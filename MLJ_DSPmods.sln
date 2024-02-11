@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractionateEverything", "FractionateEverything\FractionateEverything.csproj", "{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetItemsAndReceips", "GetItemsAndReceips\GetItemsAndReceips.csproj", "{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4878B4A3-2A2B-4B68-B186-67F65F2E01DE}
+	EndGlobalSection
+EndGlobal
