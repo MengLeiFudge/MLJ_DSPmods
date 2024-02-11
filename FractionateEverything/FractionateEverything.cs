@@ -6,8 +6,6 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using HarmonyLib;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Xml.Linq;
 using UnityEngine;
 using xiaoye97;
 
@@ -15,7 +13,6 @@ namespace FractionateEverything
 {
     [BepInPlugin(GUID, NAME, VERSION)]
     [BepInDependency(CommonAPIPlugin.GUID)]
-    //[BepInDependency("GniMaerd.DSP.plugin.MoreProtoPages", BepInDependency.DependencyFlags.SoftDependency)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry))]
     public class FractionateEverything : BaseUnityPlugin
     {
@@ -213,18 +210,15 @@ namespace FractionateEverything
             if (FractionateDifficulty.Value < 1 || FractionateDifficulty.Value > 5)
             {
                 FractionateDifficulty.Value = 5;
-                Config.Save();
             }
             ratio = new List<int> { 20, 30, 44, 67, 100 }[FractionateDifficulty.Value - 1];
-            //能不能改成越是高级产物则越难分馏？
-
             ConfigEntry<int> DefaultPage = Config.Bind("config", "DefaultPage", 3, "New fractionate recipes will be shown in this page (3-8). Hide them by set this to 9. 新的分馏配方将出现在这些页（3-8）。设置为9则不再显示。");
             if (DefaultPage.Value < 3 || DefaultPage.Value > 8)
             {
                 DefaultPage.Value = 3;
-                Config.Save();
             }
             pagePlus = (DefaultPage.Value - 3) * 1000;
+            Config.Save();
 
             //ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("FractionateEverything.fracicons"));
 
@@ -241,31 +235,6 @@ namespace FractionateEverything
             LocalizationModule.RegisterTranslation("。f", ".", "。", ".");
 
             //分馏只能单产物，不能多产物！
-
-            #region 原作者写法
-            //var ori = LDB.recipes.Select(115);//115：重氢分流配方
-            //string iName, rName;
-
-            //var c1r1 = ori.Copy();
-            //iName = "磁铁";
-            //rName = "磁线圈";
-            //c1r1.ID = 481; ////////
-            //c1r1.Name = "c1r1配方";
-            //c1r1.name = rName.Translate() + "分馏f".Translate();
-            //c1r1.Items = new int[] { 1102 }; ////////
-            //c1r1.ItemCounts = new int[] { 5 * ratio }; ////////
-            //c1r1.Results = new int[] { 1202 }; ////////
-            //c1r1.ResultCounts = new int[] { 1 };
-            //c1r1.GridIndex = pagePlus + 3101; ////////
-            //c1r1.Description = "c1r1描述";
-            //c1r1.description = "从f".Translate() + iName.Translate() + "中分馏出f".Translate() + rName.Translate() + "。f".Translate();
-            //c1r1.preTech = LDB.techs.Select(1134); ////////1134：重氢分流科技，解锁分馏塔
-            //Traverse.Create(c1r1).Field("_iconSprite").SetValue(ab.LoadAsset<Sprite>("fi3101"));
-            //var c1r1r = LDB.items.Select(1202); ////////
-            //c1r1r.recipes.Add(c1r1);
-            //LDBTool.PostAddProto(ProtoType.Recipe, c1r1);
-            #endregion
-
             AddFracChain(new List<Item> { Item.采矿机, Item.大型采矿机, });
             AddFracChain(new List<Item> { Item.小型储物仓, Item.大型储物仓, });
             AddFracChain(new List<Item> { Item.传送带, Item.高速传送带, Item.极速传送带, });
