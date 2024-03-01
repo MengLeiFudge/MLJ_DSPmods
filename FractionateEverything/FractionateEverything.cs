@@ -18,7 +18,7 @@ namespace FractionateEverything
     {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.0.1";
         public static ManualLogSource logger;
         /// <summary>
         /// 下一个新增的分馏配方应使用该ID，且使用后应+1。
@@ -123,6 +123,8 @@ namespace FractionateEverything
             导弹组 = 1609,
             超音速导弹组 = 1610,
             引力导弹组 = 1611,
+            干扰胶囊 = 1612,
+            压制胶囊 = 1613,
             原型机 = 5101,
             精准无人机 = 5102,
             攻击无人机 = 5103,
@@ -140,6 +142,7 @@ namespace FractionateEverything
             分拣器 = 2011,
             高速分拣器 = 2012,
             极速分拣器 = 2013,
+            集装分拣器 = 2014,
             四向分流器 = 2020,
             自动集装机 = 2040,
             流速监测器 = 2030,
@@ -193,6 +196,7 @@ namespace FractionateEverything
             信号塔 = 3007,
             行星护盾发生器 = 3008,
             战场分析基站 = 3009,
+            近程电浆塔 = 3010,
             电磁矩阵 = 6001,
             能量矩阵 = 6002,
             结构矩阵 = 6003,
@@ -238,7 +242,7 @@ namespace FractionateEverything
             AddFracChain(new List<Item> { Item.采矿机, Item.大型采矿机, });
             AddFracChain(new List<Item> { Item.小型储物仓, Item.大型储物仓, });
             AddFracChain(new List<Item> { Item.传送带, Item.高速传送带, Item.极速传送带, });
-            AddFracChain(new List<Item> { Item.分拣器, Item.高速分拣器, Item.极速分拣器, });
+            AddFracChain(new List<Item> { Item.分拣器, Item.高速分拣器, Item.极速分拣器, Item.集装分拣器 });
             AddFracChain(new List<Item> { Item.电弧熔炉, Item.位面熔炉, Item.负熵熔炉, });
             AddFracChain(new List<Item> { Item.制造台MkI, Item.制造台MkII, Item.制造台MkIII, Item.重组式制造台, });
             AddFracChain(new List<Item> { Item.化工厂, Item.量子化工厂, });
@@ -256,9 +260,10 @@ namespace FractionateEverything
             AddFracChain(new List<Item> { Item.炮弹组, Item.高爆炮弹组, Item.晶石炮弹组, });
             AddFracChain(new List<Item> { Item.等离子胶囊, Item.反物质胶囊, });
             AddFracChain(new List<Item> { Item.导弹组, Item.超音速导弹组, Item.引力导弹组, });
+            AddFracChain(new List<Item> { Item.干扰胶囊, Item.压制胶囊, });
             AddFracChain(new List<Item> { Item.原型机, Item.精准无人机, Item.攻击无人机, Item.护卫舰, Item.驱逐舰, });
             AddFracChain(new List<Item> { Item.能量碎片, Item.硅基神经元, Item.物质重组器, Item.负熵奇点, Item.核心素, Item.黑雾矩阵, Item.电磁矩阵, Item.能量矩阵, Item.结构矩阵, Item.信息矩阵, Item.引力矩阵, Item.宇宙矩阵, });
-            AddFracChain(new List<Item> { Item.战场分析基站, Item.干扰塔, Item.信号塔, Item.行星护盾发生器, Item.高斯机枪塔, Item.高频激光塔, Item.聚爆加农炮, Item.磁化电浆炮, Item.导弹防御塔, });
+            AddFracChain(new List<Item> { Item.战场分析基站, Item.干扰塔, Item.信号塔, Item.行星护盾发生器, Item.高斯机枪塔, Item.高频激光塔, Item.聚爆加农炮, Item.磁化电浆炮, Item.导弹防御塔, Item.近程电浆塔 });
             AddFracChain(new List<Item> { Item.水, Item.氢, });
             AddFracChain(new List<Item> { Item.临界光子, Item.反物质, });
             AddFracChain(new List<Item> { Item.电磁轨道弹射器, Item.垂直发射井, Item.射线接收站, });
