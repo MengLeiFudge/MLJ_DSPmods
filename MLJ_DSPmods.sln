@@ -7,6 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractionateEverything", "Fr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetItemsAndReceips", "GetItemsAndReceips\GetItemsAndReceips.csproj", "{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{8CB0E02E-C981-4ADF-80DF-0B7C059393CC}"
+	ProjectSection(SolutionItems) = preProject
+		gamedata\DSP_DataInfo.csv = gamedata\DSP_DataInfo.csv
+		gamedata\DSP_ItemEnum.txt = gamedata\DSP_ItemEnum.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
