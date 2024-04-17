@@ -215,6 +215,15 @@ namespace GetItemsAndReceips
             Harmony.CreateAndPatchAll(typeof(GetItemsAndReceips), GUID);
         }
 
+        /// <summary>
+        /// 该方法会在每次加载存档时调用
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GameHistoryData), "Import")]
+        public static void ImportPostPatch()
+        {
+        }
+
         private void PreAddDataAction() { }
 
         private void PostAddDataAction()
