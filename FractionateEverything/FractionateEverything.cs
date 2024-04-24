@@ -5,9 +5,7 @@ using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using HarmonyLib;
-using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -79,14 +77,14 @@ namespace FractionateEverything
         {
             logger = Logger;
 
-            LocalizationModule.RegisterTranslation("分馏页面1f", "Fractionate I", "分馏 I", "Fractionate I");
-            LocalizationModule.RegisterTranslation("分馏页面2f", "Fractionate II", "分馏 II", "Fractionate II");
-            LocalizationModule.RegisterTranslation("分馏f", " Fractionation", "分馏", " Fractionation");
-            LocalizationModule.RegisterTranslation("从f", "Fractionate ", "从", "Fractionate ");
-            LocalizationModule.RegisterTranslation("中分馏出f", " to ", "中分馏出", " to ");
-            LocalizationModule.RegisterTranslation("。f", ".", "。", ".");
-            LocalizationModule.RegisterTranslation("分馏出f", " fractionated ", "分馏出", " fractionated");
-            LocalizationModule.RegisterTranslation("个产物f", " product", "个产物", " product");
+            LocalizationModule.RegisterTranslation("分馏页面1", "Fractionate I", "分馏 I", "Fractionate I");
+            LocalizationModule.RegisterTranslation("分馏页面2", "Fractionate II", "分馏 II", "Fractionate II");
+            LocalizationModule.RegisterTranslation("分馏", " Fractionation", "分馏", " Fractionation");
+            LocalizationModule.RegisterTranslation("从", "Fractionate ", "从", "Fractionate ");
+            LocalizationModule.RegisterTranslation("中分馏出", " to ", "中分馏出", " to ");
+            LocalizationModule.RegisterTranslation("。", ".", "。", ".");
+            LocalizationModule.RegisterTranslation("分馏出", " fractionated ", "分馏出", " fractionated");
+            LocalizationModule.RegisterTranslation("个产物", " product", "个产物", " product");
 
             LocalizationModule.RegisterTranslation("低功率分馏塔", "Low Power Fractionator", "低功率分馏塔", "Low Power Fractionator");
             LocalizationModule.RegisterTranslation("I低功率分馏塔",
@@ -120,15 +118,13 @@ namespace FractionateEverything
                 new ConfigDescription("Whether show all fractionate recipes or not.\n" +
                                       "是否显示所有的分馏配方。", new AcceptableBoolValue(true), null));
             showRecipes = ShowFractionateRecipes.Value;
-
-            ConfigEntry<int> FirstPage = Config.Bind("config", "FirstPage", 3,
-                new ConfigDescription("If ShowFractionateRecipes is turned on, new fractionated recipes will be displayed starting from this page (3-7).\n" +
-                                      "Used to avoid possible recipe display issues between mods.\n" +
-                                      "Tip: This mod requires *TWO pages* to show all the added fractionation recipes.\n" +
-                                      "如果ShowFractionateRecipes已开启，新的分馏配方将从此页开始显示（3-7）。\n" +
-                                      "用于避免mod之间可能存在的配方显示问题。\n" +
-                                      "提示：本MOD需要*两页*来显示所有新增的分馏配方。", new AcceptableIntValue(3, 3, 7), null));
-            firstPage = FirstPage.Value;
+            firstPage = 3;
+            if (showRecipes)
+            {
+                string iconPath = LDB.techs.Select(T重氢分馏).IconPath;
+                firstPage = TabSystem.RegisterTab(GUID + "Tab1", new TabData("分馏页面1".Translate(), iconPath));
+                TabSystem.RegisterTab(GUID + "Tab2", new TabData("分馏页面2".Translate(), iconPath));
+            }
 
             //配方ID是int型，没有限制
             ConfigEntry<int> FirstRecipeID = Config.Bind("config", "FirstRecipeID", 1000,
@@ -140,12 +136,6 @@ namespace FractionateEverything
 
             Config.Save();
 
-            if (showRecipes)
-            {
-                string iconPath = LDB.techs.Select(T重氢分馏).IconPath;
-                TabSystem.RegisterTab(GUID + "Tab1", new TabData("分馏页面1f".Translate(), iconPath));
-                TabSystem.RegisterTab(GUID + "Tab2", new TabData("分馏页面2f".Translate(), iconPath));
-            }
 
             ab = AssetBundle.LoadFromStream(
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("FractionateEverything.fracicons"));
@@ -217,10 +207,6 @@ namespace FractionateEverything
 
         private void AddFractionators()
         {
-            ShowModel(LDB.models.Select(M分馏塔));
-
-            //modelIndex可选范围：495-554
-
             //低功率分馏塔
             //耗电量为原版分馏塔的20%，分馏成功率为原版分馏塔的33.33%
             AddFractionator(I低功率分馏塔, "低功率分馏塔",
@@ -256,10 +242,11 @@ namespace FractionateEverything
         /// <param name="gridIndex">分馏塔在背包显示的位置（配方位置）、物流塔选择物品位置（物品位置）</param>
         /// <param name="preTech">建筑和配方的前置科技</param>
         /// <param name="buildIndex">在下方快捷制作栏的哪个位置</param>
+        /// <param name="modelID">模型ID</param>
         /// <param name="color">建筑颜色</param>
         /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
         private void AddFractionator(int buildingID, string name, int[] items, int[] itemCounts, int gridIndex, int preTech,
-            int buildIndex, int modelIndex, Color? color = null, double energyRatio = 1.0)
+            int buildIndex, int modelID, Color? color = null, double energyRatio = 1.0)
         {
             ItemProto oriItem = LDB.items.Select(I分馏塔);
             ModelProto oriModel = LDB.models.Select(M分馏塔);
@@ -302,50 +289,54 @@ namespace FractionateEverything
             //Traverse.Create(item).Field("_iconSprite").SetValue(sprite);
             LDBTool.PreAddProto(item);
 
-            // var model = CopyModelUtils.CopyModelProto(oriItem.ModelIndex, modelIndex, buildingID, buildIndex,
-            //     name, color);
-            ModelProto model = new();
-            oriModel.CopyPropsTo(ref model);
-            model.prefabDesc = new();
-            oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
-            model.prefabDesc.modelIndex = modelIndex;
-            model.ID = modelIndex;
-            model.Name = modelIndex.ToString();
-            model.name = name;
-            model.sid = name;
-            model.SID = name;
-
-            LDBTool.PreAddProto(model);
-            ProtoRegistry.AddModelToItemProto(model, item, item.DescFields, buildIndex);
-
+            var model = CopyModelUtils.CopyModelProto(M分馏塔, modelID, buildingID, buildIndex,
+                name, color);
             model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
             model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
-            //item.ModelIndex = modelIndex;
 
-            ShowModel(model);
+            // ModelProto model = new();
+            // oriModel.CopyPropsTo(ref model);
+            // model.prefabDesc = new();
+            // oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
+            // model.ID = modelID;
+            // model.Name = modelID.ToString();
+            // model.name = modelID.ToString();
+            // model.sid = name;
+            // model.SID = name;
+            // model.prefabDesc.modelIndex = modelID;
+            // model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+            // model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+            // if (color.HasValue)
+            // {
+            //     foreach (Material[] lodMaterial in model.prefabDesc.lodMaterials)
+            //     {
+            //         if (lodMaterial == null) continue;
+            //         for (var j = 0; j < lodMaterial.Length; j++)
+            //         {
+            //
+            //             // ref Material material = ref lodMaterial[j];
+            //             // if (material == null) continue;
+            //             // material = new Material(material);
+            //
+            //             if (lodMaterial[j] == null) continue;
+            //             Material material = new Material(lodMaterial[j]);
+            //             lodMaterial[j] = material;
+            //
+            //             material.SetColor("_Color", color.Value);
+            //         }
+            //     }
+            // }
+            // LDBTool.PreAddProto(model);
 
+            item.ModelIndex = modelID;
             LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
         }
 
-        // [HarmonyPostfix]
-        // [HarmonyPatch(typeof(PowerSystem), "NewAccumulatorComponent")]
-        // static void Postfix(PowerSystem __instance, ref int __result)
-        // {
-        //     // 需要把蓄电池拍地上成为建筑物才有用，对能量枢纽不起作用；
-        //     PowerAccumulatorComponent acc = __instance.accPool[__result]; // 是复制
-        //     int 系数 = 15;
-        //     __instance.accPool[__result].inputEnergyPerTick = 系数 * acc.inputEnergyPerTick; // 是引用
-        //     __instance.accPool[__result].outputEnergyPerTick = 系数 * acc.outputEnergyPerTick;
-        //     __instance.accPool[__result].maxEnergy = 系数 * acc.maxEnergy;
-        //
-        //
-        //     factory.entityPool[component.entityId].modelIndex == ProtoID.M高频激光塔MK2
-        // }
-
-
         //乐，虽然是邪教，但是确实管用
         //代码源于SmelterMiner-jinxOAO
+
         #region 邪教修改建筑耗电
+
         //下面两个prefix+postfix联合作用。由于新版游戏实际执行的能量消耗、采集速率等属性都使用映射到的modelProto的prefabDesc中的数值，而不是itemProto的PrefabDesc，而修改/新增modelProto我还不会改，会报错（貌似是和模型读取不到有关）
         //因此，提前修改设定建筑信息时读取的PrefabDesc的信息，在存储建筑属性前先修改一下（改成itemProto的PrefabDesc中对应的某些值），建造建筑设定完成后再改回去
         //并且，原始item和model执向的貌似是同一个PrefabDesc，所以不能直接改model的，然后再还原成oriItem的prefabDesc，因为改了model的oriItem的也变了，还原不回去了。所以得Copy一个出来改。
@@ -387,51 +378,11 @@ namespace FractionateEverything
             {
                 return;//不相关
             }
-
             ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
             modelProto.prefabDesc = __state;//还原
-            return;
         }
+
         #endregion
-
-        public void ShowModel(ModelProto model)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (FieldInfo info in model.GetType().GetFields())
-            {
-                sb.Append(info.FieldType).Append(" ").Append(info.Name).Append(": ");
-                // if (typeof(IList).IsAssignableFrom(info.FieldType))
-                // {
-                //     IList list = info.GetValue(obj) as IList;
-                //     sb.Append("[");
-                //     foreach (var x in list)
-                //     {
-                //         sb.Append(x).Append(",");
-                //     }
-                //     sb.Append("]");
-                // }
-                // else if (typeof(IDictionary).IsAssignableFrom(info.FieldType))
-                // {
-                //     IDictionary dic = info.GetValue(obj) as IDictionary;
-                //     sb.Append(",");
-                //     int count = dic.Count;
-                //     IDictionaryEnumerator enu = dic.GetEnumerator ();
-                //     for (int i = 0; i < count; i++) {
-                //         enu.MoveNext ();
-                //         sb.Append("(").Append(enu.Key).Append(",").Append(enu.Value).Append("),");
-                //     }
-                //     sb.Append("]");
-                // }
-                // else
-                {
-                    sb.Append(info.GetValue(model)).Append("\n");
-                }
-            }
-            sb.Append("ModelPrefab.workenergy: ").Append(model.prefabDesc.workEnergyPerTick).Append("\n");
-            sb.Append("ModelPrefab.idleenergy: ").Append(model.prefabDesc.idleEnergyPerTick).Append("\n");
-            logger.LogDebug(sb.ToString());
-        }
-
 
         private void AddFracRecipes()
         {
@@ -521,33 +472,28 @@ namespace FractionateEverything
         }
 
         /// <summary>
-        /// 添加一个分馏链的所有分馏配方。
-        /// 第i个物品分馏出第i+1个物品，前置科技为第i+1个物品的前置科技；
+        /// 添加一个分馏链。
         /// 链尾物品会分馏为第1个物品，前置科技使用链尾物品的前置科技。
         /// </summary>
-        /// <param name="itemChain">分馏链</param>
         private void AddCycleFracChain(params int[] itemChain)
         {
             AddFracChain([.. itemChain, itemChain[0]], true);
         }
 
         /// <summary>
-        /// 添加一个分馏链的所有分馏配方。
-        /// 第i个物品分馏出第i+1个物品，前置科技为第i+1个物品的前置科技。
+        /// 添加一个分馏链。
+        /// 链尾物品不会分馏，可在其他链添加链尾物品的分馏配方。
         /// </summary>
-        /// <param name="itemChain">分馏链</param>
         private void AddFracChain(params int[] itemChain)
         {
             AddFracChain(itemChain, false);
         }
 
         /// <summary>
-        /// 添加一个分馏链的所有分馏配方。
+        /// 添加一个分馏链。
         /// 第i个物品分馏出第i+1个物品，前置科技为第i+1个物品的前置科技；
-        /// 链尾物品会分馏为第1个物品，前置科技根据传入的参数选择链尾或第1个物品的前置科技。
+        /// 链尾物品会分馏为第1个物品，前置科技根据lastUseInputTech选择链尾或第1个物品的前置科技。
         /// </summary>
-        /// <param name="itemChain">分馏链</param>
-        /// <param name="lastUseInputTech">如果为true，链尾物品分馏时前置科技使用链尾物品的前置科技；否则使用第1个物品的前置科技</param>
         private void AddFracChain(int[] itemChain, bool lastUseInputTech)
         {
             for (int i = 0; i < itemChain.Length - 1; i++)
@@ -556,6 +502,11 @@ namespace FractionateEverything
             }
         }
 
+        /// <summary>
+        /// 添加一个分馏配方，前置科技使用产物的前置科技。
+        /// </summary>
+        /// <param name="inputItemID"></param>
+        /// <param name="outputItemID"></param>
         private void AddFracRecipe(int inputItemID, int outputItemID)
         {
             AddFracRecipe(inputItemID, outputItemID, new() { { 1, 0.01 } }, false);
@@ -564,9 +515,9 @@ namespace FractionateEverything
         /// <summary>
         /// 添加一个分馏配方。
         /// </summary>
-        /// <param name="input">分馏原料</param>
-        /// <param name="output">分馏产物</param>
-        /// <param name="outputNum">分馏产物的数目，小于1表示分馏概率下降，大于1表示一个原材料可输出多个产物</param>
+        /// <param name="inputItemID">分馏原料</param>
+        /// <param name="outputItemID">分馏产物</param>
+        /// <param name="fracNumRatioDic">分馏产物的数目与概率</param>
         /// <param name="useInputTech">如果为true，表示前置科技使用原料的前置科技；否则前置科技使用产物的前置科技</param>
         private void AddFracRecipe(int inputItemID, int outputItemID, Dictionary<int, double> fracNumRatioDic, bool useInputTech = false)
         {
@@ -580,7 +531,7 @@ namespace FractionateEverything
                 int recipeID = nextRecipeID++;
                 ItemProto inputItem = LDB.items.Select(inputItemID);
                 ItemProto outputItem = LDB.items.Select(outputItemID);
-                string recipeName = outputItem.name + "分馏f".Translate();
+                string recipeName = outputItem.name + "分馏".Translate();
                 //获取前置科技
                 TechProto preTech = inputItemID switch
                 {
@@ -617,49 +568,54 @@ namespace FractionateEverything
                     logger.LogWarning($"配方{recipeName}前置科技为null，调整为戴森球计划！");
                 }
                 //调整部分配方的显示位置，包括产物无配方能生成产物、显示位置重合、分馏循环链影响的情况
-                int gridIndex = inputItemID switch
+                int gridIndex = 0;
+                if (showRecipes)
                 {
-                    I铁矿 => 3101,
-                    I铜矿 => 3102,
-                    I硅石 => 3103,
-                    I钛石 => 3104,
-                    I石矿 => 3105,
-                    I煤矿 => 3106,
-                    I可燃冰 => 3208,
-                    I金伯利矿石 => 3306,
-                    I分形硅石 => 3303,
-                    I光栅石 => 3605,
-                    I刺笋结晶 => 3508,
-                    I单极磁石 => 3606,
-                    I有机晶体 => 3309,
-                    I硫酸 => 3407,
-                    I磁铁 => 3201,
-                    I磁线圈 => 3202,
-                    I临界光子 => 3707,
-                    I反物质 => 3708,
-                    I黑雾矩阵 => 3801,
-                    I引力矩阵 => 3806,
-                    I宇宙矩阵 => 3807,
-                    I能量碎片 => 3808,
-                    I硅基神经元 => 3809,
-                    I物质重组器 => 3810,
-                    I负熵奇点 => 3811,
-                    I核心素 => 3812,
-                    I蓄电器 => 4113,
-                    I低功率分馏塔 => 4601,
-                    I建筑极速分馏塔 => 4602,
-                    I分馏塔 => 4603,
-                    I增殖分馏塔 => 4604,
-                    _ => outputItem.recipes.Count == 0
-                        ? 0
-                        : outputItem.recipes[0].GridIndex + (firstPage - 1) * 1000,
-                };
-                if (gridIndex == 0 || gridIndexList.Contains(gridIndex))
-                {
-                    logger.LogWarning($"配方{recipeName}显示位置{gridIndex}已被占用，调整至{currLastIdx}！");
-                    gridIndex = currLastIdx++;
+                    gridIndex = inputItemID switch
+                    {
+                        I铁矿 => 1101,
+                        I铜矿 => 1102,
+                        I硅石 => 1103,
+                        I钛石 => 1104,
+                        I石矿 => 1105,
+                        I煤矿 => 1106,
+                        I可燃冰 => 1208,
+                        I金伯利矿石 => 1306,
+                        I分形硅石 => 1303,
+                        I光栅石 => 1605,
+                        I刺笋结晶 => 1508,
+                        I单极磁石 => 1606,
+                        I有机晶体 => 1309,
+                        I硫酸 => 1407,
+                        I磁铁 => 1201,
+                        I磁线圈 => 1202,
+                        I临界光子 => 1707,
+                        I反物质 => 1708,
+                        I黑雾矩阵 => 1801,
+                        I引力矩阵 => 1806,
+                        I宇宙矩阵 => 1807,
+                        I能量碎片 => 1808,
+                        I硅基神经元 => 1809,
+                        I物质重组器 => 1810,
+                        I负熵奇点 => 1811,
+                        I核心素 => 1812,
+                        I蓄电器 => 2113,
+                        I低功率分馏塔 => 2601,
+                        I建筑极速分馏塔 => 2602,
+                        I分馏塔 => 2603,
+                        I增殖分馏塔 => 2604,
+                        _ => outputItem.recipes.Count == 0
+                            ? 0
+                            : outputItem.recipes[0].GridIndex,
+                    };
+                    gridIndex += (firstPage - 1) * 1000;
+                    if (gridIndex == (firstPage - 1) * 1000 || gridIndexList.Contains(gridIndex))
+                    {
+                        logger.LogWarning($"配方{recipeName}显示位置{gridIndex}已被占用，调整至{currLastIdx}！");
+                        gridIndex = currLastIdx++;
+                    }
+                    gridIndexList.Add(gridIndex);
                 }
-                gridIndexList.Add(gridIndex);
                 //获取重氢分馏类似样式的图标。图标由python拼接，由unity打包
                 Sprite sprite = null;
                 string inputIconName = "";
@@ -681,10 +637,10 @@ namespace FractionateEverything
                 //配方中的ResultCounts[0]大于1时，仅影响分馏成功率与显示上的分馏产物数目，实际并不能分出多个；
                 //实际分馏出多个是通过FractionatorInternalUpdatePatch方法达成的
                 //根据fracNumRatioDic的内容，构建配方的description
-                string description = $"{"从f".Translate()}{inputItem.name}{"中分馏出f".Translate()}{outputItem.name}{"。f".Translate()}";
+                string description = $"{"从".Translate()}{inputItem.name}{"中分馏出".Translate()}{outputItem.name}{"。".Translate()}";
                 foreach (var p in fracNumRatioDic)
                 {
-                    description += $"\n{p.Value:P3}{"分馏出f".Translate()}{p.Key}{"个产物f".Translate()}";
+                    description += $"\n{p.Value:P3}{"分馏出".Translate()}{p.Key}{"个产物".Translate()}";
                 }
                 //ProtoRegistry.RegisterRecipe用起来有很多问题，自己创建不容易出bug
                 RecipeProto r = new()
@@ -715,7 +671,7 @@ namespace FractionateEverything
                 fracRecipeDic.Add(inputItemID, new FracRecipe(r, fracNumRatioDic));
 #if DEBUG
                 //logger.LogDebug(
-                //    $"\nID{r.ID} index{r.index} {outputItem.name + "分馏f".Translate()}\n" +
+                //    $"\nID{r.ID} index{r.index} {outputItem.name + "分馏".Translate()}\n" +
                 //    $"Handcraft:{r.Handcraft} Explicit:{r.Handcraft} GridIndex:{r.GridIndex}\n" +
                 //    $"hasIcon:{r.hasIcon} IconPath:{r.IconPath} iconSprite:{r.iconSprite}\n" +
                 //    $"preTech:{r.preTech} preTech.ID:{r.preTech?.ID}\n" +

@@ -1193,6 +1193,6 @@
 492,492,电磁干扰胶囊,Combat/Skill/Prefabs/general-bomb-em-capsule-mk1-desc
 493,493,电磁压制胶囊,Combat/Skill/Prefabs/general-bomb-em-capsule-mk2-desc
 494,494,水,Combat/Skill/Prefabs/general-bomb-water-desc
-530,低功率分馏塔,低功率分馏塔,Entities/Prefabs/fractionator
-531,建筑极速分馏塔,建筑极速分馏塔,Entities/Prefabs/fractionator
-532,增殖分馏塔,增殖分馏塔,Entities/Prefabs/fractionator
+530,530,低功率分馏塔,Entities/Prefabs/fractionator
+531,531,建筑极速分馏塔,Entities/Prefabs/fractionator
+532,532,增殖分馏塔,Entities/Prefabs/fractionator
