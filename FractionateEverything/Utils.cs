@@ -305,6 +305,7 @@ namespace FractionateEverything
         internal const int M行星护盾发生器 = 402;
         internal const int M战场分析基站 = 453;
         internal const int M近程电浆塔 = 482;
+        //modelIndex可选范围：495-554
         internal const int M低功率分馏塔 = 530;
         internal const int M建筑极速分馏塔 = 531;
         internal const int M增殖分馏塔 = 532;
@@ -660,84 +661,85 @@ namespace FractionateEverything
 
     internal static class CopyModelUtils
     {
-        // private static ModelProto Copy(this ModelProto proto) =>
-        //     new ModelProto
-        //     {
-        //         ObjectType = proto.ObjectType,
-        //         RuinType = proto.RuinType,
-        //         RendererType = proto.RendererType,
-        //         HpMax = proto.HpMax,
-        //         HpUpgrade = proto.HpUpgrade,
-        //         HpRecover = proto.HpRecover,
-        //         RuinId = proto.RuinId,
-        //         RuinCount = proto.RuinCount,
-        //         RuinLifeTime = proto.RuinLifeTime,
-        //         PrefabPath = proto.PrefabPath,
-        //         _colliderPath = proto._colliderPath,
-        //         _ruinPath = proto._ruinPath,
-        //         _wreckagePath = proto._wreckagePath,
-        //         _ruinOriginModelIndex = proto._ruinOriginModelIndex,
-        //     };
+        private static ModelProto Copy(this ModelProto proto) =>
+            new ModelProto
+            {
+                ObjectType = proto.ObjectType,
+                RuinType = proto.RuinType,
+                RendererType = proto.RendererType,
+                HpMax = proto.HpMax,
+                HpUpgrade = proto.HpUpgrade,
+                HpRecover = proto.HpRecover,
+                RuinId = proto.RuinId,
+                RuinCount = proto.RuinCount,
+                RuinLifeTime = proto.RuinLifeTime,
+                PrefabPath = proto.PrefabPath,
+                _colliderPath = proto._colliderPath,
+                _ruinPath = proto._ruinPath,
+                _wreckagePath = proto._wreckagePath,
+                _ruinOriginModelIndex = proto._ruinOriginModelIndex,
+            };
 
 
         internal static ModelProto CopyModelProto(int oriId, int id, int item, int buildIndex, string buildingName, Color? color = null)
         {
-            // ModelProto oriModel = LDB.models.Select(oriId);
-            // //ModelProto model = new();
-            // //oriModel.CopyPropsTo(ref model);
-            // ModelProto model = oriModel.Copy();
-            // model.Name = id.ToString();
-            // model.ID = id;
-            //
-            // PrefabDesc desc = oriModel.prefabDesc;
-            // GameObject prefab = desc.prefab ? desc.prefab : Resources.Load<GameObject>(oriModel.PrefabPath);
-            // GameObject colliderPrefab = desc.colliderPrefab ? desc.colliderPrefab : Resources.Load<GameObject>(oriModel.ColliderPath);
-            //
-            // ref PrefabDesc modelPrefabDesc = ref model.prefabDesc;
-            // modelPrefabDesc = prefab == null ? PrefabDesc.none :
-            //     colliderPrefab == null ? new PrefabDesc(id, prefab) : new PrefabDesc(id, prefab, colliderPrefab);
-            //
-            // foreach (Material[] lodMaterial in modelPrefabDesc.lodMaterials)
-            // {
-            //     if (lodMaterial == null) continue;
-            //     for (var j = 0; j < lodMaterial.Length; j++)
-            //     {
-            //         ref Material material = ref lodMaterial[j];
-            //         if (material == null) continue;
-            //         material = new Material(material);
-            //         if (!color.HasValue) continue;
-            //         material.SetColor("_Color", color.Value);
-            //     }
-            // }
-            //
-            // modelPrefabDesc.modelIndex = id;
-            // modelPrefabDesc.hasBuildCollider = desc.hasBuildCollider;
-            // modelPrefabDesc.colliders = desc.colliders;
-            // modelPrefabDesc.buildCollider = desc.buildCollider;
-            // modelPrefabDesc.buildColliders = desc.buildColliders;
-            // modelPrefabDesc.colliderPrefab = desc.colliderPrefab;
-            // modelPrefabDesc.dragBuild = desc.dragBuild;
-            // modelPrefabDesc.dragBuildDist = desc.dragBuildDist;
-            // modelPrefabDesc.blueprintBoxSize = desc.blueprintBoxSize;
-            // modelPrefabDesc.roughHeight = desc.roughHeight;
-            // modelPrefabDesc.roughWidth = desc.roughWidth;
-            // modelPrefabDesc.roughRadius = desc.roughRadius;
-            // modelPrefabDesc.barHeight = desc.barHeight;
-            // modelPrefabDesc.barWidth = desc.barWidth;
-            //
-            // model.sid = "";
-            // model.SID = "";
-
             ModelProto oriModel = LDB.models.Select(oriId);
-            ModelProto model = new();
-            oriModel.CopyPropsTo(ref model);
-            model.prefabDesc = new();
-            oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
-            model.prefabDesc.modelIndex = id;
-            model.ID = id;
+            //ModelProto model = new();
+            //oriModel.CopyPropsTo(ref model);
+            ModelProto model = oriModel.Copy();
             model.Name = id.ToString();
-            model.sid = buildingName;
-            model.SID = buildingName;
+            model.ID = id;
+
+            PrefabDesc desc = oriModel.prefabDesc;
+            GameObject prefab = desc.prefab ? desc.prefab : Resources.Load<GameObject>(oriModel.PrefabPath);
+            GameObject colliderPrefab = desc.colliderPrefab ? desc.colliderPrefab : Resources.Load<GameObject>(oriModel._colliderPath);
+
+            ref PrefabDesc modelPrefabDesc = ref model.prefabDesc;
+            modelPrefabDesc = prefab == null ? PrefabDesc.none :
+                colliderPrefab == null ? new PrefabDesc(id, prefab) : new PrefabDesc(id, prefab, colliderPrefab);
+
+            foreach (Material[] lodMaterial in modelPrefabDesc.lodMaterials)
+            {
+                if (lodMaterial == null) continue;
+                for (var j = 0; j < lodMaterial.Length; j++)
+                {
+                    ref Material material = ref lodMaterial[j];
+                    if (material == null) continue;
+                    material = new Material(material);
+                    if (!color.HasValue) continue;
+                    material.SetColor("_Color", color.Value);
+                }
+            }
+
+            modelPrefabDesc.modelIndex = id;
+            modelPrefabDesc.hasBuildCollider = desc.hasBuildCollider;
+            modelPrefabDesc.colliders = desc.colliders;
+            modelPrefabDesc.buildCollider = desc.buildCollider;
+            modelPrefabDesc.buildColliders = desc.buildColliders;
+            modelPrefabDesc.colliderPrefab = desc.colliderPrefab;
+            modelPrefabDesc.dragBuild = desc.dragBuild;
+            modelPrefabDesc.dragBuildDist = desc.dragBuildDist;
+            modelPrefabDesc.blueprintBoxSize = desc.blueprintBoxSize;
+            modelPrefabDesc.roughHeight = desc.roughHeight;
+            modelPrefabDesc.roughWidth = desc.roughWidth;
+            modelPrefabDesc.roughRadius = desc.roughRadius;
+            modelPrefabDesc.barHeight = desc.barHeight;
+            modelPrefabDesc.barWidth = desc.barWidth;
+
+            model.sid = "";
+            model.SID = "";
+
+            // ModelProto oriModel = LDB.models.Select(oriId);
+            // ModelProto model = new();
+            // oriModel.CopyPropsTo(ref model);
+            // model.prefabDesc = new();
+            // oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
+            // model.prefabDesc.modelIndex = id;
+            // model.ID = id;
+            // model.Name = id.ToString();
+            // model.name = id.ToString();
+            // model.sid = buildingName;
+            // model.SID = buildingName;
 
             LDBTool.PreAddProto(model);
             //ProtoRegistry.AddModelToItemProto(model, LDB.items.Select(item), [], buildIndex);
