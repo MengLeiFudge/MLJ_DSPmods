@@ -5,12 +5,12 @@
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/MengLeiFudge/MLJ_DSPmods)
 ![GitHub last commit](https://img.shields.io/github/last-commit/MengLeiFudge/MLJ_DSPmods)
 
-×ÔÖÆ´÷É­Çò¼Æ»®MOD¡£
+è‡ªåˆ¶æˆ´æ£®çƒè®¡åˆ’MODã€‚
 
-# »ñÈ¡ÓÎÏ·ËùÓĞÎïÆ·¡¢Åä·½µÄĞÅÏ¢£¨GetItemsAndReceips£©
+# è·å–æ¸¸æˆæ‰€æœ‰ç‰©å“ã€é…æ–¹çš„ä¿¡æ¯ï¼ˆGetItemsAndReceipsï¼‰
 
-ÓÎÏ·ÄÚÎïÆ·¡¢Åä·½ÓĞ±ä¶¯Ê±£¬¿ÉÒÔÓÃ¸Ãdll½«¾ßÌåĞÅÏ¢µ¼³öÖÁÖ¸¶¨Ä¿Â¼¡£
+æ¸¸æˆå†…ç‰©å“ã€é…æ–¹æœ‰å˜åŠ¨æ—¶ï¼Œå¯ä»¥ç”¨è¯¥dllå°†å…·ä½“ä¿¡æ¯å¯¼å‡ºè‡³æŒ‡å®šç›®å½•ã€‚
 
-# ÍòÎï·ÖÁó£¨FractionateEverything£©
+# ä¸‡ç‰©åˆ†é¦ï¼ˆFractionateEverythingï¼‰
 
-¸ÃÏîÄ¿ĞÂÔöÁË100+·ÖÁóÅä·½£¬ÒÔÌá¹©È¤Î¶ĞÔ¡£
+è¯¥é¡¹ç›®æ–°å¢äº†100+åˆ†é¦é…æ–¹ï¼Œä»¥æä¾›è¶£å‘³æ€§ã€‚
