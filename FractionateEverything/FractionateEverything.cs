@@ -5,47 +5,29 @@ using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using HarmonyLib;
+using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 using xiaoye97;
+using static FractionateEverything.ProtoID;
 
 namespace FractionateEverything
 {
-    class AcceptableIntValue(int defval, int min, int max) : AcceptableValueBase(typeof(int))
-    {
-        private readonly int defval = defval >= min && defval <= max ? defval : min;
-        private readonly int min = min;
-        private readonly int max = max;
-        public override object Clamp(object value) => IsValid(value) ? (int)value : defval;
-        public override bool IsValid(object value) => value.GetType() == ValueType && (int)value >= min && (int)value <= max;
-        public override string ToDescriptionString() => null;
-    }
-
-    class AcceptableBoolValue(bool defval) : AcceptableValueBase(typeof(bool))
-    {
-        private readonly bool defval = defval;
-        public override object Clamp(object value) => IsValid(value) ? (bool)value : defval;
-        public override bool IsValid(object value) => value.GetType() == ValueType;
-        public override string ToDescriptionString() => null;
-    }
-
     [BepInPlugin(GUID, NAME, VERSION)]
     [BepInDependency(CommonAPIPlugin.GUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     public class FractionateEverything : BaseUnityPlugin
     {
-        public const string GUID = "com.menglei.dsp." + NAME;
-        public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.2.0";
-        public static ManualLogSource logger;
+        private const string GUID = "com.menglei.dsp." + NAME;
+        private const string NAME = "FractionateEverything";
+        private const string VERSION = "1.2.0";
+        private static ManualLogSource logger;
 
-        /// <summary>
-        /// 指示分馏基础速率，值越小分馏越快。
-        /// </summary>
-        private static int ratio;
         /// <summary>
         /// 是否启用前置科技。如果不启用，所有分馏配方将在开局可用。
         /// </summary>
@@ -62,235 +44,105 @@ namespace FractionateEverything
         /// 新增分馏配方的ID，使用后应+1。
         /// </summary>
         private static int nextRecipeID;
+        /// <summary>
+        /// 用于获取图标资源。
+        /// </summary>
         private AssetBundle ab;
-
-        public enum Item
-        {
-            铁矿 = 1001,
-            铜矿 = 1002,
-            硅石 = 1003,
-            钛石 = 1004,
-            石矿 = 1005,
-            煤矿 = 1006,
-            木材 = 1030,
-            植物燃料 = 1031,
-            可燃冰 = 1011,
-            金伯利矿石 = 1012,
-            分形硅石 = 1013,
-            光栅石 = 1014,
-            刺笋结晶 = 1015,
-            单极磁石 = 1016,
-            铁块 = 1101,
-            铜块 = 1104,
-            高纯硅块 = 1105,
-            钛块 = 1106,
-            石材 = 1108,
-            高能石墨 = 1109,
-            钢材 = 1103,
-            钛合金 = 1107,
-            玻璃 = 1110,
-            钛化玻璃 = 1119,
-            棱镜 = 1111,
-            金刚石 = 1112,
-            晶格硅 = 1113,
-            齿轮 = 1201,
-            磁铁 = 1102,
-            磁线圈 = 1202,
-            电动机 = 1203,
-            电磁涡轮 = 1204,
-            超级磁场环 = 1205,
-            粒子容器 = 1206,
-            奇异物质 = 1127,
-            电路板 = 1301,
-            处理器 = 1303,
-            量子芯片 = 1305,
-            微晶元件 = 1302,
-            位面过滤器 = 1304,
-            粒子宽带 = 1402,
-            电浆激发器 = 1401,
-            光子合并器 = 1404,
-            太阳帆 = 1501,
-            水 = 1000,
-            原油 = 1007,
-            精炼油 = 1114,
-            硫酸 = 1116,
-            氢 = 1120,
-            重氢 = 1121,
-            反物质 = 1122,
-            临界光子 = 1208,
-            液氢燃料棒 = 1801,
-            氘核燃料棒 = 1802,
-            反物质燃料棒 = 1803,
-            奇异湮灭燃料棒 = 1804,
-            塑料 = 1115,
-            石墨烯 = 1123,
-            碳纳米管 = 1124,
-            有机晶体 = 1117,
-            钛晶石 = 1118,
-            卡西米尔晶体 = 1126,
-            燃烧单元 = 1128,
-            爆破单元 = 1129,
-            晶石爆破单元 = 1130,
-            引力透镜 = 1209,
-            空间翘曲器 = 1210,
-            湮灭约束球 = 1403,
-            动力引擎 = 1407,
-            推进器 = 1405,
-            加力推进器 = 1406,
-            配送运输机 = 5003,
-            物流运输机 = 5001,
-            星际物流运输船 = 5002,
-            框架材料 = 1125,
-            戴森球组件 = 1502,
-            小型运载火箭 = 1503,
-            地基 = 1131,
-            增产剂MkI = 1141,
-            增产剂MkII = 1142,
-            增产剂MkIII = 1143,
-            机枪弹箱 = 1601,
-            钛化弹箱 = 1602,
-            超合金弹箱 = 1603,
-            炮弹组 = 1604,
-            高爆炮弹组 = 1605,
-            晶石炮弹组 = 1606,
-            等离子胶囊 = 1607,
-            反物质胶囊 = 1608,
-            导弹组 = 1609,
-            超音速导弹组 = 1610,
-            引力导弹组 = 1611,
-            干扰胶囊 = 1612,
-            压制胶囊 = 1613,
-            原型机 = 5101,
-            精准无人机 = 5102,
-            攻击无人机 = 5103,
-            护卫舰 = 5111,
-            驱逐舰 = 5112,
-            黑雾矩阵 = 5201,
-            硅基神经元 = 5202,
-            物质重组器 = 5203,
-            负熵奇点 = 5204,
-            核心素 = 5205,
-            能量碎片 = 5206,
-            传送带 = 2001,
-            高速传送带 = 2002,
-            极速传送带 = 2003,
-            分拣器 = 2011,
-            高速分拣器 = 2012,
-            极速分拣器 = 2013,
-            集装分拣器 = 2014,
-            四向分流器 = 2020,
-            自动集装机 = 2040,
-            流速监测器 = 2030,
-            喷涂机 = 2313,
-            物流配送器 = 2107,
-            小型储物仓 = 2101,
-            大型储物仓 = 2102,
-            储液罐 = 2106,
-            制造台MkI = 2303,
-            制造台MkII = 2304,
-            制造台MkIII = 2305,
-            重组式制造台 = 2318,
-            电力感应塔 = 2201,
-            无线输电塔 = 2202,
-            卫星配电站 = 2212,
-            风力涡轮机 = 2203,
-            火力发电厂 = 2204,
-            微型聚变发电站 = 2211,
-            地热发电站 = 2213,
-            采矿机 = 2301,
-            大型采矿机 = 2316,
-            抽水站 = 2306,
-            电弧熔炉 = 2302,
-            位面熔炉 = 2315,
-            负熵熔炉 = 2319,
-            原油萃取站 = 2307,
-            原油精炼厂 = 2308,
-            化工厂 = 2309,
-            量子化工厂 = 2317,
-            分馏塔 = 2314,
-            太阳能板 = 2205,
-            蓄电器 = 2206,
-            蓄电器满 = 2207,
-            电磁轨道弹射器 = 2311,
-            射线接收站 = 2208,
-            垂直发射井 = 2312,
-            能量枢纽 = 2209,
-            微型粒子对撞机 = 2310,
-            人造恒星 = 2210,
-            行星内物流运输站 = 2103,
-            星际物流运输站 = 2104,
-            轨道采集器 = 2105,
-            矩阵研究站 = 2901,
-            自演化研究站 = 2902,
-            高斯机枪塔 = 3001,
-            高频激光塔 = 3002,
-            聚爆加农炮 = 3003,
-            磁化电浆炮 = 3004,
-            导弹防御塔 = 3005,
-            干扰塔 = 3006,
-            信号塔 = 3007,
-            行星护盾发生器 = 3008,
-            战场分析基站 = 3009,
-            近程电浆塔 = 3010,
-            电磁矩阵 = 6001,
-            能量矩阵 = 6002,
-            结构矩阵 = 6003,
-            信息矩阵 = 6004,
-            引力矩阵 = 6005,
-            宇宙矩阵 = 6006,
-            沙土 = 1099,
-        }
+        /// <summary>
+        /// 用于Update方法的循环计时。
+        /// </summary>
+        private DateTime lastUpdateTime = DateTime.Now;
+        /// <summary>
+        /// 存储所有配方的显示位置，以确保没有显示位置冲突
+        /// </summary>
+        private readonly List<int> gridIndexList = [];
+        /// <summary>
+        /// 如果发生显示位置冲突，从这里开始显示冲突的配方
+        /// </summary>
+        private int currLastIdx = 4701;
+        /// <summary>
+        /// 存储所有分馏配方信息
+        /// </summary>
+        private static readonly Dictionary<int, FracRecipe> fracRecipeDic = [];
+        /// <summary>
+        /// 伪随机数种子。
+        /// </summary>
+        private static uint seed2 = (uint)new System.Random().Next(int.MinValue, int.MaxValue);
+#if DEBUG
+        /// <summary>
+        /// sprite名称将被记录在该文件中。
+        /// </summary>
+        private const string SPRITE_CSV_PATH = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\gamedata\fracIconPath.csv";
+#endif
 
         public void Awake()
         {
             logger = Logger;
 
-            LocalizationModule.RegisterTranslation("分馏页面1f", "ItemFrac", "物品分馏", "ItemFrac");
-            LocalizationModule.RegisterTranslation("分馏页面2f", "BuildingFrac", "建筑分馏", "BuildingFrac");
+            LocalizationModule.RegisterTranslation("分馏页面1f", "Fractionate I", "分馏 I", "Fractionate I");
+            LocalizationModule.RegisterTranslation("分馏页面2f", "Fractionate II", "分馏 II", "Fractionate II");
             LocalizationModule.RegisterTranslation("分馏f", " Fractionation", "分馏", " Fractionation");
             LocalizationModule.RegisterTranslation("从f", "Fractionate ", "从", "Fractionate ");
             LocalizationModule.RegisterTranslation("中分馏出f", " to ", "中分馏出", " to ");
             LocalizationModule.RegisterTranslation("。f", ".", "。", ".");
+            LocalizationModule.RegisterTranslation("分馏出f", " fractionated ", "分馏出", " fractionated");
+            LocalizationModule.RegisterTranslation("个产物f", " product", "个产物", " product");
 
-            ConfigEntry<int> FractionateDifficulty = Config.Bind("config", "FractionateDifficulty", 5,
-                new ConfigDescription("Lower means easier and faster to fractionate (1-5).\n" +
-                "值越小代表越简单，能更高效地分馏出产物（1-5）。", new AcceptableIntValue(5, 1, 5), null));
-            ratio = new List<int> { 20, 30, 44, 67, 100 }[FractionateDifficulty.Value - 1];
+            LocalizationModule.RegisterTranslation("低功率分馏塔", "Low Power Fractionator", "低功率分馏塔", "Low Power Fractionator");
+            LocalizationModule.RegisterTranslation("I低功率分馏塔",
+                "The same functionality as the Universal Fractionator, but with a significant reduction in power consumption. Although there is some reduction in capacity, it allows us to use powerful fractionation features early in the development process. The Low Power Fractionator has a larger footprint and higher capacity for the same amount of power, making it suitable for large-scale construction.",
+                "与通用分馏塔功能相同，但耗电大幅减少。虽然产能有一定下降，但它能使我们在发展初期就使用强大的分馏功能。在相同电力情况下，低功率分馏塔占地更大，产能更高，适合大规模建造使用。",
+                "The same functionality as the Universal Fractionator, but with a significant reduction in power consumption. Although there is some reduction in capacity, it allows us to use powerful fractionation features early in the development process. The Low Power Fractionator has a larger footprint and higher capacity for the same amount of power, making it suitable for large-scale construction.");
+            LocalizationModule.RegisterTranslation("通用分馏塔", "Universal Fractionator", "通用分馏塔", "Universal Fractionator");
+            LocalizationModule.RegisterTranslation("I通用分馏塔",
+                "The Universal Fractionator is used in a large number of applications throughout the universe. However, many Icarus have only mastered the method of fractionating out deuterium, but do not know of any other uses for its true power. In fact, it can fractionate everything - as long as you have the ability to make the target products, you can access them more easily through the Fractionator.",
+                "通用分馏塔在宇宙各处都有大量应用。不过，很多伊卡洛斯只掌握了分馏出重氢的方法，却不知道其他的用法，无法发挥出它的真正威力。其实，它可以分馏万物——只要你拥有了制造目标产物的能力，就可以通过分馏塔更便捷地获取它们。",
+                "The Universal Fractionator is used in a large number of applications throughout the universe. However, many Icarus have only mastered the method of fractionating out deuterium, but do not know of any other uses for its true power. In fact, it can fractionate everything - as long as you have the ability to make the target products, you can access them more easily through the Fractionator.");
+            LocalizationModule.RegisterTranslation("建筑极速分馏塔", "Building-HighSpeed Fractionator", "建筑极速分馏塔", "Building-HighSpeed Fractionator");
+            LocalizationModule.RegisterTranslation("I建筑极速分馏塔",
+                "Still worried about the piles of low-level buildings in your storage box? With this, we can quickly convert low-level buildings into high-level buildings. However, non-building items seem to have become extremely difficult to fractionate. Maybe we should double check if the item being fractionated is a building before fractionating.",
+                "还在为储物箱中堆积的低级建筑而烦恼吗？有了它，我们能很快地将低级建筑转换为高级建筑。不过，非建筑物品似乎变得极难分馏了。也许在分馏前，我们应该仔细确认被分馏的物品是不是建筑。",
+                "Still worried about the piles of low-level buildings in your storage box? With this, we can quickly convert low-level buildings into high-level buildings. However, non-building items seem to have become extremely difficult to fractionate. Maybe we should double check if the item being fractionated is a building before fractionating.");
+            LocalizationModule.RegisterTranslation("增殖分馏塔", "Augmentation fractionator", "增殖分馏塔", "Augmentation fractionator");
+            LocalizationModule.RegisterTranslation("I增殖分馏塔",
+                "Along with having the ability to make the Cosmic Matrix, we also learned how to make this extremely powerful Fractionation Tower. It has a certain probability of doubling the output of the product, literally creating something out of nothing. If you input raw materials that have been sprayed with a production enhancer, it does not speed up production, but rather extra output. The extra output can be stacked with the doubled output for up to 4 items at a time.",
+                "拥有制作宇宙矩阵能力的同时，我们也得知了如何制作这个极其强大的分馏塔。它有一定概率将产物翻倍输出，真正达到无中生有的效果。如果输入被增产剂喷涂过的原料，并不会加速生产，而是额外产出。额外产出可以与翻倍输出叠加，最多一次产出4个物品。",
+                "Along with having the ability to make the Cosmic Matrix, we also learned how to make this extremely powerful Fractionation Tower. It has a certain probability of doubling the output of the product, literally creating something out of nothing. If you input raw materials that have been sprayed with a production enhancer, it does not speed up production, but rather extra output. The extra output can be stacked with the doubled output for up to 4 items at a time.");
 
             ConfigEntry<bool> UsePreTech = Config.Bind("config", "UsePreTech", true,
                 new ConfigDescription("Whether or not to use front-end tech.\n" +
-                "If set to false, all fractionation recipes are unlocked at the beginning.\n" +
-                "是否使用前置科技。\n" +
-                "如果设为false，所有分馏配方都会在开局解锁。", new AcceptableBoolValue(true), null));
+                                      "If set to false, all fractionation recipes are unlocked at the beginning.\n" +
+                                      "是否使用前置科技。\n" +
+                                      "如果设为false，所有分馏配方都会在开局解锁。", new AcceptableBoolValue(true), null));
             usePreTech = UsePreTech.Value;
 
             ConfigEntry<bool> ShowFractionateRecipes = Config.Bind("config", "ShowFractionateRecipes", true,
                 new ConfigDescription("Whether show all fractionate recipes or not.\n" +
-                "是否显示所有的分馏配方。", new AcceptableBoolValue(true), null));
+                                      "是否显示所有的分馏配方。", new AcceptableBoolValue(true), null));
             showRecipes = ShowFractionateRecipes.Value;
 
             ConfigEntry<int> FirstPage = Config.Bind("config", "FirstPage", 3,
                 new ConfigDescription("If ShowFractionateRecipes is turned on, new fractionated recipes will be displayed starting from this page (3-7).\n" +
-                "Used to avoid possible recipe display issues between mods.\n" +
-                "Tip: This mod requires *TWO pages* to show all the added fractionation recipes.\n" +
-                "如果ShowFractionateRecipes已开启，新的分馏配方将从此页开始显示（3-7）。\n" +
-                "用于避免mod之间可能存在的配方显示问题。\n" +
-                "提示：本MOD需要*两页*来显示所有新增的分馏配方。", new AcceptableIntValue(3, 3, 7), null));
+                                      "Used to avoid possible recipe display issues between mods.\n" +
+                                      "Tip: This mod requires *TWO pages* to show all the added fractionation recipes.\n" +
+                                      "如果ShowFractionateRecipes已开启，新的分馏配方将从此页开始显示（3-7）。\n" +
+                                      "用于避免mod之间可能存在的配方显示问题。\n" +
+                                      "提示：本MOD需要*两页*来显示所有新增的分馏配方。", new AcceptableIntValue(3, 3, 7), null));
             firstPage = FirstPage.Value;
 
             //配方ID是int型，没有限制
             ConfigEntry<int> FirstRecipeID = Config.Bind("config", "FirstRecipeID", 1000,
                 new ConfigDescription("Which recipe ID to start adding fractionated recipes (1000-100000).\n" +
-                "Can be used to avoid recipe conflicts with other mods.\n" +
-                "从哪个ID开始添加分馏配方（1000-100000）。\n" +
-                "用于避免mod之间可能存在的配方ID冲突。", new AcceptableIntValue(1000, 1000, 100000), null));
+                                      "Can be used to avoid recipe conflicts with other mods.\n" +
+                                      "从哪个ID开始添加分馏配方（1000-100000）。\n" +
+                                      "用于避免mod之间可能存在的配方ID冲突。", new AcceptableIntValue(1000, 1000, 100000), null));
             nextRecipeID = FirstRecipeID.Value;
 
             Config.Save();
 
             if (showRecipes)
             {
-                string iconPath = LDB.items.Select((int)Item.分馏塔).IconPath;
+                string iconPath = LDB.techs.Select(T重氢分馏).IconPath;
                 TabSystem.RegisterTab(GUID + "Tab1", new TabData("分馏页面1f".Translate(), iconPath));
                 TabSystem.RegisterTab(GUID + "Tab2", new TabData("分馏页面2f".Translate(), iconPath));
             }
@@ -299,138 +151,373 @@ namespace FractionateEverything
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("FractionateEverything.fracicons"));
 
             LDBTool.EditDataAction += EditDataAction;
-            LDBTool.PreAddDataAction += PreAddDataAction;
-            LDBTool.PostAddDataAction += PostAddDataAction;
+            LDBTool.PreAddDataAction += AddFractionators;
+            LDBTool.PostAddDataAction += AddFracRecipes;
             Harmony.CreateAndPatchAll(typeof(FractionateEverything), GUID);
         }
-
-        private DateTime lastUpdateTime = DateTime.Now;
 
         public void Update()
         {
             DateTime time = DateTime.Now;
-            if ((time - lastUpdateTime).TotalMilliseconds > 200)
+            if ((time - lastUpdateTime).TotalMilliseconds < 200)
             {
-                lastUpdateTime = time;
-                //running为true表示游戏已经加载好（不是在某存档内部，仅仅是加载好能显示主界面了）
-                if (GameMain.instance != null && GameMain.instance.running)
+                return;
+            }
+            lastUpdateTime = time;
+            //running为true表示游戏已经加载好（不是在某存档内部，仅仅是加载好能显示主界面了）
+            if (GameMain.instance is null || !GameMain.instance.running)
+            {
+                return;
+            }
+            //不断更新分馏塔可接受哪些物品
+            int oldLen = RecipeProto.fractionatorRecipes.Length;
+            if (usePreTech)
+            {
+                //仅添加已解锁的配方
+                RecipeProto[] dataArray = LDB.recipes.dataArray;
+                List<RecipeProto> list = [];
+                List<int> list2 = [];
+                foreach (RecipeProto r in dataArray)
                 {
-                    //不断更新分馏塔可接受哪些物品
-                    int oldLen = RecipeProto.fractionatorRecipes.Length;
-                    if (usePreTech)
+                    if (r.Type == ERecipeType.Fractionate && GameMain.history.RecipeUnlocked(r.ID))
                     {
-                        //仅添加已解锁的配方
-                        RecipeProto[] dataArray = LDB.recipes.dataArray;
-                        List<RecipeProto> list = [];
-                        List<int> list2 = [];
-                        for (int i = 0; i < dataArray.Length; i++)
-                        {
-                            if (dataArray[i].Type == ERecipeType.Fractionate && GameMain.history.RecipeUnlocked(dataArray[i].ID))
-                            {
-                                list.Add(dataArray[i]);
-                                list2.Add(dataArray[i].Items[0]);
-                            }
-                        }
-                        RecipeProto.fractionatorRecipes = [.. list];
-                        RecipeProto.fractionatorNeeds = [.. list2];
-                    }
-                    else
-                    {
-                        //添加所有配方
-                        RecipeProto.InitFractionatorNeeds();
-                    }
-                    int currLen = RecipeProto.fractionatorRecipes.Length;
-                    if (oldLen != currLen)
-                    {
-                        logger.LogInfo($"RecipeProto.fractionatorRecipes.Length: {oldLen} -> {currLen}");
+                        list.Add(r);
+                        list2.Add(r.Items[0]);
                     }
                 }
+                RecipeProto.fractionatorRecipes = [.. list];
+                RecipeProto.fractionatorNeeds = [.. list2];
+            }
+            else
+            {
+                //添加所有配方
+                RecipeProto.InitFractionatorNeeds();
+            }
+            int currLen = RecipeProto.fractionatorRecipes.Length;
+            if (oldLen != currLen)
+            {
+                logger.LogInfo($"RecipeProto.fractionatorRecipes.Length: {oldLen} -> {currLen}");
             }
         }
 
-        private void EditDataAction(Proto proto) { }
-
-        private void PreAddDataAction()
+        private void EditDataAction(Proto proto)
         {
-#if DEBUG
-            File.Delete(SPRITE_CSV_PATH);
-#endif
-            //添加分馏配方。每个分馏配方只能有一种输入和一种输出；不同分馏配方原料必须唯一，产物可以相同。
-            //建筑I
-            AddCycleFracChain(Item.电力感应塔, Item.无线输电塔, Item.卫星配电站);
-            AddCycleFracChain(Item.风力涡轮机, Item.太阳能板, Item.蓄电器, Item.蓄电器满, Item.能量枢纽);
-            AddCycleFracChain(Item.火力发电厂, Item.地热发电站, Item.微型聚变发电站, Item.人造恒星);
-            //建筑II
-            AddCycleFracChain(Item.传送带, Item.高速传送带, Item.极速传送带);
-            AddCycleFracChain(Item.四向分流器, Item.自动集装机, Item.流速监测器, Item.喷涂机);
-            AddCycleFracChain(Item.小型储物仓, Item.大型储物仓, Item.储液罐);
-            AddCycleFracChain(Item.物流配送器, Item.行星内物流运输站, Item.星际物流运输站, Item.轨道采集器);
-            //建筑III
-            AddCycleFracChain(Item.分拣器, Item.高速分拣器, Item.极速分拣器, Item.集装分拣器);
-            AddCycleFracChain(Item.采矿机, Item.大型采矿机);
-            AddCycleFracChain(Item.抽水站, Item.原油萃取站, Item.原油精炼厂);
-            AddCycleFracChain(Item.分馏塔, Item.微型粒子对撞机);
-            AddCycleFracChain(Item.化工厂, Item.量子化工厂);
-            //建筑IV
-            AddCycleFracChain(Item.电弧熔炉, Item.位面熔炉, Item.负熵熔炉);
-            AddCycleFracChain(Item.制造台MkI, Item.制造台MkII, Item.制造台MkIII, Item.重组式制造台);
-            AddCycleFracChain(Item.矩阵研究站, Item.自演化研究站);
-            AddCycleFracChain(Item.电磁轨道弹射器, Item.射线接收站, Item.垂直发射井);
-            //建筑V
-            AddCycleFracChain(Item.高斯机枪塔, Item.导弹防御塔, Item.聚爆加农炮);
-            AddCycleFracChain(Item.高频激光塔, Item.磁化电浆炮, Item.近程电浆塔);
-            AddCycleFracChain(Item.战场分析基站, Item.信号塔, Item.干扰塔, Item.行星护盾发生器);
-            //物品左侧区域
-            //矿物自增值比冶炼更有意义
-            AddFracRecipe(Item.铁矿, Item.铁矿, 4);
-            AddFracRecipe(Item.铜矿, Item.铜矿, 4);
-            AddFracRecipe(Item.硅石, Item.硅石, 4);
-            AddFracRecipe(Item.钛石, Item.钛石, 4);
-            AddFracRecipe(Item.石矿, Item.石矿, 4);
-            AddFracRecipe(Item.煤矿, Item.煤矿, 4);
-            AddFracRecipe(Item.可燃冰, Item.可燃冰, 2);
-            AddFracRecipe(Item.金伯利矿石, Item.金伯利矿石, 2);
-            AddFracRecipe(Item.分形硅石, Item.分形硅石, 2);
-            AddFracRecipe(Item.光栅石, Item.光栅石, 2);
-            AddFracRecipe(Item.刺笋结晶, Item.刺笋结晶, 2);
-            AddFracRecipe(Item.单极磁石, Item.单极磁石, 2);
-            //部分非循环链
-            AddFracChain(Item.铁块, Item.钢材, Item.钛合金, Item.框架材料, Item.戴森球组件, Item.小型运载火箭);
-            AddFracChain(Item.高纯硅块, Item.晶格硅);
-            AddFracChain(Item.石材, Item.地基);
-            AddFracChain(Item.玻璃, Item.钛化玻璃, Item.位面过滤器);
-            AddFracChain(Item.棱镜, Item.电浆激发器, Item.光子合并器, Item.太阳帆);
-            AddFracChain(Item.高能石墨, Item.金刚石);
-            AddFracChain(Item.石墨烯, Item.碳纳米管, Item.粒子宽带);
-            AddFracChain(Item.粒子容器, Item.奇异物质, Item.引力透镜, Item.空间翘曲器);
-            AddFracChain(Item.精炼油, Item.塑料, Item.有机晶体, Item.钛晶石, Item.卡西米尔晶体);
-            //部分循环链
-            AddCycleFracChain(Item.水, Item.硫酸);
-            AddFracChain(Item.磁铁, Item.磁线圈, Item.电动机);
-            AddCycleFracChain(Item.电动机, Item.电磁涡轮, Item.超级磁场环);
-            AddCycleFracChain(Item.电路板, Item.处理器, Item.量子芯片);
-            AddCycleFracChain(Item.原型机, Item.精准无人机, Item.攻击无人机);
-            AddCycleFracChain(Item.护卫舰, Item.驱逐舰);
-            AddFracChain(Item.能量碎片, Item.硅基神经元, Item.物质重组器, Item.负熵奇点, Item.核心素, Item.黑雾矩阵);
-            AddCycleFracChain(Item.黑雾矩阵, Item.电磁矩阵, Item.能量矩阵, Item.结构矩阵, Item.信息矩阵, Item.引力矩阵);
-            AddFracRecipe(Item.宇宙矩阵, Item.宇宙矩阵, 2);
-            AddFracRecipe(Item.临界光子, Item.反物质);
-            AddFracRecipe(Item.反物质, Item.临界光子, 2);
-            //物品右侧区域
-            AddCycleFracChain(Item.增产剂MkI, Item.增产剂MkII, Item.增产剂MkIII);
-            AddCycleFracChain(Item.燃烧单元, Item.爆破单元, Item.晶石爆破单元);
-            AddCycleFracChain(Item.动力引擎, Item.推进器, Item.加力推进器);
-            AddCycleFracChain(Item.配送运输机, Item.物流运输机, Item.星际物流运输船);
-            AddCycleFracChain(Item.液氢燃料棒, Item.氘核燃料棒, Item.反物质燃料棒, Item.奇异湮灭燃料棒);
-            AddCycleFracChain(Item.机枪弹箱, Item.钛化弹箱, Item.超合金弹箱);
-            AddCycleFracChain(Item.炮弹组, Item.高爆炮弹组, Item.晶石炮弹组);
-            AddCycleFracChain(Item.导弹组, Item.超音速导弹组, Item.引力导弹组);
-            AddCycleFracChain(Item.等离子胶囊, Item.反物质胶囊);
-            AddCycleFracChain(Item.干扰胶囊, Item.压制胶囊);
+            if (proto is ItemProto { ID: I分馏塔 } item)
+            {
+                item.Name = "通用分馏塔";
+                item.name = "通用分馏塔".Translate();
+                item.Description = "I通用分馏塔";
+                item.description = "I通用分馏塔".Translate();
+                item.GridIndex = 2603;
+                item.maincraft.GridIndex = 2603;
+                item.BuildIndex = 409;
+                LDBTool.SetBuildBar(item.BuildIndex / 100, item.BuildIndex % 100, item.ID);
+            }
         }
 
-        private void PostAddDataAction()
+        private void AddFractionators()
         {
+            ShowModel(LDB.models.Select(M分馏塔));
+
+            //modelIndex可选范围：495-554
+
+            //低功率分馏塔
+            //耗电量为原版分馏塔的20%，分馏成功率为原版分馏塔的33.33%
+            AddFractionator(I低功率分馏塔, "低功率分馏塔",
+                [I铁块, I铜块, I磁线圈], [4, 2, 2],
+                2601, T电磁学, 407, M低功率分馏塔,
+                new Color(0.6275f, 0.3804f, 0.6431f), 0.2);
+
+            //建筑极速分馏塔
+            //分馏建筑成功率12.5%，分馏非建筑成功率0.1%
+            AddFractionator(I建筑极速分馏塔, "建筑极速分馏塔",
+                [I铁块, I石材, I玻璃, I电路板], [8, 4, 4, 1],
+                2602, T改良物流系统, 408, M建筑极速分馏塔,
+                new Color(0.3216F, 0.8157F, 0.09020F), 1.0);
+
+            //增殖分馏塔
+            //可输入任意物品，每次分馏成功消耗1个原料，输出2个输入的物品。
+            //分馏成功率受物品种类、是否喷涂增产剂影响。
+            //基础分馏成功率：普通物品0.2%，普通矿物2%，珍奇矿物1%。
+            //增产剂成功率加成：MK1 25%，MK2 50%，MK3 100%（每个增产点数加25%）
+            AddFractionator(I增殖分馏塔, "增殖分馏塔",
+                [I钛合金, I石材, I钛化玻璃, I量子芯片], [8, 8, 4, 1],
+                2604, T宇宙矩阵, 410, M增殖分馏塔,
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f), 4.0);
+        }
+
+        /// <summary>
+        /// 添加一个分馏塔，以及制作它的配方。
+        /// </summary>
+        /// <param name="buildingID">要添加的分馏塔的id</param>
+        /// <param name="name">分馏塔名称，用于名称显示、描述显示</param>
+        /// <param name="items">制作分馏塔需要的材料种类</param>
+        /// <param name="itemCounts">制作分馏塔需要的材料个数</param>
+        /// <param name="gridIndex">分馏塔在背包显示的位置（配方位置）、物流塔选择物品位置（物品位置）</param>
+        /// <param name="preTech">建筑和配方的前置科技</param>
+        /// <param name="buildIndex">在下方快捷制作栏的哪个位置</param>
+        /// <param name="color">建筑颜色</param>
+        /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
+        private void AddFractionator(int buildingID, string name, int[] items, int[] itemCounts, int gridIndex, int preTech,
+            int buildIndex, int modelIndex, Color? color = null, double energyRatio = 1.0)
+        {
+            ItemProto oriItem = LDB.items.Select(I分馏塔);
+            ModelProto oriModel = LDB.models.Select(M分馏塔);
+            RecipeProto oriRecipe = oriItem.maincraft;
+            Sprite sprite = oriItem.iconSprite;
+
+            int recipeID = nextRecipeID++;
+            RecipeProto recipe = new();
+            oriRecipe.CopyPropsTo(ref recipe);
+            recipe.Name = name;
+            recipe.name = name.Translate();
+            recipe.Items = items;
+            recipe.ItemCounts = itemCounts;
+            recipe.Results = [buildingID];
+            recipe.ResultCounts = [1];
+            recipe.GridIndex = gridIndex;
+            recipe.preTech = LDB.techs.Select(preTech);
+            //Traverse.Create(recipe).Field("_iconSprite").SetValue(sprite);
+            LDBTool.PreAddProto(recipe);
+            recipe.ID = recipeID;
+
+            ItemProto item = new();
+            oriItem.CopyPropsTo(ref item);
+            item.prefabDesc = new();
+            oriItem.prefabDesc.CopyPropsTo(ref item.prefabDesc);
+            item.ID = buildingID;
+            item.Name = name;
+            item.name = name.Translate();
+            item.Description = "I" + name;
+            item.description = ("I" + name).Translate();
+            item.GridIndex = gridIndex;
+            item.preTech = recipe.preTech;
+            item.recipes = [recipe];
+            item.maincraft = recipe;
+            item.handcraft = recipe;
+            item.handcrafts = [recipe];
+            item.BuildIndex = buildIndex;
+            item.prefabDesc.workEnergyPerTick = (long)(item.prefabDesc.workEnergyPerTick * energyRatio);
+            item.prefabDesc.idleEnergyPerTick = (long)(item.prefabDesc.idleEnergyPerTick * energyRatio);
+            //Traverse.Create(item).Field("_iconSprite").SetValue(sprite);
+            LDBTool.PreAddProto(item);
+
+            // var model = CopyModelUtils.CopyModelProto(oriItem.ModelIndex, modelIndex, buildingID, buildIndex,
+            //     name, color);
+            ModelProto model = new();
+            oriModel.CopyPropsTo(ref model);
+            model.prefabDesc = new();
+            oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
+            model.prefabDesc.modelIndex = modelIndex;
+            model.ID = modelIndex;
+            model.Name = modelIndex.ToString();
+            model.name = name;
+            model.sid = name;
+            model.SID = name;
+
+            LDBTool.PreAddProto(model);
+            ProtoRegistry.AddModelToItemProto(model, item, item.DescFields, buildIndex);
+
+            model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+            model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+            //item.ModelIndex = modelIndex;
+
+            ShowModel(model);
+
+            LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
+        }
+
+        // [HarmonyPostfix]
+        // [HarmonyPatch(typeof(PowerSystem), "NewAccumulatorComponent")]
+        // static void Postfix(PowerSystem __instance, ref int __result)
+        // {
+        //     // 需要把蓄电池拍地上成为建筑物才有用，对能量枢纽不起作用；
+        //     PowerAccumulatorComponent acc = __instance.accPool[__result]; // 是复制
+        //     int 系数 = 15;
+        //     __instance.accPool[__result].inputEnergyPerTick = 系数 * acc.inputEnergyPerTick; // 是引用
+        //     __instance.accPool[__result].outputEnergyPerTick = 系数 * acc.outputEnergyPerTick;
+        //     __instance.accPool[__result].maxEnergy = 系数 * acc.maxEnergy;
+        //
+        //
+        //     factory.entityPool[component.entityId].modelIndex == ProtoID.M高频激光塔MK2
+        // }
+
+
+        //乐，虽然是邪教，但是确实管用
+        //代码源于SmelterMiner-jinxOAO
+        #region 邪教修改建筑耗电
+        //下面两个prefix+postfix联合作用。由于新版游戏实际执行的能量消耗、采集速率等属性都使用映射到的modelProto的prefabDesc中的数值，而不是itemProto的PrefabDesc，而修改/新增modelProto我还不会改，会报错（貌似是和模型读取不到有关）
+        //因此，提前修改设定建筑信息时读取的PrefabDesc的信息，在存储建筑属性前先修改一下（改成itemProto的PrefabDesc中对应的某些值），建造建筑设定完成后再改回去
+        //并且，原始item和model执向的貌似是同一个PrefabDesc，所以不能直接改model的，然后再还原成oriItem的prefabDesc，因为改了model的oriItem的也变了，还原不回去了。所以得Copy一个出来改。
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
+        public static bool AddEntityDataPrePatch(EntityData entity, out PrefabDesc __state)
+        {
+            int gmProtoId = entity.protoId;
+            if (gmProtoId != I分馏塔 && gmProtoId != I低功率分馏塔 && gmProtoId != I建筑极速分馏塔 && gmProtoId != I增殖分馏塔)
+            {
+                __state = null;
+                return true;//不相关建筑直接返回
+            }
+            ItemProto itemProto = LDB.items.Select((int)entity.protoId);
+            if (itemProto == null || !itemProto.IsEntity)
+            {
+                __state = null;
+                return true;
+            }
+
+            ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
+            __state = modelProto.prefabDesc;
+            modelProto.prefabDesc = __state.Copy();
+            modelProto.prefabDesc.workEnergyPerTick = itemProto.prefabDesc.workEnergyPerTick;
+            modelProto.prefabDesc.idleEnergyPerTick = itemProto.prefabDesc.idleEnergyPerTick;
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
+        public static void AddEntityDataPostPatch(EntityData entity, PrefabDesc __state)
+        {
+            if (__state == null)
+            {
+                return;
+            }
+            int gmProtoId = entity.protoId;
+            if (gmProtoId != I分馏塔 && gmProtoId != I低功率分馏塔 && gmProtoId != I建筑极速分馏塔 && gmProtoId != I增殖分馏塔)
+            {
+                return;//不相关
+            }
+
+            ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
+            modelProto.prefabDesc = __state;//还原
+            return;
+        }
+        #endregion
+
+        public void ShowModel(ModelProto model)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (FieldInfo info in model.GetType().GetFields())
+            {
+                sb.Append(info.FieldType).Append(" ").Append(info.Name).Append(": ");
+                // if (typeof(IList).IsAssignableFrom(info.FieldType))
+                // {
+                //     IList list = info.GetValue(obj) as IList;
+                //     sb.Append("[");
+                //     foreach (var x in list)
+                //     {
+                //         sb.Append(x).Append(",");
+                //     }
+                //     sb.Append("]");
+                // }
+                // else if (typeof(IDictionary).IsAssignableFrom(info.FieldType))
+                // {
+                //     IDictionary dic = info.GetValue(obj) as IDictionary;
+                //     sb.Append(",");
+                //     int count = dic.Count;
+                //     IDictionaryEnumerator enu = dic.GetEnumerator ();
+                //     for (int i = 0; i < count; i++) {
+                //         enu.MoveNext ();
+                //         sb.Append("(").Append(enu.Key).Append(",").Append(enu.Value).Append("),");
+                //     }
+                //     sb.Append("]");
+                // }
+                // else
+                {
+                    sb.Append(info.GetValue(model)).Append("\n");
+                }
+            }
+            sb.Append("ModelPrefab.workenergy: ").Append(model.prefabDesc.workEnergyPerTick).Append("\n");
+            sb.Append("ModelPrefab.idleenergy: ").Append(model.prefabDesc.idleEnergyPerTick).Append("\n");
+            logger.LogDebug(sb.ToString());
+        }
+
+
+        private void AddFracRecipes()
+        {
+#if DEBUG
+            if (File.Exists(SPRITE_CSV_PATH))
+            {
+                File.Delete(SPRITE_CSV_PATH);
+            }
+#endif
+            //添加重氢分馏
+            fracRecipeDic.Add(I氢, new FracRecipe(LDB.recipes.Select(115), new() { { 1, 0.01 } }));
+            //添加分馏配方。每个分馏配方只能有一种输入和一种输出；不同分馏配方原料必须唯一，产物可以相同。
+            //建筑I
+            AddCycleFracChain(I电力感应塔, I无线输电塔, I卫星配电站);
+            AddCycleFracChain(I风力涡轮机, I太阳能板, I蓄电器, I蓄电器满, I能量枢纽);
+            AddCycleFracChain(I火力发电厂, I地热发电站, I微型聚变发电站, I人造恒星);
+            //建筑II
+            AddCycleFracChain(I传送带, I高速传送带, I极速传送带);
+            AddCycleFracChain(I流速监测器, I四向分流器, I喷涂机, I自动集装机);//注意科技解锁顺序
+            AddCycleFracChain(I小型储物仓, I储液罐, I大型储物仓);//注意科技解锁顺序
+            AddCycleFracChain(I物流配送器, I行星内物流运输站, I星际物流运输站, I轨道采集器);
+            //建筑III
+            AddCycleFracChain(I分拣器, I高速分拣器, I极速分拣器, I集装分拣器);
+            AddCycleFracChain(I采矿机, I大型采矿机);
+            AddCycleFracChain(I抽水站, I原油萃取站, I原油精炼厂);
+            AddCycleFracChain(I化工厂, I量子化工厂);
+            //建筑IV
+            AddCycleFracChain(I电弧熔炉, I位面熔炉, I负熵熔炉);
+            AddCycleFracChain(I制造台MkI, I制造台MkII, I制造台MkIII, I重组式制造台);
+            AddCycleFracChain(I矩阵研究站, I自演化研究站);
+            AddCycleFracChain(I电磁轨道弹射器, I射线接收站, I垂直发射井);
+            //建筑V
+            AddCycleFracChain(I高斯机枪塔, I导弹防御塔, I聚爆加农炮);//注意科技解锁顺序
+            AddCycleFracChain(I高频激光塔, I磁化电浆炮, I近程电浆塔);//注意科技解锁顺序
+            AddCycleFracChain(I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器);//注意科技解锁顺序
+            //建筑VI
+            AddCycleFracChain(I低功率分馏塔, I建筑极速分馏塔, I分馏塔, I增殖分馏塔);
+            //物品左侧区域
+            //矿物自增值比冶炼更有意义
+            AddFracRecipe(I铁矿, I铁矿, new() { { 2, 0.005 } });
+            AddFracRecipe(I铜矿, I铜矿, new() { { 2, 0.005 } });
+            AddFracRecipe(I硅石, I硅石, new() { { 2, 0.005 } });
+            AddFracRecipe(I钛石, I钛石, new() { { 2, 0.005 } });
+            AddFracRecipe(I石矿, I石矿, new() { { 2, 0.005 } });
+            AddFracRecipe(I煤矿, I煤矿, new() { { 2, 0.005 } });
+            AddFracRecipe(I可燃冰, I可燃冰, new() { { 2, 0.0025 } });
+            AddFracRecipe(I金伯利矿石, I金伯利矿石, new() { { 2, 0.0025 } });
+            AddFracRecipe(I分形硅石, I分形硅石, new() { { 2, 0.0025 } });
+            AddFracRecipe(I光栅石, I光栅石, new() { { 2, 0.0025 } });
+            AddFracRecipe(I刺笋结晶, I刺笋结晶, new() { { 2, 0.0025 } });
+            AddFracRecipe(I单极磁石, I单极磁石, new() { { 2, 0.0025 } });
+            AddFracRecipe(I有机晶体, I有机晶体, new() { { 2, 0.0025 } });
+            //部分非循环链
+            AddFracChain(I铁块, I钢材, I钛合金, I框架材料, I戴森球组件, I小型运载火箭);
+            AddFracChain(I高纯硅块, I晶格硅);
+            AddFracChain(I石材, I地基);
+            AddFracChain(I玻璃, I钛化玻璃, I位面过滤器);
+            AddFracChain(I棱镜, I电浆激发器, I光子合并器, I太阳帆);
+            AddFracChain(I高能石墨, I金刚石);
+            AddFracChain(I石墨烯, I碳纳米管, I粒子宽带);
+            AddFracChain(I粒子容器, I奇异物质, I引力透镜, I空间翘曲器);
+            AddFracChain(I精炼油, I塑料, I有机晶体);
+            AddFracChain(I钛晶石, I卡西米尔晶体);
+            //部分循环链
+            AddCycleFracChain(I水, I硫酸);
+            AddFracChain(I磁铁, I磁线圈, I电动机);
+            AddCycleFracChain(I电动机, I电磁涡轮, I超级磁场环);
+            AddCycleFracChain(I电路板, I处理器, I量子芯片);
+            AddCycleFracChain(I原型机, I精准无人机, I攻击无人机);
+            AddCycleFracChain(I护卫舰, I驱逐舰);
+            AddFracChain(I能量碎片, I硅基神经元, I物质重组器, I负熵奇点, I核心素, I黑雾矩阵);
+            AddCycleFracChain(I黑雾矩阵, I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵);
+            AddFracRecipe(I宇宙矩阵, I宇宙矩阵, new() { { 2, 0.0015 }, { 4, 0.001 }, { 8, 0.0005 } });
+            AddFracRecipe(I临界光子, I反物质);
+            AddFracRecipe(I反物质, I临界光子, new() { { 2, 0.01 } });
+            //物品右侧区域
+            AddCycleFracChain(I增产剂MkI, I增产剂MkII, I增产剂MkIII);
+            AddCycleFracChain(I燃烧单元, I爆破单元, I晶石爆破单元);
+            AddCycleFracChain(I动力引擎, I推进器, I加力推进器);
+            AddCycleFracChain(I配送运输机, I物流运输机, I星际物流运输船);
+            AddCycleFracChain(I液氢燃料棒, I氘核燃料棒, I反物质燃料棒, I奇异湮灭燃料棒);
+            AddCycleFracChain(I机枪弹箱, I钛化弹箱, I超合金弹箱);
+            AddCycleFracChain(I炮弹组, I高爆炮弹组, I晶石炮弹组);
+            AddCycleFracChain(I导弹组, I超音速导弹组, I引力导弹组);
+            AddCycleFracChain(I等离子胶囊, I反物质胶囊);
+            AddCycleFracChain(I干扰胶囊, I压制胶囊);
         }
 
         /// <summary>
@@ -439,7 +526,7 @@ namespace FractionateEverything
         /// 链尾物品会分馏为第1个物品，前置科技使用链尾物品的前置科技。
         /// </summary>
         /// <param name="itemChain">分馏链</param>
-        private void AddCycleFracChain(params Item[] itemChain)
+        private void AddCycleFracChain(params int[] itemChain)
         {
             AddFracChain([.. itemChain, itemChain[0]], true);
         }
@@ -449,7 +536,7 @@ namespace FractionateEverything
         /// 第i个物品分馏出第i+1个物品，前置科技为第i+1个物品的前置科技。
         /// </summary>
         /// <param name="itemChain">分馏链</param>
-        private void AddFracChain(params Item[] itemChain)
+        private void AddFracChain(params int[] itemChain)
         {
             AddFracChain(itemChain, false);
         }
@@ -461,41 +548,27 @@ namespace FractionateEverything
         /// </summary>
         /// <param name="itemChain">分馏链</param>
         /// <param name="lastUseInputTech">如果为true，链尾物品分馏时前置科技使用链尾物品的前置科技；否则使用第1个物品的前置科技</param>
-        private void AddFracChain(Item[] itemChain, bool lastUseInputTech)
+        private void AddFracChain(int[] itemChain, bool lastUseInputTech)
         {
             for (int i = 0; i < itemChain.Length - 1; i++)
             {
-                AddFracRecipe(itemChain[i], itemChain[i + 1], 1, lastUseInputTech && i == itemChain.Length - 2);
+                AddFracRecipe(itemChain[i], itemChain[i + 1], new() { { 1, 0.01 } }, lastUseInputTech && i == itemChain.Length - 2);
             }
         }
 
-        /// <summary>
-        /// 存储所有配方的显示位置，以确保没有显示位置冲突
-        /// </summary>
-        private readonly List<int> gridIndexList = [];
-        /// <summary>
-        /// 如果发生显示位置冲突，从这里开始显示冲突的配方
-        /// </summary>
-        private int currLastIdx = 4601;
-        /// <summary>
-        /// 存储所有分馏产物个数大于1的配方
-        /// </summary>
-        private static readonly Dictionary<int, int> specialOutputNumDic = [];
-#if DEBUG
-        /// <summary>
-        /// sprite名称将被记录在该文件中。
-        /// </summary>
-        private readonly string SPRITE_CSV_PATH = "D:\\project\\csharp\\DSP MOD\\MLJ_DSPmods\\gamedata\\fracIconPath.csv";
-#endif
+        private void AddFracRecipe(int inputItemID, int outputItemID)
+        {
+            AddFracRecipe(inputItemID, outputItemID, new() { { 1, 0.01 } }, false);
+        }
 
         /// <summary>
         /// 添加一个分馏配方。
         /// </summary>
         /// <param name="input">分馏原料</param>
         /// <param name="output">分馏产物</param>
-        /// <param name="outputNum">分馏产物的数目，大于1表示物品增值（个数凭空增加）</param>
+        /// <param name="outputNum">分馏产物的数目，小于1表示分馏概率下降，大于1表示一个原材料可输出多个产物</param>
         /// <param name="useInputTech">如果为true，表示前置科技使用原料的前置科技；否则前置科技使用产物的前置科技</param>
-        private void AddFracRecipe(Item input, Item output, int outputNum = 1, bool useInputTech = false)
+        private void AddFracRecipe(int inputItemID, int outputItemID, Dictionary<int, double> fracNumRatioDic, bool useInputTech = false)
         {
             //LDB.ItemName 等价于 itemproto.name，itemproto.name 等价于 itemproto.Name.Translate()
             //name: 推进器  name.Translate: <0xa0>-<0xa0>推进器  Name: 推进器2  Name.Translate: 推进器
@@ -504,66 +577,114 @@ namespace FractionateEverything
             //name: Assembling Machine Mk.I  name.Translate: Assembling Machine Mk.I  Name: 制造台 Mk.I  Name.Translate: Assembling Machine Mk.I
             try
             {
-                int inputItemID = (int)input;
-                int outputItemID = (int)output;
                 int recipeID = nextRecipeID++;
                 ItemProto inputItem = LDB.items.Select(inputItemID);
                 ItemProto outputItem = LDB.items.Select(outputItemID);
-                //尝试获取前置科技
-                TechProto preTech = null;
-                if (usePreTech)
+                string recipeName = outputItem.name + "分馏f".Translate();
+                //获取前置科技
+                TechProto preTech = inputItemID switch
                 {
-                    preTech = useInputTech ? inputItem.preTech : outputItem.preTech;
-                }
+                    I铁矿 => LDB.techs.Select(T戴森球计划),
+                    I铜矿 => LDB.techs.Select(T戴森球计划),
+                    I硅石 => LDB.techs.Select(T冶炼提纯),
+                    I钛石 => LDB.techs.Select(T钛矿冶炼),
+                    I石矿 => LDB.techs.Select(T戴森球计划),
+                    I煤矿 => LDB.techs.Select(T戴森球计划),
+                    I可燃冰 => LDB.techs.Select(T应用型超导体),
+                    I金伯利矿石 => LDB.techs.Select(T晶体冶炼),
+                    I分形硅石 => LDB.techs.Select(T粒子可控),
+                    I光栅石 => LDB.techs.Select(T卡西米尔晶体),
+                    I刺笋结晶 => LDB.techs.Select(T高强度材料),
+                    I单极磁石 => LDB.techs.Select(T粒子磁力阱),
+                    I有机晶体 => LDB.techs.Select(T高分子化工),
+                    I硫酸 => LDB.techs.Select(T基础化工),
+                    I磁铁 => LDB.techs.Select(T戴森球计划),
+                    I黑雾矩阵 => LDB.techs.Select(T电磁矩阵),
+                    I能量碎片 => LDB.techs.Select(T戴森球计划),
+                    I硅基神经元 => LDB.techs.Select(T戴森球计划),
+                    I物质重组器 => LDB.techs.Select(T戴森球计划),
+                    I负熵奇点 => LDB.techs.Select(T戴森球计划),
+                    I核心素 => LDB.techs.Select(T戴森球计划),
+                    I蓄电器 => LDB.techs.Select(T能量储存),
+                    _ => usePreTech
+                        ? useInputTech ? inputItem.preTech : outputItem.preTech
+                        : null,
+                };
                 //前置科技如果为null，【必须】修改为戴森球计划，才能确保某些配方能正常解锁、显示
-                preTech ??= LDB.techs.Select(1);
-                //调整部分配方的显示位置，包括产物无配方能生成产物、显示位置重合、分馏循环链影响的情况
-                int gridIndex = input switch
+                if (preTech == null)
                 {
-                    Item.铁矿 => 3101,
-                    Item.铜矿 => 3102,
-                    Item.硅石 => 3103,
-                    Item.钛石 => 3104,
-                    Item.石矿 => 3105,
-                    Item.煤矿 => 3106,
-                    Item.可燃冰 => 3208,
-                    Item.金伯利矿石 => 3306,
-                    Item.分形硅石 => 3303,
-                    Item.光栅石 => 3605,
-                    Item.刺笋结晶 => 3508,
-                    Item.单极磁石 => 3606,
-                    Item.硫酸 => 3407,
-                    Item.磁铁 => 3201,
-                    Item.磁线圈 => 3202,
-                    Item.临界光子 => 3707,
-                    Item.反物质 => 3708,
-                    Item.黑雾矩阵 => 3801,
-                    Item.引力矩阵 => 3806,
-                    Item.宇宙矩阵 => 3807,
-                    Item.能量碎片 => 3808,
-                    Item.硅基神经元 => 3809,
-                    Item.物质重组器 => 3810,
-                    Item.负熵奇点 => 3811,
-                    Item.核心素 => 3812,
-                    Item.蓄电器 => 4113,
+                    preTech = LDB.techs.Select(T戴森球计划);
+                    logger.LogWarning($"配方{recipeName}前置科技为null，调整为戴森球计划！");
+                }
+                //调整部分配方的显示位置，包括产物无配方能生成产物、显示位置重合、分馏循环链影响的情况
+                int gridIndex = inputItemID switch
+                {
+                    I铁矿 => 3101,
+                    I铜矿 => 3102,
+                    I硅石 => 3103,
+                    I钛石 => 3104,
+                    I石矿 => 3105,
+                    I煤矿 => 3106,
+                    I可燃冰 => 3208,
+                    I金伯利矿石 => 3306,
+                    I分形硅石 => 3303,
+                    I光栅石 => 3605,
+                    I刺笋结晶 => 3508,
+                    I单极磁石 => 3606,
+                    I有机晶体 => 3309,
+                    I硫酸 => 3407,
+                    I磁铁 => 3201,
+                    I磁线圈 => 3202,
+                    I临界光子 => 3707,
+                    I反物质 => 3708,
+                    I黑雾矩阵 => 3801,
+                    I引力矩阵 => 3806,
+                    I宇宙矩阵 => 3807,
+                    I能量碎片 => 3808,
+                    I硅基神经元 => 3809,
+                    I物质重组器 => 3810,
+                    I负熵奇点 => 3811,
+                    I核心素 => 3812,
+                    I蓄电器 => 4113,
+                    I低功率分馏塔 => 4601,
+                    I建筑极速分馏塔 => 4602,
+                    I分馏塔 => 4603,
+                    I增殖分馏塔 => 4604,
                     _ => outputItem.recipes.Count == 0
-                         ? 0
-                         : outputItem.recipes[0].GridIndex + (firstPage - 1) * 1000,
+                        ? 0
+                        : outputItem.recipes[0].GridIndex + (firstPage - 1) * 1000,
                 };
                 if (gridIndex == 0 || gridIndexList.Contains(gridIndex))
                 {
-                    logger.LogWarning($"配方{outputItem.Name + "分馏"}显示位置{gridIndex}已被占用，调整至{currLastIdx}！");
+                    logger.LogWarning($"配方{recipeName}显示位置{gridIndex}已被占用，调整至{currLastIdx}！");
                     gridIndex = currLastIdx++;
                 }
                 gridIndexList.Add(gridIndex);
                 //获取重氢分馏类似样式的图标。图标由python拼接，由unity打包
-                string inputIconName = inputItem.IconPath.Substring(inputItem.IconPath.LastIndexOf("/") + 1);
-                string outputIconName = outputItem.IconPath.Substring(outputItem.IconPath.LastIndexOf("/") + 1);
-                Sprite sprite = ab.LoadAsset<Sprite>(inputIconName + "-" + outputIconName + "-formula");
+                Sprite sprite = null;
+                string inputIconName = "";
+                string outputIconName = "";
+                if (!string.IsNullOrEmpty(inputItem.IconPath) && !string.IsNullOrEmpty(outputItem.IconPath))
+                {
+                    inputIconName = inputItem.IconPath.Substring(inputItem.IconPath.LastIndexOf("/") + 1);
+                    outputIconName = outputItem.IconPath.Substring(outputItem.IconPath.LastIndexOf("/") + 1);
+                    //“原料-产物”这样的名称可以避免冲突
+                    sprite = ab.LoadAsset<Sprite>(inputIconName + "-" + outputIconName + "-formula");
+                }
                 if (sprite == null)
                 {
                     sprite = outputItem.iconSprite;
-                    logger.LogWarning($"缺失{inputItem.name}->{outputItem.name}的图标，使用产物图标代替！");
+                    inputIconName = inputItem.iconSprite.name;
+                    outputIconName = outputItem.iconSprite.name;
+                    logger.LogWarning($"缺失配方{recipeName}的图标，使用产物{outputItem.Name}图标代替！");
+                }
+                //配方中的ResultCounts[0]大于1时，仅影响分馏成功率与显示上的分馏产物数目，实际并不能分出多个；
+                //实际分馏出多个是通过FractionatorInternalUpdatePatch方法达成的
+                //根据fracNumRatioDic的内容，构建配方的description
+                string description = $"{"从f".Translate()}{inputItem.name}{"中分馏出f".Translate()}{outputItem.name}{"。f".Translate()}";
+                foreach (var p in fracNumRatioDic)
+                {
+                    description += $"\n{p.Value:P3}{"分馏出f".Translate()}{p.Key}{"个产物f".Translate()}";
                 }
                 //ProtoRegistry.RegisterRecipe用起来有很多问题，自己创建不容易出bug
                 RecipeProto r = new()
@@ -573,27 +694,25 @@ namespace FractionateEverything
                     Explicit = true,
                     TimeSpend = 60,
                     Items = [inputItemID],
-                    //输入产物乘outputNum，以保证配方分馏成功率不变
-                    ItemCounts = [ratio * outputNum],
+                    ItemCounts = [100],
                     Results = [outputItemID],
-                    //outputNum大于1时，仅起到配方显示成功率与分馏成功率提升的效果，并不代表能分出多个；
-                    //实际分馏出多个是通过FractionatorInternalUpdatePatch方法达成的
-                    ResultCounts = [outputNum],
-                    Description = "R" + inputItem.Name + "分馏" + outputItem.Name,
-                    description = "从f".Translate() + inputItem.name + "中分馏出f".Translate() + outputItem.name + "。f".Translate(),
+                    ResultCounts = [1],
+                    Description = "R" + inputItem.Name + "分馏",
+                    description = description,
                     GridIndex = gridIndex,
-                    //IconPath = iconPath,
-                    Name = inputItem.Name + "分馏" + outputItem.Name,
-                    name = outputItem.name + "分馏f".Translate(),
+                    Name = inputItem.Name + "分馏",
+                    name = recipeName,
                     preTech = preTech,
                     ID = recipeID
                 };
                 Traverse.Create(r).Field("_iconSprite").SetValue(sprite);
-                LDBTool.PreAddProto(r);
+                LDBTool.PostAddProto(r);
                 //add之后要再次设定ID，不然id会莫名其妙变化。不知道这个bug怎么回事，反正这样就正常了。
                 r.ID = recipeID;
-                //FractionatorInternalUpdatePatch需要用到该数据实现某些配方分馏出多个产物
-                specialOutputNumDic.Add(inputItemID, outputNum);
+                //为基础配方添加这个公式的显示
+                outputItem.recipes.Add(r);
+                //所有配方以及配方的概率详情存起来，为FractionatorInternalUpdatePatch提供分馏个产物的数据支持
+                fracRecipeDic.Add(inputItemID, new FracRecipe(r, fracNumRatioDic));
 #if DEBUG
                 //logger.LogDebug(
                 //    $"\nID{r.ID} index{r.index} {outputItem.name + "分馏f".Translate()}\n" +
@@ -614,11 +733,6 @@ namespace FractionateEverything
                 logger.LogError(ex.ToString());
             }
         }
-
-        /// <summary>
-        /// 用于判定分馏产物是否翻倍输出。
-        /// </summary>
-        private static uint seed2 = (uint)new System.Random().Next(int.MinValue, int.MaxValue);
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FractionatorComponent), "InternalUpdate")]
@@ -651,30 +765,42 @@ namespace FractionateEverything
 
                 while (__instance.progress >= 10000)
                 {
+                    //不同分馏配方的产物可能相同，但原料一定不同，故__instance.fluidId可以找到唯一对应的配方
+                    //num3是平均增产点数
                     int num3 = ((__instance.fluidInputInc > 0 && __instance.fluidInputCount > 0) ? (__instance.fluidInputInc / __instance.fluidInputCount) : 0);
                     __instance.seed = (uint)((int)((ulong)((long)(__instance.seed % 2147483646 + 1) * 48271L) % 2147483647uL) - 1);
-                    //修改部分配方的输出数目，默认输出个数为1，特殊配方使用outputNumDic中的输出个数
-                    //注意，分馏配方无法从分馏产物推断，但是可以从分馏原料推断；即__instance.fluidId可以找到唯一对应的配方
-                    int outputNum = specialOutputNumDic.ContainsKey(__instance.fluidId) ? specialOutputNumDic[__instance.fluidId] : 1;
-                    //如果输出数目大于2，应该提升分馏概率，并降低每次输出的产物至2个
-                    //个数为1的话，100 -> 100
-                    //个数为2的话，100 -> 101，改为1次，每次多一个，对应分馏成功率应该调整为之前的1倍
-                    //个数为3的话，100 -> 102，改为2次，每次多一个，对应分馏成功率应该调整为之前的2倍
-                    //个数为4的话，100 -> 103，改为3次，每次多一个，对应分馏成功率应该调整为之前的3倍
-                    //个数为n的话，100 -> 100 + n，改为n-1次，每次多一个，对应分馏成功率应该调整为之前的n-1倍
-                    __instance.fractionSuccess = (double)__instance.seed / 2147483646.0 < (double)__instance.produceProb * (1.0 + Cargo.accTableMilli[(num3 < 10) ? num3 : 10]) * Math.Max(1, (outputNum - 1));
-                    //降低分馏数目至2
-                    outputNum = Math.Min(2, outputNum);
-                    if (__instance.fractionSuccess)
+
+                    double randomVal = (double)__instance.seed / 2147483646.0;
+                    if (factory.entityPool[__instance.entityId].protoId != I增殖分馏塔)
                     {
-                        //任何配方分馏成功时，都有5%概率分馏出配方两倍的产物（概率受设置影响）
+                        //如果不是增殖分馏塔，增产剂可以提升分馏成功率
+                        randomVal /= 1.0 + Cargo.accTableMilli[(num3 < 10) ? num3 : 10];
+                    }
+                    if (factory.entityPool[__instance.entityId].protoId == I低功率分馏塔)
+                    {
+                        randomVal *= 3;
+                    }
+                    if (factory.entityPool[__instance.entityId].protoId == I建筑极速分馏塔)
+                    {
+                        var item = LDB.items.Select(__instance.fluidId);
+                        //BuildMode0-5都有，0是不可放置的物品
+                        randomVal = item.BuildMode == 0 ? randomVal * 10 : randomVal / 12.5;
+                    }
+                    int outputNum = fracRecipeDic[__instance.fluidId].GetOutputNum(randomVal);
+                    if (factory.entityPool[__instance.entityId].protoId == I增殖分馏塔)
+                    {
+                        //增殖分馏塔的增产剂提升产物数目
                         seed2 = (uint)((int)((ulong)((long)(seed2 % 2147483646 + 1) * 48271L) % 2147483647uL) - 1);
-                        bool fracOutputDouble = (double)seed2 / 2147483646.0 < 0.05 * 100 / ratio;
-                        if (fracOutputDouble)
+                        bool outputDouble = (double)seed2 / 2147483646.0 < 0.01 * (1.0 + Cargo.incTableMilli[(num3 < 10) ? num3 : 10]);
+                        if (outputDouble)
                         {
                             outputNum *= 2;
                         }
+                    }
 
+                    __instance.fractionSuccess = outputNum > 0;
+                    if (__instance.fractionSuccess)
+                    {
                         __instance.productOutputCount += outputNum;
                         __instance.productOutputTotal += outputNum;
                         lock (productRegister)

@@ -5,13 +5,13 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractionateEverything", "FractionateEverything\FractionateEverything.csproj", "{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetItemsAndReceips", "GetItemsAndReceips\GetItemsAndReceips.csproj", "{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDspData", "GetDspData\GetDspData.csproj", "{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{8CB0E02E-C981-4ADF-80DF-0B7C059393CC}"
 	ProjectSection(SolutionItems) = preProject
 		gamedata\DSP_DataInfo.csv = gamedata\DSP_DataInfo.csv
-		gamedata\DSP_ItemEnum.txt = gamedata\DSP_ItemEnum.txt
 		README.md = README.md
+		gamedata\DSP_ProtoID.cs = gamedata\DSP_ProtoID.cs
 	EndProjectSection
 EndProject
 Global

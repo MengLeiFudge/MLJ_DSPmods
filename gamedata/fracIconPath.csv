@@ -13,13 +13,13 @@ fusion-reactor,fuel-plant
 belt-1,belt-2
 belt-2,belt-3
 belt-3,belt-1
-splitter-4dir,piler
+monitor,splitter-4dir
+splitter-4dir,spray-coater
+spray-coater,piler
 piler,monitor
-monitor,spray-coater
-spray-coater,splitter-4dir
-storage-1,storage-2
-storage-2,storage-tank
-storage-tank,storage-1
+storage-1,storage-tank
+storage-tank,storage-2
+storage-2,storage-1
 delivery-machine,logistic-station
 logistic-station,interstellar-logistic-station
 interstellar-logistic-station,orbital-collector
@@ -33,8 +33,6 @@ mining-drill-mk2,mining-drill
 water-pump,oil-extractor
 oil-extractor,oil-refinery
 oil-refinery,water-pump
-fractionator,hadron-collider
-hadron-collider,fractionator
 chemical-plant,chemical-plant-2
 chemical-plant-2,chemical-plant
 smelter,smelter-2
@@ -59,6 +57,10 @@ battle-base,turret-signal
 turret-signal,turret-disturb
 turret-disturb,turret-shield
 turret-shield,battle-base
+fractionator,fractionator
+fractionator,fractionator
+fractionator,fractionator
+fractionator,fractionator
 iron-ore,iron-ore
 copper-ore,copper-ore
 silicium-ore,silicium-ore
@@ -71,6 +73,7 @@ fractal-silica,fractal-silica
 grating-ore,grating-ore
 bamboo-crystal,bamboo-crystal
 mono-mag-ore,mono-mag-ore
+crystal-rubber,crystal-rubber
 iron-plate,steel-plate
 steel-plate,titanium-alloy
 titanium-alloy,frame-material
@@ -91,7 +94,6 @@ strange-matter-generator,gravity-lens
 gravity-lens,space-warper
 refined-oil,plastic
 plastic,crystal-rubber
-crystal-rubber,titan-crystal
 titan-crystal,casimir-crystal
 water,sulphuric-acid
 sulphuric-acid,water
