@@ -120,9 +120,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>taskkill /f /im DSPGAME.exe
-mkdir "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)"
-del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)\$(TargetFileName)"
-copy "$(TargetPath)" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)\$(TargetFileName)"
+mkdir "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)"
+del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
+copy "$(TargetPath)" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
 start steam://rungameid/1366540</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" />

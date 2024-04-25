@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using xiaoye97;
 using static FractionateEverything.ProtoID;
@@ -23,7 +22,7 @@ namespace FractionateEverything
     {
         private const string GUID = "com.menglei.dsp." + NAME;
         private const string NAME = "FractionateEverything";
-        private const string VERSION = "1.2.0";
+        private const string VERSION = "1.2.2";
         private static ManualLogSource logger;
 
         /// <summary>
@@ -39,13 +38,17 @@ namespace FractionateEverything
         /// </summary>
         private static int firstPage;
         /// <summary>
+        /// 分馏图标样式。
+        /// </summary>
+        private static int iconVersion;
+        /// <summary>
         /// 新增分馏配方的ID，使用后应+1。
         /// </summary>
         private static int nextRecipeID;
         /// <summary>
-        /// 用于获取图标资源。
+        /// 图标资源。
         /// </summary>
-        private AssetBundle ab;
+        private static ResourceData resources;
         /// <summary>
         /// 用于Update方法的循环计时。
         /// </summary>
@@ -57,7 +60,7 @@ namespace FractionateEverything
         /// <summary>
         /// 如果发生显示位置冲突，从这里开始显示冲突的配方
         /// </summary>
-        private int currLastIdx = 4701;
+        private int currLastIdx = 2701;
         /// <summary>
         /// 存储所有分馏配方信息
         /// </summary>
@@ -122,9 +125,18 @@ namespace FractionateEverything
             if (showRecipes)
             {
                 string iconPath = LDB.techs.Select(T重氢分馏).IconPath;
-                firstPage = TabSystem.RegisterTab(GUID + "Tab1", new TabData("分馏页面1".Translate(), iconPath));
-                TabSystem.RegisterTab(GUID + "Tab2", new TabData("分馏页面2".Translate(), iconPath));
+                firstPage = TabSystem.RegisterTab(GUID + "Tab1", new("分馏页面1".Translate(), iconPath));
+                TabSystem.RegisterTab(GUID + "Tab2", new("分馏页面2".Translate(), iconPath));
             }
+            currLastIdx += (firstPage - 1) * 1000;
+
+
+            ConfigEntry<int> IconVersion = Config.Bind("config", "IconVersion", 2,
+                new ConfigDescription("Which version of the fractionation icon to use.\n" +
+                                      "1 for original deuterium fractionation style, 2 for diagonal style (recommended).\n" +
+                                      "使用哪个版本的分馏图标。\n" +
+                                      "1表示原版重氢分馏样式，2表示对角线样式（推荐）。", new AcceptableIntValue(2, 1, 2), null));
+            iconVersion = IconVersion.Value;
 
             //配方ID是int型，没有限制
             ConfigEntry<int> FirstRecipeID = Config.Bind("config", "FirstRecipeID", 1000,
@@ -136,12 +148,14 @@ namespace FractionateEverything
 
             Config.Save();
 
-
-            ab = AssetBundle.LoadFromStream(
-                Assembly.GetExecutingAssembly().GetManifestResourceStream("FractionateEverything.fracicons"));
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            resources = new(GUID, "fracicons", Path.GetDirectoryName(executingAssembly.Location));
+            resources.LoadAssetBundle("fracicons");
+            ProtoRegistry.AddResource(resources);
 
             LDBTool.EditDataAction += EditDataAction;
             LDBTool.PreAddDataAction += AddFractionators;
+            LDBTool.PostAddDataAction += InitModels;
             LDBTool.PostAddDataAction += AddFracRecipes;
             Harmony.CreateAndPatchAll(typeof(FractionateEverything), GUID);
         }
@@ -207,29 +221,56 @@ namespace FractionateEverything
 
         private void AddFractionators()
         {
+            //colors = [c_main, c_glass, c_glass1, c_lod, c_lod2]
+            Color[] colors;
+
             //低功率分馏塔
             //耗电量为原版分馏塔的20%，分馏成功率为原版分馏塔的33.33%
+            colors =
+            [
+                new(0.6275f, 0.3804f, 0.6431f),
+                new(0.6275f, 0.3804f, 0.6431f),
+                new(0.6275f, 0.3804f, 0.6431f),
+                new(0.6275f, 0.3804f, 0.6431f),
+                new(0.6275f, 0.3804f, 0.6431f),
+            ];
             AddFractionator(I低功率分馏塔, "低功率分馏塔",
                 [I铁块, I铜块, I磁线圈], [4, 2, 2],
                 2601, T电磁学, 407, M低功率分馏塔,
-                new Color(0.6275f, 0.3804f, 0.6431f), 0.2);
+                colors, 0.2);
 
             //建筑极速分馏塔
             //分馏建筑成功率12.5%，分馏非建筑成功率0.1%
+            colors =
+            [
+                new(0.3216F, 0.8157F, 0.09020F),
+                new(0.3216F, 0.8157F, 0.09020F),
+                new(0.3216F, 0.8157F, 0.09020F),
+                new(0.3216F, 0.8157F, 0.09020F),
+                new(0.3216F, 0.8157F, 0.09020F),
+            ];
             AddFractionator(I建筑极速分馏塔, "建筑极速分馏塔",
                 [I铁块, I石材, I玻璃, I电路板], [8, 4, 4, 1],
                 2602, T改良物流系统, 408, M建筑极速分馏塔,
-                new Color(0.3216F, 0.8157F, 0.09020F), 1.0);
+                colors, 1.0);
 
             //增殖分馏塔
             //可输入任意物品，每次分馏成功消耗1个原料，输出2个输入的物品。
             //分馏成功率受物品种类、是否喷涂增产剂影响。
             //基础分馏成功率：普通物品0.2%，普通矿物2%，珍奇矿物1%。
             //增产剂成功率加成：MK1 25%，MK2 50%，MK3 100%（每个增产点数加25%）
+            colors =
+            [
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f),
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f),
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f),
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f),
+                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f),
+            ];
             AddFractionator(I增殖分馏塔, "增殖分馏塔",
                 [I钛合金, I石材, I钛化玻璃, I量子芯片], [8, 8, 4, 1],
                 2604, T宇宙矩阵, 410, M增殖分馏塔,
-                Color.HSVToRGB(0.1404f, 0.8294f, 0.9882f), 4.0);
+                colors, 4.0);
         }
 
         /// <summary>
@@ -243,16 +284,18 @@ namespace FractionateEverything
         /// <param name="preTech">建筑和配方的前置科技</param>
         /// <param name="buildIndex">在下方快捷制作栏的哪个位置</param>
         /// <param name="modelID">模型ID</param>
-        /// <param name="color">建筑颜色</param>
+        /// <param name="colors">建筑颜色数组，长度为5</param>
         /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
         private void AddFractionator(int buildingID, string name, int[] items, int[] itemCounts, int gridIndex, int preTech,
-            int buildIndex, int modelID, Color? color = null, double energyRatio = 1.0)
+            int buildIndex, int modelID, IReadOnlyList<Color> colors, double energyRatio = 1.0)
         {
             ItemProto oriItem = LDB.items.Select(I分馏塔);
             ModelProto oriModel = LDB.models.Select(M分馏塔);
             RecipeProto oriRecipe = oriItem.maincraft;
             Sprite sprite = oriItem.iconSprite;
+            PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
 
+            //添加制作分馏塔的配方
             int recipeID = nextRecipeID++;
             RecipeProto recipe = new();
             oriRecipe.CopyPropsTo(ref recipe);
@@ -268,10 +311,56 @@ namespace FractionateEverything
             LDBTool.PreAddProto(recipe);
             recipe.ID = recipeID;
 
+            //添加分馏塔模型
+            ModelProto model = new();
+            oriModel.CopyPropsTo(ref model);
+            //prefabDesc必须new一个对象，不能使用Copy或者CopyPropsTo
+            var _prefab = Resources.Load<GameObject>(model.PrefabPath);
+            var _colliderPrefab = Resources.Load<GameObject>(model.ColliderPath);
+            model.prefabDesc = !_prefab || !_colliderPrefab
+                ? !_prefab
+                    ? PrefabDesc.none
+                    : new(modelID, _prefab)
+                : new(modelID, _prefab, _colliderPrefab);
+            model.ID = modelID;
+            model.Name = modelID.ToString();
+            model.name = modelID.ToString();
+            model.sid = name;
+            model.SID = name;
+            model.Order = 38000 + modelID;
+            model.prefabDesc.modelIndex = modelID;
+            model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+            model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+            //更换材质的颜色。每个建筑的prefabDesc.lodMaterials长度都不一样，需要具体查看
+            var m_main = new Material(oriPrefabDesc.lodMaterials[0][0]) { color = colors[0] };
+            var m_black = oriPrefabDesc.lodMaterials[0][1];//不改
+            var m_glass = new Material(oriPrefabDesc.lodMaterials[0][2]) { color = colors[1] };
+            var m_glass1 = new Material(oriPrefabDesc.lodMaterials[0][3]) { color = colors[2] };
+            var m_lod = new Material(oriPrefabDesc.lodMaterials[1][0]) { color = colors[3] };
+            var m_lod2 = new Material(oriPrefabDesc.lodMaterials[2][0]) { color = colors[4] };
+            //同样的材质要指向同一个对象
+            model.prefabDesc.lodMaterials =
+            [
+                [m_main, m_black, m_glass, m_glass1],
+                [m_lod, m_black, m_glass, m_glass1],
+                [m_lod2, m_black, m_glass, m_glass1],
+                null,
+            ];
+            LDBTool.PreAddProto(model);
+            // //必加，不然模型显示不了
+            // LDB.models.OnAfterDeserialize();
+            // //LDB.models.modelArray[modelID] = model;
+            // //这三个无所谓
+            // ModelProto.InitMaxModelIndex();
+            // ModelProto.InitModelIndices();
+            // ModelProto.InitModelOrders();
+
+            //添加分馏塔物品
             ItemProto item = new();
             oriItem.CopyPropsTo(ref item);
-            item.prefabDesc = new();
-            oriItem.prefabDesc.CopyPropsTo(ref item.prefabDesc);
+            //应与model指向同一个prefabDesc
+            item.prefabDesc = model.prefabDesc;
+            item.ModelIndex = modelID;
             item.ID = buildingID;
             item.Name = name;
             item.name = name.Translate();
@@ -284,105 +373,26 @@ namespace FractionateEverything
             item.handcraft = recipe;
             item.handcrafts = [recipe];
             item.BuildIndex = buildIndex;
-            item.prefabDesc.workEnergyPerTick = (long)(item.prefabDesc.workEnergyPerTick * energyRatio);
-            item.prefabDesc.idleEnergyPerTick = (long)(item.prefabDesc.idleEnergyPerTick * energyRatio);
             //Traverse.Create(item).Field("_iconSprite").SetValue(sprite);
             LDBTool.PreAddProto(item);
 
-            var model = CopyModelUtils.CopyModelProto(M分馏塔, modelID, buildingID, buildIndex,
-                name, color);
-            model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-            model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
-
-            // ModelProto model = new();
-            // oriModel.CopyPropsTo(ref model);
-            // model.prefabDesc = new();
-            // oriModel.prefabDesc.CopyPropsTo(ref model.prefabDesc);
-            // model.ID = modelID;
-            // model.Name = modelID.ToString();
-            // model.name = modelID.ToString();
-            // model.sid = name;
-            // model.SID = name;
-            // model.prefabDesc.modelIndex = modelID;
-            // model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-            // model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
-            // if (color.HasValue)
-            // {
-            //     foreach (Material[] lodMaterial in model.prefabDesc.lodMaterials)
-            //     {
-            //         if (lodMaterial == null) continue;
-            //         for (var j = 0; j < lodMaterial.Length; j++)
-            //         {
-            //
-            //             // ref Material material = ref lodMaterial[j];
-            //             // if (material == null) continue;
-            //             // material = new Material(material);
-            //
-            //             if (lodMaterial[j] == null) continue;
-            //             Material material = new Material(lodMaterial[j]);
-            //             lodMaterial[j] = material;
-            //
-            //             material.SetColor("_Color", color.Value);
-            //         }
-            //     }
-            // }
-            // LDBTool.PreAddProto(model);
-
-            item.ModelIndex = modelID;
+            //设置快捷制作栏位置
             LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
         }
 
-        //乐，虽然是邪教，但是确实管用
-        //代码源于SmelterMiner-jinxOAO
-
-        #region 邪教修改建筑耗电
-
-        //下面两个prefix+postfix联合作用。由于新版游戏实际执行的能量消耗、采集速率等属性都使用映射到的modelProto的prefabDesc中的数值，而不是itemProto的PrefabDesc，而修改/新增modelProto我还不会改，会报错（貌似是和模型读取不到有关）
-        //因此，提前修改设定建筑信息时读取的PrefabDesc的信息，在存储建筑属性前先修改一下（改成itemProto的PrefabDesc中对应的某些值），建造建筑设定完成后再改回去
-        //并且，原始item和model执向的貌似是同一个PrefabDesc，所以不能直接改model的，然后再还原成oriItem的prefabDesc，因为改了model的oriItem的也变了，还原不回去了。所以得Copy一个出来改。
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
-        public static bool AddEntityDataPrePatch(EntityData entity, out PrefabDesc __state)
+        /// <summary>
+        /// 初始化模型，不然找不到
+        /// </summary>
+        private void InitModels()
         {
-            int gmProtoId = entity.protoId;
-            if (gmProtoId != I分馏塔 && gmProtoId != I低功率分馏塔 && gmProtoId != I建筑极速分馏塔 && gmProtoId != I增殖分馏塔)
-            {
-                __state = null;
-                return true;//不相关建筑直接返回
-            }
-            ItemProto itemProto = LDB.items.Select((int)entity.protoId);
-            if (itemProto == null || !itemProto.IsEntity)
-            {
-                __state = null;
-                return true;
-            }
-
-            ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
-            __state = modelProto.prefabDesc;
-            modelProto.prefabDesc = __state.Copy();
-            modelProto.prefabDesc.workEnergyPerTick = itemProto.prefabDesc.workEnergyPerTick;
-            modelProto.prefabDesc.idleEnergyPerTick = itemProto.prefabDesc.idleEnergyPerTick;
-            return true;
+            //必加，不然模型显示不了
+            LDB.models.OnAfterDeserialize();
+            //LDB.models.modelArray[modelID] = model;
+            //这三个无所谓
+            ModelProto.InitMaxModelIndex();
+            ModelProto.InitModelIndices();
+            ModelProto.InitModelOrders();
         }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
-        public static void AddEntityDataPostPatch(EntityData entity, PrefabDesc __state)
-        {
-            if (__state == null)
-            {
-                return;
-            }
-            int gmProtoId = entity.protoId;
-            if (gmProtoId != I分馏塔 && gmProtoId != I低功率分馏塔 && gmProtoId != I建筑极速分馏塔 && gmProtoId != I增殖分馏塔)
-            {
-                return;//不相关
-            }
-            ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
-            modelProto.prefabDesc = __state;//还原
-        }
-
-        #endregion
 
         private void AddFracRecipes()
         {
@@ -617,18 +627,24 @@ namespace FractionateEverything
                     gridIndexList.Add(gridIndex);
                 }
                 //获取重氢分馏类似样式的图标。图标由python拼接，由unity打包
-                Sprite sprite = null;
+                string iconPath = "";
                 string inputIconName = "";
                 string outputIconName = "";
+                Sprite sprite = null;//仅用于检测有无图标
                 if (!string.IsNullOrEmpty(inputItem.IconPath) && !string.IsNullOrEmpty(outputItem.IconPath))
                 {
                     inputIconName = inputItem.IconPath.Substring(inputItem.IconPath.LastIndexOf("/") + 1);
                     outputIconName = outputItem.IconPath.Substring(outputItem.IconPath.LastIndexOf("/") + 1);
                     //“原料-产物”这样的名称可以避免冲突
-                    sprite = ab.LoadAsset<Sprite>(inputIconName + "-" + outputIconName + "-formula");
+                    string iconName = $"{inputIconName}-{outputIconName}-formula-v{iconVersion}";
+                    iconPath = $"Assets/fracicons/{iconName}";
+                    sprite = resources.bundle.LoadAsset<Sprite>(iconName);
+
+                    logger.LogDebug($"iconPath:{iconPath}, sprite_exists:{sprite != null}");
                 }
                 if (sprite == null)
                 {
+                    iconPath = outputItem.IconPath;
                     sprite = outputItem.iconSprite;
                     inputIconName = inputItem.iconSprite.name;
                     outputIconName = outputItem.iconSprite.name;
@@ -659,7 +675,8 @@ namespace FractionateEverything
                     Name = inputItem.Name + "分馏",
                     name = recipeName,
                     preTech = preTech,
-                    ID = recipeID
+                    IconPath = iconPath,
+                    ID = recipeID,
                 };
                 Traverse.Create(r).Field("_iconSprite").SetValue(sprite);
                 LDBTool.PostAddProto(r);
@@ -668,7 +685,7 @@ namespace FractionateEverything
                 //为基础配方添加这个公式的显示
                 outputItem.recipes.Add(r);
                 //所有配方以及配方的概率详情存起来，为FractionatorInternalUpdatePatch提供分馏个产物的数据支持
-                fracRecipeDic.Add(inputItemID, new FracRecipe(r, fracNumRatioDic));
+                fracRecipeDic.Add(inputItemID, new(r, fracNumRatioDic));
 #if DEBUG
                 //logger.LogDebug(
                 //    $"\nID{r.ID} index{r.index} {outputItem.name + "分馏".Translate()}\n" +
