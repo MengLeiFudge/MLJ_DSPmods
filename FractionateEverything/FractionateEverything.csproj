@@ -114,16 +114,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <EmbeddedResource Include="fracicons" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Assets\fracicons" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>taskkill /f /im DSPGAME.exe
-mkdir "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)"
-del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)\$(TargetFileName)"
-copy "$(TargetPath)" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\$(ProjectName)\$(TargetFileName)"
+mkdir "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)"
+del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
+copy "$(TargetPath)" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
+del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\fracicons"
+copy "D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\fracicons" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\fracicons"
 start steam://rungameid/1366540</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" />

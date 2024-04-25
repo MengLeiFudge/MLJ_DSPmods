@@ -698,8 +698,10 @@ namespace FractionateEverything
             modelPrefabDesc = prefab == null ? PrefabDesc.none :
                 colliderPrefab == null ? new PrefabDesc(id, prefab) : new PrefabDesc(id, prefab, colliderPrefab);
 
-            foreach (Material[] lodMaterial in modelPrefabDesc.lodMaterials)
+            for (var i = 0; i < modelPrefabDesc.lodMaterials.Length; i++)
+            //foreach (Material[] lodMaterial in modelPrefabDesc.lodMaterials)
             {
+                var lodMaterial = modelPrefabDesc.lodMaterials[i];
                 if (lodMaterial == null) continue;
                 for (var j = 0; j < lodMaterial.Length; j++)
                 {
@@ -708,6 +710,7 @@ namespace FractionateEverything
                     material = new Material(material);
                     if (!color.HasValue) continue;
                     material.SetColor("_Color", color.Value);
+
                 }
             }
 

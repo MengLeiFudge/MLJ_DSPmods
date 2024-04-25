@@ -176,5 +176,59 @@ namespace GetDspData
                 .Replace("）", "")
                 .Replace("）", "");
         }
+
+        #region 邪教修改建筑耗电
+
+        // //乐，虽然是邪教，但是确实管用
+        // //代码源于SmelterMiner-jinxOAO
+        //
+        // //下面两个prefix+postfix联合作用。由于新版游戏实际执行的能量消耗、采集速率等属性都使用映射到的modelProto的prefabDesc中的数值，而不是itemProto的PrefabDesc，而修改/新增modelProto我还不会改，会报错（貌似是和模型读取不到有关）
+        // //因此，提前修改设定建筑信息时读取的PrefabDesc的信息，在存储建筑属性前先修改一下（改成itemProto的PrefabDesc中对应的某些值），建造建筑设定完成后再改回去
+        // //并且，原始item和model执向的貌似是同一个PrefabDesc，所以不能直接改model的，然后再还原成oriItem的prefabDesc，因为改了model的oriItem的也变了，还原不回去了。所以得Copy一个出来改。
+        // [HarmonyPrefix]
+        // [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
+        // public static bool AddEntityDataPrePatch(EntityData entity, out PrefabDesc __state)
+        // {
+        //     //不相关建筑直接返回（123、456是建筑的itemID）
+        //     int gmProtoId = entity.protoId;
+        //     if (gmProtoId != 123 && gmProtoId != 456)
+        //     {
+        //         __state = null;
+        //         return true;
+        //     }
+        //     ItemProto itemProto = LDB.items.Select(entity.protoId);
+        //     if (itemProto == null || !itemProto.IsEntity)
+        //     {
+        //         __state = null;
+        //         return true;
+        //     }
+        //     //拷贝PrefabDesc然后修改
+        //     ModelProto modelProto = LDB.models.Select(entity.modelIndex);
+        //     __state = modelProto.prefabDesc;
+        //     modelProto.prefabDesc = __state.Copy();
+        //     modelProto.prefabDesc.workEnergyPerTick = itemProto.prefabDesc.workEnergyPerTick;
+        //     modelProto.prefabDesc.idleEnergyPerTick = itemProto.prefabDesc.idleEnergyPerTick;
+        //     return true;
+        // }
+        //
+        // [HarmonyPostfix]
+        // [HarmonyPatch(typeof(PlanetFactory), "AddEntityDataWithComponents")]
+        // public static void AddEntityDataPostPatch(EntityData entity, PrefabDesc __state)
+        // {
+        //     if (__state == null)
+        //     {
+        //         return;
+        //     }
+        //     int gmProtoId = entity.protoId;
+        //     if (gmProtoId != 123 && gmProtoId != 456)
+        //     {
+        //         return;
+        //     }
+        //     //还原PrefabDesc
+        //     ModelProto modelProto = LDB.models.Select(entity.modelIndex);
+        //     modelProto.prefabDesc = __state;
+        // }
+
+        #endregion
     }
 }
