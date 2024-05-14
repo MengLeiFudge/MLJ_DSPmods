@@ -16,7 +16,7 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
     <LangVersion>latest</LangVersion>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,7 +40,7 @@
       <HintPath>..\packages\HarmonyX.2.5.5\lib\net45\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
@@ -50,6 +50,9 @@
     </Reference>
     <Reference Include="DSPModSave, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DysonSphereProgram.Modding.DSPModSave.1.2.0\lib\net472\DSPModSave.dll</HintPath>
+    </Reference>
+    <Reference Include="DSP_Battle">
+      <HintPath>Assets\DSP_Battle.dll</HintPath>
     </Reference>
     <Reference Include="LDBTool">
       <HintPath>..\packages\DysonSphereProgram.Modding.LDBTool.3.0.0\lib\net472\LDBTool.dll</HintPath>
@@ -108,9 +111,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Utils.cs" />
-    <Compile Include="FractionateEverything.cs" />
+    <Compile Include="src\Compatibility\CheckPlugins.cs" />
+    <Compile Include="src\Compatibility\GenesisBook.cs" />
+    <Compile Include="src\Compatibility\MoreMegaStructure.cs" />
+    <Compile Include="src\Compatibility\TheyComeFromVoid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\FractionateEverything.cs" />
+    <Compile Include="src\Main\AddFractionateRecipes.cs" />
+    <Compile Include="src\Main\FractionatorBuilding.cs" />
+    <Compile Include="src\Main\FractionatorLogic.cs" />
+    <Compile Include="src\Main\Tech.cs" />
+    <Compile Include="src\Main\Translation.cs" />
+    <Compile Include="src\Utils\AcceptableValueUtils.cs" />
+    <Compile Include="src\Utils\FractionatorUtils.cs" />
+    <Compile Include="src\Utils\RecipeHelper.cs" />
+    <Compile Include="src\Utils\ProtoID.cs" />
+    <Compile Include="src\Utils\RegisterTranslationUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -119,16 +135,16 @@
   <ItemGroup>
     <None Include="Assets\fracicons" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\DSP_Battle.dll" />
+    <Content Include="Assets\icon.png" />
+    <Content Include="Assets\manifest.json" />
+    <Content Include="Assets\万物分馏展示.jpg" />
+    <Content Include="Assets\如何从R2导入本地MOD.mp4" />
+    <Content Include="CHANGELOG.md" />
+    <Content Include="README.md" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>taskkill /f /im DSPGAME.exe
-mkdir "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)"
-del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
-copy "$(TargetPath)" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\$(TargetFileName)"
-del /q "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\fracicons"
-copy "D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\fracicons" "D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MengLei-$(ProjectName)\fracicons"
-start steam://rungameid/1366540</PostBuildEvent>
-  </PropertyGroup>
   <Import Project="..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
