@@ -110,7 +110,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="gamedata\DSP_ProtoID.cs" />
+    <Content Include="gamedata\DSP_ProtoID.txt" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\GetDspData.cs" />
   </ItemGroup>

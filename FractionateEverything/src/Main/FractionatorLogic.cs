@@ -16,6 +16,7 @@ namespace FractionateEverything.Main {
         private static uint seed2 = (uint)new Random().Next(int.MinValue, int.MaxValue);
         private static uint seed3 = (uint)new Random().Next(int.MinValue, int.MaxValue);
         private static int totalUIUpdateTimes = 0;
+        private static int fractionatorID = 0;
         private static bool isFirstUpdateUI = true;
         private static Vector3 productProbTextPos;
         private static Vector3 oriProductProbTextPos;
@@ -126,6 +127,7 @@ namespace FractionateEverything.Main {
                                  * num
                                  + 0.75);
                 __instance.progress += num2;
+                //每次尝试处理一个输入的产物，至多十次
                 if (__instance.progress > 100000) {
                     __instance.progress = 100000;
                 }
@@ -133,7 +135,6 @@ namespace FractionateEverything.Main {
 
                     #region 判断某一个输入的分馏结果
 
-                    //尝试处理一个输入的产物
                     int fluidInputAvgInc = __instance is { fluidInputInc: > 0, fluidInputCount: > 0 }
                         ? __instance.fluidInputInc / __instance.fluidInputCount
                         : 0;
@@ -150,22 +151,26 @@ namespace FractionateEverything.Main {
                     if (buildingID == IFE精准分馏塔) {
                         //精准分馏塔正在处理的原料越多，效率越低
                         double ratio = ProcessNum2Ratio(__instance.fluidInputCount);
-                        successRatePlus = ratio >= 0 ? successRatePlus * ratio : 1;
+                        successRatePlus *= ratio;
                     }
                     else if (buildingID == IFE建筑极速分馏塔) {
                         //建筑极速分馏塔对建筑成功率提升，对非建筑成功率下降
                         var item = LDB.items.Select(__instance.fluidId);
                         //BuildMode0-5都有，0是不可放置的物品
-                        successRatePlus = item.BuildMode == 0 ? successRatePlus / 10 : successRatePlus * 12.5;
+                        successRatePlus = item.BuildMode == 0 ? successRatePlus / 5 : successRatePlus * 5;
                     }
-                    //根据对应配方的分馏成功率与物品数列表，获取分馏得到的产品个数
-                    //不同分馏配方的产物可能相同，但原料一定不同，故__instance.fluidId可以找到唯一对应的配方
-                    if (!fracRecipeNumRatioDic.TryGetValue(__instance.fluidId, out Dictionary<int, double> dic)) {
-                        dic = null;
-                    }
-                    int outputNum = GetOutputNum(randomVal, successRatePlus, dic);
+                    //如果未找到配方，则使用默认概率
+                    int outputNum;
                     if (buildingID == IFE增产分馏塔) {
-                        //如果是增产分馏塔，增产剂可以提升产物数目
+                        //如果有自分馏配方，则使用自分馏配方的概率；否则使用默认概率
+                        if (!fracSelfRecipeList.Contains(__instance.fluidId)) {
+                            outputNum = GetOutputNum(randomVal, successRatePlus);
+                        }
+                        else {
+                            outputNum = GetOutputNum(randomVal, successRatePlus,
+                                fracRecipeNumRatioDic[__instance.fluidId]);
+                        }
+                        //增产剂可以提升产物数目
                         seed2 = (uint)((int)((ulong)((seed2 % 2147483646 + 1) * 48271L) % 2147483647uL) - 1);
                         bool outputDouble = seed2 / 2147483646.0
                                             < Cargo.incTableMilli[fluidInputAvgInc < 10 ? fluidInputAvgInc : 10];
@@ -174,11 +179,16 @@ namespace FractionateEverything.Main {
                         }
                     }
                     else if (buildingID == IFE点数聚集分馏塔) {
-                        //点数聚集分馏塔需要根据点数确定输出的物品数目
+                        //强制使用默认概率，与配方无关
+                        outputNum = GetOutputNum(randomVal, successRatePlus);
                         if (outputNum > 0) {
                             //至多将点数聚集到四个物品上
                             outputNum = Math.Min(__instance.fluidInputInc / 10, 4);
                         }
+                    }
+                    else {
+                        //普通塔需要根据配方确定输出
+                        outputNum = GetOutputNum(randomVal, successRatePlus, fracRecipeNumRatioDic[__instance.fluidId]);
                     }
                     __instance.fractionSuccess = outputNum > 0;
 
@@ -189,10 +199,16 @@ namespace FractionateEverything.Main {
                     if (buildingID == IFE点数聚集分馏塔 && __instance.fractionSuccess) {
                         __instance.fluidInputCount -= outputNum;
                         __instance.fluidInputInc -= 10 * outputNum;
+                        lock (consumeRegister) {
+                            consumeRegister[__instance.fluidId] += outputNum;
+                        }
                     }
                     else {
                         __instance.fluidInputCount--;
                         __instance.fluidInputInc -= fluidInputAvgInc;
+                        lock (consumeRegister) {
+                            consumeRegister[__instance.fluidId]++;
+                        }
                     }
                     __instance.fluidInputCargoCount -= (float)(1.0 / num);
                     if (__instance.fluidInputCargoCount < 0f) {
@@ -208,9 +224,6 @@ namespace FractionateEverything.Main {
                         __instance.productOutputTotal += outputNum;
                         lock (productRegister) {
                             productRegister[outputItemID] += outputNum;
-                        }
-                        lock (consumeRegister) {
-                            consumeRegister[__instance.fluidId] += outputNum;
                         }
                     }
                     else if (outputNum == 0) {
@@ -452,35 +465,39 @@ namespace FractionateEverything.Main {
             return 0;
         }
 
-
         /// <summary>
         /// 修改分馏塔的分馏成功率显示。
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIFractionatorWindow), "_OnUpdate")]
-        public static void FractionatorUIUpdatePatch(ref UIFractionatorWindow __instance) {
+        public static void FractionatorUIUpdatePostPatch(ref UIFractionatorWindow __instance) {
             if (__instance.fractionatorId == 0 || __instance.factory == null) {
                 totalUIUpdateTimes = 20;
                 return;
             }
             FractionatorComponent fractionatorComponent =
                 __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
-            if (fractionatorComponent.id != __instance.fractionatorId) {
-                totalUIUpdateTimes = 20;
-                return;
+            if (__instance.fractionatorId == fractionatorID) {
+                if (fractionatorComponent.id != __instance.fractionatorId) {
+                    totalUIUpdateTimes = 20;
+                    return;
+                }
+                if (fractionatorComponent.fluidId == 0) {
+                    totalUIUpdateTimes = 20;
+                    return;
+                }
+                //每20帧（通常为0.333s）刷新一次速率显示，以确保不会出现UI闪烁导致无法看清的问题
+                totalUIUpdateTimes++;
+                if (totalUIUpdateTimes < 20) {
+                    __instance.productProbText.text = lastProductProbText;
+                    __instance.oriProductProbText.text = lastOriProductProbText;
+                    return;
+                }
             }
-            if (fractionatorComponent.fluidId == 0) {
-                totalUIUpdateTimes = 20;
-                return;
-            }
-            totalUIUpdateTimes++;
-            //每20帧（通常为0.333s）刷新一次速率显示，以确保不会出现UI闪烁导致无法看清的问题
-            if (totalUIUpdateTimes < 20) {
-                __instance.productProbText.text = lastProductProbText;
-                __instance.oriProductProbText.text = lastOriProductProbText;
-                return;
-            }
+            fractionatorID = __instance.fractionatorId;
             totalUIUpdateTimes = 0;
+
+            //整理要显示的内容
             int buildingID = __instance.factory.entityPool[fractionatorComponent.entityId].protoId;
             double successRatePlus = 1.0;
             double extraIncProduceProb = 0.0;
@@ -498,10 +515,6 @@ namespace FractionateEverything.Main {
                 case I分馏塔_FE通用分馏塔:
                     successRatePlus *= 1.0 + fractionatorComponent.extraIncProduceProb;
                     break;
-                case IFE点数聚集分馏塔:
-                    double ratio4 = (double)fractionatorComponent.fluidInputInc / fractionatorComponent.fluidInputCount;
-                    successRatePlus *= Math.Min(ratio4, 4);
-                    break;
                 case IFE增产分馏塔:
                     if (fractionatorComponent.fluidInputCount > 0 && fractionatorComponent.fluidInputInc > 0) {
                         int num = fractionatorComponent.fluidInputInc / fractionatorComponent.fluidInputCount;
@@ -512,7 +525,10 @@ namespace FractionateEverything.Main {
             }
             StringBuilder sb1 = new StringBuilder();
             Dictionary<int, double> dic;
-            if (buildingID == IFE增产分馏塔) {
+            if (buildingID == IFE点数聚集分馏塔) {
+                dic = new() { { 1, 0.01 } };
+            }
+            else if (buildingID == IFE增产分馏塔) {
                 dic = fracSelfRecipeList.Contains(fractionatorComponent.fluidId)
                     ? fracRecipeNumRatioDic[fractionatorComponent.fluidId]
                     : new() { { 1, 0.01 } };
@@ -524,46 +540,56 @@ namespace FractionateEverything.Main {
             }
             dic.TryGetValue(-1, out double destroyRatio);
             double flowRatio = 1.0;
-            var tempDic = new Dictionary<int, double>();
             int sb1LineNum = 0;
-            foreach (var p in dic) {
-                if (p.Key < 0) {
-                    continue;
-                }
-                double ratio = p.Value * successRatePlus;
-                //增产分馏塔比较特殊，因为增加的概率可能与原有的概率重叠，所以需要整合后再显示
-                if (buildingID == IFE增产分馏塔) {
-                    double ratioBase = ratio * (1.0 - extraIncProduceProb);
-                    if (tempDic.ContainsKey(p.Key)) {
-                        tempDic[p.Key] += ratioBase;
+            if (buildingID == IFE点数聚集分馏塔) {
+                int num = Math.Min(4, fractionatorComponent.fluidInputInc / 10);
+                sb1.Append($"1({num}%)\n");
+                sb1LineNum++;
+                flowRatio -= 0.01 * num;
+            }
+            else {
+                var tempDic = new Dictionary<int, double>();
+                foreach (var p in dic) {
+                    if (p.Key < 0) {
+                        continue;
                     }
-                    else {
-                        tempDic.Add(p.Key, ratioBase);
-                    }
-                    if (extraIncProduceProb > 0) {
-                        double ratioDouble = ratio * extraIncProduceProb;
-                        if (tempDic.ContainsKey(p.Key * 2)) {
-                            tempDic[p.Key * 2] += ratioDouble;
+                    double ratio = p.Value * successRatePlus;
+                    //增产分馏塔比较特殊，因为增加的概率可能与原有的概率重叠，所以需要整合后再显示
+                    if (buildingID == IFE增产分馏塔) {
+                        double ratioBase = ratio * (1.0 - extraIncProduceProb);
+                        if (tempDic.ContainsKey(p.Key)) {
+                            tempDic[p.Key] += ratioBase;
                         }
                         else {
-                            tempDic.Add(p.Key * 2, ratioDouble);
+                            tempDic.Add(p.Key, ratioBase);
+                        }
+                        if (extraIncProduceProb > 0) {
+                            double ratioDouble = ratio * extraIncProduceProb;
+                            if (tempDic.ContainsKey(p.Key * 2)) {
+                                tempDic[p.Key * 2] += ratioDouble;
+                            }
+                            else {
+                                tempDic.Add(p.Key * 2, ratioDouble);
+                            }
                         }
                     }
+                    else {
+                        sb1.Append($"{p.Key}({ratio:0.###%})\n");
+                        sb1LineNum++;
+                    }
+                    flowRatio -= ratio;
                 }
-                else {
-                    sb1.Append($"{p.Key}({ratio:0.###%})\n");
-                    sb1LineNum++;
+                if (buildingID == IFE增产分馏塔) {
+                    foreach (var p in tempDic) {
+                        sb1.Append($"{p.Key}({p.Value:0.###%})\n");
+                        sb1LineNum++;
+                    }
                 }
-                flowRatio -= ratio;
             }
-            if (buildingID == IFE增产分馏塔) {
-                foreach (var p in tempDic) {
-                    sb1.Append($"{p.Key}({p.Value:0.###%})\n");
-                    sb1LineNum++;
-                }
-            }
-            //改为纵向拓展，记录初始位置
+
+            //显示内容
             if (isFirstUpdateUI) {
+                //改为纵向拓展，记录初始位置
                 __instance.productProbText.verticalOverflow = VerticalWrapMode.Overflow;
                 __instance.oriProductProbText.verticalOverflow = VerticalWrapMode.Overflow;
                 productProbTextPos = __instance.productProbText.transform.position;

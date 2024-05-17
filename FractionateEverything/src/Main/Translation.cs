@@ -1,8 +1,47 @@
-﻿using static FractionateEverything.Utils.RegisterTranslationUtils;
+﻿using CommonAPI.Systems.ModLocalization;
 
 namespace FractionateEverything.Main {
-    public class Translation {
+    public static class Translation {
+        private static void RegisterTranslation(string key, string enTrans, string cnTrans = null) {
+            LocalizationModule.RegisterTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        }
+
+        private static void EditTranslation(string key, string enTrans, string cnTrans = null) {
+            LocalizationModule.EditTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        }
+
         public static void RegisterTranslations() {
+            RegisterTranslation("DisableMessageBox", "Disable message box when loaded", "禁用万物分馏提示信息");
+            RegisterTranslation("DisableMessageBoxAdditionalText",
+                "(Disable additional information about Fractionate Everything in a messagebox after the mod is loaded)",
+                "（在MOD加载完成后禁用弹窗显示万物分馏的额外信息）");
+            RegisterTranslation("IconVersion", "Fractionation recipe icon style", "分馏配方图标样式");
+            RegisterTranslation("v1", "Original(need restart)", "原版（需要重启）");
+            RegisterTranslation("v2", "Slanting line(need restart)", "斜线（需要重启）");
+            RegisterTranslation("v3", "Circular arc(need restart)", "圆弧（需要重启）");
+            RegisterTranslation("EnableDestroy", "Enable fractionation destroy probability", "启用分馏损毁概率");
+            RegisterTranslation("EnableDestroyAdditionalText",
+                "(only affects some recipes, recommended to open, requires restart game to take effect)",
+                "（只影响部分配方，建议开启，需要重启游戏才可生效）");
+
+            RegisterTranslation("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
+            RegisterTranslation("FE信息",
+                "Thank you for using Fractionation Everything! This mod adds 5 Fractionators, and over 200 fractionation recipes.\n"
+                + "You can change mod options in Settings - Others, such as change fractionation recipe icon style (currently there are 3 styles available), or to no longer show this window.\n"
+                + "Recommended for use with More Mega Structure, They Come From Void, and Genesis Book.\n"
+                + "If you have any issues or ideas about the mod, please feedback to Github Issue.\n"
+                + "<color=\"#FD965ECC\">Have fun with fractionation!</color>",
+                "感谢你使用万物分馏！该MOD添加了5个分馏塔，以及超过200个的分馏配方。\n"
+                + "你可以在设置-杂项中修改MOD配置，例如切换分馏配方的图标样式（目前有3种样式可选），或不再显示该窗口。\n"
+                + "推荐与创世之书、深空来敌、更多巨构一起使用。\n"
+                + "如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入创世之书MOD交流群反馈。\n"
+                + "<color=\"#FD965ECC\">尽情享受分馏的乐趣吧！</color>");
+            RegisterTranslation("FE交流群", "View on Github", "加入交流群");
+            RegisterTranslation("FE交流群链接",
+                "https://github.com/MengLeiFudge/MLJ_DSPmods",
+                "https://jq.qq.com/?_wv=1027&k=5bnaDEp3");
+            RegisterTranslation("FE日志", "Update Log", "更新日志");
+
             RegisterTranslation("分馏页面1", "Fractionate I", "分馏 I");
             RegisterTranslation("分馏页面2", "Fractionate II", "分馏 II");
             RegisterTranslation("分馏", " Fractionation");
@@ -37,43 +76,43 @@ namespace FractionateEverything.Main {
 
             RegisterTranslation("点数聚集分馏塔", "Points Aggregate Fractionator");
             RegisterTranslation("I点数聚集分馏塔",
-                "Crafts an item with 10 Incremental Yield Points by concentrating the item's Incremental Yield Points on a portion of the item, breaking the upper limit of Incremental Yield Points. Accepts any item as a raw material.",
-                "将物品的增产点数集中到一部分物品上，突破增产点数的上限，从而制作出10增产点数的物品。可接受任何物品作为原料。");
+                "Crafts an item with 10 proliferate points by concentrating the item's proliferate points on a portion of the item, breaking the upper limit of proliferate points.\n<color=\"#FD965ECC\">Any item will be accepted.</color> The success rate is only related to the number of proliferate points entered for the item.",
+                "将物品的增产点数集中到一部分物品上，突破增产点数的上限，从而制作出10增产点数的物品。\n<color=\"#FD965ECC\">可接受任何物品。</color>成功率仅与输入物品的增产点数有关。");
 
             RegisterTranslation("增产分馏塔", "Increase Production Fractionator");
             RegisterTranslation("I增产分馏塔",
-                "Instead of boosting the success rate of fractionation, the production increase points boost the number of products, truly achieving the effect of creating something from nothing. Accepts any item as a raw material.",
-                "增产点数不再提升分馏成功率，而是提升产物数目，真正达到无中生有的效果。可接受任何物品作为原料。");
+                "Instead of boosting the success rate of fractionation, the production increase points boost the number of products, truly achieving the effect of creating something from nothing.\n<color=\"#FD965ECC\">Any item will be accepted.</color> The success rate is related to the number of proliferate points entered for the item, and whether or not it has a self-fractionating recipe.",
+                "增产点数不再提升分馏成功率，而是提升产物数目，真正达到无中生有的效果。\n<color=\"#FD965ECC\">可接受任何物品。</color>成功率与输入物品的增产点数、是否具有自分馏配方有关。");
 
-            RegisterTranslation("T分馏塔产物集装物流", "Fractionator product consolidation logistics", "分馏塔产物集装物流");
+            RegisterTranslation("T分馏塔产物集装物流", "Fractionator Product Integrated Count Logistics", "分馏塔产物集装物流");
             RegisterTranslation("分馏塔产物集装物流描述1",
-                "The product of the fractionator will be exported as much as possible in a containerized form.",
+                "Fractionator products will be exported as much as possible in product outgoing cargo.",
                 "分馏塔的产物将会尽可能以集装形式输出。");
             RegisterTranslation("分馏塔产物集装物流结果1",
-                "All products from the fractionator will now be consolidated as much as possible before being exported.",
+                "All products from the fractionator will now be exported as much as possible in product outgoing cargo.",
                 "现在，所有分馏塔的产物都将尽可能集装后再输出。");
             RegisterTranslation("分馏塔产物集装物流描述2",
-                "Further increase the number of sets of output products from the fractionator.",
+                "Further increases the integration count of product cargo for Fractionators.",
                 "进一步提高分馏塔输出产物的集装数量。");
             RegisterTranslation("分馏塔产物集装物流结果2",
-                "The number of product assemblies in all fractionators was further improved.",
+                "The integration count of product cargo for all Fractionators was further improved.",
                 "所有分馏塔的产物集装数量进一步提升了。");
             RegisterTranslation("分馏塔产物集装等级",
-                "Quantity of output product set from fractionator",
+                "integration count from fractionator product output",
                 "分馏塔输出产物集装数量");
 
-            RegisterTranslation("T增产点数聚集", "Aggregation of yield points", "增产点数聚集");
+            RegisterTranslation("T增产点数聚集", "Proliferate Points Aggregation", "增产点数聚集");
             RegisterTranslation("增产点数聚集描述",
-                "Due to the limitations of material technology, the spawn line is unable to create more advanced yield enhancers, but fractionation technology can break through the limitations by concentrating the raw material's yield enhancement points into a certain number of items. It was found that the yield increase points of items could be stacked indefinitely, but the portion over 10 points did not work. The Yield Increase Point Aggregation technique can fractionate just the items with 10 Yield Increase Points.",
+                "Due to the limitations of material technology, the spawn line is unable to create more advanced proliferators, but fractionation technology can break through the limitations by concentrating the raw material's proliferate points into a certain number of items. It was found that the proliferate points of items could be stacked indefinitely, but the portion over 10 points did not work. Proliferate Point Aggregation technology can fractionate just the items with 10 proliferate points.",
                 "由于材料技术的限制，产线无法制造更高级的增产剂，但分馏技术可以将原料的增产点数集中到某几个物品上，从而突破限制。研究发现，物品的增产点数可以无限叠加，但超过10点的部分不起作用。增产点数聚集技术可以刚好分馏出10点增产点数的物品。");
             RegisterTranslation("增产点数聚集结果",
-                "You have mastered the yield increase point aggregation technique. The item's yield increase points can now be pushed to the limit, and production capacity has been greatly increased!",
+                "You have mastered the Proliferate Points Aggregation technology. The item's proliferate points can now be pushed to the limit, and production capacity has been greatly increased!",
                 "你已经掌握了增产点数聚集技术。现在物品的增产点数可以突破到极限，产能得到了极大的提升！");
 
             RegisterTranslation("T增产分馏", "Increase production fractionate", "增产分馏");
             RegisterTranslation("增产分馏描述",
-                "Typically, yield increase points only boost the fractionation success rate. If the yield increase points are used to boost the number of fractionation products and keep the products consistent with the inputs, we can achieve the effect of creating something out of nothing.\n"
-                + "It is clear that the direction of transforming yield-enhancing points in fractionation is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
+                "Typically, proliferate points only boost the fractionation success rate. If proliferate points are used to boost the number of fractionation products and keep the products consistent with the inputs, we can achieve the effect of creating something out of nothing.\n"
+                + "It is clear that the direction of transforming proliferate points in fractionation is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
                 + "<color=\"#FD965ECC\">Warning：</color>The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, <color=\"#FD965ECC\">Please research manually.</color>",
                 "通常情况下，增产点数只能提升分馏成功率。如果将增产点数用于提升分馏产物的数目，并保持产物与输入一致，我们就能达到无中生有的效果。\n"
                 + "显然，转变增产点数在分馏中的应用方向高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
@@ -81,6 +120,14 @@ namespace FractionateEverything.Main {
             RegisterTranslation("增产分馏结果",
                 "You have unlocked the Increased Production Fractionation technology. Now you truly have the ability to create something from nothing!",
                 "你已经掌握了增产分馏技术。现在，你真正拥有了无中生有的能力！");
+
+            RegisterTranslation("粒子对撞与通用分馏", "Particle Collisions and Universal Fractionation");
+            EditTranslation("微型粒子对撞机描述",
+                "Building a particle collider requires advanced materials as well as a huge energy supply, which is expensive, but worth it. Or, consider fractionation?",
+                "建造一座粒子对撞机需要先进的材料以及巨大的能量供给，虽然成本昂贵，不过却是值得的。或者，考虑一下分馏？");
+            EditTranslation("微型粒子对撞机结果",
+                "You have unlocked the Particle Collider, which can now be utilized to create deuterium and antimatter at a stable rate, though it consumes a lot of energy. You have also unlocked the Universal Fractionator, which has a more stable fractionation rate.",
+                "你解锁了粒子对撞机，现在可以利用它来稳定制造重氢和反物质，不过会消耗很多能量。你也解锁了通用分馏塔，它的分馏速率更为稳定。");
         }
     }
 }
