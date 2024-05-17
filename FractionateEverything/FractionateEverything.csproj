@@ -120,13 +120,13 @@
     <Compile Include="src\Main\AddFractionateRecipes.cs" />
     <Compile Include="src\Main\FractionatorBuilding.cs" />
     <Compile Include="src\Main\FractionatorLogic.cs" />
+    <Compile Include="src\Main\OptionWindow.cs" />
     <Compile Include="src\Main\Tech.cs" />
     <Compile Include="src\Main\Translation.cs" />
     <Compile Include="src\Utils\AcceptableValueUtils.cs" />
-    <Compile Include="src\Utils\FractionatorUtils.cs" />
+    <Compile Include="src\Utils\AddProtoUtils.cs" />
     <Compile Include="src\Utils\RecipeHelper.cs" />
     <Compile Include="src\Utils\ProtoID.cs" />
-    <Compile Include="src\Utils\RegisterTranslationUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

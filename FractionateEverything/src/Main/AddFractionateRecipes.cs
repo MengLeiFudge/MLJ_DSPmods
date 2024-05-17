@@ -1,4 +1,5 @@
 ﻿using FractionateEverything.Compatibility;
+using FractionateEverything.Utils;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ using static FractionateEverything.FractionateEverything;
 using static FractionateEverything.Main.FractionatorLogic;
 using static FractionateEverything.Compatibility.GenesisBook;
 using static FractionateEverything.Compatibility.MoreMegaStructure;
+using static FractionateEverything.Utils.AddProtoUtils;
 
-namespace FractionateEverything.Utils {
+namespace FractionateEverything.Main {
     //LDB.ItemName 等价于 itemproto.name，itemproto.name 等价于 itemproto.Name.Translate()
     //name: 推进器  name.Translate: <0xa0>-<0xa0>推进器  Name: 推进器2  Name.Translate: 推进器
     //name: Thruster  name.Translate: Thruster  Name: 推进器2  Name.Translate: Thruster
@@ -52,7 +54,6 @@ namespace FractionateEverything.Utils {
 
             helper = new(tab分馏1);
             List<RecipeProto> list;
-            AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
             if (!MoreMegaStructure.Enable) {
                 AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, I轨道采集器]);
             }
@@ -60,8 +61,8 @@ namespace FractionateEverything.Utils {
                 list = AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, IMS物资交换物流站, I轨道采集器]);
                 list[2].ModifyGridIndex(tab巨构, 410);
                 AddFracChain([
-                        IMS物质解压器运载火箭, IMS科学枢纽运载火箭, IMS谐振发射器运载火箭,
-                        IMS星际组装厂运载火箭, IMS晶体重构器运载火箭, IMS恒星炮运载火箭, IMS物质解压器运载火箭
+                        IMS物质解压器运载火箭, IMS谐振发射器运载火箭, IMS星际组装厂运载火箭,
+                        IMS晶体重构器运载火箭, IMS恒星炮运载火箭, IMS科学枢纽运载火箭, IMS物质解压器运载火箭
                     ], false)
                     .ModifyGridIndex(tab巨构, 601);
                 AddFracChain([
@@ -161,6 +162,7 @@ namespace FractionateEverything.Utils {
                 AddFracChain([I采矿机, I大型采矿机]);
                 AddFracChain([I抽水站, I原油萃取站, I原油精炼厂]);
                 AddFracChain([I化工厂, I量子化工厂_GB先进化学反应釜]);
+                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01 } });
                 //建筑IV
                 AddFracChain([I电弧熔炉, I位面熔炉, I负熵熔炉]);
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
@@ -170,6 +172,8 @@ namespace FractionateEverything.Utils {
                 AddFracChain([I高斯机枪塔, I导弹防御塔, I聚爆加农炮_GB聚爆加农炮MKI]);//注意科技解锁顺序
                 AddFracChain([I高频激光塔_GB高频激光塔MKI, I磁化电浆炮, I近程电浆塔]);//注意科技解锁顺序
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
+                //建筑VI
+                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
             }
             else {
                 //创世改动过大，单独处理
@@ -236,7 +240,6 @@ namespace FractionateEverything.Utils {
                 AddFracChain([I框架材料, I戴森球组件, I小型运载火箭], false);
                 AddFracChain([I高纯硅块, I晶格硅], false);
                 AddFracChain([I石材, IGB混凝土], false);
-                AddFracChain([I玻璃, I钛化玻璃, IGB钨强化玻璃], false);
                 AddFracChain([I棱镜, I电浆激发器, I光子合并器, I太阳帆], false);
                 AddFracChain([I高能石墨, I金刚石], false);
                 AddFracChain([I石墨烯, I碳纳米管, I粒子宽带], false);
@@ -247,6 +250,7 @@ namespace FractionateEverything.Utils {
                 AddFracChain([IGB基础机械组件, IGB先进机械组件, IGB尖端机械组件]);//创世独有配方
                 AddFracChain([IGB塑料基板, IGB光学基板]);//创世独有配方
                 AddFracChain([IGB量子计算主机, IGB超越X1型光学主机]);//创世独有配方
+                AddFracChain([I玻璃, I钛化玻璃, IGB钨强化玻璃]);
                 AddFracChain([I水, I硫酸])
                     .ModifyGridIndex(tab分馏1, 313);
                 AddFracRecipe(I磁线圈_GB铜线圈, I电动机)
@@ -258,7 +262,7 @@ namespace FractionateEverything.Utils {
                 AddFracChain([I动力引擎, I推进器, I加力推进器]);
                 AddFracChain([I配送运输机, I物流运输机, I星际物流运输船]);
                 AddFracChain([I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素])
-                    .ModifyGridIndex(tab分馏1, 115, false);
+                    .ModifyGridIndex(tab防御, 217, false);
                 AddFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], true, new() { { 1, 0.01 }, { -1, 0.03 } });
 
                 //建筑页面
@@ -279,17 +283,12 @@ namespace FractionateEverything.Utils {
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
                 AddFracChain([I矩阵研究站, I自演化研究站]);
                 AddFracChain([I电磁轨道弹射器, I射线接收站, I垂直发射井]);
-                //todo: 如果可能的话，添加巨构专属建筑对应的转换配方
-                // if (GenesisBook.Enable) {
-                //     list = AddFracChain([I位面熔炉, IGB物质裂解塔]);
-                //     list.AddRange(AddFracChain([I制造台MkII_GB标准制造单元, IGB天穹装配厂]));
-                //     list.AddRange(AddFracChain([I量子化工厂_GB先进化学反应釜, IGB埃克森美孚化工厂]));
-                //     list.AddRange(AddFracChain([I制造台MkIII_GB高精度装配线, IGB工业先锋精密加工中心]));
-                //     list.AddRange(AddFracChain([I微型粒子对撞机, IGB苍穹粒子加速器]));
-                //     foreach (var r in list) {
-                //         r.Type = (ERecipeType)20;
-                //     }
-                // }
+                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01 } });
+                AddFracChain([
+                    IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施,
+                    IGB工业先锋精密加工中心, IGB苍穹粒子加速器, IGB物质裂解塔
+                ], false);
+                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
 
                 //精炼页面
                 AddFracChain([I液氢燃料棒, IGB煤油燃料棒, IGB四氢双环戊二烯燃料棒])
@@ -316,6 +315,8 @@ namespace FractionateEverything.Utils {
                     .ModifyGridIndex(tab防御, 209);
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器])
                     .ModifyGridIndex(tab防御, 213);
+                AddFracRecipe(I高斯机枪塔, I高斯机枪塔, false, new() { { 2, 0.01 } })
+                    .ModifyGridIndex(tab防御, 309);
                 AddFracChain([I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱])
                     .ModifyGridIndex(tab防御, 311);
                 AddFracChain([I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元])
@@ -324,18 +325,18 @@ namespace FractionateEverything.Utils {
                     .ModifyGridIndex(tab防御, 509);
                 AddFracChain([I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组])
                     .ModifyGridIndex(tab防御, 511);
+                AddFracRecipe(I导弹防御塔, I导弹防御塔, false, new() { { 2, 0.01 } })
+                    .ModifyGridIndex(tab防御, 609);
                 AddFracChain([I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组])
                     .ModifyGridIndex(tab防御, 611);
-                AddFracChain([I等离子胶囊, I反物质胶囊])
-                    .ModifyGridIndex(tab防御, 711);
                 AddFracChain([I干扰胶囊, I压制胶囊])
+                    .ModifyGridIndex(tab防御, 711);
+                AddFracChain([I等离子胶囊, I反物质胶囊])
                     .ModifyGridIndex(tab防御, 713);
             }
 
-            //添加所有配方
-            typeof(LDBTool).GetMethod("AddProtosToSet", AccessTools.all)
-                ?.MakeGenericMethod(typeof(RecipeProto))
-                .Invoke(null, [LDB.recipes, recipeList]);
+            //立即添加所有配方
+            AddRecipe(recipeList);
 
             LogInfo("Finish to add fractionate recipes.");
             _finished = true;
@@ -346,7 +347,7 @@ namespace FractionateEverything.Utils {
         /// 添加一个分馏链。
         /// 如果cycle为true，会多添加结尾物品到起始物品的分馏配方。
         /// </summary>
-        public static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain,
+        private static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain,
             bool cycle = true, Dictionary<int, double> fracNumRatioDic = null) {
             fracNumRatioDic ??= new() { { 1, 0.01 } };
             List<RecipeProto> list = [];
@@ -364,7 +365,7 @@ namespace FractionateEverything.Utils {
             return list;
         }
 
-        public static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
+        private static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
             bool useInputTech = false, Dictionary<int, double> fracNumRatioDic = null) {
             return AddFracRecipe(inputItemID, outputItemID,
                 useInputTech ? LDB.items.Select(inputItemID).preTech : LDB.items.Select(outputItemID).preTech,
@@ -374,7 +375,7 @@ namespace FractionateEverything.Utils {
         /// <summary>
         /// 添加一个分馏配方。
         /// </summary>
-        public static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
+        private static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
             TechProto preTech, Dictionary<int, double> fracNumRatioDic = null) {
             fracNumRatioDic ??= new() { { 1, 0.01 } };
             //如果不启用损毁概率，去除对应键值对
@@ -394,40 +395,18 @@ namespace FractionateEverything.Utils {
                     ? 0
                     : outputItem.recipes[0].GridIndex + (tab分馏1 - 1) * 1000;
                 //获取配方图标。图标由python拼接，由unity打包
-                string iconPath = "";
-                Sprite sprite = null;
-                string inputIconName = inputItem.IconPath?.Substring(inputItem.IconPath.LastIndexOf("/") + 1);
-                string outputIconName = outputItem.IconPath?.Substring(outputItem.IconPath.LastIndexOf("/") + 1);
-                if (string.IsNullOrEmpty(inputIconName)) {
-                    if (string.IsNullOrEmpty(outputIconName)) {
-                        LogWarning($"缺失{recipeName}原料图标{inputItem.IconPath}、产物图标{outputItem.IconPath}，"
-                                   + $"配方图标无法显示！");
-                    }
-                    else {
-                        LogWarning($"缺失{recipeName}原料图标{inputItem.IconPath}，"
-                                   + $"配方图标改为使用产物{outputItem.Name}图标！");
-                        iconPath = outputItem.IconPath;
-                        sprite = outputItem.iconSprite;
-                    }
-                }
-                else {
-                    if (string.IsNullOrEmpty(outputIconName)) {
-                        LogWarning($"缺失{recipeName}产物图标{outputItem.IconPath}，"
-                                   + $"配方图标无法显示！");
-                    }
-                    else {
-                        //由于不同原料可能分馏出同一种产物，配方名字应以原料名称命名
-                        //考虑到重氢可能分离为其他物品（虽然现在没有），为了不冲突，名称改为“原料-产物-formula-版本”
-                        string iconName = $"{inputIconName}-{outputIconName}-formula-v{iconVersion}";
-                        iconPath = $"Assets/fracicons/{iconName}";
-                        sprite = fracicons.bundle.LoadAsset<Sprite>(iconName);
-                        if (sprite == null) {
-                            LogWarning($"缺失{recipeName}配方图标{iconPath}，"
-                                       + $"配方图标改为使用产物{outputItem.Name}图标！");
-                            iconPath = outputItem.IconPath;
-                            sprite = outputItem.iconSprite;
-                        }
-                    }
+                string inputIconName = inputItem.iconSprite.name;
+                string outputIconName = outputItem.iconSprite.name;
+                //由于不同原料可能分馏出同一种产物，配方名字应以原料名称命名
+                //考虑到重氢可能分离为其他物品（虽然现在没有），为了不冲突，名称改为“原料-产物-formula-版本”
+                string iconName = $"{inputIconName}-{outputIconName}-formula-v{iconVersion}";
+                string iconPath = $"Assets/fracicons/{iconName}";
+                Sprite sprite = fracicons.bundle.LoadAsset<Sprite>(iconName);
+                if (sprite == null) {
+                    LogWarning($"缺失{recipeName}配方图标{iconPath}，"
+                               + $"配方图标改为使用产物{outputItem.Name}图标！");
+                    iconPath = outputItem.IconPath;
+                    sprite = outputItem.iconSprite;
                 }
                 //配方中的ResultCounts[0]大于1时，仅影响分馏成功率与显示上的分馏产物数目，实际并不能分出多个；
                 //实际分馏出多个是通过FractionatorInternalUpdatePatch方法达成的
@@ -435,11 +414,10 @@ namespace FractionateEverything.Utils {
                 string description =
                     $"{"从".Translate()}{inputItem.name}{"中分馏出".Translate()}{outputItem.name}{"。".Translate()}";
                 foreach (var p in fracNumRatioDic.Where(p => p.Key > 0)) {
-                    description += $"\n{Math.Round(p.Value * 100, 3)}%{"分馏出".Translate()}{p.Key}{"个产物".Translate()}";
+                    description += $"\n{p.Value:0.###%}{"分馏出".Translate()}{p.Key}{"个产物".Translate()}";
                 }
                 if (fracNumRatioDic.TryGetValue(-1, out double destroyRatio)) {
-                    description +=
-                        $"\n{"损毁分馏警告1".Translate()}{Math.Round(destroyRatio * 100, 3)}%{"损毁分馏警告2".Translate()}";
+                    description += $"\n{"损毁分馏警告1".Translate()}{destroyRatio:0.###%}{"损毁分馏警告2".Translate()}";
                 }
                 //ProtoRegistry.RegisterRecipe用起来有很多问题，自己创建不容易出bug
                 RecipeProto r = new() {
@@ -496,36 +474,19 @@ namespace FractionateEverything.Utils {
 
         private static void ModifyGridIndex(this List<RecipeProto> recipes, int tab, int rowColumn,
             bool addColumn = true) {
-            if (showRecipes) {
-                for (int i = 0; i < recipes.Count - 1; i++) {
-                    helper.ModifyGridIndex(recipes[i], tab, rowColumn + (addColumn ? i + 1 : (i + 1) * 100));
-                }
-                helper.ModifyGridIndex(recipes[recipes.Count - 1], tab, rowColumn);
+            for (int i = 0; i < recipes.Count - 1; i++) {
+                helper.ModifyGridIndex(recipes[i], tab, rowColumn + (addColumn ? i + 1 : (i + 1) * 100));
             }
-            else {
-                foreach (var r in recipes) {
-                    r.GridIndex = 0;
-                }
-            }
+            helper.ModifyGridIndex(recipes[recipes.Count - 1], tab, rowColumn);
         }
 
         private static RecipeProto ModifyGridIndex(this RecipeProto r, int tab, int rowColumn) {
-            if (showRecipes) {
-                helper.ModifyGridIndex(r, tab, rowColumn);
-            }
-            else {
-                r.GridIndex = 0;
-            }
+            helper.ModifyGridIndex(r, tab, rowColumn);
             return r;
         }
 
         private static RecipeProto ModifyGridIndex(this RecipeProto r, int gridIndex) {
-            if (showRecipes) {
-                helper.ModifyGridIndex(r, gridIndex);
-            }
-            else {
-                r.GridIndex = 0;
-            }
+            helper.ModifyGridIndex(r, gridIndex);
             return r;
         }
     }

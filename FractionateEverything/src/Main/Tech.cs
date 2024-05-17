@@ -5,9 +5,6 @@ using static FractionateEverything.Utils.ProtoID;
 
 namespace FractionateEverything.Main {
     public static class Tech {
-        public static TechProto tech增产点数聚集;
-        public static TechProto tech增产分馏;
-
         public static void AddTechs() {
             //第一页
             AddTech增产点数聚集();
@@ -19,7 +16,7 @@ namespace FractionateEverything.Main {
         }
 
         private static void AddTech增产点数聚集() {
-            tech增产点数聚集 = ProtoRegistry.RegisterTech(
+            var tech增产点数聚集 = ProtoRegistry.RegisterTech(
                 TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果",
                 "Assets/fracicons/tech增产点数聚集",
                 GenesisBook.Enable ? [T增产剂MkI_GB物品增产] : [T增产剂MkIII_GB人造恒星MKI, T信息矩阵],
@@ -35,7 +32,7 @@ namespace FractionateEverything.Main {
         }
 
         private static void AddTech增产分馏() {
-            tech增产分馏 = ProtoRegistry.RegisterTech(
+            var tech增产分馏 = ProtoRegistry.RegisterTech(
                 TFE增产分馏, "T增产分馏", "增产分馏描述", "增产分馏结果",
                 "Assets/fracicons/tech增产分馏",
                 GenesisBook.Enable ? [] : [TFE增产点数聚集],

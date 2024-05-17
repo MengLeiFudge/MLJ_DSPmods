@@ -1,5 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
+using System.IO;
+using UnityEngine;
 
 namespace FractionateEverything.Compatibility {
     /// <summary>
@@ -14,6 +17,8 @@ namespace FractionateEverything.Compatibility {
         public const string NAME = FractionateEverything.NAME + ".CheckPlugins";
         public const string VERSION = FractionateEverything.VERSION;
 
+        private static bool _shown;
+
         #region Logger
 
         private static ManualLogSource logger;
@@ -27,9 +32,32 @@ namespace FractionateEverything.Compatibility {
 
         public void Awake() {
             logger = Logger;
+
+            new Harmony(GUID).Patch(
+                AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
+                null,
+                new(typeof(CheckPlugins), nameof(OnMainMenuOpen)) { priority = Priority.Last }
+            );
+
             MoreMegaStructure.Compatible();
             TheyComeFromVoid.Compatible();
             GenesisBook.Compatible();
         }
+
+        public static void OnMainMenuOpen() {
+            if (FractionateEverything.disableMessageBox || _shown) return;
+            _shown = true;
+            UIMessageBox.Show(
+                "FE标题".Translate(), "FE信息".Translate(),
+                "确定".Translate(), "FE交流群".Translate(), "FE日志".Translate(),
+                UIMessageBox.INFO,
+                null, OpenBrowser, OpenLog
+            );
+        }
+
+        private static void OpenBrowser() => Application.OpenURL("FE交流群链接".Translate());
+
+        private static void OpenLog() =>
+            Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
     }
 }

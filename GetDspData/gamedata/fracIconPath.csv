@@ -1,9 +1,4 @@
-﻿fractionator-1,fractionator-2
-fractionator-2,fractionator
-fractionator,fractionator-4
-fractionator-4,fractionator-5
-fractionator-5,fractionator-1
-delivery-machine,logistic-station
+﻿delivery-machine,logistic-station
 logistic-station,interstellar-logistic-station
 interstellar-logistic-station,orbital-collector
 orbital-collector,delivery-machine
@@ -130,6 +125,7 @@ oil-extractor,oil-refinery
 oil-refinery,water-pump
 chemical-plant,chemical-plant-2
 chemical-plant-2,chemical-plant
+hadron-collider,hadron-collider
 smelter,smelter-2
 smelter-2,smelter-3
 smelter-3,smelter
@@ -152,3 +148,8 @@ battle-base,turret-signal
 turret-signal,turret-disturb
 turret-disturb,turret-shield
 turret-shield,battle-base
+fractionator-1,fractionator-2
+fractionator-2,fractionator
+fractionator,fractionator-4
+fractionator-4,fractionator-5
+fractionator-5,fractionator-1
