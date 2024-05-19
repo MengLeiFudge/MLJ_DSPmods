@@ -117,8 +117,8 @@
     <Compile Include="src\Compatibility\TheyComeFromVoid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\FractionateEverything.cs" />
-    <Compile Include="src\Main\AddFractionateRecipes.cs" />
-    <Compile Include="src\Main\FractionatorBuilding.cs" />
+    <Compile Include="src\Main\FractionateRecipes.cs" />
+    <Compile Include="src\Main\FractionatorBuildings.cs" />
     <Compile Include="src\Main\FractionatorLogic.cs" />
     <Compile Include="src\Main\OptionWindow.cs" />
     <Compile Include="src\Main\Tech.cs" />

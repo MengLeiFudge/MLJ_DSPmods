@@ -22,7 +22,7 @@ namespace FractionateEverything.Main {
     //name: 制造台<0xa0>Mk.I  name.Translate: 制造台<0xa0>Mk.I  Name: 制造台 Mk.I  Name.Translate: 制造台<0xa0>Mk.I
     //name: Assembling Machine Mk.I  name.Translate: Assembling Machine Mk.I  Name: 制造台 Mk.I  Name.Translate: Assembling Machine Mk.I
 
-    public static class AddFractionateRecipes {
+    public static class FractionateRecipes {
         private static RecipeHelper helper;
         private static readonly List<Proto> recipeList = [];
         private static bool _finished;
@@ -72,6 +72,8 @@ namespace FractionateEverything.Main {
                     .ModifyGridIndex(tab巨构, 701);
             }
             if (!GenesisBook.Enable) {
+                //添加重氢分馏配方的信息
+                fracRecipeNumRatioDic.Add(I氢, new() { { 1, 0.01 } });
                 //矿物自增值
                 AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04 } })
                     .ModifyGridIndex(tab分馏1, 101);
@@ -342,7 +344,6 @@ namespace FractionateEverything.Main {
             _finished = true;
         }
 
-
         /// <summary>
         /// 添加一个分馏链。
         /// 如果cycle为true，会多添加结尾物品到起始物品的分馏配方。
@@ -365,18 +366,14 @@ namespace FractionateEverything.Main {
             return list;
         }
 
-        private static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
-            bool useInputTech = false, Dictionary<int, double> fracNumRatioDic = null) {
-            return AddFracRecipe(inputItemID, outputItemID,
-                useInputTech ? LDB.items.Select(inputItemID).preTech : LDB.items.Select(outputItemID).preTech,
-                fracNumRatioDic);
-        }
-
         /// <summary>
         /// 添加一个分馏配方。
         /// </summary>
         private static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
-            TechProto preTech, Dictionary<int, double> fracNumRatioDic = null) {
+            bool useInputTech = false, Dictionary<int, double> fracNumRatioDic = null) {
+            TechProto preTech = useInputTech
+                ? LDB.items.Select(inputItemID).preTech
+                : LDB.items.Select(outputItemID).preTech;
             fracNumRatioDic ??= new() { { 1, 0.01 } };
             //如果不启用损毁概率，去除对应键值对
             if (!enableDestroy && fracNumRatioDic.ContainsKey(-1)) {

@@ -49,15 +49,19 @@ namespace FractionateEverything.Compatibility {
             _shown = true;
             UIMessageBox.Show(
                 "FE标题".Translate(), "FE信息".Translate(),
-                "确定".Translate(), "FE交流群".Translate(), "FE日志".Translate(),
+                "FE交流群".Translate(), "FE日志".Translate(), "确定".Translate(),
                 UIMessageBox.INFO,
-                null, OpenBrowser, OpenLog
+                Response1, Response2, null
             );
         }
 
-        private static void OpenBrowser() => Application.OpenURL("FE交流群链接".Translate());
+        private static void Response1() {
+            Application.OpenURL("FE交流群链接".Translate());
+        }
 
-        private static void OpenLog() =>
-            Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+        private static void Response2() {
+            Application.OpenURL("FE日志链接".Translate());
+            //Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+        }
     }
 }
