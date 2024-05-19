@@ -17,7 +17,7 @@ namespace FractionateEverything.Main {
     /// <summary>
     /// 添加新的分馏塔（物品、模型、配方），适配显示位置。
     /// </summary>
-    public static class FractionatorBuilding {
+    public static class FractionatorBuildings {
         /// <summary>
         /// 修改原版分馏塔相关内容，以适配万物分馏。
         /// </summary>
@@ -51,7 +51,7 @@ namespace FractionateEverything.Main {
                     preTech = null,
                 };
                 LDBTool.PreAddProto(RecipeFractionator);
-                RecipeFractionator.Preload(1003);
+                RecipeFractionator.Preload(RFE通用分馏塔);
                 RecipeFractionator.ID = RFE通用分馏塔;
                 //添加科技解锁相关信息
                 unlockList.Add(new() { itemID = I分馏塔_FE通用分馏塔, recipeID = RFE通用分馏塔, preTechID = T微型粒子对撞机_GB粒子对撞机 });
@@ -65,6 +65,7 @@ namespace FractionateEverything.Main {
             ItemFractionator.GridIndex = 2603;
             RecipeFractionator.GridIndex = 2603;
             ItemFractionator.BuildIndex = 408;//创世将BuildIndex改为0，即“该版本尚未加入”，这里正好加回来
+            ItemFractionator.Preload(ItemFractionator.index);
             LDBTool.SetBuildBar(ItemFractionator.BuildIndex / 100, ItemFractionator.BuildIndex % 100,
                 ItemFractionator.ID);
         }

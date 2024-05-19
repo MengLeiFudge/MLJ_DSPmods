@@ -27,7 +27,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.3.1";
+        public const string VERSION = "1.3.3";
 
         #region Logger
 
@@ -88,7 +88,7 @@ namespace FractionateEverything {
             using (ProtoRegistry.StartModLoad(GUID)) {
                 logger = Logger;
 
-                Translation.RegisterTranslations();
+                Translation.AddTranslations();
 
                 LoadConfig();
 
@@ -118,8 +118,8 @@ namespace FractionateEverything {
                 harmony.Patch(
                     AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
                     null,
-                    new(typeof(AddFractionateRecipes),
-                        nameof(AddFractionateRecipes.AddFracRecipesAfterLDBToolPostAddData)) {
+                    new(typeof(FractionateRecipes),
+                        nameof(FractionateRecipes.AddFracRecipesAfterLDBToolPostAddData)) {
                         after = [LDBToolPlugin.MODGUID]
                     }
                 );
@@ -132,21 +132,21 @@ namespace FractionateEverything {
             DisableMessageBoxEntry = Config.Bind("config", "DisableMessageBox", false,
                 new ConfigDescription(
                     "Don't show message when FractionateEverything is loaded.\n"
-                    + "是否禁用首次加载时的提示信息。",
+                    + "禁用游戏加载完成后显示的万物分馏提示信息。",
                     new AcceptableBoolValue(false), null));
 
             IconVersionEntry = Config.Bind("config", "IconVersion", 3,
                 new ConfigDescription(
-                    "Which version of the fractionation icon to use.\n"
-                    + "1 for the original deuterium fractionation style, 2 for the straight line segmentation style, 3 for the circular segmentation style (recommended).\n"
-                    + "使用哪个版本的分馏图标。\n"
-                    + "1表示原版重氢分馏样式，2表示直线分割样式，3表示圆弧分割样式（推荐）。",
+                    "Which style of the fractionate recipe icon to use.\n"
+                    + "1 for original deuterium fractionate style, 2 for slanting line segmentation style, 3 for circular segmentation style.\n"
+                    + "使用哪个样式的分馏配方图标。\n"
+                    + "1表示原版重氢分馏样式，2表示斜线分割样式，3表示圆弧分割样式。",
                     new AcceptableIntValue(3, 1, 3), null));
 
             EnableDestroyEntry = Config.Bind("config", "EnableDestroy", true,
                 new ConfigDescription(
-                    "Whether or not to enable the probability of damage in a fractionated recipe.\n"
-                    + "Fractionation recipes with a probability of destruction (usually matrix) fractionate with a probability of destruction of the feedstock when enabled (recommended).\n"
+                    "Whether to enable the probability of destruction in fractionate recipes.\n"
+                    + "When enabled, Fractionation recipes with a probability of destruction (usually matrix) fractionate with a probability of destruction of the feedstock (recommended).\n"
                     + "是否启用分馏配方中的损毁概率。\n"
                     + "启用情况下，有损毁概率的分馏配方（通常为矩阵）分馏时原料有概率损毁（推荐）。",
                     new AcceptableBoolValue(true), null));
@@ -199,9 +199,9 @@ namespace FractionateEverything {
             //添加新科技
             Tech.AddTechs();
             //调整原版分馏塔，移动部分物品、配方的位置
-            FractionatorBuilding.OriginFractionatorAdaptation();
+            FractionatorBuildings.OriginFractionatorAdaptation();
             //创建新的分馏塔
-            FractionatorBuilding.CreateAndPreAddNewFractionators();
+            FractionatorBuildings.CreateAndPreAddNewFractionators();
         }
 
         public void PostAddData() {
@@ -222,7 +222,7 @@ namespace FractionateEverything {
                 proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
                 proto.Preload2();
             }
-            FractionatorBuilding.SetUnlockInfo();
+            FractionatorBuildings.SetUnlockInfo();
         }
 
         public static void PreloadAndInitAll() {

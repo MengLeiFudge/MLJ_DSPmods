@@ -1,3 +1,39 @@
+- v1.3.3
+    + 载入存档时判断科技解锁状态， 并解锁未解锁的配方。
+      这有助于解决为现有存档添加万物分馏时，导致部分分馏建筑、分馏配方未能正确解锁的问题。
+    + 修复了新增的分馏塔在传送带上流动时，图标未能正确显示的问题。
+    + 优化了使用分馏塔时的统计信息。
+        + 点数聚集分馏塔不再添加生产、消耗信息。
+        + 增产分馏塔仅添加增加物品的生产信息。
+    + 调整部分翻译。
+    + 调整了README.md的内容，添加了对应的图片。
+    + 使用新的mod介绍图标。
+    + Determine technology unlock status when loading an archive and unlock unlocked recipes.
+      This helps to solve the problem of adding Fractionate Everything to an existing archive, which causes some
+      fractionators and fractionate recipes to not unlock correctly.
+    + Fixed an issue where the icon for the new fractionator was not displayed correctly when it was flowing on the
+      conveyor belt.
+    + Optimized statistics when using fractionators.
+        + Points Aggregate Fractionator no longer adds production and consumption information.
+        + Increase Production Fractionator only adds production information for increasing items.
+    + Adjusted some translations.
+    + Adjusted the content of README.md and added corresponding images.
+    + Use new mod introduction icon.
+
+- v1.3.2
+    + 修复了氢分馏重氢会报错的问题。
+    + 修复了切换查看分馏塔时，可能会报错的问题。
+    + 修复了分馏塔详情界面中，分馏塔名称没有完全显示的问题。
+    + 为重氢分馏配方增加概率描述。
+    + 调整了README.md的内容，使其与模组现有内容一致。
+    + 调整了加载后弹窗的按钮位置。
+    + Fixed an issue where hydrogen fractionate to deuterium would report an error.
+    + Fixed an issue where an error could be reported when switching to view fractionators.
+    + Fixed an issue where fractionator names were not fully displayed in the fractionator details screen.
+    + Added probability description for deuterium fractionation recipes.
+    + Adjusted the content of README.md to match the existing content of the module.
+    + Adjusted the button position of the popup window after loading.
+
 - v1.3.1
     + 原版增加分馏配方155个；创世之书、更多巨构、深空来袭同时启用时，增加分馏配方217个。
     + 新增首次加载的弹窗，并提供了跳转创世之书交流群、打开更新日志的功能。
@@ -23,7 +59,8 @@
             + 启用创世之书时，通用分馏塔的前置科技描述也随之修改。
         + 修复更多巨构中巨构接收器图标重置、效果丢失的问题。
         + 修复创世之书中导弹防御塔配方隐藏的问题。
-    + Added 155 fractionation recipes to the original version; 217 fractionation recipes when Genesis Book, More Mega Structure, and They Come From Void are enabled at the same time.
+    + Added 155 fractionation recipes to the original version; 217 fractionation recipes when Genesis Book, More Mega
+      Structure, and They Come From Void are enabled at the same time.
     + Added a popup window for the first load, and provided the ability to jump to the Genesis Book exchange group
       and open the update log.
     + Added probability description for Points Aggregate Fractionator and Increase Production Fractionator, and adjusted

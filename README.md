@@ -1,16 +1,39 @@
 # MLJ_DSPmods
+
 ![Github](https://img.shields.io/badge/Author-MengLei-blue)
 ![GitHub](https://img.shields.io/github/license/MengLeiFudge/MLJ_DSPmods)
 ![GitHub repo size](https://img.shields.io/github/repo-size/MengLeiFudge/MLJ_DSPmods)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/MengLeiFudge/MLJ_DSPmods)
 ![GitHub last commit](https://img.shields.io/github/last-commit/MengLeiFudge/MLJ_DSPmods)
 
-自制戴森球计划MOD。
+> 欢迎来到这里！这是由萌泪制作的戴森球计划MOD合集。
+>
+> Welcome to this place! This is a collection of Dyson Sphere Program mods made by MengLei.
 
-# 获取游戏所有物品、配方的信息（GetItemsAndReceips）
+# 反馈问题与建议 Issue or Idea Feedback
 
-游戏内物品、配方有变动时，可以用该dll将具体信息导出至指定目录。
+你可以在[thunderstore网站](https://thunderstore.io/c/dyson-sphere-program/p/MengLei/)
+下载我的MOD，推荐使用[R2](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/)安装模组。
 
-# 万物分馏（FractionateEverything）
+如果有任何bug或建议，点击[这里](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new)反馈，万分感谢。
 
-该项目新增了100+分馏配方，以提供趣味性。
+You can download my mods in [thunderstore website](https://thunderstore.io/c/dyson-sphere-program/p/MengLei/),
+recommended using [R2](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/) to install mods.
+
+If there are any bugs or suggestions, click [here](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new) to give
+feedback. I would be appreciated.
+
+# 模组列表
+
+## [Get Dsp Data 获取游戏数据](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/GetDspData)
+
+仅供MOD开发者使用，可以将游戏内物品、配方、模型、科技等信息导出至指定文件。
+
+For mod developers only, you can export in-game items, recipes, models, technology and other information to a specified
+file.
+
+## [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
+
+包含5个不同的分馏塔，以及超过200个分馏配方。尽情享受分馏的乐趣吧！
+
+Includes 5 different fractionators and over 200 fractionation recipes. Have fun with fractionation!
