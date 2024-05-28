@@ -1,3 +1,32 @@
+- v1.3.5
+    + 修复了未添加创世之书时，mod会导致无法进入游戏的问题。
+
+- v1.3.4
+    + 更改设置后，无需重启游戏，只要重新载入存档即可应用修改。
+    + 修改了原版重氢分馏配方。
+        + 制作了另外两个样式的图标。
+        + 配方描述结尾添加概率说明。
+        + 移动配方位置到分馏I。
+    + 现已适配创世之书内置的量化工具。
+        + 增加两个新的增产策略：加速10点、增产10点。
+        + 可以选择分馏配方作为合成路线了。
+        + 右键点击工厂，可以将建筑切换为增产分馏塔。
+        + 选择的物品配方存在递归时，会在“原料需求”添加额外需要的物品以避免递归计算。
+        + 分馏所需建筑的数目与传送带速率有关，计算时强制使用传送带MK3且4堆叠的速率，建筑数目仅供参考。
+    + After changing the settings, there is no need to restart the game, just reload the save to apply changes.
+    + Modified the original Deuterium Fractionation recipe.
+        + Added other two icon styles.
+        + Added probability note at end of recipe description.
+        + Moved recipe grid index to Fractionate I.
+    + Adapted the quantization tool built into Genesis Book.
+        + Added two new yield increase strategies: 10 points of acceleration and 10 points of yield increase.
+        + Can now select Fractionation recipes as synthesis routes.
+        + Right-clicking on a factory switches the building to an Increase Production Fractionator.
+        + If the selected recipe is recursive, additional items will be added to the "Raw Material Requirements" to
+          avoid recursive calculations.
+        + The number of buildings needed for Fractionation is related to the conveyor belt rate, the calculation is
+          forced to use the conveyor belt MK3 and 4 stacking rate, the number of buildings is for reference only.
+
 - v1.3.3
     + 载入存档时判断科技解锁状态， 并解锁未解锁的配方。
       这有助于解决为现有存档添加万物分馏时，导致部分分馏建筑、分馏配方未能正确解锁的问题。

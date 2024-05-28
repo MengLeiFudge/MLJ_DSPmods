@@ -15,7 +15,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
-    <LangVersion>latest</LangVersion>
+    <LangVersion>default</LangVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -26,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,13 +35,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.5.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\HarmonyX.2.5.5\lib\net45\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
@@ -78,6 +80,9 @@
     </Reference>
     <Reference Include="NebulaAPI, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DysonSphereProgram.Modding.NebulaMultiplayerModApi.2.0.0\lib\netstandard2.0\NebulaAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectGenesis">
+      <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -127,6 +132,7 @@
     <Compile Include="src\Utils\AddProtoUtils.cs" />
     <Compile Include="src\Utils\RecipeHelper.cs" />
     <Compile Include="src\Utils\ProtoID.cs" />
+    <Compile Include="src\Utils\TranslationUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -136,11 +142,8 @@
     <None Include="Assets\fracicons" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\DSP_Battle.dll" />
     <Content Include="Assets\icon.png" />
     <Content Include="Assets\manifest.json" />
-    <Content Include="Assets\万物分馏展示.jpg" />
-    <Content Include="Assets\如何从R2导入本地MOD.mp4" />
     <Content Include="CHANGELOG.md" />
     <Content Include="README.md" />
   </ItemGroup>
