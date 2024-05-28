@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.FractionateEverything;
+using static FractionateEverything.Main.FractionateRecipes;
 using Random = System.Random;
 
 namespace FractionateEverything.Main {

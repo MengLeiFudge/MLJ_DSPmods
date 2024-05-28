@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,6 +12,9 @@ namespace AfterBuildEvent {
         private const string R2_Default =
             @"C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
         private const string R2_BepInEx = $@"{R2_Default}\BepInEx";
+        private const string R2_DumpedDll = $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
+        private const string PublicizerExe = @"..\..\..\lib\BepInEx.AssemblyPublicizer.Cli.exe";
+        private const string Pdb2mdbExe = @"..\..\..\lib\pdb2mdb.exe";
         private const string DSPGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
         private const string KillDSP = "taskkill /f /im DSPGAME.exe";
         private const string RunModded = "start steam://rungameid/1366540";//可以修改游戏目录下的的效果
@@ -18,9 +22,20 @@ namespace AfterBuildEvent {
         public static void Main(string[] args) {
             using CmdProcess cmd = new();
             //强制终止游戏进程
+            Console.WriteLine("终止游戏进程...");
             cmd.Exec(KillDSP);
             //等待游戏进程关闭
             Thread.Sleep(1000);
+            //将注入preloader的Assembly-CSharp.dll的所有内容公开，生成的文件放在项目目录下
+            //注1：需要将BepInEX.cfg的DumpAssemblies设为true，才有注入preloader的Assembly-CSharp.dll
+            //注2：正常使用Publicizer的前提是存在注入preloader的Assembly-CSharp.dll
+            if (File.Exists(R2_DumpedDll)) {
+                cmd.Exec($"\"{PublicizerExe}\" \"{R2_DumpedDll}\"");//引号防止路径包含空格
+                Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开");
+            }
+            else {
+                Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
+            }
             //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
             foreach (var dirInfo in new DirectoryInfo(@"..\..\..").GetDirectories()) {
                 string csproj = $@"{dirInfo.FullName}\{dirInfo.Name}.csproj";
@@ -42,31 +57,37 @@ namespace AfterBuildEvent {
                     if (AssemblyName == null) {
                         continue;
                     }
+                    //要打包的所有文件
                     List<string> fileList = [];
                     var projectName = AssemblyName.InnerText;
-                    string modFileName = $"{projectName}.dll";
                     string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
-                    string r2ModFile = $@"{r2ModDir}\{modFileName}";
+                    string r2ModFile = $@"{r2ModDir}\{projectName}.dll";
                     string projectDir = $@"..\..\..\{projectName}";
-                    string projectModFile = $@"{projectDir}\bin\release\{modFileName}";
 #if DEBUG
-                    projectModFile = $@"..\..\..\{projectName}\bin\debug\{modFileName}";
+                    string projectModFile = $@"..\..\..\{projectName}\bin\debug\{projectName}.dll";
+#else
+                    string projectModFile = $@"{projectDir}\bin\release\{projectName}.dll";
 #endif
                     if (!Directory.Exists(r2ModDir)) {
                         Directory.CreateDirectory(r2ModDir);
                     }
                     if (File.Exists(projectModFile)) {
-                        fileList.Add(r2ModFile);
                         File.Copy(projectModFile, r2ModFile, true);
+                        //用dll生成mdb文件，用于调试
+                        cmd.Exec($"\"{Pdb2mdbExe}\" \"{r2ModFile}\"");//引号防止路径包含空格
+                        Console.WriteLine($"已复制{projectName}.dll到BepInEx中，并生成mdb调试文件");
+                        //添加dll到打包列表
+                        fileList.Add(r2ModFile);
                     }
                     if (projectName == "FractionateEverything") {
                         //万物分馏还需要将图标文件拷贝至项目目录、r2Mod目录
                         string fracicons = @"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\fracicons";
                         if (File.Exists(fracicons)) {
-                            fileList.Add(fracicons);
                             File.Copy(fracicons, @"..\..\..\FractionateEverything\Assets\fracicons", true);
                             File.Copy(fracicons, $@"{R2_BepInEx}\plugins\MengLei-FractionateEverything\fracicons",
                                 true);
+                            //添加资源文件到打包列表
+                            fileList.Add(fracicons);
                         }
                     }
                     //打包ZIP

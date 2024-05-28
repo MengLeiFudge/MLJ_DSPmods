@@ -10,12 +10,9 @@ using FractionateEverything.Utils;
 using HarmonyLib;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using UnityEngine;
 using xiaoye97;
 using static FractionateEverything.Utils.ProtoID;
 
@@ -27,7 +24,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.3.3";
+        public const string VERSION = "1.3.5";
 
         #region Logger
 
@@ -59,28 +56,10 @@ namespace FractionateEverything {
         /// </summary>
         public static bool enableDestroy => EnableDestroyEntry.Value;
 
-        private static readonly Regex regex = new(".+-.+-v[1-3]");
-        internal static string ModPath;
-
         public static int tab分馏1;
         public static int tab分馏2;
+        public static string ModPath;
         public static ResourceData fracicons;
-
-        /// <summary>
-        /// 所有分馏配方概率
-        /// </summary>
-        public static readonly Dictionary<int, Dictionary<int, double>> fracRecipeNumRatioDic = [];
-        /// <summary>
-        /// 所有分馏产物为自身的配方
-        /// </summary>
-        public static readonly List<int> fracSelfRecipeList = [];
-#if DEBUG
-        /// <summary>
-        /// sprite名称将被记录在该文件中。
-        /// </summary>
-        public const string SPRITE_CSV_PATH =
-            @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata\fracIconPath.csv";
-#endif
 
         #endregion
 
@@ -118,9 +97,17 @@ namespace FractionateEverything {
                 harmony.Patch(
                     AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
                     null,
-                    new(typeof(FractionateRecipes),
-                        nameof(FractionateRecipes.AddFracRecipesAfterLDBToolPostAddData)) {
+                    new(typeof(FractionateRecipes), nameof(FractionateRecipes.AddFracRecipesAfterLDBToolPostAddData)) {
                         after = [LDBToolPlugin.MODGUID]
+                    }
+                );
+                //在载入语言时、CommonAPIPlugin添加翻译后，添加额外的所有翻译
+                harmony.Patch(
+                    AccessTools.Method(typeof(Localization), "LoadLanguage"),
+                    null,
+                    new(typeof(TranslationUtils),
+                        nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
+                        after = [CommonAPIPlugin.GUID]
                     }
                 );
             }
@@ -165,34 +152,15 @@ namespace FractionateEverything {
                            + $" iconVersion:{iconVersion}"
                            + $" enableDestroy:{enableDestroy}");
             configFile.Save();
-            //替换图标样式与分馏，不生效，似乎不能动态修改
-            // foreach (var r in LDB.recipes.dataArray) {
-            //     if (r.Type != ERecipeType.Fractionate) {
-            //         continue;
-            //     }
-            //     if (regex.IsMatch(r.IconPath)) {
-            //         string newIconPath = r.IconPath.Substring(0, r.IconPath.Length - 1) + iconVersion;
-            //         Sprite sprite = Resources.Load<Sprite>(r.IconPath);
-            //         if (sprite != null) {
-            //             r.IconPath = newIconPath;
-            //             Traverse.Create(r).Field("_iconSprite").SetValue(sprite);
-            //         }
-            //         var inputItem = LDB.items.Select(r.Items[0]);
-            //         var outputItem = LDB.items.Select(r.Results[0]);
-            //         if (!fracRecipeNumRatioDic.TryGetValue(r.Items[0], out var dic)) {
-            //             dic = new() { { 1, 0.01 } };
-            //         }
-            //         string description =
-            //             $"{"从".Translate()}{inputItem.name}{"中分馏出".Translate()}{outputItem.name}{"。".Translate()}";
-            //         foreach (var p in dic.Where(p => p.Key > 0)) {
-            //             description += $"\n{p.Value:0.###%}{"分馏出".Translate()}{p.Key}{"个产物".Translate()}";
-            //         }
-            //         if (dic.TryGetValue(-1, out double destroyRatio)) {
-            //             description += $"\n{"损毁分馏警告1".Translate()}{destroyRatio:0.###%}{"损毁分馏警告2".Translate()}";
-            //         }
-            //         r.description = description;
-            //     }
-            // }
+            //替换图标样式与分馏，需要重新载入存档
+            TranslationUtils.LoadLanguagePostfixAfterCommonApi();
+            foreach (var r in LDB.recipes.dataArray) {
+                if (r.Type != ERecipeType.Fractionate) {
+                    continue;
+                }
+                r.ModifyIconAndDesc();
+                r.Preload(r.index);
+            }
         }
 
         public void PreAddData() {
@@ -205,11 +173,6 @@ namespace FractionateEverything {
         }
 
         public void PostAddData() {
-#if DEBUG
-            if (File.Exists(SPRITE_CSV_PATH)) {
-                File.Delete(SPRITE_CSV_PATH);
-            }
-#endif
             LDB.models.OnAfterDeserialize();
             ModelProto.InitMaxModelIndex();
             ModelProto.InitModelIndices();

@@ -66,6 +66,8 @@ namespace FractionateEverything.Main {
             tech3804.Name = "T分馏塔产物集装物流";
             tech3804.Level = 1;
             tech3804.PreTechsImplicit = [GenesisBook.Enable ? TGB集装物流系统 : T集装物流系统_GB物品仓储];
+            tech3804.Preload();
+            tech3804.Preload2();
             var tech3805 = ProtoRegistry.RegisterTech(TFE分馏塔产物集装物流 + 1,
                 "T分馏塔产物集装物流2", "分馏塔产物集装物流描述2", "分馏塔产物集装物流结果2",
                 LDB.techs.Select(T运输站集装物流 + 1).IconPath, [TFE分馏塔产物集装物流],
@@ -74,6 +76,8 @@ namespace FractionateEverything.Main {
             tech3805.ID = TFE分馏塔产物集装物流 + 1;
             tech3805.Name = "T分馏塔产物集装物流";
             tech3805.Level = 2;
+            tech3805.Preload();
+            tech3805.Preload2();
             var tech3806 = ProtoRegistry.RegisterTech(TFE分馏塔产物集装物流 + 2,
                 "T分馏塔产物集装物流3", "分馏塔产物集装物流描述2", "分馏塔产物集装物流结果2",
                 LDB.techs.Select(T运输站集装物流 + 2).IconPath, [TFE分馏塔产物集装物流 + 1],
@@ -83,6 +87,8 @@ namespace FractionateEverything.Main {
             tech3806.Name = "T分馏塔产物集装物流";
             tech3806.Level = 3;
             tech3806.PreTechsMax = true;
+            tech3806.Preload();
+            tech3806.Preload2();
         }
 
         [HarmonyPrefix]

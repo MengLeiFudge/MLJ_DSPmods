@@ -22,10 +22,12 @@ namespace FractionateEverything.Utils {
             AddRecipe([recipe]);
         }
 
-        public static void AddRecipe(List<Proto> recipeList) {
+        public static void AddRecipe(List<RecipeProto> recipeList) {
+            List<Proto> list = [];
+            list.AddRange(recipeList);
             typeof(LDBTool).GetMethod("AddProtosToSet", AccessTools.all)
                 ?.MakeGenericMethod(typeof(RecipeProto))
-                .Invoke(null, [LDB.recipes, recipeList]);
+                .Invoke(null, [LDB.recipes, list]);
         }
 
         public static void AddModel(ModelProto model) {
