@@ -4,9 +4,11 @@ using FractionateEverything.Compatibility;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UnityEngine;
 using xiaoye97;
 using static FractionateEverything.Utils.ProtoID;
+using static FractionateEverything.Main.FractionatorLogic;
 
 namespace FractionateEverything.Main {
     struct Unlock {
@@ -19,6 +21,15 @@ namespace FractionateEverything.Main {
     /// 添加新的分馏塔（物品、模型、配方），适配显示位置。
     /// </summary>
     public static class FractionatorBuildings {
+        private static RecipeProto RecipeFractionator;
+        private static ModelProto ModelFractionator;
+        private static ItemProto ItemFractionator;
+        private static readonly List<Unlock> unlockList = [];
+        /// <summary>
+        /// 仅用于获取基础缓存大小。
+        /// </summary>
+        public static PrefabDesc FractionatorPrefabDesc => ModelFractionator.prefabDesc;
+
         /// <summary>
         /// 修改原版分馏塔相关内容，以适配万物分馏。
         /// </summary>
@@ -65,10 +76,8 @@ namespace FractionateEverything.Main {
             ItemFractionator.Description = "I通用分馏塔";
             ItemFractionator.GridIndex = 2603;
             RecipeFractionator.GridIndex = 2603;
-            ItemFractionator.BuildIndex = 408;//创世将BuildIndex改为0，即“该版本尚未加入”，这里正好加回来
+            ItemFractionator.BuildIndex = 0;//使用两行快捷建造栏，不需要绑定到原有的BuildMenu上面了
             ItemFractionator.Preload(ItemFractionator.index);
-            LDBTool.SetBuildBar(ItemFractionator.BuildIndex / 100, ItemFractionator.BuildIndex % 100,
-                ItemFractionator.ID);
         }
 
         public static void CreateAndPreAddNewFractionators() {
@@ -97,12 +106,12 @@ namespace FractionateEverything.Main {
                 "精准分馏塔", RFE精准分馏塔, IFE精准分馏塔, MFE精准分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃] : [I铁块, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [2, 4, 2] : [4, 2, 2, 1],
-                2601, GenesisBook.Enable ? TGB基础机械组件 : T电磁学, 406, new(1.0f, 0.7019f, 0.4f), 0.4);
+                2601, GenesisBook.Enable ? TGB基础机械组件 : T电磁学, 0, new(1.0f, 0.7019f, 0.4f), 0.4f);
             var f2 = CreateAndPreAddNewFractionator(
                 "建筑极速分馏塔", RFE建筑极速分馏塔, IFE建筑极速分馏塔, MFE建筑极速分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃] : [I铁块, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [2, 4, 2] : [4, 2, 2, 1],
-                2602, T改良物流系统, 407, new(0.4f, 1.0f, 0.949f), 1.0);
+                2602, T改良物流系统, 0, new(0.4f, 1.0f, 0.949f), 1.0f);
             var f3 = (
                 RecipeFractionator,
                 ModelFractionator,
@@ -113,14 +122,14 @@ namespace FractionateEverything.Main {
                     ? [IGB尖端机械组件, IGB钨合金, IGB钨强化玻璃, IGB量子计算主机]
                     : [I钢材, I石墨烯, I钛化玻璃, I处理器],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
-                2604, TFE增产点数聚集, 409, new(0.2509f, 0.8392f, 1.0f), 2.0);
+                2604, TFE增产点数聚集, 0, new(0.2509f, 0.8392f, 1.0f), 2.0f);
             var f5 = CreateAndPreAddNewFractionator(
                 "增产分馏塔", RFE增产分馏塔, IFE增产分馏塔, MFE增产分馏塔,
                 GenesisBook.Enable
                     ? [IGB尖端机械组件, IGB三元精金, IGB钨强化玻璃, IGB超越X1型光学主机, I物质重组器]
                     : [I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器],
                 GenesisBook.Enable ? [10, 20, 8, 1, 30] : [16, 8, 4, 1, 30],
-                2605, TFE增产分馏, 410, new(0.6235f, 0.6941f, 0.8f), 4.0);
+                2605, TFE增产分馏, 0, new(0.6235f, 0.6941f, 0.8f), 4.0f);
 
             //设定升降级关系
             f1.Item3.Grade = 1;
@@ -144,11 +153,6 @@ namespace FractionateEverything.Main {
             }
         }
 
-        private static RecipeProto RecipeFractionator;
-        private static ModelProto ModelFractionator;
-        private static ItemProto ItemFractionator;
-        private static readonly List<Unlock> unlockList = [];
-
         /// <summary>
         /// 添加一个分馏塔，以及制作它的配方。
         /// </summary>
@@ -160,14 +164,14 @@ namespace FractionateEverything.Main {
         /// <param name="itemCounts">制作分馏塔需要的材料个数</param>
         /// <param name="gridIndex">分馏塔在背包显示的位置（配方位置）、物流塔选择物品位置（物品位置）</param>
         /// <param name="preTechID">建筑和配方的前置科技</param>
-        /// <param name="buildIndex">在下方快捷制作栏的哪个位置</param>
+        /// <param name="buildIndex">在下方快捷制作栏的哪个位置，注意，由于建筑过多所以不使用原有位置，改为类似巨构双行样式，所以这里固定传0</param>
         /// <param name="color">分馏塔颜色，只更改主体材质颜色，所以只需要一个颜色参数</param>
         /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
             string name, int recipeID, int itemID, int modelID,
             int[] items, int[] itemCounts,
-            int gridIndex, int preTechID, int buildIndex, Color color, double energyRatio = 1.0) {
+            int gridIndex, int preTechID, int buildIndex, Color color, float energyRatio = 1.0f) {
             ItemProto oriItem = ItemFractionator;
             ModelProto oriModel = ModelFractionator;
             RecipeProto oriRecipe = RecipeFractionator;
@@ -255,7 +259,8 @@ namespace FractionateEverything.Main {
             LDBTool.PreAddProto(item);
 
             //设置快捷制作栏位置
-            LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
+            //使用两行快捷建造栏，不需要绑定到原有的BuildMenu上面了
+            //LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
 
             //添加科技解锁相关信息。可以避免万物分馏PreAddAction时，LDB中找不到创世科技的问题
             unlockList.Add(new() { itemID = itemID, recipeID = recipeID, preTechID = preTechID });
@@ -263,15 +268,45 @@ namespace FractionateEverything.Main {
             return (recipe, model, item);
         }
 
+        /// <summary>
+        /// 关联物品、配方、前置科技
+        /// </summary>
         public static void SetUnlockInfo() {
             foreach (var unlock in unlockList) {
                 var item = LDB.items.Select(unlock.itemID);
                 var recipe = LDB.recipes.Select(unlock.recipeID);
                 var preTech = LDB.techs.Select(unlock.preTechID);
+                preTech.Preload();
+                preTech.PreTechsImplicit = preTech.PreTechsImplicit.Except(preTech.PreTechs).ToArray();
                 preTech.UnlockRecipes = [..preTech.UnlockRecipes, unlock.recipeID];
+                preTech.UnlockRecipes = preTech.UnlockRecipes.Distinct().ToArray();
+                preTech.Preload2();
                 item.Preload(item.index);
                 recipe.Preload(recipe.index);
             }
+        }
+
+        /// <summary>
+        /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
+        /// </summary>
+        public static void SetFractionatorCacheSize() {
+            foreach (var unlock in unlockList) {
+                var prefabDesc = LDB.items.Select(unlock.itemID).prefabDesc;
+                prefabDesc.fracFluidInputMax = FracFluidInputMax;
+                prefabDesc.fracProductOutputMax = FracProductOutputMax;
+                prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
+            }
+        }
+
+        /// <summary>
+        /// 更改已放置的分馏塔的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(FractionatorComponent), "Import")]
+        public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
+            __instance.fluidInputMax = FracFluidInputMax;
+            __instance.productOutputMax = FracProductOutputMax;
+            __instance.fluidOutputMax = FracFluidOutputMax;
         }
     }
 }

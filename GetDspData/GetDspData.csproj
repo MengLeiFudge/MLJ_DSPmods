@@ -112,6 +112,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\ProtoID.cs" />
+    <Compile Include="src\Utils.cs" />
+    <Content Include="gamedata\calc json\FractionateEverything.json" />
+    <Content Include="gamedata\calc json\GenesisBook.json" />
+    <Content Include="gamedata\calc json\GenesisBook_FractionateEverything.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_FractionateEverything.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_GenesisBook.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_GenesisBook_FractionateEverything.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid_FractionateEverything.json" />
+    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid_GenesisBook.json" />
+    <Content Include="gamedata\calc json\Vanilla.json" />
     <Content Include="gamedata\DSP_ProtoID.txt" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\GetDspData.cs" />

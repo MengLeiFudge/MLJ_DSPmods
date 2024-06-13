@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using static FractionateEverything.FractionateEverything;
 
 namespace FractionateEverything.Main {
-    public static class OptionWindow {
+    public static class UIOptionWindowPatcher {
         private const string details = "UI Root/Overlay Canvas/Top Windows/Option Window/details";
         private static bool _initFinished;
         private static UIToggle DisableMessageBoxToggle;

@@ -48,14 +48,12 @@ namespace FractionateEverything.Compatibility {
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIEventSystem), "RefreshESButton")]
-        public static bool RefreshESButtonPrePatch() {
+        public static bool UIEventSystem_RefreshESButton_Prefix() {
             if (EventSystem.recorder != null && EventSystem.recorder.protoId > 0 && GameMain.instance != null) {
                 //UIEventSystem.ESButtonImage.sprite = Resources.Load<Sprite>("Assets/DSPBattle/alienmatrix");
                 UIEventSystem.ESButtonImage.sprite = alienmatrix;
                 UIEventSystem.ESButtonHighlighting = false;
-                if (EventSystem.protos.ContainsKey(EventSystem.recorder
-                        .protoId))// 至少有一个非结束事件链的decision的所有request被满足时，highlight
-                {
+                if (EventSystem.protos.ContainsKey(EventSystem.recorder.protoId)) {
                     EventProto proto = EventSystem.protos[EventSystem.recorder.protoId];
                     int[][] decisionReqNeed = proto.decisionRequestNeed;
                     for (int i = 0; i < proto.decisionLen; i++) {
@@ -80,8 +78,7 @@ namespace FractionateEverything.Compatibility {
                                 continue;
                             }
                             for (int j = 0; j < decisionResults.Length; j++) {
-                                if (decisionResults[j] == -1)// 结束事件链一般都是无需前置条件的，所以不参与事件按钮是否高亮的决定
-                                {
+                                if (decisionResults[j] == -1) {
                                     allSatisfied = false;
                                     break;
                                 }
