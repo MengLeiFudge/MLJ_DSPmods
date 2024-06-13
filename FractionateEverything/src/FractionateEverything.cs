@@ -24,7 +24,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.3.5";
+        public const string VERSION = "1.3.7";
 
         #region Logger
 
@@ -60,6 +60,8 @@ namespace FractionateEverything {
         public static int tab分馏2;
         public static string ModPath;
         public static ResourceData fracicons;
+        public static readonly Harmony harmony = new(GUID);
+        private static bool _finished;
 
         #endregion
 
@@ -84,7 +86,6 @@ namespace FractionateEverything {
                 LDBTool.PreAddDataAction += PreAddData;
                 LDBTool.PostAddDataAction += PostAddData;
 
-                Harmony harmony = new(GUID);
                 foreach (Type type in executingAssembly.GetTypes()) {
                     //FractionateEverything.Compatibility内的类由自己patch，不在这里处理
                     if (type.Namespace == null
@@ -93,11 +94,11 @@ namespace FractionateEverything {
                     }
                     harmony.PatchAll(type);
                 }
-                //在所有物品、配方添加结束后（即LDBTool已执行PostAddData），添加分馏配方
+                //在LDBTool已执行完毕所有PostAddData、EditData后，执行最终修改操作
                 harmony.Patch(
                     AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
                     null,
-                    new(typeof(FractionateRecipes), nameof(FractionateRecipes.AddFracRecipesAfterLDBToolPostAddData)) {
+                    new(typeof(FractionateEverything), nameof(FinalAction)) {
                         after = [LDBToolPlugin.MODGUID]
                     }
                 );
@@ -105,8 +106,7 @@ namespace FractionateEverything {
                 harmony.Patch(
                     AccessTools.Method(typeof(Localization), "LoadLanguage"),
                     null,
-                    new(typeof(TranslationUtils),
-                        nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
+                    new(typeof(TranslationUtils), nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
                         after = [CommonAPIPlugin.GUID]
                     }
                 );
@@ -186,6 +186,20 @@ namespace FractionateEverything {
                 proto.Preload2();
             }
             FractionatorBuildings.SetUnlockInfo();
+        }
+
+        /// <summary>
+        /// 在所有内容添加完毕后，再执行的代码。
+        /// </summary>
+        public static void FinalAction() {
+            if (_finished) return;
+            PreloadAndInitAll();
+            //↓↓↓这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↓↓↓
+            FractionatorLogic.Init();
+            FractionatorBuildings.SetFractionatorCacheSize();
+            //↑↑↑这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↑↑↑
+            FractionateRecipes.AddFracRecipes();
+            UIBuildMenuPatcher.Init();
         }
 
         public static void PreloadAndInitAll() {

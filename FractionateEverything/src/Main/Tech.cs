@@ -93,7 +93,7 @@ namespace FractionateEverything.Main {
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(TechProto), "UnlockFunctionText")]
-        public static bool UnlockFunctionTextPrePatch(ref TechProto __instance, ref string __result) {
+        public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
             if (__instance.ID is < TFE分馏塔产物集装物流 or > TFE分馏塔产物集装物流 + 2) {
                 return true;
             }

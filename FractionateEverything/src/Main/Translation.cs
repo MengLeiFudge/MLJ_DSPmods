@@ -42,6 +42,8 @@ namespace FractionateEverything.Main {
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
 
+            Register("切换快捷键", "CapsLock\n↑ Hotkey Row ↓", "CapsLock\n↑快捷键切换↓");
+
             Register("分馏页面1", "Fractionate I", "分馏 I");
             Register("分馏页面2", "Fractionate II", "分馏 II");
             Register("流动", "Flow");

@@ -25,7 +25,7 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 所有分馏配方概率
         /// </summary>
-        public static readonly Dictionary<int, Dictionary<int, double>> fracRecipeNumRatioDic = [];
+        public static readonly Dictionary<int, Dictionary<int, float>> fracRecipeNumRatioDic = [];
         /// <summary>
         /// 所有分馏产物为自身的配方
         /// </summary>
@@ -40,42 +40,19 @@ namespace FractionateEverything.Main {
 
         private static RecipeHelper helper;
         private static readonly List<RecipeProto> recipeList = [];
-        private static bool _finished;
 
-        public static void AddFracRecipesAfterLDBToolPostAddData() {
-            if (_finished) return;
-
+        public static void AddFracRecipes() {
 #if DEBUG
             if (File.Exists(SPRITE_CSV_PATH)) {
                 File.Delete(SPRITE_CSV_PATH);
             }
 #endif
 
-            PreloadAndInitAll();
-
-            //获取一二三级传送带速度，并生成精准分馏塔系数
-            beltSpeed = [
-                LDB.items.Select(I传送带).prefabDesc.beltSpeed * 6,
-                LDB.items.Select(I高速传送带).prefabDesc.beltSpeed * 6,
-                LDB.items.Select(I极速传送带).prefabDesc.beltSpeed * 6,
-            ];
-            k1 = (2.0 - 3.0) / (beltSpeed[1] - beltSpeed[0]);
-            b1 = 3.0 - k1 * beltSpeed[0];
-            k2 = (1.0 - 2.0) / (beltSpeed[2] - beltSpeed[1]);
-            b2 = 2.0 - k2 * beltSpeed[1];
-
-            //获取传送带的最大速度，以此决定循环的最大次数
-            int maxSpeed = (from item in LDB.items.dataArray
-                where item.Type == EItemType.Logistics && item.prefabDesc.isBelt
-                select item.prefabDesc.beltSpeed * 6).Prepend(0).Max();
-            MaxInputTimes = (int)Math.Ceiling(maxSpeed / 60.0);
-            MaxOutputTimes = (int)Math.Ceiling(maxSpeed / 15.0);
-
             LogInfo("Begin to add fractionate recipes...");
 
             helper = new(tab分馏1);
             List<RecipeProto> list;
-            if (!MoreMegaStructure.Enable) {
+            if (!Compatibility.MoreMegaStructure.Enable) {
                 AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, I轨道采集器]);
             }
             else {
@@ -102,33 +79,33 @@ namespace FractionateEverything.Main {
                 var r = LDB.recipes.Select(R重氢分馏_GB氦闪约束器);
                 r.Modify(tab分馏1, 507);
                 r.ModifyIconAndDesc();
-                fracRecipeNumRatioDic.Add(I氢, new() { { 1, 0.01 } });
+                fracRecipeNumRatioDic.Add(I氢, defaultFracNumRatioDic);
                 //矿物自增值1
-                AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 101);
-                AddFracRecipe(I铜矿, I铜矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I铜矿, I铜矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 102);
-                AddFracRecipe(I硅石, I硅石, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I硅石, I硅石, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 103, T冶炼提纯);
-                AddFracRecipe(I钛石, I钛石, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I钛石, I钛石, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 104, T钛矿冶炼);
-                AddFracRecipe(I石矿, I石矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I石矿, I石矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 105);
-                AddFracRecipe(I煤矿, I煤矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I煤矿, I煤矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 106);
-                AddFracRecipe(I可燃冰, I可燃冰, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I可燃冰, I可燃冰, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 208, T应用型超导体);
-                AddFracRecipe(I金伯利矿石, I金伯利矿石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I金伯利矿石, I金伯利矿石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 306, T晶体冶炼);
-                AddFracRecipe(I分形硅石, I分形硅石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I分形硅石, I分形硅石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 303, T粒子可控);
-                AddFracRecipe(I光栅石, I光栅石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I光栅石, I光栅石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 605, T卡西米尔晶体);
-                AddFracRecipe(I刺笋结晶, I刺笋结晶, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I刺笋结晶, I刺笋结晶, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 508, T高强度材料);
-                AddFracRecipe(I单极磁石, I单极磁石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I单极磁石, I单极磁石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 606, T粒子磁力阱);
-                AddFracRecipe(I有机晶体, I有机晶体, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I有机晶体, I有机晶体, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 309, T高分子化工);
                 //物品左侧部分非循环链
                 AddFracChain([I铁块, I钢材, I钛合金], false);
@@ -156,9 +133,9 @@ namespace FractionateEverything.Main {
                 list[1].Modify(tab分馏1, 608);
                 AddFracChain([I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素])
                     .Modify(tab分馏1, 806);
-                AddFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], true, new() { { 1, 0.01 }, { -1, 0.03 } });
+                AddFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], true, new() { { 1, 0.01f }, { -1, 0.03f } });
                 //物品右侧区域
-                AddFracChain([I增产剂MkI, I增产剂MkII, I增产剂MkIII_GB增产剂], true, new() { { 2, 0.01 } });
+                AddFracChain([I增产剂MkI, I增产剂MkII, I增产剂MkIII_GB增产剂], true, new() { { 2, 0.01f } });
                 AddFracChain([I燃烧单元, I爆破单元, I晶石爆破单元]);
                 AddFracChain([I动力引擎, I推进器, I加力推进器]);
                 AddFracChain([I配送运输机, I物流运输机, I星际物流运输船]);
@@ -183,7 +160,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I采矿机, I大型采矿机]);
                 AddFracChain([I抽水站, I原油萃取站, I原油精炼厂]);
                 AddFracChain([I化工厂, I量子化工厂_GB先进化学反应釜]);
-                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01 } });
+                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01f } });
                 //建筑IV
                 AddFracChain([I电弧熔炉, I位面熔炉, I负熵熔炉]);
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
@@ -203,43 +180,43 @@ namespace FractionateEverything.Main {
                     "左键点击：更换生产设备\n右键点击：常规设备或分馏塔");
                 //物品页面
                 //矿物自增值
-                AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 101);
-                AddFracRecipe(I铜矿, I铜矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I铜矿, I铜矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 102);
-                AddFracRecipe(IGB铝矿, IGB铝矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB铝矿, IGB铝矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 103);
-                AddFracRecipe(I硅石, I硅石, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I硅石, I硅石, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 104, T冶炼提纯);
-                AddFracRecipe(I钛石, I钛石, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I钛石, I钛石, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 105, T钛矿冶炼);
-                AddFracRecipe(IGB钨矿, IGB钨矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB钨矿, IGB钨矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 106, T钛矿冶炼);
-                AddFracRecipe(I煤矿, I煤矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I煤矿, I煤矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 107, T冶炼提纯);
-                AddFracRecipe(I石矿, I石矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(I石矿, I石矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 108);
-                AddFracRecipe(IGB硫矿, IGB硫矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB硫矿, IGB硫矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 109, TGB矿物处理);
-                AddFracRecipe(IGB放射性矿物, IGB放射性矿物, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB放射性矿物, IGB放射性矿物, false, new() { { 2, 0.04f } })
                     .Modify(tab精炼, 302, TGB放射性矿物提炼);
-                AddFracRecipe(IGB铀矿, IGB铀矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB铀矿, IGB铀矿, false, new() { { 2, 0.04f } })
                     .Modify(tab精炼, 305, TGB放射性矿物提炼);
-                AddFracRecipe(IGB钚矿, IGB钚矿, false, new() { { 2, 0.04 } })
+                AddFracRecipe(IGB钚矿, IGB钚矿, false, new() { { 2, 0.04f } })
                     .Modify(tab精炼, 306, TGB放射性矿物提炼);
-                AddFracRecipe(I金伯利矿石, I金伯利矿石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I金伯利矿石, I金伯利矿石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 504, T晶体冶炼);
-                AddFracRecipe(I分形硅石, I分形硅石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I分形硅石, I分形硅石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 505, T粒子可控);
-                AddFracRecipe(I可燃冰, I可燃冰, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I可燃冰, I可燃冰, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 506, T应用型超导体);
-                AddFracRecipe(I刺笋结晶, I刺笋结晶, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I刺笋结晶, I刺笋结晶, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 507, T高强度材料);
-                AddFracRecipe(I有机晶体, I有机晶体, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I有机晶体, I有机晶体, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 508, T高强度晶体);
-                AddFracRecipe(I光栅石, I光栅石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I光栅石, I光栅石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 510, T光子变频);
-                AddFracRecipe(I单极磁石, I单极磁石, false, new() { { 2, 0.02 } })
+                AddFracRecipe(I单极磁石, I单极磁石, false, new() { { 2, 0.02f } })
                     .Modify(tab分馏1, 511, T粒子磁力阱);
                 list = AddFracChain([I氢, I重氢]);
                 list[1].Modify(tab分馏1, 113);
@@ -272,7 +249,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I配送运输机, I物流运输机, I星际物流运输船]);
                 AddFracChain([I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素])
                     .Modify(tab防御, 217, false);
-                AddFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], true, new() { { 1, 0.01 }, { -1, 0.03 } });
+                AddFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], true, new() { { 1, 0.01f }, { -1, 0.03f } });
 
                 //建筑页面
                 AddFracChain([I电力感应塔, I无线输电塔, I卫星配电站]);
@@ -292,7 +269,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
                 AddFracChain([I矩阵研究站, I自演化研究站]);
                 AddFracChain([I电磁轨道弹射器, I射线接收站, I垂直发射井]);
-                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01 } });
+                AddFracRecipe(I微型粒子对撞机, I微型粒子对撞机, false, new() { { 2, 0.01f } });
                 AddFracChain([
                     IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施,
                     IGB工业先锋精密加工中心, IGB苍穹粒子加速器, IGB物质裂解塔
@@ -312,7 +289,7 @@ namespace FractionateEverything.Main {
                 //化工页面
                 AddFracChain([I塑料_GB聚丙烯, IGB聚苯硫醚PPS, IGB聚酰亚胺PI])
                     .Modify(tab化工, 105);
-                AddFracRecipe(I增产剂MkIII_GB增产剂, I增产剂MkIII_GB增产剂, false, new() { { 2, 0.01 } })
+                AddFracRecipe(I增产剂MkIII_GB增产剂, I增产剂MkIII_GB增产剂, false, new() { { 2, 0.01f } })
                     .Modify(tab化工, 506);
 
                 //防御页面
@@ -324,7 +301,7 @@ namespace FractionateEverything.Main {
                     .Modify(tab防御, 209);
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器])
                     .Modify(tab防御, 213);
-                AddFracRecipe(I高斯机枪塔, I高斯机枪塔, false, new() { { 2, 0.01 } })
+                AddFracRecipe(I高斯机枪塔, I高斯机枪塔, false, new() { { 2, 0.01f } })
                     .Modify(tab防御, 309);
                 AddFracChain([I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱])
                     .Modify(tab防御, 311);
@@ -334,7 +311,7 @@ namespace FractionateEverything.Main {
                     .Modify(tab防御, 509);
                 AddFracChain([I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组])
                     .Modify(tab防御, 511);
-                AddFracRecipe(I导弹防御塔, I导弹防御塔, false, new() { { 2, 0.01 } })
+                AddFracRecipe(I导弹防御塔, I导弹防御塔, false, new() { { 2, 0.01f } })
                     .Modify(tab防御, 609);
                 AddFracChain([I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组])
                     .Modify(tab防御, 611);
@@ -357,7 +334,6 @@ namespace FractionateEverything.Main {
             }
 
             LogInfo("Finish to add fractionate recipes.");
-            _finished = true;
         }
 
         /// <summary>
@@ -365,15 +341,15 @@ namespace FractionateEverything.Main {
         /// 如果cycle为true，会多添加结尾物品到起始物品的分馏配方。
         /// </summary>
         private static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain,
-            bool cycle = true, Dictionary<int, double> fracNumRatioDic = null) {
-            fracNumRatioDic ??= new() { { 1, 0.01 } };
+            bool cycle = true, Dictionary<int, float> fracNumRatioDic = null) {
+            fracNumRatioDic ??= defaultFracNumRatioDic;
             List<RecipeProto> list = [];
             for (int i = 0; i < itemChain.Count - 1; i++) {
                 list.Add(AddFracRecipe(itemChain[i], itemChain[i + 1], false, fracNumRatioDic));
             }
             if (cycle) {
                 //循环链的末尾转初级，产物数目根据链的长短而翻倍
-                Dictionary<int, double> tempDic = new();
+                Dictionary<int, float> tempDic = new();
                 foreach (var p in fracNumRatioDic) {
                     tempDic.Add(p.Key > 0 ? p.Key * itemChain.Count : p.Key, p.Value);
                 }
@@ -386,11 +362,11 @@ namespace FractionateEverything.Main {
         /// 添加一个分馏配方。
         /// </summary>
         private static RecipeProto AddFracRecipe(int inputItemID, int outputItemID,
-            bool useInputTech = false, Dictionary<int, double> fracNumRatioDic = null) {
+            bool useInputTech = false, Dictionary<int, float> fracNumRatioDic = null) {
             TechProto preTech = useInputTech
                 ? LDB.items.Select(inputItemID).preTech
                 : LDB.items.Select(outputItemID).preTech;
-            fracNumRatioDic ??= new() { { 1, 0.01 } };
+            fracNumRatioDic ??= defaultFracNumRatioDic;
             try {
                 int recipeID = helper.GetUnusedRecipeID();
                 ItemProto inputItem = LDB.items.Select(inputItemID);
@@ -410,7 +386,7 @@ namespace FractionateEverything.Main {
                     description_cn += $"\n{p.Value:0.###%}分馏出{p.Key}个产物";
                 }
                 RegisterOrEditAsync(DescriptionNoDestroy, description_en, description_cn);
-                if (fracNumRatioDic.TryGetValue(-1, out double destroyRatio)) {
+                if (fracNumRatioDic.TryGetValue(-1, out float destroyRatio)) {
                     description_en +=
                         $"\n<color=\"#FD965ECC\">WARNING: </color>This item is difficult to fractionate and has a {destroyRatio:0.###%} chance of being destroyed!";
                     description_cn += $"\n<color=\"#FD965ECC\">警告：</color>该物品难以分馏，有{destroyRatio:0.###%}概率损毁！";

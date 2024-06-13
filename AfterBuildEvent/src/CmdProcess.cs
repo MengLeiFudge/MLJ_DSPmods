@@ -21,8 +21,8 @@ namespace AfterBuildEvent {
                 //设置cmd窗口不显示
                 CreateNoWindow = true,
             };
-            process.OutputDataReceived += (s, e) => Console.WriteLine(e.Data);
-            process.ErrorDataReceived += (s, e) => Console.Error.WriteLine(e.Data);
+            process.OutputDataReceived += (_, e) => Console.WriteLine($"[cmd]{e.Data}");
+            process.ErrorDataReceived += (_, e) => Console.Error.WriteLine($"[cmd]{e.Data}");
             process.Start();
             input = process.StandardInput;
             process.BeginOutputReadLine();

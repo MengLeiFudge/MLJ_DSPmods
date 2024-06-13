@@ -13,6 +13,7 @@ using System.Reflection.Emit;
 using System.Text;
 using UnityEngine;
 using xiaoye97;
+using static FractionateEverything.Main.FractionatorLogic;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.Compatibility.CheckPlugins;
 using Utils_ERecipeType = ProjectGenesis.Utils.ERecipeType;
@@ -263,35 +264,35 @@ namespace FractionateEverything.Compatibility {
                 int inputItemID = recipe.Items[0];
                 ItemProto inputItem = LDB.items.Select(inputItemID);
                 //根据分馏配方实际情况，计算需要多少原料
-                if (!fracRecipeNumRatioDic.TryGetValue(inputItemID, out Dictionary<int, double> dic)) {
-                    dic = new() { { 1, 0.01 } };
+                if (!fracRecipeNumRatioDic.TryGetValue(inputItemID, out Dictionary<int, float> dic)) {
+                    dic = defaultFracNumRatioDic;
                 }
                 //x表示原料数目
-                double x = 1.0;
+                float x = 1.0f;
                 //y表示可以转换出来的产物数目
-                double y = 0.0;
+                float y = 0.0f;
                 //获取损毁概率
-                double destroyRate = 0.0;
-                if (FractionateEverything.enableDestroy && dic.TryGetValue(-1, out double value)) {
+                float destroyRate = 0.0f;
+                if (FractionateEverything.enableDestroy && dic.TryGetValue(-1, out float value)) {
                     destroyRate = value;
                 }
                 while (x > 1e-6) {
                     //先判定损毁
                     x *= 1 - destroyRate;
                     //再判定转换情况
-                    double tempSubX = 0;
-                    double tempSubY = 0;
+                    float tempSubX = 0;
+                    float tempSubY = 0;
                     foreach (var p in dic) {
                         if (p.Key <= 0) {
                             continue;
                         }
                         //如果有增产剂，将会进一步提升分馏成功率
-                        double subX = x * p.Value;
+                        float subX = x * p.Value;
                         if ((int)node.Options.Strategy == ProductionSpeedup) {
-                            subX *= 2;
+                            subX *= 2f;
                         }
                         else if ((int)node.Options.Strategy == ProductionSpeedup10) {
-                            subX *= 3.5;
+                            subX *= 3.5f;
                         }
                         tempSubX += subX;
                         tempSubY += p.Key * subX;

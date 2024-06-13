@@ -1,5 +1,21 @@
+- v1.3.7
+    + 修复了黑雾物品未解锁时，仍显示对应配方的问题。
+    + 修复升降级分馏塔时，产物类型没有切换的问题。
+    + 修复传送带速度较高时，由于缓存容量限制导致无法满速运行的问题。
+    + 修复分馏塔集装物流科技未显示等级的问题。
+    + 修复建筑极速分馏塔显示的速率与实际不符的问题。
+    + 将所有分馏物品的快捷选择更改为类似巨构的双行选择模式。
+    + Fixed an issue where Dark Fog items were still showing the corresponding recipe when they were not unlocked.
+    + Changed the shortcut selection for all fractionated items to a two-line selection mode similar to More Mega
+      Structure.
+
+- v1.3.6
+    + 修复了损毁分馏在关闭时仍然生效的问题。
+    + Fixed an issue where EnableDestroy was still in effect when it was turned off.
+
 - v1.3.5
     + 修复了未添加创世之书时，mod会导致无法进入游戏的问题。
+    + Fixed an issue where the mod would cause the game to be inaccessible when Genesis Book was not added.
 
 - v1.3.4
     + 更改设置后，无需重启游戏，只要重新载入存档即可应用修改。
