@@ -132,8 +132,7 @@ namespace AfterBuildEvent {
                     else if (projectName == "FractionateEverything") {
                         //fracicons
                         string[] icons = [
-                            "fractionatebaseicon", "fractionaterecipeicon1", "fractionaterecipeicon2",
-                            "fractionaterecipeicon3"
+                            "fracicons"
                         ];
                         foreach (var icon in icons) {
                             string iconPath =
