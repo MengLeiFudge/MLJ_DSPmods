@@ -128,7 +128,7 @@ namespace FractionateEverything.Main {
                 "垃圾回收分馏塔", RFE垃圾回收分馏塔, IFE垃圾回收分馏塔, MFE垃圾回收分馏塔,
                 GenesisBook.Enable ? [IGB先进机械组件, I钛合金, I钛化玻璃, I处理器] : [I钢材, I石材, I玻璃, I处理器],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
-                2603, TFE垃圾回收, new(0.4f, 1.0f, 0.349f), 0, 2.0f);
+                2603, TFE垃圾回收, new(0.4f, 1.0f, 0.5f), 0, 2.0f);
             var f4 = (
                 RecipeFractionator,
                 ModelFractionator,
@@ -193,7 +193,7 @@ namespace FractionateEverything.Main {
             ModelProto oriModel = ModelFractionator;
             RecipeProto oriRecipe = RecipeFractionator;
             PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
-            string iconPath = $"Assets/fractionatebaseicon/fractionator-{gridIndex % 10}";
+            string iconPath = $"Assets/fracicons/fractionator-{gridIndex % 10}";
 
             //添加制作分馏塔的配方
             RecipeProto recipe = new();
@@ -275,6 +275,7 @@ namespace FractionateEverything.Main {
             };
             itemIconDescs.Add(itemID, iconDesc);
             LDBTool.PreAddProto(item);
+            //最后调用StorageComponent.LoadStatic()才能使物品的堆叠上限生效
 
             //设置快捷制作栏位置
             //使用两行快捷建造栏，不需要绑定到原有的BuildMenu上面了

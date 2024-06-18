@@ -4,6 +4,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using static FractionateEverything.Utils.ProtoID;
+using static FractionateEverything.FractionateEverything;
 
 namespace FractionateEverything.Main {
     /// <summary>
@@ -28,7 +29,7 @@ namespace FractionateEverything.Main {
         private static void AddTechFractionators() {
             var tech1 = ProtoRegistry.RegisterTech(TFE精准分馏,
                 "T精准分馏", "精准分馏描述", "精准分馏结果",
-                "",//"Assets/fractionatebaseicon/tech精准分馏",//todo:制作图标
+                Tech1134IconPath,
                 GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
                 [I电磁矩阵], [20], 18000,
                 [RFE精准分馏塔],
@@ -41,7 +42,7 @@ namespace FractionateEverything.Main {
 
             var tech2 = ProtoRegistry.RegisterTech(TFE建筑极速分馏,
                 "T建筑极速分馏", "建筑极速分馏描述", "建筑极速分馏结果",
-                "",//"Assets/fractionatebaseicon/tech建筑极速分馏",//todo:制作图标
+                Tech1134IconPath,
                 [tech1.ID],
                 [I电磁矩阵], [20], 36000,
                 [RFE建筑极速分馏塔],
@@ -54,7 +55,7 @@ namespace FractionateEverything.Main {
 
             var tech3 = ProtoRegistry.RegisterTech(TFE垃圾回收,
                 "T垃圾回收", "垃圾回收描述", "垃圾回收结果",
-                "",//"Assets/fractionatebaseicon/tech垃圾回收",//todo:制作图标
+                Tech1134IconPath,
                 [tech2.ID],
                 [I电磁矩阵, I能量矩阵], [20, 30], 36000,
                 [RFE垃圾回收分馏塔],
@@ -85,7 +86,7 @@ namespace FractionateEverything.Main {
 
             var tech5 = ProtoRegistry.RegisterTech(TFE增产点数聚集,
                 "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果",
-                "Assets/fractionatebaseicon/tech增产点数聚集",
+                "Assets/fracicons/tech增产点数聚集",
                 GenesisBook.Enable ? [T增产剂MkI_GB物品增产] : [T增产剂MkIII_GB人造恒星MKI],
                 [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵], [8, 6, 4, 4], 360000,
                 [RFE点数聚集分馏塔],
@@ -98,7 +99,7 @@ namespace FractionateEverything.Main {
 
             var tech6 = ProtoRegistry.RegisterTech(TFE增产分馏,
                 "T增产分馏", "增产分馏描述", "增产分馏结果",
-                "Assets/fractionatebaseicon/tech增产分馏",
+                "Assets/fracicons/tech增产分馏",
                 GenesisBook.Enable ? [] : [tech5.ID],
                 [I黑雾矩阵], [200], 36000,
                 [RFE增产分馏塔],

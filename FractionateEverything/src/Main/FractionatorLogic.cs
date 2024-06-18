@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -45,11 +44,6 @@ namespace FractionateEverything.Main {
         public static int FracProductOutputMax = 20;
         public static int FracFluidOutputMax = 20;
         private static readonly Dictionary<int, int> itemPointDic = new();
-        static Stopwatch swtotal = new Stopwatch();
-        static Stopwatch sw1 = new Stopwatch();
-        static Stopwatch sw2 = new Stopwatch();
-        static Stopwatch sw3 = new Stopwatch();
-        static Stopwatch sw4 = new Stopwatch();
 
         #endregion
 
@@ -288,12 +282,6 @@ namespace FractionateEverything.Main {
         public static bool FractionatorComponent_InternalUpdate_Prefix(ref FractionatorComponent __instance,
             PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
             ref uint __result) {
-            //bool record = __instance.seed < 100000;
-            bool record = false;
-            if (record) {
-                swtotal.Restart();
-                sw1.Restart();
-            }
             if (power < 0.1f) {
                 __result = 0u;
                 return false;
@@ -553,10 +541,6 @@ namespace FractionateEverything.Main {
             else {
                 __instance.fractionSuccess = false;
             }
-            if (record) {
-                sw1.Stop();
-                sw2.Restart();
-            }
 
             CargoTraffic cargoTraffic = factory.cargoTraffic;
             byte stack;
@@ -666,10 +650,6 @@ namespace FractionateEverything.Main {
                     }
                 }
             }
-            if (record) {
-                sw2.Stop();
-                sw3.Restart();
-            }
 
             if (__instance.belt2 > 0) {
                 beltId = __instance.belt2;
@@ -766,10 +746,6 @@ namespace FractionateEverything.Main {
                     }
                 }
             }
-            if (record) {
-                sw3.Stop();
-                sw4.Restart();
-            }
 
             if (__instance.belt0 > 0) {
                 beltId = __instance.belt0;
@@ -839,18 +815,6 @@ namespace FractionateEverything.Main {
                                        && __instance.fluidOutputCount < __instance.fluidOutputMax;
             }
 
-            if (record) {
-                swtotal.Stop();
-                sw4.Stop();
-                if (__instance.isOutput1) {
-                    LogDebug(
-                        $"total={swtotal.ElapsedTicks:D3} process={sw1.ElapsedTicks:D3} input={sw3.ElapsedTicks:D3} output={sw2.ElapsedTicks:D3} product={sw4.ElapsedTicks:D3}");
-                }
-                else {
-                    LogDebug(
-                        $"total={swtotal.ElapsedTicks:D3} process={sw1.ElapsedTicks:D3} input={sw2.ElapsedTicks:D3} output={sw3.ElapsedTicks:D3} product={sw4.ElapsedTicks:D3}");
-                }
-            }
             if (!__instance.isWorking) {
                 __result = 0u;
                 return false;
