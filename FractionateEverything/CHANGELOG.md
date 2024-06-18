@@ -5,6 +5,7 @@
         + 修复传送带速度较高时，分馏塔无法满速运行、显示分馏速率错误的问题。
         + 修复分馏塔集装物流科技未显示等级的问题。
         + 修复建筑极速分馏塔显示的速率与实际不符的问题。
+        + 修复分馏塔堆叠上限不是30的问题。
     + 调整&优化
         + 【重要】大幅上调增产点数对增产分馏塔的影响。输入10增产点数的物品时，相比之前，产物数目大约变为2.5倍。
         + 【重要】为所有物品添加了1%损毁概率。关闭损毁概率的开关对此次改动同样有效。
@@ -17,8 +18,9 @@
             + 调整了损毁的描述方式，使其更易于理解。
             + 调整了最下方分馏制作公式的显示，使其与对应分馏配方的概率描述保持一致。
         + 修改特殊分馏塔的处理逻辑，从而大幅提高游戏性能。特殊分馏塔提升80%以上游戏性能。
+        + 优化点数聚集分馏塔的处理逻辑，运行效果与之前一致，但概率曲线更为平滑。
         + 【重要】调整所有分馏塔的耗电情况。
-            + 垃圾回收分馏塔的耗电与所有输入的原材点数有关。
+            + 垃圾回收分馏塔的耗电与输入的原材点数成正比。分馏详情窗口中左侧输入数目表示原材总点数。
             + 输入物品的增产点数不再影响点数聚集分馏塔的耗电。
             + 输入物品的增产点数对增产分馏塔的耗电影响减半。
             + 启用创世之书时，堆叠对分馏塔耗电影响减半。
@@ -41,6 +43,7 @@
           fractionation rate is displayed incorrectly.
         + Fixed the issue that the level of fractionator assembly and logistics technology is not displayed.
         + Fix an issue where the displayed rate of Building-HighSpeed Fractionator does not match the actual rate.
+        + Fix issue with fractionator stacking cap not being 30.
     + Adjustments & Optimizations
         + [IMPORTANT] Significantly upgraded the effect of proliferator points on Increase Production Fractionators.
           When entering items with 10 proliferator points, the number of products becomes approximately 2.5 times higher
@@ -62,8 +65,12 @@
               probability description of the corresponding fractionation recipe.
         + Modified the processing logic for special fractionators, resulting in a significant increase in game
           performance. Special fractionators improve game performance by more than 80%.
+        + Optimizing the processing logic for the Points Aggregate Fractionator runs as before, but with a smoother
+          probability profile.
         + [IMPORTANT] Adjusted power consumption of all fractionators.
-            + The power consumption of the Trash Recycling fractionator is related to all input raw material points.
+            + The power consumption of the Trash Recycle Fractionator is proportional to the number of raw material
+              points entered. The number of inputs on the left in the Fractionation Details window represents the total
+              number of raw material points.
             + Inputting item's Increase Production Fractionator points no longer affects the power consumption of Points
               Aggregate Fractionator.
             + The effect of inputting items' proliferator points on the power consumption of the Increase Production

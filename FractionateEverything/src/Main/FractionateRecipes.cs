@@ -477,8 +477,7 @@ namespace FractionateEverything.Main {
                 if (inputIconName != null && outputIconName != null) {
                     //由于不同原料可能分馏出同一种产物，配方名字应以原料名称命名
                     //考虑到重氢可能分离为其他物品（虽然现在没有），为了不冲突，名称改为“原料-产物-formula-版本”
-                    string iconPath =
-                        $"Assets/fractionaterecipeicon{iconVersion}/{inputIconName}-{outputIconName}-formula-v{iconVersion}";
+                    string iconPath = $"Assets/fracicons/{inputIconName}-{outputIconName}-formula-v{iconVersion}";
                     r.IconPath = Resources.Load<Sprite>(iconPath) != null ? iconPath : outputItem.IconPath;
 #if DEBUG
                     //输出分馏配方需要的图标的路径，以便于制作图标

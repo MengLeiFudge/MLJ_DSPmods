@@ -18,7 +18,7 @@ namespace FractionateEverything.Main {
                 "感谢你使用万物分馏！该MOD添加了6个分馏塔，以及超过200个的分馏配方。\n"
                 + "如果你是首次使用该模组，强烈建议你查看模组介绍页面以了解其内容与特色。\n"
                 + "你可以在设置-杂项中修改MOD配置，例如切换分馏配方的图标样式（目前有3种样式可选），或不再显示该窗口。\n"
-                + "推荐与创世之书、深空来敌、更多巨构一起使用。\n"
+                + "推荐与创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）一起使用。\n"
                 + "如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入创世之书MOD交流群反馈。\n"
                 + "尽情享受分馏的乐趣吧！".AddOrangeLabel());
             Register("FE交流群", "View on Github", "加入交流群");
