@@ -131,10 +131,18 @@ namespace AfterBuildEvent {
                     }
                     else if (projectName == "FractionateEverything") {
                         //fracicons
-                        string fracicons = @"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\fracicons";
-                        if (File.Exists(fracicons)) {
-                            File.Copy(fracicons, @"..\..\..\FractionateEverything\Assets\fracicons", true);//拷贝到项目
-                            fileList.Add(fracicons);
+                        string[] icons = [
+                            "fractionatebaseicon", "fractionaterecipeicon1", "fractionaterecipeicon2",
+                            "fractionaterecipeicon3"
+                        ];
+                        foreach (var icon in icons) {
+                            string iconPath =
+                                $@"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\{icon}";
+                            if (File.Exists(iconPath)) {
+                                //同时拷贝到项目
+                                File.Copy(iconPath, $@"..\..\..\FractionateEverything\Assets\{icon}", true);
+                                fileList.Add(iconPath);
+                            }
                         }
                     }
                     //打包

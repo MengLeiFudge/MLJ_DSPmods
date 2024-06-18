@@ -24,7 +24,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.3.7";
+        public const string VERSION = "1.4.0";
 
         #region Logger
 
@@ -59,7 +59,9 @@ namespace FractionateEverything {
         public static int tab分馏1;
         public static int tab分馏2;
         public static string ModPath;
-        public static ResourceData fracicons;
+        public static ResourceData fractionatebaseicon;
+        public static ResourceData fractionaterecipeicon;
+        private static readonly bool[] iconAdded = new bool[10];
         public static readonly Harmony harmony = new(GUID);
         private static bool _finished;
 
@@ -73,15 +75,19 @@ namespace FractionateEverything {
 
                 LoadConfig();
 
-                string iconPath = LDB.techs.Select(T重氢分馏_GB强相互作用力材料).IconPath;
+                string iconPath = LDB.techs.Select(T重氢分馏_GB强相互作用力材料_FE通用分馏).IconPath;
                 tab分馏1 = TabSystem.RegisterTab($"{GUID}:{GUID}Tab1", new("分馏页面1".Translate(), iconPath));
                 tab分馏2 = TabSystem.RegisterTab($"{GUID}:{GUID}Tab2", new("分馏页面2".Translate(), iconPath));
 
                 var executingAssembly = Assembly.GetExecutingAssembly();
                 ModPath = Path.GetDirectoryName(executingAssembly.Location);
-                fracicons = new(GUID, "fracicons", ModPath);
-                fracicons.LoadAssetBundle("fracicons");
-                ProtoRegistry.AddResource(fracicons);
+                fractionatebaseicon = new(GUID, "fractionatebaseicon", ModPath);
+                fractionatebaseicon.LoadAssetBundle("fractionatebaseicon");
+                ProtoRegistry.AddResource(fractionatebaseicon);
+                fractionaterecipeicon = new(GUID, "fractionaterecipeicon" + iconVersion, ModPath);
+                fractionaterecipeicon.LoadAssetBundle("fractionaterecipeicon" + iconVersion);
+                ProtoRegistry.AddResource(fractionaterecipeicon);
+                iconAdded[iconVersion] = true;
 
                 LDBTool.PreAddDataAction += PreAddData;
                 LDBTool.PostAddDataAction += PostAddData;
@@ -133,9 +139,9 @@ namespace FractionateEverything {
             EnableDestroyEntry = Config.Bind("config", "EnableDestroy", true,
                 new ConfigDescription(
                     "Whether to enable the probability of destruction in fractionate recipes.\n"
-                    + "When enabled, Fractionation recipes with a probability of destruction (usually matrix) fractionate with a probability of destruction of the feedstock (recommended).\n"
+                    + "When enabled, if the fractionation recipe has a probability of destruction, there is a certain probability that the input item will disappear during fractionation (recommended).\n"
                     + "是否启用分馏配方中的损毁概率。\n"
-                    + "启用情况下，有损毁概率的分馏配方（通常为矩阵）分馏时原料有概率损毁（推荐）。",
+                    + "启用情况下，如果分馏配方具有损毁概率，则分馏时会有一定概率导致原料直接消失（推荐）。",
                     new AcceptableBoolValue(true), null));
 
             //移除之前多余的设置项，然后保存
@@ -144,6 +150,9 @@ namespace FractionateEverything {
         }
 
         internal static void SetConfig(bool disableMessageBox, int iconVersion, bool enableDestroy) {
+            bool iconVersionChanged = iconVersion != IconVersionEntry.Value;
+            bool enableDestroyChanged = enableDestroy != EnableDestroyEntry.Value;
+            //修改配置文件里面的内容
             DisableMessageBoxEntry.Value = disableMessageBox;
             IconVersionEntry.Value = iconVersion;
             EnableDestroyEntry.Value = enableDestroy;
@@ -152,14 +161,22 @@ namespace FractionateEverything {
                            + $" iconVersion:{iconVersion}"
                            + $" enableDestroy:{enableDestroy}");
             configFile.Save();
-            //替换图标样式与分馏，需要重新载入存档
-            TranslationUtils.LoadLanguagePostfixAfterCommonApi();
-            foreach (var r in LDB.recipes.dataArray) {
-                if (r.Type != ERecipeType.Fractionate) {
-                    continue;
+            //如果图标样式变化，需要重新载入资源文件
+            if (iconVersionChanged && !iconAdded[iconVersion]) {
+                fractionaterecipeicon = new(GUID, "fractionaterecipeicon" + iconVersion, ModPath);
+                fractionaterecipeicon.LoadAssetBundle("fractionaterecipeicon" + iconVersion);
+                ProtoRegistry.AddResource(fractionaterecipeicon);
+                iconAdded[iconVersion] = true;
+            }
+            //如果图标样式或损毁设置变化，需要重新加载所有分馏配方，玩家需要重新载入存档
+            if (iconVersionChanged || enableDestroyChanged) {
+                foreach (var r in LDB.recipes.dataArray) {
+                    if (r.Type != ERecipeType.Fractionate) {
+                        continue;
+                    }
+                    r.ModifyIconAndDesc();
+                    r.Preload(r.index);
                 }
-                r.ModifyIconAndDesc();
-                r.Preload(r.index);
             }
         }
 
@@ -199,7 +216,8 @@ namespace FractionateEverything {
             FractionatorBuildings.SetFractionatorCacheSize();
             //↑↑↑这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↑↑↑
             FractionateRecipes.AddFracRecipes();
-            UIBuildMenuPatcher.Init();
+            UIBuildMenuPatch.Init();
+            _finished = true;
         }
 
         public static void PreloadAndInitAll() {

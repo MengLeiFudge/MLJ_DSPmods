@@ -67,11 +67,11 @@ namespace FractionateEverything.Compatibility {
             //调整黑雾物品的位置，调回胶囊位置
             List<int> idList = [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素];
             for (int i = 0; i < idList.Count; i++) {
-                LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + (i + 2) * 100 + 9;
+                LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + (i + 2) * 100 + 16;
             }
             idList = [I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊];
             for (int i = 0; i < idList.Count; i++) {
-                LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + 700 + i + 1;
+                LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + 701 + i;
             }
 
             //修改创世部分物品、配方的显示位置
@@ -79,10 +79,11 @@ namespace FractionateEverything.Compatibility {
             ModifyItemAndItsRecipeGridIndex(I动力引擎, 1, 210);
             idList = [
                 I原型机, I精准无人机, I攻击无人机, I护卫舰, I驱逐舰,
-                I高频激光塔_GB高频激光塔MKI, IGB高频激光塔MKII,
+                I高频激光塔_GB高频激光塔MKI, IGB高频激光塔MKII, I近程电浆塔, I磁化电浆炮,
+                I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器,
             ];
-            foreach (var id in idList) {
-                ModifyItemAndItsRecipeGridIndex(id, -1);
+            for (int i = 0; i < idList.Count; i++) {
+                ModifyItemAndItsRecipeGridIndex(idList[i], tab防御, 101 + i);
             }
             idList = [
                 I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱,
@@ -94,15 +95,9 @@ namespace FractionateEverything.Compatibility {
             foreach (var id in idList) {
                 ModifyItemAndItsRecipeGridIndex(id, 2);
             }
-            idList = [I近程电浆塔, I磁化电浆炮, I战场分析基站, I信号塔];
-            foreach (var id in idList) {
-                ModifyItemAndItsRecipeGridIndex(id, -4);
-            }
-            ModifyItemAndItsRecipeGridIndex(I干扰塔, tab防御, 207);
-            ModifyItemAndItsRecipeGridIndex(I行星护盾发生器, tab防御, 208);
             ModifyItemAndItsRecipeGridIndex(I高斯机枪塔, tab防御, 301);
-            ModifyItemAndItsRecipeGridIndex(I聚爆加农炮_GB聚爆加农炮MKI, tab防御, 501);
-            ModifyItemAndItsRecipeGridIndex(IGB聚爆加农炮MKII, tab防御, 502);
+            ModifyItemAndItsRecipeGridIndex(I聚爆加农炮_GB聚爆加农炮MKI, tab防御, 401);
+            ModifyItemAndItsRecipeGridIndex(IGB聚爆加农炮MKII, tab防御, 501);
             ModifyItemAndItsRecipeGridIndex(I导弹防御塔, tab防御, 601);
 
             _finished = true;
@@ -265,7 +260,7 @@ namespace FractionateEverything.Compatibility {
                 ItemProto inputItem = LDB.items.Select(inputItemID);
                 //根据分馏配方实际情况，计算需要多少原料
                 if (!fracRecipeNumRatioDic.TryGetValue(inputItemID, out Dictionary<int, float> dic)) {
-                    dic = defaultFracNumRatioDic;
+                    dic = defaultDic;
                 }
                 //x表示原料数目
                 float x = 1.0f;

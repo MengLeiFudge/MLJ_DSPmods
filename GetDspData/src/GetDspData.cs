@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
@@ -837,5 +838,289 @@ namespace GetDspData {
                 arr.Remove(item);
             }
         }
+
+
+        // if (cargoPath != null) {
+        //     //原版传送带最大速率为30，如果每次尝试放1个物品到传送带上，需要每帧判定2次（30速*4堆叠/60帧）
+        //     //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
+        //     //将原版逻辑改为2-1，创世逻辑改为4-2-1，以减少放东西的次数
+        //     lock (cargoPath.buffer) {
+        //         int fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
+        //         int maxStack = Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1));
+        //         if (MaxInputTimes == 2) {
+        //             if (maxStack == 1) {
+        //                 if (__instance.fluidOutputCount >= 1
+        //                     && cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                         (byte)__instance.fluidOutputInc)) {
+        //                     __instance.fluidOutputCount -= 1;
+        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                 }
+        //             }
+        //             else {
+        //                 if (__instance.fluidOutputCount > 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)(fluidOutputAvgInc * 2))) {
+        //                         __instance.fluidOutputCount -= 2;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
+        //                     }
+        //                     else if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                  (byte)fluidOutputAvgInc)) {
+        //                         __instance.fluidOutputCount -= 1;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                     else {
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                 (byte)fluidOutputAvgInc)) {
+        //                             __instance.fluidOutputCount -= 1;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                         }
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 1) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         else if (MaxInputTimes == 4) {
+        //             if (maxStack == 1) {
+        //                 if (__instance.fluidOutputCount >= 1
+        //                     && cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                         (byte)__instance.fluidOutputInc)) {
+        //                     __instance.fluidOutputCount -= 1;
+        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                 }
+        //             }
+        //             else if (maxStack == 2) {
+        //                 if (__instance.fluidOutputCount > 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)(fluidOutputAvgInc * 2))) {
+        //                         __instance.fluidOutputCount -= 2;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
+        //                     }
+        //                     else if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                  (byte)fluidOutputAvgInc)) {
+        //                         __instance.fluidOutputCount -= 1;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                     else {
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                 (byte)fluidOutputAvgInc)) {
+        //                             __instance.fluidOutputCount -= 1;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                         }
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 1) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                 }
+        //             }
+        //             else if (maxStack == 3) {
+        //                 if (__instance.fluidOutputCount >= 3) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)(fluidOutputAvgInc * 2))) {
+        //                         __instance.fluidOutputCount -= 2;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
+        //                     }
+        //                     fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)fluidOutputAvgInc)) {
+        //                         __instance.fluidOutputCount -= 1;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                     else {
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                 (byte)fluidOutputAvgInc)) {
+        //                             __instance.fluidOutputCount -= 1;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                         }
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 1) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                 }
+        //             }
+        //             else {
+        //                 if (__instance.fluidOutputCount >= 4) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 4,
+        //                             (byte)(fluidOutputAvgInc * 4))) {
+        //                         __instance.fluidOutputCount -= 4;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 4;
+        //                     }
+        //                     else {
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                                 (byte)(fluidOutputAvgInc * 2))) {
+        //                             __instance.fluidOutputCount -= 2;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
+        //                         }
+        //                         fluidOutputAvgInc = __instance.fluidOutputInc
+        //                                             / __instance.fluidOutputCount;
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                 (byte)fluidOutputAvgInc)) {
+        //                             __instance.fluidOutputCount -= 1;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                         }
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 3) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)(fluidOutputAvgInc * 2))) {
+        //                         __instance.fluidOutputCount -= 2;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
+        //                     }
+        //                     fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)fluidOutputAvgInc)) {
+        //                         __instance.fluidOutputCount -= 1;
+        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 2) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                     else {
+        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                                 (byte)fluidOutputAvgInc)) {
+        //                             __instance.fluidOutputCount -= 1;
+        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                         }
+        //                     }
+        //                 }
+        //                 else if (__instance.fluidOutputCount == 1) {
+        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
+        //                             (byte)__instance.fluidOutputInc)) {
+        //                         __instance.fluidOutputCount = 0;
+        //                         __instance.fluidOutputInc = 0;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         else {
+        //             for (int i = 0; i < MaxOutputTimes; i++) {
+        //                 if (__instance.fluidOutputCount <= 0) {
+        //                     break;
+        //                 }
+        //                 fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
+        //                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID,
+        //                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+        //                         (byte)fluidOutputAvgInc)) {
+        //                     __instance.fluidOutputCount--;
+        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
+        //                 }
+        //                 else {
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // [HarmonyTranspiler]
+        // [HarmonyPatch(typeof(BuildTool_Path), "DeterminePreviews")]
+        // private static IEnumerable<CodeInstruction> test1(IEnumerable<CodeInstruction> instructions) {
+        //     var matcher = new CodeMatcher(instructions);
+        //     // matcher.MatchForward(false, new CodeMatch(OpCodes.Ldarg_0));
+        //     // //第1行ldarg.0不变
+        //     // matcher.Advance(1);
+        //     // //第2行改成call
+        //     // matcher.SetAndAdvance(OpCodes.Call,
+        //     //     AccessTools.Method(typeof(GenesisBook), nameof(ItemComboBox_OnItemIndexChange_InsertMethod)));
+        //     // //3-5行改成nop
+        //     // while (matcher.Opcode != OpCodes.Stloc_0) {
+        //     //     matcher.SetAndAdvance(OpCodes.Nop, null);
+        //     // }
+        //     // //第6行stloc.0不变
+        //     // return matcher.InstructionEnumeration();
+        //     matcher.MatchForward(false,
+        //         new CodeMatch(OpCodes.Call,
+        //             AccessTools.PropertyGetter(typeof(VFInput), nameof(VFInput._switchBeltsPath)))
+        //     );
+        //     int endPos = matcher.Clone().MatchForward(true,
+        //         new CodeMatch(OpCodes.Ldarg_0),
+        //         new CodeMatch(OpCodes.Ldc_I4_0),
+        //         new CodeMatch(OpCodes.Stfld,
+        //             AccessTools.Field(typeof(BuildTool_Path), nameof(BuildTool_Path.geodesic)))
+        //     ).Pos;
+        //     matcher.RemoveInstructionsInRange(matcher.Pos + 2, endPos);
+        //     matcher.SetAndAdvance(OpCodes.Ldarg_0, null);
+        //     matcher.SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(FractionatorLogic), nameof(test2)));
+        //     // matcher.RemoveInstructionsInRange(matcher.Pos, endPos);
+        //     // matcher.InsertAndAdvance(new CodeInstruction[] {
+        //     //     new CodeInstruction(OpCodes.Ldarg_0),
+        //     //     new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(FractionatorLogic), nameof(test2))),
+        //     // });
+        //     matcher.Advance(-5);
+        //
+        //     LogError($"len={matcher.Length}");
+        //     for (int i = 1840; i < 1860; i++) {
+        //         LogError($"{matcher.Opcode} {matcher.Operand}");
+        //         matcher.Advance(1);
+        //     }
+        //
+        //     return matcher.InstructionEnumeration();
+        // }
+        //
+        // public static void test2(BuildTool_Path path) {
+        //     LogError("test2 ok");
+        //     if (VFInput._switchBeltsPath) {
+        //         if (!path.geodesic) {
+        //             if (path.pathSuggest > 0) {
+        //                 path.geodesic = true;
+        //             }
+        //             if (path.pathAlternative == 1) {
+        //                 path.pathAlternative = 2;
+        //             }
+        //             else if (path.pathAlternative == 2) {
+        //                 path.pathAlternative = 1;
+        //                 path.geodesic = true;
+        //             }
+        //         }
+        //         else {
+        //             if (path.pathSuggest > 0)
+        //                 path.geodesic = false;
+        //             if (path.pathAlternative == 1)
+        //                 path.pathAlternative = 2;
+        //             else {
+        //                 path.pathAlternative = 1;
+        //                 path.geodesic = false;
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
