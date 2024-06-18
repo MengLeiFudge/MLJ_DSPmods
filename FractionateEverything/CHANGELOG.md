@@ -1,13 +1,90 @@
-- v1.3.7
-    + 修复了黑雾物品未解锁时，仍显示对应配方的问题。
-    + 修复升降级分馏塔时，产物类型没有切换的问题。
-    + 修复传送带速度较高时，由于缓存容量限制导致无法满速运行的问题。
-    + 修复分馏塔集装物流科技未显示等级的问题。
-    + 修复建筑极速分馏塔显示的速率与实际不符的问题。
-    + 将所有分馏物品的快捷选择更改为类似巨构的双行选择模式。
-    + Fixed an issue where Dark Fog items were still showing the corresponding recipe when they were not unlocked.
-    + Changed the shortcut selection for all fractionated items to a two-line selection mode similar to More Mega
-      Structure.
+- v1.4.0
+    + Bug修复
+        + 修复黑雾物品未解锁时，仍显示对应分馏配方的问题。
+        + 修复普通分馏塔与特殊分馏塔升降级时，产物类型没有正确切换的问题。
+        + 修复传送带速度较高时，分馏塔无法满速运行、显示分馏速率错误的问题。
+        + 修复分馏塔集装物流科技未显示等级的问题。
+        + 修复建筑极速分馏塔显示的速率与实际不符的问题。
+    + 调整&优化
+        + 【重要】大幅上调增产点数对增产分馏塔的影响。输入10增产点数的物品时，相比之前，产物数目大约变为2.5倍。
+        + 【重要】为所有物品添加了1%损毁概率。关闭损毁概率的开关对此次改动同样有效。
+        + 拆分图标资源包，修改加载图标的逻辑，现在可以在信号选择页面找到所有的分馏配方图标了。
+        + 为部分分馏塔解锁科技添加一定数目的对应的分馏塔作为科技研究奖励。
+        + 调整了部分分馏塔的制作配方与HP。
+        + 修复拖动分馏详情窗口时，分馏概率字体显示位置错误的问题。
+        + 优化分馏配方概率描述。
+            + 分馏配方描述中部分数目、概率增加黄色、红色显示，更容易确认分馏配方中特殊的部分。
+            + 调整了损毁的描述方式，使其更易于理解。
+            + 调整了最下方分馏制作公式的显示，使其与对应分馏配方的概率描述保持一致。
+        + 修改特殊分馏塔的处理逻辑，从而大幅提高游戏性能。特殊分馏塔提升80%以上游戏性能。
+        + 【重要】调整所有分馏塔的耗电情况。
+            + 垃圾回收分馏塔的耗电与所有输入的原材点数有关。
+            + 输入物品的增产点数不再影响点数聚集分馏塔的耗电。
+            + 输入物品的增产点数对增产分馏塔的耗电影响减半。
+            + 启用创世之书时，堆叠对分馏塔耗电影响减半。
+        + 适配更多巨构v1.5.0，移除巨构建造页之前的接收器配方，调整所有巨构火箭分馏配方的位置。
+        + 调整了创世之书防御页面的大部分图标位置，避免冲突。
+    + 新增内容
+        + 将所有分馏物品的快捷选择更改为类似巨构的双行选择模式，不再占用原有快捷栏位置。
+        + 【重要】新增垃圾回收分馏塔，可以将任意物品转换为沙土或随机物品。
+            + 垃圾回收分馏塔的所有接口都可输入，但只有正面的接口能够输出。
+            + 如果正面接口未连接，或正面接口不是输出，它将会把所有输入转换为沙土。
+            + 如果正面接口是输出，它将会尽可能把输入转换为地基。如果地基数目达到上限，则剩余输入会转换为沙土。
+        + 添加精准分馏塔、建筑极速分馏塔、垃圾回收分馏塔的专属解锁科技。
+        + 添加分馏塔产物输出集装科技，可以使产物以4堆叠形式输出。所有分馏塔提升10%游戏性能。该科技对精准分馏塔无效。
+    + Bug Fixes
+        + Fixed the issue that when Black Mist items were not unlocked, the corresponding fractionation recipe was still
+          displayed.
+        + Fixed the issue that the product type was not switched correctly when normal fractionator and special
+          fractionator were leveled up or down.
+        + Fixed the issue that when the conveyor belt speed is high, the fractionator cannot run at full speed and the
+          fractionation rate is displayed incorrectly.
+        + Fixed the issue that the level of fractionator assembly and logistics technology is not displayed.
+        + Fix an issue where the displayed rate of Building-HighSpeed Fractionator does not match the actual rate.
+    + Adjustments & Optimizations
+        + [IMPORTANT] Significantly upgraded the effect of proliferator points on Increase Production Fractionators.
+          When entering items with 10 proliferator points, the number of products becomes approximately 2.5 times higher
+          compared to before.
+        + [IMPORTANT] Added 1% destruction probability to all items. The switch to turn off the probability of
+          destruction also works for this change.
+        + Split the icon resource pack and modified the logic for loading icons, now you can find all fractionation
+          recipe icons on the signal selection page.
+        + Added a certain number of corresponding fractionators as a tech research bonus for some fractionator unlock
+          techs.
+        + Adjusted the crafting recipes and HP for some fractionators.
+        + Fixed the issue that the Fractionation Probability font was displayed in the wrong position when dragging the
+          Fractionation Details window.
+        + Optimized fractionation recipe probability descriptions.
+            + Added yellow and red color display for number of parts and probability in the description of fractionation
+              recipes, making it easier to identify special parts of fractionation recipes.
+            + Adjusted the description of damage to make it easier to understand.
+            + Adjusted the display of the fractionation crafting formula at the bottom to be consistent with the
+              probability description of the corresponding fractionation recipe.
+        + Modified the processing logic for special fractionators, resulting in a significant increase in game
+          performance. Special fractionators improve game performance by more than 80%.
+        + [IMPORTANT] Adjusted power consumption of all fractionators.
+            + The power consumption of the Trash Recycling fractionator is related to all input raw material points.
+            + Inputting item's Increase Production Fractionator points no longer affects the power consumption of Points
+              Aggregate Fractionator.
+            + The effect of inputting items' proliferator points on the power consumption of the Increase Production
+              Fractionator is halved.
+            + When Book of Creation is enabled, stacking halves the effect on fractionator power consumption.
+        + Adapted more megastructures for v1.5.0, removed receiver recipes before the megastructure build page, and
+          adjusted the placement of all megastructure rocket fractionation recipes.
+        + Adjusted the position of most icons on the Book of Genesis defense page to avoid conflicts.
+    + New additions
+        + Changed the shortcut selection of all fractionated items to a two-line selection mode similar to the Mega
+          Construct, which no longer occupies the original shortcut bar position.
+        + [IMPORTANT] Added Trash Recycling Fractionator, which can convert any item into sand or random items.
+            + All ports of the Trash Recycling Fractionator can be input, but only the front port can be output.
+            + If the front interface is not connected, or if the front interface is not an output, it will convert all
+              inputs to sand and earth.
+            + If the front interface is an output, it will convert the inputs to foundations if possible. If the number
+              of foundations reaches the upper limit, the remaining inputs will be converted to sand.
+        + Added exclusive unlockable techs for Precision Fractionator, Building-HighSpeed Fractionator, and Trash
+          Recycling Fractionator.
+        + Adds the Fractionator Product Output Setting tech, which allows products to be output in stacks of 4. All
+          fractionators boost game performance by 10%. This tech does not work on Precision Fractionators.
 
 - v1.3.6
     + 修复了损毁分馏在关闭时仍然生效的问题。

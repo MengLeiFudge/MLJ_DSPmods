@@ -326,6 +326,7 @@
         internal const int IFE建筑极速分馏塔 = 2321;
         internal const int IFE点数聚集分馏塔 = 2322;
         internal const int IFE增产分馏塔 = 2323;
+        internal const int IFE垃圾回收分馏塔 = 2324;
 
         internal const int M水 = 494;
         internal const int M燃烧单元 = 489;
@@ -443,6 +444,7 @@
         internal const int MFE建筑极速分馏塔 = 531;
         internal const int MFE点数聚集分馏塔 = 532;
         internal const int MFE增产分馏塔 = 533;
+        internal const int MFE垃圾回收分馏塔 = 534;
 
         internal const int R铁块 = 1;
         internal const int R磁铁_GB铜线圈 = 2;
@@ -739,6 +741,7 @@
         internal const int RFE精准分馏塔 = 1001;
         internal const int RFE建筑极速分馏塔 = 1002;
         internal const int RFE通用分馏塔 = 1003;
+        internal const int RFE垃圾回收分馏塔 = 1006;
         internal const int RFE点数聚集分馏塔 = 1004;
         internal const int RFE增产分馏塔 = 1005;
 
@@ -763,7 +766,7 @@
         internal const int T应用型超导体 = 1131;
         internal const int T高强度材料 = 1132;
         internal const int T粒子可控 = 1133;
-        internal const int T重氢分馏_GB强相互作用力材料 = 1134;
+        internal const int T重氢分馏_GB强相互作用力材料_FE通用分馏 = 1134;
         internal const int T波函数干扰 = 1141;
         internal const int T微型粒子对撞机_GB粒子对撞机 = 1142;
         internal const int T奇异物质 = 1143;
@@ -884,11 +887,15 @@
         internal const int T结构强化 = 6001;
         internal const int TVD电磁武器效果 = 6101;
         internal const int TMS尼科尔戴森光束 = 1918;
-        internal const int TGB玻色子操控 = 1999;
-        internal const int TGB并入COSMO架构 = 1998;
-        internal const int TFE分馏塔产物集装物流 = 3804;
+        internal const int TVD玻色子操控 = 1999;
+        internal const int TVD并入COSMO架构 = 1998;
+        internal const int TFE精准分馏 = 1621;
+        internal const int TFE建筑极速分馏 = 1622;
+        internal const int TFE垃圾回收 = 1623;
         internal const int TFE增产点数聚集 = 1159;
         internal const int TFE增产分馏 = 1908;
+        internal const int TFE分馏塔流动输出集装 = 3807;
+        internal const int TFE分馏塔产物输出集装 = 3804;
         internal const int TGB科学理论 = 1900;
         internal const int TGB钨强化玻璃 = 1911;
         internal const int TGB焦油精炼 = 1915;

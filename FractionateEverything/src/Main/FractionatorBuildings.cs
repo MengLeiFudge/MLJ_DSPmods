@@ -38,6 +38,11 @@ namespace FractionateEverything.Main {
             ItemFractionator = LDB.items.Select(I分馏塔_FE通用分馏塔);
             if (!GenesisBook.Enable) {
                 RecipeFractionator = ItemFractionator.maincraft;
+                unlockList.Add(new() {
+                    itemID = ItemFractionator.ID,
+                    recipeID = RecipeFractionator.ID,
+                    preTechID = T重氢分馏_GB强相互作用力材料_FE通用分馏,
+                });
                 //原版前移部分建筑位置，填补分馏塔空缺
                 int[] buildingIDArr = [I化工厂, I量子化工厂_GB先进化学反应釜, I微型粒子对撞机];
                 foreach (int buildingID in buildingIDArr) {
@@ -54,30 +59,32 @@ namespace FractionateEverything.Main {
                     Handcraft = true,
                     Name = "通用分馏塔",
                     TimeSpend = 240,
-                    Items = [IGB先进机械组件, I钛合金, I钛化玻璃],
-                    ItemCounts = [4, 8, 4],
+                    Items = [IGB先进机械组件, I钛合金, I钛化玻璃, I处理器],
+                    ItemCounts = [4, 8, 4, 1],
                     Results = [I分馏塔_FE通用分馏塔],
                     ResultCounts = [1],
-                    GridIndex = 2603,
+                    GridIndex = 2604,
                     IconPath = "Icons/ItemRecipe/fractionator",
                     preTech = null,
                 };
                 LDBTool.PreAddProto(RecipeFractionator);
                 RecipeFractionator.Preload(RFE通用分馏塔);
                 RecipeFractionator.ID = RFE通用分馏塔;
-                //添加科技解锁相关信息
-                unlockList.Add(new() { itemID = I分馏塔_FE通用分馏塔, recipeID = RFE通用分馏塔, preTechID = T微型粒子对撞机_GB粒子对撞机 });
-                //该科技为原版科技，可以直接获取到
-                TechProto tech = LDB.techs.Select(T微型粒子对撞机_GB粒子对撞机);
-                tech.Name = "粒子对撞与通用分馏";
+                unlockList.Add(new() {
+                    itemID = ItemFractionator.ID,
+                    recipeID = RecipeFractionator.ID,
+                    preTechID = T微型粒子对撞机_GB粒子对撞机,
+                });
             }
             //修改分馏塔的名称、描述、快捷栏绑定位置
             ItemFractionator.Name = "通用分馏塔";
             ItemFractionator.Description = "I通用分馏塔";
-            ItemFractionator.GridIndex = 2603;
-            RecipeFractionator.GridIndex = 2603;
+            ItemFractionator.GridIndex = 2604;
+            RecipeFractionator.GridIndex = 2604;
             ItemFractionator.BuildIndex = 0;//使用两行快捷建造栏，不需要绑定到原有的BuildMenu上面了
+            //BuildBar.Bind(5, ItemFractionator.GridIndex % 10, ItemFractionator.ID, 2);
             ItemFractionator.Preload(ItemFractionator.index);
+            RecipeFractionator.Preload(RecipeFractionator.index);
         }
 
         public static void CreateAndPreAddNewFractionators() {
@@ -87,69 +94,79 @@ namespace FractionateEverything.Main {
             //new(0.3726f, 0.8f, 1.0f)
             //new(0.549f, 0.5922f, 0.6235f)
 
-            //原版解锁科技：无 蓝 红 黄 绿
-            //[I铁块, I石材, I玻璃, I电路板]
-            //[I铁块, I石材, I玻璃, I电路板]
-            //[I钢材, I石材, I玻璃, I处理器]
-            //[I钢材, I石墨烯, I钛化玻璃, I处理器]
-            //[I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器]
+            //创世解锁科技：蓝 蓝 红 黄 紫 绿
+            //[IGB基础机械组件, I铁块, I玻璃, I电路板][2, 4, 2, 1]
+            //[IGB基础机械组件, I钢材, I玻璃, I电路板][4, 8, 4, 1]
+            //[IGB先进机械组件, I钛合金, I钛化玻璃, I处理器][4, 8, 4, 1]
+            //[IGB先进机械组件, I钛合金, I钛化玻璃, I处理器][4, 8, 4, 1]
+            //[IGB尖端机械组件, IGB钨合金, IGB钨强化玻璃, I量子芯片][4, 8, 4, 1]
+            //[IGB尖端机械组件, IGB三元精金, IGB钨强化玻璃, IGB光学处理器, I物质重组器][10, 20, 8, 1, 30]
 
-            //创世解锁科技：无 蓝 黄 紫 绿
-            //[IGB基础机械组件, I铁块, I玻璃]
-            //[IGB基础机械组件, I钢材, I玻璃]
-            //[IGB先进机械组件, I钛合金, I钛化玻璃]
-            //[IGB尖端机械组件, IGB钨合金, IGB钨强化玻璃, IGB量子计算主机]
-            //[IGB尖端机械组件, IGB三元精金, IGB钨强化玻璃, IGB超越X1型光学主机, I物质重组器]
+            //原版解锁科技：蓝 蓝 红 红 黄 绿
+            //[I铁块, I石材, I玻璃, I电路板][4, 2, 2, 1]
+            //[I铁块, I石材, I玻璃, I电路板][8, 4, 4, 1]
+            //[I钢材, I石材, I玻璃, I处理器][8, 4, 4, 1]
+            //[I钢材, I石材, I玻璃, I处理器][8, 4, 4, 1]
+            //[I钛合金, I石墨烯, I钛化玻璃, I处理器][8, 4, 4, 1]
+            //[I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器][16, 8, 4, 1, 30]
 
             //创建新建筑
+            List<ItemProto> upgradeList = [];
             var f1 = CreateAndPreAddNewFractionator(
                 "精准分馏塔", RFE精准分馏塔, IFE精准分馏塔, MFE精准分馏塔,
-                GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃] : [I铁块, I石材, I玻璃, I电路板],
-                GenesisBook.Enable ? [2, 4, 2] : [4, 2, 2, 1],
-                2601, GenesisBook.Enable ? TGB基础机械组件 : T电磁学, 0, new(1.0f, 0.7019f, 0.4f), 0.4f);
+                GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
+                GenesisBook.Enable ? [2, 4, 2, 1] : [4, 2, 2, 1],
+                2601, TFE精准分馏, new(1.0f, 0.7019f, 0.4f), -20, 0.4f);
+            upgradeList.Add(f1.Item3);
             var f2 = CreateAndPreAddNewFractionator(
                 "建筑极速分馏塔", RFE建筑极速分馏塔, IFE建筑极速分馏塔, MFE建筑极速分馏塔,
-                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃] : [I铁块, I石材, I玻璃, I电路板],
-                GenesisBook.Enable ? [2, 4, 2] : [4, 2, 2, 1],
-                2602, T改良物流系统, 0, new(0.4f, 1.0f, 0.949f), 1.0f);
-            var f3 = (
+                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
+                GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
+                2602, TFE建筑极速分馏, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
+            upgradeList.Add(f2.Item3);
+            var f3 = CreateAndPreAddNewFractionator(
+                "垃圾回收分馏塔", RFE垃圾回收分馏塔, IFE垃圾回收分馏塔, MFE垃圾回收分馏塔,
+                GenesisBook.Enable ? [IGB先进机械组件, I钛合金, I钛化玻璃, I处理器] : [I钢材, I石材, I玻璃, I处理器],
+                GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
+                2603, TFE垃圾回收, new(0.4f, 1.0f, 0.349f), 0, 2.0f);
+            var f4 = (
                 RecipeFractionator,
                 ModelFractionator,
                 ItemFractionator);
-            var f4 = CreateAndPreAddNewFractionator(
+            upgradeList.Add(f4.Item3);
+            var f5 = CreateAndPreAddNewFractionator(
                 "点数聚集分馏塔", RFE点数聚集分馏塔, IFE点数聚集分馏塔, MFE点数聚集分馏塔,
                 GenesisBook.Enable
-                    ? [IGB尖端机械组件, IGB钨合金, IGB钨强化玻璃, IGB量子计算主机]
-                    : [I钢材, I石墨烯, I钛化玻璃, I处理器],
+                    ? [IGB尖端机械组件, IGB钨合金, IGB钨强化玻璃, I量子芯片]
+                    : [I钛合金, I石墨烯, I钛化玻璃, I处理器],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
-                2604, TFE增产点数聚集, 0, new(0.2509f, 0.8392f, 1.0f), 2.0f);
-            var f5 = CreateAndPreAddNewFractionator(
+                2605, TFE增产点数聚集, new(0.2509f, 0.8392f, 1.0f), 20, 2.5f);
+            upgradeList.Add(f5.Item3);
+            var f6 = CreateAndPreAddNewFractionator(
                 "增产分馏塔", RFE增产分馏塔, IFE增产分馏塔, MFE增产分馏塔,
                 GenesisBook.Enable
-                    ? [IGB尖端机械组件, IGB三元精金, IGB钨强化玻璃, IGB超越X1型光学主机, I物质重组器]
+                    ? [IGB尖端机械组件, IGB三元精金, IGB钨强化玻璃, IGB光学处理器, I物质重组器]
                     : [I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器],
                 GenesisBook.Enable ? [10, 20, 8, 1, 30] : [16, 8, 4, 1, 30],
-                2605, TFE增产分馏, 0, new(0.6235f, 0.6941f, 0.8f), 4.0f);
+                2606, TFE增产分馏, new(0.6235f, 0.6941f, 0.8f), 40, 2.0f);
+            upgradeList.Add(f6.Item3);
 
             //设定升降级关系
-            f1.Item3.Grade = 1;
-            f2.Item3.Grade = 2;
-            f3.Item3.Grade = 3;
-            f4.Item3.Grade = 4;
-            f5.Item3.Grade = 5;
-            f1.Item3.Upgrades = [f1.Item3.ID, f2.Item3.ID, f3.Item3.ID, f4.Item3.ID, f5.Item3.ID];
-            f2.Item3.Upgrades = [f1.Item3.ID, f2.Item3.ID, f3.Item3.ID, f4.Item3.ID, f5.Item3.ID];
-            f3.Item3.Upgrades = [f1.Item3.ID, f2.Item3.ID, f3.Item3.ID, f4.Item3.ID, f5.Item3.ID];
-            f4.Item3.Upgrades = [f1.Item3.ID, f2.Item3.ID, f3.Item3.ID, f4.Item3.ID, f5.Item3.ID];
-            f5.Item3.Upgrades = [f1.Item3.ID, f2.Item3.ID, f3.Item3.ID, f4.Item3.ID, f5.Item3.ID];
+            int[] upgradeItemIDList = upgradeList.Select(item => item.ID).ToArray();
+            for (int i = 0; i < upgradeList.Count; i++) {
+                ItemProto item = upgradeList[i];
+                item.Upgrades = upgradeItemIDList;
+                item.Grade = i + 1;
+            }
 
             //适配创世
             if (GenesisBook.Enable) {
                 f1.Item1.Type = GenesisBook.基础制造;
                 f2.Item1.Type = GenesisBook.基础制造;
                 f3.Item1.Type = GenesisBook.标准制造;
-                f4.Item1.Type = GenesisBook.高精度加工;
+                f4.Item1.Type = GenesisBook.标准制造;
                 f5.Item1.Type = GenesisBook.高精度加工;
+                f6.Item1.Type = GenesisBook.高精度加工;
             }
         }
 
@@ -164,19 +181,19 @@ namespace FractionateEverything.Main {
         /// <param name="itemCounts">制作分馏塔需要的材料个数</param>
         /// <param name="gridIndex">分馏塔在背包显示的位置（配方位置）、物流塔选择物品位置（物品位置）</param>
         /// <param name="preTechID">建筑和配方的前置科技</param>
-        /// <param name="buildIndex">在下方快捷制作栏的哪个位置，注意，由于建筑过多所以不使用原有位置，改为类似巨构双行样式，所以这里固定传0</param>
         /// <param name="color">分馏塔颜色，只更改主体材质颜色，所以只需要一个颜色参数</param>
+        /// <param name="hpAdjust">hp调节量（相比于原版分馏塔）</param>
         /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
             string name, int recipeID, int itemID, int modelID,
             int[] items, int[] itemCounts,
-            int gridIndex, int preTechID, int buildIndex, Color color, float energyRatio = 1.0f) {
+            int gridIndex, int preTechID, Color color, int hpAdjust, float energyRatio) {
             ItemProto oriItem = ItemFractionator;
             ModelProto oriModel = ModelFractionator;
             RecipeProto oriRecipe = RecipeFractionator;
             PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
-            string iconPath = $"Assets/fracicons/fractionator-{gridIndex % 10}";
+            string iconPath = $"Assets/fractionatebaseicon/fractionator-{gridIndex % 10}";
 
             //添加制作分馏塔的配方
             RecipeProto recipe = new();
@@ -188,7 +205,7 @@ namespace FractionateEverything.Main {
             recipe.Results = [itemID];
             recipe.ResultCounts = [1];
             recipe.GridIndex = gridIndex;
-            recipe.IconPath = iconPath;
+            recipe.IconPath = null;//建筑配方的图标设为null，将会自动使用产物[0]的图标
             recipe.preTech = null;
             LDBTool.PreAddProto(recipe);
             recipe.ID = recipeID;
@@ -203,6 +220,7 @@ namespace FractionateEverything.Main {
             };
             //新建筑必须使用新建的prefabDesc，不能复制，Preload可生成新的prefabDesc
             model.Preload();
+            model.HpMax = oriModel.HpMax + hpAdjust * 100;
             model.prefabDesc.modelIndex = modelID;
             model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
             model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
@@ -239,7 +257,7 @@ namespace FractionateEverything.Main {
             item.maincraft = recipe;
             item.handcraft = recipe;
             item.handcrafts = [recipe];
-            item.BuildIndex = buildIndex;
+            item.BuildIndex = 0;//使用巨构双行样式，不占用原本的快捷制作栏，所以这里固定使用0
             //添加物品在传送带上的显示情况
             ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs
                 = ref AccessTools.StaticFieldRefAccess<Dictionary<int, IconToolNew.IconDesc>>(typeof(ProtoRegistry),
@@ -261,6 +279,7 @@ namespace FractionateEverything.Main {
             //设置快捷制作栏位置
             //使用两行快捷建造栏，不需要绑定到原有的BuildMenu上面了
             //LDBTool.SetBuildBar(buildIndex / 100, buildIndex % 100, item.ID);
+            //BuildBar.Bind(5, gridIndex % 10, item.ID, 2);
 
             //添加科技解锁相关信息。可以避免万物分馏PreAddAction时，LDB中找不到创世科技的问题
             unlockList.Add(new() { itemID = itemID, recipeID = recipeID, preTechID = preTechID });
@@ -272,16 +291,13 @@ namespace FractionateEverything.Main {
         /// 关联物品、配方、前置科技
         /// </summary>
         public static void SetUnlockInfo() {
+            //此时翻译字符串已经添加，再次Preload科技以更新其名称、描述、结论等
+            Tech.PreloadAll();
             foreach (var unlock in unlockList) {
+                //配方Preload会自动使用Results[0]的图标，所以先Preload item，再Preload recipe
                 var item = LDB.items.Select(unlock.itemID);
-                var recipe = LDB.recipes.Select(unlock.recipeID);
-                var preTech = LDB.techs.Select(unlock.preTechID);
-                preTech.Preload();
-                preTech.PreTechsImplicit = preTech.PreTechsImplicit.Except(preTech.PreTechs).ToArray();
-                preTech.UnlockRecipes = [..preTech.UnlockRecipes, unlock.recipeID];
-                preTech.UnlockRecipes = preTech.UnlockRecipes.Distinct().ToArray();
-                preTech.Preload2();
                 item.Preload(item.index);
+                var recipe = LDB.recipes.Select(unlock.recipeID);
                 recipe.Preload(recipe.index);
             }
         }

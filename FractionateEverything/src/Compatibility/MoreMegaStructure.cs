@@ -1,6 +1,5 @@
 ﻿using BepInEx.Bootstrap;
 using CommonAPI.Systems;
-using FractionateEverything.Main;
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,9 +33,6 @@ namespace FractionateEverything.Compatibility {
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
-            //将巨构原有的所有方法全部屏蔽，不只是patch，初始化UI的也要屏蔽，防止创建两次UI
-            //动态patch引用到了dll，需要用子方法，不然会报找不到巨构dll的错误
-            UIBuildMenuPatcher.IgnoreMSPatches(harmony);
             LogInfo("MoreMegaStructure Compatibility Compatible finish.");
         }
 

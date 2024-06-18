@@ -5402,9 +5402,9 @@
         1301
       ],
       "ItemCounts": [
+        8,
         4,
-        2,
-        2,
+        4,
         1
       ],
       "Results": [
@@ -5418,6 +5418,38 @@
       "IconName": "fractionator-2"
     },
     {
+      "ID": 1006,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "垃圾回收分馏塔",
+      "Items": [
+        1103,
+        1108,
+        1110,
+        1303
+      ],
+      "ItemCounts": [
+        8,
+        4,
+        4,
+        1
+      ],
+      "Results": [
+        2324
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 180,
+      "Proliferator": 3,
+      "IconName": "fractionator-3"
+    },
+    {
       "ID": 1004,
       "Type": 4,
       "Factories": [
@@ -5428,7 +5460,7 @@
       ],
       "Name": "点数聚集分馏塔",
       "Items": [
-        1103,
+        1107,
         1123,
         1119,
         1303
@@ -5447,7 +5479,7 @@
       ],
       "TimeSpend": 180,
       "Proliferator": 3,
-      "IconName": "fractionator-4"
+      "IconName": "fractionator-5"
     },
     {
       "ID": 1005,
@@ -5481,7 +5513,7 @@
       ],
       "TimeSpend": 180,
       "Proliferator": 3,
-      "IconName": "fractionator-5"
+      "IconName": "fractionator-6"
     },
     {
       "ID": 554,
@@ -6114,6 +6146,216 @@
       "TimeSpend": 480,
       "Proliferator": 3,
       "IconName": "exchangeLS"
+    },
+    {
+      "ID": 452,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "熔炉采矿机 A型",
+      "Items": [
+        2301,
+        1107,
+        1119
+      ],
+      "ItemCounts": [
+        1,
+        10,
+        10
+      ],
+      "Results": [
+        9446
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerA"
+    },
+    {
+      "ID": 472,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "大型熔炉采矿机 A型",
+      "Items": [
+        2316,
+        1107,
+        1119
+      ],
+      "ItemCounts": [
+        1,
+        20,
+        20
+      ],
+      "Results": [
+        9466
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerBigA"
+    },
+    {
+      "ID": 453,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "熔炉采矿机 B型",
+      "Items": [
+        2301,
+        1107,
+        1119
+      ],
+      "ItemCounts": [
+        1,
+        10,
+        10
+      ],
+      "Results": [
+        9447
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerB"
+    },
+    {
+      "ID": 473,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "大型熔炉采矿机 B型",
+      "Items": [
+        2316,
+        1107,
+        1119
+      ],
+      "ItemCounts": [
+        1,
+        20,
+        20
+      ],
+      "Results": [
+        9467
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerBigB"
+    },
+    {
+      "ID": 454,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "化工采矿机 C型",
+      "Items": [
+        2301,
+        1107,
+        1305
+      ],
+      "ItemCounts": [
+        1,
+        20,
+        5
+      ],
+      "Results": [
+        9448
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerC"
+    },
+    {
+      "ID": 474,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "大型化工采矿机 C型",
+      "Items": [
+        2316,
+        1107,
+        1305
+      ],
+      "ItemCounts": [
+        1,
+        30,
+        10
+      ],
+      "Results": [
+        9468
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerBigC"
+    },
+    {
+      "ID": 475,
+      "Type": 4,
+      "Factories": [
+        2303,
+        2304,
+        2305,
+        2318
+      ],
+      "Name": "等离子精炼油井",
+      "Items": [
+        2301,
+        1401,
+        1119
+      ],
+      "ItemCounts": [
+        1,
+        30,
+        15
+      ],
+      "Results": [
+        9469
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 60,
+      "Proliferator": 3,
+      "IconName": "SmelterMinerO"
     },
     {
       "ID": 1010,
@@ -10273,9 +10515,34 @@
         2321,
         2314
       ],
-      "Name": "通用分馏塔分馏",
+      "Name": "垃圾回收分馏塔分馏",
       "Items": [
         2321
+      ],
+      "ItemCounts": [
+        100
+      ],
+      "Results": [
+        2324
+      ],
+      "ResultCounts": [
+        1
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 1,
+      "IconName": "fractionator-3"
+    },
+    {
+      "ID": 1177,
+      "Type": 8,
+      "Factories": [
+        2320,
+        2321,
+        2314
+      ],
+      "Name": "通用分馏塔分馏",
+      "Items": [
+        2324
       ],
       "ItemCounts": [
         100
@@ -10288,10 +10555,10 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 1,
-      "IconName": "fractionator-2-fractionator-formula-v3"
+      "IconName": "fractionator"
     },
     {
-      "ID": 1177,
+      "ID": 1178,
       "Type": 8,
       "Factories": [
         2320,
@@ -10313,10 +10580,10 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 1,
-      "IconName": "fractionator-fractionator-4-formula-v3"
+      "IconName": "fractionator-5"
     },
     {
-      "ID": 1178,
+      "ID": 1179,
       "Type": 8,
       "Factories": [
         2320,
@@ -10338,10 +10605,10 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 1,
-      "IconName": "fractionator-4-fractionator-5-formula-v3"
+      "IconName": "fractionator-6"
     },
     {
-      "ID": 1179,
+      "ID": 1180,
       "Type": 8,
       "Factories": [
         2320,
@@ -10363,7 +10630,7 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 1,
-      "IconName": "fractionator-5-fractionator-1-formula-v3"
+      "IconName": "fractionator-1"
     },
     {
       "ID": 11001,
@@ -16668,6 +16935,29 @@
       "IconName": "fractionator-2"
     },
     {
+      "ID": 52324,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]垃圾回收分馏塔",
+      "Items": [
+        2324
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        2324
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "fractionator-3"
+    },
+    {
       "ID": 52322,
       "Type": -5,
       "Factories": [
@@ -16688,7 +16978,7 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 2,
-      "IconName": "fractionator-4"
+      "IconName": "fractionator-5"
     },
     {
       "ID": 52323,
@@ -16711,7 +17001,7 @@
       ],
       "TimeSpend": 1000000,
       "Proliferator": 2,
-      "IconName": "fractionator-5"
+      "IconName": "fractionator-6"
     },
     {
       "ID": 59493,
@@ -16942,6 +17232,167 @@
       "TimeSpend": 1000000,
       "Proliferator": 2,
       "IconName": "exchangeLS"
+    },
+    {
+      "ID": 59446,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]熔炉采矿机 A型",
+      "Items": [
+        9446
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9446
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerA"
+    },
+    {
+      "ID": 59466,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]大型熔炉采矿机 A型",
+      "Items": [
+        9466
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9466
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerBigA"
+    },
+    {
+      "ID": 59447,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]熔炉采矿机 B型",
+      "Items": [
+        9447
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9447
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerB"
+    },
+    {
+      "ID": 59467,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]大型熔炉采矿机 B型",
+      "Items": [
+        9467
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9467
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerBigB"
+    },
+    {
+      "ID": 59448,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]化工采矿机 C型",
+      "Items": [
+        9448
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9448
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerC"
+    },
+    {
+      "ID": 59468,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]大型化工采矿机 C型",
+      "Items": [
+        9468
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9468
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerBigC"
+    },
+    {
+      "ID": 59469,
+      "Type": -5,
+      "Factories": [
+        2323
+      ],
+      "Name": "[特殊]等离子精炼油井",
+      "Items": [
+        9469
+      ],
+      "ItemCounts": [
+        1
+      ],
+      "Results": [
+        9469
+      ],
+      "ResultCounts": [
+        2
+      ],
+      "TimeSpend": 1000000,
+      "Proliferator": 2,
+      "IconName": "SmelterMinerO"
     }
   ],
   "items": [
@@ -17992,7 +18443,7 @@
       "ID": 2314,
       "Type": 6,
       "Name": "通用分馏塔",
-      "GridIndex": 2603,
+      "GridIndex": 2604,
       "IconName": "fractionator",
       "WorkEnergyPerTick": 12000,
       "Speed": 10000,
@@ -18439,11 +18890,18 @@
       "Space": 12.96
     },
     {
+      "ID": 2324,
+      "Type": 6,
+      "Name": "垃圾回收分馏塔",
+      "GridIndex": 2603,
+      "IconName": "fractionator-3"
+    },
+    {
       "ID": 2322,
       "Type": 6,
       "Name": "点数聚集分馏塔",
-      "GridIndex": 2604,
-      "IconName": "fractionator-4",
+      "GridIndex": 2605,
+      "IconName": "fractionator-5",
       "WorkEnergyPerTick": 24000,
       "Speed": 10000,
       "MultipleOutput": 1,
@@ -18453,8 +18911,8 @@
       "ID": 2323,
       "Type": 6,
       "Name": "增产分馏塔",
-      "GridIndex": 2605,
-      "IconName": "fractionator-5",
+      "GridIndex": 2606,
+      "IconName": "fractionator-6",
       "WorkEnergyPerTick": 48000,
       "Speed": 10000,
       "MultipleOutput": 1,
@@ -18561,6 +19019,55 @@
       "Name": "物资交换物流站",
       "GridIndex": 3409,
       "IconName": "exchangeLS"
+    },
+    {
+      "ID": 9446,
+      "Type": 6,
+      "Name": "熔炉采矿机 A型",
+      "GridIndex": 2610,
+      "IconName": "SmelterMinerA"
+    },
+    {
+      "ID": 9466,
+      "Type": 6,
+      "Name": "大型熔炉采矿机 A型",
+      "GridIndex": 2710,
+      "IconName": "SmelterMinerBigA"
+    },
+    {
+      "ID": 9447,
+      "Type": 6,
+      "Name": "熔炉采矿机 B型",
+      "GridIndex": 2611,
+      "IconName": "SmelterMinerB"
+    },
+    {
+      "ID": 9467,
+      "Type": 6,
+      "Name": "大型熔炉采矿机 B型",
+      "GridIndex": 2711,
+      "IconName": "SmelterMinerBigB"
+    },
+    {
+      "ID": 9448,
+      "Type": 6,
+      "Name": "化工采矿机 C型",
+      "GridIndex": 2612,
+      "IconName": "SmelterMinerC"
+    },
+    {
+      "ID": 9468,
+      "Type": 6,
+      "Name": "大型化工采矿机 C型",
+      "GridIndex": 2712,
+      "IconName": "SmelterMinerBigC"
+    },
+    {
+      "ID": 9469,
+      "Type": 6,
+      "Name": "等离子精炼油井",
+      "GridIndex": 2609,
+      "IconName": "SmelterMinerO"
     },
     {
       "ID": 0,

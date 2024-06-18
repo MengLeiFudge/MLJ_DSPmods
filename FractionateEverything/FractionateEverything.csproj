@@ -128,10 +128,13 @@
     <Compile Include="src\Main\FractionateRecipes.cs" />
     <Compile Include="src\Main\FractionatorBuildings.cs" />
     <Compile Include="src\Main\FractionatorLogic.cs" />
-    <Compile Include="src\Main\UIOptionWindowPatcher.cs" />
+    <Compile Include="src\Main\IconSetPatch.cs" />
+    <Compile Include="src\Main\UIOptionWindowPatch.cs" />
     <Compile Include="src\Main\Tech.cs" />
     <Compile Include="src\Main\Translation.cs" />
-    <Compile Include="src\Main\UIBuildMenuPatcher.cs" />
+    <Compile Include="src\Main\UIBuildMenuPatch.cs" />
+    <Compile Include="src\Main\UIRecipeEntryPatch.cs" />
+    <Compile Include="src\Main\UISignalPickerPatch.cs" />
     <Compile Include="src\Utils\AcceptableValueUtils.cs" />
     <Compile Include="src\Utils\AddProtoUtils.cs" />
     <Compile Include="src\Utils\RecipeHelper.cs" />
@@ -141,9 +144,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\fracicons" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\icon.png" />
