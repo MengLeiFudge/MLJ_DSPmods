@@ -10,8 +10,8 @@ namespace FractionateEverything.Utils {
         /// 存储所有配方的ID，避免冲突
         /// </summary>
         private readonly List<int> recipeIDList = [];
-        private readonly int maxRowCount;
-        private readonly int maxColumnCount;
+        public static int maxRowCount;
+        public static int maxColumnCount;
         private int tab;
         private int row;
         private int column;

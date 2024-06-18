@@ -58,16 +58,16 @@ namespace FractionateEverything.Main {
             else {
                 list = AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, IMS物资交换物流站, I轨道采集器]);
                 list[2].Modify(tab巨构, 410);
-                AddFracChain([
-                        IMS物质解压器运载火箭, IMS谐振发射器运载火箭, IMS星际组装厂运载火箭,
-                        IMS晶体重构器运载火箭, IMS恒星炮运载火箭, IMS科学枢纽运载火箭, IMS物质解压器运载火箭
-                    ], false)
-                    .Modify(tab巨构, 601);
-                AddFracChain([
-                        IMS铁金属重构装置, IMS铜金属重构装置, IMS高纯硅重构装置, IMS钛金属重构装置,
-                        IMS单极磁石重构装置, IMS石墨提炼装置, IMS晶体接收器, IMS光栅晶体接收器, IMS铁金属重构装置
-                    ], false)
-                    .Modify(tab巨构, 701);
+                list = AddFracChain([
+                    IMS物质解压器运载火箭, IMS谐振发射器运载火箭, IMS星际组装厂运载火箭,
+                    IMS晶体重构器运载火箭, IMS恒星炮运载火箭, IMS科学枢纽运载火箭, IMS物质解压器运载火箭
+                ], false);
+                list[0].Modify(tab巨构, 403);
+                list[1].Modify(tab巨构, 404);
+                list[2].Modify(tab巨构, 405);
+                list[3].Modify(tab巨构, 406);
+                list[4].Modify(tab巨构, 402);
+                list[5].Modify(tab巨构, 401);
             }
             if (!GenesisBook.Enable) {
                 //修改重氢分馏配方并添加其信息
@@ -75,11 +75,17 @@ namespace FractionateEverything.Main {
                     "The successful fractionation of deuterium from liquid hydrogen has greatly advanced the utilization of nuclear fuel.\n1% fractionate 1 product";
                 string description_cn = "成功从液态氢中分馏出重氢，极大地推动了核燃料的使用。\n1%分馏出1个产物";
                 RegisterOrEditAsync("R氢分馏", description_en, description_cn);
+                if (defaultDic.TryGetValue(-1, out float destroyRatio)) {
+                    description_en +=
+                        $"\n{"WARNING:".AddOrangeLabel()} There is a probability of {destroyRatio.ToString("0.###%").AddRedLabel(true)} that an input item will be destroyed at each fractionation!";
+                    description_cn +=
+                        $"\n{"警告：".AddOrangeLabel()}每次分馏时，有{destroyRatio.ToString("0.###%").AddRedLabel(true)}概率导致原料损毁！";
+                }
                 RegisterOrEditAsync("R氢损毁分馏", description_en, description_cn);
                 var r = LDB.recipes.Select(R重氢分馏_GB氦闪约束器);
                 r.Modify(tab分馏1, 507);
                 r.ModifyIconAndDesc();
-                fracRecipeNumRatioDic.Add(I氢, defaultFracNumRatioDic);
+                fracRecipeNumRatioDic.Add(I氢, defaultDic);
                 //矿物自增值1
                 AddFracRecipe(I铁矿, I铁矿, false, new() { { 2, 0.04f } })
                     .Modify(tab分馏1, 101);
@@ -171,7 +177,8 @@ namespace FractionateEverything.Main {
                 AddFracChain([I高频激光塔_GB高频激光塔MKI, I磁化电浆炮, I近程电浆塔]);//注意科技解锁顺序
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
                 //建筑VI
-                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
+                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, IFE垃圾回收分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔], true,
+                    new() { { 1, 0.01f }, { -1, 0.03f } });
             }
             else {
                 //创世改动过大，单独处理
@@ -274,7 +281,8 @@ namespace FractionateEverything.Main {
                     IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施,
                     IGB工业先锋精密加工中心, IGB苍穹粒子加速器, IGB物质裂解塔
                 ], false);
-                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
+                AddFracChain([IFE精准分馏塔, IFE建筑极速分馏塔, IFE垃圾回收分馏塔, I分馏塔_FE通用分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔], true,
+                    new() { { 1, 0.01f }, { -1, 0.03f } });
 
                 //精炼页面
                 AddFracChain([I液氢燃料棒, IGB煤油燃料棒, IGB四氢双环戊二烯燃料棒])
@@ -294,31 +302,31 @@ namespace FractionateEverything.Main {
 
                 //防御页面
                 AddFracChain([I原型机, I精准无人机, I攻击无人机])
-                    .Modify(tab防御, 109);
+                    .Modify(tab防御, 201);
                 AddFracChain([I护卫舰, I驱逐舰])
-                    .Modify(tab防御, 112);
+                    .Modify(tab防御, 204);
                 AddFracChain([I高频激光塔_GB高频激光塔MKI, IGB高频激光塔MKII, I磁化电浆炮, I近程电浆塔])
-                    .Modify(tab防御, 209);
+                    .Modify(tab防御, 206);
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器])
-                    .Modify(tab防御, 213);
+                    .Modify(tab防御, 210);
                 AddFracRecipe(I高斯机枪塔, I高斯机枪塔, false, new() { { 2, 0.01f } })
-                    .Modify(tab防御, 309);
+                    .Modify(tab防御, 302);
                 AddFracChain([I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱])
-                    .Modify(tab防御, 311);
+                    .Modify(tab防御, 309);
                 AddFracChain([I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元])
-                    .Modify(tab防御, 411);
+                    .Modify(tab防御, 407);
                 AddFracChain([I聚爆加农炮_GB聚爆加农炮MKI, IGB聚爆加农炮MKII])
-                    .Modify(tab防御, 509);
+                    .Modify(tab防御, 402, false);
                 AddFracChain([I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组])
-                    .Modify(tab防御, 511);
+                    .Modify(tab防御, 507);
                 AddFracRecipe(I导弹防御塔, I导弹防御塔, false, new() { { 2, 0.01f } })
-                    .Modify(tab防御, 609);
+                    .Modify(tab防御, 602);
                 AddFracChain([I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组])
-                    .Modify(tab防御, 611);
+                    .Modify(tab防御, 607);
                 AddFracChain([I干扰胶囊, I压制胶囊])
-                    .Modify(tab防御, 711);
+                    .Modify(tab防御, 707);
                 AddFracChain([I等离子胶囊, I反物质胶囊])
-                    .Modify(tab防御, 713);
+                    .Modify(tab防御, 709);
             }
 
             //添加所有翻译
@@ -342,7 +350,7 @@ namespace FractionateEverything.Main {
         /// </summary>
         private static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain,
             bool cycle = true, Dictionary<int, float> fracNumRatioDic = null) {
-            fracNumRatioDic ??= defaultFracNumRatioDic;
+            fracNumRatioDic ??= defaultDic;
             List<RecipeProto> list = [];
             for (int i = 0; i < itemChain.Count - 1; i++) {
                 list.Add(AddFracRecipe(itemChain[i], itemChain[i + 1], false, fracNumRatioDic));
@@ -366,7 +374,7 @@ namespace FractionateEverything.Main {
             TechProto preTech = useInputTech
                 ? LDB.items.Select(inputItemID).preTech
                 : LDB.items.Select(outputItemID).preTech;
-            fracNumRatioDic ??= defaultFracNumRatioDic;
+            fracNumRatioDic ??= defaultDic;
             try {
                 int recipeID = helper.GetUnusedRecipeID();
                 ItemProto inputItem = LDB.items.Select(inputItemID);
@@ -382,14 +390,17 @@ namespace FractionateEverything.Main {
                 string description_en = $"Fractionate {inputItem.name} to {outputItem.name}.";
                 string description_cn = $"从{inputItem.name}中分馏出{outputItem.name}。";
                 foreach (var p in fracNumRatioDic.Where(p => p.Key > 0)) {
-                    description_en += $"\n{p.Value:0.###%} fractionate {p.Key} product{(p.Key > 1 ? "s" : "")}";
-                    description_cn += $"\n{p.Value:0.###%}分馏出{p.Key}个产物";
+                    description_en +=
+                        $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)} fractionate {p.Key.ToString().AddOrangeLabel(true)} product{(p.Key > 1 ? "s" : "")}";
+                    description_cn +=
+                        $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)}分馏出{p.Key.ToString().AddOrangeLabel(true)}个产物";
                 }
                 RegisterOrEditAsync(DescriptionNoDestroy, description_en, description_cn);
                 if (fracNumRatioDic.TryGetValue(-1, out float destroyRatio)) {
                     description_en +=
-                        $"\n<color=\"#FD965ECC\">WARNING: </color>This item is difficult to fractionate and has a {destroyRatio:0.###%} chance of being destroyed!";
-                    description_cn += $"\n<color=\"#FD965ECC\">警告：</color>该物品难以分馏，有{destroyRatio:0.###%}概率损毁！";
+                        $"\n{"WARNING:".AddOrangeLabel()} There is a probability of {destroyRatio.ToString("0.###%").AddRedLabel(true)} that an input item will be destroyed at each fractionation!";
+                    description_cn +=
+                        $"\n{"警告：".AddOrangeLabel()}每次分馏时，有{destroyRatio.ToString("0.###%").AddRedLabel(true)}概率导致原料损毁！";
                 }
                 RegisterOrEditAsync(DescriptionDestroy, description_en, description_cn);
                 //根据产物对应的配方位置，确定分馏配方的位置
@@ -397,12 +408,17 @@ namespace FractionateEverything.Main {
                 int gridIndex = outputItem.recipes.Count == 0
                     ? 0
                     : outputItem.recipes[0].GridIndex + (tab分馏1 - 1) * 1000;
+                //对于原版分馏配方而言，ItemCounts[0]和ResultCounts[0]只影响分馏成功率和配方显示，不会分出多个产物
+                //万物分馏为了解决这个问题，采用如下方案：
+                //1.抛掉ItemCounts[0]和ResultCounts[0]，它们不再造成任何影响
+                //2.重写分馏塔的运行逻辑，通过fracRecipeNumRatioDic获取指定物品的概率集合，然后处理
+                //3.如果UIItemTip最下面的某一个UIRecipeEntry（就是物品、配方详情弹窗最下面的制作方式）是分馏配方，修改输入、输出、概率。输入恒定为1，输出为配方产物数，概率显示无增产情况下的概率以及损毁概率。
+                //值得一提的是，在不考虑损毁的情况下，目前万物分馏所有的显式分馏配方均为单概率配方，这使得第3点更容易计算。
                 RecipeProto r = new() {
                     Type = ERecipeType.Fractionate,
                     Handcraft = false,
                     Explicit = true,
                     TimeSpend = 60,
-                    //ItemCounts[0]和ResultCounts[0]只影响配方小图标的内容显示，不可能分出多个，这是分馏配方的局限性
                     Items = [inputItemID],
                     ItemCounts = [100],
                     Results = [outputItemID],
@@ -461,7 +477,8 @@ namespace FractionateEverything.Main {
                 if (inputIconName != null && outputIconName != null) {
                     //由于不同原料可能分馏出同一种产物，配方名字应以原料名称命名
                     //考虑到重氢可能分离为其他物品（虽然现在没有），为了不冲突，名称改为“原料-产物-formula-版本”
-                    string iconPath = $"Assets/fracicons/{inputIconName}-{outputIconName}-formula-v{iconVersion}";
+                    string iconPath =
+                        $"Assets/fractionaterecipeicon{iconVersion}/{inputIconName}-{outputIconName}-formula-v{iconVersion}";
                     r.IconPath = Resources.Load<Sprite>(iconPath) != null ? iconPath : outputItem.IconPath;
 #if DEBUG
                     //输出分馏配方需要的图标的路径，以便于制作图标

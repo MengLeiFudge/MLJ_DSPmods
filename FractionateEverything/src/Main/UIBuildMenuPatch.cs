@@ -10,14 +10,11 @@ namespace FractionateEverything.Main {
     /// <summary>
     /// 感谢jinxOAO和Awbugl，此代码源于MoreMegaStructure的UIBuildMenuPatcher.cs
     /// </summary>
-    public static class UIBuildMenuPatcher {
-        public static bool MSEnable => Compatibility.MoreMegaStructure.Enable;
-
+    public static class UIBuildMenuPatch {
         public static List<GameObject> childButtonObjs = [];
         public static List<UIButton> childButtons = [];
         public static List<Image> childIcons = [];
         public static List<Text> childNumTexts = [];
-        public static List<Text> childTips = [];
         public static ItemProto[,] protos = new ItemProto[10, 12];
         public static List<CanvasGroup> childCanvasGroups = [];
         public static List<Text> childHotkeyText = [];// F1-F12快捷键文本
@@ -25,7 +22,6 @@ namespace FractionateEverything.Main {
         public static GameObject switchHotkeyRowText;
 
         public const int FECategory = 5;
-        public const int MSCategory = 8;
         public static int currCategory = 0;
         public static int hotkeyActivateRow = 0;
 
@@ -98,47 +94,10 @@ namespace FractionateEverything.Main {
             //显示内容
             protos[FECategory, 0] = LDB.items.Select(IFE精准分馏塔);
             protos[FECategory, 1] = LDB.items.Select(IFE建筑极速分馏塔);
-            protos[FECategory, 2] = LDB.items.Select(I分馏塔_FE通用分馏塔);
-            protos[FECategory, 3] = LDB.items.Select(IFE点数聚集分馏塔);
-            protos[FECategory, 4] = LDB.items.Select(IFE增产分馏塔);
-            if (MSEnable) {
-                protos[MSCategory, 0] = LDB.items.Select(IMS铁金属重构装置);
-                protos[MSCategory, 1] = LDB.items.Select(IMS铜金属重构装置);
-                protos[MSCategory, 2] = LDB.items.Select(IMS高纯硅重构装置);
-                protos[MSCategory, 3] = LDB.items.Select(IMS钛金属重构装置);
-                protos[MSCategory, 4] = LDB.items.Select(IMS单极磁石重构装置);
-                protos[MSCategory, 5] = LDB.items.Select(IMS石墨提炼装置);
-                protos[MSCategory, 6] = LDB.items.Select(IMS晶体接收器);
-                protos[MSCategory, 7] = LDB.items.Select(IMS光栅晶体接收器);
-            }
-        }
-
-        public static void IgnoreMSPatches(Harmony harmony) {
-            //将巨构原有的所有方法全部屏蔽，不只是patch，初始化UI的也要屏蔽，防止创建两次UI
-            var methods = AccessTools.GetDeclaredMethods(typeof(MoreMegaStructure.UIBuildMenuPatcher));
-            foreach (var method in methods) {
-                if (method.ReturnType == typeof(void)) {
-                    harmony.Patch(
-                        method,
-                        new(typeof(UIBuildMenuPatcher), nameof(MS_RetVoid_PrePatch))
-                    );
-                }
-                else if (method.ReturnType == typeof(bool)) {
-                    harmony.Patch(
-                        method,
-                        new(typeof(UIBuildMenuPatcher), nameof(MS_RetBool_PrePatch))
-                    );
-                }
-            }
-        }
-
-        public static bool MS_RetVoid_PrePatch() {
-            return false;
-        }
-
-        public static bool MS_RetBool_PrePatch(ref bool __result) {
-            __result = true;
-            return false;
+            protos[FECategory, 2] = LDB.items.Select(IFE垃圾回收分馏塔);
+            protos[FECategory, 3] = LDB.items.Select(I分馏塔_FE通用分馏塔);
+            protos[FECategory, 4] = LDB.items.Select(IFE点数聚集分馏塔);
+            protos[FECategory, 5] = LDB.items.Select(IFE增产分馏塔);
         }
 
         /// <summary>
@@ -154,8 +113,7 @@ namespace FractionateEverything.Main {
             _this.posWanted = -60;// 对应游戏的0的显示效果
             if (guideComplete) {
                 if (_this.buildMenu.active) {
-                    if (_this.buildMenu.currentCategory == FECategory
-                        || (MSEnable && _this.buildMenu.currentCategory == MSCategory)) {
+                    if (_this.buildMenu.currentCategory == FECategory) {
                         _this.posWanted = 0f;
                     }
                     else {
@@ -250,9 +208,8 @@ namespace FractionateEverything.Main {
                 }
                 GameHistoryData history = GameMain.history;
 
-                if (category == FECategory
-                    || (MSEnable && category == MSCategory)) {
-                    int categoryShift = category == FECategory ? FECategory : MSCategory;
+                if (category == FECategory) {
+                    int categoryShift = FECategory;
                     StorageComponent package = _this.player.package;
                     for (int i = 0; i < childButtons.Count; i++) {
                         if (childButtons[i] != null) {
@@ -357,9 +314,6 @@ namespace FractionateEverything.Main {
             if (__instance.currentCategory == FECategory && hotkeyActivateRow == 1) {
                 VFInput.inputing = true;
             }
-            if (MSEnable && __instance.currentCategory == MSCategory && hotkeyActivateRow == 1) {
-                VFInput.inputing = true;
-            }
             // 但如果按键是1234567等等就得不拦截，还原回其状态
             for (int i = 0; i < 10; i++) {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + (i - 1))) {
@@ -377,8 +331,7 @@ namespace FractionateEverything.Main {
         [HarmonyPatch(typeof(UIBuildMenu), "_OnUpdate")]
         public static void UIBuildMenu_OnUpdate_PostPatch(ref UIBuildMenu __instance) {
             var _this = __instance;
-            if (_this.currentCategory == FECategory
-                || (MSEnable && _this.currentCategory == MSCategory)) {
+            if (_this.currentCategory == FECategory) {
                 GameHistoryData history = GameMain.history;
                 StorageComponent package = _this.player.package;
 
