@@ -123,7 +123,6 @@ namespace GetDspData {
         ];
         public static bool canMiningFromOilWell(this ItemProto item) => miningFromOilWell.Contains(item.ID);
 
-
         //可通过射线接收器获取
         static List<int> miningByRayReceiver = MoreMegaStructureEnable
             ? [
@@ -133,17 +132,6 @@ namespace GetDspData {
                 I临界光子,
             ];
         public static bool canMiningByRayReceiver(this ItemProto item) => miningByRayReceiver.Contains(item.ID);
-        static List<int> miningByRayReceiverItemID = MoreMegaStructureEnable
-            ? [
-                I射线接收站, IMS铁金属重构装置, IMS铜金属重构装置, IMS高纯硅重构装置, IMS钛金属重构装置,
-                IMS单极磁石重构装置, IMS石墨提炼装置, IMS晶体接收器, IMS光栅晶体接收器,
-            ]
-            : [
-                I射线接收站,
-            ];
-
-        public static int getMiningByRayReceiverItemID(this ItemProto item) =>
-            miningByRayReceiverItemID[miningByRayReceiver.IndexOf(item.ID)];
 
         //可通过星际组装厂获取
         static List<int> miningByMS = [
@@ -160,26 +148,32 @@ namespace GetDspData {
         ];
         public static bool canMiningFromAtmosphere(this ItemProto item) => miningFromAtmosphere.Contains(item.ID);
 
+        //可以凭空获取
+        public static bool canMining(this ItemProto item) =>
+            item.canMiningFromVein()
+            || item.canMiningByIcarus()
+            || item.canMiningFromGasGiant()
+            || item.canMiningFromSea()
+            || item.canMiningFromOilWell()
+            || item.canMiningByRayReceiver()
+            || item.canMiningByMS()
+            || item.canDropFromEnemy()
+            || item.canMiningFromAtmosphere();
+
         //根据配方类型获取对应的工厂类型
         public static int[] getAcceptFactories(this RecipeProto recipe) {
             return (int)recipe.Type switch {
                 (int)Utils_ERecipeType.Smelt => GenesisBookEnable
                     ? [I电弧熔炉, I位面熔炉, I负熵熔炉, IGB物质裂解塔]
                     : [I电弧熔炉, I位面熔炉, I负熵熔炉],
-                (int)Utils_ERecipeType.Chemical => GenesisBookEnable
-                    ? [I化工厂, IGB埃克森美孚化工厂]
-                    : [I化工厂, I量子化工厂_GB先进化学反应釜],
+                (int)Utils_ERecipeType.Chemical => GenesisBookEnable ? [I化工厂, IGB埃克森美孚化工厂] : [I化工厂, I量子化工厂_GB先进化学反应釜],
                 (int)Utils_ERecipeType.Refine => [I原油精炼厂],
                 (int)Utils_ERecipeType.Assemble => GenesisBookEnable
                     ? [I制造台MkI_GB基础制造台, I重组式制造台_GB物质重组工厂, IGB天穹装配厂]
                     : [I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂],
-                (int)Utils_ERecipeType.Particle => GenesisBookEnable
-                    ? [I微型粒子对撞机, IGB苍穹粒子加速器]
-                    : [I微型粒子对撞机],
+                (int)Utils_ERecipeType.Particle => GenesisBookEnable ? [I微型粒子对撞机, IGB苍穹粒子加速器] : [I微型粒子对撞机],
                 (int)Utils_ERecipeType.PhotonStore => [I射线接收站],
-                (int)Utils_ERecipeType.Fractionate => FractionateEverythingEnable
-                    ? [IFE精准分馏塔, IFE建筑极速分馏塔, I分馏塔_FE通用分馏塔]
-                    : [I分馏塔_FE通用分馏塔],
+                (int)Utils_ERecipeType.Fractionate => [I分馏塔],//万物分馏配方在代码中处理，不在此处
                 (int)Utils_ERecipeType.标准制造 => [I制造台MkII_GB标准制造单元, I重组式制造台_GB物质重组工厂, IGB天穹装配厂],
                 (int)Utils_ERecipeType.高精度加工 => [I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂, IGB工业先锋精密加工中心],
                 (int)Utils_ERecipeType.矿物处理 => [IGB矿物处理厂, I负熵熔炉, IGB物质裂解塔],
@@ -188,30 +182,25 @@ namespace GetDspData {
                 (int)Utils_ERecipeType.垃圾回收 => [IGB物质分解设施],
                 (int)Utils_ERecipeType.Research => [I矩阵研究站, I自演化研究站],
                 (int)Utils_ERecipeType.高分子化工 => [I量子化工厂_GB先进化学反应釜, IGB埃克森美孚化工厂],
-                // (int)Utils_ERecipeType.所有化工 => [I化工厂, I量子化工厂_GB先进化学反应釜, IGB埃克森美孚化工厂],
-                // (int)Utils_ERecipeType.复合制造 =>
-                //     [I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I重组式制造台_GB物质重组工厂, IGB天穹装配厂],
-                // (int)Utils_ERecipeType.所有熔炉 => [I电弧熔炉, IGB矿物处理厂, I位面熔炉, I负熵熔炉, IGB物质裂解塔],
-                // (int)Utils_ERecipeType.巨构星际组装厂 => [I巨构星际组装厂],//抛出异常，因为已经添加对应配方
-                _ => throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}"),
+                _ => throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}")
             };
         }
 
         public static float GetSpace(this ItemProto item) {
             return item.ID switch {
-                I电弧熔炉 or I位面熔炉 or I负熵熔炉 => 5.76f,
+                I电弧熔炉 or I位面熔炉 or I负熵熔炉 or IGB矿物处理厂 => 5.76f,
                 I制造台MkI_GB基础制造台 or I制造台MkII_GB标准制造单元 or I制造台MkIII_GB高精度装配线 or I重组式制造台_GB物质重组工厂 => 10.24f,
                 I化工厂 or I量子化工厂_GB先进化学反应釜 => 23.76f,
                 I矩阵研究站 or I自演化研究站 => 20.25f,
                 I采矿机 => 15f,
                 I大型采矿机 => 25f,
                 I抽水站 => 12f,
-                I原油萃取站 or IGB天穹装配厂 or IGB物质裂解塔 or IGB埃克森美孚化工厂 or IGB工业先锋精密加工中心 or IGB物质分解设施 or IGB苍穹粒子加速器
-                    or IGB大气采集站 => 50f,
+                I原油萃取站 or IGB天穹装配厂 or IGB物质裂解塔 or IGB埃克森美孚化工厂 or IGB工业先锋精密加工中心
+                    or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
                 I原油精炼厂 => 18f,
-                I射线接收站 or IMS铁金属重构装置 or IMS铜金属重构装置 or IMS高纯硅重构装置 or IMS钛金属重构装置 or IMS单极磁石重构装置 or IMS晶体接收器 or IMS石墨提炼装置
-                    or IMS光栅晶体接收器 => 54.82f,
-                I分馏塔_FE通用分馏塔 or IGB聚束液体汲取设施 or IFE精准分馏塔 or IFE建筑极速分馏塔 or IFE点数聚集分馏塔 or IFE增产分馏塔 => 12.96f,
+                I射线接收站 => 54.82f,
+                I分馏塔 or IGB聚束液体汲取设施 or IFE自然资源分馏塔 or IFE升级分馏塔 or IFE降级分馏塔
+                    or IFE垃圾回收分馏塔 or IFE点数聚集分馏塔 or IFE增产分馏塔 => 12.96f,
                 I微型粒子对撞机 => 45.12f,
                 I能量枢纽 => 64f,
                 I蓄电器 or I蓄电器满 or IGB同位素温差发电机 => 4f,

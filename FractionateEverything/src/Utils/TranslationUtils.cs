@@ -74,7 +74,19 @@ namespace FractionateEverything.Utils {
         /// 翻译将会暂存到modStringList中，只有在调用LoadLanguagePostfixAfterCommonApi后才生效。
         /// </summary>
         public static void RegisterOrEditAsync(string key, string enTrans, string cnTrans = null) {
-            modStringList.Add(new() { key = key, enTrans = enTrans, cnTrans = cnTrans ?? key });
+            ModStr modStr = new() { key = key, enTrans = enTrans, cnTrans = cnTrans ?? key };
+            foreach (ModStr m in modStringList) {
+                if (m.key == key) {
+                    modStringList.Remove(m);
+                    break;
+                }
+            }
+            modStringList.Add(modStr);
+        }
+
+        public static void RegisterOrEditImmediately(string key, string enTrans, string cnTrans = null) {
+            RegisterOrEditAsync(key, enTrans, cnTrans);
+            LoadLanguagePostfixAfterCommonApi();
         }
 
         /// <summary>
