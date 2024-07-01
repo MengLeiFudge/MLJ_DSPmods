@@ -13,8 +13,6 @@ namespace FractionateEverything.Compatibility {
 
         internal static bool Enable;
         internal static int tab巨构;
-        private static Sprite alienmatrix;
-        private static Sprite alienmatrixGray;
         private static bool _finished;
 
         internal static void Compatible() {
@@ -39,16 +37,13 @@ namespace FractionateEverything.Compatibility {
         public static void AfterLDBToolPostAddData() {
             if (_finished) return;
 
-            //水滴物品、配方迁移到巨构tab112
-            ItemProto item = LDB.items.Select(IMS水滴);
-            item.GridIndex = tab巨构 * 1000 + 112;
+            //水滴物品、配方迁移到巨构tab111
+            ItemProto item = LDB.items.Select(IVD水滴);
+            item.GridIndex = tab巨构 * 1000 + 111;
             item.maincraft.GridIndex = item.GridIndex;
 
             //为传送带上没有图标显示的物品添加显示图标
-            int[] itemIDs = [
-                IMS铁金属重构装置, IMS铜金属重构装置, IMS高纯硅重构装置, IMS钛金属重构装置, IMS单极磁石重构装置,
-                IMS晶体接收器, IMS组件集成装置, IMS石墨提炼装置, IMS光栅晶体接收器, IMS物资交换物流站,
-            ];
+            int[] itemIDs = [IMS组件集成装置, IMS物资交换物流站];
             foreach (int itemID in itemIDs) {
                 try {
                     ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs

@@ -4,6 +4,9 @@ using System.Reflection.Emit;
 using static FractionateEverything.Utils.RecipeHelper;
 
 namespace FractionateEverything.Main {
+    /// <summary>
+    /// 调整图标选取页面的显示。
+    /// </summary>
     public static class UISignalPickerPatch {
         /// <summary>
         /// 公式分页移除所有分馏新增的图标（item和recipe）
@@ -77,21 +80,20 @@ namespace FractionateEverything.Main {
         [HarmonyPatch(typeof(UISignalPicker), nameof(UISignalPicker._OnUpdate))]
         [HarmonyPostfix]
         public static void UISignalPicker__OnUpdate_Postfix(ref UISignalPicker __instance) {
+            if (__instance.screenItemTip == null) {
+                return;
+            }
             if (__instance.hoveredIndex < 0) {
-                if (__instance.screenItemTip != null) {
-                    __instance.screenItemTip.showingItemId = 0;
-                    __instance.screenItemTip.gameObject.SetActive(false);
-                }
+                __instance.screenItemTip.showingItemId = 0;
+                __instance.screenItemTip.gameObject.SetActive(false);
                 return;
             }
             int index = __instance.signalArray[__instance.hoveredIndex];
             if (index > 20000 && index < 32000) {
                 var recipe = LDB.recipes.Select(index - 20000);
                 if (recipe == null) {
-                    if (__instance.screenItemTip != null) {
-                        __instance.screenItemTip.showingItemId = 0;
-                        __instance.screenItemTip.gameObject.SetActive(false);
-                    }
+                    __instance.screenItemTip.showingItemId = 0;
+                    __instance.screenItemTip.gameObject.SetActive(false);
                     return;
                 }
                 int num1 = __instance.hoveredIndex % maxColumnCount;

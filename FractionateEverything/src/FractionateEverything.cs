@@ -10,10 +10,12 @@ using FractionateEverything.Utils;
 using HarmonyLib;
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using xiaoye97;
+using static FractionateEverything.Utils.ProtoID;
 
 namespace FractionateEverything {
     [BepInPlugin(GUID, NAME, VERSION)]
@@ -23,7 +25,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.4.0";
+        public const string VERSION = "1.4.1";
 
         #region Logger
 
@@ -39,21 +41,42 @@ namespace FractionateEverything {
         #region Fields
 
         private static ConfigFile configFile;
-        private static ConfigEntry<bool> DisableMessageBoxEntry;
+        public static ConfigEntry<string> CurrentVersionEntry;
+        /// <summary>
+        /// 记录当前使用的MOD版本，以便于弹窗提示MOD更新内容。
+        /// </summary>
+        public static string currentVersion => CurrentVersionEntry.Value;
+        public static bool isVersionChanged => currentVersion != VERSION;
+        public static ConfigEntry<bool> DisableMessageBoxEntry;
         /// <summary>
         /// 是否在游戏加载时禁用提示信息。
         /// </summary>
         public static bool disableMessageBox => DisableMessageBoxEntry.Value;
-        private static ConfigEntry<int> IconVersionEntry;
+        public static ConfigEntry<int> IconVersionEntry;
         /// <summary>
         /// 分馏图标样式。
         /// </summary>
         public static int iconVersion => IconVersionEntry.Value;
-        private static ConfigEntry<bool> EnableDestroyEntry;
+        public static ConfigEntry<bool> EnableDestroyEntry;
         /// <summary>
         /// 是否启用分馏配方中的损毁概率。
         /// </summary>
         public static bool enableDestroy => EnableDestroyEntry.Value;
+        public static ConfigEntry<bool> EnableFuelRodFracEntry;
+        /// <summary>
+        /// 是否启用燃料棒分馏。
+        /// </summary>
+        public static bool enableFuelRodFrac => EnableFuelRodFracEntry.Value;
+        public static ConfigEntry<bool> EnableMatrixFracEntry;
+        /// <summary>
+        /// 是否启用矩阵分馏。
+        /// </summary>
+        public static bool enableMatrixFrac => EnableMatrixFracEntry.Value;
+        public static ConfigEntry<bool> EnableBuildingAsTrashEntry;
+        /// <summary>
+        /// 垃圾回收分馏塔能否输入建筑。
+        /// </summary>
+        public static bool enableBuildingAsTrash => EnableBuildingAsTrashEntry.Value;
 
         public const string Tech1134IconPath = "Icons/Tech/1134";
         public static int tab分馏1;
@@ -86,7 +109,7 @@ namespace FractionateEverything {
                 LDBTool.PostAddDataAction += PostAddData;
 
                 foreach (Type type in executingAssembly.GetTypes()) {
-                    //FractionateEverything.Compatibility内的类由自己patch，不在这里处理
+                    //Compatibility内的类由自己patch，不在这里处理
                     if (type.Namespace == null
                         || type.Namespace.StartsWith("FractionateEverything.Compatibility")) {
                         continue;
@@ -115,6 +138,12 @@ namespace FractionateEverything {
         public void LoadConfig() {
             configFile = Config;
 
+            CurrentVersionEntry = Config.Bind("config", "CurrentVersion", "1.4.0",
+                new ConfigDescription(
+                    "Current game version, used to control whether or not to show the update pop-up window.\n"
+                    + "当前游戏版本，用于控制是否显示更新弹窗。",
+                    new AcceptableStringValue("1.4.0"), null));
+
             DisableMessageBoxEntry = Config.Bind("config", "DisableMessageBox", false,
                 new ConfigDescription(
                     "Don't show message when FractionateEverything is loaded.\n"
@@ -131,46 +160,89 @@ namespace FractionateEverything {
 
             EnableDestroyEntry = Config.Bind("config", "EnableDestroy", true,
                 new ConfigDescription(
-                    "Whether to enable the probability of destruction in fractionate recipes.\n"
-                    + "When enabled, if the fractionation recipe has a probability of destruction, there is a certain probability that the input item will disappear during fractionation (recommended).\n"
-                    + "是否启用分馏配方中的损毁概率。\n"
-                    + "启用情况下，如果分馏配方具有损毁概率，则分馏时会有一定概率导致原料直接消失（推荐）。",
+                    "Whether to enable the probability of destruction in fractionate recipes (recommended enable).\n"
+                    + "When enabled, if the fractionation recipe has a probability of destruction, there is a certain probability that the input item will disappear during fractionation.\n"
+                    + "是否启用分馏配方中的损毁概率（建议开启）。\n"
+                    + "启用情况下，如果分馏配方具有损毁概率，则分馏时会有一定概率导致原料直接消失。",
                     new AcceptableBoolValue(true), null));
+
+            EnableFuelRodFracEntry = Config.Bind("config", "EnableFuelRodFracEntry", false,
+                new ConfigDescription(
+                    "Whether to enable fuel rod fractionation.\n"
+                    + "是否启用燃料棒分馏。",
+                    new AcceptableBoolValue(false), null));
+
+            EnableMatrixFracEntry = Config.Bind("config", "EnableMatrixFracEntry", false,
+                new ConfigDescription(
+                    "Whether to enable matrix fractionation (recommended disable).\n"
+                    + "是否启用矩阵分馏（建议关闭）。",
+                    new AcceptableBoolValue(false), null));
+
+            EnableBuildingAsTrashEntry = Config.Bind("config", "EnableBuildingAsTrashEntry", false,
+                new ConfigDescription(
+                    "Whether buildings can input into Trash Recycle Fractionator (recommended disable).\n"
+                    + "建筑能否输入垃圾回收分馏塔（建议关闭）。",
+                    new AcceptableBoolValue(false), null));
 
             //移除之前多余的设置项，然后保存
             (Traverse.Create(Config).Property("OrphanedEntries").GetValue() as IDictionary)?.Clear();
             Config.Save();
         }
 
-        internal static void SetConfig(bool disableMessageBox, int iconVersion, bool enableDestroy) {
+        [SuppressMessage("ReSharper", "ParameterHidesMember")]
+        public static void SetConfig1() {
+            DisableMessageBoxEntry.Value = true;
+            configFile.Save();
+        }
+
+        [SuppressMessage("ReSharper", "ParameterHidesMember")]
+        public static void SetConfig2() {
+            CurrentVersionEntry.Value = VERSION;
+            configFile.Save();
+        }
+
+        [SuppressMessage("ReSharper", "ParameterHidesMember")]
+        public static void SetConfig(bool disableMessageBox, int iconVersion, bool enableDestroy,
+            bool enableFuelRodFrac, bool enableMatrixFrac, bool enableBuildingAsTrash) {
             bool iconVersionChanged = iconVersion != IconVersionEntry.Value;
             bool enableDestroyChanged = enableDestroy != EnableDestroyEntry.Value;
+            bool enableFuelRodFracChanged = enableFuelRodFrac != EnableFuelRodFracEntry.Value;
+            bool enableMatrixFracChanged = enableMatrixFrac != EnableMatrixFracEntry.Value;
+            bool enableBuildingAsTrashChanged = enableBuildingAsTrash != EnableBuildingAsTrashEntry.Value;
             //修改配置文件里面的内容
             DisableMessageBoxEntry.Value = disableMessageBox;
             IconVersionEntry.Value = iconVersion;
             EnableDestroyEntry.Value = enableDestroy;
+            EnableFuelRodFracEntry.Value = enableFuelRodFrac;
+            EnableMatrixFracEntry.Value = enableMatrixFrac;
             logger.LogInfo($"Fractionate Everything setting changed.\n"
                            + $"disableMessageBox:{disableMessageBox}"
                            + $" iconVersion:{iconVersion}"
-                           + $" enableDestroy:{enableDestroy}");
+                           + $" enableDestroy:{enableDestroy}"
+                           + $" enableFuelRodFrac:{enableFuelRodFrac}"
+                           + $" enableMatrixFrac:{enableMatrixFrac}");
             configFile.Save();
-            //如果图标样式或损毁设置变化，需要重新加载所有分馏配方，玩家需要重新载入存档
-            if (iconVersionChanged || enableDestroyChanged) {
-                foreach (var r in LDB.recipes.dataArray) {
-                    if (r.Type != ERecipeType.Fractionate) {
+            //重新加载所有分馏配方，玩家需要重新载入存档
+            if (iconVersionChanged || enableDestroyChanged || enableFuelRodFracChanged || enableMatrixFracChanged) {
+                foreach (RecipeProto r in LDB.recipes.dataArray) {
+                    if (r.Type != ERecipeType.Fractionate || r.ID == R重氢分馏_GB氦闪约束器) {
                         continue;
                     }
                     r.ModifyIconAndDesc();
                     r.Preload(r.index);
                 }
             }
+            //调整垃圾回收分馏塔描述
+            if (enableBuildingAsTrashChanged) {
+                ItemProto trashRecycleFractionator = LDB.items.Select(IFE垃圾回收分馏塔);
+                trashRecycleFractionator.Name = enableBuildingAsTrash ? "I垃圾回收分馏塔2" : "I垃圾回收分馏塔";
+                trashRecycleFractionator.Preload(trashRecycleFractionator.index);
+            }
         }
 
         public void PreAddData() {
             //添加新科技
             Tech.AddTechs();
-            //调整原版分馏塔，移动部分物品、配方的位置
-            FractionatorBuildings.OriginFractionatorAdaptation();
             //创建新的分馏塔
             FractionatorBuildings.CreateAndPreAddNewFractionators();
         }
