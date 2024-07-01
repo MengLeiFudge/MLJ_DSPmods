@@ -16,4 +16,10 @@ namespace FractionateEverything.Utils {
         public override bool IsValid(object value) => value.GetType() == ValueType;
         public override string ToDescriptionString() => null;
     }
+
+    public class AcceptableStringValue(string defVal) : AcceptableValueBase(typeof(string)) {
+        public override object Clamp(object value) => IsValid(value) ? (string)value : defVal;
+        public override bool IsValid(object value) => value.GetType() == ValueType;
+        public override string ToDescriptionString() => null;
+    }
 }

@@ -1,5 +1,9 @@
 ﻿namespace FractionateEverything.Utils {
     public static class ProtoID {
+        internal const int I伊卡洛斯 = 0;
+        internal const int I行星基地 = 1;
+        internal const int I巨构星际组装厂 = 2;
+
         internal const int I铁矿 = 1001;
         internal const int I铜矿 = 1002;
         internal const int I硅石 = 1003;
@@ -141,7 +145,7 @@
         internal const int I原油精炼厂 = 2308;
         internal const int I化工厂 = 2309;
         internal const int I量子化工厂_GB先进化学反应釜 = 2317;
-        internal const int I分馏塔_FE通用分馏塔 = 2314;
+        internal const int I分馏塔 = 2314;
         internal const int I太阳能板 = 2205;
         internal const int I蓄电器 = 2206;
         internal const int I蓄电器满 = 2207;
@@ -195,7 +199,7 @@
         internal const int IMS导流框架 = 9508;
         internal const int IMS恒星炮组件 = 9509;
         internal const int IMS恒星炮运载火箭 = 9510;
-        internal const int IMS水滴 = 9511;
+        internal const int IVD水滴 = 9511;
         internal const int IMS铁金属重构装置 = 9493;
         internal const int IMS铜金属重构装置 = 9494;
         internal const int IMS高纯硅重构装置 = 9495;
@@ -322,11 +326,12 @@
         internal const int IGB光学信息传输纤维 = 7804;
         internal const int IGB量子计算主机 = 7805;
         internal const int IGB超越X1型光学主机 = 7806;
-        internal const int IFE精准分馏塔 = 2320;
-        internal const int IFE建筑极速分馏塔 = 2321;
-        internal const int IFE点数聚集分馏塔 = 2322;
-        internal const int IFE增产分馏塔 = 2323;
+        internal const int IFE自然资源分馏塔 = 2321;
+        internal const int IFE升级分馏塔 = 2322;
+        internal const int IFE降级分馏塔 = 2323;
         internal const int IFE垃圾回收分馏塔 = 2324;
+        internal const int IFE点数聚集分馏塔 = 2325;
+        internal const int IFE增产分馏塔 = 2326;
 
         internal const int M水 = 494;
         internal const int M燃烧单元 = 489;
@@ -385,7 +390,7 @@
         internal const int M原油精炼厂 = 63;
         internal const int M化工厂 = 64;
         internal const int M量子化工厂_GB先进化学反应釜 = 376;
-        internal const int M分馏塔_FE通用分馏塔 = 119;
+        internal const int M分馏塔 = 119;
         internal const int M太阳能板 = 55;
         internal const int M蓄电器 = 46;
         internal const int M蓄电器满 = 46;
@@ -440,11 +445,12 @@
         internal const int MGB反物质炮弹组 = 818;
         //id可选范围：495-560，超出需要处理OnAfterDeserialize越界问题，麻烦
         //不要使用500-520的id，会被创世修改model至+300
-        internal const int MFE精准分馏塔 = 530;
-        internal const int MFE建筑极速分馏塔 = 531;
-        internal const int MFE点数聚集分馏塔 = 532;
-        internal const int MFE增产分馏塔 = 533;
+        internal const int MFE自然资源分馏塔 = 531;
+        internal const int MFE升级分馏塔 = 532;
+        internal const int MFE降级分馏塔 = 533;
         internal const int MFE垃圾回收分馏塔 = 534;
+        internal const int MFE点数聚集分馏塔 = 535;
+        internal const int MFE增产分馏塔 = 536;
 
         internal const int R铁块 = 1;
         internal const int R磁铁_GB铜线圈 = 2;
@@ -738,12 +744,12 @@
         internal const int RGB光学信息传输纤维 = 794;
         internal const int RGB量子计算主机 = 795;
         internal const int RGB海水淡化 = 801;
-        internal const int RFE精准分馏塔 = 1001;
-        internal const int RFE建筑极速分馏塔 = 1002;
-        internal const int RFE通用分馏塔 = 1003;
-        internal const int RFE垃圾回收分馏塔 = 1006;
-        internal const int RFE点数聚集分馏塔 = 1004;
-        internal const int RFE增产分馏塔 = 1005;
+        internal const int RFE自然资源分馏塔 = 1001;
+        internal const int RFE升级分馏塔 = 1002;
+        internal const int RFE降级分馏塔 = 1003;
+        internal const int RFE垃圾回收分馏塔 = 1004;
+        internal const int RFE点数聚集分馏塔 = 1005;
+        internal const int RFE增产分馏塔 = 1006;
 
         internal const int T戴森球计划 = 1;
         internal const int T电磁学 = 1001;
@@ -766,7 +772,7 @@
         internal const int T应用型超导体 = 1131;
         internal const int T高强度材料 = 1132;
         internal const int T粒子可控 = 1133;
-        internal const int T重氢分馏_GB强相互作用力材料_FE通用分馏 = 1134;
+        internal const int T重氢分馏_GB强相互作用力材料 = 1134;
         internal const int T波函数干扰 = 1141;
         internal const int T微型粒子对撞机_GB粒子对撞机 = 1142;
         internal const int T奇异物质 = 1143;
@@ -889,13 +895,6 @@
         internal const int TMS尼科尔戴森光束 = 1918;
         internal const int TVD玻色子操控 = 1999;
         internal const int TVD并入COSMO架构 = 1998;
-        internal const int TFE精准分馏 = 1621;
-        internal const int TFE建筑极速分馏 = 1622;
-        internal const int TFE垃圾回收 = 1623;
-        internal const int TFE增产点数聚集 = 1159;
-        internal const int TFE增产分馏 = 1908;
-        internal const int TFE分馏塔流动输出集装 = 3807;
-        internal const int TFE分馏塔产物输出集装 = 3804;
         internal const int TGB科学理论 = 1900;
         internal const int TGB钨强化玻璃 = 1911;
         internal const int TGB焦油精炼 = 1915;
@@ -933,5 +932,12 @@
         internal const int TGB行星协调中心黑雾数据库 = 1960;
         internal const int TGB虚数空间存储 = 1962;
         internal const int TGB集装物流系统 = 1963;
+        internal const int TFE自然资源分馏 = 1621;
+        internal const int TFE升降级分馏 = 1622;
+        internal const int TFE垃圾回收 = 1623;
+        internal const int TFE增产点数聚集 = 1159;
+        internal const int TFE增产分馏 = 1908;
+        internal const int TFE分馏塔流动输出集装 = 3807;
+        internal const int TFE分馏塔产物输出集装 = 3804;
     }
 }

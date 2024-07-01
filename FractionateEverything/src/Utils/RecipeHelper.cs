@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using static FractionateEverything.FractionateEverything;
 
 namespace FractionateEverything.Utils {
+    /// <summary>
+    /// 给新增的分馏配方分配未使用的ID，调整已添加的分馏配方的显示位置
+    /// </summary>
     public class RecipeHelper {
         private int currID = 1010;
         /// <summary>
@@ -30,7 +33,7 @@ namespace FractionateEverything.Utils {
             //万物分馏只要两页图标
             tab = firstPage + 1;
             row = 6;
-            column = 5;
+            column = 7;
             firstEmptyGridIndex = tab * 1000 + row * 100 + column + 1;
             if (GenesisBook.Enable) {
                 maxRowCount = 7;
@@ -61,6 +64,14 @@ namespace FractionateEverything.Utils {
         }
 
         public void ModifyGridIndex(RecipeProto r, int gridIndex) {
+            //如果要改动位置就是现在的位置，直接返回
+            if (gridIndex == r.GridIndex) {
+                return;
+            }
+            //如果传入的位置已被占用，使用末尾的空位
+            if (gridIndexDic.ContainsValue(gridIndex)) {
+                gridIndex = -1;
+            }
             //传入非正数表示使用末尾的空位
             if (gridIndex <= 0) {
                 column++;
@@ -74,11 +85,6 @@ namespace FractionateEverything.Utils {
                 }
                 gridIndexDic[r] = gridIndex0;
                 r.GridIndex = gridIndex0;
-                return;
-            }
-            //如果传入的位置已被占用，使用末尾的空位
-            if (gridIndexDic.ContainsValue(gridIndex)) {
-                ModifyGridIndex(r, -1);
                 return;
             }
             //移除原来的位置，使用新位置

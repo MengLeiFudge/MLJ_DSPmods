@@ -1,10 +1,10 @@
-﻿using FractionateEverything.Compatibility;
+﻿using BuildMenuTool.Main;
+using FractionateEverything.Compatibility;
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static FractionateEverything.Utils.ProtoID;
 
 namespace FractionateEverything.Main {
     /// <summary>
@@ -29,10 +29,41 @@ namespace FractionateEverything.Main {
         public static int dblClickIndex = 0;
         public static double dblClickTime = 0;
 
+        public const bool UseBuildMenuToolDll = true;
+
+        public static void SetBuildBarUpper(this ItemProto fractionator) {
+            if (UseBuildMenuToolDll) {
+                fractionator.SetBuildBar(FECategory, fractionator.GridIndex % 10, 2);
+            }
+            else {
+                protos[FECategory, fractionator.GridIndex % 10 - 1] = fractionator;
+            }
+        }
+
+        // /// <summary>
+        // /// 取消快捷建造栏的原版分馏塔显示
+        // /// </summary>
+        // /// <param name="__instance"></param>
+        // [HarmonyPostfix]
+        // [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.StaticLoad))]
+        // public static void UIBuildMenu_StaticLoad_Postfix(ref UIBuildMenu __instance) {
+        //     for (int i = 0; i < 16; i++) {
+        //         for (int j = 0; j < 13; j++) {
+        //             ItemProto item = UIBuildMenu.protos[i, j];
+        //             if (item != null && item.ID == I分馏塔) {
+        //                 UIBuildMenu.protos[i, j] = null;
+        //             }
+        //         }
+        //     }
+        // }
+
         /// <summary>
         /// 初始化UI，并绑定对应的物品
         /// </summary>
         public static void Init() {
+            if (UseBuildMenuToolDll) {
+                return;
+            }
             // 修改底部栏位高度大小、修正文本倾斜度，修正沙盒模式额外面板的位置
             GameObject mainBg = GameObject.Find("UI Root/Overlay Canvas/In Game/Function Panel/bg-trans");
             GameObject sandboxBg =
@@ -90,22 +121,17 @@ namespace FractionateEverything.Main {
             switchHotkeyRowText.GetComponent<Text>().text = "切换快捷键".Translate();
             switchHotkeyRowText.GetComponent<Text>().fontSize = 14;
             childCanvasGroups.Add(switchHotkeyRowText.AddComponent<CanvasGroup>());
-
-            //显示内容
-            protos[FECategory, 0] = LDB.items.Select(IFE精准分馏塔);
-            protos[FECategory, 1] = LDB.items.Select(IFE建筑极速分馏塔);
-            protos[FECategory, 2] = LDB.items.Select(IFE垃圾回收分馏塔);
-            protos[FECategory, 3] = LDB.items.Select(I分馏塔_FE通用分馏塔);
-            protos[FECategory, 4] = LDB.items.Select(IFE点数聚集分馏塔);
-            protos[FECategory, 5] = LDB.items.Select(IFE增产分馏塔);
         }
 
         /// <summary>
         /// 点击页面5时，整个面板起来得更高，可以容纳两行建造按钮
         /// </summary>
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIFunctionPanel), "_OnUpdate")]
+        [HarmonyPatch(typeof(UIFunctionPanel), nameof(UIFunctionPanel._OnUpdate))]
         public static void UIFunctionPanel__OnUpdate_PostPatch(ref UIFunctionPanel __instance) {
+            if (UseBuildMenuToolDll) {
+                return;
+            }
             var _this = __instance;
             currCategory = _this.buildMenu.currentCategory;
             bool guideComplete = GameMain.data.guideComplete;
@@ -197,8 +223,11 @@ namespace FractionateEverything.Main {
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIBuildMenu), "SetCurrentCategory")]
+        [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
         public static void UIBuildMenu_SetCurrentCategory_PostPatch(ref UIBuildMenu __instance, int category) {
+            if (UseBuildMenuToolDll) {
+                return;
+            }
             var _this = __instance;
             if (_this.player != null) {
                 int num = _this.currentCategory;
@@ -307,8 +336,11 @@ namespace FractionateEverything.Main {
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(UIBuildMenu), "_OnUpdate")]
+        [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
         public static bool UIBuildMenu__OnUpdate_Prefix(ref UIBuildMenu __instance) {
+            if (UseBuildMenuToolDll) {
+                return true;
+            }
             bool oriFlag = VFInput.inputing;
             // 如果是第二行快捷键状态，通过让VFInput.inputing = true 拦截可能在原方法内触发的第一行的OnChildButtonClick
             if (__instance.currentCategory == FECategory && hotkeyActivateRow == 1) {
@@ -328,8 +360,11 @@ namespace FractionateEverything.Main {
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIBuildMenu), "_OnUpdate")]
+        [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
         public static void UIBuildMenu_OnUpdate_PostPatch(ref UIBuildMenu __instance) {
+            if (UseBuildMenuToolDll) {
+                return;
+            }
             var _this = __instance;
             if (_this.currentCategory == FECategory) {
                 GameHistoryData history = GameMain.history;

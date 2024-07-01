@@ -1,8 +1,9 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static FractionateEverything.Main.FractionateRecipes;
 using static FractionateEverything.FractionateEverything;
+using static FractionateEverything.Main.FractionateRecipes;
 
 namespace FractionateEverything.Main {
     public static class UIRecipeEntryPatch {
@@ -15,9 +16,10 @@ namespace FractionateEverything.Main {
             if (recipe.Type != ERecipeType.Fractionate) {
                 return true;
             }
-            if (!fracRecipeNumRatioDic.TryGetValue(recipe.Items[0], out var dic)) {
-                LogError($"UIRecipeEntry_SetRecipe_Prefix fracRecipeNumRatioDic not contains key {recipe.Items[0]}");
-                return true;
+            Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
+            if (dic.ContainsKey(1) && dic[1] == 0) {
+                //降级的就不管了
+                dic = GetNumRatioUpgrade(recipe.Items[0]);
             }
             var p = dic.FirstOrDefault(p => p.Key > 0);
             int index1 = 0;

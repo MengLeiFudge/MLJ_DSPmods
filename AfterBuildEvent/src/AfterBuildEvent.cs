@@ -143,6 +143,12 @@ namespace AfterBuildEvent {
                                 fileList.Add(iconPath);
                             }
                         }
+                        //buildtoolbardll
+                        string path =
+                            @"D:\project\csharp\DSP MOD\BuildMenuTool\BuildMenuTool\bin\Debug\BuildMenuTool.dll";
+                        //同时拷贝到项目
+                        File.Copy(path, $@"..\..\..\lib\BuildMenuTool.dll", true);
+                        fileList.Add(path);
                     }
                     //打包
                     if (!Directory.Exists(r2ModDir)) {
@@ -199,7 +205,10 @@ namespace AfterBuildEvent {
             }
             File.WriteAllLines(doorstop_config, lines);
             //启动使用R2MOD的游戏
-            cmd.Exec(RunModded);
+            Console.WriteLine("是否启动游戏？回车表示启动，其他表示结束程序");
+            if (Console.ReadLine() == "") {
+                cmd.Exec(RunModded);
+            }
         }
 
         static void ZipMod(List<string> fileList, string zipPath) {
@@ -230,13 +239,31 @@ namespace AfterBuildEvent {
 
         static void GetAllClacJson() {
             using CmdProcess cmd = new();
+            //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
+            File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
+            string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
+            File.Copy($@"{R2_Default}\doorstop_config.ini", doorstop_config, true);
+            //修改doorstop_config.ini，使其目标指向R2的preloader.dll
+            string[] lines = File.ReadAllLines(doorstop_config);
+            for (int i = 0; i < lines.Length; i++) {
+                if (lines[i].StartsWith("enabled=")) {
+                    lines[i] = "enabled=true";
+                }
+                else if (lines[i].StartsWith("targetAssembly=")) {
+                    lines[i] = $@"targetAssembly={R2_BepInEx}\core\BepInEx.Preloader.dll";
+                }
+                else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
+                    lines[i] = "ignoreDisableSwitch=false";
+                }
+            }
+            File.WriteAllLines(doorstop_config, lines);
+            //判断所有mod是否均已存在
             string[] mods = [
                 "jinxOAO-MoreMegaStructure",//mod a：更多巨构
                 "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
                 "HiddenCirno-GenesisBook",//mod c：创世之书
                 "MengLei-FractionateEverything",//mod d：万物分馏
             ];
-            //判断所有mod是否均已存在
             for (int i = 0; i < mods.Length; i++) {
                 string modPluginsDir = $@"{R2_BepInEx}\plugins\{mods[i]}";
                 if (!Directory.Exists(modPluginsDir)) {
@@ -244,6 +271,8 @@ namespace AfterBuildEvent {
                     return;
                 }
             }
+            //禁用所有mod，加快启动速度
+            ChangeAllModsEnable(false);
             //生成计算器json
             bool[] modsEnable = new bool[mods.Length];
             int[] set = [0, 1, 2, 3];
@@ -260,11 +289,8 @@ namespace AfterBuildEvent {
                     WriteOneJson(cmd, mods, modsEnable);
                 }
             }
-            //恢复mod启用禁用状态
-            //todo：改为读取r2配置文件
-            // for (int i = 0; i < mods.Length; i++) {
-            //     ChangeModEnable(mods[i], modsEnableFirstState[i]);
-            // }
+            //启用所有mod   todo：改为读取r2配置文件
+            ChangeAllModsEnable(true);
             //终止游戏
             cmd.Exec(KillDSP);
         }
@@ -358,6 +384,26 @@ namespace AfterBuildEvent {
                         File.Move(file, file + ".old");
                     }
                 }
+            }
+        }
+
+        static void ChangeAllModsEnable(bool enable) {
+            //不启用的mod
+            List<string> enableIgnore = ["Galactic_Scale-GalacticScale"];
+            //不禁用的mod
+            List<string> disableIgnore = [
+                "xiaoye97-LDBTool", "CommonAPI-CommonAPI", "CommonAPI-DSPModSave", "nebula-NebulaMultiplayerModApi",
+                "starfi5h-ErrorAnalyzer", "MengLei-GetDspData"
+            ];
+            string pluginsDir = $@"{R2_BepInEx}\plugins";
+            foreach (var dir in Directory.GetDirectories(pluginsDir)) {
+                if (enable && enableIgnore.Contains(new DirectoryInfo(dir).Name)) {
+                    continue;
+                }
+                if (!enable && disableIgnore.Contains(new DirectoryInfo(dir).Name)) {
+                    continue;
+                }
+                ChangeModEnable(new DirectoryInfo(dir).Name, enable);
             }
         }
     }

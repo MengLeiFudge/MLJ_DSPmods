@@ -44,23 +44,52 @@ namespace FractionateEverything.Compatibility {
         }
 
         public static void OnMainMenuOpen() {
-            if (FractionateEverything.disableMessageBox || _shown) return;
+            if (_shown) return;
+            if (!FractionateEverything.disableMessageBox) {
+                ShowMessageBox();
+            }
+            else if (FractionateEverything.isVersionChanged) {
+                ShowMessageBox141();
+            }
             _shown = true;
+        }
+
+        private static void ShowMessageBox() {
             UIMessageBox.Show(
                 "FE标题".Translate(), "FE信息".Translate(),
-                "FE交流群".Translate(), "FE日志".Translate(), "确定".Translate(),
+                "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
                 UIMessageBox.INFO,
-                Response1, Response2, null
+                Response确定1, ResponseFE日志, ResponseFE交流群
             );
         }
 
-        private static void Response1() {
-            Application.OpenURL("FE交流群链接".Translate());
+        private static void ShowMessageBox141() {
+            UIMessageBox.Show(
+                "141标题".Translate(), "141信息".Translate(),
+                "确定".Translate(),
+                UIMessageBox.INFO,
+                Response确定2
+            );
         }
 
-        private static void Response2() {
+        private static void ResponseFE交流群() {
+            Application.OpenURL("FE交流群链接".Translate());
+            Response确定1();
+        }
+
+        private static void ResponseFE日志() {
             Application.OpenURL("FE日志链接".Translate());
             //Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+            Response确定1();
+        }
+
+        private static void Response确定1() {
+            FractionateEverything.SetConfig1();
+            ShowMessageBox141();
+        }
+
+        private static void Response确定2() {
+            FractionateEverything.SetConfig2();
         }
     }
 }
