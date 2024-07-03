@@ -3,8 +3,8 @@ using HarmonyLib;
 using static FractionateEverything.Compatibility.CheckPlugins;
 
 namespace FractionateEverything.Compatibility {
-    public class TheyComeFromVoid {
-        internal const string GUID = "com.ckcz123.DSP_Battle";
+    public static class BluePrintTweaks {
+        internal const string GUID = "org.kremnev8.plugin.BlueprintTweaks";
 
         internal static bool Enable;
 
@@ -12,9 +12,9 @@ namespace FractionateEverything.Compatibility {
             Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
             if (!Enable) return;
 
-            var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.TheyComeFromVoid");
-            harmony.PatchAll(typeof(TheyComeFromVoid));
-            LogInfo("TheyComeFromVoid Compat finish.");
+            var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.BlueprintTweaks");
+            harmony.PatchAll(typeof(BluePrintTweaks));
+            LogInfo("BluePrintTweaks Compat finish.");
         }
     }
 }

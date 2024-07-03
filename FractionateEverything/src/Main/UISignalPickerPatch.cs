@@ -9,7 +9,7 @@ namespace FractionateEverything.Main {
     /// </summary>
     public static class UISignalPickerPatch {
         /// <summary>
-        /// 公式分页移除所有分馏新增的图标（item和recipe）
+        /// 公式分页移除所有新增配方的图标
         /// </summary>
         [HarmonyPatch(typeof(UISignalPicker), nameof(UISignalPicker.RefreshIcons))]
         [HarmonyTranspiler]

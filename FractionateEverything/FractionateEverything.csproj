@@ -47,6 +47,9 @@
     <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="BlueprintTweaks">
+      <HintPath>..\lib\BlueprintTweaks-publicized.dll</HintPath>
+    </Reference>
     <Reference Include="BuildMenuTool">
       <HintPath>..\lib\BuildMenuTool.dll</HintPath>
     </Reference>
@@ -119,6 +122,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Compatibility\BluePrintTweaks.cs" />
     <Compile Include="src\Compatibility\CheckPlugins.cs" />
     <Compile Include="src\Compatibility\GenesisBook.cs" />
     <Compile Include="src\Compatibility\MoreMegaStructure.cs" />

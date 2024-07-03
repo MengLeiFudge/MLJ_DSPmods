@@ -252,10 +252,12 @@ namespace GetDspData {
                 foreach (var item in LDB.items.dataArray) {
                     //如果该物品是“该版本尚未加入”
                     if ((!GameMain.history.ItemUnlocked(item.ID) && item.preTech == null && item.missingTech)
-                        //或无法选中这个物品（9998是星河卫士勋章，13001是巨构的接收器）
-                        || (item.GridIndex == 0 || item.GridIndex == 9998 || item.GridIndex == 13001)
-                        //或没有配方可以制造这个物品，且不是原始矿物
-                        || ((item.recipes == null || item.recipes.Count == 0) && !item.canMining())) {
+                        //或无法选中这个物品（9998是星河卫士勋章，13000之后是巨构旧的接收器）
+                        || (item.GridIndex == 0 || item.GridIndex == 9998 || item.GridIndex > 13000)
+                        //或没有配方可以制造这个物品，且不是原始矿物或蓄电器满
+                        || ((item.recipes == null || item.recipes.Count == 0)
+                            && !item.canMining()
+                            && item.ID != I蓄电器满)) {
                         //则移除物品，并移除原料包含该物品，或产物包含该物品的所有配方
                         LogInfo($"移除物品 {item.ID} {item.name}");
                         IList<JToken> recipeToBeRemoved = new List<JToken>();
@@ -404,21 +406,19 @@ namespace GetDspData {
                         ];
                         if (itemID.Contains(item.ID)) {
                             int index = itemID.ToList().IndexOf(item.ID);
-                            for (int i = 0; i < factoryID.Length; i++) {
-                                recipes.Add(new JObject {
-                                    { "ID", item.ID + 10000 },
-                                    { "Type", -1 },
-                                    { "Factories", new JArray(new[] { factoryID[index] }) },
-                                    { "Name", $"[燃料棒耗尽]{item.name}" },
-                                    { "Items", new JArray(new[] { item.ID }) },
-                                    { "ItemCounts", new JArray(new[] { 1 }) },
-                                    { "Results", new JArray(new[] { IGB空燃料棒 }) },
-                                    { "ResultCounts", new JArray(new[] { 1 }) },
-                                    { "TimeSpend", 60 * 60 },//暂时设为60s
-                                    { "Proliferator", 1 },//暂时先设为1，以便正确计算增产剂使用数目
-                                    { "IconName", item.iconSprite.name },
-                                });
-                            }
+                            recipes.Add(new JObject {
+                                { "ID", item.ID + 10000 },
+                                { "Type", -1 },
+                                { "Factories", new JArray(new[] { factoryID[index] }) },
+                                { "Name", $"[燃料棒耗尽]{item.name}" },
+                                { "Items", new JArray(new[] { item.ID }) },
+                                { "ItemCounts", new JArray(new[] { 1 }) },
+                                { "Results", new JArray(new[] { IGB空燃料棒 }) },
+                                { "ResultCounts", new JArray(new[] { 1 }) },
+                                { "TimeSpend", 60 * 60 },//暂时设为60s
+                                { "Proliferator", 1 },//暂时先设为1，以便正确计算增产剂使用数目
+                                { "IconName", item.iconSprite.name },
+                            });
                         }
                     }
                     //分馏启用时，添加增产塔分馏配方
@@ -463,15 +463,12 @@ namespace GetDspData {
                     });
                 }
 
-                //保存json到本项目内，再复制到计算器项目里面
+                //保存json到本项目内。文件不复制到戴森球计算器，而是在AfterBuildEvent复制
                 string jsonPath = dirCalc + $"\\{fileName}.json";
                 using (var sw = new StreamWriter(jsonPath, false, Encoding.UTF8)) {
                     sw.WriteLine(dataObj.ToString(Formatting.Indented));
                 }
                 LogInfo($"已生成{jsonPath}");
-                string jsonPath2 = $"D:\\project\\js\\dsp-calc\\data\\{fileName}.json";
-                File.Copy(jsonPath, jsonPath2, true);
-                LogInfo($"已将json文件复制到{jsonPath2}");
 
                 #endregion
 
@@ -534,8 +531,7 @@ namespace GetDspData {
             if (proto.Type == ERecipeType.Fractionate) {
                 //115重氢分馏
                 if (proto.ID == R重氢分馏_GB氦闪约束器) {
-                    RecipeProto proto2 = new RecipeProto();
-                    proto.CopyPropsTo(ref proto2);
+                    RecipeProto proto2 = CopyRecipeProto(proto);
                     proto2.ItemCounts[0] = 1;
                     proto2.TimeSpend = (int)(0.01 * 100000);
                     addRecipe(proto2, add, [I分馏塔]);
@@ -544,22 +540,19 @@ namespace GetDspData {
                 //剩下必然是万物分馏的配方
                 //判定条件不能用proto.Items[0] == proto.Results[0]，因为还有增产剂MK3自分馏、微型粒子对撞机自分馏等
                 if (isResourceFrac(proto.Items[0])) {
-                    RecipeProto proto2 = new RecipeProto();
-                    proto.CopyPropsTo(ref proto2);
+                    RecipeProto proto2 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto2, IFE自然资源分馏塔);
                     addRecipe(proto2, add, [IFE自然资源分馏塔]);
                 }
                 else {
-                    RecipeProto proto2 = new RecipeProto();
-                    proto.CopyPropsTo(ref proto2);
+                    RecipeProto proto2 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto2, IFE升级分馏塔);
                     //如果原料与产物相同，则不添加
                     if (proto.Items[0] != proto.Results[0]) {
                         addRecipe(proto, add, [IFE升级分馏塔]);
                     }
 
-                    RecipeProto proto3 = new RecipeProto();
-                    proto.CopyPropsTo(ref proto3);
+                    RecipeProto proto3 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto3, IFE降级分馏塔);
                     addRecipe(proto3, add, [IFE降级分馏塔]);
                 }
@@ -623,11 +616,26 @@ namespace GetDspData {
                 { "Results", new JArray(proto.Results) },
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 //分馏配方TimeSpend=ratio*100000
-                { "TimeSpend",  flag4 ? (1.0 / (proto.TimeSpend / 100000.0)) * 60 : proto.TimeSpend },
+                { "TimeSpend", flag4 ? (1.0 / (proto.TimeSpend / 100000.0)) * 60 : proto.TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
                 { "IconName", proto.iconSprite.name },
             };
             add.Add(obj);
+        }
+
+        static RecipeProto CopyRecipeProto(RecipeProto ori) {
+            return new() {
+                ID = ori.ID,
+                Type = ori.Type,
+                name = ori.name,
+                Items = new List<int>(ori.Items).ToArray(),
+                ItemCounts = new List<int>(ori.ItemCounts).ToArray(),
+                Results = new List<int>(ori.Results).ToArray(),
+                ResultCounts = new List<int>(ori.ResultCounts).ToArray(),
+                TimeSpend = ori.TimeSpend,
+                productive = ori.productive,
+                _iconSprite = ori.iconSprite,
+            };
         }
 
         static bool isResourceFrac(int id) {
@@ -968,215 +976,29 @@ namespace GetDspData {
             }
         }
 
-
-        // if (cargoPath != null) {
-        //     //原版传送带最大速率为30，如果每次尝试放1个物品到传送带上，需要每帧判定2次（30速*4堆叠/60帧）
-        //     //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
-        //     //将原版逻辑改为2-1，创世逻辑改为4-2-1，以减少放东西的次数
-        //     lock (cargoPath.buffer) {
-        //         int fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
-        //         int maxStack = Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1));
-        //         if (MaxInputTimes == 2) {
-        //             if (maxStack == 1) {
-        //                 if (__instance.fluidOutputCount >= 1
-        //                     && cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                         (byte)__instance.fluidOutputInc)) {
-        //                     __instance.fluidOutputCount -= 1;
-        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                 }
-        //             }
-        //             else {
-        //                 if (__instance.fluidOutputCount > 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)(fluidOutputAvgInc * 2))) {
-        //                         __instance.fluidOutputCount -= 2;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
-        //                     }
-        //                     else if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                  (byte)fluidOutputAvgInc)) {
-        //                         __instance.fluidOutputCount -= 1;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                     else {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount -= 1;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         }
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 1) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         else if (MaxInputTimes == 4) {
-        //             if (maxStack == 1) {
-        //                 if (__instance.fluidOutputCount >= 1
-        //                     && cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                         (byte)__instance.fluidOutputInc)) {
-        //                     __instance.fluidOutputCount -= 1;
-        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                 }
-        //             }
-        //             else if (maxStack == 2) {
-        //                 if (__instance.fluidOutputCount > 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)(fluidOutputAvgInc * 2))) {
-        //                         __instance.fluidOutputCount -= 2;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
-        //                     }
-        //                     else if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                  (byte)fluidOutputAvgInc)) {
-        //                         __instance.fluidOutputCount -= 1;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                     else {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount -= 1;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         }
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 1) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                 }
-        //             }
-        //             else if (maxStack == 3) {
-        //                 if (__instance.fluidOutputCount >= 3) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)(fluidOutputAvgInc * 2))) {
-        //                         __instance.fluidOutputCount -= 2;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
-        //                     }
-        //                     fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)fluidOutputAvgInc)) {
-        //                         __instance.fluidOutputCount -= 1;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                     else {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount -= 1;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         }
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 1) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                 }
-        //             }
-        //             else {
-        //                 if (__instance.fluidOutputCount >= 4) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 4,
-        //                             (byte)(fluidOutputAvgInc * 4))) {
-        //                         __instance.fluidOutputCount -= 4;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 4;
-        //                     }
-        //                     else {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                                 (byte)(fluidOutputAvgInc * 2))) {
-        //                             __instance.fluidOutputCount -= 2;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
-        //                         }
-        //                         fluidOutputAvgInc = __instance.fluidOutputInc
-        //                                             / __instance.fluidOutputCount;
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount -= 1;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         }
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 3) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)(fluidOutputAvgInc * 2))) {
-        //                         __instance.fluidOutputCount -= 2;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc * 2;
-        //                     }
-        //                     fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)fluidOutputAvgInc)) {
-        //                         __instance.fluidOutputCount -= 1;
-        //                         __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 2) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 2,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                     else {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount -= 1;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         }
-        //                     }
-        //                 }
-        //                 else if (__instance.fluidOutputCount == 1) {
-        //                     if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID, maxStack, 1,
-        //                             (byte)__instance.fluidOutputInc)) {
-        //                         __instance.fluidOutputCount = 0;
-        //                         __instance.fluidOutputInc = 0;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         else {
-        //             for (int i = 0; i < MaxOutputTimes; i++) {
-        //                 if (__instance.fluidOutputCount <= 0) {
-        //                     break;
-        //                 }
-        //                 fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
-        //                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID,
-        //                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
-        //                         (byte)fluidOutputAvgInc)) {
-        //                     __instance.fluidOutputCount--;
-        //                     __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                 }
-        //                 else {
-        //                     break;
-        //                 }
-        //             }
-        //         }
+        // [HarmonyTranspiler]
+        // [HarmonyPatch(typeof(ItemComboBox), nameof(ItemComboBox.OnItemIndexChange))]
+        // static IEnumerable<CodeInstruction> ItemComboBox_OnItemIndexChange_Transpiler(
+        //     IEnumerable<CodeInstruction> instructions) {
+        //     var matcher = new CodeMatcher(instructions);
+        //     matcher.MatchForward(false, new CodeMatch(OpCodes.Ldarg_0));
+        //     //第1行ldarg.0不变
+        //     matcher.Advance(1);
+        //     //第2行改成call
+        //     matcher.SetAndAdvance(OpCodes.Call,
+        //         AccessTools.Method(typeof(GenesisBook), nameof(ItemComboBox_OnItemIndexChange_InsertMethod)));
+        //     //3-5行改成nop
+        //     while (matcher.Opcode != OpCodes.Stloc_0) {
+        //         matcher.SetAndAdvance(OpCodes.Nop, null);
         //     }
+        //     //第6行stloc.0不变
+        //     return matcher.InstructionEnumeration();
+        // }
+        //
+        // public static ItemProto ItemComboBox_OnItemIndexChange_InsertMethod(ItemComboBox __instance) {
+        //     return __instance.selectIndex == -1
+        //         ? LDB.items.Select(IFE增产分馏塔)
+        //         : __instance._items[__instance.selectIndex];
         // }
 
         // [HarmonyTranspiler]

@@ -22,7 +22,7 @@ namespace FractionateEverything.Main {
         private static void Init() {
             if (_initFinished) return;
 
-            int baseY = GenesisBook.Enable ? -340 : -220;
+            int baseY = GenesisBook.Enable ? -380 : -220;
 
             CreateUIToggle("fe-dmb-setting",
                 "DisableMessageBox".Translate(), "DisableMessageBoxAdditionalText".Translate(), new(30, baseY - 40 * 0),
@@ -100,7 +100,6 @@ namespace FractionateEverything.Main {
         [HarmonyPostfix]
         public static void UIOptionWindow_OnOpen_Postfix() {
             Init();
-            Reset();
         }
 
         [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnRevertButtonClick))]
