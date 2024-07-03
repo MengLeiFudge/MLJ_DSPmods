@@ -65,11 +65,8 @@ namespace FractionateEverything.Main {
         #endregion
 
 #if DEBUG
-        /// <summary>
-        /// sprite名称将被记录在该文件中。
-        /// </summary>
-        private const string SPRITE_CSV_PATH =
-            @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata\fracIconPath.csv";
+        private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
+        private const string SPRITE_CSV_PATH = $@"{SPRITE_CSV_DIR}\fracIconPath.csv";
 #endif
 
         private static RecipeHelper helper;
@@ -503,7 +500,7 @@ namespace FractionateEverything.Main {
                     r.IconPath = Resources.Load<Sprite>(iconPath) != null ? iconPath : outputItem.IconPath;
 #if DEBUG
                     //输出分馏配方需要的图标的路径，以便于制作图标
-                    if (Directory.Exists(SPRITE_CSV_PATH.Substring(0, SPRITE_CSV_PATH.LastIndexOf('\\')))) {
+                    if (Directory.Exists(SPRITE_CSV_DIR)) {
                         using StreamWriter sw = new(SPRITE_CSV_PATH, true, Encoding.UTF8);
                         sw.WriteLine(inputIconName + "," + outputIconName);
                     }

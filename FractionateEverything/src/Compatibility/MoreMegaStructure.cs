@@ -17,7 +17,6 @@ namespace FractionateEverything.Compatibility {
 
         internal static void Compatible() {
             Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
-
             if (!Enable) return;
 
             tab巨构 = TabSystem.GetTabId("MegaStructures:MegaStructuresTab");
@@ -31,7 +30,7 @@ namespace FractionateEverything.Compatibility {
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
-            LogInfo("MoreMegaStructure Compatibility Compatible finish.");
+            LogInfo("MoreMegaStructure Compat finish.");
         }
 
         public static void AfterLDBToolPostAddData() {
