@@ -6,15 +6,11 @@ using ProjectGenesis.Patches.UI.QTools;
 using ProjectGenesis.Patches.UI.QTools.MyComboBox;
 using ProjectGenesis.Utils;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
-using UnityEngine;
 using xiaoye97;
 using static FractionateEverything.Utils.ProtoID;
-using static FractionateEverything.Main.FractionateRecipes;
 using static FractionateEverything.Compatibility.CheckPlugins;
 using Utils_ERecipeType = ProjectGenesis.Utils.ERecipeType;
 
@@ -38,7 +34,6 @@ namespace FractionateEverything.Compatibility {
 
         internal static void Compatible() {
             Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
-
             if (!Enable) return;
 
             tab精炼 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab1");
@@ -54,7 +49,7 @@ namespace FractionateEverything.Compatibility {
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
-            LogInfo("GenesisBook Compatibility Compatible finish.");
+            LogInfo("GenesisBook Compat finish.");
         }
 
         public static void AfterLDBToolPostAddData() {
@@ -116,26 +111,9 @@ namespace FractionateEverything.Compatibility {
             item.maincraft.GridIndex = item.GridIndex;
         }
 
-        #region 量化工具适配，特别感谢创世之书代码编写者Awbugl的帮助
+        #region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIQToolsWindow), nameof(UIQToolsWindow.CreateUI))]
-        private static void UIQToolsWindow_CreateUI_Postfix(ref UIQToolsWindow __instance) {
-            __instance._recipeMachines.Add(Utils_ERecipeType.Fractionate,
-                MyComboBox.CreateComboBox<ItemComboBox>(30, 335, __instance._tabs[0]));
-            var rect = (RectTransform)__instance._proliferatorComboBox.transform;
-            var anchoredPosition3D = rect.anchoredPosition3D;
-            anchoredPosition3D.y -= 45;
-            rect.anchoredPosition3D = anchoredPosition3D;
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(QTools), "GetFactoryDict")]
-        private static void UIQToolsWindow_GetFactoryDict_Postfix(
-            ref ConcurrentDictionary<Utils_ERecipeType, List<ItemProto>> __result) {
-            __result.TryAddOrInsert(Utils_ERecipeType.Fractionate, LDB.items.Select(2314));
-        }
-
+        //此处必须使用int而非EProliferatorStrategy，否则会因需要加载类型EProliferatorStrategy而报错找不到创世之书dll
         private const int Nonuse = 0;
         private const int ExtraProducts = 1;
         private const int ProductionSpeedup = 2;
@@ -147,12 +125,11 @@ namespace FractionateEverything.Compatibility {
         private static bool ProliferatorComboBox_Strategy_Getter_Prefix(ref ProliferatorComboBox __instance,
             ref EProliferatorStrategy __result) {
             __result = __instance.comboBox.Items[__instance.selectIndex] switch {
-                "不使用增产剂" => (EProliferatorStrategy)Nonuse,
                 "增产4点" => (EProliferatorStrategy)ExtraProducts,
                 "加速4点" => (EProliferatorStrategy)ProductionSpeedup,
                 "增产10点" => (EProliferatorStrategy)ExtraProducts10,
                 "加速10点" => (EProliferatorStrategy)ProductionSpeedup10,
-                _ => EProliferatorStrategy.Nonuse,
+                _ => (EProliferatorStrategy)Nonuse,
             };
             return false;
         }
@@ -172,10 +149,6 @@ namespace FractionateEverything.Compatibility {
             return false;
         }
 
-        private static void InitIPF(this ProliferatorComboBox proliferatorComboBox, int strategy) {
-            proliferatorComboBox.Init([1143, 1143], ["增产4点", "增产10点"], strategy);
-        }
-
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ProliferatorComboBox), nameof(ProliferatorComboBox.SetStrategySlience))]
         private static bool ProliferatorComboBox_SetStrategySlience_Prefix(ref ProliferatorComboBox __instance,
@@ -184,7 +157,6 @@ namespace FractionateEverything.Compatibility {
             uiComboBox._itemIndex = __instance.Items.Count switch {
                 5 => (int)strategy,
                 3 => (int)strategy / 2,
-                2 => (int)strategy == ExtraProducts10 ? 1 : 0,
                 _ => throw new(),//不应出现的情况
             };
             uiComboBox.m_Input.text = uiComboBox._itemIndex >= 0 ? uiComboBox.Items[uiComboBox._itemIndex] : "";
@@ -193,36 +165,11 @@ namespace FractionateEverything.Compatibility {
             return false;
         }
 
-        [HarmonyTranspiler]
-        [HarmonyPatch(typeof(ItemComboBox), nameof(ItemComboBox.OnItemIndexChange))]
-        static IEnumerable<CodeInstruction> ItemComboBox_OnItemIndexChange_Transpiler(
-            IEnumerable<CodeInstruction> instructions) {
-            var matcher = new CodeMatcher(instructions);
-            matcher.MatchForward(false, new CodeMatch(OpCodes.Ldarg_0));
-            //第1行ldarg.0不变
-            matcher.Advance(1);
-            //第2行改成call
-            matcher.SetAndAdvance(OpCodes.Call,
-                AccessTools.Method(typeof(GenesisBook), nameof(ItemComboBox_OnItemIndexChange_InsertMethod)));
-            //3-5行改成nop
-            while (matcher.Opcode != OpCodes.Stloc_0) {
-                matcher.SetAndAdvance(OpCodes.Nop, null);
-            }
-            //第6行stloc.0不变
-            return matcher.InstructionEnumeration();
-        }
-
-        public static ItemProto ItemComboBox_OnItemIndexChange_InsertMethod(ItemComboBox __instance) {
-            return __instance.selectIndex == -1
-                ? LDB.items.Select(IFE增产分馏塔)
-                : __instance._items[__instance.selectIndex];
-        }
-
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NodeDataSet), nameof(NodeDataSet.AddNodeChilds))]
         private static bool NodeDataSet_AddNodeChilds_Prefix(ref NodeDataSet __instance, NodeData node) {
-            //如果本身是自然资源且没有任何配方能制作它，则作为Raw处理
-            if (node.Item.isRaw && node.Item.recipes.Count == 0) {
+            //如果本身是自然资源或没有任何配方能制作它，则作为Raw处理
+            if (node.Item.isRaw || node.Item.recipes.Count == 0) {
                 __instance.MergeRaws(node);
                 return false;
             }
@@ -233,95 +180,7 @@ namespace FractionateEverything.Compatibility {
             }
             //将这个node作为Data处理
             __instance.MergeData(node);
-            //增产塔
-            if (node.Options.Factory.ID == IFE增产分馏塔) {
-                //计算需要的自喷涂过的增产剂（每个可以喷涂74次）数目
-                float count = node.ItemCount;
-                switch ((int)node.Options.Strategy) {
-                    case ExtraProducts:
-                        count /= 1.25f;
-                        __instance._totalProliferatedItemCount += count;
-                        break;
-                    case ExtraProducts10:
-                        count /= 1.4f;
-                        __instance._totalProliferatedItemCount += count * 2.5f;
-                        break;
-                    default:
-                        throw new();
-                }
-                //不需要计算原料，直接返回
-                return false;
-            }
             RecipeProto recipe = node.Options.Recipe;
-            //常规分馏配方
-            if ((Utils_ERecipeType)recipe.Type == Utils_ERecipeType.Fractionate) {
-                //计算原料的node
-                int inputItemID = recipe.Items[0];
-                ItemProto inputItem = LDB.items.Select(inputItemID);
-                //根据分馏配方实际情况，计算需要多少原料
-                Dictionary<int, float> dic = GetNumRatioNaturalResource(inputItemID);
-                if (dic.ContainsKey(1) && dic[1] == 0) {
-                    //降级的就不管了
-                    dic = GetNumRatioUpgrade(inputItemID);
-                }
-                //x表示原料数目
-                float x = 1.0f;
-                //y表示可以转换出来的产物数目
-                float y = 0.0f;
-                //获取损毁概率
-                float destroyRate = 0.0f;
-                if (FractionateEverything.enableDestroy && dic.TryGetValue(-1, out float value)) {
-                    destroyRate = value;
-                }
-                while (x > 1e-6) {
-                    //先判定损毁
-                    x *= 1 - destroyRate;
-                    //再判定转换情况
-                    float tempSubX = 0;
-                    float tempSubY = 0;
-                    foreach (var p in dic) {
-                        if (p.Key <= 0) {
-                            continue;
-                        }
-                        //如果有增产剂，将会进一步提升分馏成功率
-                        float subX = x * p.Value;
-                        if ((int)node.Options.Strategy == ProductionSpeedup) {
-                            subX *= 2f;
-                        }
-                        else if ((int)node.Options.Strategy == ProductionSpeedup10) {
-                            subX *= 3.5f;
-                        }
-                        tempSubX += subX;
-                        tempSubY += p.Key * subX;
-                    }
-                    x -= tempSubX;
-                    y += tempSubY;
-                }
-                //现在得到结论：1个原料可以生成y个产物
-                //node.ItemCount是产物数目
-                NodeData nodeData = __instance.ItemNeed(inputItem, (float)(node.ItemCount / y));
-                //判断是否有循环递归问题，递归只在常规分馏中出现所以写在这里
-                if (__instance.Datas.ContainsKey(inputItem)) {
-                    __instance.MergeRaws(nodeData);
-                    return false;
-                }
-                //计算需要的自喷涂过的增产剂（每个可以喷涂74次）数目
-                float count = nodeData.ItemCount;
-                switch ((int)node.Options.Strategy) {
-                    case Nonuse:
-                        break;
-                    case ProductionSpeedup:
-                        __instance._totalProliferatedItemCount += count;
-                        break;
-                    case ProductionSpeedup10:
-                        __instance._totalProliferatedItemCount += count * 2.5f;
-                        break;
-                    default:
-                        throw new();
-                }
-                __instance.AddNodeChilds(nodeData);
-                return false;
-            }
             //使用多产物配方时，将所有额外产物添加到右侧“副产物”内，避免递归计算
             int idx = Array.IndexOf(recipe.Results, node.Item.ID);
             int resultsLength = recipe.Results.Length;
@@ -339,29 +198,27 @@ namespace FractionateEverything.Compatibility {
             for (var index = 0; index < itemsLength; index++) {
                 ItemProto proto = LDB.items.Select(recipe.Items[index]);
                 float count = node.ItemCount * recipe.ItemCounts[index] / recipe.ResultCounts[idx];
+                if (node.Options.Factory.ModelIndex == ProtoID.M负熵熔炉) count /= 2f;
                 switch ((int)node.Options.Strategy) {
                     case Nonuse:
                         break;
                     case ExtraProducts:
-                        count /= 1.25f;
+                        count /= 1 + (float)Cargo.incTableMilli[4];
                         __instance._totalProliferatedItemCount += count;
                         break;
                     case ProductionSpeedup:
-                        count /= 2f;
                         __instance._totalProliferatedItemCount += count;
                         break;
                     case ExtraProducts10:
-                        count /= 1.4f;
+                        count /= 1 + (float)Cargo.incTableMilli[10];
                         __instance._totalProliferatedItemCount += count * 2.5f;
                         break;
                     case ProductionSpeedup10:
-                        count /= 3.5f;
                         __instance._totalProliferatedItemCount += count * 2.5f;
                         break;
                     default:
                         throw new();
                 }
-                if (node.Options.Factory.ModelIndex == ProtoID.M负熵熔炉) count /= 2f;
                 NodeData nodeData = __instance.ItemNeed(proto, count);
                 __instance.AddNodeChilds(nodeData);
             }
@@ -373,8 +230,7 @@ namespace FractionateEverything.Compatibility {
         private static bool NodeDataSet_ItemNeed_Prefix(ref NodeDataSet __instance, ItemProto proto, float count,
             ref NodeData __result) {
             if (__instance.CustomOptions.TryGetValue(proto, out NodeOptions option)) {
-                if (option.AsRaw
-                    || (proto.isRaw && proto.recipes.Count == 0)) {
+                if (option.AsRaw || proto.isRaw || proto.recipes.Count == 0) {
                     __result = __instance.ItemRaw(proto, count, option);
                     return false;
                 }
@@ -383,14 +239,10 @@ namespace FractionateEverything.Compatibility {
                 __result = data;
                 return false;
             }
-            //先选出第一个配方，配方类型未知
+            //从可制造配方中移除所有分馏配方。如果移除后无可用配方，按照raw处理。
             var list = new List<RecipeProto>(proto.recipes);
-            RecipeProto recipe = list.FirstOrDefault();
-            //如果去除分馏配方之后还有配方，默认使用首个非分馏配方
             list.RemoveAll(x => (Utils_ERecipeType)x.Type == Utils_ERecipeType.Fractionate);
-            if (list.Count > 0) {
-                recipe = list.FirstOrDefault();
-            }
+            RecipeProto recipe = list.FirstOrDefault();
             Utils_ERecipeType type = (Utils_ERecipeType?)recipe?.Type ?? Utils_ERecipeType.None;
             if (type == Utils_ERecipeType.None) {
                 __result = __instance.ItemRaw(proto, count);
@@ -407,26 +259,6 @@ namespace FractionateEverything.Compatibility {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NodeData), nameof(NodeData.RefreshFactoryCount))]
         private static bool NodeData_RefreshFactoryCount_Prefix(ref NodeData __instance) {
-            if (__instance.Options.Factory.ID == IFE增产分馏塔) {
-                //增产分馏
-                //0.6%1个，0.4%2个，产出为每个塔100/分钟
-                __instance.Options.FactoryCount = (int)__instance.Options.Strategy switch {
-                    ExtraProducts => __instance.ItemCount / 100.0f * 0.4f / 0.25f,
-                    ExtraProducts10 => __instance.ItemCount / 100.0f,
-                    _ => throw new(),
-                };
-                return false;
-            }
-            if (__instance.Options.Factory.ID == I分馏塔) {
-                //1%1个，产出为每个塔75.3/分钟
-                __instance.Options.FactoryCount = (int)__instance.Options.Strategy switch {
-                    Nonuse => __instance.ItemCount / 75.3f,
-                    ProductionSpeedup => __instance.ItemCount / 75.3f / 2f,
-                    ProductionSpeedup10 => __instance.ItemCount / 75.3f / 3.5f,
-                    _ => throw new(),
-                };
-                return false;
-            }
             PrefabDesc factoryPrefabDesc = __instance.Options.Factory.prefabDesc;
             float assemblerSpeed = factoryPrefabDesc.assemblerSpeed;
             if (factoryPrefabDesc.isLab) assemblerSpeed = factoryPrefabDesc.labAssembleSpeed;
@@ -441,16 +273,16 @@ namespace FractionateEverything.Compatibility {
                 case Nonuse:
                     break;
                 case ExtraProducts:
-                    count /= 1.25f;
+                    count /= 1 + (float)Cargo.incTableMilli[4];
                     break;
                 case ProductionSpeedup:
-                    count /= 2f;
+                    count /= 1 + (float)Cargo.accTableMilli[4];
                     break;
                 case ExtraProducts10:
-                    count /= 1.4f;
+                    count /= 1 + (float)Cargo.incTableMilli[10];
                     break;
                 case ProductionSpeedup10:
-                    count /= 3.5f;
+                    count /= 1 + (float)Cargo.accTableMilli[10];
                     break;
                 default:
                     throw new();
@@ -459,116 +291,34 @@ namespace FractionateEverything.Compatibility {
             return false;
         }
 
-        //proliferator ComboBox Increase Production Fractionator，增产分馏塔专用
-        private static readonly Dictionary<object, object> proliferatorComboBoxIPFDic = [];
-
-        private static ProliferatorComboBox _proliferatorComboBoxIPF(this ProductDetail productDetail) {
-            return (ProliferatorComboBox)proliferatorComboBoxIPFDic[productDetail];
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ProductDetail), nameof(ProductDetail.CreateProductDetail))]
-        private static void ProductDetail_CreateProductDetail_Postfix(ref ProductDetail __result) {
-            //添加右键工厂事件
-            ProductDetail productDetail = __result;
-            __result.factoryButton.onRightClick += _ => OnFactoryButtonRightClick(productDetail);
-            //为这个ProductDetail对象添加唯一对应的_proliferatorComboBoxIPF
-            //本来是要写在Init_Postfix里面的，后来发现运行顺序不对劲，就改到这里了，效果是一样的
-            ProliferatorComboBox _proliferatorComboBoxIPF =
-                MyComboBox.CreateComboBox<ProliferatorComboBox>(700, 10, __result._rect);
-            _proliferatorComboBoxIPF.gameObject.SetActive(false);
-            _proliferatorComboBoxIPF.comboBox.gameObject.SetActive(false);
-            proliferatorComboBoxIPFDic[__result] = _proliferatorComboBoxIPF;
-            _proliferatorComboBoxIPF.InitIPF(0);
-            _proliferatorComboBoxIPF.OnIndexChange += __result.OnProliferatorChange;
-        }
-
-        private static void OnFactoryButtonRightClick(ProductDetail productDetail) {
-            productDetail.factoryComboBox.comboBox.itemIndex =
-                productDetail.factoryComboBox.comboBox.itemIndex == -1 ? 0 : -1;
-        }
-
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProductDetail), nameof(ProductDetail.SetData))]
         private static void ProductDetail_SetData_Postfix(ref ProductDetail __instance, NodeData data) {
-            RecipeProto recipe;
-            if (data.Options.Factory.ID == IFE增产分馏塔) {
-                recipe = new() {
-                    Type = ERecipeType.Fractionate,
-                    Items = [data.Item.ID],
-                    ItemCounts = [100],
-                    Results = [data.Item.ID],
-                    ResultCounts = [1],
-                    TimeSpend = 60,
-                };
-            }
-            else {
-                recipe = data.Options.Recipe;
-            }
-            bool multiRecipes = data.Item.recipes.Count > 1;
-            bool canMining = !string.IsNullOrWhiteSpace(data.Item.miningFrom);
-            bool buttonShow = multiRecipes || canMining;
-            if (buttonShow) {
-                var sb = new StringBuilder();
-                if (multiRecipes) sb.AppendLine("左键点击：更换配方".TranslateFromJson());
-                if (canMining) sb.AppendLine("右键点击：将其设置为原材料".TranslateFromJson());
+            List<RecipeProto> recipes = [..data.Item.recipes];
+            recipes.RemoveAll(x => (Utils_ERecipeType)x.Type == Utils_ERecipeType.Fractionate);
+            bool flag1 = recipes.Count > 1;
+            bool flag2 = !string.IsNullOrWhiteSpace(data.Item.miningFrom);
+            bool flag3 = flag1 | flag2;
+            if (flag3) {
+                StringBuilder stringBuilder = new StringBuilder();
+                if (flag1) stringBuilder.AppendLine("左键点击：更换配方".TranslateFromJson());
+                if (flag2) stringBuilder.AppendLine("右键点击：将其设置为原材料".TranslateFromJson());
                 __instance.recipeImgButton.tips.tipTitle =
-                    (multiRecipes ? canMining ? "可采集多配方物品" : "可调整配方" : "可采集物品").TranslateFromJson();
-                __instance.recipeImgButton.tips.tipText = sb.ToString();
+                    (flag1 ? (flag2 ? "可采集多配方物品" : "可调整配方") : "可采集物品").TranslateFromJson();
+                __instance.recipeImgButton.tips.tipText = stringBuilder.ToString();
             }
-            __instance.recipeImgButton.gameObject.SetActive(buttonShow);
-            __instance.recipeEntry.SetRecipe(recipe);
-            if (data.Options.Factory.ID == IFE增产分馏塔) {
-                __instance._proliferatorComboBoxNormal.gameObject.SetActive(false);
-                __instance._proliferatorComboBoxNonProductive.gameObject.SetActive(false);
-                __instance._proliferatorComboBoxIPF().gameObject.SetActive(true);
-                __instance.currentProliferatorComboBox = __instance._proliferatorComboBoxIPF();
-            }
-            else if (recipe.productive && (Utils_ERecipeType)recipe.Type != Utils_ERecipeType.Fractionate) {
-                __instance._proliferatorComboBoxNormal.gameObject.SetActive(true);
-                __instance._proliferatorComboBoxNonProductive.gameObject.SetActive(false);
-                __instance._proliferatorComboBoxIPF().gameObject.SetActive(false);
-                __instance.currentProliferatorComboBox = __instance._proliferatorComboBoxNormal;
-            }
-            else {
-                __instance._proliferatorComboBoxNormal.gameObject.SetActive(false);
-                __instance._proliferatorComboBoxNonProductive.gameObject.SetActive(true);
-                __instance._proliferatorComboBoxIPF().gameObject.SetActive(false);
-                __instance.currentProliferatorComboBox = __instance._proliferatorComboBoxNonProductive;
-            }
-            __instance.currentProliferatorComboBox.SetStrategySlience(data.Options.Strategy);
-            data.Options.Strategy = __instance.currentProliferatorComboBox.Strategy;
-            __instance.proliferatorText.text = __instance.currentProliferatorComboBox.comboBox.m_Input.text;
+            __instance.recipeImgButton.gameObject.SetActive(flag3);
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(ProductDetail), nameof(ProductDetail.OnFactoryChange))]
-        private static bool ProductDetail_OnFactoryChange_Prefix(ref ProductDetail __instance,
-            (Utils_ERecipeType, ItemProto proto) obj) {
-            __instance._data.Options.Factory = obj.proto;
-            __instance.factoryButton.tips.tipTitle = obj.proto.name;
-            //执行此方法以使用正确的增产策略（更换currentProliferatorComboBox到正确对象，并重设data.Options.Strategy）
-            ProductDetail_SetData_Postfix(ref __instance, __instance._data);
-            __instance.RefreshFactoryCount();
-            __instance.RefreshNeeds();
-            return false;
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ProductDetail), nameof(ProductDetail.OnRecipePickerReturn))]
-        private static bool ProductDetail_OnRecipePickerReturn_Prefix(ref ProductDetail __instance,
-            RecipeProto recipeProto) {
-            if (recipeProto == null) {
+        [HarmonyPatch(typeof(ProductDetail), nameof(ProductDetail.Filter))]
+        private static bool ProductDetail_Filter_Prefix(ref ProductDetail __instance, RecipeProto recipeProto,
+            ref bool __result) {
+            if ((Utils_ERecipeType)recipeProto.Type == Utils_ERecipeType.Fractionate) {
+                __result = false;
                 return false;
             }
-            __instance.recipeEntry.SetRecipe(recipeProto);
-            __instance._data.Options.Recipe = recipeProto;
-            __instance._data.CheckFactory();
-            //执行此方法以使用正确的增产策略（更换currentProliferatorComboBox到正确对象，并重设data.Options.Strategy）
-            ProductDetail_SetData_Postfix(ref __instance, __instance._data);
-            __instance.RefreshFactoryCount();
-            __instance.RefreshNeeds();
-            return false;
+            return true;
         }
 
         #endregion

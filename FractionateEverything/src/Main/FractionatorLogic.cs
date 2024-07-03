@@ -57,6 +57,10 @@ namespace FractionateEverything.Main {
         private static int[] upgradeNeeds = [];
         private static int[] downgradeNeeds = [];
         private static int[] trashRecycleNeeds = [];
+#if DEBUG
+        private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
+        private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemPoint.csv";
+#endif
 
         #endregion
 
@@ -214,10 +218,9 @@ namespace FractionateEverything.Main {
             }
 #if DEBUG
             //按照从小到大的顺序输出所有物品的原材料点数
-            if (Directory.Exists(@"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata")) {
-                string filePath = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata\itemPoint.csv";
-                using StreamWriter sw = new StreamWriter(filePath);
-                sw.WriteLine("ID,名称,价值点数,分馏出2个的概率");
+            if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
+                using StreamWriter sw = new StreamWriter(ITEM_VALUE_CSV_PATH);
+                sw.WriteLine("ID,名称,物品价值,增产分馏概率最大值");
                 foreach (KeyValuePair<int, int> p in itemPointDic.OrderBy(p => p.Value)) {
                     ItemProto item = LDB.items.Select(p.Key);
                     if (item == null) {
@@ -328,7 +331,7 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 返回增产加成、加速加成中二者最大的值。
         /// </summary>
-        private static double MaxTableMilli(int fluidInputAvgInc) {
+        public static double MaxTableMilli(int fluidInputAvgInc) {
             int avgPoint = fluidInputAvgInc < 10 ? fluidInputAvgInc : 10;
             double ratioAcc = Cargo.accTableMilli[avgPoint];
             double ratioInc = Cargo.incTableMilli[avgPoint] * incTableFixedRatio[avgPoint];
@@ -382,13 +385,16 @@ namespace FractionateEverything.Main {
 
             int buildingID = factory.entityPool[__instance.entityId].protoId;
             //配方状态错误的情况下，修改配方状态（在分馏塔升降级时会有这样的现象）
+            bool abnormalProcess = false;
             if (buildingID == I分馏塔) {
                 if (__instance.fluidId != I氢 || __instance.productId != I重氢) {
-                    __instance.fluidId = I氢;
-                    __instance.productId = I重氢;
-                    __instance.produceProb = 0.01f;
-                    signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
-                    signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
+                    abnormalProcess = true;
+                    __instance.fluidOutputCount += __instance.fluidInputCount;
+                    __instance.fluidInputCount = 0;
+                    __instance.productOutputCount = 0;
+                    __instance.produceProb = 0.00f;
+                    signPool[__instance.entityId].iconId0 = 0U;
+                    signPool[__instance.entityId].iconType = 0U;
                 }
             }
             else if (buildingID is IFE自然资源分馏塔 or IFE升级分馏塔 or IFE降级分馏塔) {
@@ -397,23 +403,22 @@ namespace FractionateEverything.Main {
                     IFE升级分馏塔 => GetItemUpgrade(__instance.fluidId),
                     _ => GetItemDowngrade(__instance.fluidId),
                 };
-                if (tempProductId == 0 || (__instance.fluidId > 0 && __instance.productId != tempProductId)) {
-                    if (tempProductId == 0) {
-                        __instance.fluidId = 0;
-                        __instance.fluidInputCount = 0;
-                        __instance.fluidOutputCount = 0;
-                        __instance.productId = 0;
-                        __instance.productOutputCount = 0;
-                        __instance.produceProb = 0.0f;
-                        signPool[__instance.entityId].iconId0 = 0U;
-                        signPool[__instance.entityId].iconType = 0U;
-                    }
-                    else {
-                        __instance.productId = tempProductId;
-                        __instance.produceProb = 0.01f;
-                        signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
-                        signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
-                    }
+                if (__instance.fluidId > 0 && tempProductId == 0) {
+                    //如果正在处理一个当前无法处理的物品
+                    abnormalProcess = true;
+                    __instance.fluidOutputCount += __instance.fluidInputCount;
+                    __instance.fluidInputCount = 0;
+                    __instance.productOutputCount = 0;
+                    __instance.produceProb = 0.00f;
+                    signPool[__instance.entityId].iconId0 = 0U;
+                    signPool[__instance.entityId].iconType = 0U;
+                }
+                else if (__instance.fluidId > 0 && tempProductId != 0 && __instance.productId != tempProductId) {
+                    //如果正在处理一个当前可以处理的物品，但是产物id不对
+                    __instance.productId = tempProductId;
+                    __instance.produceProb = 0.01f;
+                    signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                    signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
                 }
             }
             else if (buildingID == IFE垃圾回收分馏塔) {
@@ -730,7 +735,7 @@ namespace FractionateEverything.Main {
                         }
                     }
                 }
-                else if (!isOutput && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+                else if (!isOutput && __instance.fluidInputCargoCount < __instance.fluidInputMax && !abnormalProcess) {
                     if (inputItemID > 0) {
                         if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null,
                                 out stack, out inc)
@@ -879,7 +884,7 @@ namespace FractionateEverything.Main {
                         }
                     }
                 }
-                else if (!isOutput && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+                else if (!isOutput && __instance.fluidInputCargoCount < __instance.fluidInputMax && !abnormalProcess) {
                     if (inputItemID > 0) {
                         if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null,
                                 out stack, out inc)

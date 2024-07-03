@@ -8,34 +8,27 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using static AfterBuildEvent.Utils;
 
 namespace AfterBuildEvent {
     static class AfterBuildEvent {
-        private const string R2_Default =
-            @"C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
-        private const string R2_BepInEx = $@"{R2_Default}\BepInEx";
-        private const string R2_DumpedDll = $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
-        private const string PublicizerExe = @"..\..\..\lib\BepInEx.AssemblyPublicizer.Cli.exe";
-        private const string Pdb2mdbExe = @"..\..\..\lib\pdb2mdb.exe";
-        private const string DSPGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
-        private const string KillDSP = "taskkill /f /im DSPGAME.exe";
-        private const string RunModded = "start steam://rungameid/1366540";
-
         public static void Main(string[] args) {
             Console.WriteLine("输入要执行的命令（直接回车表示1）：");
             Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
             Console.WriteLine("2表示生成计算器所需所有数据");
-            string cmdStr = Console.ReadLine();
-            if (cmdStr == "1" || cmdStr == "") {
+            string str = Console.ReadLine();
+            if (str == "1" || str == "") {
                 UpdateModsThenStart();
             }
-            else if (cmdStr == "2") {
-                GetAllClacJson();
+            else if (str == "2") {
+                GetAllCalcJson();
             }
             else {
                 Console.WriteLine("输入有误！");
             }
         }
+
+        #region 更新mod、打包、启动游戏
 
         static void UpdateModsThenStart() {
             using CmdProcess cmd = new();
@@ -143,7 +136,7 @@ namespace AfterBuildEvent {
                                 fileList.Add(iconPath);
                             }
                         }
-                        //buildtoolbardll
+                        //BuildMenuTool dll
                         string path =
                             @"D:\project\csharp\DSP MOD\BuildMenuTool\BuildMenuTool\bin\Debug\BuildMenuTool.dll";
                         //同时拷贝到项目
@@ -205,14 +198,18 @@ namespace AfterBuildEvent {
             }
             File.WriteAllLines(doorstop_config, lines);
             //启动使用R2MOD的游戏
-            Console.WriteLine("是否启动游戏？回车表示启动，其他表示结束程序");
-            if (Console.ReadLine() == "") {
+            Console.WriteLine("是否启动游戏？1或回车表示启动，其他表示结束程序");
+            string str = Console.ReadLine();
+            if (str == "" || str == "1") {
                 cmd.Exec(RunModded);
             }
         }
 
         static void ZipMod(List<string> fileList, string zipPath) {
             string zipParentDir = new FileInfo(zipPath).DirectoryName;
+            if (zipParentDir == null) {
+                throw new("路径异常！");
+            }
             if (!Directory.Exists(zipParentDir)) {
                 Directory.CreateDirectory(zipParentDir);
             }
@@ -237,7 +234,11 @@ namespace AfterBuildEvent {
             zipStream.Close();
         }
 
-        static void GetAllClacJson() {
+        #endregion
+
+        #region 生成戴森球量化计算器所需文件，并将其复制到计算器项目目录下
+
+        private static void GetAllCalcJson() {
             using CmdProcess cmd = new();
             //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
             File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
@@ -278,7 +279,7 @@ namespace AfterBuildEvent {
             int[] set = [0, 1, 2, 3];
             for (int i = 0; i <= mods.Length; i++) {
                 IEnumerable<IEnumerable<int>> result = Combinations(set, i);
-                foreach (var combo in result) {
+                foreach (IEnumerable<int> combo in result) {
                     for (int j = 0; j < mods.Length; j++) {
                         modsEnable[j] = combo.Contains(j);
                     }
@@ -295,27 +296,8 @@ namespace AfterBuildEvent {
             cmd.Exec(KillDSP);
         }
 
-        public static IEnumerable<IEnumerable<int>> Combinations(int[] set, int r) {
-            return Combinations(set, r, 0);
-        }
-
-        private static IEnumerable<IEnumerable<int>> Combinations(int[] set, int r, int index) {
-            if (r == 0) {
-                return new[] { new int[0] };
-            }
-            var combos = new List<IEnumerable<int>>();
-            for (int i = index; i <= set.Length - r; i++) {
-                var head = new[] { set[i] };
-                var tailCombinations = Combinations(set, r - 1, i + 1);
-                foreach (var tail in tailCombinations) {
-                    combos.Add(head.Concat(tail));
-                }
-            }
-            return combos;
-        }
-
-        static void WriteOneJson(CmdProcess cmd, string[] mods, bool[] modsEnable) {
-            string filePath = GetJsonFilePath(mods, modsEnable);
+        private static void WriteOneJson(CmdProcess cmd, string[] mods, bool[] modsEnable) {
+            string filePath = GetJsonFilePath(mods, modsEnable, false);
             if (File.Exists(filePath)) {
                 Console.WriteLine($"{filePath} 已存在，跳过生成");
                 return;
@@ -332,20 +314,31 @@ namespace AfterBuildEvent {
             Console.WriteLine(sb.ToString());
             cmd.Exec(RunModded);
             while (true) {
-                Thread.Sleep(500);
+                Thread.Sleep(200);
                 if (!File.Exists(filePath)) {
                     continue;
                 }
                 FileInfo info = new FileInfo(filePath);
                 if (info.LastWriteTime > DateTime.Now.AddSeconds(-10)) {
-                    Console.WriteLine($"已生成{filePath}");
-                    Thread.Sleep(1000);
+                    Console.WriteLine($"已生成 {filePath}");
+                    string filePath2 = GetJsonFilePath(mods, modsEnable, true);
+                    FileInfo info2 = new FileInfo(filePath2);
+                    if (info2.Directory == null || !info2.Directory.Exists) {
+                        Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
+                        break;
+                    }
+                    while (!info2.Exists || info2.Length != info.Length) {
+                        File.Copy(filePath, filePath2, true);
+                    }
+                    Console.WriteLine($"已复制到 {filePath2}");
                     break;
                 }
             }
+            //等待log文件记录完毕
+            Thread.Sleep(500);
         }
 
-        static string GetJsonFilePath(string[] mods, bool[] modsEnable) {
+        private static string GetJsonFilePath(string[] mods, bool[] modsEnable, bool isCalc) {
             string name = "";
             for (int i = 0; i < mods.Length; i++) {
                 if (modsEnable[i]) {
@@ -353,58 +346,11 @@ namespace AfterBuildEvent {
                 }
             }
             name = name == "" ? "vanilla" : name.Substring(1);
-            return $@"..\..\..\GetDspData\gamedata\calc json\{name}.json";
+            return isCalc
+                ? $@"D:\project\js\dsp-calc\data\{name}.json"
+                : $@"..\..\..\GetDspData\gamedata\calc json\{name}.json";
         }
 
-        static void ChangeModEnable(string mod, bool enable) {
-            string modPatchersDir = $@"{R2_BepInEx}\patchers\{mod}";
-            string modPluginsDir = $@"{R2_BepInEx}\plugins\{mod}";
-            if (Directory.Exists(modPatchersDir)) {
-                foreach (var file in Directory.GetFiles(modPatchersDir)) {
-                    if (enable) {
-                        if (file.EndsWith(".old")) {
-                            File.Move(file, file.Substring(0, file.Length - 4));
-                        }
-                    }
-                    else {
-                        if (!file.EndsWith(".old")) {
-                            File.Move(file, file + ".old");
-                        }
-                    }
-                }
-            }
-            foreach (var file in Directory.GetFiles(modPluginsDir)) {
-                if (enable) {
-                    if (file.EndsWith(".old")) {
-                        File.Move(file, file.Substring(0, file.Length - 4));
-                    }
-                }
-                else {
-                    if (!file.EndsWith(".old")) {
-                        File.Move(file, file + ".old");
-                    }
-                }
-            }
-        }
-
-        static void ChangeAllModsEnable(bool enable) {
-            //不启用的mod
-            List<string> enableIgnore = ["Galactic_Scale-GalacticScale"];
-            //不禁用的mod
-            List<string> disableIgnore = [
-                "xiaoye97-LDBTool", "CommonAPI-CommonAPI", "CommonAPI-DSPModSave", "nebula-NebulaMultiplayerModApi",
-                "starfi5h-ErrorAnalyzer", "MengLei-GetDspData"
-            ];
-            string pluginsDir = $@"{R2_BepInEx}\plugins";
-            foreach (var dir in Directory.GetDirectories(pluginsDir)) {
-                if (enable && enableIgnore.Contains(new DirectoryInfo(dir).Name)) {
-                    continue;
-                }
-                if (!enable && disableIgnore.Contains(new DirectoryInfo(dir).Name)) {
-                    continue;
-                }
-                ChangeModEnable(new DirectoryInfo(dir).Name, enable);
-            }
-        }
+        #endregion
     }
 }

@@ -9,16 +9,16 @@ namespace FractionateEverything.Main {
             Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
             Register("FE信息",
                 "Thank you for using Fractionation Everything! This mod adds 6 Fractionators, and a lot of fractionation recipes.\n"
-                + "If you are using this mod for the first time, it is highly recommended that you check out the module introduction page to get an idea of its contents and features.\n"
-                + "You can change mod options in Settings - Miscellaneous, such as change fractionate recipe icon style (currently there are 3 styles available), or no longer show this window.\n"
+                + $"If you are using this mod for the first time, it is highly recommended that you {"check out the mod introduction page".AddBlueLabel()} to get an idea of its contents and features.\n"
+                + $"You can change mod options in {"Settings - Miscellaneous".AddBlueLabel()} to get the full experience.\n"
                 + "Recommended for use with Genesis Book, They Come From Void, and More Mega Structure.\n"
-                + "If you have any issues or ideas about the mod, please feedback to Github Issue.\n"
+                + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".AddBlueLabel()}.\n"
                 + "Have fun with fractionation!".AddOrangeLabel(),
                 "感谢你使用万物分馏！该MOD添加了6个分馏塔，以及大量的分馏配方。\n"
-                + "如果你是首次使用该模组，强烈建议你查看模组介绍页面以了解其内容与特色。\n"
-                + "你可以在设置-杂项中修改MOD配置，例如切换分馏配方的图标样式（目前有3种样式可选）。\n"
+                + $"如果你是首次使用该模组，强烈建议你{"查看模组介绍页面".AddBlueLabel()}以了解其内容与特色。\n"
+                + $"你可以在{"设置-杂项".AddBlueLabel()}中修改MOD配置，以获得完整体验。\n"
                 + "推荐与创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）一起使用。\n"
-                + "如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入创世之书MOD交流群反馈。\n"
+                + $"如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"创世之书MOD交流群".AddBlueLabel()}反馈。\n"
                 + "尽情享受分馏的乐趣吧！".AddOrangeLabel());
             Register("FE交流群", "View on Github", "加入交流群");
             Register("FE交流群链接",
@@ -41,7 +41,7 @@ namespace FractionateEverything.Main {
                 + "In the end there are only three things to do in the game: expand the blue or red matrix production line, unlock tech, and wait.\n"
                 + "Oh my god I bet there's no worse gaming experience than this!\n"
                 + "It's hard to believe that the matrix fractionation chain is so poorly designed that it looks like Aunt Susan's apple pie next door!\n\n"
-                + $"Back on topic, this mod was originally designed to be {"fun".AddOrangeLabel()}, but I've been working on making it a {"balanced".AddBlueLabel()} mod.\n"
+                + $"Back on topic, this mod was originally designed to be {"fun".AddBlueLabel()}, but I've been working on making it a {"balanced".AddBlueLabel()} mod.\n"
                 + "It is an obvious fact that if you want to cheat, why not try \"Multfunction_Mod\" or \"CheatEnabler\"?\n"
                 + "In response to matrix fractionation, I solicited ideas for improvements from a large number of players. I gathered various ways to change things, such as lag unlocking, fractionation consuming sand,\n"
                 + "increasing power consumption, fractionated matrices not being able to be fractionated again, and so on, but they weren't in the way I expected.\n\n"
@@ -49,9 +49,9 @@ namespace FractionateEverything.Main {
                 + "Obviously, the Building-HighSpeed Fractionator is the best building. It's more of an aid and doesn't affect the game experience too much.\n"
                 + "So in 1.4.1, I added switches for matrix fractionation, split the Building-HighSpeed Fractionator into Upgrade and Downgrade Fractionator and adjusted the fractionate recipes.\n"
                 + "Hopefully these changes will make the mod more balanced.\n\n"
-                + $"PS1: You can click {"Update Log".AddOrangeLabel()} for all the changes in 1.4.1.\n"
-                + $"PS2: {"Don't ever forget to check out the new settings added in Settings - Miscellaneous!".AddRedLabel()}\n"
-                + $"Thanks to everyone for using Fractionate Everything. {"Have fun with fractionation!".AddRedLabel()}",
+                + $"PS1: You can click {"Update Log".AddBlueLabel()} for all the changes in 1.4.1.\n"
+                + $"PS2: Don't forget to check out {"the new settings".AddBlueLabel()} added in {"Settings - Miscellaneous".AddBlueLabel()}!\n"
+                + $"Thanks to everyone for using Fractionate Everything. {"Have fun with fractionation!".AddOrangeLabel()}",
                 "“尽管万物分馏属于作弊模组，但它的限制已经够多了，它应该是平衡的。”\n"
                 + "——在我亲自试玩并一个晚上通关游戏之前，我都是这样想的。\n"
                 + "在我体验万物分馏mod之后，“策划根本就不玩游戏”这个玩笑就像回旋镖一样打在了我的身上。\n\n"
@@ -62,7 +62,7 @@ namespace FractionateEverything.Main {
                 + "最后游戏只剩下三件事：扩大蓝糖或红糖的产线，解锁科技，以及等待。\n"
                 + "哦天哪，我敢打赌，没有比这更糟糕的游戏体验了！\n"
                 + "真是难以相信，矩阵分馏链的设计竟然如此糟糕，就像隔壁苏珊婶婶做的苹果派一样！\n\n"
-                + $"回归正题，分馏设计之初是为了{"有趣".AddOrangeLabel()}，但是我一直致力于把它打造成一个{"平衡".AddBlueLabel()}的mod。\n"
+                + $"回归正题，分馏设计之初是为了{"有趣".AddBlueLabel()}，但是我一直致力于把它打造成一个{"平衡".AddBlueLabel()}的mod。\n"
                 + "一个显而易见的事实是，如果你想作弊，为何不试试“Multfunction_Mod”或者“CheatEnabler”？\n"
                 + "针对矩阵分馏，我向大量玩家征集了改进意见。我收集到了各种改动方式，例如滞后解锁、分馏消耗沙土、加大耗电、\n"
                 + "分馏出的矩阵不能再次分馏等等，但它们都不是我所期望的方式。\n\n"
@@ -70,9 +70,9 @@ namespace FractionateEverything.Main {
                 + "显然，建筑极速分馏塔是最优秀的建筑。它更像是一种辅助手段，并不会过多影响游戏体验。\n"
                 + "所以在1.4.1中，我为矩阵分馏增加了开关，将建筑极速分馏塔拆分为升级、降级分馏塔并调整了分馏配方。\n"
                 + "希望这次改动能让分馏更加平衡。\n\n"
-                + $"PS1：你可以点击{"更新日志".AddOrangeLabel()}，以了解1.4.1的所有改动。\n"
-                + $"PS2：{"千万不要忘记查看设置-杂项中新增的设置项！".AddRedLabel()}\n"
-                + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".AddRedLabel()}");
+                + $"PS1：你可以点击{"更新日志".AddBlueLabel()}，以了解1.4.1的所有改动。\n"
+                + $"PS2：千万不要忘记查看{"设置-杂项".AddBlueLabel()}中{"新增的设置项".AddBlueLabel()}！\n"
+                + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
 
             #endregion
 
@@ -91,7 +91,7 @@ namespace FractionateEverything.Main {
                 "（需要重新载入存档才能完全生效）");
             Register("EnableDestroy", "Enable fractionation destroy probability", "启用分馏损毁概率");
             Register("EnableDestroyAdditionalText",
-                "(Recommended to be turned on, immediate effect, no need to reload the save)",
+                "(Recommended to be turned on, effect immediately, no need to reload the save)",
                 "（建议开启，立即生效，无需重新载入存档）");
             Register("EnableFuelRodFrac", "Enable fuel rod fractionation", "启用燃料棒分馏");
             Register("EnableFuelRodFracAdditionalText",
@@ -99,13 +99,12 @@ namespace FractionateEverything.Main {
                 "（立即生效，无需重新载入存档）");
             Register("EnableMatrixFrac", "Enable matrix fractionation", "启用矩阵分馏");
             Register("EnableMatrixFracAdditionalText",
-                "(Recommended to be turned off, immediate effect, no need to reload the save)",
+                "(Recommended to be turned off, effect immediately, no need to reload the save)",
                 "（建议关闭，立即生效，无需重新载入存档）");
             Register("EnableBuildingAsTrash", "Allow to recycle buildings", "允许回收建筑");
             Register("EnableBuildingAsTrashAdditionalText",
-                "(Recommended to be turned off, immediate effect, no need to reload the save)",
+                "(Recommended to be turned off, effect immediately, no need to reload the save)",
                 "（建议关闭，立即生效，无需重新载入存档）");
-
 
             #endregion
 
@@ -131,12 +130,12 @@ namespace FractionateEverything.Main {
             Register("升级分馏塔", "Upgrade Fractionator");
             Register("I升级分馏塔",
                 $"Converts low-level items into few high-level items. Once you have unlocked a new up-downgrade fractionation recipe, you can perform an elevated fractionation operation on its {"input".AddOrangeLabel()}.",
-                $"将低级物品转换为更少的高级物品。解锁新的升降级分馏配方后，即可对该配方的{"原料".AddOrangeLabel()}进行升级分馏操作。");
+                $"将低级物品转换为更少的高级物品。解锁新的升降级分馏配方后，即可对该配方的{"原料".AddOrangeLabel()}进行升级分馏操作。\n与{"降级分馏塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
 
             Register("降级分馏塔", "Downgrade Fractionator");
             Register("I降级分馏塔",
                 $"Converts high-level items into more low-level items. Once you have unlocked a new up-downgrade fractionation recipe, you can perform an elevated fractionation operation on its {"output".AddOrangeLabel()}.",
-                $"将高级物品转换为更多的低级物品。解锁新的升降级分馏配方后，即可对该配方的{"产物".AddOrangeLabel()}进行降级分馏操作。");
+                $"将高级物品转换为更多的低级物品。解锁新的升降级分馏配方后，即可对该配方的{"产物".AddOrangeLabel()}进行降级分馏操作。\n与{"升级分馏塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
 
             Register("垃圾回收分馏塔", "Trash Recycle Fractionator");
             Register("I垃圾回收分馏塔",
@@ -170,11 +169,11 @@ namespace FractionateEverything.Main {
 
             Register("T升降级分馏", "Up-Downgrade Fractionation", "升降级分馏");
             Register("升降级分馏描述",
-                "To facilitate Icarus's exploration, the Mastermind has issued downgraded tech for some items. Upgrading the Fractionation tech converts low-level items into fewer high-level items, and downgrading the Fractionation tech converts high-level items into multiple low-level items. This tech is well adapted to buildings, less so to non-buildings, and only some non-building items can be leveled. Nonetheless, it is a powerful aid on the quest.",
-                "为了方便伊卡洛斯的探索，主脑下发了部分物品的升降级科技。升级分馏科技可以将低级物品转为更少的高级物品，降级分馏科技可将高级物品转为多个低级物品。这项科技对建筑的适配性良好，对非建筑的适配性则较差，只有部分非建筑物品可以进行升降级操作。尽管如此，它依然是探索路上的强力援助。");
+                "To facilitate Icarus's exploration, the Mastermind has issued downgraded tech for some items. Upgrading the Fractionation tech converts low-level items into fewer high-level items, and downgrading the Fractionation tech converts high-level items into multiple low-level items. There is an inexhaustible supply of items in the cycle of upgrading and downgrading. This tech is well adapted to buildings, less so to non-buildings, and only some non-building items can be fractionated. Nonetheless, it is a powerful aid on the quest.",
+                "为了方便伊卡洛斯的探索，主脑下发了部分物品的升降级科技。升级分馏科技可以将低级物品转为更少的高级物品，降级分馏科技可将高级物品转为多个低级物品，升降级的循环中存在着取之不尽的物品。这项科技对建筑的适配性良好，对非建筑的适配性则较差，只有部分非建筑物品可以进行升降级操作。尽管如此，它依然是探索路上的强力援助。");
             Register("升降级分馏结果",
-                "You have mastered the Up-Downgrade Fractionation technology and can now process some of your items in Up-Downgrade Fractionator.",
-                "你已经掌握了升降级分馏技术，可以用升降级分馏塔处理部分物品了。");
+                "You have mastered the Up-Downgrade Fractionation technology and can now recycle process some items to copy them.",
+                "你已经掌握了升降级分馏技术，可以用升降级分馏塔循环处理物品，从而实现物品的复制。");
 
             Register("T垃圾回收", "Trash Recycle", "垃圾回收");
             Register("垃圾回收描述",
@@ -194,10 +193,10 @@ namespace FractionateEverything.Main {
 
             Register("T增产分馏", "Increase production fractionate", "增产分馏");
             Register("增产分馏描述",
-                "Although the Natural Resource Fractionator was powerful, it could only replicate a small portion of items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if all of an item's proliferator points were used to enhance the proliferator effect and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
+                "Although Natural Resource Fractionation and Up-Downgrade Fractionation are powerful, these techniques can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
                 + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
                 + $"{"Warning:".AddOrangeLabel()} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".AddOrangeLabel()}",
-                "自然资源分馏塔虽然强大，但它只能复制一小部分物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果将物品的增产点数全部用于提升增产效果，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
+                "自然资源分馏和升降级分馏虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
                 + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
                 + $"{"警告：".AddOrangeLabel()}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".AddOrangeLabel()}");
             Register("增产分馏结果",
