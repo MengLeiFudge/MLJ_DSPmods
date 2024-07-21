@@ -6,7 +6,7 @@
 
 # 万物分馏(Fractionate Everything)
 
-包含5个不同功能的分馏塔，以及超过200个分馏配方。所有分馏配方均会随着科技的进步逐渐解锁。
+新增了6个不同功能的分馏塔，以及超过100个分馏配方。分馏建筑、分馏配方会随着科研进程逐渐解锁。
 
 **_尽情享受分馏的乐趣吧！_**
 
@@ -19,17 +19,19 @@
 
 ![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)
 
-- 精准分馏塔：速率越低，分馏成功率越高。
+- 原版分馏塔：仅能用于将氢分馏为重氢。
 
-- 建筑极速分馏塔：输入建筑时，大幅提高分馏成功率；否则大幅降低分馏成功率。
+- 自然资源分馏塔：可以复制大部分自然资源（例如铁矿、单极磁石、氢、硫酸等）。
 
-- 通用分馏塔：使用极速传送带且集装货物情况下，速率优于精准分馏塔。
+- 升级、降级分馏塔：升级分馏塔可以将物品转为更少的高级物品，降级分馏塔可以将物品转为更多的低级物品，升降级循环即可复制物品。
 
-- 点数聚集分馏塔：将增产点数集中到一小部分产品上，达到10点后输出。
+- 垃圾回收分馏塔：回收你不需要的物品，将其转为地基或沙土。
 
-- 增产分馏塔：增产剂的效果改为提升物品输出数目，从而达到无中生有。
+- 点数聚集分馏塔：将增产点数集中到一小部分产品上，从而输出10增产点数的物品。
 
-以上是MOD包含的五种分馏建筑，你可以使用升降级功能在这些建筑之间自由切换。
+- 增产分馏塔：可以复制宇宙万物，基础概率与输入物品的价值有关。
+
+你可以使用升降级功能在这些建筑之间自由切换。
 
 ### 精心设计的分馏配方
 
@@ -125,7 +127,7 @@ MOD的分馏配方已经过仔细调整，其中包含部分循环链。一些�
 
 </details>
 
-Includes 5 fractionators with different functions and over 200 fractionate recipes. All fractionate recipes will be
+Includes 6 fractionators with different functions and over 200 fractionate recipes. All fractionate recipes will be
 unlocked gradually with the advancement of technology.
 
 **_Have fun with fractionation!_**

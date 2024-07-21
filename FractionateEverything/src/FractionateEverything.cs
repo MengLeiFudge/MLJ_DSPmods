@@ -25,7 +25,9 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION = "1.4.1";
+        public const string VERSION_Main = "1.4.1";
+        public const string VERSION_Debug = "";
+        public const string VERSION = VERSION_Main + VERSION_Debug;
 
         #region Logger
 
@@ -235,7 +237,7 @@ namespace FractionateEverything {
             //调整垃圾回收分馏塔描述
             if (enableBuildingAsTrashChanged) {
                 ItemProto trashRecycleFractionator = LDB.items.Select(IFE垃圾回收分馏塔);
-                trashRecycleFractionator.Name = enableBuildingAsTrash ? "I垃圾回收分馏塔2" : "I垃圾回收分馏塔";
+                trashRecycleFractionator.Description = enableBuildingAsTrash ? "I垃圾回收分馏塔2" : "I垃圾回收分馏塔";
                 trashRecycleFractionator.Preload(trashRecycleFractionator.index);
             }
         }
@@ -274,7 +276,6 @@ namespace FractionateEverything {
             FractionatorBuildings.SetFractionatorCacheSize();
             //↑↑↑这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↑↑↑
             FractionateRecipes.AddFracRecipes();
-            UIBuildMenuPatch.Init();
             _finished = true;
         }
 

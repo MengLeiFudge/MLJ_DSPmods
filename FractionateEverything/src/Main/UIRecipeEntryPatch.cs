@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using FractionateEverything.Utils;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -36,9 +37,9 @@ namespace FractionateEverything.Main {
             x1 += 40;
             __instance.arrow.anchoredPosition = new(x1, -27f);
             //概率显示包括dic首个不为损毁的概率的Value，以及损毁概率（如果有的话）
-            string str = p.Value.ToString("0.###%");
+            string str = p.Value.FormatP();
             if (enableDestroy && dic.TryGetValue(-1, out float destroyRatio)) {
-                str += "(" + destroyRatio.ToString("0.###%") + ")";
+                str += "(" + destroyRatio.FormatP() + ")";
             }
             __instance.timeText.text = str;
             //横向拓展，避免显示不下

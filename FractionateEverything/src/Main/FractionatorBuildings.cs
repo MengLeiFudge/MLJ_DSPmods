@@ -1,4 +1,5 @@
-﻿using CommonAPI.Systems;
+﻿using BuildBarTool;
+using CommonAPI.Systems;
 using FractionateEverything.Compatibility;
 using HarmonyLib;
 using System;
@@ -40,13 +41,14 @@ namespace FractionateEverything.Main {
 
             //原版解锁科技：蓝 蓝 蓝 红 紫 绿
             //[I铁块, I石材, I玻璃, I电路板][4, 2, 2, 1]
-            //[I铁块, I石材, I玻璃, I电路板][8, 4, 4, 1] [I铁块, I石材, I玻璃, I电路板][8, 4, 4, 1]
+            //[I钢材, I石材, I玻璃, I电路板][8, 4, 4, 1] [I钢材, I石材, I玻璃, I电路板][8, 4, 4, 1]
             //[I钢材, I石材, I玻璃, I处理器][8, 4, 4, 1]
             //[I钛合金, I石墨烯, I钛化玻璃, I处理器][8, 4, 4, 1]
             //[I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器][16, 8, 4, 1, 30]
 
             //创建新建筑
-            List<ItemProto> upgradeList = [];
+            //原版分馏塔作为分馏升级链最底层，以便于使用升降级替换建筑，以及适配BPT的替换建筑
+            List<ItemProto> upgradeList = [LDB.items.Select(I分馏塔)];
             var f1 = CreateAndPreAddNewFractionator(
                 "自然资源分馏塔", RFE自然资源分馏塔, IFE自然资源分馏塔, MFE自然资源分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
@@ -55,13 +57,13 @@ namespace FractionateEverything.Main {
             upgradeList.Add(f1.Item3);
             var f2 = CreateAndPreAddNewFractionator(
                 "升级分馏塔", RFE升级分馏塔, IFE升级分馏塔, MFE升级分馏塔,
-                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
+                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I钢材, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2602, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
             upgradeList.Add(f2.Item3);
             var f3 = CreateAndPreAddNewFractionator(
                 "降级分馏塔", RFE降级分馏塔, IFE降级分馏塔, MFE降级分馏塔,
-                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
+                GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I钢材, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2603, new(0.7f, 0.6f, 0.8f), 0, 1.0f);
             upgradeList.Add(f3.Item3);
@@ -211,6 +213,9 @@ namespace FractionateEverything.Main {
                 ModelCount = 1,
                 prefabDesc = model.prefabDesc,//应与model指向同一个prefabDesc
             };
+            if (itemID == IFE垃圾回收分馏塔 && FractionateEverything.enableBuildingAsTrash) {
+                item.Description += "2";
+            }
             //添加物品在传送带上的显示情况
             ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs
                 = ref AccessTools.StaticFieldRefAccess<Dictionary<int, IconToolNew.IconDesc>>(typeof(ProtoRegistry),
@@ -232,7 +237,7 @@ namespace FractionateEverything.Main {
             //最后调用StorageComponent.LoadStatic()才能使物品的堆叠上限生效
 
             //设置快捷制作栏位置
-            item.SetBuildBarUpper();
+            item.SetBuildBar(5, item.GridIndex % 10, true);
 
             //添加科技解锁相关信息。可以避免万物分馏PreAddAction时，LDB中找不到创世科技的问题
             buildingInfoList.Add(new() { itemID = itemID, recipeID = recipeID });

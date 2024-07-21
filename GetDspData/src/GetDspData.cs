@@ -241,8 +241,7 @@ namespace GetDspData {
                     //这里先排除自分馏配方，后面再添加
                     if (recipe.Items.Length > 0 && recipe.Results.Length > 0 && recipe.Items[0] != recipe.Results[0]) {
                         addRecipe(recipe, recipes);
-                    }
-                    else {
+                    } else {
                         notAddRecipes.Add(recipe);
                     }
                 }
@@ -491,14 +490,11 @@ namespace GetDspData {
                 obj.Add("WorkEnergyPerTick", proto.prefabDesc.workEnergyPerTick);
                 if (proto.prefabDesc.isAssembler) {
                     obj.Add("Speed", proto.prefabDesc.assemblerSpeed);
-                }
-                else if (proto.prefabDesc.isLab) {
+                } else if (proto.prefabDesc.isLab) {
                     obj.Add("Speed", proto.prefabDesc.labAssembleSpeed);
-                }
-                else if (proto.ID == I采矿机) {
+                } else if (proto.ID == I采矿机) {
                     obj.Add("Speed", 5000);
-                }
-                else {
+                } else {
                     //大型采矿机、分馏塔等等都是10000速度
                     obj.Add("Speed", 10000);
                 }
@@ -543,8 +539,7 @@ namespace GetDspData {
                     RecipeProto proto2 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto2, IFE自然资源分馏塔);
                     addRecipe(proto2, add, [IFE自然资源分馏塔]);
-                }
-                else {
+                } else {
                     RecipeProto proto2 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto2, IFE升级分馏塔);
                     //如果原料与产物相同，则不添加
@@ -650,8 +645,7 @@ namespace GetDspData {
                 Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
                 float ratio = dic[2];
                 recipe.TimeSpend = (int)(ratio * 100000);
-            }
-            else if (factory == IFE升级分馏塔) {
+            } else if (factory == IFE升级分馏塔) {
                 recipe.name += "-升级分馏塔";
                 recipe.ItemCounts[0] = 1;
                 recipe.ResultCounts[0] = 1;
@@ -661,8 +655,7 @@ namespace GetDspData {
                 float ratio = 0.04f;
                 //暂时不考虑损毁的影响，按照无损毁来计算
                 recipe.TimeSpend = (int)(ratio * 100000);
-            }
-            else if (factory == IFE降级分馏塔) {
+            } else if (factory == IFE降级分馏塔) {
                 recipe.name += "-降级分馏塔";
                 recipe.ID += 1000;
                 (recipe.Items[0], recipe.Results[0]) = (recipe.Results[0], recipe.Items[0]);
@@ -673,8 +666,7 @@ namespace GetDspData {
                 // float ratio = dic[2];
                 float ratio = 0.02f;
                 recipe.TimeSpend = (int)(ratio * 100000);
-            }
-            else {
+            } else {
                 throw new($"异常万物分馏配方，ID {recipe.ID}，factory {factory}");
             }
         }

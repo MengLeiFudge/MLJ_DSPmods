@@ -19,11 +19,9 @@ namespace AfterBuildEvent {
             string str = Console.ReadLine();
             if (str == "1" || str == "") {
                 UpdateModsThenStart();
-            }
-            else if (str == "2") {
+            } else if (str == "2") {
                 GetAllCalcJson();
-            }
-            else {
+            } else {
                 Console.WriteLine("输入有误！");
             }
         }
@@ -43,8 +41,7 @@ namespace AfterBuildEvent {
             if (File.Exists(R2_DumpedDll)) {
                 cmd.Exec($"\"{PublicizerExe}\" \"{R2_DumpedDll}\"");//引号防止路径包含空格
                 Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开");
-            }
-            else {
+            } else {
                 Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
             }
             //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
@@ -69,7 +66,7 @@ namespace AfterBuildEvent {
                         continue;
                     }
                     //要打包的所有文件，也是要复制到R2_BepInEx的文件
-                    List<string> fileList = [];
+                    Dictionary<string, string> fileList = [];
                     var projectName = AssemblyName.InnerText;
                     string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
                     string projectDir = $@"..\..\..\{projectName}";
@@ -82,7 +79,7 @@ namespace AfterBuildEvent {
                     if (!File.Exists(projectModFile)) {
                         continue;
                     }
-                    fileList.Add(projectModFile);
+                    fileList.Add(projectModFile, "");
                     //mod.dll.mdb
                     // cmd.Exec($"\"{Pdb2mdbExe}\" \"{projectModFile}\"");//引号防止路径包含空格
                     // string projectMdb = $@"{projectModFile}.mdb";
@@ -92,18 +89,18 @@ namespace AfterBuildEvent {
                     //README.md
                     string projectReadme = $@"{projectDir}\README.md";
                     if (File.Exists(projectReadme)) {
-                        fileList.Add(projectReadme);
+                        fileList.Add(projectReadme, "");
                     }
                     //CHANGELOG.md
                     string projectChangeLog = $@"{projectDir}\CHANGELOG.md";
                     if (File.Exists(projectChangeLog)) {
-                        fileList.Add(projectChangeLog);
+                        fileList.Add(projectChangeLog, "");
                     }
                     //manifest.json、version
                     string projectManifest = $@"{projectDir}\Assets\manifest.json";
                     string version = "";
                     if (File.Exists(projectManifest)) {
-                        fileList.Add(projectManifest);
+                        fileList.Add(projectManifest, "");
                         var obj = JObject.Parse(File.ReadAllText(projectManifest));
                         if (obj.TryGetValue("version_number", out JToken value)) {
                             version = "_" + value;
@@ -112,17 +109,16 @@ namespace AfterBuildEvent {
                     //icon.png
                     string projectIcon = $@"{projectDir}\Assets\icon.png";
                     if (File.Exists(projectIcon)) {
-                        fileList.Add(projectIcon);
+                        fileList.Add(projectIcon, "");
                     }
                     //额外文件
                     if (projectName == "GetDspData") {
                         //Newtonsoft.Json.dll
                         string jsonDll = @"..\..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll";
                         if (File.Exists(jsonDll)) {
-                            fileList.Add(jsonDll);
+                            fileList.Add(jsonDll, "");
                         }
-                    }
-                    else if (projectName == "FractionateEverything") {
+                    } else if (projectName == "FractionateEverything") {
                         //fracicons
                         string[] icons = [
                             "fracicons"
@@ -133,19 +129,21 @@ namespace AfterBuildEvent {
                             if (File.Exists(iconPath)) {
                                 //同时拷贝到项目
                                 File.Copy(iconPath, $@"..\..\..\FractionateEverything\Assets\{icon}", true);
-                                fileList.Add(iconPath);
+                                fileList.Add(iconPath, "");
                             }
                         }
-                        //BuildMenuTool dll
-                        string path =
-                            @"D:\project\csharp\DSP MOD\BuildMenuTool\BuildMenuTool\bin\Debug\BuildMenuTool.dll";
-                        //同时拷贝到项目
-                        File.Copy(path, $@"..\..\..\lib\BuildMenuTool.dll", true);
-                        fileList.Add(path);
+                        //附赠的蓝图
+                        foreach (var bpFile in Directory.GetFiles($@"{projectDir}\Assets\blueprints")) {
+                            fileList.Add(bpFile, "blueprints/");
+                        }
                     }
                     //打包
                     if (!Directory.Exists(r2ModDir)) {
                         Directory.CreateDirectory(r2ModDir);
+                    }
+                    DirectoryInfo directoryInfo = new DirectoryInfo(@".\ModZips");
+                    if (!Directory.Exists(@".\ModZips")) {
+                        Directory.CreateDirectory(@".\ModZips");
                     }
                     foreach (var file in Directory.GetFiles(@".\ModZips")) {
                         if (file.StartsWith($@".\ModZips\{projectName}") && file.EndsWith(".zip")) {
@@ -157,19 +155,24 @@ namespace AfterBuildEvent {
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                     //所有文件复制到R2，注意R2是否禁用了mod
-                    foreach (var file in fileList) {
-                        string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{Path.GetFileName(file)}";
+                    foreach (var p in fileList) {
+                        string relativePath = p.Value.Replace("/", @"\") + Path.GetFileName(p.Key);
+                        string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
                         string r2OldFilePath = $"{r2FilePath}.old";
                         string targetPath = !File.Exists(r2OldFilePath) ? r2FilePath : r2OldFilePath;
-                        File.Copy(file, targetPath, true);
-                        Console.WriteLine($"复制 {file} -> {targetPath}");
+                        FileInfo fileInfo = new FileInfo(targetPath);
+                        if (!fileInfo.Directory.Exists) {
+                            Directory.CreateDirectory(fileInfo.Directory.FullName);
+                        }
+                        File.Copy(p.Key, targetPath, true);
+                        Console.WriteLine($"复制 {p.Key} -> {targetPath}");
                     }
                     //额外打包
                     if (projectName == "FractionateEverything") {
                         //给群友提供的测试版本，包含了如何使用R2导入的视频
                         string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
                         if (File.Exists(techVideo)) {
-                            fileList.Add(techVideo);
+                            fileList.Add(techVideo, @"\");
                             zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
                             ZipMod(fileList, zipFile);
                             Console.WriteLine($"创建 {zipFile}");
@@ -188,11 +191,9 @@ namespace AfterBuildEvent {
             for (int i = 0; i < lines.Length; i++) {
                 if (lines[i].StartsWith("enabled=")) {
                     lines[i] = "enabled=true";
-                }
-                else if (lines[i].StartsWith("targetAssembly=")) {
+                } else if (lines[i].StartsWith("targetAssembly=")) {
                     lines[i] = $@"targetAssembly={R2_BepInEx}\core\BepInEx.Preloader.dll";
-                }
-                else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
+                } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
                     lines[i] = "ignoreDisableSwitch=false";
                 }
             }
@@ -205,7 +206,7 @@ namespace AfterBuildEvent {
             }
         }
 
-        static void ZipMod(List<string> fileList, string zipPath) {
+        static void ZipMod(Dictionary<string, string> fileList, string zipPath) {
             string zipParentDir = new FileInfo(zipPath).DirectoryName;
             if (zipParentDir == null) {
                 throw new("路径异常！");
@@ -217,12 +218,12 @@ namespace AfterBuildEvent {
                 File.Delete(zipPath);
             }
             using var zipStream = new ZipOutputStream(File.Create(zipPath));
-            foreach (string file in fileList) {
+            foreach (var p in fileList) {
                 //MOD上传至R2的时候，文件要直接打包在里面，不能嵌套文件夹，所以相对路径直接使用文件名
-                string relativePath = Path.GetFileName(file);
-                var entry = new ZipEntry(relativePath);
+                //但是也有一些特殊情况需要文件夹
+                var entry = new ZipEntry(p.Value + Path.GetFileName(p.Key));
                 zipStream.PutNextEntry(entry);
-                using FileStream fs = File.OpenRead(file);
+                using FileStream fs = File.OpenRead(p.Key);
                 byte[] buffer = new byte[4096];
                 int sourceBytes;
                 do {
@@ -249,11 +250,9 @@ namespace AfterBuildEvent {
             for (int i = 0; i < lines.Length; i++) {
                 if (lines[i].StartsWith("enabled=")) {
                     lines[i] = "enabled=true";
-                }
-                else if (lines[i].StartsWith("targetAssembly=")) {
+                } else if (lines[i].StartsWith("targetAssembly=")) {
                     lines[i] = $@"targetAssembly={R2_BepInEx}\core\BepInEx.Preloader.dll";
-                }
-                else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
+                } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
                     lines[i] = "ignoreDisableSwitch=false";
                 }
             }

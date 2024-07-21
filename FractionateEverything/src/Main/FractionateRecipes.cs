@@ -14,7 +14,7 @@ using static FractionateEverything.Utils.AddProtoUtils;
 using static FractionateEverything.Utils.TranslationUtils;
 
 namespace FractionateEverything.Main {
-    //LDB.ItemName 等价于 itemproto.name，itemproto.name 等价于 itemproto.Name.Translate()
+    //LDB.ItemName 等价于 item.name，item.name 等价于 item.Name.Translate()
     //name: 推进器  name.Translate: <0xa0>-<0xa0>推进器  Name: 推进器2  Name.Translate: 推进器
     //name: Thruster  name.Translate: Thruster  Name: 推进器2  Name.Translate: Thruster
     //name: 制造台<0xa0>Mk.I  name.Translate: 制造台<0xa0>Mk.I  Name: 制造台 Mk.I  Name.Translate: 制造台<0xa0>Mk.I
@@ -111,8 +111,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I原型机, I精准无人机, I攻击无人机]);
                 if (!TheyComeFromVoid.Enable) {
                     AddFracChain([I护卫舰, I驱逐舰]);
-                }
-                else {
+                } else {
                     list = AddFracChain([I护卫舰, I驱逐舰, IVD水滴]);
                     list[1].Modify(tab巨构, 112);
                 }
@@ -130,8 +129,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I增产剂MkI, I增产剂MkII, I增产剂MkIII_GB增产剂]);
                 if (!MoreMegaStructure.Enable) {
                     AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, I轨道采集器]);
-                }
-                else {
+                } else {
                     list = AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, IMS物资交换物流站, I轨道采集器]);
                     list[2].Modify(tab巨构, 410);
                 }
@@ -173,8 +171,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
                 //建筑VI
                 AddFracChain([IFE自然资源分馏塔, IFE升级分馏塔, IFE降级分馏塔, IFE垃圾回收分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
-            }
-            else {
+            } else {
                 //创世改动过大，单独处理
                 RegisterOrEditAsync("左键点击：更换生产设备",
                     "Left click: Change machine\nRight click: Assembler or Fractionator",
@@ -195,7 +192,7 @@ namespace FractionateEverything.Main {
                 AddFracRecipe(I硫酸, defaultNumRatioCommonVein).Modify(tab分馏1, 203);
                 AddFracRecipe(IGB氨, defaultNumRatioCommonVein).Modify(tab分馏1, 204);
                 AddFracRecipe(I氢, defaultNumRatioCommonVein).Modify(tab分馏1, 205);
-                AddFracRecipe(I重氢, defaultNumRatioCommonVein).Modify(tab分馏1, 206);
+                AddFracRecipe(I重氢, defaultNumRatioCommonVein).Modify(tab分馏1, 206, T微型粒子对撞机_GB粒子对撞机);
                 AddFracRecipe(IGB氦, defaultNumRatioCommonVein).Modify(tab分馏1, 207);
                 AddFracRecipe(IGB氮, defaultNumRatioCommonVein).Modify(tab分馏1, 208, T氢燃料棒_GB气体冷凝);
                 AddFracRecipe(IGB氧, defaultNumRatioCommonVein).Modify(tab分馏1, 209);
@@ -229,8 +226,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I储液罐, IGB量子储液罐]);
                 if (!MoreMegaStructure.Enable) {
                     AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, I轨道采集器]);
-                }
-                else {
+                } else {
                     list = AddFracChain([I物流配送器, I行星内物流运输站, I星际物流运输站, IMS物资交换物流站, I轨道采集器]);
                     list[2].Modify(tab巨构, 410);
                 }
@@ -267,8 +263,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I原型机, I精准无人机, I攻击无人机]).Modify(tab防御, 202);
                 if (!TheyComeFromVoid.Enable) {
                     AddFracChain([I护卫舰, I驱逐舰]).Modify(tab防御, 205);
-                }
-                else {
+                } else {
                     list = AddFracChain([I护卫舰, I驱逐舰, IVD水滴]);
                     list[0].Modify(tab防御, 205);
                     list[1].Modify(tab巨构, 112);
@@ -311,19 +306,26 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 添加一些物品构成的升降级分馏链对应的配方。
         /// </summary>
-        private static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain,
-            Dictionary<int, float> numRatioUpgrade = null, Dictionary<int, float> numRatioDowngrade = null) {
-            numRatioUpgrade ??= defaultNumRatioUpgrade;
-            numRatioDowngrade ??= defaultNumRatioDowngrade;
+        private static List<RecipeProto> AddFracChain(IReadOnlyList<int> itemChain) {
             if (itemChain.Count == 1) {
+                int stackSize = LDB.items.Select(itemChain[0]).StackSize;
+                Dictionary<int, float> numRatioUpgrade = new(defaultNumRatioDowngrade);
+                numRatioUpgrade[2] *= 0.5f * 0.0125f * stackSize;
+                Dictionary<int, float> numRatioDowngrade = new(defaultNumRatioDowngrade);
+                numRatioDowngrade[2] *= 0.5f * 0.0125f * stackSize;
                 List<RecipeProto> list = [
                     AddFracRecipe(itemChain[0], itemChain[0], numRatioUpgrade, numRatioDowngrade),
                 ];
                 return list;
-            }
-            else {
+            } else {
                 List<RecipeProto> list = [];
                 for (int i = 0; i < itemChain.Count - 1; i++) {
+                    int stackSize1 = LDB.items.Select(itemChain[i + 1]).StackSize;
+                    Dictionary<int, float> numRatioUpgrade = new(defaultNumRatioUpgrade);
+                    numRatioUpgrade[1] *= 0.0125f * stackSize1;
+                    int stackSize2 = LDB.items.Select(itemChain[i]).StackSize;
+                    Dictionary<int, float> numRatioDowngrade = new(defaultNumRatioDowngrade);
+                    numRatioDowngrade[2] *= 0.0125f * stackSize2;
                     list.Add(AddFracRecipe(itemChain[i], itemChain[i + 1], numRatioUpgrade, numRatioDowngrade));
                 }
                 return list;
@@ -349,31 +351,30 @@ namespace FractionateEverything.Main {
                     string description_cn = $"将{inputItem.name}分馏为多个。";
                     foreach (KeyValuePair<int, float> p in ratioUpgrade.Where(p => p.Key > 0)) {
                         description_en +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)} fractionate {p.Key.ToString().AddOrangeLabel(true)} product{(p.Key > 1 ? "s" : "")}";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()} fractionate {p.Key.ToString().AddOrangeLabel()} product{(p.Key > 1 ? "s" : "")}";
                         description_cn +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)}分馏出{p.Key.ToString().AddOrangeLabel(true)}个产物";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()}分馏出{p.Key.ToString().AddOrangeLabel()}个产物";
                     }
                     RegisterOrEditAsync(DescriptionNoDestroy, description_en, description_cn);
                     RegisterOrEditAsync(DescriptionDestroy, description_en, description_cn);
-                }
-                else {
+                } else {
                     RegisterOrEditAsync(Name, $"{inputItem.name}-{outputItem.name} Fractionation",
                         $"{inputItem.name}-{outputItem.name}分馏");
                     string noDestroy_en = $"Fractionate {inputItem.name} upgrade to {outputItem.name}.";
                     string noDestroy_cn = $"将{inputItem.name}升级分馏为{outputItem.name}。";
                     foreach (KeyValuePair<int, float> p in ratioUpgrade.Where(p => p.Key > 0)) {
                         noDestroy_en +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)} fractionate {p.Key.ToString().AddOrangeLabel(true)} product{(p.Key > 1 ? "s" : "")}";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()} fractionate {p.Key.ToString().AddOrangeLabel()} product{(p.Key > 1 ? "s" : "")}";
                         noDestroy_cn +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)}分馏出{p.Key.ToString().AddOrangeLabel(true)}个产物";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()}分馏出{p.Key.ToString().AddOrangeLabel()}个产物";
                     }
                     string destroy_en = noDestroy_en;
                     string destroy_cn = noDestroy_cn;
                     if (ratioUpgrade.TryGetValue(-1, out float destroyRatio)) {
                         destroy_en +=
-                            $"\n{"WARNING:".AddOrangeLabel()} There is a probability of {destroyRatio.ToString("0.###%").AddRedLabel(true)} that an input item will be destroyed at each fractionation!";
+                            $"\n{"WARNING:".AddRedLabel()} There is a probability of {destroyRatio.FormatP().AddRedLabel()} that an input item will be destroyed at each fractionation!";
                         destroy_cn +=
-                            $"\n{"警告：".AddOrangeLabel()}每次分馏时，有{destroyRatio.ToString("0.###%").AddRedLabel(true)}概率导致原料损毁！";
+                            $"\n{"警告：".AddOrangeLabel()}每次分馏时，有{destroyRatio.FormatP().AddRedLabel()}概率导致原料损毁！";
                     }
                     noDestroy_en += $"\n————————————————\nFractionate {outputItem.name} downgrade to {inputItem.name}.";
                     noDestroy_cn += $"\n————————————————\n将{outputItem.name}降级分馏为{inputItem.name}。";
@@ -381,13 +382,13 @@ namespace FractionateEverything.Main {
                     destroy_cn += $"\n————————————————\n将{outputItem.name}降级分馏为{inputItem.name}。";
                     foreach (KeyValuePair<int, float> p in ratioDowngrade.Where(p => p.Key > 0)) {
                         noDestroy_en +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)} fractionate {p.Key.ToString().AddOrangeLabel(true)} product{(p.Key > 1 ? "s" : "")}";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()} fractionate {p.Key.ToString().AddOrangeLabel()} product{(p.Key > 1 ? "s" : "")}";
                         noDestroy_cn +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)}分馏出{p.Key.ToString().AddOrangeLabel(true)}个产物";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()}分馏出{p.Key.ToString().AddOrangeLabel()}个产物";
                         destroy_en +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)} fractionate {p.Key.ToString().AddOrangeLabel(true)} product{(p.Key > 1 ? "s" : "")}";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()} fractionate {p.Key.ToString().AddOrangeLabel()} product{(p.Key > 1 ? "s" : "")}";
                         destroy_cn +=
-                            $"\n{p.Value.ToString("0.###%").AddOrangeLabel(true)}分馏出{p.Key.ToString().AddOrangeLabel(true)}个产物";
+                            $"\n{p.Value.FormatP().AddOrangeLabel()}分馏出{p.Key.ToString().AddOrangeLabel()}个产物";
                     }
                     RegisterOrEditAsync(DescriptionNoDestroy, noDestroy_en, noDestroy_cn);
                     RegisterOrEditAsync(DescriptionDestroy, destroy_en, destroy_cn);
@@ -433,8 +434,7 @@ namespace FractionateEverything.Main {
                 if (ratioDowngrade == null) {
                     itemNaturalResourceList.Add(inputItemID);
                     numRatioNaturalResourceDic.Add(inputItemID, ratioUpgrade);
-                }
-                else {
+                } else {
                     itemUpgradeDic.Add(inputItemID, outputItemID);
                     numRatioUpgradeDic.Add(inputItemID, ratioUpgrade);
                     itemDowngradeDic.Add(outputItemID, inputItemID);
@@ -480,16 +480,14 @@ namespace FractionateEverything.Main {
                 string inputIconName = null;
                 if (inputItem.iconSprite != null) {
                     inputIconName = inputItem.iconSprite.name;
-                }
-                else if (inputItem.IconPath != null && inputItem.IconPath.Contains("/")) {
+                } else if (inputItem.IconPath != null && inputItem.IconPath.Contains("/")) {
                     inputIconName = inputItem.IconPath.Substring(inputItem.IconPath.LastIndexOf("/") + 1);
                 }
                 ItemProto outputItem = LDB.items.Select(r.Results[0]);
                 string outputIconName = null;
                 if (outputItem.iconSprite != null) {
                     outputIconName = outputItem.iconSprite.name;
-                }
-                else if (outputItem.IconPath != null && outputItem.IconPath.Contains("/")) {
+                } else if (outputItem.IconPath != null && outputItem.IconPath.Contains("/")) {
                     outputIconName = outputItem.IconPath.Substring(outputItem.IconPath.LastIndexOf("/") + 1);
                 }
                 r.Description = $"R{inputItem.Name}-{outputItem.Name}{(enableDestroy ? "损毁分馏" : "分馏")}";
@@ -505,8 +503,7 @@ namespace FractionateEverything.Main {
                         sw.WriteLine(inputIconName + "," + outputIconName);
                     }
 #endif
-                }
-                else {
+                } else {
                     //如果其他mod图标资源包未加载成功，将会造成图标为null的情况
                     r.IconPath = "";
                 }
@@ -525,8 +522,7 @@ namespace FractionateEverything.Main {
                         if (!numRatioDowngradeDic.ContainsKey(r.Results[0])) {
                             numRatioDowngradeDic.Add(r.Results[0], defaultNumRatioDowngrade);
                         }
-                    }
-                    else {
+                    } else {
                         r.GridIndex = 0;
                         if (itemUpgradeDic.ContainsKey(r.Items[0])) {
                             itemUpgradeDic.Remove(r.Items[0]);
@@ -557,8 +553,7 @@ namespace FractionateEverything.Main {
                         if (!numRatioDowngradeDic.ContainsKey(r.Results[0])) {
                             numRatioDowngradeDic.Add(r.Results[0], defaultNumRatioDowngrade);
                         }
-                    }
-                    else {
+                    } else {
                         r.GridIndex = 0;
                         if (itemUpgradeDic.ContainsKey(r.Items[0])) {
                             itemUpgradeDic.Remove(r.Items[0]);

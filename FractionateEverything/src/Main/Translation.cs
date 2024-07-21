@@ -29,6 +29,7 @@ namespace FractionateEverything.Main {
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
 
+            Register("FEBlueprints", "FEBlueprints", "万物分馏蓝图");
             Register("141标题", "Fractionate Everything 1.4.1 Update", "万物分馏1.4.1版本更新");
             Register("141信息",
                 "Even though Fractionate Everything is part of the cheat mods, it has enough restrictions that it should be balanced.\n"
@@ -51,6 +52,7 @@ namespace FractionateEverything.Main {
                 + "Hopefully these changes will make the mod more balanced.\n\n"
                 + $"PS1: You can click {"Update Log".AddBlueLabel()} for all the changes in 1.4.1.\n"
                 + $"PS2: Don't forget to check out {"the new settings".AddBlueLabel()} added in {"Settings - Miscellaneous".AddBlueLabel()}!\n"
+                + $"PS3: To celebrate this update, some {"Blueprints".AddBlueLabel()} for Fractionate Everything have been added to the Blueprints library. \n"
                 + $"Thanks to everyone for using Fractionate Everything. {"Have fun with fractionation!".AddOrangeLabel()}",
                 "“尽管万物分馏属于作弊模组，但它的限制已经够多了，它应该是平衡的。”\n"
                 + "——在我亲自试玩并一个晚上通关游戏之前，我都是这样想的。\n"
@@ -72,6 +74,7 @@ namespace FractionateEverything.Main {
                 + "希望这次改动能让分馏更加平衡。\n\n"
                 + $"PS1：你可以点击{"更新日志".AddBlueLabel()}，以了解1.4.1的所有改动。\n"
                 + $"PS2：千万不要忘记查看{"设置-杂项".AddBlueLabel()}中{"新增的设置项".AddBlueLabel()}！\n"
+                + $"PS3：为了庆祝本次更新，一些万物分馏的{"蓝图".AddBlueLabel()}已添加至蓝图库。\n"
                 + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
 
             #endregion
@@ -110,9 +113,6 @@ namespace FractionateEverything.Main {
 
             #region 游戏内切换&配方显示
 
-            if (!UIBuildMenuPatch.UseBuildMenuToolDll) {
-                Register("切换快捷键", "CapsLock\n↑ Hotkey Row ↓", "CapsLock\n↑快捷键切换↓");
-            }
             Register("分馏页面1", "Fractionate I", "分馏 I");
             Register("分馏页面2", "Fractionate II", "分馏 II");
             Register("流动", "Flow");
@@ -207,33 +207,44 @@ namespace FractionateEverything.Main {
 
             #region 分馏塔输出效果增强科技
 
-            Register("T分馏塔流动输出集装", "Fractionator Fluid Output Integrate", "分馏塔流动输出集装");
-            Register("分馏塔流动输出集装描述",
+            Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
+            Register("分馏流动输出集装等级",
+                " Integration count of fractionate fluid output",
+                " 分馏流动输出集装数量");
+            Register("分馏流动输出集装描述",
                 "Failed fractionated items will be integrated as much as possible in a cargo.",
                 "分馏失败的原料将会尽可能以集装形式输出。");
-            Register("分馏塔流动输出集装结果",
+            Register("分馏流动输出集装结果",
                 "All failed fractionated items will now be integrated as much as possible in a cargo.",
                 "现在，所有分馏失败的原料都将尽可能集装后再输出。");
-            Register("分馏塔流动输出集装等级",
-                " integration count of Fractionator fluid output",
-                "分馏塔流动输出集装数量");
 
-            Register("T分馏塔产物输出集装", "Fractionator Product Output Integrate", "分馏塔产物输出集装");
-            Register("分馏塔产物输出集装描述1",
+            Register("T分馏产物输出集装", "Fractionate Product Output Integrate", "分馏产物输出集装");
+            Register("分馏产物输出集装等级",
+                " Integration count of fractionate product output",
+                " 分馏产物输出集装数量");
+            Register("分馏产物输出集装描述1",
                 "Successful fractionated items will be integrated as much as possible in a cargo.",
                 "分馏成功的产物将会尽可能以集装形式输出。");
-            Register("分馏塔产物输出集装结果1",
+            Register("分馏产物输出集装结果1",
                 "All successful fractionated items will now be integrated as much as possible in a cargo.",
                 "现在，所有分馏成功的产物都将尽可能集装后再输出。");
-            Register("分馏塔产物输出集装描述2",
-                "Further increases the integration count of product output in a cargo for all Fractionators.",
-                "进一步提高分馏塔产物输出的集装数量。");
-            Register("分馏塔产物输出集装结果2",
-                "the integration count of product output in a cargo for all Fractionators was further improved.",
-                "所有分馏塔产物输出的集装数量进一步提升了。");
-            Register("分馏塔产物输出集装等级",
-                " integration count of Fractionator product output",
-                "分馏塔产物输出集装数量");
+            Register("分馏产物输出集装描述2",
+                "Further increases the integration count of fractionate product in a cargo.",
+                "进一步提高分馏产物的集装数量。");
+            Register("分馏产物输出集装结果2",
+                "The integration count of fractionate product in a cargo was further improved.",
+                "所有分馏产物的集装数量进一步提升了。");
+
+            Register("T分馏永动", "Fractionate Forever", "分馏永动");
+            Register("分馏持续运行",
+                "Make specific types of fractionators keep running",
+                "使特定种类的分馏塔可以持续运行");
+            Register("分馏永动描述",
+                $"When fractionators in a loop, a buildup of product in one of the fractionators will cause the entire loop to stop. The Fractionate Forever tech was then created, so that when the product cache reaches half of the upper limit, the fractionator will no longer fractionate, and simply carry items from the flow input to the flow output, thus keeping the entire loop of fractionators in continuous operation.\nThis tech {"will NOT effect".AddOrangeLabel()} Up-Downgrade Fractionator and Trash Recycle Fractionator.",
+                $"当分馏塔形成环路时，只要其中某个分馏塔产物堆积，就会导致整条环路的分馏塔都停止运行。分馏永动科技随之诞生，当产物缓存达到上限一半时，分馏塔将不再分馏，仅仅将物品从流动输入搬运到流动输出，从而让整条环路的分馏塔持续运行。\n该科技{"不会作用于".AddOrangeLabel()}升降级分馏塔和垃圾回收分馏塔。");
+            Register("分馏永动结果",
+                "Now, some fractionators will continue running without product buildup.",
+                "现在，一些分馏塔将会持续运行，不会出现产物堆积的情况了。");
 
             #endregion
 

@@ -9,10 +9,7 @@ namespace FractionateEverything.Utils {
         /// <summary>
         /// 为某个字符串添加橙色标签。
         /// </summary>
-        public static string AddOrangeLabel(this string s, bool checkSIsDefault = false) {
-            if (checkSIsDefault && (s == "1" || s == "1%")) {
-                return s;
-            }
+        public static string AddOrangeLabel(this string s) {
             return $"<color=\"#FD965ECC\">{s}</color>";
         }
 
@@ -33,10 +30,7 @@ namespace FractionateEverything.Utils {
         /// <summary>
         /// 为某个字符串添加红色标签。
         /// </summary>
-        public static string AddRedLabel(this string s, bool checkSIsDefault = false) {
-            if (checkSIsDefault && (s == "1" || s == "1%")) {
-                return s;
-            }
+        public static string AddRedLabel(this string s) {
             return $"<color=\"#FF5D4CB7\">{s}</color>";
         }
 
