@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using System;
+using System.IO;
 using UnityEngine;
 
 namespace FractionateEverything.Compatibility {
@@ -8,7 +10,6 @@ namespace FractionateEverything.Compatibility {
     /// 加载万物分馏主插件前，检测是否使用其他mod，并对其进行适配。
     /// </summary>
     [BepInPlugin(GUID, NAME, VERSION)]
-    [BepInDependency(BluePrintTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -39,7 +40,6 @@ namespace FractionateEverything.Compatibility {
                 new(typeof(CheckPlugins), nameof(OnMainMenuOpen)) { priority = Priority.Last }
             );
 
-            BluePrintTweaks.Compatible();
             MoreMegaStructure.Compatible();
             TheyComeFromVoid.Compatible();
             GenesisBook.Compatible();
@@ -49,8 +49,7 @@ namespace FractionateEverything.Compatibility {
             if (_shown) return;
             if (!FractionateEverything.disableMessageBox) {
                 ShowMessageBox();
-            }
-            else if (FractionateEverything.isVersionChanged) {
+            } else if (FractionateEverything.isVersionChanged) {
                 ShowMessageBox141();
             }
             _shown = true;
@@ -66,6 +65,14 @@ namespace FractionateEverything.Compatibility {
         }
 
         private static void ShowMessageBox141() {
+            //添加蓝图至蓝图库
+            try {
+                CopyDirectory(Path.Combine(FractionateEverything.ModPath, "blueprints"),
+                    Path.Combine(GameConfig.blueprintFolder, "FEBlueprints".Translate()));
+            }
+            catch (Exception ex) {
+                LogError($"Copy FractionateEverything Blueprints directory error: {ex}");
+            }
             UIMessageBox.Show(
                 "141标题".Translate(), "141信息".Translate(),
                 "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
@@ -74,14 +81,40 @@ namespace FractionateEverything.Compatibility {
             );
         }
 
+        private static void CopyDirectory(string sourceDir, string targetDir) {
+            DirectoryInfo dir = new DirectoryInfo(sourceDir);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the source directory does not exist, throw an exception.
+            if (!dir.Exists) {
+                throw new DirectoryNotFoundException(
+                    $"Source directory does not exist or could not be found: {sourceDir}");
+            }
+            // If the destination directory does not exist, create it.
+            if (!Directory.Exists(targetDir)) {
+                Directory.CreateDirectory(targetDir);
+            }
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files) {
+                string tempPath = Path.Combine(targetDir, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+            // If copying subdirectories, copy them and their contents to the new location.
+            foreach (DirectoryInfo subDir in dirs) {
+                string tempPath = Path.Combine(targetDir, subDir.Name);
+                CopyDirectory(subDir.FullName, tempPath);
+            }
+        }
+
         private static void ResponseFE交流群() {
             Application.OpenURL("FE交流群链接".Translate());
             Response确定1();
         }
 
         private static void ResponseFE日志() {
-            Application.OpenURL("FE日志链接".Translate());
-            //Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+            Application.OpenURL(string.IsNullOrEmpty(FractionateEverything.VERSION_Debug)
+                ? "FE日志链接".Translate()
+                : Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
             Response确定1();
         }
 

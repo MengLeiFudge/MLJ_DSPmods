@@ -937,7 +937,8 @@
         internal const int TFE垃圾回收 = 1623;
         internal const int TFE增产点数聚集 = 1159;
         internal const int TFE增产分馏 = 1908;
-        internal const int TFE分馏塔流动输出集装 = 3807;
-        internal const int TFE分馏塔产物输出集装 = 3804;
+        internal const int TFE分馏流动输出集装 = 3807;
+        internal const int TFE分馏产物输出集装 = 3804;
+        internal const int TFE分馏永动 = 3808;
     }
 }

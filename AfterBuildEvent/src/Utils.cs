@@ -48,8 +48,7 @@ namespace AfterBuildEvent {
                         if (file.EndsWith(".old")) {
                             File.Move(file, file.Substring(0, file.Length - 4));
                         }
-                    }
-                    else {
+                    } else {
                         if (!file.EndsWith(".old")) {
                             File.Move(file, file + ".old");
                         }
@@ -61,8 +60,7 @@ namespace AfterBuildEvent {
                     if (file.EndsWith(".old")) {
                         File.Move(file, file.Substring(0, file.Length - 4));
                     }
-                }
-                else {
+                } else {
                     if (!file.EndsWith(".old")) {
                         File.Move(file, file + ".old");
                     }
@@ -72,11 +70,11 @@ namespace AfterBuildEvent {
 
         public static void ChangeAllModsEnable(bool enable) {
             //不启用的mod
-            List<string> enableIgnore = ["Galactic_Scale-GalacticScale"];
+            List<string> enableIgnore = ["Galactic_Scale-GalacticScale", "essium-PlanetWormhole"];
             //不禁用的mod
             List<string> disableIgnore = [
                 "xiaoye97-LDBTool", "CommonAPI-CommonAPI", "CommonAPI-DSPModSave", "nebula-NebulaMultiplayerModApi",
-                "starfi5h-ErrorAnalyzer", "MengLei-GetDspData"
+                "jinxOAO-BuildBarTool", "starfi5h-ErrorAnalyzer", "MengLei-GetDspData"
             ];
             string pluginsDir = $@"{R2_BepInEx}\plugins";
             foreach (var dir in Directory.GetDirectories(pluginsDir)) {
@@ -87,6 +85,31 @@ namespace AfterBuildEvent {
                     continue;
                 }
                 ChangeModEnable(new DirectoryInfo(dir).Name, enable);
+            }
+        }
+
+        public static void CopyDirectory(string sourceDir, string targetDir) {
+            DirectoryInfo dir = new DirectoryInfo(sourceDir);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the source directory does not exist, throw an exception.
+            if (!dir.Exists) {
+                throw new DirectoryNotFoundException(
+                    $"Source directory does not exist or could not be found: {sourceDir}");
+            }
+            // If the destination directory does not exist, create it.
+            if (!Directory.Exists(targetDir)) {
+                Directory.CreateDirectory(targetDir);
+            }
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files) {
+                string tempPath = Path.Combine(targetDir, file.Name);
+                file.CopyTo(tempPath, true);
+            }
+            // If copying subdirectories, copy them and their contents to the new location.
+            foreach (DirectoryInfo subDir in dirs) {
+                string tempPath = Path.Combine(targetDir, subDir.Name);
+                CopyDirectory(subDir.FullName, tempPath);
             }
         }
     }

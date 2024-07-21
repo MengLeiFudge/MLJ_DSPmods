@@ -11,8 +11,8 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 公式分页移除所有新增配方的图标
         /// </summary>
-        [HarmonyPatch(typeof(UISignalPicker), nameof(UISignalPicker.RefreshIcons))]
         [HarmonyTranspiler]
+        [HarmonyPatch(typeof(UISignalPicker), nameof(UISignalPicker.RefreshIcons))]
         [HarmonyPriority(Priority.Last)]
         public static IEnumerable<CodeInstruction>
             UISignalPicker_RefreshIcons_Transpiler(IEnumerable<CodeInstruction> instructions) {
