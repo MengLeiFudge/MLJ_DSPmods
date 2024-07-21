@@ -38,8 +38,7 @@ namespace FractionateEverything.Utils {
             if (GenesisBook.Enable) {
                 maxRowCount = 7;
                 maxColumnCount = 17;
-            }
-            else {
+            } else {
                 maxRowCount = 8;
                 maxColumnCount = 14;
             }
@@ -101,13 +100,11 @@ namespace FractionateEverything.Utils {
                             int column0 = p.Value % 1000 % 100;
                             if (column0 >= 2) {
                                 p.Key.GridIndex = p.Value - 1;
-                            }
-                            else {
+                            } else {
                                 p.Key.GridIndex = tab * 1000 + (row0 - 1) * 100 + maxColumnCount;
                             }
                             dic.Add(p.Key, p.Key.GridIndex);
-                        }
-                        else {
+                        } else {
                             dic.Add(p.Key, p.Value);
                         }
                     }

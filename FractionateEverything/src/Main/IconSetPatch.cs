@@ -7,8 +7,8 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 移除TechProto[] dataArray3的所有处理，从而有足够空间容纳所有分馏图标
         /// </summary>
-        [HarmonyPatch(typeof(IconSet), nameof(IconSet.Create))]
         [HarmonyTranspiler]
+        [HarmonyPatch(typeof(IconSet), nameof(IconSet.Create))]
         [HarmonyPriority(Priority.Last)]
         public static IEnumerable<CodeInstruction>
             IconSet_Create_Transpiler(IEnumerable<CodeInstruction> instructions) {

@@ -3,7 +3,7 @@
     + 增产点数对所有分馏塔的影响不再基于加速效果，而是加速效果、增产效果中加成更大的一方。
         + 深空来敌中，有增产调节公理和满增产效果，与无增产调节公理和满加速效果，二者加成是一致的，都为200%。
         + | 增产效果提升 | 加速效果提升 | 公理 | 增产总加成 | 加速总加成 | 分馏加成 |
-          |--------|--------|----|-------|-------|------|
+                    |--------|--------|----|-------|-------|------|
           | +0%    | +0%    | ×  | 25%   | 100%  | 100% |
           | +0%    | +0%    | √  | 40%   | 75%   | 160% |
           | +10%   | +100%  | ×  | 35%   | 200%  | 200% |
@@ -13,11 +13,15 @@
             + 旧存档中已放置的精准分馏塔会自动转换为矿物分馏塔，未知物品2320（原精准分馏塔）需要手动丢弃。
         + 移除建筑极速分馏塔。
         + 不再将原版分馏塔修改为通用分馏塔。
-            + 在1.4.1中，原版分馏塔只能用于将氢分馏为重氢，但分馏塔输出优化科技对其依然有效。
-            + 在1.4.1中，原版分馏塔无法升降级。如果旧存档启用了创世之书，需要手动拆除所有已建造的原版分馏塔。
+            + 原版分馏塔改为只能用于将氢分馏为重氢，但分馏塔输出优化科技对其依然有效。
+            + 原版分馏塔可以升级为矿物分馏塔，不可降级。
+                + 此项改动可以快速替换分馏塔，并且BlueprintTweaks修改建筑时，也可以将原版分馏塔与万物分馏的分馏塔互相替换。
+                + 注意，当创世之书与BPT同时启用时，由于原版分馏塔被屏蔽，你无法将万物分馏的分馏塔换为原版分馏塔。
         + 添加矿物分馏塔，可分馏所有能直接采集到的矿物（包括氢、水、硫酸、原油等自然资源）。
+            + 珍奇矿物的分馏成功率（2.5%）是普通矿物（5%）的一半。
         + 添加升级分馏塔，可将部分物品转换为更少的高级物品。
         + 添加降级分馏塔，可将部分物品转换为更多的低级物品。
+            + 升降级的概率与物品的堆叠大小有关。10堆叠物品（轨道采集器）概率为0.5%，300堆叠物品（传送带）概率为15%。
         + 垃圾回收分馏塔优化。
             + 默认禁止输入建筑，以避免误操作。你可以在设置-杂项中开启它。
             + 移除输入物品增产点数的加成。现在，物品转换得到的点数仅与物品价值有关，与是否带有增产点数无关。
@@ -28,11 +32,87 @@
         + 增产分馏塔优化。
             + 分馏概率不再使用固定值，改为与输入物品的价值有关。价值越高，概率上限就越低。
             + 实际分馏概率与输入物品的增产点数有关。增产点数越多，实际概率越大。0点对应概率0，10点对应概率上限。
-    + 降低科技矿物分馏、升降级分馏所需的矩阵数目，以便于前期快速解锁它们。
+    + 优化了新增分馏塔的前置科技。
+        + 降低矿物分馏科技、升降级分馏科技所需的矩阵数目，以便于前期可以快速解锁它们。
+        + 为部分分馏科技绘制了新的科技图标。
+        + 为大多数分馏科技添加前置条件，避免提前解锁的情况。
     + 移除了部分配方，添加了部分矿物自分馏的配方（例如原油、水、硫酸），以符合现在的分馏塔情形。
         + 矩阵分馏链默认关闭。你可以在设置-杂项中开启它。
         + 燃料棒分馏链默认关闭。你可以在设置-杂项中开启它。
     + 调整了创世之书量化计算器的适配，移除了所有分馏配方。你仍然可以选择增产10点和加速10点，将其用于其他工厂的生产。
+    + 为庆祝本次更新，加载完成时会附送一些蓝图到蓝图文件夹。
+        + 如果你需要再次获取蓝图，请将配置文件中的CurrentVersion改为1.4.0，并重新启动游戏。
+        + 或者，直接将`BepInEx\plugins\MengLei-FractionateEverything\blueprints`复制到蓝图文件夹内。
+    + Fixed an issue where the rate shown in the Succinct Tips mini-window did not match the actual rate when mousing
+      over a placed fractionator.
+    + The effect of Increase Production Fractionator points on all fractionators is no longer based on the accelerate
+      effect, but rather on the side with the greater bonus of accelerate effect or increase effect.
+        + In They Come From Void, with Increase Adjustment Axiom and full Increase Bonus, and without Increase
+          Adjustment Axiom and full Accelerate Bonus, the two bonuses are the same, both are 200%.
+        + | Inc Bonus | Acc Bonus | Axiom | Total Inc Bonus | Total Acc Bonus | Fractionation Bonus |
+                    |-----------|-----------|-------|-----------------|-----------------|---------------------|
+          | +0%       | +0%       | ×     | 25%             | 100%            | 100%                |
+          | +0%       | +0%       | √     | 40%             | 75%             | 160%                |
+          | +10%      | +100%     | ×     | 35%             | 200%            | 200%                |
+          | +10%      | +100%     | √     | 50%             | 175%            | 200%                |
+    + Adjusted the fractionator added to Fractionate Everything, and modified the descriptions associated with some of
+      the fractionators.
+        + Removed Precision Fractionator.
+            + Placed Precision Fractionators in old archives are automatically converted to Mineral Fractionators, and
+              unknown item 2320 (formerly Precision Fractionator) needs to be manually discarded.
+        + Removed Building-HighSpeed Fractionator.
+        + No longer modifies Original Fractionator to Universal Fractionator.
+            + Original fractionator changed to only be used to fractionate hydrogen into heavy hydrogen, but the
+              Fractionator Output Optimization tech still works for it.
+            + Original fractionator can be upgraded to a mineral fractionator, not downgraded.
+                + This change allows for quick replacement of Fractionation Towers, and BlueprintTweaks modifying
+                  buildings can also replace Original Fractionation Towers with Fractionation Towers from Everything
+                  Fractionation with each other.
+                + Note that when Book of Creation and BPT are enabled at the same time, you can't replace the fractional
+                  towers of Everything Fractionation with the original fractional towers because the original fractional
+                  towers are blocked.
+        + Added Mineral Fractionation Tower to fractionate all minerals that can be harvested directly (including
+          natural resources such as hydrogen, water, sulfuric acid, crude oil, etc.).
+            + The fractionation success rate for rare minerals (2.5%) is half that of normal minerals (5%).
+        + Added upgraded fractionation towers that convert some items into fewer premium items.
+        + Adding downgraded fractionation towers converts some items to more low-level items.
+            + The probability of upgrading is related to the stack size of the item. 0.5% for 10 stacked items (Orbital
+              Collector) and 15% for 300 stacked items (Conveyor Belt).
+        + Optimization of garbage recycling fractionation towers.
+            + Input of buildings is disabled by default to avoid misuse. You can turn it on in Settings - Miscellaneous.
+            + Removed bonus to inputting items to increase production points. Now, the points obtained from item
+              conversion are only related to the value of the item, not to whether it comes with yield increase points
+              or not.
+            + Adjusted power consumption calculations to significantly reduce the amount of power needed to process
+              high-value items.
+        + Points aggregation fractionation tower optimization.
+            + Further increased efficiency from 4% to 10%. This means that the number of buildings required for a full
+              belt has been reduced from 25 to 10, with a smaller footprint.
+            + Optimized production increase points for flow output items. When the average number of incremental
+              production points for flow output is less than 4, items with 4 or 0 points will be output, reducing the
+              consumption of incremental production agents.
+        + Yield Increasing Fractionation Tower Optimization.
+            + Fractionation probability no longer uses a fixed value and is instead related to the value of the input
+              item. The higher the value, the lower the probability cap.
+            + The actual fractionation probability is related to the number of yield increasing points of the input
+              item. The greater the number of production enhancement points, the greater the actual probability. 0
+              points corresponds to probability 0, and 10 points corresponds to the probability cap.
+    + Optimized the pre-tech for the addition of new fractionators.
+        + Reduced the number of matrices required for Mineral Fractionation techs and Elevation Fractionation techs so
+          that they can be unlocked quickly upfront.
+        + Painted new tech icons for some Fractionation techs.
+        + Add pre-conditions to most fractionation techs to avoid unlocking them early.
+    + Removed some recipes and added some recipes for mineral self-fractionation (e.g. Crude Oil, Water, Sulfuric
+      Acid) to match the current fractionation tower scenario.
+        + Matrix Fractionation Chain is turned off by default. You can turn it on in Settings - Miscellaneous.
+        + Fuel rod fractionation chain is off by default. You can turn it on in Settings - Miscellaneous.
+    + Adapted the Book of Genesis Quantization Calculator to remove all fractionation recipes. You can still choose
+      to increase production by 10 points and accelerate it by 10 points to use it for other factories.
+    + To celebrate this update, some blueprints will be attached to the blueprints folder when loading completes.
+        + If you need to get the blueprints again, change the CurrentVersion in the config file to 1.4.0 and restart
+          the game.
+        + Alternatively, copy `BepInEx\plugins\MengLei-FractionateEverything\blueprints` directly into the
+          blueprints folder.
 
 - v1.4.0
     + Bug修复
