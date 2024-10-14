@@ -42,27 +42,27 @@ namespace AfterBuildEvent {
         public static void ChangeModEnable(string mod, bool enable) {
             string modPatchersDir = $@"{R2_BepInEx}\patchers\{mod}";
             string modPluginsDir = $@"{R2_BepInEx}\plugins\{mod}";
-            if (Directory.Exists(modPatchersDir)) {
-                foreach (var file in Directory.GetFiles(modPatchersDir)) {
-                    if (enable) {
-                        if (file.EndsWith(".old")) {
-                            File.Move(file, file.Substring(0, file.Length - 4));
-                        }
-                    } else {
-                        if (!file.EndsWith(".old")) {
-                            File.Move(file, file + ".old");
-                        }
-                    }
+            ChangeEnable(modPatchersDir, enable);
+            ChangeEnable(modPluginsDir, enable);
+        }
+
+        private static void ChangeEnable(string path, bool enable) {
+            if (Directory.Exists(path)) {
+                foreach (var file in Directory.GetFiles(path)) {
+                    ChangeEnable(file, enable);
                 }
-            }
-            foreach (var file in Directory.GetFiles(modPluginsDir)) {
+                foreach (var dir in Directory.GetDirectories(path)) {
+                    ChangeEnable(dir, enable);
+                }
+            } else if (File.Exists(path)) {
                 if (enable) {
-                    if (file.EndsWith(".old")) {
-                        File.Move(file, file.Substring(0, file.Length - 4));
+                    while (path.EndsWith(".old")) {
+                        File.Move(path, path.Substring(0, path.Length - 4));
+                        path = path.Substring(0, path.Length - 4);
                     }
                 } else {
-                    if (!file.EndsWith(".old")) {
-                        File.Move(file, file + ".old");
+                    if (!path.EndsWith(".old")) {
+                        File.Move(path, path + ".old");
                     }
                 }
             }
@@ -85,31 +85,6 @@ namespace AfterBuildEvent {
                     continue;
                 }
                 ChangeModEnable(new DirectoryInfo(dir).Name, enable);
-            }
-        }
-
-        public static void CopyDirectory(string sourceDir, string targetDir) {
-            DirectoryInfo dir = new DirectoryInfo(sourceDir);
-            DirectoryInfo[] dirs = dir.GetDirectories();
-            // If the source directory does not exist, throw an exception.
-            if (!dir.Exists) {
-                throw new DirectoryNotFoundException(
-                    $"Source directory does not exist or could not be found: {sourceDir}");
-            }
-            // If the destination directory does not exist, create it.
-            if (!Directory.Exists(targetDir)) {
-                Directory.CreateDirectory(targetDir);
-            }
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files) {
-                string tempPath = Path.Combine(targetDir, file.Name);
-                file.CopyTo(tempPath, true);
-            }
-            // If copying subdirectories, copy them and their contents to the new location.
-            foreach (DirectoryInfo subDir in dirs) {
-                string tempPath = Path.Combine(targetDir, subDir.Name);
-                CopyDirectory(subDir.FullName, tempPath);
             }
         }
     }

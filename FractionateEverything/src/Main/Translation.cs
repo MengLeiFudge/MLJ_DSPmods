@@ -29,7 +29,13 @@ namespace FractionateEverything.Main {
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
 
-            Register("FEBlueprints", "FEBlueprints", "万物分馏蓝图");
+            Register("FEBlueprints", "FEBlueprintsGift", "万物分馏蓝图礼包");
+            Register("bp能量枢纽", "Energy Exchanger.txt", "能量枢纽.txt");
+            Register("bp能量枢纽拓展", "Energy Exchanger expend.txt", "能量枢纽拓展.txt");
+            Register("bp升降级分馏通用", "Up-Downgrade Fractionate.txt", "升降级分馏通用.txt");
+
+            #region 旧的版本更新说明
+
             Register("141标题", "Fractionate Everything 1.4.1 Update", "万物分馏1.4.1版本更新");
             Register("141信息",
                 "Even though Fractionate Everything is part of the cheat mods, it has enough restrictions that it should be balanced.\n"
@@ -76,6 +82,75 @@ namespace FractionateEverything.Main {
                 + $"PS2：千万不要忘记查看{"设置-杂项".AddBlueLabel()}中{"新增的设置项".AddBlueLabel()}！\n"
                 + $"PS3：为了庆祝本次更新，一些万物分馏的{"蓝图".AddBlueLabel()}已添加至蓝图库。\n"
                 + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
+
+            Register("142标题", "Fractionate Everything 1.4.2 Update", "万物分馏1.4.2版本更新");
+            Register("142信息",
+                "Haven't seen you for a long time, and I miss you very much. It's been another month and a half after last update. How are you?\n\n"
+                + $"Remember in version 1.4.1, I said I had a couple {"Blueprints".AddBlueLabel()} for you guys? That was indeed true, and it wasn't an April Fool's joke. \n"
+                + $"-- Just {"R2".AddBlueLabel()} took my blueprints folder {"deleted".AddRedLabel()}!Σ(っ\u00b0Д\u00b0;)っ\n"
+                + "As for why I didn't update the version after discovering this problem that day, it's because the folder is gone but the blueprints are still there...(O_o)??\n"
+                + "Yes it's strange but the folder is gone and the blueprints are out there!\n"
+                + $"{"By the way, it's definitely NOT I'm lazy to update!".AddOrangeLabel()}\n"
+                + "I'm curious if anyone has actually gone through the folder where the mod is and found those blueprints. (If so be sure to let me know www)\n"
+                + "Of course, this is a small problem for me. Since the files are unusable, I'll just shove them right inside the code!\n"
+                + "Shakespeare once said: there's nothing that can't be solved by one string. If there is, then there are four! (three blueprints + intro)\n"
+                + $"If all goes well, you should see the blueprints this time. Be sure to {"recheck the blueprint library!".AddBlueLabel()}\n\n"
+                + "In addition, this update fixes an issue with the settings page reporting errors.\n\n"
+                + "The main reason there hasn't been an update lately is the lack of inspiration, and I really can't think of anything else to optimize.\n"
+                + "I'm sure you can see that the idea of using fractionation as the core actually greatly limits the functionality of the mod.\n"
+                + $"However, after talking with the group the other day, I've determined the general direction of the MOD afterward - that is {"Draw".AddOrangeLabel()}.\n"
+                + "\"Big company with a billion dollar market cap will only make card draw games, but a team of only five people can make Dyson Sphere Program\", I'm sure you've all heard of it.\n"
+                + $"{"But why couldn't the Dyson Sphere Program be a card draw game, right?".AddOrangeLabel()} I'm coming now!\n\n"
+                + "The next update will be centered around randomness and card draw. The following information can be revealed:\n"
+                + "1.There will be new fractionators for getting currency dedicated to card draw.\n"
+                + "2.Fractionation recipes can be obtained through technology, raffle, and redemption.\n"
+                + "3.The same fractionation recipe has different qualities, the higher the quality the harder it is to obtain.\n"
+                + "4.I hope to complete the initial version before the end of September. Welcome to join the group to experience the latest beta version and give your opinion!\n\n"
+                + $"And finally, thanks for your support! {"Have fun with fractionation!".AddOrangeLabel()}",
+                "许久不见，甚是想念。时间过得真快啊，转眼又是一个半月。大家过的怎么样啊？\n\n"
+                + $"还记得在1.4.1版本中，我说过为你们准备了几个{"蓝图".AddBlueLabel()}吗？那确实是真的，它并不是一个愚人节玩笑。\n"
+                + $"——只不过{"R2".AddBlueLabel()}将我的蓝图文件夹{"删掉了".AddRedLabel()}！Σ(っ\u00b0Д\u00b0;)っ\n"
+                + "至于我为什么当天发现这个问题之后，却并没有更新版本，是因为文件夹没了但是蓝图还在……(O_o)??\n"
+                + "事实正是如此，文件夹没了，蓝图跑外面了！\n"
+                + $"{"顺带一提，绝对不是因为我懒才不更新的！".AddOrangeLabel()}）\n"
+                + "我很好奇到底有没有人去翻翻MOD所在的文件夹，把那几个蓝图找出来。（如果有的话务必告诉我哈哈）\n"
+                + "当然，这点小小的问题是难不倒我的。既然文件无法使用，那我就把它们直接塞到代码里面！\n"
+                + "鲁迅曾经说过：没有什么是一个字符串解决不了的。如果有，那就四个！（三个蓝图+简介）\n"
+                + $"如果一切顺利的话，这次应该能看到蓝图了。请务必{"重新检查一下蓝图库！".AddBlueLabel()}\n\n"
+                + "除此之外，此次更新修复了设置页面报错的问题。\n\n"
+                + "近期一直没有更新的主要原因是缺失灵感，我确实想不出有什么可以优化的地方了。\n"
+                + "想必大家也能看出来，以分馏作为核心的思路其实大大限制了MOD的功能。\n"
+                + $"不过，前几天与群友交流之后，我确定了MOD之后的大致方向——那就是{"抽奖".AddOrangeLabel()}。\n"
+                + $"“百亿大厂十连抽，五人团队戴森球”，想必大家都听过。嘿嘿嘿，{"谁说戴森球不能十连抽？".AddOrangeLabel()}我踏马莱纳！\n\n"
+                + "接下来的更新将主要以“随机性与抽卡”作为核心。可以透露的信息如下：\n"
+                + "1.会有新的分馏塔，用于获取专用于抽卡的货币。\n"
+                + "2.分馏配方可通过科技、抽奖、兑换等方式获取。\n"
+                + "3.同一个分馏配方有不同品质，越高品质越难获取。\n"
+                + "4.希望能在9月底之前完成初版。欢迎加群体验最新测试版，并提出你的看法！\n\n"
+                + $"一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
+
+            #endregion
+
+            Register("143标题", "Fractionate Everything 1.4.3 Update", "万物分馏1.4.3版本更新");
+            Register("143信息",
+                "This is a minor update that fix original fractionator can not fractionate hydrogen into deuterium.\n"
+                + "Thanks to starfi5h for exploring why this bug appeared (I really didn't reproduce the bug, so I was never able to fix it).\n\n"
+                + "Advertisement: If you want to quantify the production, we recommend using the web calculator [https://dsp-calc.pro/]\n\n"
+                + "Version 1.5.0 is still in the works, and it's more of a pain in the ass than I expected.\n"
+                + "The design part is basically finished at the moment, and I'm in the code-writing stage, though the UI aspect might be a challenge.\n"
+                + "In new version, a fractionator similar to Trash Recycle Fractionator will be added for unlocking fractionation recipes, and providing currency to the store.\n"
+                + "Recipes have 'star' and 'rarity' attribute, which indicate the efficiency and rarity of the recipe, respectively.\n"
+                + "In addition to fixed fractionation recipes, an optional fractionate recipe can be customized for output, allowing items to be reorganized in the early stages!\n"
+                + $"The above is all that's included in this update. As always, thank you for your support! {"Have fun with fractionation!".AddOrangeLabel()}",
+                "这次是一个小更新，修复了原版分馏塔无法将氢分馏为重氢的问题。\n"
+                + "感谢starfi5h大佬对此bug出现原因的探究（我确实没有复现此bug，所以一直无法修复）。\n\n"
+                + "打个广告：如果你想量化产线，推荐使用网页版量化计算器【https://dsp-calc.pro/】\n\n"
+                + "1.5.0版本的抽卡还在制作中，比我预想的要麻烦的多。\n"
+                + "目前设计部分基本完工，正处于编写代码阶段，不过UI方面可能是个难题。\n"
+                + "在新的版本中，将会增加一个与垃圾回收分馏塔类似的分馏塔，用于解锁分馏配方、向商店提供货币。\n"
+                + "配方具有“星级”与“稀有度”这两个属性，分别表示配方的效率与稀有程度。\n"
+                + "除了固定的分馏配方，还有可自定义输出的自选分馏配方，可以在前期将物品随意重组！\n"
+                + $"以上就是本次更新的全部内容。一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
 
             #endregion
 

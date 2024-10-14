@@ -166,12 +166,18 @@ namespace GetDspData {
                 (int)Utils_ERecipeType.Smelt => GenesisBookEnable
                     ? [I电弧熔炉, I位面熔炉, I负熵熔炉, IGB物质裂解塔]
                     : [I电弧熔炉, I位面熔炉, I负熵熔炉],
-                (int)Utils_ERecipeType.Chemical => GenesisBookEnable ? [I化工厂, IGB埃克森美孚化工厂] : [I化工厂, I量子化工厂_GB先进化学反应釜],
-                (int)Utils_ERecipeType.Refine => [I原油精炼厂],
+                (int)Utils_ERecipeType.Chemical => GenesisBookEnable
+                    ? [I化工厂, IGB埃克森美孚化工厂]
+                    : [I化工厂, I量子化工厂_GB先进化学反应釜],
+                (int)Utils_ERecipeType.Refine => GenesisBookEnable
+                    ? [I原油精炼厂, IGB埃克森美孚化工厂]
+                    : [I原油精炼厂],
                 (int)Utils_ERecipeType.Assemble => GenesisBookEnable
                     ? [I制造台MkI_GB基础制造台, I重组式制造台_GB物质重组工厂, IGB天穹装配厂]
                     : [I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂],
-                (int)Utils_ERecipeType.Particle => GenesisBookEnable ? [I微型粒子对撞机, IGB苍穹粒子加速器] : [I微型粒子对撞机],
+                (int)Utils_ERecipeType.Particle => GenesisBookEnable
+                    ? [I微型粒子对撞机, IGB苍穹粒子加速器]
+                    : [I微型粒子对撞机],
                 (int)Utils_ERecipeType.PhotonStore => [I射线接收站],
                 (int)Utils_ERecipeType.Fractionate => [I分馏塔],//万物分馏配方在代码中处理，不在此处
                 (int)Utils_ERecipeType.标准制造 => [I制造台MkII_GB标准制造单元, I重组式制造台_GB物质重组工厂, IGB天穹装配厂],
