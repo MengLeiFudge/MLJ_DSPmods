@@ -2,7 +2,6 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -305,10 +304,10 @@ namespace FractionateEverything.Main {
                 if (GameMain.history.RecipeUnlocked(r.ID)) {
                     list.Add(r);
                     list2.Add(r.Items[0]);
-                    if (GetItemNaturalResource(r.Items[0]) > 0) {
+                    //下面的判定要特别注意，必须确认是同一个配方
+                    if (GetItemNaturalResource(r.Items[0]) == r.Results[0]) {
                         veinList.Add(r.Items[0]);
-                    } else if (GetItemUpgrade(r.Items[0]) != 0) {
-                        //只要不是vein，就一定是升降级；需要考虑矩阵分馏、燃料棒分馏的开关
+                    } else if (GetItemUpgrade(r.Items[0]) == r.Results[0]) {
                         upgradeList.Add(r.Items[0]);
                         downgradeList.Add(r.Results[0]);
                     }
@@ -390,9 +389,11 @@ namespace FractionateEverything.Main {
 
             int buildingID = factory.entityPool[__instance.entityId].protoId;
             //配方状态错误的情况下，修改配方状态（在分馏塔升降级时会有这样的现象）
+            //为了让分馏塔升降级之前内部残留的物品流出去，添加abnormalProcess标记
+            //abnormalProcess为true时，分馏塔相当于不工作，等待内部物品全部流出
             bool abnormalProcess = false;
             if (buildingID == I分馏塔) {
-                if (__instance.fluidId != I氢 || __instance.productId != I重氢) {
+                if (__instance.fluidId != 0 && (__instance.fluidId != I氢 || __instance.productId != I重氢)) {
                     abnormalProcess = true;
                     __instance.fluidOutputCount += __instance.fluidInputCount;
                     __instance.fluidInputCount = 0;

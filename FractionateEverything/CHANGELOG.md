@@ -1,13 +1,19 @@
+- v1.4.3
+    + 修复原版分馏塔无法将氢分馏为重氢的问题。
+    + Fix the issue that hydrogen can not fractionate to deuterium.
+
+- v1.4.2
+    + 修复设置页面报错的问题，适配版本0.10.30.23430。
+    + 修复蓝图文件未能正确添加的问题。
+    + Fix an issue where the settings page reported errors, adapted to version 0.10.30.23430.
+    + Fix the issue that blueprint files are not added correctly.
+
 - v1.4.1
     + 修复鼠标移动至已放置的分馏塔时，简洁提示小窗口显示的速率与实际不符的问题。
     + 增产点数对所有分馏塔的影响不再基于加速效果，而是加速效果、增产效果中加成更大的一方。
         + 深空来敌中，有增产调节公理和满增产效果，与无增产调节公理和满加速效果，二者加成是一致的，都为200%。
-        + | 增产效果提升 | 加速效果提升 | 公理 | 增产总加成 | 加速总加成 | 分馏加成 |
-                    |--------|--------|----|-------|-------|------|
-          | +0%    | +0%    | ×  | 25%   | 100%  | 100% |
-          | +0%    | +0%    | √  | 40%   | 75%   | 160% |
-          | +10%   | +100%  | ×  | 35%   | 200%  | 200% |
-          | +10%   | +100%  | √  | 50%   | 175%  | 200% |
+        + 以深空来敌为例，启用增产调节公理，并升满增产效果，可以算出增产加成为50%，加速加成为175%。
+        + 此时增产对分馏的加成为50%/25%=200%，加速对分馏的加成为175%/100%=175%，最终取最大值200%。
     + 调整了万物分馏新增的分馏塔，修改部分分馏塔的相关描述。
         + 移除精准分馏塔。
             + 旧存档中已放置的精准分馏塔会自动转换为矿物分馏塔，未知物品2320（原精准分馏塔）需要手动丢弃。
@@ -49,12 +55,10 @@
       effect, but rather on the side with the greater bonus of accelerate effect or increase effect.
         + In They Come From Void, with Increase Adjustment Axiom and full Increase Bonus, and without Increase
           Adjustment Axiom and full Accelerate Bonus, the two bonuses are the same, both are 200%.
-        + | Inc Bonus | Acc Bonus | Axiom | Total Inc Bonus | Total Acc Bonus | Fractionation Bonus |
-                    |-----------|-----------|-------|-----------------|-----------------|---------------------|
-          | +0%       | +0%       | ×     | 25%             | 100%            | 100%                |
-          | +0%       | +0%       | √     | 40%             | 75%             | 160%                |
-          | +10%      | +100%     | ×     | 35%             | 200%            | 200%                |
-          | +10%      | +100%     | √     | 50%             | 175%            | 200%                |
+        + For example, if you use the Axiom of Increase Inc Bonus and upgrade to max Inc Bonus, you can calculate that
+          Total Inc Bonus is 50% and Total Acc Bonus is 175%.
+        + At this point, Inc Bonus is 50%/25% = 200% for Fractionation, and Acc Bonus is 175%/100% = 175% for
+          Fractionation, taking the final maximum of 200%.
     + Adjusted the fractionator added to Fractionate Everything, and modified the descriptions associated with some of
       the fractionators.
         + Removed Precision Fractionator.

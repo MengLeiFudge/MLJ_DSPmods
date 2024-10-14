@@ -13,6 +13,7 @@ using static AfterBuildEvent.Utils;
 namespace AfterBuildEvent {
     static class AfterBuildEvent {
         public static void Main(string[] args) {
+            Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
             Console.WriteLine("输入要执行的命令（直接回车表示1）：");
             Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
             Console.WriteLine("2表示生成计算器所需所有数据");
@@ -66,7 +67,7 @@ namespace AfterBuildEvent {
                         continue;
                     }
                     //要打包的所有文件，也是要复制到R2_BepInEx的文件
-                    Dictionary<string, string> fileList = [];
+                    List<string> fileList = [];
                     var projectName = AssemblyName.InnerText;
                     string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
                     string projectDir = $@"..\..\..\{projectName}";
@@ -79,7 +80,7 @@ namespace AfterBuildEvent {
                     if (!File.Exists(projectModFile)) {
                         continue;
                     }
-                    fileList.Add(projectModFile, "");
+                    fileList.Add(projectModFile);
                     //mod.dll.mdb
                     // cmd.Exec($"\"{Pdb2mdbExe}\" \"{projectModFile}\"");//引号防止路径包含空格
                     // string projectMdb = $@"{projectModFile}.mdb";
@@ -89,18 +90,18 @@ namespace AfterBuildEvent {
                     //README.md
                     string projectReadme = $@"{projectDir}\README.md";
                     if (File.Exists(projectReadme)) {
-                        fileList.Add(projectReadme, "");
+                        fileList.Add(projectReadme);
                     }
                     //CHANGELOG.md
                     string projectChangeLog = $@"{projectDir}\CHANGELOG.md";
                     if (File.Exists(projectChangeLog)) {
-                        fileList.Add(projectChangeLog, "");
+                        fileList.Add(projectChangeLog);
                     }
                     //manifest.json、version
                     string projectManifest = $@"{projectDir}\Assets\manifest.json";
                     string version = "";
                     if (File.Exists(projectManifest)) {
-                        fileList.Add(projectManifest, "");
+                        fileList.Add(projectManifest);
                         var obj = JObject.Parse(File.ReadAllText(projectManifest));
                         if (obj.TryGetValue("version_number", out JToken value)) {
                             version = "_" + value;
@@ -109,14 +110,14 @@ namespace AfterBuildEvent {
                     //icon.png
                     string projectIcon = $@"{projectDir}\Assets\icon.png";
                     if (File.Exists(projectIcon)) {
-                        fileList.Add(projectIcon, "");
+                        fileList.Add(projectIcon);
                     }
                     //额外文件
                     if (projectName == "GetDspData") {
                         //Newtonsoft.Json.dll
                         string jsonDll = @"..\..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll";
                         if (File.Exists(jsonDll)) {
-                            fileList.Add(jsonDll, "");
+                            fileList.Add(jsonDll);
                         }
                     } else if (projectName == "FractionateEverything") {
                         //fracicons
@@ -129,12 +130,8 @@ namespace AfterBuildEvent {
                             if (File.Exists(iconPath)) {
                                 //同时拷贝到项目
                                 File.Copy(iconPath, $@"..\..\..\FractionateEverything\Assets\{icon}", true);
-                                fileList.Add(iconPath, "");
+                                fileList.Add(iconPath);
                             }
-                        }
-                        //附赠的蓝图
-                        foreach (var bpFile in Directory.GetFiles($@"{projectDir}\Assets\blueprints")) {
-                            fileList.Add(bpFile, "blueprints/");
                         }
                     }
                     //打包
@@ -155,8 +152,8 @@ namespace AfterBuildEvent {
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                     //所有文件复制到R2，注意R2是否禁用了mod
-                    foreach (var p in fileList) {
-                        string relativePath = p.Value.Replace("/", @"\") + Path.GetFileName(p.Key);
+                    foreach (var file in fileList) {
+                        string relativePath = Path.GetFileName(file);
                         string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
                         string r2OldFilePath = $"{r2FilePath}.old";
                         string targetPath = !File.Exists(r2OldFilePath) ? r2FilePath : r2OldFilePath;
@@ -164,15 +161,15 @@ namespace AfterBuildEvent {
                         if (!fileInfo.Directory.Exists) {
                             Directory.CreateDirectory(fileInfo.Directory.FullName);
                         }
-                        File.Copy(p.Key, targetPath, true);
-                        Console.WriteLine($"复制 {p.Key} -> {targetPath}");
+                        File.Copy(file, targetPath, true);
+                        Console.WriteLine($"复制 {file} -> {targetPath}");
                     }
                     //额外打包
                     if (projectName == "FractionateEverything") {
                         //给群友提供的测试版本，包含了如何使用R2导入的视频
                         string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
                         if (File.Exists(techVideo)) {
-                            fileList.Add(techVideo, @"\");
+                            fileList.Add(techVideo);
                             zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
                             ZipMod(fileList, zipFile);
                             Console.WriteLine($"创建 {zipFile}");
@@ -206,7 +203,7 @@ namespace AfterBuildEvent {
             }
         }
 
-        static void ZipMod(Dictionary<string, string> fileList, string zipPath) {
+        static void ZipMod(List<string> fileList, string zipPath) {
             string zipParentDir = new FileInfo(zipPath).DirectoryName;
             if (zipParentDir == null) {
                 throw new("路径异常！");
@@ -218,12 +215,12 @@ namespace AfterBuildEvent {
                 File.Delete(zipPath);
             }
             using var zipStream = new ZipOutputStream(File.Create(zipPath));
-            foreach (var p in fileList) {
+            foreach (var file in fileList) {
                 //MOD上传至R2的时候，文件要直接打包在里面，不能嵌套文件夹，所以相对路径直接使用文件名
                 //但是也有一些特殊情况需要文件夹
-                var entry = new ZipEntry(p.Value + Path.GetFileName(p.Key));
+                var entry = new ZipEntry(Path.GetFileName(file));
                 zipStream.PutNextEntry(entry);
-                using FileStream fs = File.OpenRead(p.Key);
+                using FileStream fs = File.OpenRead(file);
                 byte[] buffer = new byte[4096];
                 int sourceBytes;
                 do {
@@ -241,6 +238,10 @@ namespace AfterBuildEvent {
 
         private static void GetAllCalcJson() {
             using CmdProcess cmd = new();
+            //终止游戏
+            cmd.Exec(KillDSP);
+            Console.WriteLine("确认是否已经打开矩阵分馏、燃料棒分馏？回车确认");
+            Console.ReadLine();
             //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
             File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
             string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
@@ -296,9 +297,9 @@ namespace AfterBuildEvent {
         }
 
         private static void WriteOneJson(CmdProcess cmd, string[] mods, bool[] modsEnable) {
-            string filePath = GetJsonFilePath(mods, modsEnable, false);
-            if (File.Exists(filePath)) {
-                Console.WriteLine($"{filePath} 已存在，跳过生成");
+            string oriFilePath = GetJsonFilePath(mods, modsEnable, false);
+            if (File.Exists(oriFilePath)) {
+                Console.WriteLine($"{oriFilePath} 已存在，跳过生成");
                 return;
             }
             Console.WriteLine("终止游戏进程...");
@@ -308,33 +309,28 @@ namespace AfterBuildEvent {
             }
             StringBuilder sb = new("启动游戏，mod情况：");
             for (int i = 0; i < mods.Length; i++) {
-                sb.Append(modsEnable[i] ? "启用 " : "禁用 ");
+                sb.Append(mods[i].Substring(mods[i].LastIndexOf("-") + 1)).Append(modsEnable[i] ? "启用 " : "禁用 ");
             }
             Console.WriteLine(sb.ToString());
             cmd.Exec(RunModded);
-            while (true) {
-                Thread.Sleep(200);
-                if (!File.Exists(filePath)) {
-                    continue;
-                }
-                FileInfo info = new FileInfo(filePath);
-                if (info.LastWriteTime > DateTime.Now.AddSeconds(-10)) {
-                    Console.WriteLine($"已生成 {filePath}");
-                    string filePath2 = GetJsonFilePath(mods, modsEnable, true);
-                    FileInfo info2 = new FileInfo(filePath2);
-                    if (info2.Directory == null || !info2.Directory.Exists) {
-                        Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
-                        break;
-                    }
-                    while (!info2.Exists || info2.Length != info.Length) {
-                        File.Copy(filePath, filePath2, true);
-                    }
-                    Console.WriteLine($"已复制到 {filePath2}");
-                    break;
-                }
+            while (!File.Exists(oriFilePath)) {
+                Thread.Sleep(100);
             }
-            //等待log文件记录完毕
+            //多等一会，确保文件已经全部写入
             Thread.Sleep(500);
+            Console.WriteLine($"已生成 {oriFilePath}");
+            string calcFilePath = GetJsonFilePath(mods, modsEnable, true);
+            DirectoryInfo info = new FileInfo(calcFilePath).Directory;
+            if (info == null || !info.Exists) {
+                Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
+                return;
+            }
+            File.Copy(oriFilePath, calcFilePath, true);
+            if (!File.Exists(calcFilePath) || new FileInfo(calcFilePath).Length != new FileInfo(oriFilePath).Length) {
+                Console.WriteLine("复制计算器json文件失败");
+                return;
+            }
+            Console.WriteLine($"已复制到 {calcFilePath}");
         }
 
         private static string GetJsonFilePath(string[] mods, bool[] modsEnable, bool isCalc) {

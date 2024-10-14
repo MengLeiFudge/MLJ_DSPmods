@@ -236,13 +236,16 @@ namespace GetDspData {
                 //配方
                 var recipes = new JArray();
                 dataObj.Add("recipes", recipes);
-                List<RecipeProto> notAddRecipes = [];
+                //为了让自然资源自分馏配方在量化计算器中靠后的位置显示，这里需要先选出来它们，后面再添加
+                List<RecipeProto> selfFracRecipes = [];
                 foreach (var recipe in LDB.recipes.dataArray) {
-                    //这里先排除自分馏配方，后面再添加
-                    if (recipe.Items.Length > 0 && recipe.Results.Length > 0 && recipe.Items[0] != recipe.Results[0]) {
-                        addRecipe(recipe, recipes);
+                    if (recipe.Type == ERecipeType.Fractionate
+                        && recipe.Items.Length == 1
+                        && recipe.Results.Length == 1
+                        && recipe.Items[0] == recipe.Results[0]) {
+                        selfFracRecipes.Add(recipe);
                     } else {
-                        notAddRecipes.Add(recipe);
+                        addRecipe(recipe, recipes);
                     }
                 }
                 //物品
@@ -308,10 +311,6 @@ namespace GetDspData {
                     if (item.canMiningByIcarus()) {
                         factorySpecial = [..factorySpecial, I伊卡洛斯];
                     }
-                    if (item.canMiningByRayReceiver()) {
-                        //不带透镜的公式
-                        factorySpecial = [..factorySpecial, I射线接收站];
-                    }
                     if (item.canMiningByMS()) {
                         factorySpecial = [..factorySpecial, I巨构星际组装厂];
                     }
@@ -333,29 +332,41 @@ namespace GetDspData {
                             { "IconName", item.iconSprite.name },
                         });
                     }
-                    //添加为了调整顺序而之前没加的配方
-                    foreach (var recipe in notAddRecipes) {
-                        if (recipe.Items.Length > 0
-                            && recipe.Results.Length > 0
-                            && recipe.Items[0] != recipe.Results[0]
-                            && recipe.Items[0] == item.ID) {
+                    //添加自分馏配方。这里处于循环内，需要找到该物品对应的自分馏配方后，添加并移除
+                    foreach (var recipe in selfFracRecipes) {
+                        if (recipe.Items.Contains(item.ID)) {
                             addRecipe(recipe, recipes);
-                            notAddRecipes.Remove(recipe);
                             break;
                         }
                     }
                     if (item.canMiningByRayReceiver()) {
+                        //不带透镜的公式
+                        //此公式比较特殊，有明确速率0.1/s，此处不使用大部分“无中生有”的1/s速率
+                        recipes.Add(new JObject {
+                            { "ID", item.ID + 10000 },
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { I射线接收站 }) },
+                            { "Name", $"[无中生有]{item.name}" },
+                            { "Items", new JArray(Array.Empty<int>()) },
+                            { "ItemCounts", new JArray(Array.Empty<int>()) },
+                            { "Results", new JArray(new[] { item.ID }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 600 },
+                            { "Proliferator", 0 },
+                            { "IconName", item.iconSprite.name },
+                        });
                         //带透镜的公式
+                        //此公式比较特殊，有明确的速率0.2/s
                         recipes.Add(new JObject {
                             { "ID", item.ID + 20000 },
                             { "Type", -1 },
                             { "Factories", new JArray(new[] { I射线接收站 }) },
-                            { "Name", $"[射线接收带透镜]{item.name}-" },
+                            { "Name", $"[射线接收带透镜]{item.name}" },
                             { "Items", new JArray(new[] { I引力透镜 }) },
                             { "ItemCounts", new JArray(new[] { 1.0 / 120.0 }) },
                             { "Results", new JArray(new[] { item.ID }) },
                             { "ResultCounts", new JArray(new[] { 1 }) },
-                            { "TimeSpend", 60 },
+                            { "TimeSpend", 300 },
                             { "Proliferator", 4 },
                             { "IconName", item.iconSprite.name },
                         });
@@ -542,9 +553,9 @@ namespace GetDspData {
                 } else {
                     RecipeProto proto2 = CopyRecipeProto(proto);
                     adjustRecipeFEFrac(proto2, IFE升级分馏塔);
-                    //如果原料与产物相同，则不添加
-                    if (proto.Items[0] != proto.Results[0]) {
-                        addRecipe(proto, add, [IFE升级分馏塔]);
+                    //有些配方使用升降级分馏塔但是自分馏，此时显然要使用降级分馏塔获取最大速率，所以升级分馏塔无用
+                    if (proto2.Items[0] != proto2.Results[0]) {
+                        addRecipe(proto2, add, [IFE升级分馏塔]);
                     }
 
                     RecipeProto proto3 = CopyRecipeProto(proto);
@@ -639,32 +650,34 @@ namespace GetDspData {
 
         static void adjustRecipeFEFrac(RecipeProto recipe, int factory) {
             if (factory == IFE自然资源分馏塔) {
-                recipe.name += "-自然资源分馏塔";
+                recipe.name += "-自然资源分馏";
                 recipe.ItemCounts[0] = 1;
                 recipe.ResultCounts[0] = 2;
                 Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
                 float ratio = dic[2];
                 recipe.TimeSpend = (int)(ratio * 100000);
             } else if (factory == IFE升级分馏塔) {
-                recipe.name += "-升级分馏塔";
+                recipe.name += "-升级分馏";
                 recipe.ItemCounts[0] = 1;
                 recipe.ResultCounts[0] = 1;
-                // Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
-                // //注意，如果没有启用矩阵分馏或者燃料棒分馏，这里会出问题，返回的值不对
-                // float ratio = dic[1];
-                float ratio = 0.04f;
+                Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
+                if (!dic.TryGetValue(1, out float ratio)) {
+                    ratio = 0.04f;
+                    LogError("没有启用矩阵分馏或者燃料棒分馏！生成的数据有问题！");
+                }
                 //暂时不考虑损毁的影响，按照无损毁来计算
                 recipe.TimeSpend = (int)(ratio * 100000);
             } else if (factory == IFE降级分馏塔) {
-                recipe.name += "-降级分馏塔";
+                recipe.name += "-降级分馏";
                 recipe.ID += 1000;
                 (recipe.Items[0], recipe.Results[0]) = (recipe.Results[0], recipe.Items[0]);
                 recipe.ItemCounts[0] = 1;
                 recipe.ResultCounts[0] = 2;
-                // Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
-                // //注意，如果没有启用矩阵分馏或者燃料棒分馏，这里会出问题，没有key=2
-                // float ratio = dic[2];
-                float ratio = 0.02f;
+                Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
+                if (!dic.TryGetValue(2, out float ratio)) {
+                    ratio = 0.02f;
+                    LogError("没有启用矩阵分馏或者燃料棒分馏！生成的数据有问题！");
+                }
                 recipe.TimeSpend = (int)(ratio * 100000);
             } else {
                 throw new($"异常万物分馏配方，ID {recipe.ID}，factory {factory}");

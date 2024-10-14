@@ -12,46 +12,15 @@ namespace FractionateEverything.Main {
     public static class UIOptionWindowPatch {
         private const string details = "UI Root/Overlay Canvas/Top Windows/Option Window/details";
         private static bool _initFinished;
-        private static UIToggle DisableMessageBoxToggle;
         private static UIComboBox IconVersionComboBox;
         private static UIToggle EnableDestroyToggle;
         private static UIToggle EnableFuelRodFracToggle;
         private static UIToggle EnableMatrixFracToggle;
         private static UIToggle EnableBuildingAsTrashToggle;
 
-        private static void Init() {
-            if (_initFinished) return;
-
-            int baseY = GenesisBook.Enable ? -380 : -220;
-
-            CreateUIToggle("fe-dmb-setting",
-                "DisableMessageBox".Translate(), "DisableMessageBoxAdditionalText".Translate(), new(30, baseY - 40 * 0),
-                disableMessageBox, out DisableMessageBoxToggle);
-
-            CreateComboBox("fe-iv-setting",
-                "IconVersion".Translate(), "IconVersionAdditionalText".Translate(), new(30, baseY - 40 * 1),
-                ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
-
-            CreateUIToggle("fe-ed-setting",
-                "EnableDestroy".Translate(), "EnableDestroyAdditionalText".Translate(), new(30, baseY - 40 * 2),
-                enableDestroy, out EnableDestroyToggle);
-
-            CreateUIToggle("fe-efrf-setting",
-                "EnableFuelRodFrac".Translate(), "EnableFuelRodFracAdditionalText".Translate(), new(30, baseY - 40 * 3),
-                enableFuelRodFrac, out EnableFuelRodFracToggle);
-
-            CreateUIToggle("fe-emf-setting",
-                "EnableMatrixFrac".Translate(), "EnableMatrixFracAdditionalText".Translate(), new(30, baseY - 40 * 4),
-                enableMatrixFrac, out EnableMatrixFracToggle);
-
-            CreateUIToggle("fe-ebat-setting",
-                "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
-                new(30, baseY - 40 * 5),
-                enableBuildingAsTrash, out EnableBuildingAsTrashToggle);
-
-            _initFinished = true;
-        }
-
+        /// <summary>
+        /// 新建一个勾选框，右侧有内容和额外提示。
+        /// </summary>
         private static void CreateUIToggle(string name, string text, string additionalTextStr,
             Vector2 position, bool defaultValue, out UIToggle toggle) {
             GameObject obj = Object.Instantiate(
@@ -70,10 +39,13 @@ namespace FractionateEverything.Main {
             additionalTextTransform.GetComponent<Text>().text = additionalTextStr;
         }
 
+        /// <summary>
+        /// 新建一个下拉选择框，右侧有内容和额外提示。
+        /// </summary>
         private static void CreateComboBox(string name, string text, string additionalTextStr,
             Vector2 position, List<string> options, int defaultValue, out UIComboBox comboBox) {
             GameObject obj = Object.Instantiate(
-                GameObject.Find($"{details}/content-1/msaa"),
+                GameObject.Find($"{details}/content-1/list/scroll-view/viewport/content/msaa"),
                 GameObject.Find($"{details}/content-5/advisor-tips").transform.parent
             );
             Object.DestroyImmediate(obj.GetComponent<Localizer>());
@@ -98,8 +70,44 @@ namespace FractionateEverything.Main {
 
         [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow._OnOpen))]
         [HarmonyPostfix]
-        public static void UIOptionWindow_OnOpen_Postfix() {
-            Init();
+        public static void UIOptionWindow_OnOpen_Postfix(UIOptionWindow __instance) {
+            GameObject settingTab =
+                GameObject.Find("UI Root/Overlay Canvas/Top Windows/Option Window/details/content-2");
+            GameObject checkBoxWithTextTemple = __instance.fullscreenComp.transform.parent.gameObject;
+            GameObject comboBoxTemple = __instance.resolutionComp.transform.gameObject;
+            GameObject inputTemple = UIRoot.instance.uiGame.planetGlobe.nameInput.gameObject;
+            GameObject buttonTemple = __instance.revertButtons[0].gameObject;
+
+            if (_initFinished) return;
+
+            int baseY = GenesisBook.Enable ? -380 : -220;
+
+            CreateComboBox("fe-iv-setting",
+                "IconVersion".Translate(), "IconVersionAdditionalText".Translate(),
+                new(30, baseY - 40 * 0),
+                ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
+
+            CreateUIToggle("fe-ed-setting",
+                "EnableDestroy".Translate(), "EnableDestroyAdditionalText".Translate(),
+                new(30, baseY - 40 * 1),
+                enableDestroy, out EnableDestroyToggle);
+
+            CreateUIToggle("fe-efrf-setting",
+                "EnableFuelRodFrac".Translate(), "EnableFuelRodFracAdditionalText".Translate(),
+                new(30, baseY - 40 * 2),
+                enableFuelRodFrac, out EnableFuelRodFracToggle);
+
+            CreateUIToggle("fe-emf-setting",
+                "EnableMatrixFrac".Translate(), "EnableMatrixFracAdditionalText".Translate(),
+                new(30, baseY - 40 * 3),
+                enableMatrixFrac, out EnableMatrixFracToggle);
+
+            CreateUIToggle("fe-ebat-setting",
+                "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
+                new(30, baseY - 40 * 4),
+                enableBuildingAsTrash, out EnableBuildingAsTrashToggle);
+
+            _initFinished = true;
         }
 
         [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnRevertButtonClick))]
@@ -109,7 +117,6 @@ namespace FractionateEverything.Main {
         }
 
         private static void Reset() {
-            DisableMessageBoxToggle.isOn = (bool)DisableMessageBoxEntry.DefaultValue;
             IconVersionComboBox.itemIndex = (int)IconVersionEntry.DefaultValue - 1;
             EnableDestroyToggle.isOn = (bool)EnableDestroyEntry.DefaultValue;
             EnableFuelRodFracToggle.isOn = (bool)EnableFuelRodFracEntry.DefaultValue;
@@ -121,7 +128,6 @@ namespace FractionateEverything.Main {
         [HarmonyPostfix]
         public static void UIOptionWindow_OnApplyClick_Postfix() =>
             SetConfig(
-                DisableMessageBoxToggle.isOn,
                 IconVersionComboBox.itemIndex + 1,
                 EnableDestroyToggle.isOn,
                 EnableFuelRodFracToggle.isOn,
