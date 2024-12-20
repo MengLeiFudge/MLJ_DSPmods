@@ -240,7 +240,7 @@ namespace AfterBuildEvent {
             using CmdProcess cmd = new();
             //终止游戏
             cmd.Exec(KillDSP);
-            Console.WriteLine("确认是否已经打开矩阵分馏、燃料棒分馏？回车确认");
+            Console.WriteLine("确认是否已经打开矩阵分馏、燃料棒分馏？回车确认");//todo:自动修改配置文件，开启
             Console.ReadLine();
             //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
             File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);

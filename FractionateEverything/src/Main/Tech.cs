@@ -69,7 +69,7 @@ namespace FractionateEverything.Main {
             var tech1159 = ProtoRegistry.RegisterTech(TFE增产点数聚集,
                 "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果",
                 "Assets/fracicons/tech增产点数聚集",
-                GenesisBook.Enable ? [T增产剂MkI_GB物品增产] : [T增产剂MkIII_GB人造恒星MKI],
+                GenesisBook.Enable ? [T增产剂MkI_GB物品增产] : [T增产剂MkIII_GB人造恒星],
                 [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 12, 4], 720000,
                 [RFE点数聚集分馏塔],
                 GenesisBook.Enable ? new(29, 29) : new(45, -11)

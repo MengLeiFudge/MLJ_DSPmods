@@ -26,7 +26,7 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION_Main = "1.4.3";
+        public const string VERSION_Main = "1.4.4";
         public const string VERSION_Debug = "";
         public const string VERSION = VERSION_Main + VERSION_Debug;
 
