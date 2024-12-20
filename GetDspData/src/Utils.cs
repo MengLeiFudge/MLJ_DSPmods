@@ -64,7 +64,7 @@ namespace GetDspData {
         //可通过矿脉开采
         static List<int> miningFromVein = GenesisBookEnable
             ? [
-                I铁矿, I铜矿, I硅石, I钛石, I石矿, I煤矿, IGB铝矿, IGB硫矿, IGB放射性矿物, IGB钨矿,
+                I铁矿, I铜矿, IGB铝矿, I硅石, I钛石, IGB钨矿, I煤矿, I石矿, IGB硫矿, IGB放射性矿物,
                 I可燃冰, I金伯利矿石, I分形硅石, I光栅石, I刺笋结晶, I单极磁石, I有机晶体,
             ]
             : [
@@ -110,7 +110,7 @@ namespace GetDspData {
         //可通过海洋获取
         static List<int> miningFromSea = GenesisBookEnable
             ? [
-                I水, IGB海水, I硫酸, IGB盐酸, IGB硝酸,
+                IGB海水, I水, IGB盐酸, I硫酸, IGB硝酸, IGB氨,
             ]
             : [
                 I水, I硫酸,
@@ -144,7 +144,7 @@ namespace GetDspData {
 
         //可通过大气获取（创世独有）
         static List<int> miningFromAtmosphere = [
-            IGB氮, IGB氧,
+            IGB氮, IGB氧, IGB二氧化碳, IGB二氧化硫,
         ];
         public static bool canMiningFromAtmosphere(this ItemProto item) => miningFromAtmosphere.Contains(item.ID);
 
@@ -178,7 +178,7 @@ namespace GetDspData {
                 (int)Utils_ERecipeType.Particle => GenesisBookEnable
                     ? [I微型粒子对撞机, IGB苍穹粒子加速器]
                     : [I微型粒子对撞机],
-                (int)Utils_ERecipeType.PhotonStore => [I射线接收站],
+                (int)Utils_ERecipeType.PhotonStore => [I射线接收站_MS射线重构站],
                 (int)Utils_ERecipeType.Fractionate => [I分馏塔],//万物分馏配方在代码中处理，不在此处
                 (int)Utils_ERecipeType.标准制造 => [I制造台MkII_GB标准制造单元, I重组式制造台_GB物质重组工厂, IGB天穹装配厂],
                 (int)Utils_ERecipeType.高精度加工 => [I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂, IGB工业先锋精密加工中心],
@@ -204,7 +204,7 @@ namespace GetDspData {
                 I原油萃取站 or IGB天穹装配厂 or IGB物质裂解塔 or IGB埃克森美孚化工厂 or IGB工业先锋精密加工中心
                     or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
                 I原油精炼厂 => 18f,
-                I射线接收站 => 54.82f,
+                I射线接收站_MS射线重构站 => 54.82f,
                 I分馏塔 or IGB聚束液体汲取设施 or IFE自然资源分馏塔 or IFE升级分馏塔 or IFE降级分馏塔
                     or IFE垃圾回收分馏塔 or IFE点数聚集分馏塔 or IFE增产分馏塔 => 12.96f,
                 I微型粒子对撞机 => 45.12f,

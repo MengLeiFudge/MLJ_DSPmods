@@ -149,7 +149,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I电力感应塔, I无线输电塔, I卫星配电站]);
                 list = AddFracChain([I风力涡轮机, I太阳能板, I蓄电器, I蓄电器满, I能量枢纽]);
                 list[2].Modify(tab分馏2, 113);
-                AddFracChain([I火力发电厂, I地热发电站, I微型聚变发电站_GB裂变能源发电站, I人造恒星_GB人造恒星MKI]);
+                AddFracChain([I火力发电厂_GB燃料电池发电厂, I地热发电站, I微型聚变发电站_GB裂变能源发电站, I人造恒星_GB朱曦K型人造恒星]);
                 //建筑II
                 AddFracChain([I传送带, I高速传送带, I极速传送带]);
                 AddFracChain([I流速监测器, I四向分流器, I喷涂机, I自动集装机]);//注意科技解锁顺序
@@ -164,10 +164,10 @@ namespace FractionateEverything.Main {
                 AddFracChain([I电弧熔炉, I位面熔炉, I负熵熔炉]);
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
                 AddFracChain([I矩阵研究站, I自演化研究站]);
-                AddFracChain([I电磁轨道弹射器, I射线接收站, I垂直发射井]);
+                AddFracChain([I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井]);
                 //建筑V
-                AddFracChain([I高斯机枪塔, I导弹防御塔, I聚爆加农炮_GB聚爆加农炮MKI]);//注意科技解锁顺序
-                AddFracChain([I高频激光塔_GB高频激光塔MKI, I磁化电浆炮, I近程电浆塔]);//注意科技解锁顺序
+                AddFracChain([I高斯机枪塔, I导弹防御塔, I聚爆加农炮]);//注意科技解锁顺序
+                AddFracChain([I高频激光塔, I磁化电浆炮, I近程电浆塔]);//注意科技解锁顺序
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
                 //建筑VI
                 AddFracChain([IFE自然资源分馏塔, IFE升级分馏塔, IFE降级分馏塔, IFE垃圾回收分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
@@ -187,18 +187,24 @@ namespace FractionateEverything.Main {
                 AddFracRecipe(I煤矿, defaultNumRatioCommonVein).Modify(tab分馏1, 107, T冶炼提纯);
                 AddFracRecipe(I石矿, defaultNumRatioCommonVein).Modify(tab分馏1, 108);
                 AddFracRecipe(IGB硫矿, defaultNumRatioCommonVein).Modify(tab分馏1, 109, TGB矿物处理);
-                AddFracRecipe(I水, defaultNumRatioCommonVein).Modify(tab分馏1, 201);
-                AddFracRecipe(I原油, defaultNumRatioCommonVein).Modify(tab分馏1, 202, TGB焦油精炼);
-                AddFracRecipe(I硫酸, defaultNumRatioCommonVein).Modify(tab分馏1, 203);
-                AddFracRecipe(IGB氨, defaultNumRatioCommonVein).Modify(tab分馏1, 204);
-                AddFracRecipe(I氢, defaultNumRatioCommonVein).Modify(tab分馏1, 205);
-                AddFracRecipe(I重氢, defaultNumRatioCommonVein).Modify(tab分馏1, 206, T微型粒子对撞机_GB粒子对撞机);
-                AddFracRecipe(IGB氦, defaultNumRatioCommonVein).Modify(tab分馏1, 207);
-                AddFracRecipe(IGB氮, defaultNumRatioCommonVein).Modify(tab分馏1, 208, T氢燃料棒_GB气体冷凝);
-                AddFracRecipe(IGB氧, defaultNumRatioCommonVein).Modify(tab分馏1, 209);
-                AddFracRecipe(IGB放射性矿物, defaultNumRatioCommonVein).Modify(tab精炼, 302, TGB放射性矿物提炼);
-                AddFracRecipe(IGB铀矿, defaultNumRatioCommonVein).Modify(tab精炼, 305, TGB放射性矿物提炼);
-                AddFracRecipe(IGB钚矿, defaultNumRatioCommonVein).Modify(tab精炼, 306, TGB放射性矿物提炼);
+                AddFracRecipe(IGB放射性矿物, defaultNumRatioCommonVein).Modify(tab精炼, 402, TGB放射性矿物提炼);
+
+                AddFracRecipe(I原油, defaultNumRatioCommonVein).Modify(tab分馏1, 201, TGB焦油精炼);
+                AddFracRecipe(IGB海水, defaultNumRatioCommonVein).Modify(tab分馏1, 202);
+                AddFracRecipe(I水, defaultNumRatioCommonVein).Modify(tab分馏1, 203);
+                AddFracRecipe(IGB盐酸, defaultNumRatioCommonVein).Modify(tab分馏1, 204);
+                AddFracRecipe(I硫酸, defaultNumRatioCommonVein).Modify(tab分馏1, 205);
+                AddFracRecipe(IGB硝酸, defaultNumRatioCommonVein).Modify(tab分馏1, 206);
+                AddFracRecipe(IGB氨, defaultNumRatioCommonVein).Modify(tab分馏1, 207);
+
+                AddFracRecipe(I氢, defaultNumRatioCommonVein).Modify(tab分馏1, 301);
+                AddFracRecipe(I重氢, defaultNumRatioCommonVein).Modify(tab分馏1, 302, T微型粒子对撞机_GB粒子对撞机);
+                AddFracRecipe(IGB氦, defaultNumRatioCommonVein).Modify(tab分馏1, 303);
+                AddFracRecipe(IGB氮, defaultNumRatioCommonVein).Modify(tab分馏1, 304, T氢燃料棒_GB气体冷凝);
+                AddFracRecipe(IGB氧, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
+                AddFracRecipe(IGB二氧化碳, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
+                AddFracRecipe(IGB二氧化硫, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
+
                 AddFracRecipe(I金伯利矿石, defaultNumRatioRealVein).Modify(tab分馏1, 504, T晶体冶炼);
                 AddFracRecipe(I分形硅石, defaultNumRatioRealVein).Modify(tab分馏1, 505, T粒子可控);
                 AddFracRecipe(I可燃冰, defaultNumRatioRealVein).Modify(tab分馏1, 506, T应用型超导体);
@@ -219,7 +225,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I电力感应塔, I无线输电塔, I卫星配电站]);
                 list = AddFracChain([I风力涡轮机, I太阳能板, IGB同位素温差发电机, I蓄电器, I蓄电器满, I能量枢纽]);
                 list[3].Modify(tab分馏2, 114);
-                AddFracChain([I火力发电厂, I地热发电站, I微型聚变发电站_GB裂变能源发电站, I人造恒星_GB人造恒星MKI, IGB人造恒星MKII]);
+                AddFracChain([I火力发电厂_GB燃料电池发电厂, I地热发电站, I微型聚变发电站_GB裂变能源发电站, I人造恒星_GB朱曦K型人造恒星, IGB湛曦O型人造恒星]);
                 AddFracChain([I传送带, I高速传送带, I极速传送带]);
                 AddFracChain([I四向分流器, I流速监测器, IGB大气采集站, I喷涂机, I自动集装机]);//注意科技解锁顺序
                 AddFracChain([I小型储物仓, I大型储物仓, IGB量子储物仓]);
@@ -238,7 +244,7 @@ namespace FractionateEverything.Main {
                 AddFracChain([I电弧熔炉, IGB矿物处理厂, I位面熔炉, I负熵熔炉]);
                 AddFracChain([I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂]);
                 AddFracChain([I矩阵研究站, I自演化研究站]);
-                AddFracChain([I电磁轨道弹射器, I射线接收站, I垂直发射井]);
+                AddFracChain([I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井]);
                 AddFracChain([I微型粒子对撞机]);
                 AddFracChain([IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]);
                 AddFracChain([IFE自然资源分馏塔, IFE升级分馏塔, IFE降级分馏塔, IFE垃圾回收分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔]);
@@ -268,12 +274,12 @@ namespace FractionateEverything.Main {
                     list[0].Modify(tab防御, 205);
                     list[1].Modify(tab巨构, 112);
                 }
-                AddFracChain([I高频激光塔_GB高频激光塔MKI, IGB高频激光塔MKII, I近程电浆塔, I磁化电浆炮]).Modify(tab防御, 207);
+                AddFracChain([I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮]).Modify(tab防御, 207);
                 AddFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]).Modify(tab防御, 211);
                 AddFracChain([I高斯机枪塔]).Modify(tab防御, 302);
                 AddFracChain([I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱]).Modify(tab防御, 309);
                 AddFracChain([I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元]).Modify(tab防御, 409);
-                AddFracChain([I聚爆加农炮_GB聚爆加农炮MKI, IGB聚爆加农炮MKII]).Modify(tab防御, 502, false);
+                AddFracChain([I聚爆加农炮, IGB电磁加农炮]).Modify(tab防御, 502, false);
                 AddFracChain([I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组]).Modify(tab防御, 509);
                 AddFracChain([I导弹防御塔]).Modify(tab防御, 602);
                 AddFracChain([I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组]).Modify(tab防御, 609);
