@@ -124,12 +124,14 @@ namespace FractionateEverything.Compatibility {
 
         private static void ShowMessageBoxLatestVersion() {
             string version = FractionateEverything.VERSION.Replace(".", "");
-            UIMessageBox.Show(
-                (version + "标题").Translate(), (version + "信息").Translate(),
-                "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
-                UIMessageBox.INFO,
-                null, ResponseFE日志, ResponseFE交流群
-            );
+            if ((version + "信息").Translate() != version + "信息") {
+                UIMessageBox.Show(
+                    (version + "标题").Translate(), (version + "信息").Translate(),
+                    "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
+                    UIMessageBox.INFO,
+                    null, ResponseFE日志, ResponseFE交流群
+                );
+            }
         }
     }
 }

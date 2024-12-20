@@ -66,15 +66,13 @@ namespace FractionateEverything.Compatibility {
             }
 
             //修改创世部分物品、配方的显示位置
-            LDB.recipes.Select(RGB物质回收).GridIndex = 1209;
-            ModifyItemAndItsRecipeGridIndex(I动力引擎, 1, 210);
             idList = [IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器];
             for (int i = 0; i < idList.Count; i++) {
                 ModifyItemAndItsRecipeGridIndex(idList[i], 2, 501 + i);
             }
             idList = [
                 I原型机, I精准无人机, I攻击无人机, I护卫舰, I驱逐舰,
-                I高频激光塔_GB高频激光塔MKI, IGB高频激光塔MKII, I近程电浆塔, I磁化电浆炮,
+                I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮,
                 I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器,
             ];
             for (int i = 0; i < idList.Count; i++) {
@@ -91,8 +89,8 @@ namespace FractionateEverything.Compatibility {
                 ModifyItemAndItsRecipeGridIndex(id, 2);
             }
             ModifyItemAndItsRecipeGridIndex(I高斯机枪塔, tab防御, 301);
-            ModifyItemAndItsRecipeGridIndex(I聚爆加农炮_GB聚爆加农炮MKI, tab防御, 401);
-            ModifyItemAndItsRecipeGridIndex(IGB聚爆加农炮MKII, tab防御, 501);
+            ModifyItemAndItsRecipeGridIndex(I聚爆加农炮, tab防御, 401);
+            ModifyItemAndItsRecipeGridIndex(IGB电磁加农炮, tab防御, 501);
             ModifyItemAndItsRecipeGridIndex(I导弹防御塔, tab防御, 601);
 
             _finished = true;

@@ -1,3 +1,12 @@
+- v2.0.0
+    + 新增单独窗口，用于显示新增内容。
+        + 
+
+- v1.4.4
+    + 适配创世3.0。
+        + 调整部分图标位置。
+        + 自然资源分馏增加盐酸、硝酸、海水。
+
 - v1.4.3
     + 修复原版分馏塔无法将氢分馏为重氢的问题。
     + Fix the issue that hydrogen can not fractionate to deuterium.

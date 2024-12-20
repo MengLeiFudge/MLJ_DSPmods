@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static GetDspData.ProtoID;
@@ -71,16 +72,27 @@ namespace GetDspData {
                 AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
                 null,
                 new(typeof(GetDspData), nameof(WriteDataToFile)) {
-                    after = [LDBToolPlugin.MODGUID, FractionateEverythingGUID]
+                    after = [
+                        LDBToolPlugin.MODGUID, MoreMegaStructureGUID, TheyComeFromVoidGUID, GenesisBookGUID,
+                        FractionateEverythingGUID, "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure"
+                    ],
+                    priority = Priority.Last,
                 }
             );
         }
 
-        static Dictionary<int, string> itemIdNameDic = new();
-        static Dictionary<string, int> modelNameIdDic = new();
-
         private static void WriteDataToFile() {
+            if (MoreMegaStructureEnable && GenesisBookEnable) {
+                if (Harmony.HasAnyPatches("ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure")) {
+                    LogInfo("已正常patch");
+                } else {
+                    LogFatal("未能正常patch");
+                    return;
+                }
+            }
+
             try {
+                Dictionary<int, string> itemIdNameDic = new();
 
                 #region 代码中使用
 
@@ -88,7 +100,10 @@ namespace GetDspData {
                     sw.WriteLine("static class ProtoID");
                     sw.WriteLine("{");
 
-                    foreach (var item in LDB.items.dataArray) {
+                    List<ItemProto> itemList = [..LDB.items.dataArray];
+                    itemList.Sort((p1, p2) => p1.ID - p2.ID);
+                    Dictionary<string, int> modelNameIdDic = new();
+                    foreach (var item in itemList) {
                         int id = item.ID;
                         string name = FormatName(item.name, item.Name);
                         sw.WriteLine($"    internal const int I{name} = {id};");
@@ -107,7 +122,9 @@ namespace GetDspData {
 
                     sw.WriteLine();
 
-                    foreach (var recipe in LDB.recipes.dataArray) {
+                    List<RecipeProto> recipeList = [..LDB.recipes.dataArray];
+                    recipeList.Sort((p1, p2) => p1.ID - p2.ID);
+                    foreach (var recipe in recipeList) {
                         int id = recipe.ID;
                         string name = FormatName(recipe.name, recipe.Name);
                         //if (!regex.IsMatch(name)) {
@@ -117,8 +134,10 @@ namespace GetDspData {
 
                     sw.WriteLine();
 
+                    List<TechProto> techList = [..LDB.techs.dataArray];
+                    techList.Sort((p1, p2) => p1.ID - p2.ID);
                     string lastTechName = "";
-                    foreach (var tech in LDB.techs.dataArray) {
+                    foreach (var tech in techList) {
                         int id = tech.ID;
                         string name = FormatName(tech.name, tech.Name);
                         if (name == lastTechName) {
@@ -345,7 +364,7 @@ namespace GetDspData {
                         recipes.Add(new JObject {
                             { "ID", item.ID + 10000 },
                             { "Type", -1 },
-                            { "Factories", new JArray(new[] { I射线接收站 }) },
+                            { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
                             { "Name", $"[无中生有]{item.name}" },
                             { "Items", new JArray(Array.Empty<int>()) },
                             { "ItemCounts", new JArray(Array.Empty<int>()) },
@@ -360,7 +379,7 @@ namespace GetDspData {
                         recipes.Add(new JObject {
                             { "ID", item.ID + 20000 },
                             { "Type", -1 },
-                            { "Factories", new JArray(new[] { I射线接收站 }) },
+                            { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
                             { "Name", $"[射线接收带透镜]{item.name}" },
                             { "Items", new JArray(new[] { I引力透镜 }) },
                             { "ItemCounts", new JArray(new[] { 1.0 / 120.0 }) },
@@ -403,10 +422,10 @@ namespace GetDspData {
                     //创世有满燃料棒变空燃料棒的配方
                     if (GenesisBookEnable) {
                         int[] factoryID = [
-                            I火力发电厂, I火力发电厂, I火力发电厂,
+                            I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂,
                             I微型聚变发电站_GB裂变能源发电站, I微型聚变发电站_GB裂变能源发电站, I微型聚变发电站_GB裂变能源发电站,
-                            I人造恒星_GB人造恒星MKI, I人造恒星_GB人造恒星MKI, I人造恒星_GB人造恒星MKI,
-                            IGB人造恒星MKII, IGB人造恒星MKII,
+                            I人造恒星_GB朱曦K型人造恒星, I人造恒星_GB朱曦K型人造恒星, I人造恒星_GB朱曦K型人造恒星,
+                            IGB湛曦O型人造恒星, IGB湛曦O型人造恒星,
                         ];
                         int[] itemID = [
                             I液氢燃料棒, IGB煤油燃料棒, IGB四氢双环戊二烯燃料棒,
@@ -499,15 +518,24 @@ namespace GetDspData {
             if (proto.GetSpace() >= 0) {
                 //对于生产建筑，添加耗能、倍率、占地
                 obj.Add("WorkEnergyPerTick", proto.prefabDesc.workEnergyPerTick);
+                //生产设备速率以倍数显示，10000对应1x，20000对应2x
+                //计算公式：(double) this.prefabDesc.assemblerSpeed / 10000.0，单位x（也就是倍数）
+                //采矿设备速率以速度显示，600000对应1/s，300000对应2/s
+                //计算公式：(60.0 / ((double) this.prefabDesc.minerPeriod / 600000.0) * 科技加成，单位每分钟
+                //小矿机初始速度为600000，也就是60/min/矿脉。
+                //但是量化计算器配方是1/s，所以需要传入的速度为10000
                 if (proto.prefabDesc.isAssembler) {
-                    obj.Add("Speed", proto.prefabDesc.assemblerSpeed);
+                    obj.Add("Speed", proto.prefabDesc.assemblerSpeed / 10000.0);
                 } else if (proto.prefabDesc.isLab) {
-                    obj.Add("Speed", proto.prefabDesc.labAssembleSpeed);
-                } else if (proto.ID == I采矿机) {
-                    obj.Add("Speed", 5000);
+                    obj.Add("Speed", proto.prefabDesc.labAssembleSpeed / 10000.0);
+                } else if (proto.prefabDesc.isCollectStation) {
+                    obj.Add("Speed", proto.prefabDesc.stationCollectSpeed / 1.0);
+                } else if (proto.prefabDesc.minerType != EMinerType.None) {
+                    obj.Add("Speed", 600000.0 / proto.prefabDesc.minerPeriod);
                 } else {
-                    //大型采矿机、分馏塔等等都是10000速度
-                    obj.Add("Speed", 10000);
+                    //其余使用10000速度
+                    LogWarning($"{proto.name}制造速度设为1.0");
+                    obj.Add("Speed", 1.0);
                 }
                 //obj.Add("MultipleOutput", proto.ID == I负熵熔炉 && GenesisBookEnable ? 2 : 1);
                 obj.Add("Space", proto.GetSpace());
@@ -663,7 +691,7 @@ namespace GetDspData {
                 Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
                 if (!dic.TryGetValue(1, out float ratio)) {
                     ratio = 0.04f;
-                    LogError("没有启用矩阵分馏或者燃料棒分馏！生成的数据有问题！");
+                    LogError(recipe.name + "未能获取升级分馏概率！生成的数据可能有问题！");
                 }
                 //暂时不考虑损毁的影响，按照无损毁来计算
                 recipe.TimeSpend = (int)(ratio * 100000);
@@ -676,7 +704,7 @@ namespace GetDspData {
                 Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
                 if (!dic.TryGetValue(2, out float ratio)) {
                     ratio = 0.02f;
-                    LogError("没有启用矩阵分馏或者燃料棒分馏！生成的数据有问题！");
+                    LogError(recipe.name + "未能获取降级分馏概率！！生成的数据有问题！");
                 }
                 recipe.TimeSpend = (int)(ratio * 100000);
             } else {

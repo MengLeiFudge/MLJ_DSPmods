@@ -70,7 +70,7 @@ namespace AfterBuildEvent {
 
         public static void ChangeAllModsEnable(bool enable) {
             //不启用的mod
-            List<string> enableIgnore = ["Galactic_Scale-GalacticScale", "essium-PlanetWormhole"];
+            List<string> enableIgnore = ["Galactic_Scale-GalacticScale", "essium-PlanetWormhole", "jinxOAO-SmelterMiner"];
             //不禁用的mod
             List<string> disableIgnore = [
                 "xiaoye97-LDBTool", "CommonAPI-CommonAPI", "CommonAPI-DSPModSave", "nebula-NebulaMultiplayerModApi",
