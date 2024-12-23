@@ -109,7 +109,7 @@ namespace FractionateEverything.Compatibility {
             item.maincraft.GridIndex = item.GridIndex;
         }
 
-        #region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
+        /*#region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
 
         //此处必须使用int而非EProliferatorStrategy，否则会因需要加载类型EProliferatorStrategy而报错找不到创世之书dll
         private const int Nonuse = 0;
@@ -319,6 +319,6 @@ namespace FractionateEverything.Compatibility {
             return true;
         }
 
-        #endregion
+        #endregion*/
     }
 }

@@ -1,11 +1,14 @@
-- v2.0.0
-    + 新增单独窗口，用于显示新增内容。
-        + 
-
 - v1.4.4
-    + 适配创世3.0。
+    + 适配创世之书3.0。
         + 调整部分图标位置。
-        + 自然资源分馏增加盐酸、硝酸、海水。
+        + 自然资源分馏增加盐酸、硝酸、海水、二氧化碳、二氧化硫等。
+        + 移除分馏对量化计算器的适配，以避免创世之书3.1报错问题。
+    + Adapted Genesis Book 3.0.
+        + Adapted some icon positions.
+        + Added hydrochloric acid, nitric acid, seawater, carbon dioxide and sulfur dioxide to natural resources
+          fractionation.
+        + Removed the adaptation of the Quantization Calculator for Fractionation to avoid the problem of error
+          reporting in Genesis Book 3.1.
 
 - v1.4.3
     + 修复原版分馏塔无法将氢分馏为重氢的问题。
