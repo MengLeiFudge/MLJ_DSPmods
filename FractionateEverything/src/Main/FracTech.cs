@@ -11,7 +11,7 @@ namespace FractionateEverything.Main {
     /// 添加科技后，需要Preload、Preload2。
     /// Preload2会初始化unlockRecipeArray，之后LDBTool添加就不会报空指针异常。
     /// </summary>
-    public static class Tech {
+    public static class FracTechManager {
         static readonly List<TechProto> techs = [];
 
         public static void AddTechs() {

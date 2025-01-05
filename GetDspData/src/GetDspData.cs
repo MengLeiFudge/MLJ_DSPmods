@@ -25,6 +25,12 @@ namespace GetDspData {
     //UnlockKey=-1：直接解锁
     //UnlockKey=-2：由黑雾掉落
 
+    //LDB.ItemName 等价于 item.name，item.name 等价于 item.Name.Translate()
+    //name: 推进器  name.Translate: <0xa0>-<0xa0>推进器  Name: 推进器2  Name.Translate: 推进器
+    //name: Thruster  name.Translate: Thruster  Name: 推进器2  Name.Translate: Thruster
+    //name: 制造台<0xa0>Mk.I  name.Translate: 制造台<0xa0>Mk.I  Name: 制造台 Mk.I  Name.Translate: 制造台<0xa0>Mk.I
+    //name: Assembling Machine Mk.I  name.Translate: Assembling Machine Mk.I  Name: 制造台 Mk.I  Name.Translate: Assembling Machine Mk.I
+
     [BepInPlugin(GUID, NAME, VERSION)]
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(MoreMegaStructureGUID, SoftDependency)]

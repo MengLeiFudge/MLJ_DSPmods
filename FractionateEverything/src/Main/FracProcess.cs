@@ -7,18 +7,17 @@ using System.Text;
 using UnityEngine;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.FractionateEverything;
-using static FractionateEverything.Main.FractionateRecipes;
-using Random = System.Random;
+using static FractionateEverything.Main.FracRecipeManager;
 
 namespace FractionateEverything.Main {
     /// <summary>
     /// 修改所有分馏塔的处理逻辑，以及对应的显示。
     /// </summary>
-    public static class FractionatorLogic {
+    public static class FracProcess {
         #region Field
 
         private static readonly Dictionary<int, float> defaultDicNoDestroy = new() { { 1, 0.01f } };
-        private static uint seed2 = (uint)new Random().Next(int.MinValue, int.MaxValue);
+        // private static uint seed2 = (uint)new Random().Next(int.MinValue, int.MaxValue);
         private static int totalUIUpdateTimes = 0;
         private static int fractionatorID = 0;
         private static bool isFirstUpdateUI = true;
@@ -60,9 +59,13 @@ namespace FractionateEverything.Main {
         private const double b = -0.5145731728297580;
         private static readonly Dictionary<int, Dictionary<int, float>> IPFDic = [];
         private static readonly Dictionary<int, float> defaultIPFDic = new() { { 2, 0.005f } };
-        private static int[] veinNeeds = [];
-        private static int[] upgradeNeeds = [];
-        private static int[] downgradeNeeds = [];
+        // private static int[] veinNeeds = [];
+        // private static int[] upgradeNeeds = [];
+        // private static int[] downgradeNeeds = [];
+        // 暂时让分馏塔接受所有物品
+        private static int[] veinNeeds = null;
+        private static int[] upgradeNeeds = null;
+        private static int[] downgradeNeeds = null;
         private static int[] trashRecycleNeeds = [];
 #if DEBUG
         private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
@@ -81,9 +84,9 @@ namespace FractionateEverything.Main {
             MaxBeltSpeed = Math.Min(MaxBeltSpeed, 60);
             MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
             float ratio = MaxBeltSpeed / 30.0f;
-            FracFluidInputMax = (int)(FractionatorBuildings.FractionatorPrefabDesc.fracFluidInputMax * ratio);
-            FracProductOutputMax = (int)(FractionatorBuildings.FractionatorPrefabDesc.fracProductOutputMax * ratio);
-            FracFluidOutputMax = (int)(FractionatorBuildings.FractionatorPrefabDesc.fracFluidOutputMax * ratio);
+            FracFluidInputMax = (int)(FracItemManager.FractionatorPrefabDesc.fracFluidInputMax * ratio);
+            FracProductOutputMax = (int)(FracItemManager.FractionatorPrefabDesc.fracProductOutputMax * ratio);
+            FracFluidOutputMax = (int)(FracItemManager.FractionatorPrefabDesc.fracFluidOutputMax * ratio);
 
             //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
             incTableFixedRatio = new double[Cargo.incTableMilli.Length];
@@ -278,55 +281,55 @@ namespace FractionateEverything.Main {
             //从科技获取是否分馏永动
             EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
 
-            //更新分馏塔可接受的物品
-            RecipeProto[] dataArray = LDB.recipes.dataArray;
-            List<RecipeProto> list = [];
-            List<int> list2 = [];
-            List<int> veinList = [];
-            List<int> upgradeList = [];
-            List<int> downgradeList = [];
-            foreach (RecipeProto r in dataArray) {
-                if (r.Type != ERecipeType.Fractionate) {
-                    continue;
-                }
-                int inputID = r.Items[0];
-                int outputID = r.Results[0];
-                if (inputID is >= I黑雾矩阵 and <= I能量碎片
-                    && outputID is >= I黑雾矩阵 and <= I能量碎片) {
-                    //如果全为黑雾独有掉落，需要确保这两个黑雾物品都已解锁黑雾掉落
-                    if (!GameMain.history.enemyDropItemUnlocked.Contains(inputID)
-                        || !GameMain.history.enemyDropItemUnlocked.Contains(outputID)) {
-                        GameMain.history.recipeUnlocked.Remove(r.ID);
-                        continue;
-                    }
-                    GameMain.history.recipeUnlocked.Add(r.ID);
-                }
-                if (GameMain.history.RecipeUnlocked(r.ID)) {
-                    list.Add(r);
-                    list2.Add(r.Items[0]);
-                    //下面的判定要特别注意，必须确认是同一个配方
-                    if (GetItemNaturalResource(r.Items[0]) == r.Results[0]) {
-                        veinList.Add(r.Items[0]);
-                    } else if (GetItemUpgrade(r.Items[0]) == r.Results[0]) {
-                        upgradeList.Add(r.Items[0]);
-                        downgradeList.Add(r.Results[0]);
-                    }
-                }
-            }
-            if (RecipeProto.fractionatorRecipes.Length != list.Count
-                || veinNeeds.Length != veinList.Count
-                || upgradeNeeds.Length != upgradeList.Count
-                || downgradeNeeds.Length != downgradeList.Count) {
-                LogInfo($"fractionatorRecipes.Length: {RecipeProto.fractionatorRecipes.Length} -> {list.Count}");
-                RecipeProto.fractionatorRecipes = list.ToArray();
-                RecipeProto.fractionatorNeeds = list2.ToArray();
-                LogInfo($"veinNeeds.Length: {veinNeeds.Length} -> {veinList.Count}");
-                veinNeeds = veinList.ToArray();
-                LogInfo($"upgradeNeeds.Length: {upgradeNeeds.Length} -> {upgradeList.Count}");
-                upgradeNeeds = upgradeList.ToArray();
-                LogInfo($"downgradeNeeds.Length: {downgradeNeeds.Length} -> {downgradeList.Count}");
-                downgradeNeeds = downgradeList.ToArray();
-            }
+            // //更新分馏塔可接受的物品
+            // RecipeProto[] dataArray = LDB.recipes.dataArray;
+            // List<RecipeProto> list = [];
+            // List<int> list2 = [];
+            // List<int> veinList = [];
+            // List<int> upgradeList = [];
+            // List<int> downgradeList = [];
+            // foreach (RecipeProto r in dataArray) {
+            //     if (r.Type != ERecipeType.Fractionate) {
+            //         continue;
+            //     }
+            //     int inputID = r.Items[0];
+            //     int outputID = r.Results[0];
+            //     if (inputID is >= I黑雾矩阵 and <= I能量碎片
+            //         && outputID is >= I黑雾矩阵 and <= I能量碎片) {
+            //         //如果全为黑雾独有掉落，需要确保这两个黑雾物品都已解锁黑雾掉落
+            //         if (!GameMain.history.enemyDropItemUnlocked.Contains(inputID)
+            //             || !GameMain.history.enemyDropItemUnlocked.Contains(outputID)) {
+            //             GameMain.history.recipeUnlocked.Remove(r.ID);
+            //             continue;
+            //         }
+            //         GameMain.history.recipeUnlocked.Add(r.ID);
+            //     }
+            //     if (GameMain.history.RecipeUnlocked(r.ID)) {
+            //         list.Add(r);
+            //         list2.Add(r.Items[0]);
+            //         //下面的判定要特别注意，必须确认是同一个配方
+            //         if (GetItemNaturalResource(r.Items[0]) == r.Results[0]) {
+            //             veinList.Add(r.Items[0]);
+            //         } else if (GetItemUpgrade(r.Items[0]) == r.Results[0]) {
+            //             upgradeList.Add(r.Items[0]);
+            //             downgradeList.Add(r.Results[0]);
+            //         }
+            //     }
+            // }
+            // if (RecipeProto.fractionatorRecipes.Length != list.Count
+            //     || veinNeeds.Length != veinList.Count
+            //     || upgradeNeeds.Length != upgradeList.Count
+            //     || downgradeNeeds.Length != downgradeList.Count) {
+            //     LogInfo($"fractionatorRecipes.Length: {RecipeProto.fractionatorRecipes.Length} -> {list.Count}");
+            //     RecipeProto.fractionatorRecipes = list.ToArray();
+            //     RecipeProto.fractionatorNeeds = list2.ToArray();
+            //     LogInfo($"veinNeeds.Length: {veinNeeds.Length} -> {veinList.Count}");
+            //     veinNeeds = veinList.ToArray();
+            //     LogInfo($"upgradeNeeds.Length: {upgradeNeeds.Length} -> {upgradeList.Count}");
+            //     upgradeNeeds = upgradeList.ToArray();
+            //     LogInfo($"downgradeNeeds.Length: {downgradeNeeds.Length} -> {downgradeList.Count}");
+            //     downgradeNeeds = downgradeList.ToArray();
+            // }
         }
 
         #endregion
@@ -350,28 +353,28 @@ namespace FractionateEverything.Main {
         /// </summary>
         /// <param name="randomVal">0-1的随机数</param>
         /// <param name="successRatePlus">概率加成，例如增产剂提速100%，则传入2.0</param>
-        /// <param name="dic">分馏成功率与产物数关系的字典</param>
+        /// <param name="recipe">分馏配方</param>
         /// <returns>产物数目。-1表示原料损毁；0表示原料不变，流动输出；＞0表示生成产物</returns>
-        private static int GetOutputNum(float randomVal, float successRatePlus, Dictionary<int, float> dic) {
-            //原料丢失判定
-            if (enableDestroy && dic.TryGetValue(-1, out float missRate)) {
-                seed2 = (uint)((int)((ulong)((seed2 % 2147483646 + 1) * 48271L) % 2147483647uL) - 1);
-                if (seed2 / 2147483646.0 < missRate) {
-                    return -1;
+        private static int[] GetOutput(float randomVal, float successRatePlus, FracRecipe recipe) {
+            //如果配方还未解锁，则直接流出
+            if (!recipe.unlocked) {
+                return [0, 0];
+            }
+            //根据概率进行处理，注意增产点数只影响物品转换，不影响损毁
+            float val = 0;
+            for (int i = 0; i < recipe.outputRatio.Count; i++) {
+                if (recipe.outputNum[i] == -1) {
+                    //损毁概率不受增产点数影响
+                    val += recipe.outputRatio[i];//todo: outputRatio没有考虑配方等级加成
+                } else {
+                    //普通概率受增产点数影响
+                    val += recipe.outputRatio[i] * successRatePlus;//todo: outputRatio没有考虑配方等级加成
+                }
+                if (randomVal < val) {
+                    return [recipe.outputID[i], recipe.outputNum[i]];//todo: outputNum没有考虑配方等级加成
                 }
             }
-            //分馏是否成功判定
-            float value = 0;
-            foreach (KeyValuePair<int, float> p in dic) {
-                if (p.Key == -1) {
-                    continue;//不要用linq，效率低
-                }
-                value += p.Value * successRatePlus;
-                if (randomVal < value) {
-                    return p.Key;
-                }
-            }
-            return 0;
+            return [0, 0];
         }
 
         /// <summary>
@@ -382,6 +385,9 @@ namespace FractionateEverything.Main {
         public static bool FractionatorComponent_InternalUpdate_Prefix(ref FractionatorComponent __instance,
             PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
             ref uint __result) {
+            //连接实例与新增字段
+            __instance.CheckOutput(factory);
+
             if (power < 0.1f) {
                 __result = 0u;
                 return false;
@@ -390,41 +396,20 @@ namespace FractionateEverything.Main {
             int buildingID = factory.entityPool[__instance.entityId].protoId;
             //配方状态错误的情况下，修改配方状态（在分馏塔升降级时会有这样的现象）
             //为了让分馏塔升降级之前内部残留的物品流出去，添加abnormalProcess标记
-            //abnormalProcess为true时，分馏塔相当于不工作，等待内部物品全部流出
-            bool abnormalProcess = false;
-            if (buildingID == I分馏塔) {
-                if (__instance.fluidId != 0 && (__instance.fluidId != I氢 || __instance.productId != I重氢)) {
-                    abnormalProcess = true;
-                    __instance.fluidOutputCount += __instance.fluidInputCount;
-                    __instance.fluidInputCount = 0;
-                    __instance.productOutputCount = 0;
-                    __instance.produceProb = 0.00f;
-                    signPool[__instance.entityId].iconId0 = 0U;
-                    signPool[__instance.entityId].iconType = 0U;
-                }
-            } else if (buildingID is IFE自然资源分馏塔 or IFE升级分馏塔 or IFE降级分馏塔) {
-                int tempProductId = buildingID switch {
-                    IFE自然资源分馏塔 => GetItemNaturalResource(__instance.fluidId),
-                    IFE升级分馏塔 => GetItemUpgrade(__instance.fluidId),
-                    _ => GetItemDowngrade(__instance.fluidId),
-                };
-                if (__instance.fluidId > 0 && tempProductId == 0) {
-                    //如果正在处理一个当前无法处理的物品
-                    abnormalProcess = true;
-                    __instance.fluidOutputCount += __instance.fluidInputCount;
-                    __instance.fluidInputCount = 0;
-                    __instance.productOutputCount = 0;
-                    __instance.produceProb = 0.00f;
-                    signPool[__instance.entityId].iconId0 = 0U;
-                    signPool[__instance.entityId].iconType = 0U;
-                } else if (__instance.fluidId > 0 && tempProductId != 0 && __instance.productId != tempProductId) {
-                    //如果正在处理一个当前可以处理的物品，但是产物id不对
-                    __instance.productId = tempProductId;
-                    __instance.produceProb = 0.01f;
-                    signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
-                    signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
-                }
-            } else if (buildingID == IFE垃圾回收分馏塔) {
+            //recipe为null时，分馏塔相当于不工作，等待内部物品全部流出
+            FracRecipe recipe = buildingID switch {
+                I分馏塔 => __instance.fluidId == I氢 ? DeuteriumFracRecipe : null,
+                IFE自然资源分馏塔 => GetRecipe1(__instance.fluidId),
+                IFE升级分馏塔 => GetRecipe2(__instance.fluidId),
+                IFE降级分馏塔 => GetRecipe3(__instance.fluidId),
+                IFE点数聚集分馏塔 => PointsAggregateRecipe,
+                IFE增产分馏塔 => GetRecipe4(__instance.fluidId),
+                _ => null,
+            };
+            if (recipe != null && !recipe.unlocked) {
+                recipe = null;
+            }
+            if (buildingID == IFE垃圾回收分馏塔) {
                 //物品ID
                 //  fluidId              无用，固定为沙土
                 //  productId            必须是地基
@@ -445,7 +430,8 @@ namespace FractionateEverything.Main {
                 //  productOutputTotal   产出地基总数
                 if (__instance.fluidId != I沙土) {
                     __instance.fluidId = I沙土;
-                    __instance.productId = I地基;
+                    __instance.productId().Clear();
+                    __instance.productId().Add(I地基);
                     __instance.produceProb = 0.01f;
                     signPool[__instance.entityId].iconId0 = I沙土;
                     signPool[__instance.entityId].iconType = 1U;
@@ -455,7 +441,8 @@ namespace FractionateEverything.Main {
                     __instance.fluidInputCargoCount = 1;
                     __instance.fluidOutputCount = 0;
                     __instance.fluidOutputInc = 0;
-                    __instance.productOutputCount = 0;
+                    __instance.productOutputCount().Clear();
+                    __instance.productOutputCount().Add(0);
                     __instance.fluidOutputTotal = 0;
                     __instance.productOutputTotal = 0;
                 }
@@ -548,50 +535,45 @@ namespace FractionateEverything.Main {
                     float randomVal = (float)(__instance.seed / 2147483646.0);
                     //分馏成功率加成，2.0表示加成100%
                     float successRatePlus = 1.0f;
-                    int outputNum;
-                    if (buildingID == IFE增产分馏塔) {
-                        //增产0点则概率为0，增产10点则概率为IPFDic
-                        //增产点数以40%为基准，按加速或增产的最高效果提升分馏成功率
-                        successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
-                        //分馏基础概率由物品点数决定，点数越高的物品越难分馏
-                        if (!IPFDic.TryGetValue(inputItemID, out Dictionary<int, float> dic)) {
-                            dic = defaultIPFDic;
-                        }
-                        outputNum = GetOutputNum(randomVal, successRatePlus, dic);
-                    } else if (buildingID == IFE点数聚集分馏塔) {
+                    if (buildingID == IFE点数聚集分馏塔) {
                         //增产点数与分馏成功率成正比，与加速或增产效果无关
                         //基础概率为10%
                         successRatePlus = __instance.fluidInputInc >= 10
                             ? successRatePlus * __instance.fluidInputInc / __instance.fluidInputCount * 2.5f
                             : 0;
-                        outputNum = GetOutputNum(randomVal, successRatePlus, defaultDicNoDestroy);
+                    } else if (buildingID == IFE增产分馏塔) {
+                        //增产0点则概率为0，增产10点则概率为IPFDic
+                        //增产点数以40%为基准，按加速或增产的最高效果提升分馏成功率
+                        successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
                     } else {
                         //增产点数以100%为基准，按加速或增产的最高效果提升分馏成功率
                         successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                        //根据配方确定输出
-                        Dictionary<int, float> dic = buildingID switch {
-                            IFE自然资源分馏塔 => GetNumRatioNaturalResource(inputItemID),
-                            IFE升级分馏塔 => GetNumRatioUpgrade(inputItemID),
-                            IFE降级分馏塔 => GetNumRatioDowngrade(inputItemID),
-                            _ => defaultDicNoDestroy//I分馏塔
-                        };
-                        outputNum = GetOutputNum(randomVal, successRatePlus, dic);
+                    }
+                    //outputIDNum[0]表示产物ID（负数损毁，0不变，其他生成产物），[1]表示产物数目（仅在[0]为正数时有意义）
+                    int[] outputIDNum = GetOutput(randomVal, successRatePlus, recipe);
+                    if (buildingID == IFE点数聚集分馏塔 && outputIDNum[0] > 0) {
+                        outputIDNum[0] = __instance.fluidId;
                     }
                     //如果分馏永动已研究，并且输出缓达到上限的一半，则不会分馏出物品
                     if (EnableFracForever
                         && buildingID != IFE升级分馏塔
-                        && buildingID != IFE降级分馏塔
-                        && __instance.productOutputCount >= __instance.productOutputMax / 2) {
-                        outputNum = 0;
+                        && buildingID != IFE降级分馏塔) {
+                        for (int i = 0; i < __instance.productOutputCount().Count; i++) {
+                            if (__instance.productOutputCount()[i] >= __instance.productOutputMax / 2) {
+                                outputIDNum[0] = 0;
+                                outputIDNum[1] = 0;
+                                break;
+                            }
+                        }
                     }
-                    __instance.fractionSuccess = outputNum > 0;
+                    __instance.fractionSuccess = outputIDNum[0] > 0;
 
                     #endregion
 
                     #region 根据分馏结果处理原料输入、原料输出、产物输出
 
-                    if (outputNum > 0) {
-                        //分馏成功
+                    if (outputIDNum[0] > 0) {
+                        //分馏出产物
                         __instance.fluidInputCount--;
                         if (buildingID == IFE点数聚集分馏塔) {
                             __instance.fluidInputInc -= 10;
@@ -602,8 +584,17 @@ namespace FractionateEverything.Main {
                         if (__instance.fluidInputCargoCount < 0f) {
                             __instance.fluidInputCargoCount = 0f;
                         }
-                        __instance.productOutputCount += outputNum;
-                        __instance.productOutputTotal += outputNum;
+
+                        List<int> productId = __instance.productId();
+                        List<int> productOutputCount = __instance.productOutputCount();
+                        int index = productId.IndexOf(outputIDNum[0]);
+                        if (index == -1) {
+                            index = productId.Count;
+                            productId.Add(outputIDNum[0]);
+                            productOutputCount.Add(0);
+                        }
+                        productOutputCount[index] += outputIDNum[1];
+                        __instance.productOutputTotal += outputIDNum[1];
                         switch (buildingID) {
                             case IFE点数聚集分馏塔:
                                 //不计算生成、消耗
@@ -611,9 +602,9 @@ namespace FractionateEverything.Main {
                             case IFE自然资源分馏塔:
                             case IFE增产分馏塔:
                                 //只计算多生成的部分
-                                if (outputNum > 1) {
+                                if (outputIDNum[1] > 1) {
                                     lock (productRegister) {
-                                        productRegister[outputItemID] += outputNum - 1;
+                                        productRegister[outputItemID] += outputIDNum[1] - 1;
                                     }
                                 }
                                 break;
@@ -622,19 +613,19 @@ namespace FractionateEverything.Main {
                                     consumeRegister[inputItemID]++;
                                 }
                                 lock (productRegister) {
-                                    productRegister[outputItemID] += outputNum;
+                                    productRegister[outputItemID] += outputIDNum[1];
                                 }
                                 break;
                         }
                     } else {
-                        //分馏失败
+                        //没分馏出物品，正常流出或者原料损毁
                         __instance.fluidInputCount--;
                         __instance.fluidInputInc -= fluidInputAvgInc;
                         __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
                         if (__instance.fluidInputCargoCount < 0f) {
                             __instance.fluidInputCargoCount = 0f;
                         }
-                        if (outputNum == 0) {
+                        if (outputIDNum[1] == 0) {
                             //分馏失败，保留原料
                             __instance.fluidOutputCount++;
                             __instance.fluidOutputTotal++;
@@ -733,7 +724,7 @@ namespace FractionateEverything.Main {
                     }
                 } else if (!isOutput
                            && __instance.fluidInputCargoCount < __instance.fluidInputMax
-                           && !abnormalProcess) {
+                           && recipe != null) {
                     if (inputItemID > 0) {
                         if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null,
                                 out stack, out inc)
@@ -762,7 +753,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemNaturalResource(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -774,7 +765,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemUpgrade(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -786,7 +777,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemDowngrade(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -874,7 +865,7 @@ namespace FractionateEverything.Main {
                     }
                 } else if (!isOutput
                            && __instance.fluidInputCargoCount < __instance.fluidInputMax
-                           && !abnormalProcess) {
+                           && recipe != null) {
                     if (inputItemID > 0) {
                         if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null,
                                 out stack, out inc)
@@ -903,7 +894,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemNaturalResource(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -915,7 +906,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemUpgrade(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -927,7 +918,7 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
-                                __instance.productId = GetItemDowngrade(input);
+                                __instance.productId = recipe.outputID[0];
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                                 signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -1218,65 +1209,66 @@ namespace FractionateEverything.Main {
             __instance.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
             lastSpeedText = __instance.speedText.text;
             //整理要显示的内容
-            int fluidInputAvgInc = fractionator.fluidInputCount > 0
-                ? fractionator.fluidInputInc / fractionator.fluidInputCount
-                : 0;
-            float successRatePlus = 1.0f;
-            Dictionary<int, float> dic;
-            switch (buildingID) {
-                case IFE自然资源分馏塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    dic = GetNumRatioNaturalResource(fractionator.fluidId);
-                    break;
-                case IFE升级分馏塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    dic = GetNumRatioUpgrade(fractionator.fluidId);
-                    break;
-                case IFE降级分馏塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    dic = GetNumRatioDowngrade(fractionator.fluidId);
-                    break;
-                case IFE点数聚集分馏塔:
-                    successRatePlus = fractionator.fluidInputInc >= 10
-                        ? successRatePlus * fractionator.fluidInputInc / fractionator.fluidInputCount * 2.5f
-                        : 0;
-                    dic = defaultDicNoDestroy;
-                    break;
-                case IFE增产分馏塔:
-                    successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
-                    dic = IPFDic[fractionator.fluidId];
-                    break;
-                default://I分馏塔，I垃圾回收分馏塔
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    dic = defaultDicNoDestroy;
-                    break;
-            }
-            //根据建筑类型、初步的分馏概率表、输入情况，计算实际的分馏概率表
+            // int fluidInputAvgInc = fractionator.fluidInputCount > 0
+            //     ? fractionator.fluidInputInc / fractionator.fluidInputCount
+            //     : 0;
+            // float successRatePlus = 1.0f;
+            // List<int> idList =
+            // switch (buildingID) {
+            //     case IFE自然资源分馏塔:
+            //         successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+            //         dic = GetNumRatioNaturalResource(fractionator.fluidId);
+            //         break;
+            //     case IFE升级分馏塔:
+            //         successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+            //         dic = GetNumRatioUpgrade(fractionator.fluidId);
+            //         break;
+            //     case IFE降级分馏塔:
+            //         successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+            //         dic = GetNumRatioDowngrade(fractionator.fluidId);
+            //         break;
+            //     case IFE点数聚集分馏塔:
+            //         successRatePlus = fractionator.fluidInputInc >= 10
+            //             ? successRatePlus * fractionator.fluidInputInc / fractionator.fluidInputCount * 2.5f
+            //             : 0;
+            //         dic = defaultDicNoDestroy;
+            //         break;
+            //     case IFE增产分馏塔:
+            //         successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
+            //         dic = IPFDic[fractionator.fluidId];
+            //         break;
+            //     default://I分馏塔，I垃圾回收分馏塔
+            //         successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+            //         dic = defaultDicNoDestroy;
+            //         break;
+            // }
+            // //根据建筑类型、初步的分馏概率表、输入情况，计算实际的分馏概率表
+            // float flowRatio = 1.0f;
+            // StringBuilder sb1 = new StringBuilder();
+            // if (EnableFracForever
+            //     && buildingID != IFE升级分馏塔
+            //     && fractionator.productOutputCount >= fractionator.productOutputMax / 2) {
+            //     sb1.Append("0(0%)\n");
+            // } else if (buildingID == IFE点数聚集分馏塔) {
+            //     float ratio = 0.01f * successRatePlus;
+            //     sb1.Append($"1({ratio.FormatP()})\n");
+            //     flowRatio -= ratio;
+            // } else {
+            //     foreach (var p in dic) {
+            //         if (p.Key < 0) {
+            //             continue;
+            //         }
+            //         float ratio = p.Value * successRatePlus;
+            //         sb1.Append($"{p.Key}({ratio.FormatP()})\n");
+            //         flowRatio -= ratio;
+            //     }
+            // }
+            // //获取损毁概率
+            // dic.TryGetValue(-1, out float destroyRatio);
+
+            StringBuilder sb1 = new StringBuilder("还没改凑合看");
             float flowRatio = 1.0f;
-            StringBuilder sb1 = new StringBuilder();
-            if (EnableFracForever
-                && buildingID != IFE升级分馏塔
-                && fractionator.productOutputCount >= fractionator.productOutputMax / 2) {
-                sb1.Append("0(0%)\n");
-            } else if (buildingID == IFE点数聚集分馏塔) {
-                float ratio = 0.01f * successRatePlus;
-                sb1.Append($"1({ratio.FormatP()})\n");
-                flowRatio -= ratio;
-            } else {
-                foreach (var p in dic) {
-                    if (p.Key < 0) {
-                        continue;
-                    }
-                    float ratio = p.Value * successRatePlus;
-                    sb1.Append($"{p.Key}({ratio.FormatP()})\n");
-                    flowRatio -= ratio;
-                }
-            }
-            //获取损毁概率
-            dic.TryGetValue(-1, out float destroyRatio);
-            if (!enableDestroy) {
-                destroyRatio = 0.0f;
-            }
+            float destroyRatio = 1.0f;
 
             //刷新概率显示内容
             string s1;

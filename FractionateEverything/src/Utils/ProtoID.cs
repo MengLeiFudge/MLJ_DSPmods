@@ -323,6 +323,7 @@
         internal const int IFE垃圾回收分馏塔 = 2324;
         internal const int IFE点数聚集分馏塔 = 2325;
         internal const int IFE增产分馏塔 = 2326;
+        internal const int IFE老虎机分馏塔 = 2327;
         internal const int IMS铁金属重构装置 = 9493;
         internal const int IMS铜金属重构装置 = 9494;
         internal const int IMS高纯硅重构装置 = 9495;
@@ -442,6 +443,7 @@
         internal const int MFE垃圾回收分馏塔 = 534;
         internal const int MFE点数聚集分馏塔 = 535;
         internal const int MFE增产分馏塔 = 536;
+        internal const int MFE老虎机分馏塔 = 537;
         internal const int MMS铁金属重构装置 = 73;
         internal const int MMS铜金属重构装置 = 73;
         internal const int MMS高纯硅重构装置 = 73;
@@ -732,6 +734,7 @@
         internal const int RFE垃圾回收分馏塔 = 1004;
         internal const int RFE点数聚集分馏塔 = 1005;
         internal const int RFE增产分馏塔 = 1006;
+        internal const int RFE老虎机分馏塔 = 1007;
         internal const int RMS制造台快速组装 = 754;
         internal const int RMS传送带快速组装 = 551;
         internal const int RMS化工厂快速组装 = 756;

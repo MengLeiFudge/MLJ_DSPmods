@@ -87,20 +87,20 @@ namespace FractionateEverything.Main {
                 new(30, baseY - 40 * 0),
                 ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
 
-            CreateUIToggle("fe-ed-setting",
-                "EnableDestroy".Translate(), "EnableDestroyAdditionalText".Translate(),
-                new(30, baseY - 40 * 1),
-                enableDestroy, out EnableDestroyToggle);
-
-            CreateUIToggle("fe-efrf-setting",
-                "EnableFuelRodFrac".Translate(), "EnableFuelRodFracAdditionalText".Translate(),
-                new(30, baseY - 40 * 2),
-                enableFuelRodFrac, out EnableFuelRodFracToggle);
-
-            CreateUIToggle("fe-emf-setting",
-                "EnableMatrixFrac".Translate(), "EnableMatrixFracAdditionalText".Translate(),
-                new(30, baseY - 40 * 3),
-                enableMatrixFrac, out EnableMatrixFracToggle);
+            // CreateUIToggle("fe-ed-setting",
+            //     "EnableDestroy".Translate(), "EnableDestroyAdditionalText".Translate(),
+            //     new(30, baseY - 40 * 1),
+            //     enableDestroy, out EnableDestroyToggle);
+            //
+            // CreateUIToggle("fe-efrf-setting",
+            //     "EnableFuelRodFrac".Translate(), "EnableFuelRodFracAdditionalText".Translate(),
+            //     new(30, baseY - 40 * 2),
+            //     enableFuelRodFrac, out EnableFuelRodFracToggle);
+            //
+            // CreateUIToggle("fe-emf-setting",
+            //     "EnableMatrixFrac".Translate(), "EnableMatrixFracAdditionalText".Translate(),
+            //     new(30, baseY - 40 * 3),
+            //     enableMatrixFrac, out EnableMatrixFracToggle);
 
             CreateUIToggle("fe-ebat-setting",
                 "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
@@ -118,9 +118,9 @@ namespace FractionateEverything.Main {
 
         private static void Reset() {
             IconVersionComboBox.itemIndex = (int)IconVersionEntry.DefaultValue - 1;
-            EnableDestroyToggle.isOn = (bool)EnableDestroyEntry.DefaultValue;
-            EnableFuelRodFracToggle.isOn = (bool)EnableFuelRodFracEntry.DefaultValue;
-            EnableMatrixFracToggle.isOn = (bool)EnableMatrixFracEntry.DefaultValue;
+            // EnableDestroyToggle.isOn = (bool)EnableDestroyEntry.DefaultValue;
+            // EnableFuelRodFracToggle.isOn = (bool)EnableFuelRodFracEntry.DefaultValue;
+            // EnableMatrixFracToggle.isOn = (bool)EnableMatrixFracEntry.DefaultValue;
             EnableBuildingAsTrashToggle.isOn = (bool)EnableBuildingAsTrashEntry.DefaultValue;
         }
 
