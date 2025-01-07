@@ -187,7 +187,7 @@ namespace FractionateEverything.Main {
                 AddFracRecipe(I煤矿, defaultNumRatioCommonVein).Modify(tab分馏1, 107, T冶炼提纯);
                 AddFracRecipe(I石矿, defaultNumRatioCommonVein).Modify(tab分馏1, 108);
                 AddFracRecipe(IGB硫矿, defaultNumRatioCommonVein).Modify(tab分馏1, 109, TGB矿物处理);
-                AddFracRecipe(IGB放射性矿物, defaultNumRatioCommonVein).Modify(tab精炼, 402, TGB放射性矿物提炼);
+                AddFracRecipe(IGB放射性矿物, defaultNumRatioCommonVein).Modify(tab精炼, 302, TGB放射性矿物提炼);
 
                 AddFracRecipe(I原油, defaultNumRatioCommonVein).Modify(tab分馏1, 201, TGB焦油精炼);
                 AddFracRecipe(IGB海水, defaultNumRatioCommonVein).Modify(tab分馏1, 202);
@@ -202,8 +202,8 @@ namespace FractionateEverything.Main {
                 AddFracRecipe(IGB氦, defaultNumRatioCommonVein).Modify(tab分馏1, 303);
                 AddFracRecipe(IGB氮, defaultNumRatioCommonVein).Modify(tab分馏1, 304, T氢燃料棒_GB气体冷凝);
                 AddFracRecipe(IGB氧, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
-                AddFracRecipe(IGB二氧化碳, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
-                AddFracRecipe(IGB二氧化硫, defaultNumRatioCommonVein).Modify(tab分馏1, 305);
+                AddFracRecipe(IGB二氧化碳, defaultNumRatioCommonVein).Modify(tab分馏1, 306);
+                AddFracRecipe(IGB二氧化硫, defaultNumRatioCommonVein).Modify(tab分馏1, 307);
 
                 AddFracRecipe(I金伯利矿石, defaultNumRatioRealVein).Modify(tab分馏1, 504, T晶体冶炼);
                 AddFracRecipe(I分形硅石, defaultNumRatioRealVein).Modify(tab分馏1, 505, T粒子可控);
