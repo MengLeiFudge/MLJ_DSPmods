@@ -13,9 +13,6 @@ namespace FractionateEverything.Main {
         private const string details = "UI Root/Overlay Canvas/Top Windows/Option Window/details";
         private static bool _initFinished;
         private static UIComboBox IconVersionComboBox;
-        private static UIToggle EnableDestroyToggle;
-        private static UIToggle EnableFuelRodFracToggle;
-        private static UIToggle EnableMatrixFracToggle;
         private static UIToggle EnableBuildingAsTrashToggle;
 
         /// <summary>
@@ -87,24 +84,9 @@ namespace FractionateEverything.Main {
                 new(30, baseY - 40 * 0),
                 ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
 
-            // CreateUIToggle("fe-ed-setting",
-            //     "EnableDestroy".Translate(), "EnableDestroyAdditionalText".Translate(),
-            //     new(30, baseY - 40 * 1),
-            //     enableDestroy, out EnableDestroyToggle);
-            //
-            // CreateUIToggle("fe-efrf-setting",
-            //     "EnableFuelRodFrac".Translate(), "EnableFuelRodFracAdditionalText".Translate(),
-            //     new(30, baseY - 40 * 2),
-            //     enableFuelRodFrac, out EnableFuelRodFracToggle);
-            //
-            // CreateUIToggle("fe-emf-setting",
-            //     "EnableMatrixFrac".Translate(), "EnableMatrixFracAdditionalText".Translate(),
-            //     new(30, baseY - 40 * 3),
-            //     enableMatrixFrac, out EnableMatrixFracToggle);
-
             CreateUIToggle("fe-ebat-setting",
                 "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
-                new(30, baseY - 40 * 4),
+                new(30, baseY - 40 * 1),
                 enableBuildingAsTrash, out EnableBuildingAsTrashToggle);
 
             _initFinished = true;
@@ -118,9 +100,6 @@ namespace FractionateEverything.Main {
 
         private static void Reset() {
             IconVersionComboBox.itemIndex = (int)IconVersionEntry.DefaultValue - 1;
-            // EnableDestroyToggle.isOn = (bool)EnableDestroyEntry.DefaultValue;
-            // EnableFuelRodFracToggle.isOn = (bool)EnableFuelRodFracEntry.DefaultValue;
-            // EnableMatrixFracToggle.isOn = (bool)EnableMatrixFracEntry.DefaultValue;
             EnableBuildingAsTrashToggle.isOn = (bool)EnableBuildingAsTrashEntry.DefaultValue;
         }
 
@@ -129,9 +108,6 @@ namespace FractionateEverything.Main {
         public static void UIOptionWindow_OnApplyClick_Postfix() =>
             SetConfig(
                 IconVersionComboBox.itemIndex + 1,
-                EnableDestroyToggle.isOn,
-                EnableFuelRodFracToggle.isOn,
-                EnableMatrixFracToggle.isOn,
                 EnableBuildingAsTrashToggle.isOn
             );
     }

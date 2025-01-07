@@ -16,7 +16,10 @@ using System.Threading;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static GetDspData.ProtoID;
-using static FractionateEverything.Main.FractionateRecipes;
+using static FractionateEverything.Main.FracProcess;
+using static FractionateEverything.Main.FracRecipeManager;
+using static FractionateEverything.Main.FracRecipe;
+using static FractionateEverything.Main.FracItemManager;
 
 namespace GetDspData {
     //item.UnlockKey
@@ -550,7 +553,7 @@ namespace GetDspData {
         }
 
         static void addIncFractorRecipe(ItemProto item, JArray recipes) {
-            Dictionary<int, Dictionary<int, float>> IPFDic = Traverse.Create(typeof(FractionatorLogic)).Field("IPFDic")
+            Dictionary<int, Dictionary<int, float>> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
                 .GetValue<Dictionary<int, Dictionary<int, float>>>();
             float ratio = IPFDic[item.ID].Values.First();//这就是10点数情况下，对应的比例
             recipes.Add(new JObject {
@@ -579,23 +582,23 @@ namespace GetDspData {
                     return;
                 }
                 //剩下必然是万物分馏的配方
-                //判定条件不能用proto.Items[0] == proto.Results[0]，因为还有增产剂MK3自分馏、微型粒子对撞机自分馏等
-                if (isResourceFrac(proto.Items[0])) {
-                    RecipeProto proto2 = CopyRecipeProto(proto);
-                    adjustRecipeFEFrac(proto2, IFE自然资源分馏塔);
-                    addRecipe(proto2, add, [IFE自然资源分馏塔]);
-                } else {
-                    RecipeProto proto2 = CopyRecipeProto(proto);
-                    adjustRecipeFEFrac(proto2, IFE升级分馏塔);
-                    //有些配方使用升降级分馏塔但是自分馏，此时显然要使用降级分馏塔获取最大速率，所以升级分馏塔无用
-                    if (proto2.Items[0] != proto2.Results[0]) {
-                        addRecipe(proto2, add, [IFE升级分馏塔]);
-                    }
-
-                    RecipeProto proto3 = CopyRecipeProto(proto);
-                    adjustRecipeFEFrac(proto3, IFE降级分馏塔);
-                    addRecipe(proto3, add, [IFE降级分馏塔]);
-                }
+                // //判定条件不能用proto.Items[0] == proto.Results[0]，因为还有增产剂MK3自分馏、微型粒子对撞机自分馏等
+                // if (isResourceFrac(proto.Items[0])) {
+                //     RecipeProto proto2 = CopyRecipeProto(proto);
+                //     adjustRecipeFEFrac(proto2, IFE自然资源分馏塔);
+                //     addRecipe(proto2, add, [IFE自然资源分馏塔]);
+                // } else {
+                //     RecipeProto proto2 = CopyRecipeProto(proto);
+                //     adjustRecipeFEFrac(proto2, IFE升级分馏塔);
+                //     //有些配方使用升降级分馏塔但是自分馏，此时显然要使用降级分馏塔获取最大速率，所以升级分馏塔无用
+                //     if (proto2.Items[0] != proto2.Results[0]) {
+                //         addRecipe(proto2, add, [IFE升级分馏塔]);
+                //     }
+                //
+                //     RecipeProto proto3 = CopyRecipeProto(proto);
+                //     adjustRecipeFEFrac(proto3, IFE降级分馏塔);
+                //     addRecipe(proto3, add, [IFE降级分馏塔]);
+                // }
                 return;
             }
             int[] Factories;
@@ -678,45 +681,41 @@ namespace GetDspData {
             };
         }
 
-        static bool isResourceFrac(int id) {
-            return GetItemNaturalResource(id) != 0;
-        }
-
-        static void adjustRecipeFEFrac(RecipeProto recipe, int factory) {
-            if (factory == IFE自然资源分馏塔) {
-                recipe.name += "-自然资源分馏";
-                recipe.ItemCounts[0] = 1;
-                recipe.ResultCounts[0] = 2;
-                Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
-                float ratio = dic[2];
-                recipe.TimeSpend = (int)(ratio * 100000);
-            } else if (factory == IFE升级分馏塔) {
-                recipe.name += "-升级分馏";
-                recipe.ItemCounts[0] = 1;
-                recipe.ResultCounts[0] = 1;
-                Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
-                if (!dic.TryGetValue(1, out float ratio)) {
-                    ratio = 0.04f;
-                    LogError(recipe.name + "未能获取升级分馏概率！生成的数据可能有问题！");
-                }
-                //暂时不考虑损毁的影响，按照无损毁来计算
-                recipe.TimeSpend = (int)(ratio * 100000);
-            } else if (factory == IFE降级分馏塔) {
-                recipe.name += "-降级分馏";
-                recipe.ID += 1000;
-                (recipe.Items[0], recipe.Results[0]) = (recipe.Results[0], recipe.Items[0]);
-                recipe.ItemCounts[0] = 1;
-                recipe.ResultCounts[0] = 2;
-                Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
-                if (!dic.TryGetValue(2, out float ratio)) {
-                    ratio = 0.02f;
-                    LogError(recipe.name + "未能获取降级分馏概率！！生成的数据有问题！");
-                }
-                recipe.TimeSpend = (int)(ratio * 100000);
-            } else {
-                throw new($"异常万物分馏配方，ID {recipe.ID}，factory {factory}");
-            }
-        }
+        // static void adjustRecipeFEFrac(RecipeProto recipe, int factory) {
+        //     if (factory == IFE自然资源分馏塔) {
+        //         recipe.name += "-自然资源分馏";
+        //         recipe.ItemCounts[0] = 1;
+        //         recipe.ResultCounts[0] = 2;
+        //         Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
+        //         float ratio = dic[2];
+        //         recipe.TimeSpend = (int)(ratio * 100000);
+        //     } else if (factory == IFE升级分馏塔) {
+        //         recipe.name += "-升级分馏";
+        //         recipe.ItemCounts[0] = 1;
+        //         recipe.ResultCounts[0] = 1;
+        //         Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
+        //         if (!dic.TryGetValue(1, out float ratio)) {
+        //             ratio = 0.04f;
+        //             LogError(recipe.name + "未能获取升级分馏概率！生成的数据可能有问题！");
+        //         }
+        //         //暂时不考虑损毁的影响，按照无损毁来计算
+        //         recipe.TimeSpend = (int)(ratio * 100000);
+        //     } else if (factory == IFE降级分馏塔) {
+        //         recipe.name += "-降级分馏";
+        //         recipe.ID += 1000;
+        //         (recipe.Items[0], recipe.Results[0]) = (recipe.Results[0], recipe.Items[0]);
+        //         recipe.ItemCounts[0] = 1;
+        //         recipe.ResultCounts[0] = 2;
+        //         Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
+        //         if (!dic.TryGetValue(2, out float ratio)) {
+        //             ratio = 0.02f;
+        //             LogError(recipe.name + "未能获取降级分馏概率！！生成的数据有问题！");
+        //         }
+        //         recipe.TimeSpend = (int)(ratio * 100000);
+        //     } else {
+        //         throw new($"异常万物分馏配方，ID {recipe.ID}，factory {factory}");
+        //     }
+        // }
 
         static string FormatName(string name, string Name) {
             if (Name == null) {

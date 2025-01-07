@@ -132,6 +132,7 @@
     <Compile Include="src\Main\FracRecipe.cs" />
     <Compile Include="src\Main\FracItem.cs" />
     <Compile Include="src\Main\FracProcess.cs" />
+    <Compile Include="src\Main\UIFractionateShop.cs" />
     <Compile Include="src\Main\UIOptionWindowPatch.cs" />
     <Compile Include="src\Main\FracTech.cs" />
     <Compile Include="src\Main\Translation.cs" />

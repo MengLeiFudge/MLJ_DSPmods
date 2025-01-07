@@ -46,32 +46,26 @@ namespace FractionateEverything.Main {
             //[I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器][16, 8, 4, 1, 30]
 
             //创建新建筑
-            //原版分馏塔作为分馏升级链最底层，以便于使用升降级替换建筑，以及适配BPT的替换建筑
-            List<ItemProto> upgradeList = [LDB.items.Select(I分馏塔)];
             var f1 = CreateAndPreAddNewFractionator(
                 "自然资源分馏塔", RFE自然资源分馏塔, IFE自然资源分馏塔, MFE自然资源分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [2, 4, 2, 1] : [4, 2, 2, 1],
                 2601, new(1.0f, 0.7019f, 0.4f), -20, 0.4f);
-            upgradeList.Add(f1.Item3);
             var f2 = CreateAndPreAddNewFractionator(
                 "升级分馏塔", RFE升级分馏塔, IFE升级分馏塔, MFE升级分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I钢材, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2602, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-            upgradeList.Add(f2.Item3);
             var f3 = CreateAndPreAddNewFractionator(
                 "降级分馏塔", RFE降级分馏塔, IFE降级分馏塔, MFE降级分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I钢材, I玻璃, I电路板] : [I钢材, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2603, new(0.7f, 0.6f, 0.8f), 0, 1.0f);
-            upgradeList.Add(f3.Item3);
             var f4 = CreateAndPreAddNewFractionator(
                 "垃圾回收分馏塔", RFE垃圾回收分馏塔, IFE垃圾回收分馏塔, MFE垃圾回收分馏塔,
                 GenesisBook.Enable ? [IGB先进机械组件, I钛合金, I钛化玻璃, I处理器] : [I钢材, I石材, I玻璃, I处理器],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2604, new(0.4f, 1.0f, 0.5f), 0, 2.0f);
-            //垃圾塔不能加到升降级列表中，因为处理方式不一样
             var f5 = CreateAndPreAddNewFractionator(
                 "点数聚集分馏塔", RFE点数聚集分馏塔, IFE点数聚集分馏塔, MFE点数聚集分馏塔,
                 GenesisBook.Enable
@@ -79,7 +73,6 @@ namespace FractionateEverything.Main {
                     : [I钛合金, I石墨烯, I钛化玻璃, I处理器],
                 GenesisBook.Enable ? [4, 8, 4, 1] : [8, 4, 4, 1],
                 2605, new(0.2509f, 0.8392f, 1.0f), 20, 2.5f);
-            upgradeList.Add(f5.Item3);
             var f6 = CreateAndPreAddNewFractionator(
                 "增产分馏塔", RFE增产分馏塔, IFE增产分馏塔, MFE增产分馏塔,
                 GenesisBook.Enable
@@ -87,14 +80,17 @@ namespace FractionateEverything.Main {
                     : [I钛合金, I粒子宽带, I位面过滤器, I量子芯片, I物质重组器],
                 GenesisBook.Enable ? [10, 20, 8, 1, 30] : [16, 8, 4, 1, 30],
                 2606, new(0.6235f, 0.6941f, 0.8f), 40, 2.0f);
-            upgradeList.Add(f6.Item3);
-            var f9 = CreateAndPreAddNewFractionator(
+            var f7 = CreateAndPreAddNewFractionator(
                 "老虎机分馏塔", RFE老虎机分馏塔, IFE老虎机分馏塔, MFE老虎机分馏塔,
                 GenesisBook.Enable ? [IGB基础机械组件, I铁块, I玻璃, I电路板] : [I铁块, I石材, I玻璃, I电路板],
                 GenesisBook.Enable ? [2, 4, 2, 1] : [4, 2, 2, 1],
-                2607, new(1.0f, 0.7019f, 0.4f), 0, 0.0f);
+                2607, new(0.8f, 0.3f, 0.6f), 0, 0.0f);
 
             //设定升降级关系
+            //原版分馏塔作为分馏升级链最底层，以便于使用升降级替换建筑，以及适配BPT的替换建筑
+            List<ItemProto> upgradeList = [
+                LDB.items.Select(I分馏塔), f1.Item3, f2.Item3, f3.Item3, f5.Item3, f6.Item3
+            ];
             int[] upgradeItemIDList = upgradeList.Select(item => item.ID).ToArray();
             for (int i = 0; i < upgradeList.Count; i++) {
                 ItemProto item = upgradeList[i];
@@ -110,7 +106,7 @@ namespace FractionateEverything.Main {
                 f4.Item1.Type = GenesisBook.标准制造;
                 f5.Item1.Type = GenesisBook.高精度加工;
                 f6.Item1.Type = GenesisBook.高精度加工;
-                f9.Item1.Type = GenesisBook.基础制造;
+                f7.Item1.Type = GenesisBook.基础制造;
             }
         }
 
@@ -135,6 +131,10 @@ namespace FractionateEverything.Main {
             ModelProto oriModel = FractionatorModel;
             PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
             string iconPath = $"Assets/fracicons/fractionator-{gridIndex % 10}";
+            //todo: 增加老虎机分馏塔的图标
+            if (itemID == IFE老虎机分馏塔) {
+                iconPath = $"Assets/fracicons/fractionator";
+            }
 
             //添加制作分馏塔的配方，IconPath和preTech都无需设定，Preload会自动生成
             RecipeProto recipe = new() {
@@ -305,31 +305,18 @@ namespace FractionateEverything.Main {
         #region 分馏塔字段拓展
 
         /// <summary>
-        /// (planetId, entityId) => outputIdList
+        /// 存储分馏塔所有副产物。结构：
+        /// (planetId, entityId) => Dictionary&lt;itemId, itemCount&gt;
         /// </summary>
-        private static readonly ConcurrentDictionary<(int, int), List<int>> outputIdDic1 = [];
-        /// <summary>
-        /// (planetId, entityId) => outputCountList
-        /// </summary>
-        private static readonly ConcurrentDictionary<(int, int), List<int>> outputCountDic1 = [];
-        /// <summary>
-        /// FractionatorComponent => outputIdList
-        /// </summary>
-        private static readonly ConcurrentDictionary<FractionatorComponent, List<int>> outputIdDic2 = [];
-        /// <summary>
-        /// FractionatorComponent => outputCountList
-        /// </summary>
-        private static readonly ConcurrentDictionary<FractionatorComponent, List<int>> outputCountDic2 = [];
+        private static readonly ConcurrentDictionary<(int, int), Dictionary<int, int>> outputExtend = [];
 
         public static void Import(BinaryReader r) {
-            outputIdDic1.Clear();
-            outputCountDic1.Clear();
+            outputExtend.Clear();
             int fractionatorNum = r.ReadInt32();
             for (int i = 0; i < fractionatorNum; i++) {
                 int planetId = r.ReadInt32();
                 int entityId = r.ReadInt32();
-                List<int> outputIdList = [];
-                List<int> outputCountList = [];
+                Dictionary<int, int> outputDic = [];
                 int outputKinds = r.ReadInt32();
                 for (int j = 0; j < outputKinds; j++) {
                     int outputId = r.ReadInt32();
@@ -337,67 +324,40 @@ namespace FractionateEverything.Main {
                     if (LDB.items.Select(outputId) == null) {
                         continue;
                     }
-                    outputIdList.Add(outputId);
-                    outputCountList.Add(outputCount);
+                    outputDic.Add(outputId, outputCount);
                 }
-                outputIdDic1.TryAdd((planetId, entityId), outputIdList);
-                outputCountDic1.TryAdd((planetId, entityId), outputCountList);
+                outputExtend.TryAdd((planetId, entityId), outputDic);
             }
         }
 
         public static void Export(BinaryWriter w) {
-            w.Write(outputIdDic1.Count);
-            foreach (var p in outputIdDic1) {
+            w.Write(outputExtend.Count);
+            foreach (var p in outputExtend) {
                 w.Write(p.Key.Item1);
                 w.Write(p.Key.Item2);
-                List<int> outputIdList = outputIdDic1[p.Key];
-                List<int> outputCountList = outputCountDic1[p.Key];
-                //移除数目为0的物品，减少存储内容
-                for (int i = outputIdList.Count - 1; i >= 0; i--) {
-                    if (outputCountList[i] == 0) {
-                        outputIdList.RemoveAt(i);
-                        outputCountList.RemoveAt(i);
-                    }
-                }
-                w.Write(outputIdList.Count);
-                for (int i = 0; i < outputIdList.Count; i++) {
-                    w.Write(outputIdList[i]);
-                    w.Write(outputCountList[i]);
+                Dictionary<int, int> outputDic = outputExtend[p.Key];
+                //去除所有物品数目为0的情况，节约存储体积
+                List<int> keys = outputDic.Keys.Where(Key => outputDic[Key] > 0).ToList();
+                w.Write(keys.Count);
+                for (int i = 0; i < keys.Count; i++) {
+                    w.Write(keys[i]);
+                    w.Write(outputDic[keys[i]]);
                 }
             }
         }
 
         public static void IntoOtherSave() {
-            outputIdDic1.Clear();
-            outputCountDic1.Clear();
+            outputExtend.Clear();
         }
 
-        public static void CheckOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
-            if (outputIdDic2.ContainsKey(fractionator)) {
-                return;
-            }
+        public static Dictionary<int, int> productExpansion(this FractionatorComponent fractionator,
+            PlanetFactory factory) {
             int planetId = factory.planetId;
             int entityId = fractionator.entityId;
-            List<int> outputIdList = [];
-            List<int> outputCountList = [];
-            if (LDB.items.Select(fractionator.productId) != null) {
-                outputIdList.Add(fractionator.productId);
-                outputCountList.Add(fractionator.productOutputCount);
-                fractionator.productId = 0;
-                fractionator.productOutputCount = 0;
+            if (!outputExtend.ContainsKey((planetId, entityId))) {
+                outputExtend.TryAdd((planetId, entityId), []);
             }
-            outputIdDic1.TryAdd((planetId, entityId), outputIdList);
-            outputCountDic1.TryAdd((planetId, entityId), outputCountList);
-            outputIdDic2.TryAdd(fractionator, outputIdList);
-            outputCountDic2.TryAdd(fractionator, outputCountList);
-        }
-
-        public static List<int> productId(this FractionatorComponent fractionator) {
-            return outputIdDic2[fractionator];
-        }
-
-        public static List<int> productOutputCount(this FractionatorComponent fractionator) {
-            return outputCountDic2[fractionator];
+            return outputExtend[(planetId, entityId)];
         }
 
         #endregion
