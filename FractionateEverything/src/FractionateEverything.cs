@@ -26,9 +26,12 @@ namespace FractionateEverything {
     public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         public const string GUID = "com.menglei.dsp." + NAME;
         public const string NAME = "FractionateEverything";
-        public const string VERSION_Main = "2.0.0";
-        public const string VERSION_Debug = "";
-        public const string VERSION = VERSION_Main + VERSION_Debug;
+#if DEBUG
+        public const string VERSION = "2.0.0.01071525";
+#else
+        public const string VERSION = "2.0.0";
+#endif
+        public static int versionNumber;
 
         #region Logger
 
@@ -175,23 +178,13 @@ namespace FractionateEverything {
          * 在点击设置-杂项的应用按钮时执行。
          */
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
-        public static void SetConfig(int iconVersion, bool enableDestroy,
-            bool enableFuelRodFrac, bool enableMatrixFrac, bool enableBuildingAsTrash) {
+        public static void SetConfig(int iconVersion, bool enableBuildingAsTrash) {
             bool iconVersionChanged = iconVersion != IconVersionEntry.Value;
-            // bool enableDestroyChanged = enableDestroy != EnableDestroyEntry.Value;
-            // bool enableFuelRodFracChanged = enableFuelRodFrac != EnableFuelRodFracEntry.Value;
-            // bool enableMatrixFracChanged = enableMatrixFrac != EnableMatrixFracEntry.Value;
             bool enableBuildingAsTrashChanged = enableBuildingAsTrash != EnableBuildingAsTrashEntry.Value;
             //修改配置文件里面的内容
             IconVersionEntry.Value = iconVersion;
-            // EnableDestroyEntry.Value = enableDestroy;
-            // EnableFuelRodFracEntry.Value = enableFuelRodFrac;
-            // EnableMatrixFracEntry.Value = enableMatrixFrac;
             logger.LogInfo($"Fractionate Everything setting changed.\n"
-                           + $" iconVersion:{iconVersion}"
-                           + $" enableDestroy:{enableDestroy}"
-                           + $" enableFuelRodFrac:{enableFuelRodFrac}"
-                           + $" enableMatrixFrac:{enableMatrixFrac}");
+                           + $" iconVersion:{iconVersion}");
             configFile.Save();
             // //重新加载所有分馏配方，玩家需要重新载入存档
             // if (iconVersionChanged || enableDestroyChanged || enableFuelRodFracChanged || enableMatrixFracChanged) {
@@ -216,6 +209,10 @@ namespace FractionateEverything {
         public void Awake() {
             using (ProtoRegistry.StartModLoad(GUID)) {
                 logger = Logger;
+
+                Version version = new();
+                version.FromFullString(VERSION);
+                versionNumber = version.sig;
 
                 Translation.AddTranslations();
 
@@ -289,10 +286,10 @@ namespace FractionateEverything {
         public static void FinalAction() {
             if (_finished) return;
             PreloadAndInitAll();
-            //↓↓↓这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↓↓↓
             FracProcess.Init();
+            //SetFractionatorCacheSize用到了Init生成的数据
             FracItemManager.SetFractionatorCacheSize();
-            //↑↑↑这两个顺序不能变，SetFractionatorCacheSize用到了Init生成的数据↑↑↑
+            //AddFracRecipes用到了Init生成的数据
             FracRecipeManager.AddFracRecipes();
             _finished = true;
         }
@@ -356,24 +353,21 @@ namespace FractionateEverything {
 
         #region IModCanSave
 
-        static int VersionNumber() {
-            var version = new Version();
-            version.FromFullString(VERSION);
-            return version.sig;
-        }
-
         public void Import(BinaryReader r) {
-            int version = r.ReadInt32();
+            int savedVersion = r.ReadInt32();
             FracItemManager.Import(r);
+            FracRecipeManager.Import(r);
         }
 
         public void Export(BinaryWriter w) {
-            w.Write(VersionNumber());
+            w.Write(versionNumber);
             FracItemManager.Export(w);
+            FracRecipeManager.Export(w);
         }
 
         public void IntoOtherSave() {
             FracItemManager.IntoOtherSave();
+            FracRecipeManager.IntoOtherSave();
         }
 
         #endregion
