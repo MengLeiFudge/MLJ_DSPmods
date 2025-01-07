@@ -111,9 +111,11 @@ namespace FractionateEverything.Compatibility {
         }
 
         private static void ResponseFE日志() {
-            Application.OpenURL(string.IsNullOrEmpty(FractionateEverything.VERSION_Debug)
-                ? "FE日志链接".Translate()
-                : Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+#if DEBUG
+            Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+#else
+            Application.OpenURL("FE日志链接".Translate());
+#endif
             ShowMessageBoxLatestVersion();
         }
 
@@ -123,7 +125,7 @@ namespace FractionateEverything.Compatibility {
         }
 
         private static void ShowMessageBoxLatestVersion() {
-            string version = FractionateEverything.VERSION.Replace(".", "");
+            const string version = FractionateEverything.VERSION;
             if ((version + "信息").Translate() != version + "信息") {
                 UIMessageBox.Show(
                     (version + "标题").Translate(), (version + "信息").Translate(),
