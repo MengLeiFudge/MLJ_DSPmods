@@ -15,5 +15,24 @@ namespace FractionateEverything.Utils {
             }
             return "0%";
         }
+
+        public static string FormatName(string s) {
+            if (s == null) {
+                return "null";
+            }
+            return s.Translate()
+                .Replace(" ", "")
+                .Replace(" ", "")
+                .Replace(" ", "")
+                .Replace("“", "")
+                .Replace("”", "")
+                .Replace(":", "")
+                .Replace("：", "")
+                .Replace("!", "")
+                .Replace("-", "")
+                .Replace(".", "")
+                .Replace("（", "")
+                .Replace("）", "");
+        }
     }
 }
