@@ -31,7 +31,7 @@ namespace FractionateEverything.Main {
                 GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
                 [I电磁矩阵], [20], 3600,
                 [RFE自然资源分馏塔],
-                GenesisBook.Enable ? new(9, -43) : new(13, 17)
+                GenesisBook.Enable ? new(9, -47) : new(13, 17)
             );
             tech1621.PreTechsImplicit = GenesisBook.Enable ? [T电磁矩阵, TGB基础机械组件] : [T电磁矩阵, T自动化冶金];
             tech1621.AddItems = [IFE自然资源分馏塔];
@@ -44,7 +44,7 @@ namespace FractionateEverything.Main {
                 [tech1621.ID],
                 [I电磁矩阵], [20], 18000,
                 [RFE升级分馏塔, RFE降级分馏塔],
-                GenesisBook.Enable ? new(13, -43) : new(17, 17)
+                GenesisBook.Enable ? new(13, -47) : new(17, 17)
             );
             tech1622.PreTechsImplicit = [tech1621.ID, T钢材冶炼];
             tech1622.AddItems = [IFE升级分馏塔, IFE降级分馏塔];
@@ -57,7 +57,7 @@ namespace FractionateEverything.Main {
                 [tech1622.ID],
                 [I电磁矩阵, I能量矩阵], [20, 30], 36000,
                 [RFE垃圾回收分馏塔],
-                GenesisBook.Enable ? new(17, -43) : new(21, 17)
+                GenesisBook.Enable ? new(17, -47) : new(21, 17)
             );
             tech1623.PreTechsImplicit = GenesisBook.Enable
                 ? [tech1622.ID, T能量矩阵, TGB先进机械组件, T高强度钛合金, T高强度玻璃, T处理器]
@@ -72,7 +72,7 @@ namespace FractionateEverything.Main {
                 GenesisBook.Enable ? [T增产剂MkI_GB物品增产] : [T增产剂MkIII_GB人造恒星],
                 [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 12, 4], 720000,
                 [RFE点数聚集分馏塔],
-                GenesisBook.Enable ? new(29, 29) : new(45, -11)
+                GenesisBook.Enable ? new(29, 21) : new(45, -11)
             );
             tech1159.PreTechsImplicit = GenesisBook.Enable
                 ? [tech1623.ID, T结构矩阵, TGB尖端机械组件, TGB钨强化金属, TGB钨强化玻璃, T量子芯片]
@@ -103,7 +103,7 @@ namespace FractionateEverything.Main {
                 LDB.techs.Select(T运输站集装物流 + 2).IconPath,
                 [],
                 [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-                [], new(37, -27));
+                [], new(37, -31));
             tech3807.Name = "T分馏流动输出集装";
             tech3807.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
             techs.Add(tech3807);
@@ -113,7 +113,7 @@ namespace FractionateEverything.Main {
                 LDB.techs.Select(T运输站集装物流).IconPath,
                 [],
                 [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-                [], new(37, -31));
+                [], new(37, -35));
             tech3804.Name = "T分馏产物输出集装";
             tech3804.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
             tech3804.Level = 1;
@@ -125,7 +125,7 @@ namespace FractionateEverything.Main {
                 LDB.techs.Select(T运输站集装物流 + 1).IconPath,
                 [tech3804.ID],
                 [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵], [8, 8, 8, 8], 360000,
-                [], new(41, -31));
+                [], new(41, -35));
             tech3805.Name = "T分馏产物输出集装";
             tech3805.Level = 2;
             tech3805.MaxLevel = 2;
@@ -136,7 +136,7 @@ namespace FractionateEverything.Main {
                 LDB.techs.Select(T运输站集装物流 + 2).IconPath,
                 [tech3805.ID],
                 [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-                [], new(45, -31));
+                [], new(45, -35));
             tech3806.Name = "T分馏产物输出集装";
             tech3806.Level = 3;
             tech3806.MaxLevel = 3;
@@ -144,10 +144,10 @@ namespace FractionateEverything.Main {
 
             var tech3808 = ProtoRegistry.RegisterTech(TFE分馏永动,
                 "T分馏永动", "分馏永动描述", "分馏永动结果",
-                Tech1134IconPath,
+                "Assets/fracicons/tech分馏永动",
                 [],
                 [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-                [], new(45, -27));
+                [], new(45, -31));
             tech3808.Name = "T分馏永动";
             tech3808.PreTechsImplicit = [tech3806.ID];
             techs.Add(tech3808);

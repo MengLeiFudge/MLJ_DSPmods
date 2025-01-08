@@ -54,9 +54,6 @@
     <Reference Include="DSPModSave, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DysonSphereProgram.Modding.DSPModSave.1.2.0\lib\net472\DSPModSave.dll</HintPath>
     </Reference>
-    <Reference Include="FractionateEverything">
-      <HintPath>..\FractionateEverything\bin\Debug\FractionateEverything.dll</HintPath>
-    </Reference>
     <Reference Include="LDBTool, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DysonSphereProgram.Modding.LDBTool.3.0.0\lib\net472\LDBTool.dll</HintPath>
       <Private>False</Private>
@@ -142,6 +139,12 @@
   <ItemGroup>
     <Content Include="gamedata\DSP_DataInfo.csv" />
     <Content Include="gamedata\fracIconPath.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj">
+      <Project>{3204cf73-a6e8-4c3b-a91d-e4baf6fca974}</Project>
+      <Name>FractionateEverything</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" />

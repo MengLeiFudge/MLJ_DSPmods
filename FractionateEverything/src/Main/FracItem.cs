@@ -131,10 +131,6 @@ namespace FractionateEverything.Main {
             ModelProto oriModel = FractionatorModel;
             PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
             string iconPath = $"Assets/fracicons/fractionator-{gridIndex % 10}";
-            //todo: 增加老虎机分馏塔的图标
-            if (itemID == IFE老虎机分馏塔) {
-                iconPath = $"Assets/fracicons/fractionator";
-            }
 
             //添加制作分馏塔的配方，IconPath和preTech都无需设定，Preload会自动生成
             RecipeProto recipe = new() {

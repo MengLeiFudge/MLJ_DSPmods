@@ -188,8 +188,11 @@ namespace FractionateEverything.Main {
 
             #region 游戏内切换&配方显示
 
-            Register("分馏页面1", "Fractionate I", "分馏 I");
-            Register("分馏页面2", "Fractionate II", "分馏 II");
+            // Register("分馏页面1", "Fractionate I", "分馏 I");
+            // Register("分馏页面2", "Fractionate II", "分馏 II");
+            Register("无配方", "NoRecipe");
+            Register("未解锁", "NotUnlock");
+            Register("永动", "Forever");
             Register("流动", "Flow");
             Register("损毁", "Destroy");
 
@@ -315,11 +318,11 @@ namespace FractionateEverything.Main {
                 "Make specific types of fractionators keep running",
                 "使特定种类的分馏塔可以持续运行");
             Register("分馏永动描述",
-                $"When fractionators in a loop, a buildup of product in one of the fractionators will cause the entire loop to stop. The Fractionate Forever tech was then created, so that when the product cache reaches half of the upper limit, the fractionator will no longer fractionate, and simply carry items from the flow input to the flow output, thus keeping the entire loop of fractionators in continuous operation.\nThis tech {"will NOT effect".AddOrangeLabel()} Up-Downgrade Fractionator and Trash Recycle Fractionator.",
-                $"当分馏塔形成环路时，只要其中某个分馏塔产物堆积，就会导致整条环路的分馏塔都停止运行。分馏永动科技随之诞生，当产物缓存达到上限一半时，分馏塔将不再分馏，仅仅将物品从流动输入搬运到流动输出，从而让整条环路的分馏塔持续运行。\n该科技{"不会作用于".AddOrangeLabel()}升降级分馏塔和垃圾回收分馏塔。");
+                "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches half of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
+                "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限一半时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
             Register("分馏永动结果",
-                "Now, some fractionators will continue running without product buildup.",
-                "现在，一些分馏塔将会持续运行，不会出现产物堆积的情况了。");
+                "Now, fractionators will keep running without product buildup.",
+                "现在，分馏塔将会持续运行，不会出现产物堆积的情况了。");
 
             #endregion
 
