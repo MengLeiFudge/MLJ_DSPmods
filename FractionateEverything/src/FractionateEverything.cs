@@ -354,18 +354,21 @@ namespace FractionateEverything {
         #region IModCanSave
 
         public void Import(BinaryReader r) {
+            LogInfo("FE Import");
             int savedVersion = r.ReadInt32();
             FracItemManager.Import(r);
             FracRecipeManager.Import(r);
         }
 
         public void Export(BinaryWriter w) {
+            LogInfo("FE Export");
             w.Write(versionNumber);
             FracItemManager.Export(w);
             FracRecipeManager.Export(w);
         }
 
         public void IntoOtherSave() {
+            LogInfo("FE IntoOtherSave");
             FracItemManager.IntoOtherSave();
             FracRecipeManager.IntoOtherSave();
         }
