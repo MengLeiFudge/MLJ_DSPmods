@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FractionateEverything.FractionateEverything;
 
-namespace FractionateEverything.Main {
+namespace FractionateEverything.UI {
     /// <summary>
     /// 游戏加载完成后，弹窗提示某些信息。
     /// </summary>

@@ -6,7 +6,7 @@ using System.Linq;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.FractionateEverything;
 
-namespace FractionateEverything.Main {
+namespace FractionateEverything.Logic {
     /// <summary>
     /// 添加科技后，需要Preload、Preload2。
     /// Preload2会初始化unlockRecipeArray，之后LDBTool添加就不会报空指针异常。

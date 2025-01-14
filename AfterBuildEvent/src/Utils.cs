@@ -7,10 +7,20 @@ namespace AfterBuildEvent {
         public const string R2_Default =
             @"C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
         public const string R2_BepInEx = $@"{R2_Default}\BepInEx";
-        public const string R2_DumpedDll = $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
-        public const string PublicizerExe = @"..\..\..\lib\BepInEx.AssemblyPublicizer.Cli.exe";
-        public const string Pdb2mdbExe = @"..\..\..\lib\pdb2mdb.exe";
         public const string DSPGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
+
+        public static FileInfo PublicizerExe => new(@"..\..\..\lib\BepInEx.AssemblyPublicizer.Cli.exe");
+        public const string R2_DumpedDll_Origin = $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
+        public const string R2_DumpedDll_Publicized =
+            $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp-publicized.dll";
+        public const string DSP_DumpedDll_Publicized = @"..\..\..\lib\Assembly-CSharp-publicized.dll";
+        public const string R2_GenesisDll_Origin = $@"{R2_BepInEx}\plugins\HiddenCirno-GenesisBook\ProjectGenesis.dll";
+        public const string R2_GenesisDll_Publicized =
+            $@"{R2_BepInEx}\plugins\HiddenCirno-GenesisBook\ProjectGenesis-publicized.dll";
+        public const string DSP_GenesisDll_Publicized = @"..\..\..\lib\ProjectGenesis-publicized.dll";
+
+        public static FileInfo Pdb2mdbExe => new(@"..\..\..\lib\pdb2mdb.exe");
+
         public const string KillDSP = "taskkill /f /im DSPGAME.exe";
         public const string RunModded = "start steam://rungameid/1366540";
 
@@ -70,7 +80,8 @@ namespace AfterBuildEvent {
 
         public static void ChangeAllModsEnable(bool enable) {
             //不启用的mod
-            List<string> enableIgnore = ["Galactic_Scale-GalacticScale", "essium-PlanetWormhole", "jinxOAO-SmelterMiner"];
+            List<string> enableIgnore =
+                ["Galactic_Scale-GalacticScale", "essium-PlanetWormhole", "jinxOAO-SmelterMiner"];
             //不禁用的mod
             List<string> disableIgnore = [
                 "xiaoye97-LDBTool", "CommonAPI-CommonAPI", "CommonAPI-DSPModSave", "nebula-NebulaMultiplayerModApi",

@@ -6,7 +6,7 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FractionateEverything.Compatibility;
-using FractionateEverything.Main;
+using FractionateEverything.Logic;
 using FractionateEverything.Utils;
 using HarmonyLib;
 using System;
@@ -277,7 +277,8 @@ namespace FractionateEverything {
                 proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
                 proto.Preload2();
             }
-            FracItemManager.SetUnlockInfo();
+            FracTechManager.PreloadAll();
+            FracItemManager.PreloadAll();
         }
 
         /// <summary>
@@ -288,7 +289,7 @@ namespace FractionateEverything {
             PreloadAndInitAll();
             FracProcess.Init();
             //SetFractionatorCacheSize用到了Init生成的数据
-            FracItemManager.SetFractionatorCacheSize();
+            FracItem.SetFractionatorCacheSize();
             //AddFracRecipes用到了Init生成的数据
             FracRecipeManager.AddFracRecipes();
             _finished = true;
@@ -356,21 +357,24 @@ namespace FractionateEverything {
         public void Import(BinaryReader r) {
             LogInfo("FE Import");
             int savedVersion = r.ReadInt32();
-            FracItemManager.Import(r);
+            FracItem.Import(r);
             FracRecipeManager.Import(r);
+            FracProcess.Import(r);
         }
 
         public void Export(BinaryWriter w) {
             LogInfo("FE Export");
             w.Write(versionNumber);
-            FracItemManager.Export(w);
+            FracItem.Export(w);
             FracRecipeManager.Export(w);
+            FracProcess.Export(w);
         }
 
         public void IntoOtherSave() {
             LogInfo("FE IntoOtherSave");
-            FracItemManager.IntoOtherSave();
+            FracItem.IntoOtherSave();
             FracRecipeManager.IntoOtherSave();
+            FracProcess.IntoOtherSave();
         }
 
         #endregion

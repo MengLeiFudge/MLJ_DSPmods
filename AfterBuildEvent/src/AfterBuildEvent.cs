@@ -36,14 +36,49 @@ namespace AfterBuildEvent {
             cmd.Exec(KillDSP);
             //等待游戏进程关闭
             Thread.Sleep(1000);
-            //将注入preloader的Assembly-CSharp.dll的所有内容公开，生成的文件放在项目目录下
-            //注1：需要将BepInEX.cfg的DumpAssemblies设为true，才有注入preloader的Assembly-CSharp.dll
-            //注2：正常使用Publicizer的前提是存在注入preloader的Assembly-CSharp.dll
-            if (File.Exists(R2_DumpedDll)) {
-                cmd.Exec($"\"{PublicizerExe}\" \"{R2_DumpedDll}\"");//引号防止路径包含空格
-                Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开");
+            //publicize已注入preloader的Assembly-CSharp.dll，然后将其拷贝到项目的lib
+            //注：将BepInEX.cfg的DumpAssemblies设为true，就会生成已注入preloader的Assembly-CSharp.dll
+            if (File.Exists(R2_DumpedDll_Origin)) {
+                Console.WriteLine("开始尝试将注入preloader的Assembly-CSharp.dll公开");
+                if (File.Exists(R2_DumpedDll_Publicized)) {
+                    File.Delete(R2_DumpedDll_Publicized);
+                }
+                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
+                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_DumpedDll_Origin}\"");//引号防止路径包含空格
+                while (!File.Exists(R2_DumpedDll_Publicized)) {
+                    Thread.Sleep(100);
+                }
+                Retry1:
+                try {
+                    File.Copy(R2_DumpedDll_Publicized, DSP_DumpedDll_Publicized, true);
+                }
+                catch (Exception) {
+                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
+                    goto Retry1;
+                }
+                Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开，并复制到本地");
             } else {
                 Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
+            }
+            //publicize创世之书的dll，然后将其拷贝到项目的lib
+            //注：如果R2禁用创世，也会出现找不到dll的情况
+            if (File.Exists(R2_GenesisDll_Origin)) {
+                Console.WriteLine("开始尝试将创世之书的dll公开");
+                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
+                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_GenesisDll_Origin}\"");//引号防止路径包含空格，必须绝对路径
+                Retry2:
+                try {
+                    File.Copy(R2_GenesisDll_Publicized, DSP_GenesisDll_Publicized, true);
+                }
+                catch (Exception) {
+                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
+                    Thread.Sleep(100);
+                    goto Retry2;
+                }
+                File.Delete(R2_GenesisDll_Publicized);
+                Console.WriteLine("已将创世之书的dll公开，并复制到本地");
+            } else {
+                Console.WriteLine("未找到创世之书的dll");
             }
             //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
             foreach (var dirInfo in new DirectoryInfo(@"..\..\..").GetDirectories()) {
@@ -74,19 +109,35 @@ namespace AfterBuildEvent {
                     //mod.dll
 #if DEBUG
                     string projectModFile = $@"{projectDir}\bin\debug\{projectName}.dll";
+                    string projectModPdbFile = $@"{projectDir}\bin\debug\{projectName}.pdb";
+                    string projectModMdbFile = $@"{projectDir}\bin\debug\{projectName}.dll.mdb";
 #else
                     string projectModFile = $@"{projectDir}\bin\release\{projectName}.dll";
+                    string projectModPdbFile = $@"{projectDir}\bin\release\{projectName}.pdb";
+                    string projectModMdbFile = $@"{projectDir}\bin\release\{projectName}.dll.mdb";
 #endif
                     if (!File.Exists(projectModFile)) {
                         continue;
                     }
                     fileList.Add(projectModFile);
-                    //mod.dll.mdb
-                    // cmd.Exec($"\"{Pdb2mdbExe}\" \"{projectModFile}\"");//引号防止路径包含空格
-                    // string projectMdb = $@"{projectModFile}.mdb";
-                    // if (File.Exists(projectMdb)) {
-                    //     fileList.Add(projectMdb);
-                    // }
+                    //mod.dll.mdb，供Attach to Unity Editor调试使用
+                    //注：dll和pdb在同一目录下，才能生成mdb文件；但是参数只需要传dll路径
+                    if (!File.Exists(projectModPdbFile)) {
+                        Console.WriteLine($"未找到{projectName}的pdb文件！");
+                    } else {
+                        Console.WriteLine($"开始尝试生成{projectName}的mdb文件");
+                        if (File.Exists(projectModMdbFile)) {
+                            File.Delete(projectModMdbFile);
+                        }
+                        cmd.Exec($"cd \"{Pdb2mdbExe.Directory}\"");//引号防止路径包含空格
+                        cmd.Exec($".\\pdb2mdb \"{new FileInfo(projectModFile).FullName}\"");//引号防止路径包含空格，必须绝对路径
+                        Console.WriteLine("注：如果卡在这里，说明需要调整项目设置，勾选debug symbols并且修改debug type为full");
+                        while (!File.Exists(projectModMdbFile)) {
+                            Thread.Sleep(100);
+                        }
+                        //注：mdb文件不加到fileList里面，因为它不需要打包。最后会单独处理它。
+                        Console.WriteLine($"已生成{projectName}的mdb文件");
+                    }
                     //README.md
                     string projectReadme = $@"{projectDir}\README.md";
                     if (File.Exists(projectReadme)) {
@@ -138,7 +189,6 @@ namespace AfterBuildEvent {
                     if (!Directory.Exists(r2ModDir)) {
                         Directory.CreateDirectory(r2ModDir);
                     }
-                    DirectoryInfo directoryInfo = new DirectoryInfo(@".\ModZips");
                     if (!Directory.Exists(@".\ModZips")) {
                         Directory.CreateDirectory(@".\ModZips");
                     }
@@ -151,7 +201,20 @@ namespace AfterBuildEvent {
                     string zipFile = $@".\ModZips\{projectName}{version}.zip";
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
+                    //额外打包
+                    if (projectName == "FractionateEverything") {
+                        //给群友提供的测试版本，包含了如何使用R2导入的视频
+                        string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
+                        if (File.Exists(techVideo)) {
+                            fileList.Add(techVideo);
+                            zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
+                            ZipMod(fileList, zipFile);
+                            Console.WriteLine($"创建 {zipFile}");
+                        }
+                    }
                     //所有文件复制到R2，注意R2是否禁用了mod
+                    //mdb也要复制到R2（pdb不需要）
+                    fileList.Add(projectModMdbFile);
                     foreach (var file in fileList) {
                         string relativePath = Path.GetFileName(file);
                         string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
@@ -163,17 +226,6 @@ namespace AfterBuildEvent {
                         }
                         File.Copy(file, targetPath, true);
                         Console.WriteLine($"复制 {file} -> {targetPath}");
-                    }
-                    //额外打包
-                    if (projectName == "FractionateEverything") {
-                        //给群友提供的测试版本，包含了如何使用R2导入的视频
-                        string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
-                        if (File.Exists(techVideo)) {
-                            fileList.Add(techVideo);
-                            zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
-                            ZipMod(fileList, zipFile);
-                            Console.WriteLine($"创建 {zipFile}");
-                        }
                     }
                 }
             }

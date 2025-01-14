@@ -3,112 +3,15 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Emit;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.FractionateEverything;
 using static FractionateEverything.Utils.TranslationUtils;
-using static FractionateEverything.Main.FracProcess;
+using static FractionateEverything.Logic.FracProcess;
 
-namespace FractionateEverything.Main {
-    public enum FracRecipeType {
-        Origin,//仅用于原版分馏塔
-        NaturalResource,
-        Upgrade,
-        DownGrade,
-        PointsAggregate,
-        Increase,
-    }
-
-    /// <summary>
-    /// 配方基类
-    /// </summary>
-    public class FracRecipe {
-        #region 构造与基础数据变动
-
-        public readonly FracRecipeType type;
-        public readonly int inputID;
-
-        /// <summary>
-        /// idx0表示损毁id（固定-1），idx1表示主产物id，idx2及之后表示副产物id。
-        /// </summary>
-        public readonly List<int> outputID;
-        /// <summary>
-        /// idx0表示损毁概率，idx1表示主产物概率，idx2及之后表示副产物。
-        /// </summary>
-        public readonly List<float> outputRatio;
-        /// <summary>
-        /// idx0表示损毁数目（固定-1），idx1表示主产物数目，idx2及之后表示副产物数目。
-        /// </summary>
-        public readonly List<int> outputNum;
-
-        public int mainOutput => outputID[1];
-        public float destroyRatio => outputRatio[0];
-
-        public FracRecipe(FracRecipeType type, int inputID,
-            List<int> outputID, List<float> outputRatio, List<int> outputNum, float destroyRatio) {
-            this.type = type;
-            this.inputID = inputID;
-            this.outputID = [-1, ..outputID];
-            this.outputRatio = [destroyRatio, ..outputRatio];
-            this.outputNum = [-1, ..outputNum];
-        }
-
-        public FracRecipe(FracRecipeType type, int inputID,
-            int outputID, float outputRatio, int outputNum, float destroyRatio) {
-            this.type = type;
-            this.inputID = inputID;
-            this.outputID = [-1, outputID];
-            this.outputRatio = [destroyRatio, outputRatio];
-            this.outputNum = [-1, outputNum];
-        }
-
-        /// <summary>
-        /// 为该配方新增一种目标产物。目前仅可用于构造分馏配方，因为相关数据不会保存在moddsv文件中。
-        /// </summary>
-        public FracRecipe AddProduct(int id, float ratio, int num) {
-            outputID.Add(id);
-            outputRatio.Add(ratio);
-            outputNum.Add(num);
-            return this;
-        }
-
-        #endregion
-
-        #region 解锁与升级
-
-        /// <summary>
-        /// 解锁该配方需要的物品ID与对应的数目。
-        /// 特别的，如果itemID为矩阵，则配方需要在对应商店抽取。
-        /// </summary>
-        public Dictionary<int, int> unlockItemDic = [];
-
-        /// <summary>
-        /// 指示该配方是否已解锁。可由FracRecipeManager的对应方法来解锁配方。
-        /// </summary>
-        public bool unlocked = false;
-
-        //todo: 先添加等级带来的固定提升，再添加等级给的点数的随机提升
-        // public List<float> outputRatioFix;
-        // public List<int> outputNumFix;
-
-        #endregion
-
-        #region 数据读写（主要存储解锁与升级的数据）
-
-        public void Import(BinaryReader r) {
-            unlocked = r.ReadBoolean();
-        }
-
-        public void Export(BinaryWriter w) {
-            w.Write(unlocked);
-        }
-
-        #endregion
-    }
-
+namespace FractionateEverything.Logic {
     public static class FracRecipeManager {
         public static readonly FracRecipe DeuteriumFracRecipe =
-            new(FracRecipeType.Origin, I氢, I重氢, 0.01f, 1, 0) { unlocked = true };
+            new FracRecipe(FracRecipeType.Origin, I氢, I重氢, 0.01f, 1, 0).Unlock();
         private static readonly List<FracRecipe> naturalResourceRecipeList = [];
         private static readonly List<FracRecipe> upgradeRecipeList = [];
         private static readonly List<FracRecipe> downgradeRecipeList = [];
@@ -329,7 +232,7 @@ namespace FractionateEverything.Main {
                 CreateFracChain([I粒子宽带, IGB光学信息传输纤维], true);
                 CreateFracChain([I粒子容器, I奇异物质, I引力透镜, I空间翘曲器], true);
                 CreateFracChain([I钛晶石, I卡西米尔晶体], true);
-                CreateFracChain([IGB基础机械组件, IGB先进机械组件, IGB尖端机械组件], true);//创世独有配方
+                CreateFracChain([IGB基础机械组件, IGB先进机械组件, IGB尖端机械组件, IGB超级机械组件], true);//创世独有配方
                 CreateFracChain([IGB塑料基板, IGB光学基板], true);//创世独有配方
                 CreateFracChain([IGB量子计算主机, IGB超越X1型光学主机], true);//创世独有配方
                 CreateFracChain([I玻璃, I钛化玻璃, IGB钨强化玻璃], true);
@@ -490,7 +393,7 @@ namespace FractionateEverything.Main {
         /// 创建一个点数聚集分馏配方。
         /// </summary>
         private static FracRecipe CreatePointsAggregateRecipe(int itemID) {
-            FracRecipe r = new(FracRecipeType.PointsAggregate, itemID, itemID, 0.01f, 1, 0);
+            FracRecipe r = new FracRecipe(FracRecipeType.PointsAggregate, itemID, itemID, 0.01f, 1, 0).Unlock();
             pointsAggregateRecipeList.Add(r);
             r.unlockItemDic.Add(itemID, 10);
             return r;
@@ -655,9 +558,9 @@ namespace FractionateEverything.Main {
         public static void UITechTree_Do1KeyUnlock_Postfix() {
             int unlockCount = 0;
             foreach (FracRecipe r in naturalResourceRecipeList) {
-                if (!r.unlocked) {
+                if (!r.IsUnlocked) {
                     unlockCount++;
-                    r.unlocked = true;
+                    r.Unlock();
                 }
             }
             if (unlockCount > 0) {
@@ -665,9 +568,9 @@ namespace FractionateEverything.Main {
             }
             unlockCount = 0;
             foreach (FracRecipe r in upgradeRecipeList) {
-                if (!r.unlocked) {
+                if (!r.IsUnlocked) {
                     unlockCount++;
-                    r.unlocked = true;
+                    r.Unlock();
                 }
             }
             if (unlockCount > 0) {
@@ -675,82 +578,35 @@ namespace FractionateEverything.Main {
             }
             unlockCount = 0;
             foreach (FracRecipe r in downgradeRecipeList) {
-                if (!r.unlocked) {
+                if (!r.IsUnlocked) {
                     unlockCount++;
-                    r.unlocked = true;
+                    r.Unlock();
                 }
             }
             if (unlockCount > 0) {
                 LogInfo($"Unlocked {downgradeRecipeList.Count} downgrade recipes.");
             }
-            //点数聚集本身就是解锁的，此处不用处理
+            unlockCount = 0;
+            foreach (FracRecipe r in pointsAggregateRecipeList) {
+                if (!r.IsUnlocked) {
+                    unlockCount++;
+                    r.Unlock();
+                }
+            }
+            if (unlockCount > 0) {
+                LogInfo($"Unlocked {pointsAggregateRecipeList.Count} points aggregate recipes.");
+            }
             unlockCount = 0;
             foreach (FracRecipe r in increaseRecipeList) {
-                if (!r.unlocked) {
+                if (!r.IsUnlocked) {
                     unlockCount++;
-                    r.unlocked = true;
+                    r.Unlock();
                 }
             }
             if (unlockCount > 0) {
                 LogInfo($"Unlocked {increaseRecipeList.Count} increase recipes.");
             }
         }
-
-        #endregion
-
-        #region 其他Patch
-
-        // /// <summary>
-        // /// 如果物品、配方的详情窗口最下面的制作方式有分馏配方，修改对应显示内容-
-        // /// </summary>
-        // [HarmonyPatch(typeof(UIRecipeEntry), nameof(UIRecipeEntry.SetRecipe))]
-        // [HarmonyPrefix]
-        // public static bool UIRecipeEntry_SetRecipe_Prefix(ref UIRecipeEntry __instance, RecipeProto recipe) {
-        //     if (recipe.Type != ERecipeType.Fractionate) {
-        //         return true;
-        //     }
-        //     Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
-        //     if (dic.ContainsKey(1) && dic[1] == 0) {
-        //         //降级的就不管了
-        //         dic = GetNumRatioUpgrade(recipe.Items[0]);
-        //     }
-        //     var p = dic.FirstOrDefault(p => p.Key > 0);
-        //     int index1 = 0;
-        //     int x1 = 0;
-        //
-        //     ItemProto itemProto = LDB.items.Select(recipe.Results[0]);
-        //     __instance.icons[index1].sprite = itemProto?.iconSprite;
-        //     //产物数目使用dic首个不为损毁的概率的key
-        //     __instance.countTexts[index1].text = p.Key.ToString();
-        //     __instance.icons[index1].rectTransform.anchoredPosition = new(x1, 0.0f);
-        //     __instance.icons[index1].gameObject.SetActive(true);
-        //
-        //     ++index1;
-        //     x1 += 40;
-        //     __instance.arrow.anchoredPosition = new(x1, -27f);
-        //     //概率显示包括dic首个不为损毁的概率的Value，以及损毁概率（如果有的话）
-        //     string str = p.Value.FormatP();
-        //     if (enableDestroy && dic.TryGetValue(-1, out float destroyRatio)) {
-        //         str += "(" + destroyRatio.FormatP() + ")";
-        //     }
-        //     __instance.timeText.text = str;
-        //     //横向拓展，避免显示不下
-        //     __instance.timeText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        //
-        //     int x2 = x1 + 40;
-        //     itemProto = LDB.items.Select(recipe.Items[0]);
-        //     __instance.icons[index1].sprite = itemProto?.iconSprite;
-        //     //原料数目使用1
-        //     __instance.countTexts[index1].text = "1";
-        //     __instance.icons[index1].rectTransform.anchoredPosition = new(x2, 0.0f);
-        //     __instance.icons[index1].gameObject.SetActive(true);
-        //
-        //     ++index1;
-        //     x2 += 40;
-        //     for (int index4 = index1; index4 < 7; ++index4)
-        //         __instance.icons[index4].gameObject.SetActive(false);
-        //     return false;
-        // }
 
         #endregion
     }

@@ -2,27 +2,18 @@
 using CommonAPI.Systems;
 using FractionateEverything.Compatibility;
 using HarmonyLib;
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 using xiaoye97;
 using static FractionateEverything.Utils.ProtoID;
-using static FractionateEverything.Main.FracProcess;
 
-namespace FractionateEverything.Main {
+namespace FractionateEverything.Logic {
     public static class FracItemManager {
-        private struct BuildingInfo {
-            public int recipeID;
-            public int itemID;
-        }
-
         private static readonly ModelProto FractionatorModel = LDB.models.Select(M分馏塔);
         public static readonly PrefabDesc FractionatorPrefabDesc = FractionatorModel.prefabDesc;
-        private static readonly List<BuildingInfo> buildingInfoList = [];
+        public static readonly List<BuildingInfo> buildingInfoList = [];
 
         public static void CreateAndPreAddNewFractionators() {
             //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
@@ -87,9 +78,13 @@ namespace FractionateEverything.Main {
                 2607, new(0.8f, 0.3f, 0.6f), 0, 0.0f);
 
             //设定升降级关系
-            //原版分馏塔作为分馏升级链最底层，以便于使用升降级替换建筑，以及适配BPT的替换建筑
+            //原版分馏塔可以升级为自然资源分馏塔，以适配BPT的替换建筑
+            ItemProto originFractionator = LDB.items.Select(I分馏塔);
+            originFractionator.Upgrades = [I分馏塔, f1.Item3.ID];
+            originFractionator.Grade = 1;
+            //其他分馏塔形成升级链（垃圾回收、老虎机除外）
             List<ItemProto> upgradeList = [
-                LDB.items.Select(I分馏塔), f1.Item3, f2.Item3, f3.Item3, f5.Item3, f6.Item3
+                f1.Item3, f2.Item3, f3.Item3, f5.Item3, f6.Item3
             ];
             int[] upgradeItemIDList = upgradeList.Select(item => item.ID).ToArray();
             for (int i = 0; i < upgradeList.Count; i++) {
@@ -249,9 +244,8 @@ namespace FractionateEverything.Main {
         /// <summary>
         /// 关联物品、配方、前置科技，以使分馏塔在正确的科技被解锁
         /// </summary>
-        public static void SetUnlockInfo() {
+        public static void PreloadAll() {
             //此时翻译字符串已经添加，再次Preload科技以更新其名称、描述、结论等
-            FracTechManager.PreloadAll();
             foreach (var unlock in buildingInfoList) {
                 //配方Preload会自动使用Results[0]的图标，所以先Preload item，再Preload recipe
                 var item = LDB.items.Select(unlock.itemID);
@@ -260,102 +254,5 @@ namespace FractionateEverything.Main {
                 recipe.Preload(recipe.index);
             }
         }
-
-        /// <summary>
-        /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
-        /// </summary>
-        public static void SetFractionatorCacheSize() {
-            foreach (var unlock in buildingInfoList) {
-                var prefabDesc = LDB.items.Select(unlock.itemID).prefabDesc;
-                prefabDesc.fracFluidInputMax = FracFluidInputMax;
-                prefabDesc.fracProductOutputMax = FracProductOutputMax;
-                prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
-            }
-        }
-
-        /// <summary>
-        /// 更改已放置的分馏塔的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
-        /// </summary>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
-        public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
-            __instance.fluidInputMax = FracFluidInputMax;
-            __instance.productOutputMax = FracProductOutputMax;
-            __instance.fluidOutputMax = FracFluidOutputMax;
-        }
-
-        /// <summary>
-        /// 更新1.4.1版本后，将已建造的精准分馏塔转换为自然资源分馏塔。
-        /// 作为物品的精准分馏塔并不准备修改，因为包含传送带上、玩家背包、玩家物流背包、各种箱子等等，容易出问题。
-        /// </summary>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(EntityData), nameof(EntityData.Import))]
-        [Obsolete("This method should be removed after Fractionate Everything 1.5.0 published.")]
-        public static void EntityData_Import_Postfix(ref EntityData __instance) {
-            if (__instance.modelIndex == 530) {
-                __instance.protoId = IFE自然资源分馏塔;
-                __instance.modelIndex = MFE自然资源分馏塔;
-            }
-        }
-
-        #region 分馏塔字段拓展
-
-        /// <summary>
-        /// 存储分馏塔所有副产物。结构：
-        /// (planetId, entityId) => Dictionary&lt;itemId, itemCount&gt;
-        /// </summary>
-        private static readonly ConcurrentDictionary<(int, int), Dictionary<int, int>> outputExtend = [];
-
-        public static void Import(BinaryReader r) {
-            outputExtend.Clear();
-            int fractionatorNum = r.ReadInt32();
-            for (int i = 0; i < fractionatorNum; i++) {
-                int planetId = r.ReadInt32();
-                int entityId = r.ReadInt32();
-                Dictionary<int, int> outputDic = [];
-                int outputKinds = r.ReadInt32();
-                for (int j = 0; j < outputKinds; j++) {
-                    int outputId = r.ReadInt32();
-                    int outputCount = r.ReadInt32();
-                    if (LDB.items.Select(outputId) == null) {
-                        continue;
-                    }
-                    outputDic.Add(outputId, outputCount);
-                }
-                outputExtend.TryAdd((planetId, entityId), outputDic);
-            }
-        }
-
-        public static void Export(BinaryWriter w) {
-            w.Write(outputExtend.Count);
-            foreach (var p in outputExtend) {
-                w.Write(p.Key.Item1);
-                w.Write(p.Key.Item2);
-                Dictionary<int, int> outputDic = outputExtend[p.Key];
-                //去除所有物品数目为0的情况，节约存储体积
-                List<int> keys = outputDic.Keys.Where(Key => outputDic[Key] > 0).ToList();
-                w.Write(keys.Count);
-                for (int i = 0; i < keys.Count; i++) {
-                    w.Write(keys[i]);
-                    w.Write(outputDic[keys[i]]);
-                }
-            }
-        }
-
-        public static void IntoOtherSave() {
-            outputExtend.Clear();
-        }
-
-        public static Dictionary<int, int> productExpansion(this FractionatorComponent fractionator,
-            PlanetFactory factory) {
-            int planetId = factory.planetId;
-            int entityId = fractionator.entityId;
-            if (!outputExtend.ContainsKey((planetId, entityId))) {
-                outputExtend.TryAdd((planetId, entityId), []);
-            }
-            return outputExtend[(planetId, entityId)];
-        }
-
-        #endregion
     }
 }
