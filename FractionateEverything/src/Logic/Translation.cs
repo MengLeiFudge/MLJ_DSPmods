@@ -1,6 +1,6 @@
 ﻿using static FractionateEverything.Utils.TranslationUtils;
 
-namespace FractionateEverything.Main {
+namespace FractionateEverything.Logic {
     public static class Translation {
         public static void AddTranslations() {
 

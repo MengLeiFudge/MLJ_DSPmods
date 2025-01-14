@@ -9,9 +9,9 @@ using UnityEngine;
 using static FractionateEverything.Utils.ProtoID;
 using static FractionateEverything.Utils.FormatUtils;
 using static FractionateEverything.FractionateEverything;
-using static FractionateEverything.Main.FracRecipeManager;
+using static FractionateEverything.Logic.FracRecipeManager;
 
-namespace FractionateEverything.Main {
+namespace FractionateEverything.Logic {
     /// <summary>
     /// 修改所有分馏塔的处理逻辑，以及对应的显示。
     /// </summary>
@@ -67,6 +67,89 @@ namespace FractionateEverything.Main {
         private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
         private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemPoint.csv";
 #endif
+
+        #endregion
+
+        #region 分馏成功次数统计（用于配方升级）
+
+        // 某个自然资源成功分馏的个数
+        private static readonly long[] NRFracSuccessCount = new long[12000];
+        // 某个自然资源杂质成功分馏的个数
+        private static readonly long[] NRSuperFracSuccessCount = new long[12000];
+        // 某个物品成功分馏的个数
+        private static readonly long[] UpgradeFracSuccessCount = new long[12000];
+        // 某个物品跨阶成功分馏的个数
+        private static readonly long[] UpgradeSuperFracSuccessCount = new long[12000];
+        // 某个物品成功增产分馏的个数
+        private static readonly long[] IFracSuccessCount = new long[12000];
+
+        public static void Import(BinaryReader r) {
+            int count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                int id = r.ReadInt32();
+                NRFracSuccessCount[id] = r.ReadInt64();
+            }
+            count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                int id = r.ReadInt32();
+                NRSuperFracSuccessCount[id] = r.ReadInt64();
+            }
+            count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                int id = r.ReadInt32();
+                UpgradeFracSuccessCount[id] = r.ReadInt64();
+            }
+            count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                int id = r.ReadInt32();
+                UpgradeSuperFracSuccessCount[id] = r.ReadInt64();
+            }
+            count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                int id = r.ReadInt32();
+                IFracSuccessCount[id] = r.ReadInt64();
+            }
+        }
+
+        public static void Export(BinaryWriter w) {
+            w.Write(NRFracSuccessCount.Count(num => num > 0));
+            for (int i = 0; i < NRFracSuccessCount.Length; i++) {
+                if (NRFracSuccessCount[i] > 0) {
+                    w.Write(i);
+                    w.Write(NRFracSuccessCount[i]);
+                }
+            }
+            w.Write(NRSuperFracSuccessCount.Count(num => num > 0));
+            for (int i = 0; i < NRSuperFracSuccessCount.Length; i++) {
+                if (NRSuperFracSuccessCount[i] > 0) {
+                    w.Write(i);
+                    w.Write(NRSuperFracSuccessCount[i]);
+                }
+            }
+            w.Write(UpgradeFracSuccessCount.Count(num => num > 0));
+            for (int i = 0; i < UpgradeFracSuccessCount.Length; i++) {
+                if (UpgradeFracSuccessCount[i] > 0) {
+                    w.Write(i);
+                    w.Write(UpgradeFracSuccessCount[i]);
+                }
+            }
+            w.Write(UpgradeSuperFracSuccessCount.Count(num => num > 0));
+            for (int i = 0; i < UpgradeSuperFracSuccessCount.Length; i++) {
+                if (UpgradeSuperFracSuccessCount[i] > 0) {
+                    w.Write(i);
+                    w.Write(UpgradeSuperFracSuccessCount[i]);
+                }
+            }
+            w.Write(IFracSuccessCount.Count(num => num > 0));
+            for (int i = 0; i < IFracSuccessCount.Length; i++) {
+                if (IFracSuccessCount[i] > 0) {
+                    w.Write(i);
+                    w.Write(IFracSuccessCount[i]);
+                }
+            }
+        }
+
+        public static void IntoOtherSave() { }
 
         #endregion
 
@@ -284,7 +367,7 @@ namespace FractionateEverything.Main {
         /// <returns>产物数目。-1表示原料损毁；0表示原料不变，流动输出；＞0表示生成产物</returns>
         private static int[] GetOutput(float randomVal, float successRatePlus, FracRecipe recipe) {
             //如果配方还未解锁，则直接流出
-            if (recipe is not { unlocked: true }) {
+            if (recipe == null || !recipe.IsUnlocked) {
                 return [0, 0];
             }
             //根据概率进行处理，注意增产点数只影响物品转换，不影响损毁
@@ -317,6 +400,7 @@ namespace FractionateEverything.Main {
                 return false;
             }
 
+            int inputItemID = __instance.fluidId;
             //获取分馏塔输出缓存拓展
             Dictionary<int, int> productExpansion = __instance.productExpansion(factory);
             int buildingID = factory.entityPool[__instance.entityId].protoId;
@@ -324,12 +408,12 @@ namespace FractionateEverything.Main {
             //为了让分馏塔升降级之前内部残留的物品流出去，添加abnormalProcess标记
             //recipe为null时，分馏塔相当于不工作，等待内部物品全部流出
             FracRecipe recipe = buildingID switch {
-                I分馏塔 => __instance.fluidId == I氢 ? DeuteriumFracRecipe : null,
-                IFE自然资源分馏塔 => GetNaturalResourceRecipe(__instance.fluidId),
-                IFE升级分馏塔 => GetUpgradeRecipe(__instance.fluidId),
-                IFE降级分馏塔 => GetDowngradeRecipe(__instance.fluidId),
-                IFE点数聚集分馏塔 => GetPointsAggregateRecipe(__instance.fluidId),
-                IFE增产分馏塔 => GetIncreaseRecipe(__instance.fluidId),
+                I分馏塔 => inputItemID == I氢 ? DeuteriumFracRecipe : null,
+                IFE自然资源分馏塔 => GetNaturalResourceRecipe(inputItemID),
+                IFE升级分馏塔 => GetUpgradeRecipe(inputItemID),
+                IFE降级分馏塔 => GetDowngradeRecipe(inputItemID),
+                IFE点数聚集分馏塔 => GetPointsAggregateRecipe(inputItemID),
+                IFE增产分馏塔 => GetIncreaseRecipe(inputItemID),
                 _ => null,
             };
             if (buildingID == IFE垃圾回收分馏塔) {
@@ -351,7 +435,7 @@ namespace FractionateEverything.Main {
                 //统计信息
                 //  fluidOutputTotal     消耗物品总数
                 //  productOutputTotal   产出地基总数
-                if (__instance.fluidId != I沙土) {
+                if (inputItemID != I沙土) {
                     __instance.fluidId = I沙土;
                     __instance.productId = I地基;
                     __instance.produceProb = 0.01f;
@@ -368,9 +452,21 @@ namespace FractionateEverything.Main {
                     __instance.productOutputTotal = 0;
                 }
             }
-
-            bool isSpecialFractionator = buildingID is IFE点数聚集分馏塔 or IFE增产分馏塔;
-            int inputItemID = __instance.fluidId;
+            //如果分馏塔主输出和分馏配方主输出不一致，调整产物（通常出现于升降级分馏塔的情况）
+            if (recipe == null || __instance.productId != recipe.mainOutput) {
+                //将分馏塔内缓存的产物全部返还到玩家背包
+                //注意，点数聚集分馏塔变为其他分馏塔时，产物增产点数会消失
+                GameMain.mainPlayer.package.AddItem(__instance.productId, __instance.productOutputCount, 0, out _);
+                __instance.productOutputCount = 0;
+                List<int> idList = productExpansion.Keys.ToList();
+                foreach (var id in idList) {
+                    GameMain.mainPlayer.package.AddItem(id, productExpansion[id], 0, out _);
+                    productExpansion.Remove(id);
+                }
+                //分馏塔主输出改为分馏配方主输出
+                __instance.productId = recipe == null ? inputItemID : recipe.mainOutput;
+                //如果是原版分馏塔，
+            }
 
             //输入货物的平均堆叠数目，后面输出时候会用
             float fluidInputCountPerCargo = 1.0f;
@@ -509,27 +605,43 @@ namespace FractionateEverything.Main {
                         }
 
                         __instance.productOutputTotal += outputIDNum[1];
-                        switch (buildingID) {
-                            case IFE点数聚集分馏塔:
-                                //不计算生成、消耗
-                                break;
-                            case IFE自然资源分馏塔:
-                            case IFE增产分馏塔:
-                                //只计算多生成的部分
-                                if (outputIDNum[1] > 1) {
-                                    lock (productRegister) {
-                                        productRegister[outputIDNum[0]] += outputIDNum[1] - 1;
+                        if (outputIDNum[0] == inputItemID) {
+                            //如果分馏出来的产物与原料相同，只计算多生成的部分
+                            lock (productRegister) {
+                                productRegister[outputIDNum[0]] += outputIDNum[1] - 1;
+                            }
+                            if (buildingID == IFE自然资源分馏塔) {
+                                lock (NRFracSuccessCount) {
+                                    NRFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
+                                }
+                            } else if (buildingID == IFE增产分馏塔) {
+                                lock (IFracSuccessCount) {
+                                    IFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
+                                }
+                            }
+                        } else {
+                            //正常计算
+                            lock (consumeRegister) {
+                                consumeRegister[inputItemID]++;
+                            }
+                            lock (productRegister) {
+                                productRegister[outputIDNum[0]] += outputIDNum[1];
+                            }
+                            if (buildingID == IFE自然资源分馏塔) {
+                                lock (NRSuperFracSuccessCount) {
+                                    NRSuperFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
+                                }
+                            } else if (buildingID == IFE升级分馏塔) {
+                                if (outputIDNum[0] == recipe.mainOutput) {
+                                    lock (UpgradeFracSuccessCount) {
+                                        UpgradeFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
+                                    }
+                                } else {
+                                    lock (UpgradeSuperFracSuccessCount) {
+                                        UpgradeSuperFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
                                     }
                                 }
-                                break;
-                            default:
-                                lock (consumeRegister) {
-                                    consumeRegister[inputItemID]++;
-                                }
-                                lock (productRegister) {
-                                    productRegister[outputIDNum[0]] += outputIDNum[1];
-                                }
-                                break;
+                            }
                         }
                     } else {
                         //没分馏出物品，正常流出或者原料损毁
@@ -546,7 +658,6 @@ namespace FractionateEverything.Main {
                             __instance.fluidOutputInc += fluidInputAvgInc;
                         } else {
                             //分馏失败，损毁原料
-                            //这个分支只有普通分馏塔才会进入，所以无需判断是否为特殊分馏塔
                             lock (consumeRegister) {
                                 consumeRegister[inputItemID]++;
                             }
@@ -667,6 +778,12 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
+                                recipe = buildingID switch {
+                                    IFE自然资源分馏塔 => GetNaturalResourceRecipe(input),
+                                    IFE升级分馏塔 => GetUpgradeRecipe(input),
+                                    IFE降级分馏塔 => GetDowngradeRecipe(input),
+                                    _ => null,
+                                };
                                 __instance.productId = recipe?.mainOutput ?? input;
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
@@ -743,9 +860,7 @@ namespace FractionateEverything.Main {
                 } else if (!isOutput
                            && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
                     if (inputItemID > 0) {
-                        if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null,
-                                out stack, out inc)
-                            > 0) {
+                        if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null, out stack, out inc) > 0) {
                             __instance.fluidInputCount += stack;
                             __instance.fluidInputInc += inc;
                             __instance.fluidInputCargoCount += 1f;
@@ -771,6 +886,12 @@ namespace FractionateEverything.Main {
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount += 1f;
                                 __instance.fluidId = input;
+                                recipe = buildingID switch {
+                                    IFE自然资源分馏塔 => GetNaturalResourceRecipe(input),
+                                    IFE升级分馏塔 => GetUpgradeRecipe(input),
+                                    IFE降级分馏塔 => GetDowngradeRecipe(input),
+                                    _ => null,
+                                };
                                 __instance.productId = recipe?.mainOutput ?? input;
                                 __instance.produceProb = 0.01f;
                                 signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
@@ -1131,7 +1252,7 @@ namespace FractionateEverything.Main {
                 if (recipe == null) {
                     s1 = "无配方".Translate();
                     s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-                } else if (!recipe.unlocked) {
+                } else if (!recipe.IsUnlocked) {
                     s1 = "未解锁".Translate();
                     s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
                 } else {

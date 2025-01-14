@@ -3,7 +3,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
-using FractionateEverything.Main;
+using FractionateEverything.Logic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,10 +16,10 @@ using System.Threading;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static GetDspData.ProtoID;
-using static FractionateEverything.Main.FracProcess;
-using static FractionateEverything.Main.FracRecipeManager;
-using static FractionateEverything.Main.FracRecipe;
-using static FractionateEverything.Main.FracItemManager;
+using static FractionateEverything.Logic.FracProcess;
+using static FractionateEverything.Logic.FracRecipeManager;
+using static FractionateEverything.Logic.FracRecipe;
+using static FractionateEverything.Logic.FracItemManager;
 
 namespace GetDspData {
     //item.UnlockKey
@@ -553,9 +553,9 @@ namespace GetDspData {
         }
 
         static void addIncFractorRecipe(ItemProto item, JArray recipes) {
-            Dictionary<int, Dictionary<int, float>> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
-                .GetValue<Dictionary<int, Dictionary<int, float>>>();
-            float ratio = IPFDic[item.ID].Values.First();//这就是10点数情况下，对应的比例
+            Dictionary<int, float> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
+                .GetValue<Dictionary<int, float>>();
+            float ratio = IPFDic[item.ID];//这就是10点数情况下，对应的比例
             recipes.Add(new JObject {
                 { "ID", item.ID + 30000 },
                 { "Type", -1 },
