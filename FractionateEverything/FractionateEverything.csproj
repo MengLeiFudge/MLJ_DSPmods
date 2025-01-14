@@ -30,13 +30,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.5.5.0, Culture=neutral, processorArchitecture=MSIL">
@@ -47,9 +48,6 @@
     </Reference>
     <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
-    </Reference>
-    <Reference Include="BlueprintTweaks">
-      <HintPath>..\lib\BlueprintTweaks-publicized.dll</HintPath>
     </Reference>
     <Reference Include="BuildBarTool">
       <HintPath>..\lib\BuildBarTool.dll</HintPath>
@@ -129,13 +127,19 @@
     <Compile Include="src\Compatibility\TheyComeFromVoid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\FractionateEverything.cs" />
-    <Compile Include="src\Main\FracRecipe.cs" />
-    <Compile Include="src\Main\FracItem.cs" />
-    <Compile Include="src\Main\FracProcess.cs" />
-    <Compile Include="src\Main\UIFractionateShop.cs" />
-    <Compile Include="src\Main\UIOptionWindowPatch.cs" />
-    <Compile Include="src\Main\FracTech.cs" />
-    <Compile Include="src\Main\Translation.cs" />
+    <Compile Include="src\Logic\BuildingInfo.cs" />
+    <Compile Include="src\Logic\FracItemManager.cs" />
+    <Compile Include="src\Logic\FracRecipe.cs" />
+    <Compile Include="src\Logic\FracRecipeManager.cs" />
+    <Compile Include="src\Logic\FracItem.cs" />
+    <Compile Include="src\Logic\FracProcess.cs" />
+    <Compile Include="src\Logic\FracRecipeType.cs" />
+    <Compile Include="src\Logic\FracTech.cs" />
+    <Compile Include="src\Logic\Translation.cs" />
+    <Compile Include="src\UI\UIFractionateShop.cs" />
+    <Compile Include="src\UI\UIHotkeySettingPatcher.cs" />
+    <Compile Include="src\UI\UIOptionWindowPatch.cs" />
+    <Compile Include="src\UI\UIRecipeEntryPatch.cs" />
     <Compile Include="src\Utils\AcceptableValueUtils.cs" />
     <Compile Include="src\Utils\AddProtoUtils.cs" />
     <Compile Include="src\Utils\FormatUtils.cs" />
