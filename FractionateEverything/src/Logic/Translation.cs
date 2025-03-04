@@ -18,12 +18,12 @@ namespace FractionateEverything.Logic {
                 + $"如果你是首次使用该模组，强烈建议你{"查看模组介绍页面".AddBlueLabel()}以了解其内容与特色。\n"
                 + $"你可以在{"设置-杂项".AddBlueLabel()}中修改MOD配置，以获得完整体验。\n"
                 + "推荐与创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）一起使用。\n"
-                + $"如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"创世之书MOD交流群".AddBlueLabel()}反馈。\n"
+                + $"如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".AddBlueLabel()}反馈。\n"
                 + "尽情享受分馏的乐趣吧！".AddOrangeLabel());
             Register("FE交流群", "View on Github", "加入交流群");
             Register("FE交流群链接",
                 "https://github.com/MengLeiFudge/MLJ_DSPmods",
-                "https://jq.qq.com/?_wv=1027&k=5bnaDEp3");
+                "https://qm.qq.com/q/zzicz6j9zW");
             Register("FE日志", "Update Log", "更新日志");
             Register("FE日志链接",
                 "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",

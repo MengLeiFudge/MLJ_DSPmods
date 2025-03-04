@@ -7,7 +7,33 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace FractionateEverything.UI {
-    public class UIHotkeySettingPatcher {
+    public static class UIHotkeySettingPatcher {
+        /*public static void On_Shift_F_Switch()
+        {
+            if (this.dysonEditor.active || this.gameData.mainPlayer.fastTravelling || !this.gameData.mainPlayer.isAlive)
+                return;
+            if (this.replicator.active)
+            {
+                this.ShutAllFunctionWindow();
+                this.CloseEnemyBriefInfo();
+                this.ShutPlayerInventory();
+            }
+            else
+            {
+                this.ShutAllFunctionWindow();
+                this.CloseEnemyBriefInfo();
+                this.OpenReplicatorWindow();
+                this.OpenPlayerInventory();
+            }
+        }
+
+
+
+
+
+
+
+
         //KeyCode都是大于等于8的，所以modifier shift=1 ctrl=2 alt=4
         public static Text title1;
         public static Text keyText1;
@@ -195,6 +221,6 @@ namespace FractionateEverything.UI {
         //         result += " + ";
         //     result += DSPCalculatorPlugin.SwitchWindowSizeHotKey.Value;
         //     return " (" + result + ")";
-        // }
+        // }*/
     }
 }
