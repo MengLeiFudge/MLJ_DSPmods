@@ -34,10 +34,8 @@ namespace FractionateEverything.Logic {
         /// </summary>
         public int mainOutput => outputID[1];
 
-        /*
-        */
         /// <summary>
-        /// su
+        /// 损毁概率。
         /// </summary>
         public float destroyRatio => outputRatio[0];
 

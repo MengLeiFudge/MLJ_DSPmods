@@ -136,8 +136,9 @@
     <Compile Include="src\Logic\FracRecipeType.cs" />
     <Compile Include="src\Logic\FracTech.cs" />
     <Compile Include="src\Logic\Translation.cs" />
-    <Compile Include="src\UI\UIFractionateShop.cs" />
-    <Compile Include="src\UI\UIHotkeySettingPatcher.cs" />
+    <Compile Include="src\UI\temp\UIFractionateShopWindow.cs" />
+    <Compile Include="src\UI\temp\UIHotkeySettingPatcher.cs" />
+    <Compile Include="src\UI\temp\UIItemPickerWindow.cs" />
     <Compile Include="src\UI\UIOptionWindowPatch.cs" />
     <Compile Include="src\UI\UIRecipeEntryPatch.cs" />
     <Compile Include="src\Utils\AcceptableValueUtils.cs" />
