@@ -3,7 +3,6 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
-using FractionateEverything.Logic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,10 +15,6 @@ using System.Threading;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static GetDspData.ProtoID;
-using static FractionateEverything.Logic.FracProcess;
-using static FractionateEverything.Logic.FracRecipeManager;
-using static FractionateEverything.Logic.FracRecipe;
-using static FractionateEverything.Logic.FracItemManager;
 
 namespace GetDspData {
     //item.UnlockKey
@@ -264,60 +259,76 @@ namespace GetDspData {
                 //配方
                 var recipes = new JArray();
                 dataObj.Add("recipes", recipes);
-                //为了让自然资源自分馏配方在量化计算器中靠后的位置显示，这里需要先选出来它们，后面再添加
-                List<RecipeProto> selfFracRecipes = [];
                 foreach (var recipe in LDB.recipes.dataArray) {
-                    if (recipe.Type == ERecipeType.Fractionate
-                        && recipe.Items.Length == 1
-                        && recipe.Results.Length == 1
-                        && recipe.Items[0] == recipe.Results[0]) {
-                        selfFracRecipes.Add(recipe);
-                    } else {
-                        addRecipe(recipe, recipes);
-                    }
+                    addRecipe(recipe, recipes);
                 }
                 //物品
                 var items = new JArray();
                 dataObj.Add("items", items);
                 foreach (var item in LDB.items.dataArray) {
-                    //如果该物品是“该版本尚未加入”
-                    if ((!GameMain.history.ItemUnlocked(item.ID) && item.preTech == null && item.missingTech)
-                        //或无法选中这个物品（9998是星河卫士勋章，13000之后是巨构旧的接收器）
-                        || (item.GridIndex == 0 || item.GridIndex == 9998 || item.GridIndex > 13000)
-                        //或没有配方可以制造这个物品，且不是原始矿物或蓄电器满
-                        || ((item.recipes == null || item.recipes.Count == 0)
-                            && !item.canMining()
-                            && item.ID != I蓄电器满)) {
-                        //则移除物品，并移除原料包含该物品，或产物包含该物品的所有配方
-                        LogInfo($"移除物品 {item.ID} {item.name}");
-                        IList<JToken> recipeToBeRemoved = new List<JToken>();
-                        foreach (var recipe in recipes) {
-                            var itemsArr = ((JArray)((JObject)recipe)["Items"]).Values<int>();
-                            var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
-                            bool remove = false;
-                            foreach (var id in itemsArr) {
-                                if (id == item.ID) {
-                                    remove = true;
+                    if (item.ID < IFE自然资源分馏塔 || item.ID > IFE老虎机分馏塔) {
+                        //如果该物品是“该版本尚未加入”
+                        if ((!GameMain.history.ItemUnlocked(item.ID) && item.preTech == null && item.missingTech)
+                            //或无法选中这个物品（9998是星河卫士勋章，13000之后是巨构旧的接收器）
+                            || (item.GridIndex == 0 || item.GridIndex == 9998 || item.GridIndex > 13000)
+                            //或没有配方可以制造这个物品，且不是原始矿物或蓄电器满
+                            || ((item.recipes == null || item.recipes.Count == 0)
+                                && !item.canMining()
+                                && item.ID != I蓄电器满)) {
+                            //则移除物品，并移除原料包含该物品，或产物包含该物品的所有配方
+                            LogInfo($"移除物品 {item.ID} {item.name}");
+                            IList<JToken> recipeToBeRemoved = new List<JToken>();
+                            foreach (var recipe in recipes) {
+                                var itemsArr = ((JArray)((JObject)recipe)["Items"]).Values<int>();
+                                var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
+                                bool remove = false;
+                                foreach (var id in itemsArr) {
+                                    if (id == item.ID) {
+                                        remove = true;
+                                    }
+                                }
+                                foreach (var id in resultsArr) {
+                                    if (id == item.ID) {
+                                        remove = true;
+                                    }
+                                }
+                                if (remove) {
+                                    recipeToBeRemoved.Add(recipe);
                                 }
                             }
-                            foreach (var id in resultsArr) {
-                                if (id == item.ID) {
-                                    remove = true;
-                                }
+                            foreach (var recipe in recipeToBeRemoved) {
+                                recipes.Remove(recipe);
+                                LogInfo($"移除配方 {recipe["ID"]} {recipe["Name"]}");
                             }
-                            if (remove) {
-                                recipeToBeRemoved.Add(recipe);
-                            }
+                            continue;
                         }
-                        foreach (var recipe in recipeToBeRemoved) {
-                            recipes.Remove(recipe);
-                            LogInfo($"移除配方 {recipe["ID"]} {recipe["Name"]}");
-                        }
-                        continue;
                     }
                     addItem(item, items);
-                    //添加特殊配方，游戏中不存在但是计算器需要它们来计算
-                    List<int> factorySpecial = [];//可以直接采集，Type=-1，ID+10000
+                    //添加与这个物品相关的特殊配方（游戏中不存在，但是计算器需要它们来计算）
+                    //0.可直接采集的物品（黑雾不算）对应开采配方需要插入到最前，以尽量规避线性规划无解
+                    int firstIdx = recipes.Count;
+                    if (item.canMiningFromVein()
+                        || item.canMiningFromSea()
+                        || item.canMiningFromOilWell()
+                        || item.canMiningFromGasGiant()
+                        || item.canMiningFromAtmosphere()
+                        || item.canMiningByRayReceiver()) {
+                        foreach (var recipe in recipes) {
+                            var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
+                            bool contains = false;
+                            foreach (var id in resultsArr) {
+                                if (id == item.ID) {
+                                    contains = true;
+                                }
+                            }
+                            if (contains) {
+                                firstIdx = recipes.IndexOf(recipe);
+                                break;
+                            }
+                        }
+                    }
+                    //1.可直接采集
+                    List<int> factorySpecial = [];
                     if (item.canMiningFromVein()) {
                         factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
                     }
@@ -346,8 +357,7 @@ namespace GetDspData {
                         factorySpecial = [..factorySpecial, I行星基地];
                     }
                     if (factorySpecial.Count > 0) {
-                        recipes.Add(new JObject {
-                            { "ID", item.ID + 10000 },
+                        recipes.Insert(firstIdx, new JObject {
                             { "Type", -1 },
                             { "Factories", new JArray(factorySpecial) },
                             { "Name", $"[无中生有]{item.name}" },
@@ -359,19 +369,13 @@ namespace GetDspData {
                             { "Proliferator", 0 },
                             { "IconName", item.iconSprite.name },
                         });
+                        firstIdx++;
                     }
-                    //添加自分馏配方。这里处于循环内，需要找到该物品对应的自分馏配方后，添加并移除
-                    foreach (var recipe in selfFracRecipes) {
-                        if (recipe.Items.Contains(item.ID)) {
-                            addRecipe(recipe, recipes);
-                            break;
-                        }
-                    }
+                    //2.射线接受站，以及巨构的射线重构站
                     if (item.canMiningByRayReceiver()) {
                         //不带透镜的公式
                         //此公式比较特殊，有明确速率0.1/s，此处不使用大部分“无中生有”的1/s速率
-                        recipes.Add(new JObject {
-                            { "ID", item.ID + 10000 },
+                        recipes.Insert(firstIdx, new JObject {
                             { "Type", -1 },
                             { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
                             { "Name", $"[无中生有]{item.name}" },
@@ -383,10 +387,10 @@ namespace GetDspData {
                             { "Proliferator", 0 },
                             { "IconName", item.iconSprite.name },
                         });
+                        firstIdx++;
                         //带透镜的公式
                         //此公式比较特殊，有明确的速率0.2/s
-                        recipes.Add(new JObject {
-                            { "ID", item.ID + 20000 },
+                        recipes.Insert(firstIdx, new JObject {
                             { "Type", -1 },
                             { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
                             { "Name", $"[射线接收带透镜]{item.name}" },
@@ -398,11 +402,12 @@ namespace GetDspData {
                             { "Proliferator", 4 },
                             { "IconName", item.iconSprite.name },
                         });
+                        firstIdx++;
                     }
+                    //3.蓄电器空与蓄电器满的相互转化
                     if (item.ID == I蓄电器满) {
                         //蓄电器->蓄电器满，两个公式，一个放下充电，一个通过能量枢纽充电
                         recipes.Add(new JObject {
-                            { "ID", item.ID + 10000 },
                             { "Type", -1 },
                             { "Factories", new JArray(new[] { I蓄电器满 }) },
                             { "Name", $"[充电]{item.name}-放置充电" },
@@ -415,7 +420,6 @@ namespace GetDspData {
                             { "IconName", item.iconSprite.name },
                         });
                         recipes.Add(new JObject {
-                            { "ID", item.ID + 10001 },
                             { "Type", -1 },
                             { "Factories", new JArray(new[] { I能量枢纽 }) },
                             { "Name", $"[充电]{item.name}-能量枢纽充电" },
@@ -428,7 +432,7 @@ namespace GetDspData {
                             { "IconName", item.iconSprite.name },
                         });
                     }
-                    //创世有满燃料棒变空燃料棒的配方
+                    //4.创世满燃料棒烧完变空燃料棒
                     if (GenesisBookEnable) {
                         int[] factoryID = [
                             I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂,
@@ -445,7 +449,6 @@ namespace GetDspData {
                         if (itemID.Contains(item.ID)) {
                             int index = itemID.ToList().IndexOf(item.ID);
                             recipes.Add(new JObject {
-                                { "ID", item.ID + 10000 },
                                 { "Type", -1 },
                                 { "Factories", new JArray(new[] { factoryID[index] }) },
                                 { "Name", $"[燃料棒耗尽]{item.name}" },
@@ -459,9 +462,9 @@ namespace GetDspData {
                             });
                         }
                     }
-                    //分馏启用时，添加增产塔分馏配方
-                    if (FractionateEverythingEnable && item.ID != I沙土) {
-                        addIncFractorRecipe(item, recipes);
+                    //5.自然资源分馏、升降级分馏、增产分馏
+                    if (FractionateEverythingEnable) {
+                        AddFracRecipe(recipes, item);
                     }
                 }
                 //特殊物品（无实体的工厂）
@@ -516,6 +519,96 @@ namespace GetDspData {
             }
         }
 
+        static void AddFracRecipe(JArray recipes, ItemProto item) {
+            FractionateEverything.Logic.FracRecipe fracRecipe;
+            if ((fracRecipe = FractionateEverything.Logic.FracRecipeManager.GetNaturalResourceRecipe(item.ID))
+                != null) {
+                var res = processFracRecipe(fracRecipe);
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IFE自然资源分馏塔 }) },
+                    { "Name", $"[自然资源分馏]{item.name}" },
+                    { "Items", new JArray(new[] { item.ID }) },
+                    { "ItemCounts", new JArray(new[] { res.Item1 }) },
+                    { "Results", new JArray(res.Item2) },
+                    { "ResultCounts", new JArray(res.Item3) },
+                    { "TimeSpend", 6000 },
+                    { "Proliferator", 1 },
+                    { "IconName", item.iconSprite.name },
+                });
+            }
+            if ((fracRecipe = FractionateEverything.Logic.FracRecipeManager.GetUpgradeRecipe(item.ID)) != null) {
+                var res = processFracRecipe(fracRecipe);
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IFE升级分馏塔 }) },
+                    { "Name", $"[升级分馏]{item.name}" },
+                    { "Items", new JArray(new[] { item.ID }) },
+                    { "ItemCounts", new JArray(new[] { res.Item1 }) },
+                    { "Results", new JArray(res.Item2) },
+                    { "ResultCounts", new JArray(res.Item3) },
+                    { "TimeSpend", 6000 },
+                    { "Proliferator", 1 },
+                    { "IconName", item.iconSprite.name },
+                });
+            }
+            if ((fracRecipe = FractionateEverything.Logic.FracRecipeManager.GetDowngradeRecipe(item.ID)) != null) {
+                var res = processFracRecipe(fracRecipe);
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IFE降级分馏塔 }) },
+                    { "Name", $"[降级分馏]{item.name}" },
+                    { "Items", new JArray(new[] { item.ID }) },
+                    { "ItemCounts", new JArray(new[] { res.Item1 }) },
+                    { "Results", new JArray(res.Item2) },
+                    { "ResultCounts", new JArray(res.Item3) },
+                    { "TimeSpend", 6000 },
+                    { "Proliferator", 1 },
+                    { "IconName", item.iconSprite.name },
+                });
+            }
+            if (item.ID != I沙土
+                && (fracRecipe = FractionateEverything.Logic.FracRecipeManager.GetIncreaseRecipe(item.ID)) != null) {
+                // Dictionary<int, float> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
+                //     .GetValue<Dictionary<int, float>>();
+                // float ratio = IPFDic[item.ID];//增产10点情况下的概率
+                // var res = processFracRecipe(new FracRecipe());
+                var res = processFracRecipe(fracRecipe);
+                recipes.Add(new JObject {
+                    { "Type", -1 },
+                    { "Factories", new JArray(new[] { IFE增产分馏塔 }) },
+                    { "Name", $"[增产分馏]{item.name}" },
+                    { "Items", new JArray(new[] { item.ID }) },
+                    { "ItemCounts", new JArray(new[] { res.Item1 }) },
+                    { "Results", new JArray(res.Item2) },
+                    { "ResultCounts", new JArray(res.Item3) },
+                    { "TimeSpend", 6000 },
+                    { "Proliferator", 8 },//新的模式
+                    { "IconName", item.iconSprite.name },
+                });
+            }
+        }
+
+        static (float, List<int>, List<float>) processFracRecipe(FractionateEverything.Logic.FracRecipe fracRecipe) {
+            float inputNum = 0;
+            List<int> outputID = [..fracRecipe.outputID];
+            List<float> outputNum = [..fracRecipe.outputNum];
+            List<float> outputRatio = [..fracRecipe.outputRatio];
+            //1个->5%->2个 等价于 1个->20s->2个 等价于 5个->100s->10个
+            //1个->x%->y个 等价于 x个->100s->xy个
+            if (fracRecipe.destroyRatio > 0) {
+                inputNum += fracRecipe.destroyRatio * 100;
+            }
+            outputID.RemoveAt(0);
+            outputNum.RemoveAt(0);
+            outputRatio.RemoveAt(0);
+            for (int i = 0; i < outputID.Count; i++) {
+                inputNum += outputRatio[i] * 100;
+                outputNum[i] *= outputRatio[i] * 100;
+            }
+            return (inputNum, outputID, outputNum);
+        }
+
         static void addItem(ItemProto proto, JArray add) {
             var obj = new JObject {
                 { "ID", proto.ID },
@@ -552,53 +645,23 @@ namespace GetDspData {
             add.Add(obj);
         }
 
-        static void addIncFractorRecipe(ItemProto item, JArray recipes) {
-            Dictionary<int, float> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
-                .GetValue<Dictionary<int, float>>();
-            float ratio = IPFDic[item.ID];//这就是10点数情况下，对应的比例
-            recipes.Add(new JObject {
-                { "ID", item.ID + 30000 },
-                { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE增产分馏塔 }) },
-                { "Name", $"[增产分馏塔]{item.name}" },
-                { "Items", new JArray(new[] { item.ID }) },
-                { "ItemCounts", new JArray(new[] { 1 }) },
-                { "Results", new JArray(new[] { item.ID }) },
-                { "ResultCounts", new JArray(new[] { 2 }) },
-                { "TimeSpend", (1.0 / ratio) * 60 },//按照10点数情况计算time
-                { "Proliferator", 8 },//新的模式
-                { "IconName", item.iconSprite.name },
-            });
-        }
-
+        /// <summary>
+        /// TimeSpend：帧数，一秒对应60帧。也就是说TimeSpend为60时，表示1秒内可以完成制造。
+        /// </summary>
         static void addRecipe(RecipeProto proto, JArray add) {
             if (proto.Type == ERecipeType.Fractionate) {
                 //115重氢分馏
                 if (proto.ID == R重氢分馏_GB氦闪约束器) {
                     RecipeProto proto2 = CopyRecipeProto(proto);
+                    //1%概率分馏出1个重氢，假设传送带速度为x每秒，显然重氢生成速率为x/100每秒
+                    //可以转为等价配方：1氢->100s->1重氢
                     proto2.ItemCounts[0] = 1;
-                    proto2.TimeSpend = (int)(0.01 * 100000);
+                    proto2.TimeSpend = 6000;
+                    proto2.ResultCounts[0] = 1;
                     addRecipe(proto2, add, [I分馏塔]);
-                    return;
+                } else {
+                    LogError($"发现非重氢分馏的分馏配方！ ID：{proto.ID}");
                 }
-                //剩下必然是万物分馏的配方
-                // //判定条件不能用proto.Items[0] == proto.Results[0]，因为还有增产剂MK3自分馏、微型粒子对撞机自分馏等
-                // if (isResourceFrac(proto.Items[0])) {
-                //     RecipeProto proto2 = CopyRecipeProto(proto);
-                //     adjustRecipeFEFrac(proto2, IFE自然资源分馏塔);
-                //     addRecipe(proto2, add, [IFE自然资源分馏塔]);
-                // } else {
-                //     RecipeProto proto2 = CopyRecipeProto(proto);
-                //     adjustRecipeFEFrac(proto2, IFE升级分馏塔);
-                //     //有些配方使用升降级分馏塔但是自分馏，此时显然要使用降级分馏塔获取最大速率，所以升级分馏塔无用
-                //     if (proto2.Items[0] != proto2.Results[0]) {
-                //         addRecipe(proto2, add, [IFE升级分馏塔]);
-                //     }
-                //
-                //     RecipeProto proto3 = CopyRecipeProto(proto);
-                //     adjustRecipeFEFrac(proto3, IFE降级分馏塔);
-                //     addRecipe(proto3, add, [IFE降级分馏塔]);
-                // }
                 return;
             }
             int[] Factories;
@@ -617,7 +680,6 @@ namespace GetDspData {
 
                     RecipeProto proto2 = new RecipeProto();
                     proto.CopyPropsTo(ref proto2);
-                    proto2.ID += 40000;
                     proto2.Type = (ERecipeType)(-1);
                     proto2.name = $"[负熵翻倍]{proto.name}";
                     for (int i = 0; i < proto2.ResultCounts.Length; i++) {
@@ -650,7 +712,6 @@ namespace GetDspData {
             bool flag2 = proto.productive;
             bool flag4 = proto.Type == ERecipeType.Fractionate;
             var obj = new JObject {
-                { "ID", proto.ID },
                 { "Type", (int)proto.Type },
                 { "Factories", new JArray(Factories) },
                 { "Name", proto.name },
@@ -659,7 +720,8 @@ namespace GetDspData {
                 { "Results", new JArray(proto.Results) },
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 //分馏配方TimeSpend=ratio*100000
-                { "TimeSpend", flag4 ? (1.0 / (proto.TimeSpend / 100000.0)) * 60 : proto.TimeSpend },
+                //{ "TimeSpend", flag4 ? (1.0 / (proto.TimeSpend / 100000.0)) * 60 : proto.TimeSpend },
+                { "TimeSpend", proto.TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
                 { "IconName", proto.iconSprite.name },
             };
@@ -681,42 +743,6 @@ namespace GetDspData {
             };
         }
 
-        // static void adjustRecipeFEFrac(RecipeProto recipe, int factory) {
-        //     if (factory == IFE自然资源分馏塔) {
-        //         recipe.name += "-自然资源分馏";
-        //         recipe.ItemCounts[0] = 1;
-        //         recipe.ResultCounts[0] = 2;
-        //         Dictionary<int, float> dic = GetNumRatioNaturalResource(recipe.Items[0]);
-        //         float ratio = dic[2];
-        //         recipe.TimeSpend = (int)(ratio * 100000);
-        //     } else if (factory == IFE升级分馏塔) {
-        //         recipe.name += "-升级分馏";
-        //         recipe.ItemCounts[0] = 1;
-        //         recipe.ResultCounts[0] = 1;
-        //         Dictionary<int, float> dic = GetNumRatioUpgrade(recipe.Items[0]);
-        //         if (!dic.TryGetValue(1, out float ratio)) {
-        //             ratio = 0.04f;
-        //             LogError(recipe.name + "未能获取升级分馏概率！生成的数据可能有问题！");
-        //         }
-        //         //暂时不考虑损毁的影响，按照无损毁来计算
-        //         recipe.TimeSpend = (int)(ratio * 100000);
-        //     } else if (factory == IFE降级分馏塔) {
-        //         recipe.name += "-降级分馏";
-        //         recipe.ID += 1000;
-        //         (recipe.Items[0], recipe.Results[0]) = (recipe.Results[0], recipe.Items[0]);
-        //         recipe.ItemCounts[0] = 1;
-        //         recipe.ResultCounts[0] = 2;
-        //         Dictionary<int, float> dic = GetNumRatioDowngrade(recipe.Items[0]);
-        //         if (!dic.TryGetValue(2, out float ratio)) {
-        //             ratio = 0.02f;
-        //             LogError(recipe.name + "未能获取降级分馏概率！！生成的数据有问题！");
-        //         }
-        //         recipe.TimeSpend = (int)(ratio * 100000);
-        //     } else {
-        //         throw new($"异常万物分馏配方，ID {recipe.ID}，factory {factory}");
-        //     }
-        // }
-
         static string FormatName(string name, string Name) {
             if (Name == null) {
                 return "Name is null!";
@@ -734,40 +760,6 @@ namespace GetDspData {
                 .Replace(".", "")
                 .Replace("（", "")
                 .Replace("）", "");
-        }
-
-        private void EditData(Proto proto) {
-            // if (proto is ItemProto item) {
-            //     switch (item.ID) {
-            //         case I分馏塔:
-            //
-            //             break;
-            //         case I化工厂:
-            //         case I量子化工厂:
-            //         case I微型粒子对撞机:
-            //             item.GridIndex--;
-            //             item.maincraft.GridIndex--;
-            //             break;
-            //     }
-            // }else if (proto is RecipeProto recipe) {
-            //     switch (recipe.ID) {
-            //         case I分馏塔:
-            //             item.Name = "通用分馏塔";
-            //             item.Description = "I通用分馏塔";
-            //             item.Preload(item.index);
-            //             item.GridIndex = 2603;
-            //             item.maincraft.GridIndex = 2603;
-            //             item.BuildIndex = 408;
-            //             LDBTool.SetBuildBar(item.BuildIndex / 100, item.BuildIndex % 100, item.ID);
-            //             break;
-            //         case I化工厂:
-            //         case I量子化工厂:
-            //         case I微型粒子对撞机:
-            //             item.GridIndex--;
-            //             item.maincraft.GridIndex--;
-            //             break;
-            //     }
-            // }
         }
 
         #region 分馏原版逻辑梳理
@@ -996,23 +988,23 @@ namespace GetDspData {
 
         #endregion
 
-        private void test() {
-            string jsonText =
-                "[{\"a\": \"aaa\",\"b\": \"bbb\",\"c\": \"ccc\"},{\"a\": \"aa\",\"b\": \"bb\",\"c\": \"cc\"}]";
-            var arr = JArray.Parse(jsonText);
-            //需求，删除列表里的a节点的值为\"aa\"的项
-            IList<JToken> _ILIST = new List<JToken>();//存储需要删除的项
-            foreach (var item in arr)//查找某个字段与值
-            {
-                if (((JObject)item)["a"].Value<string>() == "aa") {
-                    _ILIST.Add(item);
-                }
-            }
-            foreach (var item in _ILIST)//移除mJObj  有效
-            {
-                arr.Remove(item);
-            }
-        }
+        // private void test() {
+        //     string jsonText =
+        //         "[{\"a\": \"aaa\",\"b\": \"bbb\",\"c\": \"ccc\"},{\"a\": \"aa\",\"b\": \"bb\",\"c\": \"cc\"}]";
+        //     var arr = JArray.Parse(jsonText);
+        //     //需求，删除列表里的a节点的值为\"aa\"的项
+        //     IList<JToken> _ILIST = new List<JToken>();//存储需要删除的项
+        //     foreach (var item in arr)//查找某个字段与值
+        //     {
+        //         if (((JObject)item)["a"].Value<string>() == "aa") {
+        //             _ILIST.Add(item);
+        //         }
+        //     }
+        //     foreach (var item in _ILIST)//移除mJObj  有效
+        //     {
+        //         arr.Remove(item);
+        //     }
+        // }
 
         // [HarmonyTranspiler]
         // [HarmonyPatch(typeof(ItemComboBox), nameof(ItemComboBox.OnItemIndexChange))]

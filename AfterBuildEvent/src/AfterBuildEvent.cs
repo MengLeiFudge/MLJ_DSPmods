@@ -13,14 +13,22 @@ using static AfterBuildEvent.Utils;
 namespace AfterBuildEvent {
     static class AfterBuildEvent {
         public static void Main(string[] args) {
+            //已注入preloader的Assembly-CSharp.dll
+            //ProjectGenesis-publicized.dll
+            //现有project的dll
+            //任意project的mdb
+
             Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
             Console.WriteLine("输入要执行的命令（直接回车表示1）：");
             Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
-            Console.WriteLine("2表示生成计算器所需所有数据");
+            Console.WriteLine("2表示更新部分需要的dll类库");
+            Console.WriteLine("3表示生成计算器所需所有数据");
             string str = Console.ReadLine();
             if (str == "1" || str == "") {
                 UpdateModsThenStart();
             } else if (str == "2") {
+                UpdateLibDll();
+            } else if (str == "3") {
                 GetAllCalcJson();
             } else {
                 Console.WriteLine("输入有误！");
@@ -36,50 +44,6 @@ namespace AfterBuildEvent {
             cmd.Exec(KillDSP);
             //等待游戏进程关闭
             Thread.Sleep(1000);
-            //publicize已注入preloader的Assembly-CSharp.dll，然后将其拷贝到项目的lib
-            //注：将BepInEX.cfg的DumpAssemblies设为true，就会生成已注入preloader的Assembly-CSharp.dll
-            if (File.Exists(R2_DumpedDll_Origin)) {
-                Console.WriteLine("开始尝试将注入preloader的Assembly-CSharp.dll公开");
-                if (File.Exists(R2_DumpedDll_Publicized)) {
-                    File.Delete(R2_DumpedDll_Publicized);
-                }
-                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
-                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_DumpedDll_Origin}\"");//引号防止路径包含空格
-                while (!File.Exists(R2_DumpedDll_Publicized)) {
-                    Thread.Sleep(100);
-                }
-                Retry1:
-                try {
-                    File.Copy(R2_DumpedDll_Publicized, DSP_DumpedDll_Publicized, true);
-                }
-                catch (Exception) {
-                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
-                    goto Retry1;
-                }
-                Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开，并复制到本地");
-            } else {
-                Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
-            }
-            //publicize创世之书的dll，然后将其拷贝到项目的lib
-            //注：如果R2禁用创世，也会出现找不到dll的情况
-            if (File.Exists(R2_GenesisDll_Origin)) {
-                Console.WriteLine("开始尝试将创世之书的dll公开");
-                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
-                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_GenesisDll_Origin}\"");//引号防止路径包含空格，必须绝对路径
-                Retry2:
-                try {
-                    File.Copy(R2_GenesisDll_Publicized, DSP_GenesisDll_Publicized, true);
-                }
-                catch (Exception) {
-                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
-                    Thread.Sleep(100);
-                    goto Retry2;
-                }
-                File.Delete(R2_GenesisDll_Publicized);
-                Console.WriteLine("已将创世之书的dll公开，并复制到本地");
-            } else {
-                Console.WriteLine("未找到创世之书的dll");
-            }
             //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
             foreach (var dirInfo in new DirectoryInfo(@"..\..\..").GetDirectories()) {
                 string csproj = $@"{dirInfo.FullName}\{dirInfo.Name}.csproj";
@@ -286,12 +250,69 @@ namespace AfterBuildEvent {
 
         #endregion
 
+        #region 更新类库需要的部分DLL
+
+        static void UpdateLibDll() {
+            using CmdProcess cmd = new();
+            //publicize已注入preloader的Assembly-CSharp.dll，然后将其拷贝到项目的lib
+            //注：将BepInEX.cfg的DumpAssemblies设为true，就会生成已注入preloader的Assembly-CSharp.dll
+            if (File.Exists(R2_DumpedDll_Origin)) {
+                Console.WriteLine("开始尝试将注入preloader的Assembly-CSharp.dll公开");
+                if (File.Exists(R2_DumpedDll_Publicized)) {
+                    File.Delete(R2_DumpedDll_Publicized);
+                }
+                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
+                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_DumpedDll_Origin}\"");//引号防止路径包含空格
+                while (!File.Exists(R2_DumpedDll_Publicized)) {
+                    Thread.Sleep(100);
+                }
+                Retry1:
+                try {
+                    File.Copy(R2_DumpedDll_Publicized, Project_DumpedDll_Publicized, true);
+                }
+                catch (Exception) {
+                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
+                    goto Retry1;
+                }
+                Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开，并复制到本地");
+            } else {
+                Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
+            }
+            //publicize创世之书的dll，然后将其拷贝到项目的lib
+            //注：如果R2禁用创世，也会出现找不到dll的情况
+            if (File.Exists(R2_GenesisDll_Origin)) {
+                Console.WriteLine("开始尝试将创世之书的dll公开");
+                cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
+                cmd.Exec($".\\{PublicizerExe.Name} \"{R2_GenesisDll_Origin}\"");//引号防止路径包含空格，必须绝对路径
+                Retry2:
+                try {
+                    File.Copy(R2_GenesisDll_Publicized, Project_GenesisDll_Publicized, true);
+                }
+                catch (Exception) {
+                    //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
+                    Thread.Sleep(100);
+                    goto Retry2;
+                }
+                File.Delete(R2_GenesisDll_Publicized);
+                Console.WriteLine("已将创世之书的dll公开，并复制到本地");
+            } else {
+                Console.WriteLine("未找到创世之书的dll");
+            }
+        }
+
+        #endregion
+
         #region 生成戴森球量化计算器所需文件，并将其复制到计算器项目目录下
 
         private static void GetAllCalcJson() {
             using CmdProcess cmd = new();
             //终止游戏
             cmd.Exec(KillDSP);
+            Console.WriteLine("确认以下mod版本是否正确？回车确认");
+            foreach (var p in modVer) {
+                Console.WriteLine($"{p.Key} : v{p.Value}");
+            }
+            Console.ReadLine();
             Console.WriteLine("确认是否已经打开矩阵分馏、燃料棒分馏？回车确认");//todo:自动修改配置文件，开启
             Console.ReadLine();
             //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
@@ -317,6 +338,11 @@ namespace AfterBuildEvent {
                 "HiddenCirno-GenesisBook",//mod c：创世之书
                 "MengLei-FractionateEverything",//mod d：万物分馏
             ];
+            Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
+            string s = Console.ReadLine();
+            if (s != "") {
+                mods[2] = "GenesisBook-GenesisBook_Experimental";
+            }
             for (int i = 0; i < mods.Length; i++) {
                 string modPluginsDir = $@"{R2_BepInEx}\plugins\{mods[i]}";
                 if (!Directory.Exists(modPluginsDir)) {
@@ -350,33 +376,35 @@ namespace AfterBuildEvent {
 
         private static void WriteOneJson(CmdProcess cmd, string[] mods, bool[] modsEnable) {
             string oriFilePath = GetJsonFilePath(mods, modsEnable, false);
+            string calcFilePath = GetJsonFilePath(mods, modsEnable, true);
             if (File.Exists(oriFilePath)) {
                 Console.WriteLine($"{oriFilePath} 已存在，跳过生成");
-                return;
+            } else {
+                Console.WriteLine("终止游戏进程...");
+                cmd.Exec(KillDSP);
+                for (int i = 0; i < mods.Length; i++) {
+                    ChangeModEnable(mods[i], modsEnable[i]);
+                }
+                StringBuilder sb = new("启动游戏，mod情况：");
+                for (int i = 0; i < mods.Length; i++) {
+                    sb.Append(mods[i].Substring(mods[i].LastIndexOf("-") + 1)).Append(modsEnable[i] ? "启用 " : "禁用 ");
+                }
+                Console.WriteLine(sb.ToString());
+                cmd.Exec(RunModded);
+                while (!File.Exists(oriFilePath)) {
+                    Thread.Sleep(100);
+                }
+                //多等一会，确保文件已经全部写入
+                Thread.Sleep(500);
+                Console.WriteLine($"已生成 {oriFilePath}");
+                DirectoryInfo info = new FileInfo(calcFilePath).Directory;
+                if (info == null || !info.Exists) {
+                    Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
+                    return;
+                }
             }
-            Console.WriteLine("终止游戏进程...");
-            cmd.Exec(KillDSP);
-            for (int i = 0; i < mods.Length; i++) {
-                ChangeModEnable(mods[i], modsEnable[i]);
-            }
-            StringBuilder sb = new("启动游戏，mod情况：");
-            for (int i = 0; i < mods.Length; i++) {
-                sb.Append(mods[i].Substring(mods[i].LastIndexOf("-") + 1)).Append(modsEnable[i] ? "启用 " : "禁用 ");
-            }
-            Console.WriteLine(sb.ToString());
-            cmd.Exec(RunModded);
-            while (!File.Exists(oriFilePath)) {
-                Thread.Sleep(100);
-            }
-            //多等一会，确保文件已经全部写入
-            Thread.Sleep(500);
-            Console.WriteLine($"已生成 {oriFilePath}");
-            string calcFilePath = GetJsonFilePath(mods, modsEnable, true);
-            DirectoryInfo info = new FileInfo(calcFilePath).Directory;
-            if (info == null || !info.Exists) {
-                Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
-                return;
-            }
+            //这里必须删除目标文件，再复制，因为windows忽略大小写，有可能导致名称有问题
+            File.Delete(calcFilePath);
             File.Copy(oriFilePath, calcFilePath, true);
             if (!File.Exists(calcFilePath) || new FileInfo(calcFilePath).Length != new FileInfo(oriFilePath).Length) {
                 Console.WriteLine("复制计算器json文件失败");
@@ -385,14 +413,28 @@ namespace AfterBuildEvent {
             Console.WriteLine($"已复制到 {calcFilePath}");
         }
 
+        private static Dictionary<string, string> modVer = new() {
+            { "MoreMegaStructure", "1.8.3" },
+            { "TheyComeFromVoid", "3.4.10" },
+            { "GenesisBook", "3.0.14" },
+            { "GenesisBook_Experimental", "3.1.0-alpha2.2" },
+            { "FractionateEverything", "1.4.5" },
+            { "FractionateEverything_Experimental", "2.0.0" },
+        };
+
         private static string GetJsonFilePath(string[] mods, bool[] modsEnable, bool isCalc) {
             string name = "";
             for (int i = 0; i < mods.Length; i++) {
                 if (modsEnable[i]) {
-                    name += "_" + mods[i].Split('-')[1];
+                    string modEnName = mods[i].Split('-')[1];
+                    //通过modEnName找到对应的版本号
+                    if (modEnName == "FractionateEverything" && mods.Contains("GenesisBook_Experimental")) {
+                        modEnName += "_Experimental";
+                    }
+                    name += "_" + modEnName.Replace("_Experimental", "") + modVer[modEnName];
                 }
             }
-            name = name == "" ? "vanilla" : name.Substring(1);
+            name = name == "" ? "Vanilla" : name.Substring(1);
             return isCalc
                 ? $@"D:\project\js\dsp-calc\data\{name}.json"
                 : $@"..\..\..\GetDspData\gamedata\calc json\{name}.json";

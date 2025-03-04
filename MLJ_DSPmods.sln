@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AfterBuildEvent", "AfterBui
 		{F5EBBCC1-478A-4F61-9702-BF91BFF50013} = {F5EBBCC1-478A-4F61-9702-BF91BFF50013}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VerticalConstruction", "VerticalConstruction\VerticalConstruction.csproj", "{F5EBBCC1-478A-4F61-9702-BF91BFF50013}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +32,6 @@ Global
 		{5B245DA6-BAB7-432A-95BD-FE3875F77B76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B245DA6-BAB7-432A-95BD-FE3875F77B76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B245DA6-BAB7-432A-95BD-FE3875F77B76}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5EBBCC1-478A-4F61-9702-BF91BFF50013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5EBBCC1-478A-4F61-9702-BF91BFF50013}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5EBBCC1-478A-4F61-9702-BF91BFF50013}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5EBBCC1-478A-4F61-9702-BF91BFF50013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

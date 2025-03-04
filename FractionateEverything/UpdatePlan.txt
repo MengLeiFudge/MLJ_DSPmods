@@ -1,3 +1,5 @@
+UIReplicatorWindow
+
 【商店列表——物品】
 老虎机分馏塔，仅能兑换一次
 
