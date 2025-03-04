@@ -2,6 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props" Condition="Exists('..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="../DefaultPath.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -101,25 +102,25 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
