@@ -364,3 +364,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 GetDspData/gamedata
+DefaultPath.props
