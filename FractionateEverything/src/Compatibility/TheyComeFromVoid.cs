@@ -2,19 +2,19 @@
 using HarmonyLib;
 using static FractionateEverything.Compatibility.CheckPlugins;
 
-namespace FractionateEverything.Compatibility {
-    public class TheyComeFromVoid {
-        internal const string GUID = "com.ckcz123.DSP_Battle";
+namespace FractionateEverything.Compatibility;
 
-        internal static bool Enable;
+public class TheyComeFromVoid {
+    internal const string GUID = "com.ckcz123.DSP_Battle";
 
-        internal static void Compatible() {
-            Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
-            if (!Enable) return;
+    internal static bool Enable;
 
-            var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.TheyComeFromVoid");
-            harmony.PatchAll(typeof(TheyComeFromVoid));
-            LogInfo("TheyComeFromVoid Compat finish.");
-        }
+    internal static void Compatible() {
+        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
+        if (!Enable) return;
+
+        var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.TheyComeFromVoid");
+        harmony.PatchAll(typeof(TheyComeFromVoid));
+        LogInfo("TheyComeFromVoid Compat finish.");
     }
 }
