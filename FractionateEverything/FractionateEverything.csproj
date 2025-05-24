@@ -378,7 +378,7 @@
         <Content Include="Assets\manifest.json" />
         <Content Include="CHANGELOG.md" />
         <Content Include="README.md" />
-        <Content Include="UpdatePlan.txt" />
+        <Content Include="UpdatePlan.md" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

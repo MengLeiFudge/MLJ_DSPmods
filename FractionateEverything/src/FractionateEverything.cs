@@ -32,7 +32,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public const string GUID = "com.menglei.dsp." + NAME;
     public const string NAME = "FractionateEverything";
 #if DEBUG
-    public const string VERSION = "2.0.0.01071525";
+    public const string VERSION = "2.0.0.05191023";
 #else
     public const string VERSION = "2.0.0";
 #endif
