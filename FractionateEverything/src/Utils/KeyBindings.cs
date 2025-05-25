@@ -2,7 +2,7 @@
 using CommonAPI.Systems;
 using UnityEngine;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class KeyBindings {
     public static PressKeyBind RegisterKeyBinding(BuiltinKey key) {

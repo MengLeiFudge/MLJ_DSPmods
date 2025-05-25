@@ -1,11 +1,11 @@
 ﻿using BepInEx.Configuration;
-using FractionateEverything.Utils;
+using FE.Utils;
 using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 public class MyComboBox : MonoBehaviour {
     private RectTransform _rectTrans;

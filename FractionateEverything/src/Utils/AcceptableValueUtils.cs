@@ -1,6 +1,6 @@
 ﻿using BepInEx.Configuration;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public class AcceptableIntValue(int defVal, int min, int max) : AcceptableValueBase(typeof(int)) {
     private readonly int defVal = defVal >= min && defVal <= max ? defVal : min;

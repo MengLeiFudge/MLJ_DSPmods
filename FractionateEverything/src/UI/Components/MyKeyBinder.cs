@@ -1,11 +1,11 @@
 ﻿using BepInEx.Configuration;
-using FractionateEverything.Utils;
+using FE.Utils;
 using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 // MyKeyBinder modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyKeyBinder.cs
 public class MyKeyBinder : MonoBehaviour {

@@ -1,8 +1,8 @@
-﻿using FractionateEverything.UI.Components;
+﻿using FE.UI.Components;
 using System.Text;
 using UnityEngine;
 
-namespace FractionateEverything.UI.Shop;
+namespace FE.UI.Shop;
 
 public static class UIShop {
     private static RectTransform _windowTrans;

@@ -3,10 +3,10 @@ using CommonAPI.Systems;
 using HarmonyLib;
 using System.Collections.Generic;
 using xiaoye97;
-using static FractionateEverything.Utils.ProtoID;
-using static FractionateEverything.Compatibility.CheckPlugins;
+using static FE.Utils.ProtoID;
+using static FE.Compatibility.CheckPlugins;
 
-namespace FractionateEverything.Compatibility;
+namespace FE.Compatibility;
 
 public static class GenesisBook {
     internal const string GUID = "org.LoShin.GenesisBook";
@@ -33,7 +33,7 @@ public static class GenesisBook {
         tab化工 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab2");
         tab防御 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab3");
 
-        var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.GenesisBook");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.GenesisBook");
         harmony.PatchAll(typeof(GenesisBook));
         harmony.Patch(
             AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),

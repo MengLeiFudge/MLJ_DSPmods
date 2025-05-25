@@ -4,10 +4,10 @@ using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 using xiaoye97;
-using static FractionateEverything.Utils.ProtoID;
-using static FractionateEverything.Compatibility.CheckPlugins;
+using static FE.Utils.ProtoID;
+using static FE.Compatibility.CheckPlugins;
 
-namespace FractionateEverything.Compatibility;
+namespace FE.Compatibility;
 
 public static class MoreMegaStructure {
     internal const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
@@ -22,7 +22,7 @@ public static class MoreMegaStructure {
 
         tab巨构 = TabSystem.GetTabId("MegaStructures:MegaStructuresTab");
 
-        var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.MoreMegaStructure");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.MoreMegaStructure");
         harmony.PatchAll(typeof(MoreMegaStructure));
         harmony.Patch(
             AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),

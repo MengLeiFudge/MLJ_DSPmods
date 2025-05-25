@@ -1,5 +1,5 @@
 ﻿using BepInEx.Configuration;
-using FractionateEverything.Utils;
+using FE.Utils;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 // MyWindow modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyWindowCtl.cs
 

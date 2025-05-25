@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class UIUtils {
     public static RectTransform

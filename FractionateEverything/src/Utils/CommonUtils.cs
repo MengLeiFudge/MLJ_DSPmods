@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class Util {
     public static Type[] GetTypesFiltered(Assembly assembly, Func<Type, bool> predicate) {

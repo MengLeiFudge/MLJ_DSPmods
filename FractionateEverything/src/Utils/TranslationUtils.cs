@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static FractionateEverything.FractionateEverything;
+using static FE.FractionateEverything;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class TranslationUtils {
     /// <summary>

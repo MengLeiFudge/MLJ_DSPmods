@@ -1,9 +1,9 @@
 ﻿// using System;
 // using System.Runtime.InteropServices;
 // using BepInEx.Configuration;
-// using FractionateEverything.Utils;
+// using FE.Utils;
 //
-// namespace FractionateEverything.UI;
+// namespace FE.UI;
 //
 // public static class WindowFunctions {
 //     private static bool _initialized;
