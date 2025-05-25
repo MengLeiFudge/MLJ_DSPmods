@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class PatchGuidAttribute(string guid) : Attribute {

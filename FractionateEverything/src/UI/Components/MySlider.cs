@@ -1,9 +1,9 @@
-﻿using FractionateEverything.Utils;
+﻿using FE.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 // MySlider modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MySlider.cs
 

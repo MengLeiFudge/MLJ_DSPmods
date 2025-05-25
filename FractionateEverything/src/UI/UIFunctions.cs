@@ -1,13 +1,13 @@
 ﻿using CommonAPI.Systems;
-using FractionateEverything.UI.Components;
-using FractionateEverything.Utils;
+using FE.UI.Components;
+using FE.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI;
+namespace FE.UI;
 
 public static class UIFunctions {
     private static bool _initialized;

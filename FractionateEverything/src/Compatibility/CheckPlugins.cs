@@ -1,10 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace FractionateEverything.Compatibility;
+namespace FE.Compatibility;
 
 /// <summary>
 /// 加载万物分馏主插件前，检测是否使用其他mod，并对其进行适配。
@@ -14,9 +15,9 @@ namespace FractionateEverything.Compatibility;
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
-    public const string GUID = FractionateEverything.GUID + ".CheckPlugins";
-    public const string NAME = FractionateEverything.NAME + ".CheckPlugins";
-    public const string VERSION = FractionateEverything.VERSION;
+    public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
+    public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
+    public const string VERSION = PluginInfo.PLUGIN_VERSION;
 
     private static bool _shown;
 
@@ -42,7 +43,7 @@ public class CheckPlugins : BaseUnityPlugin {
     private const string bp能量枢纽拓展 =
         "BLUEPRINT:0,32,2209,0,602,0,0,0,638571596487037974,0.10.30.22292,%E8%83%BD%E9%87%8F%E6%9E%A2%E7%BA%BD%E6%8B%93%E5%B1%95,%E5%8F%AF%E6%A0%B9%E6%8D%AE%E9%9C%80%E8%A6%81%E6%8B%93%E5%B1%95%E8%83%BD%E9%87%8F%E6%9E%A2%E7%BA%BD%E7%9A%84%E6%95%B0%E7%9B%AE%E3%80%82%0A%0AThe%20number%20of%20Energy%20Exchangers%20can%20be%20expanded%20as%20needed.\"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\"B4AF15BE9329781B71DACBCBC7B34C30";
 
-    private const string bp升降级分馏通用 =
+    private const string bp升转化通用 =
         "BLUEPRINT:0,20,2322,2323,2323,0,0,0,638555528517002608,0.10.30.22292,%E5%8D%87%E9%99%8D%E7%BA%A7%E9%80%9A%E7%94%A8,%E4%BC%A0%E9%80%81%E5%B8%A6%E5%8F%AF%E9%9A%8F%E6%84%8F%E5%8D%87%E9%99%8D%E7%BA%A7%EF%BC%8C%E9%85%8D%E9%80%81%E5%99%A8%E9%9C%80%E7%82%B9%E5%87%BB%E6%99%BA%E8%83%BD%E7%8C%9C%E6%B5%8B%E3%80%82%0A%E5%8F%AF%E6%97%A0%E9%99%90%E4%B8%B2%E8%81%94%EF%BC%8C%E4%BE%BF%E4%BA%8E%E6%8B%93%E5%B1%95%E3%80%82%0A%0AThe%20conveyor%20belt%20can%20be%20raised%20and%20lowered%20at%20will%2C%20and%20the%20dispenser%20needs%20to%20be%20clicked%20for%20intelligent%20guessing.%0AUnlimited%20tandem%20connection%20is%20available%20for%20easy%20expansion.\"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\"A4C5C3CF91C0EC73E70A5C5E30B3837E";
 
     /// <summary>
@@ -65,9 +66,9 @@ public class CheckPlugins : BaseUnityPlugin {
         if (!File.Exists(bp能量枢纽拓展Path)) {
             File.WriteAllText(bp能量枢纽拓展Path, bp能量枢纽拓展);
         }
-        string bp升降级分馏通用Path = Path.Combine(FEBlueprintsDir, "bp升降级分馏通用".Translate());
-        if (!File.Exists(bp升降级分馏通用Path)) {
-            File.WriteAllText(bp升降级分馏通用Path, bp升降级分馏通用);
+        string bp升转化通用Path = Path.Combine(FEBlueprintsDir, "bp升转化通用".Translate());
+        if (!File.Exists(bp升转化通用Path)) {
+            File.WriteAllText(bp升转化通用Path, bp升转化通用);
         }
     }
 
@@ -75,7 +76,6 @@ public class CheckPlugins : BaseUnityPlugin {
 
     public void Awake() {
         logger = Logger;
-
         new Harmony(GUID).Patch(
             AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
             null,
@@ -89,9 +89,6 @@ public class CheckPlugins : BaseUnityPlugin {
 
     public static void OnMainMenuOpen() {
         if (_shown) return;
-        if (!FractionateEverything.addedBlueprints) {
-            AddBlueprints();
-        }
         //UIMessageBox.Show会直接返回，所以这里只能显示一个弹窗。弹窗1消失后再展示弹窗2。
         if (!FractionateEverything.disableMessageBox) {
             ShowMessageBox();
@@ -113,7 +110,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
     private static void ResponseFE日志() {
 #if DEBUG
-            Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+        Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
 #else
         Application.OpenURL("FE日志链接".Translate());
 #endif
@@ -126,7 +123,7 @@ public class CheckPlugins : BaseUnityPlugin {
     }
 
     private static void ShowMessageBoxLatestVersion() {
-        const string version = FractionateEverything.VERSION;
+        const string version = PluginInfo.PLUGIN_VERSION;
         if ((version + "信息").Translate() != version + "信息") {
             UIMessageBox.Show(
                 (version + "标题").Translate(), (version + "信息").Translate(),

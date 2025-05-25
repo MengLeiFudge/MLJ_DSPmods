@@ -1,6 +1,6 @@
-﻿using static FractionateEverything.Utils.TranslationUtils;
+﻿using static FE.Utils.TranslationUtils;
 
-namespace FractionateEverything.Logic;
+namespace FE.Logic;
 
 public static class Translation {
     public static void AddTranslations() {
@@ -33,7 +33,7 @@ public static class Translation {
         Register("FEBlueprints", "FEBlueprintsGift", "万物分馏蓝图礼包");
         Register("bp能量枢纽", "Energy Exchanger.txt", "能量枢纽.txt");
         Register("bp能量枢纽拓展", "Energy Exchanger expend.txt", "能量枢纽拓展.txt");
-        Register("bp升降级分馏通用", "Up-Downgrade Fractionate.txt", "升降级分馏通用.txt");
+        Register("bp升转化通用", "Up-Downgrade Fractionate.txt", "升转化通用.txt");
 
         #region 旧的版本更新说明
 
@@ -77,7 +77,7 @@ public static class Translation {
             + "分馏出的矩阵不能再次分馏等等，但它们都不是我所期望的方式。\n\n"
             + $"不过，我想明白了一件事情：{"分馏应该提供便利，但是不能跳过游戏进程。".AddOrangeLabel()}\n"
             + "显然，建筑极速分馏塔是最优秀的建筑。它更像是一种辅助手段，并不会过多影响游戏体验。\n"
-            + "所以在1.4.1中，我为矩阵分馏增加了开关，将建筑极速分馏塔拆分为升级、降级分馏塔并调整了分馏配方。\n"
+            + "所以在1.4.1中，我为矩阵分馏增加了开关，将建筑极速分馏塔拆分为升级、转化塔并调整了分馏配方。\n"
             + "希望这次改动能让分馏更加平衡。\n\n"
             + $"PS1：你可以点击{"更新日志".AddBlueLabel()}，以了解1.4.1的所有改动。\n"
             + $"PS2：千万不要忘记查看{"设置-杂项".AddBlueLabel()}中{"新增的设置项".AddBlueLabel()}！\n"
@@ -201,20 +201,20 @@ public static class Translation {
 
         #region 建筑说明
 
-        Register("自然资源分馏塔", "Natural Resource Fractionator");
-        Register("I自然资源分馏塔",
+        Register("矿物复制塔", "Natural Resource Fractionator");
+        Register("I矿物复制塔",
             "It is possible to duplicate most natural resources, avoiding the situation of being unable to explore for lack of resources. Once you have unlocked a natural resource's corresponding fractionation recipe, you can fractionate the natural resource.",
             "可以复制绝大多数自然资源，避免出现缺乏资源无法探索的情形。解锁某个自然资源对应的分馏配方后，即可对其进行自然资源分馏操作。");
 
-        Register("升级分馏塔", "Upgrade Fractionator");
-        Register("I升级分馏塔",
+        Register("转化塔", "Upgrade Fractionator");
+        Register("I转化塔",
             $"Converts low-level items into few high-level items. Once you have unlocked a new up-downgrade fractionation recipe, you can perform an elevated fractionation operation on its {"input".AddOrangeLabel()}.",
-            $"将低级物品转换为更少的高级物品。解锁新的升降级分馏配方后，即可对该配方的{"原料".AddOrangeLabel()}进行升级分馏操作。\n与{"降级分馏塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
+            $"将低级物品转换为更少的高级物品。解锁新的升转化配方后，即可对该配方的{"原料".AddOrangeLabel()}进行升级分馏操作。\n与{"转化塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
 
-        Register("降级分馏塔", "Downgrade Fractionator");
-        Register("I降级分馏塔",
+        Register("转化塔", "Downgrade Fractionator");
+        Register("I转化塔",
             $"Converts high-level items into more low-level items. Once you have unlocked a new up-downgrade fractionation recipe, you can perform an elevated fractionation operation on its {"output".AddOrangeLabel()}.",
-            $"将高级物品转换为更多的低级物品。解锁新的升降级分馏配方后，即可对该配方的{"产物".AddOrangeLabel()}进行降级分馏操作。\n与{"升级分馏塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
+            $"将高级物品转换为更多的低级物品。解锁新的升转化配方后，即可对该配方的{"产物".AddOrangeLabel()}进行转化操作。\n与{"转化塔".AddOrangeLabel()}配合使用，即可拥有取之不尽的物品。");
 
         Register("垃圾回收分馏塔", "Trash Recycle Fractionator");
         Register("I垃圾回收分馏塔",
@@ -224,13 +224,13 @@ public static class Translation {
             $"Converts unwanted items into foundation or sand. All connections can be input, but only {"the front one".AddOrangeLabel()} can be output.\nSand will be {"directly added to the backpack".AddOrangeLabel()} without any additional operation.\n{"Any item will be accepted, and proliferator points does not take effect.".AddOrangeLabel()}",
             $"将不需要的物品转换为地基或沙土。所有连接口都可输入，但只有{"正面".AddOrangeLabel()}的连接口可以输出。\n转换得到的沙土会{"直接加入背包".AddOrangeLabel()}，无需额外操作。\n{"可接受任何物品，增产点数不起作用。".AddOrangeLabel()}");
 
-        Register("点数聚集分馏塔", "Points Aggregate Fractionator");
-        Register("I点数聚集分馏塔",
+        Register("点数聚集塔", "Points Aggregate Fractionator");
+        Register("I点数聚集塔",
             $"Crafts an item with 10 proliferator points by concentrating the item's proliferator points on a portion of the item, breaking the upper limit of proliferator points.\n{"Any item will be accepted.".AddOrangeLabel()} Success rate is related to the input item proliferator points.",
             $"将物品的增产点数集中到一部分物品上，突破增产点数的上限，从而制作出10增产点数的物品。\n{"可接受任何物品。".AddOrangeLabel()}\n成功率与输入物品的增产点数有关。");
 
-        Register("增产分馏塔", "Increase Production Fractionator");
-        Register("I增产分馏塔",
+        Register("量子复制塔", "Increase Production Fractionator");
+        Register("I量子复制塔",
             $"Take full advantage of the proliferator points' proliferator feature to reorganize and duplicate the input items. It can fractionate everything and truly create something from nothing.\n{"Any item will be accepted.".AddOrangeLabel()} Success rate is related to the input item proliferator points, and maximum rate is related to the input item value.",
             $"充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。\n{"可接受任何物品。".AddOrangeLabel()}\n成功率与输入物品的增产点数有关，最大值与输入物品的价值有关。");
 
@@ -246,13 +246,13 @@ public static class Translation {
             "You have mastered the Natural Resource Fractionation technology, which can be replicated indefinitely as long as you have a certain amount of natural resources.",
             "你已经掌握了自然资源分馏技术，只要拥有一定量的自然资源，就能对其进行无限复制。");
 
-        Register("T升降级分馏", "Up-Downgrade Fractionation", "升降级分馏");
-        Register("升降级分馏描述",
+        Register("T升转化", "Up-Downgrade Fractionation", "升转化");
+        Register("升转化描述",
             "To facilitate Icarus's exploration, the Mastermind has issued downgraded tech for some items. Upgrading the Fractionation tech converts low-level items into fewer high-level items, and downgrading the Fractionation tech converts high-level items into multiple low-level items. There is an inexhaustible supply of items in the cycle of upgrading and downgrading. This tech is well adapted to buildings, less so to non-buildings, and only some non-building items can be fractionated. Nonetheless, it is a powerful aid on the quest.",
-            "为了方便伊卡洛斯的探索，主脑下发了部分物品的升降级科技。升级分馏科技可以将低级物品转为更少的高级物品，降级分馏科技可将高级物品转为多个低级物品，升降级的循环中存在着取之不尽的物品。这项科技对建筑的适配性良好，对非建筑的适配性则较差，只有部分非建筑物品可以进行升降级操作。尽管如此，它依然是探索路上的强力援助。");
-        Register("升降级分馏结果",
+            "为了方便伊卡洛斯的探索，主脑下发了部分物品的升降级科技。升级分馏科技可以将低级物品转为更少的高级物品，转化科技可将高级物品转为多个低级物品，升降级的循环中存在着取之不尽的物品。这项科技对建筑的适配性良好，对非建筑的适配性则较差，只有部分非建筑物品可以进行升降级操作。尽管如此，它依然是探索路上的强力援助。");
+        Register("升转化结果",
             "You have mastered the Up-Downgrade Fractionation technology and can now recycle process some items to copy them.",
-            "你已经掌握了升降级分馏技术，可以用升降级分馏塔循环处理物品，从而实现物品的复制。");
+            "你已经掌握了升转化技术，可以用升转化塔循环处理物品，从而实现物品的复制。");
 
         Register("T垃圾回收", "Trash Recycle", "垃圾回收");
         Register("垃圾回收描述",
@@ -270,17 +270,17 @@ public static class Translation {
             "You have mastered the Proliferator Points Aggregation technology. The item's proliferator points can now be pushed to the limit, and production capacity has been greatly increased!",
             "你已经掌握了增产点数聚集技术。现在物品的增产点数可以达到极限，产能得到了极大的提升！");
 
-        Register("T增产分馏", "Increase production fractionate", "增产分馏");
-        Register("增产分馏描述",
+        Register("T量子复制", "Increase production fractionate", "量子复制");
+        Register("量子复制描述",
             "Although Natural Resource Fractionation and Up-Downgrade Fractionation are powerful, these techniques can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
             + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
             + $"{"Warning:".AddOrangeLabel()} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".AddOrangeLabel()}",
-            "自然资源分馏和升降级分馏虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
+            "自然资源分馏和升转化虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
             + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".AddOrangeLabel()}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".AddOrangeLabel()}");
-        Register("增产分馏结果",
+        Register("量子复制结果",
             "You have unlocked the Increased Production Fractionation technology. Now you truly have the ability to create something from nothing!",
-            "你已经掌握了增产分馏技术。现在，你真正拥有了无中生有的能力！");
+            "你已经掌握了量子复制技术。现在，你真正拥有了无中生有的能力！");
 
         #endregion
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using xiaoye97;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 /// <summary>
 /// 无需等待PreAddDataAction/PostAddDataAction结束，立即将内容添加至LDB。

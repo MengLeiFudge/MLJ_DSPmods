@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class FormatUtils {
     public static string FormatP(this float value) {

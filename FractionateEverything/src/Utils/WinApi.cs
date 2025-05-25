@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public static class WinApi {
     #region Styles

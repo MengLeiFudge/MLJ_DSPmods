@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 public class MyConfigWindow : MyWindowWithTabs {
     public static Action<MyConfigWindow, RectTransform> OnUICreated;

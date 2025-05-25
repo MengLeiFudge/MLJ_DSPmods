@@ -1,4 +1,4 @@
-﻿namespace FractionateEverything.Logic;
+﻿namespace FE.Logic;
 
 public struct BuildingInfo {
     public int recipeID;

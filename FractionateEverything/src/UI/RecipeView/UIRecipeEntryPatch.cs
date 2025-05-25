@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace FractionateEverything.UI.RecipeView;
+namespace FE.UI.RecipeView;
 
 public static class UIItemTipPatch {
     /// <summary>
