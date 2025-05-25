@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace FractionateEverything.Utils;
+namespace FE.Utils;
 
 public class GameLogic : PatchImpl<GameLogic> {
     public static Action OnDataLoaded;

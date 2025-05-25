@@ -1,11 +1,11 @@
-﻿using FractionateEverything.Compatibility;
+﻿using FE.Compatibility;
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static FractionateEverything.FractionateEverything;
+using static FE.FractionateEverything;
 
-namespace FractionateEverything.UI.SettingPage;
+namespace FE.UI.SettingPage;
 
 /// <summary>
 /// 游戏加载完成后，弹窗提示某些信息。
@@ -83,15 +83,15 @@ public static class UIOptionWindowPatch {
 
         int baseY = GenesisBook.Enable ? -380 : -220;
 
-        CreateComboBox("fe-iv-setting",
-            "IconVersion".Translate(), "IconVersionAdditionalText".Translate(),
-            new(30, baseY - 40 * 0),
-            ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
+        // CreateComboBox("fe-iv-setting",
+        //     "IconVersion".Translate(), "IconVersionAdditionalText".Translate(),
+        //     new(30, baseY - 40 * 0),
+        //     ["v1".Translate(), "v2".Translate(), "v3".Translate()], iconVersion - 1, out IconVersionComboBox);
 
-        CreateUIToggle("fe-ebat-setting",
-            "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
-            new(30, baseY - 40 * 1),
-            enableBuildingAsTrash, out EnableBuildingAsTrashToggle);
+        // CreateUIToggle("fe-ebat-setting",
+        //     "EnableBuildingAsTrash".Translate(), "EnableBuildingAsTrashAdditionalText".Translate(),
+        //     new(30, baseY - 40 * 1),
+        //     enableBuildingAsTrash, out EnableBuildingAsTrashToggle);
 
         _initFinished = true;
     }
@@ -106,8 +106,8 @@ public static class UIOptionWindowPatch {
     }
 
     private static void Reset() {
-        IconVersionComboBox.itemIndex = (int)IconVersionEntry.DefaultValue - 1;
-        EnableBuildingAsTrashToggle.isOn = (bool)EnableBuildingAsTrashEntry.DefaultValue;
+        // IconVersionComboBox.itemIndex = (int)IconVersionEntry.DefaultValue - 1;
+        // EnableBuildingAsTrashToggle.isOn = (bool)EnableBuildingAsTrashEntry.DefaultValue;
     }
 
     [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnApplyClick))]

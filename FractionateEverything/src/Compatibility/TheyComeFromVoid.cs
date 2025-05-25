@@ -1,8 +1,8 @@
 ﻿using BepInEx.Bootstrap;
 using HarmonyLib;
-using static FractionateEverything.Compatibility.CheckPlugins;
+using static FE.Compatibility.CheckPlugins;
 
-namespace FractionateEverything.Compatibility;
+namespace FE.Compatibility;
 
 public class TheyComeFromVoid {
     internal const string GUID = "com.ckcz123.DSP_Battle";
@@ -13,7 +13,7 @@ public class TheyComeFromVoid {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
         if (!Enable) return;
 
-        var harmony = new Harmony(FractionateEverything.GUID + ".Compatibility.TheyComeFromVoid");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
         LogInfo("TheyComeFromVoid Compat finish.");
     }

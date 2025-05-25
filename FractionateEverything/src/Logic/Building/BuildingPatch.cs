@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static FractionateEverything.Logic.FracProcess;
-using static FractionateEverything.Logic.FracItemManager;
+using static FE.Logic.FracProcess;
+using static FE.Logic.BuildingManager;
 
-namespace FractionateEverything.Logic;
+namespace FE.Logic;
 
-public static class FracItem {
+public static class BuildingPatch {
     /// <summary>
     /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
     /// </summary>

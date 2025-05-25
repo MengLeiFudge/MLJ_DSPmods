@@ -3,17 +3,14 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
-using FractionateEverything.Compatibility;
-using FractionateEverything.Logic;
+using FE.Logic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using ProjectGenesis.Patches.UI.QTools.MyComboBox;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
@@ -269,7 +266,7 @@ public class GetDspData : BaseUnityPlugin {
             var items = new JArray();
             dataObj.Add("items", items);
             foreach (var item in LDB.items.dataArray) {
-                if (item.ID < IFE自然资源分馏塔 || item.ID > IFE老虎机分馏塔) {
+                if (item.ID < IFE矿物复制塔 || item.ID > IFE净化插件MK3) {
                     //如果该物品是“该版本尚未加入”
                     if ((!GameMain.history.ItemUnlocked(item.ID) && item.preTech == null && item.missingTech)
                         //或无法选中这个物品（9998是星河卫士勋章，13000之后是巨构旧的接收器）
@@ -465,7 +462,7 @@ public class GetDspData : BaseUnityPlugin {
                         });
                     }
                 }
-                //5.自然资源分馏、升降级分馏、增产分馏
+                //5.自然资源分馏、升转化、量子复制
                 if (FractionateEverythingEnable) {
                     AddFracRecipe(recipes, item);
                 }
@@ -529,7 +526,7 @@ public class GetDspData : BaseUnityPlugin {
             var res = processFracRecipe(fracRecipe);
             recipes.Add(new JObject {
                 { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE自然资源分馏塔 }) },
+                { "Factories", new JArray(new[] { IFE矿物复制塔 }) },
                 { "Name", $"[自然资源分馏]{item.name}" },
                 { "Items", new JArray(new[] { item.ID }) },
                 { "ItemCounts", new JArray(new[] { res.Item1 }) },
@@ -544,7 +541,7 @@ public class GetDspData : BaseUnityPlugin {
             var res = processFracRecipe(fracRecipe);
             recipes.Add(new JObject {
                 { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE升级分馏塔 }) },
+                { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
                 { "Name", $"[升级分馏]{item.name}" },
                 { "Items", new JArray(new[] { item.ID }) },
                 { "ItemCounts", new JArray(new[] { res.Item1 }) },
@@ -559,8 +556,8 @@ public class GetDspData : BaseUnityPlugin {
             var res = processFracRecipe(fracRecipe);
             recipes.Add(new JObject {
                 { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE降级分馏塔 }) },
-                { "Name", $"[降级分馏]{item.name}" },
+                { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
+                { "Name", $"[转化]{item.name}" },
                 { "Items", new JArray(new[] { item.ID }) },
                 { "ItemCounts", new JArray(new[] { res.Item1 }) },
                 { "Results", new JArray(res.Item2) },
@@ -579,8 +576,8 @@ public class GetDspData : BaseUnityPlugin {
             var res = processFracRecipe(fracRecipe);
             recipes.Add(new JObject {
                 { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE增产分馏塔 }) },
-                { "Name", $"[增产分馏]{item.name}" },
+                { "Factories", new JArray(new[] { IFE量子复制塔 }) },
+                { "Name", $"[量子复制]{item.name}" },
                 { "Items", new JArray(new[] { item.ID }) },
                 { "ItemCounts", new JArray(new[] { res.Item1 }) },
                 { "Results", new JArray(res.Item2) },
@@ -706,7 +703,7 @@ public class GetDspData : BaseUnityPlugin {
         //Proliferator bit0：加速
         //Proliferator bit1：增产
         //Proliferator bit2：接收射线使用引力透镜
-        //Proliferator bit3：增产分馏
+        //Proliferator bit3：量子复制
         //Proliferator=0：无
         //Proliferator=1：无，加速
         //Proliferator=2：无，增产
@@ -1030,7 +1027,7 @@ public class GetDspData : BaseUnityPlugin {
     //
     // public static ItemProto ItemComboBox_OnItemIndexChange_InsertMethod(ItemComboBox __instance) {
     //     return __instance.selectIndex == -1
-    //         ? LDB.items.Select(IFE增产分馏塔)
+    //         ? LDB.items.Select(IFE量子复制塔)
     //         : __instance._items[__instance.selectIndex];
     // }
 

@@ -1,14 +1,14 @@
-﻿using FractionateEverything.Compatibility;
+﻿using FE.Compatibility;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using static FractionateEverything.Utils.ProtoID;
-using static FractionateEverything.FractionateEverything;
-using static FractionateEverything.Utils.TranslationUtils;
-using static FractionateEverything.Logic.FracProcess;
+using static FE.Utils.ProtoID;
+using static FE.FractionateEverything;
+using static FE.Utils.TranslationUtils;
+using static FE.Logic.FracProcess;
 
-namespace FractionateEverything.Logic;
+namespace FE.Logic;
 
 public static class FracRecipeManager {
     public static readonly FracRecipe DeuteriumFracRecipe =
@@ -83,7 +83,7 @@ public static class FracRecipeManager {
         if (!GenesisBook.Enable) {
             //自然资源复制
             //采集10个对应物品，或者向老虎机投入10个对应物品，即可解锁自然资源复制配方
-            //使用自然资源分馏塔成功分馏出指定数目的物品之后，配方可以消耗资源来升级
+            //使用矿物复制塔成功分馏出指定数目的物品之后，配方可以消耗资源来升级
             //todo：能不能判定采集了多少个资源
             CreateNaturalResourceRecipe(I铁矿, 0.05f);
             CreateNaturalResourceRecipe(I铜矿, 0.05f);
@@ -104,7 +104,7 @@ public static class FracRecipeManager {
             CreateNaturalResourceRecipe(I单极磁石, 0.01f);
             CreateNaturalResourceRecipe(I有机晶体, 0.025f);
             CreateNaturalResourceRecipe(I临界光子, 0.01f);
-            //升降级分馏链
+            //升转化链
             //分为消耗品、材料、建筑三种
             //消耗品指燃料棒、弹药、增产剂
             //材料指电路板、处理器等
@@ -174,11 +174,11 @@ public static class FracRecipeManager {
             CreateFracChain3([I高频激光塔, I磁化电浆炮, I近程电浆塔]);//注意科技解锁顺序
             CreateFracChain3([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
             //建筑VI
-            List<FracRecipe>[] lists =
-                CreateFracChain([IFE自然资源分馏塔, IFE升级分馏塔, IFE降级分馏塔, IFE垃圾回收分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔], false);
-            foreach (FracRecipe recipe in lists[0]) {
-                recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
-            }
+            // List<FracRecipe>[] lists =
+            //     CreateFracChain([IFE矿物复制塔, IFE转化塔MK1, IFE转化塔MK1, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
+            // foreach (FracRecipe recipe in lists[0]) {
+            //     recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
+            // }
         } else {
             //创世改动过大，单独处理
             RegisterOrEditAsync("左键点击：更换生产设备",
@@ -272,11 +272,11 @@ public static class FracRecipeManager {
             CreateFracChain([I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井], false);
             //CreateFracChain([I微型粒子对撞机], false);
             CreateFracChain3([IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]);
-            List<FracRecipe>[] lists =
-                CreateFracChain([IFE自然资源分馏塔, IFE升级分馏塔, IFE降级分馏塔, IFE垃圾回收分馏塔, IFE点数聚集分馏塔, IFE增产分馏塔], false);
-            foreach (FracRecipe recipe in lists[0]) {
-                recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
-            }
+            // List<FracRecipe>[] lists =
+            //     CreateFracChain([IFE矿物复制塔, IFE转化塔MK1, IFE转化塔MK1, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
+            // foreach (FracRecipe recipe in lists[0]) {
+            //     recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
+            // }
 
             //精炼页面
             CreateFracChain([
@@ -309,7 +309,7 @@ public static class FracRecipeManager {
             CreateFracChain([I等离子胶囊, I反物质胶囊], false);
         }
 
-        //为所有物品添加点数聚集分馏配方以及增产分馏配方
+        //为所有物品添加点数聚集配方以及量子复制配方
         for (int i = 0; i < LDB.items.Length; i++) {
             int itemID = LDB.items[i].ID;
             CreatePointsAggregateRecipe(itemID);
@@ -363,7 +363,7 @@ public static class FracRecipeManager {
     }
 
     /// <summary>
-    /// 创建一个降级分馏配方。
+    /// 创建一个转化配方。
     /// </summary>
     private static FracRecipe CreateDownGradeRecipe(int inputID, int outputID, float outputRatio, float destroy,
         bool special) {
@@ -391,7 +391,7 @@ public static class FracRecipeManager {
     }
 
     /// <summary>
-    /// 创建一个点数聚集分馏配方。
+    /// 创建一个点数聚集配方。
     /// </summary>
     private static FracRecipe CreatePointsAggregateRecipe(int itemID) {
         FracRecipe r = new FracRecipe(FracRecipeType.PointsAggregate, itemID, itemID, 0.01f, 1, 0).Unlock();
@@ -401,7 +401,7 @@ public static class FracRecipeManager {
     }
 
     /// <summary>
-    /// 创建一个增产分馏配方。
+    /// 创建一个量子复制配方。
     /// </summary>
     private static FracRecipe CreateIncreaseRecipe(int itemID, float ratio) {
         FracRecipe r = new(FracRecipeType.Increase, itemID, itemID, ratio, 2, 0);
@@ -411,7 +411,7 @@ public static class FracRecipeManager {
     }
 
     /// <summary>
-    /// 添加一些具有上下级关系的物品构成的升降级分馏链对应的配方。
+    /// 添加一些具有上下级关系的物品构成的升转化链对应的配方。
     /// </summary>
     private static List<FracRecipe>[] CreateFracChain(IReadOnlyList<int> itemChain, bool special) {
         List<FracRecipe> list1 = [];
@@ -435,7 +435,7 @@ public static class FracRecipeManager {
     }
 
     /// <summary>
-    /// 添加一些同等级物品构成的升降级分馏链对应的配方。
+    /// 添加一些同等级物品构成的升转化链对应的配方。
     /// </summary>
     private static List<FracRecipe>[] CreateFracChain3(IReadOnlyList<int> itemChain) {
         //todo: 任何物品分馏时，都有概率分馏出分馏链内任意物品

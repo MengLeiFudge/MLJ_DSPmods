@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace FractionateEverything.Logic;
+namespace FE.Logic;
 
 /// <summary>
 /// 配方基类。

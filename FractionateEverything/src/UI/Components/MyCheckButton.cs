@@ -1,10 +1,10 @@
 using BepInEx.Configuration;
-using FractionateEverything.Utils;
+using FE.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FractionateEverything.UI.Components;
+namespace FE.UI.Components;
 
 public class MyCheckButton : MonoBehaviour {
     public RectTransform rectTrans;
