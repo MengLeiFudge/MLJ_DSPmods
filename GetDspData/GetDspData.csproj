@@ -117,6 +117,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\FractionatorComponent.cs" />
     <Compile Include="src\ProtoID.cs" />
     <Compile Include="src\Utils.cs" />
     <Content Include="gamedata\calc json\FractionateEverything.json" />

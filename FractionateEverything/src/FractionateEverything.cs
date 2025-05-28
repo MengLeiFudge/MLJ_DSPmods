@@ -7,6 +7,9 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Compatibility;
 using FE.Logic;
+using FE.Logic.Item;
+using FE.Logic.Manager;
+using FE.Logic.Tech;
 using FE.UI;
 using FE.UI.Components;
 using FE.UI.Shop;
@@ -259,7 +262,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             proto.Preload2();
         }
         FracTechManager.PreloadAll();
-        BuildingManager.PreloadAll();
     }
 
     /// <summary>
@@ -268,52 +270,17 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public static void FinalAction() {
         if (_finished) return;
         PreloadAndInitAll();
-        FracProcess.Init();
+        ProcessManager.Init();
         //SetFractionatorCacheSize用到了Init生成的数据
-        BuildingPatch.SetFractionatorCacheSize();
-        //AddFracRecipes用到了Init生成的数据
-        FracRecipeManager.AddFracRecipes();
+        BuildingManager.SetFractionatorCacheSize();
+        //AddBaseRecipes用到了Init生成的数据
+        BaseRecipeManager.AddBaseRecipes();
+        //重载语言
+        TranslationUtils.LoadLanguagePostfixAfterCommonApi();
         _finished = true;
     }
 
     public static void PreloadAndInitAll() {
-        // LDB.items.OnAfterDeserialize();
-        // LDB.recipes.OnAfterDeserialize();
-        // LDB.techs.OnAfterDeserialize();
-        // LDB.models.OnAfterDeserialize();
-        // LDB.milestones.OnAfterDeserialize();
-        // LDB.journalPatterns.OnAfterDeserialize();
-        // LDB.themes.OnAfterDeserialize();
-        // LDB.veins.OnAfterDeserialize();
-        // foreach (MilestoneProto milestone in LDB.milestones.dataArray) {
-        //     milestone.Preload();
-        // }
-        // foreach (JournalPatternProto journalPattern in LDB.journalPatterns.dataArray) {
-        //     journalPattern.Preload();
-        // }
-        // foreach (VeinProto proto in LDB.veins.dataArray) {
-        //     proto.Preload();
-        //     proto.name = proto.Name.Translate();
-        // }
-        // foreach (ModelProto proto in LDB.models.dataArray) {
-        //     proto.Preload();
-        // }
-        // foreach (TechProto proto in LDB.techs.dataArray) {
-        //     proto.Preload();
-        // }
-        // for (var i = 0; i < LDB.items.dataArray.Length; ++i) {
-        //     LDB.items.dataArray[i].recipes = null;
-        //     LDB.items.dataArray[i].rawMats = null;
-        //     LDB.items.dataArray[i].Preload(i);
-        // }
-        // for (var i = 0; i < LDB.recipes.dataArray.Length; ++i) {
-        //     LDB.recipes.dataArray[i].Preload(i);
-        // }
-        // foreach (TechProto proto in LDB.techs.dataArray) {
-        //     proto.PreTechsImplicit = proto.PreTechsImplicit.Except(proto.PreTechs).ToArray();
-        //     proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
-        //     proto.Preload2();
-        // }
         ItemProto.InitFuelNeeds();
         ItemProto.InitTurretNeeds();
         ItemProto.InitFluids();
@@ -338,24 +305,21 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public void Import(BinaryReader r) {
         LogInfo("FE Import");
         int savedVersion = r.ReadInt32();
-        BuildingPatch.Import(r);
-        FracRecipeManager.Import(r);
-        FracProcess.Import(r);
+        BaseRecipeManager.Import(r);
+        ProcessManager.Import(r);
     }
 
     public void Export(BinaryWriter w) {
         LogInfo("FE Export");
         w.Write(versionNumber);
-        BuildingPatch.Export(w);
-        FracRecipeManager.Export(w);
-        FracProcess.Export(w);
+        BaseRecipeManager.Export(w);
+        ProcessManager.Export(w);
     }
 
     public void IntoOtherSave() {
         LogInfo("FE IntoOtherSave");
-        BuildingPatch.IntoOtherSave();
-        FracRecipeManager.IntoOtherSave();
-        FracProcess.IntoOtherSave();
+        BaseRecipeManager.IntoOtherSave();
+        ProcessManager.IntoOtherSave();
     }
 
     #endregion
