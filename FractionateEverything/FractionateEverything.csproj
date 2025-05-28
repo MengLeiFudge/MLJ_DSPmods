@@ -11,6 +11,7 @@
         <PackageId>FractionateEverything</PackageId>
         <RootNamespace>FE</RootNamespace>
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
@@ -19,20 +20,18 @@
         <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
         <PackageReference Include="DysonSphereProgram.Modding.DSPModSave" Version="1.2.0"/>
         <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
-        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"/>
+        <!-- 排除 GameLibs 中的 Assembly-CSharp.dll -->
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"
+                          ExcludeAssets="lib\**\Assembly-CSharp.dll"/>
+        <!-- 添加本地 Assembly-CSharp-publicized.dll -->
+        <Reference Include="Assembly-CSharp">
+            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
+            <!-- 确保本地 DLL 优先 -->
+            <Private>True</Private>
+        </Reference>
         <Reference Include="BuildBarTool">
             <HintPath>..\lib\BuildBarTool.dll</HintPath>
         </Reference>
-        <!--<Reference Include="Assembly-CSharp">
-            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
-        </Reference>-->
-    </ItemGroup>
-    <ItemGroup>
-        <!--        <EmbeddedResource Include="Assets/icon.png" />-->
-        <!--        <EmbeddedResource Include="Assets/manifest.json" />-->
-        <!--        <EmbeddedResource Include="CHANGELOG.md" />-->
-        <!--        <EmbeddedResource Include="README.md" />-->
-        <!--        <EmbeddedResource Include="UpdatePlan.md" />-->
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>

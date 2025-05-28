@@ -1,11 +1,9 @@
-﻿using CommonAPI.Systems;
-using FE.Compatibility;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using static FE.Utils.ProtoID;
 
-namespace FE.Logic;
+namespace FE.Logic.Tech;
 
 /// <summary>
 /// 添加科技后，需要Preload、Preload2。
@@ -162,8 +160,6 @@ public static class FracTechManager {
     }
 
     [HarmonyPrefix]
-
-
     [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
     public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
         switch (__instance.ID) {

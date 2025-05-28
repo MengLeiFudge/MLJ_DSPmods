@@ -30,12 +30,7 @@ public static class Translation {
             "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
             "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
 
-        Register("FEBlueprints", "FEBlueprintsGift", "万物分馏蓝图礼包");
-        Register("bp能量枢纽", "Energy Exchanger.txt", "能量枢纽.txt");
-        Register("bp能量枢纽拓展", "Energy Exchanger expend.txt", "能量枢纽拓展.txt");
-        Register("bp升转化通用", "Up-Downgrade Fractionate.txt", "升转化通用.txt");
-
-        #region 旧的版本更新说明
+        #region 旧的版本更新说明（做成彩蛋）
 
         Register("141标题", "Fractionate Everything 1.4.1 Update", "万物分馏1.4.1版本更新");
         Register("141信息",
