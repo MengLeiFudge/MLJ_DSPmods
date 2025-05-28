@@ -331,6 +331,8 @@ public static class ProtoID {
     internal const int IFE点数聚集塔 = 2361;
     internal const int IFE量子复制塔 = 2362;
     internal const int IFE宇宙复制塔 = 2363;
+    internal const int IFE点金塔 = 2364;
+    internal const int IFE分解塔 = 2365;
     internal const int IFE插件塔 = 2371;
     internal const int IFE量子插件塔 = 2372;
     internal const int IFE速度插件MK1 = 2373;
@@ -473,6 +475,8 @@ public static class ProtoID {
     internal const int MFE宇宙复制塔 = 543;
     internal const int MFE插件塔 = 544;
     internal const int MFE量子插件塔 = 545;
+    internal const int MFE点金塔 = 546;
+    internal const int MFE分解塔 = 547;
     internal const int MMS铁金属重构装置 = 73;
     internal const int MMS铜金属重构装置 = 73;
     internal const int MMS高纯硅重构装置 = 73;

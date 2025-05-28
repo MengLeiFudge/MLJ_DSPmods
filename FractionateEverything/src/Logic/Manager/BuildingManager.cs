@@ -1,20 +1,25 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Logic.Building;
 using HarmonyLib;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using xiaoye97;
 using static FE.Utils.ProtoID;
+using static FE.Logic.Manager.ProcessManager;
 
-namespace FE.Logic;
+namespace FE.Logic.Manager;
 
 public static class BuildingManager {
+    #region 在PreAdd阶段添加新建筑
+
     private static readonly ModelProto FractionatorModel = LDB.models.Select(M分馏塔);
     public static readonly PrefabDesc FractionatorPrefabDesc = FractionatorModel.prefabDesc;
-    public static readonly List<BuildingInfo> buildingInfoList = [];
+    private static List<ItemProto> buildingList = [];
 
     public static void CreateAndPreAddNewFractionators() {
         //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
@@ -23,40 +28,40 @@ public static class BuildingManager {
         //new(0.3726f, 0.8f, 1.0f)
         //new(0.549f, 0.5922f, 0.6235f)
 
-        //创建新建筑
-        var f11 = CreateAndPreAddNewFractionator(
-            "交互塔", IFE交互塔, MFE交互塔, 2601, new(0.8f, 0.3f, 0.6f), -50, 2.5f);
-        f11.Item3.SetBuildBar(5, 1, true);
-        var f21 = CreateAndPreAddNewFractionator(
-            "矿物复制塔", IFE矿物复制塔, MFE矿物复制塔, 2602, new(1.0f, 0.7019f, 0.4f), -20, 0.4f);
-        f21.Item3.SetBuildBar(5, 2, true);
-        var f31 = CreateAndPreAddNewFractionator(
-            "转化塔MK1", IFE转化塔MK1, MFE转化塔MK1, 2603, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-        f31.Item3.SetBuildBar(6, 1, true);
-        var f32 = CreateAndPreAddNewFractionator(
-            "转化塔MK2", IFE转化塔MK2, MFE转化塔MK2, 2604, new(0.7f, 0.6f, 0.8f), 0, 1.0f);
-        f32.Item3.SetBuildBar(6, 2, true);
-        var f33 = CreateAndPreAddNewFractionator(
-            "转化塔MK3", IFE转化塔MK3, MFE转化塔MK3, 2605, new(0.4f, 1.0f, 0.5f), 0, 1.0f);
-        f33.Item3.SetBuildBar(6, 3, true);
-        var f34 = CreateAndPreAddNewFractionator(
-            "转化塔MK4", IFE转化塔MK4, MFE转化塔MK4, 2606, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-        f34.Item3.SetBuildBar(6, 4, true);
-        var f35 = CreateAndPreAddNewFractionator(
-            "转化塔MK5", IFE转化塔MK5, MFE转化塔MK5, 2607, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-        f35.Item3.SetBuildBar(6, 5, true);
-        var f36 = CreateAndPreAddNewFractionator(
-            "转化塔MK6", IFE转化塔MK6, MFE转化塔MK6, 2608, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-        f36.Item3.SetBuildBar(6, 6, true);
-        var f37 = CreateAndPreAddNewFractionator(
-            "转化塔MK7", IFE转化塔MK7, MFE转化塔MK7, 2609, new(0.4f, 1.0f, 0.949f), 0, 1.0f);
-        f37.Item3.SetBuildBar(6, 7, true);
-        var f41 = CreateAndPreAddNewFractionator(
-            "点数聚集塔", IFE点数聚集塔, MFE点数聚集塔, 2710, new(0.2509f, 0.8392f, 1.0f), 0, 1.0f);
-        f41.Item3.SetBuildBar(5, 4, true);
-        var f51 = CreateAndPreAddNewFractionator(
-            "量子复制塔", IFE量子复制塔, MFE量子复制塔, 2711, new(0.6235f, 0.6941f, 0.8f), 0, 1.0f);
-        f51.Item3.SetBuildBar(5, 5, true);
+        //交互塔
+        var interactionTower = InteractionTower.Create();
+        interactionTower.Item3.SetBuildBar(5, 1, true);
+
+        //矿物复制塔
+        var mineralCopyTower = MineralCopyTower.Create();
+        mineralCopyTower.Item3.SetBuildBar(5, 2, true);
+
+        //点数聚集塔
+        var pointAggregatorTower = PointAggregatorTower.Create();
+        pointAggregatorTower.Item3.SetBuildBar(5, 3, true);
+
+        //量子复制塔
+        var quantumCopyTower = QuantumCopyTower.Create();
+        quantumCopyTower.Item3.SetBuildBar(5, 4, true);
+
+        //点金塔
+        var alchemyTower = AlchemyTower.Create();
+        alchemyTower.Item3.SetBuildBar(6, 1, true);
+
+        //转化塔MK1-MK7
+        var conversionTowers = ConversionTower.CreateAll();
+        conversionTowers[0].Item3.SetBuildBar(6, 2, true);
+        conversionTowers[1].Item3.SetBuildBar(6, 3, true);
+        conversionTowers[2].Item3.SetBuildBar(6, 4, true);
+        conversionTowers[3].Item3.SetBuildBar(6, 5, true);
+        conversionTowers[4].Item3.SetBuildBar(6, 6, true);
+        conversionTowers[5].Item3.SetBuildBar(6, 7, true);
+        conversionTowers[6].Item3.SetBuildBar(6, 8, true);
+
+        //分解塔
+        var deconstructionTower = DeconstructionTower.Create();
+        deconstructionTower.Item3.SetBuildBar(6, 9, true);
+
 
         // //设定升降级关系
         // //原版分馏塔可以升级为矿物复制塔，以适配BPT的替换建筑
@@ -100,7 +105,7 @@ public static class BuildingManager {
     /// <param name="hpAdjust">hp调节量（相比于原版分馏塔）</param>
     /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
     [SuppressMessage("ReSharper", "ParameterHidesMember")]
-    private static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
+    public static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
         string name, int itemID, int modelID,
         int gridIndex, Color color, int hpAdjust, float energyRatio) {
         ModelProto oriModel = FractionatorModel;
@@ -195,21 +200,100 @@ public static class BuildingManager {
 
         //添加科技解锁相关信息。可以避免万物分馏PreAddAction时，LDB中找不到创世科技的问题
         // buildingInfoList.Add(new() { itemID = itemID, recipeID = recipeID });
+        buildingList.Add(item);
 
         return (null, model, item);
     }
 
+    #endregion
+
+
+    #region 在PostAdd之后根据已添加的物品修改部分属性
+
     /// <summary>
-    /// 关联物品、配方、前置科技，以使分馏塔在正确的科技被解锁
+    /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
     /// </summary>
-    public static void PreloadAll() {
-        //此时翻译字符串已经添加，再次Preload科技以更新其名称、描述、结论等
-        foreach (var unlock in buildingInfoList) {
-            //配方Preload会自动使用Results[0]的图标，所以先Preload item，再Preload recipe
-            var item = LDB.items.Select(unlock.itemID);
-            item.Preload(item.index);
-            // var recipe = LDB.recipes.Select(unlock.recipeID);
-            // recipe.Preload(recipe.index);
+    public static void SetFractionatorCacheSize() {
+        foreach (var building in buildingList) {
+            if (building.prefabDesc.isFractionator) {
+                var prefabDesc = LDB.items.Select(building.ID).prefabDesc;
+                prefabDesc.fracFluidInputMax = FracFluidInputMax;
+                prefabDesc.fracProductOutputMax = FracProductOutputMax;
+                prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
+            }
         }
     }
+
+    /// <summary>
+    /// 更改已放置的分馏塔的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
+    public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
+        __instance.fluidInputMax = FracFluidInputMax;
+        __instance.productOutputMax = FracProductOutputMax;
+        __instance.fluidOutputMax = FracFluidOutputMax;
+    }
+
+    #endregion
+
+    #region 分馏塔字段拓展
+
+    /// <summary>
+    /// 存储分馏塔所有副产物。结构：
+    /// (planetId, entityId) => Dictionary&lt;itemId, itemCount&gt;
+    /// </summary>
+    private static readonly ConcurrentDictionary<(int, int), Dictionary<int, int>> outputExtend = [];
+
+    public static void Import(BinaryReader r) {
+        outputExtend.Clear();
+        int fractionatorNum = r.ReadInt32();
+        for (int i = 0; i < fractionatorNum; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            Dictionary<int, int> outputDic = [];
+            int outputKinds = r.ReadInt32();
+            for (int j = 0; j < outputKinds; j++) {
+                int outputId = r.ReadInt32();
+                int outputCount = r.ReadInt32();
+                if (LDB.items.Select(outputId) == null) {
+                    continue;
+                }
+                outputDic.Add(outputId, outputCount);
+            }
+            outputExtend.TryAdd((planetId, entityId), outputDic);
+        }
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(outputExtend.Count);
+        foreach (var p in outputExtend) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            Dictionary<int, int> outputDic = outputExtend[p.Key];
+            //去除所有物品数目为0的情况，节约存储体积
+            List<int> keys = outputDic.Keys.Where(Key => outputDic[Key] > 0).ToList();
+            w.Write(keys.Count);
+            for (int i = 0; i < keys.Count; i++) {
+                w.Write(keys[i]);
+                w.Write(outputDic[keys[i]]);
+            }
+        }
+    }
+
+    public static void IntoOtherSave() {
+        outputExtend.Clear();
+    }
+
+    public static Dictionary<int, int> productExpansion(this FractionatorComponent fractionator,
+        PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        if (!outputExtend.ContainsKey((planetId, entityId))) {
+            outputExtend.TryAdd((planetId, entityId), []);
+        }
+        return outputExtend[(planetId, entityId)];
+    }
+
+    #endregion
 }

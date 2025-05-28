@@ -73,9 +73,9 @@ static class AfterBuildEvent {
                 string projectDir = $@"..\..\..\{projectName}";
                 //mod.dll
 #if DEBUG
-                    string projectModFile = $@"{projectDir}\bin\debug\{projectName}.dll";
-                    string projectModPdbFile = $@"{projectDir}\bin\debug\{projectName}.pdb";
-                    string projectModMdbFile = $@"{projectDir}\bin\debug\{projectName}.dll.mdb";
+                string projectModFile = $@"{projectDir}\bin\debug\{projectName}.dll";
+                string projectModPdbFile = $@"{projectDir}\bin\debug\{projectName}.pdb";
+                string projectModMdbFile = $@"{projectDir}\bin\debug\{projectName}.dll.mdb";
 #else
                 string projectModFile = $@"{projectDir}\bin\release\{projectName}.dll";
                 string projectModPdbFile = $@"{projectDir}\bin\release\{projectName}.pdb";

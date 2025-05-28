@@ -3,7 +3,8 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
-using FE.Logic;
+using FE.Logic.Manager;
+using FE.Logic.Recipe;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -464,7 +465,7 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 //5.自然资源分馏、升转化、量子复制
                 if (FractionateEverythingEnable) {
-                    AddFracRecipe(recipes, item);
+                    AddBaseRecipe(recipes, item);
                 }
             }
             //特殊物品（无实体的工厂）
@@ -519,86 +520,86 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
-    static void AddFracRecipe(JArray recipes, ItemProto item) {
-        FracRecipe fracRecipe;
-        if ((fracRecipe = FracRecipeManager.GetNaturalResourceRecipe(item.ID))
-            != null) {
-            var res = processFracRecipe(fracRecipe);
-            recipes.Add(new JObject {
-                { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE矿物复制塔 }) },
-                { "Name", $"[自然资源分馏]{item.name}" },
-                { "Items", new JArray(new[] { item.ID }) },
-                { "ItemCounts", new JArray(new[] { res.Item1 }) },
-                { "Results", new JArray(res.Item2) },
-                { "ResultCounts", new JArray(res.Item3) },
-                { "TimeSpend", 6000 },
-                { "Proliferator", 1 },
-                { "IconName", item.iconSprite.name },
-            });
-        }
-        if ((fracRecipe = FracRecipeManager.GetUpgradeRecipe(item.ID)) != null) {
-            var res = processFracRecipe(fracRecipe);
-            recipes.Add(new JObject {
-                { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
-                { "Name", $"[升级分馏]{item.name}" },
-                { "Items", new JArray(new[] { item.ID }) },
-                { "ItemCounts", new JArray(new[] { res.Item1 }) },
-                { "Results", new JArray(res.Item2) },
-                { "ResultCounts", new JArray(res.Item3) },
-                { "TimeSpend", 6000 },
-                { "Proliferator", 1 },
-                { "IconName", item.iconSprite.name },
-            });
-        }
-        if ((fracRecipe = FracRecipeManager.GetDowngradeRecipe(item.ID)) != null) {
-            var res = processFracRecipe(fracRecipe);
-            recipes.Add(new JObject {
-                { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
-                { "Name", $"[转化]{item.name}" },
-                { "Items", new JArray(new[] { item.ID }) },
-                { "ItemCounts", new JArray(new[] { res.Item1 }) },
-                { "Results", new JArray(res.Item2) },
-                { "ResultCounts", new JArray(res.Item3) },
-                { "TimeSpend", 6000 },
-                { "Proliferator", 1 },
-                { "IconName", item.iconSprite.name },
-            });
-        }
-        if (item.ID != I沙土
-            && (fracRecipe = FracRecipeManager.GetIncreaseRecipe(item.ID)) != null) {
-            // Dictionary<int, float> IPFDic = Traverse.Create(typeof(FracProcess)).Field("IPFDic")
-            //     .GetValue<Dictionary<int, float>>();
-            // float ratio = IPFDic[item.ID];//增产10点情况下的概率
-            // var res = processFracRecipe(new FracRecipe());
-            var res = processFracRecipe(fracRecipe);
-            recipes.Add(new JObject {
-                { "Type", -1 },
-                { "Factories", new JArray(new[] { IFE量子复制塔 }) },
-                { "Name", $"[量子复制]{item.name}" },
-                { "Items", new JArray(new[] { item.ID }) },
-                { "ItemCounts", new JArray(new[] { res.Item1 }) },
-                { "Results", new JArray(res.Item2) },
-                { "ResultCounts", new JArray(res.Item3) },
-                { "TimeSpend", 6000 },
-                { "Proliferator", 8 },//新的模式
-                { "IconName", item.iconSprite.name },
-            });
-        }
+    static void AddBaseRecipe(JArray recipes, ItemProto item) {
+        // BaseRecipe baseRecipe;
+        // if ((baseRecipe = BaseRecipeManager.GetNaturalResourceRecipe(item.ID))
+        //     != null) {
+        //     var res = processBaseRecipe(baseRecipe);
+        //     recipes.Add(new JObject {
+        //         { "Type", -1 },
+        //         { "Factories", new JArray(new[] { IFE矿物复制塔 }) },
+        //         { "Name", $"[自然资源分馏]{item.name}" },
+        //         { "Items", new JArray(new[] { item.ID }) },
+        //         { "ItemCounts", new JArray(new[] { res.Item1 }) },
+        //         { "Results", new JArray(res.Item2) },
+        //         { "ResultCounts", new JArray(res.Item3) },
+        //         { "TimeSpend", 6000 },
+        //         { "Proliferator", 1 },
+        //         { "IconName", item.iconSprite.name },
+        //     });
+        // }
+        // if ((baseRecipe = BaseRecipeManager.GetUpgradeRecipe(item.ID)) != null) {
+        //     var res = processBaseRecipe(baseRecipe);
+        //     recipes.Add(new JObject {
+        //         { "Type", -1 },
+        //         { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
+        //         { "Name", $"[升级分馏]{item.name}" },
+        //         { "Items", new JArray(new[] { item.ID }) },
+        //         { "ItemCounts", new JArray(new[] { res.Item1 }) },
+        //         { "Results", new JArray(res.Item2) },
+        //         { "ResultCounts", new JArray(res.Item3) },
+        //         { "TimeSpend", 6000 },
+        //         { "Proliferator", 1 },
+        //         { "IconName", item.iconSprite.name },
+        //     });
+        // }
+        // if ((baseRecipe = BaseRecipeManager.GetDowngradeRecipe(item.ID)) != null) {
+        //     var res = processBaseRecipe(baseRecipe);
+        //     recipes.Add(new JObject {
+        //         { "Type", -1 },
+        //         { "Factories", new JArray(new[] { IFE转化塔MK1 }) },
+        //         { "Name", $"[转化]{item.name}" },
+        //         { "Items", new JArray(new[] { item.ID }) },
+        //         { "ItemCounts", new JArray(new[] { res.Item1 }) },
+        //         { "Results", new JArray(res.Item2) },
+        //         { "ResultCounts", new JArray(res.Item3) },
+        //         { "TimeSpend", 6000 },
+        //         { "Proliferator", 1 },
+        //         { "IconName", item.iconSprite.name },
+        //     });
+        // }
+        // if (item.ID != I沙土
+        //     && (baseRecipe = BaseRecipeManager.GetIncreaseRecipe(item.ID)) != null) {
+        //     // Dictionary<int, float> IPFDic = Traverse.Create(typeof(ProcessManager)).Field("IPFDic")
+        //     //     .GetValue<Dictionary<int, float>>();
+        //     // float ratio = IPFDic[item.ID];//增产10点情况下的概率
+        //     // var res = processBaseRecipe(new BaseRecipe());
+        //     var res = processBaseRecipe(baseRecipe);
+        //     recipes.Add(new JObject {
+        //         { "Type", -1 },
+        //         { "Factories", new JArray(new[] { IFE量子复制塔 }) },
+        //         { "Name", $"[量子复制]{item.name}" },
+        //         { "Items", new JArray(new[] { item.ID }) },
+        //         { "ItemCounts", new JArray(new[] { res.Item1 }) },
+        //         { "Results", new JArray(res.Item2) },
+        //         { "ResultCounts", new JArray(res.Item3) },
+        //         { "TimeSpend", 6000 },
+        //         { "Proliferator", 8 },//新的模式
+        //         { "IconName", item.iconSprite.name },
+        //     });
+        // }
     }
 
-    static (float, List<int>, List<float>) processFracRecipe(FracRecipe fracRecipe) {
+    static (float, List<int>, List<float>) processBaseRecipe(BaseRecipe baseRecipe) {
         float inputNum = 0;
-        List<int> outputID = [..fracRecipe.outputID];
-        List<float> outputNum = [..fracRecipe.outputNum];
-        List<float> outputRatio = [..fracRecipe.outputRatio];
+        List<int> outputID = [baseRecipe.InputID];
+        List<float> outputNum = [baseRecipe.UsageCount];
+        List<float> outputRatio = [baseRecipe.InputID];
         //1个->5%->2个 等价于 1个->20s->2个 等价于 5个->100s->10个
         //1个->x%->y个 等价于 x个->100s->xy个
-        if (fracRecipe.destroyRatio > 0) {
-            inputNum += fracRecipe.destroyRatio * 100;
-        }
+        // if (baseRecipe.destroyRatio > 0) {
+        //     inputNum += baseRecipe.destroyRatio * 100;
+        // }
         outputID.RemoveAt(0);
         outputNum.RemoveAt(0);
         outputRatio.RemoveAt(0);
@@ -761,232 +762,6 @@ public class GetDspData : BaseUnityPlugin {
             .Replace("（", "")
             .Replace("）", "");
     }
-
-    #region 分馏原版逻辑梳理
-
-    // public uint InternalUpdate(
-    //     PlanetFactory factory,
-    //     float power,
-    //     SignData[] signPool,
-    //     int[] productRegister,
-    //     int[] consumeRegister) {
-    //     //如果没电就不工作
-    //     if ((float)power < 0.1f)
-    //         return 0;
-    //     //要处理的物品数目？一次只能处理0.001-4.0个物品。注意这是个float
-    //     float num1 = 1.0;
-    //     //fluidInputCount输入物品的数目  fluidInputCargoCount平均堆叠个数
-    //     if (this.fluidInputCount == 0)
-    //         //没有物品，平均堆叠自然是0
-    //         this.fluidInputCargoCount = 0.0f;
-    //     else
-    //         //因为堆叠科技最大是4，所以fluidInputCount不可能大于4倍的fluidInputCargoCount
-    //         num1 = (float)this.fluidInputCargoCount > 0.0001
-    //             ? (float)this.fluidInputCount / (float)this.fluidInputCargoCount
-    //             : 4.0;
-    //     //运行分馏的条件：输入个数>0，流动输出个数未达缓存上限，产品输出个数未达缓存上限
-    //     if (this.fluidInputCount > 0
-    //         && this.productOutputCount < this.productOutputMax
-    //         && this.fluidOutputCount < this.fluidOutputMax) {
-    //         //反正是根据电力、要处理的数目（num1）来增加处理进度
-    //         this.progress += (int)((float)power
-    //                                * (500.0 / 3.0)
-    //                                * ((float)this.fluidInputCargoCount < 30.0
-    //                                    ? (float)this.fluidInputCargoCount
-    //                                    : 30.0)
-    //                                * num1
-    //                                + 0.75);
-    //         //最多一次性进行10次分馏判定
-    //         if (this.progress > 100000)
-    //             this.progress = 100000;
-    //         //每10000进度，判定一次分馏，直至进度小于10000
-    //         for (; this.progress >= 10000; this.progress -= 10000) {
-    //             //fluidInputInc总输入增产点数  num2平均增产点数，注意这是个int
-    //             int num2 = this.fluidInputInc <= 0 || this.fluidInputCount <= 0
-    //                 ? 0
-    //                 : this.fluidInputInc / this.fluidInputCount;
-    //             //伪随机数种子
-    //             this.seed = (uint)((ulong)(this.seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
-    //             //seed / 2147483646是一个0-1之间的数
-    //             //produceProb是基础概率0.01，不过在万物分馏mod里面不用这个基础概率
-    //             //1.0 + Cargo.accTableMilli[num2 < 10 ? num2 : 10]这个是平均增产点数对于速率的加成
-    //             //增产点数越高，分馏成功率越高
-    //             this.fractionSuccess = (float)this.seed / 2147483646.0
-    //                                    < (float)this.produceProb
-    //                                    * (1.0 + Cargo.accTableMilli[num2 < 10 ? num2 : 10]);
-    //             if (this.fractionSuccess) {
-    //                 //分馏成功
-    //                 //产物+1（当前的实际产物个数）
-    //                 ++this.productOutputCount;
-    //                 //产物总数+1（仅用于分馏页面的显示，无实际效果）
-    //                 ++this.productOutputTotal;
-    //
-    //                 //统计数目相关的东西
-    //                 lock (productRegister)
-    //                     //全局这个产物的生成数+1
-    //                     ++productRegister[this.productId];
-    //                 lock (consumeRegister)
-    //                     //全局这个原料的消耗数+1
-    //                     ++consumeRegister[this.fluidId];
-    //             }
-    //             else {
-    //                 //分馏失败
-    //                 //流动输出+1（当前的实际流动输出个数）
-    //                 ++this.fluidOutputCount;
-    //                 //流动总数+1（仅用于分馏页面的显示，无实际效果）
-    //                 ++this.fluidOutputTotal;
-    //                 //输出的产物增产总点数增加
-    //                 this.fluidOutputInc += num2;
-    //             }
-    //
-    //             //无论分馏是否成功，原料都被处理了
-    //             //原料-1
-    //             --this.fluidInputCount;
-    //             //原料增产点数减少
-    //             this.fluidInputInc -= num2;
-    //             //原料平均堆叠数减少？这段没太看懂
-    //             //num1是fluidInputCount / fluidInputCargoCount，
-    //             //1.0 / num1 就是 fluidInputCargoCount / fluidInputCount
-    //             //emm先不管了
-    //             this.fluidInputCargoCount -= (float)(1.0 / num1);
-    //             if ((float)this.fluidInputCargoCount < 0.0)
-    //                 this.fluidInputCargoCount = 0.0f;
-    //         }
-    //     }
-    //     else
-    //         //未满足运行分馏的条件
-    //         this.fractionSuccess = false;
-    //     //货物流量
-    //     CargoTraffic cargoTraffic = factory.cargoTraffic;
-    //     byte stack;
-    //     byte inc1;
-    //
-    //     //下面两个类似，只不过是传送带进出方向不同。
-    //     //如果有传送带
-    //     if (this.belt1 > 0) {
-    //         //如果这个口是流动出口
-    //         if (this.isOutput1) {
-    //             //如果流动货物大于0
-    //             //这样看来，处理多次后可能有多个流动货物了
-    //             if (this.fluidOutputCount > 0) {
-    //                 //平均增产点数
-    //                 int inc2 = this.fluidOutputInc / this.fluidOutputCount;
-    //                 CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[this.belt1].segPathId);
-    //                 if (cargoPath != null
-    //                     &&
-    //                     //itemID，maxstack，stack，inc
-    //                     cargoPath.TryUpdateItemAtHeadAndFillBlank(
-    //                         this.fluidId,
-    //                         Mathf.CeilToInt((float)(num1 - 0.1)),//平均每一块货物数目的上封顶
-    //                         (byte)1,//仅输出一个
-    //                         (byte)inc2)) {
-    //                     //总输出-1，总增产点数也减少
-    //                     --this.fluidOutputCount;
-    //                     this.fluidOutputInc -= inc2;
-    //                     //继续判断流动货物。为什么不写成while循环？
-    //                     //奇怪，如果只判断两次，怎么做到输出货物也是堆叠4的？
-    //                     //游戏60帧，传送带最大30/s，所以只需要一帧判断两次，即可输出4堆叠货物
-    //                     if (this.fluidOutputCount > 0) {
-    //                         int inc3 = this.fluidOutputInc / this.fluidOutputCount;
-    //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(
-    //                                 this.fluidId,
-    //                                 Mathf.CeilToInt((float)(num1 - 0.1)),
-    //                                 (byte)1,
-    //                                 (byte)inc3)) {
-    //                             --this.fluidOutputCount;
-    //                             this.fluidOutputInc -= inc3;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         //如果这个口是流动输入口，且输入缓存没满
-    //         else if (!this.isOutput1 && (float)this.fluidInputCargoCount < (float)this.fluidInputMax) {
-    //             //取货这部分不用看了
-    //             if (this.fluidId > 0) {
-    //                 if (cargoTraffic.TryPickItemAtRear(this.belt1, this.fluidId, (int[])null, out stack, out inc1)
-    //                     > 0) {
-    //                     this.fluidInputCount += (int)stack;
-    //                     this.fluidInputInc += (int)inc1;
-    //                     ++this.fluidInputCargoCount;
-    //                 }
-    //             }
-    //             else {
-    //                 int needId = cargoTraffic.TryPickItemAtRear(this.belt1, 0, RecipeProto.fractionatorNeeds,
-    //                     out stack, out inc1);
-    //                 if (needId > 0) {
-    //                     this.fluidInputCount += (int)stack;
-    //                     this.fluidInputInc += (int)inc1;
-    //                     ++this.fluidInputCargoCount;
-    //                     this.SetRecipe(needId, signPool);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     if (this.belt2 > 0) {
-    //         if (this.isOutput2) {
-    //             if (this.fluidOutputCount > 0) {
-    //                 int inc4 = this.fluidOutputInc / this.fluidOutputCount;
-    //                 CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[this.belt2].segPathId);
-    //                 if (cargoPath != null
-    //                     && cargoPath.TryUpdateItemAtHeadAndFillBlank(this.fluidId,
-    //                         Mathf.CeilToInt((float)(num1 - 0.1)), (byte)1, (byte)inc4)) {
-    //                     --this.fluidOutputCount;
-    //                     this.fluidOutputInc -= inc4;
-    //                     if (this.fluidOutputCount > 0) {
-    //                         int inc5 = this.fluidOutputInc / this.fluidOutputCount;
-    //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(this.fluidId,
-    //                                 Mathf.CeilToInt((float)(num1 - 0.1)), (byte)1, (byte)inc5)) {
-    //                             --this.fluidOutputCount;
-    //                             this.fluidOutputInc -= inc5;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         else if (!this.isOutput2 && (float)this.fluidInputCargoCount < (float)this.fluidInputMax) {
-    //             if (this.fluidId > 0) {
-    //                 if (cargoTraffic.TryPickItemAtRear(this.belt2, this.fluidId, (int[])null, out stack, out inc1)
-    //                     > 0) {
-    //                     this.fluidInputCount += (int)stack;
-    //                     this.fluidInputInc += (int)inc1;
-    //                     ++this.fluidInputCargoCount;
-    //                 }
-    //             }
-    //             else {
-    //                 int needId = cargoTraffic.TryPickItemAtRear(this.belt2, 0, RecipeProto.fractionatorNeeds,
-    //                     out stack, out inc1);
-    //                 if (needId > 0) {
-    //                     this.fluidInputCount += (int)stack;
-    //                     this.fluidInputInc += (int)inc1;
-    //                     ++this.fluidInputCargoCount;
-    //                     this.SetRecipe(needId, signPool);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     //如果产品出口有传送带
-    //     if (this.belt0 > 0
-    //         &&
-    //         //并且是输出口
-    //         this.isOutput0
-    //         &&
-    //         //并且产物数目大于0
-    //         this.productOutputCount > 0
-    //         &&
-    //         //尝试往传送带上塞一个物品
-    //         cargoTraffic.TryInsertItemAtHead(this.belt0, this.productId, (byte)1, (byte)0))
-    //         --this.productOutputCount;
-    //     if (this.fluidInputCount == 0 && this.fluidOutputCount == 0 && this.productOutputCount == 0)
-    //         this.fluidId = 0;
-    //     //工作条件：有原料并且俩输出都不堵
-    //     this.isWorking = this.fluidInputCount > 0
-    //                      && this.productOutputCount < this.productOutputMax
-    //                      && this.fluidOutputCount < this.fluidOutputMax;
-    //     return !this.isWorking ? 0U : 1U;
-    // }
-
-    #endregion
 
     // private void test() {
     //     string jsonText =
