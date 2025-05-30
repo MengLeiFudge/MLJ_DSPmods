@@ -570,9 +570,9 @@ public class GetDspData : BaseUnityPlugin {
         // }
         // if (item.ID != I沙土
         //     && (baseRecipe = BaseRecipeManager.GetIncreaseRecipe(item.ID)) != null) {
-        //     // Dictionary<int, float> IPFDic = Traverse.Create(typeof(ProcessManager)).Field("IPFDic")
+        //     // Dictionary<int, float> itemRatioDic = Traverse.Create(typeof(ProcessManager)).Field("itemRatioDic")
         //     //     .GetValue<Dictionary<int, float>>();
-        //     // float ratio = IPFDic[item.ID];//增产10点情况下的概率
+        //     // float ratio = itemRatioDic[item.ID];//增产10点情况下的概率
         //     // var res = processBaseRecipe(new BaseRecipe());
         //     var res = processBaseRecipe(baseRecipe);
         //     recipes.Add(new JObject {

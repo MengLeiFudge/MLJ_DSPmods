@@ -117,7 +117,7 @@ public static class BaseRecipeManager {
         //     CreateFracChain3([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);//注意科技解锁顺序
         //     //建筑VI
         //     // List<BaseRecipe>[] lists =
-        //     //     CreateFracChain([IFE矿物复制塔, IFE转化塔MK1, IFE转化塔MK1, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
+        //     //     CreateFracChain([IFE矿物复制塔, IFE转化塔, IFE转化塔, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
         //     // foreach (BaseRecipe recipe in lists[0]) {
         //     //     recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
         //     // }
@@ -215,7 +215,7 @@ public static class BaseRecipeManager {
         //     //CreateFracChain([I微型粒子对撞机], false);
         //     CreateFracChain3([IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]);
         //     // List<BaseRecipe>[] lists =
-        //     //     CreateFracChain([IFE矿物复制塔, IFE转化塔MK1, IFE转化塔MK1, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
+        //     //     CreateFracChain([IFE矿物复制塔, IFE转化塔, IFE转化塔, IFE垃圾回收分馏塔, IFE点数聚集塔, IFE量子复制塔], false);
         //     // foreach (BaseRecipe recipe in lists[0]) {
         //     //     recipe.AddProduct(IFE老虎机分馏塔, 0.001f, 1);
         //     // }
@@ -255,7 +255,7 @@ public static class BaseRecipeManager {
         // for (int i = 0; i < LDB.items.Length; i++) {
         //     int itemID = LDB.items[i].ID;
         //     CreatePointsAggregateRecipe(itemID);
-        //     CreateIncreaseRecipe(itemID, IPFDic[itemID]);
+        //     CreateIncreaseRecipe(itemID, itemRatioDic[itemID]);
         // }
 
         //添加所有翻译
