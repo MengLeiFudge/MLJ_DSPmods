@@ -36,37 +36,9 @@ public static class ProcessManager {
     public static int FracFluidInputMax = 40;
     public static int FracProductOutputMax = 20;
     public static int FracFluidOutputMax = 20;
-    private static readonly Dictionary<int, int> itemPointDic = new();
-    private static int foundationConvertPoint = (int)(660 * 1.25);
     private static double[] incTableFixedRatio;
-    //f(x)=a*x^b，由MATLAB拟合得到
-    //原始数据：
-    //100.000000 	    0.100000
-    //200.000000 	    0.070000
-    //400.000000 	    0.049000
-    //800.000000 	    0.034300
-    //1600.000000 	    0.024010
-    //3200.000000 	    0.016807
-    //6400.000000 	    0.011765
-    //12800.000000 	    0.008235
-    //25600.000000 	    0.005765
-    //51200.000000 	    0.004035
-    //102400.000000 	0.002825
-    //204800.000000 	0.001977
-    //409600.000000 	0.001384
-    //819200.000000 	0.000969
-    //1638400.000000 	0.000678
-    //3276800.000000 	0.000475
-    private const double a = 1.069415182912524;
-    private const double b = -0.5145731728297580;
-    public static readonly Dictionary<int, float> IPFDic = [];
-    private static readonly Dictionary<int, float> defaultIPFDic = new() { { 2, 0.005f } };
     private static int[] trashRecycleNeeds = [];
     // private static BaseRecipe DefaultBaseRecipe = new(ERecipe.Origin, 0, [-1, 0], [0, 0], [-1, 0]);
-#if DEBUG
-    private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
-    private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemPoint.csv";
-#endif
 
     #endregion
 
@@ -182,139 +154,6 @@ public static class ProcessManager {
             }
         }
         trashRecycleNeeds = trashRecycleList.ToArray();
-
-        //计算所有物品的原材料点数
-        itemPointDic.Add(I能量碎片, 50);
-        itemPointDic.Add(I黑雾矩阵, 60);
-        itemPointDic.Add(I物质重组器, 110);
-        itemPointDic.Add(I硅基神经元, 150);
-        itemPointDic.Add(I负熵奇点, 180);
-        itemPointDic.Add(I核心素, 680);
-        itemPointDic.Add(I临界光子, 8000);
-        List<int> point10 = [
-            I硅石,
-            I水, I原油, I精炼油_GB焦油, I硫酸, I氢, I重氢,
-            IGB铝矿, IGB硫矿, IGB放射性矿物, IGB钨矿, IGB氦, IGB氨, IGB氮, IGB氧,
-        ];
-        foreach (int id in point10) {
-            itemPointDic.Add(id, 100);
-        }
-        List<int> point20 = [
-            I可燃冰, I金伯利矿石, I分形硅石, I光栅石, I刺笋结晶, I单极磁石, I有机晶体,
-        ];
-        foreach (int id in point20) {
-            itemPointDic.Add(id, 200);
-        }
-        foreach (ItemProto item in LDB.items.dataArray) {
-            if (itemPointDic.ContainsKey(item.ID) || item.ID == I蓄电器满) {
-                continue;
-            }
-            if (item.maincraft == null) {
-                itemPointDic.Add(item.ID, 100);
-            }
-        }
-        while (true) {
-            bool fresh = false;
-            foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-                if (recipe.Type == ERecipeType.Fractionate
-                    || recipe.Items.Length == 0
-                    || recipe.Results.Length == 0) {
-                    continue;
-                }
-                int totalPoints = 0;
-                int totalCounts = 0;
-                bool canCompute = true;
-                if (recipe.Items[0] == IMS多功能集成组件 && !recipe.Results.ToList().Contains(IMS多功能集成组件)) {
-                    //totalPoints：输出的增产点数总数
-                    //totalCounts：输入的物品总数
-                    for (int i = 0; i < recipe.Results.Length; i++) {
-                        int id = recipe.Results[i];
-                        if (!itemPointDic.ContainsKey(id)) {
-                            canCompute = false;
-                            break;
-                        }
-                        totalPoints += itemPointDic[id] * recipe.ResultCounts[i];
-                    }
-                    if (!canCompute) {
-                        continue;
-                    }
-                    foreach (int count in recipe.ItemCounts) {
-                        totalCounts += count;
-                    }
-                    totalPoints = (int)Math.Ceiling((double)totalPoints / totalCounts - recipe.TimeSpend);
-                    foreach (int id in recipe.Items) {
-                        if (!itemPointDic.ContainsKey(id)) {
-                            itemPointDic.Add(id, totalPoints);
-                            fresh = true;
-                        } else if (totalPoints < itemPointDic[id]) {
-                            //这里想了一下，还是取价值低的吧
-                            itemPointDic[id] = totalPoints;
-                            fresh = true;
-                        }
-                    }
-                } else {
-                    //totalPoints：输入的增产点数总数
-                    //totalCounts：输出的物品总数
-                    for (int i = 0; i < recipe.Items.Length; i++) {
-                        int id = recipe.Items[i];
-                        if (!itemPointDic.ContainsKey(id)) {
-                            canCompute = false;
-                            break;
-                        }
-                        totalPoints += itemPointDic[id] * recipe.ItemCounts[i];
-                    }
-                    if (!canCompute) {
-                        continue;
-                    }
-                    foreach (int t in recipe.ResultCounts) {
-                        totalCounts += t;
-                    }
-                    totalPoints = (int)((double)totalPoints / totalCounts + recipe.TimeSpend);
-                    foreach (int id0 in recipe.Results) {
-                        int id = id0;
-                        label:
-                        if (!itemPointDic.ContainsKey(id)) {
-                            itemPointDic.Add(id, totalPoints);
-                            fresh = true;
-                        } else if (totalPoints < itemPointDic[id]) {
-                            itemPointDic[id] = totalPoints;
-                            fresh = true;
-                        }
-                        if (id == I蓄电器) {
-                            id = I蓄电器满;
-                            goto label;
-                        }
-                    }
-                }
-            }
-            if (!fresh) {
-                break;
-            }
-        }
-        foreach (ItemProto item in LDB.items.dataArray) {
-            if (!itemPointDic.ContainsKey(item.ID)) {
-                itemPointDic.Add(item.ID, 100);
-            }
-        }
-        foundationConvertPoint = (int)(itemPointDic[I地基] * 1.25);
-        //根据物品点数，构建增产塔使用的概率表
-        foreach (KeyValuePair<int, int> p in itemPointDic) {
-            IPFDic.Add(p.Key, (float)(a * Math.Pow(p.Value, b)));
-        }
-#if DEBUG
-        //按照从小到大的顺序输出所有物品的原材料点数
-        if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
-            using StreamWriter sw = new StreamWriter(ITEM_VALUE_CSV_PATH);
-            sw.WriteLine("ID,名称,物品价值,量子复制概率最大值");
-            foreach (KeyValuePair<int, int> p in itemPointDic.OrderBy(p => p.Value)) {
-                ItemProto item = LDB.items.Select(p.Key);
-                if (item == null) {
-                    continue;
-                }
-                sw.WriteLine($"{p.Key},{item.name},{p.Value},{IPFDic[p.Key]:P5}");
-            }
-        }
-#endif
     }
 
     #region 分馏配方与科技状态检测
@@ -374,22 +213,24 @@ public static class ProcessManager {
                 MineralCopyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result);
                 return false;
-            case IFE转化塔MK1:
-            case IFE转化塔MK2:
-            case IFE转化塔MK3:
-            case IFE转化塔MK4:
-            case IFE转化塔MK5:
-            case IFE转化塔MK6:
-            case IFE转化塔MK7:
-                ConversionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result);
-                return false;
             case IFE点数聚集塔:
                 PointAggregatorTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result);
                 return false;
             case IFE量子复制塔:
                 QuantumCopyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result);
+                return false;
+            case IFE点金塔:
+                AlchemyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result);
+                return false;
+            case IFE分解塔:
+                DeconstructionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result);
+                return false;
+            case IFE转化塔:
+                ConversionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result);
                 return false;
         }
@@ -410,7 +251,7 @@ public static class ProcessManager {
         // BaseRecipe recipe = buildingID switch {
         //     I分馏塔 => inputItemID == I氢 ? DeuteriumBaseRecipe : null,
         //     IFE矿物复制塔 => GetNaturalResourceRecipe(inputItemID),
-        //     IFE转化塔MK1 => GetUpgradeRecipe(inputItemID),
+        //     IFE转化塔 => GetUpgradeRecipe(inputItemID),
         //     IFE点数聚集塔 => GetPointsAggregateRecipe(inputItemID),
         //     IFE量子复制塔 => GetIncreaseRecipe(inputItemID),
         //     _ => null,
@@ -557,7 +398,7 @@ public static class ProcessManager {
         //                     lock (NRSuperFracSuccessCount) {
         //                         NRSuperFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
         //                     }
-        //                 } else if (buildingID == IFE转化塔MK1) {
+        //                 } else if (buildingID == IFE转化塔) {
         //                     if (outputIDNum[0] == recipe.mainOutput) {
         //                         lock (UpgradeFracSuccessCount) {
         //                             UpgradeFracSuccessCount[outputIDNum[0]] += outputIDNum[1];
@@ -692,7 +533,7 @@ public static class ProcessManager {
         //                     __instance.fluidId = input;
         //                     recipe = buildingID switch {
         //                         IFE矿物复制塔 => GetNaturalResourceRecipe(input),
-        //                         IFE转化塔MK1 => GetUpgradeRecipe(input),
+        //                         IFE转化塔 => GetUpgradeRecipe(input),
         //                         _ => null,
         //                     };
         //                     __instance.productId = recipe?.mainOutput ?? input;
@@ -785,7 +626,7 @@ public static class ProcessManager {
         //                     __instance.fluidId = input;
         //                     recipe = buildingID switch {
         //                         IFE矿物复制塔 => GetNaturalResourceRecipe(input),
-        //                         IFE转化塔MK1 => GetUpgradeRecipe(input),
+        //                         IFE转化塔 => GetUpgradeRecipe(input),
         //                         _ => null,
         //                     };
         //                     __instance.productId = recipe?.mainOutput ?? input;
@@ -1090,16 +931,6 @@ public static class ProcessManager {
                     successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
                     recipe = MineralCopyRecipe.GetRecipe(fractionator.fluidId);
                     break;
-                case IFE转化塔MK1:
-                case IFE转化塔MK2:
-                case IFE转化塔MK3:
-                case IFE转化塔MK4:
-                case IFE转化塔MK5:
-                case IFE转化塔MK6:
-                case IFE转化塔MK7:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    recipe = ConversionRecipe.GetRecipe(fractionator.fluidId);
-                    break;
                 case IFE点数聚集塔:
                     successRatePlus = fractionator.fluidInputInc >= 10
                         ? successRatePlus * fractionator.fluidInputInc / fractionator.fluidInputCount * 2.5f
@@ -1109,6 +940,18 @@ public static class ProcessManager {
                 case IFE量子复制塔:
                     successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
                     recipe = QuantumCopyRecipe.GetRecipe(fractionator.fluidId);
+                    break;
+                case IFE点金塔:
+                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+                    recipe = AlchemyRecipe.GetRecipe(fractionator.fluidId);
+                    break;
+                case IFE分解塔:
+                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+                    recipe = DeconstructionRecipe.GetRecipe(fractionator.fluidId);
+                    break;
+                case IFE转化塔:
+                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
+                    recipe = ConversionRecipe.GetRecipe(fractionator.fluidId);
                     break;
                 default:
                     return;
