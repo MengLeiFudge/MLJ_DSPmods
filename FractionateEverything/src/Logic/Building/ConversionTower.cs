@@ -9,78 +9,18 @@ namespace FE.Logic.Building;
 /// </summary>
 public static class ConversionTower {
     /// <summary>
-    /// 创建所有转化塔
+    /// 创建转化塔
     /// </summary>
     /// <returns>创建的转化塔原型元组数组</returns>
     public static (RecipeProto, ModelProto, ItemProto)[] CreateAll() {
-        var towers = new (RecipeProto, ModelProto, ItemProto)[7];
+        var towers = new (RecipeProto, ModelProto, ItemProto)[1];
 
         towers[0] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK1",
-            IFE转化塔MK1,
-            MFE转化塔MK1,
+            "转化塔",
+            IFE转化塔,
+            MFE转化塔,
             2603,
-            new Color(0.4f, 1.0f, 0.949f),
-            0,
-            1.0f
-        );
-
-        towers[1] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK2",
-            IFE转化塔MK2,
-            MFE转化塔MK2,
-            2604,
-            new Color(0.7f, 0.6f, 0.8f),
-            0,
-            1.0f
-        );
-
-        towers[2] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK3",
-            IFE转化塔MK3,
-            MFE转化塔MK3,
-            2605,
-            new Color(0.4f, 1.0f, 0.5f),
-            0,
-            1.0f
-        );
-
-        towers[3] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK4",
-            IFE转化塔MK4,
-            MFE转化塔MK4,
-            2606,
-            new Color(0.4f, 1.0f, 0.949f),
-            0,
-            1.0f
-        );
-
-        towers[4] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK5",
-            IFE转化塔MK5,
-            MFE转化塔MK5,
-            2607,
-            new Color(0.4f, 1.0f, 0.949f),
-            0,
-            1.0f
-        );
-
-        towers[5] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK6",
-            IFE转化塔MK6,
-            MFE转化塔MK6,
-            2608,
-            new Color(0.4f, 1.0f, 0.949f),
-            0,
-            1.0f
-        );
-
-        towers[6] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔MK7",
-            IFE转化塔MK7,
-            MFE转化塔MK7,
-            2609,
-            new Color(0.4f, 1.0f, 0.949f),
+            new Color(0.5f, 0.9f, 1.0f),
             0,
             1.0f
         );

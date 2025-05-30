@@ -45,7 +45,7 @@ public static class FracTechManager {
         //     GenesisBook.Enable ? new(13, -47) : new(17, 17)
         // );
         // tech1622.PreTechsImplicit = [tech1621.ID, T钢材冶炼];
-        // tech1622.AddItems = [IFE转化塔MK1, IFE转化塔MK1];
+        // tech1622.AddItems = [IFE转化塔, IFE转化塔];
         // tech1622.AddItemCounts = [1, 1];
         // techs.Add(tech1622);
         //
