@@ -3,7 +3,6 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
-using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using HarmonyLib;
 using Newtonsoft.Json;
@@ -522,7 +521,7 @@ public class GetDspData : BaseUnityPlugin {
 
     static void AddBaseRecipe(JArray recipes, ItemProto item) {
         // BaseRecipe baseRecipe;
-        // if ((baseRecipe = BaseRecipeManager.GetNaturalResourceRecipe(item.ID))
+        // if ((baseRecipe = RecipeManager.GetNaturalResourceRecipe(item.ID))
         //     != null) {
         //     var res = processBaseRecipe(baseRecipe);
         //     recipes.Add(new JObject {
@@ -538,7 +537,7 @@ public class GetDspData : BaseUnityPlugin {
         //         { "IconName", item.iconSprite.name },
         //     });
         // }
-        // if ((baseRecipe = BaseRecipeManager.GetUpgradeRecipe(item.ID)) != null) {
+        // if ((baseRecipe = RecipeManager.GetUpgradeRecipe(item.ID)) != null) {
         //     var res = processBaseRecipe(baseRecipe);
         //     recipes.Add(new JObject {
         //         { "Type", -1 },
@@ -553,7 +552,7 @@ public class GetDspData : BaseUnityPlugin {
         //         { "IconName", item.iconSprite.name },
         //     });
         // }
-        // if ((baseRecipe = BaseRecipeManager.GetDowngradeRecipe(item.ID)) != null) {
+        // if ((baseRecipe = RecipeManager.GetDowngradeRecipe(item.ID)) != null) {
         //     var res = processBaseRecipe(baseRecipe);
         //     recipes.Add(new JObject {
         //         { "Type", -1 },
@@ -569,7 +568,7 @@ public class GetDspData : BaseUnityPlugin {
         //     });
         // }
         // if (item.ID != I沙土
-        //     && (baseRecipe = BaseRecipeManager.GetIncreaseRecipe(item.ID)) != null) {
+        //     && (baseRecipe = RecipeManager.GetIncreaseRecipe(item.ID)) != null) {
         //     // Dictionary<int, float> itemRatioDic = Traverse.Create(typeof(ProcessManager)).Field("itemRatioDic")
         //     //     .GetValue<Dictionary<int, float>>();
         //     // float ratio = itemRatioDic[item.ID];//增产10点情况下的概率
@@ -593,7 +592,7 @@ public class GetDspData : BaseUnityPlugin {
     static (float, List<int>, List<float>) processBaseRecipe(BaseRecipe baseRecipe) {
         float inputNum = 0;
         List<int> outputID = [baseRecipe.InputID];
-        List<float> outputNum = [baseRecipe.UsageCount];
+        List<float> outputNum = [baseRecipe.InputID];
         List<float> outputRatio = [baseRecipe.InputID];
         //1个->5%->2个 等价于 1个->20s->2个 等价于 5个->100s->10个
         //1个->x%->y个 等价于 x个->100s->xy个

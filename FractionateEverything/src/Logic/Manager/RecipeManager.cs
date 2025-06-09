@@ -1,12 +1,68 @@
 ﻿using FE.Logic.Recipe;
-using HarmonyLib;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using static FE.FractionateEverything;
+using static FE.Utils.ProtoID;
 
 namespace FE.Logic.Manager;
 
-public static class BaseRecipeManager {
-    #region 创建分馏配方
+public static class RecipeManager {
+    #region 配方列表
+
+    /// <summary>
+    /// 存储所有类型的配方
+    /// </summary>
+    private static readonly Dictionary<ERecipe, List<BaseRecipe>> _allRecipes = [];
+
+    /// <summary>
+    /// 添加一个配方
+    /// </summary>
+    /// <param name="recipe">要添加的配方</param>
+    /// <typeparam name="T">BaseRecipe的子类</typeparam>
+    public static void AddRecipe<T>(T recipe) where T : BaseRecipe {
+        ERecipe recipeType = recipe.RecipeType;
+        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
+            recipeList = [];
+            _allRecipes[recipeType] = recipeList;
+        }
+        if (recipeList.Any(r => r.InputID == recipe.InputID)) {
+            LogError($"Recipe with ID {recipe.InputID} already exists for type {recipeType}");
+            return;
+        }
+        recipeList.Add(recipe);
+    }
+
+    /// <summary>
+    /// 获取指定类型的所有配方
+    /// </summary>
+    /// <param name="recipeType">要获取的配方类型</param>
+    /// <typeparam name="T">BaseRecipe的子类</typeparam>
+    /// <returns>类型为recipeType的所有配方</returns>
+    public static List<T> GetRecipes<T>(ERecipe recipeType) where T : BaseRecipe {
+        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
+            return [];
+        }
+        return recipeList.OfType<T>().ToList();
+    }
+
+    /// <summary>
+    /// 获取指定类型的指定输入ID的配方
+    /// </summary>
+    /// <param name="recipeType">要获取的配方类型</param>
+    /// <param name="inputId">要获取的配方的输入ID</param>
+    /// <typeparam name="T">BaseRecipe的子类</typeparam>
+    /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
+    public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
+        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
+            return null;
+        }
+        return recipeList.OfType<T>().FirstOrDefault(r => r.InputID == inputId);
+    }
+
+    #endregion
+
+    #region 创建配方
 
 #if DEBUG
     private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
@@ -22,11 +78,15 @@ public static class BaseRecipeManager {
 
         LogInfo("Begin to add fractionate recipes...");
 
+        MineralCopyRecipe.CreateAll();
+        QuantumCopyRecipe.CreateAll();
+        AlchemyRecipe.CreateAll();
+        DeconstructionRecipe.CreateAll();
+        ConversionRecipe.CreateAll();
+
+
         // if (!GenesisBook.Enable) {
         //     //自然资源复制
-        //     //采集10个对应物品，或者向老虎机投入10个对应物品，即可解锁自然资源复制配方
-        //     //使用矿物复制塔成功分馏出指定数目的物品之后，配方可以消耗资源来升级
-        //     //todo：能不能判定采集了多少个资源
         //     CreateNaturalResourceRecipe(I铁矿, 0.05f);
         //     CreateNaturalResourceRecipe(I铜矿, 0.05f);
         //     CreateNaturalResourceRecipe(I硅石, 0.05f).AddProduct(I分形硅石, 0.01f, 1);
@@ -266,13 +326,14 @@ public static class BaseRecipeManager {
 
     #endregion
 
-    #region 从存档读取分馏配方数据
+    #region 从存档读取配方数据
 
     public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
         int count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int inputID = r.ReadInt32();
-            MineralCopyRecipe recipe = MineralCopyRecipe.GetRecipe(inputID);
+            MineralCopyRecipe recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, inputID);
             if (recipe == null) {
                 //规定每一个配方导出信息时，最后必须为 int.MaxValue
                 while (r.ReadInt32() != int.MaxValue) { }
@@ -283,7 +344,7 @@ public static class BaseRecipeManager {
         count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int inputID = r.ReadInt32();
-            ConversionRecipe recipe = ConversionRecipe.GetRecipe(inputID);
+            QuantumCopyRecipe recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, inputID);
             if (recipe == null) {
                 while (r.ReadInt32() != int.MaxValue) { }
             } else {
@@ -293,7 +354,7 @@ public static class BaseRecipeManager {
         count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int inputID = r.ReadInt32();
-            AlchemyRecipe recipe = AlchemyRecipe.GetRecipe(inputID);
+            AlchemyRecipe recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, inputID);
             if (recipe == null) {
                 while (r.ReadInt32() != int.MaxValue) { }
             } else {
@@ -303,7 +364,7 @@ public static class BaseRecipeManager {
         count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int inputID = r.ReadInt32();
-            DeconstructionRecipe recipe = DeconstructionRecipe.GetRecipe(inputID);
+            DeconstructionRecipe recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, inputID);
             if (recipe == null) {
                 while (r.ReadInt32() != int.MaxValue) { }
             } else {
@@ -313,7 +374,7 @@ public static class BaseRecipeManager {
         count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int inputID = r.ReadInt32();
-            QuantumCopyRecipe recipe = QuantumCopyRecipe.GetRecipe(inputID);
+            ConversionRecipe recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, inputID);
             if (recipe == null) {
                 while (r.ReadInt32() != int.MaxValue) { }
             } else {
@@ -323,96 +384,36 @@ public static class BaseRecipeManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(MineralCopyRecipe.GetAllRecipes().Count);
-        foreach (BaseRecipe recipe in MineralCopyRecipe.GetAllRecipes()) {
+        w.Write(1);
+        w.Write(GetRecipes<MineralCopyRecipe>(ERecipe.MineralCopy).Count);
+        foreach (MineralCopyRecipe recipe in GetRecipes<MineralCopyRecipe>(ERecipe.MineralCopy)) {
             w.Write(recipe.InputID);
             recipe.Export(w);
         }
-        w.Write(ConversionRecipe.GetAllRecipes().Count);
-        foreach (BaseRecipe recipe in ConversionRecipe.GetAllRecipes()) {
+        //点数聚集不需要配方
+        w.Write(GetRecipes<QuantumCopyRecipe>(ERecipe.QuantumDuplicate).Count);
+        foreach (QuantumCopyRecipe recipe in GetRecipes<QuantumCopyRecipe>(ERecipe.QuantumDuplicate)) {
             w.Write(recipe.InputID);
             recipe.Export(w);
         }
-        w.Write(AlchemyRecipe.GetAllRecipes().Count);
-        foreach (BaseRecipe recipe in AlchemyRecipe.GetAllRecipes()) {
+        w.Write(GetRecipes<AlchemyRecipe>(ERecipe.Alchemy).Count);
+        foreach (AlchemyRecipe recipe in GetRecipes<AlchemyRecipe>(ERecipe.Alchemy)) {
             w.Write(recipe.InputID);
             recipe.Export(w);
         }
-        w.Write(DeconstructionRecipe.GetAllRecipes().Count);
-        foreach (BaseRecipe recipe in DeconstructionRecipe.GetAllRecipes()) {
+        w.Write(GetRecipes<DeconstructionRecipe>(ERecipe.Deconstruction).Count);
+        foreach (DeconstructionRecipe recipe in GetRecipes<DeconstructionRecipe>(ERecipe.Deconstruction)) {
             w.Write(recipe.InputID);
             recipe.Export(w);
         }
-        w.Write(QuantumCopyRecipe.GetAllRecipes().Count);
-        foreach (BaseRecipe recipe in QuantumCopyRecipe.GetAllRecipes()) {
+        w.Write(GetRecipes<ConversionRecipe>(ERecipe.Conversion).Count);
+        foreach (ConversionRecipe recipe in GetRecipes<ConversionRecipe>(ERecipe.Conversion)) {
             w.Write(recipe.InputID);
             recipe.Export(w);
         }
     }
 
     public static void IntoOtherSave() { }
-
-    #endregion
-
-    #region 一键解锁
-
-    /// <summary>
-    /// 处于沙盒模式下时，在点击“解锁全部”按钮后额外执行的操作
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
-    public static void UITechTree_Do1KeyUnlock_Postfix() {
-        // int unlockCount = 0;
-        // foreach (BaseRecipe r in naturalResourceRecipeList) {
-        //     if (!r.IsUnlocked) {
-        //         unlockCount++;
-        //         r.Unlock();
-        //     }
-        // }
-        // if (unlockCount > 0) {
-        //     LogInfo($"Unlocked {naturalResourceRecipeList.Count} natural resource recipes.");
-        // }
-        // unlockCount = 0;
-        // foreach (BaseRecipe r in upgradeRecipeList) {
-        //     if (!r.IsUnlocked) {
-        //         unlockCount++;
-        //         r.Unlock();
-        //     }
-        // }
-        // if (unlockCount > 0) {
-        //     LogInfo($"Unlocked {upgradeRecipeList.Count} upgrade recipes.");
-        // }
-        // unlockCount = 0;
-        // foreach (BaseRecipe r in downgradeRecipeList) {
-        //     if (!r.IsUnlocked) {
-        //         unlockCount++;
-        //         r.Unlock();
-        //     }
-        // }
-        // if (unlockCount > 0) {
-        //     LogInfo($"Unlocked {downgradeRecipeList.Count} downgrade recipes.");
-        // }
-        // unlockCount = 0;
-        // foreach (BaseRecipe r in pointsAggregateRecipeList) {
-        //     if (!r.IsUnlocked) {
-        //         unlockCount++;
-        //         r.Unlock();
-        //     }
-        // }
-        // if (unlockCount > 0) {
-        //     LogInfo($"Unlocked {pointsAggregateRecipeList.Count} points aggregate recipes.");
-        // }
-        // unlockCount = 0;
-        // foreach (BaseRecipe r in increaseRecipeList) {
-        //     if (!r.IsUnlocked) {
-        //         unlockCount++;
-        //         r.Unlock();
-        //     }
-        // }
-        // if (unlockCount > 0) {
-        //     LogInfo($"Unlocked {increaseRecipeList.Count} increase recipes.");
-        // }
-    }
 
     #endregion
 }

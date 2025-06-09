@@ -1,4 +1,5 @@
-﻿using static FE.Utils.TranslationUtils;
+﻿using CommonAPI.Systems.ModLocalization;
+using static FE.Utils.TranslationUtils;
 
 namespace FE.Logic;
 
@@ -184,8 +185,7 @@ public static class Translation {
 
         #region 游戏内切换&配方显示
 
-        // Register("分馏页面1", "Fractionate I", "分馏 I");
-        // Register("分馏页面2", "Fractionate II", "分馏 II");
+        Register("分馏页面", "Fractionate", "分馏");
         Register("无配方", "NoRecipe");
         Register("未解锁", "NotUnlock");
         Register("永动", "Forever");

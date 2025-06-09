@@ -7,9 +7,7 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Compatibility;
 using FE.Logic;
-using FE.Logic.Item;
 using FE.Logic.Manager;
-using FE.Logic.Tech;
 using FE.UI;
 using FE.UI.Components;
 using FE.UI.Shop;
@@ -18,7 +16,6 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using xiaoye97;
 
@@ -47,7 +44,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     #region Fields
 
     public const string Tech1134IconPath = "Icons/Tech/1134";
-    // public static int tab分馏1;
+    public static int tab分馏1;
     // public static int tab分馏2;
     public static string ModPath;
     public static ResourceData fracicons;
@@ -164,14 +161,28 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
             LoadConfig();
 
-            // tab分馏1 = TabSystem.RegisterTab($"{GUID}:{GUID}Tab1", new("分馏页面1".Translate(), Tech1134IconPath));
-            // tab分馏2 = TabSystem.RegisterTab($"{GUID}:{GUID}Tab2", new("分馏页面2".Translate(), Tech1134IconPath));
+            tab分馏1 = TabSystem.RegisterTab($"{PluginInfo.PLUGIN_GUID}:{PluginInfo.PLUGIN_GUID}Tab",
+                new("分馏页面".Translate(), Tech1134IconPath));
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             ModPath = Path.GetDirectoryName(executingAssembly.Location);
             fracicons = new(PluginInfo.PLUGIN_GUID, "fracicons", ModPath);
             fracicons.LoadAssetBundle("fracicons");
             ProtoRegistry.AddResource(fracicons);
+
+            //加载顺序：
+            //LDBTool.PreAddDataAction
+            //VFPreload
+            //  model preload
+            //  item preload
+            //  recipe preload
+            //  tech preload
+            //  item init
+            //  model init
+            //  recipe init
+            //  RaycastLogic LoadStatic
+            //  tech preload2
+            //LDBTool.PostAddDataAction
 
             LDBTool.PreAddDataAction += PreAddData;
             LDBTool.PostAddDataAction += PostAddData;
@@ -192,14 +203,14 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
-            //在载入语言时、CommonAPIPlugin添加翻译后，添加额外的所有翻译
-            harmony.Patch(
-                AccessTools.Method(typeof(Localization), "LoadLanguage"),
-                null,
-                new(typeof(TranslationUtils), nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
-                    after = [CommonAPIPlugin.GUID]
-                }
-            );
+            // //在载入语言时、CommonAPIPlugin添加翻译后，添加额外的所有翻译
+            // harmony.Patch(
+            //     AccessTools.Method(typeof(Localization), "LoadLanguage"),
+            //     null,
+            //     new(typeof(TranslationUtils), nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
+            //         after = [CommonAPIPlugin.GUID]
+            //     }
+            // );
 
             GameLogic.Enable(true);
             UIShop.Init();
@@ -240,28 +251,28 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public void PreAddData() {
-        //添加新科技
-        FracTechManager.AddTechs();
-        //创建新的分馏塔
-        BuildingManager.CreateAndPreAddNewFractionators();
-        //添加分馏原胚
-        ItemManager.AddFractionalPrototypes();
+        //添加分馏原胚、精华
+        ItemManager.AddFractionalPrototypeAndEssence();
+        //添加分馏塔
+        BuildingManager.AddFractionators();
+        //添加科技
+        TechManager.AddTechs();
     }
 
     public void PostAddData() {
-        LDB.models.OnAfterDeserialize();
-        ModelProto.InitMaxModelIndex();
-        ModelProto.InitModelIndices();
-        ModelProto.InitModelOrders();
-        foreach (TechProto proto in LDB.techs.dataArray) {
-            proto.Preload();
-        }
-        foreach (TechProto proto in LDB.techs.dataArray) {
-            proto.PreTechsImplicit = proto.PreTechsImplicit.Except(proto.PreTechs).ToArray();
-            proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
-            proto.Preload2();
-        }
-        FracTechManager.PreloadAll();
+        // LDB.models.OnAfterDeserialize();
+        // ModelProto.InitMaxModelIndex();
+        // ModelProto.InitModelIndices();
+        // ModelProto.InitModelOrders();
+        // foreach (TechProto proto in LDB.techs.dataArray) {
+        //     proto.Preload();
+        // }
+        // foreach (TechProto proto in LDB.techs.dataArray) {
+        //     proto.PreTechsImplicit = proto.PreTechsImplicit.Except(proto.PreTechs).ToArray();
+        //     proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
+        //     proto.Preload2();
+        // }
+        // BuildingManager.SetUnlockInfo();
     }
 
     /// <summary>
@@ -269,14 +280,15 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public static void FinalAction() {
         if (_finished) return;
-        PreloadAndInitAll();
+        // PreloadAndInitAll();
+        //获取部分数据，例如传送带最大速度等
         ProcessManager.Init();
+        //计算物品价值
+        ItemManager.CalculateItemValues();
         //SetFractionatorCacheSize用到了Init生成的数据
         BuildingManager.SetFractionatorCacheSize();
         //AddBaseRecipes用到了Init生成的数据
-        BaseRecipeManager.AddBaseRecipes();
-        //重载语言
-        TranslationUtils.LoadLanguagePostfixAfterCommonApi();
+        RecipeManager.AddBaseRecipes();
         _finished = true;
     }
 
@@ -290,7 +302,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         ItemProto.InitItemIds();
         ItemProto.InitItemIndices();
         ItemProto.InitMechaMaterials();
-        ItemProto.InitFighterIndices();
+        //ItemProto.InitFighterIndices();
+        //ItemProto.InitPowerFacilityIndices();
+        //ItemProto.InitProductionMask();
         ModelProto.InitMaxModelIndex();
         ModelProto.InitModelIndices();
         ModelProto.InitModelOrders();
@@ -305,20 +319,20 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public void Import(BinaryReader r) {
         LogInfo("FE Import");
         int savedVersion = r.ReadInt32();
-        BaseRecipeManager.Import(r);
+        RecipeManager.Import(r);
         ProcessManager.Import(r);
     }
 
     public void Export(BinaryWriter w) {
         LogInfo("FE Export");
         w.Write(versionNumber);
-        BaseRecipeManager.Export(w);
+        RecipeManager.Export(w);
         ProcessManager.Export(w);
     }
 
     public void IntoOtherSave() {
         LogInfo("FE IntoOtherSave");
-        BaseRecipeManager.IntoOtherSave();
+        RecipeManager.IntoOtherSave();
         ProcessManager.IntoOtherSave();
     }
 

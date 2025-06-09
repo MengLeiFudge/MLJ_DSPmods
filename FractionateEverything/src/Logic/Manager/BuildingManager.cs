@@ -19,9 +19,9 @@ public static class BuildingManager {
 
     private static readonly ModelProto FractionatorModel = LDB.models.Select(M分馏塔);
     public static readonly PrefabDesc FractionatorPrefabDesc = FractionatorModel.prefabDesc;
-    private static List<ItemProto> buildingList = [];
+    private static List<(RecipeProto, ModelProto, ItemProto)> buildingList = [];
 
-    public static void CreateAndPreAddNewFractionators() {
+    public static void AddFractionators() {
         //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
         //new(1.0f, 0.6596f, 0.3066f)
         //new(0.0f, 1.0f, 0.9112f)
@@ -38,29 +38,23 @@ public static class BuildingManager {
 
         //点数聚集塔
         var pointAggregatorTower = PointAggregatorTower.Create();
-        pointAggregatorTower.Item3.SetBuildBar(5, 3, true);
+        pointAggregatorTower.Item3.SetBuildBar(5, 4, true);
 
         //量子复制塔
         var quantumCopyTower = QuantumCopyTower.Create();
-        quantumCopyTower.Item3.SetBuildBar(5, 4, true);
+        quantumCopyTower.Item3.SetBuildBar(5, 5, true);
 
         //点金塔
         var alchemyTower = AlchemyTower.Create();
-        alchemyTower.Item3.SetBuildBar(6, 1, true);
-
-        //转化塔MK1-MK7
-        var conversionTowers = ConversionTower.CreateAll();
-        conversionTowers[0].Item3.SetBuildBar(6, 2, true);
-        conversionTowers[1].Item3.SetBuildBar(6, 3, true);
-        conversionTowers[2].Item3.SetBuildBar(6, 4, true);
-        conversionTowers[3].Item3.SetBuildBar(6, 5, true);
-        conversionTowers[4].Item3.SetBuildBar(6, 6, true);
-        conversionTowers[5].Item3.SetBuildBar(6, 7, true);
-        conversionTowers[6].Item3.SetBuildBar(6, 8, true);
+        alchemyTower.Item3.SetBuildBar(5, 6, true);
 
         //分解塔
         var deconstructionTower = DeconstructionTower.Create();
-        deconstructionTower.Item3.SetBuildBar(6, 9, true);
+        deconstructionTower.Item3.SetBuildBar(5, 7, true);
+
+        //转化塔
+        var conversionTower = ConversionTower.Create();
+        conversionTower.Item3.SetBuildBar(5, 8, true);
 
 
         // //设定升降级关系
@@ -106,26 +100,16 @@ public static class BuildingManager {
     /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
     [SuppressMessage("ReSharper", "ParameterHidesMember")]
     public static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
-        string name, int itemID, int modelID,
-        int gridIndex, Color color, int hpAdjust, float energyRatio) {
+        string name, int recipeID, int itemID, int modelID, int[] items, int[] itemCounts, int[] resultCounts,
+        int gridIndex, Color color, int hpAdjust, float energyRatio, int techID) {
         ModelProto oriModel = FractionatorModel;
         PrefabDesc oriPrefabDesc = oriModel.prefabDesc;
         string iconPath = $"Assets/fracicons/fractionator-{name}";
 
-        //添加分馏塔模型
-        ModelProto model = new() {
-            PrefabPath = oriModel.PrefabPath,
-            ID = modelID,
-            Name = modelID.ToString(),
-            SID = name,
-            Order = 38000 + modelID,
-        };
-        //新建筑必须使用新建的prefabDesc，不能复制，Preload可生成新的prefabDesc
-        model.Preload();
-        model.HpMax = oriModel.HpMax + hpAdjust * 100;
-        model.prefabDesc.modelIndex = modelID;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+        ItemProto item = ProtoRegistry.RegisterItem(itemID, name, "I" + name, iconPath,
+            gridIndex, 30, EItemType.Production, ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        RecipeProto recipe = ProtoRegistry.RegisterRecipe(recipeID, ERecipeType.Assemble, 60,
+            items, itemCounts, [itemID], resultCounts, "I" + name, techID, gridIndex, name, iconPath);
         //更换材质的颜色。每个建筑的prefabDesc.lodMaterials长度都不一样，需要具体查看
         var m_main = new Material(oriPrefabDesc.lodMaterials[0][0]) { color = color };//主体材质
         var m_black = oriPrefabDesc.lodMaterials[0][1];//黑色材质不改
@@ -133,6 +117,14 @@ public static class BuildingManager {
         var m_glass1 = oriPrefabDesc.lodMaterials[0][3];//玻璃材质不改
         var m_lod = new Material(oriPrefabDesc.lodMaterials[1][0]) { color = color };//缩小时看到的材质
         var m_lod2 = new Material(oriPrefabDesc.lodMaterials[2][0]) { color = color };//缩小时看到的材质
+        ModelProto model = ProtoRegistry.RegisterModel(modelID, item, oriModel.PrefabPath + name,
+            [m_main, m_black], [53, 11, 12, 1, 40], 0);
+        model.PrefabPath = oriModel.PrefabPath;
+        model.Preload();
+        model.HpMax = oriModel.HpMax + hpAdjust * 100;
+        model.prefabDesc.modelIndex = modelID;
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
         //同样的材质要指向同一个对象
         model.prefabDesc.lodMaterials = [
             [m_main, m_black, m_glass, m_glass1],
@@ -141,72 +133,16 @@ public static class BuildingManager {
             null,
         ];
         model.prefabDesc.materials = [m_main, m_black];
-        LDBTool.PreAddProto(model);
-        model.ID = modelID;
-
-        //添加分馏塔物品，preTech无需设定，Preload会自动生成
-        //由于使用双行样式，BuildIndex只要保持默认值0即可
-        ItemProto item = new() {
-            Type = EItemType.Production,
-            ID = itemID,
-            SID = "",
-            Name = name,
-            Description = "I" + name,
-            GridIndex = gridIndex,
-            IconPath = iconPath,
-            StackSize = 30,
-            DescFields = [53, 11, 12, 1, 40],
-            HpMax = 1200,
-            recipes = [],
-            makes = [],
-            maincraft = null,
-            maincraftProductCount = 1,
-            handcraft = null,
-            handcraftProductCount = 1,
-            handcrafts = [],
-            MiningFrom = "",
-            ProduceFrom = "",
-            Upgrades = [],
-            Grade = 0,
-            BuildMode = 1,
-            CanBuild = true,
-            IsEntity = true,
-            ModelIndex = modelID,
-            ModelCount = 1,
-            prefabDesc = model.prefabDesc,//应与model指向同一个prefabDesc
-        };
-        //添加物品在传送带上的显示情况
-        ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs
-            = ref AccessTools.StaticFieldRefAccess<Dictionary<int, IconToolNew.IconDesc>>(typeof(ProtoRegistry),
-                "itemIconDescs");
-        IconToolNew.IconDesc iconDesc = new() {
-            faceColor = Color.white,
-            sideColor = color,
-            faceEmission = Color.black,
-            sideEmission = Color.black,
-            iconEmission = Color.clear,
-            metallic = 0.8f,
-            smoothness = 0.5f,
-            solidAlpha = 1f,
-            iconAlpha = 1f,
-        };
-        itemIconDescs.Add(itemID, iconDesc);
-        LDBTool.PreAddProto(item);
-        item.ID = itemID;
-        //最后调用StorageComponent.LoadStatic()才能使物品的堆叠上限生效
-
         //设置快捷制作栏位置
-        // item.SetBuildBar(5, item.GridIndex % 10, true);
+        item.SetBuildBar(5, item.GridIndex % 10, true);
 
         //添加科技解锁相关信息。可以避免万物分馏PreAddAction时，LDB中找不到创世科技的问题
-        // buildingInfoList.Add(new() { itemID = itemID, recipeID = recipeID });
-        buildingList.Add(item);
+        buildingList.Add((recipe, model, item));
 
-        return (null, model, item);
+        return (recipe, model, item);
     }
 
     #endregion
-
 
     #region 在PostAdd之后根据已添加的物品修改部分属性
 
@@ -214,9 +150,9 @@ public static class BuildingManager {
     /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
     /// </summary>
     public static void SetFractionatorCacheSize() {
-        foreach (var building in buildingList) {
-            if (building.prefabDesc.isFractionator) {
-                var prefabDesc = LDB.items.Select(building.ID).prefabDesc;
+        foreach (var p in buildingList) {
+            if (p.Item3.prefabDesc.isFractionator) {
+                var prefabDesc = LDB.items.Select(p.Item3.ID).prefabDesc;
                 prefabDesc.fracFluidInputMax = FracFluidInputMax;
                 prefabDesc.fracProductOutputMax = FracProductOutputMax;
                 prefabDesc.fracFluidOutputMax = FracFluidOutputMax;

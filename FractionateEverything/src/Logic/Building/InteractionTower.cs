@@ -1,5 +1,4 @@
 ﻿using FE.Logic.Manager;
-using UnityEngine;
 using static FE.Utils.ProtoID;
 
 namespace FE.Logic.Building;
@@ -14,13 +13,9 @@ public static class InteractionTower {
     /// <returns>创建的交互塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "交互塔",
-            IFE交互塔,
-            MFE交互塔,
-            2601,
-            new Color(0.8f, 0.3f, 0.6f),
-            -50,
-            2.5f
+            "交互塔", RFE交互塔, IFE交互塔, MFE交互塔,
+            [IFE分馏原胚定向], [1], [1],
+            3101, new(0.8f, 0.3f, 0.6f), -50, 2.5f, TFE交互塔
         );
     }
 

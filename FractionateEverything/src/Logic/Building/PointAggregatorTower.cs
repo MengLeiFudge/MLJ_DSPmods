@@ -14,19 +14,14 @@ public static class PointAggregatorTower {
     /// <returns>创建的点数聚集塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "点数聚集塔",
-            IFE点数聚集塔,
-            MFE点数聚集塔,
-            2710,
-            new Color(0.2509f, 0.8392f, 1.0f),
-            0,
-            1.0f
+            "点数聚集塔", RFE点数聚集塔, IFE点数聚集塔, MFE点数聚集塔,
+            [IFE分馏原胚定向], [1], [2],
+            3104, new(0.2509f, 0.8392f, 1.0f), 0, 1.0f, TFE点数聚集塔
         );
     }
 
-    public static void InternalUpdate(ref FractionatorComponent __instance,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint __result) {
+    public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
+        float power, SignData[] signPool, int[] productRegister, int[] consumeRegister, ref uint __result) {
         // 没电就不工作
         if (power < 0.1) {
             __result = 0;

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Manager.RecipeManager;
+using static FE.Utils.ProtoID;
 
 namespace FE.Logic.Recipe;
 
@@ -9,105 +12,50 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public class ConversionRecipe : BaseRecipe {
     /// <summary>
-    /// 存储所有转化配方的静态列表
+    /// 添加所有矿物复制配方
     /// </summary>
-    private static readonly List<ConversionRecipe> conversionRecipeList = [];
-
-    /// <summary>
-    /// 根据输入物品ID获取转化配方
-    /// </summary>
-    /// <param name="inputID">输入物品ID</param>
-    /// <returns>对应的转化配方，如果未找到则返回null</returns>
-    public static ConversionRecipe GetRecipe(int inputID) {
-        foreach (ConversionRecipe r in conversionRecipeList) {
-            if (r.InputItemId == inputID) {
-                return r;
-            }
+    public static void CreateAll() {
+        foreach (var item in LDB.items.dataArray) {
+            List<OutputInfo> outputMain = [
+                new OutputInfo(0.99f, I宇宙矩阵, 1),
+                new OutputInfo(0.01f, IFE分馏原胚定向, 10),
+            ];
+            Create(item.ID, itemRatioDic[item.ID], outputMain);
         }
-        return null;
     }
 
     /// <summary>
-    /// 添加配方到静态列表
+    /// 创建一个矿物复制配方，然后将其添加到配方列表中
     /// </summary>
-    /// <param name="recipe">要添加的配方</param>
-    public static void AddRecipe(ConversionRecipe recipe) {
-        conversionRecipeList.Add(recipe);
+    private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputMain) {
+        AddRecipe(new ConversionRecipe(inputID, baseSuccessRate,
+            outputMain,
+            [
+                new OutputInfo(0.012f, IFE分馏原胚普通, 1),
+                new OutputInfo(0.010f, IFE分馏原胚精良, 1),
+                new OutputInfo(0.008f, IFE分馏原胚稀有, 1),
+                new OutputInfo(0.006f, IFE分馏原胚史诗, 1),
+                new OutputInfo(0.004f, IFE分馏原胚传说, 1),
+                new OutputInfo(0.002f, IFE分馏原胚定向, 1),
+                new OutputInfo(0.050f, IFE转化精华, 1),
+            ]));
     }
 
     /// <summary>
-    /// 获取所有转化配方列表
+    /// 配方类型
     /// </summary>
-    /// <returns>转化配方列表</returns>
-    public static List<ConversionRecipe> GetAllRecipes() {
-        return conversionRecipeList;
-    }
-
-    /// <summary>
-    /// 清空配方列表
-    /// </summary>
-    public static void ClearRecipes() {
-        conversionRecipeList.Clear();
-    }
+    public override ERecipe RecipeType => ERecipe.Conversion;
 
     /// <summary>
     /// 创建转化塔配方实例
     /// </summary>
-    /// <param name="id">配方ID</param>
-    /// <param name="name">配方名称</param>
-    /// <param name="description">配方描述</param>
-    /// <param name="inputItemId">输入物品ID</param>
+    /// <param name="inputID">输入物品ID</param>
     /// <param name="baseSuccessRate">基础成功率</param>
-    /// <param name="destructionRate">损毁率</param>
-    public ConversionRecipe(int inputItemId, List<OutputItem> outputs,
-        float baseSuccessRate = 0.05f, float destructionRate = 0.01f, int level = 1, int star = 0) {
-        InputItemId = inputItemId;
-        BaseSuccessRate = baseSuccessRate;
-        DestructionRate = destructionRate;
-        Level = level;
-        Star = star;
-        IsUnlocked = false;
-
-        // 初始化输出物品
-        OutputItems = new Dictionary<int, Tuple<float, float>>();
-        foreach (var output in outputs) {
-            OutputItems[output.ItemId] = new Tuple<float, float>(output.Ratio, output.Count);
-        }
-    }
-
-    /// <summary>
-    /// 向后兼容的构造函数，支持元组列表
-    /// </summary>
-    public ConversionRecipe(int inputItemId, List<(int outputId, float ratio, float count)> outputs,
-        float baseSuccessRate = 0.05f, float destructionRate = 0.01f, int level = 1, int star = 0)
-        : this(inputItemId, ConvertToOutputItems(outputs), baseSuccessRate, destructionRate, level, star) { }
-
-    /// <summary>
-    /// 将元组列表转换为OutputItem列表
-    /// </summary>
-    private static List<OutputItem> ConvertToOutputItems(List<(int outputId, float ratio, float count)> tuples) {
-        var result = new List<OutputItem>(tuples.Count);
-        foreach (var tuple in tuples) {
-            result.Add(new OutputItem(tuple.outputId, tuple.ratio, tuple.count));
-        }
-        return result;
-    }
-
-    /// <summary>
-    /// 输入物品ID
-    /// </summary>
-    public int InputItemId { get; set; }
-
-    /// <summary>
-    /// 转化产物表
-    /// 结构: Dictionary<物品ID, Tuple<成功率, 数量>>
-    /// </summary>
-    public Dictionary<int, Tuple<float, float>> OutputItems { get; set; } = new Dictionary<int, Tuple<float, float>>();
-
-    /// <summary>
-    /// 损毁率（材料消失的概率）
-    /// </summary>
-    public float DestructionRate { get; set; }
+    /// <param name="outputMain">主输出物品</param>
+    /// <param name="outputAppend">附加输出物品</param>
+    public ConversionRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+        List<OutputInfo> outputAppend)
+        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
     /// 是否不消耗材料（突破特殊属性）
@@ -130,50 +78,6 @@ public class ConversionRecipe : BaseRecipe {
     public float SpecializedBonus { get; set; } = 1.0f;
 
     /// <summary>
-    /// 配方类型
-    /// </summary>
-    public override ERecipe RecipeType => ERecipe.Conversion;
-
-    /// <summary>
-    /// 获取所有输出物品
-    /// </summary>
-    /// <returns>输出物品列表</returns>
-    public List<OutputItem> GetOutputItems() {
-        var result = new List<OutputItem>(OutputItems.Count);
-        foreach (var kvp in OutputItems) {
-            result.Add(new OutputItem(kvp.Key, kvp.Value.Item1, kvp.Value.Item2));
-        }
-        return result;
-    }
-
-    /// <summary>
-    /// 添加输出物品
-    /// </summary>
-    /// <param name="output">要添加的输出物品</param>
-    public void AddOutputItem(OutputItem output) {
-        OutputItems[output.ItemId] = new Tuple<float, float>(output.Ratio, output.Count);
-    }
-
-    /// <summary>
-    /// 添加输出物品
-    /// </summary>
-    /// <param name="itemId">物品ID</param>
-    /// <param name="ratio">成功率</param>
-    /// <param name="count">数量</param>
-    public void AddOutputItem(int itemId, float ratio, float count) {
-        OutputItems[itemId] = new Tuple<float, float>(ratio, count);
-    }
-
-    /// <summary>
-    /// 移除输出物品
-    /// </summary>
-    /// <param name="itemId">要移除的物品ID</param>
-    /// <returns>是否成功移除</returns>
-    public bool RemoveOutputItem(int itemId) {
-        return OutputItems.Remove(itemId);
-    }
-
-    /// <summary>
     /// 处理转化逻辑
     /// </summary>
     /// <param name="random">随机数生成器</param>
@@ -182,60 +86,60 @@ public class ConversionRecipe : BaseRecipe {
     public Dictionary<int, int> Process(Random random, float successRate) {
         Dictionary<int, int> result = new Dictionary<int, int>();
 
-        // 检查是否成功转化
-        if (random.NextDouble() > successRate) {
-            // 检查是否损毁
-            if (random.NextDouble() < DestructionRate) {
-                // 材料损毁，返回空
-                return result;
-            }
-
-            // 未成功也未损毁，原物品流出
-            if (!NoMaterialConsumption) {
-                result[InputItemId] = 1;
-            }
-
-            return result;
-        }
-
-        // 处理所有可能的产物
-        foreach (var output in OutputItems) {
-            int itemId = output.Key;
-            float probability = output.Value.Item1;
-            float amount = output.Value.Item2;
-
-            // 应用专精加成
-            if (itemId == SpecializedOutputId && SpecializedBonus > 1.0f) {
-                probability *= SpecializedBonus;
-                amount *= (SpecializedBonus + 1) / 2;// 数量小幅提升
-            }
-
-            // 检查该产物是否产出
-            if (random.NextDouble() < probability) {
-                // 处理小数部分
-                int integerPart = (int)amount;
-                float decimalPart = amount - integerPart;
-
-                int finalAmount = integerPart;
-                if (decimalPart > 0 && random.NextDouble() < decimalPart) {
-                    finalAmount++;
-                }
-
-                // 应用翻倍效果
-                if (DoubleOutput) {
-                    finalAmount *= 2;
-                }
-
-                if (finalAmount > 0) {
-                    result[itemId] = finalAmount;
-                }
-            }
-        }
-
-        // 如果配置了不消耗材料且没有产出，返回原物品
-        if (NoMaterialConsumption && result.Count == 0) {
-            result[InputItemId] = 1;
-        }
+        // // 检查是否成功转化
+        // if (random.NextDouble() > successRate) {
+        //     // 检查是否损毁
+        //     if (random.NextDouble() < DestructionRate) {
+        //         // 材料损毁，返回空
+        //         return result;
+        //     }
+        //
+        //     // 未成功也未损毁，原物品流出
+        //     if (!NoMaterialConsumption) {
+        //         result[InputItemId] = 1;
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        // // 处理所有可能的产物
+        // foreach (var output in OutputItems) {
+        //     int itemId = output.Key;
+        //     float probability = output.Value.Item1;
+        //     float amount = output.Value.Item2;
+        //
+        //     // 应用专精加成
+        //     if (itemId == SpecializedOutputId && SpecializedBonus > 1.0f) {
+        //         probability *= SpecializedBonus;
+        //         amount *= (SpecializedBonus + 1) / 2;// 数量小幅提升
+        //     }
+        //
+        //     // 检查该产物是否产出
+        //     if (random.NextDouble() < probability) {
+        //         // 处理小数部分
+        //         int integerPart = (int)amount;
+        //         float decimalPart = amount - integerPart;
+        //
+        //         int finalAmount = integerPart;
+        //         if (decimalPart > 0 && random.NextDouble() < decimalPart) {
+        //             finalAmount++;
+        //         }
+        //
+        //         // 应用翻倍效果
+        //         if (DoubleOutput) {
+        //             finalAmount *= 2;
+        //         }
+        //
+        //         if (finalAmount > 0) {
+        //             result[itemId] = finalAmount;
+        //         }
+        //     }
+        // }
+        //
+        // // 如果配置了不消耗材料且没有产出，返回原物品
+        // if (NoMaterialConsumption && result.Count == 0) {
+        //     result[InputItemId] = 1;
+        // }
 
         return result;
     }
@@ -269,20 +173,18 @@ public class ConversionRecipe : BaseRecipe {
         base.Export(w);
 
         // 保存转化塔特有属性
-        w.Write(InputItemId);
-        w.Write(DestructionRate);
         w.Write(NoMaterialConsumption);
         w.Write(DoubleOutput);
         w.Write(SpecializedOutputId);
         w.Write(SpecializedBonus);
 
-        // 保存转化产物表
-        w.Write(OutputItems.Count);
-        foreach (var kvp in OutputItems) {
-            w.Write(kvp.Key);// 物品ID
-            w.Write(kvp.Value.Item1);// 成功率
-            w.Write(kvp.Value.Item2);// 数量
-        }
+        // // 保存转化产物表
+        // w.Write(OutputItems.Count);
+        // foreach (var kvp in OutputItems) {
+        //     w.Write(kvp.Key);// 物品ID
+        //     w.Write(kvp.Value.Item1);// 成功率
+        //     w.Write(kvp.Value.Item2);// 数量
+        // }
     }
 
     /// <summary>
@@ -294,21 +196,19 @@ public class ConversionRecipe : BaseRecipe {
         base.Import(r);
 
         // 读取转化塔特有属性
-        InputItemId = r.ReadInt32();
-        DestructionRate = r.ReadSingle();
         NoMaterialConsumption = r.ReadBoolean();
         DoubleOutput = r.ReadBoolean();
         SpecializedOutputId = r.ReadInt32();
         SpecializedBonus = r.ReadSingle();
 
-        // 读取转化产物表
-        int outputCount = r.ReadInt32();
-        OutputItems.Clear();
-        for (int i = 0; i < outputCount; i++) {
-            int itemId = r.ReadInt32();
-            float probability = r.ReadSingle();
-            float amount = r.ReadSingle();
-            OutputItems[itemId] = new Tuple<float, float>(probability, amount);
-        }
+        // // 读取转化产物表
+        // int outputCount = r.ReadInt32();
+        // OutputItems.Clear();
+        // for (int i = 0; i < outputCount; i++) {
+        //     int itemId = r.ReadInt32();
+        //     float probability = r.ReadSingle();
+        //     float amount = r.ReadSingle();
+        //     OutputItems[itemId] = new Tuple<float, float>(probability, amount);
+        // }
     }
 }
