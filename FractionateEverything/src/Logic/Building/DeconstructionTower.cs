@@ -15,13 +15,9 @@ public static class DeconstructionTower {
     /// <returns>创建的分解塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "分解塔",
-            IFE分解塔,
-            MFE分解塔,
-            2311,
-            new Color(0.6f, 0.3f, 0.9f),
-            0,
-            0.9f
+            "分解塔", RFE分解塔, IFE分解塔, MFE分解塔,
+            [IFE分馏原胚定向], [3], [1],
+            3107, new(0.4f, 1.0f, 0.5f), 0, 0.9f, TFE分解塔
         );
     }
 
@@ -93,7 +89,8 @@ public static class DeconstructionTower {
                     var productExpansion = __instance.productExpansion(factory);
 
                     // 沙土概率 - 20%概率获得沙土
-                    uint sandRandom = (uint)((ulong)(__instance.seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+                    uint sandRandom =
+                        (uint)((ulong)(__instance.seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
                     if (sandRandom / 2147483646.0 < 0.2) {
                         // 石矿ID为1004
                         int stoneId = 1004;
@@ -156,8 +153,10 @@ public static class DeconstructionTower {
                         foreach (var kvp in productExpansion.ToArray()) {
                             if (kvp.Value > 0) {
                                 int itemId = kvp.Key;
-                                CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
-                                if (cargoPath != null && cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, 1, (byte)1, (byte)0)) {
+                                CargoPath cargoPath =
+                                    cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
+                                if (cargoPath != null
+                                    && cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, 1, (byte)1, (byte)0)) {
                                     productExpansion[itemId]--;
                                     break;
                                 }
@@ -175,7 +174,7 @@ public static class DeconstructionTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;
@@ -196,8 +195,10 @@ public static class DeconstructionTower {
                     foreach (var kvp in productExpansion.ToArray()) {
                         if (kvp.Value > 0) {
                             int itemId = kvp.Key;
-                            CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
-                            if (cargoPath != null && cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, 1, (byte)1, (byte)0)) {
+                            CargoPath cargoPath =
+                                cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
+                            if (cargoPath != null
+                                && cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, 1, (byte)1, (byte)0)) {
                                 productExpansion[itemId]--;
                                 break;
                             }
@@ -213,7 +214,7 @@ public static class DeconstructionTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;

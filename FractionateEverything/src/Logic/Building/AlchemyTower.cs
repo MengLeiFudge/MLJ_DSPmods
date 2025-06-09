@@ -14,13 +14,9 @@ public static class AlchemyTower {
     /// <returns>创建的点金塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "点金塔",
-            IFE点金塔,
-            MFE点金塔,
-            2310,
-            new Color(1.0f, 0.85f, 0.2f),
-            0,
-            0.75f
+            "点金塔", RFE点金塔, IFE点金塔, MFE点金塔,
+            [IFE分馏原胚定向], [3], [1],
+            3106, new(1.0f, 0.7019f, 0.4f), 0, 0.75f, TFE点金塔
         );
     }
 
@@ -48,7 +44,7 @@ public static class AlchemyTower {
 
             // 点金塔处理速度适中
             __instance.progress += (int)(power
-                                         * (600.0 / 3.0) // 比原版稍快
+                                         * (600.0 / 3.0)// 比原版稍快
                                          * (__instance.fluidInputCargoCount < 30.0
                                              ? __instance.fluidInputCargoCount
                                              : 30.0)
@@ -74,8 +70,8 @@ public static class AlchemyTower {
                                   - 1U;
 
                 // 点金塔有极高的成功率
-                double baseProb = __instance.produceProb * 2.5; // 基础概率提高2.5倍
-                double incFactor = 1.0 + 1.5 * Cargo.accTableMilli[itemIncAvg < 10 ? itemIncAvg : 10]; // 增产剂效果提高1.5倍
+                double baseProb = __instance.produceProb * 2.5;// 基础概率提高2.5倍
+                double incFactor = 1.0 + 1.5 * Cargo.accTableMilli[itemIncAvg < 10 ? itemIncAvg : 10];// 增产剂效果提高1.5倍
                 __instance.fractionSuccess = __instance.seed / 2147483646.0 < baseProb * incFactor;
 
                 if (__instance.fractionSuccess) {
@@ -135,7 +131,7 @@ public static class AlchemyTower {
                     }
                 } else {
                     // 点金塔只接受特定材料
-                    int[] alchemyNeeds = RecipeProto.fractionatorNeeds; // 可以替换为特定物品ID数组
+                    int[] alchemyNeeds = RecipeProto.fractionatorNeeds;// 可以替换为特定物品ID数组
                     int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, alchemyNeeds,
                         out stack, out inc1);
                     if (needId > 0) {
@@ -170,7 +166,7 @@ public static class AlchemyTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int[] alchemyNeeds = RecipeProto.fractionatorNeeds; // 可以替换为特定物品ID数组
+                    int[] alchemyNeeds = RecipeProto.fractionatorNeeds;// 可以替换为特定物品ID数组
                     int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, alchemyNeeds,
                         out stack, out inc1);
                     if (needId > 0) {

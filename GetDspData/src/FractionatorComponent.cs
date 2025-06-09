@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace GetDspData;
 
+/// <summary>
+/// 此类为原版分馏代码，主要用于分析原版的分馏逻辑
+/// </summary>
 public struct FractionatorComponent {
     public int id;
     public int entityId;
@@ -323,7 +326,7 @@ public struct FractionatorComponent {
                     }
                 } else {
                     //没有物品则查看输入的物品是不是fractionatorNeeds的物品之一，只有在这里面的才会取
-                    int needId = cargoTraffic.TryPickItemAtRear(belt1, 0, RecipeProto.fractionatorNeeds, out stack,
+                    int needId = cargoTraffic.TryPickItemAtRear(belt1, 0, null, out stack,
                         out inc1);
                     if (needId > 0) {
                         fluidInputCount += stack;
@@ -366,7 +369,7 @@ public struct FractionatorComponent {
                         ++fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(belt2, 0, RecipeProto.fractionatorNeeds, out stack,
+                    int needId = cargoTraffic.TryPickItemAtRear(belt2, 0, null, out stack,
                         out inc1);
                     if (needId > 0) {
                         fluidInputCount += stack;

@@ -46,7 +46,7 @@ static class AfterBuildEvent {
         //等待游戏进程关闭
         Thread.Sleep(1000);
         //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
-        foreach (var dirInfo in new DirectoryInfo(@"..\..\..").GetDirectories()) {
+        foreach (var dirInfo in new DirectoryInfo(@"..\..\..\..").GetDirectories()) {
             string csproj = $@"{dirInfo.FullName}\{dirInfo.Name}.csproj";
             if (!File.Exists(csproj)) {
                 continue;
@@ -55,154 +55,153 @@ static class AfterBuildEvent {
             XmlReader reader = XmlReader.Create(csproj);
             xml.Load(reader);
             reader.Close();
-            XmlNamespaceManager nsMgr = new XmlNamespaceManager(xml.NameTable);
-            nsMgr.AddNamespace("ns", "http://schemas.microsoft.com/developer/msbuild/2003");
-            var OutputType = xml.SelectSingleNode("/ns:Project/ns:PropertyGroup/ns:OutputType", nsMgr);
-            if (OutputType == null) {
+            if (xml.SelectSingleNode("/Project/PropertyGroup/BepInExPluginGuid") == null) {
                 continue;
             }
-            if (OutputType.InnerText == "Library") {
-                var AssemblyName = xml.SelectSingleNode("/ns:Project/ns:PropertyGroup/ns:AssemblyName", nsMgr);
-                if (AssemblyName == null) {
-                    continue;
-                }
-                //要打包的所有文件，也是要复制到R2_BepInEx的文件
-                List<string> fileList = [];
-                var projectName = AssemblyName.InnerText;
-                string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
-                string projectDir = $@"..\..\..\{projectName}";
-                //mod.dll
+            string projectName = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText;
+            string targetFramework = xml.SelectSingleNode("/Project/PropertyGroup/TargetFramework")?.InnerText;
+            if (projectName == null || targetFramework == null) {
+                continue;
+            }
+            //要打包的所有文件，也是要复制到R2_BepInEx的文件
+            List<string> fileList = [];
+            string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
+            string projectDir = dirInfo.FullName;
+            //mod.dll
 #if DEBUG
-                string projectModFile = $@"{projectDir}\bin\debug\{projectName}.dll";
-                string projectModPdbFile = $@"{projectDir}\bin\debug\{projectName}.pdb";
-                string projectModMdbFile = $@"{projectDir}\bin\debug\{projectName}.dll.mdb";
+            string projectModFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.dll";
+            string projectModPdbFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.pdb";
+            string projectModMdbFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.dll.mdb";
 #else
-                string projectModFile = $@"{projectDir}\bin\release\{projectName}.dll";
-                string projectModPdbFile = $@"{projectDir}\bin\release\{projectName}.pdb";
-                string projectModMdbFile = $@"{projectDir}\bin\release\{projectName}.dll.mdb";
+            string projectModFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.dll";
+            string projectModPdbFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.pdb";
+            string projectModMdbFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.dll.mdb";
 #endif
-                if (!File.Exists(projectModFile)) {
-                    continue;
+            if (!File.Exists(projectModFile)) {
+                continue;
+            }
+            fileList.Add(projectModFile);
+            //mod.dll.mdb，供Attach to Unity Editor调试使用
+            //注：dll和pdb在同一目录下，才能生成mdb文件；但是参数只需要传dll路径
+            if (!File.Exists(projectModPdbFile)) {
+                Console.WriteLine($"未找到{projectName}的pdb文件！");
+            } else {
+                Console.WriteLine($"开始尝试生成{projectName}的mdb文件");
+                if (File.Exists(projectModMdbFile)) {
+                    File.Delete(projectModMdbFile);
                 }
-                fileList.Add(projectModFile);
-                //mod.dll.mdb，供Attach to Unity Editor调试使用
-                //注：dll和pdb在同一目录下，才能生成mdb文件；但是参数只需要传dll路径
-                if (!File.Exists(projectModPdbFile)) {
-                    Console.WriteLine($"未找到{projectName}的pdb文件！");
-                } else {
-                    Console.WriteLine($"开始尝试生成{projectName}的mdb文件");
-                    if (File.Exists(projectModMdbFile)) {
-                        File.Delete(projectModMdbFile);
-                    }
-                    cmd.Exec($"cd \"{Pdb2mdbExe.Directory}\"");//引号防止路径包含空格
-                    cmd.Exec($".\\pdb2mdb \"{new FileInfo(projectModFile).FullName}\"");//引号防止路径包含空格，必须绝对路径
-                    Console.WriteLine("注：如果卡在这里，说明需要调整项目设置，勾选debug symbols并且修改debug type为full");
-                    while (!File.Exists(projectModMdbFile)) {
-                        Thread.Sleep(100);
-                    }
-                    //注：mdb文件不加到fileList里面，因为它不需要打包。最后会单独处理它。
-                    Console.WriteLine($"已生成{projectName}的mdb文件");
+                cmd.Exec($"cd \"{Pdb2mdbExe.Directory}\"");//引号防止路径包含空格
+                cmd.Exec($".\\pdb2mdb \"{new FileInfo(projectModFile).FullName}\"");//引号防止路径包含空格，必须绝对路径
+                Console.WriteLine("注：如果卡在这里，说明需要调整项目设置，勾选debug symbols并且修改debug type为full");
+                while (!File.Exists(projectModMdbFile)) {
+                    Thread.Sleep(100);
                 }
-                //README.md
-                string projectReadme = $@"{projectDir}\README.md";
-                if (File.Exists(projectReadme)) {
-                    fileList.Add(projectReadme);
-                }
-                //CHANGELOG.md
-                string projectChangeLog = $@"{projectDir}\CHANGELOG.md";
-                if (File.Exists(projectChangeLog)) {
-                    fileList.Add(projectChangeLog);
-                }
-                //manifest.json、version
-                string projectManifest = $@"{projectDir}\Assets\manifest.json";
-                string version = "";
-                if (File.Exists(projectManifest)) {
-                    fileList.Add(projectManifest);
-                    var obj = JObject.Parse(File.ReadAllText(projectManifest));
-                    if (obj.TryGetValue("version_number", out JToken value)) {
-                        version = "_" + value;
-                    }
-                }
-                //icon.png
-                string projectIcon = $@"{projectDir}\Assets\icon.png";
-                if (File.Exists(projectIcon)) {
-                    fileList.Add(projectIcon);
-                }
-                //额外文件
-                if (projectName == "GetDspData") {
-                    //Newtonsoft.Json.dll
-                    string jsonDll = @"..\..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll";
-                    if (File.Exists(jsonDll)) {
-                        fileList.Add(jsonDll);
-                    }
-                } else if (projectName == "FractionateEverything") {
-                    //fracicons
-                    string[] icons = [
-                        "fracicons"
-                    ];
-                    foreach (var icon in icons) {
-                        string iconPath =
-                            $@"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\{icon}";
-                        if (File.Exists(iconPath)) {
-                            //同时拷贝到项目
-                            File.Copy(iconPath, $@"..\..\..\FractionateEverything\Assets\{icon}", true);
-                            fileList.Add(iconPath);
-                        }
-                    }
-                }
-                //打包
-                if (!Directory.Exists(r2ModDir)) {
-                    Directory.CreateDirectory(r2ModDir);
-                }
-                if (!Directory.Exists(@".\ModZips")) {
-                    Directory.CreateDirectory(@".\ModZips");
-                }
-                foreach (var file in Directory.GetFiles(@".\ModZips")) {
-                    if (file.StartsWith($@".\ModZips\{projectName}") && file.EndsWith(".zip")) {
-                        File.Delete(file);
-                        Console.WriteLine($"删除 {file}");
-                    }
-                }
-                string zipFile = $@".\ModZips\{projectName}{version}.zip";
-                ZipMod(fileList, zipFile);
-                Console.WriteLine($"创建 {zipFile}");
-                //额外打包
-                if (projectName == "FractionateEverything") {
-                    //给群友提供的测试版本，包含了如何使用R2导入的视频
-                    string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
-                    if (File.Exists(techVideo)) {
-                        fileList.Add(techVideo);
-                        zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
-                        ZipMod(fileList, zipFile);
-                        Console.WriteLine($"创建 {zipFile}");
-                    }
-                }
-                //所有文件复制到R2，注意R2是否禁用了mod
-                //mdb也要复制到R2（pdb不需要）
-                fileList.Add(projectModMdbFile);
-                foreach (var file in fileList) {
-                    string relativePath = Path.GetFileName(file);
-                    string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
-                    string r2OldFilePath = $"{r2FilePath}.old";
-                    string targetPath = !File.Exists(r2OldFilePath) ? r2FilePath : r2OldFilePath;
-                    FileInfo fileInfo = new FileInfo(targetPath);
-                    if (!fileInfo.Directory.Exists) {
-                        Directory.CreateDirectory(fileInfo.Directory.FullName);
-                    }
-                    File.Copy(file, targetPath, true);
-                    Console.WriteLine($"复制 {file} -> {targetPath}");
+                //注：mdb文件不加到fileList里面，因为它不需要打包。最后会单独处理它。
+                Console.WriteLine($"已生成{projectName}的mdb文件");
+            }
+            //README.md
+            string projectReadme = $@"{projectDir}\README.md";
+            if (File.Exists(projectReadme)) {
+                fileList.Add(projectReadme);
+            }
+            //CHANGELOG.md
+            string projectChangeLog = $@"{projectDir}\CHANGELOG.md";
+            if (File.Exists(projectChangeLog)) {
+                fileList.Add(projectChangeLog);
+            }
+            //manifest.json、version
+            string projectManifest = $@"{projectDir}\Assets\manifest.json";
+            string version = "";
+            if (File.Exists(projectManifest)) {
+                fileList.Add(projectManifest);
+                var obj = JObject.Parse(File.ReadAllText(projectManifest));
+                if (obj.TryGetValue("version_number", out JToken value)) {
+                    version = "_" + value;
                 }
             }
+            //icon.png
+            string projectIcon = $@"{projectDir}\Assets\icon.png";
+            if (File.Exists(projectIcon)) {
+                fileList.Add(projectIcon);
+            }
+            //额外文件
+            if (projectName == "GetDspData") {
+                //Newtonsoft.Json.dll
+                string jsonDll = @"..\..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll";
+                if (File.Exists(jsonDll)) {
+                    fileList.Add(jsonDll);
+                }
+            } else if (projectName == "FractionateEverything") {
+                //fracicons
+                string[] icons = [
+                    "fracicons"
+                ];
+                foreach (var icon in icons) {
+                    string iconPath =
+                        $@"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\{icon}";
+                    if (File.Exists(iconPath)) {
+                        //同时拷贝到项目
+                        File.Copy(iconPath, $@"..\..\..\..\FractionateEverything\Assets\{icon}", true);
+                        fileList.Add(iconPath);
+                    }
+                }
+            }
+            //打包
+            if (!Directory.Exists(r2ModDir)) {
+                Directory.CreateDirectory(r2ModDir);
+            }
+            if (!Directory.Exists(@".\ModZips")) {
+                Directory.CreateDirectory(@".\ModZips");
+            }
+            foreach (var file in Directory.GetFiles(@".\ModZips")) {
+                if (file.StartsWith($@".\ModZips\{projectName}") && file.EndsWith(".zip")) {
+                    File.Delete(file);
+                    Console.WriteLine($"删除 {file}");
+                }
+            }
+            string zipFile = $@".\ModZips\{projectName}{version}.zip";
+            ZipMod(fileList, zipFile);
+            Console.WriteLine($"创建 {zipFile}");
+            //额外打包
+            if (projectName == "FractionateEverything") {
+                //给群友提供的测试版本，包含了如何使用R2导入的视频
+                string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
+                if (File.Exists(techVideo)) {
+                    fileList.Add(techVideo);
+                    zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
+                    ZipMod(fileList, zipFile);
+                    Console.WriteLine($"创建 {zipFile}");
+                }
+            }
+            //所有文件复制到R2，注意R2是否禁用了mod
+            //mdb也要复制到R2（pdb不需要）
+            fileList.Add(projectModMdbFile);
+            foreach (var file in fileList) {
+                string relativePath = Path.GetFileName(file);
+                string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
+                string r2OldFilePath = $"{r2FilePath}.old";
+                string targetPath = !File.Exists(r2OldFilePath) ? r2FilePath : r2OldFilePath;
+                FileInfo fileInfo = new FileInfo(targetPath);
+                if (!fileInfo.Directory.Exists) {
+                    Directory.CreateDirectory(fileInfo.Directory.FullName);
+                }
+                File.Copy(file, targetPath, true);
+                Console.WriteLine($"复制 {file} -> {targetPath}");
+            }
         }
+
         //打开所有压缩包的文件夹
         Process.Start("explorer", @".\ModZips");
+
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
         string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
         File.Copy($@"{R2_Default}\doorstop_config.ini", doorstop_config, true);
         //修改doorstop_config.ini，使其目标指向R2的preloader.dll
         string[] lines = File.ReadAllLines(doorstop_config);
-        for (int i = 0; i < lines.Length; i++) {
+        for (int i = 0;
+             i < lines.Length;
+             i++) {
             if (lines[i].StartsWith("enabled=")) {
                 lines[i] = "enabled=true";
             } else if (lines[i].StartsWith("targetAssembly=")) {
@@ -212,6 +211,7 @@ static class AfterBuildEvent {
             }
         }
         File.WriteAllLines(doorstop_config, lines);
+
         //启动使用R2MOD的游戏
         Console.WriteLine("是否启动游戏？1或回车表示启动，其他表示结束程序");
         string str = Console.ReadLine();
