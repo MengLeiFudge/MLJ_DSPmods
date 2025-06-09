@@ -13,6 +13,9 @@
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>full</DebugType>
+    </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0"/>

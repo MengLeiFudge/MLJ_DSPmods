@@ -12,20 +12,12 @@ public static class ConversionTower {
     /// 创建转化塔
     /// </summary>
     /// <returns>创建的转化塔原型元组数组</returns>
-    public static (RecipeProto, ModelProto, ItemProto)[] CreateAll() {
-        var towers = new (RecipeProto, ModelProto, ItemProto)[1];
-
-        towers[0] = BuildingManager.CreateAndPreAddNewFractionator(
-            "转化塔",
-            IFE转化塔,
-            MFE转化塔,
-            2603,
-            new Color(0.5f, 0.9f, 1.0f),
-            0,
-            1.0f
+    public static (RecipeProto, ModelProto, ItemProto) Create() {
+        return BuildingManager.CreateAndPreAddNewFractionator(
+            "转化塔", RFE转化塔, IFE转化塔, MFE转化塔,
+            [IFE分馏原胚定向], [3], [1],
+            3108, new(0.7f, 0.6f, 0.8f), 0, 1.0f, TFE转化塔
         );
-
-        return towers;
     }
 
     public static void InternalUpdate(ref FractionatorComponent __instance,
@@ -150,7 +142,7 @@ public static class ConversionTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;
@@ -192,7 +184,7 @@ public static class ConversionTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;

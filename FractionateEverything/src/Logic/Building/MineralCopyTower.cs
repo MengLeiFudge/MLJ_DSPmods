@@ -14,13 +14,9 @@ public static class MineralCopyTower {
     /// <returns>创建的矿物复制塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "矿物复制塔",
-            IFE矿物复制塔,
-            MFE矿物复制塔,
-            2602,
-            new Color(1.0f, 0.7019f, 0.4f),
-            -20,
-            0.4f
+            "矿物复制塔", RFE矿物复制塔, IFE矿物复制塔, MFE矿物复制塔,
+            [IFE分馏原胚定向], [1], [10],
+            3102, new(0.4f, 1.0f, 0.949f), -20, 0.4f, TFE矿物复制塔
         );
     }
 
@@ -71,14 +67,10 @@ public static class MineralCopyTower {
                 if (!__instance.incUsed)
                     __instance.incUsed = itemIncAvg > 0;
 
-                // 随机数生成逻辑保持不变
-                __instance.seed = (uint)((ulong)(__instance.seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue)
-                                  - 1U;
 
-                // 矿物复制塔有中等成功率
-                double baseProb = __instance.produceProb * 1.5;// 基础概率提高1.5倍
-                double incFactor = 1.0 + 1.7 * Cargo.accTableMilli[itemIncAvg < 10 ? itemIncAvg : 10];// 增产剂效果增强
-                __instance.fractionSuccess = __instance.seed / 2147483646.0 < baseProb * incFactor;
+
+
+                __instance.fractionSuccess = __instance.seed / 2147483646.0 < 1;
 
                 if (__instance.fractionSuccess) {
                     // 成功时的处理 - 矿物复制塔特性：成功时有几率产出双倍产物
@@ -150,7 +142,7 @@ public static class MineralCopyTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;
@@ -192,7 +184,7 @@ public static class MineralCopyTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;

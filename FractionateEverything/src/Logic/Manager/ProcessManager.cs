@@ -9,6 +9,7 @@ using System.Text;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.Utils.FormatUtils;
+using static FE.Logic.Manager.RecipeManager;
 
 namespace FE.Logic.Manager;
 
@@ -32,7 +33,7 @@ public static class ProcessManager {
     private static bool EnableFracForever = false;
     private static bool EnableFluidOutputStack = false;
     private static int MaxOutputTimes = 2;
-    private static int MaxBeltSpeed = 30;
+    public static int MaxBeltSpeed = 30;
     public static int FracFluidInputMax = 40;
     public static int FracProductOutputMax = 20;
     public static int FracFluidOutputMax = 20;
@@ -929,7 +930,7 @@ public static class ProcessManager {
             switch (buildingID) {
                 case IFE矿物复制塔:
                     successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    recipe = MineralCopyRecipe.GetRecipe(fractionator.fluidId);
+                    recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fractionator.fluidId);
                     break;
                 case IFE点数聚集塔:
                     successRatePlus = fractionator.fluidInputInc >= 10
@@ -939,19 +940,19 @@ public static class ProcessManager {
                     break;
                 case IFE量子复制塔:
                     successRatePlus = (float)MaxTableMilli(fluidInputAvgInc) / 2.5f;
-                    recipe = QuantumCopyRecipe.GetRecipe(fractionator.fluidId);
+                    recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, fractionator.fluidId);
                     break;
                 case IFE点金塔:
                     successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    recipe = AlchemyRecipe.GetRecipe(fractionator.fluidId);
+                    recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, fractionator.fluidId);
                     break;
                 case IFE分解塔:
                     successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    recipe = DeconstructionRecipe.GetRecipe(fractionator.fluidId);
+                    recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, fractionator.fluidId);
                     break;
                 case IFE转化塔:
                     successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputAvgInc);
-                    recipe = ConversionRecipe.GetRecipe(fractionator.fluidId);
+                    recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
                     break;
                 default:
                     return;

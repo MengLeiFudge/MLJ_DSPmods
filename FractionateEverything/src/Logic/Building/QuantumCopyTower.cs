@@ -14,13 +14,9 @@ public static class QuantumCopyTower {
     /// <returns>创建的量子复制塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
         return BuildingManager.CreateAndPreAddNewFractionator(
-            "量子复制塔",
-            IFE量子复制塔,
-            MFE量子复制塔,
-            2711,
-            new Color(0.6235f, 0.6941f, 0.8f),
-            0,
-            1.0f
+            "量子复制塔", RFE量子复制塔, IFE量子复制塔, MFE量子复制塔,
+            [IFE分馏原胚定向], [1], [10],
+            3105, new(0.6235f, 0.6941f, 0.8f), 0, 1.0f, TFE量子复制塔
         );
     }
 
@@ -144,7 +140,7 @@ public static class QuantumCopyTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;
@@ -186,7 +182,7 @@ public static class QuantumCopyTower {
                         ++__instance.fluidInputCargoCount;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, RecipeProto.fractionatorNeeds,
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null,
                         out stack, out inc1);
                     if (needId > 0) {
                         __instance.fluidInputCount += (int)stack;
