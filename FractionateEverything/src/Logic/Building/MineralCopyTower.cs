@@ -13,7 +13,7 @@ public static class MineralCopyTower {
     /// </summary>
     /// <returns>创建的矿物复制塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
-        return BuildingManager.CreateAndPreAddNewFractionator(
+        return BuildingManager.CreateFractionator(
             "矿物复制塔", RFE矿物复制塔, IFE矿物复制塔, MFE矿物复制塔,
             [IFE分馏原胚定向], [1], [10],
             3102, new(0.4f, 1.0f, 0.949f), -20, 0.4f, TFE矿物复制塔
@@ -66,8 +66,6 @@ public static class MineralCopyTower {
 
                 if (!__instance.incUsed)
                     __instance.incUsed = itemIncAvg > 0;
-
-
 
 
                 __instance.fractionSuccess = __instance.seed / 2147483646.0 < 1;

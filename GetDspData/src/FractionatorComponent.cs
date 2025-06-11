@@ -203,11 +203,11 @@ public struct FractionatorComponent {
             return 0;
         //计算输入缓存区物品的平均堆叠，上限4。平均堆叠越高，处理次数越多。
         //fluidInputCount表示总数，fluidInputCargoCount表示多少组。除一下就是每组多少，也就是平均堆叠。
-        double itemStackAvg = 1.0;
+        double fluidInputCountPerCargo = 1.0;
         if (fluidInputCount == 0)
             fluidInputCargoCount = 0.0f;
         else
-            itemStackAvg = fluidInputCargoCount > 0.0001
+            fluidInputCountPerCargo = fluidInputCargoCount > 0.0001
                 ? fluidInputCount / (double)fluidInputCargoCount
                 : 4.0;
         //只有输入缓存大于0且流动输出、产物输出都不堵的情况下，才进行内部分馏处理
@@ -224,7 +224,7 @@ public struct FractionatorComponent {
                 (int)(power
                       * (500.0 / 3.0)
                       * (fluidInputCargoCount < 30.0 ? fluidInputCargoCount : 30.0)
-                      * itemStackAvg
+                      * fluidInputCountPerCargo
                       + 0.75);
             //任何一个输出堵着的时候，显然不能无限加进度，不然流通的瞬间会全部处理。限定最高瞬间处理10次。
             if (progress > 100000)
@@ -232,12 +232,12 @@ public struct FractionatorComponent {
             //10000进度处理一次
             for (; progress >= 10000; progress -= 10000) {
                 //计算平均每个物品携带的增产点数（因为是int，所以实际上是向下取整了）
-                int itemIncAvg = fluidInputInc <= 0 || fluidInputCount <= 0
+                int fluidInputIncAvg = fluidInputInc <= 0 || fluidInputCount <= 0
                     ? 0
                     : fluidInputInc / fluidInputCount;
                 //这个是新增监视面板要的东西，不管
                 if (!incUsed)
-                    incUsed = itemIncAvg > 0;
+                    incUsed = fluidInputIncAvg > 0;
                 //基于线性同余生成器（LCG，seed = (a * seed + c) % m，其中a = 48271，m = int.MaxValue，c = 0）
                 //+1U是为了避免0的情况（在这个LCG实现中，显然为0的情况下会一直卡死为0），最后再-1U确保后续计算
                 //理论上48271U可以达到最大周期2147483646，且均匀分布，十分理想
@@ -246,7 +246,7 @@ public struct FractionatorComponent {
                 //seed / 2147483646.0显然就是一个0-1之间的随机数
                 //原版分馏塔被设定为增产剂以加速的比例来提升分馏概率，而对产物数目无影响，所以此处乘accTableMilli
                 fractionSuccess = seed / 2147483646.0
-                                  < produceProb * (1.0 + Cargo.accTableMilli[itemIncAvg < 10 ? itemIncAvg : 10]);
+                                  < produceProb * (1.0 + Cargo.accTableMilli[fluidInputIncAvg < 10 ? fluidInputIncAvg : 10]);
                 //成功或失败的处理
                 //需要注意的是，此处仅有“数目”的变动，没有“可能生成了哪种物品”的判断。
                 //这是因为流动输入物品id确定的情况下，产物输出物品id、流动输出物品id也就跟随着确定了（原版分馏塔数据结构就是这样设计）
@@ -271,15 +271,15 @@ public struct FractionatorComponent {
                     //流动输出总数统计+1
                     ++fluidOutputTotal;
                     //增加增产点数（流动输入->流动输出）
-                    fluidOutputInc += itemIncAvg;
+                    fluidOutputInc += fluidInputIncAvg;
                 }
                 //无论分馏是否成功，原料都被处理了
                 //原料-1
                 --fluidInputCount;
                 //减少增产点数（流动输入->流动输出（不变）或产物输出（变为0））
-                fluidInputInc -= itemIncAvg;
+                fluidInputInc -= fluidInputIncAvg;
                 //重新计算输入缓存区物品的平均堆叠（因为循环的上面用到了这个值）
-                fluidInputCargoCount -= (float)(1.0 / itemStackAvg);
+                fluidInputCargoCount -= (float)(1.0 / fluidInputCountPerCargo);
                 if (fluidInputCargoCount < 0.0)
                     fluidInputCargoCount = 0.0f;
             }
@@ -298,7 +298,7 @@ public struct FractionatorComponent {
                     //尝试放1个物品（如果是4堆叠那就要执行4次才能放完）
                     if (cargoPath != null
                         && cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                            Mathf.CeilToInt((float)(itemStackAvg - 0.1)),
+                            Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)),
                             1, (byte)inc2)) {
                         --fluidOutputCount;
                         fluidOutputInc -= inc2;
@@ -307,7 +307,7 @@ public struct FractionatorComponent {
                         if (fluidOutputCount > 0) {
                             int inc3 = fluidOutputInc / fluidOutputCount;
                             if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                    Mathf.CeilToInt((float)(itemStackAvg - 0.1)), 1, (byte)inc3)) {
+                                    Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1, (byte)inc3)) {
                                 --fluidOutputCount;
                                 fluidOutputInc -= inc3;
                             }
@@ -346,14 +346,14 @@ public struct FractionatorComponent {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[belt2].segPathId);
                     if (cargoPath != null
                         && cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                            Mathf.CeilToInt((float)(itemStackAvg - 0.1)),
+                            Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)),
                             1, (byte)inc4)) {
                         --fluidOutputCount;
                         fluidOutputInc -= inc4;
                         if (fluidOutputCount > 0) {
                             int inc5 = fluidOutputInc / fluidOutputCount;
                             if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                    Mathf.CeilToInt((float)(itemStackAvg - 0.1)), 1, (byte)inc5)) {
+                                    Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1, (byte)inc5)) {
                                 --fluidOutputCount;
                                 fluidOutputInc -= inc5;
                             }

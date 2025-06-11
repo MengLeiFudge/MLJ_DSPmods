@@ -17,9 +17,9 @@ namespace FE.Logic.Manager;
 public static class BuildingManager {
     #region 在PreAdd阶段添加新建筑
 
-    private static readonly ModelProto FractionatorModel = LDB.models.Select(M分馏塔);
-    public static readonly PrefabDesc FractionatorPrefabDesc = FractionatorModel.prefabDesc;
-    private static List<(RecipeProto, ModelProto, ItemProto)> buildingList = [];
+    private static ModelProto FractionatorModel => LDB.models.Select(M分馏塔);
+    public static PrefabDesc FractionatorPrefabDesc => FractionatorModel.prefabDesc;
+    private static readonly List<(RecipeProto, ModelProto, ItemProto)> buildingList = [];
 
     public static void AddFractionators() {
         //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
@@ -98,8 +98,7 @@ public static class BuildingManager {
     /// <param name="color">分馏塔颜色，只更改主体材质颜色，所以只需要一个颜色参数</param>
     /// <param name="hpAdjust">hp调节量（相比于原版分馏塔）</param>
     /// <param name="energyRatio">能耗比例（相比于原版分馏塔）</param>
-    [SuppressMessage("ReSharper", "ParameterHidesMember")]
-    public static (RecipeProto, ModelProto, ItemProto) CreateAndPreAddNewFractionator(
+    public static (RecipeProto, ModelProto, ItemProto) CreateFractionator(
         string name, int recipeID, int itemID, int modelID, int[] items, int[] itemCounts, int[] resultCounts,
         int gridIndex, Color color, int hpAdjust, float energyRatio, int techID) {
         ModelProto oriModel = FractionatorModel;
@@ -110,6 +109,13 @@ public static class BuildingManager {
             gridIndex, 30, EItemType.Production, ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         RecipeProto recipe = ProtoRegistry.RegisterRecipe(recipeID, ERecipeType.Assemble, 60,
             items, itemCounts, [itemID], resultCounts, "I" + name, techID, gridIndex, name, iconPath);
+        ModelProto model = ProtoRegistry.RegisterModel(modelID, item, oriModel.PrefabPath,
+            null, [53, 11, 12, 1, 40], 0);
+        model.Preload();
+        model.HpMax = oriModel.HpMax + hpAdjust * 100;
+        model.prefabDesc.modelIndex = modelID;
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
         //更换材质的颜色。每个建筑的prefabDesc.lodMaterials长度都不一样，需要具体查看
         var m_main = new Material(oriPrefabDesc.lodMaterials[0][0]) { color = color };//主体材质
         var m_black = oriPrefabDesc.lodMaterials[0][1];//黑色材质不改
@@ -117,14 +123,6 @@ public static class BuildingManager {
         var m_glass1 = oriPrefabDesc.lodMaterials[0][3];//玻璃材质不改
         var m_lod = new Material(oriPrefabDesc.lodMaterials[1][0]) { color = color };//缩小时看到的材质
         var m_lod2 = new Material(oriPrefabDesc.lodMaterials[2][0]) { color = color };//缩小时看到的材质
-        ModelProto model = ProtoRegistry.RegisterModel(modelID, item, oriModel.PrefabPath + name,
-            [m_main, m_black], [53, 11, 12, 1, 40], 0);
-        model.PrefabPath = oriModel.PrefabPath;
-        model.Preload();
-        model.HpMax = oriModel.HpMax + hpAdjust * 100;
-        model.prefabDesc.modelIndex = modelID;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
         //同样的材质要指向同一个对象
         model.prefabDesc.lodMaterials = [
             [m_main, m_black, m_glass, m_glass1],
@@ -133,6 +131,11 @@ public static class BuildingManager {
             null,
         ];
         model.prefabDesc.materials = [m_main, m_black];
+
+        // ProtoRegistry.AddLodMaterials(model.PrefabPath, 0, [m_main, m_black, m_glass, m_glass1]);
+        // ProtoRegistry.AddLodMaterials(model.PrefabPath, 1, [m_lod, m_black, m_glass, m_glass1]);
+        // ProtoRegistry.AddLodMaterials(model.PrefabPath, 2, [m_lod2, m_black, m_glass, m_glass1]);
+
         //设置快捷制作栏位置
         item.SetBuildBar(5, item.GridIndex % 10, true);
 
@@ -221,7 +224,7 @@ public static class BuildingManager {
         outputExtend.Clear();
     }
 
-    public static Dictionary<int, int> productExpansion(this FractionatorComponent fractionator,
+    public static Dictionary<int, int> otherProductOutput(this FractionatorComponent fractionator,
         PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;

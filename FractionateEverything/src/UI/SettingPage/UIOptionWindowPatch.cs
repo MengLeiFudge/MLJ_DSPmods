@@ -13,8 +13,8 @@ namespace FE.UI.SettingPage;
 public static class UIOptionWindowPatch {
     private const string details = "UI Root/Overlay Canvas/Top Windows/Option Window/details";
     private static bool _initFinished;
-    private static UIComboBox IconVersionComboBox;
-    private static UIToggle EnableBuildingAsTrashToggle;
+    // private static UIComboBox IconVersionComboBox;
+    // private static UIToggle EnableBuildingAsTrashToggle;
 
     /// <summary>
     /// 新建一个勾选框，右侧有内容和额外提示。
@@ -113,8 +113,5 @@ public static class UIOptionWindowPatch {
     [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnApplyClick))]
     [HarmonyPostfix]
     public static void UIOptionWindow_OnApplyClick_Postfix() =>
-        SetConfig(
-            IconVersionComboBox.itemIndex + 1,
-            EnableBuildingAsTrashToggle.isOn
-        );
+        SetConfig(0, true);
 }

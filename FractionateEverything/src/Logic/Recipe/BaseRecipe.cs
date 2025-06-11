@@ -64,15 +64,16 @@ public abstract class BaseRecipe(
     /// 获取某次输出的执行结果
     /// </summary>
     /// <param name="seed">随机数种子</param>
+    /// <param name="successRatePlus">增产剂对成功率的加成</param>
     /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
-    public virtual Dictionary<int, int> GetOutputs(ref uint seed) {
+    public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
         seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
         if (seed / 2147483646.0 < DestroyRate) {
             return null;
         }
         Dictionary<int, int> dic = [];
         seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
-        if (seed / 2147483646.0 >= BaseSuccessRate) {
+        if (seed / 2147483646.0 >= BaseSuccessRate * successRatePlus) {
             return dic;
         }
         //主输出判定
