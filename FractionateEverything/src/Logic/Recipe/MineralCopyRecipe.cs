@@ -16,27 +16,61 @@ public class MineralCopyRecipe : BaseRecipe {
     public static void CreateAll() {
         Create(I铁矿, 0.4f);
         Create(I铜矿, 0.4f);
-        Create(I石矿, 0.4f);
-        Create(I煤矿, 0.4f);
-        Create(I硅石, 0.3f);
+        Create(I石矿, 0.4f, [new OutputInfo(0.01f, I硅石, 1), new OutputInfo(0.01f, I钛石, 1)]);
+        Create(I煤矿, 0.4f, [new OutputInfo(0.01f, I金刚石, 1)]);
+        Create(IGB铝矿, 0.4f);
+        Create(IGB钨矿, 0.4f);
+        Create(I硅石, 0.3f, [new OutputInfo(0.01f, I分形硅石, 1)]);
         Create(I钛石, 0.3f);
+        Create(IGB硫矿, 0.5f);
+        Create(IGB放射性矿物, 0.5f);
 
+        Create(I水, 0.5f);
+        Create(I原油, 0.5f);
+        Create(I硫酸, 0.3f);
+        Create(IGB海水, 0.5f);
+        Create(IGB盐酸, 0.5f);
+        Create(IGB硝酸, 0.5f);
+        Create(IGB氨, 0.5f);
+
+        Create(I氢, 0.3f, [new OutputInfo(0.01f, I重氢, 1)]);
+        Create(I重氢, 0.2f, [new OutputInfo(0.01f, I氢, 1)]);
+        Create(IGB氦, 0.2f, [new OutputInfo(0.01f, IGB氦三, 1)]);
+        Create(IGB氦三, 0.2f, [new OutputInfo(0.01f, IGB氦, 1)]);
+        Create(IGB氮, 0.3f);
+        Create(IGB氧, 0.3f);
+        Create(IGB二氧化碳, 0.3f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
+        Create(IGB二氧化硫, 0.3f, [new OutputInfo(0.01f, IGB二氧化硫, 1)]);
+
+        Create(I可燃冰, 0.3f);
         Create(I金伯利矿石, 0.2f);
         Create(I分形硅石, 0.2f);
         Create(I光栅石, 0.2f);
         Create(I刺笋结晶, 0.2f);
+        Create(I有机晶体, 0.2f);
         Create(I单极磁石, 0.1f);
+
+        Create(I临界光子, 0.1f);
+        Create(I反物质, 0.1f);
+    }
+
+    private static void Create(int inputID, float baseSuccessRate) {
+        Create(inputID, baseSuccessRate, []);
     }
 
     /// <summary>
     /// 创建一个矿物复制配方，然后将其添加到配方列表中
     /// </summary>
-    private static void Create(int inputID, float baseSuccessRate) {
+    private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputAppend) {
+        if (!LDB.items.Exist(inputID)) {
+            return;
+        }
         AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRate,
             [
                 new OutputInfo(1.000f, inputID, 2),
             ],
             [
+                ..outputAppend,
                 new OutputInfo(0.012f, IFE分馏原胚普通, 1),
                 new OutputInfo(0.010f, IFE分馏原胚精良, 1),
                 new OutputInfo(0.008f, IFE分馏原胚稀有, 1),
