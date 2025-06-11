@@ -19,34 +19,65 @@ public static class ItemManager {
         ProtoRegistry.RegisterItem(IFE分馏原胚普通, "分馏原胚（普通）", "分馏原胚（普通）描述",
             "Assets/fracicons/fractional-prototype-normal.png", 3201, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚普通, ERecipeType.Assemble, 300,
+            [I电磁矩阵], [20], [IFE分馏原胚普通], [1], "分馏原胚（普通）描述", 0, 3201,
+            "分馏原胚（普通）", "Assets/fracicons/fractional-prototype-normal.png");
         ProtoRegistry.RegisterItem(IFE分馏原胚精良, "分馏原胚（精良）", "分馏原胚（精良）描述",
             "Assets/fracicons/fractional-prototype-uncommon.png", 3202, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚精良, ERecipeType.Assemble, 300,
+            [I能量矩阵], [17], [IFE分馏原胚精良], [1], "分馏原胚（精良）描述", 0, 3202,
+            "分馏原胚（精良）", "Assets/fracicons/fractional-prototype-uncommon.png");
         ProtoRegistry.RegisterItem(IFE分馏原胚稀有, "分馏原胚（稀有）", "分馏原胚（稀有）描述",
             "Assets/fracicons/fractional-prototype-rare.png", 3203, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚稀有, ERecipeType.Assemble, 300,
+            [I结构矩阵], [14], [IFE分馏原胚稀有], [1], "分馏原胚（稀有）描述", 0, 3203,
+            "分馏原胚（稀有）", "Assets/fracicons/fractional-prototype-rare.png");
         ProtoRegistry.RegisterItem(IFE分馏原胚史诗, "分馏原胚（史诗）", "分馏原胚（史诗）描述",
             "Assets/fracicons/fractional-prototype-epic.png", 3204, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚史诗, ERecipeType.Assemble, 300,
+            [I信息矩阵], [11], [IFE分馏原胚史诗], [1], "分馏原胚（史诗）描述", 0, 3204,
+            "分馏原胚（史诗）", "Assets/fracicons/fractional-prototype-epic.png");
         ProtoRegistry.RegisterItem(IFE分馏原胚传说, "分馏原胚（传说）", "分馏原胚（传说）描述",
             "Assets/fracicons/fractional-prototype-legendary.png", 3205, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚传说, ERecipeType.Assemble, 300,
+            [I引力矩阵], [8], [IFE分馏原胚传说], [1], "分馏原胚（传说）描述", 0, 3205,
+            "分馏原胚（传说）", "Assets/fracicons/fractional-prototype-legendary.png");
         ProtoRegistry.RegisterItem(IFE分馏原胚精良, "分馏原胚（定向）", "分馏原胚（定向）描述",
             "Assets/fracicons/fractional-prototype-directional.png", 3206, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分馏原胚定向, ERecipeType.Assemble, 300,
+            [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说], [1, 1, 1, 1, 1],
+            [IFE分馏原胚定向], [1], "分馏原胚（定向）描述", 0, 3206,
+            "分馏原胚（定向）", "Assets/fracicons/fractional-prototype-directional.png");
         //各种精华
         ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "复制精华描述",
             "Assets/fracicons/copy-essence.png", 3301, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE复制精华, ERecipeType.Assemble, 300,
+            [IFE复制精华], [2], [IFE复制精华], [1], "复制精华描述", TFE矿物复制塔, 3301,
+            "复制精华", "Assets/fracicons/copy-essence.png");
         ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "点金精华描述",
             "Assets/fracicons/alchemy-essence.png", 3302, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE点金精华, ERecipeType.Assemble, 300,
+            [IFE点金精华], [2], [IFE点金精华], [1], "点金精华描述", TFE点金塔, 3302,
+            "点金精华", "Assets/fracicons/alchemy-essence.png");
         ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "分解精华描述",
             "Assets/fracicons/deconstruction-essence.png", 3303, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE分解精华, ERecipeType.Assemble, 300,
+            [IFE分解精华], [2], [IFE分解精华], [1], "分解精华描述", TFE分解塔, 3303,
+            "分解精华", "Assets/fracicons/deconstruction-essence.png");
         ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "转化精华描述",
             "Assets/fracicons/conversion-essence.png", 3304, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE转化精华, ERecipeType.Assemble, 300,
+            [IFE转化精华], [2], [IFE转化精华], [1], "转化精华描述", TFE转化塔, 3304,
+            "转化精华", "Assets/fracicons/conversion-essence.png");
     }
 
     #region 计算物品价值

@@ -14,7 +14,7 @@ public static class DeconstructionTower {
     /// </summary>
     /// <returns>创建的分解塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
-        return BuildingManager.CreateAndPreAddNewFractionator(
+        return BuildingManager.CreateFractionator(
             "分解塔", RFE分解塔, IFE分解塔, MFE分解塔,
             [IFE分馏原胚定向], [3], [1],
             3107, new(0.4f, 1.0f, 0.5f), 0, 0.9f, TFE分解塔
@@ -86,7 +86,7 @@ public static class DeconstructionTower {
                         ++consumeRegister[__instance.fluidId];
 
                     // 获取扩展产物字典
-                    var productExpansion = __instance.productExpansion(factory);
+                    var productExpansion = __instance.otherProductOutput(factory);
 
                     // 沙土概率 - 20%概率获得沙土
                     uint sandRandom =
@@ -148,7 +148,7 @@ public static class DeconstructionTower {
                     }
                 } else {
                     // 当主输出流没有物品时，尝试输出扩展产物（如沙土）
-                    var productExpansion = __instance.productExpansion(factory);
+                    var productExpansion = __instance.otherProductOutput(factory);
                     if (productExpansion.Count > 0) {
                         foreach (var kvp in productExpansion.ToArray()) {
                             if (kvp.Value > 0) {
@@ -190,7 +190,7 @@ public static class DeconstructionTower {
         if (__instance.belt2 > 0) {
             if (__instance.isOutput2) {
                 // 右侧作为输出口，输出扩展产物（如沙土）
-                var productExpansion = __instance.productExpansion(factory);
+                var productExpansion = __instance.otherProductOutput(factory);
                 if (productExpansion.Count > 0) {
                     foreach (var kvp in productExpansion.ToArray()) {
                         if (kvp.Value > 0) {
@@ -236,7 +236,7 @@ public static class DeconstructionTower {
 
         // 如果缓存区全部清空，重置输入id
         if (__instance.fluidInputCount == 0 && __instance.fluidOutputCount == 0 && __instance.productOutputCount == 0) {
-            var productExpansion = __instance.productExpansion(factory);
+            var productExpansion = __instance.otherProductOutput(factory);
             bool hasItems = false;
             foreach (var count in productExpansion.Values) {
                 if (count > 0) {

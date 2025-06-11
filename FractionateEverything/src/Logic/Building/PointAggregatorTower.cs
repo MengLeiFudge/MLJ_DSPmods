@@ -13,7 +13,7 @@ public static class PointAggregatorTower {
     /// </summary>
     /// <returns>创建的点数聚集塔原型元组</returns>
     public static (RecipeProto, ModelProto, ItemProto) Create() {
-        return BuildingManager.CreateAndPreAddNewFractionator(
+        return BuildingManager.CreateFractionator(
             "点数聚集塔", RFE点数聚集塔, IFE点数聚集塔, MFE点数聚集塔,
             [IFE分馏原胚定向], [1], [2],
             3104, new(0.2509f, 0.8392f, 1.0f), 0, 1.0f, TFE点数聚集塔
