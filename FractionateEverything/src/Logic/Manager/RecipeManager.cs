@@ -57,6 +57,16 @@ public static class RecipeManager {
 
     #endregion
 
+    public static void UnlockAll() {
+        foreach (var recipe in RecipeList) {
+            if (!recipe.IsUnlocked) {
+                recipe.Level = 1;
+                recipe.Quality = 1;
+                LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
+            }
+        }
+    }
+
     #region 创建配方
 
 #if DEBUG

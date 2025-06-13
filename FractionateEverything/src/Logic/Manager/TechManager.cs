@@ -213,13 +213,8 @@ public static class TechManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
     public static void UITechTree_Do1KeyUnlock_Postfix() {
-        GameMain.mainPlayer.package.AddItem(IFE分馏原胚定向, 200, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE交互塔, 100, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE矿物复制塔, 100, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE点数聚集塔, 100, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE点金塔, 100, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE分解塔, 100, 0, out _);
-        GameMain.mainPlayer.package.AddItem(IFE转化塔, 100, 0, out _);
+        //解锁所有分馏配方
+        RecipeManager.UnlockAll();
 
         // int unlockCount = 0;
         // foreach (BaseRecipe r in naturalResourceRecipeList) {

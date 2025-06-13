@@ -142,6 +142,18 @@ public abstract class BaseRecipe(
     /// </details>
     public int Quality { get; set; } = 0;
 
+    public static string GetQualityStr(int quality) {
+        switch (quality) {
+            case 1: return "白";
+            case 2: return "绿";
+            case 3: return "蓝";
+            case 4: return "紫";
+            case 5: return "红";
+            case 7: return "金";
+            default: return "未知";
+        }
+    }
+
     /// <summary>
     /// 配方等级
     /// </summary>
@@ -175,12 +187,21 @@ public abstract class BaseRecipe(
     /// 添加经验
     /// </summary>
     public void AddExp(long exp) {
-        LogDebug($"Quality{Quality} Lv{Level} ({Experience} + {exp}/{NextLevelExperience})");
+        // LogDebug($"Quality{Quality} Lv{Level} ({Experience} + {exp}/{NextLevelExperience})");
         Experience += exp;
         if (!CanBreakthrough && Experience >= NextLevelExperience) {
             Experience -= NextLevelExperience;
             Level++;
             LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            // ItemProto itemProto = LDB.items.Select(InputID);
+            // string info = $"{RecipeType}-{itemProto.Name}配方已升至{Level}级！\n"
+            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
+            // UIMessageBox.Show(
+            //     "配方升级".Translate(), info.Translate(),
+            //     "确定".Translate(),
+            //     UIMessageBox.INFO,
+            //     null
+            // );
         }
         if (CanBreakthrough) {
             TryBreakQuality();
@@ -210,12 +231,34 @@ public abstract class BaseRecipe(
             }
             AddExp(0);
             LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            // ItemProto itemProto = LDB.items.Select(InputID);
+            // string info = $"{RecipeType}-{itemProto.Name}配方已突破至{GetQualityStr(Quality)}色！\n"
+            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
+            // UIMessageBox.Show(
+            //     "配方突破".Translate(), info.Translate(),
+            //     "确定".Translate(),
+            //     UIMessageBox.INFO,
+            //     null
+            // );
             return true;
         } else {
             AddExp(-NextLevelExperience / 10);
             LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            // ItemProto itemProto = LDB.items.Select(InputID);
+            // string info = $"{RecipeType}-{itemProto.Name}配方突破{GetQualityStr(Quality)}色失败！\n"
+            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
+            // UIMessageBox.Show(
+            //     "配方突破".Translate(), info.Translate(),
+            //     "确定".Translate(),
+            //     UIMessageBox.INFO,
+            //     null
+            // );
             return false;
         }
+    }
+
+    public override string ToString() {
+        return $"{GetQualityStr(Quality)}色 Lv{Level}({Experience}/{NextLevelExperience})";
     }
 
     #endregion
