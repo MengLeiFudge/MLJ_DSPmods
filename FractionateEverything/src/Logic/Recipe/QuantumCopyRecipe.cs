@@ -98,29 +98,29 @@ public class QuantumCopyRecipe : BaseRecipe {
         return 0;
     }
 
-    /// <summary>
-    /// 将配方数据保存到二进制流中
-    /// </summary>
-    /// <param name="w">二进制写入器</param>
-    public override void Export(BinaryWriter w) {
-        // 先调用基类的方法保存基本属性
-        base.Export(w);
-
-        // 保存量子复制塔特有属性
-        w.Write(NoMaterialConsumption);
-        w.Write(DoubleOutput);
-    }
-
-    /// <summary>
-    /// 从二进制流中加载配方数据
-    /// </summary>
-    /// <param name="r">二进制读取器</param>
-    public override void Import(BinaryReader r) {
-        // 先调用基类的方法读取基本属性
-        base.Import(r);
-
-        // 读取量子复制塔特有属性
-        NoMaterialConsumption = r.ReadBoolean();
-        DoubleOutput = r.ReadBoolean();
-    }
+    // /// <summary>
+    // /// 将配方数据保存到二进制流中
+    // /// </summary>
+    // /// <param name="w">二进制写入器</param>
+    // public override void Export(BinaryWriter w) {
+    //     // 先调用基类的方法保存基本属性
+    //     base.Export(w);
+    //
+    //     // 保存量子复制塔特有属性
+    //     w.Write(NoMaterialConsumption);
+    //     w.Write(DoubleOutput);
+    // }
+    //
+    // /// <summary>
+    // /// 从二进制流中加载配方数据
+    // /// </summary>
+    // /// <param name="r">二进制读取器</param>
+    // public override void Import(BinaryReader r) {
+    //     // 先调用基类的方法读取基本属性
+    //     base.Import(r);
+    //
+    //     // 读取量子复制塔特有属性
+    //     NoMaterialConsumption = r.ReadBoolean();
+    //     DoubleOutput = r.ReadBoolean();
+    // }
 }

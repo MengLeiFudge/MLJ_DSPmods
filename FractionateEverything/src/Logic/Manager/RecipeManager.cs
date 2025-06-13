@@ -1,4 +1,5 @@
 ﻿using FE.Logic.Recipe;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,39 +12,36 @@ public static class RecipeManager {
     #region 配方列表
 
     /// <summary>
-    /// 存储所有类型的配方
+    /// 配方列表，[(int)ERecipe][(int)ItemID]
     /// </summary>
-    private static readonly Dictionary<ERecipe, List<BaseRecipe>> _allRecipes = [];
+    private static BaseRecipe[][] BaseRecipes = null;
+
+    /// <summary>
+    /// 临时存储所有配方，生成baseRecipes之后就不需要了
+    /// </summary>
+    private static readonly Dictionary<ERecipe, List<BaseRecipe>> RecipesWithType = [];
+
+    /// <summary>
+    /// 存储所有配方
+    /// </summary>
+    private static readonly List<BaseRecipe> RecipeList = [];
 
     /// <summary>
     /// 添加一个配方
     /// </summary>
-    /// <param name="recipe">要添加的配方</param>
-    /// <typeparam name="T">BaseRecipe的子类</typeparam>
     public static void AddRecipe<T>(T recipe) where T : BaseRecipe {
         ERecipe recipeType = recipe.RecipeType;
-        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
+        if (!RecipesWithType.TryGetValue(recipeType, out var recipeList)) {
             recipeList = [];
-            _allRecipes[recipeType] = recipeList;
+            RecipesWithType[recipeType] = recipeList;
         }
         if (recipeList.Any(r => r.InputID == recipe.InputID)) {
             LogError($"Recipe with ID {recipe.InputID} already exists for type {recipeType}");
             return;
         }
         recipeList.Add(recipe);
-    }
-
-    /// <summary>
-    /// 获取指定类型的所有配方
-    /// </summary>
-    /// <param name="recipeType">要获取的配方类型</param>
-    /// <typeparam name="T">BaseRecipe的子类</typeparam>
-    /// <returns>类型为recipeType的所有配方</returns>
-    public static List<T> GetRecipes<T>(ERecipe recipeType) where T : BaseRecipe {
-        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
-            return [];
-        }
-        return recipeList.OfType<T>().ToList();
+        RecipeList.Add(recipe);
+        LogInfo($"Add {recipe.InputID} {LDB.items.Select(recipe.InputID).Name} to {recipeType.ToString()} Recipe.");
     }
 
     /// <summary>
@@ -54,10 +52,7 @@ public static class RecipeManager {
     /// <typeparam name="T">BaseRecipe的子类</typeparam>
     /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
     public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
-        if (!_allRecipes.TryGetValue(recipeType, out var recipeList)) {
-            return null;
-        }
-        return recipeList.OfType<T>().FirstOrDefault(r => r.InputID == inputId);
+        return BaseRecipes[(int)recipeType][inputId] as T;
     }
 
     #endregion
@@ -84,6 +79,15 @@ public static class RecipeManager {
         DeconstructionRecipe.CreateAll();
         ConversionRecipe.CreateAll();
 
+        BaseRecipes = new BaseRecipe[Enum.GetNames(typeof(ERecipe)).Length + 1][];
+        for (int i = 0; i < BaseRecipes.Length; i++) {
+            BaseRecipes[i] = new BaseRecipe[12000];
+        }
+        foreach (var p in RecipesWithType) {
+            foreach (var recipe in p.Value) {
+                BaseRecipes[(int)p.Key][recipe.InputID] = recipe;
+            }
+        }
 
         // if (!GenesisBook.Enable) {
         //     //自然资源复制
@@ -329,87 +333,35 @@ public static class RecipeManager {
     #region 从存档读取配方数据
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        int count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int inputID = r.ReadInt32();
-            MineralCopyRecipe recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, inputID);
-            if (recipe == null) {
-                //规定每一个配方导出信息时，最后必须为 int.MaxValue
-                while (r.ReadInt32() != int.MaxValue) { }
-            } else {
-                recipe.Import(r);
-            }
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int inputID = r.ReadInt32();
-            QuantumCopyRecipe recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, inputID);
-            if (recipe == null) {
-                while (r.ReadInt32() != int.MaxValue) { }
-            } else {
-                recipe.Import(r);
-            }
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int inputID = r.ReadInt32();
-            AlchemyRecipe recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, inputID);
-            if (recipe == null) {
-                while (r.ReadInt32() != int.MaxValue) { }
-            } else {
-                recipe.Import(r);
-            }
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int inputID = r.ReadInt32();
-            DeconstructionRecipe recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, inputID);
-            if (recipe == null) {
-                while (r.ReadInt32() != int.MaxValue) { }
-            } else {
-                recipe.Import(r);
-            }
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int inputID = r.ReadInt32();
-            ConversionRecipe recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, inputID);
-            if (recipe == null) {
-                while (r.ReadInt32() != int.MaxValue) { }
-            } else {
-                recipe.Import(r);
+        int typeCount = r.ReadInt32();
+        for (int typeIndex = 0; typeIndex < typeCount; typeIndex++) {
+            ERecipe recipeType = (ERecipe)r.ReadInt32();
+            int recipeCount = r.ReadInt32();
+            for (int i = 0; i < recipeCount; i++) {
+                int inputID = r.ReadInt32();
+                BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, inputID);
+                if (recipe == null) {
+                    int byteCount = r.ReadInt32();
+                    for (int j = 0; j < byteCount; j++) {
+                        r.ReadByte();
+                    }
+                } else {
+                    recipe.Import(r);
+                }
             }
         }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(GetRecipes<MineralCopyRecipe>(ERecipe.MineralCopy).Count);
-        foreach (MineralCopyRecipe recipe in GetRecipes<MineralCopyRecipe>(ERecipe.MineralCopy)) {
-            w.Write(recipe.InputID);
-            recipe.Export(w);
-        }
-        //点数聚集不需要配方
-        w.Write(GetRecipes<QuantumCopyRecipe>(ERecipe.QuantumDuplicate).Count);
-        foreach (QuantumCopyRecipe recipe in GetRecipes<QuantumCopyRecipe>(ERecipe.QuantumDuplicate)) {
-            w.Write(recipe.InputID);
-            recipe.Export(w);
-        }
-        w.Write(GetRecipes<AlchemyRecipe>(ERecipe.Alchemy).Count);
-        foreach (AlchemyRecipe recipe in GetRecipes<AlchemyRecipe>(ERecipe.Alchemy)) {
-            w.Write(recipe.InputID);
-            recipe.Export(w);
-        }
-        w.Write(GetRecipes<DeconstructionRecipe>(ERecipe.Deconstruction).Count);
-        foreach (DeconstructionRecipe recipe in GetRecipes<DeconstructionRecipe>(ERecipe.Deconstruction)) {
-            w.Write(recipe.InputID);
-            recipe.Export(w);
-        }
-        w.Write(GetRecipes<ConversionRecipe>(ERecipe.Conversion).Count);
-        foreach (ConversionRecipe recipe in GetRecipes<ConversionRecipe>(ERecipe.Conversion)) {
-            w.Write(recipe.InputID);
-            recipe.Export(w);
+        w.Write(RecipesWithType.Count);
+        foreach (var p in RecipesWithType) {
+            w.Write((int)p.Key);
+            w.Write(p.Value.Count);
+            foreach (BaseRecipe recipe in p.Value) {
+                w.Write(recipe.InputID);
+                recipe.Export(w);
+            }
         }
     }
 

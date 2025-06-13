@@ -23,15 +23,11 @@
         <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
         <PackageReference Include="DysonSphereProgram.Modding.DSPModSave" Version="1.2.0"/>
         <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
-        <!-- 排除 GameLibs 中的 Assembly-CSharp.dll -->
-        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"
-                          ExcludeAssets="lib\**\Assembly-CSharp.dll"/>
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"/>
         <!-- 添加本地 Assembly-CSharp-publicized.dll -->
-        <Reference Include="Assembly-CSharp">
-            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
-            <!-- 确保本地 DLL 优先 -->
-            <Private>True</Private>
-        </Reference>
+<!--        <Reference Include="Assembly-CSharp">-->
+<!--            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>-->
+<!--        </Reference>-->
         <Reference Include="BuildBarTool">
             <HintPath>..\lib\BuildBarTool.dll</HintPath>
         </Reference>

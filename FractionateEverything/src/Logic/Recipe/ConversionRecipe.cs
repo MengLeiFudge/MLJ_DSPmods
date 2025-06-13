@@ -28,7 +28,7 @@ public class ConversionRecipe : BaseRecipe {
                     outputMain.Add(new OutputInfo(rateOther, item0, 1));
                 }
             }
-            Create(item, 0.05f, outputMain);
+            Create(item, 0.04f, outputMain);
         }
     }
 
@@ -45,8 +45,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateFracChain([I石材, IGB混凝土]);
         CreateFracChain([I棱镜, I电浆激发器, I光子合并器, I太阳帆]);
         CreateFracChain([I高能石墨, I金刚石]);
-        CreateFracChain([I石墨烯, I碳纳米管, I粒子宽带]);
-        CreateFracChain([I粒子宽带, IGB光学信息传输纤维]);
+        CreateFracChain([I石墨烯, I碳纳米管, I粒子宽带, IGB光学信息传输纤维]);
         CreateFracChain([I粒子容器, I奇异物质, I引力透镜, I空间翘曲器]);
         CreateFracChain([I钛晶石, I卡西米尔晶体]);
         CreateFracChain([IGB基础机械组件, IGB先进机械组件, IGB尖端机械组件, IGB超级机械组件]);//创世独有配方
@@ -265,51 +264,51 @@ public class ConversionRecipe : BaseRecipe {
         }
     }
 
-    /// <summary>
-    /// 将配方数据保存到二进制流中
-    /// </summary>
-    /// <param name="w">二进制写入器</param>
-    public override void Export(BinaryWriter w) {
-        // 先调用基类的方法保存基本属性
-        base.Export(w);
-
-        // 保存转化塔特有属性
-        w.Write(NoMaterialConsumption);
-        w.Write(DoubleOutput);
-        w.Write(SpecializedOutputId);
-        w.Write(SpecializedBonus);
-
-        // // 保存转化产物表
-        // w.Write(OutputItems.Count);
-        // foreach (var kvp in OutputItems) {
-        //     w.Write(kvp.Key);// 物品ID
-        //     w.Write(kvp.Value.Item1);// 成功率
-        //     w.Write(kvp.Value.Item2);// 数量
-        // }
-    }
-
-    /// <summary>
-    /// 从二进制流中加载配方数据
-    /// </summary>
-    /// <param name="r">二进制读取器</param>
-    public override void Import(BinaryReader r) {
-        // 先调用基类的方法读取基本属性
-        base.Import(r);
-
-        // 读取转化塔特有属性
-        NoMaterialConsumption = r.ReadBoolean();
-        DoubleOutput = r.ReadBoolean();
-        SpecializedOutputId = r.ReadInt32();
-        SpecializedBonus = r.ReadSingle();
-
-        // // 读取转化产物表
-        // int outputCount = r.ReadInt32();
-        // OutputItems.Clear();
-        // for (int i = 0; i < outputCount; i++) {
-        //     int itemId = r.ReadInt32();
-        //     float probability = r.ReadSingle();
-        //     float amount = r.ReadSingle();
-        //     OutputItems[itemId] = new Tuple<float, float>(probability, amount);
-        // }
-    }
+    // /// <summary>
+    // /// 将配方数据保存到二进制流中
+    // /// </summary>
+    // /// <param name="w">二进制写入器</param>
+    // public override void Export(BinaryWriter w) {
+    //     // 先调用基类的方法保存基本属性
+    //     base.Export(w);
+    //
+    //     // 保存转化塔特有属性
+    //     w.Write(NoMaterialConsumption);
+    //     w.Write(DoubleOutput);
+    //     w.Write(SpecializedOutputId);
+    //     w.Write(SpecializedBonus);
+    //
+    //     // // 保存转化产物表
+    //     // w.Write(OutputItems.Count);
+    //     // foreach (var kvp in OutputItems) {
+    //     //     w.Write(kvp.Key);// 物品ID
+    //     //     w.Write(kvp.Value.Item1);// 成功率
+    //     //     w.Write(kvp.Value.Item2);// 数量
+    //     // }
+    // }
+    //
+    // /// <summary>
+    // /// 从二进制流中加载配方数据
+    // /// </summary>
+    // /// <param name="r">二进制读取器</param>
+    // public override void Import(BinaryReader r) {
+    //     // 先调用基类的方法读取基本属性
+    //     base.Import(r);
+    //
+    //     // 读取转化塔特有属性
+    //     NoMaterialConsumption = r.ReadBoolean();
+    //     DoubleOutput = r.ReadBoolean();
+    //     SpecializedOutputId = r.ReadInt32();
+    //     SpecializedBonus = r.ReadSingle();
+    //
+    //     // // 读取转化产物表
+    //     // int outputCount = r.ReadInt32();
+    //     // OutputItems.Clear();
+    //     // for (int i = 0; i < outputCount; i++) {
+    //     //     int itemId = r.ReadInt32();
+    //     //     float probability = r.ReadSingle();
+    //     //     float amount = r.ReadSingle();
+    //     //     OutputItems[itemId] = new Tuple<float, float>(probability, amount);
+    //     // }
+    // }
 }
