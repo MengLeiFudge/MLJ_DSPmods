@@ -290,7 +290,7 @@ public static class ItemManager {
             sw.WriteLine("ID,名称,价值,量子复制概率最大值");
             foreach (var p in itemValueDic.OrderBy(p => p.Value)) {
                 ItemProto item = LDB.items.Select(p.Key);
-                LogDebug($"物品{item.name}({p.Key})价值保存至表格...");
+                // LogDebug($"物品{item.name}({p.Key})价值保存至表格...");
                 sw.WriteLine(
                     $"{p.Key},{item.name},{p.Value:F2},{itemRatioDic[p.Key]:P5}");
             }

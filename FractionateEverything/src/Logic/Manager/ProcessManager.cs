@@ -694,7 +694,7 @@ public static class ProcessManager {
             && __instance.productOutputCount < __instance.productOutputMax
             && __instance.fluidOutputCount < __instance.fluidOutputMax) {
             __instance.progress += (int)(power
-                                         * (50.0 / 3.0)
+                                         * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
                                              ? __instance.fluidInputCargoCount
                                              : MaxBeltSpeed)
@@ -725,6 +725,22 @@ public static class ProcessManager {
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
+                if (recipe == null) {
+                    __instance.fluidInputInc -= fluidInputIncAvg;
+                    __instance.fractionSuccess = false;
+                    __instance.fluidInputCount--;
+                    __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
+                    if (__instance.fluidInputCargoCount < 0f) {
+                        __instance.fluidInputCargoCount = 0f;
+                    }
+                    __instance.fluidOutputCount++;
+                    __instance.fluidOutputTotal++;
+                    __instance.fluidOutputInc += fluidInputIncAvg;
+                    // LogDebug($"配方为空，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                    //          + $"当前产物输出{__instance.productOutputCount}个");
+                    continue;
+                }
+
                 float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 Dictionary<int, int> outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
                 __instance.fluidInputInc -= fluidInputIncAvg;
@@ -742,13 +758,13 @@ public static class ProcessManager {
                         __instance.fluidOutputCount++;
                         __instance.fluidOutputTotal++;
                         __instance.fluidOutputInc += fluidInputIncAvg;
-                        LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
-                                 + $"当前产物输出{__instance.productOutputCount}个");
+                        // LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                        //          + $"当前产物输出{__instance.productOutputCount}个");
                     } else {
                         foreach (KeyValuePair<int, int> p in outputs) {
                             int itemID = p.Key;
                             int itemCount = p.Value;
-                            LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
+                            // LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
                             lock (productRegister) {
                                 productRegister[itemID] += itemCount;
                             }
@@ -763,12 +779,12 @@ public static class ProcessManager {
                                 }
                             }
                         }
-                        LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
-                                 + $"当前产物输出{__instance.productOutputCount}个");
+                        // LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                        //          + $"当前产物输出{__instance.productOutputCount}个");
                     }
                 } else {
-                    LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
-                             + $"当前产物输出{__instance.productOutputCount}个");
+                    // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                    //          + $"当前产物输出{__instance.productOutputCount}个");
                 }
             }
         } else {
@@ -833,7 +849,7 @@ public static class ProcessManager {
                         __instance.fluidInputCargoCount++;
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
-                        __instance.productId = recipe.OutputMain[0].OutputID;
+                        __instance.productId = recipe == null ? __instance.fluidId : recipe.OutputMain[0].OutputID;
                         __instance.produceProb = 0.01f;
                         signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                         signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -890,7 +906,7 @@ public static class ProcessManager {
                         __instance.fluidInputCargoCount++;
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
-                        __instance.productId = recipe.OutputMain[0].OutputID;
+                        __instance.productId = recipe == null ? __instance.fluidId : recipe.OutputMain[0].OutputID;
                         __instance.produceProb = 0.01f;
                         signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                         signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -1116,17 +1132,9 @@ public static class ProcessManager {
             return;
         }
         int buildingID = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingID == I分馏塔) {
+        if (buildingID == I分馏塔 || buildingID == IFE点数聚集塔) {
             return;
         }
-        // if (buildingID == IFE垃圾回收分馏塔 || buildingID == IFE老虎机分馏塔) {
-        //     //屏蔽原料增产箭头
-        //     __instance.needIncs[0].enabled = false;
-        //     __instance.needIncs[1].enabled = false;
-        //     __instance.needIncs[2].enabled = false;
-        //     //屏蔽分馏速率
-        //     __instance.speedText.enabled = false;
-        // }
         //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新UI，防止UI变化过快导致无法看清
         if (__instance.fractionatorId == fractionatorID) {
             totalUIUpdateTimes++;
@@ -1168,83 +1176,79 @@ public static class ProcessManager {
         //根据分馏塔以及配方情况，计算实际处理情况，生成上方字符串s1以及下方字符串s2
         string s1 = "";
         string s2 = "";
-        /*if (buildingID != IFE垃圾回收分馏塔 && buildingID != IFE老虎机分馏塔)*/
-        {
-            int fluidInputIncAvg = fractionator.fluidInputCount > 0
-                ? fractionator.fluidInputInc / fractionator.fluidInputCount
-                : 0;
-            float successRatePlus = 1.0f;
-            BaseRecipe recipe;
-            switch (buildingID) {
-                case IFE矿物复制塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fractionator.fluidId);
-                    break;
-                case IFE点数聚集塔:
-                    successRatePlus = fractionator.fluidInputInc >= 10
-                        ? successRatePlus * fractionator.fluidInputInc / fractionator.fluidInputCount * 2.5f
-                        : 0;
-                    recipe = null;
-                    break;
-                case IFE量子复制塔:
-                    successRatePlus = (float)MaxTableMilli(fluidInputIncAvg) / 2.5f;
-                    recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, fractionator.fluidId);
-                    break;
-                case IFE点金塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, fractionator.fluidId);
-                    break;
-                case IFE分解塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, fractionator.fluidId);
-                    break;
-                case IFE转化塔:
-                    successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
-                    break;
-                default:
-                    return;
-            }
-            float flowRatio = 1.0f;
-            if (recipe == null) {
-                s1 = "无配方".Translate();
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            } else if (!recipe.IsUnlocked) {
-                s1 = "未解锁".Translate();
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            } else {
-                StringBuilder sb1 = new StringBuilder();
-                bool fracForever = false;
-                if (EnableFracForever) {
-                    if (fractionator.productOutputCount >= fractionator.productOutputMax / 2) {
+        int fluidInputIncAvg = fractionator.fluidInputCount > 0
+            ? fractionator.fluidInputInc / fractionator.fluidInputCount
+            : 0;
+        float successRatePlus = 1.0f;
+        BaseRecipe recipe;
+        switch (buildingID) {
+            case IFE矿物复制塔:
+                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fractionator.fluidId);
+                break;
+            case IFE点数聚集塔:
+                successRatePlus = fractionator.fluidInputInc >= 10
+                    ? successRatePlus * fractionator.fluidInputInc / fractionator.fluidInputCount * 2.5f
+                    : 0;
+                recipe = null;
+                break;
+            case IFE量子复制塔:
+                successRatePlus = (float)MaxTableMilli(fluidInputIncAvg) / 2.5f;
+                recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, fractionator.fluidId);
+                break;
+            case IFE点金塔:
+                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, fractionator.fluidId);
+                break;
+            case IFE分解塔:
+                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, fractionator.fluidId);
+                break;
+            case IFE转化塔:
+                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
+                break;
+            default:
+                return;
+        }
+        float flowRatio = 1.0f;
+        if (recipe == null) {
+            s1 = "无配方".Translate();
+            s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+        } else if (!recipe.IsUnlocked) {
+            s1 = recipe + "\n" + "未解锁".Translate();
+            s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+        } else {
+            StringBuilder sb1 = new StringBuilder();
+            bool fracForever = false;
+            if (EnableFracForever) {
+                if (fractionator.productOutputCount >= fractionator.productOutputMax / 2) {
+                    fracForever = true;
+                }
+                Dictionary<int, int> productExpansion = fractionator.otherProductOutput(__instance.factory);
+                foreach (var p in productExpansion) {
+                    if (p.Value >= fractionator.productOutputMax / 2) {
                         fracForever = true;
-                    }
-                    Dictionary<int, int> productExpansion = fractionator.otherProductOutput(__instance.factory);
-                    foreach (var p in productExpansion) {
-                        if (p.Value >= fractionator.productOutputMax / 2) {
-                            fracForever = true;
-                            break;
-                        }
+                        break;
                     }
                 }
-                if (fracForever) {
-                    s1 = "永动".Translate();
-                    s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-                } else {
-                    //[0]表示损毁，跳过，从[1]开始
-                    // for (int i = 1; i < recipe.outputID.Count; i++) {
-                    //     float ratio = recipe.outputRatio[i] * successRatePlus;
-                    //     string name = FormatName(LDB.items.Select(recipe.outputID[i]).name);
-                    //     sb1.Append($"{name}x{recipe.outputNum[i]} ({ratio.FormatP()})\n");
-                    //     flowRatio -= ratio;
-                    // }
-                    // float destroyRatio = recipe.outputRatio[0];
-                    // flowRatio -= destroyRatio;
-                    s1 = sb1.ToString().Substring(0, sb1.Length - 1);
-                    s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-                    // if (destroyRatio > 0) {
-                    //     s2 += $"\n{"损毁".Translate()}({destroyRatio.FormatP()})";
-                    // }
+            }
+            if (fracForever) {
+                s1 = recipe + "\n" + "永动".Translate();
+                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+            } else {
+                foreach (var output in recipe.OutputMain) {
+                    float ratio = output.SuccessRate;// * successRatePlus;
+                    string name = FormatName(LDB.items.Select(output.OutputID).Name);
+                    sb1.Append($"{name}x{output.OutputCount} ({ratio.FormatP()})\n");
+                    flowRatio -= ratio;
+                }
+                float destroyRatio = recipe.DestroyRate;
+                flowRatio -= destroyRatio;
+                s1 = recipe + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+                if (destroyRatio > 0) {
+                    s2 += $"\n{"损毁".Translate()}({destroyRatio.FormatP()})";
                 }
             }
         }
