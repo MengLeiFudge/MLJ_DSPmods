@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using static FE.FractionateEverything;
 using static FE.Utils.ProtoID;
 using static FE.Utils.FormatUtils;
 using static FE.Logic.Manager.RecipeManager;
@@ -40,89 +41,6 @@ public static class ProcessManager {
     private static double[] incTableFixedRatio;
     private static int[] trashRecycleNeeds = [];
     // private static BaseRecipe DefaultBaseRecipe = new(ERecipe.Origin, 0, [-1, 0], [0, 0], [-1, 0]);
-
-    #endregion
-
-    #region 分馏成功次数统计（用于配方升级）
-
-    // 某个自然资源成功分馏的个数
-    private static readonly long[] NRFracSuccessCount = new long[12000];
-    // 某个自然资源杂质成功分馏的个数
-    private static readonly long[] NRSuperFracSuccessCount = new long[12000];
-    // 某个物品成功分馏的个数
-    private static readonly long[] UpgradeFracSuccessCount = new long[12000];
-    // 某个物品跨阶成功分馏的个数
-    private static readonly long[] UpgradeSuperFracSuccessCount = new long[12000];
-    // 某个物品成功量子复制的个数
-    private static readonly long[] IFracSuccessCount = new long[12000];
-
-    public static void Import(BinaryReader r) {
-        int count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int id = r.ReadInt32();
-            NRFracSuccessCount[id] = r.ReadInt64();
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int id = r.ReadInt32();
-            NRSuperFracSuccessCount[id] = r.ReadInt64();
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int id = r.ReadInt32();
-            UpgradeFracSuccessCount[id] = r.ReadInt64();
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int id = r.ReadInt32();
-            UpgradeSuperFracSuccessCount[id] = r.ReadInt64();
-        }
-        count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int id = r.ReadInt32();
-            IFracSuccessCount[id] = r.ReadInt64();
-        }
-    }
-
-    public static void Export(BinaryWriter w) {
-        w.Write(NRFracSuccessCount.Count(num => num > 0));
-        for (int i = 0; i < NRFracSuccessCount.Length; i++) {
-            if (NRFracSuccessCount[i] > 0) {
-                w.Write(i);
-                w.Write(NRFracSuccessCount[i]);
-            }
-        }
-        w.Write(NRSuperFracSuccessCount.Count(num => num > 0));
-        for (int i = 0; i < NRSuperFracSuccessCount.Length; i++) {
-            if (NRSuperFracSuccessCount[i] > 0) {
-                w.Write(i);
-                w.Write(NRSuperFracSuccessCount[i]);
-            }
-        }
-        w.Write(UpgradeFracSuccessCount.Count(num => num > 0));
-        for (int i = 0; i < UpgradeFracSuccessCount.Length; i++) {
-            if (UpgradeFracSuccessCount[i] > 0) {
-                w.Write(i);
-                w.Write(UpgradeFracSuccessCount[i]);
-            }
-        }
-        w.Write(UpgradeSuperFracSuccessCount.Count(num => num > 0));
-        for (int i = 0; i < UpgradeSuperFracSuccessCount.Length; i++) {
-            if (UpgradeSuperFracSuccessCount[i] > 0) {
-                w.Write(i);
-                w.Write(UpgradeSuperFracSuccessCount[i]);
-            }
-        }
-        w.Write(IFracSuccessCount.Count(num => num > 0));
-        for (int i = 0; i < IFracSuccessCount.Length; i++) {
-            if (IFracSuccessCount[i] > 0) {
-                w.Write(i);
-                w.Write(IFracSuccessCount[i]);
-            }
-        }
-    }
-
-    public static void IntoOtherSave() { }
 
     #endregion
 
@@ -219,44 +137,30 @@ public static class ProcessManager {
         int buildingID = factory.entityPool[__instance.entityId].protoId;
         switch (buildingID) {
             case IFE交互塔:
-                // InteractionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
-                InternalUpdate<BaseRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Unknown);
+                InteractionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result);
                 return false;
             case IFE矿物复制塔:
-                // MineralCopyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
                 InternalUpdate<MineralCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.MineralCopy);
                 return false;
             case IFE点数聚集塔:
-                // PointAggregatorTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
-                InternalUpdate<MineralCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.MineralCopy);
+                PointAggregatorTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result);
                 return false;
             case IFE量子复制塔:
-                // QuantumCopyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
                 InternalUpdate<QuantumCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.QuantumDuplicate);
                 return false;
             case IFE点金塔:
-                // AlchemyTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
                 InternalUpdate<AlchemyRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Alchemy);
                 return false;
             case IFE分解塔:
-                // DeconstructionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
                 InternalUpdate<DeconstructionRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Deconstruction);
                 return false;
             case IFE转化塔:
-                // ConversionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                //     consumeRegister, ref __result);
                 InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Conversion);
                 return false;
@@ -790,7 +694,7 @@ public static class ProcessManager {
             && __instance.productOutputCount < __instance.productOutputMax
             && __instance.fluidOutputCount < __instance.fluidOutputMax) {
             __instance.progress += (int)(power
-                                         * (500.0 / 3.0)
+                                         * (50.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
                                              ? __instance.fluidInputCargoCount
                                              : MaxBeltSpeed)
@@ -821,18 +725,10 @@ public static class ProcessManager {
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
-                Dictionary<int, int> outputs;
-                if (recipe.RecipeType == ERecipe.PointAggregator) {
-                    float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
-                    __instance.fractionSuccess = outputs.Count > 0;
-                    __instance.fluidInputInc -= 10;
-                } else {
-                    float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                    outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
-                    __instance.fractionSuccess = outputs.Count > 0;
-                    __instance.fluidInputInc -= fluidInputIncAvg;
-                }
+                float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                Dictionary<int, int> outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
+                __instance.fluidInputInc -= fluidInputIncAvg;
+                __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;
                 __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
                 if (__instance.fluidInputCargoCount < 0f) {
@@ -846,10 +742,13 @@ public static class ProcessManager {
                         __instance.fluidOutputCount++;
                         __instance.fluidOutputTotal++;
                         __instance.fluidOutputInc += fluidInputIncAvg;
+                        LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                                 + $"当前产物输出{__instance.productOutputCount}个");
                     } else {
                         foreach (KeyValuePair<int, int> p in outputs) {
                             int itemID = p.Key;
                             int itemCount = p.Value;
+                            LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
                             lock (productRegister) {
                                 productRegister[itemID] += itemCount;
                             }
@@ -864,7 +763,12 @@ public static class ProcessManager {
                                 }
                             }
                         }
+                        LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                                 + $"当前产物输出{__instance.productOutputCount}个");
                     }
+                } else {
+                    LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                             + $"当前产物输出{__instance.productOutputCount}个");
                 }
             }
         } else {
@@ -885,11 +789,6 @@ public static class ProcessManager {
                         if (!EnableFluidOutputStack) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                if (recipe.RecipeType == ERecipe.PointAggregator
-                                    && fluidOutputIncAvg < 4
-                                    && __instance.fluidOutputCount > 1) {
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
-                                }
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
                                         (byte)fluidOutputIncAvg)) {
@@ -902,10 +801,6 @@ public static class ProcessManager {
                             //已研究流动输出集装科技
                             if (__instance.fluidOutputCount >= 4) {
                                 //超过4个，则输出4个
-                                //优化输出，只会输出4增产点数或0增产点数
-                                if (recipe.RecipeType == ERecipe.PointAggregator && fluidOutputIncAvg < 4) {
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 16 ? 4 : 0;
-                                }
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         4, 4, (byte)(fluidOutputIncAvg * 4))) {
                                     __instance.fluidOutputCount -= 4;
@@ -938,11 +833,7 @@ public static class ProcessManager {
                         __instance.fluidInputCargoCount++;
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
-                        if (recipe == null || recipe.RecipeType == ERecipe.PointAggregator) {
-                            __instance.productId = needId;
-                        } else {
-                            __instance.productId = recipe.OutputMain[0].OutputID;
-                        }
+                        __instance.productId = recipe.OutputMain[0].OutputID;
                         __instance.produceProb = 0.01f;
                         signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                         signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -958,11 +849,6 @@ public static class ProcessManager {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
                         if (!EnableFluidOutputStack) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                if (recipe.RecipeType == ERecipe.PointAggregator
-                                    && fluidOutputIncAvg < 4
-                                    && __instance.fluidOutputCount > 1) {
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
-                                }
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
                                         (byte)fluidOutputIncAvg)) {
@@ -973,9 +859,6 @@ public static class ProcessManager {
                             }
                         } else {
                             if (__instance.fluidOutputCount >= 4) {
-                                if (recipe.RecipeType == ERecipe.PointAggregator && fluidOutputIncAvg < 4) {
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 16 ? 4 : 0;
-                                }
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         4, 4, (byte)(fluidOutputIncAvg * 4))) {
                                     __instance.fluidOutputCount -= 4;
@@ -1007,11 +890,7 @@ public static class ProcessManager {
                         __instance.fluidInputCargoCount++;
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
-                        if (recipe == null || recipe.RecipeType == ERecipe.PointAggregator) {
-                            __instance.productId = needId;
-                        } else {
-                            __instance.productId = recipe.OutputMain[0].OutputID;
-                        }
+                        __instance.productId = recipe.OutputMain[0].OutputID;
                         __instance.produceProb = 0.01f;
                         signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
                         signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
@@ -1030,20 +909,14 @@ public static class ProcessManager {
                         //产物达到最大堆叠数目，直接尝试输出
                         mainProductOutput = true;
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
-                                (byte)MaxProductOutputStack,
-                                (byte)(recipe.RecipeType == ERecipe.PointAggregator
-                                    ? 10 * MaxProductOutputStack
-                                    : 0))) {
+                                (byte)MaxProductOutputStack, 0)) {
                             break;
                         }
                         __instance.productOutputCount -= MaxProductOutputStack;
                     } else if (__instance.productOutputCount > 0 && __instance.fluidInputCount == 0) {
                         //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
-                                (byte)__instance.productOutputCount,
-                                (byte)(recipe.RecipeType == ERecipe.PointAggregator
-                                    ? 10 * __instance.productOutputCount
-                                    : 0))) {
+                                (byte)__instance.productOutputCount, 0)) {
                             break;
                         }
                         __instance.productOutputCount = 0;
@@ -1062,29 +935,25 @@ public static class ProcessManager {
                         for (int j = 0; j < MaxOutputTimes; j++) {
                             if (otherProductOutput[outputID] >= MaxProductOutputStack) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
-                                        (byte)MaxProductOutputStack,
-                                        (byte)(recipe.RecipeType == ERecipe.PointAggregator
-                                            ? 10 * MaxProductOutputStack
-                                            : 0))) {
+                                        (byte)MaxProductOutputStack, 0)) {
                                     break;
                                 }
-                                if (otherProductOutput[outputID] == MaxProductOutputStack) {
-                                    otherProductOutput.Remove(outputID);
-                                } else {
-                                    otherProductOutput[outputID] -= MaxProductOutputStack;
-                                }
+                                otherProductOutput[outputID] -= MaxProductOutputStack;
                             } else if (otherProductOutput[outputID] > 0 && __instance.fluidInputCount == 0) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
-                                        (byte)otherProductOutput[outputID],
-                                        (byte)(recipe.RecipeType == ERecipe.PointAggregator
-                                            ? 10 * otherProductOutput[outputID]
-                                            : 0))) {
+                                        (byte)otherProductOutput[outputID], 0)) {
                                     break;
                                 }
-                                otherProductOutput.Remove(outputID);
+                                otherProductOutput[outputID] = 0;
                             } else {
                                 break;
                             }
+                        }
+                    }
+                    //移除所有数目为0的缓存物品
+                    foreach (int outputID in keys) {
+                        if (otherProductOutput[outputID] == 0) {
+                            otherProductOutput.Remove(outputID);
                         }
                     }
                 }
