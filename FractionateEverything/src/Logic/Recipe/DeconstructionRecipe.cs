@@ -176,7 +176,7 @@ public class DeconstructionRecipe : BaseRecipe {
         // EssenceOutputs.Clear();
         //
         // // 设置原材料输出（数量有一定随机性）
-        // float recoveryRate = 0.6f + (Level * 0.05f) + (Star * 0.05f);// 基础回收率
+        // float recoveryRate = 0.6f + (Level * 0.05f) + (Quality * 0.05f);// 基础回收率
         //
         // foreach (var ingredient in ingredients) {
         //     int materialId = ingredient.Key;
@@ -191,7 +191,7 @@ public class DeconstructionRecipe : BaseRecipe {
         //     float baseEssenceChance = 0.05f + (ingredients.Count * 0.01f);
         //
         //     // 根据配方等级和星级提高精华产出概率
-        //     baseEssenceChance += (Level * 0.01f) + (Star * 0.02f);
+        //     baseEssenceChance += (Level * 0.01f) + (Quality * 0.02f);
         //
         //     // 每种精华的产出概率
         //     foreach (int essenceId in essenceIds) {
@@ -209,63 +209,63 @@ public class DeconstructionRecipe : BaseRecipe {
         // }
     }
 
-    /// <summary>
-    /// 将配方数据保存到二进制流中
-    /// </summary>
-    /// <param name="w">二进制写入器</param>
-    public override void Export(BinaryWriter w) {
-        // 先调用基类的方法保存基本属性
-        base.Export(w);
-
-        // 保存分解塔特有属性
-        w.Write(DoubleOutput);
-        w.Write(EssenceBoost);
-        w.Write(CompleteDeconstruction);
-
-        // // 保存原材料输出
-        // w.Write(MaterialOutputs.Count);
-        // foreach (var kvp in MaterialOutputs) {
-        //     w.Write(kvp.Key);// 物品ID
-        //     w.Write(kvp.Value);// 数量
-        // }
-        //
-        // // 保存精华输出
-        // w.Write(EssenceOutputs.Count);
-        // foreach (var kvp in EssenceOutputs) {
-        //     w.Write(kvp.Key);// 精华ID
-        //     w.Write(kvp.Value);// 概率
-        // }
-    }
-
-    /// <summary>
-    /// 从二进制流中加载配方数据
-    /// </summary>
-    /// <param name="r">二进制读取器</param>
-    public override void Import(BinaryReader r) {
-        // 先调用基类的方法读取基本属性
-        base.Import(r);
-
-        // 读取分解塔特有属性
-        DoubleOutput = r.ReadBoolean();
-        EssenceBoost = r.ReadBoolean();
-        CompleteDeconstruction = r.ReadBoolean();
-
-        // // 读取原材料输出
-        // int materialCount = r.ReadInt32();
-        // MaterialOutputs.Clear();
-        // for (int i = 0; i < materialCount; i++) {
-        //     int materialId = r.ReadInt32();
-        //     float count = r.ReadSingle();
-        //     MaterialOutputs[materialId] = count;
-        // }
-        //
-        // // 读取精华输出
-        // int essenceCount = r.ReadInt32();
-        // EssenceOutputs.Clear();
-        // for (int i = 0; i < essenceCount; i++) {
-        //     int essenceId = r.ReadInt32();
-        //     float probability = r.ReadSingle();
-        //     EssenceOutputs[essenceId] = probability;
-        // }
-    }
+    // /// <summary>
+    // /// 将配方数据保存到二进制流中
+    // /// </summary>
+    // /// <param name="w">二进制写入器</param>
+    // public override void Export(BinaryWriter w) {
+    //     // 先调用基类的方法保存基本属性
+    //     base.Export(w);
+    //
+    //     // 保存分解塔特有属性
+    //     w.Write(DoubleOutput);
+    //     w.Write(EssenceBoost);
+    //     w.Write(CompleteDeconstruction);
+    //
+    //     // // 保存原材料输出
+    //     // w.Write(MaterialOutputs.Count);
+    //     // foreach (var kvp in MaterialOutputs) {
+    //     //     w.Write(kvp.Key);// 物品ID
+    //     //     w.Write(kvp.Value);// 数量
+    //     // }
+    //     //
+    //     // // 保存精华输出
+    //     // w.Write(EssenceOutputs.Count);
+    //     // foreach (var kvp in EssenceOutputs) {
+    //     //     w.Write(kvp.Key);// 精华ID
+    //     //     w.Write(kvp.Value);// 概率
+    //     // }
+    // }
+    //
+    // /// <summary>
+    // /// 从二进制流中加载配方数据
+    // /// </summary>
+    // /// <param name="r">二进制读取器</param>
+    // public override void Import(BinaryReader r) {
+    //     // 先调用基类的方法读取基本属性
+    //     base.Import(r);
+    //
+    //     // 读取分解塔特有属性
+    //     DoubleOutput = r.ReadBoolean();
+    //     EssenceBoost = r.ReadBoolean();
+    //     CompleteDeconstruction = r.ReadBoolean();
+    //
+    //     // // 读取原材料输出
+    //     // int materialCount = r.ReadInt32();
+    //     // MaterialOutputs.Clear();
+    //     // for (int i = 0; i < materialCount; i++) {
+    //     //     int materialId = r.ReadInt32();
+    //     //     float count = r.ReadSingle();
+    //     //     MaterialOutputs[materialId] = count;
+    //     // }
+    //     //
+    //     // // 读取精华输出
+    //     // int essenceCount = r.ReadInt32();
+    //     // EssenceOutputs.Clear();
+    //     // for (int i = 0; i < essenceCount; i++) {
+    //     //     int essenceId = r.ReadInt32();
+    //     //     float probability = r.ReadSingle();
+    //     //     EssenceOutputs[essenceId] = probability;
+    //     // }
+    // }
 }

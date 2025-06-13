@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using static FE.FractionateEverything;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.ItemManager;
 
@@ -24,27 +25,25 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方输入物品的ID
     /// </summary>
-    public int InputID { get; private set; } = inputID;
+    public int InputID { get; } = inputID;
 
     /// <summary>
-    /// 配方基础成功率，暂定最高80%。平时计算不使用此值。
+    /// 配方基础成功率
     /// </summary>
-    public float BaseSuccessRate { get; private set; } = baseSuccessRate;
+    public float BaseSuccessRate { get; } = baseSuccessRate;
 
     /// <summary>
-    /// 配方损毁率，由基础成功率计算得到
+    /// 带有突破和等级加成的成功率
     /// </summary>
-    public float DestroyRate => CalculateDestroyRate();
+    public float SuccessRate => BaseSuccessRate * (1 + Quality * 0.2f + Level * (0.1f + Quality * 0.02f));
 
     /// <summary>
-    /// 计算配方损毁率，可在子类中重写
+    /// 配方损毁率
     /// </summary>
-    public virtual float CalculateDestroyRate() {
-        //假设每秒处理x份原料（x范围1/12到1/3，原料价值越高x越低），成功率为p（BaseSuccessRate），那么1s就会成功px，损毁(1-p)x。
-        //假设每秒通过y份原料（以无堆叠最高带子速率为准，例如原版为1800），损毁率为q，那么1s就会损毁qy。
-        //(1-p)x=qy，q=(1-p)x/y
-        return (1 - BaseSuccessRate) * (1.0f / (float)Math.Log(itemValueDic[InputID])) / MaxBeltSpeed;
-    }
+    public float DestroyRate => (1 - BaseSuccessRate)
+                                / 50.0f
+                                * (0.5f + (float)Math.Log10(itemValueDic[InputID] + 1) / 5.0f)
+                                * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f));
 
     /// <summary>
     /// 配方主产物信息，概率之和必须为100%。
@@ -69,11 +68,12 @@ public abstract class BaseRecipe(
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
         seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
         if (seed / 2147483646.0 < DestroyRate) {
+            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[OutputMain[0].OutputID]) * 0.5));
             return null;
         }
         Dictionary<int, int> dic = [];
         seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
-        if (seed / 2147483646.0 >= BaseSuccessRate * successRatePlus) {
+        if (seed / 2147483646.0 >= SuccessRate * successRatePlus) {
             return dic;
         }
         //主输出判定
@@ -94,6 +94,7 @@ public abstract class BaseRecipe(
                 }
                 //由于此处必定是第一个key，所以直接添加
                 dic[outputInfo.OutputID] = count;
+                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
                 break;
             }
         }
@@ -114,6 +115,7 @@ public abstract class BaseRecipe(
                 } else {
                     dic.Add(outputInfo.OutputID, count);
                 }
+                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
             }
         }
         return dic;
@@ -126,114 +128,94 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 解锁状态
     /// </summary>
-    public bool IsUnlocked { get; set; } = false;
+    public bool IsUnlocked => Level > 0;
 
     #endregion
 
     #region 配方等级与星级
 
     /// <summary>
-    /// 配方等级（1-5）
+    /// 配方品质
     /// </summary>
-    public int Level { get; set; } = 1;
+    /// <details>
+    /// 未解锁时为0。解锁之后，最低为1，最高为7。1白、2绿、3蓝、4紫、5红、7金。
+    /// </details>
+    public int Quality { get; set; } = 0;
 
     /// <summary>
-    /// 配方星级/品质（突破后增加）
+    /// 配方等级
     /// </summary>
-    public int Star { get; set; } = 1;
+    /// <details>
+    /// 未解锁时为0。解锁之后，最低为1，最高为3 + Quality。
+    /// </details>
+    public int Level { get; set; } = 0;
 
     /// <summary>
-    /// 经验值，成功输出+10，不成功+1
+    /// 经验值
     /// </summary>
+    /// <details>
+    /// 达到下一级所需经验会自动升级。到达等级上限仍可获取经验，突破时多余经验会按照一定比例转化。
+    /// </details>
     public long Experience { get; set; } = 0;
 
     /// <summary>
     /// 下一级所需经验
     /// </summary>
-    public long NextLevelExperience => CalculateNextLevelExperience();
+    /// <details>
+    /// 注意
+    /// </details>
+    public long NextLevelExperience => (long)(10 * Math.Pow(Quality + 2, Level + (Quality - 1) / 3.0));
 
     /// <summary>
-    /// 计算下一级所需经验，可在子类中重写
+    /// 指示是否满足突破的前置等级条件
     /// </summary>
-    protected virtual long CalculateNextLevelExperience() {
-        return (long)(1000 * Math.Pow(Star + 2, Level));
-    }
+    public bool CanBreakthrough => Level >= 3 + Quality && Experience >= NextLevelExperience;
 
     /// <summary>
     /// 添加经验
     /// </summary>
-    public virtual void AddExp(int exp) {
+    public void AddExp(long exp) {
+        LogDebug($"Quality{Quality} Lv{Level} ({Experience} + {exp}/{NextLevelExperience})");
         Experience += exp;
-    }
-
-    /// <summary>
-    /// 添加经验
-    /// </summary>
-    public virtual void AddExp(bool success) {
-        double exp = itemValueDic[InputID];
-        if (!success) {
-            exp *= 0.1;
-        }
-        Experience += (int)Math.Ceiling(exp);
-    }
-
-    /// <summary>
-    /// 添加经验
-    /// </summary>
-    /// <param name="amount">经验值</param>
-    /// <returns>是否升级</returns>
-    public virtual bool AddExperience(long amount) {
-        if (Level >= 5 && Star >= 6)// 最高等级和星级
-            return false;
-
-        Experience += amount;
-
-        if (Experience >= NextLevelExperience) {
-            LevelUp();
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// 升级配方
-    /// </summary>
-    protected virtual void LevelUp() {
-        if (Level < 5) {
+        if (!CanBreakthrough && Experience >= NextLevelExperience) {
+            Experience -= NextLevelExperience;
             Level++;
-            Experience = 0;
-            // 升级后提升基础成功率
-            BaseSuccessRate *= 1.2f;
+            LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+        }
+        if (CanBreakthrough) {
+            TryBreakQuality();
         }
     }
 
+    private static Random random = new();
+
     /// <summary>
-    /// 突破配方
+    /// 突破配方品质
     /// </summary>
-    /// <param name="resonanceCount">使用的配方回响数量</param>
     /// <returns>是否突破成功</returns>
-    public virtual bool Breakthrough(int resonanceCount) {
-        if (Level < 5 || Star >= 6)// 星级上限为6（白、绿、蓝、紫、红、金）
+    public virtual bool TryBreakQuality() {
+        if (!CanBreakthrough) {
             return false;
-
-        // 计算突破成功率，星级越高成功率越低
-        float successRate = 1.0f - Star * 0.1f;
-
-        // 回响越多，成功率越高
-        successRate += resonanceCount * 0.05f;
-
-        // 随机判断是否突破成功
-        bool success = new Random().NextDouble() < successRate;
-
-        if (success) {
-            Star++;
-            Level = 1;// 重置等级
-            Experience = 0;
-            BaseSuccessRate *= 1.5f;// 突破后大幅提升基础成功率
         }
-
-        return success;
+        float successRate = 1.0f - (Quality - 1) * 0.1f;
+        bool success = random.NextDouble() < successRate;
+        if (success) {
+            Experience -= NextLevelExperience;
+            Experience = (int)(Experience * 0.7f);
+            Level = 1;
+            Quality++;
+            //红到金是品质+2
+            if (Quality == 6) {
+                Quality++;
+            }
+            AddExp(0);
+            LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            return true;
+        } else {
+            AddExp(-NextLevelExperience / 10);
+            LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            return false;
+        }
     }
 
     #endregion
@@ -245,26 +227,21 @@ public abstract class BaseRecipe(
     /// </summary>
     /// <param name="w">二进制写入器</param>
     public virtual void Export(BinaryWriter w) {
+        int byteCount = 4 + 4 + OutputMain.Count * (4 + 4) + 4 + OutputAppend.Count * (4 + 4) + 4 + 4 + 8;
+        w.Write(byteCount);
         w.Write(1);
-        w.Write(InputID);
-        w.Write(BaseSuccessRate);
         w.Write(OutputMain.Count);
         foreach (OutputInfo info in OutputMain) {
-            w.Write(info.SuccessRate);
             w.Write(info.OutputID);
-            w.Write(info.OutputCount);
             w.Write(info.OutputTotalCount);
         }
         w.Write(OutputAppend.Count);
         foreach (OutputInfo info in OutputAppend) {
-            w.Write(info.SuccessRate);
             w.Write(info.OutputID);
-            w.Write(info.OutputCount);
             w.Write(info.OutputTotalCount);
         }
-        w.Write(IsUnlocked);
         w.Write(Level);
-        w.Write(Star);
+        w.Write(Quality);
         w.Write(Experience);
 
         // 子类特定数据由重写的方法处理
@@ -275,27 +252,34 @@ public abstract class BaseRecipe(
     /// </summary>
     /// <param name="r">二进制读取器</param>
     public virtual void Import(BinaryReader r) {
+        int byteCount = r.ReadInt32();
         int version = r.ReadInt32();
-        InputID = r.ReadInt32();
-        BaseSuccessRate = r.ReadSingle();
-        OutputMain.Clear();
         int outputMainCount = r.ReadInt32();
         for (int i = 0; i < outputMainCount; i++) {
-            var info = new OutputInfo(r.ReadSingle(), r.ReadInt32(), r.ReadInt32());
-            info.OutputTotalCount = r.ReadInt32();
-            OutputMain.Add(info);
+            int outputID = r.ReadInt32();
+            int outputTotalCount = r.ReadInt32();
+            foreach (OutputInfo info in OutputMain) {
+                if (info.OutputID == outputID) {
+                    info.OutputTotalCount = outputTotalCount;
+                    break;
+                }
+            }
         }
-        OutputAppend.Clear();
         int outputAppendCount = r.ReadInt32();
         for (int i = 0; i < outputAppendCount; i++) {
-            var info = new OutputInfo(r.ReadSingle(), r.ReadInt32(), r.ReadInt32());
-            info.OutputTotalCount = r.ReadInt32();
-            OutputAppend.Add(info);
+            int outputID = r.ReadInt32();
+            int outputTotalCount = r.ReadInt32();
+            foreach (OutputInfo info in OutputAppend) {
+                if (info.OutputID == outputID) {
+                    info.OutputTotalCount = outputTotalCount;
+                    break;
+                }
+            }
         }
-        IsUnlocked = r.ReadBoolean();
+        Quality = r.ReadInt32();
         Level = r.ReadInt32();
-        Star = r.ReadInt32();
         Experience = r.ReadInt64();
+        AddExp(0);
 
         // 子类特定数据由重写的方法处理
     }

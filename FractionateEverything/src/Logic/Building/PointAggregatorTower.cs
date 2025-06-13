@@ -22,6 +22,9 @@ public static class PointAggregatorTower {
 
     public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
         float power, SignData[] signPool, int[] productRegister, int[] consumeRegister, ref uint __result) {
+        __result = 0;
+        return;
+
         // 没电就不工作
         if (power < 0.1) {
             __result = 0;
