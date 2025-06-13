@@ -321,6 +321,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void Import(BinaryReader r) {
         RecipeManager.Import(r);
+
+        //解锁所有分馏配方
+        RecipeManager.UnlockAll();
     }
 
     /// <summary>
@@ -335,6 +338,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
+
+        //解锁所有分馏配方
+        RecipeManager.UnlockAll();
     }
 
     #endregion
