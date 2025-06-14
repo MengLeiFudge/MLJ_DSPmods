@@ -46,7 +46,7 @@ public static class ItemManager {
         ProtoRegistry.RegisterRecipe(RFE分馏原胚传说, ERecipeType.Assemble, 300,
             [I引力矩阵], [8], [IFE分馏原胚传说], [1], "分馏原胚（传说）描述", 0, 3205,
             "分馏原胚（传说）", "Assets/fracicons/fractional-prototype-legendary.png");
-        ProtoRegistry.RegisterItem(IFE分馏原胚精良, "分馏原胚（定向）", "分馏原胚（定向）描述",
+        ProtoRegistry.RegisterItem(IFE分馏原胚定向, "分馏原胚（定向）", "分馏原胚（定向）描述",
             "Assets/fracicons/fractional-prototype-directional.png", 3206, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE分馏原胚定向, ERecipeType.Assemble, 300,
