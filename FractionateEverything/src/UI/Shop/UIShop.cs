@@ -1,10 +1,15 @@
-﻿using FE.UI.Components;
+﻿using FE.Logic.Manager;
+using FE.Logic.Recipe;
+using FE.UI.Components;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
+using static FE.Utils.ProtoID;
+using Random = System.Random;
 
 namespace FE.UI.Shop;
 
-public static class UIShop {
+public static class UIMain {
     private static RectTransform _windowTrans;
     private static RectTransform _dysonTab;
     private static UIButton _dysonInitBtn;
@@ -16,34 +21,28 @@ public static class UIShop {
         MyConfigWindow.OnUpdateUI += UpdateUI;
     }
 
-    private class OcMapper : MyWindow.ValueMapper<int> {
+    private class TestValueMapper : MyWindow.ValueMapper<int> {
         public override int Min => 0;
         public override int Max => 40;
+
+        public override int IndexToValue(int index) => index - 10;
+        public override int ValueToIndex(int value) => Mathf.RoundToInt(value + 10);
 
         public override string FormatValue(string format, int value) {
             return value == 0 ? "max".Translate() : base.FormatValue(format, value);
         }
     }
 
-    private class AngleMapper : MyWindow.ValueMapper<float> {
-        public override int Min => 0;
-        public override int Max => 20;
-        public override float IndexToValue(int index) => index - 10f;
-        public override int ValueToIndex(float value) => Mathf.RoundToInt(value + 10f);
-    }
+    private class MultiRateMapper : MyWindow.ValueMapper<float> {
+        public override int Min => 1;//0.1
+        public override int Max => 100;//10
 
-    private class DistanceMapper : MyWindow.ValueMapper<double> {
-        public override int Min => 1;
-        public override int Max => 40;
-        public override double IndexToValue(int index) => index * 0.5;
-        public override int ValueToIndex(double value) => Mathf.RoundToInt((float)(value * 2.0));
-    }
+        public override float IndexToValue(int index) => index / 10.0f;
+        public override int ValueToIndex(float value) => Mathf.RoundToInt(value * 10);
 
-    private class UpsMapper : MyWindow.ValueMapper<double> {
-        public override int Min => 1;
-        public override int Max => 100;
-        public override double IndexToValue(int index) => index * 0.1;
-        public override int ValueToIndex(double value) => Mathf.RoundToInt((float)(value * 10.0));
+        // public override string FormatValue(string format, float value) {
+        //     return value == 0 ? "max".Translate() : base.FormatValue(format, value);
+        // }
     }
 
     private class AutoConfigDispenserChargePowerMapper() : MyWindow.RangeValueMapper<int>(3, 30) {
@@ -55,80 +54,207 @@ public static class UIShop {
         }
     }
 
-    private class AutoConfigBattleBaseChargePowerMapper() : MyWindow.RangeValueMapper<int>(4, 40) {
-        public override string FormatValue(string format, int value) {
-            var sb = new StringBuilder("         ");
-            StringBuilderUtility.WriteKMG(sb, 8, value * 300000L, false);
-            sb.Append('W');
-            return sb.ToString().Trim();
+    private static int inputID = I铁矿;
+
+    public static void ChangeInputID() {
+        //弹窗选择物品
+
+    }
+
+    private static Random random = new Random();
+
+    public static void GetRecipe(ERecipe recipeType, int count) {
+        BaseRecipe[] recipeArr = RecipeManager.GetRecipes(recipeType);
+        for (int i = 0; i < count; i++) {
+            int id = random.Next(0, recipeArr.Length - 1);
+            if (recipeArr[id] == null) {
+                //狗粮
+
+            } else {
+                //配方
+                BaseRecipe recipe = recipeArr[id];
+                if (!recipe.IsUnlocked) {
+                    recipe.Level = 1;
+                    recipe.Quality = 1;
+                } else {
+                    recipe.MemoryCount++;
+                }
+            }
         }
     }
 
-    private class AutoConfigPLSChargePowerMapper() : MyWindow.RangeValueMapper<int>(2, 20) {
-        public override string FormatValue(string format, int value) {
-            var sb = new StringBuilder("         ");
-            StringBuilderUtility.WriteKMG(sb, 8, value * 3000000L, false);
-            sb.Append('W');
-            return sb.ToString().Trim();
-        }
-    }
-
-    private class AutoConfigCarrierMinDeliverMapper() : MyWindow.RangeValueMapper<int>(0, 10) {
-        public override string FormatValue(string format, int value) {
-            return (value == 0 ? 1 : (value * 10)).ToString("0\\%");
-        }
-    }
-
-    private class AutoConfigMinPilerValueMapper() : MyWindow.RangeValueMapper<int>(0, 4) {
-        public override string FormatValue(string format, int value) {
-            return value == 0 ? "集装使用科技上限".Translate().Trim() : value.ToString();
-        }
-    }
-
-    private class AutoConfigILSChargePowerMapper() : MyWindow.RangeValueMapper<int>(2, 20) {
-        public override string FormatValue(string format, int value) {
-            var sb = new StringBuilder("         ");
-            StringBuilderUtility.WriteKMG(sb, 8, value * 15000000L, false);
-            sb.Append('W');
-            return sb.ToString().Trim();
-        }
-    }
-
-    private class AutoConfigILSMaxTripShipMapper() : MyWindow.RangeValueMapper<int>(1, 41) {
-        public override string FormatValue(string format, int value) {
-            return value switch {
-                <= 20 => value.ToString("0LY"),
-                <= 40 => (value * 2 - 20).ToString("0LY"),
-                _ => "∞",
-            };
-        }
-    }
-
-    private class AutoConfigILSWarperDistanceMapper() : MyWindow.RangeValueMapper<int>(2, 21) {
-        public override string FormatValue(string format, int value) {
-            return value switch {
-                <= 7 => (value * 0.5 - 0.5).ToString("0.0AU"),
-                <= 13 => (value - 4.0).ToString("0.0AU"),
-                <= 16 => (value - 4).ToString("0AU"),
-                <= 20 => (value * 2 - 20).ToString("0AU"),
-                _ => "60AU",
-            };
-        }
-    }
-
-    private class AutoConfigVeinCollectorHarvestSpeedMapper() : MyWindow.RangeValueMapper<int>(0, 20) {
-        public override string FormatValue(string format, int value) {
-            return (100 + value * 10).ToString("0\\%");
-        }
-    }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        wnd.AddTabGroup(trans, "UXAssist", "tab-group-uxassist");
-        var tab1 = wnd.AddTab(trans, "General");
-        var x = 0f;
-        var y = 10f;
-        wnd.AddCheckBox(x, y, tab1, FractionateEverything.DisableMessageBoxEntry, "DisableMessageBoxEntry测试样例");
+        Text txt;
+        float x;
+        float y;
+        {
+            wnd.AddTabGroup(trans, "配方", "tab-group-fe1");
+            {
+                var tab = wnd.AddTab(trans, "矿物复制");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
+                    ChangeInputID);
+            }
+            {
+                var tab = wnd.AddTab(trans, "量子复制");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
+                    ChangeInputID);
+            }
+            {
+                var tab = wnd.AddTab(trans, "点金");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
+                    ChangeInputID);
+            }
+            {
+                var tab = wnd.AddTab(trans, "分解");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
+                    ChangeInputID);
+            }
+            {
+                var tab = wnd.AddTab(trans, "转化");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
+                    ChangeInputID);
+            }
+        }
+        {
+            wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
+            {
+                var tab = wnd.AddTab(trans, "矿物复制");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe1-1",
+                    () => GetRecipe(ERecipe.MineralCopy, 1));
+                y += 30f;
+                wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe1-10",
+                    () => GetRecipe(ERecipe.MineralCopy, 10));
+            }
+            {
+                var tab = wnd.AddTab(trans, "量子复制");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe2-1",
+                    () => GetRecipe(ERecipe.QuantumDuplicate, 1));
+                y += 30f;
+                wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe2-10",
+                    () => GetRecipe(ERecipe.QuantumDuplicate, 10));
+            }
+            {
+                var tab = wnd.AddTab(trans, "点金");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe3-1",
+                    () => GetRecipe(ERecipe.Alchemy, 1));
+                y += 30f;
+                wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe3-10",
+                    () => GetRecipe(ERecipe.Alchemy, 10));
+            }
+            {
+                var tab = wnd.AddTab(trans, "分解");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe4-1",
+                    () => GetRecipe(ERecipe.Deconstruction, 1));
+                y += 30f;
+                wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe4-10",
+                    () => GetRecipe(ERecipe.Deconstruction, 10));
+            }
+            {
+                var tab = wnd.AddTab(trans, "转化");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe5-1",
+                    () => GetRecipe(ERecipe.Conversion, 1));
+                y += 30f;
+                wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe5-10",
+                    () => GetRecipe(ERecipe.Conversion, 10));
+            }
+        }
+        {
+            wnd.AddTabGroup(trans, "商店", "tab-group-fe3");
+            {
+                var tab = wnd.AddTab(trans, "蓝糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "红糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "黄糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "紫糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "绿糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "白糖");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+            {
+                var tab = wnd.AddTab(trans, "黑雾");
+                x = 0f;
+                y = 10f;
+                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                    null);
+            }
+        }
+        {
+            wnd.AddTabGroup(trans, "成就", "tab-group-fe4");
+        }
+        {
+            wnd.AddTabGroup(trans, "彩蛋", "tab-group-fe5");
+        }
+        {
+            wnd.AddTabGroup(trans, "其他", "tab-group-fe6");
+            {
+                var tab = wnd.AddTab(trans, "其他");
+                x = 0f;
+                y = 10f;
+                wnd.AddCheckBox(x, y, tab, FractionateEverything.EnableGod, "启用上帝模式");
+                y += 36f;
+                wnd.AddButton(x, y, 200, tab, "一键解锁", 16, "button-1key-unlock",
+                    TechManager.UITechTree_Do1KeyUnlock_Postfix);
+                y += 30f;
+                txt = wnd.AddText2(x + 10f, y, tab, "处理比例修改", 15, "text-multi-rate");
+                wnd.AddSlider(x + 10f + txt.preferredWidth + 5f, y + 6f, tab,
+                    FractionateEverything.MultiRate, new MultiRateMapper(), "G", 160f);
+                y += 30f;
+            }
+        }
 
 
         // var tab1 = wnd.AddTab(trans, "General");
@@ -233,47 +359,11 @@ public static class UIShop {
         // }
         //
         // x = 0;
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab2, FractionateEverything.DoNotRenderEntitiesEnabled, "Do not render factory entities");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab2, FractionateEverything.DismantleBlueprintSelectionEnabled, "Dismantle blueprint selected buildings");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab2, FractionateEverything.BeltSignalsForBuyOutEnabled, "Belt signals for buy out dark fog items automatically");
-        //
-        // y += 36f;
-        // checkBoxForMeasureTextWidth = wnd.AddCheckBox(x, y, tab2, FactoryPatch.ProtectVeinsFromExhaustionEnabled, "Protect veins from exhaustion");
-        // wnd.AddTipsButton2(x + checkBoxForMeasureTextWidth.Width + 5f, y + 6f, tab2, "Protect veins from exhaustion", "Protect veins from exhaustion tips", "protect-veins-tips");
-        // {
-        //     y += 36f;
-        //     wnd.AddCheckBox(x, y, tab2, FractionateEverything.DragBuildPowerPolesEnabled, "Drag building power poles in maximum connection range");
-        //     y += 27f;
-        //     var alternatelyCheckBox = wnd.AddCheckBox(x + 20f, y, tab2, FractionateEverything.DragBuildPowerPolesAlternatelyEnabled, "Build Tesla Tower and Wireless Power Tower alternately", 13);
-        //     FractionateEverything.DragBuildPowerPolesEnabled.SettingChanged += AlternatelyCheckBoxChanged;
-        //     wnd.OnFree += () => { FractionateEverything.DragBuildPowerPolesEnabled.SettingChanged -= AlternatelyCheckBoxChanged; };
-        //     AlternatelyCheckBoxChanged(null, null);
-        //
-        //     void AlternatelyCheckBoxChanged(object o, EventArgs e)
-        //     {
-        //         alternatelyCheckBox.SetEnable(FactoryPatch.DragBuildPowerPolesEnabled.Value);
-        //     }
-        // }
-        //
-        // x = 400f;
-        // y = 10f;
-        // wnd.AddButton(x, y, tab2, "Initialize This Planet", 16, "button-init-planet", () =>
-        //     UIMessageBox.Show("Initialize This Planet".Translate(), "Initialize This Planet Confirm".Translate(), "取消".Translate(), "确定".Translate(), 2, null,
-        //         () => { PlanetFunctions.RecreatePlanet(true); })
-        // );
-        // y += 36f;
-        // wnd.AddButton(x, y, tab2, "Dismantle All Buildings", 16, "button-dismantle-all", () =>
-        //     UIMessageBox.Show("Dismantle All Buildings".Translate(), "Dismantle All Buildings Confirm".Translate(), "取消".Translate(), "确定".Translate(), 2, null,
-        //         () => { PlanetFunctions.DismantleAll(false); })
-        // );
         // y += 72f;
         // wnd.AddButton(x, y, 200, tab2, "Quick build Orbital Collectors", 16, "button-init-planet", PlanetFunctions.BuildOrbitalCollectors);
         // y += 30f;
         // txt = wnd.AddText2(x + 10f, y, tab2, "Maximum count to build", 15, "text-oc-build-count");
-        // wnd.AddSlider(x + 10f + txt.preferredWidth + 5f, y + 6f, tab2, FractionateEverything.OrbitalCollectorMaxBuildCount, new OcMapper(), "G", 160f);
+        // wnd.AddSlider(x + 10f + txt.preferredWidth + 5f, y + 6f, tab2, FractionateEverything.OrbitalCollectorMaxBuildCount, new TestValueMapper(), "G", 160f);
         //
         // y += 18f;
         //

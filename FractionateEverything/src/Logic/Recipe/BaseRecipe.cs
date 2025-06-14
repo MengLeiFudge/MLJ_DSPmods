@@ -40,8 +40,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率
     /// </summary>
-    public float DestroyRate => (1 - BaseSuccessRate)
-                                / 50.0f
+    public float DestroyRate => (0.2f - BaseSuccessRate)
                                 * (0.5f + (float)Math.Log10(itemValueDic[InputID] + 1) / 5.0f)
                                 * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f));
 
@@ -94,6 +93,7 @@ public abstract class BaseRecipe(
                 }
                 //由于此处必定是第一个key，所以直接添加
                 dic[outputInfo.OutputID] = count;
+                outputInfo.OutputTotalCount += count;
                 AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
                 break;
             }
@@ -115,6 +115,7 @@ public abstract class BaseRecipe(
                 } else {
                     dic.Add(outputInfo.OutputID, count);
                 }
+                outputInfo.OutputTotalCount += count;
                 AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
             }
         }
@@ -211,6 +212,11 @@ public abstract class BaseRecipe(
     private static Random random = new();
 
     /// <summary>
+    /// 配方回响个数。
+    /// </summary>
+    public int MemoryCount { get; set; } = 0;
+
+    /// <summary>
     /// 突破配方品质
     /// </summary>
     /// <returns>是否突破成功</returns>
@@ -270,7 +276,7 @@ public abstract class BaseRecipe(
     /// </summary>
     /// <param name="w">二进制写入器</param>
     public virtual void Export(BinaryWriter w) {
-        int byteCount = 4 + 4 + OutputMain.Count * (4 + 4) + 4 + OutputAppend.Count * (4 + 4) + 4 + 4 + 8;
+        int byteCount = 4 + (4 + OutputMain.Count * (4 + 4)) + (4 + OutputAppend.Count * (4 + 4)) + 4 + 4 + 8;
         w.Write(byteCount);
         w.Write(1);
         w.Write(OutputMain.Count);
@@ -286,6 +292,7 @@ public abstract class BaseRecipe(
         w.Write(Level);
         w.Write(Quality);
         w.Write(Experience);
+        w.Write(MemoryCount);
 
         // 子类特定数据由重写的方法处理
     }
@@ -323,6 +330,7 @@ public abstract class BaseRecipe(
         Level = r.ReadInt32();
         Experience = r.ReadInt64();
         AddExp(0);
+        MemoryCount = r.ReadInt32();
 
         // 子类特定数据由重写的方法处理
     }
