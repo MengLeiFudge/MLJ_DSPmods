@@ -89,7 +89,7 @@ public class CheckPlugins : BaseUnityPlugin {
     public static void OnMainMenuOpen() {
         if (_shown) return;
         //UIMessageBox.Show会直接返回，所以这里只能显示一个弹窗。弹窗1消失后再展示弹窗2。
-        if (!FractionateEverything.disableMessageBox) {
+        if (!FractionateEverything.DisableMessageBox.Value) {
             ShowMessageBox();
         } else if (FractionateEverything.isVersionChanged) {
             ShowMessageBoxLatestVersion();

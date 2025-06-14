@@ -56,35 +56,53 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     #region Config
 
     private static ConfigFile configFile;
-    public static ConfigEntry<string> CurrentVersionEntry;
+    /// <summary>
+    /// 旧的版本号。
+    /// </summary>
+    public static ConfigEntry<string> CurrentVersion;
     /// <summary>
     /// 判断是否有版本更新，以便于弹窗提示MOD更新内容。
-    /// 如果是第一次运行，CurrentVersionEntry.Value为""，与VERSION不同；
-    /// 如果是版本更新，CurrentVersionEntry.Value为旧的版本号，与VERSION不同。
     /// </summary>
-    public static bool isVersionChanged => CurrentVersionEntry.Value != PluginInfo.PLUGIN_VERSION;
-    public static ConfigEntry<bool> DisableMessageBoxEntry;
+    public static bool isVersionChanged => CurrentVersion.Value != PluginInfo.PLUGIN_VERSION;
     /// <summary>
     /// 是否在游戏加载时禁用提示信息。
     /// </summary>
-    public static bool disableMessageBox => DisableMessageBoxEntry.Value;
-
-    public static ConfigEntry<bool> AutoCruiseEnabled;
+    public static ConfigEntry<bool> DisableMessageBox;
+    /// <summary>
+    /// 是否启用上帝模式。
+    /// </summary>
+    public static ConfigEntry<bool> EnableGod;
+    /// <summary>
+    /// 加成倍数。
+    /// </summary>
+    public static ConfigEntry<float> MultiRate;
 
     public void LoadConfig() {
         configFile = Config;
 
-        CurrentVersionEntry = Config.Bind("config", "CurrentVersion", "",
+        CurrentVersion = Config.Bind("config", "CurrentVersion", "",
             new ConfigDescription(
                 "Current game version, used to control whether or not to show the update pop-up window.\n"
                 + "当前游戏版本，用于控制是否显示更新弹窗。",
                 new AcceptableStringValue(""), null));
 
-        DisableMessageBoxEntry = Config.Bind("config", "DisableMessageBox", false,
+        DisableMessageBox = Config.Bind("config", "DisableMessageBox", false,
             new ConfigDescription(
                 "Don't show message when FractionateEverything is loaded.\n"
                 + "禁用游戏加载完成后显示的万物分馏提示信息。",
                 new AcceptableBoolValue(false), null));
+
+        EnableGod = Config.Bind("config", "EnableGod", false,
+            new ConfigDescription(
+                "Enable god mode.\n"
+                + "启用上帝模式。",
+                new AcceptableBoolValue(false), null));
+
+        MultiRate = Config.Bind("config", "MultiRate", 1.0f,
+            new ConfigDescription(
+                "Multi Rate.\n"
+                + "加成倍数。",
+                new AcceptableFloatValue(1.0f, 0.1f, 10.0f), null));
 
         //移除之前多余的设置项，然后保存
         (Traverse.Create(Config).Property("OrphanedEntries").GetValue() as IDictionary)?.Clear();
@@ -96,44 +114,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
      * 在主界面弹窗关闭后执行。
      */
     public static void SetConfig() {
-        DisableMessageBoxEntry.Value = true;
-        CurrentVersionEntry.Value = PluginInfo.PLUGIN_VERSION;
-        configFile.Save();
-    }
-
-    /**
-     * 更新商店相关设置项
-     */
-    public static void SetShopConfig(bool enableFractionateShopFeature, bool enableSlotMachineFractionator,
-        bool enableRandomRecipeUnlock, bool enableSpecialRecipes, bool enableShopItemsPurchase,
-        bool enableMatrixCurrency, bool enableUpgradeSystem, bool enableRecipeStar,
-        int maxRecipeStarLevel, int shopMaxLevel, int maxSelectionChanges,
-        float selfSelectEfficiency, float upgradeChance, float rareRecipeChance) {
-        logger.LogInfo("Fractionate Everything shop settings changed.");
-        configFile.Save();
-    }
-
-    /**
-     * 更新货币和特殊功能相关设置项
-     */
-    public static void SetCurrencyAndSpecialConfig(int redMatrixCurrency, int blueMatrixCurrency,
-        int yellowMatrixCurrency, int purpleMatrixCurrency, int greenMatrixCurrency, int whiteMatrixCurrency,
-        int fragmentAmount, int recipeShards, bool enableAutoFractionate, bool enableBatchPurchase,
-        bool enablePitySystem, bool enableRecipeHistory, bool enableFavoritesSystem) {
-
-
-        logger.LogInfo("Fractionate Everything currency and special settings changed.");
-        configFile.Save();
-    }
-
-    /**
-     * 更新商店UI相关设置项
-     */
-    public static void SetShopUIConfig(bool enableShopItemPreview, bool showMatrixConversionRate,
-        bool enableCraftingPreview, bool compactShopView, int shopUITheme) {
-
-
-        logger.LogInfo("Fractionate Everything shop UI settings changed.");
+        DisableMessageBox.Value = true;
+        CurrentVersion.Value = PluginInfo.PLUGIN_VERSION;
         configFile.Save();
     }
 
@@ -213,7 +195,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             // );
 
             GameLogic.Enable(true);
-            UIShop.Init();
+            UIMain.Init();
             UIFunctions.Init();
         }
     }

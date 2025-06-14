@@ -10,7 +10,7 @@ public class MyConfigWindow : MyWindowWithTabs {
     private RectTransform _windowTrans;
 
     public static MyConfigWindow CreateInstance() {
-        return MyWindowManager.CreateWindow<MyConfigWindow>("OpenFEShopWindow", "测试商店页面111");
+        return MyWindowManager.CreateWindow<MyConfigWindow>("FEMainWindow", "万物分馏 v" + PluginInfo.PLUGIN_VERSION);
     }
 
     public static void DestroyInstance(MyConfigWindow win) {
