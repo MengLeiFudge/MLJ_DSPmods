@@ -2,7 +2,6 @@
 using FE.Compatibility;
 using HarmonyLib;
 using System.Collections.Generic;
-using System.Linq;
 using static FE.Utils.ProtoID;
 
 namespace FE.Logic.Manager;

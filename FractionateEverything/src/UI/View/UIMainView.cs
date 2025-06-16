@@ -7,30 +7,18 @@ using UnityEngine.UI;
 using static FE.Utils.ProtoID;
 using Random = System.Random;
 
-namespace FE.UI.Shop;
+namespace FE.UI.View;
 
-public static class UIMain {
+public static class UIMainView {
     private static RectTransform _windowTrans;
     private static RectTransform _dysonTab;
     private static UIButton _dysonInitBtn;
     private static readonly UIButton[] DysonLayerBtn = new UIButton[10];
 
     public static void Init() {
-        // TranslationUtils.Register("key", "en", "cn");
+        // I18NUtils.Register("key", "en", "cn");
         MyConfigWindow.OnUICreated += CreateUI;
         MyConfigWindow.OnUpdateUI += UpdateUI;
-    }
-
-    private class TestValueMapper : MyWindow.ValueMapper<int> {
-        public override int Min => 0;
-        public override int Max => 40;
-
-        public override int IndexToValue(int index) => index - 10;
-        public override int ValueToIndex(int value) => Mathf.RoundToInt(value + 10);
-
-        public override string FormatValue(string format, int value) {
-            return value == 0 ? "max".Translate() : base.FormatValue(format, value);
-        }
     }
 
     private class MultiRateMapper : MyWindow.ValueMapper<float> {
@@ -59,6 +47,7 @@ public static class UIMain {
     public static void ChangeInputID() {
         //弹窗选择物品
 
+        inputID = I铁矿;
     }
 
     private static Random random = new Random();
@@ -186,49 +175,49 @@ public static class UIMain {
                 var tab = wnd.AddTab(trans, "蓝糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "红糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "黄糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "紫糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "绿糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "白糖");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
             {
                 var tab = wnd.AddTab(trans, "黑雾");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "——未知按钮——", 50, "button-unknown",
+                wnd.AddButton(x, y, 300, tab, "——未知按钮——", 16, "button-unknown",
                     null);
             }
         }

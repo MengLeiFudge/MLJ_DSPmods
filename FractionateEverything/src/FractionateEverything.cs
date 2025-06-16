@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
@@ -10,7 +9,7 @@ using FE.Logic;
 using FE.Logic.Manager;
 using FE.UI;
 using FE.UI.Components;
-using FE.UI.Shop;
+using FE.UI.View;
 using FE.Utils;
 using HarmonyLib;
 using System;
@@ -18,34 +17,27 @@ using System.Collections;
 using System.IO;
 using System.Reflection;
 using xiaoye97;
+using static FE.Utils.LogUtils;
 
 namespace FE;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(DSPModSavePlugin.MODGUID)]
+[BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
-[BepInDependency(CheckPlugins.GUID)]
 public class FractionateEverything : BaseUnityPlugin, IModCanSave {
-    public static int versionNumber;
-
-    #region Logger
-
-    private static ManualLogSource logger;
-    public static void LogDebug(object data) => logger.LogDebug(data);
-    public static void LogInfo(object data) => logger.LogInfo(data);
-    public static void LogWarning(object data) => logger.LogWarning(data);
-    public static void LogError(object data) => logger.LogError(data);
-    public static void LogFatal(object data) => logger.LogFatal(data);
-
-    #endregion
-
     #region Fields
 
+    /// <summary>
+    /// 原版分馏科技图标，主要用于标签页。暂时无图标的新增科技也可以临时使用它作为图标路径。
+    /// </summary>
     public const string Tech1134IconPath = "Icons/Tech/1134";
-    public static int tab分馏1;
-    // public static int tab分馏2;
+    /// <summary>
+    /// 指示分馏标签是第几页。新增物品的GridIndex需要根据页面来确定。
+    /// </summary>
+    public static int tab分馏;
     public static string ModPath;
     public static ResourceData fracicons;
     public static readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
@@ -124,7 +116,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
      * 在点击设置-杂项的应用按钮时执行。
      */
     public static void SetConfig(int iconVersion, bool enableBuildingAsTrash) {
-        logger.LogInfo($"Fractionate Everything setting changed.\n"
+        LogInfo($"Fractionate Everything setting changed.\n"
                        + $" iconVersion:{iconVersion}");
         configFile.Save();
     }
@@ -133,17 +125,13 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
     public void Awake() {
         using (ProtoRegistry.StartModLoad(PluginInfo.PLUGIN_GUID)) {
-            logger = Logger;
-
-            Version version = new();
-            version.FromFullString(PluginInfo.PLUGIN_VERSION);
-            versionNumber = version.sig;
+            InitLogger(Logger);
 
             Translation.AddTranslations();
 
             LoadConfig();
 
-            tab分馏1 = TabSystem.RegisterTab($"{PluginInfo.PLUGIN_GUID}:{PluginInfo.PLUGIN_GUID}Tab",
+            tab分馏 = TabSystem.RegisterTab($"{PluginInfo.PLUGIN_GUID}:{PluginInfo.PLUGIN_GUID}Tab",
                 new("分馏页面".Translate(), Tech1134IconPath));
 
             var executingAssembly = Assembly.GetExecutingAssembly();
@@ -189,13 +177,13 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             // harmony.Patch(
             //     AccessTools.Method(typeof(Localization), "LoadLanguage"),
             //     null,
-            //     new(typeof(TranslationUtils), nameof(TranslationUtils.LoadLanguagePostfixAfterCommonApi)) {
+            //     new(typeof(I18NUtils), nameof(I18NUtils.LoadLanguagePostfixAfterCommonApi)) {
             //         after = [CommonAPIPlugin.GUID]
             //     }
             // );
 
             GameLogic.Enable(true);
-            UIMain.Init();
+            UIMainView.Init();
             UIFunctions.Init();
         }
     }
@@ -235,26 +223,15 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public void PreAddData() {
         //添加分馏原胚、精华
         ItemManager.AddFractionalPrototypeAndEssence();
-        //添加分馏塔
+        //初步添加分馏塔
         BuildingManager.AddFractionators();
         //添加科技
         TechManager.AddTechs();
     }
 
     public void PostAddData() {
-        // LDB.models.OnAfterDeserialize();
-        // ModelProto.InitMaxModelIndex();
-        // ModelProto.InitModelIndices();
-        // ModelProto.InitModelOrders();
-        // foreach (TechProto proto in LDB.techs.dataArray) {
-        //     proto.Preload();
-        // }
-        // foreach (TechProto proto in LDB.techs.dataArray) {
-        //     proto.PreTechsImplicit = proto.PreTechsImplicit.Except(proto.PreTechs).ToArray();
-        //     proto.UnlockRecipes = proto.UnlockRecipes.Distinct().ToArray();
-        //     proto.Preload2();
-        // }
-        // BuildingManager.SetUnlockInfo();
+        //调整分馏塔模型电力、颜色等属性
+        BuildingManager.PostFixFractionators();
     }
 
     /// <summary>
@@ -303,9 +280,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void Import(BinaryReader r) {
         RecipeManager.Import(r);
-
-        //解锁所有分馏配方
-        RecipeManager.UnlockAll();
     }
 
     /// <summary>
@@ -320,9 +294,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
-
-        //解锁所有分馏配方
-        RecipeManager.UnlockAll();
     }
 
     #endregion

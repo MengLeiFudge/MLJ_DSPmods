@@ -3,11 +3,9 @@ using FE.Logic.Recipe;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using static FE.FractionateEverything;
 using static FE.Utils.ProtoID;
 using static FE.Utils.FormatUtils;
 using static FE.Logic.Manager.RecipeManager;
@@ -54,9 +52,9 @@ public static class ProcessManager {
         MaxBeltSpeed = Math.Min(MaxBeltSpeed, 60);
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
         float ratio = MaxBeltSpeed / 30.0f;
-        FracFluidInputMax = (int)(BuildingManager.FractionatorPrefabDesc.fracFluidInputMax * ratio);
-        FracProductOutputMax = (int)(BuildingManager.FractionatorPrefabDesc.fracProductOutputMax * ratio);
-        FracFluidOutputMax = (int)(BuildingManager.FractionatorPrefabDesc.fracFluidOutputMax * ratio);
+        FracFluidInputMax = (int)(BuildingManager.OriPrefabDesc.fracFluidInputMax * ratio);
+        FracProductOutputMax = (int)(BuildingManager.OriPrefabDesc.fracProductOutputMax * ratio);
+        FracFluidOutputMax = (int)(BuildingManager.OriPrefabDesc.fracFluidOutputMax * ratio);
 
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         incTableFixedRatio = new double[Cargo.incTableMilli.Length];
