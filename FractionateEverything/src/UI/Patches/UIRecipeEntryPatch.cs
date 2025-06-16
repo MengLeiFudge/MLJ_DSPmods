@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace FE.UI.RecipeView;
+namespace FE.UI.Patches;
 
 public static class UIItemTipPatch {
     /// <summary>

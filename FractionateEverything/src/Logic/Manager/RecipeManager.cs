@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static FE.FractionateEverything;
+using static FE.Utils.LogUtils;
 
 namespace FE.Logic.Manager;
 
