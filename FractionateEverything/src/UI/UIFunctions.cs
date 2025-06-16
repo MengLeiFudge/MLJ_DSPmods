@@ -1,14 +1,13 @@
 ﻿using CommonAPI.Systems;
 using FE.UI.Components;
 using FE.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FE.UI;
 
+/// <summary>
+/// 使用快捷键打开窗口。默认快捷键为Shift+F。
+/// </summary>
 public static class UIFunctions {
     private static bool _initialized;
     private static PressKeyBind _toggleKey;
@@ -27,7 +26,7 @@ public static class UIFunctions {
             name = "OpenFEMainWindow",
             canOverride = true
         });
-        TranslationUtils.Register("KEYOpenFEMainWindow", "[FE] Open main window", "[FE] 打开主页");
+        I18NUtils.Register("KEYOpenFEMainWindow", "[FE] Open main window", "[FE] 打开主页");
         // I18N.OnInitialized += RecreateConfigWindow;
     }
 

@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static FE.FractionateEverything;
+using static FE.Utils.LogUtils;
 
 namespace FE.Utils;
 
-public static class TranslationUtils {
+public static class I18NUtils {
     /// <summary>
     /// 为某个字符串添加橙色标签。
     /// </summary>
@@ -56,7 +56,7 @@ public static class TranslationUtils {
         LocalizationModule.EditTranslation(key, enTrans, cnTrans ?? key, enTrans);
     }
 
-    struct ModStr {
+    private record struct ModStr {
         public string key;
         public string enTrans;
         public string cnTrans;

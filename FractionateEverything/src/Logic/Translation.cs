@@ -1,5 +1,4 @@
-﻿using CommonAPI.Systems.ModLocalization;
-using static FE.Utils.TranslationUtils;
+﻿using static FE.Utils.I18NUtils;
 
 namespace FE.Logic;
 
