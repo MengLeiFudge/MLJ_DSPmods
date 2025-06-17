@@ -1,12 +1,15 @@
-﻿using BepInEx.Configuration;
+﻿using System;
+using BepInEx.Configuration;
 using FE.Utils;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.Components;
 
 // MyCheckBox modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyCheckBox.cs
+/// <summary>
+/// 勾选框
+/// </summary>
 public class MyCheckBox : MonoBehaviour {
     public RectTransform rectTrans;
     public UIButton uiButton;

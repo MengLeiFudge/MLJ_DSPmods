@@ -1,10 +1,10 @@
-﻿using BuildBarTool;
+﻿using System;
+using BuildBarTool;
 using CommonAPI.Systems;
-using System;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Utils.I18NUtils;
 
 namespace FE.Logic.Building;
 
@@ -12,25 +12,32 @@ namespace FE.Logic.Building;
 /// 交互塔，此类不需要配方
 /// </summary>
 public static class InteractionTower {
+    public static void AddTranslations() {
+        Register("交互塔", "Interaction Tower");
+        Register("I交互塔",
+            $"-",
+            $"将物品以数据形式传递到主脑，从而进行资源的相关兑换、抽奖等操作。");
+    }
+
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "交互塔描述",
-            "Assets/fracicons/interaction-tower", tab分馏 * 1000 + 101, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
+            "Assets/fe/interaction-tower", tab分馏 * 1000 + 101, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE交互塔], [1],
-            "交互塔描述", TFE交互塔);
+            "I交互塔", TFE物品交互);
         model = ProtoRegistry.RegisterModel(MFE交互塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
     public static void PostFix() {
-        model.HpMax += 200;
+        // model.HpMax += 200;
         double energyRatio = 3.0;
         model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);

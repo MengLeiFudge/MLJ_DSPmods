@@ -1,10 +1,10 @@
-﻿using FE.Logic.Building;
-using FE.Logic.Recipe;
-using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FE.Logic.Building;
+using FE.Logic.Recipe;
+using HarmonyLib;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.Utils.FormatUtils;
@@ -143,7 +143,7 @@ public static class ProcessManager {
                     consumeRegister, ref __result, ERecipe.MineralCopy);
                 return false;
             case IFE点数聚集塔:
-                PointAggregatorTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
+                PointAggregateTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result);
                 return false;
             case IFE量子复制塔:
@@ -186,7 +186,7 @@ public static class ProcessManager {
         //     IFE量子复制塔 => GetIncreaseRecipe(inputItemID),
         //     _ => null,
         // };
-        // //如果分馏塔主输出和分馏配方主输出不一致，调整产物（通常出现于升转化塔的情况）
+        // //如果分馏塔主输出和分馏配方主输出不一致，调整产物（通常出现于物品转化塔的情况）
         // if (recipe == null || __instance.productId != recipe.mainOutput) {
         //     //将分馏塔内缓存的产物全部返还到玩家背包
         //     //注意，点数聚集塔变为其他分馏塔时，产物增产点数会消失

@@ -1,11 +1,14 @@
+using System;
 using BepInEx.Configuration;
 using FE.Utils;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.Components;
 
+/// <summary>
+///
+/// </summary>
 public class MyCheckButton : MonoBehaviour {
     public RectTransform rectTrans;
     public UIButton uiButton;

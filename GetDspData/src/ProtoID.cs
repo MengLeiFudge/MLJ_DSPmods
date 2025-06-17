@@ -963,9 +963,9 @@ public static class ProtoID {
     internal const int TGB行星协调中心黑雾数据库 = 1960;
     internal const int TGB虚数空间存储 = 1962;
     internal const int TGB集装物流系统 = 1963;
-    internal const int TFE自然资源分馏 = 1621;
-    internal const int TFE升转化 = 1622;
-    internal const int TFE垃圾回收 = 1623;
+    internal const int TFE矿物复制 = 1621;
+    internal const int TFE物品转化 = 1622;
+    internal const int TFE物品分解 = 1623;
     internal const int TFE增产点数聚集 = 1159;
     internal const int TFE量子复制 = 1908;
     internal const int TFE分馏流动输出集装 = 3807;

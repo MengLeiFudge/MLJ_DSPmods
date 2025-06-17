@@ -87,7 +87,7 @@ MOD的分馏配方已经过仔细调整，其中包含部分循环链。一些�
    和 [CommonAPI](https://thunderstore.io/c/dyson-sphere-program/p/CommonAPI/CommonAPI/)。
 3. 将下载的万物分馏压缩包解压至`%gamepath%\BepInEx\plugins`。确保有如下文件：
     * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fracicons`
+    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
 
 ## 修改配置
 
@@ -226,7 +226,7 @@ Dyson Sphere Program -> Properties... -> Installed Files -> Browse... to open th
 3. Extract the downloaded Fractionate Everything zip to `%gamepath%\BepInEx\plugins`. Make sure you have the following
    files:
     * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fracicons`
+    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
 
 ## Modify the configuration
 

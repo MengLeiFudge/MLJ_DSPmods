@@ -3,7 +3,7 @@ using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Utils.I18NUtils;
 
 namespace FE.Logic.Building;
 
@@ -11,25 +11,32 @@ namespace FE.Logic.Building;
 /// 点金塔
 /// </summary>
 public static class AlchemyTower {
+    public static void AddTranslations() {
+        Register("点金塔", "Alchemy Tower");
+        Register("I点金塔",
+            $"-",
+            $"将物品转换为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
+    }
+
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(1.0f, 0.7019f, 0.4f);
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE点金塔, "点金塔", "点金塔描述",
-            "Assets/fracicons/alchemy-tower", tab分馏 * 1000 + 106, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE点金塔, "点金塔", "I点金塔",
+            "Assets/fe/alchemy-tower", tab分馏 * 1000 + 106, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点金塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [3], [IFE点金塔], [1],
-            "点金塔描述", TFE点金塔);
+            "I点金塔", TFE物品点金);
         model = ProtoRegistry.RegisterModel(MFE点金塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
     public static void PostFix() {
-        model.HpMax += 0;
+        // model.HpMax += 0;
         double energyRatio = 0.75;
         model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);

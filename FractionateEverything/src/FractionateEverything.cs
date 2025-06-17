@@ -1,4 +1,8 @@
-﻿using BepInEx;
+﻿using System;
+using System.Collections;
+using System.IO;
+using System.Reflection;
+using BepInEx;
 using BepInEx.Configuration;
 using CommonAPI;
 using CommonAPI.Systems;
@@ -7,15 +11,13 @@ using crecheng.DSPModSave;
 using FE.Compatibility;
 using FE.Logic;
 using FE.Logic.Manager;
+using FE.Logic.Recipe;
 using FE.UI;
 using FE.UI.Components;
 using FE.UI.View;
+using FE.UI.ViewModel;
 using FE.Utils;
 using HarmonyLib;
-using System;
-using System.Collections;
-using System.IO;
-using System.Reflection;
 using xiaoye97;
 using static FE.Utils.LogUtils;
 
@@ -39,7 +41,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public static int tab分馏;
     public static string ModPath;
-    public static ResourceData fracicons;
+    public static ResourceData FEAssets;
     public static readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
     private static bool _finished;
 
@@ -96,6 +98,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
                 + "加成倍数。",
                 new AcceptableFloatValue(1.0f, 0.1f, 10.0f), null));
 
+        UIMainViewModel.Init(Config);
+
         //移除之前多余的设置项，然后保存
         (Traverse.Create(Config).Property("OrphanedEntries").GetValue() as IDictionary)?.Clear();
         Config.Save();
@@ -117,7 +121,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
      */
     public static void SetConfig(int iconVersion, bool enableBuildingAsTrash) {
         LogInfo($"Fractionate Everything setting changed.\n"
-                       + $" iconVersion:{iconVersion}");
+                + $" iconVersion:{iconVersion}");
         configFile.Save();
     }
 
@@ -128,6 +132,10 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             InitLogger(Logger);
 
             Translation.AddTranslations();
+            BuildingManager.AddTranslations();
+            ItemManager.AddTranslations();
+            TechManager.AddTranslations();
+            OutputInfo.AddTranslations();
 
             LoadConfig();
 
@@ -136,9 +144,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
             var executingAssembly = Assembly.GetExecutingAssembly();
             ModPath = Path.GetDirectoryName(executingAssembly.Location);
-            fracicons = new(PluginInfo.PLUGIN_GUID, "fracicons", ModPath);
-            fracicons.LoadAssetBundle("fracicons");
-            ProtoRegistry.AddResource(fracicons);
+            FEAssets = new(PluginInfo.PLUGIN_GUID, "fe", ModPath);
+            FEAssets.LoadAssetBundle("fe");
+            ProtoRegistry.AddResource(FEAssets);
 
             //加载顺序：
             //LDBTool.PreAddDataAction
@@ -239,7 +247,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public static void FinalAction() {
         if (_finished) return;
-        // PreloadAndInitAll();
+        PreloadAndInitAll();
         //获取部分数据，例如传送带最大速度等
         ProcessManager.Init();
         //计算物品价值
@@ -252,23 +260,24 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public static void PreloadAndInitAll() {
-        ItemProto.InitFuelNeeds();
-        ItemProto.InitTurretNeeds();
-        ItemProto.InitFluids();
-        ItemProto.InitTurrets();
-        ItemProto.InitEnemyDropTables();
-        ItemProto.InitConstructableItems();
-        ItemProto.InitItemIds();
-        ItemProto.InitItemIndices();
-        ItemProto.InitMechaMaterials();
-        //ItemProto.InitFighterIndices();
-        //ItemProto.InitPowerFacilityIndices();
-        //ItemProto.InitProductionMask();
-        ModelProto.InitMaxModelIndex();
-        ModelProto.InitModelIndices();
-        ModelProto.InitModelOrders();
-        RecipeProto.InitFractionatorNeeds();
-        RaycastLogic.LoadStatic();
+        // ItemProto.InitFuelNeeds();
+        // ItemProto.InitTurretNeeds();
+        // ItemProto.InitFluids();
+        // ItemProto.InitTurrets();
+        // ItemProto.InitEnemyDropTables();
+        // ItemProto.InitConstructableItems();
+        // ItemProto.InitItemIds();
+        // ItemProto.InitItemIndices();
+        // ItemProto.InitMechaMaterials();
+        // //ItemProto.InitFighterIndices();
+        // //ItemProto.InitPowerFacilityIndices();
+        // //ItemProto.InitProductionMask();
+        // ModelProto.InitMaxModelIndex();
+        // ModelProto.InitModelIndices();
+        // ModelProto.InitModelOrders();
+        // RecipeProto.InitFractionatorNeeds();
+        // RaycastLogic.LoadStatic();
+        //重新设定堆叠大小
         StorageComponent.staticLoaded = false;
         StorageComponent.LoadStatic();
     }
