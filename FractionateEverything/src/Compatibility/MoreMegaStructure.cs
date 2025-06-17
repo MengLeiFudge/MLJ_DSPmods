@@ -1,7 +1,7 @@
-﻿using BepInEx.Bootstrap;
+﻿using System.Collections.Generic;
+using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
-using System.Collections.Generic;
 using UnityEngine;
 using xiaoye97;
 using static FE.Utils.ProtoID;

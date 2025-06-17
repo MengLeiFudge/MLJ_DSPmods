@@ -132,18 +132,11 @@ static class AfterBuildEvent {
                     fileList.Add(jsonDll);
                 }
             } else if (projectName == "FractionateEverything") {
-                //fracicons
-                string[] icons = [
-                    "fracicons"
-                ];
-                foreach (var icon in icons) {
-                    string iconPath =
-                        $@"D:\project\unity\DSP_FracIcons\AssetBundles\StandaloneWindows64\{icon}";
-                    if (File.Exists(iconPath)) {
-                        //同时拷贝到项目
-                        File.Copy(iconPath, $@"..\..\..\..\FractionateEverything\Assets\{icon}", true);
-                        fileList.Add(iconPath);
-                    }
+                //fe
+                string assets = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
+                if (File.Exists(assets)) {
+                    File.Copy(assets, @"..\..\..\..\FractionateEverything\Assets\FEAssets", true);
+                    fileList.Add(assets);
                 }
             }
             //打包

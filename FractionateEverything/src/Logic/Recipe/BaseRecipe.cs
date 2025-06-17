@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.LogUtils;
+using Random = System.Random;
 
 namespace FE.Logic.Recipe;
 
@@ -138,21 +140,29 @@ public abstract class BaseRecipe(
     /// 配方品质
     /// </summary>
     /// <details>
-    /// 未解锁时为0。解锁之后，最低为1，最高为7。1白、2绿、3蓝、4紫、5红、7金。
+    /// 未解锁时为0。解锁之后，最低为1，最高为7。0灰、1白、2绿、3蓝、4紫、5红、7金。
     /// </details>
     public int Quality { get; set; } = 0;
 
-    public static string GetQualityStr(int quality) {
-        switch (quality) {
-            case 1: return "白";
-            case 2: return "绿";
-            case 3: return "蓝";
-            case 4: return "紫";
-            case 5: return "红";
-            case 7: return "金";
-            default: return "未知";
-        }
-    }
+    /// <summary>
+    /// 品质对应的颜色数组
+    /// </summary>
+    public static readonly Color[] QualityColors = [
+        new(0.65f, 0.65f, 0.65f),// 0 - 灰色 - 未解锁
+        new(0.90f, 0.90f, 0.90f),// 1 - 白色 - 稍微灰一点以减少刺眼
+        new(0.50f, 0.85f, 0.50f),// 2 - 绿色 - 更深的绿色
+        new(0.45f, 0.65f, 0.95f),// 3 - 蓝色 - 更深的蓝色
+        new(0.75f, 0.45f, 0.85f),// 4 - 紫色 - 更深的紫色
+        new(0.95f, 0.45f, 0.45f),// 5 - 红色 - 更深的红色
+        new(0.65f, 0.65f, 0.65f),// 6 - 未使用
+        new(0.95f, 0.85f, 0.40f),// 7 - 金色 - 更深的金色
+    ];
+
+    /// <summary>
+    /// 获取当前品质对应的颜色
+    /// </summary>
+    public Color QualityColor =>
+        Quality >= 0 && Quality < QualityColors.Length ? QualityColors[Quality] : QualityColors[0];
 
     /// <summary>
     /// 配方等级
@@ -173,10 +183,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 下一级所需经验
     /// </summary>
-    /// <details>
-    /// 注意
-    /// </details>
-    public long NextLevelExperience => (long)(10 * Math.Pow(Quality + 2, Level + (Quality - 1) / 3.0));
+    public long NextLevelExperience => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
 
     /// <summary>
     /// 指示是否满足突破的前置等级条件
@@ -193,15 +200,6 @@ public abstract class BaseRecipe(
             Experience -= NextLevelExperience;
             Level++;
             LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
-            // ItemProto itemProto = LDB.items.Select(InputID);
-            // string info = $"{RecipeType}-{itemProto.Name}配方已升至{Level}级！\n"
-            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
-            // UIMessageBox.Show(
-            //     "配方升级".Translate(), info.Translate(),
-            //     "确定".Translate(),
-            //     UIMessageBox.INFO,
-            //     null
-            // );
         }
         if (CanBreakthrough) {
             TryBreakQuality();
@@ -236,34 +234,12 @@ public abstract class BaseRecipe(
             }
             AddExp(0);
             LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
-            // ItemProto itemProto = LDB.items.Select(InputID);
-            // string info = $"{RecipeType}-{itemProto.Name}配方已突破至{GetQualityStr(Quality)}色！\n"
-            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
-            // UIMessageBox.Show(
-            //     "配方突破".Translate(), info.Translate(),
-            //     "确定".Translate(),
-            //     UIMessageBox.INFO,
-            //     null
-            // );
             return true;
         } else {
             AddExp(-NextLevelExperience / 10);
             LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
-            // ItemProto itemProto = LDB.items.Select(InputID);
-            // string info = $"{RecipeType}-{itemProto.Name}配方突破{GetQualityStr(Quality)}色失败！\n"
-            //               + $"当前情况：{GetQualityStr(Quality)}色配方 Lv{Level}({Experience}/{NextLevelExperience})";
-            // UIMessageBox.Show(
-            //     "配方突破".Translate(), info.Translate(),
-            //     "确定".Translate(),
-            //     UIMessageBox.INFO,
-            //     null
-            // );
             return false;
         }
-    }
-
-    public override string ToString() {
-        return $"{GetQualityStr(Quality)}色 Lv{Level}({Experience}/{NextLevelExperience})";
     }
 
     #endregion

@@ -1,7 +1,7 @@
-﻿using CommonAPI.Systems.ModLocalization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommonAPI.Systems.ModLocalization;
 using static FE.Utils.LogUtils;
 
 namespace FE.Utils;
@@ -40,6 +40,27 @@ public static class I18NUtils {
     /// </summary>
     public static string AddBlueLabel(this string s) {
         return $"<color=\"#61D8FFB8\">{s}</color>";
+    }
+
+    public static string AddLabelWithQualityColor(this string s, int quality) {
+        switch (quality) {
+            case 0:// 褐色
+                return $"<color=\"#A0522DAA\">{s}</color>";
+            case 1:// 白色
+                return $"<color=\"#FFFFFFAA\">{s}</color>";
+            case 2:// 绿色
+                return $"<color=\"#7CFC00AA\">{s}</color>";
+            case 3:// 蓝色
+                return $"<color=\"#61D8FFB8\">{s}</color>";
+            case 4:// 紫色
+                return $"<color=\"#DA70D6AA\">{s}</color>";
+            case 5:// 红色
+                return $"<color=\"#FF5D4CB7\">{s}</color>";
+            case 7:// 金色
+                return $"<color=\"#FFD700AA\">{s}</color>";
+            default:
+                return s;
+        }
     }
 
     /// <summary>
