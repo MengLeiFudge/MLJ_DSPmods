@@ -1,11 +1,12 @@
-﻿using FE.Logic.Manager;
+﻿using System.Text;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.ProtoID;
-using Random = System.Random;
+using static FE.UI.ViewModel.UIMainViewModel;
+using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.BaseRecipe;
 
 namespace FE.UI.View;
 
@@ -42,36 +43,8 @@ public static class UIMainView {
         }
     }
 
-    private static int inputID = I铁矿;
-
-    public static void ChangeInputID() {
-        //弹窗选择物品
-
-        inputID = I铁矿;
-    }
-
-    private static Random random = new Random();
-
-    public static void GetRecipe(ERecipe recipeType, int count) {
-        BaseRecipe[] recipeArr = RecipeManager.GetRecipes(recipeType);
-        for (int i = 0; i < count; i++) {
-            int id = random.Next(0, recipeArr.Length - 1);
-            if (recipeArr[id] == null) {
-                //狗粮
-
-            } else {
-                //配方
-                BaseRecipe recipe = recipeArr[id];
-                if (!recipe.IsUnlocked) {
-                    recipe.Level = 1;
-                    recipe.Quality = 1;
-                } else {
-                    recipe.MemoryCount++;
-                }
-            }
-        }
-    }
-
+    public static Text[] textRecipeInfo = new Text[20];
+    public static Text[] textBuildingInfo = new Text[20];
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
@@ -81,92 +54,93 @@ public static class UIMainView {
         {
             wnd.AddTabGroup(trans, "配方", "tab-group-fe1");
             {
-                var tab = wnd.AddTab(trans, "矿物复制");
+                var tab = wnd.AddTab(trans, "配方详情");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
-                    ChangeInputID);
+                wnd.AddComboBox(x, y, tab, "配方类型")
+                    .WithItems("矿物复制", "量子复制", "点金", "分解", "转化")
+                    .WithSize(150f, 0f)
+                    .WithConfigEntry(RecipeTypeEntry);
+                x = 250f;
+                wnd.AddButton(x, y, 200, tab, "切换物品", 16, "button-change-item", OnButtonChangeItemClick);
+                x = 0f;
+                y += 36f;
+                for (int i = 0; i < textRecipeInfo.Length; i++) {
+                    textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"textRecipeInfo{i}");
+                    y += 36f;
+                }
             }
             {
-                var tab = wnd.AddTab(trans, "量子复制");
+                var tab = wnd.AddTab(trans, "建筑加成");
                 x = 0f;
                 y = 10f;
-                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
-                    ChangeInputID);
-            }
-            {
-                var tab = wnd.AddTab(trans, "点金");
-                x = 0f;
-                y = 10f;
-                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
-                    ChangeInputID);
-            }
-            {
-                var tab = wnd.AddTab(trans, "分解");
-                x = 0f;
-                y = 10f;
-                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
-                    ChangeInputID);
-            }
-            {
-                var tab = wnd.AddTab(trans, "转化");
-                x = 0f;
-                y = 10f;
-                wnd.AddButton(x, y, 200, tab, "切换配方输入", 16, "button-change-recipe-input",
-                    ChangeInputID);
+                wnd.AddComboBox(x, y, tab, "建筑类型")
+                    .WithItems("交互塔", "矿物复制塔", "点数聚集塔", "量子复制塔", "点金塔", "分解塔", "转化塔")
+                    .WithSize(150f, 0f)
+                    .WithConfigEntry(BuildingTypeEntry);
+                y += 36f;
+                for (int i = 0; i < textBuildingInfo.Length; i++) {
+                    textBuildingInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"textBuildingInfo{i}");
+                    y += 36f;
+                }
             }
         }
         {
             wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
             {
-                var tab = wnd.AddTab(trans, "矿物复制");
+                var tab = wnd.AddTab(trans, "抽卡");
                 x = 0f;
                 y = 10f;
+                wnd.AddComboBox(x, y, tab, "卡池")
+                    .WithItems("交互塔", "矿物复制塔", "点数聚集塔", "量子复制塔", "点金塔", "分解塔", "转化塔")
+                    .WithSize(150f, 0f)
+                    .WithConfigEntry(BuildingTypeEntry);
+
                 wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe1-1",
-                    () => GetRecipe(ERecipe.MineralCopy, 1));
+                    () => Raffle(ERecipe.MineralCopy, 1));
                 y += 30f;
                 wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe1-10",
-                    () => GetRecipe(ERecipe.MineralCopy, 10));
+                    () => Raffle(ERecipe.MineralCopy, 10));
             }
             {
                 var tab = wnd.AddTab(trans, "量子复制");
                 x = 0f;
                 y = 10f;
                 wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe2-1",
-                    () => GetRecipe(ERecipe.QuantumDuplicate, 1));
+                    () => Raffle(ERecipe.QuantumDuplicate, 1));
                 y += 30f;
                 wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe2-10",
-                    () => GetRecipe(ERecipe.QuantumDuplicate, 10));
+                    () => Raffle(ERecipe.QuantumDuplicate, 10));
             }
             {
                 var tab = wnd.AddTab(trans, "点金");
                 x = 0f;
                 y = 10f;
                 wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe3-1",
-                    () => GetRecipe(ERecipe.Alchemy, 1));
+                    () => Raffle(ERecipe.Alchemy, 1));
                 y += 30f;
                 wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe3-10",
-                    () => GetRecipe(ERecipe.Alchemy, 10));
+                    () => Raffle(ERecipe.Alchemy, 10));
             }
             {
                 var tab = wnd.AddTab(trans, "分解");
                 x = 0f;
                 y = 10f;
                 wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe4-1",
-                    () => GetRecipe(ERecipe.Deconstruction, 1));
+                    () => Raffle(ERecipe.Deconstruction, 1));
                 y += 30f;
                 wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe4-10",
-                    () => GetRecipe(ERecipe.Deconstruction, 10));
+                    () => Raffle(ERecipe.Deconstruction, 10));
             }
             {
                 var tab = wnd.AddTab(trans, "转化");
                 x = 0f;
                 y = 10f;
                 wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-get-recipe5-1",
-                    () => GetRecipe(ERecipe.Conversion, 1));
+                    () => Raffle(ERecipe.Conversion, 1));
                 y += 30f;
                 wnd.AddButton(x, y, 200, tab, "十连", 16, "button-get-recipe5-10",
-                    () => GetRecipe(ERecipe.Conversion, 10));
+                    () => Raffle(ERecipe.Conversion, 10));
             }
         }
         {
@@ -233,33 +207,19 @@ public static class UIMainView {
                 var tab = wnd.AddTab(trans, "其他");
                 x = 0f;
                 y = 10f;
-                wnd.AddCheckBox(x, y, tab, FractionateEverything.EnableGod, "启用上帝模式");
+                var checkBox = wnd.AddCheckBox(x, y, tab, FractionateEverything.EnableGod, "启用上帝模式未实装");
+                wnd.AddTipsButton2(checkBox.Width + 5f, y + 6f, tab, "启用上帝模式", "可以大幅提升经验获取速度。", "");
                 y += 36f;
-                wnd.AddButton(x, y, 200, tab, "一键解锁", 16, "button-1key-unlock",
-                    TechManager.UITechTree_Do1KeyUnlock_Postfix);
+                wnd.AddButton(x, y, 200, tab, "解锁所有配方", 16, "button-unlock-all-recipes",
+                    UnlockAll);
                 y += 30f;
-                txt = wnd.AddText2(x + 10f, y, tab, "处理比例修改", 15, "text-multi-rate");
+                txt = wnd.AddText2(x + 10f, y, tab, "处理倍率未实装", 15, "text-multi-rate");
                 wnd.AddSlider(x + 10f + txt.preferredWidth + 5f, y + 6f, tab,
                     FractionateEverything.MultiRate, new MultiRateMapper(), "G", 160f);
                 y += 30f;
             }
         }
 
-
-        // var tab1 = wnd.AddTab(trans, "General");
-        // var x = 0f;
-        // var y = 10f;
-        // wnd.AddCheckBox(x, y, tab1, FractionateEverything.EnableWindowResizeEnabled, "Enable game window resize");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab1, FractionateEverything.LoadLastWindowRectEnabled, "Remeber window position and size on last exit");
-        // y += 36f;
-        // var txt = wnd.AddText2(x + 2f, y, tab1, "Scale up mouse cursor", 15, "text-scale-up-mouse-cursor");
-        // wnd.AddSlider(x + txt.preferredWidth + 7f, y + 6f, tab1, FractionateEverything.MouseCursorScaleUpMultiplier, [1, 2, 3, 4], "0x", 100f);
-        // /*
-        // y += 30f;
-        // wnd.AddCheckBox(x, y, tab1, GamePatch.AutoSaveOptEnabled, "Better auto-save mechanism");
-        // x = 200f;
-        // y += 6f;
         // wnd.AddTipsButton2(x, y, tab1, "Better auto-save mechanism", "Better auto-save mechanism tips", "auto-save-opt-tips");
         // x = 0f;
         // */
@@ -577,45 +537,7 @@ public static class UIMainView {
         // checkBoxForMeasureTextWidth = wnd.AddCheckBox(x, y, tab4, PlayerPatch.EnhancedMechaForgeCountControlEnabled, "Enhanced count control for hand-make");
         // wnd.AddTipsButton2(x + checkBoxForMeasureTextWidth.Width + 5f, y + 6f, tab4, "Enhanced count control for hand-make", "Enhanced count control for hand-make tips", "enhanced-count-control-tips");
         // y += 36f;
-        // wnd.AddCheckBox(x, y, tab4, PlayerPatch.ShortcutKeysForStarsNameEnabled, "Shortcut keys for showing stars' name");
-        //
-        // {
-        //     y += 36f;
-        //     wnd.AddCheckBox(x, y, tab4, PlayerPatch.AutoNavigationEnabled, "Auto navigation on sailings");
-        //     y += 27f;
-        //     var autoCruiseCheckBox = wnd.AddCheckBox(x + 20f, y, tab4, PlayerPatch.AutoCruiseEnabled, "Enable auto-cruise", 13);
-        //     y += 27f;
-        //     var autoBoostCheckBox = wnd.AddCheckBox(x + 20f, y, tab4, PlayerPatch.AutoBoostEnabled, "Auto boost", 13);
-        //     y += 27f;
-        //     txt = wnd.AddText2(x + 20f, y, tab4, "Distance to use warp", 15, "text-distance-to-warp");
-        //     var navDistanceSlider = wnd.AddSlider(x + 20f + txt.preferredWidth + 5f, y + 6f, tab4, PlayerPatch.DistanceToWarp, new DistanceMapper(), "0.0", 100f);
-        //     PlayerPatch.AutoNavigationEnabled.SettingChanged += NavSettingChanged;
-        //     wnd.OnFree += () => { PlayerPatch.AutoNavigationEnabled.SettingChanged -= NavSettingChanged; };
-        //     NavSettingChanged(null, null);
-        //
-        //     void NavSettingChanged(object o, EventArgs e)
-        //     {
-        //         autoCruiseCheckBox.SetEnable(PlayerPatch.AutoNavigationEnabled.Value);
-        //         autoBoostCheckBox.SetEnable(PlayerPatch.AutoNavigationEnabled.Value);
-        //         navDistanceSlider.SetEnable(PlayerPatch.AutoNavigationEnabled.Value);
-        //     }
-        // }
-        //
-        // var tab5 = wnd.AddTab(trans, "Dyson Sphere");
-        // x = 0f;
-        // y = 10f;
-        // wnd.AddCheckBox(x, y, tab5, DysonSpherePatch.StopEjectOnNodeCompleteEnabled, "Stop ejectors when available nodes are all filled up");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab5, DysonSpherePatch.OnlyConstructNodesEnabled, "Construct only structure points but frames");
-        // x = 400f;
-        // y = 10f;
-        // _dysonInitBtn = wnd.AddButton(x, y, tab5, "Initialize Dyson Sphere", 16, "init-dyson-sphere", () =>
-        //     UIMessageBox.Show("Initialize Dyson Sphere".Translate(), "Initialize Dyson Sphere Confirm".Translate(), "取消".Translate(), "确定".Translate(), 2, null,
-        //         () => { DysonSphereFunctions.InitCurrentDysonLayer(null, -1); })
-        // );
-        // y += 36f;
-        // wnd.AddText2(x, y, tab5, "Click to dismantle selected layer", 16, "text-dismantle-layer");
-        // y += 27f;
+
         // for (var i = 0; i < 10; i++)
         // {
         //     var id = i + 1;
@@ -637,59 +559,64 @@ public static class UIMainView {
         //         x += 40f;
         //     }
         // }
-        //
-        // x = 400f;
-        // y += 36f;
-        // txt = wnd.AddText2(x, y, tab5, "Auto Fast Build Speed Multiplier", 15, "text-auto-fast-build-multiplier");
-        // wnd.AddSlider(x + txt.preferredWidth + 5f, y + 6f, tab5, DysonSpherePatch.AutoConstructMultiplier, [1, 2, 5, 10, 20, 50, 100], "0", 100f);
-        // _dysonTab = tab5;
-        //
-        // var tab6 = wnd.AddTab(trans, "Tech/Combat");
-        // x = 10;
-        // y = 10;
-        // wnd.AddCheckBox(x, y, tab6, TechPatch.BatchBuyoutTechEnabled, "Buy out techs with their prerequisites");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab6, TechPatch.SorterCargoStackingEnabled, "Restore upgrades of \"Sorter Cargo Stacking\" on panel");
-        // y += 36f;
-        // wnd.AddCheckBox(x, y, tab6, TechPatch.DisableBattleRelatedTechsInPeaceModeEnabled, "Disable battle-related techs in Peace mode");
-        // y += 36f;
-        // wnd.AddButton(x, y, 300f, tab6, "Set \"Sorter Cargo Stacking\" to unresearched state", 16, "button-remove-cargo-stacking", TechFunctions.RemoveCargoStackingTechs);
-        // y += 36f;
-        // wnd.AddButton(x, y, 300f, tab6, "Unlock all techs with metadata", 16, "button-unlock-all-techs-with-metadata", TechFunctions.UnlockAllProtoWithMetadataAndPrompt);
-        // y += 36f;
-        // y += 36f;
-        // wnd.AddButton(x, y, 300f, tab6, "Open Dark Fog Communicator", 16, "button-open-df-communicator", () =>
-        // {
-        //     if (!(GameMain.data?.gameDesc.isCombatMode ?? false)) return;
-        //     var uiGame = UIRoot.instance.uiGame;
-        //     uiGame.ShutPlayerInventory();
-        //     uiGame.CloseEnemyBriefInfo();
-        //     uiGame.OpenCommunicatorWindow(5);
-        // });
+
     }
 
     private static void UpdateUI() {
-        UpdateDysonShells();
-    }
+        ERecipe recipeType = RecipeTypeToERecipe();
+        BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, InputItem.ID);
+        int line = 0;
+        if (recipe != null) {
+            textRecipeInfo[line].text =
+                $"{RecipeTypeToStr()}-{InputItem.name} Lv{recipe.Level} ({recipe.Experience}/{recipe.NextLevelExperience})";
+            textRecipeInfo[line].color = recipe.QualityColor;
+            line++;
+            textRecipeInfo[line].text = $"费用 1.00 {InputItem.name}";
+            line++;
+            if (recipeType == ERecipe.QuantumDuplicate) {
+                textRecipeInfo[line].text = $"     0.01 复制精华";
+                line++;
+                textRecipeInfo[line].text = $"     0.01 点金精华";
+                line++;
+                textRecipeInfo[line].text = $"     0.01 分解精华";
+                line++;
+                textRecipeInfo[line].text = $"     0.01 转化精华";
+                line++;
+            }
+            textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}    损毁率 {recipe.DestroyRate:P3}";
+            line++;
+            bool isFirst = true;
+            foreach (OutputInfo info in recipe.OutputMain) {
+                textRecipeInfo[line].text = $"{(isFirst ? "产出" : "    ")} {info}";
+                line++;
+                if (isFirst) {
+                    isFirst = false;
+                }
+            }
+            isFirst = true;
+            foreach (OutputInfo info in recipe.OutputAppend) {
+                textRecipeInfo[line].text = $"{(isFirst ? "其他" : "    ")} {info}";
+                line++;
+                if (isFirst) {
+                    isFirst = false;
+                }
+            }
+            textRecipeInfo[line].text = $"突破加成：无";
+            line++;
+        } else {
+            textRecipeInfo[line].text = $"配方不存在！";
+            textRecipeInfo[line].color = QualityColors[5];
+            line++;
+        }
+        for (; line < textRecipeInfo.Length; line++) {
+            textRecipeInfo[line].text = "";
+        }
 
-    private static void UpdateDysonShells() {
-        // if (!_dysonTab.gameObject.activeSelf) return;
-        // var star = DysonSphereFunctions.CurrentStarForDysonSystem();
-        // if (star == null)
-        // {
-        //     for (var i = 0; i < 10; i++)
-        //     {
-        //         DysonLayerBtn[i].button.interactable = false;
-        //     }
-        //     return;
-        // }
-        // var dysonSpheres = GameMain.data?.dysonSpheres;
-        // if (dysonSpheres?[star.index] == null) return;
-        // var ds = dysonSpheres[star.index];
-        // for (var i = 1; i <= 10; i++)
-        // {
-        //     var layer = ds.layersIdBased[i];
-        //     DysonLayerBtn[i - 1].button.interactable = layer != null && layer.id == i;
-        // }
+        line = 0;
+        textBuildingInfo[line].text = $"建筑加成：无";
+        line++;
+        for (; line < textBuildingInfo.Length; line++) {
+            textBuildingInfo[line].text = "";
+        }
     }
 }

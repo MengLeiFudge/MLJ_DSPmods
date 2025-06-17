@@ -3,33 +3,40 @@ using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Utils.I18NUtils;
 
 namespace FE.Logic.Building;
 
 /// <summary>
 /// 点数聚集塔
 /// </summary>
-public static class PointAggregatorTower {
+public static class PointAggregateTower {
+    public static void AddTranslations() {
+        Register("点数聚集塔", "Points Aggregate Tower");
+        Register("I点数聚集塔",
+            $"Crafts an item with 10 proliferator points by concentrating the item's proliferator points on a portion of the item, breaking the upper limit of proliferator points.\nSuccess rate is related to the input item proliferator points.",
+            $"将物品的增产点数集中到一部分物品上，突破增产点数的上限，从而制作出10增产点数的物品。\n成功率与输入物品的增产点数有关。");
+    }
+
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.2509f, 0.8392f, 1.0f);
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "点数聚集塔描述",
-            "Assets/fracicons/point-aggregator-tower", tab分馏 * 1000 + 104, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
+            "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 104, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE点数聚集塔], [2],
-            "点数聚集塔描述", TFE点数聚集塔);
+            "I点数聚集塔", TFE增产点数聚集);
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
     public static void PostFix() {
-        model.HpMax += 0;
+        // model.HpMax += 0;
         double energyRatio = 1.0;
         model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);

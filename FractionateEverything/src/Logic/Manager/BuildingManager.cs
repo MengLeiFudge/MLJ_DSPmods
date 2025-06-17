@@ -1,9 +1,9 @@
-﻿using FE.Logic.Building;
-using HarmonyLib;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FE.Logic.Building;
+using HarmonyLib;
 using static FE.Utils.ProtoID;
 using static FE.Logic.Manager.ProcessManager;
 
@@ -11,6 +11,16 @@ namespace FE.Logic.Manager;
 
 public static class BuildingManager {
     #region 添加新建筑
+
+    public static void AddTranslations() {
+        InteractionTower.AddTranslations();
+        MineralCopyTower.AddTranslations();
+        PointAggregateTower.AddTranslations();
+        QuantumCopyTower.AddTranslations();
+        AlchemyTower.AddTranslations();
+        DeconstructionTower.AddTranslations();
+        ConversionTower.AddTranslations();
+    }
 
     public static PrefabDesc OriPrefabDesc => LDB.models.Select(M分馏塔).prefabDesc;
     public static readonly List<(RecipeProto, ModelProto, ItemProto)> buildingList = [];
@@ -27,7 +37,7 @@ public static class BuildingManager {
 
         InteractionTower.Create();
         MineralCopyTower.Create();
-        PointAggregatorTower.Create();
+        PointAggregateTower.Create();
         QuantumCopyTower.Create();
         AlchemyTower.Create();
         DeconstructionTower.Create();
@@ -37,7 +47,7 @@ public static class BuildingManager {
     public static void PostFixFractionators() {
         InteractionTower.PostFix();
         MineralCopyTower.PostFix();
-        PointAggregatorTower.PostFix();
+        PointAggregateTower.PostFix();
         QuantumCopyTower.PostFix();
         AlchemyTower.PostFix();
         DeconstructionTower.PostFix();

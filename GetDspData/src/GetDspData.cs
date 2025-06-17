@@ -462,7 +462,7 @@ public class GetDspData : BaseUnityPlugin {
                         });
                     }
                 }
-                //5.自然资源分馏、升转化、量子复制
+                //5.矿物复制、物品转化、量子复制
                 if (FractionateEverythingEnable) {
                     AddBaseRecipe(recipes, item);
                 }
@@ -527,7 +527,7 @@ public class GetDspData : BaseUnityPlugin {
         //     recipes.Add(new JObject {
         //         { "Type", -1 },
         //         { "Factories", new JArray(new[] { IFE矿物复制塔 }) },
-        //         { "Name", $"[自然资源分馏]{item.name}" },
+        //         { "Name", $"[矿物复制]{item.name}" },
         //         { "Items", new JArray(new[] { item.ID }) },
         //         { "ItemCounts", new JArray(new[] { res.Item1 }) },
         //         { "Results", new JArray(res.Item2) },
