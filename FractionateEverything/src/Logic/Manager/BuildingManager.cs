@@ -140,4 +140,67 @@ public static class BuildingManager {
     }
 
     #endregion
+
+    public static bool EnableFluidOutputStack(this ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                return InteractionTower.EnableFluidOutputStackEntry.Value;
+            case IFE矿物复制塔:
+                return MineralCopyTower.EnableFluidOutputStackEntry.Value;
+            case IFE点数聚集塔:
+                return PointAggregateTower.EnableFluidOutputStackEntry.Value;
+            case IFE量子复制塔:
+                return QuantumCopyTower.EnableFluidOutputStackEntry.Value;
+            case IFE点金塔:
+                return AlchemyTower.EnableFluidOutputStackEntry.Value;
+            case IFE分解塔:
+                return DeconstructionTower.EnableFluidOutputStackEntry.Value;
+            case IFE转化塔:
+                return ConversionTower.EnableFluidOutputStackEntry.Value;
+            default:
+                return false;
+        }
+    }
+
+    public static int MaxProductOutputStack(this ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                return InteractionTower.MaxProductOutputStackEntry.Value;
+            case IFE矿物复制塔:
+                return MineralCopyTower.MaxProductOutputStackEntry.Value;
+            case IFE点数聚集塔:
+                return PointAggregateTower.MaxProductOutputStackEntry.Value;
+            case IFE量子复制塔:
+                return QuantumCopyTower.MaxProductOutputStackEntry.Value;
+            case IFE点金塔:
+                return AlchemyTower.MaxProductOutputStackEntry.Value;
+            case IFE分解塔:
+                return DeconstructionTower.MaxProductOutputStackEntry.Value;
+            case IFE转化塔:
+                return ConversionTower.MaxProductOutputStackEntry.Value;
+            default:
+                return 1;
+        }
+    }
+
+    public static bool EnableFracForever(this ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                return InteractionTower.EnableFracForeverEntry.Value;
+            case IFE矿物复制塔:
+                return MineralCopyTower.EnableFracForeverEntry.Value;
+            case IFE点数聚集塔:
+                return PointAggregateTower.EnableFracForeverEntry.Value;
+            case IFE量子复制塔:
+                return QuantumCopyTower.EnableFracForeverEntry.Value;
+            case IFE点金塔:
+                return AlchemyTower.EnableFracForeverEntry.Value;
+            case IFE分解塔:
+                return DeconstructionTower.EnableFracForeverEntry.Value;
+            case IFE转化塔:
+                return ConversionTower.EnableFracForeverEntry.Value;
+            default:
+                return false;
+        }
+    }
 }

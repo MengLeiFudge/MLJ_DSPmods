@@ -82,47 +82,45 @@ public static class TechManager {
             "You have mastered the Up-Downgrade Fractionation technology and can now recycle process some items to copy them.",
             "你已经掌握了物品转化技术，可以用物品转化塔循环处理物品，从而实现物品的复制。");
 
-        Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
-        Register("分馏流动输出集装等级",
-            " Integration count of fractionate fluid output",
-            " 分馏流动输出集装数量");
-        Register("分馏流动输出集装描述",
-            "Failed fractionated items will be integrated as much as possible in a cargo.",
-            "分馏失败的原料将会尽可能以集装形式输出。");
-        Register("分馏流动输出集装结果",
-            "All failed fractionated items will now be integrated as much as possible in a cargo.",
-            "现在，所有分馏失败的原料都将尽可能集装后再输出。");
-
-        Register("T分馏产物输出集装", "Fractionate Product Output Integrate", "分馏产物输出集装");
-        Register("分馏产物输出集装等级",
-            " Integration count of fractionate product output",
-            " 分馏产物输出集装数量");
-        Register("分馏产物输出集装描述1",
-            "Successful fractionated items will be integrated as much as possible in a cargo.",
-            "分馏成功的产物将会尽可能以集装形式输出。");
-        Register("分馏产物输出集装结果1",
-            "All successful fractionated items will now be integrated as much as possible in a cargo.",
-            "现在，所有分馏成功的产物都将尽可能集装后再输出。");
-        Register("分馏产物输出集装描述2",
-            "Further increases the integration count of fractionate product in a cargo.",
-            "进一步提高分馏产物的集装数量。");
-        Register("分馏产物输出集装结果2",
-            "The integration count of fractionate product in a cargo was further improved.",
-            "所有分馏产物的集装数量进一步提升了。");
-
-        Register("T分馏永动", "Fractionate Forever", "分馏永动");
-        Register("分馏持续运行",
-            "Make specific types of fractionators keep running",
-            "使特定种类的分馏塔可以持续运行");
-        Register("分馏永动描述",
-            "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches half of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
-            "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限一半时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
-        Register("分馏永动结果",
-            "Now, fractionators will keep running without product buildup.",
-            "现在，分馏塔将会持续运行，不会出现产物堆积的情况了。");
+        // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
+        // Register("分馏流动输出集装等级",
+        //     " Integration count of fractionate fluid output",
+        //     " 分馏流动输出集装数量");
+        // Register("分馏流动输出集装描述",
+        //     "Failed fractionated items will be integrated as much as possible in a cargo.",
+        //     "分馏失败的原料将会尽可能以集装形式输出。");
+        // Register("分馏流动输出集装结果",
+        //     "All failed fractionated items will now be integrated as much as possible in a cargo.",
+        //     "现在，所有分馏失败的原料都将尽可能集装后再输出。");
+        //
+        // Register("T分馏产物输出集装", "Fractionate Product Output Integrate", "分馏产物输出集装");
+        // Register("分馏产物输出集装等级",
+        //     " Integration count of fractionate product output",
+        //     " 分馏产物输出集装数量");
+        // Register("分馏产物输出集装描述1",
+        //     "Successful fractionated items will be integrated as much as possible in a cargo.",
+        //     "分馏成功的产物将会尽可能以集装形式输出。");
+        // Register("分馏产物输出集装结果1",
+        //     "All successful fractionated items will now be integrated as much as possible in a cargo.",
+        //     "现在，所有分馏成功的产物都将尽可能集装后再输出。");
+        // Register("分馏产物输出集装描述2",
+        //     "Further increases the integration count of fractionate product in a cargo.",
+        //     "进一步提高分馏产物的集装数量。");
+        // Register("分馏产物输出集装结果2",
+        //     "The integration count of fractionate product in a cargo was further improved.",
+        //     "所有分馏产物的集装数量进一步提升了。");
+        //
+        // Register("T分馏永动", "Fractionate Forever", "分馏永动");
+        // Register("分馏持续运行",
+        //     "Make specific types of fractionators keep running",
+        //     "使特定种类的分馏塔可以持续运行");
+        // Register("分馏永动描述",
+        //     "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches half of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
+        //     "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限一半时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
+        // Register("分馏永动结果",
+        //     "Now, fractionators will keep running without product buildup.",
+        //     "现在，分馏塔将会持续运行，不会出现产物堆积的情况了。");
     }
-
-    static readonly List<TechProto> techs = [];
 
     /// <summary>
     /// 添加所有科技。对于科技的位置，x向右y向下，间距固定为4
@@ -132,176 +130,158 @@ public static class TechManager {
             "T分馏原胚", "分馏原胚描述", "分馏原胚结果",
             "Assets/fe/tech分馏原胚",
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
-            [I电磁矩阵], [10], 3600,
-            [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向],
+            [I电磁矩阵], [20], 7200,
+            [RFE分馏原胚普通, RFE分馏原胚精良, RFE分馏原胚稀有, RFE分馏原胚史诗, RFE分馏原胚传说, RFE分馏原胚定向],
             GenesisBook.Enable ? new(13, -67) : new(13, -67)
         );
         tech1750.AddItems = [IFE分馏原胚定向];
-        tech1750.AddItemCounts = [20];
-        techs.Add(tech1750);
+        tech1750.AddItemCounts = [10];
 
         var tech1751 = ProtoRegistry.RegisterTech(TFE物品交互,
             "T物品交互", "物品交互描述", "物品交互结果",
             "Assets/fe/tech物品交互",
             [tech1750.ID],
-            [IFE交互塔], [1], 3600,
+            [IFE交互塔], [10], 3600,
             [RFE交互塔],
             GenesisBook.Enable ? new(17, -67) : new(17, -67)
         );
         tech1751.AddItems = [IFE交互塔];
         tech1751.AddItemCounts = [5];
-        techs.Add(tech1751);
 
         var tech1752 = ProtoRegistry.RegisterTech(TFE矿物复制,
             "T矿物复制", "矿物复制描述", "矿物复制结果",
             "Assets/fe/tech矿物复制",
             [tech1751.ID],
             [IFE矿物复制塔], [1], 3600,
-            [RFE矿物复制塔],
+            [RFE矿物复制塔, RFE复制精华],
             GenesisBook.Enable ? new(21, -67) : new(21, -67)
         );
         tech1752.AddItems = [IFE矿物复制塔];
         tech1752.AddItemCounts = [5];
-        techs.Add(tech1752);
 
         var tech1754 = ProtoRegistry.RegisterTech(TFE增产点数聚集,
             "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果",
             "Assets/fe/tech增产点数聚集",
-            [tech1751.ID],
+            [tech1752.ID],
             [IFE点数聚集塔], [1], 3600,
             [RFE点数聚集塔],
             GenesisBook.Enable ? new(25, -67) : new(25, -67)
         );
         tech1754.AddItems = [IFE点数聚集塔];
         tech1754.AddItemCounts = [5];
-        techs.Add(tech1754);
 
         var tech1755 = ProtoRegistry.RegisterTech(TFE量子复制,
             "T量子复制", "量子复制描述", "量子复制结果",
             "Assets/fe/tech量子复制",
-            [tech1751.ID],
-            [IFE量子复制塔, I黑雾矩阵], [1, 200], 36000,
+            [tech1754.ID],
+            [IFE量子复制塔, I黑雾矩阵], [1, 2000], 60000,
             [RFE量子复制塔],
             GenesisBook.Enable ? new(29, -67) : new(29, -67)
         );
         tech1755.IsHiddenTech = true;
         //前置物品仅需物质重组器，只要掉落该物品，该科技就为可见状态
         tech1755.PreItem = [I物质重组器];
-        tech1755.PreTechsImplicit = GenesisBook.Enable
-            ? [T信息矩阵, T引力矩阵, T重氢分馏_GB强相互作用力材料, TGB家园世界虚拟技术革新]
-            : [T信息矩阵, T引力矩阵, T粒子可控, T波函数干扰, T量子芯片];
         tech1755.AddItems = [IFE量子复制塔];
         tech1755.AddItemCounts = [5];
-        techs.Add(tech1755);
 
-
-        //点金塔、分解塔、转化塔
         var tech1756 = ProtoRegistry.RegisterTech(TFE物品点金,
             "T物品点金", "物品点金描述", "物品点金结果",
             "Assets/fe/tech物品点金",
             [tech1751.ID],
             [IFE点金塔], [1], 3600,
-            [RFE点金塔],
+            [RFE点金塔, RFE点金精华],
             GenesisBook.Enable ? new(21, -71) : new(21, -71)
         );
         tech1756.AddItems = [IFE点金塔];
         tech1756.AddItemCounts = [5];
-        techs.Add(tech1756);
 
         var tech1757 = ProtoRegistry.RegisterTech(TFE物品分解,
             "T物品分解", "物品分解描述", "物品分解结果",
             "Assets/fe/tech物品分解",
             [tech1756.ID],
             [IFE分解塔], [1], 3600,
-            [RFE分解塔],
+            [RFE分解塔, RFE分解精华],
             GenesisBook.Enable ? new(25, -71) : new(25, -71)
         );
         tech1757.AddItems = [IFE分解塔];
         tech1757.AddItemCounts = [5];
-        techs.Add(tech1757);
 
         var tech1758 = ProtoRegistry.RegisterTech(TFE物品转化,
             "T物品转化", "物品转化描述", "物品转化结果",
             "Assets/fe/tech物品转化",
             [tech1757.ID],
             [IFE转化塔], [1], 3600,
-            [RFE转化塔],
+            [RFE转化塔, RFE转化精华],
             GenesisBook.Enable ? new(29, -71) : new(29, -71)
         );
         tech1758.AddItems = [IFE转化塔];
         tech1758.AddItemCounts = [5];
-        techs.Add(tech1758);
 
-        var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
-            "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",
-            LDB.techs.Select(T运输站集装物流 + 2).IconPath,
-            [],
-            [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-            [], new(37, -31));
-        tech3807.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
-        techs.Add(tech3807);
-
-        var tech3804 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装,
-            "T分馏产物输出集装", "分馏产物输出集装描述1", "分馏产物输出集装结果1",
-            LDB.techs.Select(T运输站集装物流).IconPath,
-            [],
-            [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-            [], new(37, -35));
+        // var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
+        //     "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",
+        //     LDB.techs.Select(T运输站集装物流 + 2).IconPath,
+        //     [],
+        //     [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
+        //     [], new(37, -31));
+        // tech3807.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
+        //
+        // var tech3804 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装,
+        //     "T分馏产物输出集装1", "分馏产物输出集装描述1", "分馏产物输出集装结果1",
+        //     LDB.techs.Select(T运输站集装物流).IconPath,
+        //     [],
+        //     [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
+        //     [], new(37, -35));
         // tech3804.Name = "T分馏产物输出集装";
-        tech3804.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
-        tech3804.Level = 1;
-        tech3804.MaxLevel = 1;
-        techs.Add(tech3804);
-
-        var tech3805 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 1,
-            "T分馏产物输出集装", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
-            LDB.techs.Select(T运输站集装物流 + 1).IconPath,
-            [tech3804.ID],
-            [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵], [8, 8, 8, 8], 360000,
-            [], new(41, -35));
+        // tech3804.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
+        // tech3804.Level = 1;
+        // tech3804.MaxLevel = 1;
+        //
+        // var tech3805 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 1,
+        //     "T分馏产物输出集装2", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
+        //     LDB.techs.Select(T运输站集装物流 + 1).IconPath,
+        //     [tech3804.ID],
+        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵], [8, 8, 8, 8], 360000,
+        //     [], new(41, -35));
         // tech3805.Name = "T分馏产物输出集装";
-        tech3805.Level = 2;
-        tech3805.MaxLevel = 2;
-        techs.Add(tech3805);
-
-        var tech3806 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 2,
-            "T分馏产物输出集装", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
-            LDB.techs.Select(T运输站集装物流 + 2).IconPath,
-            [tech3805.ID],
-            [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-            [], new(45, -35));
+        // tech3805.Level = 2;
+        // tech3805.MaxLevel = 2;
+        //
+        // var tech3806 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 2,
+        //     "T分馏产物输出集装", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
+        //     LDB.techs.Select(T运输站集装物流 + 2).IconPath,
+        //     [tech3805.ID],
+        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
+        //     [], new(45, -35));
         // tech3806.Name = "T分馏产物输出集装";
-        tech3806.Level = 3;
-        tech3806.MaxLevel = 3;
-        techs.Add(tech3806);
-
-        var tech3808 = ProtoRegistry.RegisterTech(TFE分馏永动,
-            "T分馏永动", "分馏永动描述", "分馏永动结果",
-            "Assets/fe/tech分馏永动",
-            [],
-            [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-            [], new(45, -31));
+        // tech3806.Level = 3;
+        // tech3806.MaxLevel = 3;
+        //
+        // var tech3808 = ProtoRegistry.RegisterTech(TFE分馏永动,
+        //     "T分馏永动", "分馏永动描述", "分馏永动结果",
+        //     "Assets/fe/tech分馏永动",
+        //     [],
+        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
+        //     [], new(45, -31));
         // tech3808.Name = "T分馏永动";
-        tech3808.PreTechsImplicit = [tech3806.ID];
-        techs.Add(tech3808);
+        // tech3808.PreTechsImplicit = [tech3806.ID];
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
-    public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
-        switch (__instance.ID) {
-            case TFE分馏流动输出集装:
-                __result = "+3" + "分馏流动输出集装等级".Translate() + "\r\n";
-                return false;
-            case >= TFE分馏产物输出集装 and <= TFE分馏产物输出集装 + 2:
-                __result = "+1" + "分馏产物输出集装等级".Translate() + "\r\n";
-                return false;
-            case TFE分馏永动:
-                __result = "分馏持续运行".Translate() + "\r\n";
-                return false;
-        }
-        return true;
-    }
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
+    // public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
+    //     switch (__instance.ID) {
+    //         case TFE分馏流动输出集装:
+    //             __result = "+3" + "分馏流动输出集装等级".Translate() + "\r\n";
+    //             return false;
+    //         case >= TFE分馏产物输出集装 and <= TFE分馏产物输出集装 + 2:
+    //             __result = "+1" + "分馏产物输出集装等级".Translate() + "\r\n";
+    //             return false;
+    //         case TFE分馏永动:
+    //             __result = "分馏持续运行".Translate() + "\r\n";
+    //             return false;
+    //     }
+    //     return true;
+    // }
 
     #region 一键解锁
 

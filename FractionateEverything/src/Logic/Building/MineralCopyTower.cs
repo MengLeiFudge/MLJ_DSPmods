@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -22,6 +23,9 @@ public static class MineralCopyTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.4f, 1.0f, 0.949f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
