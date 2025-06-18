@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -22,6 +23,9 @@ public static class PointAggregateTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.2509f, 0.8392f, 1.0f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",

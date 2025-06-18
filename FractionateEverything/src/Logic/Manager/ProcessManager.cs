@@ -28,9 +28,9 @@ public static class ProcessManager {
     private static string lastSpeedText = "";
     private static string lastProductProbText = "";
     private static string lastOriProductProbText = "";
-    public static int MaxProductOutputStack = 1;
-    public static bool EnableFracForever = false;
-    public static bool EnableFluidOutputStack = false;
+    // public static int MaxProductOutputStack = 1;
+    // public static bool EnableFracForever = false;
+    // public static bool EnableFluidOutputStack = false;
     public static int MaxOutputTimes = 2;
     public static int MaxBeltSpeed = 30;
     public static int FracFluidInputMax = 40;
@@ -75,28 +75,31 @@ public static class ProcessManager {
 
     #region 分馏配方与科技状态检测
 
-    /// <summary>
-    /// 更新分馏塔处理需要的部分数值。
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameData), nameof(GameData.GameTick))]
-    public static void GameData_GameTick_Postfix(long time) {
-        //使用3作为特殊值，每10逻辑帧更新一次
-        if (time % 10 != 3 || GameMain.history == null) {
-            return;
-        }
-        //从科技获取流动输出最大堆叠数目、产物输出最大堆叠数目
-        EnableFluidOutputStack = GameMain.history.TechUnlocked(TFE分馏流动输出集装);
-        int maxStack = 1;
-        for (int i = 0; i < 3; i++) {
-            if (GameMain.history.TechUnlocked(TFE分馏产物输出集装 + i)) {
-                maxStack++;
-            }
-        }
-        MaxProductOutputStack = maxStack;
-        //从科技获取是否分馏永动
-        EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
-    }
+    // /// <summary>
+    // /// 更新分馏塔处理需要的部分数值。
+    // /// </summary>
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(GameData), nameof(GameData.GameTick))]
+    // public static void GameData_GameTick_Postfix(long time) {
+    //     //使用3作为特殊值，每10逻辑帧更新一次
+    //     if (time % 10 != 3 || GameMain.history == null) {
+    //         return;
+    //     }
+    //     // //从科技获取流动输出最大堆叠数目、产物输出最大堆叠数目
+    //     // EnableFluidOutputStack = GameMain.history.TechUnlocked(TFE分馏流动输出集装);
+    //     // int maxStack = 1;
+    //     // for (int i = 0; i < 3; i++) {
+    //     //     if (GameMain.history.TechUnlocked(TFE分馏产物输出集装 + i)) {
+    //     //         maxStack++;
+    //     //     }
+    //     // }
+    //     // MaxProductOutputStack = maxStack;
+    //     // //从科技获取是否分馏永动
+    //     // EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
+    //     // EnableFluidOutputStack = false;
+    //     // MaxProductOutputStack = 1;
+    //     // EnableFracForever = true;
+    // }
 
     #endregion
 
@@ -677,6 +680,8 @@ public static class ProcessManager {
             __result = 0;
             return;
         }
+        int buildingID = factory.entityPool[__instance.entityId].protoId;
+        ItemProto building = LDB.items.Select(buildingID);
         int fluidId = __instance.fluidId;
         int mainProductId = __instance.productId;
         float fluidInputCountPerCargo = 1.0f;
@@ -702,7 +707,7 @@ public static class ProcessManager {
                 __instance.progress = 100000;
             bool fracForever = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
-                if (!fracForever && EnableFracForever) {
+                if (!fracForever && building.EnableFracForever()) {
                     //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
                     if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
                         fracForever = true;
@@ -800,7 +805,7 @@ public static class ProcessManager {
                         //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
                         //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!EnableFluidOutputStack) {
+                        if (!building.EnableFluidOutputStack()) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
@@ -861,7 +866,7 @@ public static class ProcessManager {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!EnableFluidOutputStack) {
+                        if (!building.EnableFluidOutputStack()) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -919,14 +924,14 @@ public static class ProcessManager {
                 //输出主产物
                 for (int i = 0; i < MaxOutputTimes; i++) {
                     //只有产物数目到达堆叠要求，或者没有正在处理的物品，才输出，且一次输出最大堆叠个数的物品
-                    if (__instance.productOutputCount >= MaxProductOutputStack) {
+                    if (__instance.productOutputCount >= building.MaxProductOutputStack()) {
                         //产物达到最大堆叠数目，直接尝试输出
                         mainProductOutput = true;
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
-                                (byte)MaxProductOutputStack, 0)) {
+                                (byte)building.MaxProductOutputStack(), 0)) {
                             break;
                         }
-                        __instance.productOutputCount -= MaxProductOutputStack;
+                        __instance.productOutputCount -= building.MaxProductOutputStack();
                     } else if (__instance.productOutputCount > 0 && __instance.fluidInputCount == 0) {
                         //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
@@ -947,12 +952,12 @@ public static class ProcessManager {
                             continue;
                         }
                         for (int j = 0; j < MaxOutputTimes; j++) {
-                            if (otherProductOutput[outputID] >= MaxProductOutputStack) {
+                            if (otherProductOutput[outputID] >= building.MaxProductOutputStack()) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
-                                        (byte)MaxProductOutputStack, 0)) {
+                                        (byte)building.MaxProductOutputStack(), 0)) {
                                     break;
                                 }
-                                otherProductOutput[outputID] -= MaxProductOutputStack;
+                                otherProductOutput[outputID] -= building.MaxProductOutputStack();
                             } else if (otherProductOutput[outputID] > 0 && __instance.fluidInputCount == 0) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
                                         (byte)otherProductOutput[outputID], 0)) {
@@ -1133,6 +1138,7 @@ public static class ProcessManager {
         if (buildingID == I分馏塔 || buildingID == IFE点数聚集塔) {
             return;
         }
+        ItemProto building = LDB.items.Select(buildingID);
         //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新UI，防止UI变化过快导致无法看清
         if (__instance.fractionatorId == fractionatorID) {
             totalUIUpdateTimes++;
@@ -1219,7 +1225,7 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             bool fracForever = false;
-            if (EnableFracForever) {
+            if (building.EnableFracForever()) {
                 if (fractionator.productOutputCount >= fractionator.productOutputMax / 2) {
                     fracForever = true;
                 }

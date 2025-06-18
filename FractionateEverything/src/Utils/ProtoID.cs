@@ -1000,7 +1000,4 @@ public static class ProtoID {
     internal const int TFE物品点金 = 1756;
     internal const int TFE物品分解 = 1757;
     internal const int TFE物品转化 = 1758;
-    internal const int TFE分馏流动输出集装 = 3807;
-    internal const int TFE分馏产物输出集装 = 3804;
-    internal const int TFE分馏永动 = 3808;
 }

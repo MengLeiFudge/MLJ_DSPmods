@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -22,6 +23,9 @@ public static class QuantumCopyTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.6235f, 0.6941f, 0.8f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE量子复制塔, "量子复制塔", "I量子复制塔",
