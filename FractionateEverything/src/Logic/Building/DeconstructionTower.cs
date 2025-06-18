@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -22,6 +23,9 @@ public static class DeconstructionTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.4f, 1.0f, 0.5f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE分解塔, "分解塔", "I分解塔",

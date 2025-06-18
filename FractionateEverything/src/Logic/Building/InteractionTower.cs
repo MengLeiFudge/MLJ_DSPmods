@@ -1,4 +1,5 @@
 ﻿using System;
+using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
@@ -23,6 +24,9 @@ public static class InteractionTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.8f, 0.3f, 0.6f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",

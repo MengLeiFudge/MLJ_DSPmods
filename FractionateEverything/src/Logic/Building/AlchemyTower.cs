@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -22,6 +23,9 @@ public static class AlchemyTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(1.0f, 0.7019f, 0.4f);
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点金塔, "点金塔", "I点金塔",

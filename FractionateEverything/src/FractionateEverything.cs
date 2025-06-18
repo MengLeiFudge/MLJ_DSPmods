@@ -62,14 +62,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// 是否在游戏加载时禁用提示信息。
     /// </summary>
     public static ConfigEntry<bool> DisableMessageBox;
-    /// <summary>
-    /// 是否启用上帝模式。
-    /// </summary>
-    public static ConfigEntry<bool> EnableGod;
-    /// <summary>
-    /// 加成倍数。
-    /// </summary>
-    public static ConfigEntry<float> MultiRate;
 
     public void LoadConfig() {
         configFile = Config;
@@ -85,18 +77,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
                 "Don't show message when FractionateEverything is loaded.\n"
                 + "禁用游戏加载完成后显示的万物分馏提示信息。",
                 new AcceptableBoolValue(false), null));
-
-        EnableGod = Config.Bind("config", "EnableGod", false,
-            new ConfigDescription(
-                "Enable god mode.\n"
-                + "启用上帝模式。",
-                new AcceptableBoolValue(false), null));
-
-        MultiRate = Config.Bind("config", "MultiRate", 1.0f,
-            new ConfigDescription(
-                "Multi Rate.\n"
-                + "加成倍数。",
-                new AcceptableFloatValue(1.0f, 0.1f, 10.0f), null));
 
         UIMainViewModel.Init(Config);
 
