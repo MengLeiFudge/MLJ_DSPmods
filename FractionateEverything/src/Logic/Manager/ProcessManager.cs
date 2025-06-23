@@ -9,6 +9,7 @@ using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.Utils.FormatUtils;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.BaseRecipe;
 
 namespace FE.Logic.Manager;
 
@@ -52,9 +53,10 @@ public static class ProcessManager {
         MaxBeltSpeed = Math.Min(MaxBeltSpeed, 60);
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
         float ratio = MaxBeltSpeed / 30.0f;
-        FracFluidInputMax = (int)(BuildingManager.OriPrefabDesc.fracFluidInputMax * ratio);
-        FracProductOutputMax = (int)(BuildingManager.OriPrefabDesc.fracProductOutputMax * ratio);
-        FracFluidOutputMax = (int)(BuildingManager.OriPrefabDesc.fracFluidOutputMax * ratio);
+        PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
+        FracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
+        FracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
+        FracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
 
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         incTableFixedRatio = new double[Cargo.incTableMilli.Length];
@@ -1216,12 +1218,14 @@ public static class ProcessManager {
                 return;
         }
         float flowRatio = 1.0f;
+        Color color = QualityColors[5];
         if (recipe == null) {
             s1 = "无配方".Translate();
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else if (!recipe.IsUnlocked) {
             s1 = recipe + "\n" + "未解锁".Translate();
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+            color = recipe.QualityColor;
         } else {
             StringBuilder sb1 = new StringBuilder();
             bool fracForever = false;
@@ -1255,11 +1259,14 @@ public static class ProcessManager {
                     s2 += $"\n{"损毁".Translate()}({destroyRatio.FormatP()})";
                 }
             }
+            color = recipe.QualityColor;
         }
         //刷新概率显示内容
         __instance.productProbText.text = s1;
+        __instance.productProbText.color = color;
         lastProductProbText = s1;
         __instance.oriProductProbText.text = s2;
+        __instance.oriProductProbText.color = color;
         lastOriProductProbText = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);

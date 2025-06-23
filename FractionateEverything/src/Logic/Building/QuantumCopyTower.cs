@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
@@ -15,17 +16,25 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            $"Take full advantage of the proliferator points' proliferator feature to reorganize and duplicate the input items. It can fractionate everything and truly create something from nothing.\nSuccess rate is related to the input item proliferator points, and maximum rate is related to the input item value.",
-            $"充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。\n成功率与输入物品的增产点数有关，最大值与输入物品的价值有关。");
+            $"-",
+            $"充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。");
+    }
+
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
+
+    public static void LoadConfig(ConfigFile configFile) {
+        string className = "QuantumCopyTower";
+        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
+        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
+        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.6235f, 0.6941f, 0.8f);
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE量子复制塔, "量子复制塔", "I量子复制塔",
@@ -39,11 +48,7 @@ public static class QuantumCopyTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void PostFix() {
-        // model.HpMax += 0;
-        double energyRatio = 1.0;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void SetMaterials() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -57,5 +62,31 @@ public static class QuantumCopyTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
+        SetHpAndEnergy(1);
     }
+
+    public static void SetHpAndEnergy(int level) {
+        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
+        double energyRatio = 1.0 * (1 - level * 0.1);
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
+        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        EnableFracForeverEntry.Value = r.ReadBoolean();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(EnableFluidOutputStackEntry.Value);
+        w.Write(MaxProductOutputStackEntry.Value);
+        w.Write(EnableFracForeverEntry.Value);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }

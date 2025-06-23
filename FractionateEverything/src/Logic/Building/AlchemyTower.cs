@@ -1,6 +1,8 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
+using FE.Logic.Manager;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
@@ -19,13 +21,21 @@ public static class AlchemyTower {
             $"将物品转换为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
     }
 
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
+
+    public static void LoadConfig(ConfigFile configFile) {
+        string className = "AlchemyTower";
+        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
+        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
+        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
+    }
+
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(1.0f, 0.7019f, 0.4f);
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点金塔, "点金塔", "I点金塔",
@@ -39,11 +49,7 @@ public static class AlchemyTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void PostFix() {
-        // model.HpMax += 0;
-        double energyRatio = 0.75;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void SetMaterials() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -57,5 +63,31 @@ public static class AlchemyTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
+        SetHpAndEnergy(1);
     }
+
+    public static void SetHpAndEnergy(int level) {
+        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
+        double energyRatio = 0.8 * (1 - level * 0.1);
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
+        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        EnableFracForeverEntry.Value = r.ReadBoolean();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(EnableFluidOutputStackEntry.Value);
+        w.Write(MaxProductOutputStackEntry.Value);
+        w.Write(EnableFracForeverEntry.Value);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }

@@ -10,6 +10,11 @@ public enum ERecipe {
     Unknown,
 
     /// <summary>
+    /// 建筑培养配方
+    /// </summary>
+    BuildingCultivate,
+
+    /// <summary>
     /// 矿物复制配方
     /// </summary>
     MineralCopy,

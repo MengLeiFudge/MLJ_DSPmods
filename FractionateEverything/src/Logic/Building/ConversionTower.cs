@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
@@ -15,17 +16,25 @@ public static class ConversionTower {
     public static void AddTranslations() {
         Register("转化塔", "Conversion Tower");
         Register("I转化塔",
-            $"Converts items into other items.",
-            $"将物品转换为其他物品。有一定概率得到转化精华。");
+            $"-",
+            $"将物品转换为其他相关物品。有一定概率得到转化精华。");
+    }
+
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
+
+    public static void LoadConfig(ConfigFile configFile) {
+        string className = "ConversionTower";
+        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
+        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
+        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.7f, 0.6f, 0.8f);
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE转化塔, "转化塔", "I转化塔",
@@ -39,11 +48,7 @@ public static class ConversionTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void PostFix() {
-        // model.HpMax += 0;
-        double energyRatio = 1.0;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void SetMaterials() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -57,5 +62,31 @@ public static class ConversionTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
+        SetHpAndEnergy(1);
     }
+
+    public static void SetHpAndEnergy(int level) {
+        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
+        double energyRatio = 1.0 * (1 - level * 0.1);
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
+        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        EnableFracForeverEntry.Value = r.ReadBoolean();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(EnableFluidOutputStackEntry.Value);
+        w.Write(MaxProductOutputStackEntry.Value);
+        w.Write(EnableFracForeverEntry.Value);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }
