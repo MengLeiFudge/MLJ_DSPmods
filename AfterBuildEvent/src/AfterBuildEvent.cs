@@ -158,10 +158,19 @@ static class AfterBuildEvent {
             //额外打包
             if (projectName == "FractionateEverything") {
                 //给群友提供的测试版本，包含了如何使用R2导入的视频
+                string dir = $@".\ModZips";
+                if (Directory.Exists(dir)) {
+                    foreach (string file in Directory.GetFiles(dir)) {
+                        FileInfo fileInfo = new FileInfo(file);
+                        if (fileInfo.Name.StartsWith("万物分馏测试版-") && fileInfo.Name.EndsWith(".zip")) {
+                            fileInfo.Delete();
+                        }
+                    }
+                }
                 string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
                 if (File.Exists(techVideo)) {
                     fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\{projectName}{version}（附带R2导入教学）.zip";
+                    zipFile = $@".\ModZips\万物分馏测试版-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                 }

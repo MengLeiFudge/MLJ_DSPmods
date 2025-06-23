@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
@@ -10,23 +11,31 @@ using static FE.Utils.I18NUtils;
 namespace FE.Logic.Building;
 
 /// <summary>
-/// 交互塔，此类不需要配方
+/// 交互塔
 /// </summary>
 public static class InteractionTower {
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
             $"-",
-            $"将物品以数据形式传递到主脑，从而进行资源的相关兑换、抽奖等操作。");
+            $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".AddOrangeLabel()}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
+    }
+
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
+
+    public static void LoadConfig(ConfigFile configFile) {
+        string className = "InteractionTower";
+        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
+        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
+        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.8f, 0.3f, 0.6f);
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
@@ -40,11 +49,7 @@ public static class InteractionTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void PostFix() {
-        // model.HpMax += 200;
-        double energyRatio = 3.0;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void SetMaterials() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -58,6 +63,14 @@ public static class InteractionTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
+        SetHpAndEnergy(1);
+    }
+
+    public static void SetHpAndEnergy(int level) {
+        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
+        double energyRatio = 3.0 * (1 - level * 0.1);
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
     }
 
     public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
@@ -270,4 +283,22 @@ public static class InteractionTower {
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
+        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        EnableFracForeverEntry.Value = r.ReadBoolean();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(EnableFluidOutputStackEntry.Value);
+        w.Write(MaxProductOutputStackEntry.Value);
+        w.Write(EnableFracForeverEntry.Value);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }

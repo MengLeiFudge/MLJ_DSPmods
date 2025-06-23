@@ -244,6 +244,8 @@ public abstract class BaseRecipe(
 
     #endregion
 
+    public override string ToString() => $"Lv{Level} ({Experience}/{NextLevelExperience})";
+
     #region IModCanSave
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
@@ -15,17 +16,25 @@ public static class MineralCopyTower {
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Copy Tower");
         Register("I矿物复制塔",
-            "It is possible to duplicate most natural resources, avoiding the situation of being unable to explore for lack of resources.",
-            "可以复制绝大多数自然资源，避免出现缺乏资源无法探索的情形。");
+            $"-",
+            $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".AddOrangeLabel()}科技也会影响效果。");
+    }
+
+    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
+    public static ConfigEntry<int> MaxProductOutputStackEntry;
+    public static ConfigEntry<bool> EnableFracForeverEntry;
+
+    public static void LoadConfig(ConfigFile configFile) {
+        string className = "MineralCopyTower";
+        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
+        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
+        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.4f, 1.0f, 0.949f);
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
@@ -39,11 +48,7 @@ public static class MineralCopyTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void PostFix() {
-        // model.HpMax += 50;
-        double energyRatio = 0.4;
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void SetMaterials() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -57,5 +62,31 @@ public static class MineralCopyTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
+        SetHpAndEnergy(1);
     }
+
+    public static void SetHpAndEnergy(int level) {
+        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
+        double energyRatio = 0.4 * (1 - level * 0.1);
+        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
+        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        EnableFracForeverEntry.Value = r.ReadBoolean();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(EnableFluidOutputStackEntry.Value);
+        w.Write(MaxProductOutputStackEntry.Value);
+        w.Write(EnableFracForeverEntry.Value);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }

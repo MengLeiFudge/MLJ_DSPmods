@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx.Configuration;
 using FE.Logic.Building;
 using HarmonyLib;
 using static FE.Utils.ProtoID;
@@ -10,8 +11,6 @@ using static FE.Logic.Manager.ProcessManager;
 namespace FE.Logic.Manager;
 
 public static class BuildingManager {
-    #region 添加新建筑
-
     public static void AddTranslations() {
         InteractionTower.AddTranslations();
         MineralCopyTower.AddTranslations();
@@ -22,12 +21,16 @@ public static class BuildingManager {
         ConversionTower.AddTranslations();
     }
 
-    public static PrefabDesc OriPrefabDesc => LDB.models.Select(M分馏塔).prefabDesc;
-    public static readonly List<(RecipeProto, ModelProto, ItemProto)> buildingList = [];
+    public static void LoadConfig(ConfigFile configFile) {
+        InteractionTower.LoadConfig(configFile);
+        MineralCopyTower.LoadConfig(configFile);
+        PointAggregateTower.LoadConfig(configFile);
+        QuantumCopyTower.LoadConfig(configFile);
+        AlchemyTower.LoadConfig(configFile);
+        DeconstructionTower.LoadConfig(configFile);
+        ConversionTower.LoadConfig(configFile);
+    }
 
-    /// <summary>
-    /// 在PreAdd阶段，添加分馏塔。
-    /// </summary>
     public static void AddFractionators() {
         //assembler-mk-1至assembler-mk-4，但对于分馏塔而言太暗，需要适当增加亮度
         //new(1.0f, 0.6596f, 0.3066f)
@@ -42,28 +45,32 @@ public static class BuildingManager {
         AlchemyTower.Create();
         DeconstructionTower.Create();
         ConversionTower.Create();
+
+        //初始给予1个交互塔
+        TechProto tech = LDB.techs.Select(T戴森球计划);
+        tech.AddItems = [..tech.AddItems, IFE交互塔];
+        tech.AddItemCounts = [..tech.AddItemCounts, 1];
     }
 
-    public static void PostFixFractionators() {
-        InteractionTower.PostFix();
-        MineralCopyTower.PostFix();
-        PointAggregateTower.PostFix();
-        QuantumCopyTower.PostFix();
-        AlchemyTower.PostFix();
-        DeconstructionTower.PostFix();
-        ConversionTower.PostFix();
+    public static void SetFractionatorMaterials() {
+        InteractionTower.SetMaterials();
+        MineralCopyTower.SetMaterials();
+        PointAggregateTower.SetMaterials();
+        QuantumCopyTower.SetMaterials();
+        AlchemyTower.SetMaterials();
+        DeconstructionTower.SetMaterials();
+        ConversionTower.SetMaterials();
     }
 
     /// <summary>
     /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
     /// </summary>
     public static void SetFractionatorCacheSize() {
-        foreach (var p in buildingList) {
-            if (p.Item3.prefabDesc.isFractionator) {
-                var prefabDesc = LDB.items.Select(p.Item3.ID).prefabDesc;
-                prefabDesc.fracFluidInputMax = FracFluidInputMax;
-                prefabDesc.fracProductOutputMax = FracProductOutputMax;
-                prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
+        foreach (ModelProto modelProto in LDB.models.dataArray) {
+            if (modelProto.prefabDesc.isFractionator) {
+                modelProto.prefabDesc.fracFluidInputMax = FracFluidInputMax;
+                modelProto.prefabDesc.fracProductOutputMax = FracProductOutputMax;
+                modelProto.prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
             }
         }
     }
@@ -79,9 +86,7 @@ public static class BuildingManager {
         __instance.fluidOutputMax = FracFluidOutputMax;
     }
 
-    #endregion
-
-    #region 分馏塔字段拓展
+    #region 分馏塔产物输出拓展
 
     /// <summary>
     /// 存储分馏塔所有副产物。结构：
@@ -89,7 +94,7 @@ public static class BuildingManager {
     /// </summary>
     private static readonly ConcurrentDictionary<(int, int), Dictionary<int, int>> outputExtend = [];
 
-    public static void Import(BinaryReader r) {
+    public static void OutputExtendImport(BinaryReader r) {
         outputExtend.Clear();
         int fractionatorNum = r.ReadInt32();
         for (int i = 0; i < fractionatorNum; i++) {
@@ -109,7 +114,7 @@ public static class BuildingManager {
         }
     }
 
-    public static void Export(BinaryWriter w) {
+    public static void OutputExtendExport(BinaryWriter w) {
         w.Write(outputExtend.Count);
         foreach (var p in outputExtend) {
             w.Write(p.Key.Item1);
@@ -125,7 +130,7 @@ public static class BuildingManager {
         }
     }
 
-    public static void IntoOtherSave() {
+    public static void OutputExtendIntoOtherSave() {
         outputExtend.Clear();
     }
 
@@ -203,4 +208,41 @@ public static class BuildingManager {
                 return false;
         }
     }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        OutputExtendImport(r);
+        InteractionTower.Import(r);
+        MineralCopyTower.Import(r);
+        PointAggregateTower.Import(r);
+        QuantumCopyTower.Import(r);
+        AlchemyTower.Import(r);
+        DeconstructionTower.Import(r);
+        ConversionTower.Import(r);
+    }
+
+    public static void Export(BinaryWriter w) {
+        OutputExtendExport(w);
+        InteractionTower.Export(w);
+        MineralCopyTower.Export(w);
+        PointAggregateTower.Export(w);
+        QuantumCopyTower.Export(w);
+        AlchemyTower.Export(w);
+        DeconstructionTower.Export(w);
+        ConversionTower.Export(w);
+    }
+
+    public static void IntoOtherSave() {
+        OutputExtendIntoOtherSave();
+        InteractionTower.IntoOtherSave();
+        MineralCopyTower.IntoOtherSave();
+        PointAggregateTower.IntoOtherSave();
+        QuantumCopyTower.IntoOtherSave();
+        AlchemyTower.IntoOtherSave();
+        DeconstructionTower.IntoOtherSave();
+        ConversionTower.IntoOtherSave();
+    }
+
+    #endregion
 }

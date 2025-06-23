@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using FE.Logic.Recipe;
 using static FE.Utils.LogUtils;
+using static FE.Utils.ProtoID;
 
 namespace FE.Logic.Manager;
 
@@ -61,6 +62,9 @@ public static class RecipeManager {
     #endregion
 
     public static void UnlockAll() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
         foreach (var recipe in RecipeList) {
             if (!recipe.IsUnlocked) {
                 recipe.Level = 1;
@@ -68,6 +72,14 @@ public static class RecipeManager {
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
+        GameMain.mainPlayer.package.AddItem(IFE交互塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE矿物复制塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE点数聚集塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE量子复制塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE点金塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE分解塔, 30, 0, out _);
+        GameMain.mainPlayer.package.AddItem(IFE转化塔, 30, 0, out _);
+        UIMessageBox.Show("提示".Translate(), "所有配方已解锁。".Translate(), "确定".Translate(), UIMessageBox.INFO, null);
     }
 
     #region 创建配方
