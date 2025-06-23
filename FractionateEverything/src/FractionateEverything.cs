@@ -15,7 +15,6 @@ using FE.Logic.Recipe;
 using FE.UI;
 using FE.UI.Components;
 using FE.UI.View;
-using FE.UI.ViewModel;
 using FE.Utils;
 using HarmonyLib;
 using xiaoye97;
@@ -78,9 +77,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
                 + "禁用游戏加载完成后显示的万物分馏提示信息。",
                 new AcceptableBoolValue(false), null));
 
-        UIMainViewModel.Init(Config);
+        BuildingManager.LoadConfig(Config);
+        MainWindow.LoadConfig(Config);
 
-        //移除之前多余的设置项，然后保存
         (Traverse.Create(Config).Property("OrphanedEntries").GetValue() as IDictionary)?.Clear();
         Config.Save();
     }
@@ -92,16 +91,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public static void SetConfig() {
         DisableMessageBox.Value = true;
         CurrentVersion.Value = PluginInfo.PLUGIN_VERSION;
-        configFile.Save();
-    }
-
-    /**
-     * 更新自定义设置项。
-     * 在点击设置-杂项的应用按钮时执行。
-     */
-    public static void SetConfig(int iconVersion, bool enableBuildingAsTrash) {
-        LogInfo($"Fractionate Everything setting changed.\n"
-                + $" iconVersion:{iconVersion}");
         configFile.Save();
     }
 
@@ -171,7 +160,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             // );
 
             GameLogic.Enable(true);
-            UIMainView.Init();
+            MainWindow.Init();
             UIFunctions.Init();
         }
     }
@@ -218,8 +207,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public void PostAddData() {
-        //调整分馏塔模型电力、颜色等属性
-        BuildingManager.PostFixFractionators();
+        //调整分馏塔模型颜色
+        BuildingManager.SetFractionatorMaterials();
     }
 
     /// <summary>
@@ -269,6 +258,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void Import(BinaryReader r) {
         RecipeManager.Import(r);
+        BuildingManager.Import(r);
     }
 
     /// <summary>
@@ -276,6 +266,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void Export(BinaryWriter w) {
         RecipeManager.Export(w);
+        BuildingManager.Export(w);
     }
 
     /// <summary>
@@ -283,6 +274,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// </summary>
     public void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
+        BuildingManager.IntoOtherSave();
     }
 
     #endregion
