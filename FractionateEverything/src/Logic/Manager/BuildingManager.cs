@@ -45,11 +45,6 @@ public static class BuildingManager {
         AlchemyTower.Create();
         DeconstructionTower.Create();
         ConversionTower.Create();
-
-        //初始给予1个交互塔
-        TechProto tech = LDB.techs.Select(T戴森球计划);
-        tech.AddItems = [..tech.AddItems, IFE交互塔];
-        tech.AddItemCounts = [..tech.AddItemCounts, 1];
     }
 
     public static void SetFractionatorMaterials() {
