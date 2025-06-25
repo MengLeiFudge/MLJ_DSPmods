@@ -257,16 +257,20 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// 载入存档时执行。
     /// </summary>
     public void Import(BinaryReader r) {
+        int version = r.ReadInt32();
         RecipeManager.Import(r);
         BuildingManager.Import(r);
+        MainWindow.Import(r);
     }
 
     /// <summary>
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
+        w.Write(1);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
+        MainWindow.Export(w);
     }
 
     /// <summary>
@@ -275,6 +279,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
+        MainWindow.IntoOtherSave();
     }
 
     #endregion

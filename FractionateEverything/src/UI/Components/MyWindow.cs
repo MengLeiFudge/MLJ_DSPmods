@@ -85,7 +85,7 @@ public class MyWindow : ManualBehaviour {
 
     public void AutoFitWindowSize() {
         var trans = GetComponent<RectTransform>();
-        trans.sizeDelta = new Vector2(_maxX + Margin + TabWidth + Spacing + Margin, MaxY + TitleHeight + Margin);
+        trans.sizeDelta = new(_maxX + Margin + TabWidth + Spacing + Margin, MaxY + TitleHeight + Margin);
     }
 
     private static void AddElement(float x, float y, RectTransform rect, RectTransform parent = null) {
@@ -100,10 +100,10 @@ public class MyWindow : ManualBehaviour {
         var txt = Instantiate(src);
         txt.gameObject.name = objName;
         txt.text = label.Translate();
-        txt.color = new Color(1f, 1f, 1f, 0.4f);
+        txt.color = new(1f, 1f, 1f, 0.4f);
         txt.alignment = TextAnchor.MiddleLeft;
         txt.fontSize = fontSize;
-        txt.rectTransform.sizeDelta = new Vector2(txt.preferredWidth + 8f, txt.preferredHeight + 8f);
+        txt.rectTransform.sizeDelta = new(txt.preferredWidth + 8f, txt.preferredHeight + 8f);
         AddElement(x, y, txt.rectTransform, parent);
         return txt;
     }
@@ -153,7 +153,7 @@ public class MyWindow : ManualBehaviour {
         var btn = Instantiate(panel.cpuActiveButton);
         btn.gameObject.name = objName;
         var rect = UIUtils.NormalizeRectWithTopLeft(btn, x, y, parent);
-        rect.sizeDelta = new Vector2(width, rect.sizeDelta.y);
+        rect.sizeDelta = new(width, rect.sizeDelta.y);
         var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
         var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
         if (l != null) {
@@ -167,7 +167,7 @@ public class MyWindow : ManualBehaviour {
 
         t.fontSize = fontSize;
         btn.tip = null;
-        btn.tips = new UIButton.TipSettings();
+        btn.tips = new();
         btn.button.onClick.RemoveAllListeners();
         if (onClick != null) btn.button.onClick.AddListener(onClick);
 
@@ -225,11 +225,17 @@ public class MyWindow : ManualBehaviour {
         }
     }
 
+    /// <summary>
+    /// 滑条位置是index，滑块显示数字是value
+    /// </summary>
     public class RangeValueMapper<T>(int min, int max) : ValueMapper<T> {
         public override int Min => min;
         public override int Max => max;
     }
 
+    /// <summary>
+    /// 滑条位置是index，滑块显示数字是value
+    /// </summary>
     private class ArrayMapper<T> : ValueMapper<T> {
         private readonly T[] _values;
 
@@ -368,9 +374,9 @@ public class MyWindow : ManualBehaviour {
         var inputField = Instantiate(stationWindow.nameInput);
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
-        inputField.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
+        inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
         var rect = UIUtils.NormalizeRectWithTopLeft(inputField, x, y, parent);
-        rect.sizeDelta = new Vector2(210, rect.sizeDelta.y);
+        rect.sizeDelta = new(210, rect.sizeDelta.y);
         inputField.text = text;
         inputField.textComponent.fontSize = fontSize;
 
@@ -391,9 +397,9 @@ public class MyWindow : ManualBehaviour {
         var inputField = Instantiate(stationWindow.nameInput);
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
-        inputField.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
+        inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
         var rect = UIUtils.NormalizeRectWithTopLeft(inputField, x, y, parent);
-        rect.sizeDelta = new Vector2(width, rect.sizeDelta.y);
+        rect.sizeDelta = new(width, rect.sizeDelta.y);
         inputField.text = config.Value;
         inputField.textComponent.fontSize = fontSize;
 
@@ -429,13 +435,13 @@ public class MyWindowWithTabs : MyWindow {
         var btn = Instantiate(src);
         var btnRect = UIUtils.NormalizeRectWithTopLeft(btn, Margin, y, parent);
         btn.name = "tab-btn-" + index;
-        btnRect.sizeDelta = new Vector2(TabWidth, TabHeight);
+        btnRect.sizeDelta = new(TabWidth, TabHeight);
         btn.transform.Find("frame").gameObject.SetActive(false);
         if (btn.transitions.Length >= 3) {
-            btn.transitions[0].normalColor = new Color(0.1f, 0.1f, 0.1f, 0.68f);
-            btn.transitions[0].highlightColorOverride = new Color(0.9906f, 0.5897f, 0.3691f, 0.4f);
-            btn.transitions[1].normalColor = new Color(1f, 1f, 1f, 0.6f);
-            btn.transitions[1].highlightColorOverride = new Color(0.2f, 0.1f, 0.1f, 0.9f);
+            btn.transitions[0].normalColor = new(0.1f, 0.1f, 0.1f, 0.68f);
+            btn.transitions[0].highlightColorOverride = new(0.9906f, 0.5897f, 0.3691f, 0.4f);
+            btn.transitions[1].normalColor = new(1f, 1f, 1f, 0.6f);
+            btn.transitions[1].highlightColorOverride = new(0.2f, 0.1f, 0.1f, 0.9f);
         }
 
         var btnText = btn.transform.Find("Text").GetComponent<Text>();
@@ -461,7 +467,7 @@ public class MyWindowWithTabs : MyWindow {
         Destroy(img.Find("tri").gameObject);
         _tabY += spacing;
         var rect = UIUtils.NormalizeRectWithTopLeft(img, 28, _tabY, parent);
-        rect.sizeDelta = new Vector2(107, 2);
+        rect.sizeDelta = new(107, 2);
         _tabY += 2;
     }
 

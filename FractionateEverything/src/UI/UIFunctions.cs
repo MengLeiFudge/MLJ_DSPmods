@@ -16,8 +16,8 @@ public static class UIFunctions {
     private static GameObject _buttonOnPlanetGlobe;
 
     public static void Init() {
-        _toggleKey = KeyBindings.RegisterKeyBinding(new BuiltinKey {
-            key = new CombineKey((int)KeyCode.F, CombineKey.SHIFT_COMB, ECombineKeyAction.OnceClick, false),
+        _toggleKey = KeyBindings.RegisterKeyBinding(new() {
+            key = new((int)KeyCode.F, CombineKey.SHIFT_COMB, ECombineKeyAction.OnceClick, false),
             conflictGroup = KeyBindConflict.MOVEMENT
                             | KeyBindConflict.FLYING
                             | KeyBindConflict.SAILING

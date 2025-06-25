@@ -79,7 +79,7 @@ public class MyCornerComboBox : MonoBehaviour {
     public void SetIndex(int index) => _comboBox.itemIndex = index;
 
     public void SetSize(float width, float height) {
-        _rectTrans.sizeDelta = new Vector2(width > 0f ? width : _rectTrans.sizeDelta.x,
+        _rectTrans.sizeDelta = new(width > 0f ? width : _rectTrans.sizeDelta.x,
             height > 0f ? height : _rectTrans.sizeDelta.y);
     }
 

@@ -23,7 +23,7 @@ public static class KeyBindings {
             };
         }
 
-        return new CombineKey((int)shortcut.MainKey, mod, ECombineKeyAction.OnceClick, false);
+        return new((int)shortcut.MainKey, mod, ECombineKeyAction.OnceClick, false);
     }
 
     public static bool IsKeyPressing(this PressKeyBind keyBind) {

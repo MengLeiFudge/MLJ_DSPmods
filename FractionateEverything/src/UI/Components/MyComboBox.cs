@@ -28,7 +28,7 @@ public class MyComboBox : MonoBehaviour {
             txt.font = fontSource.font;
             txt.fontSize = fontSource.fontSize;
             txt.fontStyle = fontSource.fontStyle;
-            txt.color = new Color(1f, 1f, 1f, 0.6f);
+            txt.color = new(1f, 1f, 1f, 0.6f);
         }
         var localizer = go.GetComponent<Localizer>();
         if (localizer) DestroyImmediate(localizer);
@@ -83,8 +83,8 @@ public class MyComboBox : MonoBehaviour {
         var rtrans = (RectTransform)_comboBox.transform;
         var oldPosition = rtrans.localPosition;
         var pwidth = _text.preferredWidth;
-        rtrans.localPosition = new Vector3(pwidth + 5f, oldPosition.y, oldPosition.z);
-        _rectTrans.sizeDelta = new Vector2(rtrans.localPosition.x + 5f + rtrans.sizeDelta.x, _rectTrans.sizeDelta.y);
+        rtrans.localPosition = new(pwidth + 5f, oldPosition.y, oldPosition.z);
+        _rectTrans.sizeDelta = new(rtrans.localPosition.x + 5f + rtrans.sizeDelta.x, _rectTrans.sizeDelta.y);
     }
 
     public void SetPrompt(string prompt) {
@@ -112,8 +112,8 @@ public class MyComboBox : MonoBehaviour {
     public void SetSize(float width, float height) {
         var rtrans = (RectTransform)_comboBox.transform;
         rtrans.sizeDelta =
-            new Vector2(width > 0f ? width : rtrans.sizeDelta.x, height > 0f ? height : rtrans.sizeDelta.y);
-        _rectTrans.sizeDelta = new Vector2(rtrans.localPosition.x + rtrans.sizeDelta.x, _rectTrans.sizeDelta.y);
+            new(width > 0f ? width : rtrans.sizeDelta.x, height > 0f ? height : rtrans.sizeDelta.y);
+        _rectTrans.sizeDelta = new(rtrans.localPosition.x + rtrans.sizeDelta.x, _rectTrans.sizeDelta.y);
     }
 
     public void AddOnSelChanged(Action<int> action) => OnSelChanged += action;

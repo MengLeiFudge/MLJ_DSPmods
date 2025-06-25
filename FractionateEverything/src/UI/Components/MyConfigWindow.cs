@@ -33,7 +33,7 @@ public class MyConfigWindow : MyWindowWithTabs {
 
     public override bool _OnInit() {
         if (!base._OnInit()) return false;
-        _windowTrans.anchoredPosition = new Vector2(0, 0);
+        _windowTrans.anchoredPosition = new(0, 0);
         return true;
     }
 
