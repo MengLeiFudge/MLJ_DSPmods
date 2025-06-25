@@ -159,13 +159,13 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumDuplicate) {
-                textRecipeInfo[line].text = $"     0.01 复制精华";
+                textRecipeInfo[line].text = "     0.01 复制精华";
                 line++;
-                textRecipeInfo[line].text = $"     0.01 点金精华";
+                textRecipeInfo[line].text = "     0.01 点金精华";
                 line++;
-                textRecipeInfo[line].text = $"     0.01 分解精华";
+                textRecipeInfo[line].text = "     0.01 分解精华";
                 line++;
-                textRecipeInfo[line].text = $"     0.01 转化精华";
+                textRecipeInfo[line].text = "     0.01 转化精华";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}    损毁率 {recipe.DestroyRate:P3}";
@@ -189,10 +189,10 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}";
             line++;
             if (recipe.Quality >= 7) {
-                textRecipeInfo[line].text = $"当前配方已到最高品质，无法突破！";
+                textRecipeInfo[line].text = "当前配方已到最高品质，无法突破！";
                 line++;
             } else {
-                textRecipeInfo[line].text = $"突破条件：";
+                textRecipeInfo[line].text = "突破条件：";
                 line++;
                 textRecipeInfo[line].text =
                     $"[{(recipe.CanBreakthrough2 ? "√" : "x")}] 等级达到 {recipe.Level} / {3 + recipe.Quality}";
@@ -204,10 +204,10 @@ public static class TabRecipeAndBuilding {
                     $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.NextQuality} 个对应回响";
                 line++;
             }
-            textRecipeInfo[line].text = $"特殊突破加成：无";
+            textRecipeInfo[line].text = "特殊突破加成：无";
             line++;
         } else {
-            textRecipeInfo[line].text = $"配方不存在！";
+            textRecipeInfo[line].text = "配方不存在！";
             textRecipeInfo[line].color = BaseRecipe.QualityColors[5];
             line++;
         }
@@ -217,7 +217,7 @@ public static class TabRecipeAndBuilding {
 
         line = 0;
         //20%配方达到蓝色（2叠） ---  80%配方达到红色（4叠）
-        textBuildingInfo[line].text = $"建筑加成：无";
+        textBuildingInfo[line].text = "建筑加成：无";
         line++;
         for (; line < textBuildingInfo.Length; line++) {
             textBuildingInfo[line].text = "";

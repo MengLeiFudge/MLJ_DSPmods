@@ -58,5 +58,7 @@ public class QuantumCopyRecipe : BaseRecipe {
         w.Write(1);
     }
 
+    public virtual void IntoOtherSave() { }
+
     #endregion
 }

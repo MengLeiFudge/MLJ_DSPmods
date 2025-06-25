@@ -1,11 +1,13 @@
-﻿namespace FE.Utils;
+﻿using FE.Logic.Manager;
+
+namespace FE.Utils;
 
 public static class PackageUtils {
     /// <summary>
     /// 尝试用一定数量的物品交换其他物品。
     /// </summary>
     /// <details>
-    /// 拿取物品顺序为：背包 -> 物流背包
+    /// 拿取物品顺序为：MOD数据 -> 背包 -> 物流背包
     /// <para></para>
     /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
     /// </details>
@@ -22,14 +24,17 @@ public static class PackageUtils {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
-        if (GetPackageItemCount(takeId) + GetDeliveryPackageItemCount(takeId) < takeCount) {
+        if (GetItemTotalCount(takeId) < takeCount) {
             UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}，无法兑换！",
                 "确定", UIMessageBox.WARNING);
             return;
         }
-        takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
+        takeCount -= ItemManager.TakeItem(takeId, takeCount);
         if (takeCount > 0) {
-            GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
+            if (takeCount > 0) {
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+            }
         }
         GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, true);
         UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount}！",
@@ -40,7 +45,7 @@ public static class PackageUtils {
     /// 弹窗询问是否兑换，然后尝试用一定数量的物品交换其他物品，最后提示兑换成功。
     /// </summary>
     /// <details>
-    /// 拿取物品顺序为：背包 -> 物流背包
+    /// 拿取物品顺序为：MOD数据 -> 背包 -> 物流背包
     /// <para></para>
     /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
     /// </details>
@@ -53,6 +58,13 @@ public static class PackageUtils {
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeItems(takeId, takeCount, giveId, giveCount); }, null);
+    }
+
+    /// <summary>
+    /// 获取MOD数据中指定物品的数量。
+    /// </summary>
+    public static int GetModDataItemCount(int itemId) {
+        return ItemManager.GetItemCount(itemId);
     }
 
     /// <summary>
@@ -93,5 +105,12 @@ public static class PackageUtils {
             }
         }
         return count;
+    }
+
+    /// <summary>
+    /// 获取所有背包中指定物品的总数。
+    /// </summary>
+    public static int GetItemTotalCount(int itemId) {
+        return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
     }
 }

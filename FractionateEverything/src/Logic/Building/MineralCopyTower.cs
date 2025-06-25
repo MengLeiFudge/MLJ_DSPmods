@@ -16,7 +16,7 @@ public static class MineralCopyTower {
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Copy Tower");
         Register("I矿物复制塔",
-            $"-",
+            "-",
             $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".AddOrangeLabel()}科技也会影响效果。");
     }
 
@@ -88,7 +88,11 @@ public static class MineralCopyTower {
         w.Write(EnableFracForeverEntry.Value);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        EnableFluidOutputStackEntry.Value = false;
+        MaxProductOutputStackEntry.Value = 1;
+        EnableFracForeverEntry.Value = false;
+    }
 
     #endregion
 }

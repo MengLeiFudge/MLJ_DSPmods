@@ -11,6 +11,7 @@ public static class TabAchievement {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        _windowTrans = trans;
         float x;
         float y;
         wnd.AddTabGroup(trans, "成就", "tab-group-fe4");

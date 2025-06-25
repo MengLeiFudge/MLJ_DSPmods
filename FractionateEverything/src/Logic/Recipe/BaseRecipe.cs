@@ -67,18 +67,18 @@ public abstract class BaseRecipe(
     /// <param name="successRatePlus">增产剂对成功率的加成</param>
     /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
-        seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
         if (seed / 2147483646.0 < DestroyRate) {
             AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[OutputMain[0].OutputID]) * 0.5));
             return null;
         }
         Dictionary<int, int> dic = [];
-        seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
         if (seed / 2147483646.0 >= SuccessRate * successRatePlus) {
             return dic;
         }
         //主输出判定
-        seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
         double ratio = seed / 2147483646.0;
         float ratioMain = 0.0f;//用于累计概率
         foreach (var outputInfo in OutputMain) {
@@ -88,7 +88,7 @@ public abstract class BaseRecipe(
                 int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
                 float leftCount = outputInfo.OutputCount - count;
                 if (leftCount > 0.0001f) {
-                    seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+                    seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
                     if (seed / 2147483646.0 < leftCount) {
                         count++;
                     }
@@ -102,12 +102,12 @@ public abstract class BaseRecipe(
         }
         //附加输出判定
         foreach (var outputInfo in OutputAppend) {
-            seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+            seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
             if (seed / 2147483646.0 <= outputInfo.SuccessRate) {
                 int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
                 float leftCount = outputInfo.OutputCount - count;
                 if (leftCount > 0.0001f) {
-                    seed = (uint)((ulong)(seed % 2147483646U + 1U) * 48271UL % (ulong)int.MaxValue) - 1U;
+                    seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
                     if (seed / 2147483646.0 < leftCount) {
                         count++;
                     }
@@ -207,7 +207,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public void AddExp(int exp) {
         // LogDebug($"Quality{Quality} Lv{Level} ({Exp} + {exp}/{LevelUpExp})");
-        Exp += (int)(exp * ExpMultiRateEntry.Value);
+        Exp += (int)(exp * ExpMultiRate);
         if (Exp >= LevelUpExp && !CanBreakthrough2) {
             Exp -= LevelUpExp;
             Level++;
@@ -247,11 +247,10 @@ public abstract class BaseRecipe(
             AddExp(0);
             LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
             return true;
-        } else {
-            AddExp((int)(-LevelUpExp / 5));
-            LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
-            return false;
         }
+        AddExp((int)(-LevelUpExp / 5));
+        LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
+        return false;
     }
 
     #endregion
@@ -309,6 +308,19 @@ public abstract class BaseRecipe(
         w.Write(Exp);
         w.Write(MemoryCount);
         // 子类特定数据由重写的方法处理
+    }
+
+    public virtual void IntoOtherSave() {
+        foreach (OutputInfo info in OutputMain) {
+            info.OutputTotalCount = 0;
+        }
+        foreach (OutputInfo info in OutputAppend) {
+            info.OutputTotalCount = 0;
+        }
+        Quality = 0;
+        Level = 0;
+        Exp = 0;
+        MemoryCount = 0;
     }
 
     #endregion
