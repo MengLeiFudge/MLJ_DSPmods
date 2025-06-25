@@ -16,8 +16,8 @@ public static class ConversionTower {
     public static void AddTranslations() {
         Register("转化塔", "Conversion Tower");
         Register("I转化塔",
-            $"-",
-            $"将物品转换为其他相关物品。有一定概率得到转化精华。");
+            "-",
+            "将物品转换为其他相关物品。有一定概率得到转化精华。");
     }
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;
@@ -88,7 +88,11 @@ public static class ConversionTower {
         w.Write(EnableFracForeverEntry.Value);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        EnableFluidOutputStackEntry.Value = false;
+        MaxProductOutputStackEntry.Value = 1;
+        EnableFracForeverEntry.Value = false;
+    }
 
     #endregion
 }

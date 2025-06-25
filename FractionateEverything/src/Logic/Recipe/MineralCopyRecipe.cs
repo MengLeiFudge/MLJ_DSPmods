@@ -112,5 +112,7 @@ public class MineralCopyRecipe : BaseRecipe {
         w.Write(1);
     }
 
+    public virtual void IntoOtherSave() { }
+
     #endregion
 }

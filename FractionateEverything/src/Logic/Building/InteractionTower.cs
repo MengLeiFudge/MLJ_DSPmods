@@ -1,12 +1,17 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
+using FE.Logic.Manager;
+using FE.Logic.Recipe;
 using UnityEngine;
 using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
 using static FE.Utils.I18NUtils;
+using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Manager.ProcessManager;
+using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Logic.Building;
 
@@ -17,7 +22,7 @@ public static class InteractionTower {
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
-            $"-",
+            "-",
             $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".AddOrangeLabel()}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
     }
 
@@ -75,205 +80,317 @@ public static class InteractionTower {
 
     public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
         float power, SignData[] signPool, int[] productRegister, int[] consumeRegister, ref uint __result) {
-        __result = 0;
-        return;
-
-        // 没电就不工作
         if (power < 0.1) {
             __result = 0;
             return;
         }
-
-        // 计算输入缓存区物品的平均堆叠
-        double itemStackAvg = 1.0;
+        int buildingID = factory.entityPool[__instance.entityId].protoId;
+        ItemProto building = LDB.items.Select(buildingID);
+        int fluidId = __instance.fluidId;
+        int mainProductId = __instance.productId;
+        float fluidInputCountPerCargo = 1.0f;
         if (__instance.fluidInputCount == 0)
-            __instance.fluidInputCargoCount = 0.0f;
+            __instance.fluidInputCargoCount = 0f;
         else
-            itemStackAvg = __instance.fluidInputCargoCount > 0.0001
-                ? __instance.fluidInputCount / (double)__instance.fluidInputCargoCount
-                : 4.0;
-
-        int productInc = 0;
-
-        // 点数聚集塔只有在输入有物品且输出未满的情况下才工作
+            fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
+                ? __instance.fluidInputCount / __instance.fluidInputCargoCount
+                : 4f;
+        Dictionary<int, int> otherProductOutput = __instance.otherProductOutput(factory);
+        BuildingTrainRecipe recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fluidId);
         if (__instance.fluidInputCount > 0
             && __instance.productOutputCount < __instance.productOutputMax
             && __instance.fluidOutputCount < __instance.fluidOutputMax) {
-
-            // 处理速度基于输入物品数量和电力
             __instance.progress += (int)(power
-                                         * (600.0 / 3.0)
-                                         * (__instance.fluidInputCargoCount < 30.0
+                                         * (500.0 / 3.0)
+                                         * (__instance.fluidInputCargoCount < MaxBeltSpeed
                                              ? __instance.fluidInputCargoCount
-                                             : 30.0)
-                                         * itemStackAvg
+                                             : MaxBeltSpeed)
+                                         * fluidInputCountPerCargo
                                          + 0.75);
-
-            // 限制最大进度
             if (__instance.progress > 100000)
                 __instance.progress = 100000;
-
-            // 处理每次点数聚集
+            bool fracForever = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
-                // 计算平均每个物品携带的增产点数
-                int itemIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
+                if (!fracForever && building.EnableFracForever()) {
+                    //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
+                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
+                        fracForever = true;
+                    }
+                    foreach (var p in otherProductOutput) {
+                        if (p.Value >= __instance.productOutputMax / 2) {
+                            fracForever = true;
+                            break;
+                        }
+                    }
+                }
+                if (fracForever) {
+                    continue;
+                }
+                int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
                     : __instance.fluidInputInc / __instance.fluidInputCount;
+                if (!__instance.incUsed)
+                    __instance.incUsed = fluidInputIncAvg > 0;
 
-                // 如果输入物品没有增产点数，直接输出到流体输出
-                if (itemIncAvg <= 0) {
-                    ++__instance.fluidOutputCount;
-                    ++__instance.fluidOutputTotal;
-                    __instance.fluidOutputInc += 0;
-                    --__instance.fluidInputCount;
-                    __instance.fluidInputInc -= 0;
-                    __instance.fluidInputCargoCount -= (float)(1.0 / itemStackAvg);
-                    if (__instance.fluidInputCargoCount < 0.0)
-                        __instance.fluidInputCargoCount = 0.0f;
+                if (recipe == null) {
+                    __instance.fluidInputInc -= fluidInputIncAvg;
+                    __instance.fractionSuccess = false;
+                    __instance.fluidInputCount--;
+                    __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
+                    if (__instance.fluidInputCargoCount < 0f) {
+                        __instance.fluidInputCargoCount = 0f;
+                    }
+                    __instance.fluidOutputCount++;
+                    __instance.fluidOutputTotal++;
+                    __instance.fluidOutputInc += fluidInputIncAvg;
+                    // LogDebug($"配方为空，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                    //          + $"当前产物输出{__instance.productOutputCount}个");
                     continue;
                 }
 
-                if (!__instance.incUsed)
-                    __instance.incUsed = true;
-
-                // 随机数生成逻辑
-                __instance.seed = (uint)((__instance.seed % 2147483646U + 1U) * 48271UL % int.MaxValue)
-                                  - 1U;
-
-                // 计算聚集成功率 - 基础5%成功率
-                // 后期可以根据科技解锁情况提高这个值
-                double baseProb = 0.05;
-
-                // 根据输入物品的增产点数调整成功率
-                // 当点数为4时，达到正常概率；低于4时概率降低，高于4时概率提高
-                double pointFactor = itemIncAvg / 4.0;
-                if (pointFactor > 1.5) pointFactor = 1.5;// 最多提升50%
-
-                __instance.fractionSuccess = __instance.seed / 2147483646.0 < baseProb * pointFactor;
-
-                // 聚集成功 - 生成高点数产物
-                if (__instance.fractionSuccess) {
-                    // 聚集后的点数，最多为10
-                    int targetPoints = itemIncAvg * 2;
-                    if (targetPoints > 10) targetPoints = 10;
-
-                    ++__instance.productOutputCount;
-                    ++__instance.productOutputTotal;
-                    // 将聚集的点数加到productId物品上
-                    productInc += targetPoints;
-                    lock (productRegister)
-                        ++productRegister[__instance.productId];
-                    lock (consumeRegister)
-                        ++consumeRegister[__instance.fluidId];
-                } else {
-                    // 聚集失败，输出到流体输出
-                    ++__instance.fluidOutputCount;
-                    ++__instance.fluidOutputTotal;
-                    __instance.fluidOutputInc += itemIncAvg;
+                float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                Dictionary<int, int> outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
+                __instance.fluidInputInc -= fluidInputIncAvg;
+                __instance.fractionSuccess = outputs != null && outputs.Count > 0;
+                __instance.fluidInputCount--;
+                __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
+                if (__instance.fluidInputCargoCount < 0f) {
+                    __instance.fluidInputCargoCount = 0f;
                 }
-
-                // 消耗输入物品
-                --__instance.fluidInputCount;
-                __instance.fluidInputInc -= itemIncAvg;
-                __instance.fluidInputCargoCount -= (float)(1.0 / itemStackAvg);
-                if (__instance.fluidInputCargoCount < 0.0)
-                    __instance.fluidInputCargoCount = 0.0f;
+                lock (consumeRegister) {
+                    consumeRegister[fluidId]++;
+                }
+                if (outputs != null) {
+                    if (outputs.Count == 0) {
+                        __instance.fluidOutputCount++;
+                        __instance.fluidOutputTotal++;
+                        __instance.fluidOutputInc += fluidInputIncAvg;
+                        // LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                        //          + $"当前产物输出{__instance.productOutputCount}个");
+                    } else {
+                        foreach (KeyValuePair<int, int> p in outputs) {
+                            int itemID = p.Key;
+                            int itemCount = p.Value;
+                            // LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
+                            lock (productRegister) {
+                                productRegister[itemID] += itemCount;
+                            }
+                            if (itemID == mainProductId) {
+                                __instance.productOutputCount++;
+                                __instance.productOutputTotal++;
+                            } else {
+                                if (otherProductOutput.ContainsKey(itemID)) {
+                                    otherProductOutput[itemID] += itemCount;
+                                } else {
+                                    otherProductOutput[itemID] = itemCount;
+                                }
+                            }
+                        }
+                        // LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                        //          + $"当前产物输出{__instance.productOutputCount}个");
+                    }
+                }
+                // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                //          + $"当前产物输出{__instance.productOutputCount}个");
             }
         } else {
             __instance.fractionSuccess = false;
         }
-
-        // 处理传送带交互
         CargoTraffic cargoTraffic = factory.cargoTraffic;
         byte stack;
-        byte inc1;
-
-        // 处理belt1（左侧接口）
+        byte inc;
         if (__instance.belt1 > 0) {
             if (__instance.isOutput1) {
-                // 作为输出处理 - 点数较低的物品从左侧输出
                 if (__instance.fluidOutputCount > 0) {
-                    int inc2 = __instance.fluidOutputInc / __instance.fluidOutputCount;
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
-                    if (cargoPath != null
-                        && cargoPath.TryUpdateItemAtHeadAndFillBlank(__instance.fluidId,
-                            (int)Math.Ceiling((float)(itemStackAvg - 0.1)), 1, (byte)inc2)) {
-                        --__instance.fluidOutputCount;
-                        __instance.fluidOutputInc -= inc2;
+                    if (cargoPath != null) {
+                        //原版传送带最大速率为30，如果每次尝试放1个物品到传送带上，需要每帧判定2次（30速*4堆叠/60帧）
+                        //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
+                        //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
+                        int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
+                        if (!building.EnableFluidOutputStack()) {
+                            //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                        (byte)fluidOutputIncAvg)) {
+                                    break;
+                                }
+                                __instance.fluidOutputCount--;
+                                __instance.fluidOutputInc -= fluidOutputIncAvg;
+                            }
+                        } else {
+                            //已研究流动输出集装科技
+                            if (__instance.fluidOutputCount >= 4) {
+                                //超过4个，则输出4个
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        4, 4, (byte)(fluidOutputIncAvg * 4))) {
+                                    __instance.fluidOutputCount -= 4;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg * 4;
+                                }
+                            } else if (__instance.fluidInputCount == 0) {
+                                //未超过4个且输入为空，剩几个输出几个
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        4, (byte)__instance.fluidOutputCount,
+                                        (byte)__instance.fluidOutputInc)) {
+                                    __instance.fluidOutputCount = 0;
+                                    __instance.fluidOutputInc = 0;
+                                }
+                            }
+                        }
                     }
                 }
-            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < (double)__instance.fluidInputMax) {
-                // 作为输入处理
-                if (__instance.fluidId > 0) {
-                    if (cargoTraffic.TryPickItemAtRear(__instance.belt1, __instance.fluidId, null, out stack, out inc1)
-                        > 0) {
+            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+                if (fluidId > 0) {
+                    if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc1;
-                        ++__instance.fluidInputCargoCount;
+                        __instance.fluidInputInc += inc;
+                        __instance.fluidInputCargoCount++;
                     }
                 } else {
-                    // 点数聚集塔接受任何带增产剂的物品
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null,
-                        out stack, out inc1);
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null, out stack, out inc);
                     if (needId > 0) {
                         __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc1;
-                        ++__instance.fluidInputCargoCount;
-                        __instance.SetRecipe(needId, signPool);
+                        __instance.fluidInputInc += inc;
+                        __instance.fluidInputCargoCount++;
+                        __instance.fluidId = needId;
+                        recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, needId);
+                        __instance.productId = recipe == null ? __instance.fluidId : recipe.OutputMain[0].OutputID;
+                        __instance.produceProb = 0.01f;
+                        signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                        signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
                     }
                 }
             }
         }
-
-        // 处理belt2（右侧接口）
         if (__instance.belt2 > 0) {
             if (__instance.isOutput2) {
-                // 右侧也用于输出点数较低的物品
                 if (__instance.fluidOutputCount > 0) {
-                    int inc4 = __instance.fluidOutputInc / __instance.fluidOutputCount;
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
-                    if (cargoPath != null
-                        && cargoPath.TryUpdateItemAtHeadAndFillBlank(__instance.fluidId,
-                            (int)Math.Ceiling((float)(itemStackAvg - 0.1)), 1, (byte)inc4)) {
-                        --__instance.fluidOutputCount;
-                        __instance.fluidOutputInc -= inc4;
+                    if (cargoPath != null) {
+                        int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
+                        if (!building.EnableFluidOutputStack()) {
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                        (byte)fluidOutputIncAvg)) {
+                                    break;
+                                }
+                                __instance.fluidOutputCount--;
+                                __instance.fluidOutputInc -= fluidOutputIncAvg;
+                            }
+                        } else {
+                            if (__instance.fluidOutputCount >= 4) {
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        4, 4, (byte)(fluidOutputIncAvg * 4))) {
+                                    __instance.fluidOutputCount -= 4;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg * 4;
+                                }
+                            } else if (__instance.fluidInputCount == 0) {
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                        4, (byte)__instance.fluidOutputCount,
+                                        (byte)__instance.fluidOutputInc)) {
+                                    __instance.fluidOutputCount = 0;
+                                    __instance.fluidOutputInc = 0;
+                                }
+                            }
+                        }
                     }
                 }
-            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < (double)__instance.fluidInputMax) {
-                // 右侧也可以输入
-                if (__instance.fluidId > 0) {
-                    if (cargoTraffic.TryPickItemAtRear(__instance.belt2, __instance.fluidId, null, out stack, out inc1)
-                        > 0) {
+            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+                if (fluidId > 0) {
+                    if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc1;
-                        ++__instance.fluidInputCargoCount;
+                        __instance.fluidInputInc += inc;
+                        __instance.fluidInputCargoCount++;
                     }
                 } else {
-                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null,
-                        out stack, out inc1);
+                    int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null, out stack, out inc);
                     if (needId > 0) {
                         __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc1;
-                        ++__instance.fluidInputCargoCount;
-                        __instance.SetRecipe(needId, signPool);
+                        __instance.fluidInputInc += inc;
+                        __instance.fluidInputCargoCount++;
+                        __instance.fluidId = needId;
+                        recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, needId);
+                        __instance.productId = recipe == null ? __instance.fluidId : recipe.OutputMain[0].OutputID;
+                        __instance.produceProb = 0.01f;
+                        signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                        signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
                     }
                 }
             }
         }
-
-        // 处理belt0（正面输出口）- 输出高点数物品
-        if (__instance.belt0 > 0
-            && __instance.isOutput0
-            && __instance.productOutputCount > 0) {
-            int incPerItem = productInc / __instance.productOutputCount;
-            if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId, 1, (byte)incPerItem)) {
-                --__instance.productOutputCount;
-                productInc -= incPerItem;
+        if (__instance.belt0 > 0) {
+            if (__instance.isOutput0) {
+                //指示是否已输出主产物。如果主产物成功输出，则不判定副产物是否输出
+                bool mainProductOutput = false;
+                //输出主产物
+                for (int i = 0; i < MaxOutputTimes; i++) {
+                    //只有产物数目到达堆叠要求，或者没有正在处理的物品，才输出，且一次输出最大堆叠个数的物品
+                    if (__instance.productOutputCount >= building.MaxProductOutputStack()) {
+                        //产物达到最大堆叠数目，直接尝试输出
+                        mainProductOutput = true;
+                        if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
+                                (byte)building.MaxProductOutputStack(), 0)) {
+                            break;
+                        }
+                        __instance.productOutputCount -= building.MaxProductOutputStack();
+                    } else if (__instance.productOutputCount > 0 && __instance.fluidInputCount == 0) {
+                        //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
+                        if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
+                                (byte)__instance.productOutputCount, 0)) {
+                            break;
+                        }
+                        __instance.productOutputCount = 0;
+                    } else {
+                        break;
+                    }
+                }
+                //输出副产物
+                if (!mainProductOutput) {
+                    //每个物品都要尝试输出
+                    List<int> keys = [..otherProductOutput.Keys];
+                    foreach (int outputID in keys) {
+                        if (otherProductOutput[outputID] == 0) {
+                            continue;
+                        }
+                        for (int j = 0; j < MaxOutputTimes; j++) {
+                            if (otherProductOutput[outputID] >= building.MaxProductOutputStack()) {
+                                if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
+                                        (byte)building.MaxProductOutputStack(), 0)) {
+                                    break;
+                                }
+                                otherProductOutput[outputID] -= building.MaxProductOutputStack();
+                            } else if (otherProductOutput[outputID] > 0 && __instance.fluidInputCount == 0) {
+                                if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
+                                        (byte)otherProductOutput[outputID], 0)) {
+                                    break;
+                                }
+                                otherProductOutput[outputID] = 0;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    //移除所有数目为0的缓存物品
+                    foreach (int outputID in keys) {
+                        if (otherProductOutput[outputID] == 0) {
+                            otherProductOutput.Remove(outputID);
+                        }
+                    }
+                }
+            } else {
+                //正面作为输入，数据传到数据中心
+                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, null, out stack, out _);
+                AddItem(itemId, stack);
             }
         }
 
         // 如果缓存区全部清空，重置输入id
-        if (__instance.fluidInputCount == 0 && __instance.fluidOutputCount == 0 && __instance.productOutputCount == 0)
+        if (__instance.fluidInputCount == 0
+            && __instance.fluidOutputCount == 0
+            && __instance.productOutputCount == 0
+            && otherProductOutput.Count == 0)
             __instance.fluidId = 0;
 
         // 更新工作状态
@@ -300,7 +417,11 @@ public static class InteractionTower {
         w.Write(EnableFracForeverEntry.Value);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        EnableFluidOutputStackEntry.Value = false;
+        MaxProductOutputStackEntry.Value = 1;
+        EnableFracForeverEntry.Value = false;
+    }
 
     #endregion
 }

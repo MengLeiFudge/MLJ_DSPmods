@@ -16,8 +16,8 @@ public static class AlchemyTower {
     public static void AddTranslations() {
         Register("点金塔", "Alchemy Tower");
         Register("I点金塔",
-            $"-",
-            $"将物品转换为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
+            "-",
+            "将物品转换为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
     }
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;
@@ -88,7 +88,11 @@ public static class AlchemyTower {
         w.Write(EnableFracForeverEntry.Value);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        EnableFluidOutputStackEntry.Value = false;
+        MaxProductOutputStackEntry.Value = 1;
+        EnableFracForeverEntry.Value = false;
+    }
 
     #endregion
 }

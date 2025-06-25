@@ -75,5 +75,7 @@ public class BuildingTrainRecipe : BaseRecipe {
         w.Write(1);
     }
 
+    public virtual void IntoOtherSave() { }
+
     #endregion
 }

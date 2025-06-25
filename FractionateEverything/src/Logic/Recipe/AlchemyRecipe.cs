@@ -86,5 +86,7 @@ public class AlchemyRecipe : BaseRecipe {
         w.Write(1);
     }
 
+    public virtual void IntoOtherSave() { }
+
     #endregion
 }

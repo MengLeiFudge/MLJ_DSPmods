@@ -29,6 +29,7 @@ public static class TabRaffle {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        _windowTrans = trans;
         float x;
         float y;
         wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
