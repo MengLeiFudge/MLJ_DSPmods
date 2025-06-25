@@ -44,6 +44,8 @@ public static class ItemManager {
         Register("I转化精华", "-", "转化塔产出的精华，有特殊的用途。");
     }
 
+    #region 添加新物品
+
     /// <summary>
     /// 添加部分物品
     /// </summary>
@@ -116,6 +118,8 @@ public static class ItemManager {
         ProtoRegistry.RegisterRecipe(RFE转化精华, ERecipeType.Assemble, 300,
             [IFE转化精华], [2], [IFE转化精华], [1], "I转化精华");
     }
+
+    #endregion
 
     #region 计算物品价值
 
@@ -333,6 +337,68 @@ public static class ItemManager {
             }
         }
 #endif
+    }
+
+    #endregion
+
+    #region 交互塔存储数据
+
+    public static Dictionary<int, int> itemDataDic = [];
+
+    public static void AddItem(int itemId, int count) {
+        if (itemDataDic.ContainsKey(itemId)) {
+            itemDataDic[itemId] += count;
+        } else {
+            itemDataDic[itemId] = count;
+        }
+    }
+
+    public static int GetItemCount(int itemId) {
+        return itemDataDic.TryGetValue(itemId, out int value) ? value : 0;
+    }
+
+    public static int TakeItem(int itemId, int count) {
+        if (itemDataDic.ContainsKey(itemId)) {
+            if (itemDataDic[itemId] >= count) {
+                itemDataDic[itemId] -= count;
+                if (itemDataDic[itemId] == 0) {
+                    itemDataDic.Remove(itemId);
+                }
+            } else {
+                count = itemDataDic[itemId];
+                itemDataDic.Remove(itemId);
+            }
+        } else {
+            count = 0;
+        }
+        return count;
+    }
+
+    #endregion
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
+        int itemDataDicSize = r.ReadInt32();
+        for (int i = 0; i < itemDataDicSize; i++) {
+            int itemId = r.ReadInt32();
+            int count = r.ReadInt32();
+            itemDataDic[itemId] = count;
+        }
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(1);
+        w.Write(itemDataDic.Count);
+        foreach (var p in itemDataDic) {
+            w.Write(p.Key);
+            w.Write(p.Value);
+        }
+    }
+
+    public static void IntoOtherSave() {
+        itemDataDic.Clear();
     }
 
     #endregion

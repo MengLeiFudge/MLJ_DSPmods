@@ -787,10 +787,9 @@ public static class ProcessManager {
                         // LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                         //          + $"当前产物输出{__instance.productOutputCount}个");
                     }
-                } else {
-                    // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
-                    //          + $"当前产物输出{__instance.productOutputCount}个");
                 }
+                // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                //          + $"当前产物输出{__instance.productOutputCount}个");
             }
         } else {
             __instance.fractionSuccess = false;
@@ -978,9 +977,8 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else {
-                //正面作为输入
             }
+            //正面作为输入
         }
 
         // 如果缓存区全部清空，重置输入id

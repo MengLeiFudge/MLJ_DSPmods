@@ -155,7 +155,13 @@ public static class RecipeManager {
         }
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        foreach (var p in RecipesWithType) {
+            foreach (BaseRecipe recipe in p.Value) {
+                recipe.IntoOtherSave();
+            }
+        }
+    }
 
     #endregion
 }

@@ -16,8 +16,8 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            $"-",
-            $"充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。");
+            "-",
+            "充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。");
     }
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;
@@ -88,7 +88,11 @@ public static class QuantumCopyTower {
         w.Write(EnableFracForeverEntry.Value);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        EnableFluidOutputStackEntry.Value = false;
+        MaxProductOutputStackEntry.Value = 1;
+        EnableFracForeverEntry.Value = false;
+    }
 
     #endregion
 }

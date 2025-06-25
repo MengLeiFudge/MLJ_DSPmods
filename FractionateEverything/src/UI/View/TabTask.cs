@@ -11,8 +11,20 @@ public static class TabTask {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        _windowTrans = trans;
+        float x;
+        float y;
         wnd.AddTabGroup(trans, "任务", "tab-group-fe4");
-        { }
+        {
+            var tab = wnd.AddTab(trans, "所有任务");
+            x = 0f;
+            y = 10f;
+        }
+        {
+            var tab = wnd.AddTab(trans, "标记任务");
+            x = 0f;
+            y = 10f;
+        }
     }
 
     public static void UpdateUI() { }

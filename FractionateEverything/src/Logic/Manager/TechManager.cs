@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CommonAPI.Systems;
+﻿using CommonAPI.Systems;
 using FE.Compatibility;
 using HarmonyLib;
 using static FE.Utils.ProtoID;

@@ -260,6 +260,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         int version = r.ReadInt32();
         RecipeManager.Import(r);
         BuildingManager.Import(r);
+        ItemManager.Import(r);
         MainWindow.Import(r);
     }
 
@@ -270,6 +271,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         w.Write(1);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
+        ItemManager.Export(w);
         MainWindow.Export(w);
     }
 
@@ -279,6 +281,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     public void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
+        ItemManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
     }
 
