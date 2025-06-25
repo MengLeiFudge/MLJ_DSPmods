@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
 using static FE.Utils.ProtoID;
@@ -19,9 +20,8 @@ public static class TabShop {
             var tab = wnd.AddTab(trans, "矩阵商店");
             x = 0f;
             y = 10f;
-            wnd.AddButton(x, y, 200, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1", () => {
-                ExchangeItemsWithQuestion(I电磁矩阵, 200, IFE交互塔, 1);
-            });
+            wnd.AddButton(x, y, 200, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1",
+                () => { ExchangeItemsWithQuestion(I电磁矩阵, 200, IFE交互塔, 1); });
         }
         {
             var tab = wnd.AddTab(trans, "黑雾商店");
@@ -31,4 +31,18 @@ public static class TabShop {
     }
 
     public static void UpdateUI() { }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(1);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }

@@ -286,12 +286,14 @@ public static class PointAggregateTower {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
         EnableFluidOutputStackEntry.Value = r.ReadBoolean();
         MaxProductOutputStackEntry.Value = r.ReadInt32();
         EnableFracForeverEntry.Value = r.ReadBoolean();
     }
 
     public static void Export(BinaryWriter w) {
+        w.Write(1);
         w.Write(EnableFluidOutputStackEntry.Value);
         w.Write(MaxProductOutputStackEntry.Value);
         w.Write(EnableFracForeverEntry.Value);

@@ -33,7 +33,7 @@ public class MySlider : MonoBehaviour {
         var rect = UIUtils.NormalizeRectWithTopLeft(sl, x, y, parent);
         sl.rectTrans = rect;
         if (width > 0) {
-            rect.sizeDelta = new Vector2(width, rect.sizeDelta.y);
+            rect.sizeDelta = new(width, rect.sizeDelta.y);
         }
 
         sl.slider = go.GetComponent<Slider>();
@@ -46,7 +46,7 @@ public class MySlider : MonoBehaviour {
         if (sl.labelText) {
             sl.labelText.fontSize = 14;
             if (sl.labelText.transform is RectTransform rectTrans) {
-                rectTrans.sizeDelta = new Vector2(22f, 22f);
+                rectTrans.sizeDelta = new(22f, 22f);
             }
         }
         sl.labelFormat = "G";
@@ -55,11 +55,11 @@ public class MySlider : MonoBehaviour {
 
         var bg = sl.slider.transform.Find("Background")?.GetComponent<Image>();
         if (bg != null) {
-            bg.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            bg.color = new(0.5f, 0.5f, 0.5f, 0.5f);
         }
         var fill = sl.slider.fillRect.GetComponent<Image>();
         if (fill != null) {
-            fill.color = new Color(1f, 1f, 1f, 0.28f);
+            fill.color = new(1f, 1f, 1f, 0.28f);
         }
         sl.UpdateLabel();
 
@@ -125,9 +125,9 @@ public class MySlider : MonoBehaviour {
 
     public MySlider WithSmallerHandle(float deltaX = 10f, float deltaY = 0f) {
         var oldSize = slider.handleRect.sizeDelta;
-        slider.handleRect.sizeDelta = new Vector2(oldSize.x - deltaX, oldSize.y - deltaY);
-        handleSlideArea.offsetMin = new Vector2(handleSlideArea.offsetMin.x - deltaX / 2, handleSlideArea.offsetMin.y);
-        handleSlideArea.offsetMax = new Vector2(handleSlideArea.offsetMax.x + deltaX / 2, handleSlideArea.offsetMax.y);
+        slider.handleRect.sizeDelta = new(oldSize.x - deltaX, oldSize.y - deltaY);
+        handleSlideArea.offsetMin = new(handleSlideArea.offsetMin.x - deltaX / 2, handleSlideArea.offsetMin.y);
+        handleSlideArea.offsetMax = new(handleSlideArea.offsetMax.x + deltaX / 2, handleSlideArea.offsetMax.y);
         return this;
     }
 

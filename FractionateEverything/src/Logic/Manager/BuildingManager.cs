@@ -207,6 +207,7 @@ public static class BuildingManager {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
         OutputExtendImport(r);
         InteractionTower.Import(r);
         MineralCopyTower.Import(r);
@@ -218,6 +219,7 @@ public static class BuildingManager {
     }
 
     public static void Export(BinaryWriter w) {
+        w.Write(1);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralCopyTower.Export(w);

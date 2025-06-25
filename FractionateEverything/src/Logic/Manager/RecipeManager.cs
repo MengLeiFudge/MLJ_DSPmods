@@ -55,8 +55,8 @@ public static class RecipeManager {
         return BaseRecipes[(int)recipeType][inputId] as T;
     }
 
-    public static BaseRecipe[] GetRecipes(ERecipe recipeType) {
-        return BaseRecipes[(int)recipeType];
+    public static List<BaseRecipe> GetRecipes(ERecipe recipeType) {
+        return RecipesWithType.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
     }
 
     #endregion
@@ -97,6 +97,7 @@ public static class RecipeManager {
 #endif
         LogInfo("Begin to add fractionate recipes...");
 
+        BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
         QuantumCopyRecipe.CreateAll();
         AlchemyRecipe.CreateAll();
@@ -121,6 +122,7 @@ public static class RecipeManager {
     #region 从存档读取配方数据
 
     public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
         int typeCount = r.ReadInt32();
         for (int typeIndex = 0; typeIndex < typeCount; typeIndex++) {
             ERecipe recipeType = (ERecipe)r.ReadInt32();

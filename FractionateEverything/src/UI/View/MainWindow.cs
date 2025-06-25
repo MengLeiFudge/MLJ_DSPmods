@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace FE.UI.View;
 
 public static class MainWindow {
     private static RectTransform _windowTrans;
-    
+
     public static void LoadConfig(ConfigFile configFile) {
         TabRecipeAndBuilding.LoadConfig(configFile);
         TabRaffle.LoadConfig(configFile);
@@ -39,4 +40,37 @@ public static class MainWindow {
         TabAchievement.UpdateUI();
         TabOtherSetting.UpdateUI();
     }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
+        TabRecipeAndBuilding.Import(r);
+        TabRaffle.Import(r);
+        TabShop.Import(r);
+        TabTask.Import(r);
+        TabAchievement.Import(r);
+        TabOtherSetting.Import(r);
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(1);
+        TabRecipeAndBuilding.Export(w);
+        TabRaffle.Export(w);
+        TabShop.Export(w);
+        TabTask.Export(w);
+        TabAchievement.Export(w);
+        TabOtherSetting.Export(w);
+    }
+
+    public static void IntoOtherSave() {
+        TabRecipeAndBuilding.IntoOtherSave();
+        TabRaffle.IntoOtherSave();
+        TabShop.IntoOtherSave();
+        TabTask.IntoOtherSave();
+        TabAchievement.IntoOtherSave();
+        TabOtherSetting.IntoOtherSave();
+    }
+
+    #endregion
 }

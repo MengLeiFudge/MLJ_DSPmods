@@ -9,10 +9,10 @@ public static class UIUtils {
         if (parent != null) {
             rect.SetParent(parent, false);
         }
-        rect.anchorMax = new Vector2(0f, 1f);
-        rect.anchorMin = new Vector2(0f, 1f);
-        rect.pivot = new Vector2(0f, 1f);
-        rect.anchoredPosition3D = new Vector3(left, -top, 0f);
+        rect.anchorMax = new(0f, 1f);
+        rect.anchorMin = new(0f, 1f);
+        rect.pivot = new(0f, 1f);
+        rect.anchoredPosition3D = new(left, -top, 0f);
         return rect;
     }
 
@@ -22,10 +22,10 @@ public static class UIUtils {
         if (parent != null) {
             rect.SetParent(parent, false);
         }
-        rect.anchorMax = new Vector2(1f, 1f);
-        rect.anchorMin = new Vector2(1f, 1f);
-        rect.pivot = new Vector2(1f, 1f);
-        rect.anchoredPosition3D = new Vector3(-right, -top, 0f);
+        rect.anchorMax = new(1f, 1f);
+        rect.anchorMin = new(1f, 1f);
+        rect.pivot = new(1f, 1f);
+        rect.anchoredPosition3D = new(-right, -top, 0f);
         return rect;
     }
 
@@ -35,10 +35,10 @@ public static class UIUtils {
         if (parent != null) {
             rect.SetParent(parent, false);
         }
-        rect.anchorMax = new Vector2(0f, 0f);
-        rect.anchorMin = new Vector2(0f, 0f);
-        rect.pivot = new Vector2(0f, 0f);
-        rect.anchoredPosition3D = new Vector3(left, bottom, 0f);
+        rect.anchorMax = new(0f, 0f);
+        rect.anchorMin = new(0f, 0f);
+        rect.pivot = new(0f, 0f);
+        rect.anchoredPosition3D = new(left, bottom, 0f);
         return rect;
     }
 
@@ -52,19 +52,19 @@ public static class UIUtils {
         rect.localScale = Vector3.one;
         rect.anchorMax = Vector2.one;
         rect.anchorMin = Vector2.zero;
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.offsetMax = new Vector2(-right, -top);
-        rect.offsetMin = new Vector2(left, bottom);
+        rect.pivot = new(0.5f, 0.5f);
+        rect.offsetMax = new(-right, -top);
+        rect.offsetMin = new(left, bottom);
         return rect;
     }
 
     public static RectTransform NormalizeRectCenter(GameObject go, float width = 0, float height = 0) {
         if (go.transform is not RectTransform rect) return null;
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new(0.5f, 0.5f);
+        rect.anchorMin = new(0.5f, 0.5f);
+        rect.pivot = new(0.5f, 0.5f);
         if (width > 0 && height > 0) {
-            rect.sizeDelta = new Vector2(width, height);
+            rect.sizeDelta = new(width, height);
         }
         return rect;
     }

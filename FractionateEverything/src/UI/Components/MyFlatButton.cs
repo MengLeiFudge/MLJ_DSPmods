@@ -22,12 +22,12 @@ public class MyFlatButton : MonoBehaviour {
         var img = btn.GetComponent<Image>();
         if (img != null) {
             img.sprite = panel.buttonDefaultSprite;
-            img.color = new Color(img.color.r, img.color.g, img.color.b, 13f / 255f);
+            img.color = new(img.color.r, img.color.g, img.color.b, 13f / 255f);
         }
 
         img = btn.gameObject.transform.Find("frame")?.GetComponent<Image>();
         if (img != null) {
-            img.color = new Color(img.color.r, img.color.g, img.color.b, 0f);
+            img.color = new(img.color.r, img.color.g, img.color.b, 0f);
         }
 
         btn.button.onClick.RemoveAllListeners();
@@ -67,7 +67,7 @@ public class MyFlatButton : MonoBehaviour {
     }
 
     public MyFlatButton WithSize(float width, float height) {
-        rectTrans.sizeDelta = new Vector2(width, height);
+        rectTrans.sizeDelta = new(width, height);
         return this;
     }
 

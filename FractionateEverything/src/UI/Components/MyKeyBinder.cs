@@ -63,12 +63,12 @@ public class MyKeyBinder : MonoBehaviour {
         kb.functionText.text = label.Translate();
         kb.functionText.fontSize = 17;
 
-        ((RectTransform)kb.keyText.transform).anchoredPosition = new Vector2(20f, -27f);
+        ((RectTransform)kb.keyText.transform).anchoredPosition = new(20f, -27f);
         //kb.keyText.alignment = TextAnchor.MiddleRight;
         kb.keyText.fontSize = 17;
-        ((RectTransform)kb.inputUIButton.transform.parent.transform).anchoredPosition = new Vector2(0f + 20f, -57f);
-        ((RectTransform)kb.setDefaultUIButton.transform).anchoredPosition = new Vector2(140f + 20f, -57f);
-        ((RectTransform)kb.setNoneKeyUIButton.transform).anchoredPosition = new Vector2(240f + 20f, -57f);
+        ((RectTransform)kb.inputUIButton.transform.parent.transform).anchoredPosition = new(0f + 20f, -57f);
+        ((RectTransform)kb.setDefaultUIButton.transform).anchoredPosition = new(140f + 20f, -57f);
+        ((RectTransform)kb.setNoneKeyUIButton.transform).anchoredPosition = new(240f + 20f, -57f);
 
         var rect = UIUtils.NormalizeRectWithTopLeft(kb, x, y, parent);
         kb.rectTrans = rect;
