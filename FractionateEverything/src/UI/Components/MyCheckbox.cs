@@ -84,7 +84,7 @@ public class MyCheckBox : MonoBehaviour {
     private void UpdateLabelTextWidth() {
         if (labelText)
             labelText.rectTransform.sizeDelta =
-                new Vector2(labelText.preferredWidth, labelText.rectTransform.sizeDelta.y);
+                new(labelText.preferredWidth, labelText.rectTransform.sizeDelta.y);
     }
 
     public bool Checked {
@@ -142,11 +142,11 @@ public class MyCheckBox : MonoBehaviour {
 
     public MyCheckBox WithSmallerBox(float boxSize = 20f) {
         var oldWidth = rectTrans.sizeDelta.x;
-        rectTrans.sizeDelta = new Vector2(boxSize, boxSize);
-        checkImage.rectTransform.sizeDelta = new Vector2(boxSize, boxSize);
-        labelText.rectTransform.sizeDelta = new Vector2(labelText.rectTransform.sizeDelta.x, boxSize);
+        rectTrans.sizeDelta = new(boxSize, boxSize);
+        checkImage.rectTransform.sizeDelta = new(boxSize, boxSize);
+        labelText.rectTransform.sizeDelta = new(labelText.rectTransform.sizeDelta.x, boxSize);
         labelText.rectTransform.localPosition =
-            new Vector3(labelText.rectTransform.localPosition.x + boxSize - oldWidth,
+            new(labelText.rectTransform.localPosition.x + boxSize - oldWidth,
                 labelText.rectTransform.localPosition.y, labelText.rectTransform.localPosition.z);
         return this;
     }

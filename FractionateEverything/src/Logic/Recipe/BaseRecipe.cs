@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.LogUtils;
+using static FE.UI.View.TabOtherSetting;
 using Random = System.Random;
 
 namespace FE.Logic.Recipe;
@@ -41,9 +42,9 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率
     /// </summary>
-    public float DestroyRate => (0.2f - BaseSuccessRate)
-                                * (0.5f + (float)Math.Log10(itemValueDic[InputID] + 1) / 5.0f)
-                                * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f));
+    public float DestroyRate => Math.Max(0, (0.2f - BaseSuccessRate)
+                                            * (0.5f + (float)Math.Log10(itemValueDic[InputID] + 1) / 5.0f)
+                                            * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f)));
 
     /// <summary>
     /// 配方主产物信息，概率之和必须为100%。
@@ -143,6 +144,7 @@ public abstract class BaseRecipe(
     /// 未解锁时为0。解锁之后，最低为1，最高为7。0灰、1白、2绿、3蓝、4紫、5红、7金。
     /// </details>
     public int Quality { get; set; } = 0;
+    public int NextQuality => Quality == 5 ? Quality + 2 : Quality + 1;
 
     /// <summary>
     /// 品质对应的颜色数组
@@ -178,28 +180,38 @@ public abstract class BaseRecipe(
     /// <details>
     /// 达到下一级所需经验会自动升级。到达等级上限仍可获取经验，突破时多余经验会按照一定比例转化。
     /// </details>
-    public long Experience { get; set; } = 0;
+    public long Exp { get; set; } = 0;
 
     /// <summary>
-    /// 下一级所需经验
+    /// 升级所需经验
     /// </summary>
-    public long NextLevelExperience => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
+    public long LevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
 
     /// <summary>
-    /// 指示是否满足突破的前置等级条件
+    /// 当前品质最高经验
     /// </summary>
-    public bool CanBreakthrough => Level >= 3 + Quality && Experience >= NextLevelExperience;
+    public long MaxLevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, (3 + Quality) - 1));
+
+    public bool CanBreakthrough1 => Quality < 7;
+    public bool CanBreakthrough2 => Level >= 3 + Quality;
+    public bool CanBreakthrough3 => Exp >= MaxLevelUpExp;
+    public bool CanBreakthrough4 => MemoryCount >= NextQuality;
+
+    /// <summary>v
+    /// 指示是否满足突破的前置条件
+    /// </summary>
+    public bool CanBreakthrough => CanBreakthrough1 && CanBreakthrough2 && CanBreakthrough3 && CanBreakthrough4;
 
     /// <summary>
     /// 添加经验
     /// </summary>
-    public void AddExp(long exp) {
-        // LogDebug($"Quality{Quality} Lv{Level} ({Experience} + {exp}/{NextLevelExperience})");
-        Experience += exp;
-        if (!CanBreakthrough && Experience >= NextLevelExperience) {
-            Experience -= NextLevelExperience;
+    public void AddExp(int exp) {
+        // LogDebug($"Quality{Quality} Lv{Level} ({Exp} + {exp}/{LevelUpExp})");
+        Exp += (int)(exp * ExpMultiRateEntry.Value);
+        if (Exp >= LevelUpExp && !CanBreakthrough2) {
+            Exp -= LevelUpExp;
             Level++;
-            LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
         }
         if (CanBreakthrough) {
             TryBreakQuality();
@@ -224,8 +236,8 @@ public abstract class BaseRecipe(
         float successRate = 1.0f - (Quality - 1) * 0.1f;
         bool success = random.NextDouble() < successRate;
         if (success) {
-            Experience -= NextLevelExperience;
-            Experience = (int)(Experience * 0.7f);
+            Exp -= LevelUpExp;
+            Exp = (int)(Exp * 0.7f);
             Level = 1;
             Quality++;
             //红到金是品质+2
@@ -233,53 +245,22 @@ public abstract class BaseRecipe(
                 Quality++;
             }
             AddExp(0);
-            LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
             return true;
         } else {
-            AddExp(-NextLevelExperience / 10);
-            LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Experience}/{NextLevelExperience})");
+            AddExp((int)(-LevelUpExp / 5));
+            LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
             return false;
         }
     }
 
     #endregion
 
-    public override string ToString() => $"Lv{Level} ({Experience}/{NextLevelExperience})";
+    public override string ToString() => $"Lv{Level} ({Exp}/{LevelUpExp})";
 
     #region IModCanSave
 
-    /// <summary>
-    /// 将配方数据保存到二进制流中
-    /// </summary>
-    /// <param name="w">二进制写入器</param>
-    public virtual void Export(BinaryWriter w) {
-        int byteCount = 4 + (4 + OutputMain.Count * (4 + 4)) + (4 + OutputAppend.Count * (4 + 4)) + 4 + 4 + 8;
-        w.Write(byteCount);
-        w.Write(1);
-        w.Write(OutputMain.Count);
-        foreach (OutputInfo info in OutputMain) {
-            w.Write(info.OutputID);
-            w.Write(info.OutputTotalCount);
-        }
-        w.Write(OutputAppend.Count);
-        foreach (OutputInfo info in OutputAppend) {
-            w.Write(info.OutputID);
-            w.Write(info.OutputTotalCount);
-        }
-        w.Write(Level);
-        w.Write(Quality);
-        w.Write(Experience);
-        w.Write(MemoryCount);
-
-        // 子类特定数据由重写的方法处理
-    }
-
-    /// <summary>
-    /// 从二进制流中加载配方数据
-    /// </summary>
-    /// <param name="r">二进制读取器</param>
     public virtual void Import(BinaryReader r) {
-        int byteCount = r.ReadInt32();
         int version = r.ReadInt32();
         int outputMainCount = r.ReadInt32();
         for (int i = 0; i < outputMainCount; i++) {
@@ -305,10 +286,28 @@ public abstract class BaseRecipe(
         }
         Quality = r.ReadInt32();
         Level = r.ReadInt32();
-        Experience = r.ReadInt64();
-        AddExp(0);
+        Exp = r.ReadInt64();
+        AddExp(0);//触发升级、突破判断
         MemoryCount = r.ReadInt32();
+        // 子类特定数据由重写的方法处理
+    }
 
+    public virtual void Export(BinaryWriter w) {
+        w.Write(1);
+        w.Write(OutputMain.Count);
+        foreach (OutputInfo info in OutputMain) {
+            w.Write(info.OutputID);
+            w.Write(info.OutputTotalCount);
+        }
+        w.Write(OutputAppend.Count);
+        foreach (OutputInfo info in OutputAppend) {
+            w.Write(info.OutputID);
+            w.Write(info.OutputTotalCount);
+        }
+        w.Write(Level);
+        w.Write(Quality);
+        w.Write(Exp);
+        w.Write(MemoryCount);
         // 子类特定数据由重写的方法处理
     }
 

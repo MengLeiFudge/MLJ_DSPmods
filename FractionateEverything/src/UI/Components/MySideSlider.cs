@@ -39,8 +39,8 @@ public class MySideSlider : MonoBehaviour {
         sl.slider.onValueChanged.AddListener(sl.SliderChanged);
         if (width == 0) width = 160f;
         if (sl.slider.transform is RectTransform rectTrans) {
-            rectTrans.localPosition = new Vector3(width, rectTrans.localPosition.y, rectTrans.localPosition.z);
-            rectTrans.sizeDelta = new Vector2(width, rectTrans.sizeDelta.y);
+            rectTrans.localPosition = new(width, rectTrans.localPosition.y, rectTrans.localPosition.z);
+            rectTrans.sizeDelta = new(width, rectTrans.sizeDelta.y);
         }
         sl.Value = 0f;
 
@@ -48,12 +48,12 @@ public class MySideSlider : MonoBehaviour {
         sl.labelText.alignment = textWidth <= 0f ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
         if (sl.labelText.transform is RectTransform rectTrans2) {
             if (textWidth > 0f) {
-                rectTrans2.sizeDelta = new Vector2(textWidth, rectTrans2.sizeDelta.y);
+                rectTrans2.sizeDelta = new(textWidth, rectTrans2.sizeDelta.y);
             } else {
-                rectTrans2.sizeDelta = new Vector2(-textWidth, rectTrans2.sizeDelta.y);
+                rectTrans2.sizeDelta = new(-textWidth, rectTrans2.sizeDelta.y);
             }
-            rectTrans2.pivot = new Vector2(0f, 1f);
-            rectTrans2.localPosition = new Vector3(textWidth <= 0f ? width + 10f : width, rectTrans2.localPosition.y,
+            rectTrans2.pivot = new(0f, 1f);
+            rectTrans2.localPosition = new(textWidth <= 0f ? width + 10f : width, rectTrans2.localPosition.y,
                 rectTrans2.localPosition.z);
         }
         sl.labelFormat = "G";

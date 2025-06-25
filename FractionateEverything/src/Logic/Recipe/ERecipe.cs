@@ -12,7 +12,7 @@ public enum ERecipe {
     /// <summary>
     /// 建筑培养配方
     /// </summary>
-    BuildingCultivate,
+    BuildingTrain,
 
     /// <summary>
     /// 矿物复制配方
@@ -38,4 +38,18 @@ public enum ERecipe {
     /// 转化配方
     /// </summary>
     Conversion,
+}
+
+public static class EnumExtensions {
+    public static string GetName(this ERecipe recipe) {
+        return recipe switch {
+            ERecipe.BuildingTrain => "建筑培养",
+            ERecipe.MineralCopy => "矿物复制",
+            ERecipe.QuantumDuplicate => "量子复制",
+            ERecipe.Alchemy => "点金",
+            ERecipe.Deconstruction => "分解",
+            ERecipe.Conversion => "转化",
+            _ => "未知"
+        };
+    }
 }

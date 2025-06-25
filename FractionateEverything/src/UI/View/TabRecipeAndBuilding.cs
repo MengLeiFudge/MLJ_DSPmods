@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.IO;
+using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
@@ -18,7 +19,7 @@ public static class TabRecipeAndBuilding {
     public static ConfigEntry<int> RecipeTypeEntry;
     public static string[] RecipeTypeNames = ["建筑培养", "矿物复制", "量子复制", "点金", "分解", "转化"];
     public static ERecipe[] RecipeTypes = [
-        ERecipe.BuildingCultivate, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
+        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
     ];
 
@@ -152,7 +153,7 @@ public static class TabRecipeAndBuilding {
         int line = 0;
         if (recipe != null) {
             textRecipeInfo[line].text =
-                $"{recipeTypeName}-{SelectedItem.name} Lv{recipe.Level} ({recipe.Experience}/{recipe.NextLevelExperience})";
+                $"{recipeTypeName}-{SelectedItem.name} Lv{recipe.Level} ({recipe.Exp}/{recipe.LevelUpExp})";
             textRecipeInfo[line].color = recipe.QualityColor;
             line++;
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
@@ -185,7 +186,25 @@ public static class TabRecipeAndBuilding {
                     isFirst = false;
                 }
             }
-            textRecipeInfo[line].text = $"突破加成：无";
+            textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}";
+            line++;
+            if (recipe.Quality >= 7) {
+                textRecipeInfo[line].text = $"当前配方已到最高品质，无法突破！";
+                line++;
+            } else {
+                textRecipeInfo[line].text = $"突破条件：";
+                line++;
+                textRecipeInfo[line].text =
+                    $"[{(recipe.CanBreakthrough2 ? "√" : "x")}] 等级达到 {recipe.Level} / {3 + recipe.Quality}";
+                line++;
+                textRecipeInfo[line].text =
+                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {recipe.Exp} / {recipe.MaxLevelUpExp}";
+                line++;
+                textRecipeInfo[line].text =
+                    $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.NextQuality} 个对应回响";
+                line++;
+            }
+            textRecipeInfo[line].text = $"特殊突破加成：无";
             line++;
         } else {
             textRecipeInfo[line].text = $"配方不存在！";
@@ -197,6 +216,7 @@ public static class TabRecipeAndBuilding {
         }
 
         line = 0;
+        //20%配方达到蓝色（2叠） ---  80%配方达到红色（4叠）
         textBuildingInfo[line].text = $"建筑加成：无";
         line++;
         for (; line < textBuildingInfo.Length; line++) {
@@ -209,4 +229,18 @@ public static class TabRecipeAndBuilding {
         CheckBoxEnableFracForever.Checked = EnableFracForeverEntryArr[BuildingTypeEntry.Value].Value;
         EnableFracForeverEntry.Value = EnableFracForeverEntryArr[BuildingTypeEntry.Value].Value;
     }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(1);
+    }
+
+    public static void IntoOtherSave() { }
+
+    #endregion
 }
