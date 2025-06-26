@@ -64,6 +64,10 @@ public static class TabShop {
             y = 10f;
             wnd.AddButton(x, y, 200, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1",
                 () => { ExchangeItemsWithQuestion(I电磁矩阵, 200, IFE交互塔, 1); });
+            y += 36f;
+            wnd.AddButton(x, y, 200, tab, "10蓝糖兑换1分馏原胚（普通）", 16, "btn-blue2",
+                () => { ExchangeItemsWithQuestion(I电磁矩阵, 10, IFE分馏原胚普通, 1); });
+            y += 36f;
         }
         {
             var tab = wnd.AddTab(trans, "黑雾商店");

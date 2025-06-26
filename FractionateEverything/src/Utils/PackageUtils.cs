@@ -19,7 +19,7 @@ public static class PackageUtils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (LDB.items.Exist(takeId) || takeCount == 0 || LDB.items.Exist(giveId) || giveCount == 0) {
+        if (!LDB.items.Exist(takeId) || takeCount == 0 || !LDB.items.Exist(giveId) || giveCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -74,7 +74,7 @@ public static class PackageUtils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (itemId <= 0) {
+        if (!LDB.items.Exist(itemId)) {
             return 0;
         }
         StorageComponent package = GameMain.mainPlayer.package;
@@ -94,7 +94,7 @@ public static class PackageUtils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (itemId <= 0 || !GameMain.mainPlayer.deliveryPackage.unlocked) {
+        if (!LDB.items.Exist(itemId) || !GameMain.mainPlayer.deliveryPackage.unlocked) {
             return 0;
         }
         DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;

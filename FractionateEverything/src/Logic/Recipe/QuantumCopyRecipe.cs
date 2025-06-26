@@ -50,15 +50,19 @@ public class QuantumCopyRecipe : BaseRecipe {
 
     #region IModCanSave
 
-    public virtual void Import(BinaryReader r) {
+    public override void Import(BinaryReader r) {
+        base.Import(r);
         int version = r.ReadInt32();
     }
 
-    public virtual void Export(BinaryWriter w) {
+    public override void Export(BinaryWriter w) {
+        base.Export(w);
         w.Write(1);
     }
 
-    public virtual void IntoOtherSave() { }
+    public override void IntoOtherSave() {
+        base.IntoOtherSave();
+    }
 
     #endregion
 }
