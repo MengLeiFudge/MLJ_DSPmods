@@ -45,6 +45,7 @@ public static class TabRecipeAndBuilding {
 
     public static ConfigEntry<int> BuildingTypeEntry;
     public static string[] BuildingTypeNames = ["交互塔", "矿物复制塔", "点数聚集塔", "量子复制塔", "点金塔", "分解塔", "转化塔"];
+    public static int[] BuildingIds = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;
     public static ConfigEntry<int> MaxProductOutputStackEntry;
