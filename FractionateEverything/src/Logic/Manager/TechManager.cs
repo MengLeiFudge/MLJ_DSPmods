@@ -16,15 +16,15 @@ public static class TechManager {
         Register("T分馏原胚", "-", "分馏原胚");
         Register("分馏原胚描述",
             "In the course of Icarus' exploration, the Mastermind discovered that some star zones were extremely resource-poor and unsustainable. In order to make it easier for Icarus to explore the barren star zones, the Mastermind specially researched and issued the Fractionation of Natural Resources technology. This technology can be used to replicate the vast majority of natural resources, avoiding situations where lack of resources prevents exploration.",
-            "分馏科技在各个星区的加持下有了极大的拓展，主脑将其中的新技术下发，从而让各地的伊卡洛斯更快地建设巨构。");
+            "随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发新科技来帮助伊卡洛斯建设巨构。按 Shift+F 即可连接到分馏中心。\n提示：你可以在商店中兑换一些普通原胚。或者，考虑拔一些草？");
         Register("分馏原胚结果",
             "You have mastered the Natural Resource Fractionation technology, which can be replicated indefinitely as long as you have a certain amount of natural resources.",
-            "你已经掌握了分馏原胚的相关制作技术，可以将矩阵制作成分馏原胚。");
+            "你已经了解了分馏原胚的相关信息，可以将不同品质的分馏原胚合成定向分馏原胚了。");
 
         Register("T物品交互", "-", "物品交互");
         Register("物品交互描述",
             "-",
-            "主脑开发了一种高级的交互技术，可以关联到所有分馏相关的物品。有了这项技术，就可以自动将需要的物品以数据的形式传递给分馏处理中心。");
+            "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏中心，便于后续使用。");
         Register("物品交互结果",
             "-",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
@@ -81,6 +81,23 @@ public static class TechManager {
             "You have mastered the Up-Downgrade Fractionation technology and can now recycle process some items to copy them.",
             "你已经掌握了物品转化技术，可以用物品转化塔循环处理物品，从而实现物品的复制。");
 
+
+        Register("T首充1", "-", "首充6电磁矩阵");
+        Register("首充1描述",
+            "-",
+            "166倍超值礼包！只要6电磁矩阵，就可以获取原价1000电磁矩阵的抽奖券！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("物品点金结果",
+            "-",
+            "电磁奖券 x 100 已到账。");
+
+        Register("T首充2", "-", "首充30电磁矩阵");
+        Register("首充2描述",
+            "-",
+            "只要30电磁矩阵，就可以获取极其珍贵的分馏配方核心，可用于兑换任何配方！以及强力的建筑增幅芯片，大大增强特定建筑的效果！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("首充2结果",
+            "-",
+            "分馏配方核心 x 3，建筑增幅芯片 x 1 已到账。");
+
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
         // Register("分馏流动输出集装等级",
         //     " Integration count of fractionate fluid output",
@@ -129,12 +146,14 @@ public static class TechManager {
             "T分馏原胚", "分馏原胚描述", "分馏原胚结果",
             "Assets/fe/tech分馏原胚",
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
-            [I电磁矩阵], [20], 7200,
+            [IFE分馏原胚普通], [50], 3600,
             [RFE分馏原胚普通, RFE分馏原胚精良, RFE分馏原胚稀有, RFE分馏原胚史诗, RFE分馏原胚传说, RFE分馏原胚定向],
             GenesisBook.Enable ? new(13, -67) : new(13, -67)
         );
         tech1750.AddItems = [IFE分馏原胚定向];
         tech1750.AddItemCounts = [10];
+
+        //添加配方核心、建筑核心
 
         var tech1751 = ProtoRegistry.RegisterTech(TFE物品交互,
             "T物品交互", "物品交互描述", "物品交互结果",
@@ -215,6 +234,28 @@ public static class TechManager {
         );
         tech1758.AddItems = [IFE转化塔];
         tech1758.AddItemCounts = [5];
+
+        var tech1759 = ProtoRegistry.RegisterTech(TFE首充6矩阵,
+            "T首充6矩阵", "首充6矩阵描述", "首充6矩阵结果",
+            "Assets/fe/tech首充6矩阵",
+            [tech1750.ID],
+            [I电磁矩阵], [6], 3600,
+            [RFE电磁奖券, RFE能量奖券, RFE结构奖券, RFE信息奖券, RFE引力奖券, RFE宇宙奖券, RFE黑雾奖券],
+            GenesisBook.Enable ? new(17, -75) : new(17, -75)
+        );
+        tech1759.AddItems = [IFE电磁奖券];
+        tech1759.AddItemCounts = [100];
+
+        var tech1760 = ProtoRegistry.RegisterTech(TFE首充30矩阵,
+            "T首充30矩阵", "首充30矩阵描述", "首充30矩阵结果",
+            "Assets/fe/tech首充30矩阵",
+            [tech1759.ID],
+            [I电磁矩阵], [30], 3600,
+            [RFE分馏配方核心, RFE建筑增幅芯片],
+            GenesisBook.Enable ? new(21, -75) : new(21, -75)
+        );
+        tech1760.AddItems = [IFE分馏配方核心, IFE建筑增幅芯片];
+        tech1760.AddItemCounts = [5, 3];
 
         // var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
         //     "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",
