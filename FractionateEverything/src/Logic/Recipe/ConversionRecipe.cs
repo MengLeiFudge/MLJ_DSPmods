@@ -94,7 +94,7 @@ public class ConversionRecipe : BaseRecipe {
         //剩余物品统一转化为自身
         foreach (var item in LDB.items.dataArray) {
             if (!CreatedID.Contains(item.ID)) {
-                Create(item.ID, itemRatioDic[item.ID], [
+                Create(item.ID, itemRatio[item.ID], [
                     new OutputInfo(1f, item.ID, 1),
                 ]);
             }
