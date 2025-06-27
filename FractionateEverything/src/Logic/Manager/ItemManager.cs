@@ -67,10 +67,10 @@ public static class ItemManager {
         Register("I黑雾奖券", "-", "一张高科技奖券，里面似乎封装了大量黑雾矩阵。可以用于抽奖。");
 
         Register("分馏配方核心", "Frac Recipe Core");
-        Register("I分馏配方核心", "-", "一张高科技奖券，里面似乎封装了大量黑雾矩阵。可以用于抽奖。");
+        Register("I分馏配方核心", "-", "主脑研发的高科技立方体，具有神奇的力量。可以用于兑换任何分馏配方。");
 
         Register("建筑增幅芯片", "Building Increase Chip");
-        Register("I建筑增幅芯片", "-", "一张高科技奖券，里面似乎封装了大量黑雾矩阵。可以用于抽奖。");
+        Register("I建筑增幅芯片", "-", "高度集成的电子芯片，可以增强各种分馏建筑的效果，带来特殊的提升。");
     }
 
     #region 添加新物品
