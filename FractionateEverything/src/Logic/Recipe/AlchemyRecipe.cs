@@ -15,7 +15,7 @@ public class AlchemyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
-            AddRecipe(new AlchemyRecipe(item.ID, itemValueDic[item.ID] / 250000f,
+            AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / 250000f,
                 [
                     new OutputInfo(0.507937f, I电磁矩阵, 1),
                     new OutputInfo(0.253968f, I能量矩阵, 1),

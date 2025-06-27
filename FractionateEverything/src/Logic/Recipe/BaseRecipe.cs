@@ -43,7 +43,7 @@ public abstract class BaseRecipe(
     /// 配方损毁率
     /// </summary>
     public float DestroyRate => Math.Max(0, (0.2f - BaseSuccessRate)
-                                            * (0.5f + (float)Math.Log10(itemValueDic[InputID] + 1) / 5.0f)
+                                            * (0.5f + (float)Math.Log10(itemValue[InputID] + 1) / 5.0f)
                                             * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f)));
 
     /// <summary>
@@ -69,7 +69,7 @@ public abstract class BaseRecipe(
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
         seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
         if (seed / 2147483646.0 < DestroyRate) {
-            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[OutputMain[0].OutputID]) * 0.5));
+            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.5));
             return null;
         }
         Dictionary<int, int> dic = [];
@@ -96,7 +96,7 @@ public abstract class BaseRecipe(
                 //由于此处必定是第一个key，所以直接添加
                 dic[outputInfo.OutputID] = count;
                 outputInfo.OutputTotalCount += count;
-                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
+                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count));
                 break;
             }
         }
@@ -118,7 +118,7 @@ public abstract class BaseRecipe(
                     dic.Add(outputInfo.OutputID, count);
                 }
                 outputInfo.OutputTotalCount += count;
-                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValueDic[outputInfo.OutputID]) * count));
+                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count));
             }
         }
         return dic;

@@ -14,7 +14,7 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
-            AddRecipe(new QuantumCopyRecipe(item.ID, itemRatioDic[item.ID],
+            AddRecipe(new QuantumCopyRecipe(item.ID, itemRatio[item.ID],
                 [
                     new OutputInfo(1.000f, item.ID, 2),
                 ],
