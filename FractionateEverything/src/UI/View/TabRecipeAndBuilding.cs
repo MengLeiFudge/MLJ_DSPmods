@@ -25,7 +25,7 @@ public static class TabRecipeAndBuilding {
 
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
 
-    public static void OnButtonChangeItemClick() {
+    public static void OnButtonChangeItemClick(bool showLocked) {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
@@ -34,7 +34,10 @@ public static class TabRecipeAndBuilding {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => GetRecipe<BaseRecipe>(RecipeTypes[RecipeTypeEntry.Value], item.ID) != null);
+        }, false, item => {
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(RecipeTypes[RecipeTypeEntry.Value], item.ID);
+            return recipe != null && (!showLocked || recipe.IsUnlocked);
+        });
     }
 
     private static Text[] textRecipeInfo = new Text[30];
@@ -111,7 +114,9 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             x = 250f;
-            wnd.AddButton(x, y, 200, tab, "切换物品", 16, "button-change-item", OnButtonChangeItemClick);
+            wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-change-item",
+                () => { OnButtonChangeItemClick(false); });
+            wnd.AddButton(x + 300, y, 200, tab, "查看全部配方", 16, "button-change-item", () => { OnButtonChangeItemClick(true); });
             x = 0f;
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
