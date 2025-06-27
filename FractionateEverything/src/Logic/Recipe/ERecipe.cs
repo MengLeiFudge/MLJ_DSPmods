@@ -41,15 +41,22 @@ public enum ERecipe {
 }
 
 public static class EnumExtensions {
-    public static string GetName(this ERecipe recipe) {
+    /// <summary>
+    /// 拓展方法，返回配方名称
+    /// </summary>
+    public static string GetShortName(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.BuildingTrain => "建筑培养",
-            ERecipe.MineralCopy => "矿物复制",
-            ERecipe.QuantumDuplicate => "量子复制",
-            ERecipe.Alchemy => "点金",
-            ERecipe.Deconstruction => "分解",
-            ERecipe.Conversion => "转化",
-            _ => "未知"
+            ERecipe.BuildingTrain => "建筑培养".Translate(),
+            ERecipe.MineralCopy => "矿物复制".Translate(),
+            ERecipe.QuantumDuplicate => "量子复制".Translate(),
+            ERecipe.Alchemy => "点金".Translate(),
+            ERecipe.Deconstruction => "分解".Translate(),
+            ERecipe.Conversion => "转化".Translate(),
+            _ => "未知".Translate()
         };
+    }
+
+    public static string GetName(this ERecipe recipe) {
+        return recipe.GetShortName() + "配方".Translate();
     }
 }

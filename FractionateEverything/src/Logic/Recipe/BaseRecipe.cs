@@ -255,6 +255,8 @@ public abstract class BaseRecipe(
 
     #endregion
 
+    public string ShortInfo() => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
+
     public override string ToString() => $"Lv{Level} ({Exp}/{LevelUpExp})";
 
     #region IModCanSave

@@ -85,7 +85,7 @@ public static class TechManager {
         Register("T首充1", "-", "首充6电磁矩阵");
         Register("首充1描述",
             "-",
-            "166倍超值礼包！只要6电磁矩阵，就可以获取原价1000电磁矩阵的抽奖券！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "百倍超值礼包！只要6电磁矩阵，就可以获取原价上千电磁矩阵的抽奖券！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("物品点金结果",
             "-",
             "电磁奖券 x 100 已到账。");
@@ -96,7 +96,7 @@ public static class TechManager {
             "只要30电磁矩阵，就可以获取极其珍贵的分馏配方核心，可用于兑换任何配方！以及强力的建筑增幅芯片，大大增强特定建筑的效果！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("首充2结果",
             "-",
-            "分馏配方核心 x 3，建筑增幅芯片 x 1 已到账。");
+            "分馏配方核心 x 5，建筑增幅芯片 x 3 已到账。");
 
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
         // Register("分馏流动输出集装等级",
@@ -235,9 +235,9 @@ public static class TechManager {
         tech1758.AddItems = [IFE转化塔];
         tech1758.AddItemCounts = [5];
 
-        var tech1759 = ProtoRegistry.RegisterTech(TFE首充6矩阵,
-            "T首充6矩阵", "首充6矩阵描述", "首充6矩阵结果",
-            "Assets/fe/tech首充6矩阵",
+        var tech1759 = ProtoRegistry.RegisterTech(TFE首充1,
+            "T首充1", "首充1描述", "首充1结果",
+            "Assets/fe/tech首充1",
             [tech1750.ID],
             [I电磁矩阵], [6], 3600,
             [RFE电磁奖券, RFE能量奖券, RFE结构奖券, RFE信息奖券, RFE引力奖券, RFE宇宙奖券, RFE黑雾奖券],
@@ -246,9 +246,9 @@ public static class TechManager {
         tech1759.AddItems = [IFE电磁奖券];
         tech1759.AddItemCounts = [100];
 
-        var tech1760 = ProtoRegistry.RegisterTech(TFE首充30矩阵,
-            "T首充30矩阵", "首充30矩阵描述", "首充30矩阵结果",
-            "Assets/fe/tech首充30矩阵",
+        var tech1760 = ProtoRegistry.RegisterTech(TFE首充2,
+            "T首充2", "首充2描述", "首充2结果",
+            "Assets/fe/tech首充2",
             [tech1759.ID],
             [I电磁矩阵], [30], 3600,
             [RFE分馏配方核心, RFE建筑增幅芯片],
