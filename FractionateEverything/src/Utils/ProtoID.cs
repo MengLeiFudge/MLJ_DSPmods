@@ -1018,6 +1018,6 @@ public static class ProtoID {
     internal const int TFE物品点金 = 1756;
     internal const int TFE物品分解 = 1757;
     internal const int TFE物品转化 = 1758;
-    internal const int TFE首充6矩阵 = 1759;
-    internal const int TFE首充30矩阵 = 1760;
+    internal const int TFE首充1 = 1759;
+    internal const int TFE首充2 = 1760;
 }

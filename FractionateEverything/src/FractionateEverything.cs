@@ -198,8 +198,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public void PreAddData() {
-        //清除LDBTool的物品ID、配方ID的Config数据
-
         //添加分馏原胚、精华
         ItemManager.AddFractionalPrototypeAndEssence();
         //初步添加分馏塔

@@ -24,13 +24,7 @@ public static class TabRaffle {
     public static int RecipeRaffleCount = 1;
     public static double RecipeRaffleRate => 0.006 + Math.Max(RecipeRaffleCount - 73, 0) * 0.06;
 
-    /// <summary>
-    /// 下一抽是第几抽。
-    /// </summary>
-    public static int BuildingRaffleCount = 1;
-    public static double BuildingRaffleRate => 0.006 + Math.Max(BuildingRaffleCount - 73, 0) * 0.06;
-
-    public static double[] FracProtoArr = [0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
+    public static double[] FracProtoRateArr = [0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
     public static int[] FracProtoID = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
     public static void LoadConfig(ConfigFile configFile) { }
 
@@ -80,32 +74,41 @@ public static class TabRaffle {
         StringBuilder sb = new StringBuilder("获得了以下物品：");
         while (count > 0) {
             count--;
-            double currRate = RecipeRaffleRate;
+            double currRate = 0;
             double randDouble = random.NextDouble();
-            //配方
+            //分馏配方核心（0.05%）
+            currRate += 0.0005;
+            if (randDouble < currRate) {
+                GameMain.mainPlayer.TryAddItemToPackage(IFE分馏配方核心, 1, 0, true);
+                sb.Append($"\n{LDB.items.Select(IFE分馏配方核心).name} x 1");
+                RecipeRaffleCount = 1;
+                continue;
+            }
+            //配方（0.6%，74抽开始后每抽增加6%）
+            currRate += RecipeRaffleRate;
             if (randDouble < currRate) {
                 int idx = random.Next(0, recipeArr.Count);
                 BaseRecipe recipe = recipeArr[idx];
-                string name = LDB.items.Select(recipe.InputID).name.Trim('\r', '\n');
+                string name = LDB.items.Select(recipe.InputID).name;
                 if (!recipe.IsUnlocked) {
                     recipe.Level = 1;
                     recipe.Quality = 1;
-                    sb.AppendLine($"\n[配方] {recipeType.GetName()}-{name}");
+                    sb.Append($"\n{recipe.ShortInfo()} 已解锁");
                 } else {
                     recipe.MemoryCount++;
-                    sb.AppendLine($"\n[回响] {recipeType.GetName()}-{name}");
+                    sb.Append($"\n{recipe.ShortInfo()} 已转为回响（当前回响数目：{recipe.MemoryCount}）");
                 }
                 RecipeRaffleCount = 1;
                 continue;
             }
             RecipeRaffleCount++;
-            //分馏原胚
+            //分馏原胚（8.8%）
             bool getFracProto = false;
-            for (int i = 0; i < FracProtoArr.Length; i++) {
-                currRate += FracProtoArr[i];
+            for (int i = 0; i < FracProtoRateArr.Length; i++) {
+                currRate += FracProtoRateArr[i];
                 if (randDouble < currRate) {
                     GameMain.mainPlayer.TryAddItemToPackage(FracProtoID[i], 1, 0, true);
-                    sb.Append($"\n[原胚] {LDB.items.Select(FracProtoID[i]).name} x 1");
+                    sb.Append($"\n{LDB.items.Select(FracProtoID[i]).name} x 1");
                     getFracProto = true;
                     break;
                 }
@@ -113,9 +116,9 @@ public static class TabRaffle {
             if (getFracProto) {
                 continue;
             }
-            //狗粮
+            //沙土
             GameMain.mainPlayer.TryAddItemToPackage(I沙土, 1000, 0, true);
-            sb.Append("\n[沙土] 沙土 x 1000");
+            sb.Append("\n沙土 x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString(), "确认", UIMessageBox.INFO);
     }
@@ -132,35 +135,40 @@ public static class TabRaffle {
         StringBuilder sb = new StringBuilder("获得了以下物品：");
         while (count > 0) {
             count--;
-            double currRate = BuildingRaffleRate;
+            double currRate = 0;
             double randDouble = random.NextDouble();
-            //建筑
+            //建筑增幅芯片（0.3%）
+            currRate += 0.003;
             if (randDouble < currRate) {
-                ItemProto item = LDB.items.Select(BuildingIds[buildingType]);
-                string name = item.name.Trim('\r', '\n');
-                GameMain.mainPlayer.TryAddItemToPackage(item.ID, 1, 0, true);
-                sb.AppendLine($"\n[建筑] {name} x 1");
-                BuildingRaffleCount = 1;
+                GameMain.mainPlayer.TryAddItemToPackage(IFE建筑增幅芯片, 1, 0, true);
+                sb.Append($"\n{LDB.items.Select(IFE建筑增幅芯片).name} x 1");
                 continue;
             }
-            BuildingRaffleCount++;
-            //分馏原胚
+            //分馏原胚（26.4%）
             bool getFracProto = false;
-            for (int i = 0; i < FracProtoArr.Length; i++) {
-                currRate += FracProtoArr[i];
+            for (int i = 0; i < FracProtoRateArr.Length; i++) {
+                currRate += FracProtoRateArr[i] * 3;
                 if (randDouble < currRate) {
                     GameMain.mainPlayer.TryAddItemToPackage(FracProtoID[i], 1, 0, true);
-                    sb.Append($"\n[原胚] {LDB.items.Select(FracProtoID[i]).name} x 1");
+                    sb.Append($"\n{LDB.items.Select(FracProtoID[i]).name} x 1");
                     getFracProto = true;
                     break;
                 }
             }
+            //建筑（7%）
+            if (randDouble < currRate) {
+                ItemProto item = LDB.items.Select(BuildingIds[buildingType]);
+                string name = item.name;
+                GameMain.mainPlayer.TryAddItemToPackage(item.ID, 1, 0, true);
+                sb.Append($"\n{name} x 1");
+                continue;
+            }
             if (getFracProto) {
                 continue;
             }
-            //狗粮
+            //沙土
             GameMain.mainPlayer.TryAddItemToPackage(I沙土, 1000, 0, true);
-            sb.Append("\n[沙土] 沙土 x 1000");
+            sb.Append("\n沙土 x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString(), "确认", UIMessageBox.INFO);
     }
