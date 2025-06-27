@@ -225,11 +225,11 @@ public static class ItemManager {
     /// <summary>
     /// 物品总价值（原材料价值 + 制作价值）
     /// </summary>
-    public static readonly Dictionary<int, float> itemValueDic = [];
+    public static readonly float[] itemValue = new float[12000];
     /// <summary>
     /// 物品转化率，物品价值越高则转化率越低
     /// </summary>
-    public static readonly Dictionary<int, float> itemRatioDic = [];
+    public static readonly float[] itemRatio = new float[12000];
     //计算物品转化率。f(x)=a*x^b，由MATLAB拟合得到
     //原始数据：
     //100.000000 	    0.100000
@@ -259,67 +259,57 @@ public static class ItemManager {
     /// 计算所有物品的价值
     /// </summary>
     public static void CalculateItemValues() {
-        //初始化价值字典
-        itemValueDic.Clear();
+        //初始化价值字典，将所有物品价值都设为特定的大值
+        float maxValue = 1000000;
+        for (int i = 0; i < itemValue.Length; i++) {
+            itemValue[i] = maxValue;
+        }
         //设置普通原矿价值
-        itemValueDic.Add(I铁矿, 1.0f);
-        itemValueDic.Add(I铜矿, 1.0f);
-        itemValueDic.Add(IGB铝矿, 1.0f);
-        itemValueDic.Add(IGB钨矿, 1.0f);
-        itemValueDic.Add(I煤矿, 1.0f);
-        itemValueDic.Add(I石矿, 1.0f);
-        itemValueDic.Add(IGB硫矿, 1.2f);
-        itemValueDic.Add(IGB放射性矿物, 1.2f);
-        itemValueDic.Add(I木材, 1.0f);
-        itemValueDic.Add(I植物燃料, 1.0f);
-        itemValueDic.Add(I沙土, 1.0f);
+        itemValue[I铁矿] = 1.0f;
+        itemValue[I铜矿] = 1.0f;
+        itemValue[IGB铝矿] = 1.0f;
+        itemValue[IGB钨矿] = 1.0f;
+        itemValue[I煤矿] = 1.0f;
+        itemValue[I石矿] = 1.0f;
+        itemValue[IGB硫矿] = 1.2f;
+        itemValue[IGB放射性矿物] = 1.2f;
+        itemValue[I木材] = 1.0f;
+        itemValue[I植物燃料] = 1.0f;
+        itemValue[I沙土] = 1.0f;
         //设置母星系其他星球普通原矿价值
-        itemValueDic.Add(I硅石, 2.0f);
-        itemValueDic.Add(I钛石, 2.0f);
+        itemValue[I硅石] = 2.0f;
+        itemValue[I钛石] = 2.0f;
         //设置其他星系珍奇矿物价值
-        itemValueDic.Add(I可燃冰, 5.0f);
-        itemValueDic.Add(I金伯利矿石, 8.0f);
-        itemValueDic.Add(I分形硅石, 8.0f);
-        itemValueDic.Add(I有机晶体, 8.0f);
-        itemValueDic.Add(I光栅石, 20.0f);
-        itemValueDic.Add(I刺笋结晶, 20.0f);
-        itemValueDic.Add(I单极磁石, 200.0f);
+        itemValue[I可燃冰] = 5.0f;
+        itemValue[I金伯利矿石] = 8.0f;
+        itemValue[I分形硅石] = 8.0f;
+        itemValue[I有机晶体] = 8.0f;
+        itemValue[I光栅石] = 20.0f;
+        itemValue[I刺笋结晶] = 20.0f;
+        itemValue[I单极磁石] = 200.0f;
         //设置气巨、冰巨可开采物品价值
-        itemValueDic.Add(I氢, 2.0f);
-        itemValueDic.Add(I重氢, 5.0f);
-        itemValueDic.Add(IGB氦, 20.0f);
-        //dic.Add(I可燃冰, 2.0f);
-        //dic.Add(IGB氨, 3.0f);
+        itemValue[I氢] = 2.0f;
+        itemValue[I重氢] = 5.0f;
+        itemValue[IGB氦] = 20.0f;
+        //itemValue[I可燃冰] = 2.0f;
+        //itemValue[IGB氨] = 3.0f;
         //设置可直接抽取的物品价值
-        itemValueDic.Add(I原油, 1.0f);
-        itemValueDic.Add(IGB海水, 1.0f);
-        itemValueDic.Add(I水, 1.0f);
-        itemValueDic.Add(IGB盐酸, 5.0f);
-        itemValueDic.Add(I硫酸, 5.0f);
-        itemValueDic.Add(IGB硝酸, 5.0f);
-        itemValueDic.Add(IGB氨, 5.0f);
+        itemValue[I原油] = 1.0f;
+        itemValue[IGB海水] = 1.0f;
+        itemValue[I水] = 1.0f;
+        itemValue[IGB盐酸] = 5.0f;
+        itemValue[I硫酸] = 5.0f;
+        itemValue[IGB硝酸] = 5.0f;
+        itemValue[IGB氨] = 5.0f;
         //设置黑雾掉落价值
-        itemValueDic.Add(I能量碎片, 2f);
-        itemValueDic.Add(I黑雾矩阵, 2.5f);
-        itemValueDic.Add(I物质重组器, 4.5f);
-        itemValueDic.Add(I硅基神经元, 6.0f);
-        itemValueDic.Add(I负熵奇点, 7.5f);
-        itemValueDic.Add(I核心素, 30f);
+        itemValue[I能量碎片] = 2f;
+        itemValue[I黑雾矩阵] = 2.5f;
+        itemValue[I物质重组器] = 4.5f;
+        itemValue[I硅基神经元] = 6.0f;
+        itemValue[I负熵奇点] = 7.5f;
+        itemValue[I核心素] = 30f;
         //设置临界光子价值
-        itemValueDic.Add(I临界光子, 400.0f);
-        //设置多功能集成组件价值，已知有许多配方为“多功能集成组件*1 -> 某个建筑*n”，所以暂定高价值
-        //dic.Add(IMS多功能集成组件, 999999f);
-        //移除不存在的物品
-        var keysToRemove = itemValueDic.Keys.Where(key => !LDB.items.Exist(key)).ToList();
-        foreach (var key in keysToRemove) {
-            itemValueDic.Remove(key);
-        }
-        //将剩余的物品价值都设为最大值
-        foreach (var item in LDB.items.dataArray) {
-            if (!itemValueDic.ContainsKey(item.ID)) {
-                itemValueDic.Add(item.ID, float.MaxValue);
-            }
-        }
+        itemValue[I临界光子] = 400.0f;
         //获取所有配方（排除分馏配方）
         var recipes = LDB.recipes.dataArray
             .Where(r => r.Type != ERecipeType.Fractionate)
@@ -373,7 +363,7 @@ public static class ItemManager {
                 // 检查输入物品是否都有已知价值
                 bool canProcess = true;
                 foreach (int itemId in inputIDs) {
-                    if (itemValueDic[itemId] == double.MaxValue) {
+                    if (Math.Abs(itemValue[itemId] - maxValue) < 0.001f) {
                         canProcess = false;
                         break;
                     }
@@ -383,7 +373,7 @@ public static class ItemManager {
                 // 计算输入总价值和输出总单位数
                 float inputValue = 0;
                 for (int i = 0; i < inputIDs.Count; i++) {
-                    inputValue += inputCounts[i] * itemValueDic[inputIDs[i]];
+                    inputValue += inputCounts[i] * itemValue[inputIDs[i]];
                 }
 
                 int outputUnits = outputCounts.Sum();
@@ -399,19 +389,14 @@ public static class ItemManager {
                 float unitValue = (inputValue + adjustedTimeValue) / outputUnits;
 
                 // 更新输出物品价值（取最小值）
-                for (int i = 0; i < outputIDs.Count; i++) {
-                    int itemId = outputIDs[i];
-                    if (!itemValueDic.ContainsKey(itemId)) {
-                        LogWarning($"物品ID {itemId} 在itemValueDic中不存在，跳过更新价值");
-                        continue;
-                    }
-                    if (unitValue < itemValueDic[itemId]) {
-                        itemValueDic[itemId] = unitValue;
+                foreach (int itemId in outputIDs) {
+                    if (unitValue < itemValue[itemId]) {
+                        itemValue[itemId] = unitValue;
                         ItemProto item = LDB.items.Select(itemId);
                         LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
                                  + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
                         if (itemId == I蓄电器) {
-                            itemValueDic[I蓄电器满] = unitValue * 2;
+                            itemValue[I蓄电器满] = unitValue * 2;
                         }
                         changed = true;
                     }
@@ -421,18 +406,24 @@ public static class ItemManager {
 
         //根据物品价值构建概率表
         foreach (ItemProto item in LDB.items.dataArray) {
-            itemRatioDic.Add(item.ID, (float)(a * Math.Pow(itemValueDic[item.ID] * 100, b)));
+            itemRatio[item.ID] = (float)(a * Math.Pow(itemValue[item.ID] * 100, b));
         }
 #if DEBUG
         //按照从小到大的顺序输出所有物品的原材料点数
         if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
             using StreamWriter sw = new StreamWriter(ITEM_VALUE_CSV_PATH);
             sw.WriteLine("ID,名称,价值,量子复制概率最大值");
-            foreach (var p in itemValueDic.OrderBy(p => p.Value)) {
+            Dictionary<int, float> dic = [];
+            for (int i = 0; i < itemValue.Length; i++) {
+                if (LDB.items.Exist(i)) {
+                    dic[i] = itemValue[i];
+                }
+            }
+            foreach (var p in dic.OrderBy(p => p.Value)) {
                 ItemProto item = LDB.items.Select(p.Key);
                 // LogDebug($"物品{item.name}({p.Key})价值保存至表格...");
                 sw.WriteLine(
-                    $"{p.Key},{item.name},{p.Value:F2},{itemRatioDic[p.Key]:P5}");
+                    $"{p.Key},{item.name},{p.Value:F2},{itemRatio[p.Key]:P5}");
             }
         }
 #endif
