@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.ProtoID;
+using static FE.Utils.PackageUtils;
 
 namespace FE.UI.View;
 
@@ -24,6 +25,8 @@ public static class TabRecipeAndBuilding {
     ];
 
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
+    public static BaseRecipe SelectedRecipe =>
+        GetRecipe<BaseRecipe>(RecipeTypes[RecipeTypeEntry.Value], SelectedItem.ID);
 
     public static void OnButtonChangeItemClick(bool showLocked) {
         //_windowTrans.anchoredPosition是窗口的中心点
@@ -34,10 +37,7 @@ public static class TabRecipeAndBuilding {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => {
-            BaseRecipe recipe = GetRecipe<BaseRecipe>(RecipeTypes[RecipeTypeEntry.Value], item.ID);
-            return recipe != null && (!showLocked || recipe.IsUnlocked);
-        });
+        }, false, item => SelectedRecipe != null && (!showLocked || SelectedRecipe.IsUnlocked));
     }
 
     private static Text[] textRecipeInfo = new Text[30];
@@ -114,9 +114,14 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             x = 250f;
-            wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-change-item",
+            wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
-            wnd.AddButton(x + 300, y, 200, tab, "查看全部配方", 16, "button-change-item", () => { OnButtonChangeItemClick(true); });
+            wnd.AddButton(x + 300, y, 200, tab, "查看全部配方", 16, "button-show-all-recipe",
+                () => { OnButtonChangeItemClick(true); });
+            x = 0f;
+            y += 36f;
+            wnd.AddButton(x, y, 200, tab, "兑换此配方", 16, "button-get-recipe",
+                () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
             x = 0f;
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {

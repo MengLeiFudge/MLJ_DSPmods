@@ -1,4 +1,5 @@
 ﻿using FE.Logic.Manager;
+using FE.Logic.Recipe;
 
 namespace FE.Utils;
 
@@ -58,6 +59,49 @@ public static class PackageUtils {
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeItems(takeId, takeCount, giveId, giveCount); }, null);
+    }
+
+    private static void ExchangeRecipe(int takeId, int takeCount, BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+            return;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        if (GetItemTotalCount(takeId) < takeCount) {
+            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}，无法兑换！",
+                "确定", UIMessageBox.WARNING);
+            return;
+        }
+        takeCount -= ItemManager.TakeItem(takeId, takeCount);
+        if (takeCount > 0) {
+            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
+            if (takeCount > 0) {
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+            }
+        }
+        if (!recipe.IsUnlocked) {
+            recipe.Level = 1;
+            recipe.Quality = 1;
+            UIMessageBox.Show("提示", $"已解锁 {recipe.ShortInfo()}！",
+                "确定", UIMessageBox.INFO);
+        } else {
+            recipe.MemoryCount++;
+            UIMessageBox.Show("提示", $"已兑换 {recipe.ShortInfo()}，自动转化为对应回响！\n"
+                                    + $"当前回响数目：{recipe.MemoryCount}",
+                "确定", UIMessageBox.INFO);
+        }
+    }
+
+    public static void ExchangeRecipeWithQuestion(int takeId, int takeCount, BaseRecipe recipe) {
+        if (recipe == null) {
+            UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.INFO);
+            return;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.ShortInfo()} 吗？",
+            "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeRecipe(takeId, takeCount, recipe); }, null);
     }
 
     /// <summary>
