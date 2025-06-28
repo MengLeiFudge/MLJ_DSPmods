@@ -1,6 +1,6 @@
 ﻿namespace FE.Utils;
 
-public static class ProtoID {
+public static partial class Utils {
     internal const int I伊卡洛斯 = 0;
     internal const int I行星基地 = 1;
     internal const int I巨构星际组装厂 = 2;

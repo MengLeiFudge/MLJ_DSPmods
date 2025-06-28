@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using BepInEx;
@@ -15,10 +16,9 @@ using FE.Logic.Recipe;
 using FE.UI;
 using FE.UI.Components;
 using FE.UI.View;
-using FE.Utils;
 using HarmonyLib;
 using xiaoye97;
-using static FE.Utils.LogUtils;
+using static FE.Utils.Utils;
 
 namespace FE;
 
@@ -49,48 +49,21 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     #region Config
 
     private static ConfigFile configFile;
-    /// <summary>
-    /// 旧的版本号。
-    /// </summary>
-    public static ConfigEntry<string> CurrentVersion;
-    /// <summary>
-    /// 判断是否有版本更新，以便于弹窗提示MOD更新内容。
-    /// </summary>
-    public static bool isVersionChanged => CurrentVersion.Value != PluginInfo.PLUGIN_VERSION;
-    /// <summary>
-    /// 是否在游戏加载时禁用提示信息。
-    /// </summary>
-    public static ConfigEntry<bool> DisableMessageBox;
 
     public void LoadConfig() {
         configFile = Config;
 
-        CurrentVersion = Config.Bind("config", "CurrentVersion", "",
-            new ConfigDescription(
-                "Current game version, used to control whether or not to show the update pop-up window.\n"
-                + "当前游戏版本，用于控制是否显示更新弹窗。",
-                new AcceptableStringValue(""), null));
-
-        DisableMessageBox = Config.Bind("config", "DisableMessageBox", false,
-            new ConfigDescription(
-                "Don't show message when FractionateEverything is loaded.\n"
-                + "禁用游戏加载完成后显示的万物分馏提示信息。",
-                new AcceptableBoolValue(false), null));
-
+        CheckPlugins.DisableMessageBox = Config.Bind("other", "DisableMessageBox", false,
+            "Don't show messagebox when FractionateEverything loaded.");
         BuildingManager.LoadConfig(Config);
         MainWindow.LoadConfig(Config);
 
-        (Traverse.Create(Config).Property("OrphanedEntries").GetValue() as IDictionary)?.Clear();
+        //清除无用项目
+        Traverse.Create(Config).Property("OrphanedEntries").GetValue<Dictionary<ConfigDefinition, string>>().Clear();
         Config.Save();
     }
 
-    /**
-     * 禁用首次弹窗，并更新版本号。
-     * 在主界面弹窗关闭后执行。
-     */
-    public static void SetConfig() {
-        DisableMessageBox.Value = true;
-        CurrentVersion.Value = PluginInfo.PLUGIN_VERSION;
+    public static void SaveConfig() {
         configFile.Save();
     }
 
@@ -154,12 +127,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             // harmony.Patch(
             //     AccessTools.Method(typeof(Localization), "LoadLanguage"),
             //     null,
-            //     new(typeof(I18NUtils), nameof(I18NUtils.LoadLanguagePostfixAfterCommonApi)) {
+            //     new(typeof(Utils), nameof(Utils.LoadLanguagePostfixAfterCommonApi)) {
             //         after = [CommonAPIPlugin.GUID]
             //     }
             // );
 
-            GameLogic.Enable(true);
             MainWindow.Init();
             UIFunctions.Init();
         }
@@ -168,33 +140,15 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     private void Start() {
         MyWindowManager.InitBaseObjects();
         MyWindowManager.Enable(true);
-
-        // _patches?.Do(type => type.GetMethod("Start")?.Invoke(null, null));
-        //
-        // object[] parameters = [UIPatch.GetHarmony()];
-        // _compats?.Do(type => type.GetMethod("Start")?.Invoke(null, parameters));
-        // WindowFunctions.Start();
     }
 
     private void OnDestroy() {
-        // _patches?.Do(type => type.GetMethod("Uninit")?.Invoke(null, null));
-        //
-        // UIPatch.Enable(false);
         MyWindowManager.Enable(false);
-        GameLogic.Enable(false);
     }
 
     private void Update() {
         if (VFInput.inputing) return;
-        if (DSPGame.IsMenuDemo) {
-            UIFunctions.OnInputUpdate();
-            return;
-        }
-        // LogisticsPatch.OnInputUpdate();
         UIFunctions.OnInputUpdate();
-        // GamePatch.OnInputUpdate();
-        // FactoryPatch.OnInputUpdate();
-        // PlayerPatch.OnInputUpdate();
     }
 
     public void PreAddData() {

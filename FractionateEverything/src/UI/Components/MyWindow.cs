@@ -7,6 +7,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -90,7 +91,7 @@ public class MyWindow : ManualBehaviour {
 
     private static void AddElement(float x, float y, RectTransform rect, RectTransform parent = null) {
         if (rect != null) {
-            UIUtils.NormalizeRectWithTopLeft(rect, x, y, parent);
+            NormalizeRectWithTopLeft(rect, x, y, parent);
         }
     }
 
@@ -122,7 +123,7 @@ public class MyWindow : ManualBehaviour {
         var dst = Instantiate(src);
         dst.gameObject.name = objName;
         var btn = dst.GetComponent<UIButton>();
-        UIUtils.NormalizeRectWithTopLeft(btn, x, y, parent);
+        NormalizeRectWithTopLeft(btn, x, y, parent);
         btn.tips.topLevel = true;
         btn.tips.tipTitle = label;
         btn.tips.tipText = tip;
@@ -152,7 +153,7 @@ public class MyWindow : ManualBehaviour {
         var panel = UIRoot.instance.uiGame.statWindow.performancePanelUI;
         var btn = Instantiate(panel.cpuActiveButton);
         btn.gameObject.name = objName;
-        var rect = UIUtils.NormalizeRectWithTopLeft(btn, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(btn, x, y, parent);
         rect.sizeDelta = new(width, rect.sizeDelta.y);
         var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
         var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
@@ -375,7 +376,7 @@ public class MyWindow : ManualBehaviour {
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
         inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
-        var rect = UIUtils.NormalizeRectWithTopLeft(inputField, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(inputField, x, y, parent);
         rect.sizeDelta = new(210, rect.sizeDelta.y);
         inputField.text = text;
         inputField.textComponent.fontSize = fontSize;
@@ -398,7 +399,7 @@ public class MyWindow : ManualBehaviour {
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
         inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
-        var rect = UIUtils.NormalizeRectWithTopLeft(inputField, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(inputField, x, y, parent);
         rect.sizeDelta = new(width, rect.sizeDelta.y);
         inputField.text = config.Value;
         inputField.textComponent.fontSize = fontSize;
@@ -428,12 +429,12 @@ public class MyWindowWithTabs : MyWindow {
     private RectTransform AddTabInternal(float y, int index, RectTransform parent, string label) {
         var tab = new GameObject();
         var tabRect = tab.AddComponent<RectTransform>();
-        UIUtils.NormalizeRectWithMargin(tabRect, TitleHeight, Margin + TabWidth + Spacing, 0f, 0f, parent);
+        NormalizeRectWithMargin(tabRect, TitleHeight, Margin + TabWidth + Spacing, 0f, 0f, parent);
         tab.name = "tab-" + index;
         var swarmPanel = UIRoot.instance.uiGame.dysonEditor.controlPanel.hierarchy.swarmPanel;
         var src = swarmPanel.orbitButtons[0];
         var btn = Instantiate(src);
-        var btnRect = UIUtils.NormalizeRectWithTopLeft(btn, Margin, y, parent);
+        var btnRect = NormalizeRectWithTopLeft(btn, Margin, y, parent);
         btn.name = "tab-btn-" + index;
         btnRect.sizeDelta = new(TabWidth, TabHeight);
         btn.transform.Find("frame").gameObject.SetActive(false);
@@ -466,7 +467,7 @@ public class MyWindowWithTabs : MyWindow {
         var img = Instantiate(UIRoot.instance.optionWindow.transform.Find("tab-line").Find("bar"));
         Destroy(img.Find("tri").gameObject);
         _tabY += spacing;
-        var rect = UIUtils.NormalizeRectWithTopLeft(img, 28, _tabY, parent);
+        var rect = NormalizeRectWithTopLeft(img, 28, _tabY, parent);
         rect.sizeDelta = new(107, 2);
         _tabY += 2;
     }

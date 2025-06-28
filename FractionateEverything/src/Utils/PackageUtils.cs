@@ -3,7 +3,7 @@ using FE.Logic.Recipe;
 
 namespace FE.Utils;
 
-public static class PackageUtils {
+public static partial class Utils {
     /// <summary>
     /// 尝试用一定数量的物品交换其他物品。
     /// </summary>

@@ -16,7 +16,7 @@ public static class UIFunctions {
     private static GameObject _buttonOnPlanetGlobe;
 
     public static void Init() {
-        _toggleKey = KeyBindings.RegisterKeyBinding(new() {
+        _toggleKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
             key = new((int)KeyCode.F, CombineKey.SHIFT_COMB, ECombineKeyAction.OnceClick, false),
             conflictGroup = KeyBindConflict.MOVEMENT
                             | KeyBindConflict.FLYING
@@ -26,7 +26,7 @@ public static class UIFunctions {
             name = "OpenFEMainWindow",
             canOverride = true
         });
-        I18NUtils.Register("KEYOpenFEMainWindow", "[FE] Open main window", "[FE] 打开主页");
+        Utils.Utils.Register("KEYOpenFEMainWindow", "[FE] Open main window", "[FE] 打开主页");
         // I18N.OnInitialized += RecreateConfigWindow;
     }
 

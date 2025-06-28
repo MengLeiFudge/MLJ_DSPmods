@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
+using FE.Utils;
 using HarmonyLib;
 using UnityEngine;
-using static FE.Utils.ProtoID;
-using static FE.Utils.FormatUtils;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.BaseRecipe;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 
@@ -19,8 +19,6 @@ namespace FE.Logic.Manager;
 public static class ProcessManager {
     #region Field
 
-    private static readonly Dictionary<int, float> defaultDicNoDestroy = new() { { 1, 0.01f } };
-    // private static uint seed2 = (uint)new Random().Next(int.MinValue, int.MaxValue);
     private static int totalUIUpdateTimes = 0;
     private static int fractionatorID = 0;
     private static bool isFirstUpdateUI = true;
@@ -29,17 +27,12 @@ public static class ProcessManager {
     private static string lastSpeedText = "";
     private static string lastProductProbText = "";
     private static string lastOriProductProbText = "";
-    // public static int MaxProductOutputStack = 1;
-    // public static bool EnableFracForever = false;
-    // public static bool EnableFluidOutputStack = false;
     public static int MaxOutputTimes = 2;
     public static int MaxBeltSpeed = 30;
     public static int FracFluidInputMax = 40;
     public static int FracProductOutputMax = 20;
     public static int FracFluidOutputMax = 20;
     private static double[] incTableFixedRatio;
-    private static int[] trashRecycleNeeds = [];
-    // private static BaseRecipe DefaultBaseRecipe = new(ERecipe.Origin, 0, [-1, 0], [0, 0], [-1, 0]);
 
     #endregion
 
@@ -63,16 +56,6 @@ public static class ProcessManager {
         for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
             incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
         }
-
-        //生成垃圾塔使用的非建筑列表
-        List<int> trashRecycleList = [];
-        foreach (ItemProto item in LDB.items.dataArray) {
-            //0是普通物品，4是地基
-            if (item.BuildMode is 0 or 4) {
-                trashRecycleList.Add(item.ID);
-            }
-        }
-        trashRecycleNeeds = trashRecycleList.ToArray();
     }
 
     #region 分馏配方与科技状态检测
@@ -1122,6 +1105,9 @@ public static class ProcessManager {
             __instance.oriProductProbText.verticalOverflow = VerticalWrapMode.Overflow;
             productProbTextBaseY = __instance.productProbText.transform.localPosition.y;
             oriProductProbTextBaseY = __instance.oriProductProbText.transform.localPosition.y;
+            //支持富文本
+            __instance.productProbText.supportRichText = true;
+            __instance.oriProductProbText.supportRichText = true;
         }
         if (__instance.fractionatorId == 0 || __instance.factory == null) {
             return;
@@ -1135,7 +1121,7 @@ public static class ProcessManager {
             return;
         }
         int buildingID = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingID == I分馏塔 || buildingID == IFE点数聚集塔) {
+        if (buildingID == I分馏塔) {
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
@@ -1186,6 +1172,10 @@ public static class ProcessManager {
         float successRatePlus = 1.0f;
         BaseRecipe recipe;
         switch (buildingID) {
+            case IFE交互塔:
+                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
+                break;
             case IFE矿物复制塔:
                 successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fractionator.fluidId);
@@ -1218,7 +1208,7 @@ public static class ProcessManager {
         float flowRatio = 1.0f;
         Color color = QualityColors[5];
         if (recipe == null) {
-            s1 = "无配方".Translate();
+            s1 = $"{"无配方".Translate().WithColor(Blue)}";
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else if (!recipe.IsUnlocked) {
             s1 = recipe + "\n" + "未解锁".Translate();
@@ -1244,7 +1234,7 @@ public static class ProcessManager {
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             } else {
                 foreach (var output in recipe.OutputMain) {
-                    float ratio = output.SuccessRate;// * successRatePlus;
+                    float ratio = recipe.BaseSuccessRate * output.SuccessRate * successRatePlus;
                     string name = FormatName(LDB.items.Select(output.OutputID).Name);
                     sb1.Append($"{name}x{output.OutputCount} ({ratio.FormatP()})\n");
                     flowRatio -= ratio;

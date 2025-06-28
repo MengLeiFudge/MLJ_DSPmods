@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Utils.LogUtils;
 using static FE.UI.View.TabOtherSetting;
+using static FE.Utils.Utils;
 using Random = System.Random;
 
 namespace FE.Logic.Recipe;

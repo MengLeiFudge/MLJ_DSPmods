@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FE.Logic.Recipe;
-using static FE.Utils.LogUtils;
-using static FE.Utils.ProtoID;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 

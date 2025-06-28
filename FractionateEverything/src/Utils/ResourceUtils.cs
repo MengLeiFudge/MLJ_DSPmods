@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FE.Utils;
 
-public static class Util {
+public static partial class Utils {
     public static Type[] GetTypesFiltered(Assembly assembly, Func<Type, bool> predicate) {
         return assembly.GetTypes().Where(predicate).ToArray();
     }

@@ -1,8 +1,8 @@
 ﻿using System;
 using BepInEx.Configuration;
-using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -59,13 +59,13 @@ public class MyCheckBox : MonoBehaviour {
         go.name = "my-checkbox";
         go.SetActive(true);
         var cb = go.AddComponent<MyCheckBox>();
-        var rect = UIUtils.NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(cb, x, y, parent);
 
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();
         cb.boxImage = go.transform.GetComponent<Image>();
         cb.checkImage = go.transform.Find("checked")?.GetComponent<Image>();
-        UIUtils.NormalizeRectWithTopLeft(cb.checkImage, 0f, 0f);
+        NormalizeRectWithTopLeft(cb.checkImage, 0f, 0f);
 
         var child = go.transform.Find("text");
         if (child != null) {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
-using static FE.Utils.ProtoID;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 

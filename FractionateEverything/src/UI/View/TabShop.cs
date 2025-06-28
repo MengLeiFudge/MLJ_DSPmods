@@ -1,13 +1,11 @@
 ﻿using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.ProtoID;
-using static FE.Utils.PackageUtils;
 using static FE.UI.View.TabRecipeAndBuilding;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 

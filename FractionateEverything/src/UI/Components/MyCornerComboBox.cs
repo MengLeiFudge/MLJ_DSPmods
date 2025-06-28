@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -39,9 +40,9 @@ public class MyCornerComboBox : MonoBehaviour {
         var cb = gameObject.AddComponent<MyCornerComboBox>();
         RectTransform rtrans;
         if (topRight) {
-            rtrans = UIUtils.NormalizeRectWithTopRight(cb, x, y, parent);
+            rtrans = NormalizeRectWithTopRight(cb, x, y, parent);
         } else {
-            rtrans = UIUtils.NormalizeRectWithTopLeft(cb, x, y, parent);
+            rtrans = NormalizeRectWithTopLeft(cb, x, y, parent);
         }
         cb._rectTrans = rtrans;
         var box = rtrans.GetComponent<UIComboBox>();

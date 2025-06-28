@@ -7,8 +7,7 @@ using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.RecipeManager;
-using static FE.Utils.ProtoID;
-using static FE.Utils.PackageUtils;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 
@@ -18,15 +17,14 @@ public static class TabRecipeAndBuilding {
     #region 配方详情
 
     public static ConfigEntry<int> RecipeTypeEntry;
-    public static string[] RecipeTypeNames = ["建筑培养", "矿物复制", "量子复制", "点金", "分解", "转化"];
+    public static string[] RecipeTypeNames;
     public static ERecipe[] RecipeTypes = [
         ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
     ];
-
+    public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    public static BaseRecipe SelectedRecipe =>
-        GetRecipe<BaseRecipe>(RecipeTypes[RecipeTypeEntry.Value], SelectedItem.ID);
+    public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
 
     public static void OnButtonChangeItemClick(bool showLocked) {
         //_windowTrans.anchoredPosition是窗口的中心点
@@ -37,9 +35,13 @@ public static class TabRecipeAndBuilding {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => SelectedRecipe != null && (!showLocked || SelectedRecipe.IsUnlocked));
+        }, false, item => {
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
+            return recipe != null && (!showLocked || recipe.IsUnlocked);
+        });
     }
 
+    private static Text textCurrRecipe;
     private static Text[] textRecipeInfo = new Text[30];
 
     #endregion
@@ -66,8 +68,12 @@ public static class TabRecipeAndBuilding {
 
     public static void LoadConfig(ConfigFile configFile) {
         RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
-        if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypeNames.Length) {
+        if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
             RecipeTypeEntry.Value = 0;
+        }
+        RecipeTypeNames = new string[RecipeTypes.Length];
+        for (int i = 0; i < RecipeTypeNames.Length; i++) {
+            RecipeTypeNames[i] = RecipeTypes[i].GetShortName();
         }
         BuildingTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Building Type", 0, "想要查看的建筑类型。");
         if (BuildingTypeEntry.Value < 0 || BuildingTypeEntry.Value >= BuildingTypeNames.Length) {
@@ -113,16 +119,15 @@ public static class TabRecipeAndBuilding {
             y = 10f;
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
-            x = 250f;
+            textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
+            textCurrRecipe.supportRichText = true;
+            y += 36f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
-            wnd.AddButton(x + 300, y, 200, tab, "查看全部配方", 16, "button-show-all-recipe",
+            wnd.AddButton(x + 220, y, 200, tab, "查看全部配方", 16, "button-show-all-recipe",
                 () => { OnButtonChangeItemClick(true); });
-            x = 0f;
-            y += 36f;
-            wnd.AddButton(x, y, 200, tab, "兑换此配方", 16, "button-get-recipe",
+            wnd.AddButton(x + 440, y, 200, tab, "兑换此配方", 16, "button-get-recipe",
                 () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
-            x = 0f;
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
                 textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"textRecipeInfo{i}");
@@ -158,6 +163,7 @@ public static class TabRecipeAndBuilding {
     }
 
     public static void UpdateUI() {
+        textCurrRecipe.text = $"原料：{SelectedItem.name}";
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         string recipeTypeName = RecipeTypeNames[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);

@@ -3,8 +3,7 @@ using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
 using xiaoye97;
-using static FE.Utils.ProtoID;
-using static FE.Compatibility.CheckPlugins;
+using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
@@ -42,52 +41,52 @@ public static class GenesisBook {
                 after = [LDBToolPlugin.MODGUID]
             }
         );
-        LogInfo("GenesisBook Compat finish.");
+        CheckPlugins.LogInfo("GenesisBook Compat finish.");
     }
 
     public static void AfterLDBToolPostAddData() {
         if (_finished) return;
 
-        //调整黑雾物品的位置，调回胶囊位置
-        List<int> idList = [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素];
-        for (int i = 0; i < idList.Count; i++) {
-            LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + (i + 2) * 100 + 16;
-        }
-        idList = [I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊];
-        for (int i = 0; i < idList.Count; i++) {
-            LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + 701 + i;
-        }
-
-        //修改创世部分物品、配方的显示位置
-        idList = [IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器];
-        for (int i = 0; i < idList.Count; i++) {
-            ModifyItemAndItsRecipeGridIndex(idList[i], 2, 501 + i);
-        }
-        idList = [
-            I原型机, I精准无人机, I攻击无人机, I护卫舰, I驱逐舰,
-            I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮,
-            I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器,
-        ];
-        for (int i = 0; i < idList.Count; i++) {
-            ModifyItemAndItsRecipeGridIndex(idList[i], tab防御, 101 + i);
-        }
-        idList = [
-            I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱,
-            I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元,
-            I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组,
-            I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组,
-            I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊,
-        ];
-        foreach (var id in idList) {
-            ModifyItemAndItsRecipeGridIndex(id, 2);
-        }
-        ModifyItemAndItsRecipeGridIndex(I高斯机枪塔, tab防御, 301);
-        ModifyItemAndItsRecipeGridIndex(I聚爆加农炮, tab防御, 401);
-        ModifyItemAndItsRecipeGridIndex(IGB电磁加农炮, tab防御, 501);
-        ModifyItemAndItsRecipeGridIndex(I导弹防御塔, tab防御, 601);
+        // //调整黑雾物品的位置，调回胶囊位置
+        // List<int> idList = [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素];
+        // for (int i = 0; i < idList.Count; i++) {
+        //     LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + (i + 2) * 100 + 16;
+        // }
+        // idList = [I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊];
+        // for (int i = 0; i < idList.Count; i++) {
+        //     LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + 701 + i;
+        // }
+        //
+        // //修改创世部分物品、配方的显示位置
+        // idList = [IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器];
+        // for (int i = 0; i < idList.Count; i++) {
+        //     ModifyItemAndItsRecipeGridIndex(idList[i], 2, 501 + i);
+        // }
+        // idList = [
+        //     I原型机, I精准无人机, I攻击无人机, I护卫舰, I驱逐舰,
+        //     I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮,
+        //     I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器,
+        // ];
+        // for (int i = 0; i < idList.Count; i++) {
+        //     ModifyItemAndItsRecipeGridIndex(idList[i], tab防御, 101 + i);
+        // }
+        // idList = [
+        //     I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱,
+        //     I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元,
+        //     I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组,
+        //     I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组,
+        //     I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊,
+        // ];
+        // foreach (var id in idList) {
+        //     ModifyItemAndItsRecipeGridIndex(id, 2);
+        // }
+        // ModifyItemAndItsRecipeGridIndex(I高斯机枪塔, tab防御, 301);
+        // ModifyItemAndItsRecipeGridIndex(I聚爆加农炮, tab防御, 401);
+        // ModifyItemAndItsRecipeGridIndex(IGB电磁加农炮, tab防御, 501);
+        // ModifyItemAndItsRecipeGridIndex(I导弹防御塔, tab防御, 601);
 
         _finished = true;
-        LogInfo("GenesisBook Compatibility LDBToolOnPostAddDataAction finish.");
+        CheckPlugins.LogInfo("GenesisBook Compatibility LDBToolOnPostAddDataAction finish.");
     }
 
     private static void ModifyItemAndItsRecipeGridIndex(int itemId, int tab, int rowColumn) {
@@ -189,7 +188,7 @@ public static class GenesisBook {
         for (var index = 0; index < itemsLength; index++) {
             ItemProto proto = LDB.items.Select(recipe.Items[index]);
             float count = node.ItemCount * recipe.ItemCounts[index] / recipe.ResultCounts[idx];
-            if (node.Options.Factory.ModelIndex == ProtoID.M负熵熔炉) count /= 2f;
+            if (node.Options.Factory.ModelIndex == Utils.M负熵熔炉) count /= 2f;
             switch ((int)node.Options.Strategy) {
                 case Nonuse:
                     break;
@@ -259,7 +258,7 @@ public static class GenesisBook {
                       / __instance.Options.Recipe.ResultCounts[idx]
                       / assemblerSpeed
                       / 0.36f;
-        if (__instance.Options.Factory.ModelIndex == ProtoID.M负熵熔炉) count /= 2f;
+        if (__instance.Options.Factory.ModelIndex == Utils.M负熵熔炉) count /= 2f;
         switch ((int)__instance.Options.Strategy) {
             case Nonuse:
                 break;

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -19,6 +20,11 @@ public class CheckPlugins : BaseUnityPlugin {
     public const string VERSION = PluginInfo.PLUGIN_VERSION;
 
     private static bool _shown;
+
+    /// <summary>
+    /// 是否在游戏加载时禁用提示信息。
+    /// </summary>
+    public static ConfigEntry<bool> DisableMessageBox;
 
     #region Logger
 
@@ -46,13 +52,10 @@ public class CheckPlugins : BaseUnityPlugin {
 
     public static void OnMainMenuOpen() {
         if (_shown) return;
-        //UIMessageBox.Show会直接返回，所以这里只能显示一个弹窗。弹窗1消失后再展示弹窗2。
-        if (!FractionateEverything.DisableMessageBox.Value) {
+        if (!DisableMessageBox.Value) {
             ShowMessageBox();
-        } else if (FractionateEverything.isVersionChanged) {
-            ShowMessageBoxLatestVersion();
         }
-        FractionateEverything.SetConfig();
+        FractionateEverything.SaveConfig();
         _shown = true;
     }
 
@@ -61,33 +64,13 @@ public class CheckPlugins : BaseUnityPlugin {
             "FE标题".Translate(), "FE信息".Translate(),
             "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
             UIMessageBox.INFO,
-            ShowMessageBoxLatestVersion, ResponseFE日志, ResponseFE交流群
-        );
-    }
-
-    private static void ResponseFE日志() {
+            null, () => {
 #if DEBUG
-        Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
 #else
-        Application.OpenURL("FE日志链接".Translate());
+                Application.OpenURL("FE日志链接".Translate());
 #endif
-        ShowMessageBoxLatestVersion();
-    }
-
-    private static void ResponseFE交流群() {
-        Application.OpenURL("FE交流群链接".Translate());
-        ShowMessageBoxLatestVersion();
-    }
-
-    private static void ShowMessageBoxLatestVersion() {
-        const string version = PluginInfo.PLUGIN_VERSION;
-        if ((version + "信息").Translate() != version + "信息") {
-            UIMessageBox.Show(
-                (version + "标题").Translate(), (version + "信息").Translate(),
-                "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
-                UIMessageBox.INFO,
-                null, ResponseFE日志, ResponseFE交流群
-            );
-        }
+            }, () => Application.OpenURL("FE交流群链接".Translate())
+        );
     }
 }
