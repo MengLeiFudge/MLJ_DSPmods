@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using BepInEx.Bootstrap;
+﻿using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
 using xiaoye97;
-using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 

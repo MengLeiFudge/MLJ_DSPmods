@@ -1,5 +1,4 @@
 ﻿using System;
-using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
