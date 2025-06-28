@@ -42,6 +42,7 @@ public static class TabRecipeAndBuilding {
     }
 
     private static Text textCurrRecipe;
+    private static MyImageButton btnSelectedItem;
     private static Text[] textRecipeInfo = new Text[30];
 
     #endregion
@@ -121,6 +122,9 @@ public static class TabRecipeAndBuilding {
                 .WithConfigEntry(RecipeTypeEntry);
             textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
             textCurrRecipe.supportRichText = true;
+
+            btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item");
+
             y += 36f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
@@ -164,6 +168,7 @@ public static class TabRecipeAndBuilding {
 
     public static void UpdateUI() {
         textCurrRecipe.text = $"原料：{SelectedItem.name}";
+        btnSelectedItem.WithItem(SelectedItem);
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         string recipeTypeName = RecipeTypeNames[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);

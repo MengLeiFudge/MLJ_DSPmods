@@ -54,8 +54,9 @@ public class CheckPlugins : BaseUnityPlugin {
         if (_shown) return;
         if (!DisableMessageBox.Value) {
             ShowMessageBox();
+            DisableMessageBox.Value = true;
+            FractionateEverything.SaveConfig();
         }
-        FractionateEverything.SaveConfig();
         _shown = true;
     }
 

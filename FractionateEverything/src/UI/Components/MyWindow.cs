@@ -177,6 +177,16 @@ public class MyWindow : ManualBehaviour {
         return btn;
     }
 
+    public MyImageButton AddImageButton(float x, float y, RectTransform parent, int itemId = I铁矿,
+        string objName = "button") {
+        var btn = MyImageButton.CreateImageButton(x, y, parent, itemId);
+        btn.gameObject.name = objName;
+
+        _maxX = Math.Max(_maxX, x + btn.Width);
+        MaxY = Math.Max(MaxY, y + btn.Height);
+        return btn;
+    }
+
     public MyFlatButton AddFlatButton(float x, float y, RectTransform parent, string text = "", int fontSize = 12,
         string objName = "button", UnityAction onClick = null) {
         var btn = MyFlatButton.CreateFlatButton(x, y, parent, text, fontSize, _ => onClick());
@@ -509,6 +519,7 @@ public abstract class MyWindowManager {
         MyComboBox.InitBaseObject();
         MyCornerComboBox.InitBaseObject();
         MyFlatButton.InitBaseObject();
+        MyImageButton.InitBaseObject();
     }
 
     public static T CreateWindow<T>(string name, string title = "") where T : MyWindow {
