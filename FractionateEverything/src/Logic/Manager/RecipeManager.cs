@@ -96,6 +96,12 @@ public static class RecipeManager {
 #endif
         LogInfo("Begin to add fractionate recipes...");
 
+        BaseRecipes = new BaseRecipe[Enum.GetNames(typeof(ERecipe)).Length + 1][];
+        for (int i = 0; i < BaseRecipes.Length; i++) {
+            RecipesWithType.Add((ERecipe)i, []);
+            BaseRecipes[i] = new BaseRecipe[12000];
+        }
+
         BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
         QuantumCopyRecipe.CreateAll();
@@ -103,10 +109,6 @@ public static class RecipeManager {
         DeconstructionRecipe.CreateAll();
         ConversionRecipe.CreateAll();
 
-        BaseRecipes = new BaseRecipe[Enum.GetNames(typeof(ERecipe)).Length + 1][];
-        for (int i = 0; i < BaseRecipes.Length; i++) {
-            BaseRecipes[i] = new BaseRecipe[12000];
-        }
         foreach (var p in RecipesWithType) {
             foreach (var recipe in p.Value) {
                 BaseRecipes[(int)p.Key][recipe.InputID] = recipe;

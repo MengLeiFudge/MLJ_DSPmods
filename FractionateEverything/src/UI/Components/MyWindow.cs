@@ -110,7 +110,7 @@ public class MyWindow : ManualBehaviour {
         return txt;
     }
 
-    public Text AddText2(float x, float y, RectTransform parent, string label, int fontSize = 14,
+    public Text AddText2(float x, float y, RectTransform parent, string label, int fontSize = 15,
         string objName = "label") {
         var text = AddText(x, y, parent, label, fontSize, objName);
         _maxX = Math.Max(_maxX, x + text.rectTransform.sizeDelta.x);

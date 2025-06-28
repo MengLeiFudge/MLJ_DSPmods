@@ -69,6 +69,9 @@ public static class ItemManager {
 
         Register("建筑增幅芯片", "Building Increase Chip");
         Register("I建筑增幅芯片", "-", "高度集成的电子芯片，可以增强各种分馏建筑的效果，带来特殊的提升。");
+
+        Register("残破核心", "Destroyed Core");
+        Register("I残破核心", "-", "损毁的分馏配方核心，两个残破核心可以合成一个新的分馏配方核心。");
     }
 
     #region 添加新物品

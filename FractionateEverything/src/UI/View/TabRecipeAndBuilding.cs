@@ -24,6 +24,7 @@ public static class TabRecipeAndBuilding {
     ];
     public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
+    public static int SelectedItemId =>  SelectedItem.ID;
     public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
 
     public static void OnButtonChangeItemClick(bool showLocked) {
