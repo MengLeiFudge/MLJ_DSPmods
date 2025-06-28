@@ -222,11 +222,11 @@ public static class TabRecipeAndBuilding {
                 line++;
                 textRecipeInfo[line].text =
                     $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {recipe.Exp} / {recipe.MaxLevelUpExp}"
-                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
+                        .WithColor(recipe.CanBreakthrough3 ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
                     $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.BreakMemoryCount} 个对应回响"
-                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
+                        .WithColor(recipe.CanBreakthrough4 ? Green : Red);
                 line++;
             }
             // textRecipeInfo[line].text = "特殊突破加成：无";
