@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
@@ -76,7 +77,7 @@ public static class ConversionTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
         EnableFracForeverEntry.Value = r.ReadBoolean();
     }
 

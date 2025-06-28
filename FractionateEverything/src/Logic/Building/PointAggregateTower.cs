@@ -334,7 +334,7 @@ public static class PointAggregateTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
         EnableFracForeverEntry.Value = r.ReadBoolean();
         if (version >= 2) {
             Level = r.ReadInt32();
