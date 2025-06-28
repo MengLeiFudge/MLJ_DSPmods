@@ -21,8 +21,10 @@ public static class LDBToolPatch {
             string[] fields =
                 ["CustomID", "CustomGridIndex", "CustomStringZHCN", "CustomStringENUS", "CustomStringFRFR"];
             foreach (string field in fields) {
-                LDBTool.Field(field).Property("Entries").GetValue<Dictionary<ConfigDefinition, ConfigEntryBase>>().Clear();
-                LDBTool.Field(field).Property("OrphanedEntries").GetValue<Dictionary<ConfigDefinition, string>>().Clear();
+                LDBTool.Field(field).Property("Entries").GetValue<Dictionary<ConfigDefinition, ConfigEntryBase>>()
+                    .Clear();
+                LDBTool.Field(field).Property("OrphanedEntries").GetValue<Dictionary<ConfigDefinition, string>>()
+                    .Clear();
             }
             LogInfo("LDBTool config cleared.");
             cleared = true;
