@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -76,7 +77,7 @@ public class MyCheckButton : MonoBehaviour {
         go.name = "my-checkbutton";
         go.SetActive(true);
         var cb = go.AddComponent<MyCheckButton>();
-        var rect = UIUtils.NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(cb, x, y, parent);
 
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();

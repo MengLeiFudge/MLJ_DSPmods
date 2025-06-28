@@ -2,6 +2,7 @@ using System;
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -29,7 +30,7 @@ public class MySideSlider : MonoBehaviour {
         Destroy(go.GetComponent<UIButton>());
         go.SetActive(true);
         var sl = go.AddComponent<MySideSlider>();
-        var rect = UIUtils.NormalizeRectWithTopLeft(sl, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(sl, x, y, parent);
         sl.rectTrans = rect;
 
         sl.slider = go.transform.Find("slider").GetComponent<Slider>();

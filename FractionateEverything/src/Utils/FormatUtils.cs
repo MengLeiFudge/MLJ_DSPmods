@@ -3,7 +3,10 @@ using System.Text;
 
 namespace FE.Utils;
 
-public static class FormatUtils {
+public static partial class Utils {
+    /// <summary>
+    /// 将浮点数转化为百分数，至少保留一位有效数字。
+    /// </summary>
     public static string FormatP(this float value) {
         int i = 3;
         StringBuilder sb = new StringBuilder("0.###");
@@ -17,6 +20,9 @@ public static class FormatUtils {
         return "0%";
     }
 
+    /// <summary>
+    /// 格式化物品/配方名称，去除多余的空格、特殊字符等。
+    /// </summary>
     public static string FormatName(string s) {
         if (s == null) {
             return "null";

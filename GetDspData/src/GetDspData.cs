@@ -101,7 +101,7 @@ public class GetDspData : BaseUnityPlugin {
             #region 代码中使用
 
             using (var sw = new StreamWriter(dir + "\\DSP_ProtoID.txt", false, Encoding.UTF8)) {
-                sw.WriteLine("static class ProtoID");
+                sw.WriteLine("static class Utils");
                 sw.WriteLine("{");
 
                 List<ItemProto> itemList = [..LDB.items.dataArray];

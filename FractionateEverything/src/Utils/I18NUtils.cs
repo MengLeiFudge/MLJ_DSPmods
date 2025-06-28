@@ -2,67 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems.ModLocalization;
-using static FE.Utils.LogUtils;
 
 namespace FE.Utils;
 
-public static class I18NUtils {
-    /// <summary>
-    /// 为某个字符串添加橙色标签。
-    /// </summary>
-    public static string AddOrangeLabel(this string s) {
-        return $"<color=\"#FD965ECC\">{s}</color>";
-    }
-
-    // /// <summary>
-    // /// 启用此patch后，可以得知红色是FF5D4Cb7，蓝色是61D8FFB8
-    // /// </summary>
-    // [HarmonyPatch(typeof(UIItemTip), nameof(UIItemTip.SetTip))]
-    // [HarmonyPostfix]
-    // public static void LogColorGameUsed(ref UIItemTip __instance) {
-    //     var text = __instance.valuesText.text;
-    //     var color = __instance.valuesText.color;
-    //     LogError($"text={text} argb={Math.Round(color.a * 255.0)},{Math.Round(color.r * 255.0)},{Math.Round(color.b * 255.0)},{Math.Round(color.g * 255.0)}");
-    //     //text=<color=#FF5D4Cb7>不能手动制造</color> argb=255,150,150,150
-    //     //text=310<color=#61D8FFB8> + 62</color> hp argb=255,150,150,150
-    //     //这个argb是浅灰色，显然不是需要的，颜色是通过text里面的标签改的
-    // }
-
-    /// <summary>
-    /// 为某个字符串添加红色标签。
-    /// </summary>
-    public static string AddRedLabel(this string s) {
-        return $"<color=\"#FF5D4CB7\">{s}</color>";
-    }
-
-    /// <summary>
-    /// 为某个字符串添加蓝色标签。
-    /// </summary>
-    public static string AddBlueLabel(this string s) {
-        return $"<color=\"#61D8FFB8\">{s}</color>";
-    }
-
-    public static string AddLabelWithQualityColor(this string s, int quality) {
-        switch (quality) {
-            case 0:// 褐色
-                return $"<color=\"#A0522DAA\">{s}</color>";
-            case 1:// 白色
-                return $"<color=\"#FFFFFFAA\">{s}</color>";
-            case 2:// 绿色
-                return $"<color=\"#7CFC00AA\">{s}</color>";
-            case 3:// 蓝色
-                return $"<color=\"#61D8FFB8\">{s}</color>";
-            case 4:// 紫色
-                return $"<color=\"#DA70D6AA\">{s}</color>";
-            case 5:// 红色
-                return $"<color=\"#FF5D4CB7\">{s}</color>";
-            case 7:// 金色
-                return $"<color=\"#FFD700AA\">{s}</color>";
-            default:
-                return s;
-        }
-    }
-
+public static partial class Utils {
     /// <summary>
     /// 添加翻译，仅在Awake结束前可用。
     /// </summary>

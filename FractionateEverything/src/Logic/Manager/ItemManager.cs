@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
 using UnityEngine;
-using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Utils.LogUtils;
-using static FE.Utils.I18NUtils;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 

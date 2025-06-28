@@ -3,9 +3,8 @@ using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
-using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Utils.I18NUtils;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Building;
 
@@ -17,7 +16,7 @@ public static class MineralCopyTower {
         Register("矿物复制塔", "Mineral Copy Tower");
         Register("I矿物复制塔",
             "-",
-            $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".AddOrangeLabel()}科技也会影响效果。");
+            $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".WithColor(Orange)}科技也会影响效果。");
     }
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;

@@ -2,16 +2,36 @@
 
 namespace FE.Utils;
 
-public static class UIUtils {
-    public static RectTransform
-        NormalizeRectWithTopLeft(Component cmp, float left, float top, Transform parent = null) {
+/// <summary>
+/// 设置Component的位置
+/// </summary>
+public static partial class Utils {
+    /// <summary>
+    /// 设置元素左上角相对于parent左上角的位置
+    /// </summary>
+    /// <param name="cmp">组件，类型为Component表示可以传入任何类型组件（例如Button、Image等）</param>
+    /// <param name="left">cmp左上角在parent左上角的往右多少</param>
+    /// <param name="top">cmp左上角在parent左上角的往下多少</param>
+    /// <param name="parent">如果不为空，可以重设cmp的parent</param>
+    /// <returns>cmp的transform</returns>
+    public static RectTransform NormalizeRectWithTopLeft(Component cmp, float left, float top,
+        Transform parent = null) {
+        //只有UI相关的元素，transform才是RectTransform
         if (cmp.transform is not RectTransform rect) return null;
+        //如果parent不为空，可以重设cmp的parent
         if (parent != null) {
             rect.SetParent(parent, false);
         }
-        rect.anchorMax = new(0f, 1f);
+        //锚点矩形的左下角是父容器的左上角，锚点矩形的右上角是父容器的左上角
+        //anchorMin和anchorMax相等时，UI元素的大小不会随父容器大小变化而自动调整
         rect.anchorMin = new(0f, 1f);
+        rect.anchorMax = new(0f, 1f);
+        //UI元素自身的参考点为左上角。这意味着：
+        //当设置位置时，是以元素的左上角为基准点
+        //当旋转元素时，会围绕左上角旋转
+        //当缩放元素时，左上角位置保持不变
         rect.pivot = new(0f, 1f);
+        //UI元素的pivot点相对于锚点的偏移量。由于传入的是2D UI，所以z为0
         rect.anchoredPosition3D = new(left, -top, 0f);
         return rect;
     }

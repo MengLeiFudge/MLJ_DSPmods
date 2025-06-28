@@ -6,9 +6,8 @@ using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Logic.Manager;
 using UnityEngine;
-using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Utils.I18NUtils;
+using static FE.Utils.Utils;
 using static FE.Logic.Manager.ProcessManager;
 
 namespace FE.Logic.Building;

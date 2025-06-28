@@ -2,6 +2,7 @@
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -30,7 +31,7 @@ public class MySlider : MonoBehaviour {
         go.name = "my-slider";
         go.SetActive(true);
         var sl = go.AddComponent<MySlider>();
-        var rect = UIUtils.NormalizeRectWithTopLeft(sl, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(sl, x, y, parent);
         sl.rectTrans = rect;
         if (width > 0) {
             rect.sizeDelta = new(width, rect.sizeDelta.y);

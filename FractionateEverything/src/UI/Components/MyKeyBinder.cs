@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -70,7 +71,7 @@ public class MyKeyBinder : MonoBehaviour {
         ((RectTransform)kb.setDefaultUIButton.transform).anchoredPosition = new(140f + 20f, -57f);
         ((RectTransform)kb.setNoneKeyUIButton.transform).anchoredPosition = new(240f + 20f, -57f);
 
-        var rect = UIUtils.NormalizeRectWithTopLeft(kb, x, y, parent);
+        var rect = NormalizeRectWithTopLeft(kb, x, y, parent);
         kb.rectTrans = rect;
 
         //rect.sizeDelta = new Vector2(240f, 64f);
