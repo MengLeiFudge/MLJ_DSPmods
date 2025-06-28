@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using BuildBarTool;
@@ -405,7 +406,7 @@ public static class InteractionTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = r.ReadInt32();
+        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
         EnableFracForeverEntry.Value = r.ReadBoolean();
     }
 

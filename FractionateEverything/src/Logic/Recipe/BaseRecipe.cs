@@ -175,10 +175,17 @@ public abstract class BaseRecipe(
     /// </summary>
     public long MaxLevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, MaxLevel - 1));
 
+    /// <summary>
+    /// 配方回响个数。
+    /// </summary>
+    public int MemoryCount { get; set; } = 0;
+    public int BreakMemoryCount => NextQuality - 2;
+    public int MaxMemoryCount => 5;
+
     public bool CanBreakthrough1 => Quality < MaxQuality;
     public bool CanBreakthrough2 => Level >= MaxLevel;
     public bool CanBreakthrough3 => Exp >= MaxLevelUpExp;
-    public bool CanBreakthrough4 => MemoryCount >= NextQuality - 2;
+    public bool CanBreakthrough4 => MemoryCount >= BreakMemoryCount;
 
     /// <summary>v
     /// 指示是否满足突破的前置条件
@@ -202,12 +209,6 @@ public abstract class BaseRecipe(
     }
 
     private static Random random = new();
-
-    /// <summary>
-    /// 配方回响个数。
-    /// </summary>
-    public int MemoryCount { get; set; } = 0;
-    public int MaxMemoryCount => 5;
 
     /// <summary>
     /// 突破配方品质

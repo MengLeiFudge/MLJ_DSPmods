@@ -20,15 +20,20 @@ public static class TabRaffle {
     public static Random random = new();
 
     public static ConfigEntry<int> TicketTypeEntry;
-    public static string[] TicketTypeNames;
     public static int[] TicketIds = [
         IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
+    ];
+    public static string[] TicketTypeNames = [
+        "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
+        "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
     public static float[] TicketRatioPlus = [
         1.0f, 1.1f, 1.2f, 1.3f, 1.4f, 1.6f, 1.0f,
     ];
     public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
     public static float SelectedTicketRatioPlus => TicketRatioPlus[TicketTypeEntry.Value];
+    public static Text TicketCountText1;
+    public static Text TicketCountText2;
 
     /// <summary>
     /// 下一抽是第几抽。
@@ -58,10 +63,6 @@ public static class TabRaffle {
         if (TicketTypeEntry.Value < 0 || TicketTypeEntry.Value >= TicketIds.Length) {
             TicketTypeEntry.Value = 0;
         }
-        TicketTypeNames = new string[TicketIds.Length];
-        for (int i = 0; i < TicketTypeNames.Length; i++) {
-            TicketTypeNames[i] = LDB.items.Select(TicketIds[TicketTypeEntry.Value]).name;
-        }
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -75,13 +76,14 @@ public static class TabRaffle {
             y = 10f;
             wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
-            wnd.AddComboBox(x + 300, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            wnd.AddComboBox(x + 250, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(TicketTypeEntry);
+            TicketCountText1 = wnd.AddText2(x + 500, y, tab, "奖券数目", 15, "text-ticket-count-1");
             y += 38f;
             for (int i = 0; i < PreferredItems.Length; i++) {
                 PreferredTexts[i] = wnd.AddText2(x, y, tab, $"优先配方{i + 1}", 15, "text-preferred-recipe");
                 int j = i;
-                wnd.AddButton(x + 400, y, tab, "设置优先配方", 16, "button-set-preferred-recipe",
+                wnd.AddButton(x + 350, y, tab, "设置优先配方", 16, "button-set-preferred-recipe",
                     () => SetPreferredRecipe(j));
                 y += 38f;
             }
@@ -96,8 +98,9 @@ public static class TabRaffle {
             y = 10f;
             wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(BuildingTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(BuildingTypeEntry);
-            wnd.AddComboBox(x + 300, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            wnd.AddComboBox(x + 250, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(TicketTypeEntry);
+            TicketCountText2 = wnd.AddText2(x + 500, y, tab, "奖券数目", 15, "text-ticket-count-2");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
@@ -107,6 +110,8 @@ public static class TabRaffle {
     }
 
     public static void UpdateUI() {
+        TicketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+        TicketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         for (int i = 0; i < PreferredItems.Length; i++) {
             BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[i], PreferredItems[i]);
             if (recipe == null) {
@@ -118,14 +123,23 @@ public static class TabRaffle {
     }
 
     public static void SetPreferredRecipe(int index) {
-        for (int i = 0; i < PreferredItems.Length; i++) {
-            if (PreferredRecipeTypes[i] == SelectedRecipeType && PreferredItems[i] == SelectedItemId) {
-                UIMessageBox.Show("提示", "该配方已经是优先配方！", "确认", UIMessageBox.WARNING);
-                return;
+        ERecipe oldType = PreferredRecipeTypes[index];
+        int oldItemId = PreferredItems[index];
+        if (oldType != SelectedRecipeType || oldItemId != SelectedItemId) {
+            //有可能交换位置，也有可能是替换
+            int changeIndex = -1;
+            for (int i = 0; i < PreferredItems.Length; i++) {
+                if (PreferredRecipeTypes[i] == SelectedRecipeType && PreferredItems[i] == SelectedItemId) {
+                    changeIndex = i;
+                }
             }
+            if (changeIndex != -1) {
+                PreferredRecipeTypes[changeIndex] = PreferredRecipeTypes[index];
+                PreferredItems[changeIndex] = PreferredItems[index];
+            }
+            PreferredRecipeTypes[index] = SelectedRecipeType;
+            PreferredItems[index] = SelectedItemId;
         }
-        PreferredRecipeTypes[index] = SelectedRecipeType;
-        PreferredItems[index] = SelectedItemId;
         UIMessageBox.Show("提示", "已设定优先配方！", "确认", UIMessageBox.INFO);
     }
 
@@ -236,7 +250,7 @@ public static class TabRaffle {
             }
             //50%沙土
             AddItem(I沙土, 1000);
-            sb.AppendLine("沙土 x 1000");
+            sb.AppendLine($"{LDB.items.Select(I沙土).name} x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
@@ -313,7 +327,7 @@ public static class TabRaffle {
             }
             //50%沙土
             AddItem(I沙土, 1000);
-            sb.AppendLine("沙土 x 1000");
+            sb.AppendLine($"{LDB.items.Select(I沙土).name} x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
