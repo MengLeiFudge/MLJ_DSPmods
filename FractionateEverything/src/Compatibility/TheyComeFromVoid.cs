@@ -1,6 +1,5 @@
 ﻿using BepInEx.Bootstrap;
 using HarmonyLib;
-using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
