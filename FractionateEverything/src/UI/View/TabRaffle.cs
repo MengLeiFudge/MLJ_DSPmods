@@ -89,14 +89,16 @@ public static class TabRaffle {
             if (randDouble < currRate) {
                 int idx = random.Next(0, recipeArr.Count);
                 BaseRecipe recipe = recipeArr[idx];
-                string name = LDB.items.Select(recipe.InputID).name;
                 if (!recipe.IsUnlocked) {
                     recipe.Level = 1;
                     recipe.Quality = 1;
                     sb.AppendLine($"{recipe.TypeName} => 已解锁".WithColor(QualityGold));
-                } else {
+                } else if(recipe.MemoryCount < recipe.MaxMemoryCount) {
                     recipe.MemoryCount++;
                     sb.AppendLine($"{recipe.TypeName} => 已转为回响（当前拥有{recipe.MemoryCount}）".WithColor(QualityGold));
+                } else {
+                    GameMain.mainPlayer.TryAddItemToPackage(IFE残破核心, 1, 0, true);
+                    sb.AppendLine($"{recipe.TypeName} => 已转为残破核心".WithColor(QualityGold));
                 }
                 RecipeRaffleCount = 1;
                 continue;

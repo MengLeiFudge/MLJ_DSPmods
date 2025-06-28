@@ -140,25 +140,25 @@ public static class ItemManager {
             "Assets/fe/copy-essence", 3301, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE复制精华, ERecipeType.Assemble, 300,
-            [IFE复制精华], [2], [IFE复制精华], [1], "I复制精华").NonProductive = true;
+            [IFE复制精华], [1], [IFE复制精华], [1], "I复制精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
             "Assets/fe/alchemy-essence", 3302, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE点金精华, ERecipeType.Assemble, 300,
-            [IFE点金精华], [2], [IFE点金精华], [1], "I点金精华").NonProductive = true;
+            [IFE点金精华], [1], [IFE点金精华], [1], "I点金精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
             "Assets/fe/deconstruction-essence", 3303, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE分解精华, ERecipeType.Assemble, 300,
-            [IFE分解精华], [2], [IFE分解精华], [1], "I分解精华").NonProductive = true;
+            [IFE分解精华], [1], [IFE分解精华], [1], "I分解精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
             "Assets/fe/conversion-essence", 3304, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE转化精华, ERecipeType.Assemble, 300,
-            [IFE转化精华], [2], [IFE转化精华], [1], "I转化精华").NonProductive = true;
+            [IFE转化精华], [1], [IFE转化精华], [1], "I转化精华").NonProductive = true;
 
 
         ProtoRegistry.RegisterItem(IFE电磁奖券, "电磁奖券", "I电磁奖券",
@@ -207,13 +207,19 @@ public static class ItemManager {
             "Assets/fe/frac-recipe-core", 3408, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE分馏配方核心, ERecipeType.Assemble, 300,
-            [IFE分馏配方核心], [2], [IFE分馏配方核心], [1], "I分馏配方核心").NonProductive = true;
+            [IFE残破核心], [2], [IFE分馏配方核心], [1], "I分馏配方核心").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE建筑增幅芯片, "建筑增幅芯片", "I建筑增幅芯片",
             "Assets/fe/building-increase-chip", 3409, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE建筑增幅芯片, ERecipeType.Assemble, 300,
-            [IFE建筑增幅芯片], [2], [IFE建筑增幅芯片], [1], "I建筑增幅芯片").NonProductive = true;
+            [IFE建筑增幅芯片], [1], [IFE建筑增幅芯片], [1], "I建筑增幅芯片").NonProductive = true;
+
+        ProtoRegistry.RegisterItem(IFE残破核心, "残破核心", "I残破核心",
+            "Assets/fe/frac-recipe-core-destroyed", 3410, 100, EItemType.Component,
+            ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
+        ProtoRegistry.RegisterRecipe(RFE残破核心, ERecipeType.Assemble, 300,
+            [IFE残破核心], [1], [IFE残破核心], [1], "I残破核心").NonProductive = true;
     }
 
     #endregion

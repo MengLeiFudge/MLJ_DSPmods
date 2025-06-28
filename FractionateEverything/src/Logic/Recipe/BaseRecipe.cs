@@ -206,6 +206,7 @@ public abstract class BaseRecipe(
     /// 配方回响个数。
     /// </summary>
     public int MemoryCount { get; set; } = 0;
+    public int MaxMemoryCount => 5;
 
     /// <summary>
     /// 突破配方品质
