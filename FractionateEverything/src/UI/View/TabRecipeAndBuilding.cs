@@ -142,7 +142,7 @@ public static class TabRecipeAndBuilding {
             var tab = wnd.AddTab(trans, "建筑加成");
             x = 0f;
             y = 10f;
-            var cbx = wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
+            wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(BuildingTypeEntry);
             y += 36f;
             CheckBoxEnableFluidOutputStack =

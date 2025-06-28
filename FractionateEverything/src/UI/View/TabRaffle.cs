@@ -19,6 +19,17 @@ public static class TabRaffle {
 
     public static Random random = new();
 
+    public static ConfigEntry<int> TicketTypeEntry;
+    public static string[] TicketTypeNames;
+    public static int[] TicketIds = [
+        IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
+    ];
+    public static float[] TicketRatioPlus = [
+        1.0f, 1.1f, 1.2f, 1.3f, 1.4f, 1.6f, 1.0f,
+    ];
+    public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
+    public static float SelectedTicketRatioPlus => TicketRatioPlus[TicketTypeEntry.Value];
+
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
@@ -41,7 +52,17 @@ public static class TabRaffle {
 
     public static double[] FracProtoRateArr = [0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
     public static int[] FracProtoID = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
-    public static void LoadConfig(ConfigFile configFile) { }
+
+    public static void LoadConfig(ConfigFile configFile) {
+        TicketTypeEntry = configFile.Bind("TabRaffle", "Ticket Type", 0, "想要使用的奖券类型。");
+        if (TicketTypeEntry.Value < 0 || TicketTypeEntry.Value >= TicketIds.Length) {
+            TicketTypeEntry.Value = 0;
+        }
+        TicketTypeNames = new string[TicketIds.Length];
+        for (int i = 0; i < TicketTypeNames.Length; i++) {
+            TicketTypeNames[i] = LDB.items.Select(TicketIds[TicketTypeEntry.Value]).name;
+        }
+    }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
@@ -54,6 +75,8 @@ public static class TabRaffle {
             y = 10f;
             wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
+            wnd.AddComboBox(x + 300, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+                .WithConfigEntry(TicketTypeEntry);
             y += 38f;
             for (int i = 0; i < PreferredItems.Length; i++) {
                 PreferredTexts[i] = wnd.AddText2(x, y, tab, $"优先配方{i + 1}", 15, "text-preferred-recipe");
@@ -62,10 +85,10 @@ public static class TabRaffle {
                     () => SetPreferredRecipe(j));
                 y += 38f;
             }
-            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-1",
-                () => Raffle(RecipeTypes[RecipeTypeEntry.Value], 1));
-            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-10",
-                () => Raffle(RecipeTypes[RecipeTypeEntry.Value], 10));
+            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
+                () => RaffleRecipe(1));
+            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-recipe-10",
+                () => RaffleRecipe(10));
         }
         {
             var tab = wnd.AddTab(trans, "建筑卡池");
@@ -73,11 +96,13 @@ public static class TabRaffle {
             y = 10f;
             wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(BuildingTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(BuildingTypeEntry);
+            wnd.AddComboBox(x + 300, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+                .WithConfigEntry(TicketTypeEntry);
             y += 38f;
-            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-1",
-                () => Raffle(BuildingTypeEntry.Value, 1));
-            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-10",
-                () => Raffle(BuildingTypeEntry.Value, 10));
+            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
+                () => RaffleBuilding(1));
+            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-building-10",
+                () => RaffleBuilding(10));
         }
     }
 
@@ -107,9 +132,8 @@ public static class TabRaffle {
     /// <summary>
     /// 抽卡。
     /// </summary>
-    /// <param name="recipeType">配方奖池</param>
     /// <param name="count">抽卡次数</param>
-    public static void Raffle(ERecipe recipeType, int count) {
+    public static void RaffleRecipe(int count) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -119,22 +143,25 @@ public static class TabRaffle {
                 return;
             }
         }
-        List<BaseRecipe> recipeArr = RecipeManager.GetRecipes(recipeType);
+        if (!TakeItem(SelectedTicketId, count)) {
+            return;
+        }
+        List<BaseRecipe> recipeArr = RecipeManager.GetRecipes(RecipeTypes[RecipeTypeEntry.Value]);
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         while (count > 0) {
             count--;
             double currRate = 0;
             double randDouble = random.NextDouble();
             //分馏配方核心（0.05%）
-            currRate += 0.0005;
+            currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                GameMain.mainPlayer.TryAddItemToPackage(IFE分馏配方核心, 1, 0, true);
+                AddItem(IFE分馏配方核心, 1);
                 sb.AppendLine($"{LDB.items.Select(IFE分馏配方核心).name.WithColor(Gold)} x 1");
                 RecipeRaffleCount = 1;
                 continue;
             }
             //配方（0.6%，74抽开始后每抽增加6%）
-            currRate += RecipeRaffleRate;
+            currRate += RecipeRaffleRate * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
                 //先判断是不是优先配方
                 double preferred = NotMostPreferredCount >= 2 ? 0 : random.NextDouble();
@@ -167,7 +194,7 @@ public static class TabRaffle {
                     recipe.MemoryCount++;
                     sb.AppendLine($"{recipe.TypeName.WithColor(Red)} => 已转为回响（当前拥有{recipe.MemoryCount}）");
                 } else {
-                    GameMain.mainPlayer.TryAddItemToPackage(IFE残破核心, 1, 0, true);
+                    AddItem(IFE残破核心, 1);
                     sb.AppendLine($"{recipe.TypeName.WithColor(Red)} => 已转为残破核心");
                 }
                 RecipeRaffleCount = 1;
@@ -177,9 +204,9 @@ public static class TabRaffle {
             //分馏原胚（8.8%）
             bool getFracProto = false;
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
-                currRate += FracProtoRateArr[i];
+                currRate += FracProtoRateArr[i] * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    GameMain.mainPlayer.TryAddItemToPackage(FracProtoID[i], 1, 0, true);
+                    AddItem(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
                     sb.AppendLine($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
                     getFracProto = true;
@@ -190,7 +217,7 @@ public static class TabRaffle {
                 continue;
             }
             //沙土
-            GameMain.mainPlayer.TryAddItemToPackage(I沙土, 1000, 0, true);
+            AddItem(I沙土, 1000);
             sb.AppendLine("沙土 x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
@@ -199,30 +226,32 @@ public static class TabRaffle {
     /// <summary>
     /// 抽卡。
     /// </summary>
-    /// <param name="buildingType">建筑奖池</param>
     /// <param name="count">抽卡次数</param>
-    public static void Raffle(int buildingType, int count) {
+    public static void RaffleBuilding(int count) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        StringBuilder sb = new StringBuilder("获得了以下物品：");
+        if (!TakeItem(SelectedTicketId, count)) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         while (count > 0) {
             count--;
             double currRate = 0;
             double randDouble = random.NextDouble();
             //建筑增幅芯片（0.3%）
-            currRate += 0.003;
+            currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                GameMain.mainPlayer.TryAddItemToPackage(IFE建筑增幅芯片, 1, 0, true);
+                AddItem(IFE建筑增幅芯片, 1);
                 sb.AppendLine($"{LDB.items.Select(IFE建筑增幅芯片).name.WithColor(Gold)} x 1");
                 continue;
             }
             //建筑（3% * 1 + 0.5% * 6）
             bool getBuilding = false;
             for (int i = 0; i < BuildingIds.Length; i++) {
-                currRate += i == buildingType ? 0.03 : 0.005;
+                currRate += (i == BuildingTypeEntry.Value ? 0.03 : 0.005) * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    GameMain.mainPlayer.TryAddItemToPackage(BuildingIds[i], 1, 0, true);
+                    AddItem(BuildingIds[i], 1);
                     sb.AppendLine($"{LDB.items.Select(BuildingIds[i]).name.WithColor(Purple)} x 1");
                     getBuilding = true;
                     break;
@@ -234,9 +263,9 @@ public static class TabRaffle {
             //分馏原胚（26.4%）
             bool getFracProto = false;
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
-                currRate += FracProtoRateArr[i] * 3;
+                currRate += FracProtoRateArr[i] * 3 * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    GameMain.mainPlayer.TryAddItemToPackage(FracProtoID[i], 1, 0, true);
+                    AddItem(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
                     sb.AppendLine($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
                     getFracProto = true;
@@ -247,8 +276,14 @@ public static class TabRaffle {
                 continue;
             }
             //沙土
-            GameMain.mainPlayer.TryAddItemToPackage(I沙土, 1000, 0, true);
-            sb.AppendLine("沙土 x 1000");
+            currRate += (1 - currRate) / 2;
+            if (randDouble < currRate) {
+                AddItem(I沙土, 1000);
+                sb.AppendLine("沙土 x 1000");
+            } else {
+                AddItem(I沙土, 1000);
+                sb.AppendLine("沙土 x 1000");
+            }
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
