@@ -345,6 +345,7 @@ public static partial class Utils {
     internal const int IFE黑雾奖券 = 8137;
     internal const int IFE分馏配方核心 = 8138;
     internal const int IFE建筑增幅芯片 = 8139;
+    internal const int IFE残破核心 = 8140;
     internal const int IFE插件塔 = 2371;
     internal const int IFE量子插件塔 = 2372;
     internal const int IFE速度插件MK1 = 2373;
@@ -679,6 +680,7 @@ public static partial class Utils {
     internal const int RFE黑雾奖券 = 837;
     internal const int RFE分馏配方核心 = 838;
     internal const int RFE建筑增幅芯片 = 839;
+    internal const int RFE残破核心 = 840;
     //创世会将部分配方减200，下面是没有减过的
     internal const int RMS引力发生装置 = 530;
     internal const int RMS位面约束环 = 531;
