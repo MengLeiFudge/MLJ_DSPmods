@@ -145,34 +145,16 @@ public abstract class BaseRecipe(
     /// </details>
     public int Quality { get; set; } = 0;
     public int NextQuality => Quality == 5 ? Quality + 2 : Quality + 1;
-
-    /// <summary>
-    /// 品质对应的颜色数组
-    /// </summary>
-    public static readonly Color[] QualityColors = [
-        new(0.65f, 0.65f, 0.65f),// 0 - 灰色 - 未解锁
-        new(0.90f, 0.90f, 0.90f),// 1 - 白色 - 稍微灰一点以减少刺眼
-        new(0.50f, 0.85f, 0.50f),// 2 - 绿色 - 更深的绿色
-        new(0.45f, 0.65f, 0.95f),// 3 - 蓝色 - 更深的蓝色
-        new(0.75f, 0.45f, 0.85f),// 4 - 紫色 - 更深的紫色
-        new(0.95f, 0.45f, 0.45f),// 5 - 红色 - 更深的红色
-        new(0.65f, 0.65f, 0.65f),// 6 - 未使用
-        new(0.95f, 0.85f, 0.40f),// 7 - 金色 - 更深的金色
-    ];
-
-    /// <summary>
-    /// 获取当前品质对应的颜色
-    /// </summary>
-    public Color QualityColor =>
-        Quality >= 0 && Quality < QualityColors.Length ? QualityColors[Quality] : QualityColors[0];
+    public int MaxQuality => 7;
 
     /// <summary>
     /// 配方等级
     /// </summary>
     /// <details>
-    /// 未解锁时为0。解锁之后，最低为1，最高为3 + Quality。
+    /// 未解锁时为0。解锁之后，最低为1，最高为Quality + 3。
     /// </details>
     public int Level { get; set; } = 0;
+    public int MaxLevel => Quality + 3;
 
     /// <summary>
     /// 经验值
@@ -180,7 +162,7 @@ public abstract class BaseRecipe(
     /// <details>
     /// 达到下一级所需经验会自动升级。到达等级上限仍可获取经验，突破时多余经验会按照一定比例转化。
     /// </details>
-    public long Exp { get; set; } = 0;
+    public long Exp { get; private set; } = 0;
 
     /// <summary>
     /// 升级所需经验
@@ -190,12 +172,12 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 当前品质最高经验
     /// </summary>
-    public long MaxLevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, (3 + Quality) - 1));
+    public long MaxLevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, MaxLevel - 1));
 
-    public bool CanBreakthrough1 => Quality < 7;
-    public bool CanBreakthrough2 => Level >= 3 + Quality;
+    public bool CanBreakthrough1 => Quality < MaxQuality;
+    public bool CanBreakthrough2 => Level >= MaxLevel;
     public bool CanBreakthrough3 => Exp >= MaxLevelUpExp;
-    public bool CanBreakthrough4 => MemoryCount >= NextQuality;
+    public bool CanBreakthrough4 => MemoryCount >= NextQuality - 2;
 
     /// <summary>v
     /// 指示是否满足突破的前置条件
@@ -206,14 +188,14 @@ public abstract class BaseRecipe(
     /// 添加经验
     /// </summary>
     public void AddExp(int exp) {
-        // LogDebug($"Quality{Quality} Lv{Level} ({Exp} + {exp}/{LevelUpExp})");
-        Exp += (int)(exp * ExpMultiRate);
-        if (Exp >= LevelUpExp && !CanBreakthrough2) {
-            Exp -= LevelUpExp;
-            Level++;
-            LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
-        }
-        if (CanBreakthrough) {
+        lock (this) {
+            // LogDebug($"Quality{Quality} Lv{Level} ({Exp} + {exp}/{LevelUpExp})");
+            Exp += (int)(exp * ExpMultiRate);
+            if (Exp >= LevelUpExp && !CanBreakthrough2) {
+                Exp -= LevelUpExp;
+                Level++;
+                LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
+            }
             TryBreakQuality();
         }
     }
@@ -229,35 +211,37 @@ public abstract class BaseRecipe(
     /// 突破配方品质
     /// </summary>
     /// <returns>是否突破成功</returns>
-    public virtual bool TryBreakQuality() {
-        if (!CanBreakthrough) {
-            return false;
-        }
-        float successRate = 1.0f - (Quality - 1) * 0.1f;
-        bool success = random.NextDouble() < successRate;
-        if (success) {
-            Exp -= LevelUpExp;
-            Exp = (int)(Exp * 0.7f);
-            Level = 1;
-            Quality++;
-            //红到金是品质+2
-            if (Quality == 6) {
-                Quality++;
+    public virtual void TryBreakQuality() {
+        lock (this) {
+            while (CanBreakthrough) {
+                float successRate = 1.0f - (Quality - 1) * 0.15f;
+                bool success = random.NextDouble() < successRate;
+                if (success) {
+                    Exp -= LevelUpExp;
+                    Exp = (int)(Exp * 0.7f);
+                    Level = 1;
+                    //红到金是品质+2
+                    if (Quality == 5) {
+                        Quality += 2;
+                    } else {
+                        Quality++;
+                    }
+                    LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
+                } else {
+                    LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
+                    Exp -= LevelUpExp / 5;
+                }
             }
-            AddExp(0);
-            LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
-            return true;
         }
-        AddExp((int)(-LevelUpExp / 5));
-        LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
-        return false;
     }
 
     #endregion
 
-    public string ShortInfo() => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
+    public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
+    public string TypeNameWC => TypeName.WithQualityColor(Quality);
+    public string LvExp => $"Lv{Level} ({Exp}/{LevelUpExp})";
+    public string LvExpWC => LvExp.WithQualityColor(Quality);
 
-    public override string ToString() => $"Lv{Level} ({Exp}/{LevelUpExp})";
 
     #region IModCanSave
 
@@ -285,8 +269,8 @@ public abstract class BaseRecipe(
                 }
             }
         }
-        Quality = r.ReadInt32();
-        Level = r.ReadInt32();
+        Quality = Math.Min(r.ReadInt32(), 7);
+        Level = Math.Min(r.ReadInt32(), Quality + 3);
         Exp = r.ReadInt64();
         AddExp(0);//触发升级、突破判断
         MemoryCount = r.ReadInt32();
