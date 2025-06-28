@@ -10,8 +10,7 @@ public class MyImageButton : MonoBehaviour {
     public RectTransform rectTrans;
     public UIButton uiButton;
     public Image boxImage;
-    public Image checkImage;
-    // public Text labelText;
+    public Image itemImage;
     public event Action OnChecked;
     private bool _checked;
 
@@ -19,20 +18,19 @@ public class MyImageButton : MonoBehaviour {
 
     private static readonly Color BoxColor = new(1f, 1f, 1f, 100f / 255f);
     private static readonly Color CheckColor = new(1f, 1f, 1f, 1f);
-    private static readonly Color TextColor = new(178f / 255f, 178f / 255f, 178f / 255f, 168f / 255f);
 
     public static void InitBaseObject() {
         if (_baseObject) return;
         var go = Instantiate(UIRoot.instance.uiGame.buildMenu.uxFacilityCheck.gameObject);
         go.name = "my-image-button";
         go.SetActive(false);
-        // var comp = go.transform.Find("text");
-        // if (comp) {
-        //     var txt = comp.GetComponent<Text>();
-        //     if (txt) txt.text = "";
-        //     var localizer = comp.GetComponent<Localizer>();
-        //     if (localizer) DestroyImmediate(localizer);
-        // }
+        var comp = go.transform.Find("text");
+        if (comp) {
+            var txt = comp.GetComponent<Text>();
+            if (txt) DestroyImmediate(txt);
+            var localizer = comp.GetComponent<Localizer>();
+            if (localizer) DestroyImmediate(localizer);
+        }
         _baseObject = go;
     }
 
@@ -40,18 +38,15 @@ public class MyImageButton : MonoBehaviour {
         if (_config != null) _config.SettingChanged -= _configChanged;
     }
 
-    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, int itemId,
-        int fontSize = 15) {
-        return CreateImageButton(x, y, parent, LDB.items.Select(itemId).iconSprite, fontSize);
+    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, int itemId) {
+        return CreateImageButton(x, y, parent, LDB.items.Select(itemId).iconSprite);
     }
 
-    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, ItemProto proto,
-        int fontSize = 15) {
-        return CreateImageButton(x, y, parent, proto.iconSprite, fontSize);
+    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, ItemProto proto) {
+        return CreateImageButton(x, y, parent, proto.iconSprite);
     }
 
-    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, Sprite sprite,
-        int fontSize = 15) {
+    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent, Sprite sprite) {
         var go = Instantiate(_baseObject);
         go.name = "my-image-button";
         go.SetActive(true);
@@ -61,9 +56,10 @@ public class MyImageButton : MonoBehaviour {
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();
         cb.boxImage = go.transform.GetComponent<Image>();
-        cb.checkImage = go.transform.Find("checked")?.GetComponent<Image>();
-        cb.checkImage.sprite = sprite;
-        NormalizeRectWithTopLeft(cb.checkImage, 0f, 0f);
+        cb.itemImage = go.transform.Find("checked")?.GetComponent<Image>();
+        // cb.itemImage.sprite = sprite;
+        cb.SetSprite(sprite);
+        NormalizeRectWithTopLeft(cb.itemImage, 0f, 0f);
 
         // var child = go.transform.Find("text");
         // if (child != null) {
@@ -89,7 +85,8 @@ public class MyImageButton : MonoBehaviour {
         get => _checked;
         set {
             _checked = value;
-            checkImage.enabled = value;
+            // itemImage.enabled = value;
+            boxImage.enabled = value;
         }
     }
 
@@ -104,17 +101,18 @@ public class MyImageButton : MonoBehaviour {
         if (uiButton) uiButton.enabled = on;
         if (on) {
             if (boxImage) boxImage.color = BoxColor;
-            if (checkImage) checkImage.color = CheckColor;
+            if (itemImage) itemImage.color = CheckColor;
             // if (labelText) labelText.color = TextColor;
         } else {
             if (boxImage) boxImage.color = BoxColor.RGBMultiplied(0.5f);
-            if (checkImage) checkImage.color = CheckColor.RGBMultiplied(0.5f);
+            if (itemImage) itemImage.color = CheckColor.RGBMultiplied(0.5f);
             // if (labelText) labelText.color = TextColor.RGBMultiplied(0.5f);
         }
     }
 
     public void SetSprite(Sprite sprite) {
-        checkImage.sprite = sprite;
+        itemImage.sprite = sprite;
+        WithBox(sprite.rect.width, sprite.rect.height);
     }
 
     private EventHandler _configChanged;
@@ -137,7 +135,7 @@ public class MyImageButton : MonoBehaviour {
     }
 
     public MyImageButton WithItem(ItemProto item) {
-        if (item == null) {
+        if (item == null || item.iconSprite == null) {
             return this;
         }
         SetSprite(item.iconSprite);
@@ -154,16 +152,15 @@ public class MyImageButton : MonoBehaviour {
         return this;
     }
 
-    // public MyImageButton WithSmallerBox(float boxSize = 20f) {
-    //     var oldWidth = rectTrans.sizeDelta.x;
-    //     rectTrans.sizeDelta = new(boxSize, boxSize);
-    //     checkImage.rectTransform.sizeDelta = new(boxSize, boxSize);
-    //     labelText.rectTransform.sizeDelta = new(labelText.rectTransform.sizeDelta.x, boxSize);
-    //     labelText.rectTransform.localPosition =
-    //         new(labelText.rectTransform.localPosition.x + boxSize - oldWidth,
-    //             labelText.rectTransform.localPosition.y, labelText.rectTransform.localPosition.z);
-    //     return this;
-    // }
+    public MyImageButton WithBox(float boxSize) {
+        return WithBox(boxSize, boxSize);
+    }
+
+    public MyImageButton WithBox(float boxX, float boxY) {
+        rectTrans.sizeDelta = new(boxX, boxY);
+        itemImage.rectTransform.sizeDelta = new(boxX, boxY);
+        return this;
+    }
 
     public MyImageButton WithEnable(bool on) {
         SetEnable(on);
@@ -177,10 +174,11 @@ public class MyImageButton : MonoBehaviour {
 
     public void OnClick(int obj) {
         _checked = !_checked;
-        checkImage.enabled = _checked;
+        // itemImage.enabled = _checked;
+        boxImage.enabled = _checked;
         OnChecked?.Invoke();
     }
 
-    // public float Width => rectTrans.sizeDelta.x + labelText.rectTransform.sizeDelta.x;
-    // public float Height => Math.Max(rectTrans.sizeDelta.y, labelText.rectTransform.sizeDelta.y);
+    public float Width => rectTrans.sizeDelta.x;
+    public float Height => rectTrans.sizeDelta.y;
 }
