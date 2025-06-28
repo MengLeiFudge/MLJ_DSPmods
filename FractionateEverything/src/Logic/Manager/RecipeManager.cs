@@ -71,13 +71,6 @@ public static class RecipeManager {
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
-        GameMain.mainPlayer.TryAddItemToPackage(IFE交互塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE矿物复制塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE点数聚集塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE量子复制塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE点金塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE分解塔, 30, 0, true);
-        GameMain.mainPlayer.TryAddItemToPackage(IFE转化塔, 30, 0, true);
         UIMessageBox.Show("提示".Translate(), "所有配方已解锁。".Translate(), "确定".Translate(), UIMessageBox.INFO, null);
     }
 

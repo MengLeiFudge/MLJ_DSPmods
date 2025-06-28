@@ -12,8 +12,8 @@ public static partial class Utils {
     /// <para></para>
     /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
     /// </details>
-    /// <param name="takeId">从背包或物流背包中取走的物品ID</param>
-    /// <param name="takeCount">从背包或物流背包中取走的物品数量</param>
+    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
+    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
     /// <param name="giveId">添加到背包中的物品ID</param>
     /// <param name="giveCount">添加到背包中的物品数量</param>
     private static void ExchangeItems(int takeId, int takeCount, int giveId, int giveCount) {
@@ -23,21 +23,11 @@ public static partial class Utils {
         if (!LDB.items.Exist(takeId) || takeCount == 0 || !LDB.items.Exist(giveId) || giveCount == 0) {
             return;
         }
-        ItemProto takeProto = LDB.items.Select(takeId);
-        ItemProto giveProto = LDB.items.Select(giveId);
-        if (GetItemTotalCount(takeId) < takeCount) {
-            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}，无法兑换！",
-                "确定", UIMessageBox.WARNING);
+        if (!TakeItem(takeId, takeCount)) {
             return;
         }
-        takeCount -= ItemManager.TakeItem(takeId, takeCount);
-        if (takeCount > 0) {
-            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
-            if (takeCount > 0) {
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
-            }
-        }
-        GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, true);
+        AddItem(giveId, giveCount);
+        ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount}！",
             "确定", UIMessageBox.INFO);
     }
@@ -50,11 +40,17 @@ public static partial class Utils {
     /// <para></para>
     /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
     /// </details>
-    /// <param name="takeId">从背包或物流背包中取走的物品ID</param>
-    /// <param name="takeCount">从背包或物流背包中取走的物品数量</param>
+    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
+    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
     /// <param name="giveId">添加到背包中的物品ID</param>
     /// <param name="giveCount">添加到背包中的物品数量</param>
     public static void ExchangeItemsWithQuestion(int takeId, int takeCount, int giveId, int giveCount) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (!LDB.items.Exist(takeId) || takeCount == 0 || !LDB.items.Exist(giveId) || giveCount == 0) {
+            return;
+        }
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
@@ -74,12 +70,8 @@ public static partial class Utils {
                 "确定", UIMessageBox.WARNING);
             return;
         }
-        takeCount -= ItemManager.TakeItem(takeId, takeCount);
-        if (takeCount > 0) {
-            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
-            if (takeCount > 0) {
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
-            }
+        if (!TakeItem(takeId, takeCount)) {
+            return;
         }
         if (!recipe.IsUnlocked) {
             recipe.Level = 1;
@@ -95,6 +87,12 @@ public static partial class Utils {
     }
 
     public static void ExchangeRecipeWithQuestion(int takeId, int takeCount, BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+            return;
+        }
         if (recipe == null) {
             UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.INFO);
             return;
@@ -156,5 +154,54 @@ public static partial class Utils {
     /// </summary>
     public static int GetItemTotalCount(int itemId) {
         return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
+    }
+
+    /// <summary>
+    /// 拿取指定物品。
+    /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
+    /// </summary>
+    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
+    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
+    /// <returns>是否拿取成功</returns>
+    public static bool TakeItem(int takeId, int takeCount) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return false;
+        }
+        if (!LDB.items.Exist(takeId)) {
+            return false;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        if (GetItemTotalCount(takeId) < takeCount) {
+            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}！",
+                "确定", UIMessageBox.WARNING);
+            return false;
+        }
+        takeCount -= ItemManager.TakeItem(takeId, takeCount);
+        if (takeCount > 0) {
+            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
+            if (takeCount > 0) {
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 将指定物品添加到背包，并在左侧显示物品变动。
+    /// </summary>
+    /// <param name="giveId">添加到背包中的物品ID</param>
+    /// <param name="giveCount">添加到背包中的物品数量</param>
+    /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
+    public static void AddItem(int giveId, int giveCount, bool throwTrash = true) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (!LDB.items.Exist(giveId)) {
+            return;
+        }
+        int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
+        if (package > 0) {
+            UIItemup.Up(giveId, package);
+        }
     }
 }

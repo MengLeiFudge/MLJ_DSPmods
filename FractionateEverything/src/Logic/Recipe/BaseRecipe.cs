@@ -69,7 +69,7 @@ public abstract class BaseRecipe(
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
         seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
         if (seed / 2147483646.0 < DestroyRate) {
-            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.5));
+            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         Dictionary<int, int> dic = [];
@@ -96,7 +96,7 @@ public abstract class BaseRecipe(
                 //由于此处必定是第一个key，所以直接添加
                 dic[outputInfo.OutputID] = count;
                 outputInfo.OutputTotalCount += count;
-                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count));
+                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
                 break;
             }
         }
@@ -118,7 +118,8 @@ public abstract class BaseRecipe(
                     dic.Add(outputInfo.OutputID, count);
                 }
                 outputInfo.OutputTotalCount += count;
-                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count));
+                //附加输出无经验
+                // AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
             }
         }
         return dic;
