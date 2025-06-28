@@ -1,6 +1,5 @@
 ﻿using CommonAPI.Systems;
 using FE.UI.Components;
-using FE.Utils;
 using UnityEngine;
 
 namespace FE.UI;
@@ -23,10 +22,10 @@ public static class UIFunctions {
                             | KeyBindConflict.SAILING
                             | KeyBindConflict.BUILD_MODE_1
                             | KeyBindConflict.KEYBOARD_KEYBIND,
-            name = "OpenFEMainWindow",
+            name = "OpenFracCenter",
             canOverride = true
         });
-        Utils.Utils.Register("KEYOpenFEMainWindow", "[FE] Open main window", "[FE] 打开主页");
+        Utils.Utils.Register("KEYOpenFracCenter", "[FE] Open Fractionate Center", "[FE] 打开分馏中心");
         // I18N.OnInitialized += RecreateConfigWindow;
     }
 
