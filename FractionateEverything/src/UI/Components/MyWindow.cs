@@ -206,6 +206,14 @@ public class MyWindow : ManualBehaviour {
         return cb;
     }
 
+    // public MyCheckBox AddCheckBox(float x, float y, RectTransform parent, bool check, string label = "",
+    //     int fontSize = 15) {
+    //     var cb = MyCheckBox.CreateCheckBox(x, y, parent, check, label, fontSize);
+    //     _maxX = Math.Max(_maxX, x + cb.Width);
+    //     MaxY = Math.Max(MaxY, y + cb.Height);
+    //     return cb;
+    // }
+
     public MyComboBox AddComboBox(float x, float y, RectTransform parent, string label = "", int fontSize = 15) {
         var comboBox = MyComboBox.CreateComboBox(x, y, parent).WithPrompt(label).WithFontSize(fontSize);
         _maxX = Math.Max(_maxX, x + comboBox.Width);

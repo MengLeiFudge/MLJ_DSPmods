@@ -24,7 +24,7 @@ public static class TabRecipeAndBuilding {
     ];
     public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    public static int SelectedItemId =>  SelectedItem.ID;
+    public static int SelectedItemId => SelectedItem.ID;
     public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
 
     public static void OnButtonChangeItemClick(bool showLocked) {
@@ -51,20 +51,25 @@ public static class TabRecipeAndBuilding {
     #region 建筑加成
 
     public static ConfigEntry<int> BuildingTypeEntry;
-    public static string[] BuildingTypeNames = ["交互塔", "矿物复制塔", "点数聚集塔", "量子复制塔", "点金塔", "分解塔", "转化塔"];
+    public static string[] BuildingTypeNames = [
+        "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(),
+        "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate()
+    ];
     public static int[] BuildingIds = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
 
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
-    public static ConfigEntry<bool>[] EnableFluidOutputStackEntryArr = new ConfigEntry<bool>[7];
-    public static ConfigEntry<int>[] MaxProductOutputStackEntryArr = new ConfigEntry<int>[7];
-    public static ConfigEntry<bool>[] EnableFracForeverEntryArr = new ConfigEntry<bool>[7];
+    public static ConfigEntry<bool>[] EnableFluidOutputStackEntryArr;
+    public static ConfigEntry<bool> EnableFluidOutputStack => EnableFluidOutputStackEntryArr[BuildingTypeEntry.Value];
+    public static ConfigEntry<int>[] MaxProductOutputStackEntryArr;
+    public static ConfigEntry<int> MaxProductOutputStack => MaxProductOutputStackEntryArr[BuildingTypeEntry.Value];
+    public static ConfigEntry<bool>[] EnableFracForeverEntryArr;
+    public static ConfigEntry<bool> EnableFracForever => EnableFracForeverEntryArr[BuildingTypeEntry.Value];
 
-    private static Text[] textBuildingInfo = new Text[5];
-    private static MyCheckBox CheckBoxEnableFluidOutputStack;
-    private static MySlider SliderEnableFluidOutputStack;
-    private static MyCheckBox CheckBoxEnableFracForever;
+    private static Text textBuildingInfo1;
+    private static UIButton btnBuildingInfo1;
+    private static Text textBuildingInfo2;
+    private static UIButton btnBuildingInfo2;
+    private static Text textBuildingInfo3;
+    private static UIButton btnBuildingInfo3;
 
     #endregion
 
@@ -81,33 +86,34 @@ public static class TabRecipeAndBuilding {
         if (BuildingTypeEntry.Value < 0 || BuildingTypeEntry.Value >= BuildingTypeNames.Length) {
             BuildingTypeEntry.Value = 0;
         }
-        EnableFluidOutputStackEntry = configFile.Bind("TabRecipeAndBuilding", "EnableFluidOutputStack", false);
-        MaxProductOutputStackEntry = configFile.Bind("TabRecipeAndBuilding", "MaxProductOutputStack", 1);
-        EnableFracForeverEntry = configFile.Bind("TabRecipeAndBuilding", "EnableFracForever", false);
 
-        EnableFluidOutputStackEntryArr[0] = InteractionTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[1] = MineralCopyTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[2] = PointAggregateTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[3] = QuantumCopyTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[4] = AlchemyTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[5] = DeconstructionTower.EnableFluidOutputStackEntry;
-        EnableFluidOutputStackEntryArr[6] = ConversionTower.EnableFluidOutputStackEntry;
-
-        MaxProductOutputStackEntryArr[0] = InteractionTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[1] = MineralCopyTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[2] = PointAggregateTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[3] = QuantumCopyTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[4] = AlchemyTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[5] = DeconstructionTower.MaxProductOutputStackEntry;
-        MaxProductOutputStackEntryArr[6] = ConversionTower.MaxProductOutputStackEntry;
-
-        EnableFracForeverEntryArr[0] = InteractionTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[1] = MineralCopyTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[2] = PointAggregateTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[3] = QuantumCopyTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[4] = AlchemyTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[5] = DeconstructionTower.EnableFracForeverEntry;
-        EnableFracForeverEntryArr[6] = ConversionTower.EnableFracForeverEntry;
+        EnableFluidOutputStackEntryArr = [
+            InteractionTower.EnableFluidOutputStackEntry,
+            MineralCopyTower.EnableFluidOutputStackEntry,
+            PointAggregateTower.EnableFluidOutputStackEntry,
+            QuantumCopyTower.EnableFluidOutputStackEntry,
+            AlchemyTower.EnableFluidOutputStackEntry,
+            DeconstructionTower.EnableFluidOutputStackEntry,
+            ConversionTower.EnableFluidOutputStackEntry
+        ];
+        MaxProductOutputStackEntryArr = [
+            InteractionTower.MaxProductOutputStackEntry,
+            MineralCopyTower.MaxProductOutputStackEntry,
+            PointAggregateTower.MaxProductOutputStackEntry,
+            QuantumCopyTower.MaxProductOutputStackEntry,
+            AlchemyTower.MaxProductOutputStackEntry,
+            DeconstructionTower.MaxProductOutputStackEntry,
+            ConversionTower.MaxProductOutputStackEntry
+        ];
+        EnableFracForeverEntryArr = [
+            InteractionTower.EnableFracForeverEntry,
+            MineralCopyTower.EnableFracForeverEntry,
+            PointAggregateTower.EnableFracForeverEntry,
+            QuantumCopyTower.EnableFracForeverEntry,
+            AlchemyTower.EnableFracForeverEntry,
+            DeconstructionTower.EnableFracForeverEntry,
+            ConversionTower.EnableFracForeverEntry
+        ];
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -122,9 +128,7 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
-
             //btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item");
-
             y += 36f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
@@ -134,7 +138,7 @@ public static class TabRecipeAndBuilding {
                 () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
-                textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"textRecipeInfo{i}");
+                textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
                 y += 20f;
             }
         }
@@ -145,24 +149,21 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(BuildingTypeEntry);
             y += 36f;
-            CheckBoxEnableFluidOutputStack =
-                wnd.AddCheckBox(x, y, tab, EnableFluidOutputStackEntry, "启用流动输出堆叠");
-            wnd.AddTipsButton2(CheckBoxEnableFluidOutputStack.Width + 5f, y + 6f, tab, "启用流动输出堆叠",
-                "流动输出尽可能以堆叠形式输出。", "");
+
+            wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
             y += 36f;
-            var txt = wnd.AddText2(x, y, tab, "产物输出最大堆叠", 15, "text-output-stack");
-            SliderEnableFluidOutputStack = wnd.AddSlider(x + txt.preferredWidth + 5f, y + 6f, tab,
-                MaxProductOutputStackEntry, new MyWindow.RangeValueMapper<int>(1, 4), "G", 160f);
+            textBuildingInfo1 = wnd.AddText2(x, y, tab, "启用流动输出堆叠", 15, "text-building-info-1");
+            btnBuildingInfo1 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-enable-fluid-output-stack",
+                SetFluidOutputStack);
             y += 36f;
-            CheckBoxEnableFracForever = wnd.AddCheckBox(x, y, tab, EnableFracForeverEntry, "启用分馏永动");
-            wnd.AddTipsButton2(CheckBoxEnableFracForever.Width + 5f, y + 6f, tab, "启用分馏永动",
-                "分馏塔产物输出已满时，原料仍可流动输出，从而让后面的分馏塔继续分馏。",
-                "");
+            textBuildingInfo2 = wnd.AddText2(x, y, tab, "产物输出最大堆叠", 15, "text-building-info-2");
+            btnBuildingInfo2 = wnd.AddButton(x + 350, y, tab, "堆叠+1", 16, "button-show-unlocked-recipe",
+                AddMaxProductOutputStack);
             y += 36f;
-            for (int i = 0; i < textBuildingInfo.Length; i++) {
-                textBuildingInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"textBuildingInfo{i}");
-                y += 20f;
-            }
+            textBuildingInfo3 = wnd.AddText2(x, y, tab, "启用分馏永动", 15, "text-building-info-3");
+            btnBuildingInfo3 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-show-unlocked-recipe",
+                SetFracForever);
+            y += 36f;
         }
     }
 
@@ -187,7 +188,9 @@ public static class TabRecipeAndBuilding {
                 textRecipeInfo[line].text = "     0.01 转化精华";
                 line++;
             }
-            textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}    损毁率 {recipe.DestroyRate:P3}";
+            textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}".WithColor(Orange)
+                                        + "      "
+                                        + $"损毁率 {recipe.DestroyRate:P3}".WithColor(Color.red);
             line++;
             bool isFirst = true;
             foreach (OutputInfo info in recipe.OutputMain) {
@@ -205,26 +208,29 @@ public static class TabRecipeAndBuilding {
                     isFirst = false;
                 }
             }
-            textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}";
+            textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}".WithColor(Blue);
             line++;
             if (recipe.Quality >= 7) {
-                textRecipeInfo[line].text = "当前配方已到最高品质，无法突破！";
+                textRecipeInfo[line].text = "当前配方已到最高品质，无法突破！".WithColor(Orange);
                 line++;
             } else {
                 textRecipeInfo[line].text = "突破条件：";
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough2 ? "√" : "x")}] 等级达到 {recipe.Level} / {3 + recipe.Quality}";
+                    $"[{(recipe.CanBreakthrough2 ? "√" : "x")}] 等级达到 {recipe.Level} / {recipe.MaxLevel}"
+                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {recipe.Exp} / {recipe.MaxLevelUpExp}";
+                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {recipe.Exp} / {recipe.MaxLevelUpExp}"
+                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.NextQuality} 个对应回响";
+                    $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.BreakMemoryCount} 个对应回响"
+                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
                 line++;
             }
-            textRecipeInfo[line].text = "特殊突破加成：无";
-            line++;
+            // textRecipeInfo[line].text = "特殊突破加成：无";
+            // line++;
         } else {
             textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
             line++;
@@ -233,19 +239,88 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = "";
         }
 
-        line = 0;
-        //20%配方达到蓝色（2叠） ---  80%配方达到红色（4叠）
-        textBuildingInfo[line].text = "建筑加成：无";
-        line++;
-        for (; line < textBuildingInfo.Length; line++) {
-            textBuildingInfo[line].text = "";
+        textBuildingInfo1.text =
+            EnableFluidOutputStack.Value ? "已启用流动输出堆叠".WithColor(Orange) : "未启用流动输出堆叠".WithColor(Red);
+        btnBuildingInfo1.button.enabled = !EnableFluidOutputStack.Value;
+        string s = $"产物输出堆叠：{MaxProductOutputStack.Value}";
+        textBuildingInfo2.text =
+            MaxProductOutputStack.Value >= 4 ? s.WithColor(Orange) : s.WithQualityColor(MaxProductOutputStack.Value);
+        btnBuildingInfo2.button.enabled = MaxProductOutputStack.Value < 4;
+        textBuildingInfo3.text =
+            EnableFracForever.Value ? "已启用分馏永动".WithColor(Orange) : "未启用分馏永动".WithColor(Red);
+        btnBuildingInfo3.button.enabled = !EnableFracForever.Value;
+    }
+
+    private static void SetFluidOutputStack() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
         }
-        CheckBoxEnableFluidOutputStack.Checked = EnableFluidOutputStackEntryArr[BuildingTypeEntry.Value].Value;
-        EnableFluidOutputStackEntry.Value = EnableFluidOutputStackEntryArr[BuildingTypeEntry.Value].Value;
-        SliderEnableFluidOutputStack.Value = MaxProductOutputStackEntryArr[BuildingTypeEntry.Value].Value;
-        MaxProductOutputStackEntry.Value = MaxProductOutputStackEntryArr[BuildingTypeEntry.Value].Value;
-        CheckBoxEnableFracForever.Checked = EnableFracForeverEntryArr[BuildingTypeEntry.Value].Value;
-        EnableFracForeverEntry.Value = EnableFracForeverEntryArr[BuildingTypeEntry.Value].Value;
+        if (EnableFluidOutputStack.Value) {
+            return;
+        }
+        int takeId = IFE建筑增幅芯片;
+        int takeCount = 2;
+        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+            return;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 启用流动输出堆叠吗？",
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                EnableFluidOutputStack.Value = true;
+                UIMessageBox.Show("提示", "已启用流动输出堆叠！",
+                    "确定", UIMessageBox.INFO);
+            }, null);
+    }
+
+    private static void AddMaxProductOutputStack() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        int takeId = IFE建筑增幅芯片;
+        int takeCount = 1;
+        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+            return;
+        }
+        if (MaxProductOutputStack.Value >= 4) {
+            return;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 将产物输出堆叠 +1 吗？",
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                MaxProductOutputStack.Value++;
+                UIMessageBox.Show("提示", "已将产物输出堆叠 +1！",
+                    "确定", UIMessageBox.INFO);
+            }, null);
+    }
+
+    private static void SetFracForever() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (EnableFracForever.Value) {
+            return;
+        }
+        int takeId = IFE建筑增幅芯片;
+        int takeCount = 3;
+        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+            return;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 启用分馏永动吗？",
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                EnableFracForever.Value = true;
+                UIMessageBox.Show("提示", "已启用分馏永动！",
+                    "确定", UIMessageBox.INFO);
+            }, null);
     }
 
     #region IModCanSave
