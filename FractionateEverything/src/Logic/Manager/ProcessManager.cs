@@ -1205,14 +1205,14 @@ public static class ProcessManager {
                 return;
         }
         float flowRatio = 1.0f;
-        Color color = QualityColors[5];
         if (recipe == null) {
-            s1 = $"{"无配方".Translate().WithColor(Blue)}";
+            s1 = "无配方".Translate();
+            s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else if (!recipe.IsUnlocked) {
-            s1 = recipe + "\n" + "未解锁".Translate();
+            s1 = "配方未解锁".Translate();
+            s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            color = recipe.QualityColor;
         } else {
             StringBuilder sb1 = new StringBuilder();
             bool fracForever = false;
@@ -1229,7 +1229,7 @@ public static class ProcessManager {
                 }
             }
             if (fracForever) {
-                s1 = recipe + "\n" + "永动".Translate();
+                s1 = recipe.LvExpWC + "\n" + "永动".Translate();
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             } else {
                 foreach (var output in recipe.OutputMain) {
@@ -1240,20 +1240,18 @@ public static class ProcessManager {
                 }
                 float destroyRatio = recipe.DestroyRate;
                 flowRatio -= destroyRatio;
-                s1 = recipe + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+                s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
                 if (destroyRatio > 0) {
-                    s2 += $"\n{"损毁".Translate()}({destroyRatio.FormatP()})";
+                    string destroy = $"{"损毁".Translate()}({destroyRatio.FormatP()})";
+                    s2 += $"\n{destroy.WithColor(Red)}";
                 }
             }
-            color = recipe.QualityColor;
         }
         //刷新概率显示内容
         __instance.productProbText.text = s1;
-        __instance.productProbText.color = color;
         lastProductProbText = s1;
         __instance.oriProductProbText.text = s2;
-        __instance.oriProductProbText.color = color;
         lastOriProductProbText = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);

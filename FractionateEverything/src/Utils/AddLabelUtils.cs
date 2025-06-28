@@ -21,6 +21,8 @@ public static partial class Utils {
     // }
 
     // 游戏基础颜色
+    public static Color Gray2 = new(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);//UX使用的颜色
+    public static Color Gray = new(150 / 255f, 150 / 255f, 150 / 255f, 255 / 255f);
     public static Color Orange = new(0xFD / 255f, 0x96 / 255f, 0x5E / 255f, 0xCC / 255f);
     public static Color Red = new(0xFF / 255f, 0x5D / 255f, 0x4C / 255f, 0xB7 / 255f);
     public static Color Blue = new(0x61 / 255f, 0xD8 / 255f, 0xFF / 255f, 0xB8 / 255f);
@@ -46,7 +48,7 @@ public static partial class Utils {
     /// <summary>
     /// 根据品质等级为字符串添加对应颜色标签。
     /// </summary>
-    public static string AddLabelWithQualityColor(this string s, int quality) {
+    public static string WithQualityColor(this string s, int quality) {
         return quality switch {
             0 => s.WithColor(QualityBrown),// 褐色
             1 => s.WithColor(QualityWhite),// 白色
@@ -55,7 +57,7 @@ public static partial class Utils {
             4 => s.WithColor(QualityPurple),// 紫色
             5 => s.WithColor(QualityRed),// 红色
             7 => s.WithColor(QualityGold),// 金色
-            _ => s
+            _ => ("invalid quality level" + quality).WithColor(QualityRed)
         };
     }
 }

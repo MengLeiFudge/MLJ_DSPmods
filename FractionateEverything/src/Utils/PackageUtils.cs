@@ -84,11 +84,11 @@ public static partial class Utils {
         if (!recipe.IsUnlocked) {
             recipe.Level = 1;
             recipe.Quality = 1;
-            UIMessageBox.Show("提示", $"已解锁 {recipe.ShortInfo()}！",
+            UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
                 "确定", UIMessageBox.INFO);
         } else {
             recipe.MemoryCount++;
-            UIMessageBox.Show("提示", $"已兑换 {recipe.ShortInfo()}，自动转化为对应回响！\n"
+            UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为对应回响！\n"
                                     + $"当前回响数目：{recipe.MemoryCount}",
                 "确定", UIMessageBox.INFO);
         }
@@ -100,7 +100,7 @@ public static partial class Utils {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.ShortInfo()} 吗？",
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeName} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeRecipe(takeId, takeCount, recipe); }, null);
     }
 

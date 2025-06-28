@@ -42,7 +42,7 @@ public static class TabRecipeAndBuilding {
     }
 
     private static Text textCurrRecipe;
-    private static MyImageButton btnSelectedItem;
+    // private static MyImageButton btnSelectedItem;
     private static Text[] textRecipeInfo = new Text[30];
 
     #endregion
@@ -121,9 +121,8 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
-            textCurrRecipe.supportRichText = true;
 
-            btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item");
+            //btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item");
 
             y += 36f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
@@ -168,15 +167,12 @@ public static class TabRecipeAndBuilding {
 
     public static void UpdateUI() {
         textCurrRecipe.text = $"原料：{SelectedItem.name}";
-        btnSelectedItem.WithItem(SelectedItem);
+        //btnSelectedItem.WithItem(SelectedItem);
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
-        string recipeTypeName = RecipeTypeNames[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         int line = 0;
         if (recipe != null) {
-            textRecipeInfo[line].text =
-                $"{recipeTypeName}-{SelectedItem.name} Lv{recipe.Level} ({recipe.Exp}/{recipe.LevelUpExp})";
-            textRecipeInfo[line].color = recipe.QualityColor;
+            textRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
             line++;
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
             line++;
@@ -229,8 +225,7 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = "特殊突破加成：无";
             line++;
         } else {
-            textRecipeInfo[line].text = "配方不存在！";
-            textRecipeInfo[line].color = BaseRecipe.QualityColors[5];
+            textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
             line++;
         }
         for (; line < textRecipeInfo.Length; line++) {
