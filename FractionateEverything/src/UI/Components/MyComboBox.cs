@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -64,7 +65,7 @@ public class MyComboBox : MonoBehaviour {
         gameObject.name = "my-combobox";
         gameObject.SetActive(true);
         var cb = gameObject.AddComponent<MyComboBox>();
-        var rtrans = UIUtils.NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rtrans = NormalizeRectWithTopLeft(cb, x, y, parent);
         cb._rectTrans = rtrans;
         cb._text = gameObject.GetComponent<Text>();
         var box = rtrans.Find("ComboBox").GetComponent<UIComboBox>();

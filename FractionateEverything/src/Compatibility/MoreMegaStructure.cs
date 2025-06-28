@@ -4,8 +4,7 @@ using CommonAPI.Systems;
 using HarmonyLib;
 using UnityEngine;
 using xiaoye97;
-using static FE.Utils.ProtoID;
-using static FE.Compatibility.CheckPlugins;
+using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
@@ -31,7 +30,7 @@ public static class MoreMegaStructure {
                 after = [LDBToolPlugin.MODGUID]
             }
         );
-        LogInfo("MoreMegaStructure Compat finish.");
+        CheckPlugins.LogInfo("MoreMegaStructure Compat finish.");
     }
 
     public static void AfterLDBToolPostAddData() {
@@ -71,6 +70,6 @@ public static class MoreMegaStructure {
         }
 
         _finished = true;
-        LogInfo("MoreMegaStructure Compatibility LDBToolOnPostAddDataAction finish.");
+        CheckPlugins.LogInfo("MoreMegaStructure Compatibility LDBToolOnPostAddDataAction finish.");
     }
 }

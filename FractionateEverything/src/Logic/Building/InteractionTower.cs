@@ -6,9 +6,8 @@ using CommonAPI.Systems;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using UnityEngine;
-using static FE.Utils.ProtoID;
 using static FE.FractionateEverything;
-using static FE.Utils.I18NUtils;
+using static FE.Utils.Utils;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.ItemManager;
@@ -23,7 +22,7 @@ public static class InteractionTower {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
             "-",
-            $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".AddOrangeLabel()}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
+            $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
     }
 
     public static ConfigEntry<bool> EnableFluidOutputStackEntry;

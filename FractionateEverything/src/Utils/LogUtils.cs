@@ -2,11 +2,11 @@
 
 namespace FE.Utils;
 
-public static class LogUtils {
+public static partial class Utils {
     private static ManualLogSource logger;
 
     public static void InitLogger(ManualLogSource logger) {
-        LogUtils.logger = logger;
+        Utils.logger = logger;
     }
 
     public static void LogDebug(object data) => logger.LogDebug(data);

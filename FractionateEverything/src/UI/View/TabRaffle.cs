@@ -8,8 +8,8 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using static FE.UI.View.TabRecipeAndBuilding;
+using static FE.Utils.Utils;
 using Random = System.Random;
-using static FE.Utils.ProtoID;
 
 namespace FE.UI.View;
 
@@ -144,6 +144,20 @@ public static class TabRaffle {
                 sb.Append($"\n{LDB.items.Select(IFE建筑增幅芯片).name} x 1");
                 continue;
             }
+            //建筑（3% * 1 + 0.5% * 6）
+            bool getBuilding = false;
+            for (int i = 0; i < BuildingIds.Length; i++) {
+                currRate += i == buildingType ? 0.03 : 0.005;
+                if (randDouble < currRate) {
+                    GameMain.mainPlayer.TryAddItemToPackage(BuildingIds[i], 1, 0, true);
+                    sb.Append($"\n{LDB.items.Select(BuildingIds[i]).name} x 1");
+                    getBuilding = true;
+                    break;
+                }
+            }
+            if (getBuilding) {
+                continue;
+            }
             //分馏原胚（26.4%）
             bool getFracProto = false;
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
@@ -154,14 +168,6 @@ public static class TabRaffle {
                     getFracProto = true;
                     break;
                 }
-            }
-            //建筑（7%）
-            if (randDouble < currRate) {
-                ItemProto item = LDB.items.Select(BuildingIds[buildingType]);
-                string name = item.name;
-                GameMain.mainPlayer.TryAddItemToPackage(item.ID, 1, 0, true);
-                sb.Append($"\n{name} x 1");
-                continue;
             }
             if (getFracProto) {
                 continue;

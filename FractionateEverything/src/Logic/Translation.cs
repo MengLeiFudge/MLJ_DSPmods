@@ -1,4 +1,4 @@
-﻿using static FE.Utils.I18NUtils;
+﻿using static FE.Utils.Utils;
 
 namespace FE.Logic;
 
@@ -10,17 +10,17 @@ public static class Translation {
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
         Register("FE信息",
             "Thank you for using Fractionation Everything! This mod adds 6 Fractionators, and a lot of fractionation recipes.\n"
-            + $"If you are using this mod for the first time, it is highly recommended that you {"check out the mod introduction page".AddBlueLabel()} to get an idea of its contents and features.\n"
-            + $"You can change mod options in {"Settings - Miscellaneous".AddBlueLabel()} to get the full experience.\n"
+            + $"If you are using this mod for the first time, it is highly recommended that you {"check out the mod introduction page".WithColor(Blue)} to get an idea of its contents and features.\n"
+            + $"You can change mod options in {"Settings - Miscellaneous".WithColor(Blue)} to get the full experience.\n"
             + "Recommended for use with Genesis Book, They Come From Void, and More Mega Structure.\n"
-            + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".AddBlueLabel()}.\n"
-            + "Have fun with fractionation!".AddOrangeLabel(),
+            + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".WithColor(Blue)}.\n"
+            + "Have fun with fractionation!".WithColor(Orange),
             "感谢你使用万物分馏！该MOD添加了6个分馏塔，以及大量的分馏配方。\n"
-            + $"如果你是首次使用该模组，强烈建议你{"查看模组介绍页面".AddBlueLabel()}以了解其内容与特色。\n"
-            + $"你可以在{"设置-杂项".AddBlueLabel()}中修改MOD配置，以获得完整体验。\n"
+            + $"如果你是首次使用该模组，强烈建议你{"查看模组介绍页面".WithColor(Blue)}以了解其内容与特色。\n"
+            + $"你可以在{"设置-杂项".WithColor(Blue)}中修改MOD配置，以获得完整体验。\n"
             + "推荐与创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）一起使用。\n"
-            + $"如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".AddBlueLabel()}反馈。\n"
-            + "尽情享受分馏的乐趣吧！".AddOrangeLabel());
+            + $"如果你在游玩MOD时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".WithColor(Blue)}反馈。\n"
+            + "尽情享受分馏的乐趣吧！".WithColor(Orange));
         Register("FE交流群", "View on Github", "加入交流群");
         Register("FE交流群链接",
             "https://github.com/MengLeiFudge/MLJ_DSPmods",
@@ -37,93 +37,93 @@ public static class Translation {
             "Even though Fractionate Everything is part of the cheat mods, it has enough restrictions that it should be balanced.\n"
             + "—until I try it out for myself and get through the game in one night, that's what I'm thinking.\n"
             + "After my experience with the Fractionate Everything mod, the \"planning doesn't even play games\" joke hit me like a boomerang.\n\n"
-            + $"The idea of Fractionate Everything is great, but it's fatal flaw is {"fractionation skips a lot of yield lines".AddRedLabel()} (especially with matrix fractionation).\n"
+            + $"The idea of Fractionate Everything is great, but it's fatal flaw is {"fractionation skips a lot of yield lines".WithColor(Red)} (especially with matrix fractionation).\n"
             + "Without using proliferators, 3% destroy probability means you only get 25% of the product, like 10,000 blue matrix => 2,500 red matrix => 625 yellow matrix => ......\n"
             + "Imagine when players realize that \"there is a huge loss of blue matrix to green matrix\", will they start building yellow or purple matrix production lines as I envisioned?\n"
             + "The answer is not. Production enhancers reduce damage and new matrices are overly complex, so players tend to expand the production of lower level matrices and then fractionate them.\n"
             + "In the end there are only three things to do in the game: expand the blue or red matrix production line, unlock tech, and wait.\n"
             + "Oh my god I bet there's no worse gaming experience than this!\n"
             + "It's hard to believe that the matrix fractionation chain is so poorly designed that it looks like Aunt Susan's apple pie next door!\n\n"
-            + $"Back on topic, this mod was originally designed to be {"fun".AddBlueLabel()}, but I've been working on making it a {"balanced".AddBlueLabel()} mod.\n"
+            + $"Back on topic, this mod was originally designed to be {"fun".WithColor(Blue)}, but I've been working on making it a {"balanced".WithColor(Blue)} mod.\n"
             + "It is an obvious fact that if you want to cheat, why not try \"Multfunction_Mod\" or \"CheatEnabler\"?\n"
             + "In response to matrix fractionation, I solicited ideas for improvements from a large number of players. I gathered various ways to change things, such as lag unlocking, fractionation consuming sand,\n"
             + "increasing power consumption, fractionated matrices not being able to be fractionated again, and so on, but they weren't in the way I expected.\n\n"
-            + $"However, I figured out one thing: {"Fractionation should provide convenience, but not skip game progression.".AddOrangeLabel()}\n"
+            + $"However, I figured out one thing: {"Fractionation should provide convenience, but not skip game progression.".WithColor(Orange)}\n"
             + "Obviously, the Building-HighSpeed Fractionator is the best building. It's more of an aid and doesn't affect the game experience too much.\n"
             + "So in 1.4.1, I added switches for matrix fractionation, split the Building-HighSpeed Fractionator into Upgrade and Downgrade Fractionator and adjusted the fractionate recipes.\n"
             + "Hopefully these changes will make the mod more balanced.\n\n"
-            + $"PS1: You can click {"Update Log".AddBlueLabel()} for all the changes in 1.4.1.\n"
-            + $"PS2: Don't forget to check out {"the new settings".AddBlueLabel()} added in {"Settings - Miscellaneous".AddBlueLabel()}!\n"
-            + $"PS3: To celebrate this update, some {"Blueprints".AddBlueLabel()} for Fractionate Everything have been added to the Blueprints library. \n"
-            + $"Thanks to everyone for using Fractionate Everything. {"Have fun with fractionation!".AddOrangeLabel()}",
+            + $"PS1: You can click {"Update Log".WithColor(Blue)} for all the changes in 1.4.1.\n"
+            + $"PS2: Don't forget to check out {"the new settings".WithColor(Blue)} added in {"Settings - Miscellaneous".WithColor(Blue)}!\n"
+            + $"PS3: To celebrate this update, some {"Blueprints".WithColor(Blue)} for Fractionate Everything have been added to the Blueprints library. \n"
+            + $"Thanks to everyone for using Fractionate Everything. {"Have fun with fractionation!".WithColor(Orange)}",
             "“尽管万物分馏属于作弊模组，但它的限制已经够多了，它应该是平衡的。”\n"
             + "——在我亲自试玩并一个晚上通关游戏之前，我都是这样想的。\n"
             + "在我体验万物分馏mod之后，“策划根本就不玩游戏”这个玩笑就像回旋镖一样打在了我的身上。\n\n"
-            + $"万物分馏的想法是很棒的，但它的致命缺陷在于{"分馏会跳过大量产线".AddRedLabel()}（尤其是矩阵分馏）。\n"
+            + $"万物分馏的想法是很棒的，但它的致命缺陷在于{"分馏会跳过大量产线".WithColor(Red)}（尤其是矩阵分馏）。\n"
             + "不使用增产剂的情况下，3%的损毁概率意味着你只能获得25%的产物，也就是10000蓝糖=>2500红糖=>625黄糖=>……\n"
             + "试想一下，当玩家意识到“蓝糖分馏为绿糖会有巨大损耗”，他们会按照我的预想开始构建黄糖或紫糖产线吗？\n"
             + "答案是不会。增产剂可以降低损毁，新矩阵又过于复杂，所以玩家倾向于扩大低级矩阵的产量，然后分馏它们。\n"
             + "最后游戏只剩下三件事：扩大蓝糖或红糖的产线，解锁科技，以及等待。\n"
             + "哦天哪，我敢打赌，没有比这更糟糕的游戏体验了！\n"
             + "真是难以相信，矩阵分馏链的设计竟然如此糟糕，就像隔壁苏珊婶婶做的苹果派一样！\n\n"
-            + $"回归正题，分馏设计之初是为了{"有趣".AddBlueLabel()}，但是我一直致力于把它打造成一个{"平衡".AddBlueLabel()}的mod。\n"
+            + $"回归正题，分馏设计之初是为了{"有趣".WithColor(Blue)}，但是我一直致力于把它打造成一个{"平衡".WithColor(Blue)}的mod。\n"
             + "一个显而易见的事实是，如果你想作弊，为何不试试“Multfunction_Mod”或者“CheatEnabler”？\n"
             + "针对矩阵分馏，我向大量玩家征集了改进意见。我收集到了各种改动方式，例如滞后解锁、分馏消耗沙土、加大耗电、\n"
             + "分馏出的矩阵不能再次分馏等等，但它们都不是我所期望的方式。\n\n"
-            + $"不过，我想明白了一件事情：{"分馏应该提供便利，但是不能跳过游戏进程。".AddOrangeLabel()}\n"
+            + $"不过，我想明白了一件事情：{"分馏应该提供便利，但是不能跳过游戏进程。".WithColor(Orange)}\n"
             + "显然，建筑极速分馏塔是最优秀的建筑。它更像是一种辅助手段，并不会过多影响游戏体验。\n"
             + "所以在1.4.1中，我为矩阵分馏增加了开关，将建筑极速分馏塔拆分为升级、转化塔并调整了分馏配方。\n"
             + "希望这次改动能让分馏更加平衡。\n\n"
-            + $"PS1：你可以点击{"更新日志".AddBlueLabel()}，以了解1.4.1的所有改动。\n"
-            + $"PS2：千万不要忘记查看{"设置-杂项".AddBlueLabel()}中{"新增的设置项".AddBlueLabel()}！\n"
-            + $"PS3：为了庆祝本次更新，一些万物分馏的{"蓝图".AddBlueLabel()}已添加至蓝图库。\n"
-            + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
+            + $"PS1：你可以点击{"更新日志".WithColor(Blue)}，以了解1.4.1的所有改动。\n"
+            + $"PS2：千万不要忘记查看{"设置-杂项".WithColor(Blue)}中{"新增的设置项".WithColor(Blue)}！\n"
+            + $"PS3：为了庆祝本次更新，一些万物分馏的{"蓝图".WithColor(Blue)}已添加至蓝图库。\n"
+            + $"感谢万物分馏的每一位玩家。{"尽情享受分馏的乐趣吧！".WithColor(Orange)}");
 
         Register("142标题", "Fractionate Everything 1.4.2 Update", "万物分馏1.4.2版本更新");
         Register("142信息",
             "Haven't seen you for a long time, and I miss you very much. It's been another month and a half after last update. How are you?\n\n"
-            + $"Remember in version 1.4.1, I said I had a couple {"Blueprints".AddBlueLabel()} for you guys? That was indeed true, and it wasn't an April Fool's joke. \n"
-            + $"-- Just {"R2".AddBlueLabel()} took my blueprints folder {"deleted".AddRedLabel()}!Σ(っ\u00b0Д\u00b0;)っ\n"
+            + $"Remember in version 1.4.1, I said I had a couple {"Blueprints".WithColor(Blue)} for you guys? That was indeed true, and it wasn't an April Fool's joke. \n"
+            + $"-- Just {"R2".WithColor(Blue)} took my blueprints folder {"deleted".WithColor(Red)}!Σ(っ\u00b0Д\u00b0;)っ\n"
             + "As for why I didn't update the version after discovering this problem that day, it's because the folder is gone but the blueprints are still there...(O_o)??\n"
             + "Yes it's strange but the folder is gone and the blueprints are out there!\n"
-            + $"{"By the way, it's definitely NOT I'm lazy to update!".AddOrangeLabel()}\n"
+            + $"{"By the way, it's definitely NOT I'm lazy to update!".WithColor(Orange)}\n"
             + "I'm curious if anyone has actually gone through the folder where the mod is and found those blueprints. (If so be sure to let me know www)\n"
             + "Of course, this is a small problem for me. Since the files are unusable, I'll just shove them right inside the code!\n"
             + "Shakespeare once said: there's nothing that can't be solved by one string. If there is, then there are four! (three blueprints + intro)\n"
-            + $"If all goes well, you should see the blueprints this time. Be sure to {"recheck the blueprint library!".AddBlueLabel()}\n\n"
+            + $"If all goes well, you should see the blueprints this time. Be sure to {"recheck the blueprint library!".WithColor(Blue)}\n\n"
             + "In addition, this update fixes an issue with the settings page reporting errors.\n\n"
             + "The main reason there hasn't been an update lately is the lack of inspiration, and I really can't think of anything else to optimize.\n"
             + "I'm sure you can see that the idea of using fractionation as the core actually greatly limits the functionality of the mod.\n"
-            + $"However, after talking with the group the other day, I've determined the general direction of the MOD afterward - that is {"Draw".AddOrangeLabel()}.\n"
+            + $"However, after talking with the group the other day, I've determined the general direction of the MOD afterward - that is {"Draw".WithColor(Orange)}.\n"
             + "\"Big company with a billion dollar market cap will only make card draw games, but a team of only five people can make Dyson Sphere Program\", I'm sure you've all heard of it.\n"
-            + $"{"But why couldn't the Dyson Sphere Program be a card draw game, right?".AddOrangeLabel()} I'm coming now!\n\n"
+            + $"{"But why couldn't the Dyson Sphere Program be a card draw game, right?".WithColor(Orange)} I'm coming now!\n\n"
             + "The next update will be centered around randomness and card draw. The following information can be revealed:\n"
             + "1.There will be new fractionators for getting currency dedicated to card draw.\n"
             + "2.Fractionation recipes can be obtained through technology, raffle, and redemption.\n"
             + "3.The same fractionation recipe has different qualities, the higher the quality the harder it is to obtain.\n"
             + "4.I hope to complete the initial version before the end of September. Welcome to join the group to experience the latest beta version and give your opinion!\n\n"
-            + $"And finally, thanks for your support! {"Have fun with fractionation!".AddOrangeLabel()}",
+            + $"And finally, thanks for your support! {"Have fun with fractionation!".WithColor(Orange)}",
             "许久不见，甚是想念。时间过得真快啊，转眼又是一个半月。大家过的怎么样啊？\n\n"
-            + $"还记得在1.4.1版本中，我说过为你们准备了几个{"蓝图".AddBlueLabel()}吗？那确实是真的，它并不是一个愚人节玩笑。\n"
-            + $"——只不过{"R2".AddBlueLabel()}将我的蓝图文件夹{"删掉了".AddRedLabel()}！Σ(っ\u00b0Д\u00b0;)っ\n"
+            + $"还记得在1.4.1版本中，我说过为你们准备了几个{"蓝图".WithColor(Blue)}吗？那确实是真的，它并不是一个愚人节玩笑。\n"
+            + $"——只不过{"R2".WithColor(Blue)}将我的蓝图文件夹{"删掉了".WithColor(Red)}！Σ(っ\u00b0Д\u00b0;)っ\n"
             + "至于我为什么当天发现这个问题之后，却并没有更新版本，是因为文件夹没了但是蓝图还在……(O_o)??\n"
             + "事实正是如此，文件夹没了，蓝图跑外面了！\n"
-            + $"{"顺带一提，绝对不是因为我懒才不更新的！".AddOrangeLabel()}）\n"
+            + $"{"顺带一提，绝对不是因为我懒才不更新的！".WithColor(Orange)}）\n"
             + "我很好奇到底有没有人去翻翻MOD所在的文件夹，把那几个蓝图找出来。（如果有的话务必告诉我哈哈）\n"
             + "当然，这点小小的问题是难不倒我的。既然文件无法使用，那我就把它们直接塞到代码里面！\n"
             + "鲁迅曾经说过：没有什么是一个字符串解决不了的。如果有，那就四个！（三个蓝图+简介）\n"
-            + $"如果一切顺利的话，这次应该能看到蓝图了。请务必{"重新检查一下蓝图库！".AddBlueLabel()}\n\n"
+            + $"如果一切顺利的话，这次应该能看到蓝图了。请务必{"重新检查一下蓝图库！".WithColor(Blue)}\n\n"
             + "除此之外，此次更新修复了设置页面报错的问题。\n\n"
             + "近期一直没有更新的主要原因是缺失灵感，我确实想不出有什么可以优化的地方了。\n"
             + "想必大家也能看出来，以分馏作为核心的思路其实大大限制了MOD的功能。\n"
-            + $"不过，前几天与群友交流之后，我确定了MOD之后的大致方向——那就是{"抽奖".AddOrangeLabel()}。\n"
-            + $"“百亿大厂十连抽，五人团队戴森球”，想必大家都听过。嘿嘿嘿，{"谁说戴森球不能十连抽？".AddOrangeLabel()}我踏马莱纳！\n\n"
+            + $"不过，前几天与群友交流之后，我确定了MOD之后的大致方向——那就是{"抽奖".WithColor(Orange)}。\n"
+            + $"“百亿大厂十连抽，五人团队戴森球”，想必大家都听过。嘿嘿嘿，{"谁说戴森球不能十连抽？".WithColor(Orange)}我踏马莱纳！\n\n"
             + "接下来的更新将主要以“随机性与抽卡”作为核心。可以透露的信息如下：\n"
             + "1.会有新的分馏塔，用于获取专用于抽卡的货币。\n"
             + "2.分馏配方可通过科技、抽奖、兑换等方式获取。\n"
             + "3.同一个分馏配方有不同品质，越高品质越难获取。\n"
             + "4.希望能在9月底之前完成初版。欢迎加群体验最新测试版，并提出你的看法！\n\n"
-            + $"一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
+            + $"一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".WithColor(Orange)}");
 
         #endregion
 
@@ -137,7 +137,7 @@ public static class Translation {
             + "In new version, a fractionator similar to Trash Recycle Fractionator will be added for unlocking fractionation recipes, and providing currency to the store.\n"
             + "Recipes have 'star' and 'rarity' attribute, which indicate the efficiency and rarity of the recipe, respectively.\n"
             + "In addition to fixed fractionation recipes, an optional fractionate recipe can be customized for output, allowing items to be reorganized in the early stages!\n"
-            + $"The above is all that's included in this update. As always, thank you for your support! {"Have fun with fractionation!".AddOrangeLabel()}",
+            + $"The above is all that's included in this update. As always, thank you for your support! {"Have fun with fractionation!".WithColor(Orange)}",
             "这次是一个小更新，修复了原版分馏塔无法将氢分馏为重氢的问题。\n"
             + "感谢starfi5h大佬对此bug出现原因的探究（我确实没有复现此bug，所以一直无法修复）。\n\n"
             + "打个广告：如果你想量化产线，推荐使用网页版量化计算器【https://dsp-calc.pro/】\n\n"
@@ -146,7 +146,7 @@ public static class Translation {
             + "在新的版本中，将会增加一个与垃圾回收分馏塔类似的分馏塔，用于解锁分馏配方、向商店提供货币。\n"
             + "配方具有“星级”与“稀有度”这两个属性，分别表示配方的效率与稀有程度。\n"
             + "除了固定的分馏配方，还有可自定义输出的自选分馏配方，可以在前期将物品随意重组！\n"
-            + $"以上就是本次更新的全部内容。一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".AddOrangeLabel()}");
+            + $"以上就是本次更新的全部内容。一如既往，感谢大家的支持！{"尽情享受分馏的乐趣吧！".WithColor(Orange)}");
 
         #endregion
 

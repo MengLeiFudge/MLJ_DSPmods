@@ -1,6 +1,6 @@
 ﻿using BepInEx.Bootstrap;
 using HarmonyLib;
-using static FE.Compatibility.CheckPlugins;
+using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
@@ -15,6 +15,6 @@ public class TheyComeFromVoid {
 
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
-        LogInfo("TheyComeFromVoid Compat finish.");
+        CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
     }
 }

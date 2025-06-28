@@ -1,4 +1,4 @@
-﻿using static FE.Utils.I18NUtils;
+﻿using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
