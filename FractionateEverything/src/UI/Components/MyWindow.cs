@@ -104,6 +104,7 @@ public class MyWindow : ManualBehaviour {
         txt.color = new(1f, 1f, 1f, 0.4f);
         txt.alignment = TextAnchor.MiddleLeft;
         txt.fontSize = fontSize;
+        txt.supportRichText = true;
         txt.rectTransform.sizeDelta = new(txt.preferredWidth + 8f, txt.preferredHeight + 8f);
         AddElement(x, y, txt.rectTransform, parent);
         return txt;

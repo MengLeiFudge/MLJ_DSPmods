@@ -86,7 +86,6 @@ public class MyImageButton : MonoBehaviour {
         set {
             _checked = value;
             // itemImage.enabled = value;
-            boxImage.enabled = value;
         }
     }
 
@@ -175,7 +174,6 @@ public class MyImageButton : MonoBehaviour {
     public void OnClick(int obj) {
         _checked = !_checked;
         // itemImage.enabled = _checked;
-        boxImage.enabled = _checked;
         OnChecked?.Invoke();
     }
 
