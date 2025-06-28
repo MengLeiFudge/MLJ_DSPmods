@@ -216,7 +216,25 @@ public static class TabRaffle {
             if (getFracProto) {
                 continue;
             }
-            //沙土
+            //剩余的概率中，50%黑雾掉落
+            int enemyDropCount = GameMain.history.enemyDropItemUnlocked.Count;
+            if (enemyDropCount > 0) {
+                double ratioDarkFog = (1 - currRate) * 0.5 / enemyDropCount;
+                bool getDarkFog = false;
+                foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
+                    currRate += ratioDarkFog;
+                    if (randDouble < currRate) {
+                        AddItem(itemId, 200);
+                        sb.AppendLine($"{LDB.items.Select(itemId).name} x 200");
+                        getDarkFog = true;
+                        break;
+                    }
+                }
+                if (getDarkFog) {
+                    continue;
+                }
+            }
+            //50%沙土
             AddItem(I沙土, 1000);
             sb.AppendLine("沙土 x 1000");
         }
@@ -275,15 +293,27 @@ public static class TabRaffle {
             if (getFracProto) {
                 continue;
             }
-            //沙土
-            currRate += (1 - currRate) / 2;
-            if (randDouble < currRate) {
-                AddItem(I沙土, 1000);
-                sb.AppendLine("沙土 x 1000");
-            } else {
-                AddItem(I沙土, 1000);
-                sb.AppendLine("沙土 x 1000");
+            //剩余的概率中，50%黑雾掉落
+            int enemyDropCount = GameMain.history.enemyDropItemUnlocked.Count;
+            if (enemyDropCount > 0) {
+                double ratioDarkFog = (1 - currRate) * 0.5 / enemyDropCount;
+                bool getDarkFog = false;
+                foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
+                    currRate += ratioDarkFog;
+                    if (randDouble < currRate) {
+                        AddItem(itemId, 200);
+                        sb.AppendLine($"{LDB.items.Select(itemId).name} x 200");
+                        getDarkFog = true;
+                        break;
+                    }
+                }
+                if (getDarkFog) {
+                    continue;
+                }
             }
+            //50%沙土
+            AddItem(I沙土, 1000);
+            sb.AppendLine("沙土 x 1000");
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
