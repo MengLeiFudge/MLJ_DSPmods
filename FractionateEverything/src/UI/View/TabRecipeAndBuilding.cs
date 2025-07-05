@@ -43,7 +43,7 @@ public static class TabRecipeAndBuilding {
     }
 
     private static Text textCurrRecipe;
-    // private static MyImageButton btnSelectedItem;
+    private static MyImageButton btnSelectedItem;
     private static Text[] textRecipeInfo = new Text[30];
 
     #endregion
@@ -128,7 +128,8 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
-            //btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item");
+            btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item",
+                () => { OnButtonChangeItemClick(false); });
             y += 36f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
@@ -190,7 +191,7 @@ public static class TabRecipeAndBuilding {
             }
             textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}".WithColor(Orange)
                                         + "      "
-                                        + $"损毁率 {recipe.DestroyRate:P3}".WithColor(Color.red);
+                                        + $"损毁率 {recipe.DestroyRate:P3}".WithColor(Red);
             line++;
             bool isFirst = true;
             foreach (OutputInfo info in recipe.OutputMain) {
