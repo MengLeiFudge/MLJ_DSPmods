@@ -140,86 +140,86 @@ public static class ItemManager {
 
 
         ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
-            "Assets/fe/copy-essence", 3301, 100, EItemType.Product,
+            "Assets/fe/copy-essence", tab分馏 * 1000 + 301, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE复制精华, ERecipeType.Assemble, 300,
             [IFE复制精华], [1], [IFE复制精华], [1], "I复制精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
-            "Assets/fe/alchemy-essence", 3302, 100, EItemType.Product,
+            "Assets/fe/alchemy-essence", tab分馏 * 1000 + 302, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE点金精华, ERecipeType.Assemble, 300,
             [IFE点金精华], [1], [IFE点金精华], [1], "I点金精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
-            "Assets/fe/deconstruction-essence", 3303, 100, EItemType.Product,
+            "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 303, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE分解精华, ERecipeType.Assemble, 300,
             [IFE分解精华], [1], [IFE分解精华], [1], "I分解精华").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
-            "Assets/fe/conversion-essence", 3304, 100, EItemType.Product,
+            "Assets/fe/conversion-essence", tab分馏 * 1000 + 304, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE转化精华, ERecipeType.Assemble, 300,
             [IFE转化精华], [1], [IFE转化精华], [1], "I转化精华").NonProductive = true;
 
 
         ProtoRegistry.RegisterItem(IFE电磁奖券, "电磁奖券", "I电磁奖券",
-            "Assets/fe/electromagnetic-ticket", 3401, 100, EItemType.Product,
+            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 401, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE电磁奖券, ERecipeType.Assemble, 300,
             [I电磁矩阵], [70], [IFE电磁奖券], [1], "I电磁奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE能量奖券, "能量奖券", "I能量奖券",
-            "Assets/fe/energy-ticket", 3402, 100, EItemType.Product,
+            "Assets/fe/energy-ticket", tab分馏 * 1000 + 402, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE能量奖券, ERecipeType.Assemble, 300,
             [I能量矩阵], [65], [IFE能量奖券], [1], "I能量奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE结构奖券, "结构奖券", "I结构奖券",
-            "Assets/fe/structure-ticket", 3403, 100, EItemType.Product,
+            "Assets/fe/structure-ticket", tab分馏 * 1000 + 403, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE结构奖券, ERecipeType.Assemble, 300,
             [I结构矩阵], [60], [IFE结构奖券], [1], "I结构奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE信息奖券, "信息奖券", "I信息奖券",
-            "Assets/fe/information-ticket", 3404, 100, EItemType.Product,
+            "Assets/fe/information-ticket", tab分馏 * 1000 + 404, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE信息奖券, ERecipeType.Assemble, 300,
             [I信息矩阵], [55], [IFE信息奖券], [1], "I信息奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE引力奖券, "引力奖券", "I引力奖券",
-            "Assets/fe/gravity-ticket", 3405, 100, EItemType.Product,
+            "Assets/fe/gravity-ticket", tab分馏 * 1000 + 405, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE引力奖券, ERecipeType.Assemble, 300,
             [I引力矩阵], [50], [IFE引力奖券], [1], "I引力奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE宇宙奖券, "宇宙奖券", "I宇宙奖券",
-            "Assets/fe/universe-ticket", 3406, 100, EItemType.Product,
+            "Assets/fe/universe-ticket", tab分馏 * 1000 + 406, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE宇宙奖券, ERecipeType.Assemble, 300,
             [I宇宙矩阵], [40], [IFE宇宙奖券], [1], "I宇宙奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE黑雾奖券, "黑雾奖券", "I黑雾奖券",
-            "Assets/fe/dark-fog-ticket", 3407, 100, EItemType.Product,
+            "Assets/fe/dark-fog-ticket", tab分馏 * 1000 + 407, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE黑雾奖券, ERecipeType.Assemble, 300,
             [I黑雾矩阵], [1000], [IFE黑雾奖券], [1], "I黑雾奖券").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE分馏配方核心, "分馏配方核心", "I分馏配方核心",
-            "Assets/fe/frac-recipe-core", 3408, 100, EItemType.Product,
+            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 408, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE分馏配方核心, ERecipeType.Assemble, 300,
             [IFE残破核心], [2], [IFE分馏配方核心], [1], "I分馏配方核心").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE建筑增幅芯片, "建筑增幅芯片", "I建筑增幅芯片",
-            "Assets/fe/building-increase-chip", 3409, 100, EItemType.Product,
+            "Assets/fe/building-increase-chip", tab分馏 * 1000 + 409, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE建筑增幅芯片, ERecipeType.Assemble, 300,
             [IFE建筑增幅芯片], [1], [IFE建筑增幅芯片], [1], "I建筑增幅芯片").NonProductive = true;
 
         ProtoRegistry.RegisterItem(IFE残破核心, "残破核心", "I残破核心",
-            "Assets/fe/frac-recipe-core-destroyed", 3410, 100, EItemType.Component,
+            "Assets/fe/frac-recipe-core-destroyed", tab分馏 * 1000 + 410, 100, EItemType.Component,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         ProtoRegistry.RegisterRecipe(RFE残破核心, ERecipeType.Assemble, 300,
             [IFE残破核心], [1], [IFE残破核心], [1], "I残破核心").NonProductive = true;
