@@ -186,6 +186,29 @@ public static partial class Utils {
         return true;
     }
 
+    private static object obj = new object();
+
+    /// <summary>
+    /// 从Mod数据中拿取每种精华各1个。
+    /// 如果数目不足，则不拿取；否则扣除对应物品。
+    /// 注意，为了提高性能，此方法未判断前置条件。使用时需注意情况。
+    /// </summary>
+    public static bool TakeEssenceInModData() {
+        lock (obj) {
+            if (GetModDataItemCount(IFE复制精华) == 0
+                || GetModDataItemCount(IFE点金精华) == 0
+                || GetModDataItemCount(IFE分解精华) == 0
+                || GetModDataItemCount(IFE转化精华) == 0) {
+                return false;
+            }
+            ItemManager.TakeItem(IFE复制精华, 1);
+            ItemManager.TakeItem(IFE点金精华, 1);
+            ItemManager.TakeItem(IFE分解精华, 1);
+            ItemManager.TakeItem(IFE转化精华, 1);
+            return true;
+        }
+    }
+
     /// <summary>
     /// 将指定物品添加到背包，并在左侧显示物品变动。
     /// </summary>

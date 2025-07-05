@@ -690,8 +690,8 @@ public static class ProcessManager {
                 __instance.progress = 100000;
             bool fracForever = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
+                //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
                 if (!fracForever && building.EnableFracForever()) {
-                    //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
                     if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
                         fracForever = true;
                     }
@@ -747,6 +747,14 @@ public static class ProcessManager {
                         // LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                         //          + $"当前产物输出{__instance.productOutputCount}个");
                     } else {
+                        //如果是量子复制塔，10%概率消耗各种精华各1个
+                        if (buildingID == IFE量子复制塔) {
+                            __instance.seed = (uint)((__instance.seed % 2147483646U + 1U) * 48271UL % int.MaxValue)
+                                              - 1U;
+                            if (__instance.seed / 2147483646.0 < 0.1 && !TakeEssenceInModData()) {
+                                continue;
+                            }
+                        }
                         foreach (KeyValuePair<int, int> p in outputs) {
                             int itemID = p.Key;
                             int itemCount = p.Value;

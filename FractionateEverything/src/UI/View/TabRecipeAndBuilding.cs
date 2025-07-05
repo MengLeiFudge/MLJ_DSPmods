@@ -130,7 +130,7 @@ public static class TabRecipeAndBuilding {
             textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
             btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item",
                 () => { OnButtonChangeItemClick(false); });
-            y += 36f;
+            y += 50f;
             wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
             wnd.AddButton(x + 220, y, 200, tab, "查看全部配方", 16, "button-show-all-recipe",
@@ -154,20 +154,20 @@ public static class TabRecipeAndBuilding {
             wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
             y += 36f;
             textBuildingInfo1 = wnd.AddText2(x, y, tab, "流动输出堆叠", 15, "text-building-info-1");
-            wnd.AddTipsButton2(x + 200, y, tab, "流动输出堆叠",
+            wnd.AddTipsButton2(x + 200, y + 6, tab, "流动输出堆叠",
                 "启用后，流动输出（即侧面的输出）会尽可能以4堆叠进行输出。");
             btnBuildingInfo1 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-enable-fluid-output-stack",
                 SetFluidOutputStack);
             y += 36f;
             textBuildingInfo2 = wnd.AddText2(x, y, tab, "产物输出最大堆叠", 15, "text-building-info-2");
-            wnd.AddTipsButton2(x + 200, y, tab, "产物输出最大堆叠",
+            wnd.AddTipsButton2(x + 200, y + 6, tab, "产物输出最大堆叠",
                 "产物输出（即正面的输出）会尽可能以该项的数目进行输出。");
             btnBuildingInfo2 = wnd.AddButton(x + 350, y, tab, "堆叠+1", 16, "button-show-unlocked-recipe",
                 AddMaxProductOutputStack);
             y += 36f;
             textBuildingInfo3 = wnd.AddText2(x, y, tab, "分馏永动", 15, "text-building-info-3");
-            wnd.AddTipsButton2(x + 200, y, tab, "分馏永动",
-                "启用后，当产物到达一定数目后，建筑将不再对其进行处理，而是直接输出。\n该功能可以确保环路的持续运行。");
+            wnd.AddTipsButton2(x + 200, y + 6, tab, "分馏永动",
+                "启用后，当产物缓存到达一定数目后，建筑将不再处理输入的物品，而是直接将其搬运到流动输出。\n该功能可以确保环路的持续运行。");
             btnBuildingInfo3 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-show-unlocked-recipe",
                 SetFracForever);
             y += 36f;
@@ -176,7 +176,7 @@ public static class TabRecipeAndBuilding {
 
     public static void UpdateUI() {
         textCurrRecipe.text = $"原料：{SelectedItem.name}";
-        //btnSelectedItem.WithItem(SelectedItem);
+        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         int line = 0;
@@ -186,13 +186,13 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumDuplicate) {
-                textRecipeInfo[line].text = "     0.01 复制精华";
+                textRecipeInfo[line].text = "     0.1 复制精华";
                 line++;
-                textRecipeInfo[line].text = "     0.01 点金精华";
+                textRecipeInfo[line].text = "     0.1 点金精华";
                 line++;
-                textRecipeInfo[line].text = "     0.01 分解精华";
+                textRecipeInfo[line].text = "     0.1 分解精华";
                 line++;
-                textRecipeInfo[line].text = "     0.01 转化精华";
+                textRecipeInfo[line].text = "     0.1 转化精华";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}".WithColor(Orange)
