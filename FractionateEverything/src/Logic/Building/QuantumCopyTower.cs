@@ -44,6 +44,7 @@ public static class QuantumCopyTower {
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE量子复制塔], [10],
             "I量子复制塔", TFE量子复制);
         recipe.IconPath = "";
+        recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE量子复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

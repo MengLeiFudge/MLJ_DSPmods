@@ -131,12 +131,15 @@ public static class TabRecipeAndBuilding {
             btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item",
                 () => { OnButtonChangeItemClick(false); });
             y += 50f;
-            wnd.AddButton(x, y, 200, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
+            wnd.AddButton(x, y, 300, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
                 () => { OnButtonChangeItemClick(false); });
-            wnd.AddButton(x + 220, y, 200, tab, "查看全部配方", 16, "button-show-all-recipe",
+            wnd.AddButton(x + 320, y, 300, tab, "查看全部配方", 16, "button-show-all-recipe",
                 () => { OnButtonChangeItemClick(true); });
-            wnd.AddButton(x + 440, y, 200, tab, "兑换此配方", 16, "button-get-recipe",
+            y += 36f;
+            wnd.AddButton(x, y, 300, tab, "使用分馏配方核心兑换此配方", 16, "button-get-recipe",
                 () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
+            wnd.AddButton(x + 320, y, 300, tab, "使用残破核心兑换此配方", 16, "button-get-recipe2",
+                () => { ExchangeRecipeWithQuestion(IFE残破核心, 2, SelectedRecipe); });
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
                 textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
