@@ -179,8 +179,8 @@ public class MyWindow : ManualBehaviour {
     }
 
     public MyImageButton AddImageButton(float x, float y, RectTransform parent, int itemId = I铁矿,
-        string objName = "button") {
-        var btn = MyImageButton.CreateImageButton(x, y, parent, itemId);
+        string objName = "button", UnityAction onClick = null) {
+        var btn = MyImageButton.CreateImageButton(x, y, parent, itemId, onClick);
         btn.gameObject.name = objName;
 
         _maxX = Math.Max(_maxX, x + btn.Width);
