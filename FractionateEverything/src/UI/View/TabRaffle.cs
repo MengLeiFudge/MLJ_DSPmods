@@ -54,6 +54,8 @@ public static class TabRaffle {
     /// 优先配方ID，[0]为主优先配方（30%），其余为次优先配方（10%）
     /// </summary>
     public static ERecipe[] PreferredRecipeTypes = new ERecipe[4];
+    public static BaseRecipe MostPreferredRecipe =>
+        RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[0], PreferredItems[0]);
 
     public static double[] FracProtoRateArr = [0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
     public static int[] FracProtoID = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
@@ -127,6 +129,11 @@ public static class TabRaffle {
     }
 
     public static void SetPreferredRecipe(int index) {
+        if (!GameMain.history.ItemUnlocked(SelectedItem.ID)) {
+            UIMessageBox.Show("提示", $"物品 {SelectedItem.name} 尚未解锁，无法设为优先配方！",
+                "确认", UIMessageBox.WARNING);
+            return;
+        }
         ERecipe oldType = PreferredRecipeTypes[index];
         int oldItemId = PreferredItems[index];
         if (oldType != SelectedRecipeType || oldItemId != SelectedItemId) {
@@ -211,7 +218,16 @@ public static class TabRaffle {
                 }
                 //不是优先配方，则按照当前选择的奖池随机抽取
                 if (!getPreferred) {
-                    recipe = recipeArr[random.Next(0, recipeArr.Count)];
+                    while (true) {
+                        recipe = recipeArr[random.Next(0, recipeArr.Count)];
+                        if (recipe == MostPreferredRecipe) {
+                            continue;
+                        }
+                        if (!GameMain.history.ItemUnlocked(recipe.InputID)) {
+                            continue;
+                        }
+                        break;
+                    }
                 }
                 if (!recipe.IsUnlocked) {
                     recipe.Level = 1;
