@@ -246,7 +246,8 @@ public struct FractionatorComponent {
                 //seed / 2147483646.0显然就是一个0-1之间的随机数
                 //原版分馏塔被设定为增产剂以加速的比例来提升分馏概率，而对产物数目无影响，所以此处乘accTableMilli
                 fractionSuccess = seed / 2147483646.0
-                                  < produceProb * (1.0 + Cargo.accTableMilli[fluidInputIncAvg < 10 ? fluidInputIncAvg : 10]);
+                                  < produceProb
+                                  * (1.0 + Cargo.accTableMilli[fluidInputIncAvg < 10 ? fluidInputIncAvg : 10]);
                 //成功或失败的处理
                 //需要注意的是，此处仅有“数目”的变动，没有“可能生成了哪种物品”的判断。
                 //这是因为流动输入物品id确定的情况下，产物输出物品id、流动输出物品id也就跟随着确定了（原版分馏塔数据结构就是这样设计）

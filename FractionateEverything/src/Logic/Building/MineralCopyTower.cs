@@ -43,6 +43,7 @@ public static class MineralCopyTower {
         recipe = ProtoRegistry.RegisterRecipe(RFE矿物复制塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE矿物复制塔], [10],
             "I矿物复制塔", TFE矿物复制);
+        recipe.IconPath = "";
         model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);
