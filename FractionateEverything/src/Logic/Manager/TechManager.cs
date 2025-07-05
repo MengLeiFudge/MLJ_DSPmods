@@ -97,6 +97,63 @@ public static class TechManager {
             "-",
             "分馏配方核心 x 5，建筑增幅芯片 x 3 已到账。");
 
+
+        Register("T电磁奖券", "-", "电磁奖券");
+        Register("电磁奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("电磁奖券结果",
+            "-",
+            "你已经掌握了制作电磁奖券的技术，可以用它抽奖了。");
+
+        Register("T能量奖券", "-", "能量奖券");
+        Register("能量奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("能量奖券结果",
+            "-",
+            "你已经掌握了制作能量奖券的技术，可以用它抽奖了。");
+
+        Register("T结构奖券", "-", "结构奖券");
+        Register("结构奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("结构奖券结果",
+            "-",
+            "你已经掌握了制作结构奖券的技术，可以用它抽奖了。");
+
+        Register("T信息奖券", "-", "信息奖券");
+        Register("信息奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("信息奖券结果",
+            "-",
+            "你已经掌握了制作信息奖券的技术，可以用它抽奖了。");
+
+        Register("T引力奖券", "-", "引力奖券");
+        Register("引力奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("引力奖券结果",
+            "-",
+            "你已经掌握了制作引力奖券的技术，可以用它抽奖了。");
+
+        Register("T宇宙奖券", "-", "宇宙奖券");
+        Register("宇宙奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("宇宙奖券结果",
+            "-",
+            "你已经掌握了制作宇宙奖券的技术，可以用它抽奖了。");
+
+        Register("T黑雾奖券", "-", "黑雾奖券");
+        Register("黑雾奖券描述",
+            "-",
+            "在分馏中心的抽奖页面，可以使用奖券可以抽奖。");
+        Register("黑雾奖券结果",
+            "-",
+            "你已经掌握了制作黑雾奖券的技术，可以用它抽奖了。");
+
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
         // Register("分馏流动输出集装等级",
         //     " Integration count of fractionate fluid output",
@@ -146,13 +203,11 @@ public static class TechManager {
             "Assets/fe/tech分馏原胚",
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
             [IFE分馏原胚普通], [50], 3600,
-            [RFE分馏原胚普通, RFE分馏原胚精良, RFE分馏原胚稀有, RFE分馏原胚史诗, RFE分馏原胚传说, RFE分馏原胚定向],
-            GenesisBook.Enable ? new(13, -67) : new(13, -67)
+            [RFE分馏原胚定向],
+            GenesisBook.Enable ? new(13, -71) : new(13, -71)
         );
         tech1750.AddItems = [IFE分馏原胚定向];
         tech1750.AddItemCounts = [10];
-
-        //添加配方核心、建筑核心
 
         var tech1751 = ProtoRegistry.RegisterTech(TFE物品交互,
             "T物品交互", "物品交互描述", "物品交互结果",
@@ -239,7 +294,7 @@ public static class TechManager {
             "Assets/fe/tech首充1",
             [tech1750.ID],
             [I电磁矩阵], [6], 3600,
-            [RFE电磁奖券, RFE能量奖券, RFE结构奖券, RFE信息奖券, RFE引力奖券, RFE宇宙奖券, RFE黑雾奖券],
+            [],
             GenesisBook.Enable ? new(17, -75) : new(17, -75)
         );
         tech1759.AddItems = [IFE电磁奖券];
@@ -250,11 +305,97 @@ public static class TechManager {
             "Assets/fe/tech首充2",
             [tech1759.ID],
             [I电磁矩阵], [30], 3600,
-            [RFE分馏配方核心, RFE建筑增幅芯片, RFE残破核心],
+            [],
             GenesisBook.Enable ? new(21, -75) : new(21, -75)
         );
         tech1760.AddItems = [IFE分馏配方核心, IFE建筑增幅芯片];
         tech1760.AddItemCounts = [5, 3];
+
+        var tech1761 = ProtoRegistry.RegisterTech(TFE电磁奖券,
+            "T电磁奖券", "电磁奖券描述", "电磁奖券结果",
+            "Assets/fe/tech电磁奖券",
+            [tech1750.ID],
+            [I电磁矩阵], [700], 3600,
+            [RFE电磁奖券],
+            GenesisBook.Enable ? new(17, -79) : new(17, -79)
+        );
+        tech1761.PreTechsImplicit = [T电磁矩阵];
+        tech1761.AddItems = [IFE电磁奖券];
+        tech1761.AddItemCounts = [20];
+
+        var tech1762 = ProtoRegistry.RegisterTech(TFE能量奖券,
+            "T能量奖券", "能量奖券描述", "能量奖券结果",
+            "Assets/fe/tech能量奖券",
+            [tech1761.ID],
+            [I能量矩阵], [650], 3600,
+            [RFE能量奖券],
+            GenesisBook.Enable ? new(21, -79) : new(21, -79)
+        );
+        tech1761.PreTechsImplicit = [T能量矩阵];
+        tech1762.AddItems = [IFE能量奖券];
+        tech1762.AddItemCounts = [20];
+
+        var tech1763 = ProtoRegistry.RegisterTech(TFE结构奖券,
+            "T结构奖券", "结构奖券描述", "结构奖券结果",
+            "Assets/fe/tech结构奖券",
+            [tech1762.ID],
+            [I结构矩阵], [600], 3600,
+            [RFE结构奖券],
+            GenesisBook.Enable ? new(25, -79) : new(25, -79)
+        );
+        tech1763.PreTechsImplicit = [T结构矩阵];
+        tech1763.AddItems = [IFE结构奖券];
+        tech1763.AddItemCounts = [20];
+
+        var tech1764 = ProtoRegistry.RegisterTech(TFE信息奖券,
+            "T信息奖券", "信息奖券描述", "信息奖券结果",
+            "Assets/fe/tech信息奖券",
+            [tech1763.ID],
+            [I信息矩阵], [550], 3600,
+            [RFE信息奖券],
+            GenesisBook.Enable ? new(29, -79) : new(29, -79)
+        );
+        tech1764.PreTechsImplicit = [T信息矩阵];
+        tech1764.AddItems = [IFE信息奖券];
+        tech1764.AddItemCounts = [20];
+
+        var tech1765 = ProtoRegistry.RegisterTech(TFE引力奖券,
+            "T引力奖券", "引力奖券描述", "引力奖券结果",
+            "Assets/fe/tech引力奖券",
+            [tech1764.ID],
+            [I引力矩阵], [500], 3600,
+            [RFE引力奖券],
+            GenesisBook.Enable ? new(33, -79) : new(33, -79)
+        );
+        tech1765.PreTechsImplicit = [T引力矩阵];
+        tech1765.AddItems = [IFE引力奖券];
+        tech1765.AddItemCounts = [20];
+
+        var tech1766 = ProtoRegistry.RegisterTech(TFE宇宙奖券,
+            "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果",
+            "Assets/fe/tech宇宙奖券",
+            [tech1765.ID],
+            [I宇宙矩阵], [400], 3600,
+            [RFE宇宙奖券],
+            GenesisBook.Enable ? new(37, -79) : new(37, -79)
+        );
+        tech1766.PreTechsImplicit = [T宇宙矩阵];
+        tech1766.AddItems = [IFE宇宙奖券];
+        tech1766.AddItemCounts = [20];
+
+        var tech1767 = ProtoRegistry.RegisterTech(TFE黑雾奖券,
+            "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果",
+            "Assets/fe/tech黑雾奖券",
+            [],
+            [I黑雾矩阵], [20000], 3600,
+            [RFE黑雾奖券],
+            GenesisBook.Enable ? new(41, -79) : new(41, -79)
+        );
+        tech1767.IsHiddenTech = true;
+        tech1767.PreItem = [I黑雾矩阵];
+        tech1767.PreTechsImplicit = [1750];
+        tech1767.AddItems = [IFE黑雾奖券];
+        tech1767.AddItemCounts = [20];
 
         // var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
         //     "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",

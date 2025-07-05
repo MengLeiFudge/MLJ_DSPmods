@@ -44,6 +44,7 @@ public static class ConversionTower {
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [3], [IFE转化塔], [1],
             "I转化塔", TFE物品转化);
         recipe.IconPath = "";
+        recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE转化塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

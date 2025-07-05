@@ -1022,4 +1022,11 @@ public static partial class Utils {
     internal const int TFE物品转化 = 1758;
     internal const int TFE首充1 = 1759;
     internal const int TFE首充2 = 1760;
+    internal const int TFE电磁奖券 = 1761;
+    internal const int TFE能量奖券 = 1762;
+    internal const int TFE结构奖券 = 1763;
+    internal const int TFE信息奖券 = 1764;
+    internal const int TFE引力奖券 = 1765;
+    internal const int TFE宇宙奖券 = 1766;
+    internal const int TFE黑雾奖券 = 1767;
 }
