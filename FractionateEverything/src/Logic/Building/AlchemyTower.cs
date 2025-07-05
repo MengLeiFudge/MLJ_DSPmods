@@ -43,6 +43,7 @@ public static class AlchemyTower {
         recipe = ProtoRegistry.RegisterRecipe(RFE点金塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [3], [IFE点金塔], [1],
             "I点金塔", TFE物品点金);
+        recipe.IconPath = "";
         model = ProtoRegistry.RegisterModel(MFE点金塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

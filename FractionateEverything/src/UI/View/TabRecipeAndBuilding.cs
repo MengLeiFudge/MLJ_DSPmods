@@ -31,14 +31,14 @@ public static class TabRecipeAndBuilding {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
-        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2 + 5;
-        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2 + 5;
+        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
+        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
         }, false, item => {
             BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
-            return recipe != null && (!showLocked || recipe.IsUnlocked);
+            return recipe != null && (showLocked || recipe.IsUnlocked);
         });
     }
 
@@ -153,15 +153,21 @@ public static class TabRecipeAndBuilding {
 
             wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
             y += 36f;
-            textBuildingInfo1 = wnd.AddText2(x, y, tab, "启用流动输出堆叠", 15, "text-building-info-1");
+            textBuildingInfo1 = wnd.AddText2(x, y, tab, "流动输出堆叠", 15, "text-building-info-1");
+            wnd.AddTipsButton2(x + 200, y, tab, "流动输出堆叠",
+                "启用后，流动输出（即侧面的输出）会尽可能以4堆叠进行输出。");
             btnBuildingInfo1 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-enable-fluid-output-stack",
                 SetFluidOutputStack);
             y += 36f;
             textBuildingInfo2 = wnd.AddText2(x, y, tab, "产物输出最大堆叠", 15, "text-building-info-2");
+            wnd.AddTipsButton2(x + 200, y, tab, "产物输出最大堆叠",
+                "产物输出（即正面的输出）会尽可能以该项的数目进行输出。");
             btnBuildingInfo2 = wnd.AddButton(x + 350, y, tab, "堆叠+1", 16, "button-show-unlocked-recipe",
                 AddMaxProductOutputStack);
             y += 36f;
-            textBuildingInfo3 = wnd.AddText2(x, y, tab, "启用分馏永动", 15, "text-building-info-3");
+            textBuildingInfo3 = wnd.AddText2(x, y, tab, "分馏永动", 15, "text-building-info-3");
+            wnd.AddTipsButton2(x + 200, y, tab, "分馏永动",
+                "启用后，当产物到达一定数目后，建筑将不再对其进行处理，而是直接输出。\n该功能可以确保环路的持续运行。");
             btnBuildingInfo3 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-show-unlocked-recipe",
                 SetFracForever);
             y += 36f;
