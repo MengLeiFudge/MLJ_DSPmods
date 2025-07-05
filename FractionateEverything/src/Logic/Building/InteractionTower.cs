@@ -49,6 +49,7 @@ public static class InteractionTower {
         recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE交互塔], [1],
             "I交互塔", TFE物品交互);
+        recipe.IconPath = "";
         model = ProtoRegistry.RegisterModel(MFE交互塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

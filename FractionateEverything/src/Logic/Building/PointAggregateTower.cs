@@ -61,6 +61,7 @@ public static class PointAggregateTower {
         recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE点数聚集塔], [2],
             "I点数聚集塔", TFE增产点数聚集);
+        recipe.IconPath = "";
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

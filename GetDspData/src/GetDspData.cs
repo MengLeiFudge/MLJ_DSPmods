@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
-using static GetDspData.ProtoID;
+using static GetDspData.Utils;
 
 namespace GetDspData;
 //item.UnlockKey
@@ -52,7 +52,7 @@ public class GetDspData : BaseUnityPlugin {
 
     #endregion
 
-    private static string dir;
+    private static string dir = null;
     public const string MoreMegaStructureGUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool MoreMegaStructureEnable;
     public const string TheyComeFromVoidGUID = "com.ckcz123.DSP_Battle";
@@ -65,7 +65,14 @@ public class GetDspData : BaseUnityPlugin {
     public void Awake() {
         logger = Logger;
 
-        dir = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
+        string GetDspDataPath = $@"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData";
+        if (!Directory.Exists(GetDspDataPath)) {
+            return;
+        }
+        dir = $@"{GetDspDataPath}\gamedata";
+        if (!Directory.Exists(dir)) {
+            Directory.CreateDirectory(dir);
+        }
         MoreMegaStructureEnable = Chainloader.PluginInfos.ContainsKey(MoreMegaStructureGUID);
         TheyComeFromVoidEnable = Chainloader.PluginInfos.ContainsKey(TheyComeFromVoidGUID);
         GenesisBookEnable = Chainloader.PluginInfos.ContainsKey(GenesisBookGUID);
@@ -77,8 +84,12 @@ public class GetDspData : BaseUnityPlugin {
             null,
             new(typeof(GetDspData), nameof(WriteDataToFile)) {
                 after = [
-                    LDBToolPlugin.MODGUID, MoreMegaStructureGUID, TheyComeFromVoidGUID, GenesisBookGUID,
-                    FractionateEverythingGUID, "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure"
+                    LDBToolPlugin.MODGUID,
+                    MoreMegaStructureGUID,
+                    TheyComeFromVoidGUID,
+                    GenesisBookGUID,
+                    FractionateEverythingGUID,
+                    "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure"
                 ],
                 priority = Priority.Last,
             }
@@ -100,7 +111,11 @@ public class GetDspData : BaseUnityPlugin {
 
             #region 代码中使用
 
-            using (var sw = new StreamWriter(dir + "\\DSP_ProtoID.txt", false, Encoding.UTF8)) {
+            string filePath = $@"{dir}\DSP_ProtoID.txt";
+            if (!File.Exists(filePath)) {
+                File.Create(filePath).Close();
+            }
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
                 sw.WriteLine("static class Utils");
                 sw.WriteLine("{");
 
@@ -158,7 +173,11 @@ public class GetDspData : BaseUnityPlugin {
 
             #region csv数据
 
-            using (var sw = new StreamWriter(dir + "\\DSP_DataInfo.csv", false, Encoding.UTF8)) {
+            filePath = $@"{dir}\DSP_DataInfo.csv";
+            if (!File.Exists(filePath)) {
+                File.Create(filePath).Close();
+            }
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
                 sw.WriteLine("物品ID,物品名称,物品类型,index(自动排序位置),BuildMode(建造类型),BuildIndex(建造栏位置)");
                 foreach (var item in LDB.items.dataArray) {
                     sw.WriteLine(item.ID
@@ -237,7 +256,7 @@ public class GetDspData : BaseUnityPlugin {
 
             #region 计算器所需数据
 
-            string dirCalc = dir + "\\calc json";
+            string dirCalc = $@"{dir}\calc json";
             if (!Directory.Exists(dirCalc)) {
                 Directory.CreateDirectory(dirCalc);
             }
@@ -505,11 +524,14 @@ public class GetDspData : BaseUnityPlugin {
             }
 
             //保存json到本项目内。文件不复制到戴森球计算器，而是在AfterBuildEvent复制
-            string jsonPath = dirCalc + $"\\{fileName}.json";
-            using (var sw = new StreamWriter(jsonPath, false, Encoding.UTF8)) {
+            filePath = $@"{dirCalc}\{fileName}.json";
+            if (!File.Exists(filePath)) {
+                File.Create(filePath).Close();
+            }
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
                 sw.WriteLine(dataObj.ToString(Formatting.Indented));
             }
-            LogInfo($"已生成{jsonPath}");
+            LogInfo($"已生成{filePath}");
 
             #endregion
 

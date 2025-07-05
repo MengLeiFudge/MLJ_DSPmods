@@ -43,6 +43,7 @@ public static class DeconstructionTower {
         recipe = ProtoRegistry.RegisterRecipe(RFE分解塔,
             ERecipeType.Assemble, 60, [IFE分馏原胚定向], [3], [IFE分解塔], [1],
             "I分解塔", TFE物品分解);
+        recipe.IconPath = "";
         model = ProtoRegistry.RegisterModel(MFE分解塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(5, item.GridIndex % 10, true);

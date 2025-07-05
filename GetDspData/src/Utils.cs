@@ -1,41 +1,7 @@
 ﻿using System.Collections.Generic;
-using static GetDspData.ProtoID;
 using static GetDspData.GetDspData;
 
 namespace GetDspData;
-
-public enum FactoryType {
-    //异常类型
-    None = -1,
-    Custom = -2,
-    Error = -3,
-    //采集
-    轻型工业机甲 = 0,
-    采矿设备,
-    抽水设备,
-    抽油设备,
-    巨星采集,
-    //制作
-    冶炼设备,
-    制造台,
-    化工设备,
-    科研设备,
-    精炼设备,
-    粒子对撞机,
-    射线接收站,
-    分馏设备,
-    充电设备,
-    //战斗掉落
-    黑雾残骸,
-    //mod
-    行星大气,
-    矿物处理,
-    标准制造,
-    精密组装,
-    高精度加工,
-    高分子化工,
-    垃圾回收,
-}
 
 public enum Utils_ERecipeType {
     None = 0,
@@ -61,7 +27,7 @@ public enum Utils_ERecipeType {
     巨构星际组装厂 = 21,
 }
 
-public static class Utils {
+public static partial class Utils {
     //可通过矿脉开采
     static List<int> miningFromVein = GenesisBookEnable
         ? [
