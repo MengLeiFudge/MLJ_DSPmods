@@ -89,8 +89,10 @@ public static class TabRaffle {
             }
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
-            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-recipe-10",
+            wnd.AddButton(x + 220, y, 200, tab, "十连", 16, "button-raffle-recipe-10",
                 () => RaffleRecipe(10));
+            wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-recipe-100",
+                () => RaffleRecipe(100, 5));
         }
         {
             var tab = wnd.AddTab(trans, "建筑卡池");
@@ -104,8 +106,10 @@ public static class TabRaffle {
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
-            wnd.AddButton(x + 300, y, 200, tab, "十连", 16, "button-raffle-building-10",
+            wnd.AddButton(x + 220, y, 200, tab, "十连", 16, "button-raffle-building-10",
                 () => RaffleBuilding(10));
+            wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-building-100",
+                () => RaffleBuilding(100, 5));
         }
     }
 
@@ -144,10 +148,11 @@ public static class TabRaffle {
     }
 
     /// <summary>
-    /// 抽卡。
+    /// 配方卡池抽卡。
     /// </summary>
     /// <param name="count">抽卡次数</param>
-    public static void RaffleRecipe(int count) {
+    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    public static void RaffleRecipe(int count, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -162,6 +167,7 @@ public static class TabRaffle {
         }
         List<BaseRecipe> recipeArr = RecipeManager.GetRecipes(RecipeTypes[RecipeTypeEntry.Value]);
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
+        int oneLineCount = 0;
         while (count > 0) {
             count--;
             double currRate = 0;
@@ -170,7 +176,14 @@ public static class TabRaffle {
             currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
                 AddItem(IFE分馏配方核心, 1);
-                sb.AppendLine($"{LDB.items.Select(IFE分馏配方核心).name.WithColor(Gold)} x 1");
+                sb.Append($"{LDB.items.Select(IFE分馏配方核心).name.WithColor(Gold)} x 1");
+                oneLineCount++;
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else {
+                    sb.Append("          ");
+                }
                 RecipeRaffleCount = 1;
                 continue;
             }
@@ -203,13 +216,20 @@ public static class TabRaffle {
                 if (!recipe.IsUnlocked) {
                     recipe.Level = 1;
                     recipe.Quality = 1;
-                    sb.AppendLine($"{recipe.TypeName.WithColor(Red)} => 已解锁");
+                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已解锁");
                 } else if (recipe.MemoryCount < recipe.MaxMemoryCount) {
                     recipe.MemoryCount++;
-                    sb.AppendLine($"{recipe.TypeName.WithColor(Red)} => 已转为回响（当前拥有{recipe.MemoryCount}）");
+                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为回响（当前拥有{recipe.MemoryCount}）");
                 } else {
                     AddItem(IFE残破核心, 1);
-                    sb.AppendLine($"{recipe.TypeName.WithColor(Red)} => 已转为残破核心");
+                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为残破核心");
+                }
+                oneLineCount++;
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else {
+                    sb.Append("          ");
                 }
                 RecipeRaffleCount = 1;
                 continue;
@@ -222,7 +242,14 @@ public static class TabRaffle {
                 if (randDouble < currRate) {
                     AddItem(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
-                    sb.AppendLine($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
+                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
+                    oneLineCount++;
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else {
+                        sb.Append("          ");
+                    }
                     getFracProto = true;
                     break;
                 }
@@ -239,7 +266,14 @@ public static class TabRaffle {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
                         AddItem(itemId, 200);
-                        sb.AppendLine($"{LDB.items.Select(itemId).name} x 200");
+                        sb.Append($"{LDB.items.Select(itemId).name} x 200");
+                        oneLineCount++;
+                        if (oneLineCount >= oneLineMaxCount) {
+                            sb.Append("\n");
+                            oneLineCount = 0;
+                        } else {
+                            sb.Append("          ");
+                        }
                         getDarkFog = true;
                         break;
                     }
@@ -250,16 +284,24 @@ public static class TabRaffle {
             }
             //50%沙土
             AddItem(I沙土, 1000);
-            sb.AppendLine($"{LDB.items.Select(I沙土).name} x 1000");
+            sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
+            oneLineCount++;
+            if (oneLineCount >= oneLineMaxCount) {
+                sb.Append("\n");
+                oneLineCount = 0;
+            } else {
+                sb.Append("          ");
+            }
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
 
     /// <summary>
-    /// 抽卡。
+    /// 建筑卡池抽卡。
     /// </summary>
     /// <param name="count">抽卡次数</param>
-    public static void RaffleBuilding(int count) {
+    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    public static void RaffleBuilding(int count, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -267,6 +309,7 @@ public static class TabRaffle {
             return;
         }
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
+        int oneLineCount = 0;
         while (count > 0) {
             count--;
             double currRate = 0;
@@ -275,7 +318,14 @@ public static class TabRaffle {
             currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
                 AddItem(IFE建筑增幅芯片, 1);
-                sb.AppendLine($"{LDB.items.Select(IFE建筑增幅芯片).name.WithColor(Gold)} x 1");
+                sb.Append($"{LDB.items.Select(IFE建筑增幅芯片).name.WithColor(Gold)} x 1");
+                oneLineCount++;
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else {
+                    sb.Append("          ");
+                }
                 continue;
             }
             //建筑（3% * 1 + 0.5% * 6）
@@ -284,7 +334,14 @@ public static class TabRaffle {
                 currRate += (i == BuildingTypeEntry.Value ? 0.03 : 0.005) * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
                     AddItem(BuildingIds[i], 1);
-                    sb.AppendLine($"{LDB.items.Select(BuildingIds[i]).name.WithColor(Purple)} x 1");
+                    sb.Append($"{LDB.items.Select(BuildingIds[i]).name.WithColor(Purple)} x 1");
+                    oneLineCount++;
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else {
+                        sb.Append("          ");
+                    }
                     getBuilding = true;
                     break;
                 }
@@ -299,7 +356,14 @@ public static class TabRaffle {
                 if (randDouble < currRate) {
                     AddItem(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
-                    sb.AppendLine($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
+                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
+                    oneLineCount++;
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else {
+                        sb.Append("          ");
+                    }
                     getFracProto = true;
                     break;
                 }
@@ -316,7 +380,14 @@ public static class TabRaffle {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
                         AddItem(itemId, 200);
-                        sb.AppendLine($"{LDB.items.Select(itemId).name} x 200");
+                        sb.Append($"{LDB.items.Select(itemId).name} x 200");
+                        oneLineCount++;
+                        if (oneLineCount >= oneLineMaxCount) {
+                            sb.Append("\n");
+                            oneLineCount = 0;
+                        } else {
+                            sb.Append("          ");
+                        }
                         getDarkFog = true;
                         break;
                     }
@@ -327,7 +398,14 @@ public static class TabRaffle {
             }
             //50%沙土
             AddItem(I沙土, 1000);
-            sb.AppendLine($"{LDB.items.Select(I沙土).name} x 1000");
+            sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
+            oneLineCount++;
+            if (oneLineCount >= oneLineMaxCount) {
+                sb.Append("\n");
+                oneLineCount = 0;
+            } else {
+                sb.Append("          ");
+            }
         }
         UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
     }
