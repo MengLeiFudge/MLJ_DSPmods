@@ -9,7 +9,6 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Compatibility;
-using FE.Logic;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI;
@@ -72,7 +71,12 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         using (ProtoRegistry.StartModLoad(PluginInfo.PLUGIN_GUID)) {
             InitLogger(Logger);
 
-            Translation.AddTranslations();
+            Register("分馏页面", "Fractionate", "分馏");
+            Register("无配方", "NoRecipe");
+            Register("未解锁", "NotUnlock");
+            Register("永动", "Forever");
+            Register("流动", "Flow");
+            Register("损毁", "Destroy");
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
             TechManager.AddTranslations();
