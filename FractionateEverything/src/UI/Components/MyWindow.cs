@@ -119,7 +119,7 @@ public class MyWindow : ManualBehaviour {
     }
 
     public static UIButton AddTipsButton(float x, float y, RectTransform parent, string label, string tip,
-        string content, string objName = "tips-button") {
+        string objName = "tips-button") {
         var src = UIRoot.instance.galaxySelect.sandboxToggle.gameObject.transform.parent.Find("tip-button");
         var dst = Instantiate(src);
         dst.gameObject.name = objName;
@@ -132,9 +132,9 @@ public class MyWindow : ManualBehaviour {
         return btn;
     }
 
-    public UIButton AddTipsButton2(float x, float y, RectTransform parent, string label, string tip, string content,
+    public UIButton AddTipsButton2(float x, float y, RectTransform parent, string tipTitle, string tipContent,
         string objName = "tips-button") {
-        var tipsButton = AddTipsButton(x, y, parent, label, tip, content, objName);
+        var tipsButton = AddTipsButton(x, y, parent, tipTitle, tipContent, objName);
         var rect = tipsButton.transform as RectTransform;
         if (rect != null) {
             _maxX = Math.Max(_maxX, x + rect.sizeDelta.x);
