@@ -2,9 +2,6 @@
 
 namespace FE.Utils;
 
-/// <summary>
-/// 设置Component的位置
-/// </summary>
 public static partial class Utils {
     /// <summary>
     /// 设置元素左上角相对于parent左上角的位置
