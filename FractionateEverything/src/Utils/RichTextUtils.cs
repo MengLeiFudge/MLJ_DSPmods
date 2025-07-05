@@ -32,7 +32,7 @@ public static partial class Utils {
     public static Color Gold = new(0xE0 / 255f, 0xB0 / 255f, 0x00 / 255f, 0xB7 / 255f);
 
     /// <summary>
-    /// 为字符串添加指定颜色标签。
+    /// 为字符串添加指定颜色的富文本标签。
     /// </summary>
     public static string WithColor(this string s, Color color) {
         string hexColor =
@@ -41,7 +41,7 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 根据品质等级为字符串添加对应颜色标签。
+    /// 根据品质等级为字符串添加对应颜色的富文本标签。
     /// </summary>
     public static string WithQualityColor(this string s, int quality) {
         return quality switch {
