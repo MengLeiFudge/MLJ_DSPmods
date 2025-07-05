@@ -7,7 +7,6 @@ using FE.Logic.Recipe;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
-using static FE.Logic.Recipe.BaseRecipe;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;

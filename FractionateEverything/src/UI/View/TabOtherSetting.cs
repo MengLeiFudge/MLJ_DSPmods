@@ -47,6 +47,9 @@ public static class TabOtherSetting {
             textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
             sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5f, y + 6f, tab,
                 ExpMultiRateEntry, new MultiRateMapper(), "0.#", 160f);
+            wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5f + 160f + 5f, y + 6f, tab,
+                "测试1", "测试2。", "");
+            // y += 36f;
             y += 30f;
             wnd.AddText2(x, y, tab, "经验获取倍率仅在沙盒模式下生效！", 15, "text-exp-multi-rate-tip");
             y += 30f;
