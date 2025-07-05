@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.TabOtherSetting;
 using static FE.Utils.Utils;
@@ -179,7 +178,7 @@ public abstract class BaseRecipe(
     /// 配方回响个数。
     /// </summary>
     public int MemoryCount { get; set; } = 0;
-    public int BreakMemoryCount => NextQuality - 2;
+    public int BreakMemoryCount => Math.Max(0, NextQuality - 2);
     public int MaxMemoryCount => 5;
 
     public bool CanBreakthrough1 => Quality < MaxQuality;
