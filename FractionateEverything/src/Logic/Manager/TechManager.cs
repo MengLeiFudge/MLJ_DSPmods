@@ -225,7 +225,7 @@ public static class TechManager {
             "Assets/fe/tech矿物复制",
             [tech1751.ID],
             [IFE矿物复制塔], [10], 1800,
-            [RFE矿物复制塔, RFE复制精华],
+            [RFE矿物复制塔],
             GenesisBook.Enable ? new(21, -67) : new(21, -67)
         );
         tech1752.AddItems = [IFE矿物复制塔];
@@ -261,7 +261,7 @@ public static class TechManager {
             "Assets/fe/tech物品点金",
             [tech1751.ID],
             [IFE点金塔], [10], 1800,
-            [RFE点金塔, RFE点金精华],
+            [RFE点金塔],
             GenesisBook.Enable ? new(21, -71) : new(21, -71)
         );
         tech1756.AddItems = [IFE点金塔];
@@ -272,7 +272,7 @@ public static class TechManager {
             "Assets/fe/tech物品分解",
             [tech1756.ID],
             [IFE分解塔], [10], 1800,
-            [RFE分解塔, RFE分解精华],
+            [RFE分解塔],
             GenesisBook.Enable ? new(25, -71) : new(25, -71)
         );
         tech1757.AddItems = [IFE分解塔];
@@ -283,7 +283,7 @@ public static class TechManager {
             "Assets/fe/tech物品转化",
             [tech1757.ID],
             [IFE转化塔], [10], 1800,
-            [RFE转化塔, RFE转化精华],
+            [RFE转化塔],
             GenesisBook.Enable ? new(29, -71) : new(29, -71)
         );
         tech1758.AddItems = [IFE转化塔];
