@@ -36,38 +36,38 @@ public static class MoreMegaStructure {
     public static void AfterLDBToolPostAddData() {
         if (_finished) return;
 
-        //水滴物品、配方迁移到巨构tab111
-        ItemProto item = LDB.items.Select(IVD水滴);
-        item.GridIndex = tab巨构 * 1000 + 111;
-        item.maincraft.GridIndex = item.GridIndex;
+        // //水滴物品、配方迁移到巨构tab111
+        // ItemProto item = LDB.items.Select(IMS水滴);
+        // item.GridIndex = tab巨构 * 1000 + 111;
+        // item.maincraft.GridIndex = item.GridIndex;
 
-        //为传送带上没有图标显示的物品添加显示图标
-        int[] itemIDs = [IMS组件集成装置, IMS物资交换物流站];
-        foreach (int itemID in itemIDs) {
-            try {
-                ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs
-                    = ref AccessTools.StaticFieldRefAccess<Dictionary<int, IconToolNew.IconDesc>>(
-                        typeof(ProtoRegistry),
-                        "itemIconDescs");
-                if (!itemIconDescs.ContainsKey(itemID)) {
-                    IconToolNew.IconDesc iconDesc = new() {
-                        faceColor = Color.white,
-                        sideColor = LDB.items.Select(itemID).prefabDesc.lodMaterials[0][0].color,
-                        faceEmission = Color.black,
-                        sideEmission = Color.black,
-                        iconEmission = Color.clear,
-                        metallic = 0.8f,
-                        smoothness = 0.5f,
-                        solidAlpha = 1f,
-                        iconAlpha = 1f,
-                    };
-                    itemIconDescs.Add(itemID, iconDesc);
-                }
-            }
-            catch {
-                // ignored
-            }
-        }
+        // //为传送带上没有图标显示的物品添加显示图标
+        // int[] itemIDs = [IMS组件集成装置, IMS物资交换物流站];
+        // foreach (int itemID in itemIDs) {
+        //     try {
+        //         ref Dictionary<int, IconToolNew.IconDesc> itemIconDescs
+        //             = ref AccessTools.StaticFieldRefAccess<Dictionary<int, IconToolNew.IconDesc>>(
+        //                 typeof(ProtoRegistry),
+        //                 "itemIconDescs");
+        //         if (!itemIconDescs.ContainsKey(itemID)) {
+        //             IconToolNew.IconDesc iconDesc = new() {
+        //                 faceColor = Color.white,
+        //                 sideColor = LDB.items.Select(itemID).prefabDesc.lodMaterials[0][0].color,
+        //                 faceEmission = Color.black,
+        //                 sideEmission = Color.black,
+        //                 iconEmission = Color.clear,
+        //                 metallic = 0.8f,
+        //                 smoothness = 0.5f,
+        //                 solidAlpha = 1f,
+        //                 iconAlpha = 1f,
+        //             };
+        //             itemIconDescs.Add(itemID, iconDesc);
+        //         }
+        //     }
+        //     catch {
+        //         // ignored
+        //     }
+        // }
 
         _finished = true;
         CheckPlugins.LogInfo("MoreMegaStructure Compatibility LDBToolOnPostAddDataAction finish.");
