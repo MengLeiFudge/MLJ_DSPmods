@@ -23,7 +23,6 @@ public class ConversionRecipe : BaseRecipe {
         CreateFracChain([I钢材, I钛合金, IGB钨合金, IGB三元精金]);
         CreateFracChain([I框架材料, I戴森球组件, I小型运载火箭]);
         CreateFracChain([I高纯硅块, I晶格硅]);
-        CreateFracChain([I石材, IGB混凝土]);
         CreateFracChain([I棱镜, I电浆激发器, I光子合并器, I太阳帆]);
         CreateFracChain([I高能石墨, I金刚石]);
         CreateFracChain([I石墨烯, I碳纳米管, I粒子宽带, IGB光学信息传输纤维]);
@@ -35,7 +34,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateFracChain([I玻璃, I钛化玻璃, IGB钨强化玻璃]);
         CreateFracChain([I氢, I重氢]);
         CreateFracChain([IGB氦, IGB氦三]);
-        CreateFracChain([I磁线圈_GB铜线圈, I电动机, I电磁涡轮, I超级磁场环]);
+        CreateFracChain([I磁线圈, I电动机, I电磁涡轮, I超级磁场环]);
         CreateFracChain([I电路板, I处理器, I量子芯片, IGB光学处理器]);
         CreateFracChain([I临界光子, I反物质]);
         CreateFracChain([I动力引擎, I推进器, I加力推进器]);
@@ -68,7 +67,7 @@ public class ConversionRecipe : BaseRecipe {
         //精炼页面
         CreateFracChain([
             IGB空燃料棒,
-            I液氢燃料棒, IGB煤油燃料棒, IGB四氢双环戊二烯燃料棒,
+            I液氢燃料棒, IGB焦油燃料棒, IGB四氢双环戊二烯燃料棒,
             IGB铀燃料棒, IGB钚燃料棒, IGBMOX燃料棒,
             I氘核燃料棒, IGB氦三燃料棒, IGB氘氦混合燃料棒,
             I反物质燃料棒, I奇异湮灭燃料棒,
@@ -80,7 +79,7 @@ public class ConversionRecipe : BaseRecipe {
 
         //防御页面
         CreateFracChain([I原型机, I精准无人机, I攻击无人机]);
-        CreateFracChain([I护卫舰, I驱逐舰, IVD水滴]);
+        CreateFracChain([I护卫舰, I驱逐舰, IMS水滴]);
         CreateFracChain([I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮]);
         CreateFracChain([I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]);
         CreateFracChain([I高斯机枪塔, I聚爆加农炮, IGB电磁加农炮, I导弹防御塔]);

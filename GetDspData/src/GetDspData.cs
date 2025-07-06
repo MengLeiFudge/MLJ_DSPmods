@@ -121,7 +121,7 @@ public class GetDspData : BaseUnityPlugin {
 
                 List<ItemProto> itemList = [..LDB.items.dataArray];
                 itemList.Sort((p1, p2) => p1.ID - p2.ID);
-                Dictionary<string, int> modelNameIdDic = new();
+                List<(string, int)> modelNameIdList = new();
                 foreach (var item in itemList) {
                     int id = item.ID;
                     string name = FormatName(item.name, item.Name);
@@ -129,14 +129,15 @@ public class GetDspData : BaseUnityPlugin {
                     itemIdNameDic.Add(id, name);
                     int modelID = item.ModelIndex;
                     if (modelID > 0) {
-                        modelNameIdDic.Add(name, modelID);
+                        modelNameIdList.Add((name, modelID));
                     }
                 }
 
                 sw.WriteLine();
 
-                foreach (var p in modelNameIdDic) {
-                    sw.WriteLine($"    internal const int M{p.Key} = {p.Value};");
+                modelNameIdList.Sort((p1, p2) => p1.Item2 - p2.Item2);
+                foreach (var p in modelNameIdList) {
+                    sw.WriteLine($"    internal const int M{p.Item1} = {p.Item2};");
                 }
 
                 sw.WriteLine();
@@ -460,7 +461,7 @@ public class GetDspData : BaseUnityPlugin {
                         IGB湛曦O型人造恒星, IGB湛曦O型人造恒星,
                     ];
                     int[] itemID = [
-                        I液氢燃料棒, IGB煤油燃料棒, IGB四氢双环戊二烯燃料棒,
+                        I液氢燃料棒, IGB焦油燃料棒, IGB四氢双环戊二烯燃料棒,
                         IGB铀燃料棒, IGB钚燃料棒, IGBMOX燃料棒,
                         I氘核燃料棒, IGB氦三燃料棒, IGB氘氦混合燃料棒,
                         I反物质燃料棒, I奇异湮灭燃料棒,
@@ -766,10 +767,9 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     static string FormatName(string name, string Name) {
-        if (Name == null) {
-            return "Name is null!";
-        }
-        return Name.Translate()
+        //优先使用Name，例如分馏的“首充1”
+        string str = string.IsNullOrEmpty(Name) ? name : Name;
+        return str.Translate()
             .Replace(" ", "")
             .Replace(" ", "")
             .Replace(" ", "")
@@ -781,7 +781,8 @@ public class GetDspData : BaseUnityPlugin {
             .Replace("-", "")
             .Replace(".", "")
             .Replace("（", "")
-            .Replace("）", "");
+            .Replace("）", "")
+            .Replace("Recipe", "");
     }
 
     // private void test() {
