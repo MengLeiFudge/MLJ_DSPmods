@@ -17,8 +17,6 @@ namespace FE.UI.View;
 public static class TabRaffle {
     public static RectTransform _windowTrans;
 
-    public static Random random = new();
-
     public static ConfigEntry<int> TicketTypeEntry;
     public static int[] TicketIds = [
         IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
@@ -178,7 +176,7 @@ public static class TabRaffle {
         while (count > 0) {
             count--;
             double currRate = 0;
-            double randDouble = random.NextDouble();
+            double randDouble = GetRandDouble();
             //分馏配方核心（0.05%）
             currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
@@ -198,7 +196,7 @@ public static class TabRaffle {
             currRate += RecipeRaffleRate * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
                 //先判断是不是优先配方
-                double preferred = NotMostPreferredCount >= 2 ? 0 : random.NextDouble();
+                double preferred = NotMostPreferredCount >= 2 ? 0 : GetRandDouble();
                 double currPreferred = 0;
                 bool getPreferred = false;
                 BaseRecipe recipe = null;
@@ -219,7 +217,7 @@ public static class TabRaffle {
                 //不是优先配方，则按照当前选择的奖池随机抽取
                 if (!getPreferred) {
                     while (true) {
-                        recipe = recipeArr[random.Next(0, recipeArr.Count)];
+                        recipe = recipeArr[GetRandInt(0, recipeArr.Count)];
                         if (recipe == MostPreferredRecipe) {
                             continue;
                         }
@@ -329,7 +327,7 @@ public static class TabRaffle {
         while (count > 0) {
             count--;
             double currRate = 0;
-            double randDouble = random.NextDouble();
+            double randDouble = GetRandDouble();
             //建筑增幅芯片（0.3%）
             currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {

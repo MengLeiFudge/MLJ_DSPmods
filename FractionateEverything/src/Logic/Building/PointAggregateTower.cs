@@ -145,8 +145,7 @@ public static class PointAggregateTower {
                     __instance.incUsed = fluidInputIncAvg > 0;
 
                 float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
-                __instance.seed = (uint)((__instance.seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-                if (__instance.seed / 2147483646.0 < rate) {
+                if (GetRandDouble(ref __instance.seed) < rate) {
                     //成功
                     __instance.fluidInputInc -= MaxInc;
                     __instance.fractionSuccess = true;
