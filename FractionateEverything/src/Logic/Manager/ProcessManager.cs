@@ -112,7 +112,7 @@ public static class ProcessManager {
     /// </ul>
     /// <para>其中第三项为输出拓展字段，Key表示副产物ID，Value表示副产物数目。</para>
     /// <para>输出拓展字段不参与分馏塔产物输出数目是否超限的判断。</para>
-    /// <para>除此之外，分馏判定结果由<see cref="FE.Logic.Recipe.BaseRecipe.GetOutputs(ref uint)"/>得到。</para>
+    /// <para>除此之外，分馏判定结果由<see cref="FE.Logic.Recipe.BaseRecipe.GetOutputs"/>得到。</para>
     /// </remarks>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.InternalUpdate))]
@@ -755,16 +755,17 @@ public static class ProcessManager {
                 //指示是否已输出主产物。如果主产物成功输出，则不判定副产物是否输出
                 bool mainProductOutput = false;
                 //输出主产物
+                int productStack = building.MaxProductOutputStack();
                 for (int i = 0; i < MaxOutputTimes; i++) {
                     //只有产物数目到达堆叠要求，或者没有正在处理的物品，才输出，且一次输出最大堆叠个数的物品
-                    if (__instance.productOutputCount >= building.MaxProductOutputStack()) {
+                    if (__instance.productOutputCount >= productStack) {
                         //产物达到最大堆叠数目，直接尝试输出
                         mainProductOutput = true;
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
-                                (byte)building.MaxProductOutputStack(), 0)) {
+                                (byte)productStack, 0)) {
                             break;
                         }
-                        __instance.productOutputCount -= building.MaxProductOutputStack();
+                        __instance.productOutputCount -= productStack;
                     } else if (__instance.productOutputCount > 0 && __instance.fluidInputCount == 0) {
                         //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
@@ -785,12 +786,12 @@ public static class ProcessManager {
                             continue;
                         }
                         for (int j = 0; j < MaxOutputTimes; j++) {
-                            if (otherProductOutput[outputID] >= building.MaxProductOutputStack()) {
+                            if (otherProductOutput[outputID] >= productStack) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
-                                        (byte)building.MaxProductOutputStack(), 0)) {
+                                        (byte)productStack, 0)) {
                                     break;
                                 }
-                                otherProductOutput[outputID] -= building.MaxProductOutputStack();
+                                otherProductOutput[outputID] -= productStack;
                             } else if (otherProductOutput[outputID] > 0 && __instance.fluidInputCount == 0) {
                                 if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, outputID,
                                         (byte)otherProductOutput[outputID], 0)) {
