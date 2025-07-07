@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -21,6 +23,8 @@ public class DeconstructionRecipe : BaseRecipe {
                 for (int i = 0; i < len; i++) {
                     outputMain.Add(new(rate, item.maincraft.Items[i], item.maincraft.ItemCounts[i] * len));
                 }
+            } else {
+                outputMain.Add(new(1.0f, I沙土, (int)Math.Ceiling(itemValue[item.ID] / itemValue[I沙土] * 0.8)));
             }
             AddRecipe(new DeconstructionRecipe(item.ID, 0.25f,
                 outputMain,

@@ -26,7 +26,7 @@ public static partial class Utils {
         if (!TakeItem(takeId, takeCount)) {
             return;
         }
-        AddItem(giveId, giveCount);
+        AddItemToPackage(giveId, giveCount);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount}！",
             "确定", UIMessageBox.INFO);
@@ -193,7 +193,7 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// 注意，为了提高性能，此方法未判断前置条件。使用时需注意情况。
     /// </summary>
-    public static bool TakeEssenceInModData() {
+    public static bool TakeEssenceFromModData() {
         lock (obj) {
             if (GetModDataItemCount(IFE复制精华) == 0
                 || GetModDataItemCount(IFE点金精华) == 0
@@ -211,11 +211,12 @@ public static partial class Utils {
 
     /// <summary>
     /// 将指定物品添加到背包，并在左侧显示物品变动。
+    /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上
     /// </summary>
     /// <param name="giveId">添加到背包中的物品ID</param>
     /// <param name="giveCount">添加到背包中的物品数量</param>
     /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
-    public static void AddItem(int giveId, int giveCount, bool throwTrash = true) {
+    public static void AddItemToPackage(int giveId, int giveCount, bool throwTrash = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -226,5 +227,14 @@ public static partial class Utils {
         if (package > 0) {
             UIItemup.Up(giveId, package);
         }
+    }
+
+    /// <summary>
+    /// 将指定物品添加到Mod数据中。
+    /// </summary>
+    /// <param name="giveId">添加到Mod数据中的物品ID</param>
+    /// <param name="giveCount">添加到Mod数据中的物品数量</param>
+    public static void AddItemToModData(int giveId, int giveCount) {
+        ItemManager.AddItem(giveId, giveCount);
     }
 }
