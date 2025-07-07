@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
+using FE.UI.View;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
@@ -121,8 +122,8 @@ public static class ProcessManager {
         int buildingID = factory.entityPool[__instance.entityId].protoId;
         switch (buildingID) {
             case IFE交互塔:
-                InteractionTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result);
+                InternalUpdate<BuildingTrainRecipe>(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result, ERecipe.BuildingTrain);
                 return false;
             case IFE矿物复制塔:
                 InternalUpdate<MineralCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
@@ -152,77 +153,6 @@ public static class ProcessManager {
         //原版分馏塔不做处理
         return true;
 
-        // if (power < 0.1f) {
-        //     __result = 0u;
-        //     return false;
-        // }
-        //
-        // int inputItemID = __instance.fluidId;
-        // //获取分馏塔输出缓存拓展
-        // Dictionary<int, int> otherProductOutput = __instance.otherProductOutput(factory);
-        // // int buildingID = factory.entityPool[__instance.entityId].protoId;
-        // //配方状态错误的情况下，修改配方状态（在分馏塔升降级时会有这样的现象）
-        // //为了让分馏塔升降级之前内部残留的物品流出去，添加abnormalProcess标记
-        // //recipe为null时，分馏塔相当于不工作，等待内部物品全部流出
-        // BaseRecipe recipe = buildingID switch {
-        //     I分馏塔 => inputItemID == I氢 ? DeuteriumBaseRecipe : null,
-        //     IFE矿物复制塔 => GetNaturalResourceRecipe(inputItemID),
-        //     IFE转化塔 => GetUpgradeRecipe(inputItemID),
-        //     IFE点数聚集塔 => GetPointsAggregateRecipe(inputItemID),
-        //     IFE量子复制塔 => GetIncreaseRecipe(inputItemID),
-        //     _ => null,
-        // };
-        // //如果分馏塔主输出和分馏配方主输出不一致，调整产物（通常出现于物品转化塔的情况）
-        // if (recipe == null || __instance.productId != recipe.mainOutput) {
-        //     //将分馏塔内缓存的产物全部返还到玩家背包
-        //     //注意，点数聚集塔变为其他分馏塔时，产物增产点数会消失
-        //     GameMain.mainPlayer.package.AddItem(__instance.productId, __instance.productOutputCount, 0, out _);
-        //     __instance.productOutputCount = 0;
-        //     List<int> idList = otherProductOutput.Keys.ToList();
-        //     foreach (var id in idList) {
-        //         GameMain.mainPlayer.package.AddItem(id, otherProductOutput[id], 0, out _);
-        //         otherProductOutput.Remove(id);
-        //     }
-        //     //分馏塔主输出改为分馏配方主输出
-        //     __instance.productId = recipe == null ? inputItemID : recipe.mainOutput;
-        //     //如果是原版分馏塔，
-        // }
-        //
-        // //输入货物的平均堆叠数目，后面输出时候会用
-        // float fluidInputCountPerCargo = 1.0f;
-        // if (__instance.fluidInputCount == 0) {
-        //     __instance.fluidInputCargoCount = 0f;
-        // } else {
-        //     fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
-        //         ? __instance.fluidInputCount / __instance.fluidInputCargoCount
-        //         : 4f;
-        // }
-        //
-        // if (__instance.fluidInputCount > 0
-        //     && __instance.productOutputCount < __instance.productOutputMax
-        //     && __instance.fluidOutputCount < __instance.fluidOutputMax) {
-        //     //缓存区每有MaxBeltSpeed个氢，就执行一次分馏，4堆叠就是4次
-        //     int progressAdd = (int)(power
-        //                             * 166.66666666666666
-        //                             * (__instance.fluidInputCargoCount < MaxBeltSpeed
-        //                                 ? __instance.fluidInputCargoCount
-        //                                 : MaxBeltSpeed)
-        //                             * fluidInputCountPerCargo
-        //                             + 0.75);
-        //     __instance.progress += progressAdd;
-        //     //每次尝试处理一个输入的产物，至多十次；x堆叠就是xw左右，也就是处理x-1次或x次
-        //     if (__instance.progress > 100000) {
-        //         __instance.progress = 100000;
-        //     }
-        //     while (__instance.progress >= 10000) {
-        //
-        //         #region 判断某一个输入的分馏结果
-        //
-        //         int fluidInputIncAvg = __instance is { fluidInputInc: > 0, fluidInputCount: > 0 }
-        //             ? __instance.fluidInputInc / __instance.fluidInputCount
-        //             : 0;
-        //         __instance.seed =
-        //             (uint)((int)((ulong)((__instance.seed % 2147483646 + 1) * 48271L) % 2147483647uL) - 1);
         //         //分馏成功率，越接近0表示成功率越高
         //         float randomVal = (float)(__instance.seed / 2147483646.0);
         //         //分馏成功率加成，2.0表示加成100%
@@ -461,100 +391,6 @@ public static class ProcessManager {
         //         }
         //     }
         // }
-        //
-        // if (__instance.belt2 > 0) {
-        //     beltId = __instance.belt2;
-        //     isOutput = __instance.isOutput2;
-        //     if (isOutput) {
-        //         if (__instance.fluidOutputCount > 0) {
-        //             CargoPath cargoPath =
-        //                 cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
-        //             if (cargoPath != null) {
-        //                 int fluidOutputAvgInc = __instance.fluidOutputInc / __instance.fluidOutputCount;
-        //                 if (!EnableFluidOutputStack) {
-        //                     for (int i = 0; i < MaxOutputTimes; i++) {
-        //                         if (__instance.fluidOutputCount <= 0) {
-        //                             break;
-        //                         }
-        //                         if (buildingID == IFE点数聚集塔
-        //                             && fluidOutputAvgInc < 4
-        //                             && __instance.fluidOutputCount > 1) {
-        //                             fluidOutputAvgInc = __instance.fluidOutputInc >= 4 ? 4 : 0;
-        //                         }
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID,
-        //                                 Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
-        //                                 (byte)fluidOutputAvgInc)) {
-        //                             __instance.fluidOutputCount--;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc;
-        //                         } else {
-        //                             break;
-        //                         }
-        //                     }
-        //                 } else {
-        //                     if (__instance.fluidOutputCount > 4) {
-        //                         if (buildingID == IFE点数聚集塔 && fluidOutputAvgInc < 4) {
-        //                             fluidOutputAvgInc = __instance.fluidOutputInc >= 16 ? 4 : 0;
-        //                         }
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID,
-        //                                 4, 4, (byte)(fluidOutputAvgInc * 4))) {
-        //                             __instance.fluidOutputCount -= 4;
-        //                             __instance.fluidOutputInc -= fluidOutputAvgInc * 4;
-        //                         }
-        //                     } else if (__instance.fluidInputCount == 0) {
-        //                         if (cargoPath.TryUpdateItemAtHeadAndFillBlank(inputItemID,
-        //                                 4, (byte)__instance.fluidOutputCount,
-        //                                 (byte)__instance.fluidOutputInc)) {
-        //                             __instance.fluidOutputCount = 0;
-        //                             __instance.fluidOutputInc = 0;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     } else if (!isOutput
-        //                && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
-        //         if (inputItemID > 0) {
-        //             if (cargoTraffic.TryPickItemAtRear(beltId, inputItemID, null, out stack, out inc) > 0) {
-        //                 __instance.fluidInputCount += stack;
-        //                 __instance.fluidInputInc += inc;
-        //                 __instance.fluidInputCargoCount += 1f;
-        //             }
-        //         } else {
-        //             if (buildingID == I分馏塔) {
-        //                 int input = cargoTraffic.TryPickItemAtRear(beltId, I氢, null, out stack, out inc);
-        //                 if (input > 0) {
-        //                     __instance.fluidInputCount += stack;
-        //                     __instance.fluidInputInc += inc;
-        //                     __instance.fluidInputCargoCount += 1f;
-        //                     __instance.fluidId = I氢;
-        //                     __instance.productId = I重氢;
-        //                     __instance.produceProb = 0.01f;
-        //                     signPool[__instance.entityId].iconId0 = I重氢;
-        //                     signPool[__instance.entityId].iconType = 1U;
-        //                 }
-        //             } else {
-        //                 //新增的分馏塔均可输入任何物品，如果不存在分馏配方则会正常流出
-        //                 int input = cargoTraffic.TryPickItemAtRear(beltId, 0, null, out stack, out inc);
-        //                 if (input > 0) {
-        //                     __instance.fluidInputCount += stack;
-        //                     __instance.fluidInputInc += inc;
-        //                     __instance.fluidInputCargoCount += 1f;
-        //                     __instance.fluidId = input;
-        //                     recipe = buildingID switch {
-        //                         IFE矿物复制塔 => GetNaturalResourceRecipe(input),
-        //                         IFE转化塔 => GetUpgradeRecipe(input),
-        //                         _ => null,
-        //                     };
-        //                     __instance.productId = recipe?.mainOutput ?? input;
-        //                     __instance.produceProb = 0.01f;
-        //                     signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
-        //                     signPool[__instance.entityId].iconType = __instance.productId == 0 ? 0U : 1U;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
         // if (__instance.belt0 > 0) {
         //     beltId = __instance.belt0;
         //     isOutput = __instance.isOutput0;
@@ -751,7 +587,7 @@ public static class ProcessManager {
                         if (buildingID == IFE量子复制塔) {
                             __instance.seed = (uint)((__instance.seed % 2147483646U + 1U) * 48271UL % int.MaxValue)
                                               - 1U;
-                            if (__instance.seed / 2147483646.0 < 0.1 && !TakeEssenceInModData()) {
+                            if (__instance.seed / 2147483646.0 < 0.1 && !TakeEssenceFromModData()) {
                                 continue;
                             }
                         }
@@ -759,6 +595,10 @@ public static class ProcessManager {
                             int itemID = p.Key;
                             int itemCount = p.Value;
                             // LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
+                            if (itemID == I沙土) {
+                                AddItemToPackage(I沙土, itemCount);
+                                continue;
+                            }
                             lock (productRegister) {
                                 productRegister[itemID] += itemCount;
                             }
@@ -966,8 +806,13 @@ public static class ProcessManager {
                         }
                     }
                 }
+            } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
+                //正面作为输入，数据传到数据中心。仅接受奖券。
+                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, TabRaffle.TicketIds, out stack, out _);
+                if (itemId > 0) {
+                    AddItemToModData(itemId, stack);
+                }
             }
-            //正面作为输入
         }
 
         // 如果缓存区全部清空，重置输入id
