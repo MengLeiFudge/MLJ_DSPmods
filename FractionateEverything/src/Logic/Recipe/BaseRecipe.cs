@@ -66,19 +66,16 @@ public abstract class BaseRecipe(
     /// <param name="successRatePlus">增产剂对成功率的加成</param>
     /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
-        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-        if (seed / 2147483646.0 < DestroyRate) {
+        if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         Dictionary<int, int> dic = [];
-        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-        if (seed / 2147483646.0 >= SuccessRate * successRatePlus) {
+        if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
             return dic;
         }
         //主输出判定
-        seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-        double ratio = seed / 2147483646.0;
+        double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
         foreach (var outputInfo in OutputMain) {
             ratioMain += outputInfo.SuccessRate;
@@ -87,8 +84,7 @@ public abstract class BaseRecipe(
                 int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
                 float leftCount = outputInfo.OutputCount - count;
                 if (leftCount > 0.0001f) {
-                    seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-                    if (seed / 2147483646.0 < leftCount) {
+                    if (GetRandDouble(ref seed) < leftCount) {
                         count++;
                     }
                 }
@@ -101,13 +97,11 @@ public abstract class BaseRecipe(
         }
         //附加输出判定
         foreach (var outputInfo in OutputAppend) {
-            seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-            if (seed / 2147483646.0 <= outputInfo.SuccessRate) {
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
                 int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
                 float leftCount = outputInfo.OutputCount - count;
                 if (leftCount > 0.0001f) {
-                    seed = (uint)((seed % 2147483646U + 1U) * 48271UL % int.MaxValue) - 1U;
-                    if (seed / 2147483646.0 < leftCount) {
+                    if (GetRandDouble(ref seed) < leftCount) {
                         count++;
                     }
                 }
@@ -207,8 +201,6 @@ public abstract class BaseRecipe(
         }
     }
 
-    private static Random random = new();
-
     /// <summary>
     /// 突破配方品质
     /// </summary>
@@ -217,7 +209,7 @@ public abstract class BaseRecipe(
         lock (this) {
             while (CanBreakthrough) {
                 float successRate = 1.0f - (Quality - 1) * 0.15f;
-                bool success = random.NextDouble() < successRate;
+                bool success = GetRandDouble() < successRate;
                 if (success) {
                     Exp -= LevelUpExp;
                     Exp = (int)(Exp * 0.7f);

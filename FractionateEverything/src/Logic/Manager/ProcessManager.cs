@@ -572,9 +572,6 @@ public static class ProcessManager {
                 if (__instance.fluidInputCargoCount < 0f) {
                     __instance.fluidInputCargoCount = 0f;
                 }
-                lock (consumeRegister) {
-                    consumeRegister[fluidId]++;
-                }
                 if (outputs != null) {
                     if (outputs.Count == 0) {
                         __instance.fluidOutputCount++;
@@ -583,11 +580,12 @@ public static class ProcessManager {
                         // LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                         //          + $"当前产物输出{__instance.productOutputCount}个");
                     } else {
+                        lock (consumeRegister) {
+                            consumeRegister[fluidId]++;
+                        }
                         //如果是量子复制塔，10%概率消耗各种精华各1个
                         if (buildingID == IFE量子复制塔) {
-                            __instance.seed = (uint)((__instance.seed % 2147483646U + 1U) * 48271UL % int.MaxValue)
-                                              - 1U;
-                            if (__instance.seed / 2147483646.0 < 0.1 && !TakeEssenceFromModData()) {
+                            if (GetRandDouble(ref __instance.seed) < 0.1 && !TakeEssenceFromModData()) {
                                 continue;
                             }
                         }
@@ -596,7 +594,8 @@ public static class ProcessManager {
                             int itemCount = p.Value;
                             // LogDebug($"转化得到产物ID{itemID}，数目{itemCount}");
                             if (itemID == I沙土) {
-                                AddItemToPackage(I沙土, itemCount);
+                                //不要用AddItem，会导致UI显示问题
+                                GameMain.mainPlayer.sandCount += itemCount;
                                 continue;
                             }
                             lock (productRegister) {
@@ -616,9 +615,13 @@ public static class ProcessManager {
                         // LogDebug($"原料转化，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                         //          + $"当前产物输出{__instance.productOutputCount}个");
                     }
+                } else {
+                    lock (consumeRegister) {
+                        consumeRegister[fluidId]++;
+                    }
+                    // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
+                    //          + $"当前产物输出{__instance.productOutputCount}个");
                 }
-                // LogDebug($"原料损毁，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
-                //          + $"当前产物输出{__instance.productOutputCount}个");
             }
         } else {
             __instance.fractionSuccess = false;
@@ -799,12 +802,12 @@ public static class ProcessManager {
                             }
                         }
                     }
-                    //移除所有数目为0的缓存物品
-                    foreach (int outputID in keys) {
-                        if (otherProductOutput[outputID] == 0) {
-                            otherProductOutput.Remove(outputID);
-                        }
-                    }
+                    // //移除所有数目为0的缓存物品
+                    // foreach (int outputID in keys) {
+                    //     if (otherProductOutput[outputID] == 0) {
+                    //         otherProductOutput.Remove(outputID);
+                    //     }
+                    // }
                 }
             } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
                 //正面作为输入，数据传到数据中心。仅接受奖券。
