@@ -30,7 +30,7 @@ public static class PointAggregateTower {
     /// <summary>
     /// 建筑等级，1-7。
     /// </summary>
-    public static int Level;
+    public static int Level = 1;
 
     /// <summary>
     /// 产出物品的最大增产点数，4-10。
@@ -150,6 +150,7 @@ public static class PointAggregateTower {
                     __instance.fluidInputInc -= MaxInc;
                     __instance.fractionSuccess = true;
                     __instance.productOutputCount++;
+                    __instance.productOutputTotal++;
                 } else {
                     //失败
                     __instance.fluidInputInc -= fluidInputIncAvg;
@@ -292,15 +293,16 @@ public static class PointAggregateTower {
         if (__instance.belt0 > 0) {
             if (__instance.isOutput0) {
                 //输出主产物
+                int productStack = building.MaxProductOutputStack();
                 for (int i = 0; i < MaxOutputTimes; i++) {
                     //只有产物数目到达堆叠要求，或者没有正在处理的物品，才输出，且一次输出最大堆叠个数的物品
-                    if (__instance.productOutputCount >= building.MaxProductOutputStack()) {
+                    if (__instance.productOutputCount >= productStack) {
                         //产物达到最大堆叠数目，直接尝试输出
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
-                                (byte)building.MaxProductOutputStack(), 0)) {
+                                (byte)productStack, (byte)(productStack * MaxInc))) {
                             break;
                         }
-                        __instance.productOutputCount -= building.MaxProductOutputStack();
+                        __instance.productOutputCount -= productStack;
                     } else if (__instance.productOutputCount > 0 && __instance.fluidInputCount == 0) {
                         //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
                         if (!cargoTraffic.TryInsertItemAtHead(__instance.belt0, __instance.productId,
@@ -337,15 +339,13 @@ public static class PointAggregateTower {
         EnableFluidOutputStackEntry.Value = r.ReadBoolean();
         MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
         EnableFracForeverEntry.Value = r.ReadBoolean();
-        if (version >= 2) {
-            Level = r.ReadInt32();
-        }
-        //暂时定为7
+        Level = r.ReadInt32();
+        //todo：暂时定为7
         Level = 7;
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(EnableFluidOutputStackEntry.Value);
         w.Write(MaxProductOutputStackEntry.Value);
         w.Write(EnableFracForeverEntry.Value);
