@@ -182,7 +182,7 @@ public static class TabRaffle {
             //分馏配方核心（0.05%）
             currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItem(IFE分馏配方核心, 1);
+                AddItemToPackage(IFE分馏配方核心, 1);
                 sb.Append($"{LDB.items.Select(IFE分馏配方核心).name.WithColor(Gold)} x 1");
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
@@ -237,7 +237,7 @@ public static class TabRaffle {
                     recipe.MemoryCount++;
                     sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为回响（当前拥有{recipe.MemoryCount}）");
                 } else {
-                    AddItem(IFE残破核心, 1);
+                    AddItemToPackage(IFE残破核心, 1);
                     sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为残破核心");
                 }
                 oneLineCount++;
@@ -256,7 +256,7 @@ public static class TabRaffle {
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
                 currRate += FracProtoRateArr[i] * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    AddItem(FracProtoID[i], 1);
+                    AddItemToPackage(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
                     sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
                     oneLineCount++;
@@ -281,7 +281,7 @@ public static class TabRaffle {
                 foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
-                        AddItem(itemId, 200);
+                        AddItemToPackage(itemId, 200);
                         sb.Append($"{LDB.items.Select(itemId).name} x 200");
                         oneLineCount++;
                         if (oneLineCount >= oneLineMaxCount) {
@@ -299,7 +299,7 @@ public static class TabRaffle {
                 }
             }
             //50%沙土
-            AddItem(I沙土, 1000);
+            AddItemToPackage(I沙土, 1000);
             sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
@@ -333,7 +333,7 @@ public static class TabRaffle {
             //建筑增幅芯片（0.3%）
             currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItem(IFE建筑增幅芯片, 1);
+                AddItemToPackage(IFE建筑增幅芯片, 1);
                 sb.Append($"{LDB.items.Select(IFE建筑增幅芯片).name.WithColor(Gold)} x 1");
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
@@ -349,7 +349,7 @@ public static class TabRaffle {
             for (int i = 0; i < BuildingIds.Length; i++) {
                 currRate += (i == BuildingTypeEntry.Value ? 0.03 : 0.005) * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    AddItem(BuildingIds[i], 1);
+                    AddItemToPackage(BuildingIds[i], 1);
                     sb.Append($"{LDB.items.Select(BuildingIds[i]).name.WithColor(Purple)} x 1");
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
@@ -370,7 +370,7 @@ public static class TabRaffle {
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
                 currRate += FracProtoRateArr[i] * 3 * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    AddItem(FracProtoID[i], 1);
+                    AddItemToPackage(FracProtoID[i], 1);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
                     sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
                     oneLineCount++;
@@ -395,7 +395,7 @@ public static class TabRaffle {
                 foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
-                        AddItem(itemId, 200);
+                        AddItemToPackage(itemId, 200);
                         sb.Append($"{LDB.items.Select(itemId).name} x 200");
                         oneLineCount++;
                         if (oneLineCount >= oneLineMaxCount) {
@@ -413,7 +413,7 @@ public static class TabRaffle {
                 }
             }
             //50%沙土
-            AddItem(I沙土, 1000);
+            AddItemToPackage(I沙土, 1000);
             sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
