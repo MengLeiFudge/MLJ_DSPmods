@@ -40,7 +40,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateFracChain([I动力引擎, I推进器, I加力推进器]);
         CreateFracChain([I配送运输机, I物流运输机, I星际物流运输船]);
         CreateFracChain([I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素]);
-        CreateFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵]);
+        CreateFracChain([I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, IGB玻色矩阵, IGB耗散矩阵, IGB奇点矩阵]);
 
         //建筑页面
         CreateFracChain([I电力感应塔, I无线输电塔, I卫星配电站]);
