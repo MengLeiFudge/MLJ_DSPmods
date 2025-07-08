@@ -461,6 +461,36 @@ public static class ItemManager {
 
     #endregion
 
+    #region 将物品根据前置科技分类到不同矩阵层级
+
+    public static int[] ItemToMatrix = new int[12000];
+
+    public static void ClassifyItemsToMatrix() {
+        for (int itemID = 0; itemID < LDB.items.dataArray.Length; itemID++) {
+            ItemProto item = LDB.items.Select(itemID);
+            TechProto preTech = item.maincraft?.preTech;
+            if (preTech != null) {
+                int topMatrixID = 0;
+                for (int j = 0; j < preTech.Items.Length; j++) {
+                    int matrixID = preTech.Items[j];
+                    if (LDB.items.Select(matrixID).Type == EItemType.Matrix) {
+                        topMatrixID = Math.Max(topMatrixID, matrixID);
+                    }
+                }
+                if (topMatrixID > 0) {
+                    ItemToMatrix[itemID] = topMatrixID;
+                    LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
+                    continue;
+                }
+            }
+            //todo：归到黑雾还是白糖？
+            LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(I黑雾矩阵).name}({I黑雾矩阵})");
+            ItemToMatrix[itemID] = I黑雾矩阵;
+        }
+    }
+
+    #endregion
+
     #region 交互塔存储数据
 
     public static Dictionary<int, int> itemDataDic = [];

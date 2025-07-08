@@ -178,6 +178,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         ProcessManager.Init();
         //计算物品价值
         ItemManager.CalculateItemValues();
+        //将物品分类到各个矩阵层级中
+        ItemManager.ClassifyItemsToMatrix();
         //SetFractionatorCacheSize用到了Init生成的数据
         BuildingManager.SetFractionatorCacheSize();
         //AddBaseRecipes用到了Init生成的数据

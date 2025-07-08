@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -15,14 +16,20 @@ public class AlchemyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
+            //点金塔不能处理矩阵
+            if ((item.ID >= I电磁矩阵 && item.ID <= I宇宙矩阵)
+                || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)) {
+                continue;
+            }
             AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / 250000f,
                 [
-                    new OutputInfo(0.507937f, I电磁矩阵, 1),
-                    new OutputInfo(0.253968f, I能量矩阵, 1),
-                    new OutputInfo(0.126984f, I结构矩阵, 1),
-                    new OutputInfo(0.063492f, I信息矩阵, 1),
-                    new OutputInfo(0.031746f, I引力矩阵, 1),
-                    new OutputInfo(0.015873f, I宇宙矩阵, 1),
+                    new OutputInfo(1.0f, ItemToMatrix[item.ID], 1),
+                    // new OutputInfo(0.507937f, I电磁矩阵, 1),
+                    // new OutputInfo(0.253968f, I能量矩阵, 1),
+                    // new OutputInfo(0.126984f, I结构矩阵, 1),
+                    // new OutputInfo(0.063492f, I信息矩阵, 1),
+                    // new OutputInfo(0.031746f, I引力矩阵, 1),
+                    // new OutputInfo(0.015873f, I宇宙矩阵, 1),
                 ],
                 [
                     new OutputInfo(0.010f, IFE分馏原胚普通, 1),
