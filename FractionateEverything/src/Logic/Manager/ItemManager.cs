@@ -468,6 +468,9 @@ public static class ItemManager {
     public static void ClassifyItemsToMatrix() {
         for (int itemID = 0; itemID < LDB.items.dataArray.Length; itemID++) {
             ItemProto item = LDB.items.Select(itemID);
+            if (item == null) {
+                continue;
+            }
             TechProto preTech = item.maincraft?.preTech;
             if (preTech != null) {
                 int topMatrixID = 0;
