@@ -174,7 +174,7 @@ public static class TabRecipeAndBuilding {
                 textRecipeInfo[line].text = "     0.1 转化精华";
                 line++;
             }
-            textRecipeInfo[line].text = $"成功率 {recipe.BaseSuccessRate:P3}".WithColor(Orange)
+            textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
                                         + "      "
                                         + $"损毁率 {recipe.DestroyRate:P3}".WithColor(Red);
             line++;

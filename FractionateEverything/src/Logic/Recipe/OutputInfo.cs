@@ -2,6 +2,10 @@
 
 namespace FE.Logic.Recipe;
 
+/// <summary>
+/// 配方某一项产物信息。
+/// 注意，只有<see cref="FE.Logic.Recipe.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
+/// </summary>
 public class OutputInfo(float successRate, int outputID, int outputCount) {
     public static void AddTranslations() {
         Register("总计 ", "Total ");
@@ -10,17 +14,17 @@ public class OutputInfo(float successRate, int outputID, int outputCount) {
     /// <summary>
     /// 输出物品的概率
     /// </summary>
-    public float SuccessRate { get; set; } = successRate;
+    public float SuccessRate => successRate;
 
     /// <summary>
     /// 输出物品的ID
     /// </summary>
-    public int OutputID { get; set; } = outputID;
+    public int OutputID => outputID;
 
     /// <summary>
     /// 输出物品的数目
     /// </summary>
-    public float OutputCount { get; set; } = outputCount;
+    public float OutputCount => outputCount;
 
     /// <summary>
     /// 输出物品的总数，用于控制配方信息的隐藏显示

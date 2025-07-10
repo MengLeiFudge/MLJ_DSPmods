@@ -21,12 +21,14 @@ public class AlchemyRecipe : BaseRecipe {
                 || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)) {
                 continue;
             }
-            AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / 250000f,
+            int matrixID = ItemToMatrix[item.ID];
+            float matrixValue = itemValue[matrixID];
+            AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / matrixValue,
                 [
-                    new OutputInfo(1.0f, ItemToMatrix[item.ID], 1),
+                    new OutputInfo(1.0f, matrixID, 1),
                 ],
                 [
-                    new OutputInfo(0.020f, IFE点金精华, 1),
+                    new OutputInfo(0.01f, IFE点金精华, 1),
                 ]));
         }
     }
@@ -40,12 +42,12 @@ public class AlchemyRecipe : BaseRecipe {
     /// 创建点金塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">基础成功率</param>
+    /// <param name="maxSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public AlchemyRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public AlchemyRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
     /// 是否不消耗材料（突破特殊属性）
