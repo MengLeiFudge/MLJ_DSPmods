@@ -1092,7 +1092,7 @@ public static class ProcessManager {
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             } else {
                 foreach (var output in recipe.OutputMain) {
-                    float ratio = recipe.BaseSuccessRate * output.SuccessRate * successRatePlus;
+                    float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
                     string name = FormatName(LDB.items.Select(output.OutputID).Name);
                     sb1.Append($"{name}x{output.OutputCount} ({ratio.FormatP()})\n");
                     flowRatio -= ratio;

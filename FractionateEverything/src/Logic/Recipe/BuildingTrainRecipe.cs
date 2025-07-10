@@ -38,12 +38,12 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 创建建筑培养配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">基础成功率</param>
+    /// <param name="maxSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public BuildingTrainRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public BuildingTrainRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
     /// 是否不消耗材料（突破特殊属性）

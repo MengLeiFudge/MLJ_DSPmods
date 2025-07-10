@@ -109,12 +109,12 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         item.UnlockKey = -1;
 
-        //树、草、石头有20%概率掉落普通原胚
-        foreach (VegeProto vege in LDB.veges.dataArray) {
-            vege.MiningItem = [..vege.MiningItem, IFE分馏原胚普通];
-            vege.MiningCount = [..vege.MiningCount, 1];
-            vege.MiningChance = [..vege.MiningChance, 0.2f];
-        }
+        // //树、草、石头有20%概率掉落普通原胚
+        // foreach (VegeProto vege in LDB.veges.dataArray) {
+        //     vege.MiningItem = [..vege.MiningItem, IFE分馏原胚普通];
+        //     vege.MiningCount = [..vege.MiningCount, 1];
+        //     vege.MiningChance = [..vege.MiningChance, 0.2f];
+        // }
 
         item = ProtoRegistry.RegisterItem(IFE分馏原胚精良, "分馏原胚精良", "I分馏原胚精良",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,

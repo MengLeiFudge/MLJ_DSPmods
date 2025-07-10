@@ -13,7 +13,7 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public abstract class BaseRecipe(
     int inputID,
-    float baseSuccessRate,
+    float maxSuccessRate,
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     #region 配方类型、输入输出
@@ -26,38 +26,44 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方输入物品的ID
     /// </summary>
-    public int InputID { get; } = inputID;
+    public int InputID => inputID;
 
     /// <summary>
-    /// 配方基础成功率
+    /// 配方成功率上限
     /// </summary>
-    public float BaseSuccessRate { get; } = baseSuccessRate;
+    public float MaxSuccessRate => maxSuccessRate;
 
     /// <summary>
-    /// 带有突破和等级加成的成功率
+    /// 通过品质和等级得到该配方的整体进度，范围为0-1
     /// </summary>
-    public float SuccessRate => BaseSuccessRate * (1 + Quality * 0.2f + Level * (0.1f + Quality * 0.02f));
+    public float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
+                             / (MaxLevel * (0.1f + MaxQuality * 0.02f) + MaxQuality * 0.2f);
 
     /// <summary>
-    /// 配方损毁率
+    /// 实际成功率，随着等级和品质的提高而提高。
+    /// 初始为上限的40%，最终为上限。
     /// </summary>
-    public float DestroyRate => Math.Max(0, (0.2f - BaseSuccessRate)
-                                            * (0.5f + (float)Math.Log10(itemValue[InputID] + 1) / 5.0f)
-                                            * (1 - Quality * 0.2f - Level * (0.1f + Quality * 0.02f)));
+    public float SuccessRate => MaxSuccessRate * (0.4f + 0.6f * Progress);
+
+    /// <summary>
+    /// 配方损毁率，随着等级和品质的提高而降低。
+    /// 初始与物品价值有关（价值越高损毁率越高），最终为0%。
+    /// </summary>
+    public float DestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f) * (1 - Progress);
 
     /// <summary>
     /// 配方主产物信息，概率之和必须为100%。
     /// 当判定成功时，必定输出且仅输出其中一项。
     /// 如果输出的物品数目为小数，则进行二次判定。
     /// </summary>
-    public List<OutputInfo> OutputMain { get; set; } = outputMain;
+    public List<OutputInfo> OutputMain => outputMain;
 
     /// <summary>
-    /// 配方额外输出产物信息。
+    /// 配方副产物信息。
     /// 当判定成功时，该列表内每一项分别判定是否成功。
     /// 如果输出的物品数目为小数，则进行二次判定。
     /// </summary>
-    public List<OutputInfo> OutputAppend { get; set; } = outputAppend;
+    public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
     /// 获取某次输出的执行结果
