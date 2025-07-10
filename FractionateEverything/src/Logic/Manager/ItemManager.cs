@@ -463,7 +463,7 @@ public static class ItemManager {
 
     #region 将物品根据前置科技分类到不同矩阵层级
 
-    public static int[] ItemToMatrix = new int[12000];
+    public static readonly int[] itemToMatrix = new int[12000];
 
     public static void ClassifyItemsToMatrix() {
         foreach (var item in LDB.items.dataArray) {
@@ -474,18 +474,24 @@ public static class ItemManager {
                 for (int j = 0; j < preTech.Items.Length; j++) {
                     int matrixID = preTech.Items[j];
                     if (LDB.items.Select(matrixID).Type == EItemType.Matrix) {
+                        matrixID = matrixID switch {
+                            IGB玻色矩阵 => I能量矩阵,
+                            IGB耗散矩阵 => I信息矩阵,
+                            IGB奇点矩阵 => I引力矩阵,
+                            _ => matrixID
+                        };
                         topMatrixID = Math.Max(topMatrixID, matrixID);
                     }
                 }
                 if (topMatrixID > 0) {
-                    ItemToMatrix[itemID] = topMatrixID;
+                    itemToMatrix[itemID] = topMatrixID;
                     LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
                     continue;
                 }
             }
             //todo：归到黑雾还是白糖？
             LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(I黑雾矩阵).name}({I黑雾矩阵})");
-            ItemToMatrix[itemID] = I黑雾矩阵;
+            itemToMatrix[itemID] = I黑雾矩阵;
         }
     }
 
@@ -493,36 +499,7 @@ public static class ItemManager {
 
     #region 交互塔存储数据
 
-    public static Dictionary<int, int> itemDataDic = [];
-
-    public static void AddItem(int itemId, int count) {
-        if (itemDataDic.ContainsKey(itemId)) {
-            itemDataDic[itemId] += count;
-        } else {
-            itemDataDic[itemId] = count;
-        }
-    }
-
-    public static int GetItemCount(int itemId) {
-        return itemDataDic.TryGetValue(itemId, out int value) ? value : 0;
-    }
-
-    public static int TakeItem(int itemId, int count) {
-        if (itemDataDic.ContainsKey(itemId)) {
-            if (itemDataDic[itemId] >= count) {
-                itemDataDic[itemId] -= count;
-                if (itemDataDic[itemId] == 0) {
-                    itemDataDic.Remove(itemId);
-                }
-            } else {
-                count = itemDataDic[itemId];
-                itemDataDic.Remove(itemId);
-            }
-        } else {
-            count = 0;
-        }
-        return count;
-    }
+    public static readonly Dictionary<int, int> itemModDataCount = [];
 
     #endregion
 
@@ -534,21 +511,21 @@ public static class ItemManager {
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
             int count = r.ReadInt32();
-            itemDataDic[itemId] = count;
+            itemModDataCount[itemId] = count;
         }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(itemDataDic.Count);
-        foreach (var p in itemDataDic) {
+        w.Write(itemModDataCount.Count);
+        foreach (var p in itemModDataCount) {
             w.Write(p.Key);
             w.Write(p.Value);
         }
     }
 
     public static void IntoOtherSave() {
-        itemDataDic.Clear();
+        itemModDataCount.Clear();
     }
 
     #endregion

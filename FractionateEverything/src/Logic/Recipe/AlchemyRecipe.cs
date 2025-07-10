@@ -21,7 +21,7 @@ public class AlchemyRecipe : BaseRecipe {
                 || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)) {
                 continue;
             }
-            int matrixID = ItemToMatrix[item.ID];
+            int matrixID = itemToMatrix[item.ID];
             float matrixValue = itemValue[matrixID];
             AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / matrixValue,
                 [
