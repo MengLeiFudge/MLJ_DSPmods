@@ -28,11 +28,11 @@ public static class TabShop {
     /// 显示指定物品分别在MOD数据、背包、物流背包中的数量
     /// </summary>
     private static Text[] textItemCount = new Text[3];
-
     /// <summary>
     /// 显示指定物品在MOD数据、背包、物流背包中的总数
     /// </summary>
     private static Text textItemTotalCount;
+    private static UIButton btnGetItemOneGroup;
 
     public static void LoadConfig(ConfigFile configFile) { }
 
@@ -55,15 +55,18 @@ public static class TabShop {
             y += 36f;
             textItemTotalCount = wnd.AddText2(x, y, tab, "", 15, "textItemTotalCount");
             y += 36f;
+            btnGetItemOneGroup = wnd.AddButton(x, y, 400, tab, "从分馏中心提取一组物品", 16, "button-get-item",
+                GetItemOneGroup);
+            y += 36f;
         }
         {
             var tab = wnd.AddTab(trans, "矩阵商店");
             x = 0f;
             y = 10f;
-            wnd.AddButton(x, y, 200, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1",
+            wnd.AddButton(x, y, 400, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1",
                 () => { ExchangeItemsWithQuestion(I电磁矩阵, 200, IFE交互塔, 1); });
             y += 36f;
-            wnd.AddButton(x, y, 200, tab, "10蓝糖兑换1分馏原胚（普通）", 16, "btn-blue2",
+            wnd.AddButton(x, y, 400, tab, "10蓝糖兑换1分馏原胚（普通）", 16, "btn-blue2",
                 () => { ExchangeItemsWithQuestion(I电磁矩阵, 10, IFE分馏原胚普通, 1); });
             y += 36f;
         }
@@ -79,6 +82,24 @@ public static class TabShop {
         textItemCount[1].text = $"背包有 {GetPackageItemCount(SelectedItem.ID)} 个 {SelectedItem.name}";
         textItemCount[2].text = $"物流背包有 {GetDeliveryPackageItemCount(SelectedItem.ID)} 个 {SelectedItem.name}";
         textItemTotalCount.text = $"总计有 {GetItemTotalCount(SelectedItem.ID)} 个 {SelectedItem.name}";
+        var t = btnGetItemOneGroup.gameObject.transform.Find("button-text").GetComponent<Text>();
+        if (t != null) {
+            t.text = $"从分馏中心提取 {SelectedItem.name} x {SelectedItem.StackSize}";
+        }
+    }
+
+    /// <summary>
+    /// 从ModData背包提取一组物品。
+    /// 如果物品数目达到一组，则提取一组；否则提取全部。
+    /// </summary>
+    public static void GetItemOneGroup() {
+        int realTakeCount = TakeItemFromModData(SelectedItem.ID, SelectedItem.StackSize);
+        if (realTakeCount <= 0) {
+            UIMessageBox.Show("提示", $"分馏中心没有物品 {SelectedItem.name}", "确认", UIMessageBox.WARNING);
+        } else {
+            AddItemToPackage(SelectedItem.ID, realTakeCount);
+            UIMessageBox.Show("提示", $"已从分馏中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
+        }
     }
 
     #region IModCanSave

@@ -8,9 +8,9 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.TabRecipeAndBuilding;
 using static FE.Utils.Utils;
-using Random = System.Random;
 
 namespace FE.UI.View;
 
@@ -26,7 +26,7 @@ public static class TabRaffle {
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
     public static float[] TicketRatioPlus = [
-        1.0f, 1.1f, 1.2f, 1.3f, 1.4f, 1.6f, 1.0f,
+        1.0f, 1.05f, 1.1f, 1.15f, 1.2f, 1.3f, 1.0f,
     ];
     public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
     public static float SelectedTicketRatioPlus => TicketRatioPlus[TicketTypeEntry.Value];
@@ -155,9 +155,9 @@ public static class TabRaffle {
     /// <summary>
     /// 配方卡池抽卡。
     /// </summary>
-    /// <param name="count">抽卡次数</param>
+    /// <param name="ticketCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleRecipe(int count, int oneLineMaxCount = 1) {
+    public static void RaffleRecipe(int ticketCount, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -167,14 +167,14 @@ public static class TabRaffle {
                 return;
             }
         }
-        if (!TakeItem(SelectedTicketId, count)) {
+        if (!TakeItem(SelectedTicketId, ticketCount)) {
             return;
         }
         List<BaseRecipe> recipeArr = RecipeManager.GetRecipes(RecipeTypes[RecipeTypeEntry.Value]);
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         int oneLineCount = 0;
-        while (count > 0) {
-            count--;
+        while (ticketCount > 0) {
+            ticketCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
             //分馏配方核心（0.05%）
@@ -249,28 +249,6 @@ public static class TabRaffle {
                 continue;
             }
             RecipeRaffleCount++;
-            //分馏原胚（8.8%）
-            bool getFracProto = false;
-            for (int i = 0; i < FracProtoRateArr.Length; i++) {
-                currRate += FracProtoRateArr[i] * SelectedTicketRatioPlus;
-                if (randDouble < currRate) {
-                    AddItemToPackage(FracProtoID[i], 1);
-                    Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
-                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
-                    oneLineCount++;
-                    if (oneLineCount >= oneLineMaxCount) {
-                        sb.Append("\n");
-                        oneLineCount = 0;
-                    } else {
-                        sb.Append("          ");
-                    }
-                    getFracProto = true;
-                    break;
-                }
-            }
-            if (getFracProto) {
-                continue;
-            }
             //剩余的概率中，50%黑雾掉落
             int enemyDropCount = GameMain.history.enemyDropItemUnlocked.Count;
             if (enemyDropCount > 0) {
@@ -279,8 +257,9 @@ public static class TabRaffle {
                 foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
-                        AddItemToPackage(itemId, 200);
-                        sb.Append($"{LDB.items.Select(itemId).name} x 200");
+                        int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[itemId] * 0.8f);
+                        AddItemToModData(itemId, count);
+                        sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
                         if (oneLineCount >= oneLineMaxCount) {
                             sb.Append("\n");
@@ -297,8 +276,9 @@ public static class TabRaffle {
                 }
             }
             //50%沙土
-            AddItemToPackage(I沙土, 1000);
-            sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
+            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.8f);
+            AddItemToPackage(I沙土, sandCount);
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}");
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
                 sb.Append("\n");
@@ -313,19 +293,19 @@ public static class TabRaffle {
     /// <summary>
     /// 建筑卡池抽卡。
     /// </summary>
-    /// <param name="count">抽卡次数</param>
+    /// <param name="ticketCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleBuilding(int count, int oneLineMaxCount = 1) {
+    public static void RaffleBuilding(int ticketCount, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!TakeItem(SelectedTicketId, count)) {
+        if (!TakeItem(SelectedTicketId, ticketCount)) {
             return;
         }
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         int oneLineCount = 0;
-        while (count > 0) {
-            count--;
+        while (ticketCount > 0) {
+            ticketCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
             //建筑增幅芯片（0.3%）
@@ -368,9 +348,10 @@ public static class TabRaffle {
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
                 currRate += FracProtoRateArr[i] * 3 * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
-                    AddItemToPackage(FracProtoID[i], 1);
+                    int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[FracProtoID[i]] * 0.8f);
+                    AddItemToModData(FracProtoID[i], count);
                     Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
-                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x 1");
+                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x {count}");
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
@@ -393,8 +374,9 @@ public static class TabRaffle {
                 foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
                     currRate += ratioDarkFog;
                     if (randDouble < currRate) {
-                        AddItemToPackage(itemId, 200);
-                        sb.Append($"{LDB.items.Select(itemId).name} x 200");
+                        int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[itemId] * 0.8f);
+                        AddItemToModData(itemId, count);
+                        sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
                         if (oneLineCount >= oneLineMaxCount) {
                             sb.Append("\n");
@@ -411,8 +393,9 @@ public static class TabRaffle {
                 }
             }
             //50%沙土
-            AddItemToPackage(I沙土, 1000);
-            sb.Append($"{LDB.items.Select(I沙土).name} x 1000");
+            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.8f);
+            AddItemToPackage(I沙土, sandCount);
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}");
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
                 sb.Append("\n");
