@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -26,10 +27,10 @@ public class DeconstructionRecipe : BaseRecipe {
             } else {
                 outputMain.Add(new(1.0f, I沙土, (int)Math.Ceiling(itemValue[item.ID] / itemValue[I沙土] * 0.8)));
             }
-            AddRecipe(new DeconstructionRecipe(item.ID, 0.25f,
+            AddRecipe(new DeconstructionRecipe(item.ID, 1.0f / (1.0f + (float)ProcessManager.MaxTableMilli(10)),
                 outputMain,
                 [
-                    new OutputInfo(0.050f, IFE分解精华, 1),
+                    new OutputInfo(0.01f, IFE分解精华, 1),
                 ]));
         }
     }
@@ -43,12 +44,12 @@ public class DeconstructionRecipe : BaseRecipe {
     /// 创建分解塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">基础成功率</param>
+    /// <param name="maxSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public DeconstructionRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public DeconstructionRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
     /// 是否输出翻倍（突破特殊属性）
