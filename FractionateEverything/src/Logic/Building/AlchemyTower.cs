@@ -20,21 +20,14 @@ public static class AlchemyTower {
             "将物品转换为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
     }
 
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
-
-    public static void LoadConfig(ConfigFile configFile) {
-        string className = "AlchemyTower";
-        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
-        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
-        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(1.0f, 0.7019f, 0.4f);
+
+    public static bool EnableFluidOutputStack = false;
+    public static int MaxProductOutputStack = 1;
+    public static bool EnableFracForever = false;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点金塔, "点金塔", "I点金塔",
@@ -78,22 +71,22 @@ public static class AlchemyTower {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
-        EnableFracForeverEntry.Value = r.ReadBoolean();
+        EnableFluidOutputStack = r.ReadBoolean();
+        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        EnableFracForever = r.ReadBoolean();
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(EnableFluidOutputStackEntry.Value);
-        w.Write(MaxProductOutputStackEntry.Value);
-        w.Write(EnableFracForeverEntry.Value);
+        w.Write(EnableFluidOutputStack);
+        w.Write(MaxProductOutputStack);
+        w.Write(EnableFracForever);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStackEntry.Value = false;
-        MaxProductOutputStackEntry.Value = 1;
-        EnableFracForeverEntry.Value = false;
+        EnableFluidOutputStack = false;
+        MaxProductOutputStack = 1;
+        EnableFracForever = false;
     }
 
     #endregion

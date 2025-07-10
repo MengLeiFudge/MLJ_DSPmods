@@ -20,21 +20,14 @@ public static class InteractionTower {
             $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
     }
 
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
-
-    public static void LoadConfig(ConfigFile configFile) {
-        string className = "InteractionTower";
-        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
-        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
-        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.8f, 0.3f, 0.6f);
+
+    public static bool EnableFluidOutputStack = false;
+    public static int MaxProductOutputStack = 1;
+    public static bool EnableFracForever = false;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
@@ -78,22 +71,22 @@ public static class InteractionTower {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
-        EnableFracForeverEntry.Value = r.ReadBoolean();
+        EnableFluidOutputStack = r.ReadBoolean();
+        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        EnableFracForever = r.ReadBoolean();
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(EnableFluidOutputStackEntry.Value);
-        w.Write(MaxProductOutputStackEntry.Value);
-        w.Write(EnableFracForeverEntry.Value);
+        w.Write(EnableFluidOutputStack);
+        w.Write(MaxProductOutputStack);
+        w.Write(EnableFracForever);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStackEntry.Value = false;
-        MaxProductOutputStackEntry.Value = 1;
-        EnableFracForeverEntry.Value = false;
+        EnableFluidOutputStack = false;
+        MaxProductOutputStack = 1;
+        EnableFracForever = false;
     }
 
     #endregion
