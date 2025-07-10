@@ -53,7 +53,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
         CheckPlugins.DisableMessageBox = Config.Bind("other", "DisableMessageBox", false,
             "Don't show messagebox when FractionateEverything loaded.");
-        BuildingManager.LoadConfig(Config);
         MainWindow.LoadConfig(Config);
 
         //清除无用项目

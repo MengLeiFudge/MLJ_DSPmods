@@ -20,21 +20,14 @@ public static class MineralCopyTower {
             $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".WithColor(Orange)}科技也会影响效果。");
     }
 
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
-
-    public static void LoadConfig(ConfigFile configFile) {
-        string className = "MineralCopyTower";
-        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
-        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
-        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.4f, 1.0f, 0.949f);
+
+    public static bool EnableFluidOutputStack = false;
+    public static int MaxProductOutputStack = 1;
+    public static bool EnableFracForever = false;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
@@ -78,22 +71,22 @@ public static class MineralCopyTower {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
-        EnableFracForeverEntry.Value = r.ReadBoolean();
+        EnableFluidOutputStack = r.ReadBoolean();
+        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        EnableFracForever = r.ReadBoolean();
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(EnableFluidOutputStackEntry.Value);
-        w.Write(MaxProductOutputStackEntry.Value);
-        w.Write(EnableFracForeverEntry.Value);
+        w.Write(EnableFluidOutputStack);
+        w.Write(MaxProductOutputStack);
+        w.Write(EnableFracForever);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStackEntry.Value = false;
-        MaxProductOutputStackEntry.Value = 1;
-        EnableFracForeverEntry.Value = false;
+        EnableFluidOutputStack = false;
+        MaxProductOutputStack = 1;
+        EnableFracForever = false;
     }
 
     #endregion

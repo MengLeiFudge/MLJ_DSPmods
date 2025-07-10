@@ -23,36 +23,26 @@ public static class PointAggregateTower {
             "将全部物品的增产点数集中到少部分物品上，从而突破增产点数的上限，产出10增产点数的物品。");
     }
 
-    public static ConfigEntry<bool> EnableFluidOutputStackEntry;
-    public static ConfigEntry<int> MaxProductOutputStackEntry;
-    public static ConfigEntry<bool> EnableFracForeverEntry;
-
-    /// <summary>
-    /// 建筑等级，1-7。
-    /// </summary>
-    public static int Level = 1;
-
-    /// <summary>
-    /// 产出物品的最大增产点数，4-10。
-    /// </summary>
-    public static int MaxInc => Math.Min(10, Level + 3);
-
-    /// <summary>
-    /// 产出物品的概率。
-    /// </summary>
-    public static float SuccessRate => 0.1f + Level * 0.03f;
-
-    public static void LoadConfig(ConfigFile configFile) {
-        string className = "PointAggregateTower";
-        EnableFluidOutputStackEntry = configFile.Bind(className, "Enable Fluid Output Stack", false);
-        MaxProductOutputStackEntry = configFile.Bind(className, "Max Product Output Stack", 1);
-        EnableFracForeverEntry = configFile.Bind(className, "Enable Frac Forever", false);
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.2509f, 0.8392f, 1.0f);
+
+    public static bool EnableFluidOutputStack = false;
+    public static int MaxProductOutputStack = 1;
+    public static bool EnableFracForever = false;
+    /// <summary>
+    /// 建筑等级，1-7。
+    /// </summary>
+    public static int Level = 1;
+    /// <summary>
+    /// 产出物品的最大增产点数，4-10。
+    /// </summary>
+    public static int MaxInc => Math.Min(10, Level + 3);
+    /// <summary>
+    /// 产出物品的概率。
+    /// </summary>
+    public static float SuccessRate => 0.11f + Level * 0.02f;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
@@ -336,27 +326,25 @@ public static class PointAggregateTower {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStackEntry.Value = r.ReadBoolean();
-        MaxProductOutputStackEntry.Value = Math.Min(r.ReadInt32(), 4);
-        EnableFracForeverEntry.Value = r.ReadBoolean();
-        Level = r.ReadInt32();
-        //todo：暂时定为7
-        Level = 7;
+        EnableFluidOutputStack = r.ReadBoolean();
+        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        EnableFracForever = r.ReadBoolean();
+        Level = Math.Min(r.ReadInt32(), 10);
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(EnableFluidOutputStackEntry.Value);
-        w.Write(MaxProductOutputStackEntry.Value);
-        w.Write(EnableFracForeverEntry.Value);
+        w.Write(EnableFluidOutputStack);
+        w.Write(MaxProductOutputStack);
+        w.Write(EnableFracForever);
         w.Write(Level);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStackEntry.Value = false;
-        MaxProductOutputStackEntry.Value = 1;
-        EnableFracForeverEntry.Value = false;
-        Level = 7;
+        EnableFluidOutputStack = false;
+        MaxProductOutputStack = 1;
+        EnableFracForever = false;
+        Level = 1;
     }
 
     #endregion
