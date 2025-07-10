@@ -4,6 +4,155 @@ using FE.Logic.Recipe;
 namespace FE.Utils;
 
 public static partial class Utils {
+    #region 向背包添加物品
+
+    /// <summary>
+    /// 将指定物品添加到ModData背包
+    /// </summary>
+    public static void AddItemToModData(int giveId, int giveCount) {
+        lock (ItemManager.itemModDataCount) {
+            if (ItemManager.itemModDataCount.ContainsKey(giveId)) {
+                ItemManager.itemModDataCount[giveId] += giveCount;
+            } else {
+                ItemManager.itemModDataCount[giveId] = giveCount;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 将指定物品添加到背包，并在左侧显示物品变动。
+    /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上
+    /// </summary>
+    /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
+    public static void AddItemToPackage(int giveId, int giveCount, bool throwTrash = true) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (!LDB.items.Exist(giveId)) {
+            return;
+        }
+        int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
+        if (package > 0) {
+            UIItemup.Up(giveId, package);
+        }
+    }
+
+    #endregion
+
+    #region 获取背包中物品的数目
+
+    /// <summary>
+    /// 获取MOD数据中指定物品的数量。
+    /// </summary>
+    public static int GetModDataItemCount(int itemId) {
+        return ItemManager.itemModDataCount.TryGetValue(itemId, out int value) ? value : 0;
+    }
+
+    /// <summary>
+    /// 获取背包中指定物品的数量。
+    /// </summary>
+    public static int GetPackageItemCount(int itemId) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return 0;
+        }
+        if (!LDB.items.Exist(itemId)) {
+            return 0;
+        }
+        StorageComponent package = GameMain.mainPlayer.package;
+        int count = 0;
+        for (int index = 0; index < package.size; index++) {
+            if (package.grids[index].itemId == itemId && package.grids[index].count > 0) {
+                count += package.grids[index].count;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// 获取物流背包中指定物品的数量。
+    /// </summary>
+    public static int GetDeliveryPackageItemCount(int itemId) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return 0;
+        }
+        if (!LDB.items.Exist(itemId) || !GameMain.mainPlayer.deliveryPackage.unlocked) {
+            return 0;
+        }
+        DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
+        int count = 0;
+        for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
+            if (deliveryPackage.grids[gridIndex].itemId == itemId && deliveryPackage.grids[gridIndex].count > 0) {
+                count += deliveryPackage.grids[gridIndex].count;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// 获取所有背包中指定物品的总数。
+    /// </summary>
+    public static int GetItemTotalCount(int itemId) {
+        return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
+    }
+
+    #endregion
+
+    #region 从背包拿取物品
+
+    /// <summary>
+    /// 从ModData背包取出指定物品。
+    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。最终返回取出的物品数量。
+    /// </summary>
+    /// <returns>取出的物品数量</returns>
+    public static int TakeItemFromModData(int takeId, int takeCount) {
+        lock (ItemManager.itemModDataCount) {
+            if (ItemManager.itemModDataCount.ContainsKey(takeId)) {
+                if (ItemManager.itemModDataCount[takeId] >= takeCount) {
+                    ItemManager.itemModDataCount[takeId] -= takeCount;
+                    if (ItemManager.itemModDataCount[takeId] == 0) {
+                        ItemManager.itemModDataCount.Remove(takeId);
+                    }
+                } else {
+                    takeCount = ItemManager.itemModDataCount[takeId];
+                    ItemManager.itemModDataCount.Remove(takeId);
+                }
+            } else {
+                takeCount = 0;
+            }
+            return takeCount;
+        }
+    }
+
+    /// <summary>
+    /// 拿取指定物品。
+    /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
+    /// </summary>
+    /// <returns>是否拿取成功</returns>
+    public static bool TakeItem(int takeId, int takeCount) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return false;
+        }
+        if (!LDB.items.Exist(takeId)) {
+            return false;
+        }
+        ItemProto takeProto = LDB.items.Select(takeId);
+        if (GetItemTotalCount(takeId) < takeCount) {
+            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}！",
+                "确定", UIMessageBox.WARNING);
+            return false;
+        }
+        takeCount -= TakeItemFromModData(takeId, takeCount);
+        if (takeCount > 0) {
+            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
+            if (takeCount > 0) {
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+            }
+        }
+        return true;
+    }
+
+    #endregion
+
     /// <summary>
     /// 尝试用一定数量的物品交换其他物品。
     /// </summary>
@@ -12,10 +161,6 @@ public static partial class Utils {
     /// <para></para>
     /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
     /// </details>
-    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
-    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
-    /// <param name="giveId">添加到背包中的物品ID</param>
-    /// <param name="giveCount">添加到背包中的物品数量</param>
     private static void ExchangeItems(int takeId, int takeCount, int giveId, int giveCount) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
@@ -28,7 +173,7 @@ public static partial class Utils {
         }
         AddItemToPackage(giveId, giveCount);
         ItemProto giveProto = LDB.items.Select(giveId);
-        UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount}！",
+        UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount} ！",
             "确定", UIMessageBox.INFO);
     }
 
@@ -103,138 +248,23 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 获取MOD数据中指定物品的数量。
-    /// </summary>
-    public static int GetModDataItemCount(int itemId) {
-        return ItemManager.GetItemCount(itemId);
-    }
-
-    /// <summary>
-    /// 获取背包中指定物品的数量。
-    /// </summary>
-    public static int GetPackageItemCount(int itemId) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return 0;
-        }
-        if (!LDB.items.Exist(itemId)) {
-            return 0;
-        }
-        StorageComponent package = GameMain.mainPlayer.package;
-        int count = 0;
-        for (int index = 0; index < package.size; index++) {
-            if (package.grids[index].itemId == itemId && package.grids[index].count > 0) {
-                count += package.grids[index].count;
-            }
-        }
-        return count;
-    }
-
-    /// <summary>
-    /// 获取物流背包中指定物品的数量。
-    /// </summary>
-    public static int GetDeliveryPackageItemCount(int itemId) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return 0;
-        }
-        if (!LDB.items.Exist(itemId) || !GameMain.mainPlayer.deliveryPackage.unlocked) {
-            return 0;
-        }
-        DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
-        int count = 0;
-        for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
-            if (deliveryPackage.grids[gridIndex].itemId == itemId && deliveryPackage.grids[gridIndex].count > 0) {
-                count += deliveryPackage.grids[gridIndex].count;
-            }
-        }
-        return count;
-    }
-
-    /// <summary>
-    /// 获取所有背包中指定物品的总数。
-    /// </summary>
-    public static int GetItemTotalCount(int itemId) {
-        return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
-    }
-
-    /// <summary>
-    /// 拿取指定物品。
-    /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
-    /// </summary>
-    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
-    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
-    /// <returns>是否拿取成功</returns>
-    public static bool TakeItem(int takeId, int takeCount) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return false;
-        }
-        if (!LDB.items.Exist(takeId)) {
-            return false;
-        }
-        ItemProto takeProto = LDB.items.Select(takeId);
-        if (GetItemTotalCount(takeId) < takeCount) {
-            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}！",
-                "确定", UIMessageBox.WARNING);
-            return false;
-        }
-        takeCount -= ItemManager.TakeItem(takeId, takeCount);
-        if (takeCount > 0) {
-            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
-            if (takeCount > 0) {
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
-            }
-        }
-        return true;
-    }
-
-    private static object obj = new object();
-
-    /// <summary>
     /// 从Mod数据中拿取每种精华各1个。
     /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// 注意，为了提高性能，此方法未判断前置条件。使用时需注意情况。
     /// </summary>
     public static bool TakeEssenceFromModData() {
-        lock (obj) {
+        lock (ItemManager.itemModDataCount) {
             if (GetModDataItemCount(IFE复制精华) == 0
                 || GetModDataItemCount(IFE点金精华) == 0
                 || GetModDataItemCount(IFE分解精华) == 0
                 || GetModDataItemCount(IFE转化精华) == 0) {
                 return false;
             }
-            ItemManager.TakeItem(IFE复制精华, 1);
-            ItemManager.TakeItem(IFE点金精华, 1);
-            ItemManager.TakeItem(IFE分解精华, 1);
-            ItemManager.TakeItem(IFE转化精华, 1);
+            TakeItemFromModData(IFE复制精华, 1);
+            TakeItemFromModData(IFE点金精华, 1);
+            TakeItemFromModData(IFE分解精华, 1);
+            TakeItemFromModData(IFE转化精华, 1);
             return true;
         }
-    }
-
-    /// <summary>
-    /// 将指定物品添加到背包，并在左侧显示物品变动。
-    /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上
-    /// </summary>
-    /// <param name="giveId">添加到背包中的物品ID</param>
-    /// <param name="giveCount">添加到背包中的物品数量</param>
-    /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
-    public static void AddItemToPackage(int giveId, int giveCount, bool throwTrash = true) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        if (!LDB.items.Exist(giveId)) {
-            return;
-        }
-        int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
-        if (package > 0) {
-            UIItemup.Up(giveId, package);
-        }
-    }
-
-    /// <summary>
-    /// 将指定物品添加到Mod数据中。
-    /// </summary>
-    /// <param name="giveId">添加到Mod数据中的物品ID</param>
-    /// <param name="giveCount">添加到Mod数据中的物品数量</param>
-    public static void AddItemToModData(int giveId, int giveCount) {
-        ItemManager.AddItem(giveId, giveCount);
     }
 }
