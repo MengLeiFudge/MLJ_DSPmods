@@ -26,11 +26,6 @@ public class AlchemyRecipe : BaseRecipe {
                     new OutputInfo(1.0f, ItemToMatrix[item.ID], 1),
                 ],
                 [
-                    new OutputInfo(0.010f, IFE分馏原胚普通, 1),
-                    new OutputInfo(0.007f, IFE分馏原胚精良, 1),
-                    new OutputInfo(0.004f, IFE分馏原胚稀有, 1),
-                    new OutputInfo(0.002f, IFE分馏原胚史诗, 1),
-                    new OutputInfo(0.001f, IFE分馏原胚传说, 1),
                     new OutputInfo(0.020f, IFE点金精华, 1),
                 ]));
         }
