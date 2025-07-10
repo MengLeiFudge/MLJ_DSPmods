@@ -228,28 +228,27 @@ public static class TabRecipeAndBuilding {
         textBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
             ? "已启用流动输出堆叠".WithColor(Orange)
             : "未启用流动输出堆叠".WithColor(Red);
-        btnBuildingInfo1.button.enabled = SelectedBuilding.EnableFluidOutputStack();
+        btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidOutputStack());
 
         string s = $"产物输出堆叠：{SelectedBuilding.MaxProductOutputStack()}";
         textBuildingInfo2.text = SelectedBuilding.MaxProductOutputStack() >= 4
             ? s.WithColor(Orange)
             : s.WithQualityColor(SelectedBuilding.MaxProductOutputStack());
-        btnBuildingInfo2.button.enabled = SelectedBuilding.MaxProductOutputStack() < 4;
+        btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
 
         textBuildingInfo3.text = SelectedBuilding.EnableFracForever()
             ? "已启用分馏永动".WithColor(Orange)
             : "未启用分馏永动".WithColor(Red);
-        btnBuildingInfo3.button.enabled = !SelectedBuilding.EnableFracForever();
+        btnBuildingInfo3.gameObject.SetActive(!SelectedBuilding.EnableFracForever());
 
         if (SelectedBuilding.ID == IFE点数聚集塔) {
-            textBuildingInfo4.enabled = true;
-            btnTip4.gameObject.SetActive(true);
-            btnBuildingInfo4.gameObject.SetActive(true);
             s = $"点数聚集效率层次：{PointAggregateTower.Level}";
             textBuildingInfo4.text = PointAggregateTower.Level >= 7
                 ? s.WithColor(Orange)
                 : s.WithQualityColor(PointAggregateTower.Level);
-            btnBuildingInfo4.button.enabled = PointAggregateTower.Level < 7;
+            textBuildingInfo4.enabled = true;
+            btnTip4.gameObject.SetActive(true);
+            btnBuildingInfo4.gameObject.SetActive(true);
         } else {
             textBuildingInfo4.enabled = false;
             btnTip4.gameObject.SetActive(false);
