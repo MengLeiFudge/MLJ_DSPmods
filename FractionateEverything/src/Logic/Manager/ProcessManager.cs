@@ -32,6 +32,7 @@ public static class ProcessManager {
     public static int FracProductOutputMax = 20;
     public static int FracFluidOutputMax = 20;
     private static double[] incTableFixedRatio;
+    private static Dictionary<int, int> emptyOutputs = [];
 
     #endregion
 
@@ -524,23 +525,9 @@ public static class ProcessManager {
                                          + 0.75);
             if (__instance.progress > 100000)
                 __instance.progress = 100000;
+            //指示是否已启用分馏永动并且某个产物达到上限的一半
             bool fracForever = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
-                //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
-                if (!fracForever && building.EnableFracForever()) {
-                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
-                        fracForever = true;
-                    }
-                    foreach (var p in otherProductOutput) {
-                        if (p.Value >= __instance.productOutputMax / 2) {
-                            fracForever = true;
-                            break;
-                        }
-                    }
-                }
-                if (fracForever) {
-                    continue;
-                }
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
                     : __instance.fluidInputInc / __instance.fluidInputCount;
@@ -562,9 +549,25 @@ public static class ProcessManager {
                     //          + $"当前产物输出{__instance.productOutputCount}个");
                     continue;
                 }
-
-                float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                Dictionary<int, int> outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
+                Dictionary<int, int> outputs = emptyOutputs;
+                if (!fracForever && building.EnableFracForever()) {
+                    //如果已启用分馏永动，并且所有产物都少于上限的一半，重新检查后者是否满足
+                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
+                        fracForever = true;
+                    } else {
+                        foreach (var p in otherProductOutput) {
+                            if (p.Value >= __instance.productOutputMax / 2) {
+                                fracForever = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!fracForever) {
+                    //如果所有产物仍然少于上限的一半，正常处理
+                    float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                    outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
+                }
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;
