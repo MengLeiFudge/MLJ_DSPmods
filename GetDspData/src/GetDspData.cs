@@ -210,11 +210,11 @@ public class GetDspData : BaseUnityPlugin {
                                + Enum.GetName(typeof(Utils_ERecipeType), (int)recipe.Type)
                                + ",";
                     for (int i = 0; i < itemIDs.Length; i++) {
-                        s += itemIDs[i] + "(" + itemIdNameDic[itemIDs[i]] + ")*" + itemCounts[i] + " + ";
+                        s += itemIdNameDic[itemIDs[i]] + "(" + itemIDs[i] + ")*" + itemCounts[i] + " + ";
                     }
-                    s = s.Substring(0, s.Length - 3) + " -> ";
+                    s = s.Substring(0, s.Length - 3) + ",";
                     for (int i = 0; i < resultIDs.Length; i++) {
-                        s += resultIDs[i] + "(" + itemIdNameDic[resultIDs[i]] + ")*" + resultCounts[i] + " + ";
+                        s += itemIdNameDic[resultIDs[i]] + "(" + resultIDs[i] + ")*" + resultCounts[i] + " + ";
                     }
                     s = s.Substring(0, s.Length - 3) + ",";
                     s += recipe.TimeSpend + "(" + timeSpeed.ToString("F1") + "s)";
