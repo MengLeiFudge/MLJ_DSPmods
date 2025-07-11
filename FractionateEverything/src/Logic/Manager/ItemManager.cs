@@ -331,6 +331,9 @@ public static class ItemManager {
         itemValue[I硫酸] = 5.0f;
         itemValue[IGB硝酸] = 5.0f;
         itemValue[IGB氨] = 5.0f;
+        itemValue[IGB二氧化硫] = 5.0f;
+        itemValue[IGB二氧化碳] = 5.0f;
+        itemValue[IGB氮] = 3.0f;
         //设置黑雾掉落价值
         itemValue[I能量碎片] = 2f;
         itemValue[I黑雾矩阵] = 2.5f;
@@ -340,6 +343,19 @@ public static class ItemManager {
         itemValue[I核心素] = 30f;
         //设置临界光子价值
         itemValue[I临界光子] = 400.0f;
+        //设置分馏原胚价值
+        itemValue[IFE分馏原胚普通] = 200.0f;
+        itemValue[IFE分馏原胚精良] = 400.0f;
+        itemValue[IFE分馏原胚稀有] = 800.0f;
+        itemValue[IFE分馏原胚史诗] = 1600.0f;
+        itemValue[IFE分馏原胚传说] = 3200.0f;
+        //设置精华、核心、芯片价值
+        itemValue[IFE复制精华] = 500.0f;
+        itemValue[IFE点金精华] = 500.0f;
+        itemValue[IFE分解精华] = 500.0f;
+        itemValue[IFE转化精华] = 500.0f;
+        itemValue[IFE建筑增幅芯片] = 888888.0f;
+        itemValue[IFE残破核心] = 250000.0f;
         //获取所有配方（排除分馏配方，以及含有多功能集成组件的配方）
         var recipes = LDB.recipes.dataArray
             .Where(r => r.Type != ERecipeType.Fractionate && !r.Items.ToList().Contains(IMS多功能集成组件))
