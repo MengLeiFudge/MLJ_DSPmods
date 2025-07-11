@@ -534,7 +534,7 @@ public static class ProcessManager {
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
-                if (recipe == null) {
+                if (recipe == null || !recipe.IsUnlocked) {
                     __instance.fluidInputInc -= fluidInputIncAvg;
                     __instance.fractionSuccess = false;
                     __instance.fluidInputCount--;
@@ -543,7 +543,6 @@ public static class ProcessManager {
                         __instance.fluidInputCargoCount = 0f;
                     }
                     __instance.fluidOutputCount++;
-                    __instance.fluidOutputTotal++;
                     __instance.fluidOutputInc += fluidInputIncAvg;
                     // LogDebug($"配方为空，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                     //          + $"当前产物输出{__instance.productOutputCount}个");
@@ -578,7 +577,9 @@ public static class ProcessManager {
                 if (outputs != null) {
                     if (outputs.Count == 0) {
                         __instance.fluidOutputCount++;
-                        __instance.fluidOutputTotal++;
+                        if (!fracForever) {
+                            __instance.fluidOutputTotal++;
+                        }
                         __instance.fluidOutputInc += fluidInputIncAvg;
                         // LogDebug($"原料不变，当前流动输入{__instance.fluidInputCount}个, 当前流动输出{__instance.fluidOutputCount}个, "
                         //          + $"当前产物输出{__instance.productOutputCount}个");
@@ -1069,7 +1070,7 @@ public static class ProcessManager {
             s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else if (!recipe.IsUnlocked) {
-            s1 = "配方未解锁".Translate();
+            s1 = "未解锁".Translate();//todo：注意，“配方未解锁”已经被原版游戏注册过
             s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else {

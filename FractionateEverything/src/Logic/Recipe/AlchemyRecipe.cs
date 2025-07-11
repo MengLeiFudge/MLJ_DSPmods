@@ -18,7 +18,8 @@ public class AlchemyRecipe : BaseRecipe {
         foreach (var item in LDB.items.dataArray) {
             //点金塔不能处理矩阵
             if ((item.ID >= I电磁矩阵 && item.ID <= I宇宙矩阵)
-                || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)) {
+                || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)
+                || item.ID == I黑雾矩阵) {
                 continue;
             }
             int matrixID = itemToMatrix[item.ID];

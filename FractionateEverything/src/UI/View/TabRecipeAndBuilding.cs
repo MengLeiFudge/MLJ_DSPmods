@@ -147,7 +147,7 @@ public static class TabRecipeAndBuilding {
             textBuildingInfo4 = wnd.AddText2(x, y, tab, "点数聚集效率层次", 15, "text-building-info-4");
             btnTip4 = wnd.AddTipsButton2(x + 200, y + 6, tab, "点数聚集效率层次",
                 "点数聚集的效率层次会影响产物的输出速率、产物的最大增产点数，上限为7。");
-            btnBuildingInfo4 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-add-point-aggregate-level",
+            btnBuildingInfo4 = wnd.AddButton(x + 350, y, tab, "层次+1", 16, "button-add-point-aggregate-level",
                 AddPointAggregateLevel);
             y += 36f;
         }
