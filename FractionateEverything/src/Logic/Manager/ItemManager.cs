@@ -354,8 +354,9 @@ public static class ItemManager {
         itemValue[IFE点金精华] = 500.0f;
         itemValue[IFE分解精华] = 500.0f;
         itemValue[IFE转化精华] = 500.0f;
+        itemValue[IFE分馏配方核心] = 600000.0f;
         itemValue[IFE建筑增幅芯片] = 888888.0f;
-        itemValue[IFE残破核心] = 250000.0f;
+        itemValue[IFE残破核心] = 200000.0f;
         //获取所有配方（排除分馏配方，以及含有多功能集成组件的配方）
         var recipes = LDB.recipes.dataArray
             .Where(r => r.Type != ERecipeType.Fractionate && !r.Items.ToList().Contains(IMS多功能集成组件))
