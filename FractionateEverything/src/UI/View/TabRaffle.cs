@@ -71,6 +71,11 @@ public static class TabRaffle {
         float y;
         wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
         {
+            var tab = wnd.AddTab(trans, "自选卡池");
+            x = 0f;
+            y = 10f;
+        }
+        {
             var tab = wnd.AddTab(trans, "配方卡池");
             x = 0f;
             y = 10f;

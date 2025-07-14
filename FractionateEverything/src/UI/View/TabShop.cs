@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
@@ -34,6 +35,10 @@ public static class TabShop {
     private static Text textItemTotalCount;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
 
+    private static DateTime lastFreshTime;
+    private static Text textLeftTime;
+    private static Text[] textItemInfo = new Text[3];
+
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -64,20 +69,24 @@ public static class TabShop {
             y += 36f;
         }
         {
-            var tab = wnd.AddTab(trans, "矩阵商店");
+            var tab = wnd.AddTab(trans, "限时商店");
+            lastFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute / 10 * 10);
             x = 0f;
             y = 10f;
-            wnd.AddButton(x, y, 400, tab, "200蓝糖兑换1交互塔", 16, "btn-blue1",
-                () => { ExchangeItemsWithQuestion(I电磁矩阵, 200, IFE交互塔, 1); });
+            textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
             y += 36f;
-            wnd.AddButton(x, y, 400, tab, "10蓝糖兑换1分馏原胚（普通）", 16, "btn-blue2",
-                () => { ExchangeItemsWithQuestion(I电磁矩阵, 10, IFE分馏原胚普通, 1); });
+            textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time1",
+                () => ExchangeItem(0));
             y += 36f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "黑雾商店");
-            x = 0f;
-            y = 10f;
+            textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
+            wnd.AddButton(x, y, 400, tab, "兑换", 16, "btn-buy-time2",
+                () => ExchangeItem(1));
+            y += 36f;
+            textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
+            wnd.AddButton(x, y, 400, tab, "兑换", 16, "btn-buy-time3",
+                () => ExchangeItem(2));
+            y += 36f;
         }
     }
 
@@ -98,6 +107,16 @@ public static class TabShop {
         if (t != null) {
             t.text = $"提取 {SelectedItem.name} x {GetModDataItemCount(SelectedItem.ID)}";
         }
+
+        if (DateTime.Now.Minute / 10 != lastFreshTime.Minute / 10) {
+            lastFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute / 10 * 10);
+            //更新三份限时购买物品的信息
+            // textItemInfo[0].text = GetTimeLimitedItemInfo(0);
+            // textItemInfo[1].text = GetTimeLimitedItemInfo(1);
+            // textItemInfo[2].text = GetTimeLimitedItemInfo(2);
+        }
+        TimeSpan ts = DateTime.Now - lastFreshTime;
+        textLeftTime.text = $"还有 {(int)ts.TotalMinutes} min {ts.Seconds} s 刷新";
     }
 
     /// <summary>
@@ -115,6 +134,8 @@ public static class TabShop {
             UIMessageBox.Show("提示", $"已从分馏中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
         }
     }
+
+    public static void ExchangeItem(int index) { }
 
     #region IModCanSave
 

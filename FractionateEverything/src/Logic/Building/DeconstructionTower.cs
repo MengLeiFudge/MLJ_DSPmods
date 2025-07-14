@@ -34,7 +34,7 @@ public static class DeconstructionTower {
             "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 107, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE分解塔,
-            ERecipeType.Assemble, 60, [IFE分馏原胚定向], [3], [IFE分解塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE分解塔], [1],
             "I分解塔", TFE物品分解);
         recipe.IconPath = "";
         recipe.NonProductive = true;
