@@ -165,13 +165,14 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumDuplicate) {
-                textRecipeInfo[line].text = "     0.1 复制精华";
+                QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);
+                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 复制精华";
                 line++;
-                textRecipeInfo[line].text = "     0.1 点金精华";
+                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 点金精华";
                 line++;
-                textRecipeInfo[line].text = "     0.1 分解精华";
+                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 分解精华";
                 line++;
-                textRecipeInfo[line].text = "     0.1 转化精华";
+                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 转化精华";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
