@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
@@ -28,6 +29,11 @@ public class QuantumCopyRecipe : BaseRecipe {
     public override ERecipe RecipeType => ERecipe.QuantumDuplicate;
 
     /// <summary>
+    /// 消耗精华数目
+    /// </summary>
+    public float EssenceCost { get; private set; }
+
+    /// <summary>
     /// 创建量子复制塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
@@ -36,7 +42,9 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// <param name="outputAppend">附加输出物品</param>
     public QuantumCopyRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, maxSuccessRate, outputMain, outputAppend) {
+        EssenceCost = (float)(0.01 * Math.Pow(itemValue[InputID], Math.Log(2, 3)));
+    }
 
     /// <summary>
     /// 是否不消耗材料（突破特殊属性）
