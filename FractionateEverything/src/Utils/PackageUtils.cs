@@ -248,22 +248,22 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 从Mod数据中拿取每种精华各1个。
+    /// 从Mod数据中拿取每种精华各n个。
     /// 如果数目不足，则不拿取；否则扣除对应物品。
-    /// 注意，为了提高性能，此方法未判断前置条件。使用时需注意情况。
+    /// 注意，为了提高性能，此方法未判断某些前置条件。使用时需注意情况。
     /// </summary>
-    public static bool TakeEssenceFromModData() {
+    public static bool TakeEssenceFromModData(int n) {
         lock (ItemManager.itemModDataCount) {
-            if (GetModDataItemCount(IFE复制精华) == 0
-                || GetModDataItemCount(IFE点金精华) == 0
-                || GetModDataItemCount(IFE分解精华) == 0
-                || GetModDataItemCount(IFE转化精华) == 0) {
+            if (GetModDataItemCount(IFE复制精华) < n
+                || GetModDataItemCount(IFE点金精华) < n
+                || GetModDataItemCount(IFE分解精华) < n
+                || GetModDataItemCount(IFE转化精华) < n) {
                 return false;
             }
-            TakeItemFromModData(IFE复制精华, 1);
-            TakeItemFromModData(IFE点金精华, 1);
-            TakeItemFromModData(IFE分解精华, 1);
-            TakeItemFromModData(IFE转化精华, 1);
+            TakeItemFromModData(IFE复制精华, n);
+            TakeItemFromModData(IFE点金精华, n);
+            TakeItemFromModData(IFE分解精华, n);
+            TakeItemFromModData(IFE转化精华, n);
             return true;
         }
     }
