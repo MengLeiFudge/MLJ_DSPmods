@@ -162,7 +162,7 @@ static class AfterBuildEvent {
                 if (Directory.Exists(dir)) {
                     foreach (string file in Directory.GetFiles(dir)) {
                         FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.Name.StartsWith("万物分馏测试版-") && fileInfo.Name.EndsWith(".zip")) {
+                        if (fileInfo.Name.Contains("万物分馏") && fileInfo.Name.EndsWith(".zip")) {
                             fileInfo.Delete();
                         }
                     }
@@ -170,7 +170,7 @@ static class AfterBuildEvent {
                 string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
                 if (File.Exists(techVideo)) {
                     fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\万物分馏测试版-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
+                    zipFile = $@".\ModZips\[测试]万物分馏2.0-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                 }
@@ -311,13 +311,6 @@ static class AfterBuildEvent {
         using CmdProcess cmd = new();
         //终止游戏
         cmd.Exec(KillDSP);
-        Console.WriteLine("确认以下mod版本是否正确？回车确认");
-        foreach (var p in modVer) {
-            Console.WriteLine($"{p.Key} : v{p.Value}");
-        }
-        Console.ReadLine();
-        Console.WriteLine("确认是否已经打开矩阵分馏、燃料棒分馏？回车确认");//todo:自动修改配置文件，开启
-        Console.ReadLine();
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
         string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
@@ -335,7 +328,7 @@ static class AfterBuildEvent {
         }
         File.WriteAllLines(doorstop_config, lines);
         //判断所有mod是否均已存在
-        string[] mods = [
+        string[] names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
             "HiddenCirno-GenesisBook",//mod c：创世之书
@@ -344,103 +337,90 @@ static class AfterBuildEvent {
         Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
         string s = Console.ReadLine();
         if (s != "") {
-            mods[2] = "GenesisBook-GenesisBook_Experimental";
+            names[2] = "GenesisBook-GenesisBook_Experimental";
         }
-        for (int i = 0; i < mods.Length; i++) {
-            string modPluginsDir = $@"{R2_BepInEx}\plugins\{mods[i]}";
+        for (int i = 0; i < names.Length; i++) {
+            string modPluginsDir = $@"{R2_BepInEx}\plugins\{names[i]}";
             if (!Directory.Exists(modPluginsDir)) {
                 Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
                 return;
             }
         }
-        //禁用所有mod，加快启动速度
-        ChangeAllModsEnable(false);
+        //载入Mod数据，然后构建ModInfo数组
+        LoadModInfos();
+        ModInfo[] modInfos = names.Select(GetModInfo).ToArray();
         //生成计算器json
-        bool[] modsEnable = new bool[mods.Length];
-        int[] set = [0, 1, 2, 3];
-        for (int i = 0; i <= mods.Length; i++) {
-            IEnumerable<IEnumerable<int>> result = Combinations(set, i);
-            foreach (IEnumerable<int> combo in result) {
-                for (int j = 0; j < mods.Length; j++) {
-                    modsEnable[j] = combo.Contains(j);
-                }
-                //战斗的前置依赖为巨构，需要特别处理一下
-                if (modsEnable[1] && !modsEnable[0]) {
+        for (int r = 0; r <= modInfos.Length; r++) {
+            List<List<ModInfo>> result = Combinations(modInfos, r);
+            foreach (List<ModInfo> state in result) {
+                //深空来敌启用时，更多巨构也必须启用
+                if (!state.Contains(modInfos[0]) && state.Contains(modInfos[1])) {
                     continue;
                 }
-                WriteOneJson(cmd, mods, modsEnable);
+                //开始准备json相关内容
+                string oriFilePath = GetJsonFilePath(state, false);
+                string calcFilePath = GetJsonFilePath(state, true);
+                if (File.Exists(oriFilePath)) {
+                    Console.WriteLine($"{oriFilePath} 已存在，跳过生成");
+                    continue;
+                }
+                Console.WriteLine("终止游戏进程...");
+                cmd.Exec(KillDSP);
+                //仅启用指定的模组
+                HashSet<string> nameList = [];
+                foreach (ModInfo modInfo in state) {
+                    nameList.Add(modInfo.name);
+                    List<string> dependencies = GetDependencies(modInfo.name);
+                    foreach (string dependency in dependencies) {
+                        nameList.Add(dependency);
+                    }
+                }
+                nameList.Add("MengLei-GetDspData");
+                nameList.Add("starfi5h-ErrorAnalyzer");
+                OnlyEnableInputMods(nameList.ToList());
+                StringBuilder sb = new("启动游戏，mod情况：");
+                for (int i = 0; i < modInfos.Length; i++) {
+                    sb.Append(modInfos[i].displayName).Append(state.Contains(modInfos[i]) ? "启用 " : "禁用 ");
+                }
+                Console.WriteLine(sb.ToString());
+                cmd.Exec(RunModded);
+                while (!File.Exists(oriFilePath)) {
+                    Thread.Sleep(100);
+                }
+                //多等一会，确保文件已经全部写入
+                Thread.Sleep(500);
+                Console.WriteLine($"已生成 {oriFilePath}");
+                DirectoryInfo info = new FileInfo(calcFilePath).Directory;
+                if (info == null || !info.Exists) {
+                    Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
+                    return;
+                }
+                //这里必须删除目标文件，再复制，因为windows忽略大小写，有可能导致名称有问题
+                File.Delete(calcFilePath);
+                File.Copy(oriFilePath, calcFilePath, true);
+                if (!File.Exists(calcFilePath)
+                    || new FileInfo(calcFilePath).Length != new FileInfo(oriFilePath).Length) {
+                    Console.WriteLine("复制计算器json文件失败");
+                    return;
+                }
+                Console.WriteLine($"已复制到 {calcFilePath}");
             }
         }
-        //启用所有mod   todo：改为读取r2配置文件
-        ChangeAllModsEnable(true);
+        //启用R2配置文件中所有enable为true的mod
+        EnableModsByConfig();
         //终止游戏
         cmd.Exec(KillDSP);
     }
 
-    private static void WriteOneJson(CmdProcess cmd, string[] mods, bool[] modsEnable) {
-        string oriFilePath = GetJsonFilePath(mods, modsEnable, false);
-        string calcFilePath = GetJsonFilePath(mods, modsEnable, true);
-        if (File.Exists(oriFilePath)) {
-            Console.WriteLine($"{oriFilePath} 已存在，跳过生成");
-        } else {
-            Console.WriteLine("终止游戏进程...");
-            cmd.Exec(KillDSP);
-            for (int i = 0; i < mods.Length; i++) {
-                ChangeModEnable(mods[i], modsEnable[i]);
-            }
-            StringBuilder sb = new("启动游戏，mod情况：");
-            for (int i = 0; i < mods.Length; i++) {
-                sb.Append(mods[i].Substring(mods[i].LastIndexOf("-") + 1)).Append(modsEnable[i] ? "启用 " : "禁用 ");
-            }
-            Console.WriteLine(sb.ToString());
-            cmd.Exec(RunModded);
-            while (!File.Exists(oriFilePath)) {
-                Thread.Sleep(100);
-            }
-            //多等一会，确保文件已经全部写入
-            Thread.Sleep(500);
-            Console.WriteLine($"已生成 {oriFilePath}");
-            DirectoryInfo info = new FileInfo(calcFilePath).Directory;
-            if (info == null || !info.Exists) {
-                Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
-                return;
-            }
+    private static string GetJsonFilePath(List<ModInfo> state, bool isCalc) {
+        string jsonFileName = "";
+        foreach (ModInfo modInfo in state) {
+            jsonFileName += "_" + modInfo.displayName + modInfo.version;
         }
-        //这里必须删除目标文件，再复制，因为windows忽略大小写，有可能导致名称有问题
-        File.Delete(calcFilePath);
-        File.Copy(oriFilePath, calcFilePath, true);
-        if (!File.Exists(calcFilePath) || new FileInfo(calcFilePath).Length != new FileInfo(oriFilePath).Length) {
-            Console.WriteLine("复制计算器json文件失败");
-            return;
-        }
-        Console.WriteLine($"已复制到 {calcFilePath}");
-    }
-
-    private static Dictionary<string, string> modVer = new() {
-        { "MoreMegaStructure", "1.8.3" },
-        { "TheyComeFromVoid", "3.4.10" },
-        { "GenesisBook", "3.0.14" },
-        { "GenesisBook_Experimental", "3.1.0-alpha2.2" },
-        { "FractionateEverything", "1.4.5" },
-        { "FractionateEverything_Experimental", "2.0.0" },
-    };
-
-    private static string GetJsonFilePath(string[] mods, bool[] modsEnable, bool isCalc) {
-        string name = "";
-        for (int i = 0; i < mods.Length; i++) {
-            if (modsEnable[i]) {
-                string modEnName = mods[i].Split('-')[1];
-                //通过modEnName找到对应的版本号
-                if (modEnName == "FractionateEverything" && mods.Contains("GenesisBook_Experimental")) {
-                    modEnName += "_Experimental";
-                }
-                name += "_" + modEnName.Replace("_Experimental", "") + modVer[modEnName];
-            }
-        }
-        name = name == "" ? "Vanilla" : name.Substring(1);
+        jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc
-            ? $@"D:\project\js\dsp-calc\data\{name}.json"
-            : $@"..\..\..\GetDspData\gamedata\calc json\{name}.json";
+            ? $@"D:\project\js\dsp-calc\data\{jsonFileName}.json"
+            : $@"..\..\..\GetDspData\gamedata\calc json\{jsonFileName}.json";
     }
 
     #endregion

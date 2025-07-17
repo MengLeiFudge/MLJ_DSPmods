@@ -33,11 +33,15 @@ public abstract class BaseRecipe(
     /// </summary>
     public float MaxSuccessRate => maxSuccessRate;
 
+
+    //todo:可以开放两种模式。一种是现在的，也就是重置等级，但是加成更高；另一种是等级影响很小，品质影响大，且效果要一直上升
+
+
     /// <summary>
     /// 通过品质和等级得到该配方的整体进度，范围为0-1
     /// </summary>
     public float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
-                             / (MaxLevel * (0.1f + MaxQuality * 0.02f) + MaxQuality * 0.2f);
+                             / (MaxQuality * 0.2f + (MaxQuality + 3) * (0.1f + MaxQuality * 0.02f));
 
     /// <summary>
     /// 实际成功率，随着等级和品质的提高而提高。
