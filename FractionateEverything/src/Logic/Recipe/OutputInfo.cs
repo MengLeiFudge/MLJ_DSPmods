@@ -6,7 +6,7 @@ namespace FE.Logic.Recipe;
 /// 配方某一项产物信息。
 /// 注意，只有<see cref="FE.Logic.Recipe.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
 /// </summary>
-public class OutputInfo(float successRate, int outputID, int outputCount) {
+public class OutputInfo(float successRate, int outputID, float outputCount) {
     public static void AddTranslations() {
         Register("总计 ", "Total ");
     }
