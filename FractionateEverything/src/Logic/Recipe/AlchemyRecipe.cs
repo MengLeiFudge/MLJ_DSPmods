@@ -24,13 +24,57 @@ public class AlchemyRecipe : BaseRecipe {
             }
             int matrixID = itemToMatrix[item.ID];
             float matrixValue = itemValue[matrixID];
-            AddRecipe(new AlchemyRecipe(item.ID, itemValue[item.ID] / matrixValue,
+            //关联度越高的物品，点金成功率越大。
+            //如果某个原料是制作矩阵的第n层原料，那么点金成功率增加1/n，点金价值增加0.25/n
+            float successRate = itemValue[item.ID] / matrixValue;
+            float valueFactor = 1.0f;
+            // 获取物品与矩阵的关联度
+            Dictionary<int, int> relationDepth = [];
+            CalculateRelationDepth(item.ID, matrixID, 1, relationDepth);
+            // 根据关联度调整成功率和价值
+            if (relationDepth.TryGetValue(matrixID, out int depth)) {
+                if (depth > 0) {
+                    successRate *= 1 + 1.0f / depth;
+                    valueFactor *= 1 + 0.25f / depth;
+                }
+            }
+            AddRecipe(new AlchemyRecipe(item.ID, successRate,
                 [
-                    new OutputInfo(1.0f, matrixID, 1),
+                    new OutputInfo(1.0f, matrixID, valueFactor),
                 ],
                 [
                     new OutputInfo(0.01f, IFE点金精华, 1),
                 ]));
+        }
+    }
+
+    /// <summary>
+    /// 计算物品与矩阵的关联深度
+    /// </summary>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="matrixId">矩阵ID</param>
+    /// <param name="depth">当前深度</param>
+    /// <param name="relationDepth">关联深度字典</param>
+    private static void
+        CalculateRelationDepth(int itemId, int matrixId, int depth, Dictionary<int, int> relationDepth) {
+        // 如果已经计算过这个物品的关联深度，并且新的深度更大，则跳过
+        if (relationDepth.TryGetValue(itemId, out int existingDepth) && existingDepth <= depth) {
+            return;
+        }
+        // 记录当前物品的关联深度
+        relationDepth[itemId] = depth;
+        // 如果当前物品就是目标矩阵，则关联深度为0
+        if (itemId == matrixId) {
+            relationDepth[itemId] = 0;
+            return;
+        }
+        // 获取物品的主要制作配方
+        var recipe = LDB.items.Select(itemId)?.maincraft;
+        if (recipe == null) return;
+        // 递归计算所有原料的关联深度
+        for (int i = 0; i < recipe.Items.Length; i++) {
+            int materialId = recipe.Items[i];
+            CalculateRelationDepth(materialId, matrixId, depth + 1, relationDepth);
         }
     }
 
