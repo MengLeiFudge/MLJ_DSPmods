@@ -25,14 +25,8 @@ public static class TabShop {
         }, false, item => true);
     }
 
-    /// <summary>
-    /// 显示指定物品分别在MOD数据、背包、物流背包中的数量
-    /// </summary>
-    private static Text[] textItemCount = new Text[3];
-    /// <summary>
-    /// 显示指定物品在MOD数据、背包、物流背包中的总数
-    /// </summary>
-    private static Text textItemTotalCount;
+    private static Text textItemInfo1;
+    private static Text textItemInfo2;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
 
     private static DateTime lastFreshTime;
@@ -50,15 +44,10 @@ public static class TabShop {
             var tab = wnd.AddTab(trans, "数据中心");
             x = 0f;
             y = 10f;
-            wnd.AddButton(x, y, 200, tab, "切换物品", 16, "button-change-item", OnButtonChangeItemClick);
+            textItemInfo1 = wnd.AddText2(x, y, tab, "当前物品：xx", 15, "textItemInfo1");
+            wnd.AddButton(x + 400, y, 200, tab, "切换物品", 16, "button-change-item", OnButtonChangeItemClick);
             y += 36f;
-            textItemCount[0] = wnd.AddText2(x, y, tab, "", 15, "textItemCount0");
-            y += 36f;
-            textItemCount[1] = wnd.AddText2(x, y, tab, "", 15, "textItemCount1");
-            y += 36f;
-            textItemCount[2] = wnd.AddText2(x, y, tab, "", 15, "textItemCount2");
-            y += 36f;
-            textItemTotalCount = wnd.AddText2(x, y, tab, "", 15, "textItemTotalCount");
+            textItemInfo2 = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemInfo2");
             y += 36f;
             btnGetModDataItem[0] = wnd.AddButton(x, y, 200, tab, "提取1组物品", 16, "button-get-item",
                 () => GetModDataItem(1));
@@ -91,21 +80,21 @@ public static class TabShop {
     }
 
     public static void UpdateUI() {
-        textItemCount[0].text = $"数据中心有 {GetModDataItemCount(SelectedItem.ID)} 个 {SelectedItem.name}";
-        textItemCount[1].text = $"背包有 {GetPackageItemCount(SelectedItem.ID)} 个 {SelectedItem.name}";
-        textItemCount[2].text = $"物流背包有 {GetDeliveryPackageItemCount(SelectedItem.ID)} 个 {SelectedItem.name}";
-        textItemTotalCount.text = $"总计有 {GetItemTotalCount(SelectedItem.ID)} 个 {SelectedItem.name}";
+        textItemInfo1.text = $"当前选择物品：{SelectedItem.name} x {GetItemTotalCount(SelectedItem.ID)}";
+        textItemInfo2.text = $"数据中心：{GetModDataItemCount(SelectedItem.ID)}"
+                             + $" 物流背包：{GetModDataItemCount(SelectedItem.ID)}"
+                             + $" 个人背包：{GetModDataItemCount(SelectedItem.ID)}";
         var t = btnGetModDataItem[0].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
-            t.text = $"提取 {SelectedItem.name} x {SelectedItem.StackSize}";
+            t.text = $"提取1组（{SelectedItem.StackSize}）";
         }
         t = btnGetModDataItem[1].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
-            t.text = $"提取 {SelectedItem.name} x {SelectedItem.StackSize * 10}";
+            t.text = $"提取10组（{SelectedItem.StackSize * 10}）";
         }
         t = btnGetModDataItem[2].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
-            t.text = $"提取 {SelectedItem.name} x {GetModDataItemCount(SelectedItem.ID)}";
+            t.text = $"提取全部（{GetModDataItemCount(SelectedItem.ID)}）";
         }
 
         if (DateTime.Now.Minute / 10 != lastFreshTime.Minute / 10) {
@@ -124,9 +113,8 @@ public static class TabShop {
     /// 如果groupCount为-1，表示提取所有物品；否则表示提取groupCount组物品。
     /// </summary>
     public static void GetModDataItem(int groupCount) {
-        int realTakeCount = groupCount == -1
-            ? int.MaxValue
-            : TakeItemFromModData(SelectedItem.ID, SelectedItem.StackSize * groupCount);
+        int takeCount = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
+        int realTakeCount = TakeItemFromModData(SelectedItem.ID, takeCount);
         if (realTakeCount <= 0) {
             UIMessageBox.Show("提示", $"分馏中心没有物品 {SelectedItem.name}", "确认", UIMessageBox.WARNING);
         } else {

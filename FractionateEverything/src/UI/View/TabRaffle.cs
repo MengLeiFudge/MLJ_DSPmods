@@ -168,7 +168,7 @@ public static class TabRaffle {
         }
         for (int i = 0; i < PreferredItems.Length; i++) {
             if (RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[i], PreferredItems[i]) == null) {
-                UIMessageBox.Show("提示", "你还未设置喜好配方！", "确认", UIMessageBox.WARNING);
+                UIMessageBox.Show("提示", "你还未设置优先配方！", "确认", UIMessageBox.WARNING);
                 return;
             }
         }
