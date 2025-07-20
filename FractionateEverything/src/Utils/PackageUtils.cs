@@ -1,4 +1,5 @@
-﻿using FE.Logic.Manager;
+﻿using System;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 
 namespace FE.Utils;
@@ -107,13 +108,9 @@ public static partial class Utils {
     public static int TakeItemFromModData(int takeId, int takeCount) {
         lock (ItemManager.itemModDataCount) {
             if (ItemManager.itemModDataCount.ContainsKey(takeId)) {
-                if (ItemManager.itemModDataCount[takeId] >= takeCount) {
-                    ItemManager.itemModDataCount[takeId] -= takeCount;
-                    if (ItemManager.itemModDataCount[takeId] == 0) {
-                        ItemManager.itemModDataCount.Remove(takeId);
-                    }
-                } else {
-                    takeCount = ItemManager.itemModDataCount[takeId];
+                takeCount = Math.Min(takeCount, ItemManager.itemModDataCount[takeId]);
+                ItemManager.itemModDataCount[takeId] -= takeCount;
+                if (ItemManager.itemModDataCount[takeId] == 0) {
                     ItemManager.itemModDataCount.Remove(takeId);
                 }
             } else {
