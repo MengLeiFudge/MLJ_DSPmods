@@ -359,7 +359,9 @@ public static class ItemManager {
         itemValue[IFE残破核心] = 200000.0f;
         //获取所有配方（排除分馏配方，以及含有多功能集成组件的配方）
         var recipes = LDB.recipes.dataArray
-            .Where(r => r.Type != ERecipeType.Fractionate && !r.Items.ToList().Contains(IMS多功能集成组件))
+            .Where(r => r.Type != ERecipeType.Fractionate
+                        && !r.Items.Contains(IMS多功能集成组件)
+                        && !r.Results.Contains(IMS多功能集成组件))
             .ToArray();
 
         //迭代计算价值
@@ -484,32 +486,71 @@ public static class ItemManager {
 
     public static void ClassifyItemsToMatrix() {
         foreach (var item in LDB.items.dataArray) {
-            int itemID = item.ID;
-            TechProto preTech = item.maincraft?.preTech;
-            if (preTech != null) {
-                int topMatrixID = 0;
-                for (int j = 0; j < preTech.Items.Length; j++) {
-                    int matrixID = preTech.Items[j];
-                    if (LDB.items.Select(matrixID).Type == EItemType.Matrix) {
-                        matrixID = matrixID switch {
-                            IGB玻色矩阵 => I能量矩阵,
-                            IGB耗散矩阵 => I信息矩阵,
-                            IGB奇点矩阵 => I引力矩阵,
-                            _ => matrixID
-                        };
-                        topMatrixID = Math.Max(topMatrixID, matrixID);
+            int topMatrixID;
+            if (item.Type == EItemType.Matrix) {
+                topMatrixID = item.ID switch {
+                    IGB玻色矩阵 => I能量矩阵,
+                    IGB耗散矩阵 => I信息矩阵,
+                    IGB奇点矩阵 => I引力矩阵,
+                    _ => item.ID
+                };
+            } else if (item.missingTech) {
+                topMatrixID = I黑雾矩阵;
+            } else if (item.preTech == null) {
+                if (item.UnlockKey == -1 || item.Type == EItemType.Resource || item.ID == I沙土) {
+                    //原矿归到电磁矩阵
+                    topMatrixID = I电磁矩阵;
+                } else if (item.UnlockKey == -2) {
+                    //黑雾特有掉落归到黑雾矩阵
+                    topMatrixID = I黑雾矩阵;
+                } else {
+                    //确实无前置科技，例如铁块、分馏配方核心等
+                    List<RecipeProto> recipes = LDB.recipes.dataArray
+                        .Where(r => r.Items.Contains(item.ID)).ToList();
+                    if (recipes.Count == 0) {
+                        topMatrixID = I黑雾矩阵;
+                    } else {
+                        topMatrixID = int.MaxValue;
+                        foreach (RecipeProto recipe in recipes) {
+                            if (recipe.preTech != null) {
+                                int id = GetTopMatrixID(recipe.preTech);
+                                if (id > 0 && id < topMatrixID) {
+                                    topMatrixID = id;
+                                }
+                            }
+                        }
+                        if (topMatrixID == int.MaxValue) {
+                            topMatrixID = I黑雾矩阵;
+                        }
                     }
                 }
-                if (topMatrixID > 0) {
-                    itemToMatrix[itemID] = topMatrixID;
-                    LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
-                    continue;
-                }
+            } else {
+                int id = GetTopMatrixID(item.preTech);
+                topMatrixID = id > 0 ? id : I电磁矩阵;
             }
-            //todo：归到黑雾还是白糖？
-            LogInfo($"物品{item.name}({itemID})归类到{LDB.items.Select(I电磁矩阵).name}({I电磁矩阵})");
-            itemToMatrix[itemID] = I电磁矩阵;
+            itemToMatrix[item.ID] = topMatrixID;
+            LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
         }
+    }
+
+    private static int GetTopMatrixID(TechProto tech) {
+        if (tech.IsHiddenTech || tech.Items.Contains(I黑雾矩阵)) {
+            return I黑雾矩阵;
+        }
+        int topMatrixID = 0;
+        for (int j = 0; j < tech.Items.Length; j++) {
+            int matrixID = tech.Items[j];
+            if (LDB.items.Select(matrixID).Type == EItemType.Matrix) {
+                matrixID = matrixID switch {
+                    IGB玻色矩阵 => I能量矩阵,
+                    IGB耗散矩阵 => I信息矩阵,
+                    IGB奇点矩阵 => I引力矩阵,
+                    _ => matrixID
+                };
+                topMatrixID = Math.Max(topMatrixID, matrixID);
+            }
+        }
+        return topMatrixID;
     }
 
     #endregion
