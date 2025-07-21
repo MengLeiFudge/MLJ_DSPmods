@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using BepInEx.Configuration;
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Logic.Manager;

@@ -815,12 +815,13 @@ public static class ProcessManager {
                             }
                         }
                     }
-                    // //移除所有数目为0的缓存物品
-                    // foreach (int outputID in keys) {
-                    //     if (otherProductOutput[outputID] == 0) {
-                    //         otherProductOutput.Remove(outputID);
-                    //     }
-                    // }
+                    //移除所有数目为0的缓存物品
+                    //不能移除此代码，因为下面使用了 otherProductOutput.Count == 0 的检测
+                    foreach (int outputID in keys) {
+                        if (otherProductOutput[outputID] == 0) {
+                            otherProductOutput.Remove(outputID);
+                        }
+                    }
                 }
             } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
                 //正面作为输入，数据传到数据中心。仅接受奖券。
