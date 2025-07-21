@@ -15,10 +15,12 @@ namespace FE.UI.View;
 public static class TabRecipeAndBuilding {
     public static RectTransform _windowTrans;
 
-    #region 选定物品
+    #region 选择物品
 
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
     public static int SelectedItemId => SelectedItem.ID;
+    private static Text textCurrItem;
+    private static MyImageButton btnSelectedItem;
 
     private static void OnButtonChangeItemClick(bool showLocked) {
         //_windowTrans.anchoredPosition是窗口的中心点
@@ -47,9 +49,6 @@ public static class TabRecipeAndBuilding {
     ];
     public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
-
-    private static Text textCurrRecipe;
-    private static MyImageButton btnSelectedItem;
     private static Text[] textRecipeInfo = new Text[30];
 
     #endregion
@@ -100,17 +99,14 @@ public static class TabRecipeAndBuilding {
             var tab = wnd.AddTab(trans, "配方详情");
             x = 0f;
             y = 10f;
-            wnd.AddComboBox(x, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
+            textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
+            btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
+                SelectedItem.ID, "button-change-item",
+                () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
+                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
+            wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
-            textCurrRecipe = wnd.AddText2(x + 250, y, tab, "", 15, $"textCurRecipe");
-            btnSelectedItem = wnd.AddImageButton(x + 500, y, tab, SelectedItem.ID, "button-change-item",
-                () => { OnButtonChangeItemClick(false); });
             y += 50f;
-            wnd.AddButton(x, y, 300, tab, "查看已解锁配方", 16, "button-show-unlocked-recipe",
-                () => { OnButtonChangeItemClick(false); });
-            wnd.AddButton(x + 320, y, 300, tab, "查看全部配方", 16, "button-show-all-recipe",
-                () => { OnButtonChangeItemClick(true); });
-            y += 36f;
             wnd.AddButton(x, y, 300, tab, "使用分馏配方核心兑换此配方", 16, "button-get-recipe",
                 () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
             wnd.AddButton(x + 320, y, 300, tab, "使用残破核心兑换此配方", 16, "button-get-recipe2",
@@ -159,7 +155,6 @@ public static class TabRecipeAndBuilding {
     }
 
     public static void UpdateUI() {
-        textCurrRecipe.text = $"原料：{SelectedItem.name}";
         btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
@@ -167,13 +162,13 @@ public static class TabRecipeAndBuilding {
         if (recipe == null) {
             textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
             line++;
-        } else if (recipe.IsUnlocked) {
+        } else if (!recipe.IsUnlocked) {
             textRecipeInfo[line].text = "配方未解锁！".WithColor(Red);
             line++;
         } else {
             textRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
             line++;
-            textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
+            textRecipeInfo[line].text = $"费用 1 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumDuplicate) {
                 QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);

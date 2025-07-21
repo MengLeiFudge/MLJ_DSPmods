@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
+using CommonAPI.Systems;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Manager.RecipeManager;
 using static FE.UI.View.TabRecipeAndBuilding;
 using static FE.Utils.Utils;
 
@@ -16,6 +18,28 @@ namespace FE.UI.View;
 
 public static class TabRaffle {
     public static RectTransform _windowTrans;
+
+    #region 选择物品
+
+    private static Text textCurrItem;
+    private static MyImageButton btnSelectedItem;
+
+    private static void OnButtonChangeItemClick(bool showLocked) {
+        //_windowTrans.anchoredPosition是窗口的中心点
+        //Popup的位置是弹出窗口的左上角
+        //所以要向右（x+）向上（y+）
+        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
+        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
+        UIItemPickerExtension.Popup(new(x, y), item => {
+            if (item == null) return;
+            SelectedItem = item;
+        }, false, item => {
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
+            return recipe != null && (showLocked || recipe.IsUnlocked);
+        });
+    }
+
+    #endregion
 
     public static ConfigEntry<int> TicketTypeEntry;
     public static int[] TicketIds = [
@@ -79,6 +103,14 @@ public static class TabRaffle {
             var tab = wnd.AddTab(trans, "配方卡池");
             x = 0f;
             y = 10f;
+            textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
+            btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
+                SelectedItem.ID, "button-change-item",
+                () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
+                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
+            wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
+                .WithConfigEntry(RecipeTypeEntry);
+            y += 50f;
             wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             wnd.AddComboBox(x + 250, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)

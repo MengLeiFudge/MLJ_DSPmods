@@ -273,6 +273,10 @@ public abstract class BaseRecipe(
             }
         }
         Quality = Math.Min(r.ReadInt32(), 7);
+        //配方变动时Quality可能变成6，先这样临时解决一下
+        if (Quality == 6) {
+            Quality = 7;
+        }
         Level = Math.Min(r.ReadInt32(), Quality + 3);
         Exp = r.ReadInt64();
         AddExp(0);//触发升级、突破判断
