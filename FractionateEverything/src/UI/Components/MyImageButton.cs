@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
@@ -76,17 +78,16 @@ public class MyImageButton : MonoBehaviour {
     }
 
     public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        int itemID, UnityAction onClick = null) {
-        return CreateImageButton(x, y, parent, 40, 40, LDB.items.Select(itemID)?.iconSprite, onClick);
+        int itemID, UnityAction onLeftClick = null, UnityAction onRightClick = null,
+        string tipTitle = "", string tipContent = "") {
+        return CreateImageButton(x, y, parent, 40, 40, LDB.items.Select(itemID)?.iconSprite,
+            onLeftClick, onRightClick, tipTitle, tipContent);
     }
 
     public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        Sprite sprite = null, UnityAction onClick = null) {
-        return CreateImageButton(x, y, parent, 40, 40, sprite, onClick);
-    }
-
-    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        float width, float height, Sprite sprite = null, UnityAction onClick = null) {
+        float width, float height, Sprite sprite = null,
+        UnityAction onLeftClick = null, UnityAction onRightClick = null,
+        string tipTitle = "", string tipContent = "") {
         var go = Instantiate(_baseObject);
         go.name = "my-image-button";
         go.SetActive(true);
@@ -110,10 +111,36 @@ public class MyImageButton : MonoBehaviour {
         // 添加点击事件
         if (cb.uiButton.button != null) {
             cb.uiButton.button.onClick.RemoveAllListeners();
-            if (onClick != null) cb.uiButton.button.onClick.AddListener(onClick);
+            if (onLeftClick != null) cb.uiButton.button.onClick.AddListener(onLeftClick);
+            if (onRightClick != null) {
+                EventTrigger eventTrigger = cb.gameObject.GetComponent<EventTrigger>();
+                if (eventTrigger == null) {
+                    eventTrigger = cb.gameObject.AddComponent<EventTrigger>();
+                }
+                if (eventTrigger.triggers == null) {
+                    eventTrigger.triggers = [];
+                }
+                eventTrigger.triggers.RemoveAll(entry => entry.eventID == EventTriggerType.PointerClick);
+                EventTrigger.Entry entry = new EventTrigger.Entry {
+                    eventID = EventTriggerType.PointerClick,
+                };
+                entry.callback.AddListener(data => {
+                    PointerEventData pointerData = (PointerEventData)data;
+                    if (pointerData.button == PointerEventData.InputButton.Right) {
+                        onRightClick.Invoke();
+                    }
+                });
+                eventTrigger.triggers.Add(entry);
+            }
         } else {
             LogError("Button component is null in MyImageButton");
         }
+
+        //添加按钮悬浮提示
+        cb.uiButton.tips.topLevel = true;
+        cb.uiButton.tips.tipTitle = tipTitle;
+        cb.uiButton.tips.tipText = tipContent;
+        cb.uiButton.UpdateTip();
 
         return cb;
     }
