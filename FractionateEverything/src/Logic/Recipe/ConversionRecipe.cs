@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FE.Compatibility;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -100,24 +102,33 @@ public class ConversionRecipe : BaseRecipe {
         }
         //每一个只能转化成下一级、同级或上一级的物品
         for (int i = 0; i < itemLists.Count; i++) {
-            for (int j = 0; i < itemLists[i].Count; j++) {
+            for (int j = 0; j < itemLists[i].Count; j++) {
                 int inputID = itemLists[i][j];
+                //依据产物层次初步分配概率
                 int countN1 = i - 1 >= 0 ? itemLists[i - 1].Count : 0;
                 int countC = itemLists[i].Count;
                 int countP1 = i + 1 < itemLists.Count ? itemLists[i + 1].Count : 0;
                 int totalPieces = countN1 + countC * 2 + countP1 * 2;
+                float totalRateN1 = countN1 * 1.0f / totalPieces;
+                float totalRateC = countC * 2.0f / totalPieces;
+                float totalRateP1 = countP1 * 2.0f / totalPieces;
                 List<OutputInfo> outputMain = [];
                 for (int k = i - 1; k <= i + 1; k++) {
                     if (k < 0 || k >= itemLists.Count) {
                         continue;
                     }
-                    float rate = k == i - 1 ? 1.0f / totalPieces : 2.0f / totalPieces;
-                    //todo:价值越高的物品，概率就越低。并且，确保物品数目为整数
-                    for (int l = j - 1; l <= j + 1; l++) {
-                        if (l < 0 || l >= itemLists[k].Count) {
-                            continue;
-                        }
-                        outputMain.Add(new(rate, itemLists[k][l], 1));
+                    //依据产物价值进一步分配概率，价值越高概率越低
+                    float rateTotal = k == i - 1 ? totalRateN1 :
+                        k == i ? totalRateC : totalRateP1;
+                    float[] values = new float[itemLists.Count];
+                    for (int l = 0; l < itemLists[k].Count; l++) {
+                        values[l] = 1.0f / itemValue[itemLists[k][l]];
+                    }
+                    float valueTotal = values.Sum();
+                    for (int l = 0; l < itemLists[k].Count; l++) {
+                        //产物数目固定为1
+                        //这个配方是赚是亏，谁知道呢？
+                        outputMain.Add(new(values[l] / valueTotal * rateTotal, itemLists[k][l], 1));
                     }
                 }
                 Create(inputID, 0.1f, outputMain);

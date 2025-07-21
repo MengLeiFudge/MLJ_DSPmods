@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx.Configuration;
 using FE.Logic.Building;
 using HarmonyLib;
 using static FE.Logic.Manager.ProcessManager;

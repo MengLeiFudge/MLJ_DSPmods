@@ -15,20 +15,12 @@ namespace FE.UI.View;
 public static class TabRecipeAndBuilding {
     public static RectTransform _windowTrans;
 
-    #region 配方详情
+    #region 选定物品
 
-    public static ConfigEntry<int> RecipeTypeEntry;
-    public static string[] RecipeTypeNames;
-    public static ERecipe[] RecipeTypes = [
-        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
-        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
-    ];
-    public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
     public static int SelectedItemId => SelectedItem.ID;
-    public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
 
-    public static void OnButtonChangeItemClick(bool showLocked) {
+    private static void OnButtonChangeItemClick(bool showLocked) {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
@@ -42,6 +34,19 @@ public static class TabRecipeAndBuilding {
             return recipe != null && (showLocked || recipe.IsUnlocked);
         });
     }
+
+    #endregion
+
+    #region 配方详情
+
+    public static ConfigEntry<int> RecipeTypeEntry;
+    public static string[] RecipeTypeNames;
+    public static ERecipe[] RecipeTypes = [
+        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
+        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
+    ];
+    public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
+    public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
 
     private static Text textCurrRecipe;
     private static MyImageButton btnSelectedItem;
@@ -159,7 +164,13 @@ public static class TabRecipeAndBuilding {
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         int line = 0;
-        if (recipe != null) {
+        if (recipe == null) {
+            textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
+            line++;
+        } else if (recipe.IsUnlocked) {
+            textRecipeInfo[line].text = "配方未解锁！".WithColor(Red);
+            line++;
+        } else {
             textRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
             line++;
             textRecipeInfo[line].text = $"费用 1.00 {SelectedItem.name}";
@@ -218,9 +229,6 @@ public static class TabRecipeAndBuilding {
             }
             // textRecipeInfo[line].text = "特殊突破加成：无";
             // line++;
-        } else {
-            textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
-            line++;
         }
         for (; line < textRecipeInfo.Length; line++) {
             textRecipeInfo[line].text = "";

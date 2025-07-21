@@ -204,7 +204,7 @@ public static class TechManager {
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
             [IFE分馏原胚普通], [50], 3600,
             [RFE分馏原胚定向],
-            GenesisBook.Enable ? new(13, -71) : new(13, -71)
+            GenesisBook.Enable ? new(9, -51) : new(13, -71)
         );
         tech1750.AddItems = [IFE分馏原胚定向];
         tech1750.AddItemCounts = [10];
@@ -215,7 +215,7 @@ public static class TechManager {
             [tech1750.ID],
             [IFE交互塔], [10], 1800,
             [RFE交互塔],
-            GenesisBook.Enable ? new(17, -67) : new(17, -67)
+            GenesisBook.Enable ? new(13, -47) : new(17, -67)
         );
         tech1751.AddItems = [IFE交互塔];
         tech1751.AddItemCounts = [5];
@@ -226,7 +226,7 @@ public static class TechManager {
             [tech1751.ID],
             [IFE矿物复制塔], [10], 1800,
             [RFE矿物复制塔],
-            GenesisBook.Enable ? new(21, -67) : new(21, -67)
+            GenesisBook.Enable ? new(17, -47) : new(21, -67)
         );
         tech1752.AddItems = [IFE矿物复制塔];
         tech1752.AddItemCounts = [5];
@@ -237,7 +237,7 @@ public static class TechManager {
             [tech1752.ID],
             [IFE点数聚集塔], [10], 1800,
             [RFE点数聚集塔],
-            GenesisBook.Enable ? new(25, -67) : new(25, -67)
+            GenesisBook.Enable ? new(21, -47) : new(25, -67)
         );
         tech1754.AddItems = [IFE点数聚集塔];
         tech1754.AddItemCounts = [5];
@@ -248,7 +248,7 @@ public static class TechManager {
             [tech1754.ID],
             [IFE量子复制塔, I黑雾矩阵], [5, 2000], 60000,
             [RFE量子复制塔],
-            GenesisBook.Enable ? new(29, -67) : new(29, -67)
+            GenesisBook.Enable ? new(25, -47) : new(29, -67)
         );
         tech1755.IsHiddenTech = true;
         //前置物品仅需物质重组器，只要掉落该物品，该科技就为可见状态
@@ -262,7 +262,7 @@ public static class TechManager {
             [tech1751.ID],
             [IFE点金塔], [10], 1800,
             [RFE点金塔],
-            GenesisBook.Enable ? new(21, -71) : new(21, -71)
+            GenesisBook.Enable ? new(17, -51) : new(21, -71)
         );
         tech1756.AddItems = [IFE点金塔];
         tech1756.AddItemCounts = [5];
@@ -273,7 +273,7 @@ public static class TechManager {
             [tech1756.ID],
             [IFE分解塔], [10], 1800,
             [RFE分解塔],
-            GenesisBook.Enable ? new(25, -71) : new(25, -71)
+            GenesisBook.Enable ? new(21, -51) : new(25, -71)
         );
         tech1757.AddItems = [IFE分解塔];
         tech1757.AddItemCounts = [5];
@@ -284,7 +284,7 @@ public static class TechManager {
             [tech1757.ID],
             [IFE转化塔], [10], 1800,
             [RFE转化塔],
-            GenesisBook.Enable ? new(29, -71) : new(29, -71)
+            GenesisBook.Enable ? new(25, -51) : new(29, -71)
         );
         tech1758.AddItems = [IFE转化塔];
         tech1758.AddItemCounts = [5];
@@ -295,7 +295,7 @@ public static class TechManager {
             [tech1750.ID],
             [I电磁矩阵], [6], 3600,
             [],
-            GenesisBook.Enable ? new(17, -75) : new(17, -75)
+            GenesisBook.Enable ? new(13, -55) : new(17, -75)
         );
         tech1759.AddItems = [IFE电磁奖券];
         tech1759.AddItemCounts = [100];
@@ -306,7 +306,7 @@ public static class TechManager {
             [tech1759.ID],
             [I电磁矩阵], [30], 3600,
             [],
-            GenesisBook.Enable ? new(21, -75) : new(21, -75)
+            GenesisBook.Enable ? new(17, -55) : new(21, -75)
         );
         tech1760.AddItems = [IFE分馏配方核心, IFE建筑增幅芯片];
         tech1760.AddItemCounts = [5, 3];
@@ -317,7 +317,7 @@ public static class TechManager {
             [tech1750.ID],
             [I电磁矩阵], [700], 3600,
             [RFE电磁奖券],
-            GenesisBook.Enable ? new(17, -79) : new(17, -79)
+            GenesisBook.Enable ? new(13, -59) : new(17, -79)
         );
         tech1761.PreTechsImplicit = [T电磁矩阵];
         tech1761.AddItems = [IFE电磁奖券];
@@ -329,7 +329,7 @@ public static class TechManager {
             [tech1761.ID],
             [I能量矩阵], [650], 3600,
             [RFE能量奖券],
-            GenesisBook.Enable ? new(21, -79) : new(21, -79)
+            GenesisBook.Enable ? new(17, -59) : new(21, -79)
         );
         tech1761.PreTechsImplicit = [T能量矩阵];
         tech1762.AddItems = [IFE能量奖券];
@@ -341,7 +341,7 @@ public static class TechManager {
             [tech1762.ID],
             [I结构矩阵], [600], 3600,
             [RFE结构奖券],
-            GenesisBook.Enable ? new(25, -79) : new(25, -79)
+            GenesisBook.Enable ? new(21, -59) : new(25, -79)
         );
         tech1763.PreTechsImplicit = [T结构矩阵];
         tech1763.AddItems = [IFE结构奖券];
@@ -353,7 +353,7 @@ public static class TechManager {
             [tech1763.ID],
             [I信息矩阵], [550], 3600,
             [RFE信息奖券],
-            GenesisBook.Enable ? new(29, -79) : new(29, -79)
+            GenesisBook.Enable ? new(25, -59) : new(29, -79)
         );
         tech1764.PreTechsImplicit = [T信息矩阵];
         tech1764.AddItems = [IFE信息奖券];
@@ -365,7 +365,7 @@ public static class TechManager {
             [tech1764.ID],
             [I引力矩阵], [500], 3600,
             [RFE引力奖券],
-            GenesisBook.Enable ? new(33, -79) : new(33, -79)
+            GenesisBook.Enable ? new(29, -59) : new(33, -79)
         );
         tech1765.PreTechsImplicit = [T引力矩阵];
         tech1765.AddItems = [IFE引力奖券];
@@ -377,7 +377,7 @@ public static class TechManager {
             [tech1765.ID],
             [I宇宙矩阵], [400], 3600,
             [RFE宇宙奖券],
-            GenesisBook.Enable ? new(37, -79) : new(37, -79)
+            GenesisBook.Enable ? new(33, -59) : new(37, -79)
         );
         tech1766.PreTechsImplicit = [T宇宙矩阵];
         tech1766.AddItems = [IFE宇宙奖券];
@@ -389,7 +389,7 @@ public static class TechManager {
             [],
             [I黑雾矩阵], [20000], 3600,
             [RFE黑雾奖券],
-            GenesisBook.Enable ? new(41, -79) : new(41, -79)
+            GenesisBook.Enable ? new(37, -59) : new(41, -79)
         );
         tech1767.IsHiddenTech = true;
         tech1767.PreItem = [I黑雾矩阵];
