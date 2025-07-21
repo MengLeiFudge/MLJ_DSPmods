@@ -120,7 +120,7 @@ public class ConversionRecipe : BaseRecipe {
                     //依据产物价值进一步分配概率，价值越高概率越低
                     float rateTotal = k == i - 1 ? totalRateN1 :
                         k == i ? totalRateC : totalRateP1;
-                    float[] values = new float[itemLists.Count];
+                    float[] values = new float[itemLists[k].Count];
                     for (int l = 0; l < itemLists[k].Count; l++) {
                         values[l] = 1.0f / itemValue[itemLists[k][l]];
                     }

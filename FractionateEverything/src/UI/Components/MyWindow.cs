@@ -118,7 +118,7 @@ public class MyWindow : ManualBehaviour {
         return text;
     }
 
-    public static UIButton AddTipsButton(float x, float y, RectTransform parent, string label, string tip,
+    public static UIButton AddTipsButton(float x, float y, RectTransform parent, string tipTitle, string tipContent,
         string objName = "tips-button") {
         var src = UIRoot.instance.galaxySelect.sandboxToggle.gameObject.transform.parent.Find("tip-button");
         var dst = Instantiate(src);
@@ -126,8 +126,8 @@ public class MyWindow : ManualBehaviour {
         var btn = dst.GetComponent<UIButton>();
         NormalizeRectWithTopLeft(btn, x, y, parent);
         btn.tips.topLevel = true;
-        btn.tips.tipTitle = label;
-        btn.tips.tipText = tip;
+        btn.tips.tipTitle = tipTitle;
+        btn.tips.tipText = tipContent;
         btn.UpdateTip();
         return btn;
     }
@@ -179,8 +179,10 @@ public class MyWindow : ManualBehaviour {
     }
 
     public MyImageButton AddImageButton(float x, float y, RectTransform parent, int itemId = I铁矿,
-        string objName = "button", UnityAction onClick = null) {
-        var btn = MyImageButton.CreateImageButton(x, y, parent, itemId, onClick);
+        string objName = "button", UnityAction onLeftClick = null, UnityAction onRightClick = null,
+        string tipTitle = "", string tipContent = "") {
+        var btn = MyImageButton.CreateImageButton(x, y, parent, itemId,
+            onLeftClick, onRightClick, tipTitle, tipContent);
         btn.gameObject.name = objName;
 
         _maxX = Math.Max(_maxX, x + btn.Width);

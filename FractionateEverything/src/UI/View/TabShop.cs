@@ -89,8 +89,8 @@ public static class TabShop {
     public static void UpdateUI() {
         textItemInfo1.text = $"当前选择物品：{SelectedItem.name} x {GetItemTotalCount(SelectedItem.ID)}";
         textItemInfo2.text = $"数据中心：{GetModDataItemCount(SelectedItem.ID)}"
-                             + $" 物流背包：{GetModDataItemCount(SelectedItem.ID)}"
-                             + $" 个人背包：{GetModDataItemCount(SelectedItem.ID)}";
+                             + $"          物流背包：{GetDeliveryPackageItemCount(SelectedItem.ID)}"
+                             + $"          个人背包：{GetPackageItemCount(SelectedItem.ID)}";
         var t = btnGetModDataItem[0].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取1组（{SelectedItem.StackSize}）";
@@ -123,7 +123,7 @@ public static class TabShop {
         int takeCount = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
         int realTakeCount = TakeItemFromModData(SelectedItem.ID, takeCount);
         if (realTakeCount <= 0) {
-            UIMessageBox.Show("提示", $"分馏中心没有物品 {SelectedItem.name}", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示", $"分馏中心没有物品 {SelectedItem.name} ！", "确认", UIMessageBox.WARNING);
         } else {
             AddItemToPackage(SelectedItem.ID, realTakeCount, false);
             UIMessageBox.Show("提示", $"已从分馏中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
