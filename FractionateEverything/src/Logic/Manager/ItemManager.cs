@@ -507,8 +507,8 @@ public static class ItemManager {
                 }
             }
             //todo：归到黑雾还是白糖？
-            LogDebug($"物品{item.name}({itemID})归类到{LDB.items.Select(I黑雾矩阵).name}({I黑雾矩阵})");
-            itemToMatrix[itemID] = I黑雾矩阵;
+            LogInfo($"物品{item.name}({itemID})归类到{LDB.items.Select(I电磁矩阵).name}({I电磁矩阵})");
+            itemToMatrix[itemID] = I电磁矩阵;
         }
     }
 

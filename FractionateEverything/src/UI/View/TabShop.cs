@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
@@ -28,6 +29,8 @@ public static class TabShop {
     private static Text textItemInfo1;
     private static Text textItemInfo2;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
+    private static UIButton btnGetModDataProto;
+    private static UIButton btnGetModDataBuilding;
 
     private static DateTime lastFreshTime;
     private static Text textLeftTime;
@@ -49,13 +52,17 @@ public static class TabShop {
             y += 36f;
             textItemInfo2 = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemInfo2");
             y += 36f;
-            btnGetModDataItem[0] = wnd.AddButton(x, y, 200, tab, "提取1组物品", 16, "button-get-item",
+            btnGetModDataItem[0] = wnd.AddButton(x, y, 200, tab, "提取1组物品", 16, "button-get-item0",
                 () => GetModDataItem(1));
-            btnGetModDataItem[1] = wnd.AddButton(x + 220, y, 200, tab, "提取10组物品", 16, "button-get-item",
+            btnGetModDataItem[1] = wnd.AddButton(x + 220, y, 200, tab, "提取10组物品", 16, "button-get-item1",
                 () => GetModDataItem(10));
-            btnGetModDataItem[2] = wnd.AddButton(x + 440, y, 200, tab, "提取全部物品", 16, "button-get-item",
+            btnGetModDataItem[2] = wnd.AddButton(x + 440, y, 200, tab, "提取全部物品", 16, "button-get-item2",
                 () => GetModDataItem(-1));
             y += 36f;
+            btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏原胚", 16, "button-get-proto",
+                GetModDataProto);
+            btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏建筑", 16, "button-get-building",
+                GetModDataBuilding);
         }
         {
             var tab = wnd.AddTab(trans, "限时商店");
@@ -69,11 +76,11 @@ public static class TabShop {
                 () => ExchangeItem(0));
             y += 36f;
             textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
-            wnd.AddButton(x, y, 400, tab, "兑换", 16, "btn-buy-time2",
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time2",
                 () => ExchangeItem(1));
             y += 36f;
             textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
-            wnd.AddButton(x, y, 400, tab, "兑换", 16, "btn-buy-time3",
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time3",
                 () => ExchangeItem(2));
             y += 36f;
         }
@@ -112,7 +119,7 @@ public static class TabShop {
     /// 从ModData背包提取指定堆叠数的物品。
     /// 如果groupCount为-1，表示提取所有物品；否则表示提取groupCount组物品。
     /// </summary>
-    public static void GetModDataItem(int groupCount) {
+    private static void GetModDataItem(int groupCount) {
         int takeCount = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
         int realTakeCount = TakeItemFromModData(SelectedItem.ID, takeCount);
         if (realTakeCount <= 0) {
@@ -121,6 +128,54 @@ public static class TabShop {
             AddItemToPackage(SelectedItem.ID, realTakeCount, false);
             UIMessageBox.Show("提示", $"已从分馏中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
         }
+    }
+
+    private static void GetModDataProto() {
+        StringBuilder sb = new StringBuilder();
+        int[] itemIDs = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说];
+        int[] counts = new int[itemIDs.Length];
+        for (int i = 0; i < itemIDs.Length; i++) {
+            counts[i] = GetModDataItemCount(itemIDs[i]);
+            if (counts[i] > 0) {
+                ItemProto item = LDB.items.Select(itemIDs[i]);
+                sb.Append($"\n{item.name} x {counts[i]}");
+            }
+        }
+        if (sb.Length == 0) {
+            UIMessageBox.Show("提示", "没有可提取的分馏原胚！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
+            for (int i = 0; i < itemIDs.Length; i++) {
+                if (counts[i] > 0) {
+                    TakeItemFromModData(itemIDs[i], counts[i]);
+                }
+            }
+        });
+    }
+
+    private static void GetModDataBuilding() {
+        StringBuilder sb = new StringBuilder();
+        int[] itemIDs = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
+        int[] counts = new int[itemIDs.Length];
+        for (int i = 0; i < itemIDs.Length; i++) {
+            counts[i] = GetModDataItemCount(itemIDs[i]);
+            if (counts[i] > 0) {
+                ItemProto item = LDB.items.Select(itemIDs[i]);
+                sb.Append($"\n{item.name} x {counts[i]}");
+            }
+        }
+        if (sb.Length == 0) {
+            UIMessageBox.Show("提示", "没有可提取的分馏建筑！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
+            for (int i = 0; i < itemIDs.Length; i++) {
+                if (counts[i] > 0) {
+                    TakeItemFromModData(itemIDs[i], counts[i]);
+                }
+            }
+        });
     }
 
     public static void ExchangeItem(int index) { }
