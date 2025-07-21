@@ -14,7 +14,12 @@ namespace FE.UI.View;
 public static class TabShop {
     public static RectTransform _windowTrans;
 
-    public static void OnButtonChangeItemClick() {
+    #region 选择物品
+
+    private static Text textCurrItem;
+    private static MyImageButton btnSelectedItem;
+
+    private static void OnButtonChangeItemClick() {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
@@ -26,13 +31,14 @@ public static class TabShop {
         }, false, item => true);
     }
 
-    private static Text textItemInfo1;
-    private static Text textItemInfo2;
+    #endregion
+
+    private static Text textItemCountInfo;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
     private static UIButton btnGetModDataProto;
     private static UIButton btnGetModDataBuilding;
 
-    private static DateTime lastFreshTime;
+    private static DateTime nextFreshTime;
     private static Text textLeftTime;
     private static Text[] textItemInfo = new Text[3];
 
@@ -47,10 +53,13 @@ public static class TabShop {
             var tab = wnd.AddTab(trans, "数据中心");
             x = 0f;
             y = 10f;
-            textItemInfo1 = wnd.AddText2(x, y, tab, "当前物品：xx", 15, "textItemInfo1");
-            wnd.AddButton(x + 400, y, 200, tab, "切换物品", 16, "button-change-item", OnButtonChangeItemClick);
-            y += 36f;
-            textItemInfo2 = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemInfo2");
+            textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
+            btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
+                SelectedItem.ID, "button-change-item",
+                OnButtonChangeItemClick, OnButtonChangeItemClick,
+                "切换说明", "左键选择需要查询或提取的物品");
+            y += 50f;
+            textItemCountInfo = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemCountInfo");
             y += 36f;
             btnGetModDataItem[0] = wnd.AddButton(x, y, 200, tab, "提取1组物品", 16, "button-get-item0",
                 () => GetModDataItem(1));
@@ -66,7 +75,8 @@ public static class TabShop {
         }
         {
             var tab = wnd.AddTab(trans, "限时商店");
-            lastFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute / 10 * 10);
+            nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
+                .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
             x = 0f;
             y = 10f;
             textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
@@ -87,10 +97,10 @@ public static class TabShop {
     }
 
     public static void UpdateUI() {
-        textItemInfo1.text = $"当前选择物品：{SelectedItem.name} x {GetItemTotalCount(SelectedItem.ID)}";
-        textItemInfo2.text = $"数据中心：{GetModDataItemCount(SelectedItem.ID)}"
-                             + $"          物流背包：{GetDeliveryPackageItemCount(SelectedItem.ID)}"
-                             + $"          个人背包：{GetPackageItemCount(SelectedItem.ID)}";
+        textItemCountInfo.text = $"当前共有 {GetItemTotalCount(SelectedItem.ID)}，其中"
+                                 + $"数据中心 {GetModDataItemCount(SelectedItem.ID)}，"
+                                 + $"物流背包 {GetDeliveryPackageItemCount(SelectedItem.ID)}，"
+                                 + $"个人背包 {GetPackageItemCount(SelectedItem.ID)}";
         var t = btnGetModDataItem[0].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取1组（{SelectedItem.StackSize}）";
@@ -104,14 +114,14 @@ public static class TabShop {
             t.text = $"提取全部（{GetModDataItemCount(SelectedItem.ID)}）";
         }
 
-        if (DateTime.Now.Minute / 10 != lastFreshTime.Minute / 10) {
-            lastFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute / 10 * 10);
+        if (DateTime.Now >= nextFreshTime) {
+            nextFreshTime = nextFreshTime.AddMinutes(10);
             //更新三份限时购买物品的信息
             // textItemInfo[0].text = GetTimeLimitedItemInfo(0);
             // textItemInfo[1].text = GetTimeLimitedItemInfo(1);
             // textItemInfo[2].text = GetTimeLimitedItemInfo(2);
         }
-        TimeSpan ts = DateTime.Now - lastFreshTime;
+        TimeSpan ts = nextFreshTime - DateTime.Now;
         textLeftTime.text = $"还有 {(int)ts.TotalMinutes} min {ts.Seconds} s 刷新";
     }
 
