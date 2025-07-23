@@ -108,6 +108,9 @@ public static class TabRaffle {
                 SelectedItem.ID, "button-change-item",
                 () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
                 "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
+            //todo: 修复按钮提示窗后移除该内容
+            wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
+                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
             wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             y += 50f;
@@ -151,6 +154,7 @@ public static class TabRaffle {
     }
 
     public static void UpdateUI() {
+        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         TicketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         TicketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         for (int i = 0; i < PreferredItems.Length; i++) {
