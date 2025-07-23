@@ -32,8 +32,6 @@ public abstract class BaseRecipe(
     /// </summary>
     public float MaxSuccessRate => maxSuccessRate;
 
-    //todo:可以开放两种模式。一种是现在的，也就是重置等级，但是加成更高；另一种是等级影响很小，品质影响大，且效果要一直上升
-
     private float Progress1 => (float)(Quality + 5) / (MaxQuality + 5);
 
     /// <summary>
@@ -76,7 +74,7 @@ public abstract class BaseRecipe(
     /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
     public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
+            AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         Dictionary<int, int> dic = [];
@@ -100,7 +98,7 @@ public abstract class BaseRecipe(
                 //由于此处必定是第一个key，所以直接添加
                 dic[outputInfo.OutputID] = count;
                 outputInfo.OutputTotalCount += count;
-                AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
+                AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
                 break;
             }
         }
@@ -165,17 +163,17 @@ public abstract class BaseRecipe(
     /// <details>
     /// 达到下一级所需经验会自动升级。到达等级上限仍可获取经验，突破时多余经验会按照一定比例转化。
     /// </details>
-    public long Exp { get; private set; } = 0;
+    public float Exp { get; private set; } = 0;
 
     /// <summary>
     /// 升级所需经验
     /// </summary>
-    public long LevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
+    public int LevelUpExp => (int)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
 
     /// <summary>
     /// 当前品质最高经验
     /// </summary>
-    public long MaxLevelUpExp => (long)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, MaxLevel - 1));
+    public int MaxLevelUpExp => (int)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, MaxLevel - 1));
 
     /// <summary>
     /// 配方回响个数。
@@ -197,14 +195,12 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 添加经验
     /// </summary>
-    public void AddExp(int exp) {
+    public void AddExp(float exp) {
         lock (this) {
-            // LogDebug($"Quality{Quality} Lv{Level} ({Exp} + {exp}/{LevelUpExp})");
-            Exp += (int)(exp * ExpMultiRate);
+            Exp += exp * ExpMultiRate;
             if (Exp >= LevelUpExp && !CanBreakthrough2) {
                 Exp -= LevelUpExp;
                 Level++;
-                LogDebug($"Level Up! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
             }
             TryBreakQuality();
         }
@@ -229,10 +225,8 @@ public abstract class BaseRecipe(
                     } else {
                         Quality++;
                     }
-                    LogDebug($"Quality broke success! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
                 } else {
-                    LogDebug($"Quality broke fail! Quality{Quality} Lv{Level} ({Exp}/{LevelUpExp})");
-                    Exp -= LevelUpExp / 5;
+                    Exp -= LevelUpExp / 5.0f;
                 }
             }
         }
@@ -242,7 +236,7 @@ public abstract class BaseRecipe(
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
     public string TypeNameWC => TypeName.WithQualityColor(Quality);
-    public string LvExp => $"Lv{Level} ({Exp}/{LevelUpExp})";
+    public string LvExp => $"Lv{Level} ({(int)Exp}/{LevelUpExp})";
     public string LvExpWC => LvExp.WithQualityColor(Quality);
 
 
@@ -278,7 +272,7 @@ public abstract class BaseRecipe(
             Quality = 7;
         }
         Level = Math.Min(r.ReadInt32(), Quality + 3);
-        Exp = r.ReadInt64();
+        Exp = r.ReadSingle();
         AddExp(0);//触发升级、突破判断
         MemoryCount = r.ReadInt32();
         // 子类特定数据由重写的方法处理
