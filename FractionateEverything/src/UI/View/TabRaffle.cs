@@ -94,11 +94,11 @@ public static class TabRaffle {
         float x;
         float y;
         wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
-        {
-            var tab = wnd.AddTab(trans, "自选卡池");
-            x = 0f;
-            y = 10f;
-        }
+        // {
+        //     var tab = wnd.AddTab(trans, "自选卡池");
+        //     x = 0f;
+        //     y = 10f;
+        // }
         {
             var tab = wnd.AddTab(trans, "配方卡池");
             x = 0f;
@@ -290,15 +290,31 @@ public static class TabRaffle {
                 continue;
             }
             RecipeRaffleCount++;
-            //剩余的概率中，50%黑雾掉落
-            int enemyDropCount = GameMain.history.enemyDropItemUnlocked.Count;
-            if (enemyDropCount > 0) {
-                double ratioDarkFog = (1 - currRate) * 0.5 / enemyDropCount;
-                bool getDarkFog = false;
-                foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
-                    currRate += ratioDarkFog;
+            //剩余的概率中，50%各种物品
+            HashSet<int> items = [..GameMain.history.enemyDropItemUnlocked];
+            foreach (ItemProto item in LDB.items.dataArray) {
+                if (item.ID == I沙土) {
+                    continue;
+                }
+                if (item.UnlockKey == -1 || item.Type == EItemType.Resource) {
+                    items.Add(item.ID);
+                }
+                if (item.preTech != null && GameMain.history.TechUnlocked(item.preTech.ID)) {
+                    items.Add(item.ID);
+                }
+            }
+            items.RemoveWhere(x => itemValue[x] >= maxValue);
+            if (items.Count > 0) {
+                double ratioItem = (1 - currRate) * 0.5 / items.Count;
+                bool getItem = false;
+                foreach (int itemId in items) {
+                    currRate += ratioItem;
                     if (randDouble < currRate) {
-                        int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[itemId] * 0.8f);
+                        float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
+                        int count = ratio <= 100
+                            ? (int)Math.Ceiling(ratio * 0.8f)
+                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 8f);
+                        count = Math.Max(1, count);
                         AddItemToModData(itemId, count);
                         sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
@@ -308,11 +324,11 @@ public static class TabRaffle {
                         } else {
                             sb.Append("          ");
                         }
-                        getDarkFog = true;
+                        getItem = true;
                         break;
                     }
                 }
-                if (getDarkFog) {
+                if (getItem) {
                     continue;
                 }
             }
@@ -384,10 +400,10 @@ public static class TabRaffle {
             if (getBuilding) {
                 continue;
             }
-            //分馏原胚（26.4%）
+            //分馏原胚（8.8% * 5 = 44%）
             bool getFracProto = false;
             for (int i = 0; i < FracProtoRateArr.Length; i++) {
-                currRate += FracProtoRateArr[i] * 3 * SelectedTicketRatioPlus;
+                currRate += FracProtoRateArr[i] * 5 * SelectedTicketRatioPlus;
                 if (randDouble < currRate) {
                     int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[FracProtoID[i]] * 0.8f);
                     AddItemToModData(FracProtoID[i], count);
@@ -407,15 +423,31 @@ public static class TabRaffle {
             if (getFracProto) {
                 continue;
             }
-            //剩余的概率中，50%黑雾掉落
-            int enemyDropCount = GameMain.history.enemyDropItemUnlocked.Count;
-            if (enemyDropCount > 0) {
-                double ratioDarkFog = (1 - currRate) * 0.5 / enemyDropCount;
-                bool getDarkFog = false;
-                foreach (int itemId in GameMain.history.enemyDropItemUnlocked) {
-                    currRate += ratioDarkFog;
+            //剩余的概率中，50%各种物品
+            HashSet<int> items = [..GameMain.history.enemyDropItemUnlocked];
+            foreach (ItemProto item in LDB.items.dataArray) {
+                if (item.ID == I沙土) {
+                    continue;
+                }
+                if (item.UnlockKey == -1 || item.Type == EItemType.Resource) {
+                    items.Add(item.ID);
+                }
+                if (item.preTech != null && GameMain.history.TechUnlocked(item.preTech.ID)) {
+                    items.Add(item.ID);
+                }
+            }
+            items.RemoveWhere(x => itemValue[x] >= maxValue);
+            if (items.Count > 0) {
+                double ratioItem = (1 - currRate) * 0.5 / items.Count;
+                bool getItem = false;
+                foreach (int itemId in items) {
+                    currRate += ratioItem;
                     if (randDouble < currRate) {
-                        int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[itemId] * 0.8f);
+                        float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
+                        int count = ratio <= 100
+                            ? (int)Math.Ceiling(ratio * 0.8f)
+                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 8f);
+                        count = Math.Max(1, count);
                         AddItemToModData(itemId, count);
                         sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
@@ -425,11 +457,11 @@ public static class TabRaffle {
                         } else {
                             sb.Append("          ");
                         }
-                        getDarkFog = true;
+                        getItem = true;
                         break;
                     }
                 }
-                if (getDarkFog) {
+                if (getItem) {
                     continue;
                 }
             }
