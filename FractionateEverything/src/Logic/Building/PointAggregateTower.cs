@@ -43,6 +43,9 @@ public static class PointAggregateTower {
     /// </summary>
     public static float SuccessRate => 0.11f + Level * 0.02f;
 
+    public static string Lv => $"Lv{Level}";
+    public static string LvWC => Lv.WithPALvColor(Level);
+
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
             "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 104, 30, EItemType.Production,
@@ -110,40 +113,34 @@ public static class PointAggregateTower {
                                          + 0.75);
             if (__instance.progress > 100000)
                 __instance.progress = 100000;
+            //指示是否已启用分馏永动并且某个产物达到上限的一半
             bool fracForever = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
-                if (!fracForever && building.EnableFracForever()) {
-                    //如果分馏永动已研究，并且任何一个产物缓存达到上限的一半，则不会分馏出物品
-                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
-                        fracForever = true;
-                    }
-                    foreach (var p in otherProductOutput) {
-                        if (p.Value >= __instance.productOutputMax / 2) {
-                            fracForever = true;
-                            break;
-                        }
-                    }
-                }
-                if (fracForever) {
-                    continue;
-                }
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
                     : __instance.fluidInputInc / __instance.fluidInputCount;
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
-                float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
-                if (GetRandDouble(ref __instance.seed) < rate) {
-                    //成功
+                __instance.fractionSuccess = false;
+                if (!fracForever && building.EnableFracForever()) {
+                    //如果已启用分馏永动，并且所有产物都少于上限的一半，重新检查后者是否满足
+                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
+                        fracForever = true;
+                    }
+                }
+                if (!fracForever) {
+                    //如果所有产物仍然少于上限的一半，正常处理
+                    float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
+                    __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
+                }
+
+                if (__instance.fractionSuccess) {
                     __instance.fluidInputInc -= MaxInc;
-                    __instance.fractionSuccess = true;
                     __instance.productOutputCount++;
                     __instance.productOutputTotal++;
                 } else {
-                    //失败
                     __instance.fluidInputInc -= fluidInputIncAvg;
-                    __instance.fractionSuccess = false;
                     __instance.fluidOutputCount++;
                     __instance.fluidOutputTotal++;
                     __instance.fluidOutputInc += fluidInputIncAvg;
