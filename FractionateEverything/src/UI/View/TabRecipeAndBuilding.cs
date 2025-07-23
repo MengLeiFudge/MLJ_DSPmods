@@ -250,9 +250,7 @@ public static class TabRecipeAndBuilding {
 
         if (SelectedBuilding.ID == IFE点数聚集塔) {
             s = $"点数聚集效率层次：{PointAggregateTower.Level}";
-            textBuildingInfo4.text = PointAggregateTower.Level >= 7
-                ? s.WithColor(Orange)
-                : s.WithQualityColor(PointAggregateTower.Level);
+            textBuildingInfo4.text = s.WithPALvColor(PointAggregateTower.Level);
             textBuildingInfo4.enabled = true;
             btnTip4.gameObject.SetActive(true);
             btnBuildingInfo4.gameObject.SetActive(true);

@@ -55,4 +55,20 @@ public static partial class Utils {
             _ => $"Invalid quality {quality}".WithColor(Red)
         };
     }
+
+    /// <summary>
+    /// 根据点数聚集塔的等级为字符串添加对应颜色的富文本标签。
+    /// </summary>
+    public static string WithPALvColor(this string s, int level) {
+        return level switch {
+            1 => s.WithColor(White),
+            2 => s.WithColor(Green),
+            3 => s.WithColor(Blue),
+            4 => s.WithColor(Purple),
+            5 => s.WithColor(Red),
+            6 => s.WithColor(Gold),
+            7 => s.WithColor(Orange),
+            _ => $"Invalid point aggregate level {level}".WithColor(Red)
+        };
+    }
 }
