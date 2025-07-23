@@ -252,6 +252,7 @@ public static class ItemManager {
 
     #region 计算物品价值
 
+    public static float maxValue = 1000000;
     /// <summary>
     /// 物品总价值（原材料价值 + 制作价值）
     /// </summary>
@@ -290,7 +291,6 @@ public static class ItemManager {
     /// </summary>
     public static void CalculateItemValues() {
         //初始化价值字典，将所有物品价值都设为特定的大值
-        float maxValue = 1000000;
         for (int i = 0; i < itemValue.Length; i++) {
             itemValue[i] = maxValue;
         }
@@ -470,7 +470,6 @@ public static class ItemManager {
             }
             foreach (var p in dic.OrderBy(p => p.Value)) {
                 ItemProto item = LDB.items.Select(p.Key);
-                // LogDebug($"物品{item.name}({p.Key})价值保存至表格...");
                 sw.WriteLine(
                     $"{p.Key},{item.name},{p.Value:F2},{itemRatio[p.Key]:P5}");
             }
@@ -485,48 +484,54 @@ public static class ItemManager {
     public static readonly int[] itemToMatrix = new int[12000];
 
     public static void ClassifyItemsToMatrix() {
+        //       物品状态                         missingTech    preTech
+        //         正常                              false        tech
+        //黑雾特有材料（UnlockKey=-2），或资源        false        null
+        // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
             if (item.Type == EItemType.Matrix) {
+                //矩阵归到自己的层级，而非上一层级
                 topMatrixID = item.ID switch {
                     IGB玻色矩阵 => I能量矩阵,
                     IGB耗散矩阵 => I信息矩阵,
                     IGB奇点矩阵 => I引力矩阵,
                     _ => item.ID
                 };
-            } else if (item.missingTech) {
+            } else if (item.UnlockKey == -1 || item.Type == EItemType.Resource || item.ID == I沙土) {
+                //原矿归到电磁矩阵
+                topMatrixID = I电磁矩阵;
+            } else if (item.UnlockKey == -2) {
+                //黑雾特有掉落归到黑雾矩阵
                 topMatrixID = I黑雾矩阵;
-            } else if (item.preTech == null) {
-                if (item.UnlockKey == -1 || item.Type == EItemType.Resource || item.ID == I沙土) {
-                    //原矿归到电磁矩阵
-                    topMatrixID = I电磁矩阵;
-                } else if (item.UnlockKey == -2) {
-                    //黑雾特有掉落归到黑雾矩阵
-                    topMatrixID = I黑雾矩阵;
-                } else {
-                    //确实无前置科技，例如铁块、分馏配方核心等
-                    List<RecipeProto> recipes = LDB.recipes.dataArray
-                        .Where(r => r.Items.Contains(item.ID)).ToList();
-                    if (recipes.Count == 0) {
-                        topMatrixID = I黑雾矩阵;
-                    } else {
-                        topMatrixID = int.MaxValue;
-                        foreach (RecipeProto recipe in recipes) {
-                            if (recipe.preTech != null) {
-                                int id = GetTopMatrixID(recipe.preTech);
-                                if (id > 0 && id < topMatrixID) {
-                                    topMatrixID = id;
-                                }
-                            }
-                        }
-                        if (topMatrixID == int.MaxValue) {
-                            topMatrixID = I黑雾矩阵;
-                        }
-                    }
-                }
-            } else {
+            } else if (item.preTech != null) {
+                //大部分物品归到前置科技所属的矩阵层级。如果找不到前置科技所属的矩阵层级，归到电磁矩阵
                 int id = GetTopMatrixID(item.preTech);
                 topMatrixID = id > 0 ? id : I电磁矩阵;
+            } else if (!item.missingTech) {
+                //黑雾特有材料或资源
+                topMatrixID = item.UnlockKey == -2 ? I黑雾矩阵 : I电磁矩阵;
+            } else {
+                //主制作配方无前置科技（铁块），或没有主制作配方（分馏配方核心）
+                //此时尝试从其他配方的原料确认该物品可能的层级。如果仍未找到，归到黑雾矩阵
+                List<RecipeProto> recipes = LDB.recipes.dataArray
+                    .Where(r => r.Items.Contains(item.ID)).ToList();
+                if (recipes.Count == 0) {
+                    topMatrixID = I黑雾矩阵;
+                } else {
+                    topMatrixID = int.MaxValue;
+                    foreach (RecipeProto recipe in recipes) {
+                        if (recipe.preTech != null) {
+                            int id = GetTopMatrixID(recipe.preTech);
+                            if (id > 0 && id < topMatrixID) {
+                                topMatrixID = id;
+                            }
+                        }
+                    }
+                    if (topMatrixID == int.MaxValue) {
+                        topMatrixID = I黑雾矩阵;
+                    }
+                }
             }
             itemToMatrix[item.ID] = topMatrixID;
             LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
