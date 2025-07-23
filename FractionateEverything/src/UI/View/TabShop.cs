@@ -146,7 +146,7 @@ public static class TabShop {
 
     private static void GetModDataProto() {
         StringBuilder sb = new StringBuilder();
-        int[] itemIDs = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说];
+        int[] itemIDs = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
         int[] counts = new int[itemIDs.Length];
         for (int i = 0; i < itemIDs.Length; i++) {
             counts[i] = GetModDataItemCount(itemIDs[i]);
@@ -165,7 +165,7 @@ public static class TabShop {
                     TakeItemFromModData(itemIDs[i], counts[i]);
                 }
             }
-        });
+        }, null);
     }
 
     private static void GetModDataBuilding() {
@@ -189,7 +189,7 @@ public static class TabShop {
                     TakeItemFromModData(itemIDs[i], counts[i]);
                 }
             }
-        });
+        }, null);
     }
 
     public static void ExchangeItem(int index) { }

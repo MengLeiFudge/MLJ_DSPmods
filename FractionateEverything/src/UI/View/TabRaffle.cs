@@ -311,10 +311,9 @@ public static class TabRaffle {
                     currRate += ratioItem;
                     if (randDouble < currRate) {
                         float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
-                        int count = ratio <= 100
-                            ? (int)Math.Ceiling(ratio * 0.8f)
-                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 8f);
-                        count = Math.Max(1, count);
+                        int count = ratio <= 49
+                            ? (int)Math.Ceiling(ratio * 0.5f)
+                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
                         AddItemToModData(itemId, count);
                         sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
@@ -444,10 +443,9 @@ public static class TabRaffle {
                     currRate += ratioItem;
                     if (randDouble < currRate) {
                         float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
-                        int count = ratio <= 100
-                            ? (int)Math.Ceiling(ratio * 0.8f)
-                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 8f);
-                        count = Math.Max(1, count);
+                        int count = ratio <= 49
+                            ? (int)Math.Ceiling(ratio * 0.5f)
+                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
                         AddItemToModData(itemId, count);
                         sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                         oneLineCount++;
