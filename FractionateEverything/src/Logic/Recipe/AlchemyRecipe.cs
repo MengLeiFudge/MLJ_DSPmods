@@ -26,8 +26,8 @@ public class AlchemyRecipe : BaseRecipe {
             float matrixValue = itemValue[matrixID];
             //关联度越高的物品，点金成功率越大。
             //如果某个原料是制作矩阵的第n层原料，那么点金成功率增加1/n，点金价值增加0.25/n
-            float successRate = itemValue[item.ID] / matrixValue;
-            float valueFactor = 1.0f;
+            float successRate = 0.1f;
+            float valueFactor = itemValue[item.ID] / matrixValue * 10;
             // 获取物品与矩阵的关联度
             Dictionary<int, int> relationDepth = [];
             CalculateRelationDepth(item.ID, matrixID, 1, relationDepth);
