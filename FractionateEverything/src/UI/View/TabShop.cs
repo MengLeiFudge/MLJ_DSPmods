@@ -58,6 +58,9 @@ public static class TabShop {
                 SelectedItem.ID, "button-change-item",
                 OnButtonChangeItemClick, OnButtonChangeItemClick,
                 "切换说明", "左键选择需要查询或提取的物品");
+            //todo: 修复按钮提示窗后移除该内容
+            wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
+                "切换说明", "左键选择需要查询或提取的物品");
             y += 50f;
             textItemCountInfo = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemCountInfo");
             y += 36f;
@@ -97,6 +100,7 @@ public static class TabShop {
     }
 
     public static void UpdateUI() {
+        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         textItemCountInfo.text = $"当前共有 {GetItemTotalCount(SelectedItem.ID)}，其中"
                                  + $"数据中心 {GetModDataItemCount(SelectedItem.ID)}，"
                                  + $"物流背包 {GetDeliveryPackageItemCount(SelectedItem.ID)}，"
