@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -58,9 +59,10 @@ public class MineralCopyRecipe : BaseRecipe {
     }
 
     private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputAppend) {
-        if (!LDB.items.Exist(inputID)) {
+        if (itemValue[inputID] >= maxValue) {
             return;
         }
+        outputAppend.RemoveAll(info => itemValue[info.OutputID] >= maxValue);
         AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRate,
             [
                 new OutputInfo(1.000f, inputID, 2),

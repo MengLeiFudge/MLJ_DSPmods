@@ -59,7 +59,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I矩阵研究站], [I自演化研究站]]);
         CreateChain([[I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井, I微型粒子对撞机]]);
         CreateChain([[IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]]);
-        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
+        CreateChain([[I分馏塔], [IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
 
         //精炼页面
         CreateChain([
@@ -71,9 +71,7 @@ public class ConversionRecipe : BaseRecipe {
 
         //化工页面
         CreateChain([[I塑料_GB聚丙烯], [IGB聚苯硫醚PPS], [IGB聚酰亚胺PI]]);
-        if (!GenesisBook.Enable) {
-            CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII_GB增产剂]]);
-        }
+        CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII_GB增产剂]]);
 
         //防御页面
         CreateChain([[I原型机], [I精准无人机, I攻击无人机]]);
@@ -94,7 +92,7 @@ public class ConversionRecipe : BaseRecipe {
     private static void CreateChain(List<List<int>> itemLists) {
         //移除不存在的物品
         foreach (List<int> itemList in itemLists) {
-            itemList.RemoveAll(itemID => !LDB.items.Exist(itemID));
+            itemList.RemoveAll(itemID => itemValue[itemID] >= maxValue);
         }
         itemLists.RemoveAll(itemList => itemList.Count == 0);
         if (itemLists.Count == 0 || (itemLists.Count == 1 && itemLists[0].Count == 1)) {
@@ -137,9 +135,7 @@ public class ConversionRecipe : BaseRecipe {
     }
 
     private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputMain) {
-        if (!LDB.items.Exist(inputID)) {
-            return;
-        }
+        //由于上层已经做过价值的相关判断（也就是某个物品是否存在的判断），此处不需要再判断
         AddRecipe(new ConversionRecipe(inputID, baseSuccessRate,
             outputMain,
             [

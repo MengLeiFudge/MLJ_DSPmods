@@ -1,6 +1,6 @@
 ﻿using System;
-using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
 
@@ -11,11 +11,11 @@ public static partial class Utils {
     /// 将指定物品添加到ModData背包
     /// </summary>
     public static void AddItemToModData(int giveId, int giveCount) {
-        lock (ItemManager.itemModDataCount) {
-            if (ItemManager.itemModDataCount.ContainsKey(giveId)) {
-                ItemManager.itemModDataCount[giveId] += giveCount;
+        lock (itemModDataCount) {
+            if (itemModDataCount.ContainsKey(giveId)) {
+                itemModDataCount[giveId] += giveCount;
             } else {
-                ItemManager.itemModDataCount[giveId] = giveCount;
+                itemModDataCount[giveId] = giveCount;
             }
         }
     }
@@ -29,7 +29,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!LDB.items.Exist(giveId)) {
+        if (itemValue[giveId] >= maxValue) {
             return;
         }
         int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
@@ -46,7 +46,7 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static int GetModDataItemCount(int itemId) {
-        return ItemManager.itemModDataCount.TryGetValue(itemId, out int value) ? value : 0;
+        return itemModDataCount.TryGetValue(itemId, out int value) ? value : 0;
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (!LDB.items.Exist(itemId)) {
+        if (itemValue[itemId] >= maxValue) {
             return 0;
         }
         StorageComponent package = GameMain.mainPlayer.package;
@@ -76,7 +76,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (!LDB.items.Exist(itemId) || !GameMain.mainPlayer.deliveryPackage.unlocked) {
+        if (itemValue[itemId] >= maxValue || !GameMain.mainPlayer.deliveryPackage.unlocked) {
             return 0;
         }
         DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
@@ -106,12 +106,12 @@ public static partial class Utils {
     /// </summary>
     /// <returns>取出的物品数量</returns>
     public static int TakeItemFromModData(int takeId, int takeCount) {
-        lock (ItemManager.itemModDataCount) {
-            if (ItemManager.itemModDataCount.ContainsKey(takeId)) {
-                takeCount = Math.Min(takeCount, ItemManager.itemModDataCount[takeId]);
-                ItemManager.itemModDataCount[takeId] -= takeCount;
-                if (ItemManager.itemModDataCount[takeId] == 0) {
-                    ItemManager.itemModDataCount.Remove(takeId);
+        lock (itemModDataCount) {
+            if (itemModDataCount.ContainsKey(takeId)) {
+                takeCount = Math.Min(takeCount, itemModDataCount[takeId]);
+                itemModDataCount[takeId] -= takeCount;
+                if (itemModDataCount[takeId] == 0) {
+                    itemModDataCount.Remove(takeId);
                 }
             } else {
                 takeCount = 0;
@@ -129,7 +129,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return false;
         }
-        if (!LDB.items.Exist(takeId)) {
+        if (itemValue[takeId] >= maxValue) {
             return false;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -162,7 +162,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!LDB.items.Exist(takeId) || takeCount == 0 || !LDB.items.Exist(giveId) || giveCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0 || itemValue[giveId] >= maxValue || giveCount == 0) {
             return;
         }
         if (!TakeItem(takeId, takeCount)) {
@@ -190,7 +190,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!LDB.items.Exist(takeId) || takeCount == 0 || !LDB.items.Exist(giveId) || giveCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0 || itemValue[giveId] >= maxValue || giveCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -203,7 +203,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -232,7 +232,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         if (recipe == null) {
@@ -250,7 +250,7 @@ public static partial class Utils {
     /// 注意，为了提高性能，此方法未判断某些前置条件。使用时需注意情况。
     /// </summary>
     public static bool TakeEssenceFromModData(int n) {
-        lock (ItemManager.itemModDataCount) {
+        lock (itemModDataCount) {
             if (GetModDataItemCount(IFE复制精华) < n
                 || GetModDataItemCount(IFE点金精华) < n
                 || GetModDataItemCount(IFE分解精华) < n

@@ -15,11 +15,14 @@ public class AlchemyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
+            if (itemValue[item.ID] >= maxValue
+                || item.ID == IFE分馏配方核心
+                || item.ID == IFE建筑增幅芯片
+                || item.ID == IFE残破核心) {
+                continue;
+            }
             //点金塔不能处理矩阵，也不能处理建筑
-            if ((item.ID >= I电磁矩阵 && item.ID <= I宇宙矩阵)
-                || (item.ID >= IGB玻色矩阵 && item.ID <= IGB奇点矩阵)
-                || item.ID == I黑雾矩阵
-                || item.BuildMode != 0) {
+            if (item.Type == EItemType.Matrix || item.BuildMode != 0) {
                 continue;
             }
             int matrixID = itemToMatrix[item.ID];

@@ -17,6 +17,12 @@ public class DeconstructionRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
+            if (itemValue[item.ID] >= maxValue
+                || item.ID == IFE分馏配方核心
+                || item.ID == IFE建筑增幅芯片
+                || item.ID == IFE残破核心) {
+                continue;
+            }
             List<OutputInfo> outputMain = [];
             if (item.maincraft != null) {
                 int len = item.maincraft.Items.Length;
