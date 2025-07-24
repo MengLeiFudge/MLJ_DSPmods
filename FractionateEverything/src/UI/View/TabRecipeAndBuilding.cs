@@ -7,6 +7,7 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -217,7 +218,7 @@ public static class TabRecipeAndBuilding {
                         .WithColor(recipe.CanBreakthrough2 ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {recipe.Exp} / {recipe.MaxLevelUpExp}"
+                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {(int)recipe.Exp} / {recipe.MaxLevelUpExp}"
                         .WithColor(recipe.CanBreakthrough3 ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
@@ -270,7 +271,7 @@ public static class TabRecipeAndBuilding {
         }
         int takeId = IFE建筑增幅芯片;
         int takeCount = 2;
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -291,7 +292,7 @@ public static class TabRecipeAndBuilding {
         }
         int takeId = IFE建筑增幅芯片;
         int takeCount = 1;
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         if (SelectedBuilding.MaxProductOutputStack() >= 4) {
@@ -318,7 +319,7 @@ public static class TabRecipeAndBuilding {
         }
         int takeId = IFE建筑增幅芯片;
         int takeCount = 3;
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -339,7 +340,7 @@ public static class TabRecipeAndBuilding {
         }
         int takeId = IFE建筑增幅芯片;
         int takeCount = 1;
-        if (!LDB.items.Exist(takeId) || takeCount == 0) {
+        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         if (PointAggregateTower.Level >= 7) {
