@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
 /// <summary>
-/// 量子复制塔配方类（可复制所有物品）
+/// 量子复制塔配方类（可复制除建筑外的所有物品）
 /// </summary>
 public class QuantumCopyRecipe : BaseRecipe {
     /// <summary>
@@ -15,6 +16,16 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (var item in LDB.items.dataArray) {
+            if (itemValue[item.ID] >= maxValue
+                || item.ID == IFE分馏配方核心
+                || item.ID == IFE建筑增幅芯片
+                || item.ID == IFE残破核心) {
+                continue;
+            }
+            //量子复制塔不能处理建筑
+            if (item.BuildMode != 0) {
+                continue;
+            }
             AddRecipe(new QuantumCopyRecipe(item.ID, itemRatio[item.ID],
                 [
                     new OutputInfo(1.000f, item.ID, 2),

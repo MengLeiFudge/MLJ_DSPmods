@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
+using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -357,12 +358,25 @@ public static class ItemManager {
         itemValue[IFE分馏配方核心] = 500000.0f;
         itemValue[IFE建筑增幅芯片] = 888888.0f;
         itemValue[IFE残破核心] = 200000.0f;
-        //获取所有配方（排除分馏配方，以及含有多功能集成组件的配方）
-        var recipes = LDB.recipes.dataArray
-            .Where(r => r.Type != ERecipeType.Fractionate
-                        && !r.Items.Contains(IMS多功能集成组件)
-                        && !r.Results.Contains(IMS多功能集成组件))
-            .ToArray();
+        //获取所有配方（排除分馏配方、含有多功能集成组件的配方、GridIndex超限配方）
+        var iEnumerable = LDB.recipes.dataArray.Where(r =>
+            r.Type != ERecipeType.Fractionate
+            && !r.Items.Contains(IMS多功能集成组件)
+            && !r.Results.Contains(IMS多功能集成组件));
+        if (GenesisBook.Enable) {
+            iEnumerable = iEnumerable.Where(r =>
+                r.GridIndex % 1000 / 100 >= 1
+                && r.GridIndex % 1000 / 100 <= 7
+                && r.GridIndex % 100 >= 1
+                && r.GridIndex % 100 <= 17);
+        } else {
+            iEnumerable = iEnumerable.Where(r =>
+                r.GridIndex % 1000 / 100 >= 1
+                && r.GridIndex % 1000 / 100 <= 8
+                && r.GridIndex % 100 >= 1
+                && r.GridIndex % 100 <= 14);
+        }
+        var recipes = iEnumerable.ToArray();
 
         //迭代计算价值
         bool changed;
@@ -560,7 +574,7 @@ public static class ItemManager {
 
     #endregion
 
-    #region 交互塔存储数据
+    #region 分馏中心背包（也就是Mod物品缓存区数据）
 
     public static readonly Dictionary<int, int> itemModDataCount = [];
 

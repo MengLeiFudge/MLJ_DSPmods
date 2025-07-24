@@ -179,24 +179,30 @@ public class GetDspData : BaseUnityPlugin {
                 File.Create(filePath).Close();
             }
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                sw.WriteLine("物品ID,物品名称,物品类型,index(自动排序位置),BuildMode(建造类型),BuildIndex(建造栏位置)");
+                sw.WriteLine("物品ID,GridIndex,name,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
                 foreach (var item in LDB.items.dataArray) {
                     sw.WriteLine(item.ID
+                                 + ","
+                                 + item.GridIndex
                                  + ","
                                  + itemIdNameDic[item.ID]
                                  + ","
                                  + Enum.GetName(typeof(EItemType), (int)item.Type)
                                  + ","
-                                 + item.index
-                                 + ","
                                  + item.BuildMode
                                  + ","
-                                 + item.BuildIndex);
+                                 + item.BuildIndex
+                                 + ","
+                                 + (item.maincraft == null ? "null" : item.maincraft.ID)
+                                 + ","
+                                 + item.UnlockKey
+                                 + ","
+                                 + (item.preTech == null ? "null" : item.preTech.ID));
                 }
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("配方ID,配方名称,配方类型,原料,产物,时间");
+                sw.WriteLine("配方ID,GridIndex,name,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
                 foreach (var recipe in LDB.recipes.dataArray) {
                     int[] itemIDs = recipe.Items;
                     int[] itemCounts = recipe.ItemCounts;
@@ -204,6 +210,8 @@ public class GetDspData : BaseUnityPlugin {
                     int[] resultCounts = recipe.ResultCounts;
                     float timeSpeed = recipe.TimeSpend / 60.0f;
                     string s = recipe.ID
+                               + ","
+                               + recipe.GridIndex
                                + ","
                                + FormatName(recipe.name, recipe.Name)
                                + ","
@@ -217,13 +225,22 @@ public class GetDspData : BaseUnityPlugin {
                         s += itemIdNameDic[resultIDs[i]] + "(" + resultIDs[i] + ")*" + resultCounts[i] + " + ";
                     }
                     s = s.Substring(0, s.Length - 3) + ",";
-                    s += recipe.TimeSpend + "(" + timeSpeed.ToString("F1") + "s)";
+                    s += recipe.TimeSpend
+                         + "("
+                         + timeSpeed.ToString("F1")
+                         + "s)"
+                         + ","
+                         + recipe.Handcraft
+                         + ","
+                         + recipe.productive
+                         + ","
+                         + (recipe.preTech == null ? "null" : recipe.preTech.ID);
                     sw.WriteLine(s);
                 }
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("科技ID,科技名称,解锁配方");
+                sw.WriteLine("科技ID,name,UnlockRecipes");
                 foreach (var tech in LDB.techs.dataArray) {
                     sw.Write(tech.ID + "," + FormatName(tech.name, tech.Name));
                     if (tech.UnlockRecipes != null) {
