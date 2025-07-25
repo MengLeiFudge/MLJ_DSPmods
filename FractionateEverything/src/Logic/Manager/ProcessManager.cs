@@ -136,7 +136,7 @@ public static class ProcessManager {
                 return false;
             case IFE量子复制塔:
                 InternalUpdate<QuantumCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.QuantumDuplicate);
+                    consumeRegister, ref __result, ERecipe.QuantumCopy);
                 return false;
             case IFE点金塔:
                 InternalUpdate<AlchemyRecipe>(ref __instance, factory, power, signPool, productRegister,
@@ -719,7 +719,7 @@ public static class ProcessManager {
                 break;
             case IFE量子复制塔:
                 successRatePlus = (float)MaxTableMilli(fluidInputIncAvg) / 2.5f;
-                recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumDuplicate, fractionator.fluidId);
+                recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
                 break;
             case IFE点金塔:
                 successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);

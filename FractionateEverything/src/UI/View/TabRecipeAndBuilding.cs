@@ -45,7 +45,7 @@ public static class TabRecipeAndBuilding {
     public static ConfigEntry<int> RecipeTypeEntry;
     public static string[] RecipeTypeNames;
     public static ERecipe[] RecipeTypes = [
-        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumDuplicate,
+        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
     ];
     public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
@@ -174,7 +174,7 @@ public static class TabRecipeAndBuilding {
             line++;
             textRecipeInfo[line].text = $"费用 1 {SelectedItem.name}";
             line++;
-            if (recipeType == ERecipe.QuantumDuplicate) {
+            if (recipeType == ERecipe.QuantumCopy) {
                 QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);
                 textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 复制精华";
                 line++;
