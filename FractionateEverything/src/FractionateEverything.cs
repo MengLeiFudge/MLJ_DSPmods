@@ -181,8 +181,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         ItemManager.ClassifyItemsToMatrix();
         //SetFractionatorCacheSize用到了Init生成的数据
         BuildingManager.SetFractionatorCacheSize();
-        //AddBaseRecipes用到了Init生成的数据
-        RecipeManager.AddBaseRecipes();
+        //AddFracRecipes用到了Init生成的数据
+        RecipeManager.AddFracRecipes();
         _finished = true;
     }
 

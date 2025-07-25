@@ -22,7 +22,7 @@ public enum ERecipe {
     /// <summary>
     /// 量子复制配方
     /// </summary>
-    QuantumDuplicate,
+    QuantumCopy,
 
     /// <summary>
     /// 点金配方
@@ -48,7 +48,7 @@ public static class EnumExtensions {
         return recipe switch {
             ERecipe.BuildingTrain => "建筑培养".Translate(),
             ERecipe.MineralCopy => "矿物复制".Translate(),
-            ERecipe.QuantumDuplicate => "量子复制".Translate(),
+            ERecipe.QuantumCopy => "量子复制".Translate(),
             ERecipe.Alchemy => "点金".Translate(),
             ERecipe.Deconstruction => "分解".Translate(),
             ERecipe.Conversion => "转化".Translate(),

@@ -471,7 +471,7 @@ public static class TechManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
     public static void UITechTree_Do1KeyUnlock_Postfix() {
-        RecipeManager.UnlockAll();
+        RecipeManager.UnlockAllFracRecipes();
     }
 
     #endregion
