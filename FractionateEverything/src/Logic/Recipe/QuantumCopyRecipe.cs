@@ -37,7 +37,7 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// <summary>
     /// 配方类型
     /// </summary>
-    public override ERecipe RecipeType => ERecipe.QuantumDuplicate;
+    public override ERecipe RecipeType => ERecipe.QuantumCopy;
 
     /// <summary>
     /// 消耗精华数目
