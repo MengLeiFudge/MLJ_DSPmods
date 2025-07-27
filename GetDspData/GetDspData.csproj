@@ -1,156 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props" Condition="Exists('..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="../DefaultPath.props" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GetDspData</RootNamespace>
-    <AssemblyName>GetDspData</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
-    <LangVersion>default</LangVersion>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="0Harmony, Version=2.5.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\HarmonyX.2.5.5\lib\net45\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
-    </Reference>
-    <Reference Include="CommonAPI, Version=1.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DysonSphereProgram.Modding.CommonAPI.1.6.5\lib\net472\CommonAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="DSPModSave, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DysonSphereProgram.Modding.DSPModSave.1.2.0\lib\net472\DSPModSave.dll</HintPath>
-    </Reference>
-    <Reference Include="FractionateEverything">
-      <HintPath>..\FractionateEverything\bin\Debug\FractionateEverything.dll</HintPath>
-    </Reference>
-    <Reference Include="LDBTool, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DysonSphereProgram.Modding.LDBTool.3.0.0\lib\net472\LDBTool.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=21.8.19.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MonoMod.RuntimeDetour.21.8.19.1\lib\net40\MonoMod.RuntimeDetour.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.Utils, Version=21.8.19.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MonoMod.Utils.21.8.19.1\lib\net40\MonoMod.Utils.dll</HintPath>
-    </Reference>
-    <Reference Include="NebulaAPI, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DysonSphereProgram.Modding.NebulaMultiplayerModApi.2.0.0\lib\netstandard2.0\NebulaAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UIModule">
-      <HintPath>$(DysonSphereProgramPath)\DSPGAME_Data\Managed\UnityEngine.UIModule.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="src\ProtoID.cs" />
-    <Compile Include="src\Utils.cs" />
-    <Content Include="gamedata\calc json\FractionateEverything.json" />
-    <Content Include="gamedata\calc json\GenesisBook.json" />
-    <Content Include="gamedata\calc json\GenesisBook_FractionateEverything.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_FractionateEverything.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_GenesisBook.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_GenesisBook_FractionateEverything.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid_FractionateEverything.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid_GenesisBook.json" />
-    <Content Include="gamedata\calc json\MoreMegaStructure_TheyComeFromVoid_GenesisBook_FractionateEverything.json" />
-    <Content Include="gamedata\calc json\Vanilla.json" />
-    <Content Include="gamedata\DSP_ProtoID.txt" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\GetDspData.cs" />
-    <Content Include="gamedata\itemPoint.csv" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="gamedata\DSP_DataInfo.csv" />
-    <Content Include="gamedata\fracIconPath.csv" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+        <TargetFramework>net472</TargetFramework>
+        <BepInExPluginGuid>com.menglei.dsp.dspdata</BepInExPluginGuid>
+        <Description>DSP MOD - GetDspData</Description>
+        <Version>1.0.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <PackageId>GetDspData</PackageId>
+        <RootNamespace>GetDspData</RootNamespace>
+        <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BepInEx.Core.5.4.17\build\BepInEx.Core.targets'))" />
-    <Error Condition="!Exists('..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\DysonSphereProgram.Modding.UI.Builder.0.0.5\build\DysonSphereProgram.Modding.UI.Builder.props'))" />
-  </Target>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>full</DebugType>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2018.4.12" IncludeAssets="compile"/>
+        <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
+        <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
+        <!-- 排除 GameLibs 中的 Assembly-CSharp.dll -->
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"
+                          ExcludeAssets="lib\**\Assembly-CSharp.dll"/>
+        <!-- 添加本地 Assembly-CSharp-publicized.dll -->
+        <Reference Include="Assembly-CSharp">
+            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
+            <!-- 确保本地 DLL 优先 -->
+            <Private>True</Private>
+        </Reference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+    </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+        <Exec Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md"/>
+    </Target>
 </Project>

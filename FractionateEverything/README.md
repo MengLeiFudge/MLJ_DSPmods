@@ -6,7 +6,7 @@
 
 # 万物分馏(Fractionate Everything)
 
-新增了6个不同功能的分馏塔，以及超过100个分馏配方。分馏建筑、分馏配方会随着科研进程逐渐解锁。
+新增了6个不同功能的分馏塔，以及超过100个分馏配方。分馏塔、分馏配方会随着科研进程逐渐解锁。
 
 **_尽情享受分馏的乐趣吧！_**
 
@@ -15,7 +15,7 @@
 
 ## MOD简介
 
-### 不同功能的分馏建筑
+### 不同功能的分馏塔
 
 ![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)
 
@@ -57,7 +57,7 @@ MOD的分馏配方已经过仔细调整，其中包含部分循环链。一些�
 
 万物分馏对一部分大型MOD做了适配，为这些MOD添加了独特的分馏配方。
 
-尤其是创世之书的适配，不仅制作了专属分馏路线，还将所有分馏建筑的制作配方改为使用创世独有材料。
+尤其是创世之书的适配，不仅制作了专属分馏路线，还将所有分馏塔的制作配方改为使用创世独有材料。
 
 推荐与创世之书、更多巨构、深空来袭一同启用。同时启用时，分馏配方的数目将会超过200个。
 
@@ -87,7 +87,7 @@ MOD的分馏配方已经过仔细调整，其中包含部分循环链。一些�
    和 [CommonAPI](https://thunderstore.io/c/dyson-sphere-program/p/CommonAPI/CommonAPI/)。
 3. 将下载的万物分馏压缩包解压至`%gamepath%\BepInEx\plugins`。确保有如下文件：
     * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fracicons`
+    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
 
 ## 修改配置
 
@@ -226,7 +226,7 @@ Dyson Sphere Program -> Properties... -> Installed Files -> Browse... to open th
 3. Extract the downloaded Fractionate Everything zip to `%gamepath%\BepInEx\plugins`. Make sure you have the following
    files:
     * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fracicons`
+    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
 
 ## Modify the configuration
 
