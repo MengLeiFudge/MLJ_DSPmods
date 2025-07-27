@@ -1,10 +1,5 @@
-- v1.4.5
-    + 修复与创世之书3.0/3.1同时启用时的一些bug。
-        + 补全新增自然资源分馏配方的图标，并调整了配方位置。
-        + 下移科技树中部分科技，避免与创世之书的科技重叠。
-    + Fixed some bugs when enabled with Genesis Book 3.0/3.1 at the same time.
-        + Fixed the icon for the new Natural Resource Fractionation recipe and adjusted the recipe position.
-        + Shifted some techs in the tech tree down to avoid overlapping with the techs in the Genesis Book.
+- v2.0.0
+    + 全新抽卡！
 
 - v1.4.4
     + 适配创世之书3.0。
@@ -269,7 +264,7 @@
 
 - v1.3.3
     + 载入存档时判断科技解锁状态， 并解锁未解锁的配方。
-      这有助于解决为现有存档添加万物分馏时，导致部分分馏建筑、分馏配方未能正确解锁的问题。
+      这有助于解决为现有存档添加万物分馏时，导致部分分馏塔、分馏配方未能正确解锁的问题。
     + 修复了新增的分馏塔在传送带上流动时，图标未能正确显示的问题。
     + 优化了使用分馏塔时的统计信息。
         + 点数聚集分馏塔不再添加生产、消耗信息。
