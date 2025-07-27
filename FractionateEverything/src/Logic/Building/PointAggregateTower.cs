@@ -48,10 +48,10 @@ public static class PointAggregateTower {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
-            "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 104, 30, EItemType.Production,
+            "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 303, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
-            ERecipeType.Assemble, 60, [IFE分馏原胚定向], [2], [IFE点数聚集塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE点数聚集塔], [1],
             "I点数聚集塔", TFE增产点数聚集);
         recipe.IconPath = "";
         recipe.NonProductive = true;

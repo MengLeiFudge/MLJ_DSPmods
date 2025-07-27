@@ -16,7 +16,7 @@ public static class InteractionTower {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
             "-",
-            $"将分馏原胚转换为各种分馏建筑。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到主脑，这些物品可以进行兑换、抽奖等操作。");
+            $"不仅能将分馏塔原胚培养为各种分馏塔，还承担着与分馏数据中心进行物品交互的重要责任。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到分馏数据中心，并用于抽奖等操作。");
     }
 
     private static ItemProto item;
@@ -30,10 +30,10 @@ public static class InteractionTower {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
-            "Assets/fe/interaction-tower", tab分馏 * 1000 + 101, 30, EItemType.Production,
+            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
-            ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE交互塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE交互塔], [1],
             "I交互塔", TFE物品交互);
         recipe.IconPath = "";
         recipe.NonProductive = true;

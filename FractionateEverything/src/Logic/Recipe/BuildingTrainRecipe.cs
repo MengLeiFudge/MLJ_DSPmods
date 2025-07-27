@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Recipe;
 
 /// <summary>
-/// 建筑培养配方（1分馏原胚 -> 1随机分馏塔）
+/// 建筑培养配方（1分馏塔原胚 -> 1随机分馏塔）
 /// </summary>
 public class BuildingTrainRecipe : BaseRecipe {
     /// <summary>
@@ -22,11 +22,11 @@ public class BuildingTrainRecipe : BaseRecipe {
             new(0.15f, IFE分解塔, 1),
             new(0.15f, IFE转化塔, 1),
         ];
-        AddRecipe(new BuildingTrainRecipe(IFE分馏原胚普通, 0.01f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏原胚精良, 0.02f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏原胚稀有, 0.03f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏原胚史诗, 0.04f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏原胚传说, 0.06f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚普通, 0.01f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚精良, 0.02f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚稀有, 0.03f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚史诗, 0.04f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚传说, 0.06f, OutputMain, []));
     }
 
     /// <summary>

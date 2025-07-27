@@ -71,9 +71,9 @@ public static class TabShop {
             btnGetModDataItem[2] = wnd.AddButton(x + 440, y, 200, tab, "提取全部物品", 16, "button-get-item2",
                 () => GetModDataItem(-1));
             y += 36f;
-            btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏原胚", 16, "button-get-proto",
+            btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
                 GetModDataProto);
-            btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏建筑", 16, "button-get-building",
+            btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
                 GetModDataBuilding);
         }
         {
@@ -137,16 +137,16 @@ public static class TabShop {
         int takeCount = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
         int realTakeCount = TakeItemFromModData(SelectedItem.ID, takeCount);
         if (realTakeCount <= 0) {
-            UIMessageBox.Show("提示", $"分馏中心没有物品 {SelectedItem.name} ！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示", $"分馏数据中心没有物品 {SelectedItem.name} ！", "确认", UIMessageBox.WARNING);
         } else {
             AddItemToPackage(SelectedItem.ID, realTakeCount, false);
-            UIMessageBox.Show("提示", $"已从分馏中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
+            UIMessageBox.Show("提示", $"已从分馏数据中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
         }
     }
 
     private static void GetModDataProto() {
         StringBuilder sb = new StringBuilder();
-        int[] itemIDs = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
+        int[] itemIDs = [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向];
         int[] counts = new int[itemIDs.Length];
         for (int i = 0; i < itemIDs.Length; i++) {
             counts[i] = GetModDataItemCount(itemIDs[i]);
@@ -156,7 +156,7 @@ public static class TabShop {
             }
         }
         if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏原胚！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示", "没有可提取的分馏塔原胚！", "确认", UIMessageBox.WARNING);
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
@@ -180,7 +180,7 @@ public static class TabShop {
             }
         }
         if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏建筑！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示", "没有可提取的分馏塔！", "确认", UIMessageBox.WARNING);
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {

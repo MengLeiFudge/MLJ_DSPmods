@@ -25,7 +25,7 @@ public static class UIFunctions {
             name = "OpenFracCenter",
             canOverride = true
         });
-        Utils.Utils.Register("KEYOpenFracCenter", "[FE] Open Fractionate Center", "[FE] 打开分馏中心");
+        Utils.Utils.Register("KEYOpenFracCenter", "[FE] Open Fractionate Center", "[FE] 打开分馏数据中心");
         // I18N.OnInitialized += RecreateConfigWindow;
     }
 
