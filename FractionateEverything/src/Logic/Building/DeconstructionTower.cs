@@ -15,7 +15,7 @@ public static class DeconstructionTower {
     public static void AddTranslations() {
         Register("分解塔", "Deconstruction Tower");
         Register("I分解塔",
-            "-",
+            "Decompose items into raw materials. Items that cannot be decomposed will be transformed into sand. There is a certain probability to get the decomposed essence.",
             "将物品分解为原材料。无法分解的物品将转化为沙土。有一定概率得到分解精华。");
     }
 

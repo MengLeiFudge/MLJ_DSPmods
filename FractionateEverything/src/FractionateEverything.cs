@@ -71,6 +71,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             InitLogger(Logger);
 
             Register("分馏页面", "Fractionate", "分馏");
+            Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
             Register("无配方", "NoRecipe");
             Register("未解锁", "NotUnlock");
             Register("永动", "Forever");
@@ -109,10 +110,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             LDBTool.PreAddDataAction += PreAddData;
             LDBTool.PostAddDataAction += PostAddData;
 
+            string CheckPluginsNamespace = typeof(CheckPlugins).Namespace;
             foreach (Type type in executingAssembly.GetTypes()) {
                 //Compatibility内的类由自己patch，不在这里处理
                 if (type.Namespace == null
-                    || type.Namespace.StartsWith("FractionateEverything.Compatibility")) {
+                    || (CheckPluginsNamespace != null && type.Namespace.StartsWith(CheckPluginsNamespace))) {
                     continue;
                 }
                 harmony.PatchAll(type);

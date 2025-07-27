@@ -42,18 +42,17 @@ public class CheckPlugins : BaseUnityPlugin {
     public static void AddTranslations() {
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
         Register("FE信息",
-            "——未翻译——Thank you for using Fractionation Everything! This mod adds 7 Fractionators, and a lot of fractionation recipes.\n"
-            + $"If you are using this mod for the first time, it is highly recommended that you {"check out the mod introduction page".WithColor(Blue)} to get an idea of its contents and features.\n"
-            + $"You can change mod options in {"Settings - Miscellaneous".WithColor(Blue)} to get the full experience.\n"
-            + "Recommended for use with Genesis Book, They Come From Void, and More Mega Structure.\n"
+            "Thank you for using Fractionation Everything! This mod adds 7 different functions of fractionators and nearly a thousand fractionation recipes.\n"
+            + $"The default shortcut key is {"Shift+F".WithColor(Blue)}, and you can also modify the shortcut key on the settings page.\n"
+            + "This mod has been compatible with some large mods, such as Genesis Book, They Come From Void, and More Mega Structure.\n"
             + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".WithColor(Blue)}.\n"
             + "Have fun with fractionation!".WithColor(Orange),
-            "感谢你使用万物分馏！该Mod添加了7种不同功能的分馏塔，以及上千个分馏配方。\n"
+            "感谢你使用万物分馏！该Mod添加了7种不同功能的分馏塔，以及近千个分馏配方。\n"
             + $"默认快捷键为 {"Shift + F".WithColor(Blue)}，你也可以在设置页面修改快捷键。\n"
             + $"该Mod已对部分大型Mod进行了兼容，例如创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）。\n"
             + $"如果你在游玩时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".WithColor(Blue)}反馈。\n"
             + "尽情享受分馏的乐趣吧！".WithColor(Orange));
-        Register("FE交流群", "View on Github", "加入交流群");
+        Register("FE交流群", "Feedback on Github", "加入交流群");
         Register("FE交流群链接",
             "https://github.com/MengLeiFudge/MLJ_DSPmods",
             "https://qm.qq.com/q/zzicz6j9zW");
