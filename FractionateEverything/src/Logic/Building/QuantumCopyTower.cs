@@ -15,7 +15,7 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            "-",
+            "Fully utilize the yield increasing characteristics of increasing production points and recombine and replicate the input items. It can separate all things and truly achieve the effect of creating something out of nothing.",
             "充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。");
     }
 

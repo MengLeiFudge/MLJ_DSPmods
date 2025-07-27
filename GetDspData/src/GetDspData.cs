@@ -784,7 +784,7 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     static string FormatName(string name, string Name) {
-        //优先使用Name，例如分馏的“首充1”
+        //优先使用Name，例如分馏的“超值礼包1”
         string str = string.IsNullOrEmpty(Name) ? name : Name;
         return str.Translate()
             .Replace(" ", "")
