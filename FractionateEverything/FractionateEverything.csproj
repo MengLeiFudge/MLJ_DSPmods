@@ -31,6 +31,9 @@
         <Reference Include="BuildBarTool">
             <HintPath>..\lib\BuildBarTool.dll</HintPath>
         </Reference>
+        <Reference Include="DSP_Battle">
+            <HintPath>..\lib\DSP_Battle-publicized.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>

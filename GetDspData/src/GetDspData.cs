@@ -303,7 +303,7 @@ public class GetDspData : BaseUnityPlugin {
             var items = new JArray();
             dataObj.Add("items", items);
             foreach (var item in LDB.items.dataArray) {
-                if (item.ID < IFE矿物复制塔 || item.ID > IFE净化插件MK3) {
+                if (item.ID < IFE电磁奖券 || item.ID > IBC品质插件MK3) {
                     //如果该物品是“该版本尚未加入”
                     if ((!GameMain.history.ItemUnlocked(item.ID) && item.preTech == null && item.missingTech)
                         //或无法选中这个物品（9998是星河卫士勋章，13000之后是巨构旧的接收器）

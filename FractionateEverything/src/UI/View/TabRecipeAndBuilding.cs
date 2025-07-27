@@ -111,10 +111,8 @@ public static class TabRecipeAndBuilding {
             wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             y += 50f;
-            wnd.AddButton(x, y, 300, tab, "使用分馏配方核心兑换此配方", 16, "button-get-recipe",
-                () => { ExchangeRecipeWithQuestion(IFE分馏配方核心, 1, SelectedRecipe); });
-            wnd.AddButton(x + 320, y, 300, tab, "使用残破核心兑换此配方", 16, "button-get-recipe2",
-                () => { ExchangeRecipeWithQuestion(IFE残破核心, 3, SelectedRecipe); });
+            wnd.AddButton(x, y, 300, tab, "使用分馏配方通用核心兑换此配方", 16, "button-get-recipe",
+                () => { ExchangeRecipeWithQuestion(IFE分馏配方通用核心, 1, SelectedRecipe); });
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
                 textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
@@ -269,7 +267,7 @@ public static class TabRecipeAndBuilding {
         if (SelectedBuilding.EnableFluidOutputStack()) {
             return;
         }
-        int takeId = IFE建筑增幅芯片;
+        int takeId = IFE分馏塔增幅芯片;
         int takeCount = 2;
         if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
@@ -290,7 +288,7 @@ public static class TabRecipeAndBuilding {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        int takeId = IFE建筑增幅芯片;
+        int takeId = IFE分馏塔增幅芯片;
         int takeCount = 1;
         if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
@@ -317,7 +315,7 @@ public static class TabRecipeAndBuilding {
         if (SelectedBuilding.EnableFracForever()) {
             return;
         }
-        int takeId = IFE建筑增幅芯片;
+        int takeId = IFE分馏塔增幅芯片;
         int takeCount = 3;
         if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
@@ -338,7 +336,7 @@ public static class TabRecipeAndBuilding {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        int takeId = IFE建筑增幅芯片;
+        int takeId = IFE分馏塔增幅芯片;
         int takeCount = 1;
         if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;

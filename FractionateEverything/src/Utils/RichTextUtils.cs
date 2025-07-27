@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
 
@@ -51,6 +52,7 @@ public static partial class Utils {
             3 => s.WithColor(Blue),
             4 => s.WithColor(Purple),
             5 => s.WithColor(Red),
+            //6 => s.WithColor(Orange),
             7 => s.WithColor(Gold),
             _ => $"Invalid quality {quality}".WithColor(Red)
         };
@@ -66,9 +68,26 @@ public static partial class Utils {
             3 => s.WithColor(Blue),
             4 => s.WithColor(Purple),
             5 => s.WithColor(Red),
-            6 => s.WithColor(Gold),
-            7 => s.WithColor(Orange),
+            6 => s.WithColor(Orange),
+            7 => s.WithColor(Gold),
             _ => $"Invalid point aggregate level {level}".WithColor(Red)
+        };
+    }
+
+    /// <summary>
+    /// 根据物品价值为字符串添加对应颜色的富文本标签。
+    /// </summary>
+    public static string WithValueColor(this string s, int itemID) {
+        float value = itemValue[itemID];
+        return value switch {
+            <= 5 => s.WithColor(Gray),
+            <= 20 => s.WithColor(White),
+            <= 100 => s.WithColor(Green),
+            <= 500 => s.WithColor(Blue),
+            <= 2500 => s.WithColor(Purple),
+            <= 10000 => s.WithColor(Red),
+            <= 100000 => s.WithColor(Orange),
+            _ => s.WithColor(Gold)
         };
     }
 }
