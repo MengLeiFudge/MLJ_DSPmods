@@ -1,7 +1,16 @@
-- v2.0.0
-    + 全新抽卡！
+- v2.0.1
+    + 修复与其他Mod兼容出错的相关逻辑。
+    + 添加英文翻译。
+    + Fix the logic related to compatibility errors with other mods.
+    + Add English translation.
 
-- v1.4.4
+- v2.0.0
+    + 新建筑、新配方、新界面，还有全新的抽卡体验！
+    + 使用 Shift+F 打开面板，剩下的就请自行探索吧！
+    + New building, new recipe, new interface, and also a brand new card drawing experience!
+    + Use Shift+F to open the panel, please explore the rest on your own!
+
+- v1.4.5
     + 适配创世之书3.0。
         + 调整部分图标位置。
         + 自然资源分馏增加盐酸、硝酸、海水、二氧化碳、二氧化硫等。
@@ -84,33 +93,33 @@
             + Original fractionator changed to only be used to fractionate hydrogen into heavy hydrogen, but the
               Fractionator Output Optimization tech still works for it.
             + Original fractionator can be upgraded to a mineral fractionator, not downgraded.
-                + This change allows for quick replacement of Fractionation Towers, and BlueprintTweaks modifying
-                  buildings can also replace Original Fractionation Towers with Fractionation Towers from Everything
+                + This change allows for quick replacement of Fractionators, and BlueprintTweaks modifying
+                  buildings can also replace Original Fractionators with Fractionators from Everything
                   Fractionation with each other.
                 + Note that when Book of Creation and BPT are enabled at the same time, you can't replace the fractional
                   towers of Everything Fractionation with the original fractional towers because the original fractional
                   towers are blocked.
-        + Added Mineral Fractionation Tower to fractionate all minerals that can be harvested directly (including
+        + Added Mineral Fractionator to fractionate all minerals that can be harvested directly (including
           natural resources such as hydrogen, water, sulfuric acid, crude oil, etc.).
             + The fractionation success rate for rare minerals (2.5%) is half that of normal minerals (5%).
-        + Added upgraded fractionation towers that convert some items into fewer premium items.
-        + Adding downgraded fractionation towers converts some items to more low-level items.
+        + Added upgraded fractionators that convert some items into fewer premium items.
+        + Adding downgraded fractionators converts some items to more low-level items.
             + The probability of upgrading is related to the stack size of the item. 0.5% for 10 stacked items (Orbital
               Collector) and 15% for 300 stacked items (Conveyor Belt).
-        + Optimization of garbage recycling fractionation towers.
+        + Optimization of garbage recycling fractionators.
             + Input of buildings is disabled by default to avoid misuse. You can turn it on in Settings - Miscellaneous.
             + Removed bonus to inputting items to increase production points. Now, the points obtained from item
               conversion are only related to the value of the item, not to whether it comes with yield increase points
               or not.
             + Adjusted power consumption calculations to significantly reduce the amount of power needed to process
               high-value items.
-        + Points aggregation fractionation tower optimization.
+        + Points aggregate fractionator optimization.
             + Further increased efficiency from 4% to 10%. This means that the number of buildings required for a full
               belt has been reduced from 25 to 10, with a smaller footprint.
             + Optimized production increase points for flow output items. When the average number of incremental
               production points for flow output is less than 4, items with 4 or 0 points will be output, reducing the
               consumption of incremental production agents.
-        + Yield Increasing Fractionation Tower Optimization.
+        + Yield Increasing Fractionator Optimization.
             + Fractionation probability no longer uses a fixed value and is instead related to the value of the input
               item. The higher the value, the lower the probability cap.
             + The actual fractionation probability is related to the number of yield increasing points of the input
@@ -122,7 +131,7 @@
         + Painted new tech icons for some Fractionation techs.
         + Add pre-conditions to most fractionation techs to avoid unlocking them early.
     + Removed some recipes and added some recipes for mineral self-fractionation (e.g. Crude Oil, Water, Sulfuric
-      Acid) to match the current fractionation tower scenario.
+      Acid) to match the current fractionator scenario.
         + Matrix Fractionation Chain is turned off by default. You can turn it on in Settings - Miscellaneous.
         + Fuel rod fractionation chain is off by default. You can turn it on in Settings - Miscellaneous.
     + Adapted the Book of Genesis Quantization Calculator to remove all fractionation recipes. You can still choose
@@ -449,8 +458,8 @@
     + Fixed an issue where new fractionation recipes were not immediately available when unlocking tech.
     + Removed the option to adjust the fractionation success rate in the config file, and forced the base fractionation
       success rate to be 1%.
-    + Original Fractionation Tower renamed to Universal Fractionator, building effect remains unchanged.
-    + Add low power fractionation tower, power consumption becomes 1/5, fractionation success rate becomes 1/3.
+    + Original Fractionator renamed to Universal Fractionator, building effect remains unchanged.
+    + Add low power fractionator, power consumption becomes 1/5, fractionation success rate becomes 1/3.
     + Add Building-HighSpeed Fractionator, 12.5% probability of fractionation success when building is entered,
       otherwise only 0.1% probability of fractionation success.
     + Add Augmentation fractionator, each successful fractionation has a 10% chance of doubling the number of output

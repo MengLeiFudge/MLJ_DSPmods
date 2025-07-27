@@ -12,190 +12,188 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class TechManager {
     public static void AddTranslations() {
-        //todo: 英文翻译
-
-        Register("T分馏数据中心", "-", "分馏数据中心");
+        Register("T分馏数据中心", "Fractionation Data Center", "分馏数据中心");
         Register("分馏数据中心描述",
-            "-",
+            $"With the continuous exploration of various star regions, fractionation technology has greatly expanded, and the COSMO has specially released a series of related technologies to help Icarus build the Dyson sphere. At the same time, the COSMO provides a new way of data interaction, which can be connected by pressing {"Shift+F".WithColor(Orange)}.",
             $"随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发一系列相关科技来帮助伊卡洛斯建设戴森球。同时，主脑提供了一种新的数据交互方式，按 {"Shift+F".WithColor(Orange)} 即可连接。");
         Register("分馏数据中心结果",
-            "-",
+            "You have mastered the method of connecting to the fractionation data center, and now you can connect to the fractionation data center.",
             "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
 
 
-        Register("T电磁奖券", "-", "电磁奖券");
+        Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
         Register("电磁奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("电磁奖券结果",
-            "-",
+            "You have mastered the technology of making electromagnetic tickets and can now produce them through automation.",
             "你已经掌握了制作电磁奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T能量奖券", "-", "能量奖券");
+        Register("T能量奖券", "Energy Ticket", "能量奖券");
         Register("能量奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("能量奖券结果",
-            "-",
+            "You have mastered the technology of making energy tickets and can now produce them through automation.",
             "你已经掌握了制作能量奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T结构奖券", "-", "结构奖券");
+        Register("T结构奖券", "Structure Ticket", "结构奖券");
         Register("结构奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("结构奖券结果",
-            "-",
+            "You have mastered the technology of making structure tickets and can now produce them through automation.",
             "你已经掌握了制作结构奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T信息奖券", "-", "信息奖券");
+        Register("T信息奖券", "Information Ticket", "信息奖券");
         Register("信息奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("信息奖券结果",
-            "-",
+            "You have mastered the technology of making information tickets and can now produce them through automation.",
             "你已经掌握了制作信息奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T引力奖券", "-", "引力奖券");
+        Register("T引力奖券", "Gravity Ticket", "引力奖券");
         Register("引力奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("引力奖券结果",
-            "-",
+            "You have mastered the technology of making gravity tickets and can now produce them through automation.",
             "你已经掌握了制作引力奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T宇宙奖券", "-", "宇宙奖券");
+        Register("T宇宙奖券", "Universe Ticket", "宇宙奖券");
         Register("宇宙奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("宇宙奖券结果",
-            "-",
+            "You have mastered the technology of making universe tickets and can now produce them through automation.",
             "你已经掌握了制作宇宙奖券的技术，可以通过自动化的方式制作它了。");
 
-        Register("T黑雾奖券", "-", "黑雾奖券");
+        Register("T黑雾奖券", "Dark Fog Ticket", "黑雾奖券");
         Register("黑雾奖券描述",
-            "-",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("黑雾奖券结果",
-            "-",
+            "You have mastered the technology of making dark fog tickets and can now produce them through automation.",
             "你已经掌握了制作黑雾奖券的技术，可以通过自动化的方式制作它了。");
 
 
-        Register("T首充1", "-", "首充1");
-        Register("首充1描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张电磁矩阵的抽奖券，以及极其珍贵的通用核心、增幅芯片！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充1结果",
-            "-",
+        Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
+        Register("超值礼包1描述",
+            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can get 100 electromagnetic tickets, as well as extremely precious universal cores and amplification chips! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及极其珍贵的通用核心、增幅芯片！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包1结果",
+            "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
             "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
 
-        Register("T首充2", "-", "首充2");
-        Register("首充2描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张能量矩阵的抽奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充2结果",
-            "-",
+        Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
+        Register("超值礼包2描述",
+            "Super Value Gift Pack! As long as you have 100 energy matrices, you can get 100 energy tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100能量矩阵，就可以获取100张能量奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包2结果",
+            "Energy ticket x100 have been received.",
             "能量奖券x100 已到账。");
 
-        Register("T首充3", "-", "首充3");
-        Register("首充3描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张结构矩阵的抽奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充3结果",
-            "-",
+        Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
+        Register("超值礼包3描述",
+            "Super Value Gift Pack! As long as you have 100 structure matrices, you can get 100 structure tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100结构矩阵，就可以获取100张结构奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包3结果",
+            "Structure ticket x100 have been received.",
             "结构奖券x100 已到账。");
 
-        Register("T首充4", "-", "首充4");
-        Register("首充4描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张信息矩阵的抽奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充4结果",
-            "-",
+        Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
+        Register("超值礼包4描述",
+            "Super Value Gift Pack! As long as you have 100 information matrices, you can get 100 information tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100信息矩阵，就可以获取100张信息奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包4结果",
+            "Information ticket x100 have been received.",
             "信息奖券x100 已到账。");
 
-        Register("T首充5", "-", "首充5");
-        Register("首充5描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张引力矩阵的抽奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充5结果",
-            "-",
+        Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
+        Register("超值礼包5描述",
+            "Super Value Gift Pack! As long as you have 100 gravity matrices, you can get 100 gravity tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100引力矩阵，就可以获取100张引力奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包5结果",
+            "Gravity ticket x100 have been received.",
             "引力奖券x100 已到账。");
 
-        Register("T首充6", "-", "首充6");
-        Register("首充6描述",
-            "-",
-            "超值礼包！只要100电磁矩阵，就可以获取100张宇宙矩阵的抽奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("首充6结果",
-            "-",
+        Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
+        Register("超值礼包6描述",
+            "Super Value Gift Pack! As long as you have 100 universe matrices, you can get 100 universe tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100宇宙矩阵，就可以获取100张宇宙奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包6结果",
+            "Universe ticket x100 have been received.",
             "宇宙奖券x100 已到账。");
 
 
-        Register("T分馏塔原胚", "-", "分馏塔原胚");
+        Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the course of Icarus' exploration, the Mastermind discovered that some star zones were extremely resource-poor and unsustainable. In order to make it easier for Icarus to explore the barren star zones, the Mastermind specially researched and issued the Fractionation of Natural Resources technology. This technology can be used to replicate the vast majority of natural resources, avoiding situations where lack of resources prevents exploration.",
+            $"In the fractionation technology provided this time, the new fractionator will be obtained through a special method - namely lottery and cultivation. You need to use various lottery tickets on the lottery page of the fractionation data center to participate in the lottery, and you can obtain the raw material of the fractionator in the {"building card pool".WithColor(Orange)}. If lucky, you can also directly obtain a new fractionator. Through interactive tower culture, various fractionators can be produced from the original embryo. At the same time, the COSMO provides a technology for artificially synthesizing embryos, and the synthesized directed embryos can be directly cultured into designated buildings.",
             $"此次提供的分馏科技中，新分馏塔将采用特殊方式获取——也就是抽奖与培养。你需要在分馏数据中心的抽奖页面使用各种奖券进行抽奖，在{"建筑卡池".WithColor(Orange)}可以获取到分馏塔原胚。运气好的话，还能直接获取新的分馏塔。原胚经过交互塔培养，即可产出各种分馏塔。同时，主脑提供了一种人工合成原胚的科技，合成得到的定向原胚可以直接培养为指定的建筑。");
         Register("分馏塔原胚结果",
-            "You have mastered the Natural Resource Fractionation technology, which can be replicated indefinitely as long as you have a certain amount of natural resources.",
+            "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
 
-        Register("T物品交互", "-", "物品交互");
+        Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            "-",
+            "The COSMO has developed an advanced information transmission technology that can transmit the items input into the interactive tower in the form of data to the fractionation data center for subsequent use.",
             "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏数据中心，便于后续使用。");
         Register("物品交互结果",
-            "-",
+            "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
 
-        Register("T矿物复制", "Natural Resource Fractionation", "矿物复制");
+        Register("T矿物复制", "Mineral Copy", "矿物复制");
         Register("矿物复制描述",
-            "In the course of Icarus' exploration, the Mastermind discovered that some star zones were extremely resource-poor and unsustainable. In order to make it easier for Icarus to explore the barren star zones, the Mastermind specially researched and issued the Fractionation of Natural Resources technology. This technology can be used to replicate the vast majority of natural resources, avoiding situations where lack of resources prevents exploration.",
+            "During Icarus' exploration, the COSMO discovered that some star regions had extremely scarce resources that were difficult to sustain. In order to make it easier for Icarus to explore the barren star regions, the COSMO specially researched and issued the technology of natural resource fractionation. This technology can be used to replicate the vast majority of natural resources, avoiding situations where there is a lack of resources to explore.",
             "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。为了让伊卡洛斯能更轻松地探索贫瘠的星区，主脑特意研究并下发了自然资源的分馏技术。这项技术可以用来复制绝大多数自然资源，避免出现缺乏资源无法探索的情形。");
         Register("矿物复制结果",
-            "You have mastered the Natural Resource Fractionation technology, which can be replicated indefinitely as long as you have a certain amount of natural resources.",
+            "You have mastered the Mineral Copy technology, and as long as you have a certain amount of natural resources, you can replicate them infinitely.",
             "你已经掌握了矿物复制技术，只要拥有一定量的自然资源，就能对其进行无限复制。");
 
-        Register("T增产点数聚集", "Proliferator Points Aggregation", "增产点数聚集");
+        Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to the limitations of material technology, the spawn line is unable to create more advanced proliferators, but fractionation technology can break through the limitations by concentrating the raw material's proliferator points into a certain number of items. It was found that the proliferator points of items could be stacked indefinitely, but the portion over 10 points did not work. Proliferate Point Aggregation technology can fractionate just the items with 10 proliferator points.",
+            "Due to the limitations of material technology, the spawn line is unable to create more advanced proliferators, but fractionation technology can break through the limitations by concentrating the raw material's proliferator points into a certain number of items. It was found that the proliferator points of items could be stacked indefinitely, but the portion over 10 points did not work. Proliferate Point Aggregate technology can fractionate just the items with 10 proliferator points.",
             "由于材料技术的限制，产线无法制造更高级的增产剂，但分馏技术可以将原料的增产点数集中到某几个物品上，从而突破增产剂的点数限制。研究发现，物品的增产点数可以无限叠加，但超过10点的部分不起作用。增产点数聚集技术可以刚好分馏出10点增产点数的物品。");
         Register("增产点数聚集结果",
-            "You have mastered the Proliferator Points Aggregation technology. The item's proliferator points can now be pushed to the limit, and production capacity has been greatly increased!",
+            "You have mastered the Proliferator Points Aggregate technology. The item's proliferator points can now be pushed to the limit, and production capacity has been greatly increased!",
             "你已经掌握了增产点数聚集技术。现在物品的增产点数可以达到极限，产能得到了极大的提升！");
 
-        Register("T量子复制", "Increase production fractionate", "量子复制");
+        Register("T量子复制", "Quantum Copy", "量子复制");
         Register("量子复制描述",
-            "Although Natural Resource Fractionation and Up-Downgrade Fractionation are powerful, these techniques can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
+            "Although Mineral Copy is powerful, it can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
             + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
             + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
             "矿物复制和物品转化虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
             + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
         Register("量子复制结果",
-            "You have unlocked the Increased Production Fractionation technology. Now you truly have the ability to create something from nothing!",
+            "You have unlocked the Quantum Copy technology. Now you truly have the ability to create something from nothing!",
             "你已经掌握了量子复制技术。现在，你真正拥有了无中生有的能力！");
 
-        Register("T物品点金", "-", "物品点金");
+        Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
-            "-",
+            "Item alchemy technology can convert any item into various matrices. However, if an item itself is a matrix, or if the material used to make the item contains a matrix, or if it is a building, then the item cannot be minted.",
             "物品点金科技可以将任意的物品转换为各种矩阵。但是，如果一个物品本身是矩阵，或者一个物品的制作材料包含矩阵，或者它是建筑，那么这个物品不能被点金。");
         Register("物品点金结果",
-            "-",
+            "You have mastered the Item Alchemy technology and can convert items into various matrices.",
             "你已经掌握了物品点金技术，可以将物品转换为各种矩阵。");
 
-        Register("T物品分解", "Trash Recycle", "物品分解");
+        Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",
-            "Foundations and sand are an essential part of the exploration process. Trash pickup allows you to dispose of any item as foundation or sand, which is helpful for expanding into new terrain. However, this technology cannot be used in recycling buildings, and whether or not the waste is sprayed with proliferators does not affect the efficiency of the process.",
-            "地基和沙土是探索过程中必不可少的一环。物品分解科技可以将任意的物品处理为地基或沙土，对新地盘的扩展很有帮助。不过，这项科技无法用于回收建筑，并且是否为垃圾喷涂增产剂不会影响处理效率。");
+            "Item deconstruction technology can break down any item into the materials used to make it. Meanwhile, items without a recipe will decompose into foundation and sand, which is very helpful for expanding into new territories.",
+            "物品分解科技可以将任意物品分解为制作它的材料。同时，无制作配方的物品会分解为地基和沙土，这对新地盘的扩展很有帮助。");
         Register("物品分解结果",
-            "You have mastered the Trash Recycle technology and can recycle unwanted items, converting them into foundations or sand.",
-            "你已经掌握了物品分解技术，可以回收不需要的物品，将其转换为地基或沙土。");
+            "You have mastered the Item Deconstruction technology and can now break down unwanted items into raw materials.",
+            "你已经掌握了物品分解技术，可以将不需要的物品分解为原材料了。");
 
-        Register("T物品转化", "Up-Downgrade Fractionation", "物品转化");
+        Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "-",
-            "为了方便伊卡洛斯的探索，主脑下发了部分物品的转化科技。转化科技可将物品转为其他物品。尽管如此，它依然是探索路上的强力援助。");
+            "Item conversion technology can transform an item into other items related to that item. Although only some items can be converted, it is still an extremely powerful aid.",
+            "物品转化科技可以将物品转化为与这个物品相关的其他物品。尽管只有部分物品能进行转化，但它依然是极其强力的援助。");
         Register("物品转化结果",
-            "You have mastered the Up-Downgrade Fractionation technology and can now recycle process some items to copy them.",
-            "你已经掌握了物品转化技术，可以用物品转化塔循环处理物品，从而实现物品的复制。");
+            "You have mastered item conversion technology and can now convert items into other items related to this item.",
+            "你已经掌握了物品转化技术，可以将物品转化为与这个物品相关的其他物品了。");
 
 
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
@@ -331,71 +329,71 @@ public static class TechManager {
         tech黑雾奖券.AddItemCounts = [10];
 
 
-        var tech首充1 = ProtoRegistry.RegisterTech(
-            TFE首充1, "T首充1", "首充1描述", "首充1结果", "Assets/fe/tech首充1",
+        var tech超值礼包1 = ProtoRegistry.RegisterTech(
+            TFE超值礼包1, "T超值礼包1", "超值礼包1描述", "超值礼包1结果", "Assets/fe/tech超值礼包1",
             [tech分馏数据中心.ID],
             [I电磁矩阵], [100], 3600,
             [],
             GetTechPos(1, 1)
         );
-        tech首充1.PreTechsImplicit = [T电磁矩阵];
-        tech首充1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
-        tech首充1.AddItemCounts = [100, 5, 3];
+        tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
+        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包1.AddItemCounts = [100, 5, 3];
 
-        var tech首充2 = ProtoRegistry.RegisterTech(
-            TFE首充2, "T首充2", "首充2描述", "首充2结果", "Assets/fe/tech首充2",
-            [tech首充1.ID],
+        var tech超值礼包2 = ProtoRegistry.RegisterTech(
+            TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包2",
+            [tech超值礼包1.ID],
             [I能量矩阵], [100], 3600,
             [],
             GetTechPos(1, 2)
         );
-        tech首充2.PreTechsImplicit = [T能量矩阵];
-        tech首充2.AddItems = [IFE能量奖券];
-        tech首充2.AddItemCounts = [100];
+        tech超值礼包2.PreTechsImplicit = [T能量矩阵];
+        tech超值礼包2.AddItems = [IFE能量奖券];
+        tech超值礼包2.AddItemCounts = [100];
 
-        var tech首充3 = ProtoRegistry.RegisterTech(
-            TFE首充3, "T首充3", "首充3描述", "首充3结果", "Assets/fe/tech首充3",
-            [tech首充1.ID],
+        var tech超值礼包3 = ProtoRegistry.RegisterTech(
+            TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包3",
+            [tech超值礼包1.ID],
             [I结构矩阵], [100], 3600,
             [],
             GetTechPos(1, 3)
         );
-        tech首充3.PreTechsImplicit = [T结构矩阵];
-        tech首充3.AddItems = [IFE结构奖券];
-        tech首充3.AddItemCounts = [100];
+        tech超值礼包3.PreTechsImplicit = [T结构矩阵];
+        tech超值礼包3.AddItems = [IFE结构奖券];
+        tech超值礼包3.AddItemCounts = [100];
 
-        var tech首充4 = ProtoRegistry.RegisterTech(
-            TFE首充4, "T首充4", "首充4描述", "首充4结果", "Assets/fe/tech首充4",
-            [tech首充1.ID],
+        var tech超值礼包4 = ProtoRegistry.RegisterTech(
+            TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包4",
+            [tech超值礼包1.ID],
             [I信息矩阵], [100], 3600,
             [],
             GetTechPos(1, 4)
         );
-        tech首充4.PreTechsImplicit = [T信息矩阵];
-        tech首充4.AddItems = [IFE信息奖券];
-        tech首充4.AddItemCounts = [100];
+        tech超值礼包4.PreTechsImplicit = [T信息矩阵];
+        tech超值礼包4.AddItems = [IFE信息奖券];
+        tech超值礼包4.AddItemCounts = [100];
 
-        var tech首充5 = ProtoRegistry.RegisterTech(
-            TFE首充5, "T首充5", "首充5描述", "首充5结果", "Assets/fe/tech首充5",
-            [tech首充1.ID],
+        var tech超值礼包5 = ProtoRegistry.RegisterTech(
+            TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包5",
+            [tech超值礼包1.ID],
             [I引力矩阵], [100], 3600,
             [],
             GetTechPos(1, 5)
         );
-        tech首充5.PreTechsImplicit = [T引力矩阵];
-        tech首充5.AddItems = [IFE引力奖券];
-        tech首充5.AddItemCounts = [100];
+        tech超值礼包5.PreTechsImplicit = [T引力矩阵];
+        tech超值礼包5.AddItems = [IFE引力奖券];
+        tech超值礼包5.AddItemCounts = [100];
 
-        var tech首充6 = ProtoRegistry.RegisterTech(
-            TFE首充6, "T首充6", "首充6描述", "首充6结果", "Assets/fe/tech首充6",
-            [tech首充1.ID],
+        var tech超值礼包6 = ProtoRegistry.RegisterTech(
+            TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包6",
+            [tech超值礼包1.ID],
             [I宇宙矩阵], [100], 3600,
             [],
             GetTechPos(1, 6)
         );
-        tech首充6.PreTechsImplicit = [T宇宙矩阵];
-        tech首充6.AddItems = [IFE宇宙奖券];
-        tech首充6.AddItemCounts = [100];
+        tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
+        tech超值礼包6.AddItems = [IFE宇宙奖券];
+        tech超值礼包6.AddItemCounts = [100];
 
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(

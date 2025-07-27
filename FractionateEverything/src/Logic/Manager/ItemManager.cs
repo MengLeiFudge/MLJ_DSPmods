@@ -14,45 +14,83 @@ namespace FE.Logic.Manager;
 public static class ItemManager {
     public static void AddTranslations() {
         Register("电磁奖券", "Electromagnetic Ticket");
-        Register("I电磁奖券", "-", "一张高科技奖券，内部封装了大量电磁矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I电磁奖券",
+            "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量电磁矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("能量奖券", "Energy Ticket");
-        Register("I能量奖券", "-", "一张高科技奖券，内部封装了大量能量矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I能量奖券",
+            "A high-tech ticket with a lot of energy matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量能量矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("结构奖券", "Structure Ticket");
-        Register("I结构奖券", "-", "一张高科技奖券，内部封装了大量结构矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I结构奖券",
+            "A high-tech ticket with a lot of structure matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量结构矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("信息奖券", "Information Ticket");
-        Register("I信息奖券", "-", "一张高科技奖券，内部封装了大量信息矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I信息奖券",
+            "A high-tech ticket with a lot of information matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量信息矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("引力奖券", "Gravity Ticket");
-        Register("I引力奖券", "-", "一张高科技奖券，内部封装了大量引力矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I引力奖券",
+            "A high-tech ticket with a lot of gravity matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量引力矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("宇宙奖券", "Universe Ticket");
-        Register("I宇宙奖券", "-", "一张高科技奖券，内部封装了大量宇宙矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I宇宙奖券",
+            "A high-tech ticket with a lot of universe matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量宇宙矩阵。也是数据中心某些卡池的抽奖凭证。");
         Register("黑雾奖券", "Dark Fog Ticket");
-        Register("I黑雾奖券", "-", "一张高科技奖券，内部封装了大量黑雾矩阵。也是数据中心某些卡池的抽奖凭证。");
+        Register("I黑雾奖券",
+            "A high-tech ticket with a lot of dark fog matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
+            "一张高科技奖券，内部封装了大量黑雾矩阵。也是数据中心某些卡池的抽奖凭证。");
 
-        Register("分馏塔原胚普通", "Frac Proto(Normal)", "分馏塔原胚（普通）");
-        Register("I分馏塔原胚普通", "-", "随处可见的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
-        Register("分馏塔原胚精良", "Frac Proto(Uncommon)", "分馏塔原胚（精良）");
-        Register("I分馏塔原胚精良", "-", "精心打造的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
-        Register("分馏塔原胚稀有", "Frac Proto(Rare)", "分馏塔原胚（稀有）");
-        Register("I分馏塔原胚稀有", "-", "限量发售的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
-        Register("分馏塔原胚史诗", "Frac Proto(Epic)", "分馏塔原胚（史诗）");
-        Register("I分馏塔原胚史诗", "-", "百年难遇的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
-        Register("分馏塔原胚传说", "Frac Proto(Legendary)", "分馏塔原胚（传说）");
-        Register("I分馏塔原胚传说", "-", "历史悠久的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
-        Register("分馏塔原胚定向", "Frac Proto(Directional)", "分馏塔原胚（定向）");
-        Register("I分馏塔原胚定向", "-", "人工合成的分馏塔原胚。可以直接培养为指定的分馏塔。");
+        Register("分馏塔原胚普通", "Frac Building Proto(Normal)", "分馏塔原胚（普通）");
+        Register("I分馏塔原胚普通",
+            "The precursor of the fractionator can be seen everywhere. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
+            "随处可见的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+        Register("分馏塔原胚精良", "Frac Building Proto(Uncommon)", "分馏塔原胚（精良）");
+        Register("I分馏塔原胚精良",
+            "Carefully crafted distillation tower precursor. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
+            "精心打造的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+        Register("分馏塔原胚稀有", "Frac Building Proto(Rare)", "分馏塔原胚（稀有）");
+        Register("I分馏塔原胚稀有",
+            "Limited edition distillation tower embryo for sale. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
+            "限量发售的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+        Register("分馏塔原胚史诗", "Frac Building Proto(Epic)", "分馏塔原胚（史诗）");
+        Register("I分馏塔原胚史诗",
+            "A once-in-a-century rare distillation tower embryo. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
+            "百年难遇的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+        Register("分馏塔原胚传说", "Frac Building Proto(Legendary)", "分馏塔原胚（传说）");
+        Register("I分馏塔原胚传说",
+            "The primitive distillation tower with a long history. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
+            "历史悠久的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+        Register("分馏塔原胚定向", "Frac Building Proto(Directional)", "分馏塔原胚（定向）");
+        Register("I分馏塔原胚定向",
+            "Artificially synthesized distillation tower embryo. It can be directly cultivated as a designated fractionator.",
+            "人工合成的分馏塔原胚。可以直接培养为指定的分馏塔。");
         Register("分馏配方通用核心", "Fractionate Recipe Core");
-        Register("I分馏配方通用核心", "-", "含有奇特能量的立方体。可以提交给主脑，兑换任意分馏配方。");
+        Register("I分馏配方通用核心",
+            "A cube containing peculiar energy. You can submit it to the COSMO and exchange it for any fractionation formula.",
+            "含有奇特能量的立方体。可以提交给主脑，兑换任意分馏配方。");
         Register("分馏塔增幅芯片", "Fractionator Increase Chip");
-        Register("I分馏塔增幅芯片", "-", "高度集成的电子芯片。可以提交给主脑，增强各种分馏塔的效果。");
+        Register("I分馏塔增幅芯片",
+            "Highly integrated electronic chips. It can be submitted to the COSMO to enhance the effectiveness of various distillation towers.",
+            "高度集成的电子芯片。可以提交给主脑，增强各种分馏塔的效果。");
 
         Register("复制精华", "Copy Essence");
-        Register("I复制精华", "-", "矿物复制塔产出的精华，是量子复制塔运转所需的耗材之一。");
+        Register("I复制精华",
+            "The essence produced by the mineral replication tower is one of the consumables required for the operation of the quantum replication tower.",
+            "矿物复制塔产出的精华，是量子复制塔运转所需的耗材之一。");
         Register("点金精华", "Alchemy Essence");
-        Register("I点金精华", "-", "点金塔产出的精华，是量子复制塔运转所需的耗材之一。");
+        Register("I点金精华",
+            "The essence produced by the golden tower is one of the consumables required for the operation of the quantum replication tower.",
+            "点金塔产出的精华，是量子复制塔运转所需的耗材之一。");
         Register("分解精华", "Deconstruction Essence");
-        Register("I分解精华", "-", "分解塔产出的精华，是量子复制塔运转所需的耗材之一。");
+        Register("I分解精华",
+            "The essence produced by the decomposition tower is one of the consumables required for the operation of the quantum replication tower.",
+            "分解塔产出的精华，是量子复制塔运转所需的耗材之一。");
         Register("转化精华", "Conversion Essence");
-        Register("I转化精华", "-", "转化塔产出的精华，是量子复制塔运转所需的耗材之一。");
+        Register("I转化精华",
+            "The essence produced by the conversion tower is one of the consumables required for the operation of the quantum replication tower.",
+            "转化塔产出的精华，是量子复制塔运转所需的耗材之一。");
     }
 
     #region 添加新物品
@@ -345,10 +383,6 @@ public static class ItemManager {
     /// 计算所有物品的价值
     /// </summary>
     public static void CalculateItemValues() {
-        //初始化价值字典，将所有物品价值都设为特定的大值
-        for (int i = 0; i < itemValue.Length; i++) {
-            itemValue[i] = maxValue;
-        }
         //设置普通原矿价值
         itemValue[I铁矿] = 1.0f;
         itemValue[I铜矿] = 1.0f;
@@ -411,6 +445,12 @@ public static class ItemManager {
         itemValue[IFE转化精华] = 500.0f;
         itemValue[IFE分馏配方通用核心] = 500000.0f;
         itemValue[IFE分馏塔增幅芯片] = 888888.0f;
+        //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
+        for (int i = 0; i < itemValue.Length; i++) {
+            if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
+                itemValue[i] = maxValue;
+            }
+        }
         //获取所有配方（排除分馏配方、含有多功能集成组件的配方、GridIndex超限配方）
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             r.Type != ERecipeType.Fractionate

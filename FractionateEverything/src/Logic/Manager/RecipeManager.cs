@@ -88,11 +88,8 @@ public static class RecipeManager {
         int GetDisplayWidth(string text) {
             int width = 0;
             foreach (char c in text) {
-                if (c >= 0x4E00 && c <= 0x9FFF) { // 中文字符范围
-                    width += 2;
-                } else {
-                    width += 1;
-                }
+                // 中文字符+2，非中文+1
+                width += c >= 0x4E00 && c <= 0x9FFF ? 2 : 1;
             }
             return width;
         }
@@ -142,9 +139,13 @@ public static class RecipeManager {
     /// </summary>
     public static void AddRecipe<T>(T recipe) where T : BaseRecipe {
         ERecipe recipeType = recipe.RecipeType;
-        if (RecipeTypeArr[(int)recipeType][recipe.InputID] != null) {
-            LogError(
-                $"{recipeType.GetName()} already exists input item {recipe.InputID}({LDB.items.Select(recipe.InputID)}).");
+        int inputID = recipe.InputID;
+        if (RecipeTypeArr[(int)recipeType][inputID] != null) {
+            LogError($"{recipeType.GetName()} already exists input item {inputID}({LDB.items.Select(inputID)}).");
+            return;
+        }
+        if (itemToMatrix[inputID] == 0) {
+            LogError($"{recipeType.GetName()} item {inputID}({LDB.items.Select(inputID)}) matrix is 0.");
             return;
         }
         //RecipeList
@@ -156,14 +157,14 @@ public static class RecipeManager {
             recipeTypeList.Add(recipe);
         }
         //RecipeTypeArr
-        RecipeTypeArr[(int)recipeType][recipe.InputID] = recipe;
+        RecipeTypeArr[(int)recipeType][inputID] = recipe;
         //RecipeMatrixDic
-        if (!RecipeMatrixDic.TryGetValue(itemToMatrix[recipe.InputID], out var recipeMatrixList)) {
-            RecipeMatrixDic[itemToMatrix[recipe.InputID]] = [recipe];
+        if (!RecipeMatrixDic.TryGetValue(itemToMatrix[inputID], out var recipeMatrixList)) {
+            RecipeMatrixDic[itemToMatrix[inputID]] = [recipe];
         } else {
             recipeMatrixList.Add(recipe);
         }
-        LogInfo($"Add {recipe.InputID}({LDB.items.Select(recipe.InputID).name}) to {recipeType.GetName()}.");
+        LogInfo($"Add {inputID}({LDB.items.Select(inputID).name}) to {recipeType.GetName()}.");
     }
 
     /// <summary>

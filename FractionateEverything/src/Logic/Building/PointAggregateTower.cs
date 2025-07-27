@@ -18,7 +18,7 @@ public static class PointAggregateTower {
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");
         Register("I点数聚集塔",
-            "-",
+            "Concentrate the increase in proliferator points for all items onto a small number of items, thereby breaking the upper limit of proliferator points and producing items with 10 proliferator points.",
             "将全部物品的增产点数集中到少部分物品上，从而突破增产点数的上限，产出10增产点数的物品。");
     }
 
