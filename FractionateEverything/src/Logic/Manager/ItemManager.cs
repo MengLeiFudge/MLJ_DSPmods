@@ -225,7 +225,7 @@ public static class ItemManager {
 
         //前置科技：无，跟随TFE分馏数据中心
         item = ProtoRegistry.RegisterItem(IFE分馏配方通用核心, "分馏配方通用核心", "I分馏配方通用核心",
-            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 408, 207, EItemType.Product,
+            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
         recipe = ProtoRegistry.RegisterRecipe(RFE分馏配方通用核心, ERecipeType.None, 60,
