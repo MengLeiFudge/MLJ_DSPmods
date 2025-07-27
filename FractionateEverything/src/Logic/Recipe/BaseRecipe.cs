@@ -28,17 +28,15 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
-    /// 配方成功率上限
-    /// </summary>
-    public float MaxSuccessRate => maxSuccessRate;
-
-    private float Progress1 => (float)(Quality + 5) / (MaxQuality + 5);
-
-    /// <summary>
     /// 通过品质和等级得到该配方的整体进度，范围为0-1
     /// </summary>
     private float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
                               / (MaxQuality * 0.2f + (MaxQuality + 3) * (0.1f + MaxQuality * 0.02f));
+
+    /// <summary>
+    /// 配方成功率上限
+    /// </summary>
+    public float MaxSuccessRate => maxSuccessRate;
 
     /// <summary>
     /// 实际成功率，随着等级和品质的提高而提高。
@@ -47,10 +45,16 @@ public abstract class BaseRecipe(
     public float SuccessRate => MaxSuccessRate * (0.4f + 0.6f * Progress);
 
     /// <summary>
+    /// 配方损毁率上限
+    /// </summary>
+    public float MaxDestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f);
+
+    /// <summary>
     /// 配方损毁率，随着等级和品质的提高而降低。
     /// 初始与物品价值有关（价值越高损毁率越高），最终为0%。
+    /// 品质5，等级8时，进度为0.6842左右，所以使用0.684作为分界线
     /// </summary>
-    public float DestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f) * (1 - Progress);
+    public float DestroyRate => MaxDestroyRate * Math.Max(0.684f - Progress, 0);
 
     /// <summary>
     /// 配方主产物信息，概率之和必须为100%。
@@ -273,8 +277,8 @@ public abstract class BaseRecipe(
         }
         Level = Math.Min(r.ReadInt32(), Quality + 3);
         Exp = r.ReadSingle();
+        MemoryCount = Math.Min(r.ReadInt32(), MaxMemoryCount);
         AddExp(0);//触发升级、突破判断
-        MemoryCount = r.ReadInt32();
         // 子类特定数据由重写的方法处理
     }
 

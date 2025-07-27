@@ -164,23 +164,22 @@ public static class TabRecipeAndBuilding {
         if (recipe == null) {
             textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
             line++;
-        } else if (!recipe.IsUnlocked) {
-            textRecipeInfo[line].text = "配方未解锁！".WithColor(Red);
-            line++;
         } else {
-            textRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
+            textRecipeInfo[line].text = recipe.IsUnlocked
+                ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
+                : $"{recipe.TypeNameWC} {"配方未解锁".WithColor(Red)}";
             line++;
             textRecipeInfo[line].text = $"费用 1 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumCopy) {
                 QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);
-                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 复制精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 复制精华";
                 line++;
-                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 点金精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 点金精华";
                 line++;
-                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 分解精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 分解精华";
                 line++;
-                textRecipeInfo[line].text = $"     {recipe0.EssenceCost:F2} 转化精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 转化精华";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
