@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -14,14 +15,18 @@ public class AlchemyRecipe : BaseRecipe {
     /// 添加所有点金配方
     /// </summary>
     public static void CreateAll() {
+        List<int> matrixList = LDB.items.dataArray
+            .Where(item => item.Type == EItemType.Matrix).Select(item => item.ID).ToList();
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
                 || item.ID == IFE分馏塔增幅芯片) {
                 continue;
             }
-            //点金塔不能处理矩阵，也不能处理建筑
-            if (item.Type == EItemType.Matrix || item.BuildMode != 0) {
+            //点金塔不能处理矩阵（包括配方原材料含有矩阵的物品），也不能处理建筑
+            if (item.Type == EItemType.Matrix
+                || (item.maincraft != null && item.maincraft.Items.Any(itemID => matrixList.Contains(itemID)))
+                || item.BuildMode != 0) {
                 continue;
             }
             int matrixID = itemToMatrix[item.ID];
