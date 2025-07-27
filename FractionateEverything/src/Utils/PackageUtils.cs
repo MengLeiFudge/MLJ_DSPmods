@@ -29,9 +29,6 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (itemValue[giveId] >= maxValue) {
-            return;
-        }
         int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
         if (package > 0) {
             UIItemup.Up(giveId, package);
@@ -56,9 +53,6 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (itemValue[itemId] >= maxValue) {
-            return 0;
-        }
         StorageComponent package = GameMain.mainPlayer.package;
         int count = 0;
         for (int index = 0; index < package.size; index++) {
@@ -76,7 +70,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
-        if (itemValue[itemId] >= maxValue || !GameMain.mainPlayer.deliveryPackage.unlocked) {
+        if (!GameMain.mainPlayer.deliveryPackage.unlocked) {
             return 0;
         }
         DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
@@ -129,9 +123,6 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return false;
         }
-        if (itemValue[takeId] >= maxValue) {
-            return false;
-        }
         ItemProto takeProto = LDB.items.Select(takeId);
         if (GetItemTotalCount(takeId) < takeCount) {
             UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}！",
@@ -162,9 +153,6 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (itemValue[takeId] >= maxValue || takeCount == 0 || itemValue[giveId] >= maxValue || giveCount == 0) {
-            return;
-        }
         if (!TakeItem(takeId, takeCount)) {
             return;
         }
@@ -190,9 +178,6 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (itemValue[takeId] >= maxValue || takeCount == 0 || itemValue[giveId] >= maxValue || giveCount == 0) {
-            return;
-        }
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
@@ -201,9 +186,6 @@ public static partial class Utils {
 
     private static void ExchangeRecipe(int takeId, int takeCount, BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        if (itemValue[takeId] >= maxValue || takeCount == 0) {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
@@ -232,15 +214,16 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (itemValue[takeId] >= maxValue || takeCount == 0) {
+        if (recipe == null) {
+            UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.WARNING);
             return;
         }
-        if (recipe == null) {
-            UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.INFO);
+        if (recipe.MemoryCount >= recipe.MaxMemoryCount) {
+            UIMessageBox.Show("提示", "该配方回响数目已达到上限！", "确定", UIMessageBox.WARNING);
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeName} 吗？",
+        UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeRecipe(takeId, takeCount, recipe); }, null);
     }
 
