@@ -154,7 +154,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public void PreAddData() {
-        //添加分馏原胚、精华
+        //添加分馏塔原胚、精华
         ItemManager.AddFractionalPrototypeAndEssence();
         //初步添加分馏塔
         BuildingManager.AddFractionators();

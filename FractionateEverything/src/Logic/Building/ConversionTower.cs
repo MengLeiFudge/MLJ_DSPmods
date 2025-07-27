@@ -30,10 +30,10 @@ public static class ConversionTower {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE转化塔, "转化塔", "I转化塔",
-            "Assets/fe/conversion-tower", tab分馏 * 1000 + 108, 30, EItemType.Production,
+            "Assets/fe/conversion-tower", tab分馏 * 1000 + 307, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE转化塔,
-            ERecipeType.Assemble, 60, [IFE分馏原胚定向], [1], [IFE转化塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE转化塔], [1],
             "I转化塔", TFE物品转化);
         recipe.IconPath = "";
         recipe.NonProductive = true;

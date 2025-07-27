@@ -1,6 +1,7 @@
 ﻿using CommonAPI.Systems;
 using FE.Compatibility;
 using HarmonyLib;
+using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -12,18 +13,18 @@ namespace FE.Logic.Manager;
 public static class TechManager {
     public static void AddTranslations() {
         //todo: 英文翻译
-        Register("T分馏原胚", "-", "分馏原胚");
-        Register("分馏原胚描述",
+        Register("T分馏塔原胚", "-", "分馏塔原胚");
+        Register("分馏塔原胚描述",
             "In the course of Icarus' exploration, the Mastermind discovered that some star zones were extremely resource-poor and unsustainable. In order to make it easier for Icarus to explore the barren star zones, the Mastermind specially researched and issued the Fractionation of Natural Resources technology. This technology can be used to replicate the vast majority of natural resources, avoiding situations where lack of resources prevents exploration.",
             $"随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发一系列相关科技来帮助伊卡洛斯建设戴森球。同时，主脑提供了一种新的数据交互方式，按 {"Shift+F".WithColor(Orange)} 即可连接。\n此次提供的分馏科技中，一个重要特性为“倒因为果”。也就是说，可能需要通过与主脑的特殊交互获取某些物品，然后才能解锁该物品的相关科技。");
-        Register("分馏原胚结果",
+        Register("分馏塔原胚结果",
             "You have mastered the Natural Resource Fractionation technology, which can be replicated indefinitely as long as you have a certain amount of natural resources.",
-            "你已经了解了分馏原胚的相关信息，可以将不同品质的分馏原胚合成为定向分馏原胚了。");
+            "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
 
         Register("T物品交互", "-", "物品交互");
         Register("物品交互描述",
             "-",
-            "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏中心，便于后续使用。");
+            "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏数据中心，便于后续使用。");
         Register("物品交互结果",
             "-",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
@@ -92,16 +93,16 @@ public static class TechManager {
         Register("T首充2", "-", "首充30电磁矩阵");
         Register("首充2描述",
             "-",
-            "只要30电磁矩阵，就可以获取极其珍贵的分馏配方核心，可用于兑换任何配方！以及强力的建筑增幅芯片，大大增强特定建筑的效果！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "只要30电磁矩阵，就可以获取极其珍贵的分馏配方通用核心，可用于兑换任何配方！以及强力的分馏塔增幅芯片，大大增强特定建筑的效果！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("首充2结果",
             "-",
-            "分馏配方核心 x 5，建筑增幅芯片 x 3 已到账。");
+            "分馏配方通用核心 x 5，分馏塔增幅芯片 x 3 已到账。");
 
 
         Register("T电磁奖券", "-", "电磁奖券");
         Register("电磁奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("电磁奖券结果",
             "-",
             "你已经掌握了制作电磁奖券的技术，可以通过自动化的方式制作它了。");
@@ -109,7 +110,7 @@ public static class TechManager {
         Register("T能量奖券", "-", "能量奖券");
         Register("能量奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("能量奖券结果",
             "-",
             "你已经掌握了制作能量奖券的技术，可以通过自动化的方式制作它了。");
@@ -117,7 +118,7 @@ public static class TechManager {
         Register("T结构奖券", "-", "结构奖券");
         Register("结构奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("结构奖券结果",
             "-",
             "你已经掌握了制作结构奖券的技术，可以通过自动化的方式制作它了。");
@@ -125,7 +126,7 @@ public static class TechManager {
         Register("T信息奖券", "-", "信息奖券");
         Register("信息奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("信息奖券结果",
             "-",
             "你已经掌握了制作信息奖券的技术，可以通过自动化的方式制作它了。");
@@ -133,7 +134,7 @@ public static class TechManager {
         Register("T引力奖券", "-", "引力奖券");
         Register("引力奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("引力奖券结果",
             "-",
             "你已经掌握了制作引力奖券的技术，可以通过自动化的方式制作它了。");
@@ -141,7 +142,7 @@ public static class TechManager {
         Register("T宇宙奖券", "-", "宇宙奖券");
         Register("宇宙奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("宇宙奖券结果",
             "-",
             "你已经掌握了制作宇宙奖券的技术，可以通过自动化的方式制作它了。");
@@ -149,7 +150,7 @@ public static class TechManager {
         Register("T黑雾奖券", "-", "黑雾奖券");
         Register("黑雾奖券描述",
             "-",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("黑雾奖券结果",
             "-",
             "你已经掌握了制作黑雾奖券的技术，可以通过自动化的方式制作它了。");
@@ -198,123 +199,102 @@ public static class TechManager {
     /// 添加所有科技。对于科技的位置，x向右y向下，间距固定为4
     /// </summary>
     public static void AddTechs() {
-        var tech1750 = ProtoRegistry.RegisterTech(TFE分馏原胚,
-            "T分馏原胚", "分馏原胚描述", "分馏原胚结果",
-            "Assets/fe/tech分馏原胚",
+        var tech分馏数据中心 = ProtoRegistry.RegisterTech(
+            TFE分馏数据中心, "T分馏数据中心", "分馏数据中心描述", "分馏数据中心结果", "Assets/fe/tech分馏数据中心",
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
-            [IFE分馏原胚普通], [50], 3600,
-            [RFE分馏原胚定向],
-            GenesisBook.Enable ? new(9, -51) : new(13, -71)
+            [I铁矿, I铜矿], [100, 100], 3600,
+            [],
+            GetTechPos(1, 0)
         );
-        tech1750.AddItems = [IFE分馏原胚定向];
-        tech1750.AddItemCounts = [10];
+        tech分馏数据中心.AddItems = [IFE电磁奖券];
+        tech分馏数据中心.AddItemCounts = [100];
 
-        var tech1751 = ProtoRegistry.RegisterTech(TFE物品交互,
-            "T物品交互", "物品交互描述", "物品交互结果",
-            "Assets/fe/tech物品交互",
-            [tech1750.ID],
+        var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
+            TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
+            GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
+            [IFE分馏塔原胚普通], [50], 3600,
+            [RFE分馏塔原胚定向],
+            GetTechPos(1, 0)
+        );
+        tech分馏塔原胚.AddItems = [IFE分馏塔原胚定向];
+        tech分馏塔原胚.AddItemCounts = [10];
+
+        var tech物品交互 = ProtoRegistry.RegisterTech(
+            TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
+            [tech分馏塔原胚.ID],
             [IFE交互塔], [10], 1800,
             [RFE交互塔],
-            GenesisBook.Enable ? new(13, -47) : new(17, -67)
+            GetTechPos(0, 1)
         );
-        tech1751.AddItems = [IFE交互塔];
-        tech1751.AddItemCounts = [5];
+        tech物品交互.AddItems = [IFE交互塔];
+        tech物品交互.AddItemCounts = [5];
 
-        var tech1752 = ProtoRegistry.RegisterTech(TFE矿物复制,
-            "T矿物复制", "矿物复制描述", "矿物复制结果",
-            "Assets/fe/tech矿物复制",
-            [tech1751.ID],
+        var tech矿物复制 = ProtoRegistry.RegisterTech(
+            TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
+            [tech物品交互.ID],
             [IFE矿物复制塔], [10], 1800,
             [RFE矿物复制塔],
-            GenesisBook.Enable ? new(17, -47) : new(21, -67)
+            GetTechPos(0, 2)
         );
-        tech1752.AddItems = [IFE矿物复制塔];
-        tech1752.AddItemCounts = [5];
+        tech矿物复制.AddItems = [IFE矿物复制塔];
+        tech矿物复制.AddItemCounts = [5];
 
-        var tech1754 = ProtoRegistry.RegisterTech(TFE增产点数聚集,
-            "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果",
-            "Assets/fe/tech增产点数聚集",
-            [tech1752.ID],
+        var tech增产点数聚集 = ProtoRegistry.RegisterTech(
+            TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
+            [tech矿物复制.ID],
             [IFE点数聚集塔], [10], 1800,
             [RFE点数聚集塔],
-            GenesisBook.Enable ? new(21, -47) : new(25, -67)
+            GetTechPos(0, 3)
         );
-        tech1754.AddItems = [IFE点数聚集塔];
-        tech1754.AddItemCounts = [5];
+        tech增产点数聚集.AddItems = [IFE点数聚集塔];
+        tech增产点数聚集.AddItemCounts = [5];
 
-        var tech1755 = ProtoRegistry.RegisterTech(TFE量子复制,
-            "T量子复制", "量子复制描述", "量子复制结果",
-            "Assets/fe/tech量子复制",
-            [tech1754.ID],
+        var tech量子复制 = ProtoRegistry.RegisterTech(
+            TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
+            [tech增产点数聚集.ID],
             [IFE量子复制塔, I黑雾矩阵], [5, 2000], 60000,
             [RFE量子复制塔],
             GenesisBook.Enable ? new(25, -47) : new(29, -67)
         );
-        tech1755.IsHiddenTech = true;
+        tech量子复制.IsHiddenTech = true;
         //前置物品仅需物质重组器，只要掉落该物品，该科技就为可见状态
-        tech1755.PreItem = [I物质重组器];
-        tech1755.AddItems = [IFE量子复制塔];
-        tech1755.AddItemCounts = [5];
+        tech量子复制.PreItem = [I物质重组器];
+        tech量子复制.AddItems = [IFE量子复制塔];
+        tech量子复制.AddItemCounts = [5];
 
-        var tech1756 = ProtoRegistry.RegisterTech(TFE物品点金,
-            "T物品点金", "物品点金描述", "物品点金结果",
-            "Assets/fe/tech物品点金",
-            [tech1751.ID],
+        var tech物品点金 = ProtoRegistry.RegisterTech(
+            TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
+            [tech物品交互.ID],
             [IFE点金塔], [10], 1800,
             [RFE点金塔],
             GenesisBook.Enable ? new(17, -51) : new(21, -71)
         );
-        tech1756.AddItems = [IFE点金塔];
-        tech1756.AddItemCounts = [5];
+        tech物品点金.AddItems = [IFE点金塔];
+        tech物品点金.AddItemCounts = [5];
 
-        var tech1757 = ProtoRegistry.RegisterTech(TFE物品分解,
-            "T物品分解", "物品分解描述", "物品分解结果",
-            "Assets/fe/tech物品分解",
-            [tech1756.ID],
+        var tech物品分解 = ProtoRegistry.RegisterTech(
+            TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
+            [tech物品点金.ID],
             [IFE分解塔], [10], 1800,
             [RFE分解塔],
             GenesisBook.Enable ? new(21, -51) : new(25, -71)
         );
-        tech1757.AddItems = [IFE分解塔];
-        tech1757.AddItemCounts = [5];
+        tech物品分解.AddItems = [IFE分解塔];
+        tech物品分解.AddItemCounts = [5];
 
-        var tech1758 = ProtoRegistry.RegisterTech(TFE物品转化,
-            "T物品转化", "物品转化描述", "物品转化结果",
-            "Assets/fe/tech物品转化",
-            [tech1757.ID],
+        var tech物品转化 = ProtoRegistry.RegisterTech(
+            TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
+            [tech物品分解.ID],
             [IFE转化塔], [10], 1800,
             [RFE转化塔],
             GenesisBook.Enable ? new(25, -51) : new(29, -71)
         );
-        tech1758.AddItems = [IFE转化塔];
-        tech1758.AddItemCounts = [5];
+        tech物品转化.AddItems = [IFE转化塔];
+        tech物品转化.AddItemCounts = [5];
 
-        var tech1759 = ProtoRegistry.RegisterTech(TFE首充1,
-            "T首充1", "首充1描述", "首充1结果",
-            "Assets/fe/tech首充1",
-            [tech1750.ID],
-            [I电磁矩阵], [6], 3600,
-            [],
-            GenesisBook.Enable ? new(13, -55) : new(17, -75)
-        );
-        tech1759.AddItems = [IFE电磁奖券];
-        tech1759.AddItemCounts = [100];
-
-        var tech1760 = ProtoRegistry.RegisterTech(TFE首充2,
-            "T首充2", "首充2描述", "首充2结果",
-            "Assets/fe/tech首充2",
-            [tech1759.ID],
-            [I电磁矩阵], [30], 3600,
-            [],
-            GenesisBook.Enable ? new(17, -55) : new(21, -75)
-        );
-        tech1760.AddItems = [IFE分馏配方核心, IFE建筑增幅芯片];
-        tech1760.AddItemCounts = [5, 3];
-
-        var tech1761 = ProtoRegistry.RegisterTech(TFE电磁奖券,
-            "T电磁奖券", "电磁奖券描述", "电磁奖券结果",
-            "Assets/fe/tech电磁奖券",
-            [tech1750.ID],
+        var tech1761 = ProtoRegistry.RegisterTech(
+            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech电磁奖券",
+            [tech分馏塔原胚.ID],
             [I电磁矩阵], [700], 3600,
             [RFE电磁奖券],
             GenesisBook.Enable ? new(13, -59) : new(17, -79)
@@ -323,9 +303,8 @@ public static class TechManager {
         tech1761.AddItems = [IFE电磁奖券];
         tech1761.AddItemCounts = [20];
 
-        var tech1762 = ProtoRegistry.RegisterTech(TFE能量奖券,
-            "T能量奖券", "能量奖券描述", "能量奖券结果",
-            "Assets/fe/tech能量奖券",
+        var tech1762 = ProtoRegistry.RegisterTech(
+            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech能量奖券",
             [tech1761.ID],
             [I能量矩阵], [650], 3600,
             [RFE能量奖券],
@@ -335,9 +314,8 @@ public static class TechManager {
         tech1762.AddItems = [IFE能量奖券];
         tech1762.AddItemCounts = [20];
 
-        var tech1763 = ProtoRegistry.RegisterTech(TFE结构奖券,
-            "T结构奖券", "结构奖券描述", "结构奖券结果",
-            "Assets/fe/tech结构奖券",
+        var tech1763 = ProtoRegistry.RegisterTech(
+            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech结构奖券",
             [tech1762.ID],
             [I结构矩阵], [600], 3600,
             [RFE结构奖券],
@@ -347,9 +325,8 @@ public static class TechManager {
         tech1763.AddItems = [IFE结构奖券];
         tech1763.AddItemCounts = [20];
 
-        var tech1764 = ProtoRegistry.RegisterTech(TFE信息奖券,
-            "T信息奖券", "信息奖券描述", "信息奖券结果",
-            "Assets/fe/tech信息奖券",
+        var tech1764 = ProtoRegistry.RegisterTech(
+            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech信息奖券",
             [tech1763.ID],
             [I信息矩阵], [550], 3600,
             [RFE信息奖券],
@@ -359,9 +336,8 @@ public static class TechManager {
         tech1764.AddItems = [IFE信息奖券];
         tech1764.AddItemCounts = [20];
 
-        var tech1765 = ProtoRegistry.RegisterTech(TFE引力奖券,
-            "T引力奖券", "引力奖券描述", "引力奖券结果",
-            "Assets/fe/tech引力奖券",
+        var tech1765 = ProtoRegistry.RegisterTech(
+            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech引力奖券",
             [tech1764.ID],
             [I引力矩阵], [500], 3600,
             [RFE引力奖券],
@@ -371,9 +347,8 @@ public static class TechManager {
         tech1765.AddItems = [IFE引力奖券];
         tech1765.AddItemCounts = [20];
 
-        var tech1766 = ProtoRegistry.RegisterTech(TFE宇宙奖券,
-            "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果",
-            "Assets/fe/tech宇宙奖券",
+        var tech1766 = ProtoRegistry.RegisterTech(
+            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech宇宙奖券",
             [tech1765.ID],
             [I宇宙矩阵], [400], 3600,
             [RFE宇宙奖券],
@@ -383,9 +358,8 @@ public static class TechManager {
         tech1766.AddItems = [IFE宇宙奖券];
         tech1766.AddItemCounts = [20];
 
-        var tech1767 = ProtoRegistry.RegisterTech(TFE黑雾奖券,
-            "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果",
-            "Assets/fe/tech黑雾奖券",
+        var tech1767 = ProtoRegistry.RegisterTech(
+            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech黑雾奖券",
             [],
             [I黑雾矩阵], [20000], 3600,
             [RFE黑雾奖券],
@@ -396,6 +370,27 @@ public static class TechManager {
         tech1767.PreTechsImplicit = [1750];
         tech1767.AddItems = [IFE黑雾奖券];
         tech1767.AddItemCounts = [20];
+
+        var tech1759 = ProtoRegistry.RegisterTech(
+            TFE首充1, "T首充1", "首充1描述", "首充1结果", "Assets/fe/tech首充1",
+            [tech分馏塔原胚.ID],
+            [I电磁矩阵], [6], 3600,
+            [],
+            GenesisBook.Enable ? new(13, -55) : new(17, -75)
+        );
+        tech1759.AddItems = [IFE电磁奖券];
+        tech1759.AddItemCounts = [100];
+
+        var tech1760 = ProtoRegistry.RegisterTech(
+            TFE首充2, "T首充2", "首充2描述", "首充2结果", "Assets/fe/tech首充2",
+            [tech1759.ID],
+            [I电磁矩阵], [30], 3600,
+            [],
+            GenesisBook.Enable ? new(17, -55) : new(21, -75)
+        );
+        tech1760.AddItems = [IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech1760.AddItemCounts = [5, 3];
+
 
         // var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
         //     "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",
@@ -444,6 +439,18 @@ public static class TechManager {
         //     [], new(45, -31));
         // tech3808.Name = "T分馏永动";
         // tech3808.PreTechsImplicit = [tech3806.ID];
+    }
+
+    /// <summary>
+    /// 根据输入的行列，生成科技所在位置。
+    /// </summary>
+    /// <param name="row">从0开始，数字越大越靠下</param>
+    /// <param name="column">从0开始，数字越大越靠右</param>
+    /// <returns></returns>
+    private static Vector2 GetTechPos(int row, int column) {
+        return GenesisBook.Enable
+            ? new(9 - row * 4, -47 + column * 4)
+            : new(13 - row * 4, -67 + column * 4);
     }
 
     // [HarmonyPrefix]

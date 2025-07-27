@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -110,8 +109,15 @@ public static class RecipeManager {
         return RecipeTypeArr[(int)recipeType][inputId] as T;
     }
 
-    public static List<BaseRecipe> GetRecipes(ERecipe recipeType) {
+    public static List<BaseRecipe> GetRecipesByType(ERecipe recipeType) {
         return RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
+    }
+
+    public static List<BaseRecipe> GetRecipesByMatrix(int matrixId) {
+        if (matrixId == I宇宙矩阵) {
+            return RecipeList;
+        }
+        return RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipeList) ? recipeList : [];
     }
 
     #endregion
