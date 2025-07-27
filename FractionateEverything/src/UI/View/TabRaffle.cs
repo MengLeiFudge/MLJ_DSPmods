@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
@@ -49,11 +49,9 @@ public static class TabRaffle {
         "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
-    public static float[] TicketRatioPlus = [
-        1.0f, 1.05f, 1.1f, 1.15f, 1.2f, 1.3f, 1.0f,
-    ];
     public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
-    public static float SelectedTicketRatioPlus => TicketRatioPlus[TicketTypeEntry.Value];
+    public static int SelectedTicketMatrixId => LDB.items.Select(SelectedTicketId).maincraft.Items[0];
+    public static float SelectedTicketRatioPlus => SelectedTicketId == IFE宇宙奖券 ? 2.0f : 1.0f;
     public static Text TicketCountText1;
     public static Text TicketCountText2;
 
@@ -62,25 +60,6 @@ public static class TabRaffle {
     /// </summary>
     public static int RecipeRaffleCount = 1;
     public static double RecipeRaffleRate => 0.006 + Math.Max(RecipeRaffleCount - 73, 0) * 0.06;
-
-    /// <summary>
-    /// 抽到次优先配方的次数。
-    /// </summary>
-    public static int NotMostPreferredCount = 0;
-    public static Text[] PreferredTexts = new Text[4];
-    /// <summary>
-    /// 优先配方类型，[0]为主优先配方（30%），其余为次优先配方（10%）
-    /// </summary>
-    public static int[] PreferredItems = new int[4];
-    /// <summary>
-    /// 优先配方ID，[0]为主优先配方（30%），其余为次优先配方（10%）
-    /// </summary>
-    public static ERecipe[] PreferredRecipeTypes = new ERecipe[4];
-    public static BaseRecipe MostPreferredRecipe =>
-        RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[0], PreferredItems[0]);
-
-    public static double[] FracProtoRateArr = [0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
-    public static int[] FracProtoID = [IFE分馏原胚普通, IFE分馏原胚精良, IFE分馏原胚稀有, IFE分馏原胚史诗, IFE分馏原胚传说, IFE分馏原胚定向];
 
     public static void LoadConfig(ConfigFile configFile) {
         TicketTypeEntry = configFile.Bind("TabRaffle", "Ticket Type", 0, "想要使用的奖券类型。");
@@ -120,13 +99,6 @@ public static class TabRaffle {
                 .WithConfigEntry(TicketTypeEntry);
             TicketCountText1 = wnd.AddText2(x + 500, y, tab, "奖券数目", 15, "text-ticket-count-1");
             y += 38f;
-            for (int i = 0; i < PreferredItems.Length; i++) {
-                PreferredTexts[i] = wnd.AddText2(x, y, tab, $"优先配方{i + 1}", 15, "text-preferred-recipe");
-                int j = i;
-                wnd.AddButton(x + 350, y, tab, "设置优先配方", 16, "button-set-preferred-recipe",
-                    () => SetPreferredRecipe(j));
-                y += 38f;
-            }
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
             wnd.AddButton(x + 220, y, 200, tab, "十连", 16, "button-raffle-recipe-10",
@@ -157,40 +129,6 @@ public static class TabRaffle {
         btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         TicketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         TicketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
-        for (int i = 0; i < PreferredItems.Length; i++) {
-            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[i], PreferredItems[i]);
-            if (recipe == null) {
-                PreferredTexts[i].text = "未设置优先配方".WithColor(Red);
-            } else {
-                PreferredTexts[i].text = $"{(i == 0 ? "30%" : "10%")}优先配方：{recipe.TypeNameWC}";
-            }
-        }
-    }
-
-    public static void SetPreferredRecipe(int index) {
-        if (!GameMain.history.ItemUnlocked(SelectedItem.ID)) {
-            UIMessageBox.Show("提示", $"物品 {SelectedItem.name} 尚未解锁，无法设为优先配方！",
-                "确认", UIMessageBox.WARNING);
-            return;
-        }
-        ERecipe oldType = PreferredRecipeTypes[index];
-        int oldItemId = PreferredItems[index];
-        if (oldType != SelectedRecipeType || oldItemId != SelectedItemId) {
-            //有可能交换位置，也有可能是替换
-            int changeIndex = -1;
-            for (int i = 0; i < PreferredItems.Length; i++) {
-                if (PreferredRecipeTypes[i] == SelectedRecipeType && PreferredItems[i] == SelectedItemId) {
-                    changeIndex = i;
-                }
-            }
-            if (changeIndex != -1) {
-                PreferredRecipeTypes[changeIndex] = PreferredRecipeTypes[index];
-                PreferredItems[changeIndex] = PreferredItems[index];
-            }
-            PreferredRecipeTypes[index] = SelectedRecipeType;
-            PreferredItems[index] = SelectedItemId;
-        }
-        UIMessageBox.Show("提示", "已设定优先配方！", "确认", UIMessageBox.INFO);
     }
 
     /// <summary>
@@ -202,27 +140,83 @@ public static class TabRaffle {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        for (int i = 0; i < PreferredItems.Length; i++) {
-            if (RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[i], PreferredItems[i]) == null) {
-                UIMessageBox.Show("提示", "你还未设置优先配方！", "确认", UIMessageBox.WARNING);
-                return;
+        //构建杂项物品奖励列表
+        //主体为已解锁的非建筑物品，可抽到精华，不可抽到原胚、核心等
+        HashSet<int> itemHashSet = [];
+        foreach (ItemProto item in LDB.items.dataArray) {
+            if ((item.ID >= IFE分馏塔原胚普通 && item.ID <= IFE分馏塔原胚定向)
+                //这里先排除掉精华，后面再加
+                || (item.ID >= IFE复制精华 && item.ID <= IFE转化精华)
+                || (item.ID >= IFE分馏配方通用核心 && item.ID <= IFE分馏塔增幅芯片)
+                || item.ID == I沙土
+                || item.BuildMode != 0
+                || itemValue[item.ID] >= maxValue) {
+                continue;
             }
+            if (GameMain.history.ItemUnlocked(item.ID)) {
+                itemHashSet.Add(item.ID);
+            }
+        }
+        //初步构建杂项物品奖励列表
+        if (itemHashSet.Count == 0) {
+            UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        List<int> items = itemHashSet.ToList();
+        while (items.Count < 1000) {
+            items.InsertRange(items.Count, itemHashSet);
+        }
+        //精华概率增加至总比例10%以上
+        int essenceCount = 0;
+        while ((float)essenceCount / items.Count < 0.1f / 0.6f) {
+            for (int itemID = IFE复制精华; itemID <= IFE转化精华; itemID++) {
+                items.Add(itemID);
+            }
+        }
+        //排序一下
+        items.Sort();
+        //构建可抽到的分馏配方列表
+        List<BaseRecipe> recipes = [..GetRecipesByMatrix(SelectedTicketMatrixId)];
+        recipes.RemoveAll(recipe => recipe.MemoryCount >= recipe.MaxMemoryCount);
+        if (recipes.Count == 0) {
+            UIMessageBox.Show("提示", "该卡池已经没有配方可以抽取了！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        List<BaseRecipe> recipesTemp = [..recipes];
+        int removedCount = recipes.RemoveAll(recipe => !GameMain.history.ItemUnlocked(recipe.InputID));
+        int oneLineCount = 0;
+        if (recipes.Count == 0) {
+            StringBuilder tip = new StringBuilder($"还有{removedCount}个物品尚未解锁，现在抽取不到对应配方！\n\n"
+                                                  + $"未解锁的物品为：\n");
+            while (removedCount > 0) {
+                tip.Append(LDB.items.Select(recipesTemp[removedCount - 1].InputID).name);
+                oneLineCount++;
+                if (oneLineCount >= oneLineMaxCount) {
+                    tip.Append("\n");
+                    oneLineCount = 0;
+                } else {
+                    tip.Append("          ");
+                }
+                removedCount--;
+            }
+            UIMessageBox.Show("提示", tip.ToString(), "确认", UIMessageBox.WARNING);
+            return;
         }
         if (!TakeItem(SelectedTicketId, ticketCount)) {
             return;
         }
-        List<BaseRecipe> recipeArr = RecipeManager.GetRecipes(RecipeTypes[RecipeTypeEntry.Value]);
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
-        int oneLineCount = 0;
+        StringBuilder sb2 = new StringBuilder();
+        oneLineCount = 0;
         while (ticketCount > 0) {
             ticketCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
-            //分馏配方核心（0.05%）
+            //分馏配方通用核心（0.05%）
             currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItemToPackage(IFE分馏配方核心, 1);
-                sb.Append($"{LDB.items.Select(IFE分馏配方核心).name.WithColor(Gold)} x 1");
+                AddItemToPackage(IFE分馏配方通用核心, 1);
+                sb.Append($"{LDB.items.Select(IFE分馏配方通用核心).name} x 1".WithValueColor(IFE分馏配方通用核心));
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
                     sb.Append("\n");
@@ -236,48 +230,16 @@ public static class TabRaffle {
             //配方（0.6%，74抽开始后每抽增加6%）
             currRate += RecipeRaffleRate * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                //先判断是不是优先配方
-                double preferred = NotMostPreferredCount >= 2 ? 0 : GetRandDouble();
-                double currPreferred = 0;
-                bool getPreferred = false;
-                BaseRecipe recipe = null;
-                for (int i = 0; i < PreferredItems.Length; i++) {
-                    currPreferred += i == 0 ? 0.3 : 0.1;
-                    if (preferred < currPreferred) {
-                        recipe = RecipeManager.GetRecipe<BaseRecipe>(PreferredRecipeTypes[i], PreferredItems[i]);
-                        getPreferred = true;
-                        //如果是次有限配方，累计次数
-                        if (i == 0) {
-                            NotMostPreferredCount = 0;
-                        } else {
-                            NotMostPreferredCount++;
-                        }
-                        break;
-                    }
-                }
-                //不是优先配方，则按照当前选择的奖池随机抽取
-                if (!getPreferred) {
-                    while (true) {
-                        recipe = recipeArr[GetRandInt(0, recipeArr.Count)];
-                        if (recipe == MostPreferredRecipe) {
-                            continue;
-                        }
-                        if (!GameMain.history.ItemUnlocked(recipe.InputID)) {
-                            continue;
-                        }
-                        break;
-                    }
-                }
+                //按照当前配方奖池随机抽取
+                BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
+                sb.Append($"{recipe.TypeName}".WithColor(Gold));
                 if (!recipe.IsUnlocked) {
                     recipe.Level = 1;
                     recipe.Quality = 1;
-                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已解锁");
-                } else if (recipe.MemoryCount < recipe.MaxMemoryCount) {
-                    recipe.MemoryCount++;
-                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为回响（当前拥有{recipe.MemoryCount}）");
+                    sb2.AppendLine($"{recipe.TypeName} 已解锁".WithColor(Orange));
                 } else {
-                    AddItemToPackage(IFE残破核心, 1);
-                    sb.Append($"{recipe.TypeName.WithColor(Red)} => 已转为残破核心");
+                    recipe.MemoryCount++;
+                    sb2.AppendLine($"{recipe.TypeName} 已转为对应回响，该配方回响数目：{recipe.MemoryCount}".WithColor(Orange));
                 }
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
@@ -290,51 +252,36 @@ public static class TabRaffle {
                 continue;
             }
             RecipeRaffleCount++;
-            //剩余的概率中，50%各种物品
-            HashSet<int> items = [..GameMain.history.enemyDropItemUnlocked];
-            foreach (ItemProto item in LDB.items.dataArray) {
-                if (item.ID == I沙土) {
-                    continue;
-                }
-                if (item.UnlockKey == -1 || item.Type == EItemType.Resource) {
-                    items.Add(item.ID);
-                }
-                if (item.preTech != null && GameMain.history.TechUnlocked(item.preTech.ID)) {
-                    items.Add(item.ID);
-                }
-            }
-            items.RemoveWhere(x => itemValue[x] >= maxValue);
-            if (items.Count > 0) {
-                double ratioItem = (1 - currRate) * 0.5 / items.Count;
-                bool getItem = false;
-                foreach (int itemId in items) {
-                    currRate += ratioItem;
-                    if (randDouble < currRate) {
-                        float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
-                        int count = ratio <= 49
-                            ? (int)Math.Ceiling(ratio * 0.5f)
-                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
-                        AddItemToModData(itemId, count);
-                        sb.Append($"{LDB.items.Select(itemId).name} x {count}");
-                        oneLineCount++;
-                        if (oneLineCount >= oneLineMaxCount) {
-                            sb.Append("\n");
-                            oneLineCount = 0;
-                        } else {
-                            sb.Append("          ");
-                        }
-                        getItem = true;
-                        break;
+            //剩余的概率中，60%各种非建筑的物品（不含分馏某些特殊物品）
+            double ratioItem = (1 - currRate) * 0.6 / items.Count;
+            bool getItem = false;
+            foreach (int itemId in items) {
+                currRate += ratioItem;
+                if (randDouble < currRate) {
+                    float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
+                    int count = ratio <= 49
+                        ? (int)Math.Ceiling(ratio * 0.5f)
+                        : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
+                    AddItemToModData(itemId, count);
+                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
+                    oneLineCount++;
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else {
+                        sb.Append("          ");
                     }
-                }
-                if (getItem) {
-                    continue;
+                    getItem = true;
+                    break;
                 }
             }
-            //50%沙土
-            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.8f);
+            if (getItem) {
+                continue;
+            }
+            //40%沙土
+            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.5f);
             AddItemToPackage(I沙土, sandCount);
-            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}");
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
                 sb.Append("\n");
@@ -343,7 +290,7 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
+        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n') + "\n\n" + sb2, "确认", UIMessageBox.INFO);
     }
 
     /// <summary>
@@ -355,6 +302,54 @@ public static class TabRaffle {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
+        //构建杂项物品奖励列表
+        //主体为已解锁的建筑物品，可抽到原胚，不可抽到精华、核心等
+        HashSet<int> itemHashSet = [];
+        foreach (ItemProto item in LDB.items.dataArray) {
+            //这里先排除掉分馏塔和原胚，后面再加
+            if ((item.ID >= IFE交互塔 && item.ID <= IFE转化塔)
+                || item.BuildMode == 0
+                || itemValue[item.ID] >= maxValue) {
+                continue;
+            }
+            if (GameMain.history.ItemUnlocked(item.ID)) {
+                itemHashSet.Add(item.ID);
+            }
+        }
+        //初步构建杂项物品奖励列表
+        if (itemHashSet.Count == 0) {
+            UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        List<int> items = itemHashSet.ToList();
+        while (items.Count < 1000) {
+            items.InsertRange(items.Count, itemHashSet);
+        }
+        //分馏塔概率增加至总比例5%以上，原胚概率增加至总比例25%以上
+        int buildingCount = 0;
+        int protoCount = 0;
+        while (true) {
+            while ((float)buildingCount / items.Count < 0.05f / 0.6f) {
+                for (int itemID = IFE交互塔; itemID <= IFE转化塔; itemID++) {
+                    items.Add(itemID);
+                    buildingCount++;
+                }
+            }
+            while ((float)protoCount / items.Count < 0.25f / 0.6f) {
+                for (int itemID = IFE分馏塔原胚普通; itemID <= IFE分馏塔原胚传说; itemID++) {
+                    for (int i = 0; i < Math.Pow(2, IFE分馏塔原胚传说 - itemID); itemID++) {
+                        items.Add(itemID);
+                        protoCount++;
+                    }
+                }
+            }
+            if ((float)buildingCount / items.Count >= 0.05f / 0.6f
+                && (float)protoCount / items.Count >= 0.25f / 0.6f) {
+                break;
+            }
+        }
+        //排序一下
+        items.Sort();
         if (!TakeItem(SelectedTicketId, ticketCount)) {
             return;
         }
@@ -364,11 +359,11 @@ public static class TabRaffle {
             ticketCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
-            //建筑增幅芯片（0.3%）
+            //分馏塔增幅芯片（0.3%）
             currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItemToPackage(IFE建筑增幅芯片, 1);
-                sb.Append($"{LDB.items.Select(IFE建筑增幅芯片).name.WithColor(Gold)} x 1");
+                AddItemToPackage(IFE分馏塔增幅芯片, 1);
+                sb.Append($"{LDB.items.Select(IFE分馏塔增幅芯片).name} x 1".WithValueColor(IFE分馏塔增幅芯片));
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
                     sb.Append("\n");
@@ -378,13 +373,18 @@ public static class TabRaffle {
                 }
                 continue;
             }
-            //建筑（3% * 1 + 0.5% * 6）
-            bool getBuilding = false;
-            for (int i = 0; i < BuildingIds.Length; i++) {
-                currRate += (i == BuildingTypeEntry.Value ? 0.03 : 0.005) * SelectedTicketRatioPlus;
+            //剩余的概率中，60%各种建筑（含有分馏某些特殊物品）
+            double ratioItem = (1 - currRate) * 0.6 / items.Count;
+            bool getItem = false;
+            foreach (int itemId in items) {
+                currRate += ratioItem;
                 if (randDouble < currRate) {
-                    AddItemToPackage(BuildingIds[i], 1);
-                    sb.Append($"{LDB.items.Select(BuildingIds[i]).name.WithColor(Purple)} x 1");
+                    float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
+                    int count = ratio <= 49
+                        ? (int)Math.Ceiling(ratio * 0.5f)
+                        : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
+                    AddItemToModData(itemId, count);
+                    sb.Append($"{LDB.items.Select(itemId).name} x {count}");
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
@@ -392,79 +392,15 @@ public static class TabRaffle {
                     } else {
                         sb.Append("          ");
                     }
-                    getBuilding = true;
+                    getItem = true;
                     break;
                 }
             }
-            if (getBuilding) {
+            if (getItem) {
                 continue;
             }
-            //分馏原胚（8.8% * 5 = 44%）
-            bool getFracProto = false;
-            for (int i = 0; i < FracProtoRateArr.Length; i++) {
-                currRate += FracProtoRateArr[i] * 5 * SelectedTicketRatioPlus;
-                if (randDouble < currRate) {
-                    int count = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[FracProtoID[i]] * 0.8f);
-                    AddItemToModData(FracProtoID[i], count);
-                    Color color = i < 2 ? Green : (i < 4 ? Blue : Purple);
-                    sb.Append($"{LDB.items.Select(FracProtoID[i]).name.WithColor(color)} x {count}");
-                    oneLineCount++;
-                    if (oneLineCount >= oneLineMaxCount) {
-                        sb.Append("\n");
-                        oneLineCount = 0;
-                    } else {
-                        sb.Append("          ");
-                    }
-                    getFracProto = true;
-                    break;
-                }
-            }
-            if (getFracProto) {
-                continue;
-            }
-            //剩余的概率中，50%各种物品
-            HashSet<int> items = [..GameMain.history.enemyDropItemUnlocked];
-            foreach (ItemProto item in LDB.items.dataArray) {
-                if (item.ID == I沙土) {
-                    continue;
-                }
-                if (item.UnlockKey == -1 || item.Type == EItemType.Resource) {
-                    items.Add(item.ID);
-                }
-                if (item.preTech != null && GameMain.history.TechUnlocked(item.preTech.ID)) {
-                    items.Add(item.ID);
-                }
-            }
-            items.RemoveWhere(x => itemValue[x] >= maxValue);
-            if (items.Count > 0) {
-                double ratioItem = (1 - currRate) * 0.5 / items.Count;
-                bool getItem = false;
-                foreach (int itemId in items) {
-                    currRate += ratioItem;
-                    if (randDouble < currRate) {
-                        float ratio = itemValue[SelectedTicketId] / itemValue[itemId];
-                        int count = ratio <= 49
-                            ? (int)Math.Ceiling(ratio * 0.5f)
-                            : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
-                        AddItemToModData(itemId, count);
-                        sb.Append($"{LDB.items.Select(itemId).name} x {count}");
-                        oneLineCount++;
-                        if (oneLineCount >= oneLineMaxCount) {
-                            sb.Append("\n");
-                            oneLineCount = 0;
-                        } else {
-                            sb.Append("          ");
-                        }
-                        getItem = true;
-                        break;
-                    }
-                }
-                if (getItem) {
-                    continue;
-                }
-            }
-            //50%沙土
-            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.8f);
+            //40%沙土
+            int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.5f);
             AddItemToPackage(I沙土, sandCount);
             sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}");
             oneLineCount++;
@@ -483,32 +419,15 @@ public static class TabRaffle {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         RecipeRaffleCount = r.ReadInt32();
-        if (version >= 2) {
-            for (int i = 0; i < PreferredItems.Length; i++) {
-                PreferredItems[i] = r.ReadInt32();
-                PreferredRecipeTypes[i] = (ERecipe)r.ReadInt32();
-            }
-            NotMostPreferredCount = r.ReadInt32();
-        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(RecipeRaffleCount);
-        for (int i = 0; i < PreferredItems.Length; i++) {
-            w.Write(PreferredItems[i]);
-            w.Write((int)PreferredRecipeTypes[i]);
-        }
-        w.Write(NotMostPreferredCount);
     }
 
     public static void IntoOtherSave() {
         RecipeRaffleCount = 0;
-        for (int i = 0; i < PreferredItems.Length; i++) {
-            PreferredItems[i] = 0;
-            PreferredRecipeTypes[i] = ERecipe.Unknown;
-        }
-        NotMostPreferredCount = 0;
     }
 
     #endregion
