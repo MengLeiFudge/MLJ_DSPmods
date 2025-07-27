@@ -155,26 +155,6 @@ static class AfterBuildEvent {
             string zipFile = $@".\ModZips\{projectName}{version}.zip";
             ZipMod(fileList, zipFile);
             Console.WriteLine($"创建 {zipFile}");
-            //额外打包
-            if (projectName == "FractionateEverything") {
-                //给群友提供的测试版本，包含了如何使用R2导入的视频
-                string dir = $@".\ModZips";
-                if (Directory.Exists(dir)) {
-                    foreach (string file in Directory.GetFiles(dir)) {
-                        FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.Name.Contains("万物分馏") && fileInfo.Name.EndsWith(".zip")) {
-                            fileInfo.Delete();
-                        }
-                    }
-                }
-                string techVideo = $@"{projectDir}\Assets\如何从R2导入本地MOD.mp4";
-                if (File.Exists(techVideo)) {
-                    fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\[测试]万物分馏2.0-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
-                    ZipMod(fileList, zipFile);
-                    Console.WriteLine($"创建 {zipFile}");
-                }
-            }
             //所有文件复制到R2，注意R2是否禁用了mod
             //mdb也要复制到R2（pdb不需要）
             fileList.Add(projectModMdbFile);
@@ -189,6 +169,30 @@ static class AfterBuildEvent {
                 }
                 File.Copy(file, targetPath, true);
                 Console.WriteLine($"复制 {file} -> {targetPath}");
+            }
+            //额外打包
+            if (projectName == "FractionateEverything") {
+                //给群友提供的测试版本，包含了如何使用R2导入的视频
+                //移除旧的zip
+                string dir = $@".\ModZips";
+                if (Directory.Exists(dir)) {
+                    foreach (string file in Directory.GetFiles(dir)) {
+                        FileInfo fileInfo = new FileInfo(file);
+                        if (fileInfo.Name.Contains("万物分馏") && fileInfo.Name.EndsWith(".zip")) {
+                            fileInfo.Delete();
+                        }
+                    }
+                }
+                //生成新的zip
+                string techVideo = $@"{projectDir}\Assets\[看我看我！]如何导入测试版万物分馏.mp4";
+                if (File.Exists(techVideo)) {
+                    fileList.Clear();
+                    fileList.Add(zipFile);
+                    fileList.Add(techVideo);
+                    zipFile = $@".\ModZips\[测试]万物分馏2.0-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
+                    ZipMod(fileList, zipFile);
+                    Console.WriteLine($"创建 {zipFile}");
+                }
             }
         }
 
