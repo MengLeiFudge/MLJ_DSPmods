@@ -233,6 +233,7 @@ public static class TabRecipeAndBuilding {
         textBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
             ? "已启用流动输出堆叠".WithColor(Orange)
             : "未启用流动输出堆叠".WithColor(Red);
+        //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
         btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidOutputStack());
 
         string s = $"产物输出堆叠：{SelectedBuilding.MaxProductOutputStack()}";
