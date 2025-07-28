@@ -22,15 +22,8 @@
         <PackageReference Include="UnityEngine.Modules" Version="2018.4.12" IncludeAssets="compile"/>
         <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
         <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
-        <!-- 排除 GameLibs 中的 Assembly-CSharp.dll -->
-        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-r.*"
-                          ExcludeAssets="lib\**\Assembly-CSharp.dll"/>
-        <!-- 添加本地 Assembly-CSharp-publicized.dll -->
-        <Reference Include="Assembly-CSharp">
-            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
-            <!-- 确保本地 DLL 优先 -->
-            <Private>True</Private>
-        </Reference>
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.32.25779-r.0"/>
+        <!-- 本地 Assembly-CSharp-publicized.dll 手动覆盖 GameLibs 的对应 dll 即可 -->
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj"/>
     </ItemGroup>

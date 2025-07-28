@@ -142,27 +142,6 @@ public static partial class Utils {
     #endregion
 
     /// <summary>
-    /// 尝试用一定数量的物品交换其他物品。
-    /// </summary>
-    /// <details>
-    /// 拿取物品顺序为：MOD数据 -> 背包 -> 物流背包
-    /// <para></para>
-    /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
-    /// </details>
-    private static void ExchangeItems(int takeId, int takeCount, int giveId, int giveCount) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        if (!TakeItem(takeId, takeCount)) {
-            return;
-        }
-        AddItemToPackage(giveId, giveCount);
-        ItemProto giveProto = LDB.items.Select(giveId);
-        UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount} ！",
-            "确定", UIMessageBox.INFO);
-    }
-
-    /// <summary>
     /// 弹窗询问是否兑换，然后尝试用一定数量的物品交换其他物品，最后提示兑换成功。
     /// </summary>
     /// <details>
@@ -181,33 +160,14 @@ public static partial class Utils {
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
-            "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeItems(takeId, takeCount, giveId, giveCount); }, null);
-    }
-
-    private static void ExchangeRecipe(int takeId, int takeCount, BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        ItemProto takeProto = LDB.items.Select(takeId);
-        if (GetItemTotalCount(takeId) < takeCount) {
-            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}，无法兑换！",
-                "确定", UIMessageBox.WARNING);
-            return;
-        }
-        if (!TakeItem(takeId, takeCount)) {
-            return;
-        }
-        if (!recipe.IsUnlocked) {
-            recipe.Level = 1;
-            recipe.Quality = 1;
-            UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
-                "确定", UIMessageBox.INFO);
-        } else {
-            recipe.MemoryCount++;
-            UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为对应回响！\n"
-                                    + $"当前回响数目：{recipe.MemoryCount}",
-                "确定", UIMessageBox.INFO);
-        }
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                AddItemToPackage(giveId, giveCount);
+                UIMessageBox.Show("提示", $"已兑换 {giveProto.name} x {giveCount} ！",
+                    "确定", UIMessageBox.INFO);
+            }, null);
     }
 
     public static void ExchangeRecipeWithQuestion(int takeId, int takeCount, BaseRecipe recipe) {
@@ -224,7 +184,58 @@ public static partial class Utils {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 吗？",
-            "确定", "取消", UIMessageBox.QUESTION, () => { ExchangeRecipe(takeId, takeCount, recipe); }, null);
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                if (!recipe.IsUnlocked) {
+                    recipe.Level = 1;
+                    recipe.Quality = 1;
+                    UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
+                        "确定", UIMessageBox.INFO);
+                } else {
+                    recipe.MemoryCount++;
+                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为对应回响！\n"
+                                            + $"当前回响数目：{recipe.MemoryCount}",
+                        "确定", UIMessageBox.INFO);
+                }
+            }, null);
+    }
+
+    public static void ExchangeRecipeExpWithQuestion(BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (recipe == null) {
+            UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.WARNING);
+            return;
+        }
+        if (!recipe.IsUnlocked) {
+            UIMessageBox.Show("提示", "配方尚未解锁！", "确定", UIMessageBox.WARNING);
+            return;
+        }
+        if (recipe.Quality == recipe.MaxQuality && recipe.Level == recipe.MaxLevel) {
+            UIMessageBox.Show("提示", "配方已升到最高级！", "确定", UIMessageBox.WARNING);
+            return;
+        }
+        if (recipe.Exp >= recipe.LevelUpExp) {
+            UIMessageBox.Show("提示", "配方经验已达当前上限！", "确定", UIMessageBox.WARNING);
+            return;
+        }
+        int takeId = I沙土;
+        float needExp = recipe.LevelUpExp - recipe.Exp;
+        int takeCount = (int)Math.Ceiling(needExp * 10);
+        ItemProto takeProto = LDB.items.Select(I沙土);
+        UIMessageBox.Show("提示",
+            $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 经验 x {(int)needExp} 吗？",
+            "确定", "取消", UIMessageBox.QUESTION, () => {
+                if (!TakeItem(takeId, takeCount)) {
+                    return;
+                }
+                recipe.AddExp(needExp);
+                UIMessageBox.Show("提示", $"已兑换 {(int)needExp} 配方经验！",
+                    "确定", UIMessageBox.INFO);
+            }, null);
     }
 
     /// <summary>
