@@ -49,7 +49,8 @@ public static class TabOtherSetting {
     }
 
     public static void UpdateUI() {
-        btnUnlockAll.gameObject.SetActive(GameMain.sandboxToolsEnabled);
+        //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
+        btnUnlockAll.enabled = GameMain.sandboxToolsEnabled;
         ExpMultiRate = GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
         sliderExpMultiRate.slider.enabled = GameMain.sandboxToolsEnabled;
     }
