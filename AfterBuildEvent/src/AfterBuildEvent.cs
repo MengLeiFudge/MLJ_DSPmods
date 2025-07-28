@@ -189,7 +189,7 @@ static class AfterBuildEvent {
                     fileList.Clear();
                     fileList.Add(zipFile);
                     fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\[0.10.32]万物分馏{version}-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
+                    zipFile = $@".\ModZips\[0.10.33]万物分馏{version}-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                 }
