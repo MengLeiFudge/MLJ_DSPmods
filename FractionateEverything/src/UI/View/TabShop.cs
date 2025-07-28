@@ -72,9 +72,9 @@ public static class TabShop {
                 () => GetModDataItem(-1));
             y += 36f;
             btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
-                GetModDataProto);
+                GetModDataFracBuildingProto);
             btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
-                GetModDataBuilding);
+                GetModDataFractionator);
         }
         {
             var tab = wnd.AddTab(trans, "限时商店");
@@ -148,7 +148,7 @@ public static class TabShop {
         }
     }
 
-    private static void GetModDataProto() {
+    private static void GetModDataFracBuildingProto() {
         StringBuilder sb = new StringBuilder();
         int[] itemIDs = [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向];
         int[] counts = new int[itemIDs.Length];
@@ -164,15 +164,19 @@ public static class TabShop {
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            for (int i = 0; i < itemIDs.Length; i++) {
-                if (counts[i] > 0) {
-                    TakeItemFromModData(itemIDs[i], counts[i]);
+            sb = new("已提取以下物品：");
+            foreach (int itemID in itemIDs) {
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                if (takeCount > 0) {
+                    AddItemToPackage(itemID, takeCount);
+                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
         }, null);
     }
 
-    private static void GetModDataBuilding() {
+    private static void GetModDataFractionator() {
         StringBuilder sb = new StringBuilder();
         int[] itemIDs = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
         int[] counts = new int[itemIDs.Length];
@@ -188,11 +192,15 @@ public static class TabShop {
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            for (int i = 0; i < itemIDs.Length; i++) {
-                if (counts[i] > 0) {
-                    TakeItemFromModData(itemIDs[i], counts[i]);
+            sb = new("已提取以下物品：");
+            foreach (int itemID in itemIDs) {
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                if (takeCount > 0) {
+                    AddItemToPackage(itemID, takeCount);
+                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
         }, null);
     }
 
