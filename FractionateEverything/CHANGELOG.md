@@ -1,3 +1,16 @@
+- v2.0.2
+    + 添加沙土交换配方经验的功能。
+    + 修复“提取所有分馏塔原胚”、“提取所有分馏塔”收不到物品的问题。
+    + 修复弹窗物品选择显示不全的问题。
+    + 添加查看Mod背包所有物品的按钮。
+    + 添加配方解锁情况显示。
+    + The function of adding sand exchange recipe experience.
+    + Fixed the issue of not receiving items for "extracting all fractionator protos" and "extracting all
+      fractionators".
+    + Fixed the issue of incomplete display of pop-up item selection.
+    + Add a button to view all items in the Mod backpack.
+    + Display the unlocking status of fractionate recipes.
+
 - v2.0.1
     + 修复与其他Mod兼容出错的相关逻辑。
     + 修复抽取配方时导致的内存溢出问题。

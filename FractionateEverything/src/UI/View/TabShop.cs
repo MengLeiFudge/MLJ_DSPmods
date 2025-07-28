@@ -28,7 +28,7 @@ public static class TabShop {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => true);
+        }, true, item => true);
     }
 
     #endregion
@@ -72,9 +72,12 @@ public static class TabShop {
                 () => GetModDataItem(-1));
             y += 36f;
             btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
-                GetModDataProto);
+                GetModDataFracBuildingProto);
             btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
-                GetModDataBuilding);
+                GetModDataFractionator);
+            y += 36f;
+            btnGetModDataProto = wnd.AddButton(x, y, 600, tab, "查看分馏数据中心当前持有的所有物品", 16, "button-get-mod-data-info",
+                GetModDataItemInfo);
         }
         {
             var tab = wnd.AddTab(trans, "限时商店");
@@ -111,16 +114,19 @@ public static class TabShop {
         }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
         btnGetModDataItem[0].enabled = GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize;
+        btnGetModDataItem[0].button.enabled = GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize;
         t = btnGetModDataItem[1].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取10组（{SelectedItem.StackSize * 10}）";
         }
         btnGetModDataItem[1].enabled = GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize * 10;
+        btnGetModDataItem[1].button.enabled = GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize * 10;
         t = btnGetModDataItem[2].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取全部（{GetModDataItemCount(SelectedItem.ID)}）";
         }
         btnGetModDataItem[2].enabled = GetModDataItemCount(SelectedItem.ID) > 0;
+        btnGetModDataItem[2].button.enabled = GetModDataItemCount(SelectedItem.ID) > 0;
 
         if (DateTime.Now >= nextFreshTime) {
             nextFreshTime = nextFreshTime.AddMinutes(10);
@@ -148,7 +154,7 @@ public static class TabShop {
         }
     }
 
-    private static void GetModDataProto() {
+    private static void GetModDataFracBuildingProto() {
         StringBuilder sb = new StringBuilder();
         int[] itemIDs = [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向];
         int[] counts = new int[itemIDs.Length];
@@ -164,15 +170,19 @@ public static class TabShop {
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            for (int i = 0; i < itemIDs.Length; i++) {
-                if (counts[i] > 0) {
-                    TakeItemFromModData(itemIDs[i], counts[i]);
+            sb = new("已提取以下物品：");
+            foreach (int itemID in itemIDs) {
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                if (takeCount > 0) {
+                    AddItemToPackage(itemID, takeCount);
+                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
         }, null);
     }
 
-    private static void GetModDataBuilding() {
+    private static void GetModDataFractionator() {
         StringBuilder sb = new StringBuilder();
         int[] itemIDs = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
         int[] counts = new int[itemIDs.Length];
@@ -188,12 +198,43 @@ public static class TabShop {
             return;
         }
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            for (int i = 0; i < itemIDs.Length; i++) {
-                if (counts[i] > 0) {
-                    TakeItemFromModData(itemIDs[i], counts[i]);
+            sb = new("已提取以下物品：");
+            foreach (int itemID in itemIDs) {
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                if (takeCount > 0) {
+                    AddItemToPackage(itemID, takeCount);
+                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
         }, null);
+    }
+
+    private static void GetModDataItemInfo() {
+        StringBuilder sb = new("分馏数据中心当前持有的物品详情如下：\n");
+        int oneLineCount = 0;
+        int oneLineMaxCount = 5;
+        bool haveItem = false;
+        foreach (ItemProto item in LDB.items.dataArray) {
+            int count = GetModDataItemCount(item.ID);
+            if (count <= 0) {
+                continue;
+            }
+            haveItem = true;
+            sb.Append($"{item.name} x {count}".WithValueColor(item.ID));
+            oneLineCount++;
+            if (oneLineCount >= oneLineMaxCount) {
+                sb.Append("\n");
+                oneLineCount = 0;
+            } else {
+                sb.Append("          ");
+            }
+        }
+        if (!haveItem) {
+            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
+        } else {
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+        }
     }
 
     public static void ExchangeItem(int index) { }
