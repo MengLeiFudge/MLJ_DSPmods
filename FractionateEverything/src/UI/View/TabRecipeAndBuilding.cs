@@ -113,6 +113,8 @@ public static class TabRecipeAndBuilding {
             y += 50f;
             wnd.AddButton(x, y, 300, tab, "使用分馏配方通用核心兑换此配方", 16, "button-get-recipe",
                 () => { ExchangeRecipeWithQuestion(IFE分馏配方通用核心, 1, SelectedRecipe); });
+            wnd.AddButton(x + 350, y, 300, tab, "使用沙土兑换配方经验", 16, "button-get-recipe-exp",
+                () => { ExchangeRecipeExpWithQuestion(SelectedRecipe); });
             y += 36f;
             for (int i = 0; i < textRecipeInfo.Length; i++) {
                 textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
