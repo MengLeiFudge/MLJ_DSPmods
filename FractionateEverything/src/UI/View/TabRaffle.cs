@@ -19,28 +19,6 @@ namespace FE.UI.View;
 public static class TabRaffle {
     public static RectTransform _windowTrans;
 
-    #region 选择物品
-
-    private static Text textCurrItem;
-    private static MyImageButton btnSelectedItem;
-
-    private static void OnButtonChangeItemClick(bool showLocked) {
-        //_windowTrans.anchoredPosition是窗口的中心点
-        //Popup的位置是弹出窗口的左上角
-        //所以要向右（x+）向上（y+）
-        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
-        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
-        UIItemPickerExtension.Popup(new(x, y), item => {
-            if (item == null) return;
-            SelectedItem = item;
-        }, false, item => {
-            BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
-            return recipe != null && (showLocked || recipe.IsUnlocked);
-        });
-    }
-
-    #endregion
-
     public static ConfigEntry<int> TicketTypeEntry;
     public static int[] TicketIds = [
         IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
@@ -82,22 +60,17 @@ public static class TabRaffle {
             var tab = wnd.AddTab(trans, "配方卡池");
             x = 0f;
             y = 10f;
-            textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
-            btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
-                SelectedItem.ID, "button-change-item",
-                () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
-                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
-            //todo: 修复按钮提示窗后移除该内容
-            wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
-                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
-            wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
-                .WithConfigEntry(RecipeTypeEntry);
-            y += 50f;
-            wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(RecipeTypeNames).WithSize(150f, 0f)
-                .WithConfigEntry(RecipeTypeEntry);
-            wnd.AddComboBox(x + 250, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(TicketTypeEntry);
-            TicketCountText1 = wnd.AddText2(x + 500, y, tab, "奖券数目", 15, "text-ticket-count-1");
+            wnd.AddTipsButton2(x + 240, y + 6f, tab, "配方卡池说明",
+                "选择某种奖券后，只能抽取对应层级的配方。"
+                + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
+                + "概率公示：\n"
+                + "分馏配方通用核心：0.05%\n"
+                + "分馏配方：0.6%（至多90抽必出）\n"
+                + "杂项物品：59.61%\n"
+                + "沙土：39.74%");
+            TicketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
@@ -110,11 +83,18 @@ public static class TabRaffle {
             var tab = wnd.AddTab(trans, "建筑卡池");
             x = 0f;
             y = 10f;
-            wnd.AddComboBox(x, y, tab, "卡池选择").WithItems(BuildingTypeNames).WithSize(150f, 0f)
-                .WithConfigEntry(BuildingTypeEntry);
-            wnd.AddComboBox(x + 250, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(TicketTypeEntry);
-            TicketCountText2 = wnd.AddText2(x + 500, y, tab, "奖券数目", 15, "text-ticket-count-2");
+            wnd.AddTipsButton2(x + 240, y + 6f, tab, "建筑卡池说明",
+                "无论选择哪种奖券，都不影响可以获取的建筑类型。"
+                + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
+                + "概率公示：\n"
+                + "分馏塔增幅芯片：0.3%\n"
+                + "分馏原胚：15%\n"
+                + "分馏塔：5%\n"
+                + "其他建筑：39.82%\n"
+                + "沙土：39.88%");
+            TicketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
@@ -126,7 +106,6 @@ public static class TabRaffle {
     }
 
     public static void UpdateUI() {
-        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         TicketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         TicketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
     }
@@ -163,7 +142,7 @@ public static class TabRaffle {
             return;
         }
         List<int> items = itemHashSet.ToList();
-        while (items.Count < 1000) {
+        while (items.Count < 10000) {
             items.InsertRange(items.Count, itemHashSet);
         }
         //精华概率增加至总比例10%以上
@@ -171,6 +150,7 @@ public static class TabRaffle {
         while ((float)essenceCount / items.Count < 0.1f / 0.6f) {
             for (int itemID = IFE复制精华; itemID <= IFE转化精华; itemID++) {
                 items.Add(itemID);
+                essenceCount++;
             }
         }
         //排序一下
@@ -322,22 +302,26 @@ public static class TabRaffle {
             return;
         }
         List<int> items = itemHashSet.ToList();
-        while (items.Count < 1000) {
+        while (items.Count < 10000) {
             items.InsertRange(items.Count, itemHashSet);
         }
         //分馏塔概率增加至总比例5%以上，原胚概率增加至总比例25%以上
         int buildingCount = 0;
         int protoCount = 0;
+        int[] buildingAddCount = [10, 30, 5, 2, 10, 10, 10];
+        int[] protoAddCount = [16, 8, 4, 2, 1];
         while (true) {
             while ((float)buildingCount / items.Count < 0.05f / 0.6f) {
                 for (int itemID = IFE交互塔; itemID <= IFE转化塔; itemID++) {
-                    items.Add(itemID);
-                    buildingCount++;
+                    for (int i = 0; i < buildingAddCount[itemID - IFE交互塔]; i++) {
+                        items.Add(itemID);
+                        buildingCount++;
+                    }
                 }
             }
             while ((float)protoCount / items.Count < 0.25f / 0.6f) {
                 for (int itemID = IFE分馏塔原胚普通; itemID <= IFE分馏塔原胚传说; itemID++) {
-                    for (int i = 0; i < Math.Pow(2, IFE分馏塔原胚传说 - itemID); itemID++) {
+                    for (int i = 0; i < protoAddCount[itemID - IFE分馏塔原胚普通]; i++) {
                         items.Add(itemID);
                         protoCount++;
                     }
@@ -384,7 +368,7 @@ public static class TabRaffle {
                         ? (int)Math.Ceiling(ratio * 0.5f)
                         : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
                     AddItemToModData(itemId, count);
-                    sb.Append($"{LDB.items.Select(itemId).name} x {count}");
+                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
@@ -402,7 +386,7 @@ public static class TabRaffle {
             //40%沙土
             int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.5f);
             AddItemToPackage(I沙土, sandCount);
-            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}");
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
                 sb.Append("\n");
