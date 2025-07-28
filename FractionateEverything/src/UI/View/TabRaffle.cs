@@ -27,11 +27,15 @@ public static class TabRaffle {
         "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
+    public static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
     public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
     public static int SelectedTicketMatrixId => LDB.items.Select(SelectedTicketId).maincraft.Items[0];
     public static float SelectedTicketRatioPlus => SelectedTicketId == IFE宇宙奖券 ? 2.0f : 1.0f;
-    public static Text TicketCountText1;
-    public static Text TicketCountText2;
+    public static Text ticketCountText1;
+    public static Text recipeUnlockTitleText;
+    //矩阵7种（竖），配方6种（横）
+    public static Text[,] recipeUnlockInfoText = new Text[9, 8];
+    public static Text ticketCountText2;
 
     /// <summary>
     /// 下一抽是第几抽。
@@ -70,7 +74,7 @@ public static class TabRaffle {
                 + "分馏配方：0.6%（至多90抽必出）\n"
                 + "杂项物品：59.61%\n"
                 + "沙土：39.74%");
-            TicketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
+            ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
@@ -78,6 +82,25 @@ public static class TabRaffle {
                 () => RaffleRecipe(10));
             wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-recipe-100",
                 () => RaffleRecipe(100, 5));
+            y += 38f;
+            recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况如下：", 15, "text-recipe-unlock-title");
+            y += 38f;
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 8; j++) {
+                    recipeUnlockInfoText[i, j] =
+                        wnd.AddText2(x + 100 * j, y, tab, "xxxx", 15, $"text-recipe-unlock-info{i}");
+                }
+                y += 38f;
+            }
+            recipeUnlockInfoText[0, 0].text = "";
+            for (int i = 1; i <= 7; i++) {
+                recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name;
+            }
+            recipeUnlockInfoText[8, 0].text = "总计";
+            for (int j = 1; j <= 6; j++) {
+                recipeUnlockInfoText[0, j].text = RecipeTypeNames[j - 1];
+            }
+            recipeUnlockInfoText[0, 7].text = "总计";
         }
         {
             var tab = wnd.AddTab(trans, "建筑卡池");
@@ -94,7 +117,7 @@ public static class TabRaffle {
                 + "分馏塔：5%\n"
                 + "其他建筑：39.82%\n"
                 + "沙土：39.88%");
-            TicketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
+            ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
@@ -105,9 +128,34 @@ public static class TabRaffle {
         }
     }
 
+
     public static void UpdateUI() {
-        TicketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
-        TicketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+        ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+        int[,] unlockCountArr = new int[9, 8];
+        int[,] totalCountArr = new int[9, 8];
+        for (int i = 1; i <= 7; i++) {
+            for (int j = 1; j <= 6; j++) {
+                int matrixID = Matrixes[i - 1];
+                ERecipe type = (ERecipe)j;
+                List<BaseRecipe> recipes = GetRecipesByType(type)
+                    .Where(r => itemToMatrix[r.InputID] == matrixID).ToList();
+                totalCountArr[i, j] = recipes.Count;
+                totalCountArr[8, j] += recipes.Count;
+                totalCountArr[i, 7] += recipes.Count;
+                totalCountArr[8, 7] += recipes.Count;
+                recipes = recipes.Where(r => r.IsUnlocked).ToList();
+                unlockCountArr[i, j] = recipes.Count;
+                unlockCountArr[8, j] += recipes.Count;
+                unlockCountArr[i, 7] += recipes.Count;
+                unlockCountArr[8, 7] += recipes.Count;
+            }
+        }
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 7; j++) {
+                recipeUnlockInfoText[i, j].text = unlockCountArr[i, j] + "/" + totalCountArr[i, j];
+            }
+        }
+        ticketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
     }
 
     /// <summary>
