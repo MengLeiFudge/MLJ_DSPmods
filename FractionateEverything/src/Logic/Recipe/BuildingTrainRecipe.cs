@@ -14,13 +14,13 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         List<OutputInfo> OutputMain = [
-            new(0.2f, IFE交互塔, 1),
-            new(0.2f, IFE矿物复制塔, 1),
-            new(0.1f, IFE点数聚集塔, 1),
-            new(0.05f, IFE量子复制塔, 1),
-            new(0.15f, IFE点金塔, 1),
-            new(0.15f, IFE分解塔, 1),
-            new(0.15f, IFE转化塔, 1),
+            new(10.0f / 77, IFE交互塔, 1),
+            new(30.0f / 77, IFE矿物复制塔, 1),
+            new(5.0f / 77, IFE点数聚集塔, 1),
+            new(2.0f / 77, IFE量子复制塔, 1),
+            new(10.0f / 77, IFE点金塔, 1),
+            new(10.0f / 77, IFE分解塔, 1),
+            new(10.0f / 77, IFE转化塔, 1),
         ];
         AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚普通, 0.01f, OutputMain, []));
         AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚精良, 0.02f, OutputMain, []));

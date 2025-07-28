@@ -1,7 +1,11 @@
 - v2.0.1
     + 修复与其他Mod兼容出错的相关逻辑。
+    + 修复抽取配方时导致的内存溢出问题。
+    + 部分平衡性调整。
     + 添加英文翻译。
     + Fix the logic related to compatibility errors with other mods.
+    + Fix memory overflow issue caused by extracting recipe.
+    + Partial balance adjustment.
     + Add English translation.
 
 - v2.0.0

@@ -49,7 +49,7 @@ public static class TabOtherSetting {
     }
 
     public static void UpdateUI() {
-        btnUnlockAll.enabled = GameMain.sandboxToolsEnabled;
+        btnUnlockAll.gameObject.SetActive(GameMain.sandboxToolsEnabled);
         ExpMultiRate = GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
         sliderExpMultiRate.slider.enabled = GameMain.sandboxToolsEnabled;
     }
