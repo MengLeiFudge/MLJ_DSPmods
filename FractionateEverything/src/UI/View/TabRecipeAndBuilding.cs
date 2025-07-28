@@ -32,7 +32,7 @@ public static class TabRecipeAndBuilding {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => {
+        }, true, item => {
             BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
             return recipe != null && (showLocked || recipe.IsUnlocked);
         });

@@ -28,7 +28,7 @@ public static class TabShop {
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
-        }, false, item => true);
+        }, true, item => true);
     }
 
     #endregion
@@ -75,6 +75,9 @@ public static class TabShop {
                 GetModDataFracBuildingProto);
             btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
                 GetModDataFractionator);
+            y += 36f;
+            btnGetModDataProto = wnd.AddButton(x, y, 600, tab, "查看分馏数据中心当前持有的所有物品", 16, "button-get-mod-data-info",
+                GetModDataItemInfo);
         }
         {
             var tab = wnd.AddTab(trans, "限时商店");
@@ -202,6 +205,33 @@ public static class TabShop {
             }
             UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
         }, null);
+    }
+
+    private static void GetModDataItemInfo() {
+        StringBuilder sb = new("分馏数据中心当前持有的物品详情如下：\n");
+        int oneLineCount = 0;
+        int oneLineMaxCount = 5;
+        bool haveItem = false;
+        foreach (ItemProto item in LDB.items.dataArray) {
+            int count = GetModDataItemCount(item.ID);
+            if (count <= 0) {
+                continue;
+            }
+            haveItem = true;
+            sb.Append($"{item.name} x {count}".WithValueColor(item.ID));
+            oneLineCount++;
+            if (oneLineCount >= oneLineMaxCount) {
+                sb.Append("\n");
+                oneLineCount = 0;
+            } else {
+                sb.Append("          ");
+            }
+        }
+        if (!haveItem) {
+            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
+        } else {
+            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+        }
     }
 
     public static void ExchangeItem(int index) { }
