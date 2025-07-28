@@ -267,7 +267,7 @@ public static class TechManager {
             [RFE能量奖券],
             GetTechPos(0, 2)
         );
-        tech电磁奖券.PreTechsImplicit = [T能量矩阵];
+        tech能量奖券.PreTechsImplicit = [T能量矩阵];
         tech能量奖券.AddItems = [IFE能量奖券];
         tech能量奖券.AddItemCounts = [10];
 
@@ -353,7 +353,7 @@ public static class TechManager {
 
         var tech超值礼包3 = ProtoRegistry.RegisterTech(
             TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包3",
-            [tech超值礼包1.ID],
+            [tech超值礼包2.ID],
             [I结构矩阵], [100], 3600,
             [],
             GetTechPos(1, 3)
@@ -364,7 +364,7 @@ public static class TechManager {
 
         var tech超值礼包4 = ProtoRegistry.RegisterTech(
             TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包4",
-            [tech超值礼包1.ID],
+            [tech超值礼包3.ID],
             [I信息矩阵], [100], 3600,
             [],
             GetTechPos(1, 4)
@@ -375,7 +375,7 @@ public static class TechManager {
 
         var tech超值礼包5 = ProtoRegistry.RegisterTech(
             TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包5",
-            [tech超值礼包1.ID],
+            [tech超值礼包4.ID],
             [I引力矩阵], [100], 3600,
             [],
             GetTechPos(1, 5)
@@ -386,7 +386,7 @@ public static class TechManager {
 
         var tech超值礼包6 = ProtoRegistry.RegisterTech(
             TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包6",
-            [tech超值礼包1.ID],
+            [tech超值礼包5.ID],
             [I宇宙矩阵], [100], 3600,
             [],
             GetTechPos(1, 6)
@@ -408,74 +408,80 @@ public static class TechManager {
 
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
-            [tech分馏塔原胚.ID],
+            [],
             [IFE交互塔], [10], 1800,
             [RFE交互塔],
             GetTechPos(2, 2)
         );
+        tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品交互.AddItems = [IFE交互塔];
         tech物品交互.AddItemCounts = [10];
 
         var tech矿物复制 = ProtoRegistry.RegisterTech(
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
-            [tech物品交互.ID],
+            [],
             [IFE矿物复制塔], [10], 1800,
             [RFE矿物复制塔, RFE复制精华],
             GetTechPos(2, 3)
         );
+        tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
         tech矿物复制.AddItems = [IFE矿物复制塔];
         tech矿物复制.AddItemCounts = [10];
 
         var tech增产点数聚集 = ProtoRegistry.RegisterTech(
             TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
-            [tech矿物复制.ID],
+            [],
             [IFE点数聚集塔], [10], 1800,
             [RFE点数聚集塔],
             GetTechPos(2, 4)
         );
+        tech增产点数聚集.PreTechsImplicit = [TFE分馏塔原胚];
         tech增产点数聚集.AddItems = [IFE点数聚集塔];
         tech增产点数聚集.AddItemCounts = [10];
 
         var tech量子复制 = ProtoRegistry.RegisterTech(
             TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
-            [tech增产点数聚集.ID],
-            [IFE量子复制塔, I黑雾矩阵], [10, 2000], 60000,
+            [],
+            [IFE量子复制塔, I黑雾矩阵], [10, 2000], 3600,
             [RFE量子复制塔],
             GetTechPos(2, 5)
         );
+        tech量子复制.PreTechsImplicit = [TFE分馏塔原胚, TFE增产点数聚集];
         tech量子复制.IsHiddenTech = true;
-        //前置物品仅需物质重组器，只要掉落该物品，该科技就为可见状态
         tech量子复制.PreItem = [I物质重组器];
         tech量子复制.AddItems = [IFE量子复制塔];
         tech量子复制.AddItemCounts = [10];
 
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
-            [tech物品交互.ID],
+            [],
             [IFE点金塔], [10], 1800,
             [RFE点金塔, RFE点金精华],
             GetTechPos(2, 6)
         );
+        tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品点金.AddItems = [IFE点金塔];
         tech物品点金.AddItemCounts = [10];
 
         var tech物品分解 = ProtoRegistry.RegisterTech(
             TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
-            [tech物品点金.ID],
+            [],
             [IFE分解塔], [10], 1800,
             [RFE分解塔, RFE分解精华],
             GetTechPos(2, 7)
         );
+        tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品分解.AddItems = [IFE分解塔];
         tech物品分解.AddItemCounts = [10];
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
-            [tech物品分解.ID],
+            [],
             [IFE转化塔], [10], 1800,
             [RFE转化塔, RFE转化精华],
             GetTechPos(2, 8)
         );
+        tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品转化.AddItems = [IFE转化塔];
         tech物品转化.AddItemCounts = [10];
 

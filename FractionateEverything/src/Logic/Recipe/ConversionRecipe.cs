@@ -36,8 +36,8 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I动力引擎], [I推进器], [I加力推进器]]);
         CreateChain([[I配送运输机], [I物流运输机], [I星际物流运输船]]);
         CreateChain([[I能量碎片], [I黑雾矩阵], [I物质重组器], [I硅基神经元], [I负熵奇点], [I核心素]]);
-        CreateChain([[I电磁矩阵], [I能量矩阵, IGB玻色矩阵], [I结构矩阵], [I信息矩阵, IGB耗散矩阵], [I引力矩阵], [IGB奇点矩阵]]);
-        CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券], [IFE黑雾奖券]]);
+        CreateChain([[I电磁矩阵], [I能量矩阵], [I结构矩阵], [I信息矩阵], [I引力矩阵]]);
+        CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
 
         //建筑页面
         CreateChain([[I电力感应塔], [I无线输电塔], [I卫星配电站]]);
@@ -58,7 +58,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I矩阵研究站], [I自演化研究站]]);
         CreateChain([[I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井, I微型粒子对撞机]]);
         CreateChain([[IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]]);
-        CreateChain([[I分馏塔], [IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
+        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
 
         //精炼页面
         CreateChain([

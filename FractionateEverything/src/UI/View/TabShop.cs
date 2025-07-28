@@ -109,14 +109,17 @@ public static class TabShop {
         if (t != null) {
             t.text = $"提取1组（{SelectedItem.StackSize}）";
         }
+        btnGetModDataItem[0].gameObject.SetActive(GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize);
         t = btnGetModDataItem[1].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取10组（{SelectedItem.StackSize * 10}）";
         }
+        btnGetModDataItem[1].gameObject.SetActive(GetModDataItemCount(SelectedItem.ID) >= SelectedItem.StackSize * 10);
         t = btnGetModDataItem[2].gameObject.transform.Find("button-text").GetComponent<Text>();
         if (t != null) {
             t.text = $"提取全部（{GetModDataItemCount(SelectedItem.ID)}）";
         }
+        btnGetModDataItem[2].gameObject.SetActive(GetModDataItemCount(SelectedItem.ID) > 0);
 
         if (DateTime.Now >= nextFreshTime) {
             nextFreshTime = nextFreshTime.AddMinutes(10);

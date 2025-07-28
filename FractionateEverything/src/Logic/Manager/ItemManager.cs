@@ -328,17 +328,15 @@ public static class ItemManager {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.RecipeUnlocked))]
     private static bool GameHistoryData_RecipeUnlocked_Prefix(int recipeId, ref bool __result) {
-        __result = recipeId switch {
-            RFE分馏塔原胚普通 => GameMain.history.TechUnlocked(TFE分馏塔原胚),
-            RFE分馏塔原胚精良 => GameMain.history.TechUnlocked(TFE分馏塔原胚),
-            RFE分馏塔原胚稀有 => GameMain.history.TechUnlocked(TFE分馏塔原胚),
-            RFE分馏塔原胚史诗 => GameMain.history.TechUnlocked(TFE分馏塔原胚),
-            RFE分馏塔原胚传说 => GameMain.history.TechUnlocked(TFE分馏塔原胚),
-            RFE分馏配方通用核心 => GameMain.history.TechUnlocked(TFE分馏数据中心),
-            RFE分馏塔增幅芯片 => GameMain.history.TechUnlocked(TFE分馏数据中心),
-            _ => __result
-        };
-        return !__result;
+        if (recipeId >= RFE分馏塔原胚普通 && recipeId <= RFE分馏塔原胚传说) {
+            __result = GameMain.history.TechUnlocked(TFE分馏塔原胚);
+            return false;
+        }
+        if (recipeId >= RFE分馏配方通用核心 && recipeId <= RFE分馏塔增幅芯片) {
+            __result = GameMain.history.TechUnlocked(TFE分馏数据中心);
+            return false;
+        }
+        return true;
     }
 
     #endregion

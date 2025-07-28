@@ -104,11 +104,11 @@ public static class TabRecipeAndBuilding {
             btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
                 SelectedItem.ID, "button-change-item",
                 () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
-                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
+                "切换说明", "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
             //todo: 修复按钮提示窗后移除该内容
             wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
-                "切换说明", "左键在已解锁配方之间切换，右键在全部可用配方中切换");
-            wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
+                "切换说明", "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
+            wnd.AddComboBox(x + 250, y + 5f, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(RecipeTypeEntry);
             y += 50f;
             wnd.AddButton(x, y, 300, tab, "使用分馏配方通用核心兑换此配方", 16, "button-get-recipe",
