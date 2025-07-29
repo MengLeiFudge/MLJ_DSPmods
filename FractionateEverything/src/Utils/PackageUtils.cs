@@ -11,6 +11,10 @@ public static partial class Utils {
     /// 将指定物品添加到ModData背包
     /// </summary>
     public static void AddItemToModData(int giveId, int giveCount) {
+        if (giveId == I沙土) {
+            AddItemToPackage(giveId, giveCount);
+            return;
+        }
         lock (itemModDataCount) {
             if (itemModDataCount.ContainsKey(giveId)) {
                 itemModDataCount[giveId] += giveCount;
@@ -43,6 +47,9 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static int GetModDataItemCount(int itemId) {
+        if (itemId == I沙土) {
+            return 0;
+        }
         return itemModDataCount.TryGetValue(itemId, out int value) ? value : 0;
     }
 
@@ -52,6 +59,9 @@ public static partial class Utils {
     public static int GetPackageItemCount(int itemId) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
+        }
+        if (itemId == I沙土) {
+            return (int)Math.Min(GameMain.mainPlayer.sandCount, int.MaxValue);
         }
         StorageComponent package = GameMain.mainPlayer.package;
         int count = 0;
@@ -67,6 +77,9 @@ public static partial class Utils {
     /// 获取物流背包中指定物品的数量。
     /// </summary>
     public static int GetDeliveryPackageItemCount(int itemId) {
+        if (itemId == I沙土) {
+            return 0;
+        }
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
@@ -129,6 +142,10 @@ public static partial class Utils {
                 "确定", UIMessageBox.WARNING);
             return false;
         }
+        if (takeId == I沙土) {
+            GameMain.mainPlayer.sandCount -= takeCount;
+            return true;
+        }
         takeCount -= TakeItemFromModData(takeId, takeCount);
         if (takeCount > 0) {
             takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
@@ -153,7 +170,7 @@ public static partial class Utils {
     /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
     /// <param name="giveId">添加到背包中的物品ID</param>
     /// <param name="giveCount">添加到背包中的物品数量</param>
-    public static void ExchangeItemsWithQuestion(int takeId, int takeCount, int giveId, int giveCount) {
+    public static void ExchangeItem2Item(int takeId, int takeCount, int giveId, int giveCount) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -170,7 +187,7 @@ public static partial class Utils {
             }, null);
     }
 
-    public static void ExchangeRecipeWithQuestion(int takeId, int takeCount, BaseRecipe recipe) {
+    public static void ExchangeItem2Recipe(int takeId, int takeCount, BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -202,7 +219,7 @@ public static partial class Utils {
             }, null);
     }
 
-    public static void ExchangeRecipeExpWithQuestion(BaseRecipe recipe) {
+    public static void ExchangeSand2RecipeExp(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -224,7 +241,7 @@ public static partial class Utils {
         }
         int takeId = I沙土;
         float needExp = recipe.LevelUpExp - recipe.Exp;
-        int takeCount = (int)Math.Ceiling(needExp * 10);
+        int takeCount = (int)Math.Ceiling(needExp * 10 * Math.Pow(2, recipe.Quality));
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示",
             $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 经验 x {(int)needExp} 吗？",
