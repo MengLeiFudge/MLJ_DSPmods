@@ -2,9 +2,11 @@
     + 修复沙土交换配方经验无效的问题。
     + 抽卡后可以选择三种不同的提取方式。
     + 修复分馏塔配方科技需求的分馏塔数目错误的问题。
+    + 调整部分科技位置与需求。
     + Fixed the issue of ineffective recipe experience in sand exchange.
     + After raffle, you can choose three different extraction methods.
     + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
+    + Adjust the position and demand of some technologies.
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
