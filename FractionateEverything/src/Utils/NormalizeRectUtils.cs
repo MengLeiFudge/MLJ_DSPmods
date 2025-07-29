@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace FE.Utils;
 
@@ -84,5 +85,9 @@ public static partial class Utils {
             rect.sizeDelta = new(width, height);
         }
         return rect;
+    }
+
+    public static void SetPosition(this Text text, float x, float y) {
+        NormalizeRectWithTopLeft(text, x, y, text.rectTransform);
     }
 }

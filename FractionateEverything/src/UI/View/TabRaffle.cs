@@ -88,7 +88,7 @@ public static class TabRaffle {
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 8; j++) {
                     recipeUnlockInfoText[i, j] =
-                        wnd.AddText2(x + 100 * j, y, tab, "xxxx", 15, $"text-recipe-unlock-info{i}");
+                        wnd.AddText2(x + 100 * j, y, tab, "999/999", 15, $"text-recipe-unlock-info{i}");
                 }
                 y += 38f;
             }
@@ -161,9 +161,9 @@ public static class TabRaffle {
     /// <summary>
     /// 配方卡池抽卡。
     /// </summary>
-    /// <param name="ticketCount">抽卡次数</param>
+    /// <param name="raffleCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleRecipe(int ticketCount, int oneLineMaxCount = 1) {
+    public static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -230,20 +230,26 @@ public static class TabRaffle {
             UIMessageBox.Show("提示", tip.ToString(), "确认", UIMessageBox.WARNING);
             return;
         }
-        if (!TakeItem(SelectedTicketId, ticketCount)) {
+        if (!TakeItem(SelectedTicketId, raffleCount)) {
             return;
         }
+        Dictionary<int, int> specialItemDic = [];
+        Dictionary<int, int> commonItemDic = [];
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         StringBuilder sb2 = new StringBuilder();
         oneLineCount = 0;
-        while (ticketCount > 0) {
-            ticketCount--;
+        while (raffleCount > 0) {
+            raffleCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
             //分馏配方通用核心（0.05%）
             currRate += 0.0005 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItemToPackage(IFE分馏配方通用核心, 1);
+                if (specialItemDic.ContainsKey(IFE分馏配方通用核心)) {
+                    specialItemDic[IFE分馏配方通用核心]++;
+                } else {
+                    specialItemDic[IFE分馏配方通用核心] = 1;
+                }
                 sb.Append($"{LDB.items.Select(IFE分馏配方通用核心).name} x 1".WithValueColor(IFE分馏配方通用核心));
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
@@ -290,7 +296,11 @@ public static class TabRaffle {
                     int count = ratio <= 49
                         ? (int)Math.Ceiling(ratio * 0.5f)
                         : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
-                    AddItemToModData(itemId, count);
+                    if (commonItemDic.ContainsKey(itemId)) {
+                        commonItemDic[itemId] += count;
+                    } else {
+                        commonItemDic[itemId] = count;
+                    }
                     sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
@@ -308,7 +318,11 @@ public static class TabRaffle {
             }
             //40%沙土
             int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.5f);
-            AddItemToPackage(I沙土, sandCount);
+            if (commonItemDic.ContainsKey(I沙土)) {
+                commonItemDic[I沙土] += sandCount;
+            } else {
+                commonItemDic[I沙土] = sandCount;
+            }
             sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
@@ -318,15 +332,38 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n') + "\n\n" + sb2, "确认", UIMessageBox.INFO);
+        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n') + "\n\n" + sb2,
+            "数据中心暂存", "提取珍贵物品", "提取全部物品", UIMessageBox.INFO,
+            () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+            });
     }
 
     /// <summary>
     /// 建筑卡池抽卡。
     /// </summary>
-    /// <param name="ticketCount">抽卡次数</param>
+    /// <param name="raffleCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleBuilding(int ticketCount, int oneLineMaxCount = 1) {
+    public static void RaffleBuilding(int raffleCount, int oneLineMaxCount = 1) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -382,19 +419,25 @@ public static class TabRaffle {
         }
         //排序一下
         items.Sort();
-        if (!TakeItem(SelectedTicketId, ticketCount)) {
+        if (!TakeItem(SelectedTicketId, raffleCount)) {
             return;
         }
+        Dictionary<int, int> specialItemDic = [];
+        Dictionary<int, int> commonItemDic = [];
         StringBuilder sb = new StringBuilder("获得了以下物品：\n");
         int oneLineCount = 0;
-        while (ticketCount > 0) {
-            ticketCount--;
+        while (raffleCount > 0) {
+            raffleCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
             //分馏塔增幅芯片（0.3%）
             currRate += 0.003 * SelectedTicketRatioPlus;
             if (randDouble < currRate) {
-                AddItemToPackage(IFE分馏塔增幅芯片, 1);
+                if (specialItemDic.ContainsKey(IFE分馏塔增幅芯片)) {
+                    specialItemDic[IFE分馏塔增幅芯片]++;
+                } else {
+                    specialItemDic[IFE分馏塔增幅芯片] = 1;
+                }
                 sb.Append($"{LDB.items.Select(IFE分馏塔增幅芯片).name} x 1".WithValueColor(IFE分馏塔增幅芯片));
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {
@@ -415,7 +458,19 @@ public static class TabRaffle {
                     int count = ratio <= 49
                         ? (int)Math.Ceiling(ratio * 0.5f)
                         : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
-                    AddItemToModData(itemId, count);
+                    if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
+                        if (specialItemDic.ContainsKey(itemId)) {
+                            specialItemDic[itemId] += count;
+                        } else {
+                            specialItemDic[itemId] = count;
+                        }
+                    } else {
+                        if (commonItemDic.ContainsKey(itemId)) {
+                            commonItemDic[itemId] += count;
+                        } else {
+                            commonItemDic[itemId] = count;
+                        }
+                    }
                     sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
                     oneLineCount++;
                     if (oneLineCount >= oneLineMaxCount) {
@@ -433,7 +488,11 @@ public static class TabRaffle {
             }
             //40%沙土
             int sandCount = (int)Math.Ceiling(itemValue[SelectedTicketId] / itemValue[I沙土] * 0.5f);
-            AddItemToPackage(I沙土, sandCount);
+            if (commonItemDic.ContainsKey(I沙土)) {
+                commonItemDic[I沙土] += sandCount;
+            } else {
+                commonItemDic[I沙土] = sandCount;
+            }
             sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
@@ -443,7 +502,30 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'), "确认", UIMessageBox.INFO);
+        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'),
+            "数据中心暂存", "提取珍贵物品", "提取全部物品", UIMessageBox.INFO,
+            () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+            });
     }
 
     #region IModCanSave
