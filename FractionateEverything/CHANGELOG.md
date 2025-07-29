@@ -1,6 +1,8 @@
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。
-    + Fixed the issue of sand exchange recipe experience.
+    + 抽卡后可以选择三种不同的提取方式。
+    + Fixed the issue of ineffective recipe experience in sand exchange.
+    + After raffle, you can choose three different extraction methods.
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
