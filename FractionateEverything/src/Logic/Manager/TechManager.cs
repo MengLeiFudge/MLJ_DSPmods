@@ -391,7 +391,7 @@ public static class TechManager {
         var tech黑雾奖券 = ProtoRegistry.RegisterTech(
             TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech黑雾奖券",
             [],
-            [I黑雾矩阵], [10000], 300000,
+            [I黑雾矩阵], [2000], 18000,
             [RFE黑雾奖券],
             GetTechPos(1, 7)
         );
