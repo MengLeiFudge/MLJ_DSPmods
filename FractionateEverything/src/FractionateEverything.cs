@@ -220,6 +220,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.Import(r);
         ItemManager.Import(r);
         MainWindow.Import(r);
+        TechManager.CheckRecipesWhenImport();
     }
 
     /// <summary>
