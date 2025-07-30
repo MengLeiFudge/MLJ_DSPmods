@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
+using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
@@ -8,6 +11,7 @@ using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -171,17 +175,21 @@ public static class TabRecipeAndBuilding {
                 ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
                 : $"{recipe.TypeNameWC} {"配方未解锁".WithColor(Red)}";
             line++;
+
+            textRecipeInfo[line].text = "";
+            line++;
+
             textRecipeInfo[line].text = $"费用 1 {SelectedItem.name}";
             line++;
             if (recipeType == ERecipe.QuantumCopy) {
                 QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 复制精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 复制精华";
                 line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 点金精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 点金精华";
                 line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 分解精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 分解精华";
                 line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F2} 转化精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 转化精华";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
@@ -204,6 +212,28 @@ public static class TabRecipeAndBuilding {
                     isFirst = false;
                 }
             }
+
+            textRecipeInfo[line].text = "";
+            line++;
+
+            textRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 完全处理后的输出如下：";
+            line++;
+            textRecipeInfo[line].text = GetSameRecipeStr(recipe, 0);
+            line++;
+            if (!GenesisBook.Enable) {
+                textRecipeInfo[line].text = GetSameRecipeStr(recipe, 1);
+                line++;
+                textRecipeInfo[line].text = GetSameRecipeStr(recipe, 2);
+                line++;
+            }
+            textRecipeInfo[line].text = GetSameRecipeStr(recipe, 4);
+            line++;
+            textRecipeInfo[line].text = GetSameRecipeStr(recipe, 10);
+            line++;
+
+            textRecipeInfo[line].text = "";
+            line++;
+
             textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}".WithColor(Blue);
             line++;
             if (recipe.Quality >= 7) {
@@ -260,6 +290,57 @@ public static class TabRecipeAndBuilding {
             btnTip4.gameObject.SetActive(false);
             btnBuildingInfo4.gameObject.SetActive(false);
         }
+    }
+
+    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
+        float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+        float inputCount = 1.0f;
+        Dictionary<int, (float, bool, bool)> outputDic = [];
+        QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
+        float essenceCount = 0.0f;
+        while (inputCount > 1e-6) {
+            //损毁
+            inputCount *= 1.0f - recipe.DestroyRate;
+            //转化
+            float successRate = recipe.SuccessRate * successRatePlus;
+            float convertInputTotalCount = inputCount * successRate;
+            if (recipe0 != null) {
+                essenceCount += convertInputTotalCount * recipe0.EssenceCost;
+            }
+            foreach (var info in recipe.OutputMain) {
+                int outputId = info.OutputID;
+                float outputCount = convertInputTotalCount * info.SuccessRate * info.OutputCount;
+                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                    tuple.Item1 += outputCount;
+                } else {
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                }
+                outputDic[outputId] = tuple;
+            }
+            foreach (var info in recipe.OutputAppend) {
+                int outputId = info.OutputID;
+                float outputCount = convertInputTotalCount * info.SuccessRate * info.OutputCount;
+                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                    tuple.Item1 += outputCount;
+                } else {
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                }
+                outputDic[outputId] = tuple;
+            }
+        }
+        StringBuilder sb = new StringBuilder($"增产点数{fluidInputIncAvg}：");
+        foreach (var p in outputDic) {
+            var tuple = p.Value;
+            sb.Append(
+                $"{(tuple.Item2 ? LDB.items.Select(p.Key).name : "???")} x {(tuple.Item3 ? tuple.Item1.ToString("F3") : "???")}  ");
+        }
+        if (recipe0 != null) {
+            sb.Append($"{LDB.items.Select(IFE复制精华).name} x -{essenceCount:F3}  ")
+                .Append($"{LDB.items.Select(IFE点金精华).name} x -{essenceCount:F3}  ")
+                .Append($"{LDB.items.Select(IFE分解精华).name} x -{essenceCount:F3}  ")
+                .Append($"{LDB.items.Select(IFE转化精华).name} x -{essenceCount:F3}  ");
+        }
+        return sb.ToString();
     }
 
     private static void SetFluidOutputStack() {

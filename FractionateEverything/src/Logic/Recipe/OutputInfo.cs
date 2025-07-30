@@ -31,13 +31,13 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
     /// </summary>
     public int OutputTotalCount { get; set; } = 0;
 
-    public bool ShowSuccessRate => OutputTotalCount >= 1000;
+    public bool ShowSuccessRate => OutputTotalCount >= 500;
     public bool ShowOutputName => OutputTotalCount > 0;
     public bool ShowOutputCount => OutputTotalCount >= 200;
 
     public override string ToString() {
         ItemProto item = LDB.items.Select(OutputID);
-        string s1 = ShowOutputCount ? OutputCount.ToString("F2") : "???";
+        string s1 = ShowOutputCount ? OutputCount.ToString("F3") : "???";
         string s2 = ShowOutputName ? item.name : "???";
         string s3 = ShowSuccessRate ? SuccessRate.ToString("P3") : "???";
         return $"{s1} {s2} ~ {s3} ({"总计 ".Translate()}{OutputTotalCount})";
