@@ -3,10 +3,12 @@
     + 抽卡后可以选择三种不同的提取方式。
     + 修复分馏塔配方科技需求的分馏塔数目错误的问题。
     + 调整部分科技位置与需求。
+    + 创世之书快速开局不再解锁分馏科技。
     + Fixed the issue of ineffective recipe experience in sand exchange.
     + After raffle, you can choose three different extraction methods.
     + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
     + Adjust the position and demand of some technologies.
+    + Genesis Book fast start mode no longer unlocks fractionation technology.
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
@@ -161,7 +163,7 @@
       Acid) to match the current fractionator scenario.
         + Matrix Fractionation Chain is turned off by default. You can turn it on in Settings - Miscellaneous.
         + Fuel rod fractionation chain is off by default. You can turn it on in Settings - Miscellaneous.
-    + Adapted the Book of Genesis Quantization Calculator to remove all fractionation recipes. You can still choose
+    + Adapted the Genesis Book Quantization Calculator to remove all fractionation recipes. You can still choose
       to increase production by 10 points and accelerate it by 10 points to use it for other factories.
     + To celebrate this update, some blueprints will be attached to the blueprints folder when loading completes.
         + If you need to get the blueprints again, change the CurrentVersion in the config file to 1.4.0 and restart
@@ -249,7 +251,7 @@
             + When Book of Creation is enabled, stacking halves the effect on fractionator power consumption.
         + Adapted more megastructures for v1.5.0, removed receiver recipes before the megastructure build page, and
           adjusted the placement of all megastructure rocket fractionation recipes.
-        + Adjusted the position of most icons on the Book of Genesis defense page to avoid conflicts.
+        + Adjusted the position of most icons on the Genesis Book defense page to avoid conflicts.
     + New additions
         + Changed the shortcut selection of all fractionated items to a two-line selection mode similar to the Mega
           Construct, which no longer occupies the original shortcut bar position.
@@ -380,8 +382,7 @@
         + Changed Genesis' glass to circular fractionation (equivalent to adding a fractionation recipe).
         + Added cyclic fractionation chain to Genesis Book' megastructure building, but without the cyclic chain tail
           bonus.
-        + Added self-fractionation recipes for Gauss Machine Gun Towers and Missile Defense Towers to the Book of
-          Genesis.
+        + Added self-fractionation recipes for Gauss Machine Gun Towers and Missile Defense Towers to the Genesis Book.
         + Adjusted the fractionation order of carrier rockets in More Mega Structure to match the tech order.
     + Configuration file optimization.
         + Removed the switch for whether to show the fractionation icon, and added a switch to turn off the first load
