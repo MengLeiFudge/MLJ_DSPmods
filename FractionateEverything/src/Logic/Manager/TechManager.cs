@@ -1,7 +1,9 @@
 ﻿using CommonAPI.Systems;
 using FE.Compatibility;
+using FE.Logic.Recipe;
 using HarmonyLib;
 using UnityEngine;
+using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -14,11 +16,14 @@ public static class TechManager {
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Center", "分馏数据中心");
         Register("分馏数据中心描述",
-            $"With the continuous exploration of various star regions, fractionation technology has greatly expanded, and the COSMO has specially released a series of related technologies to help Icarus build the Dyson sphere. At the same time, the COSMO provides a new way of data interaction, which can be connected by pressing {"Shift+F".WithColor(Orange)}.",
-            $"随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发一系列相关科技来帮助伊卡洛斯建设戴森球。同时，主脑提供了一种新的数据交互方式，按 {"Shift+F".WithColor(Orange)} 即可连接。");
+            $"With the exploration of more and more star regions, fractionation technology has greatly expanded. Press {"Shift + F".WithColor(Orange)} to connect to the fractionation data center, which is a new way of data interaction and the main carrier of new fractionation technology. At the same time, in recognition of Icarus' spirit of exploration, some initial fractionation formulas will also be unlocked.",
+            $"随着探索的星区越来越多，分馏科技有了极大的拓展。按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心，这是全新的数据交互方式，也是新分馏科技的主要载体。同时，为了嘉奖伊卡洛斯的探索精神，一些初期的分馏配方也会随之解锁。");
         Register("分馏数据中心结果",
             "You have mastered the method of connecting to the fractionation data center, and now you can connect to the fractionation data center.",
-            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
+            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。部分分馏配方已解锁。");
+        Register("允许连接到分馏数据中心", "Allow connection to fractionation data center");
+        Register("解锁全部建筑培养配方", "Unlock all building train recipes");
+        Register("解锁非珍奇矿物复制配方", "Unlock non rare mineral copy recipes");
 
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
@@ -443,7 +448,7 @@ public static class TechManager {
         var tech量子复制 = ProtoRegistry.RegisterTech(
             TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
             [],
-            [IFE量子复制塔, I黑雾矩阵], [10, 2000], 3600,
+            [IFE量子复制塔, I黑雾矩阵], [1, 120], 60000,
             [RFE量子复制塔],
             GetTechPos(2, 5)
         );
@@ -451,7 +456,7 @@ public static class TechManager {
         tech量子复制.IsHiddenTech = true;
         tech量子复制.PreItem = [I物质重组器];
         tech量子复制.AddItems = [IFE量子复制塔];
-        tech量子复制.AddItemCounts = [10];
+        tech量子复制.AddItemCounts = [16];
 
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
@@ -549,22 +554,76 @@ public static class TechManager {
             : new(13 + column * 4, -67 - row * 4);
     }
 
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
-    // public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
-    //     switch (__instance.ID) {
-    //         case TFE分馏流动输出集装:
-    //             __result = "+3" + "分馏流动输出集装等级".Translate() + "\r\n";
-    //             return false;
-    //         case >= TFE分馏产物输出集装 and <= TFE分馏产物输出集装 + 2:
-    //             __result = "+1" + "分馏产物输出集装等级".Translate() + "\r\n";
-    //             return false;
-    //         case TFE分馏永动:
-    //             __result = "分馏持续运行".Translate() + "\r\n";
-    //             return false;
-    //     }
-    //     return true;
-    // }
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
+    public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
+        switch (__instance.ID) {
+            case TFE分馏数据中心:
+                __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
+                           + $"{"解锁全部建筑培养配方".Translate()}\r\n"
+                           + $"{"解锁非珍奇矿物复制配方".Translate()}";
+                return false;
+        }
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.NotifyTechUnlock))]
+    public static void GameHistoryData_NotifyTechUnlock_Postfix(int _techId) {
+        if (_techId == TFE分馏数据中心) {
+            //解锁所有建筑培养配方
+            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
+                if (!recipe.IsUnlocked) {
+                    recipe.Level = 1;
+                    recipe.Quality = 1;
+                } else {
+                    recipe.MemoryCount++;
+                }
+            }
+            //解锁非珍奇的原矿复制配方
+            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
+                if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
+                    continue;
+                }
+                if (!recipe.IsUnlocked) {
+                    recipe.Level = 1;
+                    recipe.Quality = 1;
+                } else {
+                    recipe.MemoryCount++;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 如果已经解锁分馏数据中心科技，但是某些配方未解锁，解锁这些配方
+    /// </summary>
+    public static void CheckRecipesWhenImport() {
+        if (GameMain.history.TechUnlocked(TFE分馏数据中心)) {
+            bool recipesUnlocked = true;
+            //判断所有建筑培养配方是否全部解锁
+            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
+                if (!recipe.IsUnlocked) {
+                    recipesUnlocked = false;
+                    break;
+                }
+            }
+            //判断非珍奇的原矿复制配方是否全部解锁
+            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
+                if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
+                    continue;
+                }
+                if (!recipe.IsUnlocked) {
+                    recipesUnlocked = false;
+                    break;
+                }
+            }
+            //如果有配方未解锁，可能是旧存档，解锁这部分配方
+            if (!recipesUnlocked) {
+                GameHistoryData_NotifyTechUnlock_Postfix(TFE分馏数据中心);
+            }
+        }
+    }
 
     #region 一键解锁
 
@@ -574,7 +633,7 @@ public static class TechManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
     public static void UITechTree_Do1KeyUnlock_Postfix() {
-        RecipeManager.UnlockAllFracRecipes();
+        UnlockAllFracRecipes();
     }
 
     #endregion

@@ -137,7 +137,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             // );
 
             MainWindow.Init();
-            UIFunctions.Init();
         }
     }
 
@@ -151,8 +150,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     private void Update() {
-        if (VFInput.inputing) return;
-        UIFunctions.OnInputUpdate();
+        MainWindow.OnInputUpdate();
     }
 
     public void PreAddData() {
@@ -222,6 +220,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.Import(r);
         ItemManager.Import(r);
         MainWindow.Import(r);
+        TechManager.CheckRecipesWhenImport();
     }
 
     /// <summary>
