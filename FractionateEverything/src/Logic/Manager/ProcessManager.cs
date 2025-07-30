@@ -489,8 +489,8 @@ public static class ProcessManager {
                     }
                 }
             } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
-                //正面作为输入，数据传到数据中心。仅接受奖券。
-                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, TabRaffle.TicketIds, out stack, out _);
+                //正面作为输入，数据传到数据中心。可接受所有物品。
+                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, null, out stack, out _);
                 if (itemId > 0) {
                     AddItemToModData(itemId, stack);
                 }
