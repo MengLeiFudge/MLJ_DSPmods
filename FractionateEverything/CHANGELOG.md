@@ -1,3 +1,9 @@
+- v2.0.4
+    + 分馏塔提示窗口内容受配方信息显示情况控制。
+    + 修复科技黑雾奖券需要的矩阵数目。
+    + The content of the fractionation tower prompt window is controlled by the display of recipe information.
+    + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
+
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。
     + 抽卡后可以选择三种不同的提取方式。
