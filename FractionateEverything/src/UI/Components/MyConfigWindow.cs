@@ -9,8 +9,8 @@ public class MyConfigWindow : MyWindowWithTabs {
 
     private RectTransform _windowTrans;
 
-    public static MyConfigWindow CreateInstance() {
-        return MyWindowManager.CreateWindow<MyConfigWindow>("FEMainWindow", "分馏数据中心");
+    public static MyConfigWindow CreateInstance(string name, string title = "") {
+        return MyWindowManager.CreateWindow<MyConfigWindow>(name, title);
     }
 
     public static void DestroyInstance(MyConfigWindow win) {
@@ -44,7 +44,6 @@ public class MyConfigWindow : MyWindowWithTabs {
             _Close();
             return;
         }
-
         OnUpdateUI?.Invoke();
     }
 }

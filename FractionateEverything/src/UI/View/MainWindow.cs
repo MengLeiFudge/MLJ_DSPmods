@@ -1,12 +1,17 @@
 ﻿using System.IO;
 using BepInEx.Configuration;
+using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 
 public static class MainWindow {
     private static RectTransform _windowTrans;
+    private static PressKeyBind _toggleKey;
+    private static bool _configWinInitialized;
+    private static MyConfigWindow _configWin;
 
     public static void LoadConfig(ConfigFile configFile) {
         TabRecipeAndBuilding.LoadConfig(configFile);
@@ -20,6 +25,18 @@ public static class MainWindow {
     public static void Init() {
         MyConfigWindow.OnUICreated += CreateUI;
         MyConfigWindow.OnUpdateUI += UpdateUI;
+        _toggleKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
+            key = new((int)KeyCode.F, CombineKey.SHIFT_COMB, ECombineKeyAction.OnceClick, false),
+            conflictGroup = KeyBindConflict.MOVEMENT
+                            | KeyBindConflict.FLYING
+                            | KeyBindConflict.SAILING
+                            | KeyBindConflict.BUILD_MODE_1
+                            | KeyBindConflict.KEYBOARD_KEYBIND,
+            name = "OpenFracCenter",
+            canOverride = true
+        });
+        Register("KEYOpenFracCenter", "[FE] Open Fractionation Data Center", "[FE] 打开分馏数据中心");
+        Register("分馏数据中心", "Fractionation Data Center");
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -39,6 +56,43 @@ public static class MainWindow {
         TabTask.UpdateUI();
         TabAchievement.UpdateUI();
         TabOtherSetting.UpdateUI();
+    }
+
+    public static void OnInputUpdate() {
+        if (GameMain.isPaused
+            || !GameMain.isRunning
+            || GameMain.isFullscreenPaused
+            || GameMain.mainPlayer == null) {
+            CloseConfigWindow();
+            return;
+        }
+        if (VFInput.inputing) {
+            return;
+        }
+        if (_toggleKey.keyValue && GameMain.history.TechUnlocked(TFE分馏数据中心)) {
+            ToggleConfigWindow();
+        }
+    }
+
+    public static void ToggleConfigWindow() {
+        if (!_configWinInitialized) {
+            _configWinInitialized = true;
+            _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+        }
+        if (_configWin.active) {
+            _configWin._Close();
+        } else {
+            _configWin.Open();
+        }
+    }
+
+    public static void CloseConfigWindow() {
+        if (!_configWinInitialized) {
+            return;
+        }
+        if (_configWin.active) {
+            _configWin._Close();
+        }
     }
 
     #region IModCanSave
