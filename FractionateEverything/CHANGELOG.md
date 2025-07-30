@@ -6,6 +6,8 @@
     + 创世之书快速开局不再解锁分馏科技。
     + 添加等效配方显示。
     + 交互塔可以输入任意物品。
+    + 调整量子复制科技需要的哈希块数目，以及科技的奖励。
+    + 分馏数据中心在游戏没有运行时，或者对应科技未解锁时，将无法打开。
     + Fixed the issue of ineffective recipe experience in sand exchange.
     + After raffle, you can choose three different extraction methods.
     + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
@@ -13,6 +15,9 @@
     + Genesis Book fast start mode no longer unlocks fractionation technology.
     + Add equivalent recipe display.
     + The interaction tower can input any item.
+    + Adjusting the number of hash blocks required for quantum replication technology and the rewards for the
+      technology.
+    + 
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
@@ -39,9 +44,9 @@
 
 - v2.0.0
     + 新建筑、新配方、新界面，还有全新的抽卡体验！
-    + 使用 Shift+F 打开面板，剩下的就请自行探索吧！
+    + 使用 Shift + F 打开面板，剩下的就请自行探索吧！
     + New building, new recipe, new interface, and also a brand new card drawing experience!
-    + Use Shift+F to open the panel, please explore the rest on your own!
+    + Use Shift + F to open the panel, please explore the rest on your own!
 
 - v1.4.5
     + 适配创世之书3.0。
