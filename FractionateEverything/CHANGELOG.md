@@ -4,11 +4,13 @@
     + 修复分馏塔配方科技需求的分馏塔数目错误的问题。
     + 调整部分科技位置与需求。
     + 创世之书快速开局不再解锁分馏科技。
+    + 添加等效配方显示。
     + Fixed the issue of ineffective recipe experience in sand exchange.
     + After raffle, you can choose three different extraction methods.
     + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
     + Adjust the position and demand of some technologies.
     + Genesis Book fast start mode no longer unlocks fractionation technology.
+    + Add equivalent recipe display.
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
