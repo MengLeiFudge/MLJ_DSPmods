@@ -1,7 +1,6 @@
 ﻿using CommonAPI.Systems;
 using FE.Compatibility;
 using FE.Logic.Recipe;
-using FE.UI.View;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
@@ -21,8 +20,10 @@ public static class TechManager {
             $"随着探索的星区越来越多，分馏科技有了极大的拓展。按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心，这是全新的数据交互方式，也是新分馏科技的主要载体。同时，为了嘉奖伊卡洛斯的探索精神，一些初期的分馏配方也会随之解锁。");
         Register("分馏数据中心结果",
             "You have mastered the method of connecting to the fractionation data center, and now you can connect to the fractionation data center.",
-            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。\n部分分馏配方已解锁。");
+            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。部分分馏配方已解锁。");
         Register("允许连接到分馏数据中心", "Allow connection to fractionation data center");
+        Register("解锁全部建筑培养配方", "Unlock all building train recipes");
+        Register("解锁非珍奇矿物复制配方", "Unlock non rare mineral copy recipes");
 
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
@@ -558,7 +559,9 @@ public static class TechManager {
     public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
         switch (__instance.ID) {
             case TFE分馏数据中心:
-                __result = "允许连接到分馏数据中心".Translate() + "\r\n";
+                __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
+                           + $"{"解锁全部建筑培养配方".Translate()}\r\n"
+                           + $"{"解锁非珍奇矿物复制配方".Translate()}";
                 return false;
         }
         return true;
