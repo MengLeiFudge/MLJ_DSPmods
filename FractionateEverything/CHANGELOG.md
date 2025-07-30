@@ -8,6 +8,7 @@
     + 交互塔可以输入任意物品。
     + 调整量子复制科技需要的哈希块数目，以及科技的奖励。
     + 分馏数据中心在游戏没有运行时，或者对应科技未解锁时，将无法打开。
+    + 调整科技“分馏数据中心”的效果，研究完成后会解锁部分配方。
     + Fixed the issue of ineffective recipe experience in sand exchange.
     + After raffle, you can choose three different extraction methods.
     + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
@@ -17,7 +18,10 @@
     + The interaction tower can input any item.
     + Adjusting the number of hash blocks required for quantum replication technology and the rewards for the
       technology.
-    + 
+    + The fractionation data center cannot be opened when the game is not running or the corresponding technology is not
+      unlocked.
+    + Adjust the effectiveness of the technology "fractionation data center" and unlock some recipes after the research
+      is completed.
 
 - v2.0.2
     + 添加沙土交换配方经验的功能。
