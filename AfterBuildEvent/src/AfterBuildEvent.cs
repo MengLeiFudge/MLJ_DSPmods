@@ -178,7 +178,7 @@ static class AfterBuildEvent {
                 if (Directory.Exists(dir)) {
                     foreach (string file in Directory.GetFiles(dir)) {
                         FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.Name.StartsWith("[0.10.32]万物分馏") && fileInfo.Name.EndsWith(".zip")) {
+                        if (fileInfo.Name.StartsWith("[0.10.33]万物分馏") && fileInfo.Name.EndsWith(".zip")) {
                             fileInfo.Delete();
                         }
                     }
