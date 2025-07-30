@@ -1,5 +1,6 @@
 ﻿using CommonAPI.Systems;
 using FE.Compatibility;
+using FE.UI.View;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -14,8 +15,8 @@ public static class TechManager {
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Center", "分馏数据中心");
         Register("分馏数据中心描述",
-            $"With the continuous exploration of various star regions, fractionation technology has greatly expanded, and the COSMO has specially released a series of related technologies to help Icarus build the Dyson sphere. At the same time, the COSMO provides a new way of data interaction, which can be connected by pressing {"Shift+F".WithColor(Orange)}.",
-            $"随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发一系列相关科技来帮助伊卡洛斯建设戴森球。同时，主脑提供了一种新的数据交互方式，按 {"Shift+F".WithColor(Orange)} 即可连接。");
+            $"With the continuous exploration of various star regions, fractionation technology has greatly expanded, and the COSMO has specially released a series of related technologies to help Icarus build the Dyson sphere. At the same time, the COSMO provides a new way of data interaction, which can be connected by pressing {"Shift + F".WithColor(Orange)}.",
+            $"随着各个星区的不断探索，分馏科技有了极大的拓展，主脑特地下发一系列相关科技来帮助伊卡洛斯建设戴森球。同时，主脑提供了一种新的数据交互方式，按 {"Shift + F".WithColor(Orange)} 即可连接。");
         Register("分馏数据中心结果",
             "You have mastered the method of connecting to the fractionation data center, and now you can connect to the fractionation data center.",
             "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
