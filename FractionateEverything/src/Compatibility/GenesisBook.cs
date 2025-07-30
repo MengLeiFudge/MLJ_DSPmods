@@ -1,7 +1,11 @@
-﻿using BepInEx.Bootstrap;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
+using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
 using xiaoye97;
+using ProjectGenesis.Patches;
+using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
@@ -97,6 +101,48 @@ public static class GenesisBook {
         var item = LDB.items.Select(itemId);
         item.GridIndex += offset;
         item.maincraft.GridIndex = item.GridIndex;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(FastStartOptionPatches), nameof(FastStartOptionPatches.SetForNewGame))]
+    private static IEnumerable<CodeInstruction> FastStartOptionPatches_SetForNewGame_Transpiler(
+        IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
+        //if (!GameMain.data.history.TechUnlocked(proto.ID) && NeedFastUnlock(proto.Items))
+        //变为
+        //if (IsFracTech(proto.ID) && !GameMain.data.history.TechUnlocked(proto.ID) && NeedFastUnlock(proto.Items))
+        var matcher = new CodeMatcher(instructions);
+        //寻找: GameMain.data.history.TechUnlocked(proto.ID)
+        matcher.MatchForward(false,
+            new CodeMatch(OpCodes.Ldsfld),// GameMain.data
+            new CodeMatch(OpCodes.Ldfld),// .history
+            new CodeMatch(OpCodes.Ldloc_3),// proto
+            new CodeMatch(OpCodes.Ldfld),// .ID
+            new CodeMatch(OpCodes.Callvirt)// TechUnlocked
+        );
+        if (matcher.IsInvalid) {
+            CheckPlugins.LogError("Failed to find TechUnlocked call pattern");
+            return instructions;
+        }
+        //找到要跳转的标签
+        var matcher2 = matcher.Clone();
+        matcher2.MatchForward(false, new CodeMatch(OpCodes.Brtrue));
+        if (matcher2.IsInvalid) {
+            CheckPlugins.LogError("Failed to find Brtrue opcode");
+            return instructions;
+        }
+        // 在 GameMain.data.history.TechUnlocked 调用之前插入我们的检查
+        matcher.Insert(
+            new CodeInstruction(OpCodes.Ldloc_3),// proto
+            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(TechProto), "ID")),// proto.ID
+            new CodeInstruction(OpCodes.Call,
+                AccessTools.Method(typeof(GenesisBook), nameof(IsFracTech))),// IsFracTech(proto.ID)
+            new CodeInstruction(matcher2.Opcode, matcher2.Operand)// 如果是分馏科技，直接跳过
+        );
+        return matcher.InstructionEnumeration();
+    }
+
+    public static bool IsFracTech(int id) {
+        return id >= TFE分馏数据中心 && id <= TFE超值礼包9;
     }
 
     /*#region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
