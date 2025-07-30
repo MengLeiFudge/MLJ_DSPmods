@@ -21,6 +21,55 @@ public static class TechManager {
             "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
 
 
+        Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
+        Register("超值礼包1描述",
+            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can get 100 electromagnetic tickets, as well as extremely precious universal cores and amplification chips! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及极其珍贵的通用核心、增幅芯片！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包1结果",
+            "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
+            "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
+
+        Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
+        Register("超值礼包2描述",
+            "Super Value Gift Pack! As long as you have 100 energy matrices, you can get 100 energy tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100能量矩阵，就可以获取100张能量奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包2结果",
+            "Energy ticket x100 have been received.",
+            "能量奖券x100 已到账。");
+
+        Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
+        Register("超值礼包3描述",
+            "Super Value Gift Pack! As long as you have 100 structure matrices, you can get 100 structure tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100结构矩阵，就可以获取100张结构奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包3结果",
+            "Structure ticket x100 have been received.",
+            "结构奖券x100 已到账。");
+
+        Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
+        Register("超值礼包4描述",
+            "Super Value Gift Pack! As long as you have 100 information matrices, you can get 100 information tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100信息矩阵，就可以获取100张信息奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包4结果",
+            "Information ticket x100 have been received.",
+            "信息奖券x100 已到账。");
+
+        Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
+        Register("超值礼包5描述",
+            "Super Value Gift Pack! As long as you have 100 gravity matrices, you can get 100 gravity tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100引力矩阵，就可以获取100张引力奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包5结果",
+            "Gravity ticket x100 have been received.",
+            "引力奖券x100 已到账。");
+
+        Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
+        Register("超值礼包6描述",
+            "Super Value Gift Pack! As long as you have 100 universe matrices, you can get 100 universe tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100宇宙矩阵，就可以获取100张宇宙奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+        Register("超值礼包6结果",
+            "Universe ticket x100 have been received.",
+            "宇宙奖券x100 已到账。");
+
+
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
         Register("电磁奖券描述",
             "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
@@ -76,55 +125,6 @@ public static class TechManager {
         Register("黑雾奖券结果",
             "You have mastered the technology of making dark fog tickets and can now produce them through automation.",
             "你已经掌握了制作黑雾奖券的技术，可以通过自动化的方式制作它了。");
-
-
-        Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
-        Register("超值礼包1描述",
-            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can get 100 electromagnetic tickets, as well as extremely precious universal cores and amplification chips! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及极其珍贵的通用核心、增幅芯片！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包1结果",
-            "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
-            "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
-
-        Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
-        Register("超值礼包2描述",
-            "Super Value Gift Pack! As long as you have 100 energy matrices, you can get 100 energy tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100能量矩阵，就可以获取100张能量奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包2结果",
-            "Energy ticket x100 have been received.",
-            "能量奖券x100 已到账。");
-
-        Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
-        Register("超值礼包3描述",
-            "Super Value Gift Pack! As long as you have 100 structure matrices, you can get 100 structure tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100结构矩阵，就可以获取100张结构奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包3结果",
-            "Structure ticket x100 have been received.",
-            "结构奖券x100 已到账。");
-
-        Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
-        Register("超值礼包4描述",
-            "Super Value Gift Pack! As long as you have 100 information matrices, you can get 100 information tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100信息矩阵，就可以获取100张信息奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包4结果",
-            "Information ticket x100 have been received.",
-            "信息奖券x100 已到账。");
-
-        Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
-        Register("超值礼包5描述",
-            "Super Value Gift Pack! As long as you have 100 gravity matrices, you can get 100 gravity tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100引力矩阵，就可以获取100张引力奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包5结果",
-            "Gravity ticket x100 have been received.",
-            "引力奖券x100 已到账。");
-
-        Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
-        Register("超值礼包6描述",
-            "Super Value Gift Pack! As long as you have 100 universe matrices, you can get 100 universe tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100宇宙矩阵，就可以获取100张宇宙奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
-        Register("超值礼包6结果",
-            "Universe ticket x100 have been received.",
-            "宇宙奖券x100 已到账。");
 
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
@@ -243,90 +243,11 @@ public static class TechManager {
         var tech分馏数据中心 = ProtoRegistry.RegisterTech(
             TFE分馏数据中心, "T分馏数据中心", "分馏数据中心描述", "分馏数据中心结果", "Assets/fe/tech分馏数据中心",
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
-            [I铁矿, I铜矿], [100, 100], 3600,
+            [I电磁矩阵], [10], 3600,
             [],
             GetTechPos(1, 0)
         );
-
-
-        var tech电磁奖券 = ProtoRegistry.RegisterTech(
-            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech电磁奖券",
-            [tech分馏数据中心.ID],
-            [I电磁矩阵], [200], 18000,
-            [RFE电磁奖券],
-            GetTechPos(0, 1)
-        );
-        tech电磁奖券.PreTechsImplicit = [T电磁矩阵];
-        tech电磁奖券.AddItems = [IFE电磁奖券];
-        tech电磁奖券.AddItemCounts = [10];
-
-        var tech能量奖券 = ProtoRegistry.RegisterTech(
-            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech能量奖券",
-            [tech电磁奖券.ID],
-            [I能量矩阵], [400], 36000,
-            [RFE能量奖券],
-            GetTechPos(0, 2)
-        );
-        tech能量奖券.PreTechsImplicit = [T能量矩阵];
-        tech能量奖券.AddItems = [IFE能量奖券];
-        tech能量奖券.AddItemCounts = [10];
-
-        var tech结构奖券 = ProtoRegistry.RegisterTech(
-            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech结构奖券",
-            [tech能量奖券.ID],
-            [I结构矩阵], [600], 54000,
-            [RFE结构奖券],
-            GetTechPos(0, 3)
-        );
-        tech结构奖券.PreTechsImplicit = [T结构矩阵];
-        tech结构奖券.AddItems = [IFE结构奖券];
-        tech结构奖券.AddItemCounts = [10];
-
-        var tech信息奖券 = ProtoRegistry.RegisterTech(
-            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech信息奖券",
-            [tech结构奖券.ID],
-            [I信息矩阵], [800], 72000,
-            [RFE信息奖券],
-            GetTechPos(0, 4)
-        );
-        tech信息奖券.PreTechsImplicit = [T信息矩阵];
-        tech信息奖券.AddItems = [IFE信息奖券];
-        tech信息奖券.AddItemCounts = [10];
-
-        var tech引力奖券 = ProtoRegistry.RegisterTech(
-            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech引力奖券",
-            [tech信息奖券.ID],
-            [I引力矩阵], [1000], 90000,
-            [RFE引力奖券],
-            GetTechPos(0, 5)
-        );
-        tech引力奖券.PreTechsImplicit = [T引力矩阵];
-        tech引力奖券.AddItems = [IFE引力奖券];
-        tech引力奖券.AddItemCounts = [10];
-
-        var tech宇宙奖券 = ProtoRegistry.RegisterTech(
-            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech宇宙奖券",
-            [tech引力奖券.ID],
-            [I宇宙矩阵], [1200], 108000,
-            [RFE宇宙奖券],
-            GetTechPos(0, 6)
-        );
-        tech宇宙奖券.PreTechsImplicit = [T宇宙矩阵];
-        tech宇宙奖券.AddItems = [IFE宇宙奖券];
-        tech宇宙奖券.AddItemCounts = [10];
-
-        var tech黑雾奖券 = ProtoRegistry.RegisterTech(
-            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech黑雾奖券",
-            [],
-            [I黑雾矩阵], [10000], 300000,
-            [RFE黑雾奖券],
-            GetTechPos(0, 7)
-        );
-        tech黑雾奖券.IsHiddenTech = true;
-        tech黑雾奖券.PreItem = [I黑雾矩阵];
-        tech黑雾奖券.PreTechsImplicit = [TFE分馏数据中心];
-        tech黑雾奖券.AddItems = [IFE黑雾奖券];
-        tech黑雾奖券.AddItemCounts = [10];
+        tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
 
 
         var tech超值礼包1 = ProtoRegistry.RegisterTech(
@@ -334,7 +255,7 @@ public static class TechManager {
             [tech分馏数据中心.ID],
             [I电磁矩阵], [100], 3600,
             [],
-            GetTechPos(1, 1)
+            GetTechPos(0, 1)
         );
         tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
         tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
@@ -345,7 +266,7 @@ public static class TechManager {
             [tech超值礼包1.ID],
             [I能量矩阵], [100], 3600,
             [],
-            GetTechPos(1, 2)
+            GetTechPos(0, 2)
         );
         tech超值礼包2.PreTechsImplicit = [T能量矩阵];
         tech超值礼包2.AddItems = [IFE能量奖券];
@@ -356,7 +277,7 @@ public static class TechManager {
             [tech超值礼包2.ID],
             [I结构矩阵], [100], 3600,
             [],
-            GetTechPos(1, 3)
+            GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
         tech超值礼包3.AddItems = [IFE结构奖券];
@@ -367,7 +288,7 @@ public static class TechManager {
             [tech超值礼包3.ID],
             [I信息矩阵], [100], 3600,
             [],
-            GetTechPos(1, 4)
+            GetTechPos(0, 4)
         );
         tech超值礼包4.PreTechsImplicit = [T信息矩阵];
         tech超值礼包4.AddItems = [IFE信息奖券];
@@ -378,7 +299,7 @@ public static class TechManager {
             [tech超值礼包4.ID],
             [I引力矩阵], [100], 3600,
             [],
-            GetTechPos(1, 5)
+            GetTechPos(0, 5)
         );
         tech超值礼包5.PreTechsImplicit = [T引力矩阵];
         tech超值礼包5.AddItems = [IFE引力奖券];
@@ -389,11 +310,91 @@ public static class TechManager {
             [tech超值礼包5.ID],
             [I宇宙矩阵], [100], 3600,
             [],
-            GetTechPos(1, 6)
+            GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
         tech超值礼包6.AddItems = [IFE宇宙奖券];
         tech超值礼包6.AddItemCounts = [100];
+
+
+        var tech电磁奖券 = ProtoRegistry.RegisterTech(
+            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech电磁奖券",
+            [tech分馏数据中心.ID],
+            [I电磁矩阵], [200], 18000,
+            [RFE电磁奖券],
+            GetTechPos(1, 1)
+        );
+        tech电磁奖券.PreTechsImplicit = [T电磁矩阵];
+        tech电磁奖券.AddItems = [IFE电磁奖券];
+        tech电磁奖券.AddItemCounts = [10];
+
+        var tech能量奖券 = ProtoRegistry.RegisterTech(
+            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech能量奖券",
+            [tech电磁奖券.ID],
+            [I能量矩阵], [400], 36000,
+            [RFE能量奖券],
+            GetTechPos(1, 2)
+        );
+        tech能量奖券.PreTechsImplicit = [T能量矩阵];
+        tech能量奖券.AddItems = [IFE能量奖券];
+        tech能量奖券.AddItemCounts = [10];
+
+        var tech结构奖券 = ProtoRegistry.RegisterTech(
+            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech结构奖券",
+            [tech能量奖券.ID],
+            [I结构矩阵], [600], 54000,
+            [RFE结构奖券],
+            GetTechPos(1, 3)
+        );
+        tech结构奖券.PreTechsImplicit = [T结构矩阵];
+        tech结构奖券.AddItems = [IFE结构奖券];
+        tech结构奖券.AddItemCounts = [10];
+
+        var tech信息奖券 = ProtoRegistry.RegisterTech(
+            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech信息奖券",
+            [tech结构奖券.ID],
+            [I信息矩阵], [800], 72000,
+            [RFE信息奖券],
+            GetTechPos(1, 4)
+        );
+        tech信息奖券.PreTechsImplicit = [T信息矩阵];
+        tech信息奖券.AddItems = [IFE信息奖券];
+        tech信息奖券.AddItemCounts = [10];
+
+        var tech引力奖券 = ProtoRegistry.RegisterTech(
+            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech引力奖券",
+            [tech信息奖券.ID],
+            [I引力矩阵], [1000], 90000,
+            [RFE引力奖券],
+            GetTechPos(1, 5)
+        );
+        tech引力奖券.PreTechsImplicit = [T引力矩阵];
+        tech引力奖券.AddItems = [IFE引力奖券];
+        tech引力奖券.AddItemCounts = [10];
+
+        var tech宇宙奖券 = ProtoRegistry.RegisterTech(
+            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech宇宙奖券",
+            [tech引力奖券.ID],
+            [I宇宙矩阵], [1200], 108000,
+            [RFE宇宙奖券],
+            GetTechPos(1, 6)
+        );
+        tech宇宙奖券.PreTechsImplicit = [T宇宙矩阵];
+        tech宇宙奖券.AddItems = [IFE宇宙奖券];
+        tech宇宙奖券.AddItemCounts = [10];
+
+        var tech黑雾奖券 = ProtoRegistry.RegisterTech(
+            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech黑雾奖券",
+            [],
+            [I黑雾矩阵], [10000], 300000,
+            [RFE黑雾奖券],
+            GetTechPos(1, 7)
+        );
+        tech黑雾奖券.IsHiddenTech = true;
+        tech黑雾奖券.PreItem = [I黑雾矩阵];
+        tech黑雾奖券.PreTechsImplicit = [TFE分馏数据中心];
+        tech黑雾奖券.AddItems = [IFE黑雾奖券];
+        tech黑雾奖券.AddItemCounts = [10];
 
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
@@ -409,7 +410,7 @@ public static class TechManager {
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
             [],
-            [IFE交互塔], [10], 1800,
+            [IFE交互塔], [10], 3600,
             [RFE交互塔],
             GetTechPos(2, 2)
         );
@@ -420,7 +421,7 @@ public static class TechManager {
         var tech矿物复制 = ProtoRegistry.RegisterTech(
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
             [],
-            [IFE矿物复制塔], [10], 1800,
+            [IFE矿物复制塔], [10], 3600,
             [RFE矿物复制塔, RFE复制精华],
             GetTechPos(2, 3)
         );
@@ -431,7 +432,7 @@ public static class TechManager {
         var tech增产点数聚集 = ProtoRegistry.RegisterTech(
             TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
             [],
-            [IFE点数聚集塔], [10], 1800,
+            [IFE点数聚集塔], [10], 3600,
             [RFE点数聚集塔],
             GetTechPos(2, 4)
         );
@@ -455,7 +456,7 @@ public static class TechManager {
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
             [],
-            [IFE点金塔], [10], 1800,
+            [IFE点金塔], [10], 3600,
             [RFE点金塔, RFE点金精华],
             GetTechPos(2, 6)
         );
@@ -466,7 +467,7 @@ public static class TechManager {
         var tech物品分解 = ProtoRegistry.RegisterTech(
             TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
             [],
-            [IFE分解塔], [10], 1800,
+            [IFE分解塔], [10], 3600,
             [RFE分解塔, RFE分解精华],
             GetTechPos(2, 7)
         );
@@ -477,7 +478,7 @@ public static class TechManager {
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
-            [IFE转化塔], [10], 1800,
+            [IFE转化塔], [10], 3600,
             [RFE转化塔, RFE转化精华],
             GetTechPos(2, 8)
         );
