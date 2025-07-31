@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
@@ -211,17 +212,23 @@ public static class TabShop {
     }
 
     private static void GetModDataItemInfo() {
-        StringBuilder sb = new("分馏数据中心当前持有的物品详情如下：\n");
-        int oneLineCount = 0;
-        int oneLineMaxCount = 5;
-        bool haveItem = false;
+        Dictionary<ItemProto, int> itemCountDic = [];
         foreach (ItemProto item in LDB.items.dataArray) {
             int count = GetModDataItemCount(item.ID);
             if (count <= 0) {
                 continue;
             }
-            haveItem = true;
-            sb.Append($"{item.name} x {count}".WithValueColor(item.ID));
+            itemCountDic[item] = count;
+        }
+        if (itemCountDic.Count == 0) {
+            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
+            return;
+        }
+        StringBuilder sb = new("分馏数据中心当前持有的物品详情如下：\n");
+        int oneLineMaxCount = Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 20.0));
+        int oneLineCount = 0;
+        foreach (var p in itemCountDic) {
+            sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
                 sb.Append("\n");
@@ -230,11 +237,7 @@ public static class TabShop {
                 sb.Append("          ");
             }
         }
-        if (!haveItem) {
-            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
-        } else {
-            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
-        }
+        UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
     }
 
     public static void ExchangeItem(int index) { }
