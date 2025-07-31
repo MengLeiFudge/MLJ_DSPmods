@@ -332,27 +332,33 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n') + "\n\n" + sb2,
-            "数据中心暂存", "提取珍贵物品", "提取全部物品", UIMessageBox.INFO,
+        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+                                  + "\n\n"
+                                  + sb2
+                                  + "\n\n选择提取方式：\n"
+                                  + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                                  + "部分提取：将分馏配方通用核心提取到背包，除此之外的物品存储在分馏数据中心\n"
+                                  + "全部提取：将全部物品以实体形式提取到背包",
+            "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
             () => {
-                foreach (var p in specialItemDic) {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToModData(p.Key, p.Value);
                 }
-                foreach (var p in commonItemDic) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic) {
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToModData(p.Key, p.Value);
                 }
             }, () => {
-                foreach (var p in specialItemDic) {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToPackage(p.Key, p.Value);
                 }
-                foreach (var p in commonItemDic) {
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToPackage(p.Key, p.Value);
                 }
             });
@@ -502,27 +508,31 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n'),
-            "数据中心暂存", "提取珍贵物品", "提取全部物品", UIMessageBox.INFO,
+        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+                                  + "\n\n选择提取方式：\n"
+                                  + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                                  + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
+                                  + "全部提取：将全部物品以实体形式提取到背包",
+            "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
             () => {
-                foreach (var p in specialItemDic) {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToModData(p.Key, p.Value);
                 }
-                foreach (var p in commonItemDic) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic) {
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToModData(p.Key, p.Value);
                 }
             }, () => {
-                foreach (var p in specialItemDic) {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToPackage(p.Key, p.Value);
                 }
-                foreach (var p in commonItemDic) {
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                    AddItemToModData(p.Key, p.Value);
+                }
+            }, () => {
+                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                    AddItemToPackage(p.Key, p.Value);
+                }
+                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                     AddItemToPackage(p.Key, p.Value);
                 }
             });
