@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
@@ -298,18 +299,23 @@ public static class TabRecipeAndBuilding {
         Dictionary<int, (float, bool, bool)> outputDic = [];
         QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
         float essenceCount = 0.0f;
-        while (inputCount > 1e-6) {
-            //损毁
+        int iterations = 0;
+        while (inputCount > 1e-6 && iterations < 1000) {
+            iterations++;
+            //输入减去损毁的量
             inputCount *= 1.0f - recipe.DestroyRate;
-            //转化
-            float successRate = recipe.SuccessRate * successRatePlus;
-            float convertInputTotalCount = inputCount * successRate;
+            //计算有多少物品会被处理，增产会影响这一轮处理的数目
+            float processCount = Math.Min(inputCount, inputCount * recipe.SuccessRate * successRatePlus);
+            //输入减去被处理的量
+            inputCount -= processCount;
+            //如果是量子复制配方，累加扣除精华的数目
             if (recipe0 != null) {
-                essenceCount += convertInputTotalCount * recipe0.EssenceCost;
+                essenceCount += processCount * recipe0.EssenceCost;
             }
+            //计算被处理的物品能产出多少物品
             foreach (var info in recipe.OutputMain) {
                 int outputId = info.OutputID;
-                float outputCount = convertInputTotalCount * info.SuccessRate * info.OutputCount;
+                float outputCount = processCount * info.SuccessRate * info.OutputCount;
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
@@ -319,7 +325,7 @@ public static class TabRecipeAndBuilding {
             }
             foreach (var info in recipe.OutputAppend) {
                 int outputId = info.OutputID;
-                float outputCount = convertInputTotalCount * info.SuccessRate * info.OutputCount;
+                float outputCount = processCount * info.SuccessRate * info.OutputCount;
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
