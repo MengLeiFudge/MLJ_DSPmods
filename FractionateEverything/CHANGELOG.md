@@ -2,9 +2,11 @@
     + 分馏塔提示窗口内容受配方信息显示情况控制。
     + 修复科技黑雾奖券需要的矩阵数目。
     + 修复分馏成功时，主输出产物只能输出至多一个物品的错误。
+    + 调整分解配方的平衡性，增加输出。
     + The content of the fractionation tower prompt window is controlled by the display of recipe information.
     + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
     + Fix the error where the main output product can only output up to one item when fractionation is successful.
+    + Adjust the balance of the deconstruction recipe to increase output.
 
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。
