@@ -3,6 +3,7 @@
     + 修复科技黑雾奖券需要的矩阵数目。
     + 修复分馏成功时，主输出产物只能输出至多一个物品的错误。
     + 调整分解配方的平衡性，增加输出。
+    + 调整配方升级曲线，调整沙土换经验的比例。
     + The content of the fractionation tower prompt window is controlled by the display of recipe information.
     + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
     + Fix the error where the main output product can only output up to one item when fractionation is successful.
