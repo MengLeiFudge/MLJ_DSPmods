@@ -241,7 +241,7 @@ public static partial class Utils {
         }
         int takeId = I沙土;
         float needExp = recipe.LevelUpExp - recipe.Exp;
-        int takeCount = (int)Math.Ceiling(needExp * 10 * Math.Pow(2, recipe.Quality));
+        int takeCount = (int)Math.Ceiling(needExp * 0.5);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示",
             $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 经验 x {(int)needExp} 吗？",

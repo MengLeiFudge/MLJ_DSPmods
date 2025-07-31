@@ -172,12 +172,12 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 升级所需经验
     /// </summary>
-    public int LevelUpExp => (int)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, Level - 1));
+    public int LevelUpExp => (int)(200 * Math.Pow(Quality * 2 + Level + 2, 2.0));
 
     /// <summary>
     /// 当前品质最高经验
     /// </summary>
-    public int MaxLevelUpExp => (int)(1000 * Math.Pow(1.8, Quality - 1) * Math.Pow(1.4, MaxLevel - 1));
+    public int MaxLevelUpExp => (int)(200 * Math.Pow(Quality * 2 + MaxLevel + 2, 2.0));
 
     /// <summary>
     /// 配方回响个数。
@@ -221,14 +221,8 @@ public abstract class BaseRecipe(
                 bool success = GetRandDouble() < successRate;
                 if (success) {
                     Exp -= LevelUpExp;
-                    Exp = (int)(Exp * 0.7f);
                     Level = 1;
-                    //红到金是品质+2
-                    if (Quality == 5) {
-                        Quality += 2;
-                    } else {
-                        Quality++;
-                    }
+                    Quality = NextQuality;
                 } else {
                     Exp -= LevelUpExp / 5.0f;
                 }
