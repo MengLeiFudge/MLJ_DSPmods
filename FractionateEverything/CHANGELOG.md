@@ -5,10 +5,14 @@
     + 调整分解配方的平衡性，增加输出。
     + 调整配方升级曲线，调整沙土换经验的比例。
     + 修复等效配方计算错误的问题。
+    + 调整抽卡结果按钮的显示。
     + The content of the fractionation tower prompt window is controlled by the display of recipe information.
     + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
     + Fix the error where the main output product can only output up to one item when fractionation is successful.
     + Adjust the balance of the deconstruction recipe to increase output.
+    + Adjust the recipe upgrade curve and adjust the ratio of sand to experience.
+    + Fix the issue of equivalent recipe calculation errors.
+    + Adjust the display of the raffle result button.
 
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。
