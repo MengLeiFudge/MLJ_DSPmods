@@ -283,8 +283,8 @@ public static class ProcessManager {
                                 productRegister[itemID] += itemCount;
                             }
                             if (itemID == mainProductId) {
-                                __instance.productOutputCount++;
-                                __instance.productOutputTotal++;
+                                __instance.productOutputCount += itemCount;
+                                __instance.productOutputTotal += itemCount;
                             } else {
                                 if (otherProductOutput.ContainsKey(itemID)) {
                                     otherProductOutput[itemID] += itemCount;
