@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
@@ -23,14 +24,60 @@ public class DeconstructionRecipe : BaseRecipe {
                 continue;
             }
             List<OutputInfo> outputMain = [];
+            bool mainCraftValid = false;
             if (item.maincraft != null) {
-                int len = item.maincraft.Items.Length;
-                float rate = 1.0f / len;
-                for (int i = 0; i < len; i++) {
-                    outputMain.Add(new(rate, item.maincraft.Items[i], item.maincraft.ItemCounts[i] * len));
+                var recipe = item.maincraft;
+                // 复制配方数据
+                List<int> inputIDs = recipe.Items.ToList();
+                List<int> outputIDs = recipe.Results.ToList();
+                List<int> inputCounts = recipe.ItemCounts.ToList();
+                List<int> outputCounts = recipe.ResultCounts.ToList();
+                // 抵消输入输出中的相同物品
+                bool haveSameItem;
+                do {
+                    haveSameItem = false;
+                    for (int i = 0; i < inputIDs.Count; i++) {
+                        for (int j = 0; j < outputIDs.Count; j++) {
+                            if (inputIDs[i] == outputIDs[j]) {
+                                // 比较数量大小并抵消
+                                if (inputCounts[i] > outputCounts[j]) {
+                                    inputCounts[i] -= outputCounts[j];
+                                    outputIDs.RemoveAt(j);
+                                    outputCounts.RemoveAt(j);
+                                } else if (inputCounts[i] < outputCounts[j]) {
+                                    outputCounts[j] -= inputCounts[i];
+                                    inputIDs.RemoveAt(i);
+                                    inputCounts.RemoveAt(i);
+                                } else {
+                                    // 数量相等，完全抵消
+                                    inputIDs.RemoveAt(i);
+                                    inputCounts.RemoveAt(i);
+                                    outputIDs.RemoveAt(j);
+                                    outputCounts.RemoveAt(j);
+                                }
+                                haveSameItem = true;
+                                break;
+                            }
+                        }
+                        if (haveSameItem) break;
+                    }
+                } while (haveSameItem);
+                // 检查配方是否可用
+                mainCraftValid = outputIDs.Contains(item.ID);
+                if (mainCraftValid) {
+                    List<float> inputFloatCounts = [..inputCounts];
+                    int outputCount = outputCounts[outputIDs.IndexOf(item.ID)];
+                    for (int i = 0; i < inputFloatCounts.Count; i++) {
+                        inputFloatCounts[i] /= outputCount;
+                    }
+                    float totalInputCount = inputFloatCounts.Sum();
+                    for (int i = 0; i < inputFloatCounts.Count; i++) {
+                        outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i], inputFloatCounts[i] * 1.25f));
+                    }
                 }
-            } else {
-                outputMain.Add(new(1.0f, I沙土, (int)Math.Ceiling(itemValue[item.ID] / itemValue[I沙土] * 0.8)));
+            }
+            if (!mainCraftValid) {
+                outputMain.Add(new(1.0f, I沙土, (int)Math.Ceiling(itemValue[item.ID] / itemValue[I沙土] * 2.0f)));
             }
             AddRecipe(new DeconstructionRecipe(item.ID, 1.0f / (1.0f + (float)ProcessManager.MaxTableMilli(10)),
                 outputMain,
