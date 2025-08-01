@@ -323,9 +323,9 @@ public static class PointAggregateTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStack = r.ReadBoolean();
-        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        MaxProductOutputStack = Math.Min(4, r.ReadInt32());
         EnableFracForever = r.ReadBoolean();
-        Level = Math.Min(r.ReadInt32(), 10);
+        Level = Math.Min(10, r.ReadInt32());
     }
 
     public static void Export(BinaryWriter w) {

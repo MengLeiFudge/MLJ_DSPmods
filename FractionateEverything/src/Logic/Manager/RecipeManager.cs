@@ -58,79 +58,6 @@ public static class RecipeManager {
         DeconstructionRecipe.CreateAll();
         ConversionRecipe.CreateAll();
 
-        //横向：配方类型    纵向：矩阵层级
-        int[,] counts = new int[RecipeMatrixDic.Keys.Count + 1, RecipeTypeDic.Keys.Count + 1];
-        // 创建索引映射
-        var matrixKeys = RecipeMatrixDic.Keys.ToArray();
-        var recipeTypeKeys = RecipeTypeDic.Keys.ToArray();
-        // 填充统计数据
-        foreach (var recipe in RecipeList) {
-            int matrixIndex = Array.IndexOf(matrixKeys, itemToMatrix[recipe.InputID]);
-            int typeIndex = Array.IndexOf(recipeTypeKeys, recipe.RecipeType);
-            if (matrixIndex >= 0 && typeIndex >= 0) {
-                counts[matrixIndex, typeIndex]++;
-            }
-        }
-        // 计算行列总计
-        for (int i = 0; i < matrixKeys.Length; i++) {
-            for (int j = 0; j < recipeTypeKeys.Length; j++) {
-                counts[matrixKeys.Length, j] += counts[i, j];// 列总计
-                counts[i, recipeTypeKeys.Length] += counts[i, j];// 行总计
-            }
-        }
-        // 计算总计
-        for (int i = 0; i < matrixKeys.Length; i++) {
-            counts[matrixKeys.Length, recipeTypeKeys.Length] += counts[i, recipeTypeKeys.Length];
-        }
-        // 打印表格
-        LogInfo("Recipe count table (Matrix × RecipeType):");
-        // 辅助方法：计算字符串的显示宽度（中文字符算2个宽度）
-        int GetDisplayWidth(string text) {
-            int width = 0;
-            foreach (char c in text) {
-                // 中文字符+2，非中文+1
-                width += c >= 0x4E00 && c <= 0x9FFF ? 2 : 1;
-            }
-            return width;
-        }
-        // 辅助方法：按显示宽度右填充字符串
-        string PadRightByWidth(string text, int totalWidth) {
-            int currentWidth = GetDisplayWidth(text);
-            int paddingNeeded = Math.Max(0, totalWidth - currentWidth);
-            return text + new string(' ', paddingNeeded);
-        }
-        // 定义列宽
-        int matrixColumnWidth = 10;
-        int typeColumnWidth = 10;
-        int totalColumnWidth = 8;
-        // 打印表头
-        string header = PadRightByWidth("矩阵层级", matrixColumnWidth);
-        foreach (var recipeType in recipeTypeKeys) {
-            header += PadRightByWidth(recipeType.GetShortName(), typeColumnWidth);
-        }
-        header += PadRightByWidth("总计", totalColumnWidth);
-        LogInfo(header);
-        // 打印分隔线
-        LogInfo(new string('-', GetDisplayWidth(header)));
-        // 打印数据行
-        for (int i = 0; i < matrixKeys.Length; i++) {
-            ItemProto matrix = LDB.items.Select(matrixKeys[i]);
-            string row = PadRightByWidth(matrix.name, matrixColumnWidth);
-            for (int j = 0; j < recipeTypeKeys.Length; j++) {
-                row += PadRightByWidth(counts[i, j].ToString(), typeColumnWidth);
-            }
-            row += PadRightByWidth(counts[i, recipeTypeKeys.Length].ToString(), totalColumnWidth);
-            LogInfo(row);
-        }
-        // 打印总计行
-        string totalRow = PadRightByWidth("总计", matrixColumnWidth);
-        for (int j = 0; j < recipeTypeKeys.Length; j++) {
-            totalRow += PadRightByWidth(counts[matrixKeys.Length, j].ToString(), typeColumnWidth);
-        }
-        totalRow += PadRightByWidth(counts[matrixKeys.Length, recipeTypeKeys.Length].ToString(), totalColumnWidth);
-        LogInfo(new string('-', GetDisplayWidth(header)));
-        LogInfo(totalRow);
-
         LogInfo("Finish to add fractionate recipes.");
     }
 
@@ -199,13 +126,12 @@ public static class RecipeManager {
             return;
         }
         foreach (var recipe in RecipeList) {
-            if (!recipe.IsUnlocked) {
-                recipe.Level = 1;
-                recipe.Quality = 1;
+            if (recipe.Locked) {
+                recipe.RewardThis();
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
-        UIMessageBox.Show("提示".Translate(), "所有配方已解锁。".Translate(), "确定".Translate(), UIMessageBox.INFO, null);
+        UIMessageBox.Show("提示".Translate(), "所有分馏配方已解锁。".Translate(), "确定".Translate(), UIMessageBox.INFO, null);
     }
 
     #region 从存档读取配方数据

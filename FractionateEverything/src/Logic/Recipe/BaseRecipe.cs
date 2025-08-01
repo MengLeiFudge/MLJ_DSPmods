@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Recipe;
 
 /// <summary>
-/// 分馏配方基类，所有分馏塔配方的基类
+/// 分馏配方基类
 /// </summary>
 public abstract class BaseRecipe(
     int inputID,
@@ -18,23 +18,23 @@ public abstract class BaseRecipe(
     #region 配方类型、输入输出
 
     /// <summary>
-    /// 配方类型
+    /// 类型
     /// </summary>
     public abstract ERecipe RecipeType { get; }
 
     /// <summary>
-    /// 配方输入物品的ID
+    /// 输入物品的ID
     /// </summary>
     public int InputID => inputID;
 
     /// <summary>
-    /// 通过品质和等级得到该配方的整体进度，范围为0-1
+    /// 通过品质和等级得到的综合进度，范围为0-1
     /// </summary>
     private float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
                               / (MaxQuality * 0.2f + (MaxQuality + 3) * (0.1f + MaxQuality * 0.02f));
 
     /// <summary>
-    /// 配方成功率上限
+    /// 成功率上限
     /// </summary>
     public float MaxSuccessRate => maxSuccessRate;
 
@@ -45,26 +45,26 @@ public abstract class BaseRecipe(
     public float SuccessRate => MaxSuccessRate * (0.4f + 0.6f * Progress);
 
     /// <summary>
-    /// 配方损毁率上限
+    /// 损毁率上限
     /// </summary>
     public float MaxDestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f);
 
     /// <summary>
-    /// 配方损毁率，随着等级和品质的提高而降低。
+    /// 损毁率，随着等级和品质的提高而降低。
     /// 初始与物品价值有关（价值越高损毁率越高），最终为0%。
     /// 品质5，等级8时，进度为0.6842左右，所以使用0.684作为分界线
     /// </summary>
-    public float DestroyRate => MaxDestroyRate * Math.Max(0.684f - Progress, 0);
+    public float DestroyRate => MaxDestroyRate * Math.Max(0, 0.684f - Progress);
 
     /// <summary>
-    /// 配方主产物信息，概率之和必须为100%。
+    /// 主产物信息，概率之和必须为100%。
     /// 当判定成功时，必定输出且仅输出其中一项。
     /// 如果输出的物品数目为小数，则进行二次判定。
     /// </summary>
     public List<OutputInfo> OutputMain => outputMain;
 
     /// <summary>
-    /// 配方副产物信息。
+    /// 副产物信息。
     /// 当判定成功时，该列表内每一项分别判定是否成功。
     /// 如果输出的物品数目为小数，则进行二次判定。
     /// </summary>
@@ -131,100 +131,143 @@ public abstract class BaseRecipe(
 
     #endregion
 
-    #region 配方解锁
+    #region 配方品质、等级
 
     /// <summary>
-    /// 解锁状态
-    /// </summary>
-    public bool IsUnlocked => Level > 0;
-
-    #endregion
-
-    #region 配方等级与星级
-
-    /// <summary>
-    /// 配方品质
+    /// 品质
     /// </summary>
     /// <details>
     /// 未解锁时为0。解锁之后，最低为1，最高为7。0灰、1白、2绿、3蓝、4紫、5红、7金。
     /// </details>
-    public int Quality { get; set; } = 0;
+    public int Quality { get; private set; } = 0;
+    /// <summary>
+    /// 下一品质
+    /// </summary>
     public int NextQuality => Quality == 5 ? Quality + 2 : Quality + 1;
+    /// <summary>
+    /// 最高品质
+    /// </summary>
     public int MaxQuality => 7;
+    /// <summary>
+    /// 品质是否达到上限
+    /// </summary>
+    public bool IsMaxQuality => Quality == MaxQuality;
 
     /// <summary>
-    /// 配方等级
+    /// 回响数目
+    /// </summary>
+    public int Memory { get; private set; } = 0;
+    /// <summary>
+    /// 突破当前品质需要的回响数目
+    /// </summary>
+    public int BreakCurrQualityNeedMemory => Math.Max(0, NextQuality - 2);
+    /// <summary>
+    /// 回响数目是否已达到突破当前品质所需的数目
+    /// </summary>
+    public bool IsEnoughMemoryToBreak => Memory >= BreakCurrQualityNeedMemory;
+    /// <summary>
+    /// 最高回响数目
+    /// </summary>
+    public int MaxMemory => MaxQuality - 2;
+    /// <summary>
+    /// 回响数目是否已达到上限
+    /// </summary>
+    public bool IsMaxMemory => Memory >= MaxMemory;
+
+    /// <summary>
+    /// 等级
     /// </summary>
     /// <details>
     /// 未解锁时为0。解锁之后，最低为1，最高为Quality + 3。
     /// </details>
-    public int Level { get; set; } = 0;
-    public int MaxLevel => Quality + 3;
+    public int Level { get; private set; } = 0;
+    /// <summary>
+    /// 当前品质下的最高等级
+    /// </summary>
+    public int CurrQualityMaxLevel => Quality + 3;
+    /// <summary>
+    /// 等级是否达到当前品质的上限
+    /// </summary>
+    public bool IsCurrQualityMaxLevel => Level == CurrQualityMaxLevel;
 
     /// <summary>
     /// 经验值
     /// </summary>
     /// <details>
-    /// 达到下一级所需经验会自动升级。到达等级上限仍可获取经验，突破时多余经验会按照一定比例转化。
+    /// 达到下一级所需经验会自动升级。突破后会扣除当前经验上限的经验。
     /// </details>
     public float Exp { get; private set; } = 0;
+    /// <summary>
+    /// 当前品质、当前等级下，达到多少经验可以升级
+    /// </summary>
+    public int CurrQualityCurrLevelExp => (int)(200 * Math.Pow(Quality * 2 + Level + 2, 2.0));
+    /// <summary>
+    /// 升级还需要多少经验
+    /// </summary>
+    public float StillNeedExp => Math.Max(0, CurrQualityCurrLevelExp - Exp);
+    /// <summary>
+    /// 等级是否达到当前品质的上限
+    /// </summary>
+    public bool IsCurrQualityCurrLevelMaxExp => Exp >= CurrQualityCurrLevelExp;
 
     /// <summary>
-    /// 升级所需经验
+    /// 是否未解锁
     /// </summary>
-    public int LevelUpExp => (int)(200 * Math.Pow(Quality * 2 + Level + 2, 2.0));
+    public bool Locked => Level <= 0;
+    /// <summary>
+    /// 是否已解锁
+    /// </summary>
+    public bool Unlocked => Level > 0;
+    /// <summary>
+    /// 是否已达到最大升级
+    /// </summary>
+    public bool FullUpgrade => IsMaxQuality && IsCurrQualityMaxLevel;
 
     /// <summary>
-    /// 当前品质最高经验
-    /// </summary>
-    public int MaxLevelUpExp => (int)(200 * Math.Pow(Quality * 2 + MaxLevel + 2, 2.0));
-
-    /// <summary>
-    /// 配方回响个数。
-    /// </summary>
-    public int MemoryCount { get; set; } = 0;
-    public int BreakMemoryCount => Math.Max(0, NextQuality - 2);
-    public int MaxMemoryCount => 5;
-
-    public bool CanBreakthrough1 => Quality < MaxQuality;
-    public bool CanBreakthrough2 => Level >= MaxLevel;
-    public bool CanBreakthrough3 => Exp >= MaxLevelUpExp;
-    public bool CanBreakthrough4 => MemoryCount >= BreakMemoryCount;
-
-    /// <summary>v
-    /// 指示是否满足突破的前置条件
-    /// </summary>
-    public bool CanBreakthrough => CanBreakthrough1 && CanBreakthrough2 && CanBreakthrough3 && CanBreakthrough4;
-
-    /// <summary>
-    /// 添加经验
+    /// 添加经验，同时触发升级与突破
     /// </summary>
     public void AddExp(float exp) {
         lock (this) {
             Exp += exp * ExpMultiRate;
-            if (Exp >= LevelUpExp && !CanBreakthrough2) {
-                Exp -= LevelUpExp;
-                Level++;
-            }
-            TryBreakQuality();
+            CheckState();
         }
     }
 
     /// <summary>
-    /// 突破配方品质
+    /// 通过某种方式（例如抽卡，科技奖励等）获取到该配方。
+    /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
-    /// <returns>是否突破成功</returns>
-    public virtual void TryBreakQuality() {
+    public void RewardThis() {
         lock (this) {
-            while (CanBreakthrough) {
-                float successRate = 1.0f - (Quality - 1) * 0.15f;
-                bool success = GetRandDouble() < successRate;
-                if (success) {
-                    Exp -= LevelUpExp;
+            if (Locked) {
+                Level = 1;
+                Quality = 1;
+                Exp = 0;
+                return;
+            }
+            Memory++;
+            CheckState();
+        }
+    }
+
+    /// <summary>
+    /// 检查配方是否可以升级与突破
+    /// </summary>
+    public void CheckState() {
+        lock (this) {
+            //是否可升级
+            while (!IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp) {
+                Exp -= CurrQualityCurrLevelExp;
+                Level++;
+            }
+            //是否可突破
+            while (!IsMaxQuality && IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp && IsEnoughMemoryToBreak) {
+                if (GetRandDouble() < 1.0f - (Quality - 1) * 0.15f) {
+                    Exp -= CurrQualityCurrLevelExp;
                     Level = 1;
                     Quality = NextQuality;
                 } else {
-                    Exp -= LevelUpExp / 5.0f;
+                    Exp -= CurrQualityCurrLevelExp / 5.0f;
                 }
             }
         }
@@ -234,9 +277,8 @@ public abstract class BaseRecipe(
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
     public string TypeNameWC => TypeName.WithQualityColor(Quality);
-    public string LvExp => $"Lv{Level} ({(int)Exp}/{LevelUpExp})";
+    public string LvExp => $"Lv{Level} ({(int)Exp}{(FullUpgrade ? "" : $" / {CurrQualityCurrLevelExp}")})";
     public string LvExpWC => LvExp.WithQualityColor(Quality);
-
 
     #region IModCanSave
 
@@ -264,14 +306,13 @@ public abstract class BaseRecipe(
                 }
             }
         }
-        Quality = Math.Min(r.ReadInt32(), 7);
-        //配方变动时Quality可能变成6，先这样临时解决一下
-        if (Quality == 6) {
-            Quality = 7;
+        Quality = Math.Min(MaxQuality, r.ReadInt32());
+        if (Quality == MaxQuality - 1) {
+            Quality++;
         }
-        Level = Math.Min(r.ReadInt32(), Quality + 3);
+        Level = Math.Min(CurrQualityMaxLevel, r.ReadInt32());
         Exp = r.ReadSingle();
-        MemoryCount = Math.Min(r.ReadInt32(), MaxMemoryCount);
+        Memory = Math.Min(MaxMemory, r.ReadInt32());
         AddExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
     }
@@ -291,7 +332,7 @@ public abstract class BaseRecipe(
         w.Write(Level);
         w.Write(Quality);
         w.Write(Exp);
-        w.Write(MemoryCount);
+        w.Write(Memory);
         // 子类特定数据由重写的方法处理
     }
 
@@ -305,7 +346,7 @@ public abstract class BaseRecipe(
         Quality = 0;
         Level = 0;
         Exp = 0;
-        MemoryCount = 0;
+        Memory = 0;
     }
 
     #endregion
