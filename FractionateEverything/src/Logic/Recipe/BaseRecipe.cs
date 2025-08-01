@@ -206,7 +206,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public float StillNeedExp => Math.Max(0, CurrQualityCurrLevelExp - Exp);
     /// <summary>
-    /// 等级是否达到当前品质的上限
+    /// 经验是否达到当前品质、当前等级的上限
     /// </summary>
     public bool IsCurrQualityCurrLevelMaxExp => Exp >= CurrQualityCurrLevelExp;
 
