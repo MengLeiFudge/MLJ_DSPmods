@@ -104,7 +104,7 @@ public class MyComboBox : MonoBehaviour {
     public void SetItems(params string[] items) {
         _comboBox.Items = [.. items.Select(s => s.Translate())];
         _comboBox.StartItemIndex = 0;
-        _comboBox.DropDownCount = Math.Min(items.Length, 8);
+        _comboBox.DropDownCount = Math.Min(8, items.Length);
     }
 
     public void SetIndex(int index) => _comboBox.itemIndex = index;

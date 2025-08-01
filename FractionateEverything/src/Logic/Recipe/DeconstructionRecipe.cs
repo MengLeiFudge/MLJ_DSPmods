@@ -72,7 +72,8 @@ public class DeconstructionRecipe : BaseRecipe {
                     }
                     float totalInputCount = inputFloatCounts.Sum();
                     for (int i = 0; i < inputFloatCounts.Count; i++) {
-                        outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i], inputFloatCounts[i] * 1.25f));
+                        outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i],
+                            inputFloatCounts[i] * 1.25f));
                     }
                 }
             }

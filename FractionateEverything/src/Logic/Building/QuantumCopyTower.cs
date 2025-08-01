@@ -71,7 +71,7 @@ public static class QuantumCopyTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStack = r.ReadBoolean();
-        MaxProductOutputStack = Math.Min(r.ReadInt32(), 4);
+        MaxProductOutputStack = Math.Min(4, r.ReadInt32());
         EnableFracForever = r.ReadBoolean();
     }
 
