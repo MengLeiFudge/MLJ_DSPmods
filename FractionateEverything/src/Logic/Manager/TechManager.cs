@@ -573,24 +573,14 @@ public static class TechManager {
         if (_techId == TFE分馏数据中心) {
             //解锁所有建筑培养配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                if (!recipe.IsUnlocked) {
-                    recipe.Level = 1;
-                    recipe.Quality = 1;
-                } else {
-                    recipe.MemoryCount++;
-                }
+                recipe.RewardThis();
             }
             //解锁非珍奇的原矿复制配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
                 if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
                     continue;
                 }
-                if (!recipe.IsUnlocked) {
-                    recipe.Level = 1;
-                    recipe.Quality = 1;
-                } else {
-                    recipe.MemoryCount++;
-                }
+                recipe.RewardThis();
             }
         }
     }
@@ -603,7 +593,7 @@ public static class TechManager {
             bool recipesUnlocked = true;
             //判断所有建筑培养配方是否全部解锁
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                if (!recipe.IsUnlocked) {
+                if (recipe.Locked) {
                     recipesUnlocked = false;
                     break;
                 }
@@ -613,7 +603,7 @@ public static class TechManager {
                 if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
                     continue;
                 }
-                if (!recipe.IsUnlocked) {
+                if (recipe.Locked) {
                     recipesUnlocked = false;
                     break;
                 }

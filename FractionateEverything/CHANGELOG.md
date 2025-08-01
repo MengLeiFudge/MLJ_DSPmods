@@ -7,6 +7,8 @@
     + 修复等效配方计算错误的问题。
     + 调整抽卡结果按钮的显示。
     + 调整显示分馏数据中心全部物品弹窗的排版。
+    + 调整奖券的制作速度。
+    + 物品未解锁时，无法使用分馏配方核心兑换相关配方。
     + The content of the fractionation tower prompt window is controlled by the display of recipe information.
     + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
     + Fix the error where the main output product can only output up to one item when fractionation is successful.
@@ -15,6 +17,8 @@
     + Fix the issue of equivalent recipe calculation errors.
     + Adjust the display of the raffle result button.
     + Adjust the layout of the pop-up window displaying all items in the fractionation data center.
+    + Adjust the production speed of lottery tickets.
+    + When the item is not unlocked, the fractionation recipe core cannot be used to exchange for related recipes.
 
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。

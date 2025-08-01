@@ -3,8 +3,8 @@ using System.Reflection.Emit;
 using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
-using xiaoye97;
 using ProjectGenesis.Patches;
+using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
