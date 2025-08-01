@@ -794,7 +794,7 @@ public static class ProcessManager {
                 foreach (var output in recipe.OutputMain) {
                     float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
                     string name = output.ShowOutputName ? FormatName(LDB.items.Select(output.OutputID).Name) : "???";
-                    string count = output.ShowOutputCount ? output.OutputCount.ToString() : "???";
+                    string count = output.ShowOutputCount ? output.OutputCount.ToString("F3") : "???";
                     string ratioStr = output.ShowSuccessRate ? ratio.FormatP() : "???";
                     sb1.Append($"{name}x{count} ({ratioStr})\n");
                     flowRatio -= ratio;
