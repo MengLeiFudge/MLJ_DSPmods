@@ -61,7 +61,7 @@ public static partial class Utils {
             return 0;
         }
         if (itemId == I沙土) {
-            return (int)Math.Min(GameMain.mainPlayer.sandCount, int.MaxValue);
+            return (int)Math.Min(int.MaxValue, GameMain.mainPlayer.sandCount);
         }
         StorageComponent package = GameMain.mainPlayer.package;
         int count = 0;
@@ -195,7 +195,11 @@ public static partial class Utils {
             UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.WARNING);
             return;
         }
-        if (recipe.MemoryCount >= recipe.MaxMemoryCount) {
+        if (!GameMain.history.ItemUnlocked(itemToMatrix[recipe.InputID])) {
+            UIMessageBox.Show("提示", "当前物品尚未解锁，无法兑换！", "确定", UIMessageBox.WARNING);
+            return;
+        }
+        if (recipe.IsMaxMemory) {
             UIMessageBox.Show("提示", "该配方回响数目已达到上限！", "确定", UIMessageBox.WARNING);
             return;
         }
@@ -205,15 +209,13 @@ public static partial class Utils {
                 if (!TakeItem(takeId, takeCount)) {
                     return;
                 }
-                if (!recipe.IsUnlocked) {
-                    recipe.Level = 1;
-                    recipe.Quality = 1;
+                recipe.RewardThis();
+                if (recipe.Memory == 0) {
                     UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
                         "确定", UIMessageBox.INFO);
                 } else {
-                    recipe.MemoryCount++;
-                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为对应回响！\n"
-                                            + $"当前回响数目：{recipe.MemoryCount}",
+                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为同名回响！\n"
+                                            + $"当前持有回响：{recipe.Memory}",
                         "确定", UIMessageBox.INFO);
                 }
             }, null);
@@ -227,20 +229,20 @@ public static partial class Utils {
             UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.WARNING);
             return;
         }
-        if (!recipe.IsUnlocked) {
+        if (recipe.Locked) {
             UIMessageBox.Show("提示", "配方尚未解锁！", "确定", UIMessageBox.WARNING);
             return;
         }
-        if (recipe.Quality == recipe.MaxQuality && recipe.Level == recipe.MaxLevel) {
-            UIMessageBox.Show("提示", "配方已升到最高级！", "确定", UIMessageBox.WARNING);
+        if (recipe.FullUpgrade) {
+            UIMessageBox.Show("提示", "配方已完全升级！", "确定", UIMessageBox.WARNING);
             return;
         }
-        if (recipe.Exp >= recipe.LevelUpExp) {
-            UIMessageBox.Show("提示", "配方经验已达当前上限！", "确定", UIMessageBox.WARNING);
+        if (recipe.IsCurrQualityCurrLevelMaxExp) {
+            UIMessageBox.Show("提示", "配方经验已达上限！", "确定", UIMessageBox.WARNING);
             return;
         }
         int takeId = I沙土;
-        float needExp = recipe.LevelUpExp - recipe.Exp;
+        float needExp = recipe.StillNeedExp;
         int takeCount = (int)Math.Ceiling(needExp * 0.5);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示",

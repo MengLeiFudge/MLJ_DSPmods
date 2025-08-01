@@ -25,7 +25,7 @@ public class DeconstructionRecipe : BaseRecipe {
             }
             List<OutputInfo> outputMain = [];
             bool mainCraftValid = false;
-            if (item.maincraft != null) {
+            if (item.Type != EItemType.Resource && item.maincraft != null) {
                 var recipe = item.maincraft;
                 // 复制配方数据
                 List<int> inputIDs = recipe.Items.ToList();
@@ -63,7 +63,7 @@ public class DeconstructionRecipe : BaseRecipe {
                     }
                 } while (haveSameItem);
                 // 检查配方是否可用
-                mainCraftValid = outputIDs.Contains(item.ID);
+                mainCraftValid = inputIDs.Count > 0 && outputIDs.Count == 1 && outputIDs[0] == item.ID;
                 if (mainCraftValid) {
                     List<float> inputFloatCounts = [..inputCounts];
                     int outputCount = outputCounts[outputIDs.IndexOf(item.ID)];
@@ -72,12 +72,13 @@ public class DeconstructionRecipe : BaseRecipe {
                     }
                     float totalInputCount = inputFloatCounts.Sum();
                     for (int i = 0; i < inputFloatCounts.Count; i++) {
-                        outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i], inputFloatCounts[i] * 1.25f));
+                        outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i],
+                            totalInputCount * 1.25f));
                     }
                 }
             }
             if (!mainCraftValid) {
-                outputMain.Add(new(1.0f, I沙土, (int)Math.Ceiling(itemValue[item.ID] / itemValue[I沙土] * 2.0f)));
+                outputMain.Add(new(1.0f, I沙土, itemValue[item.ID] / itemValue[I沙土] * 2.0f));
             }
             AddRecipe(new DeconstructionRecipe(item.ID, 1.0f / (1.0f + (float)ProcessManager.MaxTableMilli(10)),
                 outputMain,

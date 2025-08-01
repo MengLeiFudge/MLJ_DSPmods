@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
-using CommonAPI.Systems;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
@@ -36,12 +35,13 @@ public static class TabRaffle {
     //矩阵7种（竖），配方6种（横）
     public static Text[,] recipeUnlockInfoText = new Text[9, 8];
     public static Text ticketCountText2;
+    public static bool[] ignoreRecipeCount = new bool[TicketIds.Length];
 
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
     public static int RecipeRaffleCount = 1;
-    public static double RecipeRaffleRate => 0.006 + Math.Max(RecipeRaffleCount - 73, 0) * 0.06;
+    public static double RecipeRaffleRate => 0.006 + Math.Max(0, RecipeRaffleCount - 73) * 0.06;
 
     public static void LoadConfig(ConfigFile configFile) {
         TicketTypeEntry = configFile.Bind("TabRaffle", "Ticket Type", 0, "想要使用的奖券类型。");
@@ -83,7 +83,7 @@ public static class TabRaffle {
             wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-recipe-100",
                 () => RaffleRecipe(100, 5));
             y += 38f;
-            recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况如下：", 15, "text-recipe-unlock-title");
+            recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况如下（完全体/已解锁/总数）：", 15, "text-recipe-unlock-title");
             y += 38f;
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 8; j++) {
@@ -131,6 +131,7 @@ public static class TabRaffle {
 
     public static void UpdateUI() {
         ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+        int[,] fullUpgradeCountArr = new int[9, 8];
         int[,] unlockCountArr = new int[9, 8];
         int[,] totalCountArr = new int[9, 8];
         for (int i = 1; i <= 7; i++) {
@@ -143,16 +144,22 @@ public static class TabRaffle {
                 totalCountArr[8, j] += recipes.Count;
                 totalCountArr[i, 7] += recipes.Count;
                 totalCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.IsUnlocked).ToList();
+                recipes = recipes.Where(r => r.Unlocked).ToList();
                 unlockCountArr[i, j] = recipes.Count;
                 unlockCountArr[8, j] += recipes.Count;
                 unlockCountArr[i, 7] += recipes.Count;
                 unlockCountArr[8, 7] += recipes.Count;
+                recipes = recipes.Where(r => r.FullUpgrade).ToList();
+                fullUpgradeCountArr[i, j] = recipes.Count;
+                fullUpgradeCountArr[8, j] += recipes.Count;
+                fullUpgradeCountArr[i, 7] += recipes.Count;
+                fullUpgradeCountArr[8, 7] += recipes.Count;
             }
         }
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 7; j++) {
-                recipeUnlockInfoText[i, j].text = unlockCountArr[i, j] + "/" + totalCountArr[i, j];
+                recipeUnlockInfoText[i, j].text =
+                    $"{fullUpgradeCountArr[i, j]}/{unlockCountArr[i, j]}/{totalCountArr[i, j]}";
             }
         }
         ticketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
@@ -205,9 +212,13 @@ public static class TabRaffle {
         items.Sort();
         //构建可抽到的分馏配方列表
         List<BaseRecipe> recipes = [..GetRecipesByMatrix(SelectedTicketMatrixId)];
-        recipes.RemoveAll(recipe => recipe.MemoryCount >= recipe.MaxMemoryCount);
-        if (recipes.Count == 0) {
-            UIMessageBox.Show("提示", "该卡池已经没有配方可以抽取了！", "确认", UIMessageBox.WARNING);
+        recipes.RemoveAll(recipe => recipe.IsMaxMemory);
+        if (recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry.Value]) {
+            UIMessageBox.Show("提示", "该卡池已经没有配方可以抽取了！\n确定继续抽取吗？", "确定", "取消", UIMessageBox.WARNING,
+                () => {
+                    ignoreRecipeCount[TicketTypeEntry.Value] = true;
+                    RaffleRecipe(raffleCount, oneLineMaxCount);
+                }, null);
             return;
         }
         List<BaseRecipe> recipesTemp = [..recipes];
@@ -267,13 +278,11 @@ public static class TabRaffle {
                 //按照当前配方奖池随机抽取
                 BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
                 sb.Append($"{recipe.TypeName}".WithColor(Gold));
-                if (!recipe.IsUnlocked) {
-                    recipe.Level = 1;
-                    recipe.Quality = 1;
+                recipe.RewardThis();
+                if (recipe.Memory == 0) {
                     sb2.AppendLine($"{recipe.TypeName} 已解锁".WithColor(Orange));
                 } else {
-                    recipe.MemoryCount++;
-                    sb2.AppendLine($"{recipe.TypeName} 已转为对应回响，该配方回响数目：{recipe.MemoryCount}".WithColor(Orange));
+                    sb2.AppendLine($"{recipe.TypeName} 已转为同名回响（当前持有 {recipe.Memory} 同名回响）".WithColor(Orange));
                 }
                 oneLineCount++;
                 if (oneLineCount >= oneLineMaxCount) {

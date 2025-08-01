@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
-using FE.UI.View;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
@@ -43,7 +42,7 @@ public static class ProcessManager {
         MaxBeltSpeed = (from item in LDB.items.dataArray
             where item.Type == EItemType.Logistics && item.prefabDesc.isBelt
             select item.prefabDesc.beltSpeed * 6).Prepend(0).Max();
-        MaxBeltSpeed = Math.Min(MaxBeltSpeed, 60);
+        MaxBeltSpeed = Math.Min(60, MaxBeltSpeed);
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
         float ratio = MaxBeltSpeed / 30.0f;
         PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
@@ -208,7 +207,7 @@ public static class ProcessManager {
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
-                if (recipe == null || !recipe.IsUnlocked) {
+                if (recipe == null || recipe.Locked) {
                     __instance.fluidInputInc -= fluidInputIncAvg;
                     __instance.fractionSuccess = false;
                     __instance.fluidInputCount--;
@@ -769,7 +768,7 @@ public static class ProcessManager {
                 s1 = s1.WithColor(Red);
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             }
-        } else if (!recipe.IsUnlocked) {
+        } else if (recipe.Locked) {
             s1 = "未解锁".Translate();//todo：注意，“配方未解锁”已经被原版游戏注册过
             s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
@@ -795,7 +794,7 @@ public static class ProcessManager {
                 foreach (var output in recipe.OutputMain) {
                     float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
                     string name = output.ShowOutputName ? FormatName(LDB.items.Select(output.OutputID).Name) : "???";
-                    string count = output.ShowOutputCount ? output.OutputCount.ToString() : "???";
+                    string count = output.ShowOutputCount ? output.OutputCount.ToString("F3") : "???";
                     string ratioStr = output.ShowSuccessRate ? ratio.FormatP() : "???";
                     sb1.Append($"{name}x{count} ({ratioStr})\n");
                     flowRatio -= ratio;
