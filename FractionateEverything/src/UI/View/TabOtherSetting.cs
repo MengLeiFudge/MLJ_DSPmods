@@ -36,7 +36,7 @@ public static class TabOtherSetting {
             var tab = wnd.AddTab(trans, "其他设置");
             x = 0f;
             y = 10f;
-            btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有配方", 16, "button-unlock-all-recipes",
+            btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
                 RecipeManager.UnlockAllFracRecipes);
             y += 36f;
             textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
