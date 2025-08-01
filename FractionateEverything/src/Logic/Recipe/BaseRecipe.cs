@@ -256,6 +256,7 @@ public abstract class BaseRecipe(
     public void CheckState() {
         lock (this) {
             //是否可升级
+            CheckLevel:
             while (!IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp) {
                 Exp -= CurrQualityCurrLevelExp;
                 Level++;
@@ -266,9 +267,9 @@ public abstract class BaseRecipe(
                     Exp -= CurrQualityCurrLevelExp;
                     Level = 1;
                     Quality = NextQuality;
-                } else {
-                    Exp -= CurrQualityCurrLevelExp / 5.0f;
+                    goto CheckLevel;
                 }
+                Exp -= CurrQualityCurrLevelExp / 5.0f;
             }
         }
     }
