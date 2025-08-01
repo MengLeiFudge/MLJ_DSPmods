@@ -195,6 +195,10 @@ public static partial class Utils {
             UIMessageBox.Show("提示", "配方不存在，无法兑换！", "确定", UIMessageBox.WARNING);
             return;
         }
+        if (!GameMain.history.ItemUnlocked(itemToMatrix[recipe.InputID])) {
+            UIMessageBox.Show("提示", "当前物品尚未解锁，无法兑换！", "确定", UIMessageBox.WARNING);
+            return;
+        }
         if (recipe.IsMaxMemory) {
             UIMessageBox.Show("提示", "该配方回响数目已达到上限！", "确定", UIMessageBox.WARNING);
             return;
