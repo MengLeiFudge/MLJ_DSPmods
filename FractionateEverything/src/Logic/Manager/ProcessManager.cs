@@ -248,7 +248,7 @@ public static class ProcessManager {
                             count++;
                         }
                     }
-                    if (!TakeEssenceFromModData(count)) {
+                    if (!TakeEssenceFromModData(count, consumeRegister)) {
                         outputs = [];
                     }
                 }
@@ -276,6 +276,10 @@ public static class ProcessManager {
                             if (itemID == I沙土) {
                                 //不要用AddItem，会导致UI显示问题
                                 GameMain.mainPlayer.sandCount += itemCount;
+                                lock (productRegister) {
+                                    productRegister[itemID] += itemCount;
+                                }
+                                __instance.productOutputTotal += itemCount;
                                 continue;
                             }
                             lock (productRegister) {
