@@ -39,7 +39,7 @@ public static class TabRecipeAndBuilding {
             SelectedItem = item;
         }, true, item => {
             BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
-            return recipe != null && (showLocked || recipe.IsUnlocked);
+            return recipe != null && (showLocked || recipe.Unlocked);
         });
     }
 
@@ -172,7 +172,7 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
             line++;
         } else {
-            textRecipeInfo[line].text = recipe.IsUnlocked
+            textRecipeInfo[line].text = recipe.Unlocked
                 ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
                 : $"{recipe.TypeNameWC} {"配方未解锁".WithColor(Red)}";
             line++;
@@ -235,25 +235,26 @@ public static class TabRecipeAndBuilding {
             textRecipeInfo[line].text = "";
             line++;
 
-            textRecipeInfo[line].text = $"配方回响数目：{recipe.MemoryCount}".WithColor(Blue);
-            line++;
-            if (recipe.Quality >= 7) {
-                textRecipeInfo[line].text = "当前配方已到最高品质，无法突破！".WithColor(Orange);
+            if (recipe.FullUpgrade) {
+                textRecipeInfo[line].text = "当前配方已完全升级！".WithColor(Orange);
+                line++;
+            } else if (recipe.IsMaxQuality) {
+                textRecipeInfo[line].text = "当前配方已到最高品质！".WithColor(Blue);
                 line++;
             } else {
-                textRecipeInfo[line].text = "突破条件：";
+                textRecipeInfo[line].text = "当前配方品质可突破，突破条件：";
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough2 ? "√" : "x")}] 等级达到 {recipe.Level} / {recipe.MaxLevel}"
-                        .WithColor(recipe.CanBreakthrough2 ? Green : Red);
+                    $"[{(recipe.IsCurrQualityMaxLevel ? "√" : "x")}] 达到当前品质最高等级（{recipe.Level} / {recipe.CurrQualityMaxLevel}）"
+                        .WithColor(recipe.IsCurrQualityMaxLevel ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough3 ? "√" : "x")}] 经验达到 {(int)recipe.Exp} / {recipe.MaxLevelUpExp}"
-                        .WithColor(recipe.CanBreakthrough3 ? Green : Red);
+                    $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] 达到当前等级经验上限（{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}）"
+                        .WithColor(recipe.IsCurrQualityCurrLevelMaxExp ? Green : Red);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.CanBreakthrough4 ? "√" : "x")}] 拥有 {recipe.MemoryCount} / {recipe.BreakMemoryCount} 个对应回响"
-                        .WithColor(recipe.CanBreakthrough4 ? Green : Red);
+                    $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] 拥有足够的同名回响（{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}）"
+                        .WithColor(recipe.IsEnoughMemoryToBreak ? Green : Red);
                 line++;
             }
             // textRecipeInfo[line].text = "特殊突破加成：无";
