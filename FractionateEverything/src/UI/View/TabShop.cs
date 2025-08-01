@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.TabRecipeAndBuilding;
 using static FE.Utils.Utils;
 
@@ -224,10 +226,10 @@ public static class TabShop {
             UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
             return;
         }
-        StringBuilder sb = new("分馏数据中心当前持有的物品详情如下：\n");
-        int oneLineMaxCount = Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 20.0));
+        StringBuilder sb = new("分馏数据中心当前持有如下物品：\n");
+        int oneLineMaxCount = Math.Min(10, Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 40.0)));
         int oneLineCount = 0;
-        foreach (var p in itemCountDic) {
+        foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
             sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));
             oneLineCount++;
             if (oneLineCount >= oneLineMaxCount) {
