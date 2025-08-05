@@ -179,10 +179,10 @@ public static class TechManager {
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
             "Item alchemy technology can convert any item into various matrices. However, if an item itself is a matrix, or if the material used to make the item contains a matrix, or if it is a building, then the item cannot be minted.",
-            "物品点金科技可以将任意的物品转换为各种矩阵。但是，如果一个物品本身是矩阵，或者一个物品的制作材料包含矩阵，或者它是建筑，那么这个物品不能被点金。");
+            "物品点金科技可以将任意的物品点金为各种矩阵。但是，如果一个物品本身是矩阵，或者一个物品的制作材料包含矩阵，或者它是建筑，那么这个物品不能被点金。");
         Register("物品点金结果",
             "You have mastered the Item Alchemy technology and can convert items into various matrices.",
-            "你已经掌握了物品点金技术，可以将物品转换为各种矩阵。");
+            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵。");
 
         Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",

@@ -278,7 +278,7 @@ public abstract class BaseRecipe(
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
     public string TypeNameWC => TypeName.WithQualityColor(Quality);
-    public string LvExp => $"Lv{Level} ({(int)Exp}{(FullUpgrade ? "" : $" / {CurrQualityCurrLevelExp}")})";
+    public string LvExp => $"Lv{Level} ({(int)Exp} / {(FullUpgrade ? "∞" : CurrQualityCurrLevelExp)})";
     public string LvExpWC => LvExp.WithQualityColor(Quality);
 
     #region IModCanSave
