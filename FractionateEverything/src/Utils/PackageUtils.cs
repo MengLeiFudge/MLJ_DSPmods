@@ -214,7 +214,7 @@ public static partial class Utils {
                     UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
                         "确定", UIMessageBox.INFO);
                 } else {
-                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为同名回响！\n"
+                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName} 的同名回响 x 1！\n"
                                             + $"当前持有回响：{recipe.Memory}",
                         "确定", UIMessageBox.INFO);
                 }
