@@ -214,7 +214,7 @@ public static partial class Utils {
                     UIMessageBox.Show("提示", $"已解锁 {recipe.TypeName}！",
                         "确定", UIMessageBox.INFO);
                 } else {
-                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName}，自动转化为同名回响！\n"
+                    UIMessageBox.Show("提示", $"已兑换 {recipe.TypeName} 的同名回响 x 1！\n"
                                             + $"当前持有回响：{recipe.Memory}",
                         "确定", UIMessageBox.INFO);
                 }
@@ -262,7 +262,7 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// 注意，为了提高性能，此方法未判断某些前置条件。使用时需注意情况。
     /// </summary>
-    public static bool TakeEssenceFromModData(int n) {
+    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
         lock (itemModDataCount) {
             if (GetModDataItemCount(IFE复制精华) < n
                 || GetModDataItemCount(IFE点金精华) < n
@@ -274,6 +274,12 @@ public static partial class Utils {
             TakeItemFromModData(IFE点金精华, n);
             TakeItemFromModData(IFE分解精华, n);
             TakeItemFromModData(IFE转化精华, n);
+            lock (consumeRegister) {
+                consumeRegister[IFE复制精华] += n;
+                consumeRegister[IFE点金精华] += n;
+                consumeRegister[IFE分解精华] += n;
+                consumeRegister[IFE转化精华] += n;
+            }
             return true;
         }
     }
