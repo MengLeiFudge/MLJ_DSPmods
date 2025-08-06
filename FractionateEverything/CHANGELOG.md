@@ -1,3 +1,7 @@
+- v2.0.5
+    + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
+    + The statistics panel can correctly display the consumption of each essence during quantum copying.
+
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。
     + 修复科技黑雾奖券需要的矩阵数目。

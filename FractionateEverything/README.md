@@ -4,255 +4,416 @@
 >
 > "Don't just follow the path. Make your own trail." —— Deuterium
 
-# 万物分馏(Fractionate Everything)
+# ~~万物分馏(Fractionate Everything)~~ 万物抽卡(Raffle Everything)
 
-新增了6个不同功能的分馏塔，以及超过100个分馏配方。分馏塔、分馏配方会随着科研进程逐渐解锁。
+新增了7种不同功能的分馏塔，以及接近1000个独特设计的分馏配方。
+
+使用 Shift + F 打开面板，在分馏数据中心中实现各种操作！
+
+**2.0版本全新抽卡模式来袭！** 是兄弟，就来抽卡获取高级分馏科技！
 
 **_尽情享受分馏的乐趣吧！_**
 
-<details>
-<summary>点击此处查看模组详细信息</summary>
+Includes 7 fractionators with different functions and over 1000 fractionate recipes.
 
-## MOD简介
+Use Shift+F to open the panel and perform various operations in the fractionation data center!
 
-### 不同功能的分馏塔
-
-![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)
-
-- 原版分馏塔：仅能用于将氢分馏为重氢。
-
-- 自然资源分馏塔：可以复制大部分自然资源（例如铁矿、单极磁石、氢、硫酸等）。
-
-- 升级、降级分馏塔：升级分馏塔可以将物品转为更少的高级物品，降级分馏塔可以将物品转为更多的低级物品，升降级循环即可复制物品。
-
-- 垃圾回收分馏塔：回收你不需要的物品，将其转为地基或沙土。
-
-- 点数聚集分馏塔：将增产点数集中到一小部分产品上，从而输出10增产点数的物品。
-
-- 增产分馏塔：可以复制宇宙万物，基础概率与输入物品的价值有关。
-
-你可以使用升降级功能在这些建筑之间自由切换。
-
-### 精心设计的分馏配方
-
-![](https://s2.loli.net/2024/05/19/DAlhnkyewYKOS3L.png)
-
-万物分馏的分馏路线经过了仔细考虑，尽量保证游戏的体验。
-
-![](https://s2.loli.net/2024/05/19/Ofr48jBz3m9FeId.png)
-
-原版游戏无论如何分馏，物品整体数目都不会变。万物分馏对分馏配方进行了拓展，使其具有一个原料产出多个产品的能力。同时，如果配方有损毁概率，有可能导致原料消失。
-
-![](https://s2.loli.net/2024/05/19/Q4LgWKT5yAF6wIU.png)
-
-MOD的分馏配方已经过仔细调整，其中包含部分循环链。一些循环链的链尾物品分馏为链头物品的配方具有产物数目加成。矩阵分馏配方包含损毁概率。
-
-![](https://s2.loli.net/2024/05/19/D2QKpiEXCP3lN1r.png)
-
-每个配方都有三种图标样式可供切换，你可以自由选择喜欢的样式。
-
-### 可以适配大多数MOD
-
-![](https://s2.loli.net/2024/05/19/CVzbMQX2F1iDIrR.png)
-
-万物分馏对一部分大型MOD做了适配，为这些MOD添加了独特的分馏配方。
-
-尤其是创世之书的适配，不仅制作了专属分馏路线，还将所有分馏塔的制作配方改为使用创世独有材料。
-
-推荐与创世之书、更多巨构、深空来袭一同启用。同时启用时，分馏配方的数目将会超过200个。
-
-### 跟随科技逐步解锁
-
-![](https://s2.loli.net/2024/05/19/18I7mBtgDS43VJH.png)
-
-随着科技不断解锁，新的分馏塔、分馏配方也会跟随解锁。注意，增产分馏塔的前置科技为隐藏科技，它会在合适的时间展现。
-
-![](https://s2.loli.net/2024/05/19/JImBbpz5lQHgRKi.png)
-
-除此之外，还增加了分馏塔集装物流科技。该科技对所有分馏塔都生效，可以使分馏塔的产物尽可能以集装形式输出。
-
-## 安装方法
-
-### 使用Mod管理器安装
-
-打开mod管理器（如果你还没安装可以[**点此安装**](https://dsp.thunderstore.io/package/ebkr/r2modman/)），
-下载并启用**FractionateEverything**。
-
-### 手动安装
-
-以下使用`%gamepath%`表示游戏目录。假如你通过Steam启动游戏，右键戴森球计划->属性...->已安装文件->浏览...，即可打开游戏目录。
-
-1. 安装 [BepInEx](https://thunderstore.io/c/dyson-sphere-program/p/xiaoye97/BepInEx/) ，将其解压到`%gamepath%`下。
-2. 安装 [LDBTool](https://thunderstore.io/c/dyson-sphere-program/p/xiaoye97/LDBTool/)
-   和 [CommonAPI](https://thunderstore.io/c/dyson-sphere-program/p/CommonAPI/CommonAPI/)。
-3. 将下载的万物分馏压缩包解压至`%gamepath%\BepInEx\plugins`。确保有如下文件：
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
-
-## 修改配置
-
-### 如何修改配置
-
-配置文件路径：`%gamepath%\BepInEx\config\com.menglei.dsp.FractionateEverything.cfg`
-
-**至少运行过游戏一次**才会出现配置文件。修改后需**重启游戏**才会生效。
-
-你可以直接修改配置文件，或者在游戏的“设置-杂项”里面修改（推荐）。
-
-### 可修改的项目
-
-- DisableMessageBox：是否禁用首次加载时的提示信息。
-
-- IconVersion：使用哪个版本的分馏图标。
-
-  1表示原版重氢分馏样式，2表示直线分割样式，3表示圆弧分割样式。
-
-- EnableDestroy：是否启用分馏配方中的损毁概率。
-
-  启用情况下，有损毁概率的分馏配方（通常为矩阵）分馏时原料有概率损毁（推荐）。
-
-## 致谢
-
-- 特别感谢jinxOAO。该MOD的灵感来源于他的[FractionateUniverse](https://dsp.thunderstore.io/package/jinxOAO/FractionateUniverse/)，没有他的模组就不会有万物分馏。他还帮助我解决了科技解锁时建筑不接受新的分馏配方的问题，提供了一种修改建筑耗电的方法，并指出分馏塔升级意义不大，不如制作新功能的分馏塔。正是如此，现在的分馏塔才拥有不同的功能，而非仅仅是效率上的提升。
-
-- 特别感谢Awbugl。作为创世之书目前的代码编写者，他帮助我解决了MOD编写的绝大多数难点，非常感谢他的无私帮助。并且，万物分馏很多代码逻辑参考了创世之书的代码，例如主页面加载弹窗、与其他MOD进行适配等等，这方便了我的开发。
-
-- 特别感谢L。作为最早一批的测试人员，他的积极测试与鼓励使我拥有坚持完善万物分馏的决心。文档最顶端的[图片](https://s2.loli.net/2024/04/08/LtlNkxZD4jmdbFX.jpg)就是他提供的。
-
-- 特备感谢飞鸿，测试MOD并提供了大量建议。他提供了部分分馏塔的功能想法，并反馈给我矩阵分馏配方的不合理性。分馏损毁功能正是源于他的测试，这个功能大幅提高了MOD的游戏体验。
-
-- 特别感谢创世之书交流群的群友，正是由于他们的不断反馈，我才能修复MOD中存在的问题，并对MOD进行功能上的修改。
-
-- 特别感谢使用万物分馏的每一位玩家，希望你们能感受到分馏的乐趣。如果你有任何错误信息或建议，欢迎加入[创世之书交流群](https://jq.qq.com/?_wv=1027&k=5bnaDEp3)并反馈给我（@萌泪）。
-
-</details>
-
-Includes 6 fractionators with different functions and over 200 fractionate recipes. All fractionate recipes will be
-unlocked gradually with the advancement of technology.
+**The new card drawing mode of version 2.0 is coming!** Bro, come and draw cards to obtain advanced fractionation
+technology!
 
 **_Have fun with fractionation!_**
 
-<details>
-<summary>Click here for mod details</summary>
+## 模组介绍 Mod Introduction
 
-> Tips: The image below is shown in Chinese, but the mod has been adapted with English translation, so don't worry about it.
-
-## MOD Introduction
-
-### New Fractionators with different functions
+### 全新分馏塔与分馏配方
 
 ![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)
 
-- Precision Fractionator: the lower the rate, the higher the fractionate success rate.
+#### 交互塔 & 建筑培养配方 Interaction Tower and Building Train Recipe
 
-- Building-HighSpeed Fractionator: when inputting a building, the fractionate success rate is dramatically increased;
-otherwise, the fractionation success rate is dramatically decreased.
+交互塔是与分馏数据中心（以下简称“中心”）进行物品交互的重要手段。
 
-- Universal Fractionator: better rate than Precision Fractionator when using Extreme Conveyor and gathering cargo.
+交互塔正面输入时，可以将任意物品以数据形式输入到中心；
+通过抽卡获取的物品，也可以选择暂存到中心。
 
-- Points Aggregate Fractionator: Concentrates Increase Production Points on a small percentage of product and outputs them
-after reaching 10 points.
+中心缓存的物品可以在指定面板手动提取，也可以使用交互塔自动提取。
 
-- Increase Production Fractionator: the effect of the Increase Production Agent is changed to boost the number of items
-output, thus creating something out of nothing.
+除此之外，交互塔还承担着将分馏塔原胚培养为各种不同的分馏建筑的职责。
 
-These are the five types of Fractionators included in the mod, and you can freely switch between these buildings using
-the level up and down function.
+提示：后面会介绍分馏塔原胚的相关信息。
 
-### Well-designed fractionate recipes
+#### 矿物复制塔 & 矿物复制配方
 
-![](https://s2.loli.net/2024/05/19/DAlhnkyewYKOS3L.png)
+矿物复制塔可用于复制普通矿物、珍奇矿物，以及黑雾特有资源，并有一定概率产出复制精华。
 
-The fractionate routes of Fractionate Everything have been carefully considered to ensure as much of a gameplay
-experience as possible.
+资源越稀有，成功率就越低。大体上从高到低为：
 
-![](https://s2.loli.net/2024/05/19/Ofr48jBz3m9FeId.png)
+- 单极磁石（仅黑洞中子星）
+- 刺笋 / 光栅（有星球大量存在）
+- 分型硅 / 金伯利 / 有机晶体（分布散）
+- 可燃冰（巨星） 硫酸
+- 黑雾掉落
+- 钛石、硅石
+- 铁矿、铜矿、煤矿、石矿、油井
 
-In the original game, the overall number of items remains the same no matter how they are fractionated. Fractionate
-Everything has expanded the fractionate recipe to have the ability to produce multiple products from a single
-ingredient. Also, if the recipe has a damage probability, it may cause the ingredient to disappear.
+同时，矿物利用科技的等级越高，矿物复制的成功率越高。
 
-![](https://s2.loli.net/2024/05/19/Q4LgWKT5yAF6wIU.png)
+#### 点数聚集塔 & 点数聚集科技
 
-The MOD's fractionate recipes have been carefully tweaked to include some of the circular chains. Some recipes for
-fractionate end-of-chain items into head-of-chain items have a product count bonus. Matrix fractionate recipes
-include damage probability.
+在原版游戏中，将物品用增产剂MkI、增产剂MkII、增产剂MkIII喷涂后，物品将会带有1点、2点、4点增产点数。
 
-![](https://s2.loli.net/2024/05/19/D2QKpiEXCP3lN1r.png)
+提示：将鼠标移动到物品上，即可看到物品带有的增产点数。
 
-Each recipe has three icon styles to switch between, so you are free to choose your favorite style.
+点数聚集科技，指的就是在物品总增产点数不变的情况下，将增产点数集中在少部分物品上，从而输出超过4点增产点数的物品。
 
-### Adaptable to most mods
+点数聚集塔是**唯一**不需要特定配方就能运行的建筑，它允许任何物品输入。不过，如果输入的物品增产点数不足，则无法聚集。
 
-![](https://s2.loli.net/2024/05/19/CVzbMQX2F1iDIrR.png)
+随着点数聚集塔等级的提升，输出物品的增产点数会从4点逐步提升到10点。
 
-Fractionate Everything has been adapted to some of the large mods, adding unique fractionate recipes to these mods.
+#### 量子复制塔 & 量子复制配方
 
-In particular, Genesis Book adaptation not only made exclusive fractionate routes, but also changed the
-crafting recipes for all fractionators to use Genesis-exclusive materials.
+量子复制塔可以复制任何物品——只要中心有足够的精华。
 
-It is recommended to enable it together with Genesis Book, More Mega Structure, and They Come From Void. When
-enabled at the same time, the number of fractionate recipes will exceed 200.
+提示：精华来源于其他分馏塔，后面会介绍各种精华的相关信息。
 
-### Unlocked gradually with technology
+复制时需要各种精华的数目是根据物品价值确定的，价值越高需要的数目也就越高。
 
-![](https://s2.loli.net/2024/05/19/18I7mBtgDS43VJH.png)
+只有复制成功时，才会消耗精华。具体消耗数目可以在配方详情面板查看。
 
-As technology is unlocked, new fractionators and fractionate recipes will also be unlocked. Note that the pre-tech for
-the Increase Production Fractionator is a hidden tech that will be revealed at the right time.
+#### 点金塔 & 点金配方
 
-![](https://s2.loli.net/2024/05/19/JImBbpz5lQHgRKi.png)
+点金塔可以将除了矩阵、建筑之外的物品点金为矩阵，并有一定概率产出点金精华。
 
-In addition to this, the Fractionator Product Integrated Count Logistics tech has been added. This tech is effective for
-all fractionators, and allows the products of the fractionator to be exported as much as possible in a cargo.
+根据物品所处的科技层次，将会产出不同的矩阵。
 
-## Installation
+同时，被点金的物品越**“接近”**矩阵，点金的成功率就越高，输出的矩阵数目也越多。
 
-### Install using Mod Manager
+例如，电路板是制作电磁矩阵的原材料之一，所以电路板点金后会输出电磁矩阵。
+并且，由于它是最接近电磁矩阵的物品之一，点金时的成功率和数目加成也是最大的。
+
+#### 分解塔 & 分解配方
+
+分解塔可以将物品分解为制作它的原材料，并有一定概率产出分解精华。
+
+随着配方等级的提升，至多可以回收1.25倍的原材料。
+
+对于没有制作配方的物品，分解塔将会彻底粉碎它，然后输出沙土或地基（取决于正面是否用传送带输出）。
+
+#### 转化塔 & 转化配方
+
+转化塔可以将物品转化为与其相关的其他物品，并有一定概率产出转化精华。
+
+只要解锁了某个物品的转化配方，就可以将其使用转化塔转化为其他。
+
+### 新增物品与获取方式
+
+#### 分馏塔原胚与分馏塔
+
+以上提到的7种不同的分馏塔，不能像常规建筑一样通过某些材料合成得到。
+
+分馏塔的获取方式有：
+
+- 通过建筑卡池抽到分馏塔
+- 通过交互塔，将分馏塔原胚培养为不同的分馏塔
+- 通过转化塔，将某种分馏塔转化为其他类型的分馏塔
+- 通过制造台，将分馏塔原胚（定向）制作为指定的分馏塔
+- 某些任务/活动/科技奖励可以获取
+
+由于分馏塔原胚培养得到的分馏塔完全是随机的，所以一般结合第二点与第三点，以平衡各种不同分馏塔的数目。
+
+当有大量原胚后，也可以选择直接通过转化塔转化原胚，然后将它们合成分馏塔原胚（定向），再通过第四点制作为指定分馏塔。
+
+分馏塔原胚的唯一功能就是通过各种方式转变为不同的分馏塔。它分为六种：
+
+- 分馏塔原胚（普通）
+- 分馏塔原胚（精良）
+- 分馏塔原胚（稀有）
+- 分馏塔原胚（史诗）
+- 分馏塔原胚（传说）
+- 分馏塔原胚（定向）
+
+对于前五种原胚，越高级的原胚培养为分馏塔的成功率越高，出现稀有分馏塔的概率也越高。
+
+分馏塔原胚（定向）可以直接转换为指定的分馏塔，是非常稀有且强力的道具。
+
+分馏塔原胚的获取方式有：
+
+- 通过建筑卡池抽到分馏塔原胚（只能抽取到前五种原胚）
+- 通过转化塔，将某种分馏塔原胚转化为其他类型的分馏塔原胚（只有前五种原胚可以互相转化）
+- 通过制造台，将前五种原胚合成为分馏塔原胚（定向）
+- 某些任务/活动/科技奖励可以获取
+
+#### 精华
+
+精华的主要用途是量子复制的耗材。它分为四种：
+
+- 复制精华（主要由矿物复制塔产出）
+- 点金精华（主要由点金塔产出）
+- 分解精华（主要由分解塔产出）
+- 转化精华（主要由转化塔产出）
+
+精华的获取方式有：
+
+- 通过配方卡池抽到精华
+- 通过转化塔，将某种精华转化为其他类型的精华
+- 通过分馏塔，在成功处理物品时，有小概率同时产出精华（上面写了精华与分馏塔的关系）
+- 某些任务/活动/科技奖励可以获取
+
+#### 分馏配方核心
+
+在抽取配方卡池时，有较小概率获取到分馏配方核心。
+
+它可以兑换任何一个分馏配方（被处理的物品必须已解锁）。
+如果配方未解锁，则解锁配方；如果已解锁，则转为该配方的同名回响。
+
+提示：后面会介绍配方卡池与回响的相关信息。
+
+#### 分馏塔增幅芯片
+
+在抽取建筑卡池时，有较小概率获取到分馏塔增幅芯片。
+
+它可以用于分馏塔的升级，进一步提升分馏塔的功能。
+
+例如，大部分分馏塔都有如下升级：
+
+- 流动输出堆叠，启用后流动输出将尽可能堆叠
+- 产物输出堆叠，随着升级，产物堆叠的上限将会变高，至多为4
+- 分馏永动，启用后如果产物输出已满，分馏塔不会停止运转，而是直接将流动输入搬运到流动输出
+
+除此之外，某些分馏塔还有独属于自己的升级（例如点数聚集塔）。
+
+### 抽卡系统
+
+抽卡系统是这个模组的核心玩法之一。
+
+#### 配方卡池
+
+配方卡池是解锁配方、获取同名回响的主要手段。
+
+选择某种奖券后，只能抽取对应层次的配方。
+
+提示：配方的层次指的是配方原材料所属科技层次，后面会介绍物品科技层次的相关信息。
+
+宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。
+
+概率公示（非宇宙奖券）：
+
+- 分馏配方通用核心：0.05%
+- 分馏配方：0.6%（根据奖券不同，能抽到的范围也不同，至多90抽必出）
+- 杂项物品：59.61%（不包含建筑，且只会抽出已解锁的物品）
+- 沙土：39.74%
+
+概率公示（宇宙奖券）：
+
+- 分馏配方通用核心：0.1%
+- 分馏配方：1.2%（根据奖券不同，能抽到的范围也不同，至多90抽必出）
+- 杂项物品：59.22%（不包含建筑，且只会抽出已解锁的物品）
+- 沙土：39.48%
+
+#### 建筑卡池
+
+在此模组中，分馏塔原胚和分馏塔的主要获取来源是建筑卡池。
+
+不管使用哪种奖券，可以获得的建筑类型都是相同的。
+
+宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。
+
+概率公示（非宇宙奖券）：
+
+- 分馏塔增幅芯片：0.3%
+- 分馏塔原胚（普通）：12.90%
+- 分馏塔原胚（精良）：6.452%
+- 分馏塔原胚（稀有）：3.226%
+- 分馏塔原胚（史诗）：1.613%
+- 分馏塔原胚（传说）：0.806%
+- 交互塔：0.649%
+- 矿物复制塔：1.948%
+- 点数聚集塔：0.325%
+- 量子复制塔：0.130%
+- 点金塔：0.649%
+- 分解塔：0.649%
+- 转化塔：0.649%
+- 其他建筑：29.82%（所有非分馏塔的建筑，包括未解锁的建筑）
+- 沙土：39.88%
+
+概率公示（非宇宙奖券）：
+
+- 分馏塔增幅芯片：0.6%
+- 分馏塔原胚（普通）：12.90%
+- 分馏塔原胚（精良）：6.452%
+- 分馏塔原胚（稀有）：3.226%
+- 分馏塔原胚（史诗）：1.613%
+- 分馏塔原胚（传说）：0.806%
+- 交互塔：0.649%
+- 矿物复制塔：1.948%
+- 点数聚集塔：0.325%
+- 量子复制塔：0.130%
+- 点金塔：0.649%
+- 分解塔：0.649%
+- 转化塔：0.649%
+- 其他建筑：29.64%（所有非分馏塔的建筑，包括未解锁的建筑）
+- 沙土：39.76%
+
+#### 自选卡池
+
+在自选卡池中，可以选择10个物品/配方，出金时配方必定是其中之一。
+
+自选卡池有抽卡次数限制，每种奖券抽取次数分别计算。
+
+### 配方培养系统
+
+#### 配方解锁与同名回响
+
+在此模组中，有接近1000个新增的分馏配方。这些配方在一开始都是“锁定”状态，你需要“解锁”之后才能使用它们。
+
+配方的获取方式有如下几种：
+
+- 随科技“分馏数据中心”解锁（仅限建筑培养配方，以及部分矿物复制配方）
+- 从配方卡池中抽奖获取
+- 使用分馏配方通用核心兑换
+
+当获取到一个配方后，如果配方未解锁，则解锁配方；如果已解锁，则转为该配方的同名回响。
+
+配方最多持有5个同名回响，回响是配方突破某些品质的前置条件（后面的会介绍回响的具体数目需求）。
+
+#### 配方等级与升级
+
+配方解锁之后，就可以使用这个配方了。
+
+在使用这个配方的过程中，无论是原材料损毁，还是成功处理为产物，都会获得一定的配方经验。
+
+达到升级所需经验后，如果未达到当前品质的等级上限，等级会自动提升。升级所需的经验数目受品质和等级影响。
+
+配方等级有上限，等级上限受品质影响。最低品质只能升到4级；最高品质可以升到10级。
+
+等级达到当前品质的等级上限并且经验达到升级经验后，仍然可以通过使用配方继续积累经验。
+
+在配方详情页面，可以使用一定量的沙土兑换配方经验，从而快速提升配方的等级。
+
+随着等级不断提升，配方的成功率也会提升，损毁率会下降。
+
+#### 配方品质与品质突破
+
+配方有6个品质，分别为白、绿、蓝、紫、红、金。
+
+品质越高，配方的等级上限就越高，配方也越强。
+
+满足以下条件后，配方将自动尝试突破到下一个品质：
+
+- 达到当前品质最高等级
+- 达到当前等级经验上限
+- 拥有足够的同名回响
+
+突破时有概率判定，品质越高突破成功率越低。
+
+成功突破则提升到下一品质，并且等级重置为1（超出上限的经验会无损转化）；否则扣除等同于20%经验上限的经验。
+
+| 品质     | 白    | 绿   | 蓝   | 紫   | 红   | 金  |
+|--------|------|-----|-----|-----|-----|----|
+| 等级上限   | 4    | 5   | 6   | 7   | 8   | 10 |
+| 突破所需回响 | 0    | 1   | 2   | 3   | 5   | -  |
+| 突破成功率  | 100% | 85% | 70% | 55% | 40% | -  |
+
+#### 配方效果
+
+万物分馏的分馏配方不像原版一样只能从一种物品转为另一种物品。
+
+配方有损毁机制，如果损毁，原材料将会消失。
+尽管增产剂并不能降低损毁概率，但是增产剂可以提升成功率，相当于减少了的损毁的数目。
+
+并且，虽然输入的原料只能有一种，但输出的产出可以有多种。
+也就是说，一种原料可以转变成多种产物。这极大丰富了该模组的可玩性。
+
+所有新增的分馏塔都可以输入任意物品，但如果没有对应配方，将不会做处理，仅仅将其从流动输入搬运到流动输出。
+
+### 独特的分馏科技
+
+【图】
+
+分馏的科技比较特殊，其中一部分为“倒因为果”型科技，还有一部分为“奖励”型科技。
+
+所谓“倒因为果”型科技，指的是需要物品才能研究科技，科技解锁才获取物品的制作配方。
+
+这是故意设计如此，因为建筑卡池可以获取分馏原胚，原胚可以直接培养为不同的分馏塔。
+
+这些科技解锁的配方，是使用定向原胚合成分馏塔的配方。也就是说，完全可以先获取物品，再解锁此科技。
+
+提示：量子复制科技是隐藏科技。在解锁物品“黑雾矩阵”后，才可以看到此科技。
+
+所谓“奖励”型科技，指的是需求矩阵少，不会解锁配方，但是会给予大量物品的科技。
+
+由于科技只能研究一次，所以奖励也只能获取一次哦。
+
+【图】
+
+除此之外，还有一些无限科技，可以进一步提升分馏塔的效果。
+
+### 全新UI——分馏数据中心
+
+万物分馏2.0添加了一个全新的面板，用于与主脑进行通讯。
+
+大部分信息都可以在此处看到。
+
+### 任务系统
+
+暂定。
+
+每日任务：给予奖券。
+
+### 开发彩蛋
+
+解锁某些成就，或完成某些任务后，可以在分馏数据中心的彩蛋页面查看开发日志。
+
+### 补充说明
+
+#### 物品价值、物品所属科技层次
+
+每个物品都有自己的价值。这个价值是通过配方的输入、输出、时间综合考虑，然后自动计算的。
+
+每个物品也有自己的科技层次。这是通过物品的“主制作配方”对应科技的最高级矩阵确定的。
+
+例如，钢材的前置科技为钢材冶炼，此科技需求的最高级矩阵为电磁矩阵，所以钢材的相关分馏配方都需要使用电磁奖券进行抽取。
+
+#### 小数机制
+
+在这个模组中，物品的消耗数目、输出数目不一定是整数，也有可能是小数。
+
+当出现小数时，整数部分保持不变，小数部分会再次进行概率判定，从而确定最终的数目。
+
+例如消耗0.1复制精华，含义为有10%概率消耗1个复制精华，有90%概率不消耗复制精华。
+
+例如输出2.5个传送带MkII，含义为有50%概率输出2个传送带MkII，有50%概率输出3个传送带MkII。
+
+## 安装方法 Installation
+
+打开mod管理器（如果你还没安装可以[**点此安装**](https://dsp.thunderstore.io/package/ebkr/r2modman/)），
+下载并启用**FractionateEverything**。
 
 Open the mod manager (you can [**click here to install**](https://dsp.thunderstore.io/package/ebkr/r2modman/) if you
 haven't already) and
 Download and enable **FractionateEverything**.
 
-### Manual installation
+## 致谢 Credits
 
-The following uses `%gamepath%` to indicate the game directory. Assuming you launched the game via Steam, right-click
-Dyson Sphere Program -> Properties... -> Installed Files -> Browse... to open the game directory.
-
-1. Install [BepInEx](https://thunderstore.io/c/dyson-sphere-program/p/xiaoye97/BepInEx/) and extract it
-   under `%gamepath%`.
-2. Install [LDBTool](https://thunderstore.io/c/dyson-sphere-program/p/xiaoye97/LDBTool/)
-   and [CommonAPI](https://thunderstore.io/c/dyson-). sphere-program/p/CommonAPI/CommonAPI/).
-3. Extract the downloaded Fractionate Everything zip to `%gamepath%\BepInEx\plugins`. Make sure you have the following
-   files:
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\FractionateEverything.dll`
-    * `%gamepath%\BepInEx\plugins\MengLei-FractionateEverything\fe`
-
-## Modify the configuration
-
-### How to modify the configuration
-
-Configuration file path: `%gamepath%\BepInEx\config\com.menglei.dsp.FractionateEverything.cfg`
-
-**Run the game at least once** for the config file to appear. You need to **restart the game** after modifying it for it
-to take effect.
-
-You can change the configuration file directly, or in the game's “Settings - Miscellaneous” (recommended).
-
-### Modifiable items
-
-- DisableMessageBox: Don't show message when FractionateEverything is loaded.
-
-- IconVersion: Which style of the fractionate recipe icon to use.
-
-  1 for original deuterium fractionate style, 2 for slanting line segmentation style, 3 for circular segmentation style.
-
-- EnableDestroy: Whether to enable the probability of destruction in fractionate recipes.
-
-  When enabled, Fractionation recipes with a probability of destruction (usually matrix) fractionate with a probability
-  of destruction of the feedstock (recommended).
-
-## Credits
+- 特别感谢jinxOAO。
+  该MOD的灵感来源于他的[FractionateUniverse](https://dsp.thunderstore.io/package/jinxOAO/FractionateUniverse/)
+  ，没有他的模组就不会有万物分馏。
+  他认为分馏塔应该往不同功能区做，而非简单的效率升级，这正是1.x版本有各种各样分馏塔的主要原因。
+- 特别感谢Awbugl。作为创世之书目前的代码编写者，他帮助我解决了MOD编写的绝大多数难点，非常感谢他的无私帮助。
+  并且，万物分馏很多代码逻辑参考了创世之书的代码，例如主页面加载弹窗、与其他MOD进行适配等等，这方便了我的开发。
+- 特别感谢Starfi5h。他帮助我解决了一些代码编写上的难题，尤其是特殊bug的处理。
+  可以说，我编写戴森球计划的MOD过程中较为罕见、棘手的问题，他都可以给予一定帮助。
+- 特别感谢soarqin。万物分馏2.0的UI组件完全来源于他封装好的类，这极大方便了我在UI上面的开发。
+- 特别感谢L。作为最早一批的测试人员，他的积极测试与鼓励使我拥有坚持完善万物分馏的决心。
+  文档最顶端的[图片](https://s2.loli.net/2024/04/08/LtlNkxZD4jmdbFX.jpg)
+  就是他提供的。
+- 特备感谢飞鸿。他测试MOD并提供了大量建议，例如部分分馏塔的功能想法，并反馈给我矩阵分馏配方的不合理性。
+  分馏损毁功能正是源于他的测试，这个功能大幅提高了MOD的游戏体验。
+- 特别感谢聆汐。他是万物分馏2.0版本前期测试的主要人员，并对MOD功能、数值方面提出了很多建议，也反馈了大量Bug。
+- 特别感谢万物分馏交流群、创世之书交流群的群友，正是由于他们的不断反馈，我才能修复MOD中存在的问题，并对MOD进行功能上的修改。
+- 特别感谢使用万物分馏的每一位玩家，希望你们能感受到分馏的乐趣。
+  如果你有任何错误信息或建议，欢迎加入[万物分馏反馈群](https://qm.qq.com/q/zzicz6j9zW)
+  并反馈给我（@萌泪酱）。
 
 - Special thanks to jinxOAO. the mod was inspired by
   his [FractionateUniverse](https://dsp.thunderstore.io/package/jinxOAO/FractionateUniverse/), without his module there
@@ -278,7 +439,5 @@ You can change the configuration file directly, or in the game's “Settings - M
 - Special thanks to the group members of the Genesis Book exchange group, it was thanks to their constant feedback that
   I was able to fix the problems in the mod and make functional changes to the mod.
 
-- Special thanks to every player who uses Fractionate Everything, I hope you have fun with fractionation. If you have any
-  bug or idea, please give me feedback on [Github Issue](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new).
-
-</details>
+- Special thanks to every player who uses Fractionate Everything, I hope you have fun with fractionation. If you have
+  any bug or idea, please give me feedback on [Github Issue](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new).
