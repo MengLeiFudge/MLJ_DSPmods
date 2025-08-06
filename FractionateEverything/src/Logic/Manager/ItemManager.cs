@@ -45,23 +45,23 @@ public static class ItemManager {
         Register("分馏塔原胚普通", "Frac Building Proto(Normal)", "分馏塔原胚（普通）");
         Register("I分馏塔原胚普通",
             "The precursor of the fractionator can be seen everywhere. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "随处可见的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+            "随处可见的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
         Register("分馏塔原胚精良", "Frac Building Proto(Uncommon)", "分馏塔原胚（精良）");
         Register("I分馏塔原胚精良",
             "Carefully crafted distillation tower precursor. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "精心打造的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+            "精心打造的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
         Register("分馏塔原胚稀有", "Frac Building Proto(Rare)", "分馏塔原胚（稀有）");
         Register("I分馏塔原胚稀有",
             "Limited edition distillation tower embryo for sale. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "限量发售的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+            "限量发售的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
         Register("分馏塔原胚史诗", "Frac Building Proto(Epic)", "分馏塔原胚（史诗）");
         Register("I分馏塔原胚史诗",
             "A once-in-a-century rare distillation tower embryo. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "百年难遇的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+            "百年难遇的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
         Register("分馏塔原胚传说", "Frac Building Proto(Legendary)", "分馏塔原胚（传说）");
         Register("I分馏塔原胚传说",
             "The primitive distillation tower with a long history. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "历史悠久的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔变为其他原胚。");
+            "历史悠久的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
         Register("分馏塔原胚定向", "Frac Building Proto(Directional)", "分馏塔原胚（定向）");
         Register("I分馏塔原胚定向",
             "Artificially synthesized distillation tower embryo. It can be directly cultivated as a designated fractionator.",
