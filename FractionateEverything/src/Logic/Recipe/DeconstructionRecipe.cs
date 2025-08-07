@@ -17,6 +17,7 @@ public class DeconstructionRecipe : BaseRecipe {
     /// 添加所有分解配方
     /// </summary>
     public static void CreateAll() {
+        float maxInc = 1.0f + (float)Cargo.incTableMilli[10];
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
@@ -71,16 +72,20 @@ public class DeconstructionRecipe : BaseRecipe {
                         inputFloatCounts[i] /= outputCount;
                     }
                     float totalInputCount = inputFloatCounts.Sum();
+                    // 如果配方允许增产，则只能按照1.0/1.4返还；否则，按照1.0返还
+                    float outputCountPlus = recipe.productive ? 1.0f / maxInc : 1.0f;
+                    // 分解有额外输出奖励1.1倍
+                    outputCountPlus *= 1.1f;
                     for (int i = 0; i < inputFloatCounts.Count; i++) {
                         outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i],
-                            totalInputCount * 1.25f));
+                            totalInputCount * outputCountPlus));
                     }
                 }
             }
             if (!mainCraftValid) {
                 outputMain.Add(new(1.0f, I沙土, itemValue[item.ID] / itemValue[I沙土] * 2.0f));
             }
-            AddRecipe(new DeconstructionRecipe(item.ID, 1.0f / (1.0f + (float)ProcessManager.MaxTableMilli(10)),
+            AddRecipe(new DeconstructionRecipe(item.ID, 0.05f,
                 outputMain,
                 [
                     new OutputInfo(0.01f, IFE分解精华, 1),
