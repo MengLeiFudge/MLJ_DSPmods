@@ -129,7 +129,7 @@ public static class ItemManager {
             "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 101, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE电磁奖券, ERecipeType.Assemble, 120,
-            [I电磁矩阵], [14], [IFE电磁奖券], [1], "I电磁奖券");
+            [I电磁矩阵], [10], [IFE电磁奖券], [1], "I电磁奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
@@ -139,7 +139,7 @@ public static class ItemManager {
             "Assets/fe/energy-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE能量奖券, ERecipeType.Assemble, 150,
-            [I能量矩阵], [18], [IFE能量奖券], [1], "I能量奖券");
+            [I能量矩阵], [10], [IFE能量奖券], [1], "I能量奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
@@ -149,7 +149,7 @@ public static class ItemManager {
             "Assets/fe/structure-ticket", tab分馏 * 1000 + 103, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE结构奖券, ERecipeType.Assemble, 180,
-            [I结构矩阵], [28], [IFE结构奖券], [1], "I结构奖券");
+            [I结构矩阵], [10], [IFE结构奖券], [1], "I结构奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
@@ -159,7 +159,7 @@ public static class ItemManager {
             "Assets/fe/information-ticket", tab分馏 * 1000 + 104, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE信息奖券, ERecipeType.Assemble, 210,
-            [I信息矩阵], [22], [IFE信息奖券], [1], "I信息奖券");
+            [I信息矩阵], [10], [IFE信息奖券], [1], "I信息奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
@@ -179,7 +179,7 @@ public static class ItemManager {
             "Assets/fe/universe-ticket", tab分馏 * 1000 + 106, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE宇宙奖券, ERecipeType.Assemble, 300,
-            [I宇宙矩阵], [8], [IFE宇宙奖券], [1], "I宇宙奖券");
+            [I宇宙矩阵], [10], [IFE宇宙奖券], [1], "I宇宙奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
@@ -189,7 +189,7 @@ public static class ItemManager {
             "Assets/fe/dark-fog-ticket", tab分馏 * 1000 + 107, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
         recipe = ProtoRegistry.RegisterRecipe(RFE黑雾奖券, ERecipeType.Assemble, 600,
-            [I黑雾矩阵], [777], [IFE黑雾奖券], [1], "I黑雾奖券");
+            [I黑雾矩阵], [200], [IFE黑雾奖券], [1], "I黑雾奖券");
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
