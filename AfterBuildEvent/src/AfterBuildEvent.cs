@@ -178,7 +178,7 @@ static class AfterBuildEvent {
                 if (Directory.Exists(dir)) {
                     foreach (string file in Directory.GetFiles(dir)) {
                         FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.Name.StartsWith("[0.10.33]万物分馏") && fileInfo.Name.EndsWith(".zip")) {
+                        if (fileInfo.Name.StartsWith("[0.10.32]万物分馏") && fileInfo.Name.EndsWith(".zip")) {
                             fileInfo.Delete();
                         }
                     }
@@ -189,7 +189,7 @@ static class AfterBuildEvent {
                     fileList.Clear();
                     fileList.Add(zipFile);
                     fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\[0.10.33]万物分馏{version}-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
+                    zipFile = $@".\ModZips\[0.10.32]万物分馏{version}-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
                     ZipMod(fileList, zipFile);
                     Console.WriteLine($"创建 {zipFile}");
                 }

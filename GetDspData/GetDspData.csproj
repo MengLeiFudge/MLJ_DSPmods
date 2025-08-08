@@ -19,17 +19,11 @@
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0"/>
-        <PackageReference Include="UnityEngine.Modules" Version="2022.3.53" IncludeAssets="compile"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2018.4.12" IncludeAssets="compile"/>
         <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
         <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
-        <!--<PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.33.26482-r.0"/>-->
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.32.25779-r.0"/>
         <!-- 本地 Assembly-CSharp-publicized.dll 手动覆盖 GameLibs 的对应 dll 即可 -->
-        <Reference Include="Assembly-CSharp">
-            <HintPath>..\lib\Assembly-CSharp-publicized.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.UI">
-            <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
-        </Reference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj"/>
     </ItemGroup>
