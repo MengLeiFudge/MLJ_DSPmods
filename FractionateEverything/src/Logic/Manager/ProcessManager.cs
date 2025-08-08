@@ -562,7 +562,7 @@ public static class ProcessManager {
         PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
         int _start;
         int _end;
-        if (ParallelUtils.CalculateWorkSegmentOldFunction(1, __instance.fractionatorCursor - 1, _usedThreadCnt,
+        if (WorkerThreadExecutor.CalculateMissionIndex(1, __instance.fractionatorCursor - 1, _usedThreadCnt,
                 _curThreadIdx, _minimumMissionCnt, out _start, out _end)) {
             for (int index = _start; index < _end; ++index) {
                 if (__instance.fractionatorPool[index].id == index)
