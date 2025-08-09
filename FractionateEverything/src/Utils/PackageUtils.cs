@@ -10,17 +10,14 @@ public static partial class Utils {
     /// <summary>
     /// 将指定物品添加到ModData背包
     /// </summary>
-    public static void AddItemToModData(int giveId, int giveCount) {
-        if (giveId == I沙土) {
-            AddItemToPackage(giveId, giveCount);
+    public static void AddItemToModData(int itemId, int count, int inc = 0) {
+        if (itemId == I沙土) {
+            AddItemToPackage(itemId, count);
             return;
         }
-        lock (itemModDataCount) {
-            if (itemModDataCount.ContainsKey(giveId)) {
-                itemModDataCount[giveId] += giveCount;
-            } else {
-                itemModDataCount[giveId] = giveCount;
-            }
+        lock (centerItemCount) {
+            centerItemCount[itemId] += count;
+            centerItemInc[itemId] += inc;
         }
     }
 
@@ -29,13 +26,13 @@ public static partial class Utils {
     /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上
     /// </summary>
     /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
-    public static void AddItemToPackage(int giveId, int giveCount, bool throwTrash = true) {
+    public static void AddItemToPackage(int itemId, int count, int inc = 0, bool throwTrash = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        int package = GameMain.mainPlayer.TryAddItemToPackage(giveId, giveCount, 0, throwTrash);
+        int package = GameMain.mainPlayer.TryAddItemToPackage(itemId, count, inc, throwTrash);
         if (package > 0) {
-            UIItemup.Up(giveId, package);
+            UIItemup.Up(itemId, package);
         }
     }
 
@@ -46,11 +43,11 @@ public static partial class Utils {
     /// <summary>
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
-    public static int GetModDataItemCount(int itemId) {
+    public static long GetModDataItemCount(int itemId) {
         if (itemId == I沙土) {
             return 0;
         }
-        return itemModDataCount.TryGetValue(itemId, out int value) ? value : 0;
+        return centerItemCount[itemId];
     }
 
     /// <summary>
@@ -99,7 +96,7 @@ public static partial class Utils {
     /// <summary>
     /// 获取所有背包中指定物品的总数。
     /// </summary>
-    public static int GetItemTotalCount(int itemId) {
+    public static long GetItemTotalCount(int itemId) {
         return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
     }
 
@@ -109,21 +106,16 @@ public static partial class Utils {
 
     /// <summary>
     /// 从ModData背包取出指定物品。
-    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。最终返回取出的物品数量。
+    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
     /// </summary>
-    /// <returns>取出的物品数量</returns>
-    public static int TakeItemFromModData(int takeId, int takeCount) {
-        lock (itemModDataCount) {
-            if (itemModDataCount.ContainsKey(takeId)) {
-                takeCount = Math.Min(takeCount, itemModDataCount[takeId]);
-                itemModDataCount[takeId] -= takeCount;
-                if (itemModDataCount[takeId] == 0) {
-                    itemModDataCount.Remove(takeId);
-                }
-            } else {
-                takeCount = 0;
-            }
-            return takeCount;
+    /// <returns>实际拿到的数目</returns>
+    public static int TakeItemFromModData(int itemId, int count, out int inc) {
+        lock (centerItemCount) {
+            count = (int)Math.Min(count, centerItemCount[itemId]);
+            inc = count == 0 ? 0 : (int)(count / centerItemCount[itemId]);
+            centerItemCount[itemId] -= count;
+            centerItemInc[itemId] -= inc;
+            return count;
         }
     }
 
@@ -132,25 +124,31 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
     /// </summary>
     /// <returns>是否拿取成功</returns>
-    public static bool TakeItem(int takeId, int takeCount) {
+    public static bool TakeItem(int itemId, int count, out int inc, bool showMessage = true) {
+        inc = 0;
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return false;
         }
-        ItemProto takeProto = LDB.items.Select(takeId);
-        if (GetItemTotalCount(takeId) < takeCount) {
-            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {takeCount}！",
-                "确定", UIMessageBox.WARNING);
+        ItemProto takeProto = LDB.items.Select(itemId);
+        if (GetItemTotalCount(itemId) < count) {
+            if (showMessage) {
+                UIMessageBox.Show("提示", $"{takeProto.name} 不足 {count}！",
+                    "确定", UIMessageBox.WARNING);
+            }
             return false;
         }
-        if (takeId == I沙土) {
-            GameMain.mainPlayer.sandCount -= takeCount;
+        if (itemId == I沙土) {
+            GameMain.mainPlayer.sandCount -= count;
             return true;
         }
-        takeCount -= TakeItemFromModData(takeId, takeCount);
-        if (takeCount > 0) {
-            takeCount -= GameMain.mainPlayer.package.TakeItem(takeId, takeCount, out _);
-            if (takeCount > 0) {
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref takeId, ref takeCount, out _);
+        count -= TakeItemFromModData(itemId, count, out int inc1);
+        inc += inc1;
+        if (count > 0) {
+            count -= GameMain.mainPlayer.package.TakeItem(itemId, count, out int inc2);
+            inc += inc2;
+            if (count > 0) {
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out int inc3);
+                inc += inc3;
             }
         }
         return true;
@@ -178,7 +176,7 @@ public static partial class Utils {
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 AddItemToPackage(giveId, giveCount);
@@ -206,7 +204,7 @@ public static partial class Utils {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.RewardThis();
@@ -248,7 +246,7 @@ public static partial class Utils {
         UIMessageBox.Show("提示",
             $"确认花费 {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 经验 x {(int)needExp} 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.AddExp(needExp);
@@ -263,17 +261,17 @@ public static partial class Utils {
     /// 注意，为了提高性能，此方法未判断某些前置条件。使用时需注意情况。
     /// </summary>
     public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
-        lock (itemModDataCount) {
+        lock (centerItemCount) {
             if (GetModDataItemCount(IFE复制精华) < n
                 || GetModDataItemCount(IFE点金精华) < n
                 || GetModDataItemCount(IFE分解精华) < n
                 || GetModDataItemCount(IFE转化精华) < n) {
                 return false;
             }
-            TakeItemFromModData(IFE复制精华, n);
-            TakeItemFromModData(IFE点金精华, n);
-            TakeItemFromModData(IFE分解精华, n);
-            TakeItemFromModData(IFE转化精华, n);
+            TakeItemFromModData(IFE复制精华, n, out _);
+            TakeItemFromModData(IFE点金精华, n, out _);
+            TakeItemFromModData(IFE分解精华, n, out _);
+            TakeItemFromModData(IFE转化精华, n, out _);
             lock (consumeRegister) {
                 consumeRegister[IFE复制精华] += n;
                 consumeRegister[IFE点金精华] += n;

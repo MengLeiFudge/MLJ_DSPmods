@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -138,20 +137,34 @@ public static class RecipeManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        int typeCount = r.ReadInt32();
-        for (int typeIndex = 0; typeIndex < typeCount; typeIndex++) {
+        int recipeCount = r.ReadInt32();
+        for (int i = 0; i < recipeCount; i++) {
             ERecipe recipeType = (ERecipe)r.ReadInt32();
-            int recipeCount = r.ReadInt32();
-            for (int i = 0; i < recipeCount; i++) {
-                int inputID = r.ReadInt32();
-                BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, inputID);
-                if (recipe == null) {
-                    int byteCount = r.ReadInt32();
-                    for (int j = 0; j < byteCount; j++) {
-                        r.ReadByte();
-                    }
-                } else {
+            int inputID = r.ReadInt32();
+            // 读取单个配方的数据长度，用于跳过未知配方
+            int recipeDataLength = r.ReadInt32();
+            long startPosition = r.BaseStream.Position;
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, inputID);
+            if (recipe == null) {
+                // 配方不存在，跳过这个配方的数据
+                LogWarning($"Recipe not found: {recipeType} with input {inputID}, skipping data");
+                r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
+            } else {
+                try {
                     recipe.Import(r);
+                    // 验证读取的数据长度是否正确
+                    long actualRead = r.BaseStream.Position - startPosition;
+                    if (actualRead != recipeDataLength) {
+                        LogWarning(
+                            $"Recipe data length mismatch for {recipeType}-{inputID}: expected {recipeDataLength}, actual {actualRead}");
+                        // 调整到正确位置
+                        r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
+                    }
+                }
+                catch (Exception ex) {
+                    LogError($"Failed to import recipe {recipeType}-{inputID}: {ex.Message}");
+                    // 跳过损坏的数据
+                    r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
                 }
             }
         }
@@ -159,14 +172,18 @@ public static class RecipeManager {
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(RecipeTypeDic.Count);
-        foreach (var p in RecipeTypeDic) {
-            w.Write((int)p.Key);
-            w.Write(p.Value.Count);
-            foreach (BaseRecipe recipe in p.Value) {
-                w.Write(recipe.InputID);
-                recipe.Export(w);
-            }
+        w.Write(RecipeList.Count);
+        foreach (var recipe in RecipeList) {
+            w.Write((int)recipe.RecipeType);
+            w.Write(recipe.InputID);
+            // 使用内存流计算数据长度
+            using var memoryStream = new MemoryStream();
+            using var tempWriter = new BinaryWriter(memoryStream);
+            recipe.Export(tempWriter);
+            byte[] recipeData = memoryStream.ToArray();
+            // 写入数据长度和实际数据
+            w.Write(recipeData.Length);
+            w.Write(recipeData);
         }
     }
 
