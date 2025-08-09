@@ -178,6 +178,11 @@ public static class PointAggregateTower {
                         if (!building.EnableFluidOutputStack()) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                if (buildingID == IFE点数聚集塔
+                                    && fluidOutputIncAvg < 4
+                                    && __instance.fluidOutputCount > 1) {
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                                }
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
                                         (byte)fluidOutputIncAvg)) {
@@ -190,6 +195,9 @@ public static class PointAggregateTower {
                             //已研究流动输出集装科技
                             if (__instance.fluidOutputCount >= 4) {
                                 //超过4个，则输出4个
+                                if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4) {
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 16 ? 4 : 0;
+                                }
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         4, 4, (byte)(fluidOutputIncAvg * 4))) {
                                     __instance.fluidOutputCount -= 4;
@@ -237,6 +245,11 @@ public static class PointAggregateTower {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
                         if (!building.EnableFluidOutputStack()) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                if (buildingID == IFE点数聚集塔
+                                    && fluidOutputIncAvg < 4
+                                    && __instance.fluidOutputCount > 1) {
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                                }
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
                                         (byte)fluidOutputIncAvg)) {
@@ -247,6 +260,9 @@ public static class PointAggregateTower {
                             }
                         } else {
                             if (__instance.fluidOutputCount >= 4) {
+                                if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4) {
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 16 ? 4 : 0;
+                                }
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         4, 4, (byte)(fluidOutputIncAvg * 4))) {
                                     __instance.fluidOutputCount -= 4;
