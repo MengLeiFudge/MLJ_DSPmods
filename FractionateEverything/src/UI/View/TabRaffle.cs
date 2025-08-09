@@ -6,6 +6,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -17,8 +18,12 @@ namespace FE.UI.View;
 
 public static class TabRaffle {
     public static RectTransform _windowTrans;
+    public static RectTransform tabRecipeRaffle;
+    public static RectTransform tabBuildingRaffle;
 
     public static ConfigEntry<int> TicketTypeEntry;
+    public static ConfigEntry<bool> EnableAutoRaffleEntry;
+    public static bool[] EnableAutoRaffle = [false, false, false, false, false, false, false];
     public static int[] TicketIds = [
         IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
     ];
@@ -48,6 +53,7 @@ public static class TabRaffle {
         if (TicketTypeEntry.Value < 0 || TicketTypeEntry.Value >= TicketIds.Length) {
             TicketTypeEntry.Value = 0;
         }
+        EnableAutoRaffleEntry = configFile.Bind("TabRaffle", "Enable Auto Raffle", false, "是否自动抽取。");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -62,6 +68,7 @@ public static class TabRaffle {
         // }
         {
             var tab = wnd.AddTab(trans, "配方卡池");
+            tabRecipeRaffle = tab;
             x = 0f;
             y = 10f;
             wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
@@ -75,6 +82,7 @@ public static class TabRaffle {
                 + "杂项物品：59.61%\n"
                 + "沙土：39.74%");
             ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
+            wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
@@ -104,6 +112,7 @@ public static class TabRaffle {
         }
         {
             var tab = wnd.AddTab(trans, "建筑卡池");
+            tabBuildingRaffle = tab;
             x = 0f;
             y = 10f;
             wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
@@ -118,6 +127,7 @@ public static class TabRaffle {
                 + "其他建筑：39.82%\n"
                 + "沙土：39.88%");
             ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
+            wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
             y += 38f;
             wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
@@ -128,9 +138,14 @@ public static class TabRaffle {
         }
     }
 
-
     public static void UpdateUI() {
+        if (tabRecipeRaffle.gameObject.activeSelf) {
+            AutoRaffle(true);
+        } else if (tabBuildingRaffle.gameObject.activeSelf) {
+            AutoRaffle(false);
+        }
         ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+        // EnableAutoRaffleEntry.Value = EnableAutoRaffle[TicketTypeEntry.Value];
         int[,] fullUpgradeCountArr = new int[9, 8];
         int[,] unlockCountArr = new int[9, 8];
         int[,] totalCountArr = new int[9, 8];
@@ -170,7 +185,8 @@ public static class TabRaffle {
     /// </summary>
     /// <param name="raffleCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1) {
+    /// <param name="showMessage">是否弹窗询问、显示结果</param>
+    public static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -193,7 +209,9 @@ public static class TabRaffle {
         }
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
-            UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            if (showMessage) {
+                UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            }
             return;
         }
         List<int> items = itemHashSet.ToList();
@@ -213,7 +231,7 @@ public static class TabRaffle {
         //构建可抽到的分馏配方列表
         List<BaseRecipe> recipes = [..GetRecipesByMatrix(SelectedTicketMatrixId)];
         recipes.RemoveAll(recipe => recipe.IsMaxMemory);
-        if (recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry.Value]) {
+        if (showMessage && recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry.Value]) {
             UIMessageBox.Show("提示", "该卡池已经没有配方可以抽取了！\n确定继续抽取吗？", "确定", "取消", UIMessageBox.WARNING,
                 () => {
                     ignoreRecipeCount[TicketTypeEntry.Value] = true;
@@ -224,7 +242,7 @@ public static class TabRaffle {
         List<BaseRecipe> recipesTemp = [..recipes];
         int removedCount = recipes.RemoveAll(recipe => !GameMain.history.ItemUnlocked(recipe.InputID));
         int oneLineCount = 0;
-        if (recipes.Count == 0) {
+        if (showMessage && recipes.Count == 0) {
             StringBuilder tip = new StringBuilder($"还有{removedCount}个物品尚未解锁，现在抽取不到对应配方！\n\n"
                                                   + $"未解锁的物品为：\n");
             while (removedCount > 0) {
@@ -241,7 +259,7 @@ public static class TabRaffle {
             UIMessageBox.Show("提示", tip.ToString(), "确认", UIMessageBox.WARNING);
             return;
         }
-        if (!TakeItem(SelectedTicketId, raffleCount)) {
+        if (!TakeItem(SelectedTicketId, raffleCount, out _, showMessage)) {
             return;
         }
         Dictionary<int, int> specialItemDic = [];
@@ -273,26 +291,28 @@ public static class TabRaffle {
                 continue;
             }
             //配方（0.6%，74抽开始后每抽增加6%）
-            currRate += RecipeRaffleRate * SelectedTicketRatioPlus;
-            if (randDouble < currRate) {
-                //按照当前配方奖池随机抽取
-                BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
-                sb.Append($"{recipe.TypeName}".WithColor(Gold));
-                recipe.RewardThis();
-                if (recipe.Memory == 0) {
-                    sb2.AppendLine($"{recipe.TypeName} 已解锁".WithColor(Orange));
-                } else {
-                    sb2.AppendLine($"{recipe.TypeName} 已转为同名回响（当前持有 {recipe.Memory} 同名回响）".WithColor(Orange));
+            if (recipes.Count > 0) {
+                currRate += RecipeRaffleRate * SelectedTicketRatioPlus;
+                if (randDouble < currRate) {
+                    //按照当前配方奖池随机抽取
+                    BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
+                    sb.Append($"{recipe.TypeName}".WithColor(Gold));
+                    recipe.RewardThis();
+                    if (recipe.Memory == 0) {
+                        sb2.AppendLine($"{recipe.TypeName} 已解锁".WithColor(Orange));
+                    } else {
+                        sb2.AppendLine($"{recipe.TypeName} 已转为同名回响（当前持有 {recipe.Memory} 同名回响）".WithColor(Orange));
+                    }
+                    oneLineCount++;
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else {
+                        sb.Append("          ");
+                    }
+                    RecipeRaffleCount = 1;
+                    continue;
                 }
-                oneLineCount++;
-                if (oneLineCount >= oneLineMaxCount) {
-                    sb.Append("\n");
-                    oneLineCount = 0;
-                } else {
-                    sb.Append("          ");
-                }
-                RecipeRaffleCount = 1;
-                continue;
             }
             RecipeRaffleCount++;
             //剩余的概率中，60%各种非建筑的物品（不含分馏某些特殊物品）
@@ -341,36 +361,45 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
-                                  + "\n\n"
-                                  + sb2
-                                  + "\n\n选择提取方式：\n"
-                                  + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
-                                  + "部分提取：将分馏配方通用核心提取到背包，除此之外的物品存储在分馏数据中心\n"
-                                  + "全部提取：将全部物品以实体形式提取到背包",
-            "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
-            () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-            });
+        if (showMessage) {
+            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+                                      + "\n\n"
+                                      + sb2
+                                      + "\n\n选择提取方式：\n"
+                                      + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                                      + "部分提取：将分馏配方通用核心提取到背包，除此之外的物品存储在分馏数据中心\n"
+                                      + "全部提取：将全部物品以实体形式提取到背包",
+                "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
+                () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                }, () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                }, () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                });
+        } else {
+            foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                AddItemToModData(p.Key, p.Value);
+            }
+            foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                AddItemToModData(p.Key, p.Value);
+            }
+        }
     }
 
     /// <summary>
@@ -378,7 +407,8 @@ public static class TabRaffle {
     /// </summary>
     /// <param name="raffleCount">抽卡次数</param>
     /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
-    public static void RaffleBuilding(int raffleCount, int oneLineMaxCount = 1) {
+    /// <param name="showMessage">是否弹窗询问、显示结果</param>
+    public static void RaffleBuilding(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -398,7 +428,9 @@ public static class TabRaffle {
         }
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
-            UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            if (showMessage) {
+                UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+            }
             return;
         }
         List<int> items = itemHashSet.ToList();
@@ -434,7 +466,7 @@ public static class TabRaffle {
         }
         //排序一下
         items.Sort();
-        if (!TakeItem(SelectedTicketId, raffleCount)) {
+        if (!TakeItem(SelectedTicketId, raffleCount, out _, showMessage)) {
             return;
         }
         Dictionary<int, int> specialItemDic = [];
@@ -517,34 +549,63 @@ public static class TabRaffle {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
-                                  + "\n\n选择提取方式：\n"
-                                  + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
-                                  + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
-                                  + "全部提取：将全部物品以实体形式提取到背包",
-            "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
-            () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToModData(p.Key, p.Value);
-                }
-            }, () => {
-                foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-                foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
-                    AddItemToPackage(p.Key, p.Value);
-                }
-            });
+        if (showMessage) {
+            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+                                      + "\n\n选择提取方式：\n"
+                                      + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                                      + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
+                                      + "全部提取：将全部物品以实体形式提取到背包",
+                "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
+                () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                }, () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToModData(p.Key, p.Value);
+                    }
+                }, () => {
+                    foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                    foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                        AddItemToPackage(p.Key, p.Value);
+                    }
+                });
+        } else {
+            foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                AddItemToModData(p.Key, p.Value);
+            }
+            foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
+                AddItemToModData(p.Key, p.Value);
+            }
+        }
+    }
+
+    private static long times = 0;
+
+    /// <summary>
+    /// 每0.1s左右自动抽取一次百连。
+    /// </summary>
+    public static void AutoRaffle(bool recipeRaffle) {
+        times++;
+        if (times % 10 != 0) {
+            return;
+        }
+        times = 0;
+        if (EnableAutoRaffleEntry.Value) {
+            if (recipeRaffle) {
+                RaffleRecipe(100, 5, false);
+            } else {
+                RaffleBuilding(100, 5, false);
+            }
+        }
     }
 
     #region IModCanSave
@@ -552,15 +613,24 @@ public static class TabRaffle {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         RecipeRaffleCount = r.ReadInt32();
+        for (int i = 0; i < EnableAutoRaffle.Length; i++) {
+            EnableAutoRaffle[i] = r.ReadBoolean();
+        }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
         w.Write(RecipeRaffleCount);
+        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
+        //     w.Write(EnableAutoRaffle[i]);
+        // }
     }
 
     public static void IntoOtherSave() {
         RecipeRaffleCount = 0;
+        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
+        //     EnableAutoRaffle[i] = false;
+        // }
     }
 
     #endregion
