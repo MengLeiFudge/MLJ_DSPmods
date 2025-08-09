@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -46,24 +48,14 @@ public class BuildingTrainRecipe : BaseRecipe {
         : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
-    /// 是否不消耗材料（突破特殊属性）
+    /// 主产物数目增幅
     /// </summary>
-    public bool NoMaterialConsumption { get; set; }
+    public float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.1f * Level : 0);
 
     /// <summary>
-    /// 是否输出翻倍（突破特殊属性）
+    /// 附加产物数目增幅
     /// </summary>
-    public bool DoubleOutput { get; set; }
-
-    /// <summary>
-    /// 专精产物ID（突破特殊属性）
-    /// </summary>
-    public int SpecializedOutputId { get; set; }
-
-    /// <summary>
-    /// 专精产物加成系数（突破特殊属性）
-    /// </summary>
-    public float SpecializedBonus { get; set; } = 1.0f;
+    public float AppendOutputCountInc => 1.0f;
 
     #region IModCanSave
 
