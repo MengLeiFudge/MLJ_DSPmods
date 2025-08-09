@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Manager.ProcessManager;
 using static FE.UI.View.TabOtherSetting;
 using static FE.Utils.Utils;
 
@@ -71,21 +72,25 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
-    /// 获取某次输出的执行结果
+    /// 获取某次输出的执行结果。
+    /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
     /// <param name="successRatePlus">增产剂对成功率的加成</param>
-    /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
-    public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
+    /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
+    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus) {
+        //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
-        Dictionary<int, int> dic = [];
+        //无变化
         if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
-            return dic;
+            return emptyOutputs;
         }
-        //主输出判定
+        //成功产出
+        List<ProductOutputInfo> list = [];
+        //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
         double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
         foreach (var outputInfo in OutputMain) {
@@ -99,14 +104,13 @@ public abstract class BaseRecipe(
                         count++;
                     }
                 }
-                //由于此处必定是第一个key，所以直接添加
-                dic[outputInfo.OutputID] = count;
+                list.Add(new(true, outputInfo.OutputID, count));
                 outputInfo.OutputTotalCount += count;
                 AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
                 break;
             }
         }
-        //附加输出判定
+        //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
                 int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
@@ -116,17 +120,12 @@ public abstract class BaseRecipe(
                         count++;
                     }
                 }
-                if (dic.TryGetValue(outputInfo.OutputID, out int currentValue)) {
-                    dic[outputInfo.OutputID] = currentValue + count;
-                } else {
-                    dic.Add(outputInfo.OutputID, count);
-                }
+                list.Add(new(false, outputInfo.OutputID, count));
                 outputInfo.OutputTotalCount += count;
                 //附加输出无经验
-                // AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
             }
         }
-        return dic;
+        return list;
     }
 
     #endregion
