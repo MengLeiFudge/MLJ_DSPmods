@@ -33,6 +33,8 @@ public static class PointAggregateTower {
     /// 建筑等级，1-7。
     /// </summary>
     public static int Level = 1;
+    public static int MaxLevel => 7;
+    public static bool IsMaxLevel => Level == MaxLevel;
     /// <summary>
     /// 产出物品的最大增产点数，4-10。
     /// </summary>
