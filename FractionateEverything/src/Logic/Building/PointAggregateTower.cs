@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
@@ -100,7 +99,6 @@ public static class PointAggregateTower {
             fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
                 ? __instance.fluidInputCount / __instance.fluidInputCargoCount
                 : 4f;
-        Dictionary<int, int> otherProductOutput = __instance.otherProductOutput(factory);
         if (__instance.fluidInputCount > 0
             && __instance.productOutputCount < __instance.productOutputMax
             && __instance.fluidOutputCount < __instance.fluidOutputMax) {
@@ -113,8 +111,8 @@ public static class PointAggregateTower {
                                          + 0.75);
             if (__instance.progress > 100000)
                 __instance.progress = 100000;
-            //指示是否已启用分馏永动并且某个产物达到上限的一半
-            bool fracForever = false;
+            //是否直接将输入搬运到输出，不进行任何处理
+            bool moveDirectly = false;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
@@ -122,19 +120,28 @@ public static class PointAggregateTower {
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
 
-                __instance.fractionSuccess = false;
-                if (!fracForever && building.EnableFracForever()) {
-                    //如果已启用分馏永动，并且所有产物都少于上限的一半，重新检查后者是否满足
-                    if (__instance.productOutputCount >= __instance.productOutputMax / 2) {
-                        fracForever = true;
+                MoveDirectly:
+                if (moveDirectly) {
+                    //直接将输入搬运到输出，不进行任何处理
+                    __instance.fractionSuccess = false;
+                    __instance.fluidInputCount--;
+                    __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
+                    if (__instance.fluidInputCargoCount < 0f) {
+                        __instance.fluidInputCargoCount = 0f;
                     }
+                    __instance.fluidInputInc -= fluidInputIncAvg;
+                    __instance.fluidOutputCount++;
+                    __instance.fluidOutputInc += fluidInputIncAvg;
+                    continue;
                 }
-                if (!fracForever) {
-                    //如果所有产物仍然少于上限的一半，正常处理
-                    float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
-                    __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
+                //启用分馏永动且某个产物达到输出上限的一半，则分馏塔进入分馏永动状态
+                if (building.EnableFracForever() && __instance.productOutputCount >= __instance.productOutputMax / 2) {
+                    moveDirectly = true;
+                    goto MoveDirectly;
                 }
-
+                //正常处理，获取处理结果
+                float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
+                __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
                 if (__instance.fractionSuccess) {
                     __instance.fluidInputInc -= MaxInc;
                     __instance.productOutputCount++;
@@ -306,14 +313,20 @@ public static class PointAggregateTower {
         // 如果缓存区全部清空，重置输入id
         if (__instance.fluidInputCount == 0
             && __instance.fluidOutputCount == 0
-            && __instance.productOutputCount == 0
-            && otherProductOutput.Count == 0)
+            && __instance.productOutputCount == 0) {
             __instance.fluidId = 0;
+            __instance.productId = 0;
+            signPool[__instance.entityId].iconId0 = 0;
+            signPool[__instance.entityId].iconType = 0U;
+        }
 
         // 更新工作状态
         __instance.isWorking = __instance.fluidInputCount > 0
                                && __instance.productOutputCount < __instance.productOutputMax
                                && __instance.fluidOutputCount < __instance.fluidOutputMax;
+        if (building.EnableFracForever()) {
+            __instance.isWorking &= __instance.productOutputCount < __instance.productOutputMax / 2;
+        }
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
