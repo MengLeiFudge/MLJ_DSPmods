@@ -365,7 +365,7 @@ public static class TabRecipeAndBuilding {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 启用流动输出堆叠吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
@@ -389,7 +389,7 @@ public static class TabRecipeAndBuilding {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 将产物输出堆叠 +1 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
@@ -413,7 +413,7 @@ public static class TabRecipeAndBuilding {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 启用分馏永动吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
@@ -437,7 +437,7 @@ public static class TabRecipeAndBuilding {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示", $"确认花费 {takeProto.name} x {takeCount} 将点数聚集效率层次 +1 吗？",
             "确定", "取消", UIMessageBox.QUESTION, () => {
-                if (!TakeItem(takeId, takeCount)) {
+                if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 PointAggregateTower.Level++;
