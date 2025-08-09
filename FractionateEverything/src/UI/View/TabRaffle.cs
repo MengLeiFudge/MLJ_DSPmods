@@ -616,9 +616,9 @@ public static class TabRaffle {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         RecipeRaffleCount = r.ReadInt32();
-        for (int i = 0; i < EnableAutoRaffle.Length; i++) {
-            EnableAutoRaffle[i] = r.ReadBoolean();
-        }
+        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
+        //     EnableAutoRaffle[i] = r.ReadBoolean();
+        // }
     }
 
     public static void Export(BinaryWriter w) {

@@ -29,10 +29,10 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
-    /// 通过品质和等级得到的综合进度，范围为0-1
+    /// 通过品质和等级得到的综合进度，范围为0.35~1.00
     /// </summary>
-    private float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
-                              / (MaxQuality * 0.2f + (MaxQuality + 3) * (0.1f + MaxQuality * 0.02f));
+    private float Progress => Math.Min(1.0f,
+        0.365f + (Quality - 1) * 0.11f + (Quality - 1) * (Quality - 2) * 0.0075f + (Level - 1) * 0.015f);
 
     /// <summary>
     /// 成功率上限
@@ -41,21 +41,18 @@ public abstract class BaseRecipe(
 
     /// <summary>
     /// 实际成功率，随着等级和品质的提高而提高。
-    /// 初始为上限的40%，最终为上限。
     /// </summary>
-    public float SuccessRate => MaxSuccessRate * (0.4f + 0.6f * Progress);
+    public float SuccessRate => MaxSuccessRate * Progress;
 
     /// <summary>
     /// 损毁率上限
     /// </summary>
-    public float MaxDestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f);
+    public float MaxDestroyRate => maxSuccessRate;
 
     /// <summary>
     /// 损毁率，随着等级和品质的提高而降低。
-    /// 初始与物品价值有关（价值越高损毁率越高），最终为0%。
-    /// 品质5，等级8时，进度为0.6842左右，所以使用0.684作为分界线
     /// </summary>
-    public float DestroyRate => MaxDestroyRate * Math.Max(0, 0.684f - Progress);
+    public float DestroyRate => MaxDestroyRate * (1 - Progress);
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。

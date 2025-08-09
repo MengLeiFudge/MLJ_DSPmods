@@ -239,7 +239,7 @@ public static class TabRecipeAndBuilding {
                 textRecipeInfo[line].text = "当前配方已完全升级！".WithColor(Orange);
                 line++;
             } else if (recipe.IsMaxQuality) {
-                textRecipeInfo[line].text = "当前配方已到最高品质！".WithColor(Blue);
+                textRecipeInfo[line].text = "当前配方已到最高品质，未达到满级！".WithColor(Blue);
                 line++;
             } else {
                 textRecipeInfo[line].text = "当前配方品质可突破，突破条件：";
