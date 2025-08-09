@@ -124,15 +124,17 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
     /// </summary>
     /// <returns>是否拿取成功</returns>
-    public static bool TakeItem(int itemId, int count, out int inc) {
+    public static bool TakeItem(int itemId, int count, out int inc, bool showMessage = true) {
         inc = 0;
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return false;
         }
         ItemProto takeProto = LDB.items.Select(itemId);
         if (GetItemTotalCount(itemId) < count) {
-            UIMessageBox.Show("提示", $"{takeProto.name} 不足 {count}！",
-                "确定", UIMessageBox.WARNING);
+            if (showMessage) {
+                UIMessageBox.Show("提示", $"{takeProto.name} 不足 {count}！",
+                    "确定", UIMessageBox.WARNING);
+            }
             return false;
         }
         if (itemId == I沙土) {

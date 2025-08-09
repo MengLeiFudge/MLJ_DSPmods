@@ -8,6 +8,7 @@
     + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
     + 为不同的配方添加独特的品质影响。
     + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
+    + 增加前台自动百连抽功能。
     + The statistics panel can correctly display the consumption of each essence during quantum copying.
     + Add the metadata needed to unlock all technologies.
     + Repair the number of matrices required for certain technologies.
@@ -20,6 +21,7 @@
     + Added unique quality effects for different recipes.
     + Adjusted the probability of some mineral replication recipes and added mineral replication recipes with materials
       unique to Black Mist.
+    + Added automatic 100 consecutive draws feature to the front desk.
 
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。
