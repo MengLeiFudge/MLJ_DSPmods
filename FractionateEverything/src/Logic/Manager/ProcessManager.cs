@@ -267,21 +267,8 @@ public static class ProcessManager {
                 }
                 //正常处理，获取处理结果
                 float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                List<ProductOutputInfo> outputs = recipe.GetOutputs(ref __instance.seed, successRatePlus);
-                //如果是量子复制塔，分馏成功时还需要消耗各种精华一定数目
-                if (buildingID == IFE量子复制塔 && outputs != null && outputs.Count > 0) {
-                    QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
-                    int count = (int)Math.Ceiling(recipe0.EssenceCost - 0.0001f);
-                    float leftCount = recipe0.EssenceCost - count;
-                    if (leftCount > 0.0001f) {
-                        if (GetRandDouble(ref __instance.seed) < leftCount) {
-                            count++;
-                        }
-                    }
-                    if (!TakeEssenceFromModData(count, consumeRegister)) {
-                        outputs = emptyOutputs;
-                    }
-                }
+                List<ProductOutputInfo> outputs =
+                    recipe.GetOutputs(ref __instance.seed, successRatePlus, consumeRegister);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;

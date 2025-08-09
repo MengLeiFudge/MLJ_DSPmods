@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -39,11 +40,6 @@ public class QuantumCopyRecipe : BaseRecipe {
     public override ERecipe RecipeType => ERecipe.QuantumCopy;
 
     /// <summary>
-    /// 消耗精华数目
-    /// </summary>
-    public float EssenceCost { get; private set; }
-
-    /// <summary>
     /// 创建量子复制塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
@@ -57,14 +53,83 @@ public class QuantumCopyRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 是否不消耗材料（突破特殊属性）
+    /// 消耗精华数目
     /// </summary>
-    public bool NoMaterialConsumption { get; set; }
+    public float EssenceCost { get; private set; }
 
     /// <summary>
-    /// 是否输出翻倍（突破特殊属性）
+    /// 精华消耗减少
     /// </summary>
-    public bool DoubleOutput { get; set; }
+    public float EssenceCostDec => 1.0f - (IsMaxQuality ? 0.08f * Level : 0);
+
+    /// <summary>
+    /// 获取某次输出的执行结果。
+    /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
+    /// </summary>
+    /// <param name="seed">随机数种子</param>
+    /// <param name="successRatePlus">增产剂对成功率的加成</param>
+    /// <param name="consumeRegister">全局消耗统计</param>
+    /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
+    public override List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus, int[] consumeRegister) {
+        //损毁
+        if (GetRandDouble(ref seed) < DestroyRate) {
+            AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
+            return null;
+        }
+        //无变化
+        if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
+            return ProcessManager.emptyOutputs;
+        }
+        //成功产出
+        List<ProductOutputInfo> list = [];
+        //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
+        double ratio = GetRandDouble(ref seed);
+        float ratioMain = 0.0f;//用于累计概率
+        foreach (var outputInfo in OutputMain) {
+            ratioMain += outputInfo.SuccessRate;
+            if (ratio <= ratioMain) {
+                //整数部分必定输出，小数部分根据概率判定确定是否输出
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * MainOutputCountInc);
+                float leftCount = outputInfo.OutputCount * MainOutputCountInc - count;
+                if (leftCount > 0.0001f) {
+                    if (GetRandDouble(ref seed) < leftCount) {
+                        count++;
+                    }
+                }
+                //根据有没有精华判定是否成功输出
+                int essenceCount = (int)Math.Ceiling((EssenceCost - 0.0001f) * EssenceCostDec);
+                float essenceLeftCount = EssenceCost * EssenceCostDec - essenceCount;
+                if (essenceLeftCount > 0.0001f) {
+                    if (GetRandDouble(ref seed) < essenceLeftCount) {
+                        essenceCount++;
+                    }
+                }
+                if (!TakeEssenceFromModData(essenceCount, consumeRegister)) {
+                    return ProcessManager.emptyOutputs;
+                }
+                list.Add(new(true, outputInfo.OutputID, count));
+                outputInfo.OutputTotalCount += count;
+                AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
+                break;
+            }
+        }
+        //附加输出判定，每一项依次判定，互不影响
+        foreach (var outputInfo in OutputAppend) {
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * AppendOutputCountInc);
+                float leftCount = outputInfo.OutputCount * AppendOutputCountInc - count;
+                if (leftCount > 0.0001f) {
+                    if (GetRandDouble(ref seed) < leftCount) {
+                        count++;
+                    }
+                }
+                list.Add(new(false, outputInfo.OutputID, count));
+                outputInfo.OutputTotalCount += count;
+                //附加输出无经验
+            }
+        }
+        return list;
+    }
 
     #region IModCanSave
 

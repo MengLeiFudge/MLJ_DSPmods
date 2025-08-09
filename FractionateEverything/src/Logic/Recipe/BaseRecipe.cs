@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Manager.ProcessManager;
 using static FE.UI.View.TabOtherSetting;
 using static FE.Utils.Utils;
 
@@ -72,13 +72,24 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
+    /// 主产物数目增幅
+    /// </summary>
+    public virtual float MainOutputCountInc => 1.0f;
+
+    /// <summary>
+    /// 附加产物数目增幅
+    /// </summary>
+    public virtual float AppendOutputCountInc => 1.0f;
+
+    /// <summary>
     /// 获取某次输出的执行结果。
     /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
     /// <param name="successRatePlus">增产剂对成功率的加成</param>
+    /// <param name="consumeRegister">全局消耗统计</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
-    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus) {
+    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus, int[] consumeRegister) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
@@ -86,7 +97,7 @@ public abstract class BaseRecipe(
         }
         //无变化
         if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
-            return emptyOutputs;
+            return ProcessManager.emptyOutputs;
         }
         //成功产出
         List<ProductOutputInfo> list = [];
@@ -97,8 +108,8 @@ public abstract class BaseRecipe(
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
-                float leftCount = outputInfo.OutputCount - count;
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * MainOutputCountInc);
+                float leftCount = outputInfo.OutputCount * MainOutputCountInc - count;
                 if (leftCount > 0.0001f) {
                     if (GetRandDouble(ref seed) < leftCount) {
                         count++;
@@ -113,8 +124,8 @@ public abstract class BaseRecipe(
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
-                float leftCount = outputInfo.OutputCount - count;
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * AppendOutputCountInc);
+                float leftCount = outputInfo.OutputCount * AppendOutputCountInc - count;
                 if (leftCount > 0.0001f) {
                     if (GetRandDouble(ref seed) < leftCount) {
                         count++;

@@ -108,19 +108,14 @@ public class DeconstructionRecipe : BaseRecipe {
         : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
     /// <summary>
-    /// 是否输出翻倍（突破特殊属性）
+    /// 主产物数目增幅
     /// </summary>
-    public bool DoubleOutput { get; set; }
+    public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.01f * Level : 0);
 
     /// <summary>
-    /// 是否精华加成（突破特殊属性）
+    /// 附加产物数目增幅
     /// </summary>
-    public bool EssenceBoost { get; set; }
-
-    /// <summary>
-    /// 是否完全分解（突破特殊属性，可以分解出所有原材料）
-    /// </summary>
-    public bool CompleteDeconstruction { get; set; }
+    public override float AppendOutputCountInc => 1.0f + (Quality - 1) * 0.25f;
 
     #region IModCanSave
 
