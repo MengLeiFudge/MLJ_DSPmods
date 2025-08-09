@@ -19,7 +19,9 @@ public class DeconstructionRecipe : BaseRecipe {
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
-                || item.ID == IFE分馏塔增幅芯片) {
+                || item.ID == IFE分馏塔增幅芯片
+                || !item.GridIndexValid()
+                || item.ID == I沙土) {
                 continue;
             }
             List<OutputInfo> outputMain = [];
