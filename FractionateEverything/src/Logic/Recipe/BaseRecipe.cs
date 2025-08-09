@@ -288,22 +288,22 @@ public abstract class BaseRecipe(
         for (int i = 0; i < outputMainCount; i++) {
             int outputID = r.ReadInt32();
             int outputTotalCount = r.ReadInt32();
-            foreach (OutputInfo info in OutputMain) {
-                if (info.OutputID == outputID) {
-                    info.OutputTotalCount = outputTotalCount;
-                    break;
-                }
+            var outputInfo = OutputMain.Find(info => info.OutputID == outputID);
+            if (outputInfo != null) {
+                outputInfo.OutputTotalCount = outputTotalCount;
+            } else {
+                LogWarning($"Output {outputID} not found in {TypeName} main outputs");
             }
         }
         int outputAppendCount = r.ReadInt32();
         for (int i = 0; i < outputAppendCount; i++) {
             int outputID = r.ReadInt32();
             int outputTotalCount = r.ReadInt32();
-            foreach (OutputInfo info in OutputAppend) {
-                if (info.OutputID == outputID) {
-                    info.OutputTotalCount = outputTotalCount;
-                    break;
-                }
+            var outputInfo = OutputAppend.Find(info => info.OutputID == outputID);
+            if (outputInfo != null) {
+                outputInfo.OutputTotalCount = outputTotalCount;
+            } else {
+                LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
         Quality = Math.Min(MaxQuality, r.ReadInt32());
