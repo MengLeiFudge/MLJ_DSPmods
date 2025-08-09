@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -22,7 +20,9 @@ public class AlchemyRecipe : BaseRecipe {
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
-                || item.ID == IFE分馏塔增幅芯片) {
+                || item.ID == IFE分馏塔增幅芯片
+                || !item.GridIndexValid()
+                || item.ID == I沙土) {
                 continue;
             }
             //点金塔不能处理矩阵（包括配方原材料含有矩阵的物品），也不能处理建筑
