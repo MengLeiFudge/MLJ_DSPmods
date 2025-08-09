@@ -91,12 +91,15 @@ public static class TabRaffle {
             wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-recipe-100",
                 () => RaffleRecipe(100, 5));
             y += 38f;
-            recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况如下（完全体/已解锁/总数）：", 15, "text-recipe-unlock-title");
+            recipeUnlockTitleText = wnd.AddText2(x, y, tab,
+                $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：", 15, "text-recipe-unlock-title");
+            recipeUnlockTitleText.supportRichText = true;
             y += 38f;
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 8; j++) {
                     recipeUnlockInfoText[i, j] =
                         wnd.AddText2(x + 100 * j, y, tab, "999/999", 15, $"text-recipe-unlock-info{i}");
+                    recipeUnlockInfoText[i, j].supportRichText = true;
                 }
                 y += 38f;
             }
@@ -146,7 +149,7 @@ public static class TabRaffle {
         }
         ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         // EnableAutoRaffleEntry.Value = EnableAutoRaffle[TicketTypeEntry.Value];
-        int[,] fullUpgradeCountArr = new int[9, 8];
+        int[,] maxMemoryCountArr = new int[9, 8];
         int[,] unlockCountArr = new int[9, 8];
         int[,] totalCountArr = new int[9, 8];
         for (int i = 1; i <= 7; i++) {
@@ -164,17 +167,17 @@ public static class TabRaffle {
                 unlockCountArr[8, j] += recipes.Count;
                 unlockCountArr[i, 7] += recipes.Count;
                 unlockCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.FullUpgrade).ToList();
-                fullUpgradeCountArr[i, j] = recipes.Count;
-                fullUpgradeCountArr[8, j] += recipes.Count;
-                fullUpgradeCountArr[i, 7] += recipes.Count;
-                fullUpgradeCountArr[8, 7] += recipes.Count;
+                recipes = recipes.Where(r => r.IsMaxMemory).ToList();
+                maxMemoryCountArr[i, j] = recipes.Count;
+                maxMemoryCountArr[8, j] += recipes.Count;
+                maxMemoryCountArr[i, 7] += recipes.Count;
+                maxMemoryCountArr[8, 7] += recipes.Count;
             }
         }
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 7; j++) {
                 recipeUnlockInfoText[i, j].text =
-                    $"{fullUpgradeCountArr[i, j]}/{unlockCountArr[i, j]}/{totalCountArr[i, j]}";
+                    $"{maxMemoryCountArr[i, j].ToString().WithColor(Orange)}/{unlockCountArr[i, j].ToString().WithColor(Blue)}/{totalCountArr[i, j]}";
             }
         }
         ticketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
