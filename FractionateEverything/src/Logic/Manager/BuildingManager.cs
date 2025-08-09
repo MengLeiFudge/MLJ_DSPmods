@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FE.Logic.Building;
+using FE.Logic.Recipe;
 using HarmonyLib;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
@@ -73,59 +73,61 @@ public static class BuildingManager {
     #region 分馏塔产物输出拓展
 
     /// <summary>
-    /// 存储分馏塔所有副产物。结构：
-    /// (planetId, entityId) => Dictionary&lt;itemId, itemCount&gt;
+    /// 存储分馏塔所有产物。结构：
+    /// (planetId, entityId) => List&lt;ProductOutputInfo&gt;
     /// </summary>
-    private static readonly ConcurrentDictionary<(int, int), Dictionary<int, int>> outputExtend = [];
+    private static readonly ConcurrentDictionary<(int, int), List<ProductOutputInfo>> outputDic = [];
 
     public static void OutputExtendImport(BinaryReader r) {
-        outputExtend.Clear();
+        int version = r.ReadInt32();
+        outputDic.Clear();
         int fractionatorNum = r.ReadInt32();
         for (int i = 0; i < fractionatorNum; i++) {
             int planetId = r.ReadInt32();
             int entityId = r.ReadInt32();
-            Dictionary<int, int> outputDic = [];
+            List<ProductOutputInfo> outputList = [];
             int outputKinds = r.ReadInt32();
             for (int j = 0; j < outputKinds; j++) {
+                bool isMainOutput = r.ReadBoolean();
                 int outputId = r.ReadInt32();
                 int outputCount = r.ReadInt32();
-                if (LDB.items.Select(outputId) == null) {
+                if (LDB.items.Exist(outputId)) {
                     continue;
                 }
-                outputDic.Add(outputId, outputCount);
+                outputList.Add(new(isMainOutput, outputId, outputCount));
             }
-            outputExtend.TryAdd((planetId, entityId), outputDic);
+            outputDic.TryAdd((planetId, entityId), outputList);
         }
     }
 
     public static void OutputExtendExport(BinaryWriter w) {
-        w.Write(outputExtend.Count);
-        foreach (var p in outputExtend) {
+        w.Write(1);
+        w.Write(outputDic.Count);
+        foreach (var p in outputDic) {
             w.Write(p.Key.Item1);
             w.Write(p.Key.Item2);
-            Dictionary<int, int> outputDic = outputExtend[p.Key];
-            //去除所有物品数目为0的情况，节约存储体积
-            List<int> keys = outputDic.Keys.Where(Key => outputDic[Key] > 0).ToList();
-            w.Write(keys.Count);
-            for (int i = 0; i < keys.Count; i++) {
-                w.Write(keys[i]);
-                w.Write(outputDic[keys[i]]);
+            List<ProductOutputInfo> outputList = outputDic[p.Key];
+            w.Write(outputList.Count);
+            foreach (ProductOutputInfo outputItem in outputList) {
+                w.Write(outputItem.isMainOutput);
+                w.Write(outputItem.itemId);
+                w.Write(outputItem.count);
             }
         }
     }
 
     public static void OutputExtendIntoOtherSave() {
-        outputExtend.Clear();
+        outputDic.Clear();
     }
 
-    public static Dictionary<int, int> otherProductOutput(this FractionatorComponent fractionator,
+    public static List<ProductOutputInfo> products(this FractionatorComponent fractionator,
         PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
-        if (!outputExtend.ContainsKey((planetId, entityId))) {
-            outputExtend.TryAdd((planetId, entityId), []);
+        if (!outputDic.ContainsKey((planetId, entityId))) {
+            outputDic.TryAdd((planetId, entityId), []);
         }
-        return outputExtend[(planetId, entityId)];
+        return outputDic[(planetId, entityId)];
     }
 
     #endregion
