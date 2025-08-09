@@ -286,7 +286,7 @@ public static class TabRecipeAndBuilding {
             textBuildingInfo4.text = s.WithPALvColor(PointAggregateTower.Level);
             textBuildingInfo4.enabled = true;
             btnTip4.gameObject.SetActive(true);
-            btnBuildingInfo4.gameObject.SetActive(true);
+            btnBuildingInfo4.gameObject.SetActive(!PointAggregateTower.IsMaxLevel);
         } else {
             textBuildingInfo4.enabled = false;
             btnTip4.gameObject.SetActive(false);
