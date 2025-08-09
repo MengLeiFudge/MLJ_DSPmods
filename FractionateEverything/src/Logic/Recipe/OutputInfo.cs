@@ -3,7 +3,7 @@
 namespace FE.Logic.Recipe;
 
 /// <summary>
-/// 配方某一项产物信息。
+/// 分馏配方某一项产物信息。
 /// 注意，只有<see cref="FE.Logic.Recipe.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
 /// </summary>
 public class OutputInfo(float successRate, int outputID, float outputCount) {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
-using FE.Compatibility;
 using HarmonyLib;
 using UnityEngine;
 using static FE.FractionateEverything;
@@ -453,20 +452,8 @@ public static class ItemManager {
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             r.Type != ERecipeType.Fractionate
             && !r.Items.Contains(IMS多功能集成组件)
-            && !r.Results.Contains(IMS多功能集成组件));
-        if (GenesisBook.Enable) {
-            iEnumerable = iEnumerable.Where(r =>
-                r.GridIndex % 1000 / 100 >= 1
-                && r.GridIndex % 1000 / 100 <= 7
-                && r.GridIndex % 100 >= 1
-                && r.GridIndex % 100 <= 17);
-        } else {
-            iEnumerable = iEnumerable.Where(r =>
-                r.GridIndex % 1000 / 100 >= 1
-                && r.GridIndex % 1000 / 100 <= 8
-                && r.GridIndex % 100 >= 1
-                && r.GridIndex % 100 <= 14);
-        }
+            && !r.Results.Contains(IMS多功能集成组件)
+            && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 
         //迭代计算价值
@@ -667,7 +654,8 @@ public static class ItemManager {
 
     #region 分馏数据中心背包（也就是Mod物品缓存区数据）
 
-    public static readonly Dictionary<int, int> itemModDataCount = [];
+    public static readonly long[] centerItemCount = new long[12000];
+    public static readonly long[] centerItemInc = new long[12000];
 
     #endregion
 
@@ -678,22 +666,36 @@ public static class ItemManager {
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
-            int count = r.ReadInt32();
-            itemModDataCount[itemId] = count;
+            long count = Math.Max(0, r.ReadInt64());
+            long proliferatorPoint = Math.Max(0, r.ReadInt64());
+            if (itemId >= 0 && itemId < centerItemCount.Length) {
+                centerItemCount[itemId] = count;
+                centerItemInc[itemId] = proliferatorPoint;
+            }
         }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(itemModDataCount.Count);
-        foreach (var p in itemModDataCount) {
-            w.Write(p.Key);
-            w.Write(p.Value);
+        List<int> centerItemId = [];
+        for (int i = 0; i < centerItemCount.Length; i++) {
+            if (centerItemCount[i] > 0) {
+                centerItemId.Add(i);
+            }
+        }
+        w.Write(centerItemId.Count);
+        foreach (int itemId in centerItemId) {
+            w.Write(itemId);
+            w.Write(centerItemCount[itemId]);
+            w.Write(centerItemInc[itemId]);
         }
     }
 
     public static void IntoOtherSave() {
-        itemModDataCount.Clear();
+        for (int i = 0; i < centerItemCount.Length; i++) {
+            centerItemCount[i] = 0;
+            centerItemInc[i] = 0;
+        }
     }
 
     #endregion

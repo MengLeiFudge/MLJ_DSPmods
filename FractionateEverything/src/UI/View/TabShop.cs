@@ -147,13 +147,13 @@ public static class TabShop {
     /// 如果groupCount为-1，表示提取所有物品；否则表示提取groupCount组物品。
     /// </summary>
     private static void GetModDataItem(int groupCount) {
-        int takeCount = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
-        int realTakeCount = TakeItemFromModData(SelectedItem.ID, takeCount);
-        if (realTakeCount <= 0) {
+        int count = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
+        count = TakeItemFromModData(SelectedItem.ID, count, out int inc);
+        if (count == 0) {
             UIMessageBox.Show("提示", $"分馏数据中心没有物品 {SelectedItem.name} ！", "确认", UIMessageBox.WARNING);
         } else {
-            AddItemToPackage(SelectedItem.ID, realTakeCount, false);
-            UIMessageBox.Show("提示", $"已从分馏数据中心提取 {SelectedItem.name} x {realTakeCount} ！", "确认", UIMessageBox.INFO);
+            AddItemToPackage(SelectedItem.ID, count, inc, false);
+            UIMessageBox.Show("提示", $"已从分馏数据中心提取 {SelectedItem.name} x {count} ！", "确认", UIMessageBox.INFO);
         }
     }
 
@@ -162,7 +162,7 @@ public static class TabShop {
         int[] itemIDs = [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向];
         int[] counts = new int[itemIDs.Length];
         for (int i = 0; i < itemIDs.Length; i++) {
-            counts[i] = GetModDataItemCount(itemIDs[i]);
+            counts[i] = (int)Math.Min(int.MaxValue, GetModDataItemCount(itemIDs[i]));
             if (counts[i] > 0) {
                 ItemProto item = LDB.items.Select(itemIDs[i]);
                 sb.Append($"\n{item.name} x {counts[i]}");
@@ -175,9 +175,9 @@ public static class TabShop {
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
             sb = new("已提取以下物品：");
             foreach (int itemID in itemIDs) {
-                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
                 if (takeCount > 0) {
-                    AddItemToPackage(itemID, takeCount);
+                    AddItemToPackage(itemID, takeCount, inc);
                     sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
@@ -190,7 +190,7 @@ public static class TabShop {
         int[] itemIDs = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
         int[] counts = new int[itemIDs.Length];
         for (int i = 0; i < itemIDs.Length; i++) {
-            counts[i] = GetModDataItemCount(itemIDs[i]);
+            counts[i] = (int)Math.Min(int.MaxValue, GetModDataItemCount(itemIDs[i]));
             if (counts[i] > 0) {
                 ItemProto item = LDB.items.Select(itemIDs[i]);
                 sb.Append($"\n{item.name} x {counts[i]}");
@@ -203,9 +203,9 @@ public static class TabShop {
         UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
             sb = new("已提取以下物品：");
             foreach (int itemID in itemIDs) {
-                int takeCount = TakeItemFromModData(itemID, int.MaxValue);
+                int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
                 if (takeCount > 0) {
-                    AddItemToPackage(itemID, takeCount);
+                    AddItemToPackage(itemID, takeCount, inc);
                     sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
@@ -214,9 +214,9 @@ public static class TabShop {
     }
 
     private static void GetModDataItemInfo() {
-        Dictionary<ItemProto, int> itemCountDic = [];
+        Dictionary<ItemProto, long> itemCountDic = [];
         foreach (ItemProto item in LDB.items.dataArray) {
-            int count = GetModDataItemCount(item.ID);
+            long count = GetModDataItemCount(item.ID);
             if (count <= 0) {
                 continue;
             }

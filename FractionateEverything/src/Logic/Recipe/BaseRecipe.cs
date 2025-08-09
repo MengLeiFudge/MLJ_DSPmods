@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.TabOtherSetting;
 using static FE.Utils.Utils;
@@ -28,10 +29,10 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
-    /// 通过品质和等级得到的综合进度，范围为0-1
+    /// 通过品质和等级得到的综合进度，范围为0.35~1.00
     /// </summary>
-    private float Progress => (Quality * 0.2f + Level * (0.1f + Quality * 0.02f))
-                              / (MaxQuality * 0.2f + (MaxQuality + 3) * (0.1f + MaxQuality * 0.02f));
+    private float Progress => Math.Min(1.0f,
+        0.365f + (Quality - 1) * 0.11f + (Quality - 1) * (Quality - 2) * 0.0075f + (Level - 1) * 0.015f);
 
     /// <summary>
     /// 成功率上限
@@ -40,21 +41,18 @@ public abstract class BaseRecipe(
 
     /// <summary>
     /// 实际成功率，随着等级和品质的提高而提高。
-    /// 初始为上限的40%，最终为上限。
     /// </summary>
-    public float SuccessRate => MaxSuccessRate * (0.4f + 0.6f * Progress);
+    public float SuccessRate => MaxSuccessRate * Progress;
 
     /// <summary>
     /// 损毁率上限
     /// </summary>
-    public float MaxDestroyRate => 0.1f * (0.2f + (float)Math.Log10(itemValue[InputID] + 1) / 4.0f);
+    public float MaxDestroyRate => maxSuccessRate;
 
     /// <summary>
     /// 损毁率，随着等级和品质的提高而降低。
-    /// 初始与物品价值有关（价值越高损毁率越高），最终为0%。
-    /// 品质5，等级8时，进度为0.6842左右，所以使用0.684作为分界线
     /// </summary>
-    public float DestroyRate => MaxDestroyRate * Math.Max(0, 0.684f - Progress);
+    public float DestroyRate => MaxDestroyRate * (1 - Progress);
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。
@@ -71,62 +69,71 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
-    /// 获取某次输出的执行结果
+    /// 主产物数目增幅
+    /// </summary>
+    public virtual float MainOutputCountInc => 1.0f;
+
+    /// <summary>
+    /// 附加产物数目增幅
+    /// </summary>
+    public virtual float AppendOutputCountInc => 1.0f;
+
+    /// <summary>
+    /// 获取某次输出的执行结果。
+    /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
     /// <param name="successRatePlus">增产剂对成功率的加成</param>
-    /// <returns>损毁返回null，无变化反馈空字典，成功返回输出产物</returns>
-    public virtual Dictionary<int, int> GetOutputs(ref uint seed, float successRatePlus) {
+    /// <param name="consumeRegister">全局消耗统计</param>
+    /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
+    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus, int[] consumeRegister) {
+        //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
-        Dictionary<int, int> dic = [];
+        //无变化
         if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
-            return dic;
+            return ProcessManager.emptyOutputs;
         }
-        //主输出判定
+        //成功产出
+        List<ProductOutputInfo> list = [];
+        //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
         double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
         foreach (var outputInfo in OutputMain) {
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
-                float leftCount = outputInfo.OutputCount - count;
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * MainOutputCountInc);
+                float leftCount = outputInfo.OutputCount * MainOutputCountInc - count;
                 if (leftCount > 0.0001f) {
                     if (GetRandDouble(ref seed) < leftCount) {
                         count++;
                     }
                 }
-                //由于此处必定是第一个key，所以直接添加
-                dic[outputInfo.OutputID] = count;
+                list.Add(new(true, outputInfo.OutputID, count));
                 outputInfo.OutputTotalCount += count;
                 AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
                 break;
             }
         }
-        //附加输出判定
+        //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                int count = (int)Math.Ceiling(outputInfo.OutputCount - 0.0001f);
-                float leftCount = outputInfo.OutputCount - count;
+                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * AppendOutputCountInc);
+                float leftCount = outputInfo.OutputCount * AppendOutputCountInc - count;
                 if (leftCount > 0.0001f) {
                     if (GetRandDouble(ref seed) < leftCount) {
                         count++;
                     }
                 }
-                if (dic.TryGetValue(outputInfo.OutputID, out int currentValue)) {
-                    dic[outputInfo.OutputID] = currentValue + count;
-                } else {
-                    dic.Add(outputInfo.OutputID, count);
-                }
+                list.Add(new(false, outputInfo.OutputID, count));
                 outputInfo.OutputTotalCount += count;
                 //附加输出无经验
-                // AddExp((int)Math.Ceiling(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
             }
         }
-        return dic;
+        return list;
     }
 
     #endregion
@@ -289,22 +296,22 @@ public abstract class BaseRecipe(
         for (int i = 0; i < outputMainCount; i++) {
             int outputID = r.ReadInt32();
             int outputTotalCount = r.ReadInt32();
-            foreach (OutputInfo info in OutputMain) {
-                if (info.OutputID == outputID) {
-                    info.OutputTotalCount = outputTotalCount;
-                    break;
-                }
+            var outputInfo = OutputMain.Find(info => info.OutputID == outputID);
+            if (outputInfo != null) {
+                outputInfo.OutputTotalCount = outputTotalCount;
+            } else {
+                LogWarning($"Output {outputID} not found in {TypeName} main outputs");
             }
         }
         int outputAppendCount = r.ReadInt32();
         for (int i = 0; i < outputAppendCount; i++) {
             int outputID = r.ReadInt32();
             int outputTotalCount = r.ReadInt32();
-            foreach (OutputInfo info in OutputAppend) {
-                if (info.OutputID == outputID) {
-                    info.OutputTotalCount = outputTotalCount;
-                    break;
-                }
+            var outputInfo = OutputAppend.Find(info => info.OutputID == outputID);
+            if (outputInfo != null) {
+                outputInfo.OutputTotalCount = outputTotalCount;
+            } else {
+                LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
         Quality = Math.Min(MaxQuality, r.ReadInt32());
