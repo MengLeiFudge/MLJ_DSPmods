@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
-using FE.Compatibility;
 using HarmonyLib;
 using UnityEngine;
 using static FE.FractionateEverything;
@@ -453,20 +452,8 @@ public static class ItemManager {
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             r.Type != ERecipeType.Fractionate
             && !r.Items.Contains(IMS多功能集成组件)
-            && !r.Results.Contains(IMS多功能集成组件));
-        if (GenesisBook.Enable) {
-            iEnumerable = iEnumerable.Where(r =>
-                r.GridIndex % 1000 / 100 >= 1
-                && r.GridIndex % 1000 / 100 <= 7
-                && r.GridIndex % 100 >= 1
-                && r.GridIndex % 100 <= 17);
-        } else {
-            iEnumerable = iEnumerable.Where(r =>
-                r.GridIndex % 1000 / 100 >= 1
-                && r.GridIndex % 1000 / 100 <= 8
-                && r.GridIndex % 100 >= 1
-                && r.GridIndex % 100 <= 14);
-        }
+            && !r.Results.Contains(IMS多功能集成组件)
+            && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 
         //迭代计算价值

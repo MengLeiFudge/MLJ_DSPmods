@@ -6,7 +6,6 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
-using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
