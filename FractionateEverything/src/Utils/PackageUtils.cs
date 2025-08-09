@@ -112,7 +112,7 @@ public static partial class Utils {
     public static int TakeItemFromModData(int itemId, int count, out int inc) {
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
-            inc = (int)(count / centerItemCount[itemId]);
+            inc = count == 0 ? 0 : (int)(count / centerItemCount[itemId]);
             centerItemCount[itemId] -= count;
             centerItemInc[itemId] -= inc;
             return count;
