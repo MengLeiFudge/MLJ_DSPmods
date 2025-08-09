@@ -667,7 +667,8 @@ public static class ItemManager {
 
     #region 分馏数据中心背包（也就是Mod物品缓存区数据）
 
-    public static readonly Dictionary<int, int> itemModDataCount = [];
+    public static readonly long[] centerItemCount = new long[12000];
+    public static readonly long[] centerItemInc = new long[12000];
 
     #endregion
 
@@ -678,22 +679,36 @@ public static class ItemManager {
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
-            int count = r.ReadInt32();
-            itemModDataCount[itemId] = count;
+            long count = r.ReadInt64();
+            long proliferatorPoint = r.ReadInt64();
+            if (itemId >= 0 && itemId < centerItemCount.Length) {
+                centerItemCount[itemId] = count;
+                centerItemInc[itemId] = proliferatorPoint;
+            }
         }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        w.Write(itemModDataCount.Count);
-        foreach (var p in itemModDataCount) {
-            w.Write(p.Key);
-            w.Write(p.Value);
+        List<int> centerItemId = [];
+        for (int i = 0; i < centerItemCount.Length; i++) {
+            if (centerItemCount[i] > 0) {
+                centerItemId.Add(i);
+            }
+        }
+        w.Write(centerItemId.Count);
+        foreach (int itemId in centerItemId) {
+            w.Write(itemId);
+            w.Write(centerItemCount[itemId]);
+            w.Write(centerItemInc[itemId]);
         }
     }
 
     public static void IntoOtherSave() {
-        itemModDataCount.Clear();
+        for (int i = 0; i < centerItemCount.Length; i++) {
+            centerItemCount[i] = 0;
+            centerItemInc[i] = 0;
+        }
     }
 
     #endregion
