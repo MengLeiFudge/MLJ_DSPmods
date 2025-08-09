@@ -1,10 +1,11 @@
-- v2.0.5
+- v2.1.0
     + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
     + 为所有科技添加解锁所需的元数据。
     + 修复部分科技需要的矩阵数目。
     + 调整奖券合成需要的矩阵数目。
     + 调整分解塔、点金塔的配方平衡性。
     + 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种。
+    + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
     + The statistics panel can correctly display the consumption of each essence during quantum copying.
     + Add the metadata needed to unlock all technologies.
     + Repair the number of matrices required for certain technologies.
@@ -12,6 +13,8 @@
     + Adjust the formula balance of the decomposition tower and the alchemy tower.
     + The output items from the Point Accumulation Tower are no longer evenly distributed points, but rather either 0 or
       4 points.
+    + The upper limit of the number of items that can be stored in the fractionate data center has been changed from
+      int to long, and it now supports the storage of proliferator points.
 
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。
