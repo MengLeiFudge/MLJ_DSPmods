@@ -340,7 +340,7 @@ public static class ItemManager {
 
     #endregion
 
-    #region 计算物品价值
+    #region 计算物品价值，以及交互塔可接受物品范围
 
     public static float maxValue = 1000000;
     /// <summary>
@@ -371,6 +371,7 @@ public static class ItemManager {
     //3276800.000000 	0.000475
     private const double a = 1.069415182912524;
     private const double b = -0.5145731728297580;
+    public static int[] needs = [];
 #if DEBUG
     private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
     private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemPoint.csv";
@@ -567,6 +568,11 @@ public static class ItemManager {
             }
         }
 #endif
+        //根据物品价值构建交互塔可接受物品列表
+        needs = LDB.items.dataArray
+            .Where(item => itemValue[item.ID] < maxValue && item.GridIndexValid())
+            .Select(item => item.ID)
+            .ToArray();
     }
 
     #endregion
