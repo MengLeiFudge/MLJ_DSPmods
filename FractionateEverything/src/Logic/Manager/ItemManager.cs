@@ -199,55 +199,30 @@ public static class ItemManager {
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚普通, ERecipeType.None, 60,
-            [IFE分馏塔原胚普通], [1], [IFE分馏塔原胚普通], [1], "I分馏塔原胚普通");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚精良, "分馏塔原胚精良", "I分馏塔原胚精良",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚精良, ERecipeType.None, 60,
-            [IFE分馏塔原胚精良], [1], [IFE分馏塔原胚精良], [1], "I分馏塔原胚精良");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚稀有, "分馏塔原胚稀有", "I分馏塔原胚稀有",
             "Assets/fe/frac-proto-rare", tab分馏 * 1000 + 203, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚稀有, ERecipeType.None, 60,
-            [IFE分馏塔原胚稀有], [1], [IFE分馏塔原胚稀有], [1], "I分馏塔原胚稀有");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚史诗, "分馏塔原胚史诗", "I分馏塔原胚史诗",
             "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚史诗, ERecipeType.None, 60,
-            [IFE分馏塔原胚史诗], [1], [IFE分馏塔原胚史诗], [1], "I分馏塔原胚史诗");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚传说, "分馏塔原胚传说", "I分馏塔原胚传说",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚传说, ERecipeType.None, 60,
-            [IFE分馏塔原胚传说], [1], [IFE分馏塔原胚传说], [1], "I分馏塔原胚传说");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚定向, "分馏塔原胚定向", "I分馏塔原胚定向",
@@ -265,63 +240,33 @@ public static class ItemManager {
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏配方通用核心, ERecipeType.None, 60,
-            [IFE分馏配方通用核心], [1], [IFE分馏配方通用核心], [1], "I分馏配方通用核心");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：无，跟随TFE分馏数据中心
         item = ProtoRegistry.RegisterItem(IFE分馏塔增幅芯片, "分馏塔增幅芯片", "I分馏塔增幅芯片",
             "Assets/fe/building-increase-chip", tab分馏 * 1000 + 208, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔增幅芯片, ERecipeType.None, 60,
-            [IFE分馏塔增幅芯片], [1], [IFE分馏塔增幅芯片], [1], "I分馏塔增幅芯片");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
 
         //前置科技：TFE矿物复制
         item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE复制精华, ERecipeType.None, 60,
-            [IFE复制精华], [1], [IFE复制精华], [1], "I复制精华");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：TFE物品点金
         item = ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
             "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE点金精华, ERecipeType.None, 60,
-            [IFE点金精华], [1], [IFE点金精华], [1], "I点金精华");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：TFE物品分解
         item = ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
             "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE分解精华, ERecipeType.None, 60,
-            [IFE分解精华], [1], [IFE分解精华], [1], "I分解精华");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
 
         //前置科技：TFE物品转化
         item = ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
             "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE转化精华, ERecipeType.None, 60,
-            [IFE转化精华], [1], [IFE转化精华], [1], "I转化精华");
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
     }
 
     [HarmonyPrefix]
