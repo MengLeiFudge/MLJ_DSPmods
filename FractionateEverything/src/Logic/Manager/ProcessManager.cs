@@ -15,6 +15,14 @@ namespace FE.Logic.Manager;
 /// 修改所有分馏塔的处理逻辑，以及对应的显示。
 /// </summary>
 public static class ProcessManager {
+    public static void AddTranslations() {
+        Register("搬运中", "Transporting");
+        Register("永动", "Forever");
+        Register("流动", "Flow");
+        Register("无配方", "No recipe");
+        Register("损毁", "Destroy");
+    }
+
     #region Field
 
     private static int totalUIUpdateTimes = 0;
@@ -687,7 +695,14 @@ public static class ProcessManager {
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
-        //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新UI，防止UI变化过快导致无法看清
+        if (!fractionator.isWorking
+            && !(fractionator.productOutputCount >= fractionator.productOutputMax
+                 || fractionator.fluidOutputCount >= fractionator.fluidOutputMax)
+            && !(fractionator.fluidId > 0)
+            && fractionator.fluidInputCount > 0) {
+            __instance.stateText.text = "搬运中".Translate();
+        }
+        //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新数字，防止变化过快导致数字无法看清
         if (__instance.fractionatorId == fractionatorID) {
             totalUIUpdateTimes++;
             if (totalUIUpdateTimes < 20) {
@@ -788,7 +803,7 @@ public static class ProcessManager {
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             }
         } else if (recipe.Locked) {
-            s1 = "未解锁".Translate();//todo：注意，“配方未解锁”已经被原版游戏注册过
+            s1 = "配方未解锁".Translate();//“配方未解锁”已经被原版游戏注册过
             s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else {
