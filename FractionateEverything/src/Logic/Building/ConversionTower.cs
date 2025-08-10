@@ -34,7 +34,7 @@ public static class ConversionTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE转化塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE转化塔], [1],
-            "I转化塔", TFE物品转化);
+            "I转化塔", TFE物品转化, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE转化塔, item,
