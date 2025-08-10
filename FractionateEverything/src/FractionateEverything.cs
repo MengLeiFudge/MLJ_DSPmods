@@ -71,13 +71,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
             Register("分馏页面", "Fractionate", "分馏");
             Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
-            Register("无配方", "NoRecipe");
-            Register("未解锁", "NotUnlock");
-            Register("永动", "Forever");
-            Register("流动", "Flow");
-            Register("损毁", "Destroy");
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
+            ProcessManager.AddTranslations();
             TechManager.AddTranslations();
             OutputInfo.AddTranslations();
 
