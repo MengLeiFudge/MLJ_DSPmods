@@ -16,50 +16,45 @@ public class MineralCopyRecipe : BaseRecipe {
     public static void CreateAll() {
         Create(I铁矿, 0.05f);
         Create(I铜矿, 0.05f);
+        Create(I硅石, 0.05f, [new OutputInfo(0.01f, I分形硅石, 1)]);
+        Create(I钛石, 0.05f);
         Create(I石矿, 0.05f, [new OutputInfo(0.01f, I硅石, 1), new OutputInfo(0.01f, I钛石, 1)]);
         Create(I煤矿, 0.05f, [new OutputInfo(0.01f, I金刚石, 1)]);
-        Create(IGB铝矿, 0.05f);
         Create(IGB钨矿, 0.05f);
-        Create(IGB硫矿, 0.05f);
-        Create(IGB放射性矿物, 0.05f);
-        Create(IGB海水, 0.05f);
+        Create(IGB铝矿, 0.05f);
+        Create(IGB硫矿, 0.05f, [new OutputInfo(0.01f, I硫酸, 1), new OutputInfo(0.01f, IGB二氧化硫, 1)]);
+        Create(IGB放射性矿物, 0.05f, [new OutputInfo(0.01f, IGB铀矿, 1), new OutputInfo(0.01f, IGB钚矿, 1)]);
+        Create(IGB海水, 0.05f, [new OutputInfo(0.01f, IGB氯化钠, 1)]);
         Create(I水, 0.05f);
         Create(I原油, 0.05f);
-        Create(IGB氮, 0.05f);
-        Create(IGB氧, 0.05f);
+        Create(I硫酸, 0.05f);
+        Create(IGB盐酸, 0.05f);
+        Create(IGB硝酸, 0.05f);
+        Create(IGB氨, 0.05f, [new OutputInfo(0.01f, IGB氮, 1), new OutputInfo(0.01f, I氢, 1)]);
+        Create(I氢, 0.05f, [new OutputInfo(0.01f, I重氢, 1)]);
+        Create(I重氢, 0.05f, [new OutputInfo(0.01f, I氢, 1)]);
+        Create(IGB氮, 0.05f, [new OutputInfo(0.01f, IGB氨, 1)]);
+        Create(IGB氧, 0.05f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
+        Create(IGB氦, 0.05f, [new OutputInfo(0.01f, IGB氦三, 1)]);
+        Create(IGB氦三, 0.05f, [new OutputInfo(0.01f, IGB氦, 1)]);
+        Create(IGB二氧化碳, 0.05f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, I高能石墨, 1)]);
+        Create(IGB二氧化硫, 0.05f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, IGB硫粉, 1)]);
+        Create(I临界光子, 0.05f);
 
-        //同星系其他星球
-        Create(I硅石, 0.03f, [new OutputInfo(0.01f, I分形硅石, 1)]);
-        Create(I钛石, 0.03f);
-        Create(I硫酸, 0.03f);
-        Create(IGB盐酸, 0.03f);
-        Create(IGB硝酸, 0.03f);
-        Create(IGB氨, 0.03f);
-        Create(I氢, 0.03f, [new OutputInfo(0.01f, I重氢, 1)]);
-        Create(I重氢, 0.03f, [new OutputInfo(0.01f, I氢, 1)]);
-        Create(IGB氦, 0.03f, [new OutputInfo(0.01f, IGB氦三, 1)]);
-        Create(IGB氦三, 0.03f, [new OutputInfo(0.01f, IGB氦, 1)]);
-        Create(IGB二氧化碳, 0.03f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
-        Create(IGB二氧化硫, 0.03f, [new OutputInfo(0.01f, IGB二氧化硫, 1)]);
-        Create(I黑雾矩阵, 0.03f);
-        Create(I硅基神经元, 0.03f);
-        Create(I物质重组器, 0.03f);
-        Create(I负熵奇点, 0.03f);
-        Create(I核心素, 0.03f);
-        Create(I能量碎片, 0.03f);
-
-        //其他星系大量有的
-        Create(I可燃冰, 0.02f);
-        Create(I金伯利矿石, 0.02f);
-        Create(I分形硅石, 0.02f);
-        Create(I有机晶体, 0.02f);
-
-        //其他星系少量有的
-        Create(I光栅石, 0.015f);
-        Create(I刺笋结晶, 0.015f);
-        Create(I单极磁石, 0.01f);
-        Create(I临界光子, 0.01f);
-        Create(I反物质, 0.01f);
+        Create(I可燃冰, 0.025f);
+        Create(I金伯利矿石, 0.025f);
+        Create(I分形硅石, 0.025f);
+        Create(I光栅石, 0.025f);
+        Create(I刺笋结晶, 0.025f);
+        Create(I单极磁石, 0.025f);
+        Create(I有机晶体, 0.025f);
+        Create(I黑雾矩阵, 0.025f);
+        Create(I硅基神经元, 0.025f);
+        Create(I物质重组器, 0.025f);
+        Create(I负熵奇点, 0.025f);
+        Create(I核心素, 0.025f);
+        Create(I能量碎片, 0.025f);
+        Create(I反物质, 0.025f);
     }
 
     private static void Create(int inputID, float baseSuccessRate) {
