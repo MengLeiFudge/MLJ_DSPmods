@@ -33,6 +33,7 @@ public static class TechManager {
         Register("超值礼包1结果",
             "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
             "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
+        Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
         Register("超值礼包2描述",
@@ -598,12 +599,15 @@ public static class TechManager {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
     public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
-        switch (__instance.ID) {
-            case TFE分馏数据中心:
-                __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
-                           + $"{"解锁全部建筑培养配方".Translate()}\r\n"
-                           + $"{"解锁非珍奇矿物复制配方".Translate()}";
-                return false;
+        if (__instance.ID == TFE分馏数据中心) {
+            __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
+                       + $"{"解锁全部建筑培养配方".Translate()}\r\n"
+                       + $"{"解锁非珍奇矿物复制配方".Translate()}";
+            return false;
+        }
+        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
+            __result = $"{"一个物超所值的礼包".Translate()}";
+            return false;
         }
         return true;
     }
