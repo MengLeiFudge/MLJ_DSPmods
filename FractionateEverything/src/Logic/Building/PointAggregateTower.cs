@@ -53,7 +53,7 @@ public static class PointAggregateTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE点数聚集塔], [1],
-            "I点数聚集塔", TFE增产点数聚集);
+            "I点数聚集塔", TFE增产点数聚集, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
