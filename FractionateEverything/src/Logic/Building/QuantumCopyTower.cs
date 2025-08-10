@@ -34,7 +34,7 @@ public static class QuantumCopyTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE量子复制塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [5], [IFE量子复制塔], [1],
-            "I量子复制塔", TFE量子复制);
+            "I量子复制塔", TFE量子复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE量子复制塔, item,

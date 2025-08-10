@@ -34,7 +34,7 @@ public static class AlchemyTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点金塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE点金塔], [1],
-            "I点金塔", TFE物品点金);
+            "I点金塔", TFE物品点金, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE点金塔, item,
