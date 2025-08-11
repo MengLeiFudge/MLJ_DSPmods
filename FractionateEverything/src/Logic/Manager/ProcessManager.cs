@@ -16,10 +16,10 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class ProcessManager {
     public static void AddTranslations() {
-        Register("搬运中", "Transporting");
-        Register("永动", "Forever");
-        Register("流动", "Flow");
+        Register("搬运模式", "Transport Mode");
+        Register("分馏永动", "Frac Forever");
         Register("无配方", "No recipe");
+        Register("流动", "Flow");
         Register("损毁", "Destroy");
     }
 
@@ -181,13 +181,18 @@ public static class ProcessManager {
         T recipe = GetRecipe<T>(recipeType, fluidId);
         //检测products和recipe的输出是否一致
         if (recipe == null) {
-            products.Clear();
-            __instance.productOutputCount = 0;
+            if (products.Count > 0 || __instance.productId != fluidId || __instance.productOutputCount != 0) {
+                products.Clear();
+                __instance.productId = fluidId;
+                __instance.productOutputCount = 0;
+                __instance.produceProb = 0.01f;
+                signPool[__instance.entityId].iconId0 = 0;
+                signPool[__instance.entityId].iconType = 0U;
+            }
         } else {
-            bool needResetProducts = false;
-            if (products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count) {
-                needResetProducts = true;
-            } else {
+            bool needResetProducts = __instance.productId != recipe.OutputMain[0].OutputID
+                                     || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
+            if (!needResetProducts) {
                 foreach (OutputInfo info in recipe.OutputMain) {
                     if (products.All(p => p.itemId != info.OutputID)) {
                         needResetProducts = true;
@@ -203,7 +208,11 @@ public static class ProcessManager {
             }
             if (needResetProducts) {
                 products.Clear();
+                __instance.productId = recipe.OutputMain[0].OutputID;
                 __instance.productOutputCount = 0;
+                __instance.produceProb = 0.01f;
+                signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                signPool[__instance.entityId].iconType = 1U;
                 foreach (OutputInfo info in recipe.OutputMain) {
                     products.Add(new(true, info.OutputID, 0));
                 }
@@ -233,8 +242,9 @@ public static class ProcessManager {
         int productOutputMax = __instance.productOutputMax;
         int buildingID = factory.entityPool[__instance.entityId].protoId;
         ItemProto building = LDB.items.Select(buildingID);
+        bool enableFracForever = building.EnableFracForever();
         if (__instance.fluidInputCount > 0
-            && products.All(p => p.count < productOutputMax)
+            && (enableFracForever || products.All(p => p.count < productOutputMax))
             && __instance.fluidOutputCount < __instance.fluidOutputMax) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
@@ -269,7 +279,7 @@ public static class ProcessManager {
                     continue;
                 }
                 //启用分馏永动且某个产物达到输出上限的一半，则分馏塔进入分馏永动状态
-                if (building.EnableFracForever() && products.Any(p => p.count >= productOutputMax / 2)) {
+                if (enableFracForever && products.Any(p => p.count >= productOutputMax / 2)) {
                     moveDirectly = true;
                     goto MoveDirectly;
                 }
@@ -295,6 +305,8 @@ public static class ProcessManager {
                         lock (consumeRegister) {
                             consumeRegister[fluidId]++;
                         }
+                        //todo: 现在分馏塔详情面板的输出统计是 成功转化/总数
+                        __instance.productOutputTotal++;
                         foreach (ProductOutputInfo p in outputs) {
                             int itemID = p.itemId;
                             int itemCount = p.count;
@@ -309,8 +321,6 @@ public static class ProcessManager {
                             if (itemID == product0Id) {
                                 product0.count += itemCount;
                                 __instance.productOutputCount = product0.count;
-                                //todo: 现在面板显示的输出统计是第一个主输出的统计
-                                __instance.productOutputTotal += itemCount;
                             } else {
                                 products.FirstOrDefault(product => product.itemId == itemID).count += itemCount;
                             }
@@ -386,7 +396,7 @@ public static class ProcessManager {
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
                         if (recipe == null) {
-                            __instance.productId = __instance.fluidId;
+                            __instance.productId = needId;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
@@ -456,7 +466,7 @@ public static class ProcessManager {
                         __instance.fluidId = needId;
                         recipe = GetRecipe<T>(recipeType, needId);
                         if (recipe == null) {
-                            __instance.productId = __instance.fluidId;
+                            __instance.productId = needId;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
@@ -542,7 +552,7 @@ public static class ProcessManager {
         __instance.isWorking = __instance.fluidInputCount > 0
                                && products.All(p => p.count < productOutputMax)
                                && __instance.fluidOutputCount < __instance.fluidOutputMax;
-        if (building.EnableFracForever()) {
+        if (enableFracForever) {
             __instance.isWorking &= products.All(p => p.count < productOutputMax / 2);
         }
 
@@ -695,12 +705,20 @@ public static class ProcessManager {
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
-        if (!fractionator.isWorking
-            && !(fractionator.productOutputCount >= fractionator.productOutputMax
-                 || fractionator.fluidOutputCount >= fractionator.fluidOutputMax)
-            && !(fractionator.fluidId > 0)
-            && fractionator.fluidInputCount > 0) {
-            __instance.stateText.text = "搬运中".Translate();
+        List<ProductOutputInfo> products = fractionator.products(__instance.factory);
+        int productOutputMax = fractionator.productOutputMax;
+        bool transportMode = !fractionator.isWorking
+                             && !(fractionator.productOutputCount >= fractionator.productOutputMax
+                                  || fractionator.fluidOutputCount >= fractionator.fluidOutputMax)
+                             && fractionator.fluidId > 0
+                             && fractionator.fluidInputCount > 0;
+        if (transportMode) {
+            //原版这里是“缺少原材料”，但在此Mod中还有可能是直接搬运的状态
+            if (building.EnableFracForever() && products.Any(p => p.count >= productOutputMax / 2)) {
+                __instance.stateText.text = "分馏永动".Translate();
+            } else {
+                __instance.stateText.text = "搬运模式".Translate();
+            }
         }
         //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新数字，防止变化过快导致数字无法看清
         if (__instance.fractionatorId == fractionatorID) {
@@ -780,23 +798,18 @@ public static class ProcessManager {
             default:
                 return;
         }
-        List<ProductOutputInfo> products = fractionator.products(__instance.factory);
-        int productOutputMax = fractionator.productOutputMax;
         float flowRatio = 1.0f;
         if (recipe == null) {
             if (buildingID == IFE点数聚集塔) {
                 StringBuilder sb1 = new StringBuilder();
-                if (building.EnableFracForever() && products.Any(p => p.count > productOutputMax / 2)) {
-                    s1 = "永动".Translate();
-                    s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-                } else {
-                    float ratio = successRatePlus;
-                    string name = FormatName(LDB.items.Select(fractionator.fluidId).Name);
-                    sb1.Append($"{name}x1 ({ratio.FormatP()})\n");
+                float ratio = successRatePlus;
+                string name = FormatName(LDB.items.Select(fractionator.fluidId).Name);
+                sb1.Append($"{name}x1 ({ratio.FormatP()})\n");
+                if (!transportMode) {
                     flowRatio -= ratio;
-                    s1 = PointAggregateTower.LvWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
-                    s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
                 }
+                s1 = PointAggregateTower.LvWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             } else {
                 s1 = "无配方".Translate();
                 s1 = s1.WithColor(Red);
@@ -808,26 +821,26 @@ public static class ProcessManager {
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else {
             StringBuilder sb1 = new StringBuilder();
-            if (building.EnableFracForever() && products.Any(p => p.count > productOutputMax / 2)) {
-                s1 = recipe.LvExpWC + "\n" + "永动".Translate();
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            } else {
-                foreach (var output in recipe.OutputMain) {
-                    float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
-                    string name = output.ShowOutputName ? FormatName(LDB.items.Select(output.OutputID).Name) : "???";
-                    string count = output.ShowOutputCount ? output.OutputCount.ToString("F3") : "???";
-                    string ratioStr = output.ShowSuccessRate ? ratio.FormatP() : "???";
-                    sb1.Append($"{name}x{count} ({ratioStr})\n");
+            foreach (var output in recipe.OutputMain) {
+                float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
+                string name = output.ShowOutputName ? FormatName(LDB.items.Select(output.OutputID).Name) : "???";
+                string count = output.ShowOutputCount ? output.OutputCount.ToString("F3") : "???";
+                string ratioStr = output.ShowSuccessRate ? ratio.FormatP() : "???";
+                sb1.Append($"{name}x{count} ({ratioStr})\n");
+                if (!transportMode) {
                     flowRatio -= ratio;
                 }
-                float destroyRatio = recipe.DestroyRate;
+            }
+            float destroyRatio = 0;
+            if (!transportMode) {
+                destroyRatio = recipe.DestroyRate;
                 flowRatio -= destroyRatio;
-                s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-                if (destroyRatio > 0) {
-                    string destroy = $"{"损毁".Translate()}({destroyRatio.FormatP()})";
-                    s2 += $"\n{destroy.WithColor(Red)}";
-                }
+            }
+            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+            s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+            if (destroyRatio > 0) {
+                string destroy = $"{"损毁".Translate()}({destroyRatio.FormatP()})";
+                s2 += $"\n{destroy.WithColor(Red)}";
             }
         }
         //刷新概率显示内容
