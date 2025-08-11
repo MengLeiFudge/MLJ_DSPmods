@@ -59,7 +59,7 @@ public static class TabRaffle {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
+        wnd.AddTabGroup(trans, "抽奖", "tab-group-fe2");
         // {
         //     var tab = wnd.AddTab(trans, "自选卡池");
         //     x = 0f;
@@ -183,10 +183,10 @@ public static class TabRaffle {
     }
 
     /// <summary>
-    /// 配方卡池抽卡。
+    /// 配方卡池抽奖。
     /// </summary>
-    /// <param name="raffleCount">抽卡次数</param>
-    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    /// <param name="raffleCount">抽奖次数</param>
+    /// <param name="oneLineMaxCount">一行显示多少个抽奖结果</param>
     /// <param name="showMessage">是否弹窗询问、显示结果</param>
     public static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -364,7 +364,7 @@ public static class TabRaffle {
             }
         }
         if (showMessage) {
-            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
                                       + "\n\n"
                                       + sb2
                                       + "\n\n选择提取方式：\n"
@@ -405,10 +405,10 @@ public static class TabRaffle {
     }
 
     /// <summary>
-    /// 建筑卡池抽卡。
+    /// 建筑卡池抽奖。
     /// </summary>
-    /// <param name="raffleCount">抽卡次数</param>
-    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    /// <param name="raffleCount">抽奖次数</param>
+    /// <param name="oneLineMaxCount">一行显示多少个抽奖结果</param>
     /// <param name="showMessage">是否弹窗询问、显示结果</param>
     public static void RaffleBuilding(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -552,7 +552,7 @@ public static class TabRaffle {
             }
         }
         if (showMessage) {
-            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
                                       + "\n\n选择提取方式：\n"
                                       + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
                                       + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"

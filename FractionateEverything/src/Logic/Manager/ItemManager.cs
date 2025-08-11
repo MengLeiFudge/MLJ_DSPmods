@@ -15,31 +15,31 @@ public static class ItemManager {
         Register("电磁奖券", "Electromagnetic Ticket");
         Register("I电磁奖券",
             "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量电磁矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量电磁矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("能量奖券", "Energy Ticket");
         Register("I能量奖券",
             "A high-tech ticket with a lot of energy matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量能量矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量能量矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("结构奖券", "Structure Ticket");
         Register("I结构奖券",
             "A high-tech ticket with a lot of structure matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量结构矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量结构矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("信息奖券", "Information Ticket");
         Register("I信息奖券",
             "A high-tech ticket with a lot of information matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量信息矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量信息矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("引力奖券", "Gravity Ticket");
         Register("I引力奖券",
             "A high-tech ticket with a lot of gravity matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量引力矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量引力矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("宇宙奖券", "Universe Ticket");
         Register("I宇宙奖券",
             "A high-tech ticket with a lot of universe matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量宇宙矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量宇宙矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
         Register("黑雾奖券", "Dark Fog Ticket");
         Register("I黑雾奖券",
             "A high-tech ticket with a lot of dark fog matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data center.",
-            "一张高科技奖券，内部封装了大量黑雾矩阵。也是数据中心某些卡池的抽奖凭证。");
+            "一张高科技奖券，内部封装了大量黑雾矩阵。也是分馏数据中心某些卡池的抽奖凭证。");
 
         Register("分馏塔原胚普通", "Frac Building Proto(Normal)", "分馏塔原胚（普通）");
         Register("I分馏塔原胚普通",

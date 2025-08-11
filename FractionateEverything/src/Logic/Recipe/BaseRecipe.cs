@@ -241,7 +241,7 @@ public abstract class BaseRecipe(
     }
 
     /// <summary>
-    /// 通过某种方式（例如抽卡，科技奖励等）获取到该配方。
+    /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
     public void RewardThis() {
