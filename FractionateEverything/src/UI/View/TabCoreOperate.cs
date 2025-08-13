@@ -18,7 +18,7 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 
-public static class TabRecipeAndBuilding {
+public static class TabCoreOperate {
     public static RectTransform _windowTrans;
 
     #region 选择物品
@@ -45,7 +45,7 @@ public static class TabRecipeAndBuilding {
 
     #endregion
 
-    #region 配方详情
+    #region 配方操作
 
     public static ConfigEntry<int> RecipeTypeEntry;
     public static string[] RecipeTypeNames;
@@ -59,7 +59,7 @@ public static class TabRecipeAndBuilding {
 
     #endregion
 
-    #region 建筑加成
+    #region 建筑操作
 
     public static ConfigEntry<int> BuildingTypeEntry;
     public static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
@@ -100,9 +100,9 @@ public static class TabRecipeAndBuilding {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "配方&建筑", "tab-group-fe1");
+        wnd.AddTabGroup(trans, "核心操作");
         {
-            var tab = wnd.AddTab(trans, "配方详情");
+            var tab = wnd.AddTab(trans, "配方操作");
             x = 0f;
             y = 10f;
             textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
@@ -127,7 +127,7 @@ public static class TabRecipeAndBuilding {
             }
         }
         {
-            var tab = wnd.AddTab(trans, "建筑加成");
+            var tab = wnd.AddTab(trans, "建筑操作");
             x = 0f;
             y = 10f;
             wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)

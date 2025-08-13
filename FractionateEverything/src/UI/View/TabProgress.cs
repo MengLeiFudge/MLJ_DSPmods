@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 
-public static class TabAchievement {
+public static class TabProgress {
     public static RectTransform _windowTrans;
 
     private static Dictionary<string, int> programmingEvents;
@@ -285,7 +285,17 @@ public static class TabAchievement {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "成就", "tab-group-fe4");
+        wnd.AddTabGroup(trans, "进度系统");
+        {
+            var tab = wnd.AddTab(trans, "主线任务");
+            x = 0f;
+            y = 10f;
+        }
+        {
+            var tab = wnd.AddTab(trans, "循环任务");
+            x = 0f;
+            y = 10f;
+        }
         {
             var tab = wnd.AddTab(trans, "成就详情");
             x = 0f;

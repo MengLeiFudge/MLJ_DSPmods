@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
-using static FE.UI.View.TabOtherSetting;
+using static FE.UI.View.TabSetting;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
