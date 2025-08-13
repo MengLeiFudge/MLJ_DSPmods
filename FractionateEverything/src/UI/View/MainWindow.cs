@@ -14,12 +14,12 @@ public static class MainWindow {
     private static MyConfigWindow _configWin;
 
     public static void LoadConfig(ConfigFile configFile) {
-        TabRecipeAndBuilding.LoadConfig(configFile);
-        TabRaffle.LoadConfig(configFile);
-        TabShop.LoadConfig(configFile);
-        TabTask.LoadConfig(configFile);
-        TabAchievement.LoadConfig(configFile);
-        TabOtherSetting.LoadConfig(configFile);
+        TabCoreOperate.LoadConfig(configFile);
+        TabPackage.LoadConfig(configFile);
+        TabGetItemRecipe.LoadConfig(configFile);
+        TabProgress.LoadConfig(configFile);
+        TabStatistic.LoadConfig(configFile);
+        TabSetting.LoadConfig(configFile);
     }
 
     public static void Init() {
@@ -41,21 +41,21 @@ public static class MainWindow {
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        TabRecipeAndBuilding.CreateUI(wnd, trans);
-        TabRaffle.CreateUI(wnd, trans);
-        TabShop.CreateUI(wnd, trans);
-        TabTask.CreateUI(wnd, trans);
-        TabAchievement.CreateUI(wnd, trans);
-        TabOtherSetting.CreateUI(wnd, trans);
+        TabCoreOperate.CreateUI(wnd, trans);
+        TabPackage.CreateUI(wnd, trans);
+        TabGetItemRecipe.CreateUI(wnd, trans);
+        TabProgress.CreateUI(wnd, trans);
+        TabStatistic.CreateUI(wnd, trans);
+        TabSetting.CreateUI(wnd, trans);
     }
 
     private static void UpdateUI() {
-        TabRecipeAndBuilding.UpdateUI();
-        TabRaffle.UpdateUI();
-        TabShop.UpdateUI();
-        TabTask.UpdateUI();
-        TabAchievement.UpdateUI();
-        TabOtherSetting.UpdateUI();
+        TabCoreOperate.UpdateUI();
+        TabPackage.UpdateUI();
+        TabGetItemRecipe.UpdateUI();
+        TabProgress.UpdateUI();
+        TabStatistic.UpdateUI();
+        TabSetting.UpdateUI();
     }
 
     public static void OnInputUpdate() {
@@ -99,31 +99,31 @@ public static class MainWindow {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        TabRecipeAndBuilding.Import(r);
-        TabRaffle.Import(r);
-        TabShop.Import(r);
-        TabTask.Import(r);
-        TabAchievement.Import(r);
-        TabOtherSetting.Import(r);
+        TabCoreOperate.Import(r);
+        TabPackage.Import(r);
+        TabGetItemRecipe.Import(r);
+        TabProgress.Import(r);
+        TabStatistic.Import(r);
+        TabSetting.Import(r);
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        TabRecipeAndBuilding.Export(w);
-        TabRaffle.Export(w);
-        TabShop.Export(w);
-        TabTask.Export(w);
-        TabAchievement.Export(w);
-        TabOtherSetting.Export(w);
+        TabCoreOperate.Export(w);
+        TabPackage.Export(w);
+        TabGetItemRecipe.Export(w);
+        TabProgress.Export(w);
+        TabStatistic.Export(w);
+        TabSetting.Export(w);
     }
 
     public static void IntoOtherSave() {
-        TabRecipeAndBuilding.IntoOtherSave();
-        TabRaffle.IntoOtherSave();
-        TabShop.IntoOtherSave();
-        TabTask.IntoOtherSave();
-        TabAchievement.IntoOtherSave();
-        TabOtherSetting.IntoOtherSave();
+        TabCoreOperate.IntoOtherSave();
+        TabPackage.IntoOtherSave();
+        TabGetItemRecipe.IntoOtherSave();
+        TabProgress.IntoOtherSave();
+        TabStatistic.IntoOtherSave();
+        TabSetting.IntoOtherSave();
     }
 
     #endregion
