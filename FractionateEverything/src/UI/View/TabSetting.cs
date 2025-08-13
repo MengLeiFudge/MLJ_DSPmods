@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FE.UI.View;
 
-public static class TabOtherSetting {
+public static class TabSetting {
     public static RectTransform _windowTrans;
 
     public static UIButton btnUnlockAll;
@@ -18,7 +18,7 @@ public static class TabOtherSetting {
     public static MySlider sliderExpMultiRate;
 
     public static void LoadConfig(ConfigFile configFile) {
-        ExpMultiRateEntry = configFile.Bind("TabOtherSetting", "ExpMultiRate", 1.0f, "经验获取倍率");
+        ExpMultiRateEntry = configFile.Bind("TabSetting", "ExpMultiRate", 1.0f, "经验获取倍率");
         ExpMultiRate = ExpMultiRateEntry.Value;
     }
 
@@ -31,9 +31,19 @@ public static class TabOtherSetting {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "其他", "tab-group-fe4");
+        wnd.AddTabGroup(trans, "系统设置");
         {
-            var tab = wnd.AddTab(trans, "其他设置");
+            var tab = wnd.AddTab(trans, "弹窗设置");
+            x = 0f;
+            y = 10f;
+        }
+        {
+            var tab = wnd.AddTab(trans, "特权功能");
+            x = 0f;
+            y = 10f;
+        }
+        {
+            var tab = wnd.AddTab(trans, "沙盒模式");
             x = 0f;
             y = 10f;
             btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",

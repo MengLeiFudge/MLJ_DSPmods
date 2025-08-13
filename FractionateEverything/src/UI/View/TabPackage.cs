@@ -9,16 +9,17 @@ using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
-using static FE.UI.View.TabRecipeAndBuilding;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View;
 
-public static class TabShop {
+public static class TabPackage {
     public static RectTransform _windowTrans;
 
     #region 选择物品
 
+    public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
+    public static int SelectedItemId => SelectedItem.ID;
     private static Text textCurrItem;
     private static MyImageButton btnSelectedItem;
 
@@ -26,8 +27,8 @@ public static class TabShop {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
-        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2 + 5;
-        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2 + 5;
+        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
+        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
@@ -41,9 +42,9 @@ public static class TabShop {
     private static UIButton btnGetModDataProto;
     private static UIButton btnGetModDataBuilding;
 
-    private static DateTime nextFreshTime;
-    private static Text textLeftTime;
-    private static Text[] textItemInfo = new Text[3];
+    public static void AddTranslations() {
+        Register("FE1.1-1", "", "2024年3月");
+    }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
@@ -51,9 +52,9 @@ public static class TabShop {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "商店", "tab-group-fe3");
+        wnd.AddTabGroup(trans, "物品管理");
         {
-            var tab = wnd.AddTab(trans, "数据中心");
+            var tab = wnd.AddTab(trans, "物品交互");
             x = 0f;
             y = 10f;
             textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
@@ -83,25 +84,9 @@ public static class TabShop {
                 GetModDataItemInfo);
         }
         {
-            var tab = wnd.AddTab(trans, "限时商店");
-            nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
-                .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
+            var tab = wnd.AddTab(trans, "重要物品");
             x = 0f;
             y = 10f;
-            textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
-            y += 36f;
-            textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time1",
-                () => ExchangeItem(0));
-            y += 36f;
-            textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time2",
-                () => ExchangeItem(1));
-            y += 36f;
-            textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time3",
-                () => ExchangeItem(2));
-            y += 36f;
         }
     }
 
@@ -130,16 +115,6 @@ public static class TabShop {
         }
         btnGetModDataItem[2].enabled = GetModDataItemCount(SelectedItem.ID) > 0;
         btnGetModDataItem[2].button.enabled = GetModDataItemCount(SelectedItem.ID) > 0;
-
-        if (DateTime.Now >= nextFreshTime) {
-            nextFreshTime = nextFreshTime.AddMinutes(10);
-            //更新三份限时购买物品的信息
-            // textItemInfo[0].text = GetTimeLimitedItemInfo(0);
-            // textItemInfo[1].text = GetTimeLimitedItemInfo(1);
-            // textItemInfo[2].text = GetTimeLimitedItemInfo(2);
-        }
-        TimeSpan ts = nextFreshTime - DateTime.Now;
-        textLeftTime.text = $"还有 {(int)ts.TotalMinutes} min {ts.Seconds} s 刷新";
     }
 
     /// <summary>
@@ -241,8 +216,6 @@ public static class TabShop {
         }
         UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
     }
-
-    public static void ExchangeItem(int index) { }
 
     #region IModCanSave
 
