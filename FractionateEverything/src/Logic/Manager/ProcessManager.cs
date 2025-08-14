@@ -16,6 +16,7 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class ProcessManager {
     public static void AddTranslations() {
+        Register("原料堆积", "Fluid Overflow");
         Register("搬运模式", "Transport Mode");
         Register("分馏永动", "Frac Forever");
         Register("无配方", "No recipe");
@@ -25,19 +26,14 @@ public static class ProcessManager {
 
     #region Field
 
-    private static int totalUIUpdateTimes = 0;
-    private static int fractionatorID = 0;
     private static bool isFirstUpdateUI = true;
     private static float productProbTextBaseY;
     private static float oriProductProbTextBaseY;
-    private static string lastSpeedText = "";
-    private static string lastProductProbText = "";
-    private static string lastOriProductProbText = "";
     public static int MaxOutputTimes = 2;
     public static int MaxBeltSpeed = 30;
-    public static int FracFluidInputMax = 40;
-    public static int FracProductOutputMax = 20;
-    public static int FracFluidOutputMax = 20;
+    public static int BaseFracFluidInputMax = 40;
+    public static int BaseFracProductOutputMax = 20;
+    public static int BaseFracFluidOutputMax = 20;
     private static double[] incTableFixedRatio;
     public static readonly List<ProductOutputInfo> emptyOutputs = [];
 
@@ -54,9 +50,9 @@ public static class ProcessManager {
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
         float ratio = MaxBeltSpeed / 30.0f;
         PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
-        FracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
-        FracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
-        FracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
+        BaseFracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
+        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
+        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
 
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         incTableFixedRatio = new double[Cargo.incTableMilli.Length];
@@ -239,13 +235,17 @@ public static class ProcessManager {
             fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
                 ? __instance.fluidInputCount / __instance.fluidInputCargoCount
                 : 4f;
-        int productOutputMax = __instance.productOutputMax;
         int buildingID = factory.entityPool[__instance.entityId].protoId;
         ItemProto building = LDB.items.Select(buildingID);
+        int fluidInputMax = building.FluidInputMax();
+        int productOutputMax = building.ProductOutputMax();
+        int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFracForever();
         if (__instance.fluidInputCount > 0
-            && (enableFracForever || products.All(p => p.count < productOutputMax))
-            && __instance.fluidOutputCount < __instance.fluidOutputMax) {
+            && (products.All(p => p.count < productOutputMax)
+                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))
+            && (__instance.fluidOutputCount < fluidOutputMax
+                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
@@ -278,8 +278,11 @@ public static class ProcessManager {
                     __instance.fluidOutputInc += fluidInputIncAvg;
                     continue;
                 }
-                //启用分馏永动且某个产物达到输出上限的一半，则分馏塔进入分馏永动状态
-                if (enableFracForever && products.Any(p => p.count >= productOutputMax / 2)) {
+                //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
+                if (enableFracForever
+                    && (products.Any(p => p.count >= productOutputMax)
+                        || __instance.fluidOutputCount >= fluidOutputMax)
+                    && __instance.fluidOutputCount < fluidOutputMax + 4) {
                     moveDirectly = true;
                     goto MoveDirectly;
                 }
@@ -380,7 +383,7 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
                     if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
@@ -450,7 +453,7 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
                     if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
@@ -551,10 +554,7 @@ public static class ProcessManager {
 
         __instance.isWorking = __instance.fluidInputCount > 0
                                && products.All(p => p.count < productOutputMax)
-                               && __instance.fluidOutputCount < __instance.fluidOutputMax;
-        if (enableFracForever) {
-            __instance.isWorking &= products.All(p => p.count < productOutputMax / 2);
-        }
+                               && __instance.fluidOutputCount < fluidOutputMax;
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
@@ -706,33 +706,45 @@ public static class ProcessManager {
         }
         ItemProto building = LDB.items.Select(buildingID);
         List<ProductOutputInfo> products = fractionator.products(__instance.factory);
-        int productOutputMax = fractionator.productOutputMax;
-        bool transportMode = !fractionator.isWorking
-                             && !(fractionator.productOutputCount >= fractionator.productOutputMax
-                                  || fractionator.fluidOutputCount >= fractionator.fluidOutputMax)
-                             && fractionator.fluidId > 0
-                             && fractionator.fluidInputCount > 0;
-        if (transportMode) {
-            //原版这里是“缺少原材料”，但在此Mod中还有可能是直接搬运的状态
-            if (building.EnableFracForever() && products.Any(p => p.count >= productOutputMax / 2)) {
-                __instance.stateText.text = "分馏永动".Translate();
+        int fluidOutputMax = building.FluidOutputMax();
+        int productOutputMax = building.ProductOutputMax();
+        bool transportMode = false;
+        if (!fractionator.isWorking) {
+            if (fractionator.fluidId > 0) {
+                if (fractionator.fluidInputCount > 0) {
+                    if (products.Any(p => p.count >= productOutputMax)) {
+                        if (building.EnableFracForever()) {
+                            __instance.stateText.text = "分馏永动".Translate();
+                            __instance.stateText.color = __instance.workStoppedColor;
+                            transportMode = true;
+                        } else {
+                            __instance.stateText.text = "产物堆积".Translate();
+                            __instance.stateText.color = __instance.workStoppedColor;
+                        }
+                    } else if (fractionator.fluidOutputCount >= fluidOutputMax
+                               && fractionator.fluidOutputCount < fluidOutputMax + 4) {
+                        if (building.EnableFracForever()) {
+                            __instance.stateText.text = "分馏永动".Translate();
+                            __instance.stateText.color = __instance.workStoppedColor;
+                            transportMode = true;
+                        } else {
+                            __instance.stateText.text = "原料堆积".Translate();
+                            __instance.stateText.color = __instance.workStoppedColor;
+                        }
+                    } else {
+                        __instance.stateText.text = "搬运模式".Translate();
+                        __instance.stateText.color = __instance.workStoppedColor;
+                        transportMode = true;
+                    }
+                } else {
+                    __instance.stateText.text = "缺少原材料".Translate();
+                    __instance.stateText.color = __instance.workStoppedColor;
+                }
             } else {
-                __instance.stateText.text = "搬运模式".Translate();
+                __instance.stateText.text = "待机".Translate();
+                __instance.stateText.color = __instance.idleColor;
             }
         }
-        //当持续查看同一个塔的状态时，每20帧（通常为0.333s）刷新数字，防止变化过快导致数字无法看清
-        if (__instance.fractionatorId == fractionatorID) {
-            totalUIUpdateTimes++;
-            if (totalUIUpdateTimes < 20) {
-                __instance.speedText.text = lastSpeedText;
-                __instance.productProbText.text = lastProductProbText;
-                __instance.oriProductProbText.text = lastOriProductProbText;
-                return;
-            }
-        } else {
-            fractionatorID = __instance.fractionatorId;
-        }
-        totalUIUpdateTimes = 0;
 
         //修改速率计算
         PowerConsumerComponent powerConsumer = __instance.powerSystem.consumerPool[fractionator.pcId];
@@ -757,7 +769,6 @@ public static class ProcessManager {
         if (!fractionator.isWorking)
             speed = 0.0;
         __instance.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
-        lastSpeedText = __instance.speedText.text;
         //根据分馏塔以及配方情况，计算实际处理情况，生成上方字符串s1以及下方字符串s2
         string s1 = "";
         string s2 = "";
@@ -845,9 +856,7 @@ public static class ProcessManager {
         }
         //刷新概率显示内容
         __instance.productProbText.text = s1;
-        lastProductProbText = s1;
         __instance.oriProductProbText.text = s2;
-        lastOriProductProbText = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);
         __instance.productProbText.transform.localPosition = new(0, upY, 0);
