@@ -47,27 +47,57 @@ public static class BuildingManager {
     }
 
     /// <summary>
-    /// 调整Model的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
+    /// 调整分馏塔缓存区大小（实际运行不使用此值，该方法只对原版分馏塔生效）
     /// </summary>
     public static void SetFractionatorCacheSize() {
         foreach (ModelProto modelProto in LDB.models.dataArray) {
             if (modelProto.prefabDesc.isFractionator) {
-                modelProto.prefabDesc.fracFluidInputMax = FracFluidInputMax;
-                modelProto.prefabDesc.fracProductOutputMax = FracProductOutputMax;
-                modelProto.prefabDesc.fracFluidOutputMax = FracFluidOutputMax;
+                modelProto.prefabDesc.fracFluidInputMax = BaseFracFluidInputMax;
+                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax;
+                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax;
             }
         }
     }
 
     /// <summary>
-    /// 更改已放置的分馏塔的缓存区大小，从而使分馏塔在传送带速度较高的情况下也能满带运行
+    /// 调整已放置的分馏塔缓存区大小（实际运行不使用此值，该方法只对原版分馏塔生效）
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
     public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
-        __instance.fluidInputMax = FracFluidInputMax;
-        __instance.productOutputMax = FracProductOutputMax;
-        __instance.fluidOutputMax = FracFluidOutputMax;
+        __instance.fluidInputMax = BaseFracFluidInputMax;
+        __instance.productOutputMax = BaseFracProductOutputMax;
+        __instance.fluidOutputMax = BaseFracFluidOutputMax;
+    }
+
+    /// <summary>
+    /// 返回分馏塔流动输入缓存大小
+    /// </summary>
+    public static int FluidInputMax(this ItemProto fractionator) {
+        return BaseFracFluidInputMax;
+    }
+
+    /// <summary>
+    /// 返回分馏塔产物输出缓存大小
+    /// </summary>
+    public static int ProductOutputMax(this ItemProto fractionator) {
+        return fractionator.ID switch {
+            IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxProductOutputStack,
+            IFE矿物复制塔 => BaseFracProductOutputMax * MineralCopyTower.MaxProductOutputStack,
+            IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxProductOutputStack,
+            IFE量子复制塔 => BaseFracProductOutputMax * QuantumCopyTower.MaxProductOutputStack,
+            IFE点金塔 => BaseFracProductOutputMax * AlchemyTower.MaxProductOutputStack,
+            IFE分解塔 => BaseFracProductOutputMax * DeconstructionTower.MaxProductOutputStack,
+            IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxProductOutputStack,
+            _ => BaseFracProductOutputMax
+        };
+    }
+
+    /// <summary>
+    /// 返回分馏塔流动输出缓存大小
+    /// </summary>
+    public static int FluidOutputMax(this ItemProto fractionator) {
+        return BaseFracFluidOutputMax;
     }
 
     #region 分馏塔产物输出拓展

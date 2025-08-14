@@ -4,7 +4,6 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
-using FE.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
