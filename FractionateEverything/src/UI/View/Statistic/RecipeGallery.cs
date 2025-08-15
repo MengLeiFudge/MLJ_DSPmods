@@ -13,21 +13,24 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.Statistic;
 
 public static class RecipeGallery {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    public static Text recipeUnlockTitleText;
+    private static Text recipeUnlockTitleText;
     //矩阵7种（竖），配方6种（横）
-    public static Text[,] recipeUnlockInfoText = new Text[9, 8];
-    public static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
+    private static Text[,] recipeUnlockInfoText = new Text[9, 8];
+    private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
-    public static ConfigEntry<int> RecipeTypeEntry;
-    public static string[] RecipeTypeNames;
-    public static ERecipe[] RecipeTypes = [
+    private static ConfigEntry<int> RecipeTypeEntry;
+    private static string[] RecipeTypeNames;
+    private static ERecipe[] RecipeTypes = [
         ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
     ];
 
-    public static void AddTranslations() { }
+    public static void AddTranslations() {
+        Register("配方图鉴", "Recipe Gallery");
+    }
 
     public static void LoadConfig(ConfigFile configFile) {
         RecipeTypeNames = new string[RecipeTypes.Length];
@@ -37,8 +40,8 @@ public static class RecipeGallery {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "配方图鉴");
+        window = trans;
+        tab = wnd.AddTab(trans, "配方图鉴");
         float x = 0f;
         float y = 10f;
         recipeUnlockTitleText = wnd.AddText2(x, y, tab,
@@ -65,6 +68,9 @@ public static class RecipeGallery {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         int[,] maxMemoryCountArr = new int[9, 8];
         int[,] unlockCountArr = new int[9, 8];
         int[,] totalCountArr = new int[9, 8];

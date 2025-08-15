@@ -11,7 +11,8 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.CoreOperate;
 
 public static class BuildingOperate {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
@@ -31,6 +32,10 @@ public static class BuildingOperate {
     private static UIButton btnTip4;
     private static UIButton btnBuildingInfo4;
 
+    public static void AddTranslations() {
+        Register("建筑操作", "Building Operate");
+    }
+
     public static void LoadConfig(ConfigFile configFile) {
         BuildingTypeEntry = configFile.Bind("BuildingOperate", "Building Type", 0, "想要查看的建筑类型。");
         if (BuildingTypeEntry.Value < 0 || BuildingTypeEntry.Value >= BuildingTypeNames.Length) {
@@ -39,8 +44,8 @@ public static class BuildingOperate {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "建筑操作");
+        window = trans;
+        tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
         float y = 10f;
         wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
@@ -75,6 +80,9 @@ public static class BuildingOperate {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         textBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
             ? "已启用流动输出堆叠".WithColor(Orange)
             : "未启用流动输出堆叠".WithColor(Red);
