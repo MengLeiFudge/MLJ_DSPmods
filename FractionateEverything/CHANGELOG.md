@@ -10,6 +10,7 @@
     + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
     + 增加前台自动百连抽功能。
     + 重新调整配方效果曲线，现在品质突破不会降低配方效果。
+    + 优化分馏塔的处理逻辑。
     + The statistics panel can correctly display the consumption of each essence during quantum copying.
     + Add the metadata needed to unlock all technologies.
     + Repair the number of matrices required for certain technologies.
@@ -24,6 +25,7 @@
       unique to Black Mist.
     + Added automatic 100 consecutive draws feature to the front desk.
     + The recipe effect curve has been readjusted, and now quality breakthroughs will not reduce the recipe effect.
+    + Optimise the processing logic of the fractionator.
 
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。
@@ -32,7 +34,7 @@
     + 调整分解配方的平衡性，增加输出。
     + 调整配方升级曲线，调整沙土换经验的比例。
     + 修复等效配方计算错误的问题。
-    + 调整抽卡结果按钮的显示。
+    + 调整抽奖结果按钮的显示。
     + 调整显示分馏数据中心全部物品弹窗的排版。
     + 调整奖券的制作速度。
     + 物品未解锁时，无法使用分馏配方核心兑换相关配方。
@@ -49,7 +51,7 @@
 
 - v2.0.3
     + 修复沙土交换配方经验无效的问题。
-    + 抽卡后可以选择三种不同的提取方式。
+    + 抽奖后可以选择三种不同的提取方式。
     + 修复分馏塔配方科技需求的分馏塔数目错误的问题。
     + 调整部分科技位置与需求。
     + 创世之书快速开局不再解锁分馏科技。
@@ -96,7 +98,7 @@
     + Add English translation.
 
 - v2.0.0
-    + 新建筑、新配方、新界面，还有全新的抽卡体验！
+    + 新建筑、新配方、新界面，还有全新的抽奖体验！
     + 使用 Shift + F 打开面板，剩下的就请自行探索吧！
     + New building, new recipe, new interface, and also a brand new card drawing experience!
     + Use Shift + F to open the panel, please explore the rest on your own!

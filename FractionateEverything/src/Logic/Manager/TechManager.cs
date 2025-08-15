@@ -33,6 +33,7 @@ public static class TechManager {
         Register("超值礼包1结果",
             "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
             "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
+        Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
         Register("超值礼包2描述",
@@ -234,8 +235,8 @@ public static class TechManager {
         //     "Make specific types of fractionators keep running",
         //     "使特定种类的分馏塔可以持续运行");
         // Register("分馏永动描述",
-        //     "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches half of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
-        //     "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限一半时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
+        //     "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches 75% of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
+        //     "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限75%时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
         // Register("分馏永动结果",
         //     "Now, fractionators will keep running without product buildup.",
         //     "现在，分馏塔将会持续运行，不会出现产物堆积的情况了。");
@@ -598,12 +599,15 @@ public static class TechManager {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(TechProto), nameof(TechProto.UnlockFunctionText))]
     public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
-        switch (__instance.ID) {
-            case TFE分馏数据中心:
-                __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
-                           + $"{"解锁全部建筑培养配方".Translate()}\r\n"
-                           + $"{"解锁非珍奇矿物复制配方".Translate()}";
-                return false;
+        if (__instance.ID == TFE分馏数据中心) {
+            __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
+                       + $"{"解锁全部建筑培养配方".Translate()}\r\n"
+                       + $"{"解锁非珍奇矿物复制配方".Translate()}";
+            return false;
+        }
+        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
+            __result = $"{"一个物超所值的礼包".Translate()}";
+            return false;
         }
         return true;
     }
