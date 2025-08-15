@@ -12,9 +12,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View;
+namespace FE.UI.View.GetItemRecipe;
 
-public static class TabGetItemRecipe {
+public static class LimitedTimeStore {
     public static RectTransform _windowTrans;
     public static RectTransform tabRecipeRaffle;
     public static RectTransform tabBuildingRaffle;
@@ -50,18 +50,17 @@ public static class TabGetItemRecipe {
     private static Text[] textItemInfo = new Text[3];
 
     public static void LoadConfig(ConfigFile configFile) {
-        TicketTypeEntry = configFile.Bind("TabGetItemRecipe", "Ticket Type", 0, "想要使用的奖券类型。");
+        TicketTypeEntry = configFile.Bind("LimitedTimeStore", "Ticket Type", 0, "想要使用的奖券类型。");
         if (TicketTypeEntry.Value < 0 || TicketTypeEntry.Value >= TicketIds.Length) {
             TicketTypeEntry.Value = 0;
         }
-        EnableAutoRaffleEntry = configFile.Bind("TabGetItemRecipe", "Enable Auto Raffle", false, "是否自动抽取。");
+        EnableAutoRaffleEntry = configFile.Bind("LimitedTimeStore", "Enable Auto Raffle", false, "是否自动抽取。");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "资源获取");
         {
             var tab = wnd.AddTab(trans, "奖券抽奖");
             tabRecipeRaffle = tab;

@@ -5,9 +5,9 @@ using FE.UI.Components;
 using UnityEngine;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View;
+namespace FE.UI.View.ProgressSystem;
 
-public static class TabProgress {
+public static class DevelopmentDiary {
     public static RectTransform _windowTrans;
 
     private static Dictionary<string, int> programmingEvents;
@@ -283,29 +283,9 @@ public static class TabProgress {
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        float x;
-        float y;
-        wnd.AddTabGroup(trans, "进度系统");
-        {
-            var tab = wnd.AddTab(trans, "主线任务");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "循环任务");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "成就详情");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "开发日记");
-            x = 0f;
-            y = 10f;
-        }
+        var tab = wnd.AddTab(trans, "开发日记");
+        float x = 0f;
+        float y = 10f;
     }
 
     public static void UpdateUI() { }
