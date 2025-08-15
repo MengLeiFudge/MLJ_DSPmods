@@ -6,9 +6,9 @@ using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FE.UI.View;
+namespace FE.UI.View.Setting;
 
-public static class TabSetting {
+public static class PopupDisplay {
     public static RectTransform _windowTrans;
 
     public static UIButton btnUnlockAll;
@@ -31,14 +31,13 @@ public static class TabSetting {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "系统设置");
         {
-            var tab = wnd.AddTab(trans, "弹窗设置");
+            var tab = wnd.AddTab(trans, "弹窗显示");
             x = 0f;
             y = 10f;
         }
         {
-            var tab = wnd.AddTab(trans, "特权功能");
+            var tab = wnd.AddTab(trans, "VIP功能");
             x = 0f;
             y = 10f;
         }
