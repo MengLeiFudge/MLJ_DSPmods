@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ModPackage;
