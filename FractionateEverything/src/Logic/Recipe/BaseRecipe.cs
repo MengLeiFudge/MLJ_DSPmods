@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
-using static FE.UI.View.TabOtherSetting;
+using static FE.UI.View.Setting.SandboxMode;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -233,15 +233,15 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 添加经验，同时触发升级与突破
     /// </summary>
-    public void AddExp(float exp) {
+    public void AddExp(float exp, bool useExpMultiRate = true) {
         lock (this) {
-            Exp += exp * ExpMultiRate;
+            Exp += useExpMultiRate ? exp * ExpMultiRate : exp;
             CheckState();
         }
     }
 
     /// <summary>
-    /// 通过某种方式（例如抽卡，科技奖励等）获取到该配方。
+    /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
     public void RewardThis() {

@@ -3,28 +3,20 @@ using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
 
-namespace FE.UI.View;
+namespace FE.UI.View.ProgressSystem;
 
-public static class TabTask {
+public static class RecurringTask {
     public static RectTransform _windowTrans;
+
+    public static void AddTranslations() { }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        float x;
-        float y;
-        wnd.AddTabGroup(trans, "任务", "tab-group-fe4");
-        {
-            var tab = wnd.AddTab(trans, "所有任务");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "标记任务");
-            x = 0f;
-            y = 10f;
-        }
+        var tab = wnd.AddTab(trans, "循环任务");
+        float x = 0f;
+        float y = 10f;
     }
 
     public static void UpdateUI() { }

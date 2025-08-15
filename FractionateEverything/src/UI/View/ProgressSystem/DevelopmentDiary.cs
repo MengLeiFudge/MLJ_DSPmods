@@ -5,9 +5,9 @@ using FE.UI.Components;
 using UnityEngine;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View;
+namespace FE.UI.View.ProgressSystem;
 
-public static class TabAchievement {
+public static class DevelopmentDiary {
     public static RectTransform _windowTrans;
 
     private static Dictionary<string, int> programmingEvents;
@@ -250,8 +250,8 @@ public static class TabAchievement {
             + "想必大家也能看出来，以分馏作为核心的思路其实大大限制了MOD的功能。\n"
             + $"不过，前几天与群友交流之后，我确定了MOD之后的大致方向——那就是{"抽奖".WithColor(Orange)}。\n"
             + $"“百亿大厂十连抽，五人团队戴森球”，想必大家都听过。嘿嘿嘿，{"谁说戴森球不能十连抽？".WithColor(Orange)}我踏马莱纳！\n\n"
-            + "接下来的更新将主要以“随机性与抽卡”作为核心。可以透露的信息如下：\n"
-            + "1.会有新的分馏塔，用于获取专用于抽卡的货币。\n"
+            + "接下来的更新将主要以“随机性与抽奖”作为核心。可以透露的信息如下：\n"
+            + "1.会有新的分馏塔，用于获取专用于抽奖的货币。\n"
             + "2.分馏配方可通过科技、抽奖、兑换等方式获取。\n"
             + "3.同一个分馏配方有不同品质，越高品质越难获取。\n"
             + "4.希望能在9月底之前完成初版。欢迎加群体验最新测试版，并提出你的看法！\n\n"
@@ -271,7 +271,7 @@ public static class TabAchievement {
             "这次是一个小更新，修复了原版分馏塔无法将氢分馏为重氢的问题。\n"
             + "感谢starfi5h大佬对此bug出现原因的探究（我确实没有复现此bug，所以一直无法修复）。\n\n"
             + "打个广告：如果你想量化产线，推荐使用网页版量化计算器【https://dsp-calc.pro/】\n\n"
-            + "1.5.0版本的抽卡还在制作中，比我预想的要麻烦的多。\n"
+            + "1.5.0版本的抽奖还在制作中，比我预想的要麻烦的多。\n"
             + "目前设计部分基本完工，正处于编写代码阶段，不过UI方面可能是个难题。\n"
             + "在新的版本中，将会增加一个与垃圾回收分馏塔类似的分馏塔，用于解锁分馏配方、向商店提供货币。\n"
             + "配方具有“星级”与“稀有度”这两个属性，分别表示配方的效率与稀有程度。\n"
@@ -283,19 +283,9 @@ public static class TabAchievement {
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        float x;
-        float y;
-        wnd.AddTabGroup(trans, "成就", "tab-group-fe4");
-        {
-            var tab = wnd.AddTab(trans, "成就详情");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "开发日记");
-            x = 0f;
-            y = 10f;
-        }
+        var tab = wnd.AddTab(trans, "开发日记");
+        float x = 0f;
+        float y = 10f;
     }
 
     public static void UpdateUI() { }

@@ -10,12 +10,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
-using static FE.UI.View.TabRecipeAndBuilding;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View;
+namespace FE.UI.View.GetItemRecipe;
 
-public static class TabRaffle {
+public static class TicketRaffle {
     public static RectTransform _windowTrans;
     public static RectTransform tabRecipeRaffle;
     public static RectTransform tabBuildingRaffle;
@@ -30,14 +29,12 @@ public static class TabRaffle {
         "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
-    public static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
+
     public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
     public static int SelectedTicketMatrixId => LDB.items.Select(SelectedTicketId).maincraft.Items[0];
     public static float SelectedTicketRatioPlus => SelectedTicketId == IFE宇宙奖券 ? 2.0f : 1.0f;
     public static Text ticketCountText1;
-    public static Text recipeUnlockTitleText;
-    //矩阵7种（竖），配方6种（横）
-    public static Text[,] recipeUnlockInfoText = new Text[9, 8];
+
     public static Text ticketCountText2;
     public static bool[] ignoreRecipeCount = new bool[TicketIds.Length];
 
@@ -47,26 +44,25 @@ public static class TabRaffle {
     public static int RecipeRaffleCount = 1;
     public static double RecipeRaffleRate => 0.006 + Math.Max(0, RecipeRaffleCount - 73) * 0.06;
 
+
+    private static DateTime nextFreshTime;
+    private static Text textLeftTime;
+    private static Text[] textItemInfo = new Text[3];
+
     public static void LoadConfig(ConfigFile configFile) {
-        TicketTypeEntry = configFile.Bind("TabRaffle", "Ticket Type", 0, "想要使用的奖券类型。");
+        TicketTypeEntry = configFile.Bind("LimitedTimeStore", "Ticket Type", 0, "想要使用的奖券类型。");
         if (TicketTypeEntry.Value < 0 || TicketTypeEntry.Value >= TicketIds.Length) {
             TicketTypeEntry.Value = 0;
         }
-        EnableAutoRaffleEntry = configFile.Bind("TabRaffle", "Enable Auto Raffle", false, "是否自动抽取。");
+        EnableAutoRaffleEntry = configFile.Bind("LimitedTimeStore", "Enable Auto Raffle", false, "是否自动抽取。");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
         float x;
         float y;
-        wnd.AddTabGroup(trans, "抽卡", "tab-group-fe2");
-        // {
-        //     var tab = wnd.AddTab(trans, "自选卡池");
-        //     x = 0f;
-        //     y = 10f;
-        // }
         {
-            var tab = wnd.AddTab(trans, "配方卡池");
+            var tab = wnd.AddTab(trans, "奖券抽奖");
             tabRecipeRaffle = tab;
             x = 0f;
             y = 10f;
@@ -83,40 +79,13 @@ public static class TabRaffle {
             ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
             wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
             y += 38f;
-            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-recipe-1",
+            wnd.AddButton(x, y, 200, tab, "配方单抽", 16, "button-raffle-recipe-1",
                 () => RaffleRecipe(1));
-            wnd.AddButton(x + 220, y, 200, tab, "十连", 16, "button-raffle-recipe-10",
+            wnd.AddButton(x + 220, y, 200, tab, "配方十连", 16, "button-raffle-recipe-10",
                 () => RaffleRecipe(10));
-            wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-recipe-100",
+            wnd.AddButton(x + 440, y, 200, tab, "配方百连", 16, "button-raffle-recipe-100",
                 () => RaffleRecipe(100, 5));
             y += 38f;
-            recipeUnlockTitleText = wnd.AddText2(x, y, tab,
-                $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：", 15, "text-recipe-unlock-title");
-            recipeUnlockTitleText.supportRichText = true;
-            y += 38f;
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 8; j++) {
-                    recipeUnlockInfoText[i, j] =
-                        wnd.AddText2(x + 100 * j, y, tab, "999/999", 15, $"text-recipe-unlock-info{i}");
-                    recipeUnlockInfoText[i, j].supportRichText = true;
-                }
-                y += 38f;
-            }
-            recipeUnlockInfoText[0, 0].text = "";
-            for (int i = 1; i <= 7; i++) {
-                recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name;
-            }
-            recipeUnlockInfoText[8, 0].text = "总计";
-            for (int j = 1; j <= 6; j++) {
-                recipeUnlockInfoText[0, j].text = RecipeTypeNames[j - 1];
-            }
-            recipeUnlockInfoText[0, 7].text = "总计";
-        }
-        {
-            var tab = wnd.AddTab(trans, "建筑卡池");
-            tabBuildingRaffle = tab;
-            x = 0f;
-            y = 10f;
             wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
                 .WithConfigEntry(TicketTypeEntry);
             wnd.AddTipsButton2(x + 240, y + 6f, tab, "建筑卡池说明",
@@ -131,62 +100,70 @@ public static class TabRaffle {
             ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
             wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
             y += 38f;
-            wnd.AddButton(x, y, 200, tab, "单抽", 16, "button-raffle-building-1",
+            wnd.AddButton(x, y, 200, tab, "建筑单抽", 16, "button-raffle-building-1",
                 () => RaffleBuilding(1));
-            wnd.AddButton(x + 220, y, 200, tab, "十连", 16, "button-raffle-building-10",
+            wnd.AddButton(x + 220, y, 200, tab, "建筑十连", 16, "button-raffle-building-10",
                 () => RaffleBuilding(10));
-            wnd.AddButton(x + 440, y, 200, tab, "百连", 16, "button-raffle-building-100",
+            wnd.AddButton(x + 440, y, 200, tab, "建筑百连", 16, "button-raffle-building-100",
                 () => RaffleBuilding(100, 5));
+        }
+        {
+            var tab = wnd.AddTab(trans, "自选抽奖");
+            x = 0f;
+            y = 10f;
+        }
+        {
+            var tab = wnd.AddTab(trans, "限时商店");
+            nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
+                .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
+            x = 0f;
+            y = 10f;
+            textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
+            y += 36f;
+            textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time1",
+                () => ExchangeItem(0));
+            y += 36f;
+            textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time2",
+                () => ExchangeItem(1));
+            y += 36f;
+            textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
+            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time3",
+                () => ExchangeItem(2));
+            y += 36f;
         }
     }
 
     public static void UpdateUI() {
         if (tabRecipeRaffle.gameObject.activeSelf) {
             AutoRaffle(true);
-        } else if (tabBuildingRaffle.gameObject.activeSelf) {
-            AutoRaffle(false);
         }
+        // else if (tabBuildingRaffle.gameObject.activeSelf) {
+        //     AutoRaffle(false);
+        // }
         ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
         // EnableAutoRaffleEntry.Value = EnableAutoRaffle[TicketTypeEntry.Value];
-        int[,] maxMemoryCountArr = new int[9, 8];
-        int[,] unlockCountArr = new int[9, 8];
-        int[,] totalCountArr = new int[9, 8];
-        for (int i = 1; i <= 7; i++) {
-            for (int j = 1; j <= 6; j++) {
-                int matrixID = Matrixes[i - 1];
-                ERecipe type = (ERecipe)j;
-                List<BaseRecipe> recipes = GetRecipesByType(type)
-                    .Where(r => itemToMatrix[r.InputID] == matrixID).ToList();
-                totalCountArr[i, j] = recipes.Count;
-                totalCountArr[8, j] += recipes.Count;
-                totalCountArr[i, 7] += recipes.Count;
-                totalCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.Unlocked).ToList();
-                unlockCountArr[i, j] = recipes.Count;
-                unlockCountArr[8, j] += recipes.Count;
-                unlockCountArr[i, 7] += recipes.Count;
-                unlockCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.IsMaxMemory).ToList();
-                maxMemoryCountArr[i, j] = recipes.Count;
-                maxMemoryCountArr[8, j] += recipes.Count;
-                maxMemoryCountArr[i, 7] += recipes.Count;
-                maxMemoryCountArr[8, 7] += recipes.Count;
-            }
-        }
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 7; j++) {
-                recipeUnlockInfoText[i, j].text =
-                    $"{maxMemoryCountArr[i, j].ToString().WithColor(Orange)}/{unlockCountArr[i, j].ToString().WithColor(Blue)}/{totalCountArr[i, j]}";
-            }
-        }
+
         ticketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
+
+
+        if (DateTime.Now >= nextFreshTime) {
+            nextFreshTime = nextFreshTime.AddMinutes(10);
+            //更新三份限时购买物品的信息
+            // textItemInfo[0].text = GetTimeLimitedItemInfo(0);
+            // textItemInfo[1].text = GetTimeLimitedItemInfo(1);
+            // textItemInfo[2].text = GetTimeLimitedItemInfo(2);
+        }
+        TimeSpan ts = nextFreshTime - DateTime.Now;
+        textLeftTime.text = $"还有 {(int)ts.TotalMinutes} min {ts.Seconds} s 刷新";
     }
 
     /// <summary>
-    /// 配方卡池抽卡。
+    /// 配方卡池抽奖。
     /// </summary>
-    /// <param name="raffleCount">抽卡次数</param>
-    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    /// <param name="raffleCount">抽奖次数</param>
+    /// <param name="oneLineMaxCount">一行显示多少个抽奖结果</param>
     /// <param name="showMessage">是否弹窗询问、显示结果</param>
     public static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -364,7 +341,7 @@ public static class TabRaffle {
             }
         }
         if (showMessage) {
-            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
                                       + "\n\n"
                                       + sb2
                                       + "\n\n选择提取方式：\n"
@@ -405,10 +382,10 @@ public static class TabRaffle {
     }
 
     /// <summary>
-    /// 建筑卡池抽卡。
+    /// 建筑卡池抽奖。
     /// </summary>
-    /// <param name="raffleCount">抽卡次数</param>
-    /// <param name="oneLineMaxCount">一行显示多少个抽卡结果</param>
+    /// <param name="raffleCount">抽奖次数</param>
+    /// <param name="oneLineMaxCount">一行显示多少个抽奖结果</param>
     /// <param name="showMessage">是否弹窗询问、显示结果</param>
     public static void RaffleBuilding(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -552,7 +529,7 @@ public static class TabRaffle {
             }
         }
         if (showMessage) {
-            UIMessageBox.Show("抽卡结果", sb.ToString().TrimEnd('\n')
+            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
                                       + "\n\n选择提取方式：\n"
                                       + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
                                       + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
@@ -609,6 +586,8 @@ public static class TabRaffle {
             }
         }
     }
+
+    public static void ExchangeItem(int index) { }
 
     #region IModCanSave
 

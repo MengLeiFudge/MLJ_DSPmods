@@ -34,7 +34,7 @@ public static class MineralCopyTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE矿物复制塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE矿物复制塔], [3],
-            "I矿物复制塔", TFE矿物复制);
+            "I矿物复制塔", TFE矿物复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
