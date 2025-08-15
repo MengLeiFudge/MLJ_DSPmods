@@ -76,6 +76,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             ProcessManager.AddTranslations();
             TechManager.AddTranslations();
             OutputInfo.AddTranslations();
+            MainWindow.AddTranslations();
 
             LoadConfig();
 
