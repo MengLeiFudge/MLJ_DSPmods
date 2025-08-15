@@ -28,8 +28,8 @@ public static class TechManager {
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
         Register("超值礼包1描述",
-            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can get 100 electromagnetic tickets, as well as extremely precious universal cores and amplification chips! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及极其珍贵的通用核心、增幅芯片！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can obtain 100 electromagnetic lottery tickets and other useful items! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及其他实用物品！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包1结果",
             "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
             "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
@@ -267,8 +267,8 @@ public static class TechManager {
             GetTechPos(0, 1)
         );
         tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
-        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
-        tech超值礼包1.AddItemCounts = [100, 5, 3];
+        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片, IFE交互塔, IFE分馏塔原胚普通];
+        tech超值礼包1.AddItemCounts = [100, 5, 3, 3, 50];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
 

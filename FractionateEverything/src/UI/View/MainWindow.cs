@@ -31,8 +31,8 @@ public static class MainWindow {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        BuildingOperate.LoadConfig(configFile);
         RecipeOperate.LoadConfig(configFile);
+        BuildingOperate.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
         ImportantItem.LoadConfig(configFile);
@@ -72,8 +72,8 @@ public static class MainWindow {
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
         wnd.AddTabGroup(trans, "核心操作");
-        BuildingOperate.CreateUI(wnd, trans);
         RecipeOperate.CreateUI(wnd, trans);
+        BuildingOperate.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "物品管理");
         ItemInteraction.CreateUI(wnd, trans);
         ImportantItem.CreateUI(wnd, trans);
@@ -96,8 +96,8 @@ public static class MainWindow {
     }
 
     private static void UpdateUI() {
-        BuildingOperate.UpdateUI();
         RecipeOperate.UpdateUI();
+        BuildingOperate.UpdateUI();
 
         ItemInteraction.UpdateUI();
         ImportantItem.UpdateUI();
@@ -161,8 +161,8 @@ public static class MainWindow {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
 
-        BuildingOperate.Import(r);
         RecipeOperate.Import(r);
+        BuildingOperate.Import(r);
 
         ItemInteraction.Import(r);
         ImportantItem.Import(r);
