@@ -29,32 +29,18 @@ public static class SandboxMode {
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         _windowTrans = trans;
-        float x;
-        float y;
-        {
-            var tab = wnd.AddTab(trans, "弹窗显示");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "VIP功能");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "沙盒模式");
-            x = 0f;
-            y = 10f;
-            btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
-                RecipeManager.UnlockAllFracRecipes);
-            y += 36f;
-            textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-            sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5f, y + 6f, tab,
-                ExpMultiRateEntry, new MultiRateMapper(), "0.#", 160f);
-            wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5f + 160f + 5f, y + 6f, tab,
-                "经验获取倍率", "调整经验获取的速度，便于调试使用。\n仅在沙盒模式下生效。", "");
-            y += 36f;
-        }
+        var tab = wnd.AddTab(trans, "沙盒模式");
+        float x = 0f;
+        float y = 10f;
+        btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
+            RecipeManager.UnlockAllFracRecipes);
+        y += 36f;
+        textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
+        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5f, y + 6f, tab,
+            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 160f);
+        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5f + 160f + 5f, y + 6f, tab,
+            "经验获取倍率", "调整经验获取的速度，便于调试使用。\n仅在沙盒模式下生效。", "");
+        y += 36f;
     }
 
     public static void UpdateUI() {

@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 using BepInEx.Configuration;
-using CommonAPI.Systems;
-using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Manager.ProcessManager;
-using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.CoreOperate;
@@ -21,15 +13,13 @@ namespace FE.UI.View.CoreOperate;
 public static class BuildingOperate {
     public static RectTransform _windowTrans;
 
-    #region 建筑操作
-
-    public static ConfigEntry<int> BuildingTypeEntry;
-    public static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
-    public static string[] BuildingTypeNames = [
+    private static ConfigEntry<int> BuildingTypeEntry;
+    private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
+    private static string[] BuildingTypeNames = [
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(),
         "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate()
     ];
-    public static int[] BuildingIds = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
+    private static int[] BuildingIds = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
 
     private static Text textBuildingInfo1;
     private static UIButton btnBuildingInfo1;
@@ -41,10 +31,8 @@ public static class BuildingOperate {
     private static UIButton btnTip4;
     private static UIButton btnBuildingInfo4;
 
-    #endregion
-
     public static void LoadConfig(ConfigFile configFile) {
-        BuildingTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Building Type", 0, "想要查看的建筑类型。");
+        BuildingTypeEntry = configFile.Bind("BuildingOperate", "Building Type", 0, "想要查看的建筑类型。");
         if (BuildingTypeEntry.Value < 0 || BuildingTypeEntry.Value >= BuildingTypeNames.Length) {
             BuildingTypeEntry.Value = 0;
         }

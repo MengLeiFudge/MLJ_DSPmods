@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
-using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressSystem;
 
