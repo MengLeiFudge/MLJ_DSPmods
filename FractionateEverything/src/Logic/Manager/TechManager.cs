@@ -459,7 +459,7 @@ public static class TechManager {
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
             [],
             [IFE矿物复制塔], [10], 3600,
-            [RFE矿物复制塔, RFE复制精华],
+            [RFE矿物复制塔],
             GetTechPos(2, 3)
         );
         tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
@@ -498,7 +498,7 @@ public static class TechManager {
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
             [],
             [IFE点金塔], [10], 3600,
-            [RFE点金塔, RFE点金精华],
+            [RFE点金塔],
             GetTechPos(2, 6)
         );
         tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
@@ -511,7 +511,7 @@ public static class TechManager {
             TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
             [],
             [IFE分解塔], [10], 3600,
-            [RFE分解塔, RFE分解精华],
+            [RFE分解塔],
             GetTechPos(2, 7)
         );
         tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
@@ -524,7 +524,7 @@ public static class TechManager {
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
             [IFE转化塔], [10], 3600,
-            [RFE转化塔, RFE转化精华],
+            [RFE转化塔],
             GetTechPos(2, 8)
         );
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];

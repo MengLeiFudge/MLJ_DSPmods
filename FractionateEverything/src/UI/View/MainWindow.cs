@@ -14,7 +14,6 @@ using static FE.Utils.Utils;
 namespace FE.UI.View;
 
 public static class MainWindow {
-    private static RectTransform _windowTrans;
     private static PressKeyBind _toggleKey;
     private static bool _configWinInitialized;
     private static MyConfigWindow _configWin;
@@ -23,11 +22,27 @@ public static class MainWindow {
         Register("KEYOpenFracCenter", "[FE] Open Fractionation Data Center", "[FE] 打开分馏数据中心");
         Register("分馏数据中心", "Fractionation Data Center");
         Register("核心操作", "Core Operation");
+        RecipeOperate.AddTranslations();
+        BuildingOperate.AddTranslations();
         Register("物品管理", "Item Management");
+        ItemInteraction.AddTranslations();
+        ImportantItem.AddTranslations();
         Register("资源获取", "Resource Collection");
+        TicketRaffle.AddTranslations();
+        SelectedRaffle.AddTranslations();
+        LimitedTimeStore.AddTranslations();
         Register("进度系统", "Progress System");
+        MainTask.AddTranslations();
+        RecurringTask.AddTranslations();
+        Achievements.AddTranslations();
+        DevelopmentDiary.AddTranslations();
         Register("统计相关", "Statistic Related");
+        RecipeGallery.AddTranslations();
+        FracStatistic.AddTranslations();
         Register("系统设置", "System Setting");
+        VipFeatures.AddTranslations();
+        PopupDisplay.AddTranslations();
+        SandboxMode.AddTranslations();
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -70,7 +85,6 @@ public static class MainWindow {
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
         wnd.AddTabGroup(trans, "核心操作");
         RecipeOperate.CreateUI(wnd, trans);
         BuildingOperate.CreateUI(wnd, trans);
@@ -135,7 +149,7 @@ public static class MainWindow {
         }
     }
 
-    public static void ToggleConfigWindow() {
+    private static void ToggleConfigWindow() {
         if (!_configWinInitialized) {
             _configWinInitialized = true;
             _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
@@ -147,7 +161,7 @@ public static class MainWindow {
         }
     }
 
-    public static void CloseConfigWindow() {
+    private static void CloseConfigWindow() {
         if (!_configWinInitialized) {
             return;
         }
