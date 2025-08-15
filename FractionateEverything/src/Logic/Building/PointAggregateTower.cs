@@ -53,7 +53,7 @@ public static class PointAggregateTower {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
             ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE点数聚集塔], [1],
-            "I点数聚集塔", TFE增产点数聚集);
+            "I点数聚集塔", TFE增产点数聚集, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
@@ -91,9 +91,6 @@ public static class PointAggregateTower {
             __result = 0;
             return;
         }
-        int buildingID = factory.entityPool[__instance.entityId].protoId;
-        ItemProto building = LDB.items.Select(buildingID);
-        int fluidId = __instance.fluidId;
         float fluidInputCountPerCargo = 1.0f;
         if (__instance.fluidInputCount == 0)
             __instance.fluidInputCargoCount = 0f;
@@ -101,9 +98,17 @@ public static class PointAggregateTower {
             fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
                 ? __instance.fluidInputCount / __instance.fluidInputCargoCount
                 : 4f;
+        int fluidId = __instance.fluidId;
+        int buildingID = factory.entityPool[__instance.entityId].protoId;
+        ItemProto building = LDB.items.Select(buildingID);
+        int fluidInputMax = building.FluidInputMax();
+        int productOutputMax = building.ProductOutputMax();
+        int fluidOutputMax = building.FluidOutputMax();
+        bool enableFracForever = building.EnableFracForever();
         if (__instance.fluidInputCount > 0
-            && __instance.productOutputCount < __instance.productOutputMax
-            && __instance.fluidOutputCount < __instance.fluidOutputMax) {
+            && (__instance.productOutputCount < productOutputMax || enableFracForever)
+            && (__instance.fluidOutputCount < fluidOutputMax
+                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
@@ -136,8 +141,11 @@ public static class PointAggregateTower {
                     __instance.fluidOutputInc += fluidInputIncAvg;
                     continue;
                 }
-                //启用分馏永动且某个产物达到输出上限的一半，则分馏塔进入分馏永动状态
-                if (building.EnableFracForever() && __instance.productOutputCount >= __instance.productOutputMax / 2) {
+                //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
+                if (enableFracForever
+                    && (__instance.productOutputCount >= productOutputMax
+                        || __instance.fluidOutputCount >= fluidOutputMax)
+                    && __instance.fluidOutputCount < fluidOutputMax + 4) {
                     moveDirectly = true;
                     goto MoveDirectly;
                 }
@@ -215,7 +223,7 @@ public static class PointAggregateTower {
                         }
                     }
                 }
-            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
                     if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
@@ -279,7 +287,7 @@ public static class PointAggregateTower {
                         }
                     }
                 }
-            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < __instance.fluidInputMax) {
+            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
                     if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
                         __instance.fluidInputCount += stack;
@@ -340,11 +348,8 @@ public static class PointAggregateTower {
 
         // 更新工作状态
         __instance.isWorking = __instance.fluidInputCount > 0
-                               && __instance.productOutputCount < __instance.productOutputMax
-                               && __instance.fluidOutputCount < __instance.fluidOutputMax;
-        if (building.EnableFracForever()) {
-            __instance.isWorking &= __instance.productOutputCount < __instance.productOutputMax / 2;
-        }
+                               && __instance.productOutputCount < productOutputMax
+                               && __instance.fluidOutputCount < fluidOutputMax;
 
         __result = !__instance.isWorking ? 0U : 1U;
     }

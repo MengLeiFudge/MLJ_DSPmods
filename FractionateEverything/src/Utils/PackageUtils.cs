@@ -249,7 +249,7 @@ public static partial class Utils {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
-                recipe.AddExp(needExp);
+                recipe.AddExp(needExp, false);
                 UIMessageBox.Show("提示", $"已兑换 {(int)needExp} 配方经验！",
                     "确定", UIMessageBox.INFO);
             }, null);

@@ -74,8 +74,6 @@ public class DeconstructionRecipe : BaseRecipe {
                     float totalInputCount = inputFloatCounts.Sum();
                     // 如果配方允许增产，则只能按照1.0/1.4返还；否则，按照1.0返还
                     float outputCountPlus = recipe.productive ? 1.0f / maxInc : 1.0f;
-                    // 分解有额外输出奖励1.1倍
-                    outputCountPlus *= 1.1f;
                     for (int i = 0; i < inputFloatCounts.Count; i++) {
                         outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i],
                             totalInputCount * outputCountPlus));
