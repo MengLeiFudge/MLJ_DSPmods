@@ -8,11 +8,14 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ProgressSystem;
 
 public static class DevelopmentDiary {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
     private static Dictionary<string, int> programmingEvents;
 
     public static void AddTranslations() {
+        Register("开发日记", "Development Diary");
+
         programmingEvents = new() {
             { "FE1.0", 3 },
             { "FE1.1", 5 }
@@ -282,13 +285,17 @@ public static class DevelopmentDiary {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "开发日记");
+        window = trans;
+        tab = wnd.AddTab(trans, "开发日记");
         float x = 0f;
         float y = 10f;
     }
 
-    public static void UpdateUI() { }
+    public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
+    }
 
     #region IModCanSave
 
