@@ -823,14 +823,7 @@ public static partial class Utils {
     internal const int RFE引力奖券 = 905;
     internal const int RFE宇宙奖券 = 906;
     internal const int RFE黑雾奖券 = 907;
-    internal const int RFE分馏塔原胚普通 = 911;
-    internal const int RFE分馏塔原胚精良 = 912;
-    internal const int RFE分馏塔原胚稀有 = 913;
-    internal const int RFE分馏塔原胚史诗 = 914;
-    internal const int RFE分馏塔原胚传说 = 915;
     internal const int RFE分馏塔原胚定向 = 916;
-    internal const int RFE分馏配方通用核心 = 917;
-    internal const int RFE分馏塔增幅芯片 = 918;
     internal const int RFE交互塔 = 921;
     internal const int RFE矿物复制塔 = 922;
     internal const int RFE点数聚集塔 = 923;
@@ -845,10 +838,6 @@ public static partial class Utils {
     internal const int RFE行星点金塔 = 935;
     internal const int RFE行星分解塔 = 936;
     internal const int RFE行星转化塔 = 937;
-    internal const int RFE复制精华 = 941;
-    internal const int RFE点金精华 = 942;
-    internal const int RFE分解精华 = 943;
-    internal const int RFE转化精华 = 944;
     internal const int RBC插件效果分享塔 = 951;
     internal const int RBC插件效果分享站 = 952;
     internal const int RBC速度插件MK1 = 961;

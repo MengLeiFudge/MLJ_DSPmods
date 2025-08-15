@@ -14,7 +14,6 @@ using static FE.Utils.Utils;
 namespace FE.UI.View;
 
 public static class MainWindow {
-    private static RectTransform _windowTrans;
     private static PressKeyBind _toggleKey;
     private static bool _configWinInitialized;
     private static MyConfigWindow _configWin;
@@ -23,16 +22,32 @@ public static class MainWindow {
         Register("KEYOpenFracCenter", "[FE] Open Fractionation Data Center", "[FE] 打开分馏数据中心");
         Register("分馏数据中心", "Fractionation Data Center");
         Register("核心操作", "Core Operation");
+        RecipeOperate.AddTranslations();
+        BuildingOperate.AddTranslations();
         Register("物品管理", "Item Management");
+        ItemInteraction.AddTranslations();
+        ImportantItem.AddTranslations();
         Register("资源获取", "Resource Collection");
+        TicketRaffle.AddTranslations();
+        SelectedRaffle.AddTranslations();
+        LimitedTimeStore.AddTranslations();
         Register("进度系统", "Progress System");
+        MainTask.AddTranslations();
+        RecurringTask.AddTranslations();
+        Achievements.AddTranslations();
+        DevelopmentDiary.AddTranslations();
         Register("统计相关", "Statistic Related");
+        RecipeGallery.AddTranslations();
+        FracStatistic.AddTranslations();
         Register("系统设置", "System Setting");
+        VipFeatures.AddTranslations();
+        PopupDisplay.AddTranslations();
+        SandboxMode.AddTranslations();
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        BuildingOperate.LoadConfig(configFile);
         RecipeOperate.LoadConfig(configFile);
+        BuildingOperate.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
         ImportantItem.LoadConfig(configFile);
@@ -70,10 +85,9 @@ public static class MainWindow {
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
         wnd.AddTabGroup(trans, "核心操作");
-        BuildingOperate.CreateUI(wnd, trans);
         RecipeOperate.CreateUI(wnd, trans);
+        BuildingOperate.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "物品管理");
         ItemInteraction.CreateUI(wnd, trans);
         ImportantItem.CreateUI(wnd, trans);
@@ -96,8 +110,8 @@ public static class MainWindow {
     }
 
     private static void UpdateUI() {
-        BuildingOperate.UpdateUI();
         RecipeOperate.UpdateUI();
+        BuildingOperate.UpdateUI();
 
         ItemInteraction.UpdateUI();
         ImportantItem.UpdateUI();
@@ -135,7 +149,7 @@ public static class MainWindow {
         }
     }
 
-    public static void ToggleConfigWindow() {
+    private static void ToggleConfigWindow() {
         if (!_configWinInitialized) {
             _configWinInitialized = true;
             _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
@@ -147,7 +161,7 @@ public static class MainWindow {
         }
     }
 
-    public static void CloseConfigWindow() {
+    private static void CloseConfigWindow() {
         if (!_configWinInitialized) {
             return;
         }
@@ -161,8 +175,8 @@ public static class MainWindow {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
 
-        BuildingOperate.Import(r);
         RecipeOperate.Import(r);
+        BuildingOperate.Import(r);
 
         ItemInteraction.Import(r);
         ImportantItem.Import(r);

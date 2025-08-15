@@ -2,22 +2,32 @@
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View.GetItemRecipe;
 
 public static class SelectedRaffle {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
+
+    public static void AddTranslations() {
+        Register("自选抽奖", "Selected Raffle");
+    }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "自选抽奖");
+        window = trans;
+        tab = wnd.AddTab(trans, "自选抽奖");
         float x = 0f;
         float y = 10f;
     }
 
-    public static void UpdateUI() { }
+    public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
+    }
 
     #region IModCanSave
 

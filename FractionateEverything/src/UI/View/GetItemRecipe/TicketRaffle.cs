@@ -15,39 +15,36 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
-    public static RectTransform _windowTrans;
-    public static RectTransform tabRecipeRaffle;
-    public static RectTransform tabBuildingRaffle;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    public static ConfigEntry<int> TicketTypeEntry;
-    public static ConfigEntry<bool> EnableAutoRaffleEntry;
-    public static bool[] EnableAutoRaffle = [false, false, false, false, false, false, false];
-    public static int[] TicketIds = [
+    private static ConfigEntry<int> TicketTypeEntry;
+    private static ConfigEntry<bool> EnableAutoRaffleEntry;
+    private static bool[] EnableAutoRaffle = [false, false, false, false, false, false, false];
+    private static int[] TicketIds = [
         IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券,
     ];
-    public static string[] TicketTypeNames = [
+    private static string[] TicketTypeNames = [
         "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
 
-    public static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
-    public static int SelectedTicketMatrixId => LDB.items.Select(SelectedTicketId).maincraft.Items[0];
-    public static float SelectedTicketRatioPlus => SelectedTicketId == IFE宇宙奖券 ? 2.0f : 1.0f;
-    public static Text ticketCountText1;
-
-    public static Text ticketCountText2;
-    public static bool[] ignoreRecipeCount = new bool[TicketIds.Length];
+    private static int SelectedTicketId => TicketIds[TicketTypeEntry.Value];
+    private static int SelectedTicketMatrixId => LDB.items.Select(SelectedTicketId).maincraft.Items[0];
+    private static float SelectedTicketRatioPlus => SelectedTicketId == IFE宇宙奖券 ? 2.0f : 1.0f;
+    private static Text ticketCountText1;
+    private static Text ticketCountText2;
+    private static bool[] ignoreRecipeCount = new bool[TicketIds.Length];
 
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
-    public static int RecipeRaffleCount = 1;
-    public static double RecipeRaffleRate => 0.006 + Math.Max(0, RecipeRaffleCount - 73) * 0.06;
+    private static int RecipeRaffleCount = 1;
+    private static double RecipeRaffleRate => 0.006 + Math.Max(0, RecipeRaffleCount - 73) * 0.06;
 
-
-    private static DateTime nextFreshTime;
-    private static Text textLeftTime;
-    private static Text[] textItemInfo = new Text[3];
+    public static void AddTranslations() {
+        Register("奖券抽奖", "Ticket Raffle");
+    }
 
     public static void LoadConfig(ConfigFile configFile) {
         TicketTypeEntry = configFile.Bind("LimitedTimeStore", "Ticket Type", 0, "想要使用的奖券类型。");
@@ -58,105 +55,59 @@ public static class TicketRaffle {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        float x;
-        float y;
-        {
-            var tab = wnd.AddTab(trans, "奖券抽奖");
-            tabRecipeRaffle = tab;
-            x = 0f;
-            y = 10f;
-            wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
-                .WithConfigEntry(TicketTypeEntry);
-            wnd.AddTipsButton2(x + 240, y + 6f, tab, "配方卡池说明",
-                "选择某种奖券后，只能抽取对应层级的配方。"
-                + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
-                + "概率公示：\n"
-                + "分馏配方通用核心：0.05%\n"
-                + "分馏配方：0.6%（至多90抽必出）\n"
-                + "杂项物品：59.61%\n"
-                + "沙土：39.74%");
-            ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
-            wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
-            y += 38f;
-            wnd.AddButton(x, y, 200, tab, "配方单抽", 16, "button-raffle-recipe-1",
-                () => RaffleRecipe(1));
-            wnd.AddButton(x + 220, y, 200, tab, "配方十连", 16, "button-raffle-recipe-10",
-                () => RaffleRecipe(10));
-            wnd.AddButton(x + 440, y, 200, tab, "配方百连", 16, "button-raffle-recipe-100",
-                () => RaffleRecipe(100, 5));
-            y += 38f;
-            wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
-                .WithConfigEntry(TicketTypeEntry);
-            wnd.AddTipsButton2(x + 240, y + 6f, tab, "建筑卡池说明",
-                "无论选择哪种奖券，都不影响可以获取的建筑类型。"
-                + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
-                + "概率公示：\n"
-                + "分馏塔增幅芯片：0.3%\n"
-                + "分馏塔原胚：25%\n"
-                + "分馏塔：5%\n"
-                + "其他建筑：39.82%\n"
-                + "沙土：39.88%");
-            ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
-            wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
-            y += 38f;
-            wnd.AddButton(x, y, 200, tab, "建筑单抽", 16, "button-raffle-building-1",
-                () => RaffleBuilding(1));
-            wnd.AddButton(x + 220, y, 200, tab, "建筑十连", 16, "button-raffle-building-10",
-                () => RaffleBuilding(10));
-            wnd.AddButton(x + 440, y, 200, tab, "建筑百连", 16, "button-raffle-building-100",
-                () => RaffleBuilding(100, 5));
-        }
-        {
-            var tab = wnd.AddTab(trans, "自选抽奖");
-            x = 0f;
-            y = 10f;
-        }
-        {
-            var tab = wnd.AddTab(trans, "限时商店");
-            nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
-                .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
-            x = 0f;
-            y = 10f;
-            textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
-            y += 36f;
-            textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time1",
-                () => ExchangeItem(0));
-            y += 36f;
-            textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time2",
-                () => ExchangeItem(1));
-            y += 36f;
-            textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
-            wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time3",
-                () => ExchangeItem(2));
-            y += 36f;
-        }
+        window = trans;
+        tab = wnd.AddTab(trans, "奖券抽奖");
+        float x = 0f;
+        float y = 10f;
+        wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            .WithConfigEntry(TicketTypeEntry);
+        wnd.AddTipsButton2(x + 240, y + 6f, tab, "配方卡池说明",
+            "选择某种奖券后，只能抽取对应层级的配方。"
+            + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
+            + "概率公示：\n"
+            + "分馏配方通用核心：0.05%\n"
+            + "分馏配方：0.6%（至多90抽必出）\n"
+            + "杂项物品：59.61%\n"
+            + "沙土：39.74%");
+        ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
+        wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
+        y += 38f;
+        wnd.AddButton(x, y, 200, tab, "配方单抽", 16, "button-raffle-recipe-1",
+            () => RaffleRecipe(1));
+        wnd.AddButton(x + 220, y, 200, tab, "配方十连", 16, "button-raffle-recipe-10",
+            () => RaffleRecipe(10));
+        wnd.AddButton(x + 440, y, 200, tab, "配方百连", 16, "button-raffle-recipe-100",
+            () => RaffleRecipe(100, 5));
+        y += 38f;
+        wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
+            .WithConfigEntry(TicketTypeEntry);
+        wnd.AddTipsButton2(x + 240, y + 6f, tab, "建筑卡池说明",
+            "无论选择哪种奖券，都不影响可以获取的建筑类型。"
+            + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
+            + "概率公示：\n"
+            + "分馏塔增幅芯片：0.3%\n"
+            + "分馏塔原胚：25%\n"
+            + "分馏塔：5%\n"
+            + "其他建筑：39.82%\n"
+            + "沙土：39.88%");
+        ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
+        wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
+        y += 38f;
+        wnd.AddButton(x, y, 200, tab, "建筑单抽", 16, "button-raffle-building-1",
+            () => RaffleBuilding(1));
+        wnd.AddButton(x + 220, y, 200, tab, "建筑十连", 16, "button-raffle-building-10",
+            () => RaffleBuilding(10));
+        wnd.AddButton(x + 440, y, 200, tab, "建筑百连", 16, "button-raffle-building-100",
+            () => RaffleBuilding(100, 5));
     }
 
     public static void UpdateUI() {
-        if (tabRecipeRaffle.gameObject.activeSelf) {
-            AutoRaffle(true);
+        if (!tab.gameObject.activeSelf) {
+            return;
         }
-        // else if (tabBuildingRaffle.gameObject.activeSelf) {
-        //     AutoRaffle(false);
-        // }
+        AutoRaffle(true);
         ticketCountText1.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
-        // EnableAutoRaffleEntry.Value = EnableAutoRaffle[TicketTypeEntry.Value];
-
         ticketCountText2.text = $"奖券数目：{GetItemTotalCount(SelectedTicketId)}";
-
-
-        if (DateTime.Now >= nextFreshTime) {
-            nextFreshTime = nextFreshTime.AddMinutes(10);
-            //更新三份限时购买物品的信息
-            // textItemInfo[0].text = GetTimeLimitedItemInfo(0);
-            // textItemInfo[1].text = GetTimeLimitedItemInfo(1);
-            // textItemInfo[2].text = GetTimeLimitedItemInfo(2);
-        }
-        TimeSpan ts = nextFreshTime - DateTime.Now;
-        textLeftTime.text = $"还有 {(int)ts.TotalMinutes} min {ts.Seconds} s 刷新";
     }
 
     /// <summary>
