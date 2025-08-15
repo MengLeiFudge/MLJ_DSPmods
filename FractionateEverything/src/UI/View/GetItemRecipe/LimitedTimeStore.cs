@@ -4,21 +4,27 @@ using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View.GetItemRecipe;
 
 public static class LimitedTimeStore {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
     private static DateTime nextFreshTime;
     private static Text textLeftTime;
     private static Text[] textItemInfo = new Text[3];
 
+    public static void AddTranslations() {
+        Register("限时商店", "Limited Time Store");
+    }
+
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "限时商店");
+        window = trans;
+        tab = wnd.AddTab(trans, "限时商店");
         nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
             .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
         float x = 0f;
@@ -40,6 +46,9 @@ public static class LimitedTimeStore {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         if (DateTime.Now >= nextFreshTime) {
             nextFreshTime = nextFreshTime.AddMinutes(10);
             //更新三份限时购买物品的信息

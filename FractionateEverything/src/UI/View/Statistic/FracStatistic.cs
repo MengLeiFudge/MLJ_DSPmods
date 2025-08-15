@@ -2,24 +2,32 @@
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View.Statistic;
 
 public static class FracStatistic {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    public static void AddTranslations() { }
+    public static void AddTranslations() {
+        Register("分馏统计", "Frac Statistic");
+    }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "分馏统计");
+        window = trans;
+        tab = wnd.AddTab(trans, "分馏统计");
         float x = 0f;
         float y = 10f;
     }
 
-    public static void UpdateUI() { }
+    public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
+    }
 
     #region IModCanSave
 

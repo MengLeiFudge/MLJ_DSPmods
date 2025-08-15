@@ -16,12 +16,11 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.CoreOperate;
 
 public static class RecipeOperate {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    #region 选择物品
-
-    public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    public static int SelectedItemId => SelectedItem.ID;
+    private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
+    private static int SelectedItemId => SelectedItem.ID;
     private static Text textCurrItem;
     private static MyImageButton btnSelectedItem;
 
@@ -29,8 +28,8 @@ public static class RecipeOperate {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
-        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
-        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
+        float x = window.anchoredPosition.x + window.rect.width / 2;
+        float y = window.anchoredPosition.y + window.rect.height / 2;
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
@@ -40,21 +39,19 @@ public static class RecipeOperate {
         });
     }
 
-    #endregion
-
-    #region 配方操作
-
-    public static ConfigEntry<int> RecipeTypeEntry;
-    public static string[] RecipeTypeNames;
-    public static ERecipe[] RecipeTypes = [
+    private static ConfigEntry<int> RecipeTypeEntry;
+    private static string[] RecipeTypeNames;
+    private static ERecipe[] RecipeTypes = [
         ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
     ];
-    public static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
-    public static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
+    private static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
+    private static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
     private static Text[] textRecipeInfo = new Text[30];
 
-    #endregion
+    public static void AddTranslations() {
+        Register("配方操作", "Recipe Operate");
+    }
 
     public static void LoadConfig(ConfigFile configFile) {
         RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
@@ -68,8 +65,8 @@ public static class RecipeOperate {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "配方操作");
+        window = trans;
+        tab = wnd.AddTab(trans, "配方操作");
         float x = 0f;
         float y = 10f;
         textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
@@ -95,6 +92,9 @@ public static class RecipeOperate {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);

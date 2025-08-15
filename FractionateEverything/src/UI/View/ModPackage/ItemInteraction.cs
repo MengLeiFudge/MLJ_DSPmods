@@ -9,12 +9,11 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ModPackage;
 
 public static class ItemInteraction {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    #region 选择物品
-
-    public static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    public static int SelectedItemId => SelectedItem.ID;
+    private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
+    private static int SelectedItemId => SelectedItem.ID;
     private static Text textCurrItem;
     private static MyImageButton btnSelectedItem;
 
@@ -22,15 +21,13 @@ public static class ItemInteraction {
         //_windowTrans.anchoredPosition是窗口的中心点
         //Popup的位置是弹出窗口的左上角
         //所以要向右（x+）向上（y+）
-        float x = _windowTrans.anchoredPosition.x + _windowTrans.rect.width / 2;
-        float y = _windowTrans.anchoredPosition.y + _windowTrans.rect.height / 2;
+        float x = window.anchoredPosition.x + window.rect.width / 2;
+        float y = window.anchoredPosition.y + window.rect.height / 2;
         UIItemPickerExtension.Popup(new(x, y), item => {
             if (item == null) return;
             SelectedItem = item;
         }, true, item => true);
     }
-
-    #endregion
 
     private static Text textItemCountInfo;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
@@ -42,8 +39,8 @@ public static class ItemInteraction {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "物品交互");
+        window = trans;
+        tab = wnd.AddTab(trans, "物品交互");
         float x = 0f;
         float y = 10f;
         textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
@@ -67,6 +64,9 @@ public static class ItemInteraction {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         btnSelectedItem.SetSprite(SelectedItem.iconSprite);
         textItemCountInfo.text = $"当前共有 {GetItemTotalCount(SelectedItem.ID)}，其中"
                                  + $"数据中心 {GetModDataItemCount(SelectedItem.ID)}，"
