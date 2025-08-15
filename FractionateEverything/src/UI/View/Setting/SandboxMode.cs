@@ -5,17 +5,23 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
 
 public static class SandboxMode {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
-    public static UIButton btnUnlockAll;
-    public static ConfigEntry<float> ExpMultiRateEntry;
-    public static float ExpMultiRate { get; set; }
-    public static Text textExpMultiRate;
-    public static MySlider sliderExpMultiRate;
+    private static UIButton btnUnlockAll;
+    private static ConfigEntry<float> ExpMultiRateEntry;
+    public static float ExpMultiRate { get; private set; }
+    private static Text textExpMultiRate;
+    private static MySlider sliderExpMultiRate;
+
+    public static void AddTranslations() {
+        Register("沙盒模式", "Sandbox Mode");
+    }
 
     public static void LoadConfig(ConfigFile configFile) {
         ExpMultiRateEntry = configFile.Bind("TabSetting", "ExpMultiRate", 1.0f, "经验获取倍率");
@@ -28,8 +34,8 @@ public static class SandboxMode {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "沙盒模式");
+        window = trans;
+        tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
         float y = 10f;
         btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
@@ -44,6 +50,9 @@ public static class SandboxMode {
     }
 
     public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
         btnUnlockAll.enabled = GameMain.sandboxToolsEnabled;
         btnUnlockAll.button.enabled = GameMain.sandboxToolsEnabled;

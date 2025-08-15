@@ -12,7 +12,8 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ModPackage;
 
 public static class ImportantItem {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
 
     private static UIButton btnGetModDataProto;
     private static UIButton btnGetModDataBuilding;
@@ -24,8 +25,8 @@ public static class ImportantItem {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "重要物品");
+        window = trans;
+        tab = wnd.AddTab(trans, "重要物品");
         float x = 0f;
         float y = 10f;
         btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
@@ -37,7 +38,11 @@ public static class ImportantItem {
             GetModDataItemInfo);
     }
 
-    public static void UpdateUI() { }
+    public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
+    }
 
     private static void GetModDataFracBuildingProto() {
         StringBuilder sb = new StringBuilder();

@@ -1,31 +1,61 @@
 - v2.1.0
-    + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
-    + 为所有科技添加解锁所需的元数据。
-    + 修复部分科技需要的矩阵数目。
-    + 调整奖券合成需要的矩阵数目。
-    + 调整分解塔、点金塔的配方平衡性。
-    + 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种。
-    + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
+    + 科技调整。
+        + 为所有科技添加解锁所需的元数据。
+        + 调整部分科技需要的矩阵数目（尤其是隐藏科技的研究需求）。
+        + 超值礼包1添加交互塔与普通原胚，避免前期没有分馏塔而卡死。
     + 为不同的配方添加独特的品质影响。
-    + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
-    + 增加前台自动百连抽功能。
-    + 重新调整配方效果曲线，现在品质突破不会降低配方效果。
+        + 所有红色配方的副产物概率翻倍。
+        + 建筑培养、矿物复制金色配方会提升等级*10%的物品产出，至多+100%。
+        + 量子复制金色配方会减少等级*8%的精华消耗，至多-80%。
+        + 点金、分解、转化金色配方会提升等级*1%的物品产出，至多+10%。
+    + 配方平衡性调整。
+        + 调整奖券合成需要的矩阵数目，统一为10矩阵->1奖券（黑雾为200黑雾矩阵->1黑雾奖券）。
+        + 重新调整所有分馏配方效果曲线，现在品质突破不会降低配方效果。
+        + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
+        + 调整分解配方、点金配方的平衡性。
     + 优化分馏塔的处理逻辑。
-    + The statistics panel can correctly display the consumption of each essence during quantum copying.
-    + Add the metadata needed to unlock all technologies.
-    + Repair the number of matrices required for certain technologies.
-    + Adjust the number of matrices required for lottery ticket synthesis.
-    + Adjust the formula balance of the decomposition tower and the alchemy tower.
-    + The output items from the Point Accumulation Tower are no longer evenly distributed points, but rather either 0 or
-      4 points.
-    + The upper limit of the number of items that can be stored in the fractionate data center has been changed from
-      int to long, and it now supports the storage of proliferator points.
-    + Added unique quality effects for different recipes.
-    + Adjusted the probability of some mineral replication recipes and added mineral replication recipes with materials
-      unique to Black Mist.
-    + Added automatic 100 consecutive draws feature to the front desk.
-    + The recipe effect curve has been readjusted, and now quality breakthroughs will not reduce the recipe effect.
-    + Optimise the processing logic of the fractionator.
+        + 分馏永动状态的条件由“输出大于上限一半”改为“输出达到上限”。
+        + 分馏塔产物输出最大堆叠为n时，分馏塔产物输出上限也会变为n倍。
+        + 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种，从而减少增产剂的消耗。
+    + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
+    + 分馏数据中心优化。
+        + 重构了分馏数据中心的UI，现在分类更为详细。
+        + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
+        + 增加前台自动百连抽功能。
+    + Technology adjustments.
+        + Added metadata required to unlock all technologies.
+        + Adjusted the number of matrices required for some technologies (especially hidden technology research
+          requirements).
+        + Added interaction towers and normal prototypes to the Value Pack 1 to avoid getting stuck in the early stages
+          without fractionators.
+    + Added unique quality effects to different recipes.
+        + Doubled the probability of by-products for all red recipes.
+        + Building cultivation and mineral replication golden recipes will increase item output by 10% per level, up to
+          a maximum of +100%.
+        + Quantum replication golden recipes will reduce essence consumption by 8% per level, up to a maximum of -80%.
+        + Alchemy, decomposition, and conversion golden recipes will increase item output by 1% per level, up to a
+          maximum of +10%.
+    + Recipe balance adjustments.
+        + Adjusted the number of matrices required for lottery ticket synthesis, unified to 10 matrices -> 1 lottery
+          ticket (200 Black Mist matrices -> 1 Black Mist lottery ticket).
+        + Readjusted the effect curve of all distillation recipes, now quality breakthroughs will not reduce the recipe
+          effect.
+        + Adjusted the probability of some mineral replication recipes and added mineral replication recipes unique to
+          Black Mist.
+        + Adjusted the balance of decomposition recipes and alchemy recipes.
+    + Optimised the processing logic of the fractionator.
+        + Changed the condition for perpetual motion of the fractionator from ‘output greater than half the upper limit’
+          to ‘output reaches the upper limit’.
+        + When the maximum stack of fractionator products is n, the upper limit of fractionator product output will also
+          become n times.
+        + The flow output items of the point accumulation tower are no longer the average production increase points,
+          but either 0 or 4, thereby reducing the consumption of production increase agents.
+    + The statistics panel can now correctly display the consumption of each essence during quantum replication.
+    + Optimised the fractionation data centre.
+        + The distillation data centre UI has been restructured for more detailed categorisation.
+        + The maximum number of items the distillation data centre can store has been changed from int to long, and it
+          now supports the storage of production points.
+        + Added a front-end auto-100-draw feature.
 
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。

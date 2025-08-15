@@ -277,20 +277,6 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.RecipeUnlocked))]
-    private static bool GameHistoryData_RecipeUnlocked_Prefix(int recipeId, ref bool __result) {
-        if (recipeId >= RFE分馏塔原胚普通 && recipeId <= RFE分馏塔原胚传说) {
-            __result = GameMain.history.TechUnlocked(TFE分馏塔原胚);
-            return false;
-        }
-        if (recipeId >= RFE分馏配方通用核心 && recipeId <= RFE分馏塔增幅芯片) {
-            __result = GameMain.history.TechUnlocked(TFE分馏数据中心);
-            return false;
-        }
-        return true;
-    }
-
     #endregion
 
     #region 计算物品价值，以及交互塔可接受物品范围

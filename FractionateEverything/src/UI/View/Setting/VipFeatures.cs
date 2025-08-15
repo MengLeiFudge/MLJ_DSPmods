@@ -1,29 +1,33 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
+using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
 
 public static class VipFeatures {
-    public static RectTransform _windowTrans;
+    private static RectTransform window;
+    private static RectTransform tab;
+
+    public static void AddTranslations() {
+        Register("VIP功能", "VIP Features");
+    }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    private class MultiRateMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
-        public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
-        public override int ValueToIndex(float value) => (int)(Math.Log10(value) * 10.0 + 10);
-    }
-
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        _windowTrans = trans;
-        var tab = wnd.AddTab(trans, "VIP功能");
+        window = trans;
+        tab = wnd.AddTab(trans, "VIP功能");
         float x = 0f;
         float y = 10f;
     }
 
-    public static void UpdateUI() { }
+    public static void UpdateUI() {
+        if (!tab.gameObject.activeSelf) {
+            return;
+        }
+    }
 
     #region IModCanSave
 
