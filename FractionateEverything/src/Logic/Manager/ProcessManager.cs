@@ -834,9 +834,10 @@ public static class ProcessManager {
             StringBuilder sb1 = new StringBuilder();
             foreach (var output in recipe.OutputMain) {
                 float ratio = recipe.SuccessRate * successRatePlus * output.SuccessRate;
-                string name = output.ShowOutputName ? FormatName(LDB.items.Select(output.OutputID).Name) : "???";
-                string count = output.ShowOutputCount ? output.OutputCount.ToString("F3") : "???";
-                string ratioStr = output.ShowSuccessRate ? ratio.FormatP() : "???";
+                bool sandboxMode = GameMain.sandboxToolsEnabled;
+                string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
+                string count = output.ShowOutputCount || sandboxMode ? output.OutputCount.ToString("F3") : "???";
+                string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
                 sb1.Append($"{name}x{count} ({ratioStr})\n");
                 if (!transportMode) {
                     flowRatio -= ratio;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
-using HarmonyLib;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -123,7 +122,6 @@ public static class ItemManager {
         ItemProto item;
         RecipeProto recipe;
 
-        //前置科技：TFE电磁奖券
         item = ProtoRegistry.RegisterItem(IFE电磁奖券, "电磁奖券", "I电磁奖券",
             "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 101, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
@@ -134,7 +132,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE能量奖券
         item = ProtoRegistry.RegisterItem(IFE能量奖券, "能量奖券", "I能量奖券",
             "Assets/fe/energy-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
@@ -145,7 +142,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE结构奖券
         item = ProtoRegistry.RegisterItem(IFE结构奖券, "结构奖券", "I结构奖券",
             "Assets/fe/structure-ticket", tab分馏 * 1000 + 103, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
@@ -156,7 +152,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE信息奖券
         item = ProtoRegistry.RegisterItem(IFE信息奖券, "信息奖券", "I信息奖券",
             "Assets/fe/information-ticket", tab分馏 * 1000 + 104, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
@@ -167,7 +162,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE引力奖券
         item = ProtoRegistry.RegisterItem(IFE引力奖券, "引力奖券", "I引力奖券",
             "Assets/fe/gravity-ticket", tab分馏 * 1000 + 105, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
@@ -178,7 +172,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE宇宙奖券
         item = ProtoRegistry.RegisterItem(IFE宇宙奖券, "宇宙奖券", "I宇宙奖券",
             "Assets/fe/universe-ticket", tab分馏 * 1000 + 106, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
@@ -189,7 +182,6 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：TFE黑雾奖券
         item = ProtoRegistry.RegisterItem(IFE黑雾奖券, "黑雾奖券", "I黑雾奖券",
             "Assets/fe/dark-fog-ticket", tab分馏 * 1000 + 107, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
@@ -201,37 +193,31 @@ public static class ItemManager {
         recipe.NonProductive = true;
 
 
-        //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚普通, "分馏塔原胚普通", "I分馏塔原胚普通",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚精良, "分馏塔原胚精良", "I分馏塔原胚精良",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚稀有, "分馏塔原胚稀有", "I分馏塔原胚稀有",
             "Assets/fe/frac-proto-rare", tab分馏 * 1000 + 203, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚史诗, "分馏塔原胚史诗", "I分馏塔原胚史诗",
             "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：无，跟随TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚传说, "分馏塔原胚传说", "I分馏塔原胚传说",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：TFE分馏塔原胚
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚定向, "分馏塔原胚定向", "I分馏塔原胚定向",
             "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
@@ -243,38 +229,36 @@ public static class ItemManager {
         recipe.Handcraft = false;
         recipe.NonProductive = true;
 
-        //前置科技：无，跟随TFE分馏数据中心
         item = ProtoRegistry.RegisterItem(IFE分馏配方通用核心, "分馏配方通用核心", "I分馏配方通用核心",
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
 
-        //前置科技：无，跟随TFE分馏数据中心
         item = ProtoRegistry.RegisterItem(IFE分馏塔增幅芯片, "分馏塔增幅芯片", "I分馏塔增幅芯片",
             "Assets/fe/building-increase-chip", tab分馏 * 1000 + 208, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
 
 
-        //前置科技：TFE矿物复制
         item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        item.UnlockKey = -1;
 
-        //前置科技：TFE物品点金
         item = ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
             "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        item.UnlockKey = -1;
 
-        //前置科技：TFE物品分解
         item = ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
             "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        item.UnlockKey = -1;
 
-        //前置科技：TFE物品转化
         item = ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
             "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+        item.UnlockKey = -1;
     }
 
     #endregion
