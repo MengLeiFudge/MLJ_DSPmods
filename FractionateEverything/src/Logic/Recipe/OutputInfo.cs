@@ -37,9 +37,10 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
 
     public override string ToString() {
         ItemProto item = LDB.items.Select(OutputID);
-        string s1 = ShowOutputCount ? OutputCount.ToString("F3") : "???";
-        string s2 = ShowOutputName ? item.name : "???";
-        string s3 = ShowSuccessRate ? SuccessRate.ToString("P3") : "???";
+        bool sandboxMode = GameMain.sandboxToolsEnabled;
+        string s1 = ShowOutputCount || sandboxMode ? OutputCount.ToString("F3") : "???";
+        string s2 = ShowOutputName || sandboxMode ? item.name : "???";
+        string s3 = ShowSuccessRate || sandboxMode ? SuccessRate.ToString("P3") : "???";
         return $"{s1} {s2} ~ {s3} ({"总计 ".Translate()}{OutputTotalCount})";
     }
 }
