@@ -1,4 +1,5 @@
-﻿using static FE.Utils.Utils;
+﻿using System.Linq;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
@@ -42,16 +43,30 @@ public enum ERecipe {
     Conversion,
 }
 
-public static class EnumExtensions {
+public static class ERecipeExtension {
     public static void AddTranslations() {
-        Register("建筑培养", "Building Train ");
-        Register("矿物复制", "Mineral Copy ");
-        Register("量子复制", "Quantum Copy ");
-        Register("点金", "Alchemy ");
-        Register("分解", "Deconstruction ");
-        Register("转化", "Conversion ");
-        Register("未知", "Unknown ");
+        Register("未知", "Unknown");
+        Register("建筑培养", "Building Train");
+        Register("矿物复制", "Mineral Copy");
+        Register("量子复制", "Quantum Copy");
+        Register("点金", "Alchemy");
+        Register("分解", "Deconstruction");
+        Register("转化", "Conversion");
+        Register("未知配方", "Unknown Recipe");
+        Register("建筑培养配方", "Building Train Recipe");
+        Register("矿物复制配方", "Mineral Copy Recipe");
+        Register("量子复制配方", "Quantum Copy Recipe");
+        Register("点金配方", "Alchemy Recipe");
+        Register("分解配方", "Deconstruction Recipe");
+        Register("转化配方", "Conversion Recipe");
     }
+
+    public static readonly ERecipe[] RecipeTypes = [
+        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
+        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion
+    ];
+
+    public static readonly string[] RecipeTypeShortNames = RecipeTypes.Select(t => t.GetShortName()).ToArray();
 
     /// <summary>
     /// 拓展方法，返回配方名称
@@ -69,6 +84,14 @@ public static class EnumExtensions {
     }
 
     public static string GetName(this ERecipe recipe) {
-        return recipe.GetShortName() + "配方".Translate();
+        return recipe switch {
+            ERecipe.BuildingTrain => "建筑培养配方".Translate(),
+            ERecipe.MineralCopy => "矿物复制配方".Translate(),
+            ERecipe.QuantumCopy => "量子复制配方".Translate(),
+            ERecipe.Alchemy => "点金配方".Translate(),
+            ERecipe.Deconstruction => "分解配方".Translate(),
+            ERecipe.Conversion => "转化配方".Translate(),
+            _ => "未知配方".Translate()
+        };
     }
 }

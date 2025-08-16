@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Statistic;
@@ -21,22 +22,11 @@ public static class RecipeGallery {
     private static Text[,] recipeUnlockInfoText = new Text[9, 8];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
-    private static ConfigEntry<int> RecipeTypeEntry;
-    private static string[] RecipeTypeNames;
-    private static ERecipe[] RecipeTypes = [
-        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
-        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
-    ];
-
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        RecipeTypeNames = new string[RecipeTypes.Length];
-        for (int i = 0; i < RecipeTypeNames.Length; i++) {
-            RecipeTypeNames[i] = RecipeTypes[i].GetShortName();
-        }
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -62,7 +52,7 @@ public static class RecipeGallery {
         }
         recipeUnlockInfoText[8, 0].text = "总计";
         for (int j = 1; j <= 6; j++) {
-            recipeUnlockInfoText[0, j].text = RecipeTypeNames[j - 1];
+            recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];
         }
         recipeUnlockInfoText[0, 7].text = "总计";
     }
