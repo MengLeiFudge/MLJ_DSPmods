@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.CoreOperate;
@@ -20,7 +21,6 @@ public static class RecipeOperate {
     private static RectTransform tab;
 
     private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    private static int SelectedItemId => SelectedItem.ID;
     private static Text textCurrItem;
     private static MyImageButton btnSelectedItem;
 
@@ -40,11 +40,6 @@ public static class RecipeOperate {
     }
 
     private static ConfigEntry<int> RecipeTypeEntry;
-    private static string[] RecipeTypeNames;
-    private static ERecipe[] RecipeTypes = [
-        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
-        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion,
-    ];
     private static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     private static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
     private static Text[] textRecipeInfo = new Text[30];
@@ -57,10 +52,6 @@ public static class RecipeOperate {
         RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
         if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
             RecipeTypeEntry.Value = 0;
-        }
-        RecipeTypeNames = new string[RecipeTypes.Length];
-        for (int i = 0; i < RecipeTypeNames.Length; i++) {
-            RecipeTypeNames[i] = RecipeTypes[i].GetShortName();
         }
     }
 
@@ -77,7 +68,7 @@ public static class RecipeOperate {
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
             "切换说明", "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
-        wnd.AddComboBox(x + 250, y + 5f, tab, "配方类型").WithItems(RecipeTypeNames).WithSize(150f, 0f)
+        wnd.AddComboBox(x + 250, y + 5f, tab, "配方类型").WithItems(RecipeTypeShortNames).WithSize(150f, 0f)
             .WithConfigEntry(RecipeTypeEntry);
         y += 50f;
         wnd.AddButton(x, y, 300, tab, "使用分馏配方通用核心兑换此配方", 16, "button-get-recipe",
@@ -197,51 +188,44 @@ public static class RecipeOperate {
     }
 
     private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
-        float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-        float inputCount = 1.0f;
+        //增产剂影响后的概率
+        float successRate = recipe.SuccessRate * (1.0f + (float)MaxTableMilli(fluidInputIncAvg));
+        //损毁概率
+        float destroyRate = recipe.DestroyRate;
+        //最终产物处理率
+        float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
         Dictionary<int, (float, bool, bool)> outputDic = [];
         QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
         float essenceCount = 0.0f;
-        int iterations = 0;
-        while (inputCount > 1e-6 && iterations < 1000) {
-            iterations++;
-            //输入减去损毁的量
-            inputCount *= 1.0f - recipe.DestroyRate;
-            //计算有多少物品会被处理，增产会影响这一轮处理的数目
-            float processCount = Math.Min(inputCount, inputCount * recipe.SuccessRate * successRatePlus);
-            //输入减去被处理的量
-            inputCount -= processCount;
-            //如果是量子复制配方，累加扣除精华的数目
+        foreach (var info in recipe.OutputMain) {
+            int outputId = info.OutputID;
+            float outputCount = processRate * info.SuccessRate * info.OutputCount * recipe.MainOutputCountInc;
             if (recipe0 != null) {
-                essenceCount += processCount * recipe0.EssenceCost;
+                essenceCount += outputCount * recipe0.EssenceCost * recipe0.EssenceCostDec;
             }
-            //计算被处理的物品能产出多少物品
-            foreach (var info in recipe.OutputMain) {
-                int outputId = info.OutputID;
-                float outputCount = processCount * info.SuccessRate * info.OutputCount;
-                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                    tuple.Item1 += outputCount;
-                } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
-                }
-                outputDic[outputId] = tuple;
+            if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                tuple.Item1 += outputCount;
+            } else {
+                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
             }
-            foreach (var info in recipe.OutputAppend) {
-                int outputId = info.OutputID;
-                float outputCount = processCount * info.SuccessRate * info.OutputCount;
-                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                    tuple.Item1 += outputCount;
-                } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
-                }
-                outputDic[outputId] = tuple;
+            outputDic[outputId] = tuple;
+        }
+        foreach (var info in recipe.OutputAppend) {
+            int outputId = info.OutputID;
+            float outputCount = processRate * info.SuccessRate * info.OutputCount * recipe.AppendOutputCountInc;
+            if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                tuple.Item1 += outputCount;
+            } else {
+                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
             }
+            outputDic[outputId] = tuple;
         }
         StringBuilder sb = new StringBuilder($"增产点数{fluidInputIncAvg}：");
+        bool sandboxMode = GameMain.sandboxToolsEnabled;
         foreach (var p in outputDic) {
             var tuple = p.Value;
-            sb.Append(
-                $"{(tuple.Item2 ? LDB.items.Select(p.Key).name : "???")} x {(tuple.Item3 ? tuple.Item1.ToString("F3") : "???")}  ");
+            sb.Append($"{(tuple.Item2 || sandboxMode ? LDB.items.Select(p.Key).name : "???")}"
+                      + $" x {(tuple.Item3 || sandboxMode ? tuple.Item1.ToString("F3") : "???")}  ");
         }
         if (recipe0 != null) {
             sb.Append($"{LDB.items.Select(IFE复制精华).name} x -{essenceCount:F3}  ")

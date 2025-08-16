@@ -71,11 +71,12 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
 
             Register("分馏页面", "Fractionate", "分馏");
             Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
+            ERecipeExtension.AddTranslations();
+            OutputInfo.AddTranslations();
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
             ProcessManager.AddTranslations();
             TechManager.AddTranslations();
-            OutputInfo.AddTranslations();
             MainWindow.AddTranslations();
 
             LoadConfig();
