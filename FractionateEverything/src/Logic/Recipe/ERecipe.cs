@@ -1,4 +1,6 @@
-﻿namespace FE.Logic.Recipe;
+﻿using static FE.Utils.Utils;
+
+namespace FE.Logic.Recipe;
 
 /// <summary>
 /// 配方类型枚举
@@ -41,6 +43,16 @@ public enum ERecipe {
 }
 
 public static class EnumExtensions {
+    public static void AddTranslations() {
+        Register("建筑培养", "Building Train ");
+        Register("矿物复制", "Mineral Copy ");
+        Register("量子复制", "Quantum Copy ");
+        Register("点金", "Alchemy ");
+        Register("分解", "Deconstruction ");
+        Register("转化", "Conversion ");
+        Register("未知", "Unknown ");
+    }
+
     /// <summary>
     /// 拓展方法，返回配方名称
     /// </summary>
