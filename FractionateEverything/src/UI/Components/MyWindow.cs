@@ -78,6 +78,7 @@ public class MyWindow : ManualBehaviour {
     public void Close() => _Close();
 
     public void SetTitle(string title) {
+        //todo: 英文会超出左边界
         var txt = gameObject.transform.Find("panel-bg/title-text")?.gameObject.GetComponent<Text>();
         if (txt) {
             txt.text = title.Translate();
@@ -431,7 +432,7 @@ public class MyWindow : ManualBehaviour {
 
 public class MyWindowWithTabs : MyWindow {
     private readonly List<Tuple<RectTransform, UIButton>> _tabs = [];
-    private float _tabY = 54f;
+    private float _tabY = 66f;
 
     public override void TryClose() {
         _Close();
@@ -491,7 +492,7 @@ public class MyWindowWithTabs : MyWindow {
     }
 
     public void AddTabGroup(RectTransform parent, string label, string objName = "tabl-group-label") {
-        AddText(28, _tabY - 2, parent, label, 16, objName);
+        AddText(28, _tabY + 2, parent, label, 16, objName);
         _tabY += 28f;
     }
 

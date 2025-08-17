@@ -20,7 +20,7 @@ public static class FracStatistic {
         window = trans;
         tab = wnd.AddTab(trans, "分馏统计");
         float x = 0f;
-        float y = 10f;
+        float y = 20f;
     }
 
     public static void UpdateUI() {
