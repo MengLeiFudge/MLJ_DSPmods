@@ -288,7 +288,7 @@ public static class DevelopmentDiary {
         window = trans;
         tab = wnd.AddTab(trans, "开发日记");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
     }
 
     public static void UpdateUI() {

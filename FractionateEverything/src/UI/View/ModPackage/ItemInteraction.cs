@@ -1,9 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ModPackage;
@@ -34,21 +39,24 @@ public static class ItemInteraction {
     public static void AddTranslations() {
         Register("物品交互", "Item Interaction");
 
+        Register("查看分馏数据中心存储的所有物品", "View all items stored in the fractionation data center");
+        Register("分馏数据中心没有", "Fractionation data center does not have");
+        Register("任何物品", "any item");
+        Register("！", "!");
+        Register("分馏数据中心存储的物品有：", "The fractionation data center stores the following items:");
+
         Register("物品交互提示按钮说明1",
             "Left-click to select the items you want to query or extract.",
             "左键选择需要查询或提取的物品。");
 
         Register("当前共有", "There are currently");
-        Register("，其中分馏数据中心", "items, including Fractionation data center");
+        Register("，其中分馏数据中心", " items, including fractionation data center");
         Register("，物流清单", ", logistics list");
         Register("，个人背包", ", personal package");
 
         Register("提取1组（", "Extract 1 group (");
         Register("提取10组（", "Extract 10 group (");
         Register("提取全部（", "Extract all (");
-        Register("分馏数据中心没有", "Fractionation data center have no");
-        Register("已从分馏数据中心提取：", "Extracted from fractionation data center: ");
-        Register("！", "!");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -57,16 +65,19 @@ public static class ItemInteraction {
         window = trans;
         tab = wnd.AddTab(trans, "物品交互");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
+        wnd.AddButton(0, 1, y, tab, "查看分馏数据中心存储的所有物品", 16, "button-get-mod-data-info",
+            GetModDataItemInfo);
+        y += 36f + 7f;
         textCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
-        btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
+        btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
             OnButtonChangeItemClick, OnButtonChangeItemClick,
             "提示", "物品交互提示按钮说明1");
         //todo: 修复按钮提示窗后移除该内容
-        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y, tab,
+        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5 + 40 + 5, y, tab,
             "提示", "物品交互提示按钮说明1");
-        y += 50f;
+        y += 36f + 7f;
         textItemCountInfo = wnd.AddText2(x, y, tab, "动态刷新", 15, "textItemCountInfo");
         y += 36f;
         btnGetModDataItem[0] = wnd.AddButton(0, 3, y, tab, "动态刷新", 16, "button-get-item0",
@@ -108,6 +119,38 @@ public static class ItemInteraction {
         btnGetModDataItem[2].button.enabled = GetModDataItemCount(SelectedItem.ID) > 0;
     }
 
+    private static void GetModDataItemInfo() {
+        Dictionary<ItemProto, long> itemCountDic = [];
+        foreach (ItemProto item in LDB.items.dataArray) {
+            long count = GetModDataItemCount(item.ID);
+            if (count <= 0) {
+                continue;
+            }
+            itemCountDic[item] = count;
+        }
+        if (itemCountDic.Count == 0) {
+            UIMessageBox.Show("提示".Translate(),
+                $"{"分馏数据中心没有".Translate()} {"任何物品".Translate()}{"！".Translate()}",
+                "确定".Translate(),
+                UIMessageBox.WARNING);
+            return;
+        }
+        StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
+        int oneLineMaxCount = Math.Min(10, Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 40.0)));
+        int oneLineCount = 0;
+        foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
+            sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));
+            oneLineCount++;
+            if (oneLineCount >= oneLineMaxCount) {
+                sb.Append("\n");
+                oneLineCount = 0;
+            } else {
+                sb.Append("          ");
+            }
+        }
+        UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
+    }
+
     /// <summary>
     /// 从ModData背包提取指定堆叠数的物品。
     /// 如果groupCount为-1，表示提取所有物品；否则表示提取groupCount组物品。
@@ -122,10 +165,6 @@ public static class ItemInteraction {
                 UIMessageBox.WARNING);
         } else {
             AddItemToPackage(SelectedItem.ID, count, inc, false);
-            UIMessageBox.Show("提示".Translate(),
-                $"{"已从分馏数据中心提取：".Translate()}{SelectedItem.name} x {count} {"！".Translate()}",
-                "确定".Translate(),
-                UIMessageBox.INFO);
         }
     }
 

@@ -98,4 +98,11 @@ public static partial class Utils {
     public static void SetPosition(this Text text, float x, float y) {
         NormalizeRectWithMidLeft(text, x, y);
     }
+
+    public static (float, float) GetPosition(int index, int count, float totalPx = 640f) {
+        //假定组件之间的间隔为20px，整行宽度为640px
+        float targetLen = (totalPx - (count - 1) * 20) / count;
+        float targetPx = index * (targetLen + 20);
+        return (targetPx, targetLen);
+    }
 }

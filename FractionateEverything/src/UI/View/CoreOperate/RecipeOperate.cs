@@ -57,9 +57,10 @@ public static class RecipeOperate {
         Register("解锁/兑换配方", "Unlock/exchange recipe");
         Register("兑换经验", "Exchange experience");
 
+        Register("重置", "Reset");
+        Register("降级", "Downgrade");
         Register("升级", "Upgrade");
         Register("升满", "Full upgrade");
-        Register("重置", "Reset");
 
         Register("配方不存在！", "Recipe does not exist!");
         Register("费用", "Cost");
@@ -70,8 +71,10 @@ public static class RecipeOperate {
 
         Register("完全处理后的输出如下：", "The fully processed output is as follows:");
         Register("当前配方已完全升级！", "The current recipe has been completely upgraded!");
-        Register("当前配方已到最高品质，未达到满级！", "The current recipe is of the highest quality, but has not reached the maximum level!");
-        Register("当前配方品质可突破，突破条件：", "The current recipe quality can be broken through. Conditions for breaking through:");
+        Register("当前配方已到最高品质，未达到满级！",
+            "The current recipe is of the highest quality, but has not reached the maximum level!");
+        Register("当前配方品质可突破，突破条件：",
+            "The current recipe quality can be broken through. Conditions for breaking through:");
         Register("达到当前品质最高等级（", "Reaching the highest current quality level (");
         Register("）", ")");
         Register("达到当前等级经验上限（", "Reach the current level experience cap (");
@@ -89,32 +92,32 @@ public static class RecipeOperate {
         window = trans;
         tab = wnd.AddTab(trans, "配方操作");
         float x = 0f;
-        float y = 20f;
+        float y = 18f + 7f;
         textCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
-        btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
+        btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
             () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
             "提示", "配方操作提示按钮说明1");
         //todo: 修复按钮提示窗后移除该内容
-        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y, tab,
+        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
-        wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeShortNames).WithSize(150f, 0f)
-            .WithConfigEntry(RecipeTypeEntry);
-        y += 50f;
+        wnd.AddComboBox(GetPosition(1, 2).Item1, y, tab, "配方类型")
+            .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
+        y += 36f + 7f;
         wnd.AddButton(0, 2, y, tab, "解锁/兑换配方", 16, "button-get-recipe",
             () => { ExchangeItem2Recipe(IFE分馏配方通用核心, 1, SelectedRecipe); });
         wnd.AddButton(1, 2, y, tab, "兑换经验", 16, "button-get-recipe-exp",
             () => { ExchangeSand2RecipeExp(SelectedRecipe); });
         y += 36f;
         if (GameMain.sandboxToolsEnabled) {
-            wnd.AddButton(0, 4, y, tab, "升级", 16, "button-upgrade",
-                () => { Upgrade(SelectedRecipe); });
+            wnd.AddButton(0, 4, y, tab, "重置", 16, "button-reset",
+                () => { Reset(SelectedRecipe); });
             wnd.AddButton(1, 4, y, tab, "降级", 16, "button-downgrade",
                 () => { Downgrade(SelectedRecipe); });
-            wnd.AddButton(2, 4, y, tab, "升满", 16, "button-full-upgrade",
+            wnd.AddButton(2, 4, y, tab, "升级", 16, "button-upgrade",
+                () => { Upgrade(SelectedRecipe); });
+            wnd.AddButton(3, 4, y, tab, "升满", 16, "button-full-upgrade",
                 () => { FullUpgrade(SelectedRecipe); });
-            wnd.AddButton(3, 4, y, tab, "重置", 16, "button-reset",
-                () => { Reset(SelectedRecipe); });
             y += 36f;
         }
         textRecipeInfoBaseY = y;

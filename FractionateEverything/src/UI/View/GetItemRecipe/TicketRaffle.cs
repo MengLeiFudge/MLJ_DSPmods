@@ -58,9 +58,9 @@ public static class TicketRaffle {
         window = trans;
         tab = wnd.AddTab(trans, "奖券抽奖");
         float x = 0f;
-        float y = 20f;
-        wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
-            .WithConfigEntry(TicketTypeEntry);
+        float y = 18f;
+        wnd.AddComboBox(x, y, tab, "当前奖券")
+            .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry);
         wnd.AddTipsButton2(x + 240, y, tab, "配方卡池说明",
             "选择某种奖券后，只能抽取对应层级的配方。"
             + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
@@ -79,8 +79,8 @@ public static class TicketRaffle {
         wnd.AddButton(2, 3, y, tab, "配方百连", 16, "button-raffle-recipe-100",
             () => RaffleRecipe(100, 5));
         y += 38f;
-        wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
-            .WithConfigEntry(TicketTypeEntry);
+        wnd.AddComboBox(x, y, tab, "当前奖券")
+            .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry);
         wnd.AddTipsButton2(x + 240, y, tab, "建筑卡池说明",
             "无论选择哪种奖券，都不影响可以获取的建筑类型。"
             + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
