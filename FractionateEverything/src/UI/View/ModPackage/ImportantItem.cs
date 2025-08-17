@@ -29,12 +29,12 @@ public static class ImportantItem {
         tab = wnd.AddTab(trans, "重要物品");
         float x = 0f;
         float y = 20f;
-        btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
+        btnGetModDataProto = wnd.AddButton(0, 2, y, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
             GetModDataFracBuildingProto);
-        btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
+        btnGetModDataBuilding = wnd.AddButton(1, 2, y, tab, "提取所有分馏塔", 16, "button-get-building",
             GetModDataFractionator);
         y += 36f;
-        btnGetModDataProto = wnd.AddButton(x, y, 600, tab, "查看分馏数据中心当前持有的所有物品", 16, "button-get-mod-data-info",
+        btnGetModDataProto = wnd.AddButton(0, 1, y, tab, "查看分馏数据中心当前持有的所有物品", 16, "button-get-mod-data-info",
             GetModDataItemInfo);
     }
 
@@ -56,10 +56,10 @@ public static class ImportantItem {
             }
         }
         if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏塔原胚！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(), "没有可提取的分馏塔原胚！", "确定".Translate(), UIMessageBox.WARNING);
             return;
         }
-        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
+        UIMessageBox.Show("提示".Translate(), $"要提取以下物品{"吗？".Translate()}{sb}", "确定".Translate(), "取消".Translate(), UIMessageBox.WARNING, () => {
             sb = new("已提取以下物品：");
             foreach (int itemID in itemIDs) {
                 int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
@@ -68,7 +68,7 @@ public static class ImportantItem {
                     sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
-            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+            UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
         }, null);
     }
 
@@ -84,10 +84,10 @@ public static class ImportantItem {
             }
         }
         if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏塔！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(), "没有可提取的分馏塔！", "确定".Translate(), UIMessageBox.WARNING);
             return;
         }
-        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
+        UIMessageBox.Show("提示".Translate(), $"要提取以下物品{"吗？".Translate()}{sb}", "确定".Translate(), "取消".Translate(), UIMessageBox.WARNING, () => {
             sb = new("已提取以下物品：");
             foreach (int itemID in itemIDs) {
                 int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
@@ -96,7 +96,7 @@ public static class ImportantItem {
                     sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
                 }
             }
-            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+            UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
         }, null);
     }
 
@@ -110,7 +110,7 @@ public static class ImportantItem {
             itemCountDic[item] = count;
         }
         if (itemCountDic.Count == 0) {
-            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(), "分馏数据中心当前没有物品！", "确定".Translate(), UIMessageBox.WARNING);
             return;
         }
         StringBuilder sb = new("分馏数据中心当前持有如下物品：\n");
@@ -126,7 +126,7 @@ public static class ImportantItem {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+        UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
     }
 
     #region IModCanSave

@@ -54,11 +54,11 @@ public static class ItemInteraction {
         y += 50f;
         textItemCountInfo = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemCountInfo");
         y += 36f;
-        btnGetModDataItem[0] = wnd.AddButton(x, y, 200, tab, "提取1组物品", 16, "button-get-item0",
+        btnGetModDataItem[0] = wnd.AddButton(0, 3, y, tab, "提取1组物品", 16, "button-get-item0",
             () => GetModDataItem(1));
-        btnGetModDataItem[1] = wnd.AddButton(x + 220, y, 200, tab, "提取10组物品", 16, "button-get-item1",
+        btnGetModDataItem[1] = wnd.AddButton(1, 3, y, tab, "提取10组物品", 16, "button-get-item1",
             () => GetModDataItem(10));
-        btnGetModDataItem[2] = wnd.AddButton(x + 440, y, 200, tab, "提取全部物品", 16, "button-get-item2",
+        btnGetModDataItem[2] = wnd.AddButton(2, 3, y, tab, "提取全部物品", 16, "button-get-item2",
             () => GetModDataItem(-1));
         y += 36f;
     }
@@ -101,10 +101,10 @@ public static class ItemInteraction {
         int count = groupCount == -1 ? int.MaxValue : SelectedItem.StackSize * groupCount;
         count = TakeItemFromModData(SelectedItem.ID, count, out int inc);
         if (count == 0) {
-            UIMessageBox.Show("提示", $"分馏数据中心没有物品 {SelectedItem.name} ！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(), $"分馏数据中心没有物品 {SelectedItem.name} ！", "确定".Translate(), UIMessageBox.WARNING);
         } else {
             AddItemToPackage(SelectedItem.ID, count, inc, false);
-            UIMessageBox.Show("提示", $"已从分馏数据中心提取 {SelectedItem.name} x {count} ！", "确认", UIMessageBox.INFO);
+            UIMessageBox.Show("提示".Translate(), $"已从分馏数据中心提取 {SelectedItem.name} x {count} ！", "确定".Translate(), UIMessageBox.INFO);
         }
     }
 

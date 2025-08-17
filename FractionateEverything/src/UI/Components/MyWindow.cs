@@ -144,12 +144,21 @@ public class MyWindow : ManualBehaviour {
         return AddButton(x, y, 150f, parent, text, fontSize, objName, onClick);
     }
 
+    public UIButton AddButton(int xIdx, int xCount, float y, RectTransform parent, string text = "",
+        int fontSize = 16,
+        string objName = "button", UnityAction onClick = null) {
+        //假定按钮之前的间隔为20px，整行宽度为640px
+        float btnWidth = (640f - (xCount - 1) * 20) / xCount;
+        float x = xIdx * (btnWidth + 20);
+        return AddButton(x, y, btnWidth, parent, text, fontSize, objName, onClick);
+    }
+
     public UIButton AddButton(float x, float y, float width, RectTransform parent, string text = "", int fontSize = 16,
-        string objName = "button", UnityAction onClick = null, bool topLeft = false) {
+        string objName = "button", UnityAction onClick = null) {
         var panel = UIRoot.instance.uiGame.statWindow.performancePanelUI;
         var btn = Instantiate(panel.cpuActiveButton);
         btn.gameObject.name = objName;
-        var rect = topLeft ? NormalizeRectWithTopLeft(btn, x, y, parent) : NormalizeRectWithMidLeft(btn, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(btn, x, y, parent);
         rect.sizeDelta = new(width, rect.sizeDelta.y);
         var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
         var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
