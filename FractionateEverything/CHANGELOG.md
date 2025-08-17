@@ -22,6 +22,7 @@
         + 重构了分馏数据中心的UI，现在分类更为详细。
         + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
         + 增加前台自动百连抽功能。
+    + 添加大部分英文翻译。
     + Technology adjustments.
         + Added metadata required to unlock all technologies.
         + Adjusted the number of matrices required for some technologies (especially hidden technology research

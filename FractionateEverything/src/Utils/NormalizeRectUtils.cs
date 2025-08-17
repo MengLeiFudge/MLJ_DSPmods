@@ -34,6 +34,14 @@ public static partial class Utils {
         return rect;
     }
 
+    public static RectTransform NormalizeRectWithMidLeft(Component cmp, float left, float top,
+        Transform parent = null, float? height = null) {
+        RectTransform rect = NormalizeRectWithTopLeft(cmp, left, top, parent);
+        float actualHeight = height ?? rect.sizeDelta.y;
+        rect.anchoredPosition3D = new(left, -top + actualHeight / 2, 0f);
+        return rect;
+    }
+
     public static RectTransform NormalizeRectWithTopRight(Component cmp, float right, float top,
         Transform parent = null) {
         if (cmp.transform is not RectTransform rect) return null;
@@ -88,6 +96,6 @@ public static partial class Utils {
     }
 
     public static void SetPosition(this Text text, float x, float y) {
-        NormalizeRectWithTopLeft(text, x, y, text.rectTransform);
+        NormalizeRectWithTopLeft(text, x, y);
     }
 }

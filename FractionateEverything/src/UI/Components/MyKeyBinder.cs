@@ -70,7 +70,7 @@ public class MyKeyBinder : MonoBehaviour {
         ((RectTransform)kb.setDefaultUIButton.transform).anchoredPosition = new(140f + 20f, -57f);
         ((RectTransform)kb.setNoneKeyUIButton.transform).anchoredPosition = new(240f + 20f, -57f);
 
-        var rect = NormalizeRectWithTopLeft(kb, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(kb, x, y, parent);
         kb.rectTrans = rect;
 
         //rect.sizeDelta = new Vector2(240f, 64f);

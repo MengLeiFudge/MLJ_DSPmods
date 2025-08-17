@@ -29,7 +29,7 @@ public class MySideSlider : MonoBehaviour {
         Destroy(go.GetComponent<UIButton>());
         go.SetActive(true);
         var sl = go.AddComponent<MySideSlider>();
-        var rect = NormalizeRectWithTopLeft(sl, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(sl, x, y, parent);
         sl.rectTrans = rect;
 
         sl.slider = go.transform.Find("slider").GetComponent<Slider>();
