@@ -72,11 +72,11 @@ public static class TicketRaffle {
         ticketCountText1 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-1");
         wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
         y += 38f;
-        wnd.AddButton(x, y, 200, tab, "配方单抽", 16, "button-raffle-recipe-1",
+        wnd.AddButton(0, 3, y, tab, "配方单抽", 16, "button-raffle-recipe-1",
             () => RaffleRecipe(1));
-        wnd.AddButton(x + 220, y, 200, tab, "配方十连", 16, "button-raffle-recipe-10",
+        wnd.AddButton(1, 3, y, tab, "配方十连", 16, "button-raffle-recipe-10",
             () => RaffleRecipe(10));
-        wnd.AddButton(x + 440, y, 200, tab, "配方百连", 16, "button-raffle-recipe-100",
+        wnd.AddButton(2, 3, y, tab, "配方百连", 16, "button-raffle-recipe-100",
             () => RaffleRecipe(100, 5));
         y += 38f;
         wnd.AddComboBox(x, y, tab, "奖券选择").WithItems(TicketTypeNames).WithSize(150f, 0f)
@@ -93,11 +93,11 @@ public static class TicketRaffle {
         ticketCountText2 = wnd.AddText2(x + 300, y, tab, "奖券数目", 15, "text-ticket-count-2");
         wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry, "自动抽取");
         y += 38f;
-        wnd.AddButton(x, y, 200, tab, "建筑单抽", 16, "button-raffle-building-1",
+        wnd.AddButton(0, 3, y, tab, "建筑单抽", 16, "button-raffle-building-1",
             () => RaffleBuilding(1));
-        wnd.AddButton(x + 220, y, 200, tab, "建筑十连", 16, "button-raffle-building-10",
+        wnd.AddButton(1, 3, y, tab, "建筑十连", 16, "button-raffle-building-10",
             () => RaffleBuilding(10));
-        wnd.AddButton(x + 440, y, 200, tab, "建筑百连", 16, "button-raffle-building-100",
+        wnd.AddButton(2, 3, y, tab, "建筑百连", 16, "button-raffle-building-100",
             () => RaffleBuilding(100, 5));
     }
 
@@ -140,7 +140,7 @@ public static class TicketRaffle {
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
             if (showMessage) {
-                UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+                UIMessageBox.Show("提示".Translate(), "时机未到，再探索一会当前星球吧！", "确定".Translate(), UIMessageBox.WARNING);
             }
             return;
         }
@@ -162,7 +162,7 @@ public static class TicketRaffle {
         List<BaseRecipe> recipes = [..GetRecipesByMatrix(SelectedTicketMatrixId)];
         recipes.RemoveAll(recipe => recipe.IsMaxMemory);
         if (showMessage && recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry.Value]) {
-            UIMessageBox.Show("提示", "该卡池已经没有配方可以抽取了！\n确定继续抽取吗？", "确定", "取消", UIMessageBox.WARNING,
+            UIMessageBox.Show("提示".Translate(), $"该卡池已经没有配方可以抽取了！\n确定继续抽取{"吗？".Translate()}", "确定".Translate(), "取消".Translate(), UIMessageBox.WARNING,
                 () => {
                     ignoreRecipeCount[TicketTypeEntry.Value] = true;
                     RaffleRecipe(raffleCount, oneLineMaxCount);
@@ -186,7 +186,7 @@ public static class TicketRaffle {
                 }
                 removedCount--;
             }
-            UIMessageBox.Show("提示", tip.ToString(), "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(), tip.ToString(), "确定".Translate(), UIMessageBox.WARNING);
             return;
         }
         if (!TakeItem(SelectedTicketId, raffleCount, out _, showMessage)) {
@@ -359,7 +359,7 @@ public static class TicketRaffle {
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
             if (showMessage) {
-                UIMessageBox.Show("提示", "时机未到，再探索一会当前星球吧！", "确认", UIMessageBox.WARNING);
+                UIMessageBox.Show("提示".Translate(), "时机未到，再探索一会当前星球吧！", "确定".Translate(), UIMessageBox.WARNING);
             }
             return;
         }
