@@ -85,9 +85,9 @@ public static class BuildingOperate {
         window = trans;
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
-        float y = 20f;
-        wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
-            .WithConfigEntry(BuildingTypeEntry);
+        float y = 18f;
+        wnd.AddComboBox(x, y, tab, "建筑类型")
+            .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
         y += 36f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         y += 36f;

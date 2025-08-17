@@ -37,14 +37,14 @@ public static class SandboxMode {
         window = trans;
         tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
         btnUnlockAll = wnd.AddButton(0, 1, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
         textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5f, y, tab,
-            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 160f);
-        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5f + 160f + 5f, y, tab,
+        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5, y, tab,
+            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
+        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
             "经验获取倍率", "调整经验获取的速度，便于调试使用。\n仅在沙盒模式下生效。", "");
         y += 36f;
     }

@@ -9,10 +9,11 @@ public static partial class Utils {
         Register("提示", "Tip");
         Register("确定", "Confirm");
         Register("取消", "Cancel");
-        Register("兑换", "to exchange");
         Register("要花费", "Would you like to spend");
-        Register("兑换", "to exchange");
+        Register("来兑换", "to exchange");
         Register("吗？", "?");
+        Register("兑换", "Exchange");
+        Register("配方经验", "recipe experience");
     }
 
     #region 向背包添加物品
@@ -185,14 +186,12 @@ public static partial class Utils {
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} 兑换 {giveProto.name} x {giveCount} {"吗？".Translate()}",
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {giveProto.name} x {giveCount} {"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 AddItemToPackage(giveId, giveCount);
-                UIMessageBox.Show("提示".Translate(), $"已兑换 {giveProto.name} x {giveCount} ！",
-                    "确定".Translate(), UIMessageBox.INFO);
             }, null);
     }
 
@@ -214,20 +213,12 @@ public static partial class Utils {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} {"吗？".Translate()}",
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {recipe.TypeNameWC} {"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.RewardThis();
-                if (recipe.Memory == 0) {
-                    UIMessageBox.Show("提示".Translate(), $"已解锁 {recipe.TypeName}！",
-                        "确定".Translate(), UIMessageBox.INFO);
-                } else {
-                    UIMessageBox.Show("提示".Translate(), $"已兑换 {recipe.TypeName} 的同名回响 x 1！\n"
-                                                        + $"当前持有回响：{recipe.Memory}",
-                        "确定".Translate(), UIMessageBox.INFO);
-                }
             }, null);
     }
 
@@ -256,14 +247,12 @@ public static partial class Utils {
         int takeCount = (int)Math.Ceiling(needExp * 0.5);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} 兑换 {recipe.TypeNameWC} 经验 x {(int)needExp} {"吗？".Translate()}",
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()} x {(int)needExp} {"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.AddExp(needExp, false);
-                UIMessageBox.Show("提示".Translate(), $"已兑换 {(int)needExp} 配方经验！",
-                    "确定".Translate(), UIMessageBox.INFO);
             }, null);
     }
 

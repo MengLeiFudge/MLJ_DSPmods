@@ -28,7 +28,7 @@ public static class LimitedTimeStore {
         nextFreshTime = DateTime.Now.Date.AddHours(DateTime.Now.Hour)
             .AddMinutes(DateTime.Now.Minute / 10 * 10 + 10);
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
         textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
         y += 36f;
         textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");

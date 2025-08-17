@@ -20,7 +20,7 @@ public static class MainTask {
         window = trans;
         tab = wnd.AddTab(trans, "主线任务");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
     }
 
     public static void UpdateUI() {

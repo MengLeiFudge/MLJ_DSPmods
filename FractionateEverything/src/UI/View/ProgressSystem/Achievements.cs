@@ -20,7 +20,7 @@ public static class Achievements {
         window = trans;
         tab = wnd.AddTab(trans, "成就详情");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
     }
 
     public static void UpdateUI() {
