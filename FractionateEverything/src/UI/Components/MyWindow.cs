@@ -17,7 +17,7 @@ public class MyWindow : ManualBehaviour {
     private float _maxX;
     protected float MaxY;
     protected const float TitleHeight = 48f;
-    protected const float TabWidth = 105f;
+    protected const float TabWidth = 130f;
     protected const float TabHeight = 27f;
     protected const float Margin = 30f;
     protected const float Spacing = 10f;
@@ -89,12 +89,6 @@ public class MyWindow : ManualBehaviour {
         trans.sizeDelta = new(_maxX + Margin + TabWidth + Spacing + Margin, MaxY + TitleHeight + Margin);
     }
 
-    private static void AddElement(float x, float y, RectTransform rect, RectTransform parent = null) {
-        if (rect != null) {
-            NormalizeRectWithTopLeft(rect, x, y, parent);
-        }
-    }
-
     public static Text AddText(float x, float y, RectTransform parent, string label, int fontSize = 14,
         string objName = "label") {
         var src = UIRoot.instance.uiGame.assemblerWindow.stateText;
@@ -106,7 +100,7 @@ public class MyWindow : ManualBehaviour {
         txt.fontSize = fontSize;
         txt.supportRichText = true;
         txt.rectTransform.sizeDelta = new(txt.preferredWidth + 8f, txt.preferredHeight + 8f);
-        AddElement(x, y, txt.rectTransform, parent);
+        NormalizeRectWithMidLeft(txt.rectTransform, x, y, parent);
         return txt;
     }
 
@@ -124,7 +118,7 @@ public class MyWindow : ManualBehaviour {
         var dst = Instantiate(src);
         dst.gameObject.name = objName;
         var btn = dst.GetComponent<UIButton>();
-        NormalizeRectWithTopLeft(btn, x, y, parent);
+        NormalizeRectWithMidLeft(btn, x, y, parent);
         btn.tips.topLevel = true;
         btn.tips.tipTitle = tipTitle;
         btn.tips.tipText = tipContent;
@@ -150,11 +144,11 @@ public class MyWindow : ManualBehaviour {
     }
 
     public UIButton AddButton(float x, float y, float width, RectTransform parent, string text = "", int fontSize = 16,
-        string objName = "button", UnityAction onClick = null) {
+        string objName = "button", UnityAction onClick = null, bool topLeft = false) {
         var panel = UIRoot.instance.uiGame.statWindow.performancePanelUI;
         var btn = Instantiate(panel.cpuActiveButton);
         btn.gameObject.name = objName;
-        var rect = NormalizeRectWithTopLeft(btn, x, y, parent);
+        var rect = topLeft ? NormalizeRectWithTopLeft(btn, x, y, parent) : NormalizeRectWithMidLeft(btn, x, y, parent);
         rect.sizeDelta = new(width, rect.sizeDelta.y);
         var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
         var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
@@ -397,7 +391,7 @@ public class MyWindow : ManualBehaviour {
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
         inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
-        var rect = NormalizeRectWithTopLeft(inputField, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(inputField, x, y, parent);
         rect.sizeDelta = new(210, rect.sizeDelta.y);
         inputField.text = text;
         inputField.textComponent.fontSize = fontSize;
@@ -420,7 +414,7 @@ public class MyWindow : ManualBehaviour {
         inputField.gameObject.name = objName;
         Destroy(inputField.GetComponent<UIButton>());
         inputField.GetComponent<Image>().color = new(1f, 1f, 1f, 0.05f);
-        var rect = NormalizeRectWithTopLeft(inputField, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(inputField, x, y, parent);
         rect.sizeDelta = new(width, rect.sizeDelta.y);
         inputField.text = config.Value;
         inputField.textComponent.fontSize = fontSize;
@@ -455,7 +449,7 @@ public class MyWindowWithTabs : MyWindow {
         var swarmPanel = UIRoot.instance.uiGame.dysonEditor.controlPanel.hierarchy.swarmPanel;
         var src = swarmPanel.orbitButtons[0];
         var btn = Instantiate(src);
-        var btnRect = NormalizeRectWithTopLeft(btn, Margin, y, parent);
+        var btnRect = NormalizeRectWithMidLeft(btn, Margin, y, parent);
         btn.name = "tab-btn-" + index;
         btnRect.sizeDelta = new(TabWidth, TabHeight);
         btn.transform.Find("frame").gameObject.SetActive(false);
@@ -469,6 +463,9 @@ public class MyWindowWithTabs : MyWindow {
         var btnText = btn.transform.Find("Text").GetComponent<Text>();
         btnText.text = label.Translate();
         btnText.fontSize = 16;
+        // var srcText = UIRoot.instance.uiGame.assemblerWindow.stateText;
+        // btnText.font = srcText.font;
+        // btnText.fontStyle = srcText.fontStyle;
         btn.data = index;
 
         _tabs.Add(Tuple.Create(tabRect, btn));
@@ -488,7 +485,7 @@ public class MyWindowWithTabs : MyWindow {
         var img = Instantiate(UIRoot.instance.optionWindow.transform.Find("tab-line").Find("bar"));
         Destroy(img.Find("tri").gameObject);
         _tabY += spacing;
-        var rect = NormalizeRectWithTopLeft(img, 28, _tabY, parent);
+        var rect = NormalizeRectWithMidLeft(img, 28, _tabY, parent);
         rect.sizeDelta = new(107, 2);
         _tabY += 2;
     }

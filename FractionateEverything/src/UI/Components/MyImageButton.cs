@@ -92,7 +92,7 @@ public class MyImageButton : MonoBehaviour {
         go.SetActive(true);
 
         var cb = go.AddComponent<MyImageButton>();
-        var rect = NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(cb, x, y, parent, height);
 
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();
