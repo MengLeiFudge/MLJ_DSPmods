@@ -15,6 +15,8 @@ public static class PopupDisplay {
         Register("弹窗显示", "Popup Display");
     }
 
+    public static void LoadConfig(ConfigFile configFile) { }
+
     // private static ConfigEntry<int> RecipeTypeEntry;
     // public static void LoadConfig(ConfigFile configFile) {
     //     RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
@@ -27,7 +29,7 @@ public static class PopupDisplay {
         window = trans;
         tab = wnd.AddTab(trans, "弹窗显示");
         float x = 0f;
-        float y = 10f;
+        float y = 20f;
 
         // for (int x = 0; x < 1000; x += 100) {
         //     for (int y = 0; y < 1000; y += 50) {

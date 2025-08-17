@@ -96,6 +96,6 @@ public static partial class Utils {
     }
 
     public static void SetPosition(this Text text, float x, float y) {
-        NormalizeRectWithTopLeft(text, x, y);
+        NormalizeRectWithMidLeft(text, x, y);
     }
 }

@@ -42,14 +42,14 @@ public static class ItemInteraction {
         window = trans;
         tab = wnd.AddTab(trans, "物品交互");
         float x = 0f;
-        float y = 10f;
-        textCurrItem = wnd.AddText2(x, y + 5f, tab, "当前物品：", 15, "textCurrItem");
+        float y = 20f;
+        textCurrItem = wnd.AddText2(x, y, tab, "当前物品：", 15, "textCurrItem");
         btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
             SelectedItem.ID, "button-change-item",
             OnButtonChangeItemClick, OnButtonChangeItemClick,
             "切换说明", "左键选择需要查询或提取的物品");
         //todo: 修复按钮提示窗后移除该内容
-        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y + 11f, tab,
+        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y, tab,
             "切换说明", "左键选择需要查询或提取的物品");
         y += 50f;
         textItemCountInfo = wnd.AddText2(x, y, tab, "mod：xx 物流：xx 背包：xx", 15, "textItemCountInfo");

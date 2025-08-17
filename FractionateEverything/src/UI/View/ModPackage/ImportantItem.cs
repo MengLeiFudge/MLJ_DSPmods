@@ -28,7 +28,7 @@ public static class ImportantItem {
         window = trans;
         tab = wnd.AddTab(trans, "重要物品");
         float x = 0f;
-        float y = 10f;
+        float y = 20f;
         btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
             GetModDataFracBuildingProto);
         btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
