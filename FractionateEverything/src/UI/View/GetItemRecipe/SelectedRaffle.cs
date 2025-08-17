@@ -20,7 +20,7 @@ public static class SelectedRaffle {
         window = trans;
         tab = wnd.AddTab(trans, "自选抽奖");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
     }
 
     public static void UpdateUI() {

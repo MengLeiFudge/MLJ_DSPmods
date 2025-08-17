@@ -147,10 +147,8 @@ public class MyWindow : ManualBehaviour {
     public UIButton AddButton(int xIdx, int xCount, float y, RectTransform parent, string text = "",
         int fontSize = 16,
         string objName = "button", UnityAction onClick = null) {
-        //假定按钮之前的间隔为20px，整行宽度为640px
-        float btnWidth = (640f - (xCount - 1) * 20) / xCount;
-        float x = xIdx * (btnWidth + 20);
-        return AddButton(x, y, btnWidth, parent, text, fontSize, objName, onClick);
+        (float, float) location = GetPosition(xIdx, xCount);
+        return AddButton(location.Item1, y, location.Item2, parent, text, fontSize, objName, onClick);
     }
 
     public UIButton AddButton(float x, float y, float width, RectTransform parent, string text = "", int fontSize = 16,

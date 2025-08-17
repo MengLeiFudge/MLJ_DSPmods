@@ -33,7 +33,7 @@ public static class RecipeGallery {
         window = trans;
         tab = wnd.AddTab(trans, "配方图鉴");
         float x = 0f;
-        float y = 20f;
+        float y = 18f;
         recipeUnlockTitleText = wnd.AddText2(x, y, tab,
             $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：", 15, "text-recipe-unlock-title");
         recipeUnlockTitleText.supportRichText = true;
