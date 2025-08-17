@@ -20,7 +20,7 @@ public static class VipFeatures {
         window = trans;
         tab = wnd.AddTab(trans, "VIP功能");
         float x = 0f;
-        float y = 10f;
+        float y = 20f;
     }
 
     public static void UpdateUI() {

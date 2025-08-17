@@ -47,32 +47,32 @@ public static class BuildingOperate {
         window = trans;
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
-        float y = 10f;
+        float y = 20f;
         wnd.AddComboBox(x, y, tab, "建筑类型").WithItems(BuildingTypeNames).WithSize(150f, 0f)
             .WithConfigEntry(BuildingTypeEntry);
         y += 36f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         y += 36f;
         textBuildingInfo1 = wnd.AddText2(x, y, tab, "流动输出堆叠", 15, "text-building-info-1");
-        wnd.AddTipsButton2(x + 200, y + 6, tab, "流动输出堆叠",
+        wnd.AddTipsButton2(x + 200, y, tab, "流动输出堆叠",
             "启用后，流动输出（即侧面的输出）会尽可能以4堆叠进行输出。");
         btnBuildingInfo1 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-enable-fluid-output-stack",
             SetFluidOutputStack);
         y += 36f;
         textBuildingInfo2 = wnd.AddText2(x, y, tab, "产物输出最大堆叠", 15, "text-building-info-2");
-        wnd.AddTipsButton2(x + 200, y + 6, tab, "产物输出最大堆叠",
+        wnd.AddTipsButton2(x + 200, y, tab, "产物输出最大堆叠",
             "产物输出（即正面的输出）会尽可能以该项的数目进行输出。");
         btnBuildingInfo2 = wnd.AddButton(x + 350, y, tab, "堆叠+1", 16, "button-add-max-product-output-stack",
             AddMaxProductOutputStack);
         y += 36f;
         textBuildingInfo3 = wnd.AddText2(x, y, tab, "分馏永动", 15, "text-building-info-3");
-        wnd.AddTipsButton2(x + 200, y + 6, tab, "分馏永动",
+        wnd.AddTipsButton2(x + 200, y, tab, "分馏永动",
             "启用后，当产物缓存到达一定数目后，建筑将不再处理输入的物品，而是直接将其搬运到流动输出。\n该功能可以确保环路的持续运行。");
         btnBuildingInfo3 = wnd.AddButton(x + 350, y, tab, "启用", 16, "button-enable-frac-forever",
             SetFracForever);
         y += 36f;
         textBuildingInfo4 = wnd.AddText2(x, y, tab, "点数聚集效率层次", 15, "text-building-info-4");
-        btnTip4 = wnd.AddTipsButton2(x + 200, y + 6, tab, "点数聚集效率层次",
+        btnTip4 = wnd.AddTipsButton2(x + 200, y, tab, "点数聚集效率层次",
             "点数聚集的效率层次会影响产物的输出速率、产物的最大增产点数，上限为7。");
         btnBuildingInfo4 = wnd.AddButton(x + 350, y, tab, "层次+1", 16, "button-add-point-aggregate-level",
             AddPointAggregateLevel);
