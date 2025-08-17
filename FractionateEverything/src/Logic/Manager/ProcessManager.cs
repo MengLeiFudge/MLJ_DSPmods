@@ -16,9 +16,9 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class ProcessManager {
     public static void AddTranslations() {
-        Register("原料堆积", "Fluid Overflow");
-        Register("搬运模式", "Transport Mode");
-        Register("分馏永动", "Frac Forever");
+        Register("原料堆积", "Fluid overflow");
+        Register("搬运模式", "Transport mode");
+        Register("分馏永动", "Frac forever");
         Register("无配方", "No recipe");
         Register("流动", "Flow");
         Register("损毁", "Destroy");

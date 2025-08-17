@@ -47,7 +47,36 @@ public static class RecipeOperate {
 
     public static void AddTranslations() {
         Register("配方操作", "Recipe Operate");
+
+        Register("当前物品", "Current item");
+        Register("切换说明", "Switching instruction");
+        Register("切换说明内容",
+            "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
+            "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
+        Register("配方类型", "Recipe type");
+
+        Register("解锁/兑换配方", "Unlock/exchange recipe");
+        Register("兑换经验", "Exchange experience");
+
+        Register("升级", "Upgrade");
+        Register("升满", "Full upgrade");
+        Register("重置", "Reset");
+
+        Register("配方不存在！", "Recipe does not exist!");
+        Register("费用", "Cost");
         Register("每种精华", "Each essence");
+        Register("成功率", "Success Rate");
+        Register("损毁率", "Destroy Rate");
+        Register("产出", "Output");
+
+        Register("完全处理后的输出如下：", "The fully processed output is as follows:");
+        Register("当前配方已完全升级！", "The current recipe has been completely upgraded!");
+        Register("当前配方已到最高品质，未达到满级！", "The current recipe is of the highest quality, but has not reached the maximum level!");
+        Register("当前配方品质可突破，突破条件：", "The current recipe quality can be broken through. Conditions for breaking through:");
+        Register("达到当前品质最高等级（", "Reaching the highest current quality level (");
+        Register("）", ")");
+        Register("达到当前等级经验上限（", "Reach the current level experience cap (");
+        Register("拥有足够的同名回响（", "Have sufficient echoes of the same name (");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -62,26 +91,36 @@ public static class RecipeOperate {
         tab = wnd.AddTab(trans, "配方操作");
         float x = 0f;
         float y = 20f;
-        textCurrItem = wnd.AddText2(x, y, tab, "当前物品：", 15, "textCurrItem");
+        textCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
         btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
             SelectedItem.ID, "button-change-item",
             () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
-            "切换说明", "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
+            "切换说明", "切换说明内容");
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y, tab,
-            "切换说明", "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
+            "切换说明", "切换说明内容");
         wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeShortNames).WithSize(150f, 0f)
             .WithConfigEntry(RecipeTypeEntry);
         y += 50f;
-        wnd.AddButton(x, y, 300, tab, "使用分馏配方通用核心兑换此配方", 16, "button-get-recipe",
+        wnd.AddButton(0, 2, y, tab, "解锁/兑换配方", 16, "button-get-recipe",
             () => { ExchangeItem2Recipe(IFE分馏配方通用核心, 1, SelectedRecipe); });
-        wnd.AddButton(x + 350, y, 300, tab, "使用沙土兑换配方经验", 16, "button-get-recipe-exp",
+        wnd.AddButton(1, 2, y, tab, "兑换经验", 16, "button-get-recipe-exp",
             () => { ExchangeSand2RecipeExp(SelectedRecipe); });
         y += 36f;
+        if (GameMain.sandboxToolsEnabled) {
+            wnd.AddButton(0, 4, y, tab, "升级", 16, "button-upgrade",
+                () => { Upgrade(SelectedRecipe); });
+            wnd.AddButton(1, 4, y, tab, "降级", 16, "button-downgrade",
+                () => { Downgrade(SelectedRecipe); });
+            wnd.AddButton(2, 4, y, tab, "升满", 16, "button-full-upgrade",
+                () => { FullUpgrade(SelectedRecipe); });
+            wnd.AddButton(3, 4, y, tab, "重置", 16, "button-reset",
+                () => { Reset(SelectedRecipe); });
+            y += 36f;
+        }
         textRecipeInfoBaseY = y;
         for (int i = 0; i < textRecipeInfo.Length; i++) {
             textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
-            // y += 20f;
         }
     }
 
@@ -94,13 +133,13 @@ public static class RecipeOperate {
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         int line = 0;
         if (recipe == null) {
-            textRecipeInfo[line].text = "配方不存在！".WithColor(Red);
+            textRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
         } else {
             textRecipeInfo[line].text = recipe.Unlocked
                 ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
-                : $"{recipe.TypeNameWC} {"配方未解锁".WithColor(Red)}";
+                : $"{recipe.TypeNameWC} {"配方未解锁".Translate().WithColor(Red)}";
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
 
@@ -108,7 +147,7 @@ public static class RecipeOperate {
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
 
-            textRecipeInfo[line].text = $"费用 1 {SelectedItem.name}";
+            textRecipeInfo[line].text = $"{"费用".Translate()} 1 {SelectedItem.name}";
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
             if (recipeType == ERecipe.QuantumCopy) {
@@ -117,14 +156,14 @@ public static class RecipeOperate {
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             }
-            textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
+            textRecipeInfo[line].text = $"{"成功率".Translate()} {recipe.SuccessRate:P3}".WithColor(Orange)
                                         + "      "
-                                        + $"损毁率 {recipe.DestroyRate:P3}".WithColor(Red);
+                                        + $"{"损毁率".Translate()} {recipe.DestroyRate:P3}".WithColor(Red);
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
             bool isFirst = true;
             foreach (OutputInfo info in recipe.OutputMain) {
-                textRecipeInfo[line].text = $"{(isFirst ? "产出" : "    ")} {info}";
+                textRecipeInfo[line].text = $"{(isFirst ? "产出".Translate() : "    ")} {info}";
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 if (isFirst) {
@@ -133,7 +172,7 @@ public static class RecipeOperate {
             }
             isFirst = true;
             foreach (OutputInfo info in recipe.OutputAppend) {
-                textRecipeInfo[line].text = $"{(isFirst ? "其他" : "    ")} {info}";
+                textRecipeInfo[line].text = $"{(isFirst ? "其他".Translate() : "    ")} {info}";
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 if (isFirst) {
@@ -145,7 +184,7 @@ public static class RecipeOperate {
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
 
-            textRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 完全处理后的输出如下：";
+            textRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 {"完全处理后的输出如下：".Translate()}";
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
             textRecipeInfo[line].text = GetSameRecipeStr(recipe, 0);
@@ -171,29 +210,32 @@ public static class RecipeOperate {
             line++;
 
             if (recipe.FullUpgrade) {
-                textRecipeInfo[line].text = "当前配方已完全升级！".WithColor(Orange);
+                textRecipeInfo[line].text = "当前配方已完全升级！".Translate().WithColor(Orange);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             } else if (recipe.IsMaxQuality) {
-                textRecipeInfo[line].text = "当前配方已到最高品质，未达到满级！".WithColor(Blue);
+                textRecipeInfo[line].text = "当前配方已到最高品质，未达到满级！".Translate().WithColor(Blue);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             } else {
-                textRecipeInfo[line].text = "当前配方品质可突破，突破条件：";
+                textRecipeInfo[line].text = "当前配方品质可突破，突破条件：".Translate();
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.IsCurrQualityMaxLevel ? "√" : "x")}] 达到当前品质最高等级（{recipe.Level} / {recipe.CurrQualityMaxLevel}）"
+                    $"[{(recipe.IsCurrQualityMaxLevel ? "√" : "x")}] "
+                    + $"{"达到当前品质最高等级（".Translate()}{recipe.Level} / {recipe.CurrQualityMaxLevel}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityMaxLevel ? Green : Red);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] 达到当前等级经验上限（{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}）"
+                    $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] "
+                    + $"{"达到当前等级经验上限（".Translate()}{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityCurrLevelMaxExp ? Green : Red);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 textRecipeInfo[line].text =
-                    $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] 拥有足够的同名回响（{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}）"
+                    $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] "
+                    + $"{"拥有足够的同名回响（".Translate()}{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}{"）".Translate()}"
                         .WithColor(recipe.IsEnoughMemoryToBreak ? Green : Red);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
@@ -251,6 +293,34 @@ public static class RecipeOperate {
             sb.Append($"{"每种精华".Translate()} x -{essenceCount:F3}");
         }
         return sb.ToString();
+    }
+
+    public static void Upgrade(BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        recipe?.SandBoxUpDowngrade(true);
+    }
+
+    public static void Downgrade(BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        recipe?.SandBoxUpDowngrade(false);
+    }
+
+    public static void FullUpgrade(BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        recipe?.SandBoxMaxUpDowngrade(true);
+    }
+
+    public static void Reset(BaseRecipe recipe) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        recipe?.SandBoxMaxUpDowngrade(false);
     }
 
     #region IModCanSave

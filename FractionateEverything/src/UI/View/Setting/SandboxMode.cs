@@ -38,7 +38,7 @@ public static class SandboxMode {
         tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
         float y = 20f;
-        btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
+        btnUnlockAll = wnd.AddButton(0, 1, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
         textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");

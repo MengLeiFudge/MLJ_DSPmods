@@ -32,15 +32,15 @@ public static class LimitedTimeStore {
         textLeftTime = wnd.AddText2(x, y, tab, "剩余刷新时间：xx s", 15, "textLeftTime");
         y += 36f;
         textItemInfo[0] = wnd.AddText2(x, y, tab, "物品0信息", 15, "textLeftTime0");
-        wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time1",
+        wnd.AddButton(2, 3, y, tab, "兑换", 16, "btn-buy-time1",
             () => ExchangeItem(0));
         y += 36f;
         textItemInfo[1] = wnd.AddText2(x, y, tab, "物品1信息", 15, "textLeftTime1");
-        wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time2",
+        wnd.AddButton(2, 3, y, tab, "兑换", 16, "btn-buy-time2",
             () => ExchangeItem(1));
         y += 36f;
         textItemInfo[2] = wnd.AddText2(x, y, tab, "物品2信息", 15, "textLeftTime2");
-        wnd.AddButton(x + 350, y, 400, tab, "兑换", 16, "btn-buy-time3",
+        wnd.AddButton(2, 3, y, tab, "兑换", 16, "btn-buy-time3",
             () => ExchangeItem(2));
         y += 36f;
     }
