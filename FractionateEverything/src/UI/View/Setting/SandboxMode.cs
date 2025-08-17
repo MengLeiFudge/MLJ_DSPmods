@@ -54,10 +54,11 @@ public static class SandboxMode {
             return;
         }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
-        btnUnlockAll.enabled = GameMain.sandboxToolsEnabled;
-        btnUnlockAll.button.enabled = GameMain.sandboxToolsEnabled;
-        ExpMultiRate = GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
-        sliderExpMultiRate.slider.enabled = GameMain.sandboxToolsEnabled;
+        bool sandboxMode = GameMain.sandboxToolsEnabled;
+        btnUnlockAll.enabled = sandboxMode;
+        btnUnlockAll.button.enabled = sandboxMode;
+        ExpMultiRate = sandboxMode ? ExpMultiRateEntry.Value : 1;
+        sliderExpMultiRate.slider.enabled = sandboxMode;
     }
 
     #region IModCanSave

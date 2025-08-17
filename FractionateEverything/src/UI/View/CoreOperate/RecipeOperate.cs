@@ -46,6 +46,7 @@ public static class RecipeOperate {
 
     public static void AddTranslations() {
         Register("配方操作", "Recipe Operate");
+        Register("每种精华", "Each essence");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -106,13 +107,7 @@ public static class RecipeOperate {
             line++;
             if (recipeType == ERecipe.QuantumCopy) {
                 QuantumCopyRecipe recipe0 = GetRecipe<QuantumCopyRecipe>(recipeType, SelectedItem.ID);
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 复制精华";
-                line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 点金精华";
-                line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 分解精华";
-                line++;
-                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} 转化精华";
+                textRecipeInfo[line].text = $"         {recipe0.EssenceCost:F3} {"每种精华".Translate()}";
                 line++;
             }
             textRecipeInfo[line].text = $"成功率 {recipe.SuccessRate:P3}".WithColor(Orange)
@@ -220,7 +215,7 @@ public static class RecipeOperate {
             }
             outputDic[outputId] = tuple;
         }
-        StringBuilder sb = new StringBuilder($"增产点数{fluidInputIncAvg}：");
+        StringBuilder sb = new StringBuilder($"{"增产点数".Translate()}{fluidInputIncAvg}\t");
         bool sandboxMode = GameMain.sandboxToolsEnabled;
         foreach (var p in outputDic) {
             var tuple = p.Value;
@@ -228,10 +223,7 @@ public static class RecipeOperate {
                       + $" x {(tuple.Item3 || sandboxMode ? tuple.Item1.ToString("F3") : "???")}  ");
         }
         if (recipe0 != null) {
-            sb.Append($"{LDB.items.Select(IFE复制精华).name} x -{essenceCount:F3}  ")
-                .Append($"{LDB.items.Select(IFE点金精华).name} x -{essenceCount:F3}  ")
-                .Append($"{LDB.items.Select(IFE分解精华).name} x -{essenceCount:F3}  ")
-                .Append($"{LDB.items.Select(IFE转化精华).name} x -{essenceCount:F3}  ");
+            sb.Append($"{"每种精华".Translate()} x -{essenceCount:F3}");
         }
         return sb.ToString();
     }

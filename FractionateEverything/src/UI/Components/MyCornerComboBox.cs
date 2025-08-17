@@ -32,17 +32,12 @@ public class MyCornerComboBox : MonoBehaviour {
         _baseObject = go;
     }
 
-    public static MyCornerComboBox CreateComboBox(float x, float y, RectTransform parent, bool topRight = false) {
+    public static MyCornerComboBox CreateComboBox(float x, float y, RectTransform parent) {
         var gameObject = Instantiate(_baseObject);
         gameObject.name = "my-combobox";
         gameObject.SetActive(true);
         var cb = gameObject.AddComponent<MyCornerComboBox>();
-        RectTransform rtrans;
-        if (topRight) {
-            rtrans = NormalizeRectWithTopRight(cb, x, y, parent);
-        } else {
-            rtrans = NormalizeRectWithTopLeft(cb, x, y, parent);
-        }
+        RectTransform rtrans = NormalizeRectWithMidLeft(cb, x, y, parent);
         cb._rectTrans = rtrans;
         var box = rtrans.GetComponent<UIComboBox>();
         cb._comboBox = box;
