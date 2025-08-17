@@ -49,10 +49,9 @@ public static class RecipeOperate {
         Register("配方操作", "Recipe Operate");
 
         Register("当前物品", "Current item");
-        Register("切换说明", "Switching instruction");
-        Register("切换说明内容",
+        Register("配方操作提示按钮说明1",
             "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
-            "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换");
+            "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
         Register("配方类型", "Recipe type");
 
         Register("解锁/兑换配方", "Unlock/exchange recipe");
@@ -95,10 +94,10 @@ public static class RecipeOperate {
         btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5f, y, tab,
             SelectedItem.ID, "button-change-item",
             () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
-            "切换说明", "切换说明内容");
+            "提示", "配方操作提示按钮说明1");
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5f + 60, y, tab,
-            "切换说明", "切换说明内容");
+            "提示", "配方操作提示按钮说明1");
         wnd.AddComboBox(x + 250, y, tab, "配方类型").WithItems(RecipeTypeShortNames).WithSize(150f, 0f)
             .WithConfigEntry(RecipeTypeEntry);
         y += 50f;
