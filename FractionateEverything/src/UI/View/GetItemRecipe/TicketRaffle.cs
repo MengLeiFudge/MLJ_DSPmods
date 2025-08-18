@@ -80,7 +80,7 @@ public static class TicketRaffle {
             "选择某种奖券后，只能抽取对应层级的配方。"
             + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
             + "概率公示：\n"
-            + "分馏配方通用核心：0.05%\n"
+            + "分馏配方通用核心：0.05%\n" //todo: 改为根据奖券价值动态决定概率
             + "分馏配方：0.6%（至多90抽必出）\n"
             + "杂项物品：59.61%\n"
             + "沙土：39.74%");
@@ -101,7 +101,7 @@ public static class TicketRaffle {
             "无论选择哪种奖券，都不影响可以获取的建筑类型。"
             + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
             + "概率公示：\n"
-            + "分馏塔增幅芯片：0.3%\n"
+            + "分馏塔增幅芯片：0.3%\n" //todo: 改为根据奖券价值动态决定概率
             + "分馏塔原胚：25%\n"
             + "分馏塔：5%\n"
             + "其他建筑：39.82%\n"
@@ -177,7 +177,8 @@ public static class TicketRaffle {
         //排序一下
         items.Sort();
         //构建可抽到的分馏配方列表
-        List<BaseRecipe> recipes = [..GetRecipesUnderMatrix(SelectedTicketMatrixId1)];
+        //todo: 优化配方出现情况，当前层次概率至少翻倍
+        List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(arr => arr).ToList();
         recipes.RemoveAll(recipe => recipe.IsMaxMemory);
         if (showMessage && recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry1.Value]) {
             UIMessageBox.Show("提示".Translate(), $"该卡池已经没有配方可以抽取了！\n确定继续抽取{"吗？".Translate()}", "确定".Translate(),
