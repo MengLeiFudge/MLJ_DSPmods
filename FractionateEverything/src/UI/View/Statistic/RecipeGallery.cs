@@ -37,14 +37,14 @@ public static class RecipeGallery {
         recipeUnlockTitleText = wnd.AddText2(x, y, tab,
             $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：", 15, "text-recipe-unlock-title");
         recipeUnlockTitleText.supportRichText = true;
-        y += 38f;
+        y += 36f;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 8; j++) {
                 recipeUnlockInfoText[i, j] =
                     wnd.AddText2(x + 100 * j, y, tab, "999/999", 15, $"text-recipe-unlock-info{i}");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
-            y += 38f;
+            y += 36f;
         }
         recipeUnlockInfoText[0, 0].text = "";
         for (int i = 1; i <= 7; i++) {
