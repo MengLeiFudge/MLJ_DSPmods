@@ -191,7 +191,8 @@ public static class TicketRaffle {
         List<BaseRecipe> recipesTemp = [..recipes];
         int removedCount = recipes.RemoveAll(recipe => !GameMain.history.ItemUnlocked(recipe.InputID));
         int oneLineCount = 0;
-        if (showMessage && recipes.Count == 0) {
+        if (showMessage && recipes.Count == 0 && removedCount > 0) {
+            //todo：调整这里
             StringBuilder tip = new StringBuilder($"还有{removedCount}个物品尚未解锁，现在抽取不到对应配方！\n\n"
                                                   + $"未解锁的物品为：\n");
             while (removedCount > 0) {
@@ -537,6 +538,8 @@ public static class TicketRaffle {
         }
     }
 
+    private static long lastAtuoRaffleTick = 0;
+
     /// <summary>
     /// 每0.1s左右自动抽取一次百连。
     /// </summary>
@@ -550,9 +553,10 @@ public static class TicketRaffle {
             EnableAutoRaffleEntry2.Value = false;
         }
         //todo: vip可以提速
-        if (GameMain.gameTick % 10 != 0) {
+        if (GameMain.gameTick % 10 != 0 || lastAtuoRaffleTick == GameMain.gameTick) {
             return;
         }
+        //todo：为什么会扣除200？
         if (EnableAutoRaffleEntry1.Value) {
             RaffleRecipe(100, 5, false);
         }
