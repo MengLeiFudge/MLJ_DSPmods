@@ -22,8 +22,22 @@ public class MyImageButton : MonoBehaviour {
     private static Color normalColor;
 
     // 修改为半透明背景色，而不是边框色
-    private static readonly Color BackgroundColor = new(0.4f, 0.4f, 0.4f, 0.3f);
+    private static readonly Color NotSelectedBgColor = new(0.4f, 0.4f, 0.4f, 0.3f);
+    private static readonly Color SelectedBgColor = new(0.3f, 0.6f, 1f, 0.5f); // 浅蓝色选中背景
     private static readonly Color SpriteColor = new(1f, 1f, 1f, 1f);
+
+    // 选中状态相关
+    private bool _isSelected = false;
+    private MyImageButtonGroup _buttonGroup = null;
+
+    public bool IsSelected {
+        get => _isSelected;
+        set {
+            if (_isSelected != value) {
+                SetSelected(value);
+            }
+        }
+    }
 
     public static void InitBaseObject() {
         if (_baseObject) return;
@@ -40,7 +54,7 @@ public class MyImageButton : MonoBehaviour {
         // 添加必要的组件
         _baseObject.AddComponent<RectTransform>();
         var image = _baseObject.AddComponent<Image>();
-        image.color = BackgroundColor;
+        image.color = NotSelectedBgColor;
 
         // 添加Button组件
         _baseObject.AddComponent<Button>();
@@ -92,7 +106,7 @@ public class MyImageButton : MonoBehaviour {
         go.SetActive(true);
 
         var cb = go.AddComponent<MyImageButton>();
-        var rect = NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(cb, x, y, parent, height);
 
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();
@@ -146,15 +160,49 @@ public class MyImageButton : MonoBehaviour {
 
     public void SetEnable(bool on) {
         if (uiButton) uiButton.enabled = on;
-        if (on) {
-            if (borderImage) borderImage.color = BackgroundColor;
-            if (spriteImage) spriteImage.color = SpriteColor;
+
+        if (borderImage == null) return;
+
+        Color targetColor;
+        if (_isSelected) {
+            targetColor = SelectedBgColor;
         } else {
-            if (borderImage)
-                borderImage.color = new Color(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b,
-                    BackgroundColor.a * 0.5f);
-            if (spriteImage)
-                spriteImage.color = new Color(SpriteColor.r, SpriteColor.g, SpriteColor.b, SpriteColor.a * 0.5f);
+            targetColor = NotSelectedBgColor;
+        }
+
+        if (!uiButton.enabled) {
+            targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, targetColor.a * 0.5f);
+        }
+
+        borderImage.color = targetColor;
+
+        // 更新精灵颜色
+        if (spriteImage) {
+            Color spriteTargetColor = SpriteColor;
+            if (!uiButton.enabled) {
+                spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b, spriteTargetColor.a * 0.5f);
+            }
+            spriteImage.color = spriteTargetColor;
+        }
+        // if (on) {
+        //     if (borderImage) borderImage.color = NotSelectedBgColor;
+        //     if (spriteImage) spriteImage.color = SpriteColor;
+        // } else {
+        //     if (borderImage)
+        //         borderImage.color = new Color(NotSelectedBgColor.r, NotSelectedBgColor.g, NotSelectedBgColor.b,
+        //             NotSelectedBgColor.a * 0.5f);
+        //     if (spriteImage)
+        //         spriteImage.color = new Color(SpriteColor.r, SpriteColor.g, SpriteColor.b, SpriteColor.a * 0.5f);
+        // }
+    }
+
+    private void SetSelected(bool selected) {
+        _isSelected = selected;
+        SetEnable(selected);
+
+        // 通知按钮组
+        if (_buttonGroup != null && selected) {
+            _buttonGroup.OnButtonSelected(this);
         }
     }
 
@@ -193,6 +241,33 @@ public class MyImageButton : MonoBehaviour {
         uiButton.tips.delay = delay;
         uiButton.tips.corner = 2;
         uiButton.UpdateTip();
+        return this;
+    }
+
+    public MyImageButton WithSelected(bool selected) {
+        IsSelected = selected;
+        return this;
+    }
+
+    public MyImageButton WithGroup(MyImageButtonGroup group) {
+        _buttonGroup = group;
+        group?.AddButton(this);
+        return this;
+    }
+
+    // 添加点击切换选中状态的功能
+    public MyImageButton WithToggleOnClick() {
+        if (uiButton?.button != null) {
+            uiButton.button.onClick.AddListener(() => {
+                if (_buttonGroup == null) {
+                    // 没有按钮组时，直接切换状态
+                    IsSelected = !IsSelected;
+                } else {
+                    // 有按钮组时，让按钮组处理
+                    _buttonGroup.ToggleButton(this);
+                }
+            });
+        }
         return this;
     }
 

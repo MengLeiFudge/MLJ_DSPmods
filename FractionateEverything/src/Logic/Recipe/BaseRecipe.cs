@@ -150,7 +150,11 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 下一品质
     /// </summary>
-    public int NextQuality => Quality == 5 ? Quality + 2 : Quality + 1;
+    public int PreviousQuality => Math.Max(1, Quality == MaxQuality ? Quality - 2 : Quality - 1);
+    /// <summary>
+    /// 下一品质
+    /// </summary>
+    public int NextQuality => Math.Min(MaxQuality, Quality == MaxQuality - 2 ? MaxQuality : Quality + 1);
     /// <summary>
     /// 最高品质
     /// </summary>
@@ -279,6 +283,52 @@ public abstract class BaseRecipe(
                 Exp -= CurrQualityCurrLevelExp / 5.0f;
             }
         }
+    }
+
+    /// <summary>
+    /// 沙盒模式下，将配方升一级/降一级
+    /// </summary>
+    public void SandBoxUpDowngrade(bool up) {
+        if (up) {
+            if (FullUpgrade) {
+                //do nothing
+            } else if (Locked) {
+                Quality = 1;
+                Level = 1;
+            } else if (IsCurrQualityMaxLevel) {
+                Quality = NextQuality;
+                Level = 1;
+            } else {
+                Level++;
+            }
+        } else {
+            if (Level > 1) {
+                Level--;
+            } else if (Locked) {
+                //do nothing
+            } else if (Quality == 1 && Level == 1) {
+                Quality = 0;
+                Level = 0;
+            } else {
+                Quality = PreviousQuality;
+                Level = CurrQualityMaxLevel;
+            }
+        }
+        Exp = 0;
+    }
+
+    /// <summary>
+    /// 沙盒模式下，将配方升到最高品质、最高级/重置到最低品质、最低级
+    /// </summary>
+    public void SandBoxMaxUpDowngrade(bool up) {
+        if (up) {
+            Quality = MaxQuality;
+            Level = CurrQualityMaxLevel;
+        } else {
+            Quality = 0;
+            Level = 0;
+        }
+        Exp = 0;
     }
 
     #endregion
