@@ -17,6 +17,7 @@ public static class MainWindow {
     private static PressKeyBind _toggleKey;
     private static bool _configWinInitialized;
     private static MyConfigWindow _configWin;
+    private static bool sandboxMode = false;
 
     public static void AddTranslations() {
         Register("KEYOpenFracCenter", "[FE] Open Fractionation Data Center", "[FE] 打开分馏数据中心");
@@ -106,7 +107,9 @@ public static class MainWindow {
         wnd.AddTabGroup(trans, "系统设置");
         VipFeatures.CreateUI(wnd, trans);
         PopupDisplay.CreateUI(wnd, trans);
-        SandboxMode.CreateUI(wnd, trans);
+        if (sandboxMode) {
+            SandboxMode.CreateUI(wnd, trans);
+        }
     }
 
     private static void UpdateUI() {
@@ -130,7 +133,9 @@ public static class MainWindow {
 
         VipFeatures.UpdateUI();
         PopupDisplay.UpdateUI();
-        SandboxMode.UpdateUI();
+        if (sandboxMode) {
+            SandboxMode.UpdateUI();
+        }
     }
 
     public static void OnInputUpdate() {
@@ -152,11 +157,16 @@ public static class MainWindow {
     private static void ToggleConfigWindow() {
         if (!_configWinInitialized) {
             _configWinInitialized = true;
+            sandboxMode = GameMain.sandboxToolsEnabled;
             _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
         }
         if (_configWin.active) {
             _configWin._Close();
         } else {
+            if (sandboxMode != GameMain.sandboxToolsEnabled) {
+                sandboxMode = GameMain.sandboxToolsEnabled;
+                _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+            }
             _configWin.Open();
         }
     }

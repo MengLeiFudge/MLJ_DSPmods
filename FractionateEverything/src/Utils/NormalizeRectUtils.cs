@@ -34,6 +34,14 @@ public static partial class Utils {
         return rect;
     }
 
+    public static RectTransform NormalizeRectWithMidLeft(Component cmp, float left, float top,
+        Transform parent = null, float? height = null) {
+        RectTransform rect = NormalizeRectWithTopLeft(cmp, left, top, parent);
+        float actualHeight = height ?? rect.sizeDelta.y;
+        rect.anchoredPosition3D = new(left, -top + actualHeight / 2, 0f);
+        return rect;
+    }
+
     public static RectTransform NormalizeRectWithTopRight(Component cmp, float right, float top,
         Transform parent = null) {
         if (cmp.transform is not RectTransform rect) return null;
@@ -88,6 +96,13 @@ public static partial class Utils {
     }
 
     public static void SetPosition(this Text text, float x, float y) {
-        NormalizeRectWithTopLeft(text, x, y, text.rectTransform);
+        NormalizeRectWithMidLeft(text, x, y);
+    }
+
+    public static (float, float) GetPosition(int index, int count, float totalPx = 640f) {
+        //假定组件之间的间隔为20px，整行宽度为640px
+        float targetLen = (totalPx - (count - 1) * 20) / count;
+        float targetPx = index * (targetLen + 20);
+        return (targetPx, targetLen);
     }
 }

@@ -64,7 +64,7 @@ public class MyComboBox : MonoBehaviour {
         gameObject.name = "my-combobox";
         gameObject.SetActive(true);
         var cb = gameObject.AddComponent<MyComboBox>();
-        var rtrans = NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rtrans = NormalizeRectWithMidLeft(cb, x, y, parent);
         cb._rectTrans = rtrans;
         cb._text = gameObject.GetComponent<Text>();
         var box = rtrans.Find("ComboBox").GetComponent<UIComboBox>();

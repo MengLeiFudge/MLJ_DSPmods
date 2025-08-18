@@ -108,11 +108,68 @@ public static class RecipeManager {
         return RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
     }
 
-    public static List<BaseRecipe> GetRecipesByMatrix(int matrixId) {
-        if (matrixId == I宇宙矩阵) {
-            return RecipeList;
+    public static List<BaseRecipe> GetRecipesUnderMatrix(int matrixId) {
+        List<BaseRecipe> result = [];
+
+        // 获取当前矩阵层级的配方
+        List<BaseRecipe> currentMatrixRecipes =
+            RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipeList) ? recipeList : [];
+
+        // 获取所有小于等于当前矩阵层级的配方
+        List<BaseRecipe> allLowerRecipes = [];
+        for (int i = I电磁矩阵; i <= matrixId; i++) {
+            if (RecipeMatrixDic.TryGetValue(i, out List<BaseRecipe> lowerRecipes)) {
+                allLowerRecipes.AddRange(lowerRecipes);
+            }
         }
-        return RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipeList) ? recipeList : [];
+
+        // 如果没有配方，直接返回空列表
+        if (allLowerRecipes.Count == 0) {
+            return result;
+        }
+
+        // 计算需要的配方数量（假设返回所有可用配方，按比例分配）
+        int currentMatrixCount = (int)(allLowerRecipes.Count * 0.4f);
+        int otherMatrixCount = allLowerRecipes.Count - currentMatrixCount;
+
+        // 添加40%的当前矩阵层级配方
+        if (currentMatrixRecipes.Count > 0) {
+            if (currentMatrixRecipes.Count <= currentMatrixCount) {
+                result.AddRange(currentMatrixRecipes);
+            } else {
+                // 如果当前层级配方太多，随机选择
+                var shuffled = new List<BaseRecipe>(currentMatrixRecipes);
+                for (int i = 0; i < currentMatrixCount; i++) {
+                    int randomIndex = UnityEngine.Random.Range(i, shuffled.Count);
+                    (shuffled[i], shuffled[randomIndex]) = (shuffled[randomIndex], shuffled[i]);
+                }
+                result.AddRange(shuffled.GetRange(0, currentMatrixCount));
+            }
+        }
+
+        // 添加60%的其他层级配方（小于当前矩阵层级）
+        List<BaseRecipe> otherRecipes = [];
+        for (int i = I电磁矩阵; i < matrixId; i++) {
+            if (RecipeMatrixDic.TryGetValue(i, out List<BaseRecipe> lowerRecipes)) {
+                otherRecipes.AddRange(lowerRecipes);
+            }
+        }
+
+        if (otherRecipes.Count > 0) {
+            if (otherRecipes.Count <= otherMatrixCount) {
+                result.AddRange(otherRecipes);
+            } else {
+                // 如果其他层级配方太多，随机选择
+                var shuffled = new List<BaseRecipe>(otherRecipes);
+                for (int i = 0; i < otherMatrixCount; i++) {
+                    int randomIndex = UnityEngine.Random.Range(i, shuffled.Count);
+                    (shuffled[i], shuffled[randomIndex]) = (shuffled[randomIndex], shuffled[i]);
+                }
+                result.AddRange(shuffled.GetRange(0, otherMatrixCount));
+            }
+        }
+
+        return result;
     }
 
     #endregion

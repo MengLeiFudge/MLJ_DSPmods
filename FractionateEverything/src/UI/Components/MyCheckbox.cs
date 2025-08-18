@@ -59,7 +59,7 @@ public class MyCheckBox : MonoBehaviour {
         go.name = "my-checkbox";
         go.SetActive(true);
         var cb = go.AddComponent<MyCheckBox>();
-        var rect = NormalizeRectWithTopLeft(cb, x, y, parent);
+        var rect = NormalizeRectWithMidLeft(cb, x, y, parent);
 
         cb.rectTrans = rect;
         cb.uiButton = go.GetComponent<UIButton>();
