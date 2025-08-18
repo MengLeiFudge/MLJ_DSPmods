@@ -20,13 +20,14 @@ public static class PopupDisplay {
         window = trans;
         tab = wnd.AddTab(trans, "弹窗显示");
         float x = 0f;
-        float y = 10f;
+        float y = 18f;
     }
 
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
             return;
-        } }
+        }
+    }
 
     #region IModCanSave
 

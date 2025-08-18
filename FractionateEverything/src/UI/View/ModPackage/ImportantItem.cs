@@ -6,6 +6,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
+using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
@@ -15,11 +16,27 @@ public static class ImportantItem {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static UIButton btnGetModDataProto;
-    private static UIButton btnGetModDataBuilding;
+    private static readonly int[][] itemIdOriArr = [
+        [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
+        [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向],
+        [IFE分馏配方通用核心, IFE分馏塔增幅芯片],
+        [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔],
+        //[IFE行星交互塔, IFE行星矿物复制塔, IFE行星点数聚集塔, IFE行星量子复制塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔],
+        [IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华],
+        [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
+        [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
+    ];
+    private static readonly int[] itemIdArr = itemIdOriArr.SelectMany(arr => arr).ToArray();
+    private static readonly Text[] itemCountTextArr = new Text[itemIdArr.Length];
 
     public static void AddTranslations() {
         Register("重要物品", "Important Item");
+
+        Register("以下物品在分馏数据中心的存储量为：",
+            "The storage capacity of the following items in the Fractionation data center are: ");
+        Register("重要物品提示按钮说明1",
+            "Left-click to extract a set of items, right-click to extract all items.",
+            "左键提取一组物品，右键提取全部物品");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -28,76 +45,41 @@ public static class ImportantItem {
         window = trans;
         tab = wnd.AddTab(trans, "重要物品");
         float x = 0f;
-        float y = 10f;
-        btnGetModDataProto = wnd.AddButton(x, y, 300, tab, "提取所有分馏塔原胚", 16, "button-get-proto",
-            GetModDataFracBuildingProto);
-        btnGetModDataBuilding = wnd.AddButton(x + 320, y, 300, tab, "提取所有分馏塔", 16, "button-get-building",
-            GetModDataFractionator);
-        y += 36f;
-        btnGetModDataProto = wnd.AddButton(x, y, 600, tab, "查看分馏数据中心当前持有的所有物品", 16, "button-get-mod-data-info",
+        float y = 18f;
+        wnd.AddButton(0, 1, y, tab, "查看分馏数据中心存储的所有物品", 16, "button-get-mod-data-info",
             GetModDataItemInfo);
+        y += 36f;
+        Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
+        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提示", "重要物品提示按钮说明1");
+        y += 36f + 7f;
+        int index = 0;
+        for (int i = 0; i < itemIdOriArr.Length; i++) {
+            int xIndex = 0;
+            for (int j = 0; j < itemIdOriArr[i].Length; j++) {
+                if (xIndex > 3) {
+                    y += 36f + 7f;
+                    xIndex = 0;
+                }
+                (float, float) position = GetPosition(xIndex, 4);
+                xIndex++;
+                int itemId = itemIdOriArr[i][j];
+                wnd.AddImageButton(position.Item1, y, tab, itemId,
+                    onLeftClick: () => { GetModDataItem(itemId, 1); },
+                    onRightClick: () => { GetModDataItem(itemId, -1); });
+                itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
+                index++;
+            }
+            y += 36f + 7f;
+        }
     }
 
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-    }
-
-    private static void GetModDataFracBuildingProto() {
-        StringBuilder sb = new StringBuilder();
-        int[] itemIDs = [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向];
-        int[] counts = new int[itemIDs.Length];
-        for (int i = 0; i < itemIDs.Length; i++) {
-            counts[i] = (int)Math.Min(int.MaxValue, GetModDataItemCount(itemIDs[i]));
-            if (counts[i] > 0) {
-                ItemProto item = LDB.items.Select(itemIDs[i]);
-                sb.Append($"\n{item.name} x {counts[i]}");
-            }
+        for (int i = 0; i < itemCountTextArr.Length; i++) {
+            itemCountTextArr[i].text = $"x {GetModDataItemCount(itemIdArr[i])}";
         }
-        if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏塔原胚！", "确认", UIMessageBox.WARNING);
-            return;
-        }
-        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            sb = new("已提取以下物品：");
-            foreach (int itemID in itemIDs) {
-                int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
-                if (takeCount > 0) {
-                    AddItemToPackage(itemID, takeCount, inc);
-                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
-                }
-            }
-            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
-        }, null);
-    }
-
-    private static void GetModDataFractionator() {
-        StringBuilder sb = new StringBuilder();
-        int[] itemIDs = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
-        int[] counts = new int[itemIDs.Length];
-        for (int i = 0; i < itemIDs.Length; i++) {
-            counts[i] = (int)Math.Min(int.MaxValue, GetModDataItemCount(itemIDs[i]));
-            if (counts[i] > 0) {
-                ItemProto item = LDB.items.Select(itemIDs[i]);
-                sb.Append($"\n{item.name} x {counts[i]}");
-            }
-        }
-        if (sb.Length == 0) {
-            UIMessageBox.Show("提示", "没有可提取的分馏塔！", "确认", UIMessageBox.WARNING);
-            return;
-        }
-        UIMessageBox.Show("提示", $"确认提取以下物品吗？{sb}", "确认", "取消", UIMessageBox.WARNING, () => {
-            sb = new("已提取以下物品：");
-            foreach (int itemID in itemIDs) {
-                int takeCount = TakeItemFromModData(itemID, int.MaxValue, out int inc);
-                if (takeCount > 0) {
-                    AddItemToPackage(itemID, takeCount, inc);
-                    sb.Append($"\n{LDB.items.Select(itemID).name} x {takeCount}");
-                }
-            }
-            UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
-        }, null);
     }
 
     private static void GetModDataItemInfo() {
@@ -110,10 +92,13 @@ public static class ImportantItem {
             itemCountDic[item] = count;
         }
         if (itemCountDic.Count == 0) {
-            UIMessageBox.Show("提示", "分馏数据中心当前没有物品！", "确认", UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                $"{"分馏数据中心没有".Translate()} {"任何物品".Translate()}{"！".Translate()}",
+                "确定".Translate(),
+                UIMessageBox.WARNING);
             return;
         }
-        StringBuilder sb = new("分馏数据中心当前持有如下物品：\n");
+        StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
         int oneLineMaxCount = Math.Min(10, Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 40.0)));
         int oneLineCount = 0;
         foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
@@ -126,7 +111,21 @@ public static class ImportantItem {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("提示", sb.ToString(), "确认", UIMessageBox.INFO);
+        UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
+    }
+
+    private static void GetModDataItem(int itemId, int groupCount) {
+        ItemProto item = LDB.items.Select(itemId);
+        int count = groupCount == -1 ? int.MaxValue : item.StackSize * groupCount;
+        count = TakeItemFromModData(item.ID, count, out int inc);
+        if (count == 0) {
+            UIMessageBox.Show("提示".Translate(),
+                $"{"分馏数据中心没有".Translate()} {item.name} {"！".Translate()}",
+                "确定".Translate(),
+                UIMessageBox.WARNING);
+        } else {
+            AddItemToPackage(item.ID, count, inc, false);
+        }
     }
 
     #region IModCanSave

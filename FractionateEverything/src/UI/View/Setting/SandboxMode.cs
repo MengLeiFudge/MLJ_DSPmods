@@ -37,14 +37,14 @@ public static class SandboxMode {
         window = trans;
         tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
-        float y = 10f;
-        btnUnlockAll = wnd.AddButton(x, y, 200, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
+        float y = 18f;
+        btnUnlockAll = wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
         textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5f, y + 6f, tab,
-            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 160f);
-        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5f + 160f + 5f, y + 6f, tab,
+        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5, y, tab,
+            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
+        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
             "经验获取倍率", "调整经验获取的速度，便于调试使用。\n仅在沙盒模式下生效。", "");
         y += 36f;
     }
@@ -54,10 +54,11 @@ public static class SandboxMode {
             return;
         }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
-        btnUnlockAll.enabled = GameMain.sandboxToolsEnabled;
-        btnUnlockAll.button.enabled = GameMain.sandboxToolsEnabled;
-        ExpMultiRate = GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
-        sliderExpMultiRate.slider.enabled = GameMain.sandboxToolsEnabled;
+        bool sandboxMode = GameMain.sandboxToolsEnabled;
+        btnUnlockAll.enabled = sandboxMode;
+        btnUnlockAll.button.enabled = sandboxMode;
+        ExpMultiRate = sandboxMode ? ExpMultiRateEntry.Value : 1;
+        sliderExpMultiRate.slider.enabled = sandboxMode;
     }
 
     #region IModCanSave
