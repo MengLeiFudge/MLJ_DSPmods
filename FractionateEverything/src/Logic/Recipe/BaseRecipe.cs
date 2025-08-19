@@ -133,7 +133,8 @@ public abstract class BaseRecipe(
                 //附加输出无经验
             }
         }
-        return list;
+        //如果仍然没有产出（例如产物数目<1且小数判定未通过），由于原料已消耗，应该返回损毁而非空列表
+        return list.Count == 0 ? null : list;
     }
 
     #endregion
