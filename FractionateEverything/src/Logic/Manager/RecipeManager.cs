@@ -44,7 +44,7 @@ public static class RecipeManager {
             File.Delete(SPRITE_CSV_PATH);
         }
 #endif
-        LogInfo("Begin to add fractionate recipes...");
+        LogInfo("Add fractionate recipes...");
 
         for (int i = 0; i < RecipeTypeArr.Length; i++) {
             RecipeTypeArr[i] = new BaseRecipe[12000];
@@ -57,7 +57,7 @@ public static class RecipeManager {
         DeconstructionRecipe.CreateAll();
         ConversionRecipe.CreateAll();
 
-        LogInfo("Finish to add fractionate recipes.");
+        LogInfo($"Added {RecipeList.Count} fractionate recipes.");
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public static class RecipeManager {
         } else {
             recipeMatrixList.Add(recipe);
         }
-        LogInfo($"Add {inputID}({LDB.items.Select(inputID).name}) to {recipeType.GetName()}.");
+        // LogInfo($"Add {inputID}({LDB.items.Select(inputID).name}) to {recipeType.GetName()}.");
     }
 
     /// <summary>

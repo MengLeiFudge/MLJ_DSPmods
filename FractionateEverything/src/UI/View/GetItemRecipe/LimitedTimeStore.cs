@@ -108,9 +108,9 @@ public static class LimitedTimeStore {
     /// </summary>
     private static int exchangeInfoCount = 20;
     private static int exchangeInfoMaxCount = 20;
-    private static List<ExchangeInfo> exchangeInfos = [];
-    private static List<Text> textExchangeInfos = [];
-    private static List<UIButton> btnExchangeInfos = [];
+    private static ExchangeInfo[] exchangeInfos = new ExchangeInfo[exchangeInfoMaxCount];
+    private static Text[] textExchangeInfos = new Text[exchangeInfoMaxCount];
+    private static UIButton[] btnExchangeInfos = new UIButton[exchangeInfoMaxCount];
     /// <summary>
     /// 兑换不同矩阵层次的配方所需的矩阵数目
     /// </summary>
@@ -151,9 +151,10 @@ public static class LimitedTimeStore {
         y += 36f;
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             int j = i;
-            textExchangeInfos.Add(wnd.AddText2(x, y, tab, "动态刷新", 15, $"textLeftTime{j}"));
-            btnExchangeInfos.Add(wnd.AddButton(2, 3, y, tab, "兑换", 16, $"btn-exchange{j}",
-                () => Exchange(j)));
+            //exchangeInfos在Import、IntoOtherSave时创建
+            textExchangeInfos[j] = wnd.AddText2(x, y, tab, "动态刷新", 15, $"textLeftTime{j}");
+            btnExchangeInfos[j] = wnd.AddButton(2, 3, y, tab, "兑换", 16, $"btn-exchange{j}",
+                () => Exchange(j));
             y += 36f;
         }
     }
@@ -166,6 +167,7 @@ public static class LimitedTimeStore {
         if (gameTick >= nextFreshTick) {
             ModifyExchangeItemInfo();
         }
+        FreshExchangeItemInfo();
         long ts = nextFreshTick - gameTick;
         int minute = (int)(ts / 3600);
         ts %= 3600;
@@ -292,12 +294,25 @@ public static class LimitedTimeStore {
         }
 
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
-            //随机选择一个兑换信息（由于List的info是同一个对象，这里需要深拷贝）
-            exchangeInfos[i] = exchangeList[GetRandInt(0, exchangeList.Count)].DeepCopy();
+            //随机选择一个兑换信息
+            if (exchangeList.Count == 0) {
+                exchangeInfos[i] = new();
+            } else {
+                //由于List的info是同一个对象，这里需要深拷贝
+                exchangeInfos[i] = exchangeList[GetRandInt(0, exchangeList.Count)].DeepCopy();
+            }
             //如果是前两个，改为免费
             if (i < 2) {
                 exchangeInfos[i].matrixCount = 0;
             }
+        }
+    }
+
+    /// <summary>
+    /// 刷新显示物品/配方的信息
+    /// </summary>
+    private static void FreshExchangeItemInfo() {
+        for (int i = 0; i < exchangeInfoMaxCount; i++) {
             //显示兑换信息
             textExchangeInfos[i].text = exchangeInfos[i].ToString();
         }
@@ -349,19 +364,18 @@ public static class LimitedTimeStore {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         nextFreshTick = version >= 2 ? r.ReadInt64() : baseFreshTs;
-        exchangeInfos.Clear();
         if (version >= 3) {
             int count = r.ReadInt32();
             int i = 0;
             while (count > 0 && i < exchangeInfoMaxCount) {
                 ExchangeInfo info = new();
                 info.Import(r);
-                exchangeInfos.Add(info);
+                exchangeInfos[i] = info;
                 count--;
                 i++;
             }
             while (i < exchangeInfoMaxCount) {
-                exchangeInfos.Add(new());
+                exchangeInfos[i] = new();
                 i++;
             }
             while (count > 0) {
@@ -370,7 +384,7 @@ public static class LimitedTimeStore {
             }
         } else {
             for (int i = 0; i < exchangeInfoMaxCount; i++) {
-                exchangeInfos.Add(new());
+                exchangeInfos[i] = new();
             }
         }
     }
@@ -378,7 +392,7 @@ public static class LimitedTimeStore {
     public static void Export(BinaryWriter w) {
         w.Write(3);
         w.Write(nextFreshTick);
-        w.Write(exchangeInfos.Count);
+        w.Write(exchangeInfos.Length);
         foreach (ExchangeInfo info in exchangeInfos) {
             info.Export(w);
         }
@@ -386,7 +400,10 @@ public static class LimitedTimeStore {
 
     public static void IntoOtherSave() {
         nextFreshTick = 0;
-        //无论何时打开界面，都会自动触发重新生成交换信息的方法，所以exchangeInfos不用处理
+        for (int i = 0; i < exchangeInfoMaxCount; i++) {
+            exchangeInfos[i] = new();
+        }
+        ModifyExchangeItemInfo();
     }
 
     #endregion
