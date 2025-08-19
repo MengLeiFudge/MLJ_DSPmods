@@ -136,7 +136,12 @@ public static class ItemInteraction {
             return;
         }
         StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
-        int oneLineMaxCount = Math.Min(10, Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 40.0)));
+        int oneLineMaxCount = (int)Math.Ceiling(itemCountDic.Count / 40.0);
+        if (oneLineMaxCount < 5) {
+            oneLineMaxCount = 5;
+        } else if (oneLineMaxCount > 10) {
+            oneLineMaxCount = 10;
+        }
         int oneLineCount = 0;
         foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
             sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));

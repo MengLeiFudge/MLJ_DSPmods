@@ -77,10 +77,10 @@ public static class TicketRaffle {
             "除黑雾奖券外，其他奖券可以抽取不超过所用奖券层级的所有配方。\n"
             + "只有黑雾奖券可以抽取黑雾配方，非黑雾奖券无法抽取。\n"
             + "概率公示：\n"
-            + "分馏配方通用核心：动态，至多0.1%\n"//todo: 改为根据奖券价值动态决定概率
-            + "分馏配方：0.6%（至多90抽必出）\n"
-            + "杂项物品：59.61%\n"
-            + "沙土：39.74%");
+            + "分馏配方通用核心：<=0.20%（奖券价值越高则概率越高）\n"//todo: 改为根据奖券价值动态决定概率
+            + "分馏配方：≈0.6%（至多90抽必出）\n"
+            + "杂项物品：≈60%\n"
+            + "沙土：≈40%");
         ticketCountText1 = wnd.AddText2(x + 350, y, tab, "奖券数目", 15, "text-ticket-count-1");
         wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry1, "自动百连");
         y += 36f;
@@ -95,13 +95,13 @@ public static class TicketRaffle {
         cbx = wnd.AddComboBox(x, y, tab, "当前奖券")
             .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry2);
         wnd.AddTipsButton2(x + cbx.Width + 5, y, tab, "建筑卡池说明",
-            "无论选择哪种奖券，都不影响可以获取的建筑类型。"
+            "无论选择哪种奖券，都不影响可以获取的建筑类型。\n"
             + "概率公示：\n"
-            + "分馏塔增幅芯片：动态，至多0.07%\n"//todo: 改为根据奖券价值动态决定概率
-            + "分馏塔原胚：25%\n"
-            + "分馏塔：5%\n"
-            + "其他建筑：39.82%\n"
-            + "沙土：39.88%");
+            + "分馏塔增幅芯片：<=0.12%（奖券价值越高则概率越高）\n"//todo: 改为根据奖券价值动态决定概率
+            + "分馏塔原胚：≈25%\n"
+            + "分馏塔：≈5%\n"
+            + "其他建筑：≈40%\n"
+            + "沙土：≈40%");
         ticketCountText2 = wnd.AddText2(x + 350, y, tab, "奖券数目", 15, "text-ticket-count-2");
         wnd.AddCheckBox(x + 500, y, tab, EnableAutoRaffleEntry2, "自动百连");
         y += 36f;
@@ -179,7 +179,7 @@ public static class TicketRaffle {
         //todo: 优化配方出现情况，当前层次概率至少翻倍（也许现在这样也行？）
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(list => list).ToList();
         recipes.RemoveAll(recipe => recipe.IsMaxMemory);
-        if (recipes.Count == 0 && SelectedTicketId1 < IFE宇宙奖券) {
+        if (SelectedTicketId1 < IFE宇宙奖券 && recipes.Count == 0) {
             if (showMessage) {
                 UIMessageBox.Show("提示".Translate(),
                     "该卡池已经没有配方可以抽取了！".Translate(),
@@ -189,7 +189,7 @@ public static class TicketRaffle {
             return;
         }
         int oneLineCount = 0;
-        if (recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))) {
+        if (SelectedTicketId1 < IFE宇宙奖券 && recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))) {
             if (showMessage) {
                 StringBuilder tip = new StringBuilder($"还有{recipes.Count}个物品尚未解锁，现在抽取不到对应配方！\n\n"
                                                       + $"未解锁的物品为：\n");
@@ -224,7 +224,7 @@ public static class TicketRaffle {
             double randDouble = GetRandDouble();
             //分馏配方通用核心（动态概率）
             //todo: 确认概率计算方式与物品价值
-            currRate += itemValue[SelectedTicketId1] / itemValue[IFE分馏配方通用核心] / 10;
+            currRate += itemValue[SelectedTicketId1] / itemValue[IFE分馏配方通用核心] / 25;
             if (randDouble < currRate) {
                 if (specialItemDic.ContainsKey(IFE分馏配方通用核心)) {
                     specialItemDic[IFE分馏配方通用核心]++;
@@ -440,7 +440,7 @@ public static class TicketRaffle {
             double randDouble = GetRandDouble();
             //分馏塔增幅芯片（动态概率）
             //todo: 确认概率计算方式与物品价值
-            currRate += itemValue[SelectedTicketId2] / itemValue[IFE分馏塔增幅芯片] / 10;
+            currRate += itemValue[SelectedTicketId2] / itemValue[IFE分馏塔增幅芯片] / 25;
             if (randDouble < currRate) {
                 if (specialItemDic.ContainsKey(IFE分馏塔增幅芯片)) {
                     specialItemDic[IFE分馏塔增幅芯片]++;
