@@ -242,12 +242,10 @@ public static class ProcessManager {
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFracForever();
-        bool quantumCopyWorking = false;
+        bool quantumCopyWorking = true;
         if (__instance.fluidInputCount > 0
-            && (products.All(p => p.count < productOutputMax)
-                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))
-            && (__instance.fluidOutputCount < fluidOutputMax
-                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))) {
+            && (products.All(p => p.count < productOutputMax) || enableFracForever)
+            && __instance.fluidOutputCount < fluidOutputMax) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
@@ -282,9 +280,8 @@ public static class ProcessManager {
                 }
                 //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
                 if (enableFracForever
-                    && (products.Any(p => p.count >= productOutputMax)
-                        || __instance.fluidOutputCount >= fluidOutputMax)
-                    && __instance.fluidOutputCount < fluidOutputMax + 4) {
+                    && products.Any(p => p.count >= productOutputMax)
+                    && __instance.fluidOutputCount < fluidOutputMax) {
                     moveDirectly = true;
                     goto MoveDirectly;
                 }
@@ -723,54 +720,43 @@ public static class ProcessManager {
         int productOutputMax = building.ProductOutputMax();
         bool transportMode = false;
         if (!fractionator.isWorking) {
-            if (fractionator.fluidId > 0) {
-                if (fractionator.fluidInputCount > 0) {
-                    if (products.Any(p => p.count >= productOutputMax)) {
-                        if (building.EnableFracForever()) {
-                            __instance.stateText.text = "分馏永动".Translate();
-                            __instance.stateText.color = __instance.workStoppedColor;
-                            transportMode = true;
-                        } else {
-                            __instance.stateText.text = "产物堆积".Translate();
-                            __instance.stateText.color = __instance.workStoppedColor;
-                        }
-                    } else if (fractionator.fluidOutputCount >= fluidOutputMax
-                               && fractionator.fluidOutputCount < fluidOutputMax + 4) {
-                        if (building.EnableFracForever()) {
-                            __instance.stateText.text = "分馏永动".Translate();
-                            __instance.stateText.color = __instance.workStoppedColor;
-                            transportMode = true;
-                        } else {
-                            __instance.stateText.text = "原料堆积".Translate();
-                            __instance.stateText.color = __instance.workStoppedColor;
-                        }
-                    } else {
-                        QuantumCopyRecipe recipe0 =
-                            GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
-                        if (recipe0 != null) {
-                            int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
-                            if (GetEssenceMinCount() < essenceCost) {
-                                __instance.stateText.text = "缺少精华".Translate();
-                                __instance.stateText.color = __instance.workStoppedColor;
-                                transportMode = true;
-                            } else {
-                                __instance.stateText.text = "搬运模式".Translate();
-                                __instance.stateText.color = __instance.workStoppedColor;
-                                transportMode = true;
-                            }
-                        } else {
-                            __instance.stateText.text = "搬运模式".Translate();
-                            __instance.stateText.color = __instance.workStoppedColor;
-                            transportMode = true;
-                        }
-                    }
+            if (fractionator.fluidId == 0) {
+                __instance.stateText.text = "待机".Translate();
+                __instance.stateText.color = __instance.idleColor;
+            } else if (fractionator.fluidInputCount == 0) {
+                __instance.stateText.text = "缺少原材料".Translate();
+                __instance.stateText.color = __instance.workStoppedColor;
+            } else if (fractionator.fluidOutputCount >= fluidOutputMax) {
+                __instance.stateText.text = "原料堆积".Translate();
+                __instance.stateText.color = __instance.workStoppedColor;
+            } else if (products.Any(p => p.count >= productOutputMax)) {
+                if (building.EnableFracForever()) {
+                    __instance.stateText.text = "分馏永动".Translate();
+                    __instance.stateText.color = __instance.workStoppedColor;
+                    transportMode = true;
                 } else {
-                    __instance.stateText.text = "缺少原材料".Translate();
+                    __instance.stateText.text = "产物堆积".Translate();
                     __instance.stateText.color = __instance.workStoppedColor;
                 }
             } else {
-                __instance.stateText.text = "待机".Translate();
-                __instance.stateText.color = __instance.idleColor;
+                QuantumCopyRecipe recipe0 =
+                    GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
+                if (recipe0 != null) {
+                    int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
+                    if (GetEssenceMinCount() < essenceCost) {
+                        __instance.stateText.text = "缺少精华".Translate();
+                        __instance.stateText.color = __instance.workStoppedColor;
+                        transportMode = true;
+                    } else {
+                        __instance.stateText.text = "搬运模式".Translate();
+                        __instance.stateText.color = __instance.workStoppedColor;
+                        transportMode = true;
+                    }
+                } else {
+                    __instance.stateText.text = "搬运模式".Translate();
+                    __instance.stateText.color = __instance.workStoppedColor;
+                    transportMode = true;
+                }
             }
         }
 
