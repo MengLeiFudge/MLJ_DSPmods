@@ -594,16 +594,11 @@ public static class ItemManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        Debug.Log($"Importing ModData CenterItemCount from version {version}");
         int itemDataDicSize = r.ReadInt32();
-        Debug.Log($"ItemDataDicSize: {itemDataDicSize}");
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
-            Debug.Log($"itemId: {itemId}");
             long count = r.ReadInt64();
-            Debug.Log($"count: {count}");
             long inc = r.ReadInt64();
-            Debug.Log($"inc: {inc}");
             if (count < 0) {
                 count = 0;
             }
@@ -621,7 +616,6 @@ public static class ItemManager {
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
-        Debug.Log($"Exporting ModData CenterItemCount to version 1");
         List<int> centerItemId = [];
         for (int i = 0; i < centerItemCount.Length; i++) {
             if (centerItemCount[i] > 0) {
@@ -629,14 +623,10 @@ public static class ItemManager {
             }
         }
         w.Write(centerItemId.Count);
-        Debug.Log($"CenterItemId Count: {centerItemId.Count}");
         foreach (int itemId in centerItemId) {
             w.Write(itemId);
-            Debug.Log($"itemId: {itemId}");
             w.Write(centerItemCount[itemId]);
-            Debug.Log($"count: {centerItemCount[itemId]}");
             w.Write(centerItemInc[itemId]);
-            Debug.Log($"inc: {centerItemInc[itemId]}");
         }
     }
 
