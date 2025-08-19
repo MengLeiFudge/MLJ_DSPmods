@@ -90,17 +90,18 @@ public class CheckPlugins : BaseUnityPlugin {
     }
 
     private static void ShowMessageBox() {
-        UIMessageBox.Show(
-            "FE标题".Translate(), "FE信息".Translate(),
-            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(),
-            UIMessageBox.INFO,
-            null, () => {
+        UIMessageBox.Show("FE标题".Translate(),
+            "FE信息".Translate(),
+            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.INFO,
+            null,
+            () => {
 #if DEBUG
                 Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
 #else
                 Application.OpenURL("FE日志链接".Translate());
 #endif
-            }, () => Application.OpenURL("FE交流群链接".Translate())
+            },
+            () => Application.OpenURL("FE交流群链接".Translate())
         );
     }
 }
