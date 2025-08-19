@@ -143,8 +143,10 @@ public static partial class Utils {
         ItemProto takeProto = LDB.items.Select(itemId);
         if (GetItemTotalCount(itemId) < count) {
             if (showMessage) {
-                UIMessageBox.Show("提示".Translate(), $"{takeProto.name} 不足 {count}！",
-                    "确定".Translate(), UIMessageBox.WARNING);
+                UIMessageBox.Show("提示".Translate(),
+                    $"{takeProto.name} 不足 {count}！",
+                    "确定".Translate(), UIMessageBox.WARNING,
+                    null);
             }
             return false;
         }
@@ -186,13 +188,16 @@ public static partial class Utils {
         ItemProto takeProto = LDB.items.Select(takeId);
         ItemProto giveProto = LDB.items.Select(giveId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {giveProto.name} x {giveCount} {"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+            + $"{"来兑换".Translate()} {giveProto.name} x {giveCount} {"吗？".Translate()}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 AddItemToPackage(giveId, giveCount);
-            }, null);
+            },
+            null);
     }
 
     public static void ExchangeItem2Recipe(int takeId, int takeCount, BaseRecipe recipe) {
@@ -200,26 +205,38 @@ public static partial class Utils {
             return;
         }
         if (recipe == null) {
-            UIMessageBox.Show("提示".Translate(), "配方不存在，无法兑换！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "配方不存在，无法兑换！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         if (!GameMain.history.ItemUnlocked(itemToMatrix[recipe.InputID])) {
-            UIMessageBox.Show("提示".Translate(), "当前物品尚未解锁，无法兑换！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "当前物品尚未解锁，无法兑换！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         if (recipe.IsMaxMemory) {
-            UIMessageBox.Show("提示".Translate(), "该配方回响数目已达到上限！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "该配方回响数目已达到上限！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {recipe.TypeNameWC} {"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+            + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"吗？".Translate()}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.RewardThis();
-            }, null);
+            },
+            null);
     }
 
     public static void ExchangeSand2RecipeExp(BaseRecipe recipe) {
@@ -227,19 +244,31 @@ public static partial class Utils {
             return;
         }
         if (recipe == null) {
-            UIMessageBox.Show("提示".Translate(), "配方不存在，无法兑换！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "配方不存在，无法兑换！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         if (recipe.Locked) {
-            UIMessageBox.Show("提示".Translate(), "配方尚未解锁！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "配方尚未解锁！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         if (recipe.FullUpgrade) {
-            UIMessageBox.Show("提示".Translate(), "配方已完全升级！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "配方已完全升级！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         if (recipe.IsCurrQualityCurrLevelMaxExp) {
-            UIMessageBox.Show("提示".Translate(), "配方经验已达上限！", "确定".Translate(), UIMessageBox.WARNING);
+            UIMessageBox.Show("提示".Translate(),
+                "配方经验已达上限！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         int takeId = I沙土;
@@ -247,13 +276,16 @@ public static partial class Utils {
         int takeCount = (int)Math.Ceiling(needExp * 0.5);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()} x {(int)needExp} {"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+            + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()} x {(int)needExp} {"吗？".Translate()}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.AddExp(needExp, false);
-            }, null);
+            },
+            null);
     }
 
     /// <summary>

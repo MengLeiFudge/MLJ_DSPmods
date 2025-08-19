@@ -207,7 +207,8 @@ public static class LimitedTimeStore {
                     }
                     nextFreshTick = gameTick - baseFreshTs + 1;
                     ModifyExchangeItemInfo();
-                }, null);
+                },
+                null);
             return;
         }
         if (gameTick >= nextFreshTick) {
@@ -252,7 +253,7 @@ public static class LimitedTimeStore {
             }
         }
         //获取当前可能的所有配方（物品未解锁也可能出现）
-        List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(arr => arr).ToList();
+        List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list).ToList();
         //构建未解锁配方列表
         List<ExchangeInfo> recipeLockedExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Locked).ToList()) {
@@ -306,6 +307,9 @@ public static class LimitedTimeStore {
     /// 购买限时物品/配方
     /// </summary>
     private static void Exchange(int index) {
+        //todo: 物品可以考虑用不同的矩阵来兑换，价值怎么算？？？如何动态变化
+        //todo: 物品兑换时，数目不能超过1组，且黑雾物品出现概率太高了，得重新设计概率曲线
+
         ExchangeInfo info = exchangeInfos[index];
         //todo: 如果出现这种情况，按钮显示已兑换，并且禁用
         if (!info.IsValid || info.exchanged) {
@@ -315,24 +319,28 @@ public static class LimitedTimeStore {
             UIMessageBox.Show("提示".Translate(),
                 $"{"要花费".Translate()} {info.matrix.name} x {info.matrixCount} "
                 + $"{"来兑换".Translate()} {info.item.name} x {info.itemCount} {"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
                     if (!TakeItem(info.matrix.ID, info.matrixCount, out _)) {
                         return;
                     }
                     AddItemToPackage(info.item.ID, info.itemCount);
                     info.exchanged = true;
-                }, null);
+                },
+                null);
         } else {
             UIMessageBox.Show("提示".Translate(),
                 $"{"要花费".Translate()} {info.matrix.name} x {info.matrixCount} "
                 + $"{"来兑换".Translate()} {info.recipe.TypeName} {"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
                     if (!TakeItem(info.matrix.ID, info.matrixCount, out _)) {
                         return;
                     }
                     info.recipe.RewardThis();
                     info.exchanged = true;
-                }, null);
+                },
+                null);
         }
     }
 
