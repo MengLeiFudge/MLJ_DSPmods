@@ -71,6 +71,7 @@ public static class InteractionTower {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
         EnableFluidOutputStack = r.ReadBoolean();
+        MaxProductOutputStack = r.ReadInt32();
         if (MaxProductOutputStack < 0) {
             MaxProductOutputStack = 0;
         } else if (MaxProductOutputStack > 4) {

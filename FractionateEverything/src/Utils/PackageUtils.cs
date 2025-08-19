@@ -62,6 +62,16 @@ public static partial class Utils {
     }
 
     /// <summary>
+    /// 获取MOD数据中指定物品的数量。
+    /// </summary>
+    public static int GetModDataItemIntCount(int itemId) {
+        if (itemId == I沙土) {
+            return 0;
+        }
+        return (int)Math.Min(int.MaxValue, centerItemCount[itemId]);
+    }
+
+    /// <summary>
     /// 获取背包中指定物品的数量。
     /// </summary>
     public static int GetPackageItemCount(int itemId) {
@@ -286,6 +296,13 @@ public static partial class Utils {
                 recipe.AddExp(needExp, false);
             },
             null);
+    }
+
+    public static int GetEssenceMinCount() {
+        return Math.Min(GetModDataItemIntCount(IFE复制精华),
+            Math.Min(GetModDataItemIntCount(IFE点金精华),
+                Math.Min(GetModDataItemIntCount(IFE分解精华),
+                    GetModDataItemIntCount(IFE转化精华))));
     }
 
     /// <summary>

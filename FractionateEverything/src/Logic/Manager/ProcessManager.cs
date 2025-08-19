@@ -18,6 +18,7 @@ public static class ProcessManager {
     public static void AddTranslations() {
         Register("原料堆积", "Fluid overflow");
         Register("搬运模式", "Transport mode");
+        Register("缺少精华", "Lack of essence");
         Register("分馏永动", "Frac forever");
         Register("无配方", "No recipe");
         Register("流动", "Flow");
@@ -241,6 +242,7 @@ public static class ProcessManager {
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFracForever();
+        bool quantumCopyWorking = false;
         if (__instance.fluidInputCount > 0
             && (products.All(p => p.count < productOutputMax)
                 || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))
@@ -301,7 +303,17 @@ public static class ProcessManager {
                     if (outputs.Count == 0) {
                         //无处理，直接流出
                         __instance.fluidOutputCount++;
-                        __instance.fluidOutputTotal++;
+                        if (recipe.RecipeType == ERecipe.QuantumCopy) {
+                            QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
+                            int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
+                            if (GetEssenceMinCount() >= essenceCost) {
+                                __instance.fluidOutputTotal++;
+                            } else {
+                                quantumCopyWorking = false;
+                            }
+                        } else {
+                            __instance.fluidOutputTotal++;
+                        }
                         __instance.fluidOutputInc += fluidInputIncAvg;
                     } else {
                         //处理为其他物品
@@ -554,7 +566,8 @@ public static class ProcessManager {
 
         __instance.isWorking = __instance.fluidInputCount > 0
                                && products.All(p => p.count < productOutputMax)
-                               && __instance.fluidOutputCount < fluidOutputMax;
+                               && __instance.fluidOutputCount < fluidOutputMax
+                               && quantumCopyWorking;
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
@@ -732,9 +745,24 @@ public static class ProcessManager {
                             __instance.stateText.color = __instance.workStoppedColor;
                         }
                     } else {
-                        __instance.stateText.text = "搬运模式".Translate();
-                        __instance.stateText.color = __instance.workStoppedColor;
-                        transportMode = true;
+                        QuantumCopyRecipe recipe0 =
+                            GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
+                        if (recipe0 != null) {
+                            int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
+                            if (GetEssenceMinCount() < essenceCost) {
+                                __instance.stateText.text = "缺少精华".Translate();
+                                __instance.stateText.color = __instance.workStoppedColor;
+                                transportMode = true;
+                            } else {
+                                __instance.stateText.text = "搬运模式".Translate();
+                                __instance.stateText.color = __instance.workStoppedColor;
+                                transportMode = true;
+                            }
+                        } else {
+                            __instance.stateText.text = "搬运模式".Translate();
+                            __instance.stateText.color = __instance.workStoppedColor;
+                            transportMode = true;
+                        }
                     }
                 } else {
                     __instance.stateText.text = "缺少原材料".Translate();
@@ -776,7 +804,7 @@ public static class ProcessManager {
             ? fractionator.fluidInputInc / fractionator.fluidInputCount
             : 0;
         float successRatePlus = 1.0f;
-        BaseRecipe recipe;
+        BaseRecipe recipe = null;
         switch (buildingID) {
             case IFE交互塔:
                 successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
