@@ -456,8 +456,8 @@ public static class ItemManager {
                     if (unitValue < itemValue[itemId]) {
                         itemValue[itemId] = unitValue;
                         ItemProto item = LDB.items.Select(itemId);
-                        LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
-                                 + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
+                        // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
+                        //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
                         if (itemId == I蓄电器) {
                             itemValue[I蓄电器满] = unitValue * 2;
                         }
@@ -557,7 +557,7 @@ public static class ItemManager {
                 }
             }
             itemToMatrix[item.ID] = topMatrixID;
-            LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
+            // LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
         }
     }
 
@@ -594,28 +594,34 @@ public static class ItemManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
+        Debug.Log($"Importing ModData CenterItemCount from version {version}");
         int itemDataDicSize = r.ReadInt32();
+        Debug.Log($"ItemDataDicSize: {itemDataDicSize}");
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
+            Debug.Log($"itemId: {itemId}");
             long count = r.ReadInt64();
+            Debug.Log($"count: {count}");
+            long inc = r.ReadInt64();
+            Debug.Log($"inc: {inc}");
             if (count < 0) {
                 count = 0;
             }
-            long proliferatorPoint = r.ReadInt64();
-            if (proliferatorPoint < 0) {
-                proliferatorPoint = 0;
-            } else if (proliferatorPoint > count * 10) {
-                proliferatorPoint = count * 10;
+            if (inc < 0) {
+                inc = 0;
+            } else if (inc > count * 10) {
+                inc = count * 10;
             }
             if (itemId >= 0 && itemId < centerItemCount.Length) {
                 centerItemCount[itemId] = count;
-                centerItemInc[itemId] = proliferatorPoint;
+                centerItemInc[itemId] = inc;
             }
         }
     }
 
     public static void Export(BinaryWriter w) {
         w.Write(1);
+        Debug.Log($"Exporting ModData CenterItemCount to version 1");
         List<int> centerItemId = [];
         for (int i = 0; i < centerItemCount.Length; i++) {
             if (centerItemCount[i] > 0) {
@@ -623,10 +629,14 @@ public static class ItemManager {
             }
         }
         w.Write(centerItemId.Count);
+        Debug.Log($"CenterItemId Count: {centerItemId.Count}");
         foreach (int itemId in centerItemId) {
             w.Write(itemId);
+            Debug.Log($"itemId: {itemId}");
             w.Write(centerItemCount[itemId]);
+            Debug.Log($"count: {centerItemCount[itemId]}");
             w.Write(centerItemInc[itemId]);
+            Debug.Log($"inc: {centerItemInc[itemId]}");
         }
     }
 

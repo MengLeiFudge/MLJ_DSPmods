@@ -84,7 +84,7 @@ public static class IconSetPatch {
                         int num4 = (int)num2 / 25;
                         Graphics.CopyTexture((Texture)dataArray1[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
                             80/*0x50*/, (Texture)__instance.texture, 0, 0, num3 * 80/*0x50*/, num4 * 80/*0x50*/);
-                        LogDebug($"添加图标到图集，idx={num2}，物品{dataArray1[index].name}({dataArray1[index].ID})");
+                        //LogDebug($"添加图标到图集，idx={num2}，物品{dataArray1[index].name}({dataArray1[index].ID})");
                     }
                     __instance.spriteIndexMap[iconSprite] = num2;
                 }
@@ -111,7 +111,7 @@ public static class IconSetPatch {
                         int num7 = (int)num5 / 25;
                         Graphics.CopyTexture((Texture)dataArray2[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
                             80/*0x50*/, (Texture)__instance.texture, 0, 0, num6 * 80/*0x50*/, num7 * 80/*0x50*/);
-                        LogDebug($"添加图标到图集，idx={num5}，配方{dataArray2[index].name}({dataArray2[index].ID})");
+                        //LogDebug($"添加图标到图集，idx={num5}，配方{dataArray2[index].name}({dataArray2[index].ID})");
                     }
                     __instance.spriteIndexMap[iconSprite] = num5;
                 }
@@ -133,7 +133,7 @@ public static class IconSetPatch {
                     num8 = __instance.spriteIndexMap[iconSprite];
                 } else {
                     if (techId > 2000 && techId == lastTechId - 1) {
-                        LogInfo($"添加图标到图集，跳过科技{dataArray3[index].name}({dataArray3[index].ID})");
+                        //LogInfo($"添加图标到图集，跳过科技{dataArray3[index].name}({dataArray3[index].ID})");
                         lastTechId = techId;
                         continue;
                     }
@@ -147,7 +147,7 @@ public static class IconSetPatch {
                         int num10 = (int)num8 / 25;
                         Graphics.CopyTexture((Texture)dataArray3[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
                             80/*0x50*/, (Texture)__instance.texture, 0, 0, num9 * 80/*0x50*/, num10 * 80/*0x50*/);
-                        LogDebug($"添加图标到图集，idx={num8}，科技{dataArray3[index].name}({dataArray3[index].ID})");
+                        //LogDebug($"添加图标到图集，idx={num8}，科技{dataArray3[index].name}({dataArray3[index].ID})");
                     }
                     __instance.spriteIndexMap[iconSprite] = num8;
                 }
@@ -174,7 +174,7 @@ public static class IconSetPatch {
                         int num13 = (int)num11 / 25;
                         Graphics.CopyTexture((Texture)dataArray4[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
                             80/*0x50*/, (Texture)__instance.texture, 0, 0, num12 * 80/*0x50*/, num13 * 80/*0x50*/);
-                        LogDebug($"添加图标到图集，idx={num11}，信号{dataArray4[index].name}({dataArray4[index].ID})");
+                        //LogDebug($"添加图标到图集，idx={num11}，信号{dataArray4[index].name}({dataArray4[index].ID})");
                     }
                     __instance.spriteIndexMap[iconSprite] = num11;
                 }
@@ -205,6 +205,7 @@ public static class IconSetPatch {
         }
         __instance.itemIconDescBuffer.SetData((Array)__instance.itemDescArr);
         __instance.loaded = true;
+        Debug.Log($"添加图标到图集，共计添加{num1}（需要<=625）");
         Debug.Log((object)$"Icon set generated. Time cost: {highStopwatch.duration:0.000} s");
         return false;
     }

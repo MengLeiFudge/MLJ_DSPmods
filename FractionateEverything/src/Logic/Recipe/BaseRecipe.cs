@@ -420,8 +420,8 @@ public abstract class BaseRecipe(
             w.Write(info.OutputID);
             w.Write(info.OutputTotalCount);
         }
-        w.Write(Level);
         w.Write(Quality);
+        w.Write(Level);
         w.Write(Exp);
         w.Write(Memory);
         // 子类特定数据由重写的方法处理

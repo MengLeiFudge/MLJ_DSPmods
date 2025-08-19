@@ -553,7 +553,7 @@ public static class TicketRaffle {
         }
     }
 
-    private static long lastAtuoRaffleTick = 0;
+    private static long lastAutoRaffleTick = 0;
 
     /// <summary>
     /// 每0.1s左右自动抽取一次百连。
@@ -568,10 +568,10 @@ public static class TicketRaffle {
             EnableAutoRaffleEntry2.Value = false;
         }
         //todo: vip可以提速
-        if (GameMain.gameTick % 10 != 0 || lastAtuoRaffleTick == GameMain.gameTick) {
+        if (GameMain.gameTick % 10 != 0 || lastAutoRaffleTick == GameMain.gameTick) {
             return;
         }
-        //todo：为什么会扣除200？
+        lastAutoRaffleTick = GameMain.gameTick;
         if (EnableAutoRaffleEntry1.Value) {
             RaffleRecipe(100, 5, false);
         }
