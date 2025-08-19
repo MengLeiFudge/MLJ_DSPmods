@@ -170,6 +170,10 @@ public abstract class BaseRecipe(
     /// </summary>
     public int Memory { get; private set; } = 0;
     /// <summary>
+    /// 突破上一品质需要的回响数目
+    /// </summary>
+    public int BreakPreviousQualityNeedMemory => Math.Max(0, PreviousQuality - 2);
+    /// <summary>
     /// 突破当前品质需要的回响数目
     /// </summary>
     public int BreakCurrQualityNeedMemory => Math.Max(0, NextQuality - 2);
@@ -315,6 +319,9 @@ public abstract class BaseRecipe(
                 Level = CurrQualityMaxLevel;
             }
         }
+        if (Memory < BreakPreviousQualityNeedMemory) {
+            Memory = BreakPreviousQualityNeedMemory;
+        }
         Exp = 0;
     }
 
@@ -325,9 +332,11 @@ public abstract class BaseRecipe(
         if (up) {
             Quality = MaxQuality;
             Level = CurrQualityMaxLevel;
+            Memory = MaxMemory;
         } else {
             Quality = 0;
             Level = 0;
+            Memory = 0;
         }
         Exp = 0;
     }
@@ -365,13 +374,36 @@ public abstract class BaseRecipe(
                 LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
-        Quality = Math.Min(MaxQuality, r.ReadInt32());
-        if (Quality == MaxQuality - 1) {
-            Quality++;
-        }
-        Level = Math.Min(CurrQualityMaxLevel, r.ReadInt32());
+        Quality = r.ReadInt32();
+        Level = r.ReadInt32();
         Exp = r.ReadSingle();
-        Memory = Math.Min(MaxMemory, r.ReadInt32());
+        Memory = r.ReadInt32();
+        if (Quality < 0) {
+            Quality = 0;
+            Level = 0;
+        } else if (Quality == MaxQuality - 1) {
+            Quality++;
+        } else if (Quality > MaxQuality) {
+            Quality = MaxQuality;
+        }
+        if (Level == 0) {
+            if (Quality > 0) {
+                Level = 1;
+            }
+        } else if (Level > CurrQualityMaxLevel) {
+            Level = CurrQualityMaxLevel;
+        }
+        if (Exp < 0) {
+            Exp = 0;
+        }
+        if (Memory < 0) {
+            Memory = 0;
+        } else if (Memory > MaxMemory) {
+            Memory = MaxMemory;
+        }
+        if (Memory < BreakPreviousQualityNeedMemory) {
+            Memory = BreakPreviousQualityNeedMemory;
+        }
         AddExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
     }

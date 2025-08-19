@@ -597,8 +597,16 @@ public static class ItemManager {
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
-            long count = Math.Max(0, r.ReadInt64());
-            long proliferatorPoint = Math.Max(0, r.ReadInt64());
+            long count = r.ReadInt64();
+            if (count < 0) {
+                count = 0;
+            }
+            long proliferatorPoint = r.ReadInt64();
+            if (proliferatorPoint < 0) {
+                proliferatorPoint = 0;
+            } else if (proliferatorPoint > count * 10) {
+                proliferatorPoint = count * 10;
+            }
             if (itemId >= 0 && itemId < centerItemCount.Length) {
                 centerItemCount[itemId] = count;
                 centerItemInc[itemId] = proliferatorPoint;
