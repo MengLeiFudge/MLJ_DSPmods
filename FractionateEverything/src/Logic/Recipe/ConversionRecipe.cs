@@ -31,7 +31,7 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I氢], [I重氢]]);
         CreateChain([[IGB氦], [IGB氦三]]);
         CreateChain([[I磁线圈], [I电动机], [I电磁涡轮], [I超级磁场环]]);
-        CreateChain([[I电路板], [I处理器], [I量子芯片], [IGB光学处理器]]);
+        CreateChain([[I电路板, I微晶元件], [I处理器, I位面过滤器], [I量子芯片], [IGB光学处理器]]);
         CreateChain([[I临界光子], [I反物质]]);
         CreateChain([[I动力引擎], [I推进器], [I加力推进器]]);
         CreateChain([[I配送运输机], [I物流运输机], [I星际物流运输船]]);
@@ -64,8 +64,8 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([
             [IGB空燃料棒],
             [I液氢燃料棒], [IGB焦油燃料棒], [IGB四氢双环戊二烯燃料棒, IGB铀燃料棒],
-            [IGB钚燃料棒], [IGBMOX燃料棒, I氘核燃料棒], [IGB氦三燃料棒],
-            [IGB氘氦混合燃料棒, I反物质燃料棒], [I奇异湮灭燃料棒]
+            [IGB钚燃料棒], [I氘核燃料棒, IGBMOX燃料棒], [IGB氦三燃料棒],
+            [I反物质燃料棒, IGB氘氦混合燃料棒], [I奇异湮灭燃料棒]
         ]);
 
         //化工页面
@@ -78,9 +78,9 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮]]);
         CreateChain([[I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]]);
         CreateChain([[I高斯机枪塔, I聚爆加农炮, IGB电磁加农炮, I导弹防御塔]]);
-        CreateChain([[I机枪弹箱], [IGB钢芯弹箱], [I超合金弹箱], [IGB钨芯弹箱], [IGB三元弹箱], [IGB湮灭弹箱]]);
-        CreateChain([[I燃烧单元], [I爆破单元], [IGB核子爆破单元], [IGB反物质湮灭单元]]);
-        CreateChain([[I炮弹组], [I高爆炮弹组], [IGB微型核弹组], [IGB反物质炮弹组]]);
+        CreateChain([[I机枪弹箱], [I钛化弹箱, IGB钢芯弹箱], [I超合金弹箱], [IGB钨芯弹箱], [IGB三元弹箱], [IGB湮灭弹箱]]);
+        CreateChain([[I燃烧单元], [I爆破单元], [I晶石爆破单元, IGB核子爆破单元], [IGB反物质湮灭单元]]);
+        CreateChain([[I炮弹组], [I高爆炮弹组], [I晶石炮弹组, IGB微型核弹组], [IGB反物质炮弹组]]);
         CreateChain([[I导弹组], [I超音速导弹组], [I引力导弹组], [IGB反物质导弹组]]);
         CreateChain([[I干扰胶囊, I等离子胶囊], [I压制胶囊, I反物质胶囊]]);
     }
