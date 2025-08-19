@@ -106,10 +106,15 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 交换信息的数目，受VIP影响
     /// </summary>
-    private static int exchangeInfoCount = 20;
-    private static int exchangeInfoMaxCount = 20;
+    private static int exchangeInfoCount = 14;
+    private static int exchangeInfoMaxCount = 14;
     private static ExchangeInfo[] exchangeInfos = new ExchangeInfo[exchangeInfoMaxCount];
-    private static Text[] textExchangeInfos = new Text[exchangeInfoMaxCount];
+    private static MyImageButton[] exchangeImages1 = new MyImageButton[exchangeInfoMaxCount];
+    private static MyImageButton[] exchangeImages2 = new MyImageButton[exchangeInfoMaxCount];
+    private static Text[] textExchangeInfos1 = new Text[exchangeInfoMaxCount];
+    private static Text[] textExchangeInfos2 = new Text[exchangeInfoMaxCount];
+    private static MyImageButton[] exchangeImages3 = new MyImageButton[exchangeInfoMaxCount];
+    private static Text[] textExchangeInfos3 = new Text[exchangeInfoMaxCount];
     private static UIButton[] btnExchangeInfos = new UIButton[exchangeInfoMaxCount];
     /// <summary>
     /// 兑换不同矩阵层次的配方所需的矩阵数目
@@ -145,17 +150,21 @@ public static class LimitedTimeStore {
         float x = 0f;
         float y = 18f;
         textLeftTime = wnd.AddText2(x, y, tab, "动态刷新", 15, "textLeftTime");
-        //todo: 刷新前需要使用一定数目物品
         wnd.AddButton(2, 3, y, tab, "刷新", 16, "btn-modify",
             () => ModifyExchangeItemInfo(true));
-        y += 36f;
+        y += 36f + 7f;
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             int j = i;
             //exchangeInfos在Import、IntoOtherSave时创建
-            textExchangeInfos[j] = wnd.AddText2(x, y, tab, "动态刷新", 15, $"textLeftTime{j}");
+            exchangeImages1[j] = wnd.AddImageButton(x, y, tab);
+            exchangeImages2[j] = wnd.AddImageButton(x + 36 + 7, y, tab);
+            textExchangeInfos1[j] = wnd.AddText2(x + 40 + 5, y, tab, "动态刷新");
+            textExchangeInfos2[j] = wnd.AddText2(x + 125, y, tab, "<=");
+            exchangeImages3[j] = wnd.AddImageButton(GetPosition(1, 4).Item1, y, tab);
+            textExchangeInfos3[j] = wnd.AddText2(GetPosition(1, 4).Item1 + 40 + 5, y, tab, "动态刷新");
             btnExchangeInfos[j] = wnd.AddButton(2, 3, y, tab, "兑换", 16, $"btn-exchange{j}",
                 () => Exchange(j));
-            y += 36f;
+            y += 36f + 7f;
         }
     }
 
@@ -201,10 +210,10 @@ public static class LimitedTimeStore {
         if (manual) {
             //todo: 添加vip影响
             UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCost / 10} {"刷新商店吗？".Translate()}",
+                $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCost} {"刷新商店吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
-                    if (!TakeItem(matrixID, matrixRecipeCost / 10, out _)) {
+                    if (!TakeItem(matrixID, matrixRecipeCost, out _)) {
                         return;
                     }
                     nextFreshTick = gameTick - baseFreshTs + 1;
@@ -245,9 +254,16 @@ public static class LimitedTimeStore {
         float ratioSum = itemIdArr.Select(itemId => itemRatio[itemId]).Sum();
         foreach (int itemId in itemIdArr) {
             ItemProto item = LDB.items.Select(itemId);
-            int itemCount = (int)Math.Ceiling(matrixTotalValue / itemValue[item.ID]);
+            //至多一组
+            int itemCount = Math.Min(item.StackSize, (int)(matrixTotalValue / itemValue[item.ID]));
+            if (itemCount == 0) {
+                itemCount++;
+            }
             //考虑到某些物品属于电磁矩阵/黑雾矩阵，这里全部使用当前矩阵
-            int matrixCount = (int)Math.Ceiling(itemCount * itemValue[item.ID] / itemValue[matrix.ID] * vipDiscount);
+            int matrixCount = (int)(itemCount * itemValue[item.ID] / itemValue[matrix.ID] * vipDiscount);
+            if (matrixCount == 0) {
+                matrixCount++;
+            }
             ExchangeInfo info = new(item, itemCount, matrix, matrixCount);
             int repeatCount = (int)Math.Ceiling(itemRatio[itemId] / ratioSum * 10000);
             for (int i = 0; i < repeatCount; i++) {
@@ -313,8 +329,53 @@ public static class LimitedTimeStore {
     /// </summary>
     private static void FreshExchangeItemInfo() {
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
-            //显示兑换信息
-            textExchangeInfos[i].text = exchangeInfos[i].ToString();
+            ExchangeInfo info = exchangeInfos[i];
+            if (!info.IsValid) {
+                exchangeImages1[i].gameObject.SetActive(false);
+                exchangeImages2[i].gameObject.SetActive(false);
+                textExchangeInfos1[i].text = "";
+                textExchangeInfos2[i].text = "";
+                exchangeImages3[i].gameObject.SetActive(false);
+                textExchangeInfos3[i].text = "";
+                btnExchangeInfos[i].gameObject.SetActive(false);
+            } else if (info.item != null) {
+                exchangeImages1[i].gameObject.SetActive(true);
+                exchangeImages1[i].SetSprite(info.item.iconSprite);
+                exchangeImages2[i].gameObject.SetActive(false);
+                textExchangeInfos1[i].text = $"x {info.itemCount}";
+                textExchangeInfos2[i].text = "<=";
+                exchangeImages3[i].gameObject.SetActive(true);
+                exchangeImages3[i].SetSprite(info.matrix.iconSprite);
+                textExchangeInfos3[i].gameObject.SetActive(true);
+                textExchangeInfos3[i].text = $"x {info.matrixCount}";
+                btnExchangeInfos[i].gameObject.SetActive(true);
+                if (info.exchanged) {
+                    btnExchangeInfos[i].enabled = false;
+                    btnExchangeInfos[i].SetText("已兑换");
+                } else {
+                    btnExchangeInfos[i].enabled = true;
+                    btnExchangeInfos[i].SetText("兑换");
+                }
+            } else {
+                exchangeImages1[i].gameObject.SetActive(true);
+                exchangeImages1[i].SetSprite(info.recipe.RecipeType.GetItemSprite());
+                exchangeImages2[i].gameObject.SetActive(true);
+                exchangeImages2[i].SetSprite(LDB.items.Select(info.recipe.InputID).iconSprite);
+                textExchangeInfos1[i].text = "";
+                textExchangeInfos2[i].text = "<=";
+                exchangeImages3[i].gameObject.SetActive(true);
+                exchangeImages3[i].SetSprite(info.matrix.iconSprite);
+                textExchangeInfos3[i].gameObject.SetActive(true);
+                textExchangeInfos3[i].text = $"x {info.matrixCount}";
+                btnExchangeInfos[i].gameObject.SetActive(true);
+                if (info.exchanged) {
+                    btnExchangeInfos[i].enabled = false;
+                    btnExchangeInfos[i].SetText("已兑换");
+                } else {
+                    btnExchangeInfos[i].enabled = true;
+                    btnExchangeInfos[i].SetText("兑换");
+                }
+            }
         }
     }
 

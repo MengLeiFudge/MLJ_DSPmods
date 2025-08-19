@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.Utils;
@@ -104,5 +105,22 @@ public static partial class Utils {
         float targetLen = (totalPx - (count - 1) * 20) / count;
         float targetPx = index * (targetLen + 20);
         return (targetPx, targetLen);
+    }
+
+    public static void SetText(this UIButton btn, string notTranslateStr) {
+        try {
+            var l = btn.gameObject.transform.Find("button-notTranslateStr").GetComponent<Localizer>();
+            var t = btn.gameObject.transform.Find("button-notTranslateStr").GetComponent<Text>();
+            if (l != null) {
+                l.stringKey = notTranslateStr;
+                l.translation = notTranslateStr.Translate();
+            }
+            if (t != null) {
+                t.text = notTranslateStr.Translate();
+            }
+        }
+        catch (Exception e) {
+            LogError($"SetText error: {e}");
+        }
     }
 }

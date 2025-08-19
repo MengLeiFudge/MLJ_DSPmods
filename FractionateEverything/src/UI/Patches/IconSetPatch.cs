@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using HarmonyLib;
 using UnityEngine;
-using static FE.Utils.Utils;
 using Object = UnityEngine.Object;
 
 namespace FE.UI.Patches;
