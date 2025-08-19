@@ -133,7 +133,8 @@ public abstract class BaseRecipe(
                 //附加输出无经验
             }
         }
-        return list;
+        //如果仍然没有产出（例如产物数目<1且小数判定未通过），由于原料已消耗，应该返回损毁而非空列表
+        return list.Count == 0 ? null : list;
     }
 
     #endregion
@@ -168,6 +169,10 @@ public abstract class BaseRecipe(
     /// 回响数目
     /// </summary>
     public int Memory { get; private set; } = 0;
+    /// <summary>
+    /// 突破上一品质需要的回响数目
+    /// </summary>
+    public int BreakPreviousQualityNeedMemory => Math.Max(0, PreviousQuality - 2);
     /// <summary>
     /// 突破当前品质需要的回响数目
     /// </summary>
@@ -314,6 +319,9 @@ public abstract class BaseRecipe(
                 Level = CurrQualityMaxLevel;
             }
         }
+        if (Memory < BreakPreviousQualityNeedMemory) {
+            Memory = BreakPreviousQualityNeedMemory;
+        }
         Exp = 0;
     }
 
@@ -324,9 +332,11 @@ public abstract class BaseRecipe(
         if (up) {
             Quality = MaxQuality;
             Level = CurrQualityMaxLevel;
+            Memory = MaxMemory;
         } else {
             Quality = 0;
             Level = 0;
+            Memory = 0;
         }
         Exp = 0;
     }
@@ -364,13 +374,36 @@ public abstract class BaseRecipe(
                 LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
-        Quality = Math.Min(MaxQuality, r.ReadInt32());
-        if (Quality == MaxQuality - 1) {
-            Quality++;
-        }
-        Level = Math.Min(CurrQualityMaxLevel, r.ReadInt32());
+        Quality = r.ReadInt32();
+        Level = r.ReadInt32();
         Exp = r.ReadSingle();
-        Memory = Math.Min(MaxMemory, r.ReadInt32());
+        Memory = r.ReadInt32();
+        if (Quality < 0) {
+            Quality = 0;
+            Level = 0;
+        } else if (Quality == MaxQuality - 1) {
+            Quality++;
+        } else if (Quality > MaxQuality) {
+            Quality = MaxQuality;
+        }
+        if (Level == 0) {
+            if (Quality > 0) {
+                Level = 1;
+            }
+        } else if (Level > CurrQualityMaxLevel) {
+            Level = CurrQualityMaxLevel;
+        }
+        if (Exp < 0) {
+            Exp = 0;
+        }
+        if (Memory < 0) {
+            Memory = 0;
+        } else if (Memory > MaxMemory) {
+            Memory = MaxMemory;
+        }
+        if (Memory < BreakPreviousQualityNeedMemory) {
+            Memory = BreakPreviousQualityNeedMemory;
+        }
         AddExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
     }
@@ -387,8 +420,8 @@ public abstract class BaseRecipe(
             w.Write(info.OutputID);
             w.Write(info.OutputTotalCount);
         }
-        w.Write(Level);
         w.Write(Quality);
+        w.Write(Level);
         w.Write(Exp);
         w.Write(Memory);
         // 子类特定数据由重写的方法处理
