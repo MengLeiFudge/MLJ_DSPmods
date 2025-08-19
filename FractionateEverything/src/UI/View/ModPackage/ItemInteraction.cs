@@ -131,12 +131,17 @@ public static class ItemInteraction {
         if (itemCountDic.Count == 0) {
             UIMessageBox.Show("提示".Translate(),
                 $"{"分馏数据中心没有".Translate()} {"任何物品".Translate()}{"！".Translate()}",
-                "确定".Translate(),
-                UIMessageBox.WARNING);
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
-        int oneLineMaxCount = Math.Min(10, Math.Max(5, (int)Math.Ceiling(itemCountDic.Count / 40.0)));
+        int oneLineMaxCount = (int)Math.Ceiling(itemCountDic.Count / 40.0);
+        if (oneLineMaxCount < 5) {
+            oneLineMaxCount = 5;
+        } else if (oneLineMaxCount > 10) {
+            oneLineMaxCount = 10;
+        }
         int oneLineCount = 0;
         foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
             sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));
@@ -148,7 +153,10 @@ public static class ItemInteraction {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
+        UIMessageBox.Show("提示".Translate(),
+            sb.ToString(),
+            "确定".Translate(), UIMessageBox.INFO,
+            null);
     }
 
     /// <summary>
@@ -161,8 +169,8 @@ public static class ItemInteraction {
         if (count == 0) {
             UIMessageBox.Show("提示".Translate(),
                 $"{"分馏数据中心没有".Translate()} {SelectedItem.name} {"！".Translate()}",
-                "确定".Translate(),
-                UIMessageBox.WARNING);
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
         } else {
             AddItemToPackage(SelectedItem.ID, count, inc, false);
         }

@@ -159,12 +159,14 @@ public static class BuildingOperate {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用流动输出集装".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
-            }, null);
+            },
+            null);
     }
 
     private static void AddMaxProductOutputStack() {
@@ -179,12 +181,14 @@ public static class BuildingOperate {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
-            }, null);
+            },
+            null);
     }
 
     private static void SetFracForever() {
@@ -199,12 +203,14 @@ public static class BuildingOperate {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用分馏永动".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
-            }, null);
+            },
+            null);
     }
 
     private static void AddPointAggregateLevel() {
@@ -219,12 +225,14 @@ public static class BuildingOperate {
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION, () => {
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 PointAggregateTower.Level++;
-            }, null);
+            },
+            null);
     }
 
     #region IModCanSave

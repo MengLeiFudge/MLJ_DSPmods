@@ -265,7 +265,7 @@ public static class ItemManager {
 
     #region 计算物品价值，以及交互塔可接受物品范围
 
-    public static float maxValue = 1000000;
+    public const float maxValue = 10000000;
     /// <summary>
     /// 物品总价值（原材料价值 + 制作价值）
     /// </summary>
@@ -359,13 +359,11 @@ public static class ItemManager {
         itemValue[IFE分馏塔原胚稀有] = 800.0f;
         itemValue[IFE分馏塔原胚史诗] = 1600.0f;
         itemValue[IFE分馏塔原胚传说] = 3200.0f;
-        //设置精华、核心、芯片价值
+        //设置精华价值
         itemValue[IFE复制精华] = 500.0f;
         itemValue[IFE点金精华] = 500.0f;
         itemValue[IFE分解精华] = 500.0f;
         itemValue[IFE转化精华] = 500.0f;
-        itemValue[IFE分馏配方通用核心] = 500000.0f;
-        itemValue[IFE分馏塔增幅芯片] = 888888.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
@@ -458,8 +456,8 @@ public static class ItemManager {
                     if (unitValue < itemValue[itemId]) {
                         itemValue[itemId] = unitValue;
                         ItemProto item = LDB.items.Select(itemId);
-                        LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
-                                 + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
+                        // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
+                        //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
                         if (itemId == I蓄电器) {
                             itemValue[I蓄电器满] = unitValue * 2;
                         }
@@ -468,6 +466,10 @@ public static class ItemManager {
                 }
             }
         } while (changed && iteration < 10);
+
+        //设置核心、芯片价值
+        itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
+        itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
 
         //根据物品价值构建概率表
         foreach (ItemProto item in LDB.items.dataArray) {
@@ -555,7 +557,7 @@ public static class ItemManager {
                 }
             }
             itemToMatrix[item.ID] = topMatrixID;
-            LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
+            // LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
         }
     }
 
@@ -595,11 +597,19 @@ public static class ItemManager {
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
-            long count = Math.Max(0, r.ReadInt64());
-            long proliferatorPoint = Math.Max(0, r.ReadInt64());
+            long count = r.ReadInt64();
+            long inc = r.ReadInt64();
+            if (count < 0) {
+                count = 0;
+            }
+            if (inc < 0) {
+                inc = 0;
+            } else if (inc > count * 10) {
+                inc = count * 10;
+            }
             if (itemId >= 0 && itemId < centerItemCount.Length) {
                 centerItemCount[itemId] = count;
-                centerItemInc[itemId] = proliferatorPoint;
+                centerItemInc[itemId] = inc;
             }
         }
     }
