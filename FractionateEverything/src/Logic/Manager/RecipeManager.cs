@@ -136,7 +136,10 @@ public static class RecipeManager {
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
-        UIMessageBox.Show("提示".Translate(), "所有分馏配方已解锁。".Translate(), "确定".Translate(), UIMessageBox.INFO, null);
+        UIMessageBox.Show("提示".Translate(),
+            "所有分馏配方已解锁。".Translate(),
+            "确定".Translate(), UIMessageBox.INFO,
+            null);
     }
 
     #region 从存档读取配方数据

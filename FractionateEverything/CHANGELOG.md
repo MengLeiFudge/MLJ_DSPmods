@@ -22,6 +22,7 @@
         + 重构了分馏数据中心的UI，现在分类更为详细。
         + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
         + 增加前台自动百连抽功能。
+        + 增加限时商店，商店内随机刷新物品、配方。
     + 添加大部分英文翻译。
     + Technology adjustments.
         + Added metadata required to unlock all technologies.
@@ -57,6 +58,7 @@
         + The maximum number of items the distillation data centre can store has been changed from int to long, and it
           now supports the storage of production points.
         + Added a front-end auto-100-draw feature.
+        + Added a limited-time shop with randomly refreshed items and recipes.
 
 - v2.0.4
     + 分馏塔提示窗口内容受配方信息显示情况控制。

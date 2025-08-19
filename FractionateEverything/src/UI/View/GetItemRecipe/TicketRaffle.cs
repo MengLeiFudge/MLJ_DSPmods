@@ -30,10 +30,8 @@ public static class TicketRaffle {
     private static int TicketType1;
     private static int SelectedTicketId1 => TicketIds[TicketTypeEntry1.Value];
     private static int SelectedTicketMatrixId1 => LDB.items.Select(SelectedTicketId1).maincraft.Items[0];
-    private static float SelectedTicketRatioPlus1 => SelectedTicketId1 == IFE宇宙奖券 ? 2.0f : 1.0f;
     private static Text ticketCountText1;
     private static ConfigEntry<bool> EnableAutoRaffleEntry1;
-    private static readonly bool[] ignoreRecipeCount = new bool[TicketIds.Length];
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
@@ -44,7 +42,6 @@ public static class TicketRaffle {
     private static int TicketType2;
     private static int SelectedTicketId2 => TicketIds[TicketTypeEntry2.Value];
     private static int SelectedTicketMatrixId2 => LDB.items.Select(SelectedTicketId2).maincraft.Items[0];
-    private static float SelectedTicketRatioPlus2 => SelectedTicketId2 == IFE宇宙奖券 ? 2.0f : 1.0f;
     private static Text ticketCountText2;
     private static ConfigEntry<bool> EnableAutoRaffleEntry2;
 
@@ -77,10 +74,10 @@ public static class TicketRaffle {
         var cbx = wnd.AddComboBox(x, y, tab, "当前奖券")
             .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry1);
         wnd.AddTipsButton2(x + cbx.Width + 5, y, tab, "配方卡池说明",
-            "选择某种奖券后，只能抽取对应层级的配方。"
-            + "宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。\n"
+            "除黑雾奖券外，其他奖券可以抽取不超过所用奖券层级的所有配方。\n"
+            + "只有黑雾奖券可以抽取黑雾配方，非黑雾奖券无法抽取。\n"
             + "概率公示：\n"
-            + "分馏配方通用核心：0.05%\n" //todo: 改为根据奖券价值动态决定概率
+            + "分馏配方通用核心：动态，至多0.1%\n"//todo: 改为根据奖券价值动态决定概率
             + "分馏配方：0.6%（至多90抽必出）\n"
             + "杂项物品：59.61%\n"
             + "沙土：39.74%");
@@ -99,9 +96,8 @@ public static class TicketRaffle {
             .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry2);
         wnd.AddTipsButton2(x + cbx.Width + 5, y, tab, "建筑卡池说明",
             "无论选择哪种奖券，都不影响可以获取的建筑类型。"
-            + "宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。\n"
             + "概率公示：\n"
-            + "分馏塔增幅芯片：0.3%\n" //todo: 改为根据奖券价值动态决定概率
+            + "分馏塔增幅芯片：动态，至多0.07%\n"//todo: 改为根据奖券价值动态决定概率
             + "分馏塔原胚：25%\n"
             + "分馏塔：5%\n"
             + "其他建筑：39.82%\n"
@@ -158,7 +154,10 @@ public static class TicketRaffle {
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
             if (showMessage) {
-                UIMessageBox.Show("提示".Translate(), "时机未到，再探索一会当前星球吧！", "确定".Translate(), UIMessageBox.WARNING);
+                UIMessageBox.Show("提示".Translate(),
+                    "时机未到，再探索一会当前星球吧！",
+                    "确定".Translate(), UIMessageBox.WARNING,
+                    null);
             }
             return;
         }
@@ -177,37 +176,38 @@ public static class TicketRaffle {
         //排序一下
         items.Sort();
         //构建可抽到的分馏配方列表
-        //todo: 优化配方出现情况，当前层次概率至少翻倍
-        List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(arr => arr).ToList();
+        //todo: 优化配方出现情况，当前层次概率至少翻倍（也许现在这样也行？）
+        List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(list => list).ToList();
         recipes.RemoveAll(recipe => recipe.IsMaxMemory);
-        if (showMessage && recipes.Count == 0 && !ignoreRecipeCount[TicketTypeEntry1.Value]) {
-            UIMessageBox.Show("提示".Translate(), $"该卡池已经没有配方可以抽取了！\n确定继续抽取{"吗？".Translate()}", "确定".Translate(),
-                "取消".Translate(), UIMessageBox.WARNING,
-                () => {
-                    ignoreRecipeCount[TicketTypeEntry1.Value] = true;
-                    RaffleRecipe(raffleCount, oneLineMaxCount);
-                }, null);
+        if (recipes.Count == 0 && SelectedTicketId1 < IFE宇宙奖券) {
+            if (showMessage) {
+                UIMessageBox.Show("提示".Translate(),
+                    "该卡池已经没有配方可以抽取了！".Translate(),
+                    "确定".Translate(), UIMessageBox.WARNING,
+                    null);
+            }
             return;
         }
-        List<BaseRecipe> recipesTemp = [..recipes];
-        int removedCount = recipes.RemoveAll(recipe => !GameMain.history.ItemUnlocked(recipe.InputID));
         int oneLineCount = 0;
-        if (showMessage && recipes.Count == 0 && removedCount > 0) {
-            //todo：调整这里
-            StringBuilder tip = new StringBuilder($"还有{removedCount}个物品尚未解锁，现在抽取不到对应配方！\n\n"
-                                                  + $"未解锁的物品为：\n");
-            while (removedCount > 0) {
-                tip.Append(LDB.items.Select(recipesTemp[removedCount - 1].InputID).name);
-                oneLineCount++;
-                if (oneLineCount >= oneLineMaxCount) {
-                    tip.Append("\n");
-                    oneLineCount = 0;
-                } else {
-                    tip.Append("          ");
+        if (recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))) {
+            if (showMessage) {
+                StringBuilder tip = new StringBuilder($"还有{recipes.Count}个物品尚未解锁，现在抽取不到对应配方！\n\n"
+                                                      + $"未解锁的物品为：\n");
+                foreach (BaseRecipe recipe in recipes) {
+                    if (oneLineCount >= oneLineMaxCount - 1) {
+                        tip.Append("\n");
+                        oneLineCount = 0;
+                    } else if (oneLineCount > 0) {
+                        tip.Append("          ");
+                    }
+                    tip.Append(LDB.items.Select(recipe.InputID).name);
+                    oneLineCount++;
                 }
-                removedCount--;
+                UIMessageBox.Show("提示".Translate(),
+                    tip.ToString(),
+                    "确定".Translate(), UIMessageBox.WARNING,
+                    null);
             }
-            UIMessageBox.Show("提示".Translate(), tip.ToString(), "确定".Translate(), UIMessageBox.WARNING);
             return;
         }
         if (!TakeItem(SelectedTicketId1, raffleCount, out _, showMessage)) {
@@ -222,50 +222,54 @@ public static class TicketRaffle {
             raffleCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
-            //分馏配方通用核心（0.05%）
-            currRate += 0.0005 * SelectedTicketRatioPlus1;
+            //分馏配方通用核心（动态概率）
+            //todo: 确认概率计算方式与物品价值
+            currRate += itemValue[SelectedTicketId1] / itemValue[IFE分馏配方通用核心] / 10;
             if (randDouble < currRate) {
                 if (specialItemDic.ContainsKey(IFE分馏配方通用核心)) {
                     specialItemDic[IFE分馏配方通用核心]++;
                 } else {
                     specialItemDic[IFE分馏配方通用核心] = 1;
                 }
-                sb.Append($"{LDB.items.Select(IFE分馏配方通用核心).name} x 1".WithValueColor(IFE分馏配方通用核心));
-                oneLineCount++;
-                if (oneLineCount >= oneLineMaxCount) {
+                if (oneLineCount >= oneLineMaxCount - 1) {
                     sb.Append("\n");
                     oneLineCount = 0;
-                } else {
+                } else if (oneLineCount > 0) {
                     sb.Append("          ");
                 }
+                sb.Append($"{LDB.items.Select(IFE分馏配方通用核心).name} x 1".WithValueColor(IFE分馏配方通用核心));
+                oneLineCount++;
                 RecipeRaffleCount = 1;
                 continue;
             }
             //配方（0.6%，74抽开始后每抽增加6%）
             if (recipes.Count > 0) {
-                currRate += RecipeRaffleRate * SelectedTicketRatioPlus1;
+                currRate += RecipeRaffleRate;
                 if (randDouble < currRate) {
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
-                    sb.Append($"{recipe.TypeName}".WithColor(Gold));
                     recipe.RewardThis();
+                    if (recipe.IsMaxMemory) {
+                        recipes.Remove(recipe);
+                    }
                     if (recipe.Memory == 0) {
                         sb2.AppendLine($"{recipe.TypeName} 已解锁".WithColor(Orange));
                     } else {
                         sb2.AppendLine($"{recipe.TypeName} 已转为同名回响（当前持有 {recipe.Memory} 同名回响）".WithColor(Orange));
                     }
-                    oneLineCount++;
-                    if (oneLineCount >= oneLineMaxCount) {
+                    if (oneLineCount >= oneLineMaxCount - 1) {
                         sb.Append("\n");
                         oneLineCount = 0;
-                    } else {
+                    } else if (oneLineCount > 0) {
                         sb.Append("          ");
                     }
+                    sb.Append($"{recipe.TypeName}".WithColor(Gold));
+                    oneLineCount++;
                     RecipeRaffleCount = 1;
                     continue;
                 }
+                RecipeRaffleCount++;
             }
-            RecipeRaffleCount++;
             //剩余的概率中，60%各种非建筑的物品（不含分馏某些特殊物品）
             double ratioItem = (1 - currRate) * 0.6 / items.Count;
             bool getItem = false;
@@ -281,14 +285,14 @@ public static class TicketRaffle {
                     } else {
                         commonItemDic[itemId] = count;
                     }
-                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
-                    oneLineCount++;
-                    if (oneLineCount >= oneLineMaxCount) {
+                    if (oneLineCount >= oneLineMaxCount - 1) {
                         sb.Append("\n");
                         oneLineCount = 0;
-                    } else {
+                    } else if (oneLineCount > 0) {
                         sb.Append("          ");
                     }
+                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
+                    oneLineCount++;
                     getItem = true;
                     break;
                 }
@@ -303,23 +307,24 @@ public static class TicketRaffle {
             } else {
                 commonItemDic[I沙土] = sandCount;
             }
-            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
-            oneLineCount++;
-            if (oneLineCount >= oneLineMaxCount) {
+            if (oneLineCount >= oneLineMaxCount - 1) {
                 sb.Append("\n");
                 oneLineCount = 0;
-            } else {
+            } else if (oneLineCount > 0) {
                 sb.Append("          ");
             }
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
+            oneLineCount++;
         }
         if (showMessage) {
-            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
-                                      + "\n\n"
-                                      + sb2
-                                      + "\n\n选择提取方式：\n"
-                                      + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
-                                      + "部分提取：将分馏配方通用核心提取到背包，除此之外的物品存储在分馏数据中心\n"
-                                      + "全部提取：将全部物品以实体形式提取到背包",
+            UIMessageBox.Show("抽奖结果",
+                sb.ToString().TrimEnd('\n')
+                + "\n\n"
+                + sb2
+                + "\n\n选择提取方式：\n"
+                + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                + "部分提取：将分馏配方通用核心提取到背包，除此之外的物品存储在分馏数据中心\n"
+                + "全部提取：将全部物品以实体形式提取到背包",
                 "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
                 () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
@@ -328,14 +333,16 @@ public static class TicketRaffle {
                     foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToModData(p.Key, p.Value);
                     }
-                }, () => {
+                },
+                () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToPackage(p.Key, p.Value);
                     }
                     foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToModData(p.Key, p.Value);
                     }
-                }, () => {
+                },
+                () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToPackage(p.Key, p.Value);
                     }
@@ -380,7 +387,10 @@ public static class TicketRaffle {
         //初步构建杂项物品奖励列表
         if (itemHashSet.Count == 0) {
             if (showMessage) {
-                UIMessageBox.Show("提示".Translate(), "时机未到，再探索一会当前星球吧！", "确定".Translate(), UIMessageBox.WARNING);
+                UIMessageBox.Show("提示".Translate(),
+                    "时机未到，再探索一会当前星球吧！",
+                    "确定".Translate(), UIMessageBox.WARNING,
+                    null);
             }
             return;
         }
@@ -428,22 +438,23 @@ public static class TicketRaffle {
             raffleCount--;
             double currRate = 0;
             double randDouble = GetRandDouble();
-            //分馏塔增幅芯片（0.3%）
-            currRate += 0.003 * SelectedTicketRatioPlus2;
+            //分馏塔增幅芯片（动态概率）
+            //todo: 确认概率计算方式与物品价值
+            currRate += itemValue[SelectedTicketId2] / itemValue[IFE分馏塔增幅芯片] / 10;
             if (randDouble < currRate) {
                 if (specialItemDic.ContainsKey(IFE分馏塔增幅芯片)) {
                     specialItemDic[IFE分馏塔增幅芯片]++;
                 } else {
                     specialItemDic[IFE分馏塔增幅芯片] = 1;
                 }
-                sb.Append($"{LDB.items.Select(IFE分馏塔增幅芯片).name} x 1".WithValueColor(IFE分馏塔增幅芯片));
-                oneLineCount++;
-                if (oneLineCount >= oneLineMaxCount) {
+                if (oneLineCount >= oneLineMaxCount - 1) {
                     sb.Append("\n");
                     oneLineCount = 0;
-                } else {
+                } else if (oneLineCount > 0) {
                     sb.Append("          ");
                 }
+                sb.Append($"{LDB.items.Select(IFE分馏塔增幅芯片).name} x 1".WithValueColor(IFE分馏塔增幅芯片));
+                oneLineCount++;
                 continue;
             }
             //剩余的概率中，60%各种建筑（含有分馏某些特殊物品）
@@ -469,14 +480,14 @@ public static class TicketRaffle {
                             commonItemDic[itemId] = count;
                         }
                     }
-                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
-                    oneLineCount++;
-                    if (oneLineCount >= oneLineMaxCount) {
+                    if (oneLineCount >= oneLineMaxCount - 1) {
                         sb.Append("\n");
                         oneLineCount = 0;
-                    } else {
+                    } else if (oneLineCount > 0) {
                         sb.Append("          ");
                     }
+                    sb.Append($"{LDB.items.Select(itemId).name} x {count}".WithValueColor(itemId));
+                    oneLineCount++;
                     getItem = true;
                     break;
                 }
@@ -491,21 +502,22 @@ public static class TicketRaffle {
             } else {
                 commonItemDic[I沙土] = sandCount;
             }
-            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
-            oneLineCount++;
-            if (oneLineCount >= oneLineMaxCount) {
+            if (oneLineCount >= oneLineMaxCount - 1) {
                 sb.Append("\n");
                 oneLineCount = 0;
-            } else {
+            } else if (oneLineCount > 0) {
                 sb.Append("          ");
             }
+            sb.Append($"{LDB.items.Select(I沙土).name} x {sandCount}".WithValueColor(I沙土));
+            oneLineCount++;
         }
         if (showMessage) {
-            UIMessageBox.Show("抽奖结果", sb.ToString().TrimEnd('\n')
-                                      + "\n\n选择提取方式：\n"
-                                      + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
-                                      + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
-                                      + "全部提取：将全部物品以实体形式提取到背包",
+            UIMessageBox.Show("抽奖结果",
+                sb.ToString().TrimEnd('\n')
+                + "\n\n选择提取方式：\n"
+                + "数据中心：将全部物品以数据形式存储在分馏数据中心\n"
+                + "部分提取：将分馏塔增幅芯片、分馏塔提取到背包，其他物品存储在分馏数据中心\n"
+                + "全部提取：将全部物品以实体形式提取到背包",
                 "数据中心", "部分提取", "全部提取", UIMessageBox.INFO,
                 () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
@@ -514,14 +526,16 @@ public static class TicketRaffle {
                     foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToModData(p.Key, p.Value);
                     }
-                }, () => {
+                },
+                () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToPackage(p.Key, p.Value);
                     }
                     foreach (var p in commonItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToModData(p.Key, p.Value);
                     }
-                }, () => {
+                },
+                () => {
                     foreach (var p in specialItemDic.OrderByDescending(kvp => itemValue[kvp.Key])) {
                         AddItemToPackage(p.Key, p.Value);
                     }

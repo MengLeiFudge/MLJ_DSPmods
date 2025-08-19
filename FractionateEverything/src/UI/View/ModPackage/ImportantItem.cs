@@ -94,8 +94,8 @@ public static class ImportantItem {
         if (itemCountDic.Count == 0) {
             UIMessageBox.Show("提示".Translate(),
                 $"{"分馏数据中心没有".Translate()} {"任何物品".Translate()}{"！".Translate()}",
-                "确定".Translate(),
-                UIMessageBox.WARNING);
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
         StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
@@ -111,7 +111,10 @@ public static class ImportantItem {
                 sb.Append("          ");
             }
         }
-        UIMessageBox.Show("提示".Translate(), sb.ToString(), "确定".Translate(), UIMessageBox.INFO);
+        UIMessageBox.Show("提示".Translate(),
+            sb.ToString(),
+            "确定".Translate(), UIMessageBox.INFO,
+            null);
     }
 
     private static void GetModDataItem(int itemId, int groupCount) {
@@ -121,8 +124,8 @@ public static class ImportantItem {
         if (count == 0) {
             UIMessageBox.Show("提示".Translate(),
                 $"{"分馏数据中心没有".Translate()} {item.name} {"！".Translate()}",
-                "确定".Translate(),
-                UIMessageBox.WARNING);
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
         } else {
             AddItemToPackage(item.ID, count, inc, false);
         }
