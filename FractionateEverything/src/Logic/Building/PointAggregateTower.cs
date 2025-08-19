@@ -107,8 +107,7 @@ public static class PointAggregateTower {
         bool enableFracForever = building.EnableFracForever();
         if (__instance.fluidInputCount > 0
             && (__instance.productOutputCount < productOutputMax || enableFracForever)
-            && (__instance.fluidOutputCount < fluidOutputMax
-                || (enableFracForever && __instance.fluidOutputCount < fluidOutputMax + 4))) {
+            && __instance.fluidOutputCount < fluidOutputMax) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
@@ -143,9 +142,8 @@ public static class PointAggregateTower {
                 }
                 //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
                 if (enableFracForever
-                    && (__instance.productOutputCount >= productOutputMax
-                        || __instance.fluidOutputCount >= fluidOutputMax)
-                    && __instance.fluidOutputCount < fluidOutputMax + 4) {
+                    && __instance.productOutputCount >= productOutputMax
+                    && __instance.fluidOutputCount < fluidOutputMax) {
                     moveDirectly = true;
                     goto MoveDirectly;
                 }

@@ -23,7 +23,7 @@ public class MyImageButton : MonoBehaviour {
 
     // 修改为半透明背景色，而不是边框色
     private static readonly Color NotSelectedBgColor = new(0.4f, 0.4f, 0.4f, 0.3f);
-    private static readonly Color SelectedBgColor = new(0.3f, 0.6f, 1f, 0.5f); // 浅蓝色选中背景
+    private static readonly Color SelectedBgColor = new(0.3f, 0.6f, 1f, 0.5f);// 浅蓝色选中背景
     private static readonly Color SpriteColor = new(1f, 1f, 1f, 1f);
 
     // 选中状态相关
@@ -180,7 +180,8 @@ public class MyImageButton : MonoBehaviour {
         if (spriteImage) {
             Color spriteTargetColor = SpriteColor;
             if (!uiButton.enabled) {
-                spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b, spriteTargetColor.a * 0.5f);
+                spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
+                    spriteTargetColor.a * 0.5f);
             }
             spriteImage.color = spriteTargetColor;
         }

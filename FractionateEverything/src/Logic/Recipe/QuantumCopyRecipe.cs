@@ -99,14 +99,15 @@ public class QuantumCopyRecipe : BaseRecipe {
                     }
                 }
                 //根据有没有精华判定是否成功输出
-                int essenceCount = (int)Math.Ceiling((EssenceCost - 0.0001f) * EssenceCostDec);
-                float essenceLeftCount = EssenceCost * EssenceCostDec - essenceCount;
-                if (essenceLeftCount > 0.0001f) {
-                    if (GetRandDouble(ref seed) < essenceLeftCount) {
-                        essenceCount++;
+                float essenceNeedCountAvg = EssenceCost * EssenceCostDec;
+                int essenceNeedCountReal = (int)essenceNeedCountAvg;
+                essenceNeedCountAvg -= essenceNeedCountReal;
+                if (essenceNeedCountAvg > 0.0001f) {
+                    if (GetRandDouble(ref seed) < essenceNeedCountAvg) {
+                        essenceNeedCountReal++;
                     }
                 }
-                if (!TakeEssenceFromModData(essenceCount, consumeRegister)) {
+                if (essenceNeedCountReal > 0 && !TakeEssenceFromModData(essenceNeedCountReal, consumeRegister)) {
                     return ProcessManager.emptyOutputs;
                 }
                 list.Add(new(true, outputInfo.OutputID, count));
