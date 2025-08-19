@@ -26,8 +26,7 @@ public static class RecipeGallery {
         Register("配方图鉴", "Recipe Gallery");
     }
 
-    public static void LoadConfig(ConfigFile configFile) {
-    }
+    public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;

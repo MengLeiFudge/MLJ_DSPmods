@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -92,6 +93,18 @@ public static class ERecipeExtension {
             ERecipe.Deconstruction => "分解配方".Translate(),
             ERecipe.Conversion => "转化配方".Translate(),
             _ => "未知配方".Translate()
+        };
+    }
+
+    public static Sprite GetItemSprite(this ERecipe recipe) {
+        return recipe switch {
+            ERecipe.BuildingTrain => LDB.items.Select(IFE交互塔).iconSprite,
+            ERecipe.MineralCopy => LDB.items.Select(IFE矿物复制塔).iconSprite,
+            ERecipe.QuantumCopy => LDB.items.Select(IFE量子复制塔).iconSprite,
+            ERecipe.Alchemy => LDB.items.Select(IFE点金塔).iconSprite,
+            ERecipe.Deconstruction => LDB.items.Select(IFE分解塔).iconSprite,
+            ERecipe.Conversion => LDB.items.Select(IFE转化塔).iconSprite,
+            _ => null,
         };
     }
 }
