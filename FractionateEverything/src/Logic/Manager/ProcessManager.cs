@@ -841,7 +841,7 @@ public static class ProcessManager {
                 s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
             }
         } else if (recipe.Locked) {
-            s1 = "配方未解锁".Translate();//“配方未解锁”已经被原版游戏注册过
+            s1 = "分馏配方未解锁".Translate();//“配方未解锁”已经被原版游戏注册过
             s1 = s1.WithColor(Red);
             s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else {
