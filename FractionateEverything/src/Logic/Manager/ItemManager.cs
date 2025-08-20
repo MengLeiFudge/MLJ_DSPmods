@@ -426,7 +426,7 @@ public static class ItemManager {
                 // 检查输入物品是否都有已知价值
                 bool canProcess = true;
                 foreach (int itemId in inputIDs) {
-                    if (Math.Abs(itemValue[itemId] - maxValue) < 0.001f) {
+                    if (Math.Abs(itemValue[itemId] - maxValue) < 0.0001f) {
                         canProcess = false;
                         break;
                     }

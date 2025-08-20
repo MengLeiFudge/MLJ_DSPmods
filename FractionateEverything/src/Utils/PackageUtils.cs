@@ -210,7 +210,7 @@ public static partial class Utils {
             null);
     }
 
-    public static void ExchangeItem2Recipe(int takeId, int takeCount, BaseRecipe recipe) {
+    public static void ExchangeItem2Recipe(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -230,7 +230,16 @@ public static partial class Utils {
         }
         if (recipe.IsMaxMemory) {
             UIMessageBox.Show("提示".Translate(),
-                "该配方回响数目已达到上限！",
+                "该配方回响数目已达到上限，无需兑换！",
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
+            return;
+        }
+        int takeId = IFE分馏配方通用核心;
+        int takeCount = Math.Max(0, recipe.BreakCurrQualityNeedMemory - recipe.Memory);
+        if (takeCount == 0) {
+            UIMessageBox.Show("提示".Translate(),
+                "该配方回响数目已达到突破要求，暂时无法兑换！",
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
@@ -244,7 +253,9 @@ public static partial class Utils {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
-                recipe.RewardThis();
+                for (int i = 0; i < takeCount; i++) {
+                    recipe.RewardThis();
+                }
             },
             null);
     }

@@ -33,19 +33,15 @@ public class AlchemyRecipe : BaseRecipe {
             }
             int matrixID = itemToMatrix[item.ID];
             float matrixValue = itemValue[matrixID];
-            //关联度越高的物品，点金成功率越大。
-            //如果某个原料是制作矩阵的第n层原料，那么点金成功率增加0.5/n，点金价值增加0.1/n
             float successRate = 0.05f;
             float valueFactor = itemValue[item.ID] / matrixValue;
-            // 获取物品与矩阵的关联度
+            //关联度越高的物品，点金成功率越大。
+            //如果某个原料是制作矩阵的第n层原料，那么点金成功率增加0.5/n，点金价值增加0.25/n
             Dictionary<int, int> relationDepth = [];
-            CalcRelation(item.ID, matrixID, 1, relationDepth);
-            // 根据关联度调整成功率和价值
-            if (relationDepth.TryGetValue(matrixID, out int depth)) {
-                if (depth > 0) {
-                    successRate *= 1 + 0.5f / depth;
-                    valueFactor *= 1 + 0.1f / depth;
-                }
+            CalcRelation(matrixID, 0, relationDepth);
+            if (relationDepth.TryGetValue(item.ID, out int depth)) {
+                successRate *= 1 + 0.5f / depth;
+                valueFactor *= 1 + 0.25f / depth;
             }
             AddRecipe(new AlchemyRecipe(item.ID, successRate,
                 [
@@ -60,29 +56,23 @@ public class AlchemyRecipe : BaseRecipe {
     /// <summary>
     /// 计算物品与矩阵的关联深度
     /// </summary>
-    /// <param name="itemId">物品ID</param>
-    /// <param name="matrixId">矩阵ID</param>
+    /// <param name="currentItemId">当前物品ID</param>
     /// <param name="depth">当前深度</param>
     /// <param name="relationDepth">关联深度字典</param>
-    private static void CalcRelation(int itemId, int matrixId, int depth, Dictionary<int, int> relationDepth) {
+    private static void CalcRelation(int currentItemId, int depth, Dictionary<int, int> relationDepth) {
         // 如果已经计算过这个物品的关联深度，并且新的深度更大，则跳过
-        if (relationDepth.TryGetValue(itemId, out int existingDepth) && existingDepth <= depth) {
+        if (relationDepth.TryGetValue(currentItemId, out int existingDepth) && existingDepth <= depth) {
             return;
         }
         // 记录当前物品的关联深度
-        relationDepth[itemId] = depth;
-        // 如果当前物品就是目标矩阵，则关联深度为0
-        if (itemId == matrixId) {
-            relationDepth[itemId] = 0;
-            return;
-        }
+        relationDepth[currentItemId] = depth;
         // 获取物品的主要制作配方
-        var recipe = LDB.items.Select(itemId)?.maincraft;
+        var recipe = LDB.items.Select(currentItemId)?.maincraft;
         if (recipe == null) return;
         // 递归计算所有原料的关联深度
         for (int i = 0; i < recipe.Items.Length; i++) {
             int materialId = recipe.Items[i];
-            CalcRelation(materialId, matrixId, depth + 1, relationDepth);
+            CalcRelation(materialId, depth + 1, relationDepth);
         }
     }
 
@@ -105,7 +95,7 @@ public class AlchemyRecipe : BaseRecipe {
     /// <summary>
     /// 主产物数目增幅
     /// </summary>
-    public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.01f * Level : 0);
+    public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.02f * Level : 0);
 
     /// <summary>
     /// 附加产物数目增幅
