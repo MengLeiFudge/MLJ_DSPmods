@@ -62,6 +62,7 @@ public static class RecipeOperate {
         Register("升满", "Full upgrade");
 
         Register("配方不存在！", "Recipe does not exist!");
+        Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
         Register("费用", "Cost");
         Register("每种精华", "Each essence");
         Register("成功率", "Success Rate");
@@ -140,7 +141,7 @@ public static class RecipeOperate {
         } else {
             textRecipeInfo[line].text = recipe.Unlocked
                 ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
-                : $"{recipe.TypeNameWC} {"配方未解锁".Translate().WithColor(Red)}";
+                : $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}";
             textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
             line++;
 

@@ -109,8 +109,8 @@ public static partial class Utils {
 
     public static void SetText(this UIButton btn, string notTranslateStr) {
         try {
-            var l = btn.gameObject.transform.Find("button-notTranslateStr").GetComponent<Localizer>();
-            var t = btn.gameObject.transform.Find("button-notTranslateStr").GetComponent<Text>();
+            var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
+            var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
             if (l != null) {
                 l.stringKey = notTranslateStr;
                 l.translation = notTranslateStr.Translate();
