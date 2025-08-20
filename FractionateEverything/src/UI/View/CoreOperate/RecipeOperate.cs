@@ -104,7 +104,7 @@ public static class RecipeOperate {
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
         y += 36f + 7f;
         wnd.AddButton(0, 2, y, tab, "解锁/兑换配方", 16, "button-get-recipe",
-            () => { ExchangeItem2Recipe(IFE分馏配方通用核心, 1, SelectedRecipe); });
+            () => { ExchangeItem2Recipe(SelectedRecipe); });
         wnd.AddButton(1, 2, y, tab, "兑换经验", 16, "button-get-recipe-exp",
             () => { ExchangeSand2RecipeExp(SelectedRecipe); });
         y += 36f;

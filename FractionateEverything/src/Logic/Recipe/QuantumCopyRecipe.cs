@@ -91,43 +91,45 @@ public class QuantumCopyRecipe : BaseRecipe {
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * MainOutputCountInc);
-                float leftCount = outputInfo.OutputCount * MainOutputCountInc - count;
-                if (leftCount > 0.0001f) {
-                    if (GetRandDouble(ref seed) < leftCount) {
-                        count++;
+                float countAvg = outputInfo.OutputCount * MainOutputCountInc;
+                int countReal = (int)countAvg;
+                countAvg -= countReal;
+                if (countAvg > 0) {
+                    if (GetRandDouble(ref seed) < countAvg) {
+                        countReal++;
                     }
                 }
                 //根据有没有精华判定是否成功输出
-                float essenceNeedCountAvg = EssenceCost * EssenceCostDec;
-                int essenceNeedCountReal = (int)essenceNeedCountAvg;
-                essenceNeedCountAvg -= essenceNeedCountReal;
-                if (essenceNeedCountAvg > 0.0001f) {
-                    if (GetRandDouble(ref seed) < essenceNeedCountAvg) {
-                        essenceNeedCountReal++;
+                float essenceCountAvg = EssenceCost * EssenceCostDec;
+                int essenceCountReal = (int)essenceCountAvg;
+                essenceCountAvg -= essenceCountReal;
+                if (essenceCountAvg > 0) {
+                    if (GetRandDouble(ref seed) < essenceCountAvg) {
+                        essenceCountReal++;
                     }
                 }
-                if (essenceNeedCountReal > 0 && !TakeEssenceFromModData(essenceNeedCountReal, consumeRegister)) {
+                if (essenceCountReal > 0 && !TakeEssenceFromModData(essenceCountReal, consumeRegister)) {
                     return ProcessManager.emptyOutputs;
                 }
-                list.Add(new(true, outputInfo.OutputID, count));
-                outputInfo.OutputTotalCount += count;
-                AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * count * 0.2));
+                list.Add(new(true, outputInfo.OutputID, countReal));
+                outputInfo.OutputTotalCount += countReal;
+                AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * countReal * 0.2));
                 break;
             }
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                int count = (int)Math.Ceiling((outputInfo.OutputCount - 0.0001f) * AppendOutputCountInc);
-                float leftCount = outputInfo.OutputCount * AppendOutputCountInc - count;
-                if (leftCount > 0.0001f) {
-                    if (GetRandDouble(ref seed) < leftCount) {
-                        count++;
+                float countAvg = outputInfo.OutputCount * AppendOutputCountInc;
+                int countReal = (int)countAvg;
+                countAvg -= countReal;
+                if (countAvg > 0) {
+                    if (GetRandDouble(ref seed) < countAvg) {
+                        countReal++;
                     }
                 }
-                list.Add(new(false, outputInfo.OutputID, count));
-                outputInfo.OutputTotalCount += count;
+                list.Add(new(false, outputInfo.OutputID, countReal));
+                outputInfo.OutputTotalCount += countReal;
                 //附加输出无经验
             }
         }
