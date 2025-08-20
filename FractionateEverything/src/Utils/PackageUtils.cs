@@ -236,7 +236,7 @@ public static partial class Utils {
             return;
         }
         int takeId = IFE分馏配方通用核心;
-        int takeCount = Math.Max(0, recipe.BreakCurrQualityNeedMemory - recipe.Memory);
+        int takeCount = recipe.Locked ? 1 : Math.Max(0, recipe.BreakCurrQualityNeedMemory - recipe.Memory);
         if (takeCount == 0) {
             UIMessageBox.Show("提示".Translate(),
                 "该配方回响数目已达到突破要求，暂时无法兑换！",
