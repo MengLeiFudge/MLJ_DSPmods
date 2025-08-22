@@ -37,7 +37,6 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I配送运输机], [I物流运输机], [I星际物流运输船]]);
         CreateChain([[I能量碎片], [I黑雾矩阵], [I物质重组器], [I硅基神经元], [I负熵奇点], [I核心素]]);
         CreateChain([[I电磁矩阵], [I能量矩阵], [I结构矩阵], [I信息矩阵], [I引力矩阵]]);
-        CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
 
         //建筑页面
         CreateChain([[I电力感应塔], [I无线输电塔], [I卫星配电站]]);
@@ -58,7 +57,6 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I矩阵研究站], [I自演化研究站]]);
         CreateChain([[I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井, I微型粒子对撞机]]);
         CreateChain([[IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]]);
-        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
 
         //精炼页面
         CreateChain([
@@ -83,6 +81,20 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I炮弹组], [I高爆炮弹组], [I晶石炮弹组, IGB微型核弹组], [IGB反物质炮弹组]]);
         CreateChain([[I导弹组], [I超音速导弹组], [I引力导弹组], [IGB反物质导弹组]]);
         CreateChain([[I干扰胶囊, I等离子胶囊], [I压制胶囊, I反物质胶囊]]);
+
+        //分馏页面
+        CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
+        CreateChain([[IFE分馏塔原胚普通], [IFE分馏塔原胚精良], [IFE分馏塔原胚稀有], [IFE分馏塔原胚史诗], [IFE分馏塔原胚传说]]);
+        CreateChain([[IFE分馏配方通用核心, IFE分馏塔增幅芯片]]);
+        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
+        CreateChain([[IFE行星矿物复制塔], [IFE行星交互塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔], [IFE行星点数聚集塔], [IFE行星量子复制塔]]);
+        CreateChain([[IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华]]);
+        CreateChain([[IBC插件效果分享塔], [IBC插件效果分享站]]);
+        CreateChain([
+            [IBC速度插件MK1, IBC产能插件MK1, IBC节能插件MK1, IBC品质插件MK1],
+            [IBC速度插件MK2, IBC产能插件MK2, IBC节能插件MK2, IBC品质插件MK2],
+            [IBC速度插件MK3, IBC产能插件MK3, IBC节能插件MK3, IBC品质插件MK3]
+        ]);
     }
 
     /// <summary>
@@ -161,12 +173,13 @@ public class ConversionRecipe : BaseRecipe {
     /// <summary>
     /// 主产物数目增幅
     /// </summary>
-    public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.02f * Level : 0);
+    public override float MainOutputCountInc =>
+        1.0f + (InputID != IFE分馏配方通用核心 && InputID != IFE分馏塔增幅芯片 && IsMaxQuality ? 0.02f * Level : 0);
 
     /// <summary>
-    /// 附加产物数目增幅
+    /// 附加产物概率增幅
     /// </summary>
-    public override float AppendOutputCountInc => 1.0f + (Quality - 1) * 0.25f;
+    public override float AppendOutputRatioInc => 1.0f + (Quality - 1) * 0.25f;
 
     #region IModCanSave
 
