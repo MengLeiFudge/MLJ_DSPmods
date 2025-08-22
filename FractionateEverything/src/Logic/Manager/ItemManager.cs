@@ -513,7 +513,10 @@ public static class ItemManager {
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
-            if (item.Type == EItemType.Matrix) {
+            if (item.ID == IFE分馏配方通用核心 || item.ID == IFE分馏塔增幅芯片) {
+                //核心与芯片只有转化配方，归到宇宙矩阵
+                topMatrixID = I宇宙矩阵;
+            } else if (item.Type == EItemType.Matrix) {
                 //矩阵归到自己的层级，而非上一层级
                 topMatrixID = item.ID switch {
                     IGB玻色矩阵 => I能量矩阵,
