@@ -28,7 +28,7 @@ public class QuantumCopyRecipe : BaseRecipe {
             if (item.BuildMode != 0) {
                 continue;
             }
-            AddRecipe(new QuantumCopyRecipe(item.ID, itemRatio[item.ID],
+            AddRecipe(new QuantumCopyRecipe(item.ID, 0.125f,
                 [
                     new OutputInfo(1.000f, item.ID, 2),
                 ],
@@ -51,8 +51,19 @@ public class QuantumCopyRecipe : BaseRecipe {
     public QuantumCopyRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, maxSuccessRate, outputMain, outputAppend) {
-        EssenceCost = (float)(0.01 * Math.Pow(itemValue[InputID], Math.Log(2, 3)));
+        float essenceCost = itemValue[IFE复制精华] + itemValue[IFE点金精华] + itemValue[IFE分解精华] + itemValue[IFE转化精华];
+        EssenceCost = itemValue[InputID] * 3 / essenceCost;
     }
+
+    /// <summary>
+    /// 主产物数目增幅
+    /// </summary>
+    public override float MainOutputCountInc => 1.0f + (Progress - 0.35f) / 0.65f;
+
+    /// <summary>
+    /// 附加产物概率增幅
+    /// </summary>
+    public override float AppendOutputRatioInc => 1.0f;
 
     /// <summary>
     /// 消耗精华数目
@@ -60,9 +71,9 @@ public class QuantumCopyRecipe : BaseRecipe {
     public float EssenceCost { get; private set; }
 
     /// <summary>
-    /// 精华消耗减少
+    /// 金色品质配方精华消耗减少
     /// </summary>
-    public float EssenceCostDec => 1.0f - (IsMaxQuality ? 0.08f * Level : 0);
+    public float EssenceCostDec => 1.0f - (IsMaxQuality ? 0.05f * Level : 0);
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -78,8 +89,8 @@ public class QuantumCopyRecipe : BaseRecipe {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
-        //无变化
-        if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
+        //无变化，量子复制时增产剂不影响此概率
+        if (GetRandDouble(ref seed) >= SuccessRate) {
             return ProcessManager.emptyOutputs;
         }
         //成功产出
@@ -87,6 +98,8 @@ public class QuantumCopyRecipe : BaseRecipe {
         //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
         double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
+        float inc10 = (float)ProcessManager.MaxTableMilli(10);
+        float EssenceCostProlifeDec = (inc10 - successRatePlus * 0.5f) / inc10;
         foreach (var outputInfo in OutputMain) {
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
@@ -94,16 +107,16 @@ public class QuantumCopyRecipe : BaseRecipe {
                 float countAvg = outputInfo.OutputCount * MainOutputCountInc;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
                 }
                 //根据有没有精华判定是否成功输出
-                float essenceCountAvg = EssenceCost * EssenceCostDec;
+                float essenceCountAvg = EssenceCost * EssenceCostDec * EssenceCostProlifeDec;
                 int essenceCountReal = (int)essenceCountAvg;
                 essenceCountAvg -= essenceCountReal;
-                if (essenceCountAvg > 0) {
+                if (essenceCountAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < essenceCountAvg) {
                         essenceCountReal++;
                     }
@@ -119,11 +132,11 @@ public class QuantumCopyRecipe : BaseRecipe {
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                float countAvg = outputInfo.OutputCount * AppendOutputCountInc;
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
+                float countAvg = outputInfo.OutputCount;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
@@ -133,7 +146,8 @@ public class QuantumCopyRecipe : BaseRecipe {
                 //附加输出无经验
             }
         }
-        return list;
+        //如果仍然没有产出（例如产物数目<1且小数判定未通过），由于原料已消耗，应该返回损毁而非空列表
+        return list.Count == 0 ? null : list;
     }
 
     #region IModCanSave
