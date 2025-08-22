@@ -830,7 +830,7 @@ public static class ProcessManager {
                 StringBuilder sb1 = new StringBuilder();
                 float ratio = successRatePlus;
                 string name = FormatName(LDB.items.Select(fractionator.fluidId).Name);
-                sb1.Append($"{name}x1 ({ratio.FormatP()})\n");
+                sb1.Append($"{name} x 1.000 ({ratio.FormatP()})\n");
                 if (!transportMode) {
                     flowRatio -= ratio;
                 }
@@ -849,11 +849,11 @@ public static class ProcessManager {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
             foreach (var output in recipe.OutputMain) {
+                float count = output.OutputCount * recipe.MainOutputCountInc;
                 float ratio = recipe.SuccessRate * output.SuccessRate;
                 if (buildingID != IFE量子复制塔) {
                     ratio *= successRatePlus;
                 }
-                float count = output.OutputCount * recipe.MainOutputCountInc;
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
@@ -866,27 +866,25 @@ public static class ProcessManager {
                     QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
                     float inc10 = (float)MaxTableMilli(10);
                     float EssenceCostProlifeDec = (inc10 - (float)MaxTableMilli(fluidInputIncAvg) * 0.5f) / inc10;
-                    float essenceCost =
-                        (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec);
+                    float essenceCostAvg = recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec;
                     name = output.ShowOutputName || sandboxMode ? "每种精华".Translate() : "???";
-                    countStr = output.ShowOutputCount || sandboxMode ? essenceCost.ToString("F3") : "???";
-                    ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
-                    sb1.Append($"{name}x{countStr} ({ratioStr})\n");
+                    countStr = output.ShowOutputCount || sandboxMode ? essenceCostAvg.ToString("F3") : "???";
+                    sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }
             }
             if (recipe.OutputAppend.Count > 0) {
                 sb1.Append($"---------- {"副产物".Translate()} ----------\n");
                 foreach (var output in recipe.OutputAppend) {
-                    float ratio = recipe.SuccessRate * output.SuccessRate;
+                    float count = output.OutputCount;
+                    float ratio = recipe.SuccessRate * output.SuccessRate * recipe.AppendOutputRatioInc;
                     if (buildingID != IFE量子复制塔) {
                         ratio *= successRatePlus;
                     }
-                    float count = output.OutputCount * recipe.AppendOutputCountInc;
                     bool sandboxMode = GameMain.sandboxToolsEnabled;
                     string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
                     string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                     string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
-                    sb1.Append($"{name}x{countStr} ({ratioStr})\n");
+                    sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }
             }
             float destroyRatio = 0;
@@ -895,9 +893,9 @@ public static class ProcessManager {
                 flowRatio -= destroyRatio;
             }
             s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1) + "\n\n\n\n";
-            s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
+            s2 = "\n" + $"{"流动".Translate()} ({flowRatio.FormatP()})";
             if (destroyRatio > 0) {
-                string destroy = $"{"损毁".Translate()}({destroyRatio.FormatP()})";
+                string destroy = $"{"损毁".Translate()} ({destroyRatio.FormatP()})";
                 s2 += $"\n{destroy.WithColor(Red)}";
             }
         }

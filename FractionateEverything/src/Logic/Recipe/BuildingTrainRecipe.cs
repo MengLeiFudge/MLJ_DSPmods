@@ -58,9 +58,9 @@ public class BuildingTrainRecipe : BaseRecipe {
     public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.1f * Level : 0);
 
     /// <summary>
-    /// 附加产物数目增幅
+    /// 附加产物概率增幅
     /// </summary>
-    public override float AppendOutputCountInc => 1.0f;
+    public override float AppendOutputRatioInc => 1.0f;
 
     #region IModCanSave
 
