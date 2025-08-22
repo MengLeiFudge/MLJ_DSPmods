@@ -13,6 +13,17 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加所有建筑培养配方
     /// </summary>
     public static void CreateAll() {
+        Create(IFE分馏塔原胚普通, 0.01f);
+        Create(IFE分馏塔原胚精良, 0.02f);
+        Create(IFE分馏塔原胚稀有, 0.03f);
+        Create(IFE分馏塔原胚史诗, 0.04f);
+        Create(IFE分馏塔原胚传说, 0.06f);
+    }
+
+    /// <summary>
+    /// 添加一个建筑培养配方
+    /// </summary>
+    private static void Create(int inputID, float maxSuccessRate) {
         List<OutputInfo> OutputMain = [
             new(10.0f / 77, IFE交互塔, 1),
             new(30.0f / 77, IFE矿物复制塔, 1),
@@ -22,11 +33,7 @@ public class BuildingTrainRecipe : BaseRecipe {
             new(10.0f / 77, IFE分解塔, 1),
             new(10.0f / 77, IFE转化塔, 1),
         ];
-        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚普通, 0.01f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚精良, 0.02f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚稀有, 0.03f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚史诗, 0.04f, OutputMain, []));
-        AddRecipe(new BuildingTrainRecipe(IFE分馏塔原胚传说, 0.06f, OutputMain, []));
+        AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));
     }
 
     /// <summary>
