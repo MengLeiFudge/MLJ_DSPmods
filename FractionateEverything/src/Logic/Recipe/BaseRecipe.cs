@@ -74,9 +74,9 @@ public abstract class BaseRecipe(
     public virtual float MainOutputCountInc => 1.0f;
 
     /// <summary>
-    /// 附加产物数目增幅
+    /// 附加产物概率增幅
     /// </summary>
-    public virtual float AppendOutputCountInc => 1.0f;
+    public virtual float AppendOutputRatioInc => 1.0f;
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -108,7 +108,7 @@ public abstract class BaseRecipe(
                 float countAvg = outputInfo.OutputCount * MainOutputCountInc;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
@@ -121,11 +121,11 @@ public abstract class BaseRecipe(
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                float countAvg = outputInfo.OutputCount * AppendOutputCountInc;
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
+                float countAvg = outputInfo.OutputCount;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
@@ -406,7 +406,7 @@ public abstract class BaseRecipe(
             Quality = MaxQuality;
         }
         if (Level == 0) {
-            if (Quality > 0) {
+            if (Quality > 0.0001) {
                 Level = 1;
             }
         } else if (Level > CurrQualityMaxLevel) {

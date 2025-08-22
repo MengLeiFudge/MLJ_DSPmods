@@ -271,14 +271,14 @@ public static class RecipeOperate {
         //最终产物处理率
         float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
         Dictionary<int, (float, bool, bool)> outputDic = [];
-        float essenceCount = 0.0f;
+        float essenceCountAvg = 0.0f;
         foreach (var info in recipe.OutputMain) {
             int outputId = info.OutputID;
             float outputCount = processRate * info.SuccessRate * info.OutputCount * recipe.MainOutputCountInc;
             if (recipe0 != null) {
                 float inc10 = (float)MaxTableMilli(10);
                 float EssenceCostProlifeDec = (inc10 - (float)MaxTableMilli(fluidInputIncAvg) * 0.5f) / inc10;
-                essenceCount += outputCount * recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec;
+                essenceCountAvg = recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec;
             }
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
@@ -289,7 +289,7 @@ public static class RecipeOperate {
         }
         foreach (var info in recipe.OutputAppend) {
             int outputId = info.OutputID;
-            float outputCount = processRate * info.SuccessRate * info.OutputCount * recipe.AppendOutputCountInc;
+            float outputCount = processRate * info.SuccessRate * recipe.AppendOutputRatioInc * info.OutputCount;
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
@@ -305,7 +305,7 @@ public static class RecipeOperate {
                       + $" x {(tuple.Item3 || sandboxMode ? tuple.Item1.ToString("F3") : "???")}  ");
         }
         if (recipe0 != null) {
-            sb.Append($"{"每种精华".Translate()} x -{essenceCount:F3}");
+            sb.Append($"{"每种精华".Translate()} x -{essenceCountAvg:F3}");
         }
         return sb.ToString();
     }
