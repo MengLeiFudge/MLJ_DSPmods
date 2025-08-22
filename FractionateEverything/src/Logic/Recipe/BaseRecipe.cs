@@ -31,7 +31,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 通过品质和等级得到的综合进度，范围为0.35~1.00
     /// </summary>
-    private float Progress => Math.Min(1.0f,
+    public float Progress => Math.Min(1.0f,
         0.365f + (Quality - 1) * 0.11f + (Quality - 1) * (Quality - 2) * 0.0075f + (Level - 1) * 0.015f);
 
     /// <summary>
@@ -218,15 +218,32 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 当前品质、当前等级下，达到多少经验可以升级
     /// </summary>
-    public int CurrQualityCurrLevelExp => (int)(200 * Math.Pow(Quality * 2 + Level + 2, 2.0));
-    /// <summary>
-    /// 升级还需要多少经验
-    /// </summary>
-    public float StillNeedExp => Math.Max(0, CurrQualityCurrLevelExp - Exp);
+    public int CurrQualityCurrLevelExp => GetExp(Quality, Level);
+
+    public int GetExp(int quality, int level) {
+        return (int)(200 * Math.Pow(quality * 2 + level + 2, 2.0));
+    }
+
+    public float GetExpToNextLevel() {
+        return Math.Max(0, CurrQualityCurrLevelExp - Exp);
+    }
+
+    public float GetExpToMaxLevel() {
+        if (Level == CurrQualityMaxLevel) {
+            return 0;
+        }
+        float ret = CurrQualityCurrLevelExp - Exp;
+        for (int i = Level + 1; i < CurrQualityMaxLevel; i++) {
+            ret += GetExp(Quality, i);
+        }
+        return ret;
+    }
+
     /// <summary>
     /// 经验是否达到当前品质、当前等级的上限
     /// </summary>
-    public bool IsCurrQualityCurrLevelMaxExp => Exp >= CurrQualityCurrLevelExp;
+    public bool IsCurrQualityCurrLevelMaxExp => (Quality == MaxQuality && Level == CurrQualityMaxLevel)
+                                                || Exp >= CurrQualityCurrLevelExp;
 
     /// <summary>
     /// 是否未解锁
