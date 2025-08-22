@@ -61,9 +61,9 @@ public class QuantumCopyRecipe : BaseRecipe {
     public override float MainOutputCountInc => 1.0f + (Progress - 0.35f) / 0.65f;
 
     /// <summary>
-    /// 附加产物数目增幅
+    /// 附加产物概率增幅
     /// </summary>
-    public override float AppendOutputCountInc => 1.0f;
+    public override float AppendOutputRatioInc => 1.0f;
 
     /// <summary>
     /// 消耗精华数目
@@ -107,7 +107,7 @@ public class QuantumCopyRecipe : BaseRecipe {
                 float countAvg = outputInfo.OutputCount * MainOutputCountInc;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
@@ -116,7 +116,7 @@ public class QuantumCopyRecipe : BaseRecipe {
                 float essenceCountAvg = EssenceCost * EssenceCostDec * EssenceCostProlifeDec;
                 int essenceCountReal = (int)essenceCountAvg;
                 essenceCountAvg -= essenceCountReal;
-                if (essenceCountAvg > 0) {
+                if (essenceCountAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < essenceCountAvg) {
                         essenceCountReal++;
                     }
@@ -132,11 +132,11 @@ public class QuantumCopyRecipe : BaseRecipe {
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate) {
-                float countAvg = outputInfo.OutputCount * AppendOutputCountInc;
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
+                float countAvg = outputInfo.OutputCount;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
-                if (countAvg > 0) {
+                if (countAvg > 0.0001) {
                     if (GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }

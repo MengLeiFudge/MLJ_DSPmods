@@ -177,9 +177,9 @@ public class ConversionRecipe : BaseRecipe {
         1.0f + (InputID != IFE分馏配方通用核心 && InputID != IFE分馏塔增幅芯片 && IsMaxQuality ? 0.02f * Level : 0);
 
     /// <summary>
-    /// 附加产物数目增幅
+    /// 附加产物概率增幅
     /// </summary>
-    public override float AppendOutputCountInc => 1.0f + (Quality - 1) * 0.25f;
+    public override float AppendOutputRatioInc => 1.0f + (Quality - 1) * 0.25f;
 
     #region IModCanSave
 

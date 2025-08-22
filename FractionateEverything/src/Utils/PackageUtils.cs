@@ -1,5 +1,4 @@
 ﻿using System;
-using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
