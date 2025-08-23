@@ -39,18 +39,18 @@ public static class ItemInteraction {
     public static void AddTranslations() {
         Register("物品交互", "Item Interaction");
 
-        Register("查看分馏数据中心存储的所有物品", "View all items stored in the fractionation data center");
-        Register("分馏数据中心没有", "Fractionation data center does not have");
+        Register("查看分馏数据中心存储的所有物品", "View all items stored in the fractionation data centre");
+        Register("分馏数据中心没有", "Fractionation data centre does not have");
         Register("任何物品", "any item");
         Register("！", "!");
-        Register("分馏数据中心存储的物品有：", "The fractionation data center stores the following items:");
+        Register("分馏数据中心存储的物品有：", "The fractionation data centre stores the following items:");
 
         Register("物品交互提示按钮说明1",
             "Left-click to select the items you want to query or extract.",
             "左键选择需要查询或提取的物品。");
 
         Register("当前共有", "There are currently");
-        Register("，其中分馏数据中心", " items, including fractionation data center");
+        Register("，其中分馏数据中心", " items, including fractionation data centre");
         Register("，物流清单", ", logistics list");
         Register("，个人背包", ", personal package");
 
