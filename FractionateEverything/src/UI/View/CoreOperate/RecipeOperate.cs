@@ -72,17 +72,27 @@ public static class RecipeOperate {
         Register("成功率", "Success Rate");
         Register("损毁率", "Destroy Rate");
         Register("产出", "Output");
+        //Register("增产点数", "Proliferator Points");//原版已翻译
+        //Register("其他", "Others");//原版已翻译
 
         Register("完全处理后的输出如下：", "The fully processed output is as follows:");
-        Register("当前配方已完全升级！", "The current recipe has been completely upgraded!");
-        Register("当前配方已到最高品质，未达到满级！",
-            "The current recipe is of the highest quality, but has not reached the maximum level!");
-        Register("当前配方品质可突破，突破条件：",
-            "The current recipe quality can be broken through. Conditions for breaking through:");
+        Register("配方已完全升级！", "Recipe has been completely upgraded!");
+        Register("配方已到最高品质！", "Recipe has reached the highest quality!");
+        Register("配方品质可突破，突破条件：",
+            "Recipe quality can be broken through. Conditions for breaking through:");
         Register("达到当前品质最高等级（", "Reaching the highest current quality level (");
         Register("）", ")");
         Register("达到当前等级经验上限（", "Reach the current level experience cap (");
         Register("拥有足够的同名回响（", "Have sufficient echoes of the same name (");
+
+        Register("当前物品尚未解锁，或科技层次不足！",
+            "The current item has not been unlocked, or the technology level is insufficient!");
+        Register("配方回响数目已达到上限！", "The number of recipe echoes has reached the limit!");
+        Register("配方回响数目已达到突破要求，暂时无法兑换！",
+            "The number of recipe echoes has reached the breakthrough requirement and cannot be exchanged for the time being!");
+        Register("配方经验已达上限！", "Recipe experience has reached the limit!");
+        Register("配方已升至当前品质最高等级！", "Recipe has been upgraded to the highest quality level currently available!");
+        Register("配方回响数目不足！", "Insufficient number of recipe echoes!");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -130,7 +140,7 @@ public static class RecipeOperate {
         y += 36f;
         textRecipeInfoBaseY = y;
         for (int i = 0; i < textRecipeInfo.Length; i++) {
-            textRecipeInfo[i] = wnd.AddText2(x, y, tab, "", 15, $"text-recipe-info-{i}");
+            textRecipeInfo[i] = wnd.AddText2(x, y, tab, "动态刷新");
         }
     }
 
@@ -220,15 +230,15 @@ public static class RecipeOperate {
             line++;
 
             if (recipe.FullUpgrade) {
-                textRecipeInfo[line].text = "当前配方已完全升级！".Translate().WithColor(Orange);
+                textRecipeInfo[line].text = "配方已完全升级！".Translate().WithColor(Orange);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             } else if (recipe.IsMaxQuality) {
-                textRecipeInfo[line].text = "当前配方已到最高品质，未达到满级！".Translate().WithColor(Blue);
+                textRecipeInfo[line].text = "配方已到最高品质！".Translate().WithColor(Blue);
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             } else {
-                textRecipeInfo[line].text = "当前配方品质可突破，突破条件：".Translate();
+                textRecipeInfo[line].text = "配方品质可突破，突破条件：".Translate();
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
                 textRecipeInfo[line].text =
@@ -250,6 +260,7 @@ public static class RecipeOperate {
                 textRecipeInfo[line].SetPosition(0, textRecipeInfoBaseY + 24f * line);
                 line++;
             }
+            //todo: 展示配方特殊加成
             // textRecipeInfo[line].text = "特殊突破加成：无";
             // line++;
         }
@@ -316,21 +327,22 @@ public static class RecipeOperate {
         }
         if (recipe == null) {
             UIMessageBox.Show("提示".Translate(),
-                "配方不存在！",
+                "配方不存在！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
-        if (!GameMain.history.ItemUnlocked(ItemManager.itemToMatrix[recipe.InputID])) {
+        if (!GameMain.history.ItemUnlocked(recipe.InputID)
+            || !GameMain.history.ItemUnlocked(ItemManager.itemToMatrix[recipe.InputID])) {
             UIMessageBox.Show("提示".Translate(),
-                "当前物品尚未解锁！",
+                "当前物品尚未解锁，或科技层次不足！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.IsMaxMemory) {
             UIMessageBox.Show("提示".Translate(),
-                "该配方回响数目已达到上限！",
+                "配方回响数目已达到上限！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
@@ -339,7 +351,7 @@ public static class RecipeOperate {
         int takeCount = recipe.Locked ? 1 : Math.Max(0, recipe.BreakCurrQualityNeedMemory - recipe.Memory);
         if (takeCount == 0) {
             UIMessageBox.Show("提示".Translate(),
-                "该配方回响数目已达到突破要求，暂时无法兑换！",
+                "配方回响数目已达到突破要求，暂时无法兑换！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
@@ -366,28 +378,28 @@ public static class RecipeOperate {
         }
         if (recipe == null) {
             UIMessageBox.Show("提示".Translate(),
-                "配方不存在！",
+                "配方不存在！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.Locked) {
             UIMessageBox.Show("提示".Translate(),
-                "配方尚未解锁！",
+                $"{"分馏配方未解锁".Translate()}{"！".Translate()}",
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.FullUpgrade) {
             UIMessageBox.Show("提示".Translate(),
-                "配方已完全升级！",
+                "配方已完全升级！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.IsCurrQualityCurrLevelMaxExp) {
             UIMessageBox.Show("提示".Translate(),
-                "配方经验已达上限！",
+                "配方经验已达上限！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
@@ -396,7 +408,7 @@ public static class RecipeOperate {
         float needExp = maxLevel ? recipe.GetExpToMaxLevel() : recipe.GetExpToNextLevel();
         if (maxLevel && needExp <= 0) {
             UIMessageBox.Show("提示".Translate(),
-                "配方已升至当前品质最高等级！",
+                "配方已升至当前品质最高等级！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
@@ -422,35 +434,35 @@ public static class RecipeOperate {
         }
         if (recipe == null) {
             UIMessageBox.Show("提示".Translate(),
-                "配方不存在！",
+                "配方不存在！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.Locked) {
             UIMessageBox.Show("提示".Translate(),
-                "配方尚未解锁！",
+                $"{"分馏配方未解锁".Translate()}{"！".Translate()}",
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.FullUpgrade) {
             UIMessageBox.Show("提示".Translate(),
-                "配方已完全升级！",
+                "配方已完全升级！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (recipe.IsMaxQuality) {
             UIMessageBox.Show("提示".Translate(),
-                "配方已达到最高品质！",
+                "配方已到最高品质！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
         }
         if (!recipe.IsEnoughMemoryToBreak) {
             UIMessageBox.Show("提示".Translate(),
-                "配方回响数目不足！",
+                "配方回响数目不足！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;
