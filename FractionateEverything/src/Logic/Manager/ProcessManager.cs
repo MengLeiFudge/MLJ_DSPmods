@@ -892,16 +892,16 @@ public static class ProcessManager {
                 destroyRatio = recipe.DestroyRate;
                 flowRatio -= destroyRatio;
             }
-            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1) + "\n\n\n\n";
-            s2 = "\n" + $"{"流动".Translate()} ({flowRatio.FormatP()})";
+            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+            s2 = $"{"流动".Translate()} ({flowRatio.FormatP()})";
             if (destroyRatio > 0) {
                 string destroy = $"{"损毁".Translate()} ({destroyRatio.FormatP()})";
                 s2 += $"\n{destroy.WithColor(Red)}";
             }
         }
         //刷新概率显示内容
-        __instance.productProbText.text = s1;
-        __instance.oriProductProbText.text = s2;
+        __instance.productProbText.text = s1 + "\n\n\n\n";
+        __instance.oriProductProbText.text = "\n" + s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);
         __instance.productProbText.transform.localPosition = new(0, upY, 0);

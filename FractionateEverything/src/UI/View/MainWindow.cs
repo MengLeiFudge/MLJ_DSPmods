@@ -20,8 +20,8 @@ public static class MainWindow {
     private static bool sandboxMode = false;
 
     public static void AddTranslations() {
-        Register("KEYOpenFracCenter", "[FE] Open Fractionation Data Center", "[FE] 打开分馏数据中心");
-        Register("分馏数据中心", "Fractionation Data Center");
+        Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
+        Register("分馏数据中心", "Fractionation Data Centre");
         Register("核心操作", "Core Operation");
         RecipeOperate.AddTranslations();
         BuildingOperate.AddTranslations();
@@ -80,7 +80,7 @@ public static class MainWindow {
                             | KeyBindConflict.SAILING
                             | KeyBindConflict.BUILD_MODE_1
                             | KeyBindConflict.KEYBOARD_KEYBIND,
-            name = "OpenFracCenter",
+            name = "OpenFracCentre",
             canOverride = true
         });
     }
