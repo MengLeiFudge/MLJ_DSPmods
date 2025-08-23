@@ -170,7 +170,7 @@ public static class TechManager {
             "Although Mineral Copy is powerful, it can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
             + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
             + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
-            "矿物复制和物品转化虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
+            "随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
             + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
         Register("量子复制结果",
@@ -179,27 +179,27 @@ public static class TechManager {
 
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
-            "Item alchemy technology can convert any item into various matrices. However, if an item itself is a matrix, or if the material used to make the item contains a matrix, or if it is a building, then the item cannot be minted.",
-            "物品点金科技可以将任意的物品点金为各种矩阵。但是，如果一个物品本身是矩阵，或者一个物品的制作材料包含矩阵，或者它是建筑，那么这个物品不能被点金。");
+            "Item Alchemy Technology can transform items into various matrices. This is a simple and direct way to obtain matrices, but low-value items seem to have difficulty successfully transforming into matrices.",
+            "物品点金科技可以将物品点金为各种矩阵。这是一种简单、直接获取矩阵的方式，不过低价值物品似乎很难成功点出矩阵。");
         Register("物品点金结果",
-            "You have mastered the Item Alchemy technology and can convert items into various matrices.",
-            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵。");
+            "You have mastered the art of item alchemy and can now transform items into various matrices.",
+            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵了。");
 
         Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",
-            "Item deconstruction technology can break down any item into the materials used to make it. Meanwhile, items without a recipe will decompose into foundation and sand, which is very helpful for expanding into new territories.",
-            "物品分解科技可以将任意物品分解为制作它的材料。同时，无制作配方的物品会分解为地基和沙土，这对新地盘的扩展很有帮助。");
+            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but is it really useless when put into practice?",
+            "物品分解科技可以将物品分解为制作它的材料或沙土。这看起来似乎没有用，实际用起来也没有用……吗？");
         Register("物品分解结果",
-            "You have mastered the Item Deconstruction technology and can now break down unwanted items into raw materials.",
-            "你已经掌握了物品分解技术，可以将不需要的物品分解为原材料了。");
+            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
+            "你已经掌握了物品分解技术，可以将物品分解为制作它的材料或沙土了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "Item conversion technology can transform an item into other items related to that item. Although only some items can be converted, it is still an extremely powerful aid.",
-            "物品转化科技可以将物品转化为与这个物品相关的其他物品。尽管只有部分物品能进行转化，但它依然是极其强力的援助。");
+            "Item conversion technology can convert items into other items related to them. Is this a gain or a loss? Even COSMO cannot reach a definite conclusion.",
+            "物品转化科技可以将物品转化为与其相关的其他物品。这到底是赚了还是亏了？主脑也无法得到确切的结论。");
         Register("物品转化结果",
-            "You have mastered item conversion technology and can now convert items into other items related to this item.",
-            "你已经掌握了物品转化技术，可以将物品转化为与这个物品相关的其他物品了。");
+            "You have mastered the art of item conversion and can now convert items into other items related to them.",
+            "你已经掌握了物品转化技术，可以将物品转化为与其相关的其他物品了。");
 
 
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");

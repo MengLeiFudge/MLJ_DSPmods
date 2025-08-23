@@ -14,8 +14,8 @@ public static class ConversionTower {
     public static void AddTranslations() {
         Register("转化塔", "Conversion Tower");
         Register("I转化塔",
-            "Convert items into other related items. There is a certain probability to get the essence of transformation.",
-            "将物品转化为其他相关物品。有一定概率得到转化精华。");
+            "Convert items into other items related to them. There is a certain probability of obtaining conversion essence.",
+            "将物品转化为与其相关的其他物品。有一定概率得到转化精华。");
     }
 
     private static ItemProto item;
