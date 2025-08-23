@@ -14,8 +14,8 @@ public static class AlchemyTower {
     public static void AddTranslations() {
         Register("点金塔", "Alchemy Tower");
         Register("I点金塔",
-            "Convert items into various matrices. The more precious the input raw materials are, the higher the quality of the converted matrix. There is a certain probability to get the golden essence.",
-            "将物品点金为各种矩阵。输入的原材料越珍贵，转化出的矩阵品质越高。有一定概率得到点金精华。");
+            "Transform items into various matrices. The more precious the raw materials are and the closer they are to the target matrix, the more matrices you will obtain and the faster the process will be. There is a certain probability of obtaining alchemy essence.",
+            "将物品点金为各种矩阵。原材料越珍贵、越接近目标矩阵，点金得到的矩阵就越多、越快。有一定概率得到点金精华。");
     }
 
     private static ItemProto item;
