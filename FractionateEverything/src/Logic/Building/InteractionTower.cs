@@ -14,7 +14,7 @@ public static class InteractionTower {
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
-            $"Not only can it cultivate the original embryo of the fractionator into various fractionators, but it also bears the important responsibility of interacting with the fractionation data center. {"When the front connection port is used as input".WithColor(Orange)}, the item will be transmitted to the fractionation data center in the form of data and used for lottery and other operations.",
+            $"Not only can it cultivate the original embryo of the fractionator into various fractionators, but it also bears the important responsibility of interacting with the fractionation data centre. {"When the front connection port is used as input".WithColor(Orange)}, the item will be transmitted to the fractionation data centre in the form of data and used for lottery and other operations.",
             $"不仅能将分馏塔原胚培养为各种分馏塔，还承担着与分馏数据中心进行物品交互的重要责任。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到分馏数据中心，并用于抽奖等操作。");
     }
 
