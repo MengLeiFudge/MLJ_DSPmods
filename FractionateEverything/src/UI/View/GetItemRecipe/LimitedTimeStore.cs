@@ -401,11 +401,7 @@ public static class LimitedTimeStore {
     /// 购买限时物品/配方
     /// </summary>
     private static void Exchange(int index, bool showMessage = true) {
-        //todo: 物品可以考虑用不同的矩阵来兑换，价值怎么算？？？如何动态变化
-        //todo: 物品兑换时，数目不能超过1组，且黑雾物品出现概率太高了，得重新设计概率曲线
-
         ExchangeInfo info = exchangeInfos[index];
-        //todo: 如果出现这种情况，按钮显示已兑换，并且禁用
         if (!info.IsValid || info.exchanged) {
             return;
         }
@@ -414,7 +410,11 @@ public static class LimitedTimeStore {
                 if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                     return;
                 }
-                AddItemToPackage(info.item.ID, info.itemCount);
+                if (info.itemCount >= info.item.StackSize) {
+                    AddItemToModData(info.item.ID, info.itemCount);
+                } else {
+                    AddItemToPackage(info.item.ID, info.itemCount);
+                }
                 info.exchanged = true;
             } else {
                 UIMessageBox.Show("提示".Translate(),
@@ -425,7 +425,11 @@ public static class LimitedTimeStore {
                         if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                             return;
                         }
-                        AddItemToPackage(info.item.ID, info.itemCount);
+                        if (info.itemCount >= info.item.StackSize) {
+                            AddItemToModData(info.item.ID, info.itemCount);
+                        } else {
+                            AddItemToPackage(info.item.ID, info.itemCount);
+                        }
                         info.exchanged = true;
                     },
                     null);
