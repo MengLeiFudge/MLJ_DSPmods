@@ -12,6 +12,8 @@ public static partial class Utils {
         Register("来兑换", "to exchange");
         Register("吗？", "?");
         Register("兑换", "Exchange");
+        Register("已兑换", "Exchanged");
+        Register("无法兑换", "Can not exchange");
         Register("配方经验", "recipe experience");
     }
 

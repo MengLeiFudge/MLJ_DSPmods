@@ -39,7 +39,7 @@ public class AlchemyRecipe : BaseRecipe {
             //如果某个原料是制作矩阵的第n层原料，那么点金成功率增加0.5/n，点金价值增加0.25/n
             Dictionary<int, int> relationDepth = [];
             CalcRelation(matrixID, 0, relationDepth);
-            if (relationDepth.TryGetValue(item.ID, out int depth)) {
+            if (relationDepth.TryGetValue(item.ID, out int depth) && depth > 0) {
                 successRate *= 1 + 0.5f / depth;
                 valueFactor *= 1 + 0.25f / depth;
             }

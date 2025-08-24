@@ -24,6 +24,10 @@ public static class RecipeGallery {
 
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
+
+        Register("配方解锁情况",
+            $"The recipe unlock status is as follows ({"Full Echo".WithColor(Orange)}/{"Unlocked".WithColor(Blue)}/Total):",
+            $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -33,27 +37,26 @@ public static class RecipeGallery {
         tab = wnd.AddTab(trans, "配方图鉴");
         float x = 0f;
         float y = 18f;
-        recipeUnlockTitleText = wnd.AddText2(x, y, tab,
-            $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：", 15, "text-recipe-unlock-title");
+        recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况");
         recipeUnlockTitleText.supportRichText = true;
         y += 36f;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 8; j++) {
-                recipeUnlockInfoText[i, j] =
-                    wnd.AddText2(x + 100 * j, y, tab, "999/999", 15, $"text-recipe-unlock-info{i}");
+                (float, float) position = GetPosition(j, 8);
+                recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
             y += 36f;
         }
         recipeUnlockInfoText[0, 0].text = "";
         for (int i = 1; i <= 7; i++) {
-            recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name;
+            recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name.Replace(" Matrix", "");
         }
-        recipeUnlockInfoText[8, 0].text = "总计";
+        recipeUnlockInfoText[8, 0].text = "总计".Translate();
         for (int j = 1; j <= 6; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];
         }
-        recipeUnlockInfoText[0, 7].text = "总计";
+        recipeUnlockInfoText[0, 7].text = "总计".Translate();
     }
 
     public static void UpdateUI() {

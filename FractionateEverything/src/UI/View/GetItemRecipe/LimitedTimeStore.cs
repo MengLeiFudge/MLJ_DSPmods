@@ -5,6 +5,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -18,7 +19,8 @@ public class ExchangeInfo {
     public int itemCount = 0;
     public BaseRecipe recipe = null;
     public ItemProto matrix = null;
-    public int matrixCount = 0;
+    public float matrixCount = 0;
+    public int matrixDiscountedCount => (int)Math.Ceiling(matrixCount * VipFeatures.vipDiscount);
     public bool exchanged = false;
     public bool IsValid => (item != null && itemCount > 0 && matrix != null && matrixCount >= 0)
                            || (recipe != null && !recipe.IsMaxMemory && matrix != null && matrixCount >= 0);
@@ -31,7 +33,7 @@ public class ExchangeInfo {
     /// <summary>
     /// 一个物品兑换信息。
     /// </summary>
-    public ExchangeInfo(ItemProto item, int itemCount, ItemProto matrix, int matrixCount) {
+    public ExchangeInfo(ItemProto item, int itemCount, ItemProto matrix, float matrixCount) {
         this.item = item;
         this.itemCount = itemCount;
         this.matrix = matrix;
@@ -41,19 +43,10 @@ public class ExchangeInfo {
     /// <summary>
     /// 一个配方兑换信息。
     /// </summary>
-    public ExchangeInfo(BaseRecipe recipe, ItemProto matrix, int matrixCount) {
+    public ExchangeInfo(BaseRecipe recipe, ItemProto matrix, float matrixCount) {
         this.recipe = recipe;
         this.matrix = matrix;
         this.matrixCount = matrixCount;
-    }
-
-    public override string ToString() {
-        if (!IsValid) {
-            return "异常兑换信息".Translate();
-        }
-        return item != null
-            ? $"{item.name} x {itemCount} <= {matrix.name} x {matrixCount}"
-            : $"{recipe.RecipeType.GetName()} <= {matrix.name} x {matrixCount}";
     }
 
     public ExchangeInfo DeepCopy() {
@@ -75,12 +68,12 @@ public class ExchangeInfo {
         itemCount = r.ReadInt32();
         recipe = GetRecipe<BaseRecipe>((ERecipe)r.ReadInt32(), r.ReadInt32());
         matrix = LDB.items.Select(r.ReadInt32());
-        matrixCount = r.ReadInt32();
+        matrixCount = version >= 2 ? r.ReadSingle() : r.ReadInt32();
         exchanged = r.ReadBoolean();
     }
 
     public void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(item != null ? item.ID : 0);
         w.Write(itemCount);
         w.Write(recipe != null ? (int)recipe.RecipeType : 0);
@@ -97,6 +90,9 @@ public static class LimitedTimeStore {
     private static RectTransform window;
     private static RectTransform tab;
 
+    private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵];
+    private static Text[] textMatrixCount = new Text[Matrixes.Length];
+
     /// <summary>
     /// 基础刷新间隔，10分钟，也就是10*60*60=36000tick；实际刷新间隔需要考虑VIP
     /// </summary>
@@ -106,8 +102,8 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 交换信息的数目，受VIP影响
     /// </summary>
-    private static int exchangeInfoCount = 14;
-    private static int exchangeInfoMaxCount = 14;
+    private static int exchangeInfoCount = 12;
+    private static readonly int exchangeInfoMaxCount = 12;
     private static ExchangeInfo[] exchangeInfos = new ExchangeInfo[exchangeInfoMaxCount];
     private static MyImageButton[] exchangeImages1 = new MyImageButton[exchangeInfoMaxCount];
     private static MyImageButton[] exchangeImages2 = new MyImageButton[exchangeInfoMaxCount];
@@ -136,22 +132,37 @@ public static class LimitedTimeStore {
     public static void AddTranslations() {
         Register("限时商店", "Limited Time Store");
 
+        Register("刷新剩余时间",
+            "Refresh in {0} min {1} s",
+            "还有 {0} min {1} s 刷新");
         Register("刷新", "Fresh");
-
         Register("刷新商店吗？", "to fresh store?");
-        Register("异常兑换信息", "Invalid exchange info");
+        Register("兑换全部", "Exchange all");
+        Register("要兑换全部配方/物品", "Would you like to exchange all recipes/items");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        //todo: 调整物品概率，降低低品质概率
+        //todo: 增加选项，可以选择物品去向
+
         window = trans;
         tab = wnd.AddTab(trans, "限时商店");
         float x = 0f;
-        float y = 18f;
+        float y = 18f + 7f;
+        for (int i = 0; i < Matrixes.Length; i++) {
+            var posX = GetPosition(i, Matrixes.Length).Item1;
+            wnd.AddImageButton(posX, y, tab, Matrixes[i]);
+            textMatrixCount[i] = wnd.AddText2(posX + 40 + 5, y, tab, "动态刷新");
+        }
+
+        y += 36f + 7f;
         textLeftTime = wnd.AddText2(x, y, tab, "动态刷新", 15, "textLeftTime");
-        wnd.AddButton(2, 3, y, tab, "刷新", 16, "btn-modify",
-            () => ModifyExchangeItemInfo(true));
+        wnd.AddButton(1, 3, y, tab, "刷新",
+            onClick: () => ModifyExchangeItemInfo(true));
+        wnd.AddButton(2, 3, y, tab, "兑换全部",
+            onClick: () => ExchangeAll());
         y += 36f + 7f;
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             int j = i;
@@ -172,6 +183,9 @@ public static class LimitedTimeStore {
         if (!tab.gameObject.activeSelf) {
             return;
         }
+        for (int i = 0; i < Matrixes.Length; i++) {
+            textMatrixCount[i].text = $"x {GetItemTotalCount(Matrixes[i])}";
+        }
         long gameTick = GameMain.gameTick;
         if (gameTick >= nextFreshTick) {
             ModifyExchangeItemInfo();
@@ -181,7 +195,7 @@ public static class LimitedTimeStore {
         int minute = (int)(ts / 3600);
         ts %= 3600;
         int second = (int)(ts / 60);
-        textLeftTime.text = $"还有 {minute} min {second} s 刷新";
+        textLeftTime.text = string.Format("刷新剩余时间".Translate(), minute, second);
     }
 
     /// <summary>
@@ -205,7 +219,7 @@ public static class LimitedTimeStore {
             matrixID = I电磁矩阵;
         }
         ItemProto matrix = LDB.items.Select(matrixID);
-        //获取矩阵对应的数目
+        //获取兑换矩阵对应层次配方需要的矩阵数目
         int matrixRecipeCost = matrixRecipeCosts[matrixID - I电磁矩阵];
         if (manual) {
             //todo: 添加vip影响
@@ -228,62 +242,60 @@ public static class LimitedTimeStore {
             //todo: 添加vip影响
             nextFreshTick += skipCycles * baseFreshTs;
         }
-        //构建奖池
-        //配方科技只能小于等于当前矩阵科技，出现未解锁配方的概率高达50%；不包含黑雾配方
-        //由于配方的最大价值为90抽（90奖券，900矩阵），所以兑换所需矩阵为：100,300,500,700,900,900*vip折扣
-        //根据矩阵类型、数目（此数目不考虑vip），可以得到矩阵总价值；
-        //物品只包含分馏添加的所有物品，价值决定概率；但是高价值物品概率需要适当增加（需要一个价值=>概率的转化函数）
-        //物品数目=ceiling(矩阵总价值/物品价值)*vip折扣
-        //兑换所需矩阵类型=物品科技层次，矩阵数目=ceiling(物品数目*物品价值/矩阵价值*vip折扣)
-        //配方概率=50%，物品概率=50%
-
         //计算矩阵总价值
         float matrixTotalValue = itemValue[matrixID] * matrixRecipeCost;
-        //vip折扣，未实装
-        float vipDiscount = 1.0f;
 
-        //可能出现的随机兑换信息有：（VIP影响矩阵数目，起步九折，最低五折，且第一个免费）
-        //Mod独有物品（>=50%，高价值物品出现概率会稍低但是不会过于低）
-        //未解锁的配方（<=20%）
-        //已解锁但未满回响的配方（<=30%）
-        //todo: 同一时间，配方只能至多出现 5-当前回响 次，且满回响时禁止兑换
-
-        //构建物品基础列表
+        //1.构建物品基础列表
         List<ExchangeInfo> itemExchangeList = [];
         //计算所有物品的概率总和（假设至少有10000个物品，因为电磁矩阵的概率是建筑增幅芯片的1150倍）
-        float ratioSum = itemIdArr.Select(itemId => itemRatio[itemId]).Sum();
-        foreach (int itemId in itemIdArr) {
+        int[] itemIdArr0 = itemIdArr.Where(itemId => GameMain.history.ItemUnlocked(itemId)).ToArray();
+        float[] ratioArr =
+            itemIdArr0.Select(itemId => (float)(1.0 / Math.Log(itemValue[itemId] + 10, Math.E))).ToArray();
+        float ratioSum = ratioArr.Sum();
+        for (int i = 0; i < itemIdArr0.Length; i++) {
+            int itemId = itemIdArr0[i];
             ItemProto item = LDB.items.Select(itemId);
-            //至多一组
-            int itemCount = Math.Min(item.StackSize, (int)(matrixTotalValue / itemValue[item.ID]));
-            if (itemCount == 0) {
-                itemCount++;
+            //物品至少1，至多1(核心/芯片)/半组(建筑)/10组(材料)
+            int itemCount;
+            if (itemId == IFE分馏配方通用核心 || itemId == IFE分馏塔增幅芯片) {
+                itemCount = 1;
+            } else if (item.BuildMode == 0) {
+                itemCount = item.StackSize * 10;
+            } else {
+                itemCount = item.StackSize / 2;
             }
-            //考虑到某些物品属于电磁矩阵/黑雾矩阵，这里全部使用当前矩阵
-            int matrixCount = (int)(itemCount * itemValue[item.ID] / itemValue[matrix.ID] * vipDiscount);
-            if (matrixCount == 0) {
-                matrixCount++;
+            //如果超过matrixRecipeCost个矩阵，则根据matrixRecipeCost个矩阵的价值倒推物品数目以减少物品数目
+            float matrixCount = itemCount * itemValue[item.ID] / itemValue[matrix.ID];
+            if (matrixCount > matrixRecipeCost) {
+                itemCount = (int)(matrixTotalValue / itemValue[item.ID]);
+                if (itemCount == 0) {
+                    itemCount++;
+                }
+                matrixCount = itemCount * itemValue[item.ID] / itemValue[matrix.ID];
             }
+            //生成兑换信息
             ExchangeInfo info = new(item, itemCount, matrix, matrixCount);
-            int repeatCount = (int)Math.Ceiling(itemRatio[itemId] / ratioSum * 10000);
-            for (int i = 0; i < repeatCount; i++) {
+            int repeatCount = (int)Math.Ceiling(ratioArr[i] / ratioSum * 10000);
+            for (int j = 0; j < repeatCount; j++) {
                 itemExchangeList.Add(info);
             }
         }
-        //获取当前可能的所有配方（物品未解锁也可能出现）
-        List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list).ToList();
-        //构建未解锁配方列表
+        //获取可从抽奖获取的所有配方
+        List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list)
+            .Where(recipe => GameMain.history.ItemUnlocked(recipe.InputID))
+            .ToList();
+        //2.构建未解锁配方列表
         List<ExchangeInfo> recipeLockedExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Locked).ToList()) {
             ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
-            int matrixCount = (int)Math.Ceiling(matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵] * vipDiscount);
+            float matrixCount = matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵];
             recipeLockedExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
-        //构建已解锁但未满回响配方列表
+        //3.构建已解锁但未满回响配方列表
         List<ExchangeInfo> recipeNotMaxMemoryExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxMemory).ToList()) {
             ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
-            int matrixCount = (int)Math.Ceiling(matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵] * vipDiscount);
+            float matrixCount = matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵];
             recipeNotMaxMemoryExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
 
@@ -302,23 +314,23 @@ public static class LimitedTimeStore {
         }
         // 添加已解锁但未满回响的配方（<=30%概率）
         if (recipeNotMaxMemoryExchangeList.Count > 0) {
-            // 计算需要添加的未解锁配方数量，使其占总数的20%
-            int notMaxMemoryRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.2f / 0.5f);
+            // 计算需要添加的未解锁配方数量，使其占总数的30%
+            int notMaxMemoryRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.3f / 0.5f);
             for (int i = 0; i < notMaxMemoryRecipeCount; i++) {
                 exchangeList.Add(recipeNotMaxMemoryExchangeList[GetRandInt(0, recipeNotMaxMemoryExchangeList.Count)]);
             }
         }
 
+        //从随机兑换信息列表中挑选exchangeInfoMaxCount个，组成新的兑换信息列表
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
-            //随机选择一个兑换信息
             if (exchangeList.Count == 0) {
                 exchangeInfos[i] = new();
             } else {
                 //由于List的info是同一个对象，这里需要深拷贝
                 exchangeInfos[i] = exchangeList[GetRandInt(0, exchangeList.Count)].DeepCopy();
             }
-            //如果是前两个，改为免费
-            if (i < 2) {
+            //前vipFreeCount个交换信息改为免费
+            if (i < VipFeatures.vipFreeCount) {
                 exchangeInfos[i].matrixCount = 0;
             }
         }
@@ -330,15 +342,7 @@ public static class LimitedTimeStore {
     private static void FreshExchangeItemInfo() {
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             ExchangeInfo info = exchangeInfos[i];
-            if (!info.IsValid) {
-                exchangeImages1[i].gameObject.SetActive(false);
-                exchangeImages2[i].gameObject.SetActive(false);
-                textExchangeInfos1[i].text = "";
-                textExchangeInfos2[i].text = "";
-                exchangeImages3[i].gameObject.SetActive(false);
-                textExchangeInfos3[i].text = "";
-                btnExchangeInfos[i].gameObject.SetActive(false);
-            } else if (info.item != null) {
+            if (info.item != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
                 exchangeImages1[i].SetSprite(info.item.iconSprite);
                 exchangeImages2[i].gameObject.SetActive(false);
@@ -347,16 +351,19 @@ public static class LimitedTimeStore {
                 exchangeImages3[i].gameObject.SetActive(true);
                 exchangeImages3[i].SetSprite(info.matrix.iconSprite);
                 textExchangeInfos3[i].gameObject.SetActive(true);
-                textExchangeInfos3[i].text = $"x {info.matrixCount}";
+                textExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);
-                if (info.exchanged) {
+                if (!info.IsValid) {
                     btnExchangeInfos[i].enabled = false;
-                    btnExchangeInfos[i].SetText("已兑换");
+                    btnExchangeInfos[i].SetText("无法兑换".Translate());
+                } else if (info.exchanged) {
+                    btnExchangeInfos[i].enabled = false;
+                    btnExchangeInfos[i].SetText("已兑换".Translate());
                 } else {
                     btnExchangeInfos[i].enabled = true;
-                    btnExchangeInfos[i].SetText("兑换");
+                    btnExchangeInfos[i].SetText("兑换".Translate());
                 }
-            } else {
+            } else if (info.recipe != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
                 exchangeImages1[i].SetSprite(info.recipe.RecipeType.GetItemSprite());
                 exchangeImages2[i].gameObject.SetActive(true);
@@ -366,15 +373,26 @@ public static class LimitedTimeStore {
                 exchangeImages3[i].gameObject.SetActive(true);
                 exchangeImages3[i].SetSprite(info.matrix.iconSprite);
                 textExchangeInfos3[i].gameObject.SetActive(true);
-                textExchangeInfos3[i].text = $"x {info.matrixCount}";
+                textExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);
-                if (info.exchanged) {
+                if (!info.IsValid) {
                     btnExchangeInfos[i].enabled = false;
-                    btnExchangeInfos[i].SetText("已兑换");
+                    btnExchangeInfos[i].SetText("无法兑换".Translate());
+                } else if (info.exchanged) {
+                    btnExchangeInfos[i].enabled = false;
+                    btnExchangeInfos[i].SetText("已兑换".Translate());
                 } else {
                     btnExchangeInfos[i].enabled = true;
-                    btnExchangeInfos[i].SetText("兑换");
+                    btnExchangeInfos[i].SetText("兑换".Translate());
                 }
+            } else {
+                exchangeImages1[i].gameObject.SetActive(false);
+                exchangeImages2[i].gameObject.SetActive(false);
+                textExchangeInfos1[i].text = "";
+                textExchangeInfos2[i].text = "";
+                exchangeImages3[i].gameObject.SetActive(false);
+                textExchangeInfos3[i].text = "";
+                btnExchangeInfos[i].gameObject.SetActive(false);
             }
         }
     }
@@ -382,42 +400,74 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 购买限时物品/配方
     /// </summary>
-    private static void Exchange(int index) {
-        //todo: 物品可以考虑用不同的矩阵来兑换，价值怎么算？？？如何动态变化
-        //todo: 物品兑换时，数目不能超过1组，且黑雾物品出现概率太高了，得重新设计概率曲线
-
+    private static void Exchange(int index, bool showMessage = true) {
         ExchangeInfo info = exchangeInfos[index];
-        //todo: 如果出现这种情况，按钮显示已兑换，并且禁用
         if (!info.IsValid || info.exchanged) {
             return;
         }
         if (info.item != null) {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {info.matrix.name} x {info.matrixCount} "
-                + $"{"来兑换".Translate()} {info.item.name} x {info.itemCount} {"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-                () => {
-                    if (!TakeItem(info.matrix.ID, info.matrixCount, out _)) {
-                        return;
-                    }
+            if (info.matrixDiscountedCount == 0 || !showMessage) {
+                if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                    return;
+                }
+                if (info.itemCount >= info.item.StackSize) {
+                    AddItemToModData(info.item.ID, info.itemCount);
+                } else {
                     AddItemToPackage(info.item.ID, info.itemCount);
-                    info.exchanged = true;
-                },
-                null);
+                }
+                info.exchanged = true;
+            } else {
+                UIMessageBox.Show("提示".Translate(),
+                    $"{"要花费".Translate()} {info.matrix.name} x {info.matrixDiscountedCount} "
+                    + $"{"来兑换".Translate()} {info.item.name} x {info.itemCount} {"吗？".Translate()}",
+                    "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                    () => {
+                        if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                            return;
+                        }
+                        if (info.itemCount >= info.item.StackSize) {
+                            AddItemToModData(info.item.ID, info.itemCount);
+                        } else {
+                            AddItemToPackage(info.item.ID, info.itemCount);
+                        }
+                        info.exchanged = true;
+                    },
+                    null);
+            }
         } else {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {info.matrix.name} x {info.matrixCount} "
-                + $"{"来兑换".Translate()} {info.recipe.TypeName} {"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-                () => {
-                    if (!TakeItem(info.matrix.ID, info.matrixCount, out _)) {
-                        return;
-                    }
-                    info.recipe.RewardThis();
-                    info.exchanged = true;
-                },
-                null);
+            if (info.matrixDiscountedCount == 0 || !showMessage) {
+                if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                    return;
+                }
+                info.recipe.RewardThis();
+                info.exchanged = true;
+            } else {
+                UIMessageBox.Show("提示".Translate(),
+                    $"{"要花费".Translate()} {info.matrix.name} x {info.matrixDiscountedCount} "
+                    + $"{"来兑换".Translate()} {info.recipe.TypeName} {"吗？".Translate()}",
+                    "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                    () => {
+                        if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                            return;
+                        }
+                        info.recipe.RewardThis();
+                        info.exchanged = true;
+                    },
+                    null);
+            }
         }
+    }
+
+    private static void ExchangeAll() {
+        UIMessageBox.Show("提示".Translate(),
+            $"{"要兑换全部配方/物品".Translate()}{"吗？".Translate()}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
+                for (int i = 0; i < exchangeInfoCount; i++) {
+                    Exchange(i, false);
+                }
+            },
+            null);
     }
 
     #region IModCanSave

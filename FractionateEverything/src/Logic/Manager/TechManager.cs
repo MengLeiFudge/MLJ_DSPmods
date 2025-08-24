@@ -14,14 +14,14 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class TechManager {
     public static void AddTranslations() {
-        Register("T分馏数据中心", "Fractionation Data Center", "分馏数据中心");
+        Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
         Register("分馏数据中心描述",
-            $"With the exploration of more and more star regions, fractionation technology has greatly expanded. Press {"Shift + F".WithColor(Orange)} to connect to the fractionation data center, which is a new way of data interaction and the main carrier of new fractionation technology. At the same time, in recognition of Icarus' spirit of exploration, some initial fractionation formulas will also be unlocked.",
+            $"With the exploration of more and more star regions, fractionation technology has greatly expanded. Press {"Shift + F".WithColor(Orange)} to connect to the fractionation data centre, which is a new way of data interaction and the main carrier of new fractionation technology. At the same time, in recognition of Icarus' spirit of exploration, some initial fractionation formulas will also be unlocked.",
             $"随着探索的星区越来越多，分馏科技有了极大的拓展。按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心，这是全新的数据交互方式，也是新分馏科技的主要载体。同时，为了嘉奖伊卡洛斯的探索精神，一些初期的分馏配方也会随之解锁。");
         Register("分馏数据中心结果",
-            "You have mastered the method of connecting to the fractionation data center, and now you can connect to the fractionation data center.",
+            "You have mastered the method of connecting to the fractionation data centre, and now you can connect to the fractionation data centre.",
             "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。部分分馏配方已解锁。");
-        Register("允许连接到分馏数据中心", "Allow connection to fractionation data center");
+        Register("允许连接到分馏数据中心", "Allow connection to fractionation data centre");
         Register("解锁全部建筑培养配方", "Unlock all building train recipes");
         Register("解锁非珍奇矿物复制配方", "Unlock non rare mineral copy recipes");
 
@@ -78,7 +78,7 @@ public static class TechManager {
 
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
         Register("电磁奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("电磁奖券结果",
             "You have mastered the technology of making electromagnetic tickets and can now produce them through automation.",
@@ -86,7 +86,7 @@ public static class TechManager {
 
         Register("T能量奖券", "Energy Ticket", "能量奖券");
         Register("能量奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("能量奖券结果",
             "You have mastered the technology of making energy tickets and can now produce them through automation.",
@@ -94,7 +94,7 @@ public static class TechManager {
 
         Register("T结构奖券", "Structure Ticket", "结构奖券");
         Register("结构奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("结构奖券结果",
             "You have mastered the technology of making structure tickets and can now produce them through automation.",
@@ -102,7 +102,7 @@ public static class TechManager {
 
         Register("T信息奖券", "Information Ticket", "信息奖券");
         Register("信息奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("信息奖券结果",
             "You have mastered the technology of making information tickets and can now produce them through automation.",
@@ -110,7 +110,7 @@ public static class TechManager {
 
         Register("T引力奖券", "Gravity Ticket", "引力奖券");
         Register("引力奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("引力奖券结果",
             "You have mastered the technology of making gravity tickets and can now produce them through automation.",
@@ -118,7 +118,7 @@ public static class TechManager {
 
         Register("T宇宙奖券", "Universe Ticket", "宇宙奖券");
         Register("宇宙奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("宇宙奖券结果",
             "You have mastered the technology of making universe tickets and can now produce them through automation.",
@@ -126,7 +126,7 @@ public static class TechManager {
 
         Register("T黑雾奖券", "Dark Fog Ticket", "黑雾奖券");
         Register("黑雾奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data center to obtain various items and formulas.",
+            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
             "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
         Register("黑雾奖券结果",
             "You have mastered the technology of making dark fog tickets and can now produce them through automation.",
@@ -135,71 +135,71 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            $"In the fractionation technology provided this time, the new fractionator will be obtained through a special method - namely lottery and cultivation. You need to use various lottery tickets on the lottery page of the fractionation data center to participate in the lottery, and you can obtain the raw material of the fractionator in the {"building card pool".WithColor(Orange)}. If lucky, you can also directly obtain a new fractionator. Through interactive tower culture, various fractionators can be produced from the original embryo. At the same time, the COSMO provides a technology for artificially synthesizing embryos, and the synthesized directed embryos can be directly cultured into designated buildings.",
-            $"此次提供的分馏科技中，新分馏塔将采用特殊方式获取——也就是抽奖与培养。你需要在分馏数据中心的抽奖页面使用各种奖券进行抽奖，在{"建筑卡池".WithColor(Orange)}可以获取到分馏塔原胚。运气好的话，还能直接获取新的分馏塔。原胚经过交互塔培养，即可产出各种分馏塔。同时，主脑提供了一种人工合成原胚的科技，合成得到的定向原胚可以直接培养为指定的建筑。");
+            "In the new distillation technology, the new fractionator is not made from materials but obtained through lottery draws and cultivation. After interacting with the lottery page in the fractionation data centre, you can use lottery tickets to obtain fractionator prototypes or fractionators. After interacting with the tower, the prototype will produce different fractionators. Additionally, COSMO provides a technology for artificially synthesising directed prototypes, which can be directly cultivated into specified buildings.",
+            "在全新的分馏科技中，新分馏塔并非用材料制作，而是通过抽奖与培养获取。与分馏数据中心的奖券抽奖页面交互后，可以使用奖券获取分馏塔原胚或分馏塔。原胚经过交互塔培养后，会产出不同的分馏塔。同时，主脑也提供了一种人工合成定向原胚的科技，可以直接将其培养为指定的建筑。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            "The COSMO has developed an advanced information transmission technology that can transmit the items input into the interactive tower in the form of data to the fractionation data center for subsequent use.",
-            "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏数据中心，便于后续使用。");
+            "COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.",
+            "主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
 
         Register("T矿物复制", "Mineral Copy", "矿物复制");
         Register("矿物复制描述",
-            "During Icarus' exploration, the COSMO discovered that some star regions had extremely scarce resources that were difficult to sustain. In order to make it easier for Icarus to explore the barren star regions, the COSMO specially researched and issued the technology of natural resource fractionation. This technology can be used to replicate the vast majority of natural resources, avoiding situations where there is a lack of resources to explore.",
-            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。为了让伊卡洛斯能更轻松地探索贫瘠的星区，主脑特意研究并下发了自然资源的分馏技术。这项技术可以用来复制绝大多数自然资源，避免出现缺乏资源无法探索的情形。");
+            "During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.",
+            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。");
         Register("矿物复制结果",
-            "You have mastered the Mineral Copy technology, and as long as you have a certain amount of natural resources, you can replicate them infinitely.",
-            "你已经掌握了矿物复制技术，只要拥有一定量的自然资源，就能对其进行无限复制。");
+            "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
+            "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to the limitations of material technology, the spawn line is unable to create more advanced proliferators, but fractionation technology can break through the limitations by concentrating the raw material's proliferator points into a certain number of items. It was found that the proliferator points of items could be stacked indefinitely, but the portion over 10 points did not work. Proliferate Point Aggregate technology can fractionate just the items with 10 proliferator points.",
-            "由于材料技术的限制，产线无法制造更高级的增产剂，但分馏技术可以将原料的增产点数集中到某几个物品上，从而突破增产剂的点数限制。研究发现，物品的增产点数可以无限叠加，但超过10点的部分不起作用。增产点数聚集技术可以刚好分馏出10点增产点数的物品。");
+            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points on certain items so that they carry more than 4 proliferator points.",
+            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而使物品携带超过4点增产点数。");
         Register("增产点数聚集结果",
-            "You have mastered the Proliferator Points Aggregate technology. The item's proliferator points can now be pushed to the limit, and production capacity has been greatly increased!",
-            "你已经掌握了增产点数聚集技术。现在物品的增产点数可以达到极限，产能得到了极大的提升！");
+            "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
+            "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T量子复制", "Quantum Copy", "量子复制");
         Register("量子复制描述",
-            "Although Mineral Copy is powerful, it can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
-            + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
+            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By restructuring the item at the microscopic level and adding distilled essence as a catalyst, the item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n"
+            + "Obviously, the research process of combining material reorganisation technology with proliferator points and distillation essence is highly unpredictable. This research only exists in rumours, and whether it can be achieved remains unknown.\n"
             + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
-            "矿物复制和物品转化虽然强大，但这些技术只能用于处理特定物品。随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
-            + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
+            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。它可以应用在绝大多数物品上。如果将物品在微观层面进行重组，并添加分馏精华作为催化剂，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。\n"
+            + "显然，将物质重组技术与增产点数、分馏精华关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
         Register("量子复制结果",
-            "You have unlocked the Quantum Copy technology. Now you truly have the ability to create something from nothing!",
-            "你已经掌握了量子复制技术。现在，你真正拥有了无中生有的能力！");
+            "You have mastered quantum replication technology and can use distilled essence as a catalyst to replicate most items in bulk.",
+            "你已经掌握了量子复制技术，可以用分馏精华作为催化剂批量复制大多数物品了。");
 
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
-            "Item alchemy technology can convert any item into various matrices. However, if an item itself is a matrix, or if the material used to make the item contains a matrix, or if it is a building, then the item cannot be minted.",
-            "物品点金科技可以将任意的物品点金为各种矩阵。但是，如果一个物品本身是矩阵，或者一个物品的制作材料包含矩阵，或者它是建筑，那么这个物品不能被点金。");
+            "Item Alchemy Technology can transform items into various matrices. This is a simple and direct way to obtain matrices, but low-value items seem to have difficulty successfully transforming into matrices.",
+            "物品点金科技可以将物品点金为各种矩阵。这是一种简单、直接获取矩阵的方式，不过低价值物品似乎很难成功点出矩阵。");
         Register("物品点金结果",
-            "You have mastered the Item Alchemy technology and can convert items into various matrices.",
-            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵。");
+            "You have mastered the art of item alchemy and can now transform items into various matrices.",
+            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵了。");
 
         Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",
-            "Item deconstruction technology can break down any item into the materials used to make it. Meanwhile, items without a recipe will decompose into foundation and sand, which is very helpful for expanding into new territories.",
-            "物品分解科技可以将任意物品分解为制作它的材料。同时，无制作配方的物品会分解为地基和沙土，这对新地盘的扩展很有帮助。");
+            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but is it really useless when put into practice?",
+            "物品分解科技可以将物品分解为制作它的材料或沙土。这看起来似乎没有用，实际用起来也没有用……吗？");
         Register("物品分解结果",
-            "You have mastered the Item Deconstruction technology and can now break down unwanted items into raw materials.",
-            "你已经掌握了物品分解技术，可以将不需要的物品分解为原材料了。");
+            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
+            "你已经掌握了物品分解技术，可以将物品分解为制作它的材料或沙土了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "Item conversion technology can transform an item into other items related to that item. Although only some items can be converted, it is still an extremely powerful aid.",
-            "物品转化科技可以将物品转化为与这个物品相关的其他物品。尽管只有部分物品能进行转化，但它依然是极其强力的援助。");
+            "Item conversion technology can convert items into other items related to them. Is this a gain or a loss? Even COSMO cannot reach a definite conclusion.",
+            "物品转化科技可以将物品转化为与其相关的其他物品。这到底是赚了还是亏了？主脑也无法得到确切的结论。");
         Register("物品转化结果",
-            "You have mastered item conversion technology and can now convert items into other items related to this item.",
-            "你已经掌握了物品转化技术，可以将物品转化为与这个物品相关的其他物品了。");
+            "You have mastered the art of item conversion and can now convert items into other items related to them.",
+            "你已经掌握了物品转化技术，可以将物品转化为与其相关的其他物品了。");
 
 
         // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");

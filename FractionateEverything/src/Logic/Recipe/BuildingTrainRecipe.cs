@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -24,15 +25,28 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加一个建筑培养配方
     /// </summary>
     private static void Create(int inputID, float maxSuccessRate) {
+        float[] ratioArr = inputID switch {
+            IFE分馏塔原胚普通 => [30f, 30f / 3, 0f, 0f],
+            IFE分馏塔原胚精良 => [25f, 25f / 3, 1f, 0f],
+            IFE分馏塔原胚稀有 => [20f, 20f / 3, 2f, 0.5f],
+            IFE分馏塔原胚史诗 => [15f, 15f / 3, 3f, 1f],
+            IFE分馏塔原胚传说 => [5f, 5f / 3, 5f, 2f],
+            _ => null
+        };
+        if (ratioArr == null) {
+            return;
+        }
+        float sum = ratioArr.Sum();
         List<OutputInfo> OutputMain = [
-            new(10.0f / 77, IFE交互塔, 1),
-            new(30.0f / 77, IFE矿物复制塔, 1),
-            new(5.0f / 77, IFE点数聚集塔, 1),
-            new(2.0f / 77, IFE量子复制塔, 1),
-            new(10.0f / 77, IFE点金塔, 1),
-            new(10.0f / 77, IFE分解塔, 1),
-            new(10.0f / 77, IFE转化塔, 1),
+            new(ratioArr[1] / sum, IFE交互塔, 1),
+            new(ratioArr[0] / sum, IFE矿物复制塔, 1),
+            new(ratioArr[2] / sum, IFE点数聚集塔, 1),
+            new(ratioArr[3] / sum, IFE量子复制塔, 1),
+            new(ratioArr[1] / sum, IFE点金塔, 1),
+            new(ratioArr[1] / sum, IFE分解塔, 1),
+            new(ratioArr[1] / sum, IFE转化塔, 1),
         ];
+        OutputMain.RemoveAll(info => info.SuccessRate <= 0);
         AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));
     }
 
