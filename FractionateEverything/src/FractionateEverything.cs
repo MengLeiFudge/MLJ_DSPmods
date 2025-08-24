@@ -161,8 +161,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public void PostAddData() {
-        //调整分馏塔模型颜色
-        BuildingManager.SetFractionatorMaterials();
+        //设置分馏塔颜色
+        BuildingManager.SetFractionatorMaterial();
     }
 
     /// <summary>
@@ -177,6 +177,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         ItemManager.CalculateItemValues();
         //将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
+        //UpdateHpAndEnergy用到了Init生成的数据
+        BuildingManager.UpdateHpAndEnergy();
         //SetFractionatorCacheSize用到了Init生成的数据
         BuildingManager.SetFractionatorCacheSize();
         //AddFracRecipes用到了Init生成的数据
