@@ -732,7 +732,9 @@ public static class ProcessManager {
             return;
         }
         int buildingID = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingID == I分馏塔) {
+        if (buildingID < IFE交互塔 || buildingID > IFE行星转化塔) {
+            __instance.productProbText.transform.localPosition = new(0, productProbTextBaseY, 0);
+            __instance.oriProductProbText.transform.localPosition = new(0, oriProductProbTextBaseY, 0);
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
@@ -923,10 +925,10 @@ public static class ProcessManager {
         __instance.oriProductProbText.text = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);
-        upY += 40f;//让字体不被挡住
+        upY += 80f;//让字体不被挡住
         __instance.productProbText.transform.localPosition = new(0, upY, 0);
         float downY = oriProductProbTextBaseY - (s2.Split('\n').Length > 1 ? 9f : 0);
-        downY -= 10f;//让字体不被挡住
+        downY -= 27f;//让字体不被挡住
         __instance.oriProductProbText.transform.localPosition = new(0, downY, 0);
     }
 
