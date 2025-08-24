@@ -80,6 +80,10 @@ public static partial class Utils {
             return 0;
         }
         if (itemId == I沙土) {
+            //如果是沙盒模式并且无限沙土开启，直接返回int最大值
+            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
+                return int.MaxValue;
+            }
             return (int)Math.Min(int.MaxValue, GameMain.mainPlayer.sandCount);
         }
         StorageComponent package = GameMain.mainPlayer.package;
@@ -162,6 +166,10 @@ public static partial class Utils {
             return false;
         }
         if (itemId == I沙土) {
+            //如果是沙盒模式并且无限沙土开启，直接返回true
+            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
+                return true;
+            }
             GameMain.mainPlayer.sandCount -= count;
             return true;
         }
