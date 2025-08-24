@@ -230,7 +230,7 @@ public static class ProcessManager {
                 __instance.productId = recipe.OutputMain[0].OutputID;
                 __instance.productOutputCount = 0;
                 __instance.produceProb = 0.01f;
-                signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                 signPool[__instance.entityId].iconType = 1U;
                 foreach (OutputInfo info in recipe.OutputMain) {
                     products.Add(new(true, info.OutputID, 0));
@@ -437,7 +437,7 @@ public static class ProcessManager {
                         } else {
                             __instance.productId = recipe.OutputMain[0].OutputID;
                             __instance.produceProb = 0.01f;
-                            signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                            signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
                             foreach (OutputInfo info in recipe.OutputMain) {
                                 products.Add(new(true, info.OutputID, 0));
@@ -507,7 +507,7 @@ public static class ProcessManager {
                         } else {
                             __instance.productId = recipe.OutputMain[0].OutputID;
                             __instance.produceProb = 0.01f;
-                            signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                            signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
                             foreach (OutputInfo info in recipe.OutputMain) {
                                 products.Add(new(true, info.OutputID, 0));
