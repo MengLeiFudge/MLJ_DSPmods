@@ -36,14 +36,24 @@ public static class BuildingManager {
         ConversionTower.Create();
     }
 
-    public static void SetFractionatorMaterials() {
-        InteractionTower.SetMaterials();
-        MineralCopyTower.SetMaterials();
-        PointAggregateTower.SetMaterials();
-        QuantumCopyTower.SetMaterials();
-        AlchemyTower.SetMaterials();
-        DeconstructionTower.SetMaterials();
-        ConversionTower.SetMaterials();
+    public static void SetFractionatorMaterial() {
+        InteractionTower.SetMaterial();
+        MineralCopyTower.SetMaterial();
+        PointAggregateTower.SetMaterial();
+        QuantumCopyTower.SetMaterial();
+        AlchemyTower.SetMaterial();
+        DeconstructionTower.SetMaterial();
+        ConversionTower.SetMaterial();
+    }
+
+    public static void UpdateHpAndEnergy() {
+        InteractionTower.UpdateHpAndEnergy();
+        MineralCopyTower.UpdateHpAndEnergy();
+        PointAggregateTower.UpdateHpAndEnergy();
+        QuantumCopyTower.UpdateHpAndEnergy();
+        AlchemyTower.UpdateHpAndEnergy();
+        DeconstructionTower.UpdateHpAndEnergy();
+        ConversionTower.UpdateHpAndEnergy();
     }
 
     /// <summary>
@@ -306,6 +316,48 @@ public static class BuildingManager {
                 break;
             default:
                 return;
+        }
+    }
+
+    public static long workEnergyPerTick(this ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                return InteractionTower.workEnergyPerTick;
+            case IFE矿物复制塔:
+                return MineralCopyTower.workEnergyPerTick;
+            case IFE点数聚集塔:
+                return PointAggregateTower.workEnergyPerTick;
+            case IFE量子复制塔:
+                return QuantumCopyTower.workEnergyPerTick;
+            case IFE点金塔:
+                return AlchemyTower.workEnergyPerTick;
+            case IFE分解塔:
+                return DeconstructionTower.workEnergyPerTick;
+            case IFE转化塔:
+                return ConversionTower.workEnergyPerTick;
+            default:
+                return LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick;
+        }
+    }
+
+    public static long idleEnergyPerTick(this ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                return InteractionTower.idleEnergyPerTick;
+            case IFE矿物复制塔:
+                return MineralCopyTower.idleEnergyPerTick;
+            case IFE点数聚集塔:
+                return PointAggregateTower.idleEnergyPerTick;
+            case IFE量子复制塔:
+                return QuantumCopyTower.idleEnergyPerTick;
+            case IFE点金塔:
+                return AlchemyTower.idleEnergyPerTick;
+            case IFE分解塔:
+                return DeconstructionTower.idleEnergyPerTick;
+            case IFE转化塔:
+                return ConversionTower.idleEnergyPerTick;
+            default:
+                return LDB.models.Select(M分馏塔).prefabDesc.idleEnergyPerTick;
         }
     }
 

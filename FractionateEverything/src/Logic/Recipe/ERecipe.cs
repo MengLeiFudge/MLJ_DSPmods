@@ -67,7 +67,7 @@ public static class ERecipeExtension {
         ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion
     ];
 
-    public static readonly string[] RecipeTypeShortNames = RecipeTypes.Select(t => t.GetShortName()).ToArray();
+    public static string[] RecipeTypeShortNames => RecipeTypes.Select(t => t.GetShortName()).ToArray();
 
     /// <summary>
     /// 拓展方法，返回配方名称

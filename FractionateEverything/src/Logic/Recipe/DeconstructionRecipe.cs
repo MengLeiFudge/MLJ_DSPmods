@@ -15,7 +15,7 @@ public class DeconstructionRecipe : BaseRecipe {
     /// 添加所有分解配方
     /// </summary>
     public static void CreateAll() {
-        float maxInc = 1.0f + (float)Cargo.incTableMilli[10];
+        float maxInc = 1.0f + (float)Cargo.incTableMilli[4];
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
@@ -72,7 +72,9 @@ public class DeconstructionRecipe : BaseRecipe {
                         inputFloatCounts[i] /= outputCount;
                     }
                     float totalInputCount = inputFloatCounts.Sum();
-                    // 如果配方允许增产，则只能按照1.0/1.4返还；否则，按照1.0返还
+                    // 如果配方允许增产，则只能按照1.0/1.25返还；否则，按照1.0返还
+                    // 对于可增产的配方，只要制作时增产点数超过4点，数目会变多
+                    // 对于只能加速的配方，只有分解配方达到金色，数目才会变多
                     float outputCountPlus = recipe.productive ? 1.0f / maxInc : 1.0f;
                     for (int i = 0; i < inputFloatCounts.Count; i++) {
                         outputMain.Add(new(inputFloatCounts[i] / totalInputCount, inputIDs[i],

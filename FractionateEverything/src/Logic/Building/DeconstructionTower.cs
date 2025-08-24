@@ -3,6 +3,7 @@ using BuildBarTool;
 using CommonAPI.Systems;
 using UnityEngine;
 using static FE.FractionateEverything;
+using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Building;
@@ -14,8 +15,8 @@ public static class DeconstructionTower {
     public static void AddTranslations() {
         Register("分解塔", "Deconstruction Tower");
         Register("I分解塔",
-            "Decompose items into raw materials. Items that cannot be decomposed will be transformed into sand. There is a certain probability to get the decomposed essence.",
-            "将物品分解为制作它的原材料。没有配方制作的物品将会分解为沙土或地基。有一定概率得到分解精华。");
+            "Break down items into the materials or sand used to make them. There is a certain probability of obtaining deconstruction essence.",
+            "将物品分解为制作它的材料或沙土。有一定概率得到分解精华。");
     }
 
     private static ItemProto item;
@@ -26,6 +27,12 @@ public static class DeconstructionTower {
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
+    public static int ReinforcementLevel = 0;
+    public static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
+    public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
+    public static readonly float propertyRatio = 1.0f;
+    public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
+    public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE分解塔, "分解塔", "I分解塔",
@@ -41,7 +48,7 @@ public static class DeconstructionTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void SetMaterials() {
+    public static void SetMaterial() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -55,14 +62,17 @@ public static class DeconstructionTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
-        SetHpAndEnergy(1);
     }
 
-    public static void SetHpAndEnergy(int level) {
-        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
-        double energyRatio = 0.8 * (1 - level * 0.1);
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void UpdateHpAndEnergy() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 9));
+        double energyRatio = propertyRatio * (1.0 - ReinforcementBonus * 0.8);
+        model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }
 
     #region IModCanSave
@@ -77,19 +87,33 @@ public static class DeconstructionTower {
             MaxProductOutputStack = 4;
         }
         EnableFracForever = r.ReadBoolean();
+        if (version < 2) {
+            ReinforcementLevel = 0;
+        } else {
+            ReinforcementLevel = r.ReadInt32();
+            if (ReinforcementLevel < 0) {
+                ReinforcementLevel = 0;
+            } else if (ReinforcementLevel > MaxReinforcementLevel) {
+                ReinforcementLevel = MaxReinforcementLevel;
+            }
+        }
+        UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(EnableFluidOutputStack);
         w.Write(MaxProductOutputStack);
         w.Write(EnableFracForever);
+        w.Write(ReinforcementLevel);
     }
 
     public static void IntoOtherSave() {
         EnableFluidOutputStack = false;
         MaxProductOutputStack = 1;
         EnableFracForever = false;
+        ReinforcementLevel = 0;
+        UpdateHpAndEnergy();
     }
 
     #endregion

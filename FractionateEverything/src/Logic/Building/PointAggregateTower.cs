@@ -5,8 +5,8 @@ using CommonAPI.Systems;
 using FE.Logic.Manager;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Utils.Utils;
 using static FE.Logic.Manager.ProcessManager;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Building;
 
@@ -17,8 +17,8 @@ public static class PointAggregateTower {
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");
         Register("I点数聚集塔",
-            "Concentrate the increase in proliferator points for all items onto a small number of items, thereby breaking the upper limit of proliferator points and producing items with 10 proliferator points.",
-            "将全部物品的增产点数集中到少部分物品上，从而突破增产点数的上限，产出10增产点数的物品。");
+            "Concentrate proliferator points on certain items so that they carry more than 4 proliferator points.",
+            "将增产点数集中到部分物品上，从而使物品携带超过4点增产点数。");
     }
 
     private static ItemProto item;
@@ -29,6 +29,12 @@ public static class PointAggregateTower {
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
+    public static int ReinforcementLevel = 0;
+    public static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
+    public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
+    public static readonly float propertyRatio = 2.0f;
+    public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
+    public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
     /// <summary>
     /// 建筑等级，1-7。
     /// </summary>
@@ -61,7 +67,7 @@ public static class PointAggregateTower {
         item.SetBuildBar(5, item.GridIndex % 10, true);
     }
 
-    public static void SetMaterials() {
+    public static void SetMaterial() {
         Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
         Material m_black = model.prefabDesc.lodMaterials[0][1];
         Material m_glass = model.prefabDesc.lodMaterials[0][2];
@@ -75,14 +81,17 @@ public static class PointAggregateTower {
             [m_lod2, m_black, m_glass, m_glass1],
             null,
         ];
-        SetHpAndEnergy(1);
     }
 
-    public static void SetHpAndEnergy(int level) {
-        model.HpMax = LDB.models.Select(M分馏塔).HpMax + level * 50;
-        double energyRatio = 1.0 * (1 - level * 0.1);
-        model.prefabDesc.workEnergyPerTick = (long)(model.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(model.prefabDesc.idleEnergyPerTick * energyRatio);
+    public static void UpdateHpAndEnergy() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 9));
+        double energyRatio = propertyRatio * (1.0 - ReinforcementBonus * 0.8);
+        model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
+        model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }
 
     public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
@@ -364,6 +373,17 @@ public static class PointAggregateTower {
             MaxProductOutputStack = 4;
         }
         EnableFracForever = r.ReadBoolean();
+        if (version < 2) {
+            ReinforcementLevel = 0;
+        } else {
+            ReinforcementLevel = r.ReadInt32();
+            if (ReinforcementLevel < 0) {
+                ReinforcementLevel = 0;
+            } else if (ReinforcementLevel > MaxReinforcementLevel) {
+                ReinforcementLevel = MaxReinforcementLevel;
+            }
+        }
+        UpdateHpAndEnergy();
         Level = r.ReadInt32();
         if (Level < 1) {
             Level = 1;
@@ -373,10 +393,11 @@ public static class PointAggregateTower {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(EnableFluidOutputStack);
         w.Write(MaxProductOutputStack);
         w.Write(EnableFracForever);
+        w.Write(ReinforcementLevel);
         w.Write(Level);
     }
 
@@ -384,6 +405,8 @@ public static class PointAggregateTower {
         EnableFluidOutputStack = false;
         MaxProductOutputStack = 1;
         EnableFracForever = false;
+        ReinforcementLevel = 0;
+        UpdateHpAndEnergy();
         Level = 1;
     }
 

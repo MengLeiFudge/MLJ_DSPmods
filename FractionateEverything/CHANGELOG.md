@@ -78,7 +78,7 @@
     + Adjust the recipe upgrade curve and adjust the ratio of sand to experience.
     + Fix the issue of equivalent recipe calculation errors.
     + Adjust the display of the raffle result button.
-    + Adjust the layout of the pop-up window displaying all items in the fractionation data center.
+    + Adjust the layout of the pop-up window displaying all items in the fractionation data centre.
     + Adjust the production speed of lottery tickets.
     + When the item is not unlocked, the fractionation recipe core cannot be used to exchange for related recipes.
 
@@ -102,9 +102,9 @@
     + The interaction tower can input any item.
     + Adjusting the number of hash blocks required for quantum replication technology and the rewards for the
       technology.
-    + The fractionation data center cannot be opened when the game is not running or the corresponding technology is not
+    + The fractionation data centre cannot be opened when the game is not running or the corresponding technology is not
       unlocked.
-    + Adjust the effectiveness of the technology "fractionation data center" and unlock some recipes after the research
+    + Adjust the effectiveness of the technology "fractionation data centre" and unlock some recipes after the research
       is completed.
 
 - v2.0.2

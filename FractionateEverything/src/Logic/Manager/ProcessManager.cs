@@ -37,8 +37,11 @@ public static class ProcessManager {
     public static int BaseFracFluidInputMax = 40;
     public static int BaseFracProductOutputMax = 20;
     public static int BaseFracFluidOutputMax = 20;
-    private static double[] incTableFixedRatio;
+    private static readonly double[] incTableFixedRatio = new double[Cargo.incTableMilli.Length];
     public static readonly List<ProductOutputInfo> emptyOutputs = [];
+    public static readonly int MaxReinforcementLevel = 20;
+    public static readonly float[] ReinforcementSuccessRateArr = new float[MaxReinforcementLevel + 1];
+    public static readonly float[] ReinforcementBonusArr = new float[MaxReinforcementLevel + 1];
 
     #endregion
 
@@ -58,9 +61,26 @@ public static class ProcessManager {
         BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
 
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
-        incTableFixedRatio = new double[Cargo.incTableMilli.Length];
         for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
             incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
+        }
+
+        //强化相关
+        ReinforcementSuccessRateArr[0] = 0.5f;
+        ReinforcementSuccessRateArr[1] = 0.45f;
+        ReinforcementSuccessRateArr[2] = 0.45f;
+        ReinforcementSuccessRateArr[3] = 0.4f;
+        ReinforcementSuccessRateArr[4] = 0.4f;
+        ReinforcementSuccessRateArr[5] = 0.4f;
+        ReinforcementSuccessRateArr[6] = 0.35f;
+        ReinforcementSuccessRateArr[7] = 0.35f;
+        ReinforcementSuccessRateArr[8] = 0.35f;
+        ReinforcementSuccessRateArr[9] = 0.35f;
+        for (int i = 10; i < MaxReinforcementLevel - 1; i++) {
+            ReinforcementSuccessRateArr[i] = 0.3f;
+        }
+        for (int i = 1; i < MaxReinforcementLevel; i++) {
+            ReinforcementBonusArr[i] = i < 10 ? 0.1f * i * i + 1.9f * i : 0.3f * i * i - 1.9f * i + 18;
         }
     }
 
@@ -578,6 +598,10 @@ public static class ProcessManager {
     private static void SetPCState(this FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, EntityData[] entityPool) {
         int buildingID = entityPool[fractionator.entityId].protoId;
+        if (buildingID < IFE交互塔 || buildingID > IFE行星转化塔) {
+            return;
+        }
+        ItemProto building = LDB.items.Select(buildingID);
         double num1 = fractionator.fluidInputCargoCount > 0.0001
             ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
             : 4.0;
@@ -587,14 +611,9 @@ public static class ProcessManager {
         num2 = num2 * num1 - MaxBeltSpeed;
         if (num2 < 0.0)
             num2 = 0.0;
-        double powerRatio;
-        if (buildingID == IFE点数聚集塔) {
-            powerRatio = 1.0;
-        } else if (buildingID == IFE量子复制塔) {
-            powerRatio = (Cargo.powerTableRatio[fractionator.incLevel] - 1.0) * 0.5 + 1.0;
-        } else {
-            powerRatio = Cargo.powerTableRatio[fractionator.incLevel];
-        }
+        double powerRatio = buildingID == IFE点数聚集塔 ? 1.0 : Cargo.powerTableRatio[fractionator.incLevel];
+        pcPool[fractionator.pcId].workEnergyPerTick = building.workEnergyPerTick();
+        pcPool[fractionator.pcId].idleEnergyPerTick = building.idleEnergyPerTick();
         int permillage = (int)((num2 * 50.0 * 30.0 / MaxBeltSpeed + 1000.0) * powerRatio + 0.5);
         pcPool[fractionator.pcId].SetRequiredEnergy(fractionator.isWorking, permillage);
     }
@@ -892,8 +911,8 @@ public static class ProcessManager {
                 destroyRatio = recipe.DestroyRate;
                 flowRatio -= destroyRatio;
             }
-            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1) + "\n\n\n\n";
-            s2 = "\n" + $"{"流动".Translate()} ({flowRatio.FormatP()})";
+            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+            s2 = $"{"流动".Translate()} ({flowRatio.FormatP()})";
             if (destroyRatio > 0) {
                 string destroy = $"{"损毁".Translate()} ({destroyRatio.FormatP()})";
                 s2 += $"\n{destroy.WithColor(Red)}";
@@ -904,8 +923,10 @@ public static class ProcessManager {
         __instance.oriProductProbText.text = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);
+        upY += 40f;//让字体不被挡住
         __instance.productProbText.transform.localPosition = new(0, upY, 0);
         float downY = oriProductProbTextBaseY - (s2.Split('\n').Length > 1 ? 9f : 0);
+        downY -= 10f;//让字体不被挡住
         __instance.oriProductProbText.transform.localPosition = new(0, downY, 0);
     }
 

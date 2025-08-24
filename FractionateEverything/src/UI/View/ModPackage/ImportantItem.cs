@@ -33,7 +33,7 @@ public static class ImportantItem {
         Register("重要物品", "Important Item");
 
         Register("以下物品在分馏数据中心的存储量为：",
-            "The storage capacity of the following items in the Fractionation data center are: ");
+            "The storage capacity of the following items in the Fractionation data centre are: ");
         Register("重要物品提示按钮说明1",
             "Left-click to extract a set of items, right-click to extract all items.",
             "左键提取一组物品，右键提取全部物品");

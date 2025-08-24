@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
@@ -9,6 +10,10 @@ namespace FE.UI.View.Setting;
 public static class VipFeatures {
     private static RectTransform window;
     private static RectTransform tab;
+
+    public static int vipLevel = 0;
+    public static int vipFreeCount => (vipLevel + 2) / 3 + 2;//todo: 去除结尾+2
+    public static float vipDiscount => 1.0f - 0.05f * Math.Min(10, vipLevel);
 
     public static void AddTranslations() {
         Register("VIP功能", "VIP Features");
