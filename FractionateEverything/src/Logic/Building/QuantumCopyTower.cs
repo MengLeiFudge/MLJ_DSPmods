@@ -14,8 +14,8 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            "Fully utilize the yield increasing characteristics of increasing production points and recombine and replicate the input items. It can separate all things and truly achieve the effect of creating something out of nothing.",
-            "充分利用增产点数的增产特性，将输入的物品进行重组复制。它可以分馏万物，真正达到无中生有的效果。");
+            "Rearrange the item at the microscopic level and add distilled essence as a catalyst to replicate the item in bulk. Proliferator points no longer increase processing speed, but they can reduce the consumption of distilled essence.",
+            "将物品在微观层面进行重组，并添加分馏精华作为催化剂，从而批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。");
     }
 
     private static ItemProto item;
