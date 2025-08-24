@@ -46,6 +46,7 @@ public class BuildingTrainRecipe : BaseRecipe {
             new(ratioArr[1] / sum, IFE分解塔, 1),
             new(ratioArr[1] / sum, IFE转化塔, 1),
         ];
+        OutputMain.RemoveAll(info => info.SuccessRate <= 0);
         AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));
     }
 
