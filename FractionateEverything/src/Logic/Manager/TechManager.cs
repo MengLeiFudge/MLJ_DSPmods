@@ -135,47 +135,47 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            $"In the fractionation technology provided this time, the new fractionator will be obtained through a special method - namely lottery and cultivation. You need to use various lottery tickets on the lottery page of the fractionation data centre to participate in the lottery, and you can obtain the raw material of the fractionator in the {"building card pool".WithColor(Orange)}. If lucky, you can also directly obtain a new fractionator. Through interactive tower culture, various fractionators can be produced from the original embryo. At the same time, the COSMO provides a technology for artificially synthesizing embryos, and the synthesized directed embryos can be directly cultured into designated buildings.",
-            $"此次提供的分馏科技中，新分馏塔将采用特殊方式获取——也就是抽奖与培养。你需要在分馏数据中心的抽奖页面使用各种奖券进行抽奖，在{"建筑奖池".WithColor(Orange)}可以获取到分馏塔原胚。运气好的话，还能直接获取新的分馏塔。原胚经过交互塔培养，即可产出各种分馏塔。同时，主脑提供了一种人工合成原胚的科技，合成得到的定向原胚可以直接培养为指定的建筑。");
+            "In the new distillation technology, the new fractionator is not made from materials but obtained through lottery draws and cultivation. After interacting with the lottery page in the fractionation data centre, you can use lottery tickets to obtain fractionator prototypes or fractionators. After interacting with the tower, the prototype will produce different fractionators. Additionally, COSMO provides a technology for artificially synthesising directed prototypes, which can be directly cultivated into specified buildings.",
+            "在全新的分馏科技中，新分馏塔并非用材料制作，而是通过抽奖与培养获取。与分馏数据中心的奖券抽奖页面交互后，可以使用奖券获取分馏塔原胚或分馏塔。原胚经过交互塔培养后，会产出不同的分馏塔。同时，主脑也提供了一种人工合成定向原胚的科技，可以直接将其培养为指定的建筑。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            "The COSMO has developed an advanced information transmission technology that can transmit the items input into the interactive tower in the form of data to the fractionation data centre for subsequent use.",
-            "主脑开发了一种高级的信息传输技术，可以将输入交互塔的物品以数据的形式传递到分馏数据中心，便于后续使用。");
+            "COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.",
+            "主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
 
         Register("T矿物复制", "Mineral Copy", "矿物复制");
         Register("矿物复制描述",
-            "During Icarus' exploration, the COSMO discovered that some star regions had extremely scarce resources that were difficult to sustain. In order to make it easier for Icarus to explore the barren star regions, the COSMO specially researched and issued the technology of natural resource fractionation. This technology can be used to replicate the vast majority of natural resources, avoiding situations where there is a lack of resources to explore.",
-            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。为了让伊卡洛斯能更轻松地探索贫瘠的星区，主脑特意研究并下发了自然资源的分馏技术。这项技术可以用来复制绝大多数自然资源，避免出现缺乏资源无法探索的情形。");
+            "During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.",
+            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。");
         Register("矿物复制结果",
-            "You have mastered the Mineral Copy technology, and as long as you have a certain amount of natural resources, you can replicate them infinitely.",
-            "你已经掌握了矿物复制技术，只要拥有一定量的自然资源，就能对其进行无限复制。");
+            "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
+            "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to the limitations of material technology, the spawn line is unable to create more advanced proliferators, but fractionation technology can break through the limitations by concentrating the raw material's proliferator points into a certain number of items. It was found that the proliferator points of items could be stacked indefinitely, but the portion over 10 points did not work. Proliferate Point Aggregate technology can fractionate just the items with 10 proliferator points.",
-            "由于材料技术的限制，产线无法制造更高级的增产剂，但分馏技术可以将原料的增产点数集中到某几个物品上，从而突破增产剂的点数限制。研究发现，物品的增产点数可以无限叠加，但超过10点的部分不起作用。增产点数聚集技术可以刚好分馏出10点增产点数的物品。");
+            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points on certain items so that they carry more than 4 proliferator points.",
+            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而使物品携带超过4点增产点数。");
         Register("增产点数聚集结果",
-            "You have mastered the Proliferator Points Aggregate technology. The item's proliferator points can now be pushed to the limit, and production capacity has been greatly increased!",
-            "你已经掌握了增产点数聚集技术。现在物品的增产点数可以达到极限，产能得到了极大的提升！");
+            "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
+            "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T量子复制", "Quantum Copy", "量子复制");
         Register("量子复制描述",
-            "Although Mineral Copy is powerful, it can only be used to process specific items. As research of dark fog continued to deepen, it seemed that the possibility existed of expanding this mode of replication to everything in the universe. It was found that if the effect of the item's proliferator points on the fractionation process changes from accelerate to increase, and the material reorganization technique was used to make the product the same as the input, it would be possible to achieve the effect of duplicating everything.\n"
-            + "It is clear that the research process of correlating yield-enhancing effects with material reorganization is highly uncontrollable. This research exists only in anecdotal evidence and whether it can be done is still unknown.\n"
+            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By restructuring the item at the microscopic level and adding distilled essence as a catalyst, the item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n"
+            + "Obviously, the research process of combining material reorganisation technology with proliferator points and distillation essence is highly unpredictable. This research only exists in rumours, and whether it can be achieved remains unknown.\n"
             + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
-            "随着对黑雾研究的不断深入，似乎存在将这种复制模式扩展到宇宙万物的可能性。研究发现，如果物品的增产点数对分馏过程的影响从加速变为增产，并利用物质重组技术使产物与输入相同，就可以达到复制万物的效果。\n"
-            + "显然，将增产效果与物质重组关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
+            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。它可以应用在绝大多数物品上。如果将物品在微观层面进行重组，并添加分馏精华作为催化剂，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。\n"
+            + "显然，将物质重组技术与增产点数、分馏精华关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
         Register("量子复制结果",
-            "You have unlocked the Quantum Copy technology. Now you truly have the ability to create something from nothing!",
-            "你已经掌握了量子复制技术。现在，你真正拥有了无中生有的能力！");
+            "You have mastered quantum replication technology and can use distilled essence as a catalyst to replicate most items in bulk.",
+            "你已经掌握了量子复制技术，可以用分馏精华作为催化剂批量复制大多数物品了。");
 
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",

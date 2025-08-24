@@ -14,8 +14,8 @@ public static class MineralCopyTower {
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Copy Tower");
         Register("I矿物复制塔",
-            $"Utilizing mineral regeneration technology to replicate minerals into multiple copies. The {"mineral utilization technology".WithColor(Orange)} can also affect the effect.",
-            $"利用矿物再生科技，将矿物复制为多份。{"矿物利用".WithColor(Orange)}科技也会影响效果。");
+            "Duplicate most minerals, including those unique to dark fog.",
+            "复制大多数矿物，包括黑雾特有掉落。");
     }
 
     private static ItemProto item;

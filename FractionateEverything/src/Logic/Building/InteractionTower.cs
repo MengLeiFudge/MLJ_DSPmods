@@ -14,8 +14,8 @@ public static class InteractionTower {
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
-            $"Not only can it cultivate the original embryo of the fractionator into various fractionators, but it also bears the important responsibility of interacting with the fractionation data centre. {"When the front connection port is used as input".WithColor(Orange)}, the item will be transmitted to the fractionation data centre in the form of data and used for lottery and other operations.",
-            $"不仅能将分馏塔原胚培养为各种分馏塔，还承担着与分馏数据中心进行物品交互的重要责任。{"正面连接口作为输入时".WithColor(Orange)}，物品将以数据形式传递到分馏数据中心，并用于抽奖等操作。");
+            "In interactive mode, the input items are transmitted to the fractionation data centre in the form of data, and the selected items are output in physical form. In cultivation mode, non-directional fractionator prototypes can be cultivated into different fractionators.",
+            "交互模式下，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。培养模式下，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
     }
 
     private static ItemProto item;
