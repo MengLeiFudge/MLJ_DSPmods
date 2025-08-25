@@ -72,8 +72,7 @@ public static class ItemInteraction {
         txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
         btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
-            OnButtonChangeItemClick, OnButtonChangeItemClick,
-            "提示", "物品交互提示按钮说明1");
+            OnButtonChangeItemClick, OnButtonChangeItemClick);
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + 40 + 5, y, tab,
             "提示", "物品交互提示按钮说明1");
@@ -93,7 +92,7 @@ public static class ItemInteraction {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
+        btnSelectedItem.ItemId = SelectedItem.ID;
         txtItemCountInfo.text = $"{"当前共有".Translate()} {GetItemTotalCount(SelectedItem.ID)}"
                                  + $"{"，其中分馏数据中心".Translate()} {GetModDataItemCount(SelectedItem.ID)}"
                                  + $"{"，物流清单".Translate()} {GetDeliveryPackageItemCount(SelectedItem.ID)}"

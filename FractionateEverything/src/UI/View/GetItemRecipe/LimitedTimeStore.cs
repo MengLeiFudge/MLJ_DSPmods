@@ -344,12 +344,12 @@ public static class LimitedTimeStore {
             ExchangeInfo info = exchangeInfos[i];
             if (info.item != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
-                exchangeImages1[i].SetSprite(info.item.iconSprite);
+                exchangeImages1[i].ItemId = info.item.ID;
                 exchangeImages2[i].gameObject.SetActive(false);
                 txtExchangeInfos1[i].text = $"x {info.itemCount}";
                 txtExchangeInfos2[i].text = "<=";
                 exchangeImages3[i].gameObject.SetActive(true);
-                exchangeImages3[i].SetSprite(info.matrix.iconSprite);
+                exchangeImages3[i].ItemId = info.matrix.ID;
                 txtExchangeInfos3[i].gameObject.SetActive(true);
                 txtExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);
@@ -365,13 +365,13 @@ public static class LimitedTimeStore {
                 }
             } else if (info.recipe != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
-                exchangeImages1[i].SetSprite(info.recipe.RecipeType.GetItemSprite());
+                exchangeImages1[i].ItemId = info.recipe.RecipeType.GetSpriteItemId();
                 exchangeImages2[i].gameObject.SetActive(true);
-                exchangeImages2[i].SetSprite(LDB.items.Select(info.recipe.InputID).iconSprite);
+                exchangeImages2[i].ItemId = info.recipe.InputID;
                 txtExchangeInfos1[i].text = "";
                 txtExchangeInfos2[i].text = "<=";
                 exchangeImages3[i].gameObject.SetActive(true);
-                exchangeImages3[i].SetSprite(info.matrix.iconSprite);
+                exchangeImages3[i].ItemId = info.matrix.ID;
                 txtExchangeInfos3[i].gameObject.SetActive(true);
                 txtExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);

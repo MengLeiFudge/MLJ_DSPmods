@@ -28,13 +28,24 @@ public class MyImageButton : MonoBehaviour {
 
     // 选中状态相关
     private bool _isSelected = false;
-    private MyImageButtonGroup _buttonGroup = null;
-
     public bool IsSelected {
         get => _isSelected;
         set {
             if (_isSelected != value) {
                 SetSelected(value);
+            }
+        }
+    }
+    private MyImageButtonGroup _buttonGroup = null;
+
+    //图标对应的物品ID
+    private int _itemId = 0;
+    public int ItemId {
+        get => _itemId;
+        set {
+            if (_itemId != value) {
+                _itemId = value;
+                SetSpriteAsItemSprite(_itemId);
             }
         }
     }
@@ -90,45 +101,49 @@ public class MyImageButton : MonoBehaviour {
         _baseObject.SetActive(false);
     }
 
-    public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        int itemID, UnityAction onLeftClick = null, UnityAction onRightClick = null,
-        string tipTitle = "", string tipContent = "") {
-        return CreateImageButton(x, y, parent, 40, 40, LDB.items.Select(itemID)?.iconSprite,
-            onLeftClick, onRightClick, tipTitle, tipContent);
+    public static MyImageButton CreateImageButtonWithDefAction(float x, float y, RectTransform parent, int itemID) {
+        MyImageButton ibtn = CreateImageButton(x, y, parent, itemID);
+        ibtn.SetClickEvent(() => ibtn.DefaultClick(true), () => ibtn.DefaultClick(false));
+        return ibtn;
     }
 
     public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        float width, float height, Sprite sprite = null,
+        int itemID, float width = 40f, float height = 40f,
         UnityAction onLeftClick = null, UnityAction onRightClick = null,
         string tipTitle = "", string tipContent = "") {
         var go = Instantiate(_baseObject);
         go.name = "my-image-button";
         go.SetActive(true);
 
-        var cb = go.AddComponent<MyImageButton>();
-        var rect = NormalizeRectWithMidLeft(cb, x, y, parent, height);
+        var ibtn = go.AddComponent<MyImageButton>();
+        var rect = NormalizeRectWithMidLeft(ibtn, x, y, parent, height);
 
-        cb.rectTrans = rect;
-        cb.uiButton = go.GetComponent<UIButton>();
-        cb.borderImage = go.GetComponent<Image>();
-        cb.spriteImage = go.transform.Find("sprite").GetComponent<Image>();
+        ibtn.rectTrans = rect;
+        ibtn.uiButton = go.GetComponent<UIButton>();
+        ibtn.borderImage = go.GetComponent<Image>();
+        ibtn.spriteImage = go.transform.Find("sprite").GetComponent<Image>();
 
-        // 设置大小
+        ibtn.SetClickEvent(onLeftClick, onRightClick);
         rect.sizeDelta = new(width, height);
+        ibtn.ItemId = itemID;
 
-        // 设置初始精灵
-        if (sprite != null) {
-            cb.SetSprite(sprite);
-        }
+        //添加按钮悬浮提示
+        ibtn.uiButton.tips.topLevel = true;
+        ibtn.uiButton.tips.tipTitle = tipTitle;
+        ibtn.uiButton.tips.tipText = tipContent;
+        ibtn.uiButton.UpdateTip();
 
-        // 添加点击事件
-        if (cb.uiButton.button != null) {
-            cb.uiButton.button.onClick.RemoveAllListeners();
-            if (onLeftClick != null) cb.uiButton.button.onClick.AddListener(onLeftClick);
+        return ibtn;
+    }
+
+    private void SetClickEvent(UnityAction onLeftClick, UnityAction onRightClick) {
+        if (uiButton.button != null) {
+            uiButton.button.onClick.RemoveAllListeners();
+            if (onLeftClick != null) uiButton.button.onClick.AddListener(onLeftClick);
             if (onRightClick != null) {
-                EventTrigger eventTrigger = cb.gameObject.GetComponent<EventTrigger>();
+                EventTrigger eventTrigger = gameObject.GetComponent<EventTrigger>();
                 if (eventTrigger == null) {
-                    eventTrigger = cb.gameObject.AddComponent<EventTrigger>();
+                    eventTrigger = gameObject.AddComponent<EventTrigger>();
                 }
                 if (eventTrigger.triggers == null) {
                     eventTrigger.triggers = [];
@@ -145,17 +160,17 @@ public class MyImageButton : MonoBehaviour {
                 });
                 eventTrigger.triggers.Add(entry);
             }
-        } else {
-            LogError("Button component is null in MyImageButton");
         }
+    }
 
-        //添加按钮悬浮提示
-        cb.uiButton.tips.topLevel = true;
-        cb.uiButton.tips.tipTitle = tipTitle;
-        cb.uiButton.tips.tipText = tipContent;
-        cb.uiButton.UpdateTip();
+    private void SetSpriteAsItemSprite(int itemId) {
+        Sprite sprite = LDB.items.Select(itemId)?.iconSprite;
+        spriteImage.sprite = sprite;
+        spriteImage.gameObject.SetActive(sprite != null);
+    }
 
-        return cb;
+    private void DefaultClick(bool isLeftClick) {
+        ClickToMoveModDataItem(ItemId, isLeftClick);
     }
 
     public void SetEnable(bool on) {
@@ -207,24 +222,9 @@ public class MyImageButton : MonoBehaviour {
         }
     }
 
-    public void SetSprite(Sprite sprite) {
-        spriteImage.sprite = sprite;
-        spriteImage.gameObject.SetActive(sprite != null);
-    }
-
     public MyImageButton WithSize(float width, float height) {
         rectTrans.sizeDelta = new(width, height);
         // spriteImage.rectTransform.sizeDelta = new(width, height);
-        return this;
-    }
-
-    public MyImageButton WithSprite(Sprite sprite) {
-        SetSprite(sprite);
-        return this;
-    }
-
-    public MyImageButton WithItemSprite(int itemId) {
-        SetSprite(LDB.items.Select(itemId).iconSprite);
         return this;
     }
 

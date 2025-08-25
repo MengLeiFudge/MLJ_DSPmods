@@ -111,8 +111,7 @@ public static class RecipeOperate {
         txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
         btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
-            () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); },
-            "提示", "配方操作提示按钮说明1");
+            () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); });
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
@@ -151,7 +150,7 @@ public static class RecipeOperate {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        btnSelectedItem.SetSprite(SelectedItem.iconSprite);
+        btnSelectedItem.ItemId = SelectedItem.ID;
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
