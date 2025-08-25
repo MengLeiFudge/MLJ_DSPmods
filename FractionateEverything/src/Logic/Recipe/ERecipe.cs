@@ -96,15 +96,15 @@ public static class ERecipeExtension {
         };
     }
 
-    public static Sprite GetItemSprite(this ERecipe recipe) {
+    public static int GetSpriteItemId(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.BuildingTrain => LDB.items.Select(IFE交互塔).iconSprite,
-            ERecipe.MineralCopy => LDB.items.Select(IFE矿物复制塔).iconSprite,
-            ERecipe.QuantumCopy => LDB.items.Select(IFE量子复制塔).iconSprite,
-            ERecipe.Alchemy => LDB.items.Select(IFE点金塔).iconSprite,
-            ERecipe.Deconstruction => LDB.items.Select(IFE分解塔).iconSprite,
-            ERecipe.Conversion => LDB.items.Select(IFE转化塔).iconSprite,
-            _ => null,
+            ERecipe.BuildingTrain =>IFE交互塔,
+            ERecipe.MineralCopy => IFE矿物复制塔,
+            ERecipe.QuantumCopy => IFE量子复制塔,
+            ERecipe.Alchemy => IFE点金塔,
+            ERecipe.Deconstruction => IFE分解塔,
+            ERecipe.Conversion => IFE转化塔,
+            _ => 0,
         };
     }
 }

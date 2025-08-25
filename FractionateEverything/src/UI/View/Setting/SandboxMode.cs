@@ -16,7 +16,7 @@ public static class SandboxMode {
     private static UIButton btnUnlockAll;
     private static ConfigEntry<float> ExpMultiRateEntry;
     public static float ExpMultiRate { get; private set; }
-    private static Text textExpMultiRate;
+    private static Text txtExpMultiRate;
     private static MySlider sliderExpMultiRate;
 
     public static void AddTranslations() {
@@ -47,10 +47,10 @@ public static class SandboxMode {
         btnUnlockAll = wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
-        textExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-        sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5, y, tab,
+        txtExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
+        sliderExpMultiRate = wnd.AddSlider(x + txtExpMultiRate.preferredWidth + 5, y, tab,
             ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
+        wnd.AddTipsButton2(x + txtExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
             "经验获取倍率", "经验获取倍率说明");
         y += 36f;
     }
