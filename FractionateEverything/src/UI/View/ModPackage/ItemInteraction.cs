@@ -17,7 +17,7 @@ public static class ItemInteraction {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static Text textCurrItem;
+    private static Text txtCurrItem;
     private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
     private static MyImageButton btnSelectedItem;
 
@@ -33,7 +33,7 @@ public static class ItemInteraction {
         }, true, item => true);
     }
 
-    private static Text textItemCountInfo;
+    private static Text txtItemCountInfo;
     private static UIButton[] btnGetModDataItem = new UIButton[3];
 
     public static void AddTranslations() {
@@ -69,16 +69,16 @@ public static class ItemInteraction {
         wnd.AddButton(0, 1, y, tab, "查看分馏数据中心存储的所有物品", 16, "button-get-mod-data-info",
             GetModDataItemInfo);
         y += 36f + 7f;
-        textCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
-        btnSelectedItem = wnd.AddImageButton(x + textCurrItem.preferredWidth + 5, y, tab,
+        txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
+        btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
             OnButtonChangeItemClick, OnButtonChangeItemClick,
             "提示", "物品交互提示按钮说明1");
         //todo: 修复按钮提示窗后移除该内容
-        wnd.AddTipsButton2(x + textCurrItem.preferredWidth + 5 + 40 + 5, y, tab,
+        wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + 40 + 5, y, tab,
             "提示", "物品交互提示按钮说明1");
         y += 36f + 7f;
-        textItemCountInfo = wnd.AddText2(x, y, tab, "动态刷新", 15, "textItemCountInfo");
+        txtItemCountInfo = wnd.AddText2(x, y, tab, "动态刷新", 15, "textItemCountInfo");
         y += 36f;
         btnGetModDataItem[0] = wnd.AddButton(0, 3, y, tab, "动态刷新", 16, "button-get-item0",
             () => GetModDataItem(1));
@@ -94,7 +94,7 @@ public static class ItemInteraction {
             return;
         }
         btnSelectedItem.SetSprite(SelectedItem.iconSprite);
-        textItemCountInfo.text = $"{"当前共有".Translate()} {GetItemTotalCount(SelectedItem.ID)}"
+        txtItemCountInfo.text = $"{"当前共有".Translate()} {GetItemTotalCount(SelectedItem.ID)}"
                                  + $"{"，其中分馏数据中心".Translate()} {GetModDataItemCount(SelectedItem.ID)}"
                                  + $"{"，物流清单".Translate()} {GetDeliveryPackageItemCount(SelectedItem.ID)}"
                                  + $"{"，个人背包".Translate()} {GetPackageItemCount(SelectedItem.ID)}";
