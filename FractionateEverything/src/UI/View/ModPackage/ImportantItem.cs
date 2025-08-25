@@ -63,9 +63,7 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButton(position.Item1, y, tab, itemId,
-                    onLeftClick: () => { GetModDataItem(itemId, 1); },
-                    onRightClick: () => { GetModDataItem(itemId, -1); });
+                wnd.AddImageButtonWithDefAction(position.Item1, y, tab, itemId);
                 itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
                 index++;
             }
