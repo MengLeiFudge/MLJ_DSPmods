@@ -174,7 +174,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 突破上一品质需要的回响数目
     /// </summary>
-    public int BreakPreviousQualityNeedMemory => Math.Max(0, PreviousQuality - 2);
+    public int BreakPreviousQualityNeedMemory => Math.Max(0, Quality - 2);
     /// <summary>
     /// 突破当前品质需要的回响数目
     /// </summary>
@@ -338,9 +338,7 @@ public abstract class BaseRecipe(
                 Level = CurrQualityMaxLevel;
             }
         }
-        if (Memory < BreakPreviousQualityNeedMemory) {
-            Memory = BreakPreviousQualityNeedMemory;
-        }
+        Memory = BreakPreviousQualityNeedMemory;
         Exp = 0;
     }
 
