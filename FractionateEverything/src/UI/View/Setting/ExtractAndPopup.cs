@@ -21,20 +21,16 @@ public static class ExtractAndPopup {
     public static void AddTranslations() {
         Register("提取&弹窗", "Extract & Pop-up");
 
-        Register("1组", "1 set");
-        Register("3组", "3 sets");
-        Register("10组", "10 sets");
-        Register("30组", "30 sets");
-        Register("100组", "100 sets");
-        Register("全部", "All");
+        Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
+        Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        LeftClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "LeftClickTakeCount", 0, "左键单击时提取物品数目");
+        LeftClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "LeftClickTakeCount", 0, "左键单击时提取几组物品");
         if (LeftClickTakeCountEntry.Value < 0 || LeftClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             LeftClickTakeCountEntry.Value = 0;
         }
-        RightClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "RightClickTakeCount", 3, "右键单击时提取物品数目");
+        RightClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "RightClickTakeCount", 3, "右键单击时提取几组物品");
         if (RightClickTakeCountEntry.Value < 0 || RightClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             RightClickTakeCountEntry.Value = 3;
         }

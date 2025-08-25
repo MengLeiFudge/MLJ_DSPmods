@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View.Setting;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -186,16 +187,26 @@ public static class LimitedTimeStore {
         for (int i = 0; i < Matrixes.Length; i++) {
             txtMatrixCount[i].text = $"x {GetItemTotalCount(Matrixes[i])}";
         }
-        long gameTick = GameMain.gameTick;
-        if (gameTick >= nextFreshTick) {
-            ModifyExchangeItemInfo();
-        }
-        FreshExchangeItemInfo();
-        long ts = nextFreshTick - gameTick;
+        long ts = nextFreshTick - GameMain.gameTick;
         int minute = (int)(ts / 3600);
         ts %= 3600;
         int second = (int)(ts / 60);
         txtLeftTime.text = string.Format("刷新剩余时间".Translate(), minute, second);
+        FreshExchangeItemInfo();
+    }
+
+    /// <summary>
+    /// 后台刷新商店。
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
+    public static void GameData_GameTick_Postfix() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (GameMain.gameTick >= nextFreshTick) {
+            ModifyExchangeItemInfo();
+        }
     }
 
     /// <summary>
@@ -236,6 +247,7 @@ public static class LimitedTimeStore {
                 null);
             return;
         }
+        UIItemup.Up(IFE商店刷新提示, 1);
         if (gameTick >= nextFreshTick) {
             long tickDiff = gameTick - nextFreshTick;
             long skipCycles = tickDiff / baseFreshTs + 1;
