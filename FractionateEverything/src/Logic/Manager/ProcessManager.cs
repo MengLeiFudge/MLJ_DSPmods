@@ -45,26 +45,7 @@ public static class ProcessManager {
 
     #endregion
 
-    public static void Init() {
-        //获取传送带的最大速度，以此决定循环的最大次数以及缓存区大小
-        //游戏逻辑帧只有60，就算传送带再快，也只能取放一个槽位的物品，也就是最多4个，再多也取不到
-        //所以下面均以60/s的传送带速率作为极限值考虑
-        MaxBeltSpeed = (from item in LDB.items.dataArray
-            where item.Type == EItemType.Logistics && item.prefabDesc.isBelt
-            select item.prefabDesc.beltSpeed * 6).Prepend(0).Max();
-        MaxBeltSpeed = Math.Min(60, MaxBeltSpeed);
-        MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
-        float ratio = MaxBeltSpeed / 30.0f;
-        PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
-        BaseFracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
-        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
-        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
-
-        //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
-        for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
-            incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
-        }
-
+    static ProcessManager() {
         //强化相关
         ReinforcementSuccessRateArr[0] = 0.5f;
         ReinforcementSuccessRateArr[1] = 0.45f;
@@ -83,6 +64,27 @@ public static class ProcessManager {
             ReinforcementBonusArr[i] = i < 10
                 ? 0.001f * i * i + 0.019f * i
                 : 0.003f * i * i - 0.019f * i + 0.18f;
+        }
+    }
+
+    public static void Init() {
+        //获取传送带的最大速度，以此决定循环的最大次数以及缓存区大小
+        //游戏逻辑帧只有60，就算传送带再快，也只能取放一个槽位的物品，也就是最多4个，再多也取不到
+        //所以下面均以60/s的传送带速率作为极限值考虑
+        MaxBeltSpeed = (from item in LDB.items.dataArray
+            where item.Type == EItemType.Logistics && item.prefabDesc.isBelt
+            select item.prefabDesc.beltSpeed * 6).Prepend(0).Max();
+        MaxBeltSpeed = Math.Min(60, MaxBeltSpeed);
+        MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
+        float ratio = MaxBeltSpeed / 30.0f;
+        PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
+        BaseFracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
+        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
+        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
+
+        //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
+        for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
+            incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
         }
     }
 
