@@ -173,24 +173,16 @@ public static class BuildingManager {
     #endregion
 
     public static bool EnableFluidOutputStack(this ItemProto building) {
-        switch (building.ID) {
-            case IFE交互塔:
-                return InteractionTower.EnableFluidOutputStack;
-            case IFE矿物复制塔:
-                return MineralCopyTower.EnableFluidOutputStack;
-            case IFE点数聚集塔:
-                return PointAggregateTower.EnableFluidOutputStack;
-            case IFE量子复制塔:
-                return QuantumCopyTower.EnableFluidOutputStack;
-            case IFE点金塔:
-                return AlchemyTower.EnableFluidOutputStack;
-            case IFE分解塔:
-                return DeconstructionTower.EnableFluidOutputStack;
-            case IFE转化塔:
-                return ConversionTower.EnableFluidOutputStack;
-            default:
-                return false;
-        }
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.EnableFluidOutputStack,
+            IFE矿物复制塔 => MineralCopyTower.EnableFluidOutputStack,
+            IFE点数聚集塔 => PointAggregateTower.EnableFluidOutputStack,
+            IFE量子复制塔 => QuantumCopyTower.EnableFluidOutputStack,
+            IFE点金塔 => AlchemyTower.EnableFluidOutputStack,
+            IFE分解塔 => DeconstructionTower.EnableFluidOutputStack,
+            IFE转化塔 => ConversionTower.EnableFluidOutputStack,
+            _ => false
+        };
     }
 
     public static void EnableFluidOutputStack(this ItemProto building, bool enable) {
@@ -222,24 +214,16 @@ public static class BuildingManager {
     }
 
     public static int MaxProductOutputStack(this ItemProto building) {
-        switch (building.ID) {
-            case IFE交互塔:
-                return InteractionTower.MaxProductOutputStack;
-            case IFE矿物复制塔:
-                return MineralCopyTower.MaxProductOutputStack;
-            case IFE点数聚集塔:
-                return PointAggregateTower.MaxProductOutputStack;
-            case IFE量子复制塔:
-                return QuantumCopyTower.MaxProductOutputStack;
-            case IFE点金塔:
-                return AlchemyTower.MaxProductOutputStack;
-            case IFE分解塔:
-                return DeconstructionTower.MaxProductOutputStack;
-            case IFE转化塔:
-                return ConversionTower.MaxProductOutputStack;
-            default:
-                return 1;
-        }
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.MaxProductOutputStack,
+            IFE矿物复制塔 => MineralCopyTower.MaxProductOutputStack,
+            IFE点数聚集塔 => PointAggregateTower.MaxProductOutputStack,
+            IFE量子复制塔 => QuantumCopyTower.MaxProductOutputStack,
+            IFE点金塔 => AlchemyTower.MaxProductOutputStack,
+            IFE分解塔 => DeconstructionTower.MaxProductOutputStack,
+            IFE转化塔 => ConversionTower.MaxProductOutputStack,
+            _ => 1
+        };
     }
 
     public static void MaxProductOutputStack(this ItemProto building, int stack) {
@@ -271,24 +255,16 @@ public static class BuildingManager {
     }
 
     public static bool EnableFracForever(this ItemProto building) {
-        switch (building.ID) {
-            case IFE交互塔:
-                return InteractionTower.EnableFracForever;
-            case IFE矿物复制塔:
-                return MineralCopyTower.EnableFracForever;
-            case IFE点数聚集塔:
-                return PointAggregateTower.EnableFracForever;
-            case IFE量子复制塔:
-                return QuantumCopyTower.EnableFracForever;
-            case IFE点金塔:
-                return AlchemyTower.EnableFracForever;
-            case IFE分解塔:
-                return DeconstructionTower.EnableFracForever;
-            case IFE转化塔:
-                return ConversionTower.EnableFracForever;
-            default:
-                return false;
-        }
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.EnableFracForever,
+            IFE矿物复制塔 => MineralCopyTower.EnableFracForever,
+            IFE点数聚集塔 => PointAggregateTower.EnableFracForever,
+            IFE量子复制塔 => QuantumCopyTower.EnableFracForever,
+            IFE点金塔 => AlchemyTower.EnableFracForever,
+            IFE分解塔 => DeconstructionTower.EnableFracForever,
+            IFE转化塔 => ConversionTower.EnableFracForever,
+            _ => false
+        };
     }
 
     public static void EnableFracForever(this ItemProto building, bool enable) {
@@ -320,24 +296,16 @@ public static class BuildingManager {
     }
 
     public static long workEnergyPerTick(this ItemProto building) {
-        switch (building.ID) {
-            case IFE交互塔:
-                return InteractionTower.workEnergyPerTick;
-            case IFE矿物复制塔:
-                return MineralCopyTower.workEnergyPerTick;
-            case IFE点数聚集塔:
-                return PointAggregateTower.workEnergyPerTick;
-            case IFE量子复制塔:
-                return QuantumCopyTower.workEnergyPerTick;
-            case IFE点金塔:
-                return AlchemyTower.workEnergyPerTick;
-            case IFE分解塔:
-                return DeconstructionTower.workEnergyPerTick;
-            case IFE转化塔:
-                return ConversionTower.workEnergyPerTick;
-            default:
-                return LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick;
-        }
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.workEnergyPerTick,
+            IFE矿物复制塔 => MineralCopyTower.workEnergyPerTick,
+            IFE点数聚集塔 => PointAggregateTower.workEnergyPerTick,
+            IFE量子复制塔 => QuantumCopyTower.workEnergyPerTick,
+            IFE点金塔 => AlchemyTower.workEnergyPerTick,
+            IFE分解塔 => DeconstructionTower.workEnergyPerTick,
+            IFE转化塔 => ConversionTower.workEnergyPerTick,
+            _ => LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick
+        };
     }
 
     public static long idleEnergyPerTick(this ItemProto building) {
@@ -359,6 +327,80 @@ public static class BuildingManager {
             default:
                 return LDB.models.Select(M分馏塔).prefabDesc.idleEnergyPerTick;
         }
+    }
+
+    public static int ReinforcementLevel(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementLevel,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementLevel,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementLevel,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementLevel,
+            IFE点金塔 => AlchemyTower.ReinforcementLevel,
+            IFE分解塔 => DeconstructionTower.ReinforcementLevel,
+            IFE转化塔 => ConversionTower.ReinforcementLevel,
+            _ => 0
+        };
+    }
+
+    public static void ReinforcementLevel(this ItemProto building, int level) {
+        switch (building.ID) {
+            case IFE交互塔:
+                InteractionTower.ReinforcementLevel = level;
+                InteractionTower.UpdateHpAndEnergy();
+                break;
+            case IFE矿物复制塔:
+                MineralCopyTower.ReinforcementLevel = level;
+                MineralCopyTower.UpdateHpAndEnergy();
+                break;
+            case IFE点数聚集塔:
+                PointAggregateTower.ReinforcementLevel = level;
+                PointAggregateTower.UpdateHpAndEnergy();
+                break;
+            case IFE量子复制塔:
+                QuantumCopyTower.ReinforcementLevel = level;
+                QuantumCopyTower.UpdateHpAndEnergy();
+                break;
+            case IFE点金塔:
+                AlchemyTower.ReinforcementLevel = level;
+                AlchemyTower.UpdateHpAndEnergy();
+                break;
+            case IFE分解塔:
+                DeconstructionTower.ReinforcementLevel = level;
+                DeconstructionTower.UpdateHpAndEnergy();
+                break;
+            case IFE转化塔:
+                ConversionTower.ReinforcementLevel = level;
+                ConversionTower.UpdateHpAndEnergy();
+                break;
+            default:
+                return;
+        }
+    }
+
+    public static float ReinforcementBonus(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonus,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonus,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonus,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonus,
+            IFE点金塔 => AlchemyTower.ReinforcementBonus,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonus,
+            IFE转化塔 => ConversionTower.ReinforcementBonus,
+            _ => 0
+        };
+    }
+
+    public static float ReinforcementSuccessRate(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementSuccessRate,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementSuccessRate,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementSuccessRate,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementSuccessRate,
+            IFE点金塔 => AlchemyTower.ReinforcementSuccessRate,
+            IFE分解塔 => DeconstructionTower.ReinforcementSuccessRate,
+            IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
+            _ => 0
+        };
     }
 
     #region IModCanSave
