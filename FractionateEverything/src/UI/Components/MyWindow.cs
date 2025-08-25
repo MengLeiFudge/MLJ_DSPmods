@@ -181,10 +181,19 @@ public class MyWindow : ManualBehaviour {
     }
 
     public MyImageButton AddImageButton(float x, float y, RectTransform parent, int itemId = I铁矿,
-        string objName = "button", UnityAction onLeftClick = null, UnityAction onRightClick = null,
-        string tipTitle = "", string tipContent = "") {
+        string objName = "image-button", UnityAction onLeftClick = null, UnityAction onRightClick = null) {
         var btn = MyImageButton.CreateImageButton(x, y, parent, itemId,
-            onLeftClick, onRightClick, tipTitle, tipContent);
+            onLeftClick: onLeftClick, onRightClick: onRightClick);
+        btn.gameObject.name = objName;
+
+        _maxX = Math.Max(_maxX, x + btn.Width);
+        MaxY = Math.Max(MaxY, y + btn.Height);
+        return btn;
+    }
+
+    public MyImageButton AddImageButtonWithDefAction(float x, float y, RectTransform parent, int itemId = I铁矿,
+        string objName = "image-button") {
+        var btn = MyImageButton.CreateImageButtonWithDefAction(x, y, parent, itemId);
         btn.gameObject.name = objName;
 
         _maxX = Math.Max(_maxX, x + btn.Width);

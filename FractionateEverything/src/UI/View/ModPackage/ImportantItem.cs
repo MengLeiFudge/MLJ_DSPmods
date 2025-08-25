@@ -31,12 +31,6 @@ public static class ImportantItem {
 
     public static void AddTranslations() {
         Register("重要物品", "Important Item");
-
-        Register("以下物品在分馏数据中心的存储量为：",
-            "The storage capacity of the following items in the Fractionation data centre are: ");
-        Register("重要物品提示按钮说明1",
-            "Left-click to extract a set of items, right-click to extract all items.",
-            "左键提取一组物品，右键提取全部物品");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -46,11 +40,8 @@ public static class ImportantItem {
         tab = wnd.AddTab(trans, "重要物品");
         float x = 0f;
         float y = 18f;
-        wnd.AddButton(0, 1, y, tab, "查看分馏数据中心存储的所有物品", 16, "button-get-mod-data-info",
-            GetModDataItemInfo);
-        y += 36f;
         Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提示", "重要物品提示按钮说明1");
+        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提取物品", "提取物品说明");
         y += 36f + 7f;
         int index = 0;
         for (int i = 0; i < itemIdOriArr.Length; i++) {
@@ -63,9 +54,7 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButton(position.Item1, y, tab, itemId,
-                    onLeftClick: () => { GetModDataItem(itemId, 1); },
-                    onRightClick: () => { GetModDataItem(itemId, -1); });
+                wnd.AddImageButtonWithDefAction(position.Item1, y, tab, itemId);
                 itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
                 index++;
             }
@@ -79,60 +68,6 @@ public static class ImportantItem {
         }
         for (int i = 0; i < itemCountTextArr.Length; i++) {
             itemCountTextArr[i].text = $"x {GetModDataItemCount(itemIdArr[i])}";
-        }
-    }
-
-    private static void GetModDataItemInfo() {
-        Dictionary<ItemProto, long> itemCountDic = [];
-        foreach (ItemProto item in LDB.items.dataArray) {
-            long count = GetModDataItemCount(item.ID);
-            if (count <= 0) {
-                continue;
-            }
-            itemCountDic[item] = count;
-        }
-        if (itemCountDic.Count == 0) {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"分馏数据中心没有".Translate()} {"任何物品".Translate()}{"！".Translate()}",
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        StringBuilder sb = new("分馏数据中心存储的物品有：".Translate() + "\n");
-        int oneLineMaxCount = (int)Math.Ceiling(itemCountDic.Count / 40.0);
-        if (oneLineMaxCount < 5) {
-            oneLineMaxCount = 5;
-        } else if (oneLineMaxCount > 10) {
-            oneLineMaxCount = 10;
-        }
-        int oneLineCount = 0;
-        foreach (var p in itemCountDic.OrderByDescending(kvp => itemValue[kvp.Key.ID])) {
-            sb.Append($"{p.Key.name} x {p.Value}".WithValueColor(p.Key.ID));
-            oneLineCount++;
-            if (oneLineCount >= oneLineMaxCount) {
-                sb.Append("\n");
-                oneLineCount = 0;
-            } else {
-                sb.Append("          ");
-            }
-        }
-        UIMessageBox.Show("提示".Translate(),
-            sb.ToString(),
-            "确定".Translate(), UIMessageBox.INFO,
-            null);
-    }
-
-    private static void GetModDataItem(int itemId, int groupCount) {
-        ItemProto item = LDB.items.Select(itemId);
-        int count = groupCount == -1 ? int.MaxValue : item.StackSize * groupCount;
-        count = TakeItemFromModData(item.ID, count, out int inc);
-        if (count == 0) {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"分馏数据中心没有".Translate()} {item.name} {"！".Translate()}",
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-        } else {
-            AddItemToPackage(item.ID, count, inc, false);
         }
     }
 
