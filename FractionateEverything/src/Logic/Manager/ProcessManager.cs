@@ -76,11 +76,13 @@ public static class ProcessManager {
         ReinforcementSuccessRateArr[7] = 0.35f;
         ReinforcementSuccessRateArr[8] = 0.35f;
         ReinforcementSuccessRateArr[9] = 0.35f;
-        for (int i = 10; i < MaxReinforcementLevel - 1; i++) {
+        for (int i = 10; i < ReinforcementSuccessRateArr.Length; i++) {
             ReinforcementSuccessRateArr[i] = 0.3f;
         }
-        for (int i = 1; i < MaxReinforcementLevel; i++) {
-            ReinforcementBonusArr[i] = i < 10 ? 0.1f * i * i + 1.9f * i : 0.3f * i * i - 1.9f * i + 18;
+        for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
+            ReinforcementBonusArr[i] = i < 10
+                ? 0.001f * i * i + 0.019f * i
+                : 0.003f * i * i - 0.019f * i + 0.18f;
         }
     }
 
@@ -308,9 +310,10 @@ public static class ProcessManager {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                float inputIncBonus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                float reinforcementBonus = 1.0f + building.ReinforcementBonus();
                 List<ProductOutputInfo> outputs =
-                    recipe.GetOutputs(ref __instance.seed, successRatePlus, consumeRegister);
+                    recipe.GetOutputs(ref __instance.seed, inputIncBonus, reinforcementBonus, consumeRegister);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;

@@ -1,10 +1,12 @@
 ﻿using System.IO;
+using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.CoreOperate;
@@ -30,6 +32,8 @@ public static class BuildingOperate {
     private static Text textBuildingInfo4;
     private static UIButton btnTip4;
     private static UIButton btnBuildingInfo4;
+    private static Text textBuildingInfo5;
+    private static UIButton btnBuildingInfo5;
 
     public static void AddTranslations() {
         Register("建筑操作", "Building Operate");
@@ -71,6 +75,18 @@ public static class BuildingOperate {
         Register("点数聚集效率层次：", "Point accumulation efficiency level: ");
         Register("+1 聚集层次", "+1 aggregate level");
         Register("+1 点数聚集效率层次", "to +1 point accumulation efficiency level");
+
+        Register("强化等级：", "Reinforcement level: ");
+        Register("强化等级", "Reinforcement level");
+        StringBuilder sb = new();
+        for (int i = 0; i <= MaxReinforcementLevel; i++) {
+            sb.Append($"\n+{i}: {ReinforcementBonusArr[i]:P1} {ReinforcementSuccessRateArr[i]:P0}");
+        }
+        Register("强化等级说明",
+            $"Reinforcement levels increase the durability of buildings, reduce power consumption, and increase recipe success rates and product quantities. The enhancement bonuses and success rates are as follows:{sb}",
+            $"强化等级会增加建筑的耐久度，减少电力消耗，增加配方成功率和产物数目。强化加成、强化成功率如下：{sb}");
+        Register("敲一下！", "Knock once!");
+        Register("强化此建筑", "Reinforce this building");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -90,25 +106,30 @@ public static class BuildingOperate {
         y += 36f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         y += 36f;
-        textBuildingInfo1 = wnd.AddText2(x, y, tab, "动态刷新", 15, "text-building-info-1");
+        textBuildingInfo1 = wnd.AddText2(x, y, tab, "动态刷新");
         wnd.AddTipsButton2(x + 250, y, tab, "流动输出集装", "流动输出集装说明");
-        btnBuildingInfo1 = wnd.AddButton(1, 2, y, tab, "启用", 16, "button-enable-fluid-output-stack",
-            SetFluidOutputStack);
+        btnBuildingInfo1 = wnd.AddButton(1, 2, y, tab, "启用",
+            onClick: SetFluidOutputStack);
         y += 36f;
-        textBuildingInfo2 = wnd.AddText2(x, y, tab, "动态刷新", 15, "text-building-info-2");
+        textBuildingInfo2 = wnd.AddText2(x, y, tab, "动态刷新");
         wnd.AddTipsButton2(x + 250, y, tab, "产物输出集装", "产物输出集装说明");
-        btnBuildingInfo2 = wnd.AddButton(1, 2, y, tab, "+1 集装数目", 16, "button-add-max-product-output-stack",
-            AddMaxProductOutputStack);
+        btnBuildingInfo2 = wnd.AddButton(1, 2, y, tab, "+1 集装数目",
+            onClick: AddMaxProductOutputStack);
         y += 36f;
-        textBuildingInfo3 = wnd.AddText2(x, y, tab, "动态刷新", 15, "text-building-info-3");
+        textBuildingInfo3 = wnd.AddText2(x, y, tab, "动态刷新");
         wnd.AddTipsButton2(x + 250, y, tab, "分馏永动", "分馏永动说明");
-        btnBuildingInfo3 = wnd.AddButton(1, 2, y, tab, "启用", 16, "button-enable-frac-forever",
-            SetFracForever);
+        btnBuildingInfo3 = wnd.AddButton(1, 2, y, tab, "启用",
+            onClick: SetFracForever);
         y += 36f;
-        textBuildingInfo4 = wnd.AddText2(x, y, tab, "动态刷新", 15, "text-building-info-4");
+        textBuildingInfo4 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTip4 = wnd.AddTipsButton2(x + 250, y, tab, "点数聚集效率层次", "点数聚集效率层次说明");
-        btnBuildingInfo4 = wnd.AddButton(1, 2, y, tab, "+1 聚集层次", 16, "button-add-point-aggregate-level",
-            AddPointAggregateLevel);
+        btnBuildingInfo4 = wnd.AddButton(1, 2, y, tab, "+1 聚集层次",
+            onClick: AddPointAggregateLevel);
+        y += 36f;
+        textBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
+        wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
+        btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
+            onClick: Reinforcement);
         y += 36f;
     }
 
@@ -144,6 +165,12 @@ public static class BuildingOperate {
             btnTip4.gameObject.SetActive(false);
             btnBuildingInfo4.gameObject.SetActive(false);
         }
+
+        s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
+        textBuildingInfo5.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
+            ? s.WithColor(Orange)
+            : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
+        btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
     }
 
     private static void SetFluidOutputStack() {
@@ -230,6 +257,33 @@ public static class BuildingOperate {
                     return;
                 }
                 PointAggregateTower.Level++;
+            },
+            null);
+    }
+
+    private static void Reinforcement() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel) {
+            return;
+        }
+        int takeId = IFE分馏塔增幅芯片;
+        int takeCount = 1;
+        ItemProto takeProto = LDB.items.Select(takeId);
+        UIMessageBox.Show("提示".Translate(),
+            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"强化此建筑".Translate()}{"吗？".Translate()}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
+                if (!TakeItem(takeId, takeCount, out _)) {
+                    return;
+                }
+                if (!GameMain.sandboxToolsEnabled) {
+                    if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
+                        return;
+                    }
+                }
+                SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
             },
             null);
     }

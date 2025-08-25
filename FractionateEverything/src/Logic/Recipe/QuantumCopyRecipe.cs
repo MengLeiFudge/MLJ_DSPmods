@@ -80,17 +80,19 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
-    /// <param name="successRatePlus">增产剂对成功率的加成</param>
+    /// <param name="inputIncBonus">增产剂加成</param>
+    /// <param name="reinforcementBonus">强化等级加成</param>
     /// <param name="consumeRegister">全局消耗统计</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
-    public override List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus, int[] consumeRegister) {
+    public override List<ProductOutputInfo> GetOutputs(ref uint seed, float inputIncBonus, float reinforcementBonus,
+        int[] consumeRegister) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         //无变化，量子复制时增产剂不影响此概率
-        if (GetRandDouble(ref seed) >= SuccessRate) {
+        if (GetRandDouble(ref seed) >= SuccessRate * reinforcementBonus) {
             return ProcessManager.emptyOutputs;
         }
         //成功产出
@@ -99,12 +101,12 @@ public class QuantumCopyRecipe : BaseRecipe {
         double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
         float inc10 = (float)ProcessManager.MaxTableMilli(10);
-        float EssenceCostProlifeDec = (inc10 - successRatePlus * 0.5f) / inc10;
+        float EssenceCostProlifeDec = (inc10 - inputIncBonus * 0.5f) / inc10;
         foreach (var outputInfo in OutputMain) {
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * MainOutputCountInc;
+                float countAvg = outputInfo.OutputCount * MainOutputCountInc * reinforcementBonus;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -133,7 +135,7 @@ public class QuantumCopyRecipe : BaseRecipe {
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
-                float countAvg = outputInfo.OutputCount;
+                float countAvg = outputInfo.OutputCount * reinforcementBonus;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
