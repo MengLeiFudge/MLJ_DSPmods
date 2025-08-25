@@ -181,7 +181,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 2;
+        int takeCount = 3;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用流动输出集装".Translate()}{"吗？".Translate()}",
@@ -225,7 +225,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 3;
+        int takeCount = 5;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用分馏永动".Translate()}{"吗？".Translate()}",
@@ -278,6 +278,7 @@ public static class BuildingOperate {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
+
                 if (!GameMain.sandboxToolsEnabled) {
                     if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
                         return;
