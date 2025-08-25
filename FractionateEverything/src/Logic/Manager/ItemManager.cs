@@ -11,6 +11,11 @@ namespace FE.Logic.Manager;
 
 public static class ItemManager {
     public static void AddTranslations() {
+        Register("商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
+        Register("I商店刷新提示",
+            $"The shop has been refreshed, don't forget to claim your relief supplies! ~\n(This is just a store refresh prompt and has no practical use. However, {"you should NOT be able to see this text, right?".WithColor(Red)})",
+            $"商店已刷新，别忘了领取救济粮哦~\n（只是一个商店刷新的提示，没有实际用途。但是，{"你应该看不到这段话才对呀？".WithColor(Red)}）");
+
         Register("电磁奖券", "Electromagnetic Ticket");
         Register("I电磁奖券",
             "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
@@ -118,6 +123,9 @@ public static class ItemManager {
         // recipe.Handcraft = false 表示配方禁止手动制造
         // recipe.NonProductive = true 表示增产剂仅能加速，不能增产
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
+
+        ProtoRegistry.RegisterItem(IFE商店刷新提示, "商店刷新提示", "I商店刷新提示",
+            Tech1134IconPath, 0, 100, EItemType.Material);
 
         ItemProto item;
         RecipeProto recipe;
