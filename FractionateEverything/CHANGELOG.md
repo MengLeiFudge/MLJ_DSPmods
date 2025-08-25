@@ -1,3 +1,10 @@
+- v2.1.1
+    + 修复分馏塔弹窗的概率显示字体的位置错误的问题。
+    + 分馏塔将显示为输入的物品，而非第一个产物。
+    + 启用无限沙土时，不再消耗沙土。
+    + 调整转化配方概率。
+    + 添加部分英文翻译。
+
 - v2.1.0
     + 科技调整。
         + 为所有科技添加解锁所需的元数据。
@@ -14,7 +21,7 @@
         + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
         + 调整分解配方、点金配方的平衡性。
     + 优化分馏塔的处理逻辑。
-        + 分馏永动状态的条件由“输出大于上限一半”改为“输出达到上限”。
+        + 分馏永动状态条件改为产物输出达到上限。
         + 分馏塔产物输出最大堆叠为n时，分馏塔产物输出上限也会变为n倍。
         + 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种，从而减少增产剂的消耗。
     + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
@@ -46,8 +53,7 @@
           Black Mist.
         + Adjusted the balance of decomposition recipes and alchemy recipes.
     + Optimised the processing logic of the fractionator.
-        + Changed the condition for perpetual motion of the fractionator from ‘output greater than half the upper limit’
-          to ‘output reaches the upper limit’.
+        + Changed the condition for perpetual motion of the fractionator to 'output reaches the upper limit'.
         + When the maximum stack of fractionator products is n, the upper limit of fractionator product output will also
           become n times.
         + The flow output items of the point accumulation tower are no longer the average production increase points,
