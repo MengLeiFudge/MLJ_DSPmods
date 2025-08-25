@@ -46,20 +46,16 @@ public static class ProcessManager {
     #endregion
 
     static ProcessManager() {
-        //强化相关
-        ReinforcementSuccessRateArr[0] = 0.5f;
-        ReinforcementSuccessRateArr[1] = 0.45f;
-        ReinforcementSuccessRateArr[2] = 0.45f;
-        ReinforcementSuccessRateArr[3] = 0.4f;
-        ReinforcementSuccessRateArr[4] = 0.4f;
-        ReinforcementSuccessRateArr[5] = 0.4f;
-        ReinforcementSuccessRateArr[6] = 0.35f;
-        ReinforcementSuccessRateArr[7] = 0.35f;
-        ReinforcementSuccessRateArr[8] = 0.35f;
-        ReinforcementSuccessRateArr[9] = 0.35f;
-        for (int i = 10; i < ReinforcementSuccessRateArr.Length; i++) {
-            ReinforcementSuccessRateArr[i] = 0.3f;
+        //强化成功率
+        int index = 0;
+        float rate = 0.5f;
+        for (int loopCount = 1; index < ReinforcementSuccessRateArr.Length - 1 && rate > 0; loopCount++) {
+            for (int j = 0; j < loopCount && index < ReinforcementSuccessRateArr.Length - 1; j++) {
+                ReinforcementSuccessRateArr[index++] = rate;
+            }
+            rate -= 0.05f;
         }
+        //强化加成
         for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
             ReinforcementBonusArr[i] = i < 10
                 ? 0.001f * i * i + 0.019f * i
