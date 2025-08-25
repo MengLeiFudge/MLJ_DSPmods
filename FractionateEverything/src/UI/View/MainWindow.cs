@@ -42,7 +42,7 @@ public static class MainWindow {
         FracStatistic.AddTranslations();
         Register("系统设置", "System Setting");
         VipFeatures.AddTranslations();
-        PopupDisplay.AddTranslations();
+        ExtractAndPopup.AddTranslations();
         SandboxMode.AddTranslations();
     }
 
@@ -66,7 +66,7 @@ public static class MainWindow {
         FracStatistic.LoadConfig(configFile);
 
         VipFeatures.LoadConfig(configFile);
-        PopupDisplay.LoadConfig(configFile);
+        ExtractAndPopup.LoadConfig(configFile);
         SandboxMode.LoadConfig(configFile);
     }
 
@@ -106,7 +106,7 @@ public static class MainWindow {
         FracStatistic.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "系统设置");
         VipFeatures.CreateUI(wnd, trans);
-        PopupDisplay.CreateUI(wnd, trans);
+        ExtractAndPopup.CreateUI(wnd, trans);
         if (sandboxMode) {
             SandboxMode.CreateUI(wnd, trans);
         }
@@ -132,7 +132,7 @@ public static class MainWindow {
         FracStatistic.UpdateUI();
 
         VipFeatures.UpdateUI();
-        PopupDisplay.UpdateUI();
+        ExtractAndPopup.UpdateUI();
         if (sandboxMode) {
             SandboxMode.UpdateUI();
         }
@@ -204,7 +204,7 @@ public static class MainWindow {
         FracStatistic.Import(r);
 
         VipFeatures.Import(r);
-        PopupDisplay.Import(r);
+        ExtractAndPopup.Import(r);
         SandboxMode.Import(r);
     }
 
@@ -230,7 +230,7 @@ public static class MainWindow {
         FracStatistic.Export(w);
 
         VipFeatures.Export(w);
-        PopupDisplay.Export(w);
+        ExtractAndPopup.Export(w);
         SandboxMode.Export(w);
     }
 
@@ -254,7 +254,7 @@ public static class MainWindow {
         FracStatistic.IntoOtherSave();
 
         VipFeatures.IntoOtherSave();
-        PopupDisplay.IntoOtherSave();
+        ExtractAndPopup.IntoOtherSave();
         SandboxMode.IntoOtherSave();
     }
 
