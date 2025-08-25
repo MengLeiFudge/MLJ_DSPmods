@@ -21,6 +21,12 @@ public static class SandboxMode {
 
     public static void AddTranslations() {
         Register("沙盒模式", "Sandbox Mode");
+
+        Register("解锁所有分馏配方", "Unlock all fractionation recipes");
+        Register("经验获取倍率", "Experience gain multiplier");
+        Register("经验获取倍率说明",
+            "Adjust the speed at which recipe experience is gained by processing items.",
+            "调整通过处理物品获取配方经验的速度。");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -45,7 +51,7 @@ public static class SandboxMode {
         sliderExpMultiRate = wnd.AddSlider(x + textExpMultiRate.preferredWidth + 5, y, tab,
             ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
         wnd.AddTipsButton2(x + textExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
-            "经验获取倍率", "调整经验获取的速度，便于调试使用。\n仅在沙盒模式下生效。", "");
+            "经验获取倍率", "经验获取倍率说明");
         y += 36f;
     }
 

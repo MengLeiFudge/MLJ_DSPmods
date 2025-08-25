@@ -83,17 +83,19 @@ public abstract class BaseRecipe(
     /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
-    /// <param name="successRatePlus">增产剂对成功率的加成</param>
+    /// <param name="inputIncBonus">增产剂加成</param>
+    /// <param name="reinforcementBonus">强化等级加成</param>
     /// <param name="consumeRegister">全局消耗统计</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
-    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float successRatePlus, int[] consumeRegister) {
+    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float inputIncBonus, float reinforcementBonus,
+        int[] consumeRegister) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         //无变化
-        if (GetRandDouble(ref seed) >= SuccessRate * successRatePlus) {
+        if (GetRandDouble(ref seed) >= SuccessRate * inputIncBonus * reinforcementBonus) {
             return ProcessManager.emptyOutputs;
         }
         //成功产出
@@ -105,7 +107,7 @@ public abstract class BaseRecipe(
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * MainOutputCountInc;
+                float countAvg = outputInfo.OutputCount * MainOutputCountInc * reinforcementBonus;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -122,7 +124,7 @@ public abstract class BaseRecipe(
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
             if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
-                float countAvg = outputInfo.OutputCount;
+                float countAvg = outputInfo.OutputCount * reinforcementBonus;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -174,7 +176,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 突破上一品质需要的回响数目
     /// </summary>
-    public int BreakPreviousQualityNeedMemory => Math.Max(0, PreviousQuality - 2);
+    public int BreakPreviousQualityNeedMemory => Math.Max(0, Quality - 2);
     /// <summary>
     /// 突破当前品质需要的回响数目
     /// </summary>
@@ -338,9 +340,7 @@ public abstract class BaseRecipe(
                 Level = CurrQualityMaxLevel;
             }
         }
-        if (Memory < BreakPreviousQualityNeedMemory) {
-            Memory = BreakPreviousQualityNeedMemory;
-        }
+        Memory = BreakPreviousQualityNeedMemory;
         Exp = 0;
     }
 

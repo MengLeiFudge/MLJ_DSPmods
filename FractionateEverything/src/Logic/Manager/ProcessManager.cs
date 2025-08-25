@@ -76,11 +76,13 @@ public static class ProcessManager {
         ReinforcementSuccessRateArr[7] = 0.35f;
         ReinforcementSuccessRateArr[8] = 0.35f;
         ReinforcementSuccessRateArr[9] = 0.35f;
-        for (int i = 10; i < MaxReinforcementLevel - 1; i++) {
+        for (int i = 10; i < ReinforcementSuccessRateArr.Length; i++) {
             ReinforcementSuccessRateArr[i] = 0.3f;
         }
-        for (int i = 1; i < MaxReinforcementLevel; i++) {
-            ReinforcementBonusArr[i] = i < 10 ? 0.1f * i * i + 1.9f * i : 0.3f * i * i - 1.9f * i + 18;
+        for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
+            ReinforcementBonusArr[i] = i < 10
+                ? 0.001f * i * i + 0.019f * i
+                : 0.003f * i * i - 0.019f * i + 0.18f;
         }
     }
 
@@ -230,7 +232,7 @@ public static class ProcessManager {
                 __instance.productId = recipe.OutputMain[0].OutputID;
                 __instance.productOutputCount = 0;
                 __instance.produceProb = 0.01f;
-                signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                 signPool[__instance.entityId].iconType = 1U;
                 foreach (OutputInfo info in recipe.OutputMain) {
                     products.Add(new(true, info.OutputID, 0));
@@ -308,9 +310,10 @@ public static class ProcessManager {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float successRatePlus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                float inputIncBonus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
+                float reinforcementBonus = 1.0f + building.ReinforcementBonus();
                 List<ProductOutputInfo> outputs =
-                    recipe.GetOutputs(ref __instance.seed, successRatePlus, consumeRegister);
+                    recipe.GetOutputs(ref __instance.seed, inputIncBonus, reinforcementBonus, consumeRegister);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;
@@ -437,7 +440,7 @@ public static class ProcessManager {
                         } else {
                             __instance.productId = recipe.OutputMain[0].OutputID;
                             __instance.produceProb = 0.01f;
-                            signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                            signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
                             foreach (OutputInfo info in recipe.OutputMain) {
                                 products.Add(new(true, info.OutputID, 0));
@@ -507,7 +510,7 @@ public static class ProcessManager {
                         } else {
                             __instance.productId = recipe.OutputMain[0].OutputID;
                             __instance.produceProb = 0.01f;
-                            signPool[__instance.entityId].iconId0 = (uint)__instance.productId;
+                            signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
                             foreach (OutputInfo info in recipe.OutputMain) {
                                 products.Add(new(true, info.OutputID, 0));
@@ -732,7 +735,9 @@ public static class ProcessManager {
             return;
         }
         int buildingID = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingID == I分馏塔) {
+        if (buildingID < IFE交互塔 || buildingID > IFE行星转化塔) {
+            __instance.productProbText.transform.localPosition = new(0, productProbTextBaseY, 0);
+            __instance.oriProductProbText.transform.localPosition = new(0, oriProductProbTextBaseY, 0);
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
@@ -923,10 +928,10 @@ public static class ProcessManager {
         __instance.oriProductProbText.text = s2;
         //刷新概率显示位置
         float upY = productProbTextBaseY + 9f * (s1.Split('\n').Length - 1);
-        upY += 40f;//让字体不被挡住
+        upY += 80f;//让字体不被挡住
         __instance.productProbText.transform.localPosition = new(0, upY, 0);
         float downY = oriProductProbTextBaseY - (s2.Split('\n').Length > 1 ? 9f : 0);
-        downY -= 10f;//让字体不被挡住
+        downY -= 27f;//让字体不被挡住
         __instance.oriProductProbText.transform.localPosition = new(0, downY, 0);
     }
 
