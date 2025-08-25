@@ -45,6 +45,24 @@ public static class ProcessManager {
 
     #endregion
 
+    static ProcessManager() {
+        //强化成功率
+        int index = 0;
+        float rate = 0.5f;
+        for (int loopCount = 1; index < ReinforcementSuccessRateArr.Length - 1 && rate > 0; loopCount++) {
+            for (int j = 0; j < loopCount && index < ReinforcementSuccessRateArr.Length - 1; j++) {
+                ReinforcementSuccessRateArr[index++] = rate;
+            }
+            rate -= 0.05f;
+        }
+        //强化加成
+        for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
+            ReinforcementBonusArr[i] = i < 10
+                ? 0.001f * i * i + 0.019f * i
+                : 0.003f * i * i - 0.019f * i + 0.18f;
+        }
+    }
+
     public static void Init() {
         //获取传送带的最大速度，以此决定循环的最大次数以及缓存区大小
         //游戏逻辑帧只有60，就算传送带再快，也只能取放一个槽位的物品，也就是最多4个，再多也取不到
@@ -63,26 +81,6 @@ public static class ProcessManager {
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
             incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
-        }
-
-        //强化相关
-        ReinforcementSuccessRateArr[0] = 0.5f;
-        ReinforcementSuccessRateArr[1] = 0.45f;
-        ReinforcementSuccessRateArr[2] = 0.45f;
-        ReinforcementSuccessRateArr[3] = 0.4f;
-        ReinforcementSuccessRateArr[4] = 0.4f;
-        ReinforcementSuccessRateArr[5] = 0.4f;
-        ReinforcementSuccessRateArr[6] = 0.35f;
-        ReinforcementSuccessRateArr[7] = 0.35f;
-        ReinforcementSuccessRateArr[8] = 0.35f;
-        ReinforcementSuccessRateArr[9] = 0.35f;
-        for (int i = 10; i < ReinforcementSuccessRateArr.Length; i++) {
-            ReinforcementSuccessRateArr[i] = 0.3f;
-        }
-        for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
-            ReinforcementBonusArr[i] = i < 10
-                ? 0.001f * i * i + 0.019f * i
-                : 0.003f * i * i - 0.019f * i + 0.18f;
         }
     }
 

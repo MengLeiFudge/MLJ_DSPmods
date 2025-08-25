@@ -1,9 +1,19 @@
 - v2.1.1
     + 修复分馏塔弹窗的概率显示字体的位置错误的问题。
     + 分馏塔将显示为输入的物品，而非第一个产物。
-    + 启用无限沙土时，不再消耗沙土。
-    + 调整转化配方概率。
-    + 添加部分英文翻译。
+    + 调整转化配方概率，现在降级、同级、升级的概率都为1/3。
+    + 添加分馏塔强化功能，可以为分馏塔带来极其强力的增幅！
+    + 沙盒模式下，启用无限沙土时，获取配方经验将不再消耗沙土。
+    + 优化物品交互界面，添加左右键点击时提取物品组数的设置。
+    + 添加刷新商店的提示。
+    + Fixed an issue where the probability display font position was incorrect in the fractionator pop-up window.
+    + The fractionator will now display the input item instead of the first product.
+    + Adjusted the conversion recipe probabilities; downgrade, same-level, and upgrade probabilities are now all 1/3.
+    + Added a fractionator enhancement feature, which can provide extremely powerful boosts to the fractionator!
+    + In sandbox mode, when infinite sand is enabled, obtaining recipe experience will no longer consume sand.
+    + Optimised item interaction interface, added settings for extracting item groups when left and right clicks are
+      made.
+    + Added prompt to refresh the store.
 
 - v2.1.0
     + 科技调整。

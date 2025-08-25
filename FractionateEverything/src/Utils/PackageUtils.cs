@@ -1,4 +1,5 @@
 ﻿using System;
+using FE.UI.View.Setting;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
@@ -56,20 +57,9 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
-        if (itemId == I沙土) {
-            return 0;
+        lock (centerItemCount) {
+            return centerItemCount[itemId];
         }
-        return centerItemCount[itemId];
-    }
-
-    /// <summary>
-    /// 获取MOD数据中指定物品的数量。
-    /// </summary>
-    public static int GetModDataItemIntCount(int itemId) {
-        if (itemId == I沙土) {
-            return 0;
-        }
-        return (int)Math.Min(int.MaxValue, centerItemCount[itemId]);
     }
 
     /// <summary>
@@ -78,13 +68,6 @@ public static partial class Utils {
     public static int GetPackageItemCount(int itemId) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
-        }
-        if (itemId == I沙土) {
-            //如果是沙盒模式并且无限沙土开启，直接返回int最大值
-            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
-                return int.MaxValue;
-            }
-            return (int)Math.Min(int.MaxValue, GameMain.mainPlayer.sandCount);
         }
         StorageComponent package = GameMain.mainPlayer.package;
         int count = 0;
@@ -100,9 +83,6 @@ public static partial class Utils {
     /// 获取物流背包中指定物品的数量。
     /// </summary>
     public static int GetDeliveryPackageItemCount(int itemId) {
-        if (itemId == I沙土) {
-            return 0;
-        }
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
@@ -123,6 +103,13 @@ public static partial class Utils {
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
+        if (itemId == I沙土) {
+            //如果是沙盒模式并且无限沙土开启，直接返回long最大值
+            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
+                return long.MaxValue;
+            }
+            return GameMain.mainPlayer.sandCount;
+        }
         return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
     }
 
@@ -189,54 +176,45 @@ public static partial class Utils {
     #endregion
 
     /// <summary>
-    /// 弹窗询问是否兑换，然后尝试用一定数量的物品交换其他物品，最后提示兑换成功。
+    /// 从ModData背包取出指定物品，再将其放入玩家背包/物流背包/手上。
+    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
     /// </summary>
-    /// <details>
-    /// 拿取物品顺序为：MOD数据 -> 背包 -> 物流背包
-    /// <para></para>
-    /// 放入物品顺序为：背包 -> 物流背包 -> 掉落到地上
-    /// </details>
-    /// <param name="takeId">从MOD数据、背包或物流背包中取走的物品ID</param>
-    /// <param name="takeCount">从MOD数据、背包或物流背包中取走的物品数量</param>
-    /// <param name="giveId">添加到背包中的物品ID</param>
-    /// <param name="giveCount">添加到背包中的物品数量</param>
-    public static void ExchangeItem2Item(int takeId, int takeCount, int giveId, int giveCount) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+    public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
+        ItemProto item = LDB.items.Select(itemId);
+        if (item == null) {
             return;
         }
-        ItemProto takeProto = LDB.items.Select(takeId);
-        ItemProto giveProto = LDB.items.Select(giveId);
-        UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
-            + $"{"来兑换".Translate()} {giveProto.name} x {giveCount} {"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
-                    return;
-                }
-                AddItemToPackage(giveId, giveCount);
-            },
-            null);
+        int count = leftClick
+            ? item.StackSize * ExtractAndPopup.LeftClickTakeCount
+            : item.StackSize * ExtractAndPopup.RightClickTakeCount;
+        lock (centerItemCount) {
+            count = TakeItemFromModData(itemId, count, out int inc);
+            AddItemToPackage(itemId, count, inc, false);
+        }
     }
 
+    /// <summary>
+    /// 获取当前MOD数据中最少的精华的数目。
+    /// </summary>
     public static int GetEssenceMinCount() {
-        return Math.Min(GetModDataItemIntCount(IFE复制精华),
-            Math.Min(GetModDataItemIntCount(IFE点金精华),
-                Math.Min(GetModDataItemIntCount(IFE分解精华),
-                    GetModDataItemIntCount(IFE转化精华))));
+        lock (centerItemCount) {
+            long minCount = Math.Min(centerItemCount[IFE复制精华], centerItemCount[IFE点金精华]);
+            minCount = Math.Min(minCount, centerItemCount[IFE分解精华]);
+            minCount = Math.Min(minCount, centerItemCount[IFE转化精华]);
+            return (int)Math.Min(int.MaxValue, minCount);
+        }
     }
 
     /// <summary>
     /// 从Mod数据中拿取每种精华各n个。
     /// 如果数目不足，则不拿取；否则扣除对应物品。
-    /// 注意，为了提高性能，此方法未判断某些前置条件。使用时需注意情况。
     /// </summary>
     public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
         lock (centerItemCount) {
-            if (GetModDataItemCount(IFE复制精华) < n
-                || GetModDataItemCount(IFE点金精华) < n
-                || GetModDataItemCount(IFE分解精华) < n
-                || GetModDataItemCount(IFE转化精华) < n) {
+            if (centerItemCount[IFE复制精华] < n
+                || centerItemCount[IFE点金精华] < n
+                || centerItemCount[IFE分解精华] < n
+                || centerItemCount[IFE转化精华] < n) {
                 return false;
             }
             TakeItemFromModData(IFE复制精华, n, out _);
