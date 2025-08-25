@@ -117,10 +117,10 @@ public class ConversionRecipe : BaseRecipe {
                 int countN1 = i - 1 >= 0 ? itemLists[i - 1].Count : 0;
                 int countC = itemLists[i].Count;
                 int countP1 = i + 1 < itemLists.Count ? itemLists[i + 1].Count : 0;
-                int totalPieces = countN1 + countC * 2 + countP1 * 2;
+                float totalPieces = countN1 * 1.0f + countC * 1.0f + countP1 * 1.0f;
                 float totalRateN1 = countN1 * 1.0f / totalPieces;
-                float totalRateC = countC * 2.0f / totalPieces;
-                float totalRateP1 = countP1 * 2.0f / totalPieces;
+                float totalRateC = countC * 1.0f / totalPieces;
+                float totalRateP1 = countP1 * 1.0f / totalPieces;
                 List<OutputInfo> outputMain = [];
                 for (int k = i - 1; k <= i + 1; k++) {
                     if (k < 0 || k >= itemLists.Count) {
