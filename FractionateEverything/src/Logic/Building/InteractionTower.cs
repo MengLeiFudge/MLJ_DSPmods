@@ -69,8 +69,8 @@ public static class InteractionTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 9));
-        double energyRatio = propertyRatio * (1.0 - ReinforcementBonus * 0.8);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 4));
+        double energyRatio = propertyRatio * (1.0 + ReinforcementBonus);
         model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }
