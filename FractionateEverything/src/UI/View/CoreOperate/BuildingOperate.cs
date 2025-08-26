@@ -35,6 +35,7 @@ public static class BuildingOperate {
     private static UIButton btnBuildingInfo4;
     private static Text txtBuildingInfo5;
     private static UIButton btnBuildingInfo5;
+    private static Text txtReinforcementBonus;
 
     public static void AddTranslations() {
         Register("建筑操作", "Building Operate");
@@ -83,13 +84,17 @@ public static class BuildingOperate {
         StringBuilder en = new();
         for (int i = 0; i <= MaxReinforcementLevel; i++) {
             cn.Append($"\n+{i}: 加成 +{ReinforcementBonusArr[i]:P1}，强化成功率 {ReinforcementSuccessRateArr[i]:P0}");
-            en.Append($"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRate {ReinforcementSuccessRateArr[i]:P0}");
+            en.Append(
+                $"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRate {ReinforcementSuccessRateArr[i]:P0}");
         }
         Register("强化等级说明",
             $"Reinforcement levels increase the durability of buildings, reduce power consumption, and increase recipe success rates and product quantities. The relationship between enhancement level, enhancement bonus, and enhancement success rate is as follows:{en}",
             $"强化等级会增加建筑的耐久度，减少电力消耗，增加配方成功率和产物数目。强化级别与强化加成、强化成功率的关系如下：{cn}");
         Register("敲一下！", "Knock once!");
         Register("强化此建筑", "Reinforce this building");
+        Register("当前强化加成",
+            "Current Enhancement Bonuses: Durability +{0}, Power Consumption -{1}, Distillation Success Rate +{2}, Product Quantity +{3}",
+            "当前强化加成：耐久度+{0}，电力消耗-{1}，分馏成功率+{2}，产物数目+{3}");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -136,6 +141,8 @@ public static class BuildingOperate {
         btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
             onClick: Reinforcement);
         y += 36f;
+        txtReinforcementBonus = wnd.AddText2(x, y, tab, "动态刷新");
+        y += 36f;
     }
 
     public static void UpdateUI() {
@@ -178,6 +185,12 @@ public static class BuildingOperate {
             ? s.WithColor(Orange)
             : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
         btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+        float bonus = SelectedBuilding.ReinforcementBonus();
+        s = string.Format("当前强化加成".Translate(),
+            (bonus * 9).ToString("P1"), (bonus * 0.9).ToString("P1"), bonus.ToString("P1"), bonus.ToString("P1"));
+        txtReinforcementBonus.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
+            ? s.WithColor(Orange)
+            : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
     }
 
     private static void SetFluidOutputStack() {
