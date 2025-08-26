@@ -97,7 +97,7 @@ public static class RecipeOperate {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
+        RecipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "想要查看的配方类型。");
         if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
             RecipeTypeEntry.Value = 0;
         }
