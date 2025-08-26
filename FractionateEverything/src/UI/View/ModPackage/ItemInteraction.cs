@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
+using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,6 +31,7 @@ public static class ItemInteraction {
 
         Register("物品价值区间", "Item value range");
         Register("显示未存储的物品", "Display items not stored");
+        Register("查找指定物品", "Search for a specified item");
 
         Register("以下物品在分馏数据中心的存储量为：",
             "The storage capacity of the following items in the Fractionation data centre are: ");
@@ -54,7 +56,9 @@ public static class ItemInteraction {
         float y = 18f;
         wnd.AddComboBox(x, y, tab, "物品价值区间")
             .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry);
-        wnd.AddCheckBox(GetPosition(1, 2).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
+        wnd.AddCheckBox(GetPosition(2, 4).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
+        wnd.AddButton(3, 4, y, tab, "查找指定物品",
+            onClick: () => { SearchSpecifiedItem(); });
         y += 36f;
         Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提取物品", "提取物品说明");
@@ -74,10 +78,10 @@ public static class ItemInteraction {
         }
         //根据选择的物品价值层次，获取物品并更新UI
         Dictionary<ItemProto, long> itemCountDic = [];
-        float minValue = ItemValueRangeEntry.Value == 0 ? 0 : ItemValueRanges[ItemValueRangeEntry.Value - 1];
-        float maxValue = ItemValueRanges[ItemValueRangeEntry.Value];
+        float valueRangeMin = ItemValueRangeEntry.Value == 0 ? 0 : ItemValueRanges[ItemValueRangeEntry.Value - 1];
+        float valueRangeMax = ItemValueRanges[ItemValueRangeEntry.Value];
         foreach (ItemProto item in LDB.items.dataArray) {
-            if (itemValue[item.ID] < minValue || itemValue[item.ID] >= maxValue) {
+            if (item.ID == I沙土 || itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
                 continue;
             }
             long count = GetModDataItemCount(item.ID);
@@ -87,7 +91,7 @@ public static class ItemInteraction {
             itemCountDic[item] = count;
         }
         int i = 0;
-        foreach (var p in itemCountDic.OrderBy(kvp => itemValue[kvp.Key.ID])) {
+        foreach (var p in itemCountDic.OrderBy(kvp => kvp.Key.GridIndex)) {
             btnItems[i / 5, i % 5].gameObject.SetActive(true);
             btnItems[i / 5, i % 5].ItemId = p.Key.ID;
             txtItemCounts[i / 5, i % 5].text = $"x {p.Value}";
@@ -97,6 +101,27 @@ public static class ItemInteraction {
             btnItems[i / 5, i % 5].gameObject.SetActive(false);
             txtItemCounts[i / 5, i % 5].text = "";
         }
+    }
+
+    private static void SearchSpecifiedItem() {
+        //_windowTrans.anchoredPosition是窗口的中心点
+        //Popup的位置是弹出窗口的左上角
+        //所以要向右（x+）向上（y+）
+        float x = window.anchoredPosition.x + window.rect.width / 2;
+        float y = window.anchoredPosition.y + window.rect.height / 2;
+        UIItemPickerExtension.Popup(new(x, y), item => {
+            if (item == null) return;
+            float value = itemValue[item.ID];
+            for (int i = 0; i < ItemValueRanges.Length; i++) {
+                if (value < ItemValueRanges[i]) {
+                    ItemValueRangeEntry.Value = i;
+                    if (GetModDataItemCount(item.ID) == 0) {
+                        ShowNotStoredItemEntry.Value = true;
+                    }
+                    return;
+                }
+            }
+        }, true, item => true);
     }
 
     #region IModCanSave
