@@ -30,9 +30,14 @@ public static class PointAggregateTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
-    public static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
+    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static readonly float propertyRatio = 2.0f;
+    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
+    public static float ReinforcementBonusEnergy => ReinforcementBonus;
+    public static float ReinforcementBonusFracSuccess => ReinforcementBonus;
+    public static float ReinforcementBonusMainOutputCount => 0;
+    public static float ReinforcementBonusAppendOutputRate => 0;
+    private static readonly float propertyRatio = 2.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
     /// <summary>
@@ -88,8 +93,8 @@ public static class PointAggregateTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 9));
-        double energyRatio = propertyRatio * (1.0 - ReinforcementBonus * 0.8);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
+        double energyRatio = propertyRatio * (1 + ReinforcementBonusEnergy);
         model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }
@@ -157,7 +162,7 @@ public static class PointAggregateTower {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate : 0;
+                float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate * (1 + ReinforcementBonusFracSuccess) : 0;
                 __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
                 if (__instance.fractionSuccess) {
                     __instance.fluidInputInc -= MaxInc;

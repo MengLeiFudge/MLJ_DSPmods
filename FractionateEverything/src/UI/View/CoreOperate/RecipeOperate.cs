@@ -10,7 +10,6 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
@@ -97,7 +96,7 @@ public static class RecipeOperate {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        RecipeTypeEntry = configFile.Bind("TabRecipeAndBuilding", "Recipe Type", 0, "想要查看的配方类型。");
+        RecipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "想要查看的配方类型。");
         if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
             RecipeTypeEntry.Value = 0;
         }
@@ -159,10 +158,12 @@ public static class RecipeOperate {
             txtRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
+        } else if (recipe.Locked) {
+            txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}";
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            line++;
         } else {
-            txtRecipeInfo[line].text = recipe.Unlocked
-                ? $"{recipe.TypeNameWC} {recipe.LvExpWC}"
-                : $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}";
+            txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
 
@@ -274,25 +275,30 @@ public static class RecipeOperate {
     }
 
     private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
-        QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
-        //增产剂影响后的概率
-        float successRate = recipe.SuccessRate;
-        if (recipe0 == null) {
-            successRate *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-        }
-        //损毁概率
+        var recipe0 = recipe as QuantumCopyRecipe;
+        ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
+        float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
+        float buffBonus1 = building.ReinforcementBonusFracSuccess();
+        float buffBonus2 = building.ReinforcementBonusMainOutputCount();
+        float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+        //成功率
+        float successRate = recipe0 == null
+            ? recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)
+            : recipe.SuccessRate * (1 + buffBonus1);
+        //损毁率
         float destroyRate = recipe.DestroyRate;
-        //最终产物处理率
+        //最终产物转化率
         float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
         Dictionary<int, (float, bool, bool)> outputDic = [];
-        float essenceCountAvg = 0.0f;
+        float essenceCostAvg = 0.0f;
         foreach (var info in recipe.OutputMain) {
             int outputId = info.OutputID;
-            float outputCount = processRate * info.SuccessRate * info.OutputCount * recipe.MainOutputCountInc;
+            float outputCount = processRate;
+            outputCount *= info.SuccessRate;
+            outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
             if (recipe0 != null) {
-                float inc10 = (float)MaxTableMilli(10);
-                float EssenceCostProlifeDec = (inc10 - (float)MaxTableMilli(fluidInputIncAvg) * 0.5f) / inc10;
-                essenceCountAvg = recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec;
+                float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
+                essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
             }
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
@@ -303,7 +309,9 @@ public static class RecipeOperate {
         }
         foreach (var info in recipe.OutputAppend) {
             int outputId = info.OutputID;
-            float outputCount = processRate * info.SuccessRate * recipe.AppendOutputRatioInc * info.OutputCount;
+            float outputCount = processRate;
+            outputCount *= info.SuccessRate * (1 + recipe.AppendOutputRatioInc) * (1 + buffBonus3);
+            outputCount *= info.OutputCount;
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
@@ -311,7 +319,7 @@ public static class RecipeOperate {
             }
             outputDic[outputId] = tuple;
         }
-        StringBuilder sb = new StringBuilder($"{"增产点数".Translate()} {fluidInputIncAvg:D2}    ");
+        StringBuilder sb = new($"{"增产点数".Translate()} {fluidInputIncAvg:D2}    ");
         bool sandboxMode = GameMain.sandboxToolsEnabled;
         foreach (var p in outputDic) {
             var tuple = p.Value;
@@ -319,7 +327,7 @@ public static class RecipeOperate {
                       + $" x {(tuple.Item3 || sandboxMode ? tuple.Item1.ToString("F3") : "???")}  ");
         }
         if (recipe0 != null) {
-            sb.Append($"{"每种精华".Translate()} x -{essenceCountAvg:F3}");
+            sb.Append($"{"每种精华".Translate()} x -{essenceCostAvg:F3}");
         }
         return sb.ToString();
     }

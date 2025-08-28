@@ -57,9 +57,7 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
-        lock (centerItemCount) {
-            return centerItemCount[itemId];
-        }
+        return centerItemCount[itemId];
     }
 
     /// <summary>
@@ -187,22 +185,21 @@ public static partial class Utils {
         int count = leftClick
             ? item.StackSize * ExtractAndPopup.LeftClickTakeCount
             : item.StackSize * ExtractAndPopup.RightClickTakeCount;
+        int inc;
         lock (centerItemCount) {
-            count = TakeItemFromModData(itemId, count, out int inc);
-            AddItemToPackage(itemId, count, inc, false);
+            count = TakeItemFromModData(itemId, count, out inc);
         }
+        AddItemToPackage(itemId, count, inc, false);
     }
 
     /// <summary>
     /// 获取当前MOD数据中最少的精华的数目。
     /// </summary>
     public static int GetEssenceMinCount() {
-        lock (centerItemCount) {
-            long minCount = Math.Min(centerItemCount[IFE复制精华], centerItemCount[IFE点金精华]);
-            minCount = Math.Min(minCount, centerItemCount[IFE分解精华]);
-            minCount = Math.Min(minCount, centerItemCount[IFE转化精华]);
-            return (int)Math.Min(int.MaxValue, minCount);
-        }
+        long minCount = Math.Min(centerItemCount[IFE复制精华], centerItemCount[IFE点金精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE分解精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE转化精华]);
+        return (int)Math.Min(int.MaxValue, minCount);
     }
 
     /// <summary>
@@ -210,24 +207,24 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// </summary>
     public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
+        if (centerItemCount[IFE复制精华] < n
+            || centerItemCount[IFE点金精华] < n
+            || centerItemCount[IFE分解精华] < n
+            || centerItemCount[IFE转化精华] < n) {
+            return false;
+        }
         lock (centerItemCount) {
-            if (centerItemCount[IFE复制精华] < n
-                || centerItemCount[IFE点金精华] < n
-                || centerItemCount[IFE分解精华] < n
-                || centerItemCount[IFE转化精华] < n) {
-                return false;
-            }
             TakeItemFromModData(IFE复制精华, n, out _);
             TakeItemFromModData(IFE点金精华, n, out _);
             TakeItemFromModData(IFE分解精华, n, out _);
             TakeItemFromModData(IFE转化精华, n, out _);
-            lock (consumeRegister) {
-                consumeRegister[IFE复制精华] += n;
-                consumeRegister[IFE点金精华] += n;
-                consumeRegister[IFE分解精华] += n;
-                consumeRegister[IFE转化精华] += n;
-            }
-            return true;
         }
+        lock (consumeRegister) {
+            consumeRegister[IFE复制精华] += n;
+            consumeRegister[IFE点金精华] += n;
+            consumeRegister[IFE分解精华] += n;
+            consumeRegister[IFE转化精华] += n;
+        }
+        return true;
     }
 }

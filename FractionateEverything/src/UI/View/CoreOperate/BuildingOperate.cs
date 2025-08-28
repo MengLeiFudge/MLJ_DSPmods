@@ -17,11 +17,13 @@ public static class BuildingOperate {
 
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
-    private static string[] BuildingTypeNames = [
+    private static readonly int[] BuildingIds = [
+        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔
+    ];
+    private static readonly string[] BuildingTypeNames = [
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(),
         "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate()
     ];
-    private static int[] BuildingIds = [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔];
     private static Text txtChipCount;
 
     private static Text txtBuildingInfo1;
@@ -34,7 +36,9 @@ public static class BuildingOperate {
     private static UIButton btnTip4;
     private static UIButton btnBuildingInfo4;
     private static Text txtBuildingInfo5;
+    private static UIButton btnTip5;
     private static UIButton btnBuildingInfo5;
+    private static Text[] txtReinforcementBonus = new Text[6];
 
     public static void AddTranslations() {
         Register("建筑操作", "Building Operate");
@@ -77,19 +81,30 @@ public static class BuildingOperate {
         Register("+1 聚集层次", "+1 aggregate level");
         Register("+1 点数聚集效率层次", "to +1 point accumulation efficiency level");
 
+        Register("分馏塔强化功能将在以上升级全部升满后解锁。",
+            "The fractionator enhancement feature will unlock once all the above upgrades have been fully completed.");
         Register("强化等级：", "Reinforcement level: ");
         Register("强化等级", "Reinforcement level");
         StringBuilder cn = new();
         StringBuilder en = new();
         for (int i = 0; i <= MaxReinforcementLevel; i++) {
             cn.Append($"\n+{i}: 加成 +{ReinforcementBonusArr[i]:P1}，强化成功率 {ReinforcementSuccessRateArr[i]:P0}");
-            en.Append($"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRate {ReinforcementSuccessRateArr[i]:P0}");
+            en.Append(
+                $"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRate {ReinforcementSuccessRateArr[i]:P0}");
         }
         Register("强化等级说明",
-            $"Reinforcement levels increase the durability of buildings, reduce power consumption, and increase recipe success rates and product quantities. The relationship between enhancement level, enhancement bonus, and enhancement success rate is as follows:{en}",
-            $"强化等级会增加建筑的耐久度，减少电力消耗，增加配方成功率和产物数目。强化级别与强化加成、强化成功率的关系如下：{cn}");
+            $"Reinforcement increases durability, power consumption, fractionation success rate, and product quantity. The relationship between reinforcement level and base reinforcement bonuses, as well as reinforcement success rate, is as follows:{en}",
+            $"强化会增加耐久度、电力消耗、分馏成功率和产物数目。强化级别与强化基础加成、强化成功率的关系如下：{cn}");
         Register("敲一下！", "Knock once!");
         Register("强化此建筑", "Reinforce this building");
+        Register("强化成功提示", "Great! The enhancement worked!", "耶，塔诺西！强化成功了！");
+        Register("强化失败提示", "Awful! The enhancement failed...", "呜，苦露西！强化失败了……");
+        Register("当前强化加成：", "Current Enhancement Bonuses:");
+        Register("耐久度", "Durability");
+        Register("电力消耗", "Power consumption");
+        Register("分馏成功率", "Fractionation success rate");
+        Register("主产物数目", "Main product count");
+        Register("副产物概率", "Append product rate");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -132,10 +147,14 @@ public static class BuildingOperate {
             onClick: AddPointAggregateLevel);
         y += 36f;
         txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
-        wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
+        btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
         btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
             onClick: Reinforcement);
         y += 36f;
+        for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+            txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
+            y += 36f;
+        }
     }
 
     public static void UpdateUI() {
@@ -144,6 +163,9 @@ public static class BuildingOperate {
         }
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
 
+        bool reinforcementPreCondition = true;
+
+        reinforcementPreCondition &= SelectedBuilding.EnableFluidOutputStack();
         txtBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
             ? "已启用流动输出集装".Translate().WithColor(Orange)
             : "未启用流动输出集装".Translate().WithColor(Red);
@@ -151,11 +173,13 @@ public static class BuildingOperate {
         btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidOutputStack());
 
         string s = $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}";
+        reinforcementPreCondition &= SelectedBuilding.MaxProductOutputStack() >= 4;
         txtBuildingInfo2.text = SelectedBuilding.MaxProductOutputStack() >= 4
             ? s.WithColor(Orange)
             : s.WithQualityColor(SelectedBuilding.MaxProductOutputStack());
         btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
 
+        reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
         txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
             ? "已启用分馏永动".Translate().WithColor(Orange)
             : "未启用分馏永动".Translate().WithColor(Red);
@@ -163,21 +187,45 @@ public static class BuildingOperate {
 
         if (SelectedBuilding.ID == IFE点数聚集塔) {
             s = $"{"点数聚集效率层次：".Translate()}{PointAggregateTower.Level}";
+            reinforcementPreCondition &= PointAggregateTower.IsMaxLevel;
             txtBuildingInfo4.text = s.WithPALvColor(PointAggregateTower.Level);
-            txtBuildingInfo4.enabled = true;
             btnTip4.gameObject.SetActive(true);
             btnBuildingInfo4.gameObject.SetActive(!PointAggregateTower.IsMaxLevel);
         } else {
-            txtBuildingInfo4.enabled = false;
+            txtBuildingInfo4.text = "";
             btnTip4.gameObject.SetActive(false);
             btnBuildingInfo4.gameObject.SetActive(false);
         }
 
-        s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
-        txtBuildingInfo5.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
-            ? s.WithColor(Orange)
-            : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
-        btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+        if (reinforcementPreCondition) {
+            s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
+            txtBuildingInfo5.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
+                ? s.WithColor(Orange)
+                : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
+            btnTip5.gameObject.SetActive(true);
+            btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+
+            string[] strs = [
+                "当前强化加成：".Translate(),
+                $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
+                $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
+                $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
+            ];
+            for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+                txtReinforcementBonus[i].text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
+                    ? strs[i].WithColor(Orange)
+                    : strs[i].WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
+            }
+        } else {
+            txtBuildingInfo5.text = "分馏塔强化功能将在以上升级全部升满后解锁。".Translate();
+            btnTip5.gameObject.SetActive(false);
+            btnBuildingInfo5.gameObject.SetActive(false);
+            for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+                txtReinforcementBonus[i].text = "";
+            }
+        }
     }
 
     private static void SetFluidOutputStack() {
@@ -287,10 +335,18 @@ public static class BuildingOperate {
                 }
                 if (!GameMain.sandboxToolsEnabled) {
                     if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
+                        UIMessageBox.Show("提示".Translate(),
+                            "强化失败提示".Translate(),
+                            "确定".Translate(), UIMessageBox.ERROR,
+                            null);
                         return;
                     }
                 }
                 SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+                UIMessageBox.Show("提示".Translate(),
+                    "强化成功提示".Translate(),
+                    "确定".Translate(), UIMessageBox.INFO,
+                    null);
             },
             null);
     }
