@@ -187,23 +187,23 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     }
 
     public static void PreloadAndInitAll() {
-        // ItemProto.InitFuelNeeds();
-        // ItemProto.InitTurretNeeds();
-        // ItemProto.InitFluids();
-        // ItemProto.InitTurrets();
-        // ItemProto.InitEnemyDropTables();
-        // ItemProto.InitConstructableItems();
-        // ItemProto.InitItemIds();
-        // ItemProto.InitItemIndices();
-        // ItemProto.InitMechaMaterials();
-        // //ItemProto.InitFighterIndices();
-        // //ItemProto.InitPowerFacilityIndices();
-        // //ItemProto.InitProductionMask();
-        // ModelProto.InitMaxModelIndex();
-        // ModelProto.InitModelIndices();
-        // ModelProto.InitModelOrders();
-        // RecipeProto.InitFractionatorNeeds();
-        // RaycastLogic.LoadStatic();
+        ItemProto.InitFuelNeeds();
+        ItemProto.InitTurretNeeds();
+        ItemProto.InitFluids();
+        ItemProto.InitTurrets();
+        ItemProto.InitEnemyDropTables();
+        ItemProto.InitConstructableItems();
+        ItemProto.InitItemIds();
+        ItemProto.InitItemIndices();
+        ItemProto.InitMechaMaterials();
+        ItemProto.InitFighterIndices();
+        ItemProto.InitPowerFacilityIndices();
+        ItemProto.InitProductionMask();
+        ModelProto.InitMaxModelIndex();
+        ModelProto.InitModelIndices();
+        ModelProto.InitModelOrders();
+        RecipeProto.InitFractionatorNeeds();
+        RaycastLogic.LoadStatic();
         //重新设定堆叠大小
         StorageComponent.staticLoaded = false;
         StorageComponent.LoadStatic();
