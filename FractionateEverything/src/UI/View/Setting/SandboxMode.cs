@@ -52,7 +52,6 @@ public static class SandboxMode {
             ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
         wnd.AddTipsButton2(x + txtExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
             "经验获取倍率", "经验获取倍率说明");
-        y += 36f;
     }
 
     public static void UpdateUI() {

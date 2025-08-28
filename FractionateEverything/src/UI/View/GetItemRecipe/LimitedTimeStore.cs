@@ -145,9 +145,7 @@ public static class LimitedTimeStore {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        //todo: 调整物品概率，降低低品质概率
         //todo: 增加选项，可以选择物品去向
-
         window = trans;
         tab = wnd.AddTab(trans, "限时商店");
         float x = 0f;
@@ -157,7 +155,6 @@ public static class LimitedTimeStore {
             wnd.AddImageButton(posX, y, tab, Matrixes[i]);
             txtMatrixCount[i] = wnd.AddText2(posX + 40 + 5, y, tab, "动态刷新");
         }
-
         y += 36f + 7f;
         txtLeftTime = wnd.AddText2(x, y, tab, "动态刷新", 15, "textLeftTime");
         wnd.AddButton(1, 3, y, tab, "刷新",

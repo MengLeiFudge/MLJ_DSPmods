@@ -377,19 +377,6 @@ public static class BuildingManager {
         }
     }
 
-    public static float ReinforcementBonus(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonus,
-            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonus,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonus,
-            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonus,
-            IFE点金塔 => AlchemyTower.ReinforcementBonus,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonus,
-            IFE转化塔 => ConversionTower.ReinforcementBonus,
-            _ => 0
-        };
-    }
-
     public static float ReinforcementSuccessRate(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.ReinforcementSuccessRate,
@@ -399,6 +386,80 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.ReinforcementSuccessRate,
             IFE分解塔 => DeconstructionTower.ReinforcementSuccessRate,
             IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
+            _ => 0
+        };
+    }
+
+    public static float ReinforcementBonusDurability(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonusDurability,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonusDurability,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusDurability,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonusDurability,
+            IFE点金塔 => AlchemyTower.ReinforcementBonusDurability,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonusDurability,
+            IFE转化塔 => ConversionTower.ReinforcementBonusDurability,
+            _ => 0
+        };
+    }
+
+    public static float ReinforcementBonusEnergy(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonusEnergy,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonusEnergy,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusEnergy,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonusEnergy,
+            IFE点金塔 => AlchemyTower.ReinforcementBonusEnergy,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonusEnergy,
+            IFE转化塔 => ConversionTower.ReinforcementBonusEnergy,
+            _ => 0
+        };
+    }
+
+    /// <summary>
+    /// 强化对配方的基础成功率加成，与其他增幅累乘
+    /// </summary>
+    public static float ReinforcementBonusFracSuccess(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonusFracSuccess,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonusFracSuccess,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusFracSuccess,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonusFracSuccess,
+            IFE点金塔 => AlchemyTower.ReinforcementBonusFracSuccess,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonusFracSuccess,
+            IFE转化塔 => ConversionTower.ReinforcementBonusFracSuccess,
+            _ => 0
+        };
+    }
+
+    /// <summary>
+    /// 强化对配方的主产物数目的加成，与其他增幅累加
+    /// </summary>
+    public static float ReinforcementBonusMainOutputCount(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonusMainOutputCount,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonusMainOutputCount,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusMainOutputCount,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonusMainOutputCount,
+            IFE点金塔 => AlchemyTower.ReinforcementBonusMainOutputCount,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonusMainOutputCount,
+            IFE转化塔 => ConversionTower.ReinforcementBonusMainOutputCount,
+            _ => 0
+        };
+    }
+
+    /// <summary>
+    /// 强化对配方的副产物概率的加成，与其他增幅累乘
+    /// </summary>
+    public static float ReinforcementBonusAppendOutputRate(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.ReinforcementBonusAppendOutputRate,
+            IFE矿物复制塔 => MineralCopyTower.ReinforcementBonusAppendOutputRate,
+            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusAppendOutputRate,
+            IFE量子复制塔 => QuantumCopyTower.ReinforcementBonusAppendOutputRate,
+            IFE点金塔 => AlchemyTower.ReinforcementBonusAppendOutputRate,
+            IFE分解塔 => DeconstructionTower.ReinforcementBonusAppendOutputRate,
+            IFE转化塔 => ConversionTower.ReinforcementBonusAppendOutputRate,
             _ => 0
         };
     }
