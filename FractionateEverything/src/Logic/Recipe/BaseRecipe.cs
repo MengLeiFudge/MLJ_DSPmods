@@ -29,10 +29,11 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
-    /// 通过品质和等级得到的综合进度，范围为0.35~1.00
+    /// 通过品质和等级得到的综合进度，范围为0.56~1.00
     /// </summary>
-    public float Progress => Math.Min(1.0f,
-        0.365f + (Quality - 1) * 0.11f + (Quality - 1) * (Quality - 2) * 0.0075f + (Level - 1) * 0.015f);
+    public float Progress => IsMaxQuality
+        ? 0.928f + 0.008f * (Level - 1)
+        : 0.536f + 0.016f * Quality + 0.008f * Quality * Quality + 0.008f * (Level - 1);
 
     /// <summary>
     /// 成功率上限
@@ -71,31 +72,32 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 主产物数目增幅
     /// </summary>
-    public virtual float MainOutputCountInc => 1.0f;
+    public virtual float MainOutputCountInc => 0.0f;
 
     /// <summary>
     /// 附加产物概率增幅
     /// </summary>
-    public virtual float AppendOutputRatioInc => 1.0f;
+    public virtual float AppendOutputRatioInc => (Quality - 1) * 0.25f;
 
     /// <summary>
     /// 获取某次输出的执行结果。
     /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
     /// <param name="seed">随机数种子</param>
-    /// <param name="inputIncBonus">增产剂加成</param>
-    /// <param name="reinforcementBonus">强化等级加成</param>
-    /// <param name="consumeRegister">全局消耗统计</param>
+    /// <param name="pointsBonus">增产剂加成</param>
+    /// <param name="buffBonus1">强化对配方成功率加成</param>
+    /// <param name="buffBonus2">强化对主产物数目加成</param>
+    /// <param name="buffBonus3">强化对副产物概率加成</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
-    public virtual List<ProductOutputInfo> GetOutputs(ref uint seed, float inputIncBonus, float reinforcementBonus,
-        int[] consumeRegister) {
+    public List<ProductOutputInfo> GetOutputs(ref uint seed, float pointsBonus,
+        float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
             return null;
         }
         //无变化
-        if (GetRandDouble(ref seed) >= SuccessRate * inputIncBonus * reinforcementBonus) {
+        if (GetRandDouble(ref seed) >= SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)) {
             return ProcessManager.emptyOutputs;
         }
         //成功产出
@@ -107,7 +109,7 @@ public abstract class BaseRecipe(
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * MainOutputCountInc * reinforcementBonus;
+                float countAvg = outputInfo.OutputCount * (1 + MainOutputCountInc + buffBonus2);
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -123,8 +125,8 @@ public abstract class BaseRecipe(
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * AppendOutputRatioInc) {
-                float countAvg = outputInfo.OutputCount * reinforcementBonus;
+            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * (1 + AppendOutputRatioInc) * (1 + buffBonus3)) {
+                float countAvg = outputInfo.OutputCount;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {

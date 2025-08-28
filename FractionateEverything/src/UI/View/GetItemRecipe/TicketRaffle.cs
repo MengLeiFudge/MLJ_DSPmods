@@ -177,7 +177,6 @@ public static class TicketRaffle {
         wnd.AddButton(2, 4, y, tab, "百连",
             onClick: () => RaffleBuilding(100, 5));
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
-        y += 36f;
     }
 
     public static void UpdateUI() {
