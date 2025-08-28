@@ -1,12 +1,13 @@
 - v2.1.2
     + 优化物品交互界面，添加查找指定物品的功能，并将物品按位置排序而非价值。
     + 未完全升级分馏塔时，无法对分馏塔进行强化。
-    + 调整强化的效果，耐久度由+900%改为400%，耗电由-80%改为+100%。
+    + 修复获取对应建筑后，白色虚影不会变绿的问题。
+    + 调整强化增幅，平衡配方效果。
     + Optimised the item interaction interface, added functionality to locate specific items, and sorted items by
       location rather than value.
     + The fractionator cannot be enhanced until it has been fully upgraded.
-    + Adjusted enhancement effects: durability increased from +900% to 400%, and power consumption changed from -80% to
-      +100%.
+    + Fixed an issue where the white phantom would not turn green after acquiring the corresponding structure.
+    + Adjust and enhance the amplification, balancing the recipe's effects.
 
 - v2.1.1
     + 修复分馏塔弹窗的概率显示字体的位置错误的问题。

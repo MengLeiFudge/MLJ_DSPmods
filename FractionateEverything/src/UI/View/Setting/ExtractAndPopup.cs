@@ -46,7 +46,6 @@ public static class ExtractAndPopup {
         y += 36f;
         wnd.AddComboBox(x, y, tab, "右键单击时提取几组物品")
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
-        y += 36f;
     }
 
     public static void UpdateUI() {
