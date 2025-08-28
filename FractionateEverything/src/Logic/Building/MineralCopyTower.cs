@@ -28,9 +28,14 @@ public static class MineralCopyTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
-    public static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
+    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static readonly float propertyRatio = 1.0f / (float)Cargo.powerTableRatio[4];
+    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
+    public static float ReinforcementBonusEnergy => ReinforcementBonus;
+    public static float ReinforcementBonusFracSuccess => 0;
+    public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
+    public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
+    private static readonly float propertyRatio = 1.0f / (float)Cargo.powerTableRatio[4];
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
 
@@ -69,8 +74,8 @@ public static class MineralCopyTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 4));
-        double energyRatio = propertyRatio * (1.0 + ReinforcementBonus);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
+        double energyRatio = propertyRatio * (1 + ReinforcementBonusEnergy);
         model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }

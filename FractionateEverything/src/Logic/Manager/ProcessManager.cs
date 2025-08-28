@@ -264,7 +264,7 @@ public static class ProcessManager {
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFracForever();
-        bool quantumCopyWorking = true;
+        bool moveDirectly = recipe == null || recipe.Locked;
         if (__instance.fluidInputCount > 0
             && (products.All(p => p.count < productOutputMax) || enableFracForever)
             && __instance.fluidOutputCount < fluidOutputMax) {
@@ -278,7 +278,6 @@ public static class ProcessManager {
             if (__instance.progress > 100000)
                 __instance.progress = 100000;
             //是否直接将输入搬运到输出，不进行任何处理
-            bool moveDirectly = recipe == null || recipe.Locked;
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
@@ -308,10 +307,22 @@ public static class ProcessManager {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float inputIncBonus = 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
-                float reinforcementBonus = 1.0f + building.ReinforcementBonus();
-                List<ProductOutputInfo> outputs =
-                    recipe.GetOutputs(ref __instance.seed, inputIncBonus, reinforcementBonus, consumeRegister);
+                float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
+                float buffBonus1 = building.ReinforcementBonusFracSuccess();
+                float buffBonus2 = building.ReinforcementBonusMainOutputCount();
+                float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+                List<ProductOutputInfo> outputs;
+                if (recipe.RecipeType == ERecipe.QuantumCopy) {
+                    var recipe0 = recipe as QuantumCopyRecipe;
+                    outputs = recipe0.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2,
+                        consumeRegister, out bool essenceNotEnough);
+                    if (essenceNotEnough) {
+                        moveDirectly = true;
+                        goto MoveDirectly;
+                    }
+                } else {
+                    outputs = recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3);
+                }
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;
@@ -323,17 +334,7 @@ public static class ProcessManager {
                     if (outputs.Count == 0) {
                         //无处理，直接流出
                         __instance.fluidOutputCount++;
-                        if (recipe.RecipeType == ERecipe.QuantumCopy) {
-                            QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
-                            int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
-                            if (GetEssenceMinCount() >= essenceCost) {
-                                __instance.fluidOutputTotal++;
-                            } else {
-                                quantumCopyWorking = false;
-                            }
-                        } else {
-                            __instance.fluidOutputTotal++;
-                        }
+                        __instance.fluidOutputTotal++;
                         __instance.fluidOutputInc += fluidInputIncAvg;
                     } else {
                         //处理为其他物品
@@ -587,7 +588,7 @@ public static class ProcessManager {
         __instance.isWorking = __instance.fluidInputCount > 0
                                && products.All(p => p.count < productOutputMax)
                                && __instance.fluidOutputCount < fluidOutputMax
-                               && quantumCopyWorking;
+                               && !moveDirectly;
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
@@ -766,7 +767,7 @@ public static class ProcessManager {
                 QuantumCopyRecipe recipe0 =
                     GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
                 if (recipe0 != null) {
-                    int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * recipe0.EssenceCostDec);
+                    int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * (1 - recipe0.EssenceDec));
                     if (GetEssenceMinCount() < essenceCost) {
                         __instance.stateText.text = "缺少精华".Translate();
                         __instance.stateText.color = __instance.workStoppedColor;
@@ -808,39 +809,36 @@ public static class ProcessManager {
             speed = 0.0;
         __instance.speedText.text = string.Format("次分馏每分".Translate(), Math.Round(speed));
         //根据分馏塔以及配方情况，计算实际处理情况，生成上方字符串s1以及下方字符串s2
-        string s1 = "";
-        string s2 = "";
+        string s1;
+        string s2;
         int fluidInputIncAvg = fractionator.fluidInputCount > 0
             ? fractionator.fluidInputInc / fractionator.fluidInputCount
             : 0;
-        float successRatePlus = 1.0f;
-        BaseRecipe recipe = null;
+        BaseRecipe recipe;
+        float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
+        float buffBonus1 = building.ReinforcementBonusFracSuccess();
+        float buffBonus2 = building.ReinforcementBonusMainOutputCount();
+        float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
         switch (buildingID) {
             case IFE交互塔:
-                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
                 break;
             case IFE矿物复制塔:
-                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fractionator.fluidId);
                 break;
             case IFE点数聚集塔:
-                successRatePlus = PointAggregateTower.SuccessRate;
                 recipe = null;
                 break;
             case IFE量子复制塔:
                 recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
                 break;
             case IFE点金塔:
-                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, fractionator.fluidId);
                 break;
             case IFE分解塔:
-                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, fractionator.fluidId);
                 break;
             case IFE转化塔:
-                successRatePlus *= 1.0f + (float)MaxTableMilli(fluidInputIncAvg);
                 recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
                 break;
             default:
@@ -850,7 +848,7 @@ public static class ProcessManager {
         if (recipe == null) {
             if (buildingID == IFE点数聚集塔) {
                 StringBuilder sb1 = new StringBuilder();
-                float ratio = successRatePlus;
+                float ratio = PointAggregateTower.SuccessRate * (1 + buffBonus1);
                 string name = FormatName(LDB.items.Select(fractionator.fluidId).Name);
                 sb1.Append($"{name} x 1.000 ({ratio.FormatP()})\n");
                 if (!transportMode) {
@@ -870,25 +868,26 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
+            float recipeSuccessRate = recipe.SuccessRate * (1 + buffBonus1);
+            if (buildingID != IFE量子复制塔) {
+                recipeSuccessRate *= 1 + pointsBonus;
+            }
             foreach (var output in recipe.OutputMain) {
-                float count = output.OutputCount * recipe.MainOutputCountInc;
-                float ratio = recipe.SuccessRate * output.SuccessRate;
-                if (buildingID != IFE量子复制塔) {
-                    ratio *= successRatePlus;
-                }
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
+                float count = output.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
+                //ratio: 不考虑损毁的情况下，物品转换为此项的综合概率
+                float ratio = recipeSuccessRate * output.SuccessRate;
                 string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
                 sb1.Append($"{name}x{countStr} ({ratioStr})\n");
                 if (!transportMode) {
                     flowRatio -= ratio;
                 }
                 if (buildingID == IFE量子复制塔) {
-                    QuantumCopyRecipe recipe0 = recipe as QuantumCopyRecipe;
-                    float inc10 = (float)MaxTableMilli(10);
-                    float EssenceCostProlifeDec = (inc10 - (float)MaxTableMilli(fluidInputIncAvg) * 0.5f) / inc10;
-                    float essenceCostAvg = recipe0.EssenceCost * recipe0.EssenceCostDec * EssenceCostProlifeDec;
+                    var recipe0 = recipe as QuantumCopyRecipe;
+                    float EssenceDec2 = pointsBonus * 0.5f / (float)MaxTableMilli(10);
+                    float essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
                     name = output.ShowOutputName || sandboxMode ? "每种精华".Translate() : "???";
                     countStr = output.ShowOutputCount || sandboxMode ? essenceCostAvg.ToString("F3") : "???";
                     sb1.Append($"{name} x {countStr} ({ratioStr})\n");
@@ -897,14 +896,14 @@ public static class ProcessManager {
             if (recipe.OutputAppend.Count > 0) {
                 sb1.Append($"---------- {"副产物".Translate()} ----------\n");
                 foreach (var output in recipe.OutputAppend) {
-                    float count = output.OutputCount;
-                    float ratio = recipe.SuccessRate * output.SuccessRate * recipe.AppendOutputRatioInc;
-                    if (buildingID != IFE量子复制塔) {
-                        ratio *= successRatePlus;
-                    }
                     bool sandboxMode = GameMain.sandboxToolsEnabled;
                     string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
+                    float count = output.OutputCount;
                     string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
+                    float ratio = recipeSuccessRate
+                                  * output.SuccessRate
+                                  * (1 + recipe.AppendOutputRatioInc)
+                                  * (1 + buffBonus3);
                     string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
                     sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }
