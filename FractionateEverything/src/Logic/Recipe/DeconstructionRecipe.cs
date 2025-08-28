@@ -109,16 +109,6 @@ public class DeconstructionRecipe : BaseRecipe {
         List<OutputInfo> outputAppend)
         : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
 
-    /// <summary>
-    /// 主产物数目增幅
-    /// </summary>
-    public override float MainOutputCountInc => 1.0f + (IsMaxQuality ? 0.02f * Level : 0);
-
-    /// <summary>
-    /// 附加产物概率增幅
-    /// </summary>
-    public override float AppendOutputRatioInc => 1.0f + (Quality - 1) * 0.25f;
-
     #region IModCanSave
 
     public override void Import(BinaryReader r) {

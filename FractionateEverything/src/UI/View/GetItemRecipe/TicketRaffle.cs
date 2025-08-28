@@ -25,12 +25,13 @@ public static class TicketRaffle {
         "电磁奖券".Translate(), "能量奖券".Translate(), "结构奖券".Translate(),
         "信息奖券".Translate(), "引力奖券".Translate(), "宇宙奖券".Translate(), "黑雾奖券".Translate()
     ];
+    private static readonly Text[] txtTicketCount = new Text[TicketIds.Length];
 
     private static ConfigEntry<int> TicketTypeEntry1;
     private static int TicketType1;
     private static int SelectedTicketId1 => TicketIds[TicketTypeEntry1.Value];
     private static int SelectedTicketMatrixId1 => LDB.items.Select(SelectedTicketId1).maincraft.Items[0];
-    private static Text ticketCountText1;
+    private static Text txtCoreCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry1;
     /// <summary>
     /// 下一抽是第几抽。
@@ -42,7 +43,7 @@ public static class TicketRaffle {
     private static int TicketType2;
     private static int SelectedTicketId2 => TicketIds[TicketTypeEntry2.Value];
     private static int SelectedTicketMatrixId2 => LDB.items.Select(SelectedTicketId2).maincraft.Items[0];
-    private static Text ticketCountText2;
+    private static Text txtChipCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry2;
 
     public static void AddTranslations() {
@@ -138,14 +139,21 @@ public static class TicketRaffle {
         window = trans;
         tab = wnd.AddTab(trans, "奖券抽奖");
         float x = 0f;
-        float y = 18f;
+        float y = 18f + 7f;
+        for (int i = 0; i < TicketIds.Length; i++) {
+            var posX = GetPosition(i, TicketIds.Length).Item1;
+            wnd.AddImageButton(posX, y, tab, TicketIds[i]);
+            txtTicketCount[i] = wnd.AddText2(posX + 40 + 5, y, tab, "动态刷新");
+        }
+        y += 36f;
+        y += 36f + 7f;
         var txt = wnd.AddText2(x, y, tab, "配方奖池");
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "配方奖池", "配方奖池说明");
-        y += 36f;
-        wnd.AddComboBox(x, y, tab, "当前奖券")
+        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
             .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry1);
-        ticketCountText1 = wnd.AddText2(GetPosition(2, 3).Item1, y, tab, "动态刷新");
-        y += 36f;
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
+        txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, "单抽",
             onClick: () => RaffleRecipe(1));
         wnd.AddButton(1, 4, y, tab, "十连",
@@ -154,15 +162,14 @@ public static class TicketRaffle {
             onClick: () => RaffleRecipe(100, 5));
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry1, "自动百连");
         y += 36f;
-        y += 36f;
-        y += 36f;
+        y += 36f + 7f;
         txt = wnd.AddText2(x, y, tab, "建筑奖池");
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "建筑奖池", "建筑奖池说明");
-        y += 36f;
-        wnd.AddComboBox(x, y, tab, "当前奖券")
+        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
             .WithItems(TicketTypeNames).WithSize(200, 0).WithConfigEntry(TicketTypeEntry2);
-        ticketCountText2 = wnd.AddText2(GetPosition(2, 3).Item1, y, tab, "动态刷新");
-        y += 36f;
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
+        txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, "单抽",
             onClick: () => RaffleBuilding(1));
         wnd.AddButton(1, 4, y, tab, "十连",
@@ -170,7 +177,6 @@ public static class TicketRaffle {
         wnd.AddButton(2, 4, y, tab, "百连",
             onClick: () => RaffleBuilding(100, 5));
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
-        y += 36f;
     }
 
     public static void UpdateUI() {
@@ -180,8 +186,11 @@ public static class TicketRaffle {
             return;
         }
         AutoRaffle();
-        ticketCountText1.text = $"{"奖券数目".Translate()}{"：".Translate()}{GetItemTotalCount(SelectedTicketId1)}";
-        ticketCountText2.text = $"{"奖券数目".Translate()}{"：".Translate()}{GetItemTotalCount(SelectedTicketId2)}";
+        for (int i = 0; i < TicketIds.Length; i++) {
+            txtTicketCount[i].text = $"x {GetItemTotalCount(TicketIds[i])}";
+        }
+        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
+        txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
     }
 
     /// <summary>

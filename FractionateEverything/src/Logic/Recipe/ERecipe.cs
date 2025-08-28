@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -98,7 +97,7 @@ public static class ERecipeExtension {
 
     public static int GetSpriteItemId(this ERecipe recipe) {
         return recipe switch {
-            ERecipe.BuildingTrain =>IFE交互塔,
+            ERecipe.BuildingTrain => IFE交互塔,
             ERecipe.MineralCopy => IFE矿物复制塔,
             ERecipe.QuantumCopy => IFE量子复制塔,
             ERecipe.Alchemy => IFE点金塔,

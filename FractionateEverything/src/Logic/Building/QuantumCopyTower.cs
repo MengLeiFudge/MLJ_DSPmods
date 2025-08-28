@@ -15,8 +15,8 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            "Rearrange the item at the microscopic level and add distilled essence as a catalyst to replicate the item in bulk. Proliferator points no longer increase processing speed, but they can reduce the consumption of distilled essence.",
-            "将物品在微观层面进行重组，并添加分馏精华作为催化剂，从而批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。");
+            "Rearrange the item at the microscopic level and add distilled essence as a catalyst to replicate the item in bulk. Proliferator points no longer increase processing speed, but they can reduce the consumption of distilled essence. Consumed distillation essence will be automatically deducted from the fractionation data centre.",
+            "将物品在微观层面进行重组，并添加分馏精华作为催化剂，从而批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。消耗的分馏精华会自动从分馏数据中心扣除。");
     }
 
     private static ItemProto item;
@@ -28,9 +28,14 @@ public static class QuantumCopyTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
-    public static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
+    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static readonly float propertyRatio = 2.0f;
+    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
+    public static float ReinforcementBonusEnergy => ReinforcementBonus;
+    public static float ReinforcementBonusFracSuccess => 0;
+    public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
+    public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
+    private static readonly float propertyRatio = 2.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
 
@@ -69,8 +74,8 @@ public static class QuantumCopyTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonus * 9));
-        double energyRatio = propertyRatio * (1.0 - ReinforcementBonus * 0.8);
+        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
+        double energyRatio = propertyRatio * (1 + ReinforcementBonusEnergy);
         model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
         model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
     }
