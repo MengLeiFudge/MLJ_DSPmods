@@ -23,7 +23,7 @@ public static class TechManager {
             "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。部分分馏配方已解锁。");
         Register("允许连接到分馏数据中心", "Allow connection to fractionation data centre");
         Register("解锁全部建筑培养配方", "Unlock all building train recipes");
-        Register("解锁非珍奇矿物复制配方", "Unlock non rare mineral copy recipes");
+        Register("解锁普通矿物复制配方", "Unlock common mineral copy recipes");
 
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
@@ -602,7 +602,7 @@ public static class TechManager {
         if (__instance.ID == TFE分馏数据中心) {
             __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
                        + $"{"解锁全部建筑培养配方".Translate()}\r\n"
-                       + $"{"解锁非珍奇矿物复制配方".Translate()}";
+                       + $"{"解锁普通矿物复制配方".Translate()}";
             return false;
         }
         if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
@@ -610,6 +610,13 @@ public static class TechManager {
             return false;
         }
         return true;
+    }
+
+    private static bool IsCommonMineralCopyRecipe(this BaseRecipe recipe) {
+        ItemProto item = LDB.items.Select(recipe.InputID);
+        return recipe.RecipeType == ERecipe.MineralCopy
+               && item.Type == EItemType.Resource
+               && (recipe.InputID < I可燃冰 || recipe.InputID > I单极磁石);
     }
 
     [HarmonyPostfix]
@@ -622,10 +629,9 @@ public static class TechManager {
             }
             //解锁非珍奇的原矿复制配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
-                if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
-                    continue;
+                if (recipe.IsCommonMineralCopyRecipe()) {
+                    recipe.RewardThis();
                 }
-                recipe.RewardThis();
             }
         }
     }
@@ -645,10 +651,7 @@ public static class TechManager {
             }
             //判断非珍奇的原矿复制配方是否全部解锁
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
-                if (recipe.InputID >= I可燃冰 && recipe.InputID <= I单极磁石) {
-                    continue;
-                }
-                if (recipe.Locked) {
+                if (recipe.IsCommonMineralCopyRecipe() && recipe.Locked) {
                     recipesUnlocked = false;
                     break;
                 }
