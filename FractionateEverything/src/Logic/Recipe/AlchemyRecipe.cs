@@ -16,7 +16,7 @@ public class AlchemyRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         List<int> matrixList = LDB.items.dataArray
-            .Where(item => item.Type == EItemType.Matrix).Select(item => item.ID).ToList();
+            .Where(item => item.Type == EItemType.Matrix || item.ID == I黑雾矩阵).Select(item => item.ID).ToList();
         foreach (var item in LDB.items.dataArray) {
             if (itemValue[item.ID] >= maxValue
                 || item.ID == IFE分馏配方通用核心
@@ -26,7 +26,7 @@ public class AlchemyRecipe : BaseRecipe {
                 continue;
             }
             //点金塔不能处理矩阵（包括配方原材料含有矩阵的物品），也不能处理建筑
-            if (item.Type == EItemType.Matrix
+            if (matrixList.Contains(item.ID)
                 || (item.maincraft != null && item.maincraft.Items.Any(itemID => matrixList.Contains(itemID)))
                 || item.BuildMode != 0) {
                 continue;
