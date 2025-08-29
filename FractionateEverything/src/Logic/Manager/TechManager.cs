@@ -660,16 +660,16 @@ public static class TechManager {
         }
     }
 
-    #region 一键解锁
-
-    /// <summary>
-    /// 处于沙盒模式下时，在点击“解锁全部”按钮后额外执行的操作
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
-    public static void UITechTree_Do1KeyUnlock_Postfix() {
-        UnlockAllFracRecipes();
-    }
-
-    #endregion
+    // #region 一键解锁
+    //
+    // /// <summary>
+    // /// 处于沙盒模式下时，在点击“解锁全部”按钮后额外执行的操作
+    // /// </summary>
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
+    // public static void UITechTree_Do1KeyUnlock_Postfix() {
+    //     UnlockAllFracRecipes();
+    // }
+    //
+    // #endregion
 }
