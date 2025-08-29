@@ -115,7 +115,7 @@ public class ConversionRecipe : BaseRecipe {
                 int inputID = itemLists[i][j];
                 //依据产物层次初步分配概率
                 int countN1 = i - 1 >= 0 ? itemLists[i - 1].Count : 0;
-                int countC = itemLists[i].Count;
+                int countC = itemLists[i].Count - 1;
                 int countP1 = i + 1 < itemLists.Count ? itemLists[i + 1].Count : 0;
                 float totalPieces = countN1 * 1.0f + countC * 1.0f + countP1 * 1.0f;
                 float totalRateN1 = countN1 * 1.0f / totalPieces;
@@ -135,6 +135,9 @@ public class ConversionRecipe : BaseRecipe {
                     }
                     float valueTotal = values.Sum();
                     for (int l = 0; l < itemLists[k].Count; l++) {
+                        if (itemLists[k][l] == inputID) {
+                            continue;
+                        }
                         //产物数目固定为1
                         //这个配方是赚是亏，谁知道呢？
                         outputMain.Add(new(values[l] / valueTotal * rateTotal, itemLists[k][l], 1));
