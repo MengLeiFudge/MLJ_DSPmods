@@ -268,7 +268,7 @@ public static class TechManager {
         );
         tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
         tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片, IFE交互塔, IFE分馏塔原胚普通];
-        tech超值礼包1.AddItemCounts = [100, 5, 3, 3, 50];
+        tech超值礼包1.AddItemCounts = [100, 5, 3, 1, 100];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
 
