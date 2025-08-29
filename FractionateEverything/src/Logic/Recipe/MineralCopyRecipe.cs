@@ -14,6 +14,8 @@ public class MineralCopyRecipe : BaseRecipe {
     /// 添加所有矿物复制配方
     /// </summary>
     public static void CreateAll() {
+        Create(I木材, 0.04f);
+        Create(I植物燃料, 0.04f);
         Create(I铁矿, 0.04f);
         Create(I铜矿, 0.04f);
         Create(I硅石, 0.04f, [new OutputInfo(0.01f, I分形硅石, 1)]);
