@@ -34,7 +34,7 @@ public static class QuantumCopyTower {
     public static float ReinforcementBonusEnergy => ReinforcementBonus;
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
-    public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
+    public static float ReinforcementBonusAppendOutputRate => 0;
     private static readonly float propertyRatio = 2.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
