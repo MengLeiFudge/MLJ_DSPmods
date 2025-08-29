@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using BepInEx.Bootstrap;
 using CommonAPI.Systems;
 using HarmonyLib;
 using ProjectGenesis.Patches;
+using ProjectGenesis.Utils;
 using xiaoye97;
 using static FE.Utils.Utils;
 
@@ -143,6 +145,30 @@ public static class GenesisBook {
 
     public static bool IsFracTech(int id) {
         return id >= TFE分馏数据中心 && id <= TFE超值礼包9;
+    }
+
+    /// <summary>
+    /// 修复开启“科技探索”时，分馏塔的科技不能显示的问题
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(InitialTechPatches), nameof(InitialTechPatches.RefreshNode))]
+    private static bool InitialTechPatches_RefreshNode_Prefix(ref UITechTree __instance) {
+        GameHistoryData history = GameMain.history;
+        foreach ((int techId, UITechNode node) in __instance.nodes) {
+            TechProto tech = node.techProto;
+            if (techId > 1999 || node == null || tech.IsHiddenTech) {
+                continue;
+            }
+            bool techUnlocked = history.TechUnlocked(techId);
+            bool anyPreTechUnlocked = tech.PreTechs.Length > 0
+                ? tech.PreTechs.Any(history.TechUnlocked)
+                : tech.PreTechsImplicit.Any(history.TechUnlocked);
+            node.gameObject.SetActive(techUnlocked || anyPreTechUnlocked);
+            if (tech.postTechArray.Length > 0) {
+                node.connGroup.gameObject.SetActive(techUnlocked);
+            }
+        }
+        return false;
     }
 
     /*#region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
