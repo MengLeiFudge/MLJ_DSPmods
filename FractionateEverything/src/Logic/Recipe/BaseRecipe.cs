@@ -93,7 +93,7 @@ public abstract class BaseRecipe(
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
+            AddExp((float)Math.Log10(1 + itemValue[InputID]));
             return null;
         }
         //无变化
