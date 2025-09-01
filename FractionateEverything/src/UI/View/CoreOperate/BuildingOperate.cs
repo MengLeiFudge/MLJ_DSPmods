@@ -341,12 +341,12 @@ public static class BuildingOperate {
                             null);
                         return;
                     }
-                    SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
                     UIMessageBox.Show("提示".Translate(),
                         "强化成功提示".Translate(),
                         "确定".Translate(), UIMessageBox.INFO,
                         null);
                 }
+                SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
             },
             null);
     }
