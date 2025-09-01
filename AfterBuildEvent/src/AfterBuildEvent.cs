@@ -424,7 +424,7 @@ static class AfterBuildEvent {
         jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc
             ? $@"D:\project\js\dsp-calc\data\{jsonFileName}.json"
-            : $@"..\..\..\GetDspData\gamedata\calc json\{jsonFileName}.json";
+            : $@"..\..\..\..\GetDspData\gamedata\calc json\{jsonFileName}.json";
     }
 
     #endregion
