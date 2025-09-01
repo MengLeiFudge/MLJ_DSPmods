@@ -182,15 +182,6 @@ public static class ProcessManager {
     /// <summary>
     /// InternalUpdate的默认实现。
     /// </summary>
-    /// <param name="__instance"></param>
-    /// <param name="factory"></param>
-    /// <param name="power"></param>
-    /// <param name="signPool"></param>
-    /// <param name="productRegister"></param>
-    /// <param name="consumeRegister"></param>
-    /// <param name="__result"></param>
-    /// <param name="recipeType"></param>
-    /// <typeparam name="T"></typeparam>
     public static void InternalUpdate<T>(ref FractionatorComponent __instance,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint __result, ERecipe recipeType) where T : BaseRecipe {
