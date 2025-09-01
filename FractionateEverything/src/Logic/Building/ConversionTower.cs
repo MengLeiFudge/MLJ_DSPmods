@@ -33,7 +33,7 @@ public static class ConversionTower {
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
     public static float ReinforcementBonusEnergy => ReinforcementBonus;
     public static float ReinforcementBonusFracSuccess => 0;
-    public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.2f;
+    public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
     public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
     private static readonly float propertyRatio = 1.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
