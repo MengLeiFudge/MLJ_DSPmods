@@ -239,10 +239,10 @@ public static class BuildingOperate {
         int takeCount = 3;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用流动输出集装".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
@@ -261,10 +261,10 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
@@ -283,10 +283,10 @@ public static class BuildingOperate {
         int takeCount = 5;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用分馏永动".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
@@ -305,10 +305,10 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 PointAggregateTower.Level++;
@@ -327,10 +327,10 @@ public static class BuildingOperate {
         int takeCount = 1;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"强化此建筑".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 if (!GameMain.sandboxToolsEnabled) {
@@ -341,12 +341,12 @@ public static class BuildingOperate {
                             null);
                         return;
                     }
+                    SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+                    UIMessageBox.Show("提示".Translate(),
+                        "强化成功提示".Translate(),
+                        "确定".Translate(), UIMessageBox.INFO,
+                        null);
                 }
-                SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
-                UIMessageBox.Show("提示".Translate(),
-                    "强化成功提示".Translate(),
-                    "确定".Translate(), UIMessageBox.INFO,
-                    null);
             },
             null);
     }
