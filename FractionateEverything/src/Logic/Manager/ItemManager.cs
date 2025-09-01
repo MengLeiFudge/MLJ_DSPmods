@@ -273,39 +273,18 @@ public static class ItemManager {
 
     #region 计算物品价值，以及交互塔可接受物品范围
 
-    public const float maxValue = 10000000;
+    public const float maxValue = float.MaxValue;
     /// <summary>
     /// 物品总价值（原材料价值 + 制作价值）
     /// </summary>
     public static readonly float[] itemValue = new float[12000];
     /// <summary>
-    /// 物品转化率，物品价值越高则转化率越低
+    /// 交互塔可接收的所有物品id
     /// </summary>
-    public static readonly float[] itemRatio = new float[12000];
-    //计算物品转化率。f(x)=a*x^b，由MATLAB拟合得到
-    //原始数据：
-    //100.000000 	    0.100000
-    //200.000000 	    0.070000
-    //400.000000 	    0.049000
-    //800.000000 	    0.034300
-    //1600.000000 	    0.024010
-    //3200.000000 	    0.016807
-    //6400.000000 	    0.011765
-    //12800.000000 	    0.008235
-    //25600.000000 	    0.005765
-    //51200.000000 	    0.004035
-    //102400.000000 	0.002825
-    //204800.000000 	0.001977
-    //409600.000000 	0.001384
-    //819200.000000 	0.000969
-    //1638400.000000 	0.000678
-    //3276800.000000 	0.000475
-    private const double a = 1.069415182912524;
-    private const double b = -0.5145731728297580;
     public static int[] needs = [];
 #if DEBUG
     private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
-    private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemPoint.csv";
+    private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemValue.csv";
 #endif
 
     /// <summary>
@@ -478,16 +457,11 @@ public static class ItemManager {
         //设置核心、芯片价值
         itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
         itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
-
-        //根据物品价值构建概率表
-        foreach (ItemProto item in LDB.items.dataArray) {
-            itemRatio[item.ID] = (float)(a * Math.Pow(itemValue[item.ID] * 100, b));
-        }
 #if DEBUG
         //按照从小到大的顺序输出所有物品的原材料点数
         if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
             using StreamWriter sw = new StreamWriter(ITEM_VALUE_CSV_PATH);
-            sw.WriteLine("ID,名称,价值,量子复制概率最大值");
+            sw.WriteLine("ID,名称,价值");
             Dictionary<int, float> dic = [];
             for (int i = 0; i < itemValue.Length; i++) {
                 if (LDB.items.Exist(i)) {
@@ -496,8 +470,7 @@ public static class ItemManager {
             }
             foreach (var p in dic.OrderBy(p => p.Value)) {
                 ItemProto item = LDB.items.Select(p.Key);
-                sw.WriteLine(
-                    $"{p.Key},{item.name},{p.Value:F2},{itemRatio[p.Key]:P5}");
+                sw.WriteLine($"{p.Key},{item.name},{p.Value:F2}");
             }
         }
 #endif
