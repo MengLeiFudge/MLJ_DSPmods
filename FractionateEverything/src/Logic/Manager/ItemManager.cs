@@ -250,22 +250,22 @@ public static class ItemManager {
 
         item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
         item.UnlockKey = -1;
 
         item = ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
             "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
 
         item = ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
             "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
 
         item = ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
             "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
     }
 
