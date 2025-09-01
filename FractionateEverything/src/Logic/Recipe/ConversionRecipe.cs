@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static FE.Logic.Manager.ItemManager;
@@ -105,43 +106,52 @@ public class ConversionRecipe : BaseRecipe {
         foreach (List<int> itemList in itemLists) {
             itemList.RemoveAll(itemID => itemValue[itemID] >= maxValue);
         }
+        //移除空的物品层次
         itemLists.RemoveAll(itemList => itemList.Count == 0);
+        //如果移除之后没有任何物品层次，或者只有一个层次且层次内只有一个物品，直接返回
         if (itemLists.Count == 0 || (itemLists.Count == 1 && itemLists[0].Count == 1)) {
             return;
         }
-        //每一个只能转化成下一级、同级或上一级的物品
+        //每个物品只能转化成低1层次任何物品、同层次其他物品或高1层次任何物品
+        //转化时，需要保证物品整体价值不变。也就是说，必须先确定所有物品的概率，再确定数目
         for (int i = 0; i < itemLists.Count; i++) {
             for (int j = 0; j < itemLists[i].Count; j++) {
                 int inputID = itemLists[i][j];
-                //依据产物层次初步分配概率
-                int countN1 = i - 1 >= 0 ? itemLists[i - 1].Count : 0;
-                int countC = itemLists[i].Count - 1;
-                int countP1 = i + 1 < itemLists.Count ? itemLists[i + 1].Count : 0;
-                float totalPieces = countN1 * 1.0f + countC * 1.0f + countP1 * 1.0f;
-                float totalRateN1 = countN1 * 1.0f / totalPieces;
-                float totalRateC = countC * 1.0f / totalPieces;
-                float totalRateP1 = countP1 * 1.0f / totalPieces;
-                List<OutputInfo> outputMain = [];
+                //构建候选物品ID、候选物品出现概率列表
+                List<int> itemIDs = [];
+                List<float> itemValuePercents = [];
                 for (int k = i - 1; k <= i + 1; k++) {
                     if (k < 0 || k >= itemLists.Count) {
                         continue;
                     }
-                    //依据产物价值进一步分配概率，价值越高概率越低
-                    float rateTotal = k == i - 1 ? totalRateN1 :
-                        k == i ? totalRateC : totalRateP1;
-                    float[] values = new float[itemLists[k].Count];
                     for (int l = 0; l < itemLists[k].Count; l++) {
-                        values[l] = 1.0f / itemValue[itemLists[k][l]];
-                    }
-                    float valueTotal = values.Sum();
-                    for (int l = 0; l < itemLists[k].Count; l++) {
-                        if (itemLists[k][l] == inputID) {
+                        int targetItemID = itemLists[k][l];
+                        //排除自身
+                        if (targetItemID == inputID) {
                             continue;
                         }
-                        //产物数目固定为1
-                        //这个配方是赚是亏，谁知道呢？
-                        outputMain.Add(new(values[l] / valueTotal * rateTotal, itemLists[k][l], 1));
+                        itemIDs.Add(targetItemID);
+                        float basePercent = itemValue[targetItemID] / LDB.items.Select(targetItemID).StackSize;
+                        if (k == i - 1) {
+                            itemValuePercents.Add(basePercent * 0.8f);
+                        } else if (k == i) {
+                            itemValuePercents.Add(basePercent * 1.0f);
+                        } else {
+                            itemValuePercents.Add(basePercent * 1.25f);
+                        }
                     }
+                }
+                //构建转化列表
+                float successRate = 1.0f / itemIDs.Count;
+                float totalValuePercent = itemValuePercents.Sum();
+                List<OutputInfo> outputMain = [];
+                for (int k = 0; k < itemIDs.Count; k++) {
+                    int outputID = itemIDs[k];
+                    //计算分配给这个输出的价值
+                    float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
+                    //根据输出物品的价值计算数量
+                    float outputCount = allocatedValue / (successRate * itemValue[outputID]);
+                    outputMain.Add(new(successRate, outputID, outputCount));
                 }
                 Create(inputID, 0.05f, outputMain);
             }
@@ -172,6 +182,11 @@ public class ConversionRecipe : BaseRecipe {
     public ConversionRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
+
+    /// <summary>
+    /// 主产物数目增幅
+    /// </summary>
+    public override float MainOutputCountInc => (Progress - 0.56f) / 0.88f;
 
     #region IModCanSave
 

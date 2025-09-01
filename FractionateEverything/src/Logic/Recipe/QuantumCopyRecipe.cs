@@ -86,7 +86,7 @@ public class QuantumCopyRecipe : BaseRecipe {
         notEnoughEssence = false;
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp((float)(Math.Log10(1 + itemValue[OutputMain[0].OutputID]) * 0.1));
+            AddExp((float)Math.Log10(1 + itemValue[InputID]));
             return null;
         }
         //无变化，量子复制时增产剂不影响此概率，强化等级影响此概率
