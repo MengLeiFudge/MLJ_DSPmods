@@ -260,7 +260,7 @@ public static class TechManager {
 
 
         var tech超值礼包1 = ProtoRegistry.RegisterTech(
-            TFE超值礼包1, "T超值礼包1", "超值礼包1描述", "超值礼包1结果", "Assets/fe/tech超值礼包1",
+            TFE超值礼包1, "T超值礼包1", "超值礼包1描述", "超值礼包1结果", "Assets/fe/tech超值礼包",
             [tech分馏数据中心.ID],
             [I电磁矩阵], [100], 3600,
             [],
@@ -273,7 +273,7 @@ public static class TechManager {
         tech超值礼包1.PropertyItemCounts = [100];
 
         var tech超值礼包2 = ProtoRegistry.RegisterTech(
-            TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包2",
+            TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包",
             [tech超值礼包1.ID],
             [I能量矩阵], [100], 3600,
             [],
@@ -286,7 +286,7 @@ public static class TechManager {
         tech超值礼包2.PropertyItemCounts = [100];
 
         var tech超值礼包3 = ProtoRegistry.RegisterTech(
-            TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包3",
+            TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包",
             [tech超值礼包2.ID],
             [I结构矩阵], [100], 3600,
             [],
@@ -299,7 +299,7 @@ public static class TechManager {
         tech超值礼包3.PropertyItemCounts = [100];
 
         var tech超值礼包4 = ProtoRegistry.RegisterTech(
-            TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包4",
+            TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包",
             [tech超值礼包3.ID],
             [I信息矩阵], [100], 3600,
             [],
@@ -312,7 +312,7 @@ public static class TechManager {
         tech超值礼包4.PropertyItemCounts = [100];
 
         var tech超值礼包5 = ProtoRegistry.RegisterTech(
-            TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包5",
+            TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包",
             [tech超值礼包4.ID],
             [I引力矩阵], [100], 3600,
             [],
@@ -325,7 +325,7 @@ public static class TechManager {
         tech超值礼包5.PropertyItemCounts = [100];
 
         var tech超值礼包6 = ProtoRegistry.RegisterTech(
-            TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包6",
+            TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包",
             [tech超值礼包5.ID],
             [I宇宙矩阵], [100], 3600,
             [],
@@ -339,7 +339,7 @@ public static class TechManager {
 
 
         var tech电磁奖券 = ProtoRegistry.RegisterTech(
-            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech电磁奖券",
+            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech分馏奖券",
             [tech分馏数据中心.ID],
             [I电磁矩阵], [40], 18000,
             [RFE电磁奖券],
@@ -352,7 +352,7 @@ public static class TechManager {
         tech电磁奖券.PropertyItemCounts = [200];
 
         var tech能量奖券 = ProtoRegistry.RegisterTech(
-            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech能量奖券",
+            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech分馏奖券",
             [tech电磁奖券.ID],
             [I能量矩阵], [40], 36000,
             [RFE能量奖券],
@@ -365,7 +365,7 @@ public static class TechManager {
         tech能量奖券.PropertyItemCounts = [400];
 
         var tech结构奖券 = ProtoRegistry.RegisterTech(
-            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech结构奖券",
+            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech分馏奖券",
             [tech能量奖券.ID],
             [I结构矩阵], [40], 54000,
             [RFE结构奖券],
@@ -378,7 +378,7 @@ public static class TechManager {
         tech结构奖券.PropertyItemCounts = [600];
 
         var tech信息奖券 = ProtoRegistry.RegisterTech(
-            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech信息奖券",
+            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech分馏奖券",
             [tech结构奖券.ID],
             [I信息矩阵], [40], 72000,
             [RFE信息奖券],
@@ -391,7 +391,7 @@ public static class TechManager {
         tech信息奖券.PropertyItemCounts = [800];
 
         var tech引力奖券 = ProtoRegistry.RegisterTech(
-            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech引力奖券",
+            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech分馏奖券",
             [tech信息奖券.ID],
             [I引力矩阵], [40], 90000,
             [RFE引力奖券],
@@ -404,7 +404,7 @@ public static class TechManager {
         tech引力奖券.PropertyItemCounts = [1000];
 
         var tech宇宙奖券 = ProtoRegistry.RegisterTech(
-            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech宇宙奖券",
+            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech分馏奖券",
             [tech引力奖券.ID],
             [I宇宙矩阵], [40], 108000,
             [RFE宇宙奖券],
@@ -417,7 +417,7 @@ public static class TechManager {
         tech宇宙奖券.PropertyItemCounts = [1200];
 
         var tech黑雾奖券 = ProtoRegistry.RegisterTech(
-            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech黑雾奖券",
+            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech分馏奖券",
             [],
             [I黑雾矩阵], [800], 9000,
             [RFE黑雾奖券],
