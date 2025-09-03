@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using BepInEx.Bootstrap;
@@ -50,44 +51,6 @@ public static class GenesisBook {
 
     public static void AfterLDBToolPostAddData() {
         if (_finished) return;
-
-        // //调整黑雾物品的位置，调回胶囊位置
-        // List<int> idList = [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素];
-        // for (int i = 0; i < idList.Count; i++) {
-        //     LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + (i + 2) * 100 + 16;
-        // }
-        // idList = [I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊];
-        // for (int i = 0; i < idList.Count; i++) {
-        //     LDB.items.Select(idList[i]).GridIndex = tab防御 * 1000 + 701 + i;
-        // }
-        //
-        // //修改创世部分物品、配方的显示位置
-        // idList = [IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器];
-        // for (int i = 0; i < idList.Count; i++) {
-        //     ModifyItemAndItsRecipeGridIndex(idList[i], 2, 501 + i);
-        // }
-        // idList = [
-        //     I原型机, I精准无人机, I攻击无人机, I护卫舰, I驱逐舰,
-        //     I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮,
-        //     I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器,
-        // ];
-        // for (int i = 0; i < idList.Count; i++) {
-        //     ModifyItemAndItsRecipeGridIndex(idList[i], tab防御, 101 + i);
-        // }
-        // idList = [
-        //     I机枪弹箱, IGB钢芯弹箱, I超合金弹箱, IGB钨芯弹箱, IGB三元弹箱, IGB湮灭弹箱,
-        //     I燃烧单元, I爆破单元, IGB核子爆破单元, IGB反物质湮灭单元,
-        //     I炮弹组, I高爆炮弹组, IGB微型核弹组, IGB反物质炮弹组,
-        //     I导弹组, I超音速导弹组, I引力导弹组, IGB反物质导弹组,
-        //     I干扰胶囊, I压制胶囊, I等离子胶囊, I反物质胶囊,
-        // ];
-        // foreach (var id in idList) {
-        //     ModifyItemAndItsRecipeGridIndex(id, 2);
-        // }
-        // ModifyItemAndItsRecipeGridIndex(I高斯机枪塔, tab防御, 301);
-        // ModifyItemAndItsRecipeGridIndex(I聚爆加农炮, tab防御, 401);
-        // ModifyItemAndItsRecipeGridIndex(IGB电磁加农炮, tab防御, 501);
-        // ModifyItemAndItsRecipeGridIndex(I导弹防御塔, tab防御, 601);
 
         _finished = true;
         CheckPlugins.LogInfo("GenesisBook Compatibility LDBToolOnPostAddDataAction finish.");
@@ -147,29 +110,37 @@ public static class GenesisBook {
         return id >= TFE分馏数据中心 && id <= TFE超值礼包9;
     }
 
-    /// <summary>
-    /// 修复开启“科技探索”时，分馏塔的科技不能显示的问题
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(InitialTechPatches), nameof(InitialTechPatches.RefreshNode))]
-    private static bool InitialTechPatches_RefreshNode_Prefix(ref UITechTree __instance) {
-        GameHistoryData history = GameMain.history;
-        foreach ((int techId, UITechNode node) in __instance.nodes) {
-            TechProto tech = node.techProto;
-            if (techId > 1999 || node == null || tech.IsHiddenTech) {
-                continue;
-            }
-            bool techUnlocked = history.TechUnlocked(techId);
-            bool anyPreTechUnlocked = tech.PreTechs.Length > 0
-                ? tech.PreTechs.Any(history.TechUnlocked)
-                : tech.PreTechsImplicit.Any(history.TechUnlocked);
-            node.gameObject.SetActive(techUnlocked || anyPreTechUnlocked);
-            if (tech.postTechArray.Length > 0) {
-                node.connGroup.gameObject.SetActive(techUnlocked);
-            }
-        }
-        return false;
-    }
+    // /// <summary>
+    // /// 修复开启“科技探索”时，分馏塔的科技不能显示的问题
+    // /// </summary>
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(InitialTechPatches), nameof(InitialTechPatches.RefreshNode))]
+    // private static bool InitialTechPatches_RefreshNode_Prefix(ref UITechTree __instance) {
+    //     GameHistoryData history = GameMain.history;
+    //     foreach ((int techId, UITechNode node) in __instance.nodes) {
+    //         TechProto tech = node?.techProto;
+    //         CheckPlugins.LogInfo($"RefreshNode[start]: techId{techId}, TechProto{tech}");
+    //         if (techId > 1999 || node == null || tech.IsHiddenTech) {
+    //             CheckPlugins.LogWarning($"RefreshNode[continue]: techId{techId}, TechProto{tech} ");
+    //             continue;
+    //         }
+    //         bool techUnlocked = history.TechUnlocked(techId);
+    //         bool active = techUnlocked;
+    //         if (tech.PreTechs.Length > 0) {
+    //             active |= tech.PreTechs.Any(history.TechUnlocked);
+    //         } else if (tech.PreTechsImplicit.Length > 0) {
+    //             active |= tech.PreTechsImplicit.Any(history.TechUnlocked);
+    //         } else {
+    //             active = true;
+    //         }
+    //         node.gameObject.SetActive(active);
+    //         if (tech.postTechArray.Length > 0) {
+    //             node.connGroup.gameObject.SetActive(techUnlocked);
+    //         }
+    //         CheckPlugins.LogInfo($"RefreshNode[end]: techId{techId}, TechProto{tech}");
+    //     }
+    //     return false;
+    // }
 
     /*#region 量化工具适配，禁止选取所有分馏配方，添加10点数适配
 
