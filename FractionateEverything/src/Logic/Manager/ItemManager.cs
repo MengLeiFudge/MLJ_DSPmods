@@ -457,6 +457,44 @@ public static class ItemManager {
         //设置核心、芯片价值
         itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
         itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
+
+        //设置多功能集成组件的价值
+        iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1
+                                                       && r.Items[0] == IMS多功能集成组件
+                                                       && r.Results.Length > 0
+                                                       && !r.Results.Contains(IMS多功能集成组件));
+        float maxCalculatedValue = 0f;
+        // 为每个配方分别计算多功能集成组件的价值
+        foreach (var recipe in iEnumerable) {
+            // 计算产物总价值
+            float outputValue = 0f;
+            for (int i = 0; i < recipe.Results.Length; i++) {
+                outputValue += recipe.ResultCounts[i] * itemValue[recipe.Results[i]];
+            }
+            float inputCount = recipe.ItemCounts[0];
+            float timeSpend = recipe.TimeSpend / 60.0f;
+            // 根据公式反向推算多功能集成组件的价值
+            // 产物价值 = 原材料价值 + 制作时间价值
+            // outputValue = inputCount * x + timeSpend * (0.03f * inputCount * x + 1.5f)
+            // 其中 x 是 itemValue[IMS多功能集成组件]
+            //
+            // 展开得到：
+            // outputValue = inputCount * x + timeSpend * 0.03f * inputCount * x + timeSpend * 1.5f
+            // outputValue = x * inputCount * (1 + timeSpend * 0.03f) + timeSpend * 1.5f
+            //
+            // 解得：
+            // x = (outputValue - timeSpend * 1.5f) / (inputCount * (1 + timeSpend * 0.03f))
+            if (inputCount > 0 && (inputCount * (1 + timeSpend * 0.03f)) > 0) {
+                float calculatedValue = (outputValue - timeSpend * 1.5f)
+                                        / (inputCount * (1 + timeSpend * 0.03f));
+                maxCalculatedValue = Math.Max(maxCalculatedValue, calculatedValue);
+            }
+        }
+        // 使用所有配方计算结果的最大值
+        if (maxCalculatedValue > 0 && maxCalculatedValue < maxValue && maxCalculatedValue > itemValue[IMS多功能集成组件]) {
+            itemValue[IMS多功能集成组件] = maxCalculatedValue;
+        }
+
 #if DEBUG
         //按照从小到大的顺序输出所有物品的原材料点数
         if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
