@@ -63,7 +63,7 @@ public class GetDspData : BaseUnityPlugin {
     public static bool TheyComeFromVoidEnable;
     public const string GenesisBookGUID = "org.LoShin.GenesisBook";
     public static bool GenesisBookEnable;
-    public const string FractionateEverythingGUID = "com.menglei.dsp.FractionateEverything";
+    public const string FractionateEverythingGUID = "com.menglei.dsp.fe";
     public static bool FractionateEverythingEnable;
 
     public void Awake() {
@@ -702,18 +702,14 @@ public class GetDspData : BaseUnityPlugin {
     /// </summary>
     static void addRecipe(RecipeProto proto, JArray add) {
         if (proto.Type == ERecipeType.Fractionate) {
-            //115重氢分馏                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      0
-            if (proto.ID == R重氢分馏_GB氦闪约束器) {
-                RecipeProto proto2 = CopyRecipeProto(proto);
-                //1%概率分馏出1个重氢，假设传送带速度为x每秒，显然重氢生成速率为x/100每秒
-                //可以转为等价配方：1氢->100s->1重氢
-                proto2.ItemCounts[0] = 1;
-                proto2.TimeSpend = 6000;
-                proto2.ResultCounts[0] = 1;
-                addRecipe(proto2, add, [I分馏塔]);
-            } else {
-                LogError($"发现非重氢分馏的分馏配方！ ID：{proto.ID}");
-            }
+            RecipeProto proto2 = CopyRecipeProto(proto);
+            //1%概率分馏出1个重氢，假设传送带速度为x每秒，显然重氢生成速率为x/100每秒
+            //可以转为等价配方：1氢->100s->1重氢
+            float produceProb = proto.ResultCounts[0] / (float)proto.ItemCounts[0];
+            proto2.ItemCounts[0] = 1;
+            proto2.TimeSpend = (int)Math.Round(proto.TimeSpend / produceProb);
+            proto2.ResultCounts[0] = 1;
+            addRecipe(proto2, add, [I分馏塔]);
             return;
         }
         int[] Factories;
