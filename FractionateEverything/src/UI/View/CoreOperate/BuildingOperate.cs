@@ -38,6 +38,7 @@ public static class BuildingOperate {
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
     private static UIButton btnBuildingInfo5;
+    private static UIButton[] reinforcementBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[6];
 
     public static void AddTranslations() {
@@ -148,8 +149,20 @@ public static class BuildingOperate {
         y += 36f;
         txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
-        btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
-            onClick: Reinforcement);
+
+        if (!GameMain.sandboxToolsEnabled) {
+            btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
+                onClick: Reinforcement);
+        } else {
+            reinforcementBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
+                onClick: Reset);
+            reinforcementBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
+                onClick: Downgrade);
+            reinforcementBtn[2] = wnd.AddButton(1, 2, y + 36f*2, tab, "升级",
+                onClick: Upgrade);
+            reinforcementBtn[3] = wnd.AddButton(1, 2, y + 36f*3, tab, "升满",
+                onClick: FullUpgrade);
+        }
         y += 36f;
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
             txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
@@ -203,7 +216,14 @@ public static class BuildingOperate {
                 ? s.WithColor(Orange)
                 : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
             btnTip5.gameObject.SetActive(true);
-            btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+            if (!GameMain.sandboxToolsEnabled) {
+                btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+            } else {
+                reinforcementBtn[0].gameObject.SetActive(true);
+                reinforcementBtn[1].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() > 0);
+                reinforcementBtn[2].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+                reinforcementBtn[3].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+            }
 
             string[] strs = [
                 "当前强化加成：".Translate(),
@@ -221,7 +241,13 @@ public static class BuildingOperate {
         } else {
             txtBuildingInfo5.text = "分馏塔强化功能将在以上升级全部升满后解锁。".Translate();
             btnTip5.gameObject.SetActive(false);
-            btnBuildingInfo5.gameObject.SetActive(false);
+            if (!GameMain.sandboxToolsEnabled) {
+                btnBuildingInfo5.gameObject.SetActive(false);
+            } else {
+                for (int i = 0; i < reinforcementBtn.Length; i++) {
+                    reinforcementBtn[i].gameObject.SetActive(false);
+                }
+            }
             for (int i = 0; i < txtReinforcementBonus.Length; i++) {
                 txtReinforcementBonus[i].text = "";
             }
@@ -239,10 +265,10 @@ public static class BuildingOperate {
         int takeCount = 3;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用流动输出集装".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
@@ -261,10 +287,10 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
@@ -283,10 +309,10 @@ public static class BuildingOperate {
         int takeCount = 5;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"启用分馏永动".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
@@ -305,10 +331,10 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
                 PointAggregateTower.Level++;
@@ -327,20 +353,18 @@ public static class BuildingOperate {
         int takeCount = 1;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} {"强化此建筑".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
                     return;
                 }
-                if (!GameMain.sandboxToolsEnabled) {
-                    if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
-                        UIMessageBox.Show("提示".Translate(),
-                            "强化失败提示".Translate(),
-                            "确定".Translate(), UIMessageBox.ERROR,
-                            null);
-                        return;
-                    }
+                if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
+                    UIMessageBox.Show("提示".Translate(),
+                        "强化失败提示".Translate(),
+                        "确定".Translate(), UIMessageBox.ERROR,
+                        null);
+                    return;
                 }
                 SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
                 UIMessageBox.Show("提示".Translate(),
@@ -349,6 +373,34 @@ public static class BuildingOperate {
                     null);
             },
             null);
+    }
+
+    private static void Upgrade() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+    }
+
+    private static void Downgrade() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() - 1);
+    }
+
+    private static void FullUpgrade() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        SelectedBuilding.ReinforcementLevel(MaxReinforcementLevel);
+    }
+
+    private static void Reset() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        SelectedBuilding.ReinforcementLevel(0);
     }
 
     #region IModCanSave
