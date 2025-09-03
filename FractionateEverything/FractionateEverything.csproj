@@ -3,7 +3,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
+        <BepInExPluginGuid>com.menglei.dsp.FractionateEverything</BepInExPluginGuid>
         <Description>DSP MOD - FractionateEverything</Description>
         <Version>2.1.3</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
