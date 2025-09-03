@@ -131,7 +131,7 @@ public class ConversionRecipe : BaseRecipe {
                             continue;
                         }
                         itemIDs.Add(targetItemID);
-                        float basePercent = itemValue[targetItemID] / LDB.items.Select(targetItemID).StackSize;
+                        float basePercent = itemValue[targetItemID] * LDB.items.Select(targetItemID).StackSize;
                         if (k == i - 1) {
                             itemValuePercents.Add(basePercent * 0.8f);
                         } else if (k == i) {
