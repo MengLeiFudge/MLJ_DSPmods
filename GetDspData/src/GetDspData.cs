@@ -33,7 +33,7 @@ namespace GetDspData;
 //name: 制造台<0xa0>Mk.I  name.Translate: 制造台<0xa0>Mk.I  Name: 制造台 Mk.I  Name.Translate: 制造台<0xa0>Mk.I
 //name: Assembling Machine Mk.I  name.Translate: Assembling Machine Mk.I  Name: 制造台 Mk.I  Name.Translate: Assembling Machine Mk.I
 
-[BepInPlugin(GUID, NAME, VERSION)]
+[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(MoreMegaStructureGUID, SoftDependency)]
 [BepInDependency(TheyComeFromVoidGUID, SoftDependency)]
@@ -41,10 +41,6 @@ namespace GetDspData;
 [BepInDependency(FractionateEverythingGUID, SoftDependency)]
 [CommonAPISubmoduleDependency(nameof(ProtoRegistry))]
 public class GetDspData : BaseUnityPlugin {
-    private const string GUID = "com.menglei.dsp.GetDspData";
-    private const string NAME = "Get DSP Data";
-    private const string VERSION = "1.0.0";
-
     #region Logger
 
     private static ManualLogSource logger;
@@ -82,7 +78,7 @@ public class GetDspData : BaseUnityPlugin {
         GenesisBookEnable = Chainloader.PluginInfos.ContainsKey(GenesisBookGUID);
         FractionateEverythingEnable = Chainloader.PluginInfos.ContainsKey(FractionateEverythingGUID);
 
-        Harmony harmony = new(GUID);
+        Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         harmony.Patch(
             AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
             null,
