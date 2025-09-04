@@ -158,9 +158,9 @@ public static class BuildingOperate {
                 onClick: Reset);
             reinforcementBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
                 onClick: Downgrade);
-            reinforcementBtn[2] = wnd.AddButton(1, 2, y + 36f*2, tab, "升级",
+            reinforcementBtn[2] = wnd.AddButton(1, 2, y + 36f * 2, tab, "升级",
                 onClick: Upgrade);
-            reinforcementBtn[3] = wnd.AddButton(1, 2, y + 36f*3, tab, "升满",
+            reinforcementBtn[3] = wnd.AddButton(1, 2, y + 36f * 3, tab, "升满",
                 onClick: FullUpgrade);
         }
         y += 36f;
@@ -265,7 +265,8 @@ public static class BuildingOperate {
         int takeCount = 3;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
@@ -287,7 +288,8 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
@@ -309,7 +311,8 @@ public static class BuildingOperate {
         int takeCount = 5;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
@@ -331,7 +334,8 @@ public static class BuildingOperate {
         }
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
@@ -353,7 +357,8 @@ public static class BuildingOperate {
         int takeCount = 1;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ") + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!TakeItem(takeId, takeCount, out _)) {
