@@ -1,0 +1,12 @@
+{
+    "name": "GetDspData",
+    "author": "MengLei",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MengLeiFudge/MLJ_DSPmods",
+    "description": "一个获取游戏数据的工具。",
+    "dependencies": [
+        "xiaoye97-BepInEx-5.4.17",
+        "xiaoye97-LDBTool-3.0.1",
+        "CommonAPI-CommonAPI-1.6.6"
+    ]
+}

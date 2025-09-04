@@ -172,7 +172,7 @@ public static partial class Utils {
                 or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
             I原油精炼厂 => 18f,
             I射线接收站_MS射线重构站 => 54.82f,
-            I分馏塔 or IGB聚束液体汲取设施 or IFE矿物复制塔 or IFE点数聚集塔 or IFE量子复制塔
+            I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE量子复制塔
                 or IFE点金塔 or IFE分解塔 or IFE转化塔 => 12.96f,
             I微型粒子对撞机 => 45.12f,
             I能量枢纽 => 64f,
@@ -180,5 +180,27 @@ public static partial class Utils {
             I轨道采集器 or I伊卡洛斯 or I行星基地 or I巨构星际组装厂 => 0f,
             _ => -1f,
         };
+    }
+
+    public static bool IsGridIndexValid(int gridIndex) {
+        if (GenesisBookEnable) {
+            return gridIndex % 1000 / 100 >= 1
+                   && gridIndex % 1000 / 100 <= 7
+                   && gridIndex % 100 >= 1
+                   && gridIndex % 100 <= 17;
+        } else {
+            return gridIndex % 1000 / 100 >= 1
+                   && gridIndex % 1000 / 100 <= 8
+                   && gridIndex % 100 >= 1
+                   && gridIndex % 100 <= 14;
+        }
+    }
+
+    public static bool GridIndexValid(this ItemProto proto) {
+        return IsGridIndexValid(proto.GridIndex);
+    }
+
+    public static bool GridIndexValid(this RecipeProto proto) {
+        return IsGridIndexValid(proto.GridIndex);
     }
 }
