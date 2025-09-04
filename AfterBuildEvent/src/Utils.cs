@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace AfterBuildEvent;
 
@@ -84,14 +86,23 @@ public static class Utils {
                 ChangeEnable(dir, enable);
             }
         } else if (File.Exists(path)) {
-            if (enable) {
-                while (path.EndsWith(".old")) {
-                    File.Move(path, path.Substring(0, path.Length - 4));
-                    path = path.Substring(0, path.Length - 4);
+            while (true) {
+                try {
+                    if (enable) {
+                        while (path.EndsWith(".old")) {
+                            File.Move(path, path.Substring(0, path.Length - 4));
+                            path = path.Substring(0, path.Length - 4);
+                        }
+                    } else {
+                        if (!path.EndsWith(".old")) {
+                            File.Move(path, path + ".old");
+                        }
+                    }
+                    break;
                 }
-            } else {
-                if (!path.EndsWith(".old")) {
-                    File.Move(path, path + ".old");
+                catch (Exception ex) {
+                    Console.WriteLine($"Error changing enable state for {path}: {ex.Message}");
+                    Thread.Sleep(1000);
                 }
             }
         }
@@ -129,30 +140,28 @@ public static class Utils {
             if (modInfo == null) {
                 continue;
             }
-            string data = line.Substring(line.IndexOf(':') + 2);
             if (line.StartsWith("  name:")) {
-                modInfo.name = data;
+                modInfo.name = line.Substring(line.IndexOf(':') + 2);
             } else if (line.StartsWith("  authorName:")) {
-                modInfo.authorName = data;
+                modInfo.authorName = line.Substring(line.IndexOf(':') + 2);
             } else if (line.StartsWith("  displayName:")) {
-                modInfo.displayName = data;
+                modInfo.displayName = line.Substring(line.IndexOf(':') + 2);
             } else if (line.StartsWith("  dependencies:")) {
                 if (line == "  dependencies:") {
                     while ((line = sr.ReadLine()) != null) {
                         if (regex.IsMatch(line)) {
-                            int index = data.LastIndexOf('-');
-                            modInfo.dependencies.Add(data.Substring(0, index));
+                            modInfo.dependencies.Add(line.Substring(6, line.LastIndexOf('-') - 6));
                         } else {
                             break;
                         }
                     }
                 }
             } else if (line.StartsWith("    major:")) {
-                modInfo.version = data;
+                modInfo.version = line.Substring(line.IndexOf(':') + 2);
             } else if (line.StartsWith("    minor:") || line.StartsWith("    patch:")) {
-                modInfo.version += "." + data;
+                modInfo.version += "." + line.Substring(line.IndexOf(':') + 2);
             } else if (line.StartsWith("  enabled:")) {
-                modInfo.enabled = bool.Parse(data);
+                modInfo.enabled = bool.Parse(line.Substring(line.IndexOf(':') + 2));
                 modInfos.Add(modInfo);
             }
         }

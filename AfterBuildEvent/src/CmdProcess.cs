@@ -23,7 +23,7 @@ public class CmdProcess : IDisposable {
             CreateNoWindow = true,
         };
         process.OutputDataReceived += (_, e) => Console.WriteLine($"[cmd]{e.Data}");
-        process.ErrorDataReceived += (_, e) => Console.Error.WriteLine($"[cmd]{e.Data}");
+        // process.ErrorDataReceived += (_, e) => Console.Error.WriteLine($"[cmd]{e.Data}");
         process.Start();
         input = process.StandardInput;
         process.BeginOutputReadLine();
