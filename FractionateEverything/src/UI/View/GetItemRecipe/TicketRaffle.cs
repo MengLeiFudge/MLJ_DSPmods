@@ -205,7 +205,7 @@ public static class TicketRaffle {
         }
         //构建杂项物品奖励列表
         //主体为已解锁的非建筑物品，可抽到精华，不可抽到原胚、核心等
-        HashSet<int> itemHashSet = [];
+        List<int> baseItems = [];
         foreach (ItemProto item in LDB.items.dataArray) {
             if ((item.ID >= IFE分馏塔原胚普通 && item.ID <= IFE分馏塔原胚定向)
                 //这里先排除掉精华，后面再加
@@ -217,11 +217,16 @@ public static class TicketRaffle {
                 continue;
             }
             if (GameMain.history.ItemUnlocked(item.ID)) {
-                itemHashSet.Add(item.ID);
+                //当前持有的物品组数越少，获得该物品的概率越大，0组概率*500，>=10组概率*10
+                float stacks = Math.Min(10, (float)GetItemTotalCount(item.ID) / item.StackSize);
+                int addCounts = 500 - (int)(stacks * 49);
+                for (int i = 0; i < addCounts; i++) {
+                    baseItems.Add(item.ID);
+                }
             }
         }
         //初步构建杂项物品奖励列表
-        if (itemHashSet.Count == 0) {
+        if (baseItems.Count == 0) {
             if (showMessage) {
                 UIMessageBox.Show("提示".Translate(),
                     "时机未到，再探索一会当前星球吧！".Translate(),
@@ -230,9 +235,9 @@ public static class TicketRaffle {
             }
             return;
         }
-        List<int> items = itemHashSet.ToList();
+        List<int> items = baseItems.ToList();
         while (items.Count < 10000) {
-            items.InsertRange(items.Count, itemHashSet);
+            items.InsertRange(items.Count, baseItems);
         }
         //精华概率增加至总比例10%以上
         int essenceCount = 0;
@@ -441,7 +446,7 @@ public static class TicketRaffle {
         }
         //构建杂项物品奖励列表
         //主体为已解锁的建筑物品，可抽到原胚，不可抽到精华、核心等
-        HashSet<int> itemHashSet = [];
+        List<int> baseItems = [];
         foreach (ItemProto item in LDB.items.dataArray) {
             //这里先排除掉分馏塔和原胚，后面再加
             if ((item.ID >= IFE交互塔 && item.ID <= IFE转化塔)
@@ -450,11 +455,16 @@ public static class TicketRaffle {
                 continue;
             }
             if (GameMain.history.ItemUnlocked(item.ID)) {
-                itemHashSet.Add(item.ID);
+                //当前持有的物品组数越少，获得该物品的概率越大，0组概率*500，>=10组概率*10
+                float stacks = Math.Min(10, (float)GetItemTotalCount(item.ID) / item.StackSize);
+                int addCounts = 500 - (int)(stacks * 49);
+                for (int i = 0; i < addCounts; i++) {
+                    baseItems.Add(item.ID);
+                }
             }
         }
         //初步构建杂项物品奖励列表
-        if (itemHashSet.Count == 0) {
+        if (baseItems.Count == 0) {
             if (showMessage) {
                 UIMessageBox.Show("提示".Translate(),
                     "时机未到，再探索一会当前星球吧！".Translate(),
@@ -463,9 +473,9 @@ public static class TicketRaffle {
             }
             return;
         }
-        List<int> items = itemHashSet.ToList();
+        List<int> items = baseItems.ToList();
         while (items.Count < 10000) {
-            items.InsertRange(items.Count, itemHashSet);
+            items.InsertRange(items.Count, baseItems);
         }
         //分馏塔概率增加至总比例5%以上，原胚概率增加至总比例25%以上
         int buildingCount = 0;
