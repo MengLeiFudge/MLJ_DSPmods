@@ -118,14 +118,21 @@ public static partial class Utils {
     /// <summary>
     /// 从ModData背包取出指定物品。
     /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
+    /// 注意，通过此方法取出的物品数目应该远小于int.MaxValue，以避免增产点数超过int。
     /// </summary>
     /// <returns>实际拿到的数目</returns>
     public static int TakeItemFromModData(int itemId, int count, out int inc) {
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
-            inc = count == 0 ? 0 : (int)(count / centerItemCount[itemId]);
-            centerItemCount[itemId] -= count;
-            centerItemInc[itemId] -= inc;
+            if (count == 0) {
+                inc = 0;
+            } else {
+                inc = count == centerItemCount[itemId]
+                    ? (int)centerItemInc[itemId]
+                    : (int)((float)count / centerItemCount[itemId] * centerItemInc[itemId]);
+                centerItemCount[itemId] -= count;
+                centerItemInc[itemId] -= inc;
+            }
             return count;
         }
     }
