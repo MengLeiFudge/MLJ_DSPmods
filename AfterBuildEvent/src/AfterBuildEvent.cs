@@ -38,7 +38,7 @@ static class AfterBuildEvent {
 
     #region 更新mod、打包、启动游戏
 
-    static void UpdateModsThenStart() {
+    private static void UpdateModsThenStart() {
         using CmdProcess cmd = new();
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
@@ -127,7 +127,9 @@ static class AfterBuildEvent {
             //额外文件
             if (projectName == "GetDspData") {
                 //Newtonsoft.Json.dll
-                string jsonDll = @"..\..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll";
+                //C:\Users\MLJ\.nuget\packages\newtonsoft.json\13.0.3\lib\net45\Newtonsoft.Json.dll
+                string jsonDll =
+                    $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\.nuget\packages\newtonsoft.json\13.0.3\lib\net45\Newtonsoft.Json.dll";
                 if (File.Exists(jsonDll)) {
                     fileList.Add(jsonDll);
                 }
@@ -259,7 +261,7 @@ static class AfterBuildEvent {
 
     #region 更新类库需要的部分DLL
 
-    static void UpdateLibDll() {
+    private static void UpdateLibDll() {
         using CmdProcess cmd = new();
         //publicize已注入preloader的Assembly-CSharp.dll，然后将其拷贝到项目的lib
         //注：将BepInEX.cfg的DumpAssemblies设为true，就会生成已注入preloader的Assembly-CSharp.dll
@@ -332,18 +334,18 @@ static class AfterBuildEvent {
         }
         File.WriteAllLines(doorstop_config, lines);
         //判断所有mod是否均已存在
-        string[] names = [
+        List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
             "HiddenCirno-GenesisBook",//mod c：创世之书
             "MengLei-FractionateEverything",//mod d：万物分馏
         ];
-        Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
-        string s = Console.ReadLine();
-        if (s != "") {
-            names[2] = "GenesisBook-GenesisBook_Experimental";
-        }
-        for (int i = 0; i < names.Length; i++) {
+        // Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
+        // string s = Console.ReadLine();
+        // if (s != "") {
+        //     names[2] = "GenesisBook-GenesisBook_Experimental";
+        // }
+        for (int i = 0; i < names.Count; i++) {
             string modPluginsDir = $@"{R2_BepInEx}\plugins\{names[i]}";
             if (!Directory.Exists(modPluginsDir)) {
                 Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
@@ -356,7 +358,8 @@ static class AfterBuildEvent {
         //生成计算器json
         for (int r = 0; r <= modInfos.Length; r++) {
             List<List<ModInfo>> result = Combinations(modInfos, r);
-            foreach (List<ModInfo> state in result) {
+            for (int index = 0; index < result.Count; index++) {
+                List<ModInfo> state = result[index];
                 //深空来敌启用时，更多巨构也必须启用
                 if (!state.Contains(modInfos[0]) && state.Contains(modInfos[1])) {
                     continue;
@@ -372,6 +375,8 @@ static class AfterBuildEvent {
                 cmd.Exec(KillDSP);
                 //仅启用指定的模组
                 HashSet<string> nameList = [];
+                state.Add(GetModInfo("MengLei-GetDspData"));
+                state.Add(GetModInfo("starfi5h-ErrorAnalyzer"));
                 foreach (ModInfo modInfo in state) {
                     nameList.Add(modInfo.name);
                     List<string> dependencies = GetDependencies(modInfo.name);
@@ -379,8 +384,6 @@ static class AfterBuildEvent {
                         nameList.Add(dependency);
                     }
                 }
-                nameList.Add("MengLei-GetDspData");
-                nameList.Add("starfi5h-ErrorAnalyzer");
                 OnlyEnableInputMods(nameList.ToList());
                 StringBuilder sb = new("启动游戏，mod情况：");
                 for (int i = 0; i < modInfos.Length; i++) {
@@ -419,7 +422,10 @@ static class AfterBuildEvent {
     private static string GetJsonFilePath(List<ModInfo> state, bool isCalc) {
         string jsonFileName = "";
         foreach (ModInfo modInfo in state) {
-            jsonFileName += "_" + modInfo.displayName + modInfo.version;
+            jsonFileName += "_" + modInfo.displayName;
+            if (isCalc) {
+                jsonFileName += modInfo.version;
+            }
         }
         jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc

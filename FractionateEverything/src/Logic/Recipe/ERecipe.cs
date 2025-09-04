@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -8,14 +9,9 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public enum ERecipe {
     /// <summary>
-    /// 未知类型
-    /// </summary>
-    Unknown,
-
-    /// <summary>
     /// 建筑培养配方
     /// </summary>
-    BuildingTrain,
+    BuildingTrain = 1,
 
     /// <summary>
     /// 矿物复制配方
@@ -61,10 +57,7 @@ public static class ERecipeExtension {
         Register("转化配方", "Conversion Recipe");
     }
 
-    public static readonly ERecipe[] RecipeTypes = [
-        ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.QuantumCopy,
-        ERecipe.Alchemy, ERecipe.Deconstruction, ERecipe.Conversion
-    ];
+    public static readonly ERecipe[] RecipeTypes = (ERecipe[])Enum.GetValues(typeof(ERecipe));
 
     public static string[] RecipeTypeShortNames => RecipeTypes.Select(t => t.GetShortName()).ToArray();
 

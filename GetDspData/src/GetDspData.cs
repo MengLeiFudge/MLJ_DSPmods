@@ -7,10 +7,8 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
-using CommonAPI.Systems;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
-using FE.Utils;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -39,7 +37,6 @@ namespace GetDspData;
 [BepInDependency(TheyComeFromVoidGUID, SoftDependency)]
 [BepInDependency(GenesisBookGUID, SoftDependency)]
 [BepInDependency(FractionateEverythingGUID, SoftDependency)]
-[CommonAPISubmoduleDependency(nameof(ProtoRegistry))]
 public class GetDspData : BaseUnityPlugin {
     #region Logger
 
@@ -303,51 +300,6 @@ public class GetDspData : BaseUnityPlugin {
             var items = new JArray();
             dataObj.Add("items", items);
             foreach (var item in LDB.items.dataArray) {
-                // List<ItemProto> itemToBeRemoved = [];
-                // //移除无法选中的物品
-                // if (!item.GridIndexValid()) {
-                //     itemToBeRemoved.Add(item);
-                //     continue;
-                // }
-                // //移除"该版本尚未加入"的物品
-                // if (item.preTech == null && item.missingTech) {
-                //     itemToBeRemoved.Add(item);
-                //     continue;
-                // }
-                // //移除无主要配方的物品
-                // if (item.recipes == null || item.recipes.Count == 0) {
-                //     if (!item.canMining() && item.ID != I蓄电器满) {
-                //         itemToBeRemoved.Add(item);
-                //         continue;
-                //     }
-                // }
-                // //移除物品，并移除原料/产物包含该物品的所有配方
-                // foreach (var item in itemToBeRemoved) {
-                //     LogInfo($"移除物品 {item.ID} {item.name}");
-                //     IList<JToken> recipeToBeRemoved = new List<JToken>();
-                //     foreach (var recipe in recipes) {
-                //         var itemsArr = ((JArray)((JObject)recipe)["Items"]).Values<int>();
-                //         var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
-                //         bool remove = false;
-                //         foreach (var id in itemsArr) {
-                //             if (id == item.ID) {
-                //                 remove = true;
-                //             }
-                //         }
-                //         foreach (var id in resultsArr) {
-                //             if (id == item.ID) {
-                //                 remove = true;
-                //             }
-                //         }
-                //         if (remove) {
-                //             recipeToBeRemoved.Add(recipe);
-                //         }
-                //     }
-                //     foreach (var recipe in recipeToBeRemoved) {
-                //         recipes.Remove(recipe);
-                //         LogInfo($"移除配方 {recipe["ID"]} {recipe["Name"]}");
-                //     }
-                // }
                 addItem(item, items);
                 //添加与这个物品相关的特殊配方（游戏中不存在，但是计算器需要它们来计算）
                 //0.可直接采集的物品（黑雾不算）对应开采配方需要插入到最前，以尽量规避线性规划无解
@@ -392,7 +344,7 @@ public class GetDspData : BaseUnityPlugin {
                 if (item.canMiningFromAtmosphere()) {
                     factorySpecial = [..factorySpecial, IGB大气采集站];
                 }
-                if (item.canMiningByIcarus()) {
+                if (item.canMiningByIcarus() || item.recipes == null || item.recipes.Count == 0) {
                     factorySpecial = [..factorySpecial, I伊卡洛斯];
                 }
                 if (item.canMiningByMS()) {
@@ -509,9 +461,7 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 //5.所有万物分馏的配方
                 if (FractionateEverythingEnable) {
-                    foreach (var type in RecipeTypes) {
-                        AddFracRecipe(recipes, GetRecipe<BaseRecipe>(type, item.ID));
-                    }
+                    AddFracRecipes(recipes, item);
                 }
             }
             //特殊物品（无实体的工厂）
@@ -569,92 +519,94 @@ public class GetDspData : BaseUnityPlugin {
         }
     }
 
-    private static void AddFracRecipe(JArray recipes, BaseRecipe recipe) {
-        if (recipe == null) {
-            return;
-        }
-        var recipe0 = recipe as QuantumCopyRecipe;
-        ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
-        ItemProto item = LDB.items.Select(recipe.InputID);
-        //↓测试环境调整↓
-        recipe.SandBoxMaxUpDowngrade(true);
-        building.ReinforcementLevel(20);
-        int fluidInputIncAvg = 0;
-        //↑测试环境调整↑
-        float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-        float buffBonus1 = building.ReinforcementBonusFracSuccess();
-        float buffBonus2 = building.ReinforcementBonusMainOutputCount();
-        float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
-        //成功率
-        float successRate = recipe0 == null
-            ? recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)
-            : recipe.SuccessRate * (1 + buffBonus1);
-        //损毁率
-        float destroyRate = recipe.DestroyRate;
-        //最终产物转化率
-        float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
-        Dictionary<int, (float, bool, bool)> outputDic = [];
-        float essenceCostAvg = 0.0f;
-        foreach (var info in recipe.OutputMain) {
-            int outputId = info.OutputID;
-            float outputCount = processRate;
-            outputCount *= info.SuccessRate;
-            outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
+    private static void AddFracRecipes(JArray recipes, ItemProto item) {
+        foreach (var type in RecipeTypes) {
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(type, item.ID);
+            if (recipe == null) {
+                continue;
+            }
+            var recipe0 = recipe as QuantumCopyRecipe;
+            ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
+            //↓测试环境调整↓
+            recipe.SandBoxMaxUpDowngrade(true);
+            building.ReinforcementLevel(20);
+            int fluidInputIncAvg = 0;
+            //↑测试环境调整↑
+            float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
+            float buffBonus1 = building.ReinforcementBonusFracSuccess();
+            float buffBonus2 = building.ReinforcementBonusMainOutputCount();
+            float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+            //成功率
+            float successRate = recipe0 == null
+                ? recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)
+                : recipe.SuccessRate * (1 + buffBonus1);
+            //损毁率
+            float destroyRate = recipe.DestroyRate;
+            //最终产物转化率
+            float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
+            Dictionary<int, (float, bool, bool)> outputDic = [];
+            float essenceCostAvg = 0.0f;
+            foreach (var info in recipe.OutputMain) {
+                int outputId = info.OutputID;
+                float outputCount = processRate;
+                outputCount *= info.SuccessRate;
+                outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
+                if (recipe0 != null) {
+                    float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
+                    essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
+                }
+                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                    tuple.Item1 += outputCount;
+                } else {
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                }
+                outputDic[outputId] = tuple;
+            }
+            foreach (var info in recipe.OutputAppend) {
+                int outputId = info.OutputID;
+                float outputCount = processRate;
+                outputCount *= info.SuccessRate * (1 + recipe.AppendOutputRatioInc) * (1 + buffBonus3);
+                outputCount *= info.OutputCount;
+                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
+                    tuple.Item1 += outputCount;
+                } else {
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                }
+                outputDic[outputId] = tuple;
+            }
+            List<int> Items = [item.ID];
+            List<float> ItemCounts = [1];
             if (recipe0 != null) {
-                float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
-                essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
+                Items.Add(IFE复制精华);
+                ItemCounts.Add(essenceCostAvg);
+                Items.Add(IFE点金精华);
+                ItemCounts.Add(essenceCostAvg);
+                Items.Add(IFE分解精华);
+                ItemCounts.Add(essenceCostAvg);
+                Items.Add(IFE转化精华);
+                ItemCounts.Add(essenceCostAvg);
             }
-            if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                tuple.Item1 += outputCount;
-            } else {
-                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+            //物品数目是outputDic[物品ID].Item1
+            List<int> Results = [];
+            List<float> ResultCounts = [];
+            foreach (var p in outputDic) {
+                Results.Add(p.Key);
+                ResultCounts.Add(p.Value.Item1);
             }
-            outputDic[outputId] = tuple;
+            int TimeSpend = (int)Math.Round(60.0f / recipe.SuccessRate);
+            recipes.Add(new JObject {
+                { "Type", -1 },
+                { "Factories", new JArray(new[] { building.ID }) },
+                { "Name", $"[{recipe.RecipeType.GetShortName()}]{item.name}" },
+                { "Items", new JArray(Items) },
+                { "ItemCounts", new JArray(ItemCounts) },
+                { "Results", new JArray(Results) },
+                { "ResultCounts", new JArray(ResultCounts) },
+                { "TimeSpend", TimeSpend },
+                { "Proliferator", 1 },
+                { "IconName", item.iconSprite.name },
+            });
         }
-        foreach (var info in recipe.OutputAppend) {
-            int outputId = info.OutputID;
-            float outputCount = processRate;
-            outputCount *= info.SuccessRate * (1 + recipe.AppendOutputRatioInc) * (1 + buffBonus3);
-            outputCount *= info.OutputCount;
-            if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                tuple.Item1 += outputCount;
-            } else {
-                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
-            }
-            outputDic[outputId] = tuple;
-        }
-        List<int> Items = [item.ID];
-        List<float> ItemCounts = [1];
-        if (recipe0 != null) {
-            Items.Add(IFE复制精华);
-            ItemCounts.Add(essenceCostAvg);
-            Items.Add(IFE点金精华);
-            ItemCounts.Add(essenceCostAvg);
-            Items.Add(IFE分解精华);
-            ItemCounts.Add(essenceCostAvg);
-            Items.Add(IFE转化精华);
-            ItemCounts.Add(essenceCostAvg);
-        }
-        //物品数目是outputDic[物品ID].Item1
-        List<int> Results = [];
-        List<float> ResultCounts = [];
-        foreach (var p in outputDic) {
-            Results.Add(p.Key);
-            ResultCounts.Add(p.Value.Item1);
-        }
-        int TimeSpend = (int)Math.Round(60.0f / recipe.SuccessRate);
-        recipes.Add(new JObject {
-            { "Type", -1 },
-            { "Factories", new JArray(new[] { building.ID }) },
-            { "Name", $"[{recipe.RecipeType.GetShortName()}]{item.name}" },
-            { "Items", new JArray(Items) },
-            { "ItemCounts", new JArray(ItemCounts) },
-            { "Results", new JArray(Results) },
-            { "ResultCounts", new JArray(ResultCounts) },
-            { "TimeSpend", TimeSpend },
-            { "Proliferator", 1 },
-            { "IconName", item.iconSprite.name },
-        });
     }
 
     static void addItem(ItemProto proto, JArray add) {
@@ -703,7 +655,7 @@ public class GetDspData : BaseUnityPlugin {
             //可以转为等价配方：1氢->100s->1重氢
             float produceProb = proto.ResultCounts[0] / (float)proto.ItemCounts[0];
             proto2.ItemCounts[0] = 1;
-            proto2.TimeSpend = (int)Math.Round(proto.TimeSpend / produceProb);
+            proto2.TimeSpend = (int)Math.Round(60 / produceProb);
             proto2.ResultCounts[0] = 1;
             addRecipe(proto2, add, [I分馏塔]);
             return;
