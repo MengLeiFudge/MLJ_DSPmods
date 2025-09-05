@@ -7,9 +7,18 @@
         + 转化配方满级产物增幅从0%改为50%，满级强化加成从20%改为50%。
     + 点金配方移除黑雾矩阵、黑雾奖券。
     + 沙盒模式一键解锁科技不解锁所有分馏配方。
-    + 修复开启创世之书的“科技探索”时，分馏塔的科技不能正常显示的问题。
     + 更换精华图标，添加科技图标。
-
+    + 优化物品交互界面操作，现在被查找的物品会高亮显示。
+    + Mineral replication recipes now incorporate timber and plant-based fuels.
+    + Adjusted the initial unlocked mineral replication recipes.
+    + Modified conversion recipes.
+        + Conversion recipes no longer yield the input items.
+        + Conversion recipes will adjust output quantities based on item value, ensuring overall recipe profitability remains unchanged.
+        + Max-level conversion recipe output boost changed from 0% to 50%, max-level enhancement bonus changed from 20% to 50%.
+    + Alchemy recipes removes the Dark Fog Matrix and Dark Fog Lottery Tickets.
+    + Sandbox Mode's one-click tech unlock no longer unlocks all distillation recipes.
+    + Replaced essence icons and added tech icons.
+    + Optimised item interaction interface: items being searched for now highlight.
     
 - v2.1.2
     + 优化物品交互界面，添加查找指定物品的功能，并将物品按位置排序而非价值。
