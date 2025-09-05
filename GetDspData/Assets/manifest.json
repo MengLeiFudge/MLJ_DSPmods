@@ -7,6 +7,7 @@
     "dependencies": [
         "xiaoye97-BepInEx-5.4.17",
         "xiaoye97-LDBTool-3.0.1",
+        "CommonAPI-DSPModSave-1.2.2",
         "CommonAPI-CommonAPI-1.6.6"
     ]
 }

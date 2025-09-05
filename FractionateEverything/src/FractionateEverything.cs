@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
+using BuildBarTool;
 using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
@@ -20,8 +21,10 @@ using static FE.Utils.Utils;
 namespace FE;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-[BepInDependency(CommonAPIPlugin.GUID)]
+[BepInDependency(LDBToolPlugin.MODGUID)]
 [BepInDependency(DSPModSavePlugin.MODGUID)]
+[BepInDependency(CommonAPIPlugin.GUID)]
+[BepInDependency(BuildBarToolPlugin.GUID)]
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
