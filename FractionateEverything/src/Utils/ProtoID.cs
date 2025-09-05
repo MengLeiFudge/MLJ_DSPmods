@@ -315,7 +315,8 @@ public static partial class Utils {
     internal const int IFE点金塔 = 8025;
     internal const int IFE分解塔 = 8026;
     internal const int IFE转化塔 = 8027;
-    internal const int IFE交互物流塔 = 8028;
+    internal const int IFE行星内物流交互站 = 8028;
+    internal const int IFE星际物流交互站 = 8029;
     internal const int IFE行星交互塔 = 8031;
     internal const int IFE行星矿物复制塔 = 8032;
     internal const int IFE行星点数聚集塔 = 8033;
@@ -480,7 +481,8 @@ public static partial class Utils {
     internal const int MFE点金塔 = 605;
     internal const int MFE分解塔 = 606;
     internal const int MFE转化塔 = 607;
-    internal const int MFE交互物流塔 = 608;
+    internal const int MFE行星内物流交互站 = 608;
+    internal const int MFE星际物流交互站 = 609;
     internal const int MFE行星交互塔 = 611;
     internal const int MFE行星矿物复制塔 = 612;
     internal const int MFE行星点数聚集塔 = 613;
@@ -834,7 +836,8 @@ public static partial class Utils {
     internal const int RFE点金塔 = 925;
     internal const int RFE分解塔 = 926;
     internal const int RFE转化塔 = 927;
-    internal const int RFE交互物流塔 = 928;
+    internal const int RFE行星内物流交互站 = 928;
+    internal const int RFE星际物流交互站 = 929;
     internal const int RFE行星交互塔 = 931;
     internal const int RFE行星矿物复制塔 = 932;
     internal const int RFE行星点数聚集塔 = 933;
