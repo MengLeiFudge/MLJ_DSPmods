@@ -161,12 +161,10 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.AddFractionators();
         //添加科技
         TechManager.AddTechs();
-        // 添加交互物流塔
-        StationManager.AddStations();
     }
 
     public void PostAddData() {
-        //设置分馏塔颜色
+        //设置分馏塔、物流交互站颜色
         BuildingManager.SetFractionatorMaterial();
     }
 
