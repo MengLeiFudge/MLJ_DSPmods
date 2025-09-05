@@ -2,8 +2,12 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using BuildBarTool;
+using CommonAPI;
+using crecheng.DSPModSave;
 using HarmonyLib;
 using UnityEngine;
+using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
@@ -12,6 +16,10 @@ namespace FE.Compatibility;
 /// 加载万物分馏主插件前，检测是否使用其他mod，并对其进行适配。
 /// </summary>
 [BepInPlugin(GUID, NAME, VERSION)]
+[BepInDependency(LDBToolPlugin.MODGUID)]
+[BepInDependency(DSPModSavePlugin.MODGUID)]
+[BepInDependency(CommonAPIPlugin.GUID)]
+[BepInDependency(BuildBarToolPlugin.GUID)]
 [BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]

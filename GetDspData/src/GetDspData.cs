@@ -7,6 +7,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
+using crecheng.DSPModSave;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using HarmonyLib;
@@ -32,6 +33,8 @@ namespace GetDspData;
 //name: Assembling Machine Mk.I  name.Translate: Assembling Machine Mk.I  Name: 制造台 Mk.I  Name.Translate: Assembling Machine Mk.I
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+[BepInDependency(LDBToolPlugin.MODGUID)]
+[BepInDependency(DSPModSavePlugin.MODGUID)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(MoreMegaStructureGUID, SoftDependency)]
 [BepInDependency(TheyComeFromVoidGUID, SoftDependency)]
