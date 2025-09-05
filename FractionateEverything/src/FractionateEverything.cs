@@ -161,6 +161,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.AddFractionators();
         //添加科技
         TechManager.AddTechs();
+        // 添加交互物流塔
+        StationManager.AddStations();
     }
 
     public void PostAddData() {
