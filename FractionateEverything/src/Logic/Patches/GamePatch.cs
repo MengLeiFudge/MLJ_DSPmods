@@ -1,36 +1,45 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using HarmonyLib;
-
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Patches;
 
 public static class GamePatch {
-    private static long _lastTickTime;
+    private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlanetTransport), "GameTick")]
-    public static void PlanetTransportGameTickPostPatch(long time, PlanetTransport __instance) {
+    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
+    public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
+        //1s更新一次
+        if (time % 60L != 0L) {
+            return;
+        }
         try {
-            // 设置一个运行间隔
-            if (time % 60L != 0L || time == _lastTickTime) {
+            // 避免同一帧内多次处理
+            if (lastTickDic.TryGetValue(__instance.stationPool, out long lastTick) && lastTick == time) {
+                LogWarning($"PlanetTransportGameTickPostPatch: lastTick={lastTick}, time={time}, skip");
                 return;
             }
-            // 记住上一次运行时间，避免连续运行2次
-            _lastTickTime = time;
+            lastTickDic[__instance.stationPool] = time;
+            LogInfo($"PlanetTransportGameTickPostPatch: process tick={time}");
             // 打乱所有物流塔的顺序，尽可能的让每个物流塔都有机会拿到物品
             // TODO 要不加个开关，毕竟需要消耗性能
-            var tmpStationPool = ConfusionArray(__instance.stationPool);
-            foreach (var sc in tmpStationPool) {
-                // 筛选出所有的交互物流塔
-                if (sc == null || sc.isCollector || sc.isVeinCollector ||
-                    __instance.factory.entityPool[sc.entityId].protoId != 8028) {
-                    continue;
+            List<StationComponent> stations = [];
+            for (int index = 1; index < __instance.stationCursor; ++index) {
+                StationComponent stationComponent = __instance.stationPool[index];
+                if (stationComponent != null
+                    && stationComponent.id == index
+                    && __instance.factory.entityPool[stationComponent.entityId].protoId == IFE交互物流塔) {
+                    stations.Add(stationComponent);
                 }
+            }
+            stations.Sort((_, _) => (int)(GetRandDouble() * 100));
+            foreach (StationComponent stationComponent in stations) {
                 // 循环所有的栏位
-                for (var i = 0; i < sc.storage.Length; ++i) {
-                    ref var store = ref sc.storage[i];
+                for (var i = 0; i < stationComponent.storage.Length; ++i) {
+                    ref var store = ref stationComponent.storage[i];
                     // 暂存栏位数据
                     var storeCount = store.count;
                     var storeInc = store.inc;
@@ -43,6 +52,7 @@ public static class GamePatch {
                             var count = store.max - storeCount;
                             // 下载物品
                             TakeItem(ref store, count);
+                            LogInfo($"供应TakeItem store[{i}], count = {count}");
                             break;
                         }
                         case ELogisticStorage.Demand: {
@@ -51,6 +61,7 @@ public static class GamePatch {
                             if (storeCount > 0) {
                                 // 上传物品
                                 AddItem(ref store, storeCount, storeInc);
+                                LogInfo($"需求AddItem store[{i}], count = {storeCount}, inc = {storeInc}");
                             }
                             break;
                         }
@@ -64,6 +75,7 @@ public static class GamePatch {
                                 var count = num - storeCount;
                                 // 下载物品
                                 TakeItem(ref store, count);
+                                LogInfo($"仓储TakeItem store[{i}], count = {count}");
                             } else if (storeCount > num) {
                                 // 如果数量大于一半
                                 // 计算上传的数量
@@ -72,6 +84,7 @@ public static class GamePatch {
                                 var inc = count / storeCount * storeInc;
                                 // 上传物品
                                 AddItem(ref store, count, inc);
+                                LogInfo($"仓储AddItem store[{i}], count = {storeCount}, inc = {storeInc}");
                             }
                             break;
                         }
@@ -80,7 +93,8 @@ public static class GamePatch {
                     }
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LogError(ex);
         }
     }
@@ -112,12 +126,5 @@ public static class GamePatch {
         store.count += itemFromModData;
         // 添加增产点到交互物流塔中
         store.inc += inc;
-    }
-
-    private static StationComponent[] ConfusionArray(StationComponent[] arr) {
-        var random = new Random();
-        return arr
-            .OrderBy(_ => random.Next())
-            .ToArray();
     }
 }
