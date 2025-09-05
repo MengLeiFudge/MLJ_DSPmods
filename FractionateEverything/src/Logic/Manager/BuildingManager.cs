@@ -18,6 +18,9 @@ public static class BuildingManager {
         AlchemyTower.AddTranslations();
         DeconstructionTower.AddTranslations();
         ConversionTower.AddTranslations();
+
+        PlanetaryInteractionStation.AddTranslations();
+        InterstellarInteractionStation.AddTranslations();
     }
 
     public static void AddFractionators() {
@@ -34,6 +37,9 @@ public static class BuildingManager {
         AlchemyTower.Create();
         DeconstructionTower.Create();
         ConversionTower.Create();
+
+        PlanetaryInteractionStation.Create();
+        InterstellarInteractionStation.Create();
     }
 
     public static void SetFractionatorMaterial() {
@@ -44,6 +50,9 @@ public static class BuildingManager {
         AlchemyTower.SetMaterial();
         DeconstructionTower.SetMaterial();
         ConversionTower.SetMaterial();
+
+        PlanetaryInteractionStation.SetMaterial();
+        InterstellarInteractionStation.SetMaterial();
     }
 
     public static void UpdateHpAndEnergy() {
@@ -54,6 +63,9 @@ public static class BuildingManager {
         AlchemyTower.UpdateHpAndEnergy();
         DeconstructionTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
+
+        PlanetaryInteractionStation.UpdateHpAndEnergy();
+        InterstellarInteractionStation.UpdateHpAndEnergy();
     }
 
     /// <summary>
