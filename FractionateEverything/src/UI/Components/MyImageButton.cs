@@ -22,8 +22,8 @@ public class MyImageButton : MonoBehaviour {
     private static Color normalColor;
 
     // 修改为半透明背景色，而不是边框色
-    private static readonly Color NotSelectedBgColor = new(0.4f, 0.4f, 0.4f, 0.3f);
-    private static readonly Color SelectedBgColor = new(0.3f, 0.6f, 1f, 0.5f);// 浅蓝色选中背景
+    private static Color NotSelectedBgColor => normalColor;
+    private static readonly Color SelectedBgColor = new(1f, 0.9f, 0.2f, 0.6f);// 亮金黄色选中背景
     private static readonly Color SpriteColor = new(1f, 1f, 1f, 1f);
 
     // 选中状态相关
@@ -174,42 +174,54 @@ public class MyImageButton : MonoBehaviour {
     }
 
     public void SetEnable(bool on) {
-        if (uiButton) uiButton.enabled = on;
-
-        if (borderImage == null) return;
-
-        Color targetColor;
-        if (_isSelected) {
-            targetColor = SelectedBgColor;
-        } else {
-            targetColor = NotSelectedBgColor;
-        }
-
-        if (!uiButton.enabled) {
-            targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, targetColor.a * 0.5f);
-        }
-
-        borderImage.color = targetColor;
-
-        // 更新精灵颜色
-        if (spriteImage) {
-            Color spriteTargetColor = SpriteColor;
-            if (!uiButton.enabled) {
-                spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
-                    spriteTargetColor.a * 0.5f);
-            }
-            spriteImage.color = spriteTargetColor;
-        }
-        // if (on) {
-        //     if (borderImage) borderImage.color = NotSelectedBgColor;
-        //     if (spriteImage) spriteImage.color = SpriteColor;
+        // //if (uiButton) uiButton.enabled = on;
+        //
+        // if (borderImage == null) return;
+        //
+        // Color targetColor;
+        // if (_isSelected) {
+        //     targetColor = SelectedBgColor;
         // } else {
-        //     if (borderImage)
-        //         borderImage.color = new Color(NotSelectedBgColor.r, NotSelectedBgColor.g, NotSelectedBgColor.b,
-        //             NotSelectedBgColor.a * 0.5f);
-        //     if (spriteImage)
-        //         spriteImage.color = new Color(SpriteColor.r, SpriteColor.g, SpriteColor.b, SpriteColor.a * 0.5f);
+        //     targetColor = NotSelectedBgColor;
         // }
+        //
+        // if (!uiButton.enabled) {
+        //     targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, targetColor.a * 0.5f);
+        // }
+        //
+        // //borderImage.color = targetColor;
+        //
+        // // 更新精灵颜色
+        // if (spriteImage) {
+        //     Color spriteTargetColor = SpriteColor;
+        //     if (!uiButton.enabled) {
+        //         spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
+        //             spriteTargetColor.a * 0.5f);
+        //     }
+        //     spriteImage.color = spriteTargetColor;
+        // }
+        // // if (on) {
+        // //     if (borderImage) borderImage.color = NotSelectedBgColor;
+        // //     if (spriteImage) spriteImage.color = SpriteColor;
+        // // } else {
+        // //     if (borderImage)
+        // //         borderImage.color = new Color(NotSelectedBgColor.r, NotSelectedBgColor.g, NotSelectedBgColor.b,
+        // //             NotSelectedBgColor.a * 0.5f);
+        // //     if (spriteImage)
+        // //         spriteImage.color = new Color(SpriteColor.r, SpriteColor.g, SpriteColor.b, SpriteColor.a * 0.5f);
+        // // }
+        //
+        // //borderImage.color先不改，只改spriteImage.color；且uiButton.enabled也不改
+        // if (spriteImage) {
+        //     Color spriteTargetColor = SpriteColor;
+        //     if (!uiButton.enabled) {
+        //         spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
+        //             spriteTargetColor.a * 0.5f);
+        //     }
+        //     spriteImage.color = spriteTargetColor;
+        // }
+        if (borderImage == null) return;
+        borderImage.color = _isSelected ? SelectedBgColor : NotSelectedBgColor;
     }
 
     private void SetSelected(bool selected) {
