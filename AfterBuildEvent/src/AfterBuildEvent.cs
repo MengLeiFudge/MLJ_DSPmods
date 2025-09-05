@@ -135,12 +135,12 @@ static class AfterBuildEvent {
                 }
             } else if (projectName == "FractionateEverything") {
                 //fe
-                string FEAssetsOrigin = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
-                string FEAssetsProject = @"..\..\..\..\FractionateEverything\Assets\FEAssets";
-                if (File.Exists(FEAssetsOrigin)) {
-                    File.Copy(FEAssetsOrigin, FEAssetsProject, true);
+                string originFEAssets = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
+                string projectFEAssets = @"..\..\..\..\FractionateEverything\Assets\fe";
+                if (File.Exists(originFEAssets)) {
+                    File.Copy(originFEAssets, projectFEAssets, true);
                 }
-                fileList.Add(FEAssetsProject);
+                fileList.Add(projectFEAssets);
             }
             //打包
             if (!Directory.Exists(r2ModDir)) {
