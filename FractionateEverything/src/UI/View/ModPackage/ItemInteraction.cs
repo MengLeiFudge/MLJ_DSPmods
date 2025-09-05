@@ -22,6 +22,7 @@ public static class ItemInteraction {
     private static ConfigEntry<int> ItemValueRangeEntry;
     private static ConfigEntry<bool> ShowNotStoredItemEntry;
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
+    private static int SelectedItemID = 0;
 
     private static MyImageButton[,] btnItems = new MyImageButton[12, 5];
     private static Text[,] txtItemCounts = new Text[12, 5];
@@ -55,7 +56,8 @@ public static class ItemInteraction {
         float x = 0f;
         float y = 18f;
         wnd.AddComboBox(x, y, tab, "物品价值区间")
-            .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry);
+            .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry)
+            .WithOnSelChanged(SelectedItemIDChanged);
         wnd.AddCheckBox(GetPosition(2, 4).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
         wnd.AddButton(3, 4, y, tab, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(); });
@@ -94,6 +96,7 @@ public static class ItemInteraction {
         foreach (var p in itemCountDic.OrderBy(kvp => kvp.Key.GridIndex)) {
             btnItems[i / 5, i % 5].gameObject.SetActive(true);
             btnItems[i / 5, i % 5].ItemId = p.Key.ID;
+            btnItems[i / 5, i % 5].IsSelected = SelectedItemID > 0 && p.Key.ID == SelectedItemID;
             txtItemCounts[i / 5, i % 5].text = $"x {p.Value}";
             i++;
         }
@@ -118,10 +121,15 @@ public static class ItemInteraction {
                     if (GetModDataItemCount(item.ID) == 0) {
                         ShowNotStoredItemEntry.Value = true;
                     }
+                    SelectedItemID = item.ID;
                     return;
                 }
             }
         }, true, item => true);
+    }
+
+    private static void SelectedItemIDChanged(int idx) {
+        SelectedItemID = 0;
     }
 
     #region IModCanSave
@@ -134,7 +142,9 @@ public static class ItemInteraction {
         w.Write(1);
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        SelectedItemID = 0;
+    }
 
     #endregion
 }
