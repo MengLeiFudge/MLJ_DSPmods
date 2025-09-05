@@ -251,10 +251,12 @@ public static class TechManager {
             GenesisBook.Enable ? [TGB科学理论] : [T电磁学],
             //注：哈希块是3600的x倍时，实际需要的物品数目为当前数目*x
             [I电磁矩阵], [10], 3600,
-            [],
+            [RFE交互物流塔],
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
+        tech分馏数据中心.AddItems = [IFE交互物流塔];
+        tech分馏数据中心.AddItemCounts = [1];
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
 
