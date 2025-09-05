@@ -33,7 +33,7 @@ public static class InterstellarInteractionStation {
     private static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE星际物流交互站, "星际物流交互站", "星际物流交互站",
+        item = ProtoRegistry.RegisterItem(IFE星际物流交互站, "星际物流交互站", "I星际物流交互站",
             LDB.items.Select(I星际物流运输站).IconPath, tab分馏 * 1000 + 309, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE星际物流交互站,
@@ -59,9 +59,6 @@ public static class InterstellarInteractionStation {
     }
 
     public static void UpdateHpAndEnergy() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
         model.HpMax = stationModel.HpMax;
         model.prefabDesc.workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;

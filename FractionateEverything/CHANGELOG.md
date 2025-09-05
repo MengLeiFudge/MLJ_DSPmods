@@ -1,3 +1,7 @@
+- v2.1.4
+    + 添加行星内物流交互站、星际物流交互站。
+    + Add Planetary Interaction Station and Interstellar Interaction Station。
+
 - v2.1.3
     + 矿物复制配方添加木材、植物燃料。
     + 调整初始解锁的矿物复制配方。
