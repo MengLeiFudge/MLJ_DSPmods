@@ -27,9 +27,11 @@ public static class StationManager {
             List<StationComponent> stations = [];
             for (int index = 1; index < __instance.stationCursor; ++index) {
                 StationComponent stationComponent = __instance.stationPool[index];
-                if (stationComponent != null
-                    && stationComponent.id == index
-                    && __instance.factory.entityPool[stationComponent.entityId].protoId == IFE行星内物流交互站) {
+                if (stationComponent == null || stationComponent.id != index) {
+                    continue;
+                }
+                int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
+                if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
                     stations.Add(stationComponent);
                 }
             }
@@ -50,7 +52,6 @@ public static class StationManager {
                             var count = store.max - storeCount;
                             // 下载物品
                             TakeItem(ref store, count);
-                            LogInfo($"供应TakeItem store[{i}], count = {count}");
                             break;
                         }
                         case ELogisticStorage.Demand: {
@@ -59,7 +60,6 @@ public static class StationManager {
                             if (storeCount > 0) {
                                 // 上传物品
                                 AddItem(ref store, storeCount, storeInc);
-                                LogInfo($"需求AddItem store[{i}], count = {storeCount}, inc = {storeInc}");
                             }
                             break;
                         }
@@ -73,7 +73,6 @@ public static class StationManager {
                                 var count = num - storeCount;
                                 // 下载物品
                                 TakeItem(ref store, count);
-                                LogInfo($"仓储TakeItem store[{i}], count = {count}");
                             } else if (storeCount > num) {
                                 // 如果数量大于一半
                                 // 计算上传的数量
@@ -82,7 +81,6 @@ public static class StationManager {
                                 var inc = count / storeCount * storeInc;
                                 // 上传物品
                                 AddItem(ref store, count, inc);
-                                LogInfo($"仓储AddItem store[{i}], count = {storeCount}, inc = {storeInc}");
                             }
                             break;
                         }
