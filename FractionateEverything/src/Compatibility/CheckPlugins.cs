@@ -28,6 +28,8 @@ namespace FE.Compatibility;
 [BepInDependency(DeliverySlotsTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
@@ -87,6 +89,9 @@ public class CheckPlugins : BaseUnityPlugin {
         DeliverySlotsTweaks.Compatible();
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
+        
+        SmelterMiner.Compatible();
+        CustomCreateBirthStar.Compatible();
 
         new Harmony(GUID).Patch(
             AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
