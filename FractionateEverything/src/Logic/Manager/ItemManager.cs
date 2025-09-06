@@ -615,7 +615,6 @@ public static class ItemManager {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        ClearCenterData();
         int version = r.ReadInt32();
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
@@ -654,10 +653,6 @@ public static class ItemManager {
     }
 
     public static void IntoOtherSave() {
-        ClearCenterData();
-    }
-
-    private static void ClearCenterData() {
         for (int i = 0; i < centerItemCount.Length; i++) {
             centerItemCount[i] = 0;
             centerItemInc[i] = 0;
