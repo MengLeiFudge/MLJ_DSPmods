@@ -218,6 +218,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// 载入存档时执行。
     /// </summary>
     public void Import(BinaryReader r) {
+        IntoOtherSave();
         int version = r.ReadInt32();
         RecipeManager.Import(r);
         BuildingManager.Import(r);
