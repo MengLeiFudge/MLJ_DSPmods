@@ -342,6 +342,17 @@ public static partial class Utils {
     internal const int IBC品质插件MK1 = 8070;
     internal const int IBC品质插件MK2 = 8071;
     internal const int IBC品质插件MK3 = 8072;
+    internal const int ISM熔炉采矿机A型 = 9446;
+    internal const int ISM熔炉采矿机B型 = 9447;
+    internal const int ISM化工采矿机C型 = 9448;
+    internal const int ICCBS能量核心 = 9446;
+    internal const int ICCBS能量核心满 = 9447;
+    internal const int ICCBS星际能量枢纽 = 9448;
+    internal const int ICCBS星际能量枢纽MK2 = 9449;
+    internal const int ISM大型熔炉采矿机A型 = 9466;
+    internal const int ISM大型熔炉采矿机B型 = 9467;
+    internal const int ISM大型化工采矿机C型 = 9468;
+    internal const int ISM等离子精炼油井 = 9469;
     internal const int IMS引力发生装置 = 9480;
     internal const int IMS位面约束环 = 9481;
     internal const int IMS引力钻头 = 9482;
@@ -377,6 +388,10 @@ public static partial class Utils {
     internal const int IMS物资交换物流站 = 9512;
     internal const int IVD星河卫士勋章 = 9513;
     internal const int IVD水滴额外伤害 = 9514;
+    internal const int ICCBS_xxldm_能量核心 = 9946;
+    internal const int ICCBS_xxldm_能量核心满 = 9947;
+    internal const int ICCBS_xxldm_星际能量枢纽 = 9948;
+    internal const int ICCBS_xxldm_星际能量枢纽MK2 = 9949;
 
     internal const int M传送带 = 35;
     internal const int M高速传送带 = 36;
