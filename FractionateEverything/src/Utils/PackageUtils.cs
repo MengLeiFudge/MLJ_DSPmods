@@ -223,6 +223,9 @@ public static partial class Utils {
             count = 0;
             return false;
         }
+        if (GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId) >= count) {
+            return true;
+        }
         int takeCount = TakeItemFromModData(itemId, count, out inc);
         if (takeCount == count) {
             return false;
@@ -363,9 +366,9 @@ public static partial class Utils {
 
             return codeMacher.InstructionEnumeration();
         }
-        catch (Exception e) {
+        catch (Exception ex) {
             Plugin.Log.LogWarning("Transpiler PlaceItems error");
-            Plugin.Log.LogWarning(e);
+            Plugin.Log.LogWarning(ex);
             return instructions;
         }
     }
@@ -382,7 +385,9 @@ public static partial class Utils {
         }
     }
 
-    public static bool architectMode = false;
+    public static bool architectMode => Multfunction_mod.ArchitectMode
+                                        || CheatEnabler.ArchitectMode
+                                        || Compatibility.DeliverySlotsTweaks.ArchitectMode;
 
     public static void TakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc, bool _) {
         LogInfo($"TakeTailItems1, itemId: {itemId}, count: {count}");
