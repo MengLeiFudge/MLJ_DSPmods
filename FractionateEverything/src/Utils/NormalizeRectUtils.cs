@@ -119,8 +119,8 @@ public static partial class Utils {
                 t.text = notTranslateStr.Translate();
             }
         }
-        catch (Exception e) {
-            LogError($"SetText error: {e}");
+        catch (Exception ex) {
+            LogError($"SetText error: {ex}");
         }
     }
 }

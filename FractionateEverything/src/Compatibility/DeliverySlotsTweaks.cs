@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using BepInEx.Bootstrap;
+using BepInEx.Configuration;
 using DeliverySlotsTweaks;
 using HarmonyLib;
 using static FE.Utils.Utils;
@@ -10,10 +12,22 @@ public static class DeliverySlotsTweaks {
     internal const string GUID = "starfi5h.plugin.DeliverySlotsTweaks";
 
     internal static bool Enable;
+    public static ConfigEntry<bool> ArchitectModeEnabledEntry;
+    public static bool ArchitectMode => ArchitectModeEnabledEntry?.Value == true;
 
     internal static void Compatible() {
-        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
+        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
         if (!Enable) return;
+
+        try {
+            Assembly assembly = pluginInfo.Instance.GetType().Assembly;
+            Type classType = AccessTools.TypeByName("DeliverySlotsTweaks.Plugin");
+            ArchitectModeEnabledEntry =
+                (ConfigEntry<bool>)AccessTools.Field(classType, "EnableArchitectMode").GetValue(null);
+        }
+        catch (Exception ex) {
+            CheckPlugins.LogWarning($"Failed to compat DeliverySlotsTweaks: {ex}");
+        }
 
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.DeliverySlotsTweaks");
         harmony.PatchAll(typeof(DeliverySlotsTweaks));
