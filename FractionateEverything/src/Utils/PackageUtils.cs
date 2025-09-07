@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+using DeliverySlotsTweaks;
+using FE.Compatibility;
 using FE.UI.View.Setting;
+using HarmonyLib;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
@@ -18,7 +24,42 @@ public static partial class Utils {
         Register("配方经验", "recipe experience");
     }
 
+    // public static  bool architectMode => false;
+
+    // if (DeliveryPackagePatch.architectMode)
+    // return 999;
+    // int num1;
+    // DeliveryPackagePatch.packageItemCount.TryGetValue(itemId, out num1);
+    // int num2;
+    // DeliveryPackagePatch.deliveryItemCount.TryGetValue(itemId, out num2);
+    // return num1 + num2;
+
     #region 向背包添加物品
+
+    /// <summary>
+    /// 扔掉的垃圾会自动回收到mod背包
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Player), nameof(Player.ThrowTrash))]
+    public static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, int count, int inc) {
+        AddItemToModData(itemId, count, inc);
+        return false;
+    }
+
+    /// <summary>
+    /// 扔掉的垃圾会自动回收到mod背包
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Player), nameof(Player.ThrowHandItems))]
+    public static bool Player_ThrowHandItems_Prefix(Player __instance) {
+        if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
+            AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
+        }
+        __instance.inhandItemId = 0;
+        __instance.inhandItemCount = 0;
+        __instance.inhandItemInc = 0;
+        return false;
+    }
 
     /// <summary>
     /// 将指定物品添加到ModData背包
@@ -36,7 +77,7 @@ public static partial class Utils {
 
     /// <summary>
     /// 将指定物品添加到背包，并在左侧显示物品变动。
-    /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上
+    /// 放入物品顺序为：背包 -> 物流背包 -> 手上/地上（不会到地上，已改为到mod背包中）
     /// </summary>
     /// <param name="throwTrash">背包满的情况下，true表示将该物品丢出去；否则，将手中的物品丢出去，将物品拿到手中</param>
     public static void AddItemToPackage(int itemId, int count, int inc = 0, bool throwTrash = true) {
@@ -70,7 +111,7 @@ public static partial class Utils {
         StorageComponent package = GameMain.mainPlayer.package;
         int count = 0;
         for (int index = 0; index < package.size; index++) {
-            if (package.grids[index].itemId == itemId && package.grids[index].count > 0) {
+            if (package.grids[index].itemId == itemId) {
                 count += package.grids[index].count;
             }
         }
@@ -90,7 +131,7 @@ public static partial class Utils {
         DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
         int count = 0;
         for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
-            if (deliveryPackage.grids[gridIndex].itemId == itemId && deliveryPackage.grids[gridIndex].count > 0) {
+            if (deliveryPackage.grids[gridIndex].itemId == itemId) {
                 count += deliveryPackage.grids[gridIndex].count;
             }
         }
@@ -138,6 +179,69 @@ public static partial class Utils {
     }
 
     /// <summary>
+    /// 从背包取出的物品数目不够时，使用mod背包补足。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TakeItemFromAllPackages))]
+    public static bool PlayerPackageUtility_TakeItemFromAllPackages_Prefix(PlayerPackageUtility __instance,
+        int gridIndex, ref int itemId, ref int count, ref int inc, bool deliveryFirst, out int[] __state) {
+        inc = 0;
+        __state = [0, 0];
+        if (itemId <= 0 || count <= 0 || itemId == 1099) {
+            itemId = 0;
+            count = 0;
+            return false;
+        }
+        int takeCount = TakeItemFromModData(itemId, count, out inc);
+        if (takeCount == count) {
+            return false;
+        }
+        __state = [takeCount, inc];
+        count -= takeCount;
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TakeItemFromAllPackages))]
+    public static void PlayerPackageUtility_TakeItemFromAllPackages_Postfix(PlayerPackageUtility __instance,
+        int gridIndex, ref int itemId, ref int count, ref int inc, bool deliveryFirst, int[] __state) {
+        count += __state[0];
+        inc += __state[1];
+    }
+
+    /// <summary>
+    /// 从背包取出的物品数目不够时，使用mod背包补足。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TryTakeItemFromAllPackages))]
+    public static bool PlayerPackageUtility_TryTakeItemFromAllPackages_Prefix(PlayerPackageUtility __instance,
+        ref int itemId, ref int count, ref int inc, bool deliveryFirst, out int[] __state) {
+        inc = 0;
+        __state = [0, 0];
+        if (itemId <= 0 || count <= 0 || itemId == 1099) {
+            itemId = 0;
+            count = 0;
+            return false;
+        }
+        int takeCount = TakeItemFromModData(itemId, count, out inc);
+        if (takeCount == count) {
+            return false;
+        }
+        __state = [takeCount, inc];
+        count -= takeCount;
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TryTakeItemFromAllPackages))]
+    public static void PlayerPackageUtility_TryTakeItemFromAllPackages_Postfix(PlayerPackageUtility __instance,
+        ref int itemId, ref int count, ref int inc, bool deliveryFirst, int[] __state) {
+        count += __state[0];
+        inc += __state[1];
+    }
+
+
+    /// <summary>
     /// 拿取指定物品。
     /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
     /// </summary>
@@ -176,6 +280,151 @@ public static partial class Utils {
             }
         }
         return true;
+    }
+
+    /// <summary>
+    /// 原版分割增产点数的方法。
+    /// </summary>
+    /// <param name="n">物品总数</param>
+    /// <param name="m">物品总增产点数</param>
+    /// <param name="p">要取走的物品数目</param>
+    /// <returns>被取走的物品增产点数</returns>
+    public static int split_inc(ref int n, ref int m, int p) {
+        int num1 = m / n;
+        int num2 = m - num1 * n;
+        n -= p;
+        int num3 = num2 - n;
+        int num4 = num3 > 0 ? num1 * p + num3 : num1 * p;
+        m -= num4;
+        return num4;
+    }
+
+    #endregion
+
+    #region 建造时修正可使用物品数目
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PlaceItems))]
+    public static IEnumerable<CodeInstruction> PlaceItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        if (Compatibility.DeliverySlotsTweaks.Enable) {
+            return instructions;
+        }
+        try {
+            var codeMacher = new CodeMatcher(instructions);
+
+            /*
+            if (this.entityId == 0)
+            {
+                StorageComponent package = player.package;
+                for (int i = 0; i < package.size; i++) {
+                    ...
+                    num += count;
+                }
+                AddConstructableCountsInStorage(this, player, ref num); // Insert method here
+            }
+            else if (this.entityId > 0)
+            {
+                ...
+            */
+
+            codeMacher.MatchForward(false,
+                    new CodeMatch(OpCodes.Br),
+                    new CodeMatch(OpCodes.Ldarg_0),
+                    new CodeMatch(OpCodes.Ldfld,
+                        AccessTools.Field(typeof(ConstructionModuleComponent),
+                            nameof(ConstructionModuleComponent.entityId))),
+                    new CodeMatch(OpCodes.Ldc_I4_0),
+                    new CodeMatch(OpCodes.Ble)
+                )
+                .Insert(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Ldarg_2),
+                    new CodeInstruction(OpCodes.Ldloca_S, (byte)0),// num += count; in the loop
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(Utils), nameof(AddConstructableCountsInStorage)))
+                );
+
+            // Replace player.package.TakeTailItems
+
+            codeMacher
+                .MatchForward(true,
+                    new CodeMatch(OpCodes.Ldarg_2),
+                    new CodeMatch(OpCodes.Callvirt,
+                        AccessTools.DeclaredPropertyGetter(typeof(Player), nameof(Player.package))),
+                    new CodeMatch(OpCodes.Ldloca_S),
+                    new CodeMatch(OpCodes.Ldloca_S),
+                    new CodeMatch(OpCodes.Ldloca_S),
+                    new CodeMatch(OpCodes.Ldc_I4_0),
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt && ((MethodInfo)i.operand).Name == "TakeTailItems")
+                )
+                .Repeat(matcher => matcher.SetAndAdvance(OpCodes.Call,
+                    AccessTools.Method(typeof(Utils), nameof(TakeTailItems)))
+                );
+
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception e) {
+            Plugin.Log.LogWarning("Transpiler PlaceItems error");
+            Plugin.Log.LogWarning(e);
+            return instructions;
+        }
+    }
+
+    public static void AddConstructableCountsInStorage(ConstructionModuleComponent constructionModule, Player player,
+        ref int num) {
+        LogInfo("AddConstructableCountsInStorage");
+        var array = constructionModule.constructableCountsInStorage;
+        foreach (var itemId in ItemProto.constructableIdHash) {
+            int count = (int)Math.Min(int.MaxValue, GetModDataItemCount(itemId));
+            int index = ItemProto.constructableIndiceById[itemId];
+            array[index].haveCount += count;
+            num += count;
+        }
+    }
+
+    public static bool architectMode = false;
+
+    public static void TakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc, bool _) {
+        LogInfo($"TakeTailItems1, itemId: {itemId}, count: {count}");
+        if (architectMode) {
+            inc = 0;
+            return;
+        }
+        if (NebulaMultiplayerModAPI.IsActive && NebulaMultiplayerModAPI.IsOthers()) {
+            inc = 0;
+            return;
+        }
+
+        // if (deliveryGridindex.TryGetValue(itemId, out int gridindex))
+        // {
+        //     GameMain.mainPlayer.packageUtility.TakeItemFromAllPackages(gridindex, ref itemId, ref count, out inc, false);
+        //     if (packageItemCount.ContainsKey(itemId))
+        //     {
+        //         int num = packageItemCount[itemId] - count;
+        //         packageItemCount[itemId] = num;
+        //         if (num <= 0) packageItemCount.Remove(itemId);
+        //     }
+        //     else if (deliveryItemCount.ContainsKey(itemId))
+        //     {
+        //         int num = deliveryItemCount[itemId] - count;
+        //         deliveryItemCount[itemId] = num;
+        //         if (num <= 0) deliveryItemCount.Remove(itemId);
+        //     }
+        //
+        // }
+        // else
+        // {
+        //     storage.TakeTailItems(ref itemId, ref count, out inc, false);
+        //     if (packageItemCount.ContainsKey(itemId))
+        //     {
+        //         int num = packageItemCount[itemId] - count;
+        //         packageItemCount[itemId] = num;
+        //         if (num <= 0) packageItemCount.Remove(itemId);
+        //     }
+        // }
+
+        GameMain.mainPlayer.packageUtility.TryTakeItemFromAllPackages(ref itemId, ref count, out inc);
+        LogInfo($"TakeTailItems2, itemId: {itemId}, count: {count}, inc: {inc}");
     }
 
     #endregion

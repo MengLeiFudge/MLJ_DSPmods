@@ -24,6 +24,10 @@ namespace FE.Compatibility;
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(DeliverySlotsTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
@@ -79,6 +83,10 @@ public class CheckPlugins : BaseUnityPlugin {
         TheyComeFromVoid.Compatible();
         GenesisBook.Compatible();
         UxAssist.Compatible();
+        CheatEnabler.Compatible();
+        DeliverySlotsTweaks.Compatible();
+        Multfunction_mod.Compatible();
+        NebulaMultiplayerModAPI.Compatible();
 
         new Harmony(GUID).Patch(
             AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
