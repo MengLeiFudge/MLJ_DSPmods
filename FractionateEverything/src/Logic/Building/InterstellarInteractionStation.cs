@@ -15,15 +15,15 @@ public static class InterstellarInteractionStation {
         Register("I星际物流交互站",
             """
             An interstellar logistics station that allows for automatic item interaction with fractionation data centres.
-            Supply = Items will be downloaded up to the set limit as much as possible 
-            Demand = Items will be uploaded in full 
-            Storage = Items will be kept at half the set limit as much as possible
+            Local Supply = Items will be downloaded up to the set limit as much as possible 
+            Local Demand = Items will be uploaded in full 
+            Local Storage = Items will be kept at half the set limit as much as possible
             """,
             """
             可以与分馏数据中心自动进行物品交互操作的星际物流运输站。
-            供应 = 物品会尽可能下载至设定上限
-            需求 = 物品会全部上传
-            仓储 = 物品会尽可能维持数目为设定上限的一半
+            本地供应 = 物品会尽可能下载至设定上限
+            本地需求 = 物品会全部上传
+            本地仓储 = 物品会尽可能维持数目为设定上限的一半
             """);
     }
 
