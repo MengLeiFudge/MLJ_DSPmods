@@ -80,7 +80,7 @@ public class GetDspData : BaseUnityPlugin {
 
         Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         harmony.Patch(
-            AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
+            AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
             null,
             new(typeof(GetDspData), nameof(WriteDataToFile)) {
                 after = [
