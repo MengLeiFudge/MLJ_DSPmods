@@ -16,7 +16,7 @@ public static class CheatEnabler {
 
     internal static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
-        if (!Enable) return;
+        if (!Enable || pluginInfo == null) return;
 
         try {
             Assembly assembly = pluginInfo.Instance.GetType().Assembly;

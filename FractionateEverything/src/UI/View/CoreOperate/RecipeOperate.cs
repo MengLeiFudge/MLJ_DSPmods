@@ -373,7 +373,7 @@ public static class RecipeOperate {
             + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 for (int i = 0; i < takeCount; i++) {
@@ -431,7 +431,7 @@ public static class RecipeOperate {
             + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()} x {(int)needExp} {"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 recipe.AddExp(needExp, false);
@@ -489,7 +489,7 @@ public static class RecipeOperate {
             () => {
                 //升到当前品质满级
                 if (!recipe.IsCurrQualityMaxLevel) {
-                    if (!TakeItem(takeId, takeCount, out _)) {
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
                     recipe.AddExp(needExp, false);
@@ -499,7 +499,7 @@ public static class RecipeOperate {
                 while (recipe.Quality != nextQuality) {
                     needExp = recipe.GetExpToNextLevel();
                     takeCount = (int)Math.Ceiling(needExp * 0.5);
-                    if (!TakeItem(takeId, takeCount, out _)) {
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
                     recipe.AddExp(needExp, false);
