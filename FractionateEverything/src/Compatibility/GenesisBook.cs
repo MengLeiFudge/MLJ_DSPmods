@@ -70,7 +70,7 @@ public static class GenesisBook {
         // 在 GameMain.data.history.TechUnlocked 调用之前插入我们的检查
         matcher.Insert(
             new CodeInstruction(OpCodes.Ldloc_3),// proto
-            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(TechProto), "ID")),// proto.ID
+            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(TechProto), nameof(TechProto.ID))),// proto.ID
             new CodeInstruction(OpCodes.Call,
                 AccessTools.Method(typeof(GenesisBook), nameof(IsFracTech))),// IsFracTech(proto.ID)
             new CodeInstruction(matcher2.Opcode, matcher2.Operand)// 如果是分馏科技，直接跳过
