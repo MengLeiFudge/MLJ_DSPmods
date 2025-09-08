@@ -23,11 +23,11 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 建造师模式，所有建筑数目显示为999且建造时不消耗
+    /// 建筑师模式，所有建筑数目显示为999且建造时不消耗
     /// </summary>
     private static bool ArchitectMode => Multfunction_mod.ArchitectMode
                                          || CheatEnabler.ArchitectMode
-                                         || Compatibility.DeliverySlotsTweaks.ArchitectMode;
+                                         || DeliverySlotsTweaks.ArchitectMode;
 
     #region 向背包添加物品
 
