@@ -40,9 +40,9 @@ public static class NebulaMultiplayerModAPI {
         NebulaModAPI.OnMultiplayerGameEnded += OnMultiplayerGameEnded;
 
         Type classType = assembly.GetType("NebulaWorld.SimulatedWorld");
-        harmony.Patch(AccessTools.Method(classType, "SetupInitialPlayerState"), null,
-            new HarmonyMethod(AccessTools.Method(typeof(FractionateEverything),
-                nameof(FractionateEverything.SaveConfig))));
+        MethodInfo postfixMethod =
+            AccessTools.Method(typeof(FractionateEverything), nameof(FractionateEverything.SaveConfig));
+        harmony.Patch(AccessTools.Method(classType, "SetupInitialPlayerState"), null, new(postfixMethod));
 
 #if DEBUG
         OnMultiplayerGameStarted();

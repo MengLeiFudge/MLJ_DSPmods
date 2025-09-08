@@ -1,6 +1,13 @@
 - v2.1.4
     + 添加行星内物流交互站、星际物流交互站。
+    + 丢弃的物品会自动输入到分馏数据中心。
+    + 建造建筑、自动填充等操作可以直接使用分馏数据中心的物品。
+    + 当某个建筑总数大于0时，无论是否已解锁，都在快捷建造栏显示。
     + Add Planetary Interaction Station and Interstellar Interaction Station。
+    + Discarded items are automatically imported into the fractionation data centre.
+    + Operations such as building construction and autofill can use items from the fractionation data centre directly.
+    + When the total number of a building is greater than 0, it is displayed in the quick build bar, regardless of
+      whether it has been unlocked or not.
 
 - v2.1.3
     + 矿物复制配方添加木材、植物燃料。
@@ -17,13 +24,15 @@
     + Adjusted the initial unlocked mineral replication recipes.
     + Modified conversion recipes.
         + Conversion recipes no longer yield the input items.
-        + Conversion recipes will adjust output quantities based on item value, ensuring overall recipe profitability remains unchanged.
-        + Max-level conversion recipe output boost changed from 0% to 50%, max-level enhancement bonus changed from 20% to 50%.
+        + Conversion recipes will adjust output quantities based on item value, ensuring overall recipe profitability
+          remains unchanged.
+        + Max-level conversion recipe output boost changed from 0% to 50%, max-level enhancement bonus changed from 20%
+          to 50%.
     + Alchemy recipes removes the Dark Fog Matrix and Dark Fog Lottery Tickets.
     + Sandbox Mode's one-click tech unlock no longer unlocks all distillation recipes.
     + Replaced essence icons and added tech icons.
     + Optimised item interaction interface: items being searched for now highlight.
-    
+
 - v2.1.2
     + 优化物品交互界面，添加查找指定物品的功能，并将物品按位置排序而非价值。
     + 未完全升级分馏塔时，无法对分馏塔进行强化。
