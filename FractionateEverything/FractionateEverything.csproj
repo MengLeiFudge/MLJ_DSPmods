@@ -34,9 +34,6 @@
         <Reference Include="BuildBarTool">
             <HintPath>..\lib\BuildBarTool.dll</HintPath>
         </Reference>
-        <Reference Include="DeliverySlotsTweaks">
-          <HintPath>..\lib\DeliverySlotsTweaks-publicized.dll</HintPath>
-        </Reference>
         <Reference Include="DSP_Battle">
             <HintPath>..\lib\DSP_Battle-publicized.dll</HintPath>
         </Reference>
