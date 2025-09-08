@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Bootstrap;
 using DSP_Battle;
@@ -7,14 +8,16 @@ using HarmonyLib;
 namespace FE.Compatibility;
 
 public class TheyComeFromVoid {
-    internal const string GUID = "com.ckcz123.DSP_Battle";
+    public const string GUID = "com.ckcz123.DSP_Battle";
+    public static bool Enable;
+    public static Assembly assembly;
 
-    internal static bool Enable;
-
-    internal static void Compatible() {
+    public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
-        if (!Enable || pluginInfo == null) return;
-
+        if (!Enable || pluginInfo == null) {
+            return;
+        }
+        assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
         CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
