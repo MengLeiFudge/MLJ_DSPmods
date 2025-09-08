@@ -9,8 +9,8 @@ public class UxAssist {
     internal static bool Enable;
 
     internal static void Compatible() {
-        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out _);
-        if (!Enable) return;
+        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
+        if (!Enable || pluginInfo == null) return;
 
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.UxAssist");
         harmony.PatchAll(typeof(UxAssist));

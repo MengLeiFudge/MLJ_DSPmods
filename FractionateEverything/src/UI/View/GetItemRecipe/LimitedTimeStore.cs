@@ -235,7 +235,7 @@ public static class LimitedTimeStore {
                 $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCost} {"刷新商店吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
-                    if (!TakeItem(matrixID, matrixRecipeCost, out _)) {
+                    if (!TakeItemWithTip(matrixID, matrixRecipeCost, out _)) {
                         return;
                     }
                     nextFreshTick = gameTick - baseFreshTs + 1;
@@ -416,7 +416,7 @@ public static class LimitedTimeStore {
         }
         if (info.item != null) {
             if (info.matrixDiscountedCount == 0 || !showMessage) {
-                if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                     return;
                 }
                 if (info.itemCount >= info.item.StackSize) {
@@ -431,7 +431,7 @@ public static class LimitedTimeStore {
                     + $"{"来兑换".Translate()} {info.item.name} x {info.itemCount} {"吗？".Translate()}",
                     "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                     () => {
-                        if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                             return;
                         }
                         if (info.itemCount >= info.item.StackSize) {
@@ -445,7 +445,7 @@ public static class LimitedTimeStore {
             }
         } else {
             if (info.matrixDiscountedCount == 0 || !showMessage) {
-                if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                     return;
                 }
                 info.recipe.RewardThis();
@@ -456,7 +456,7 @@ public static class LimitedTimeStore {
                     + $"{"来兑换".Translate()} {info.recipe.TypeName} {"吗？".Translate()}",
                     "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                     () => {
-                        if (!TakeItem(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
                             return;
                         }
                         info.recipe.RewardThis();

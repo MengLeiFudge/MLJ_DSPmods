@@ -269,7 +269,7 @@ public static class BuildingOperate {
             + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
@@ -292,7 +292,7 @@ public static class BuildingOperate {
             + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
@@ -315,7 +315,7 @@ public static class BuildingOperate {
             + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
@@ -338,7 +338,7 @@ public static class BuildingOperate {
             + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItem(takeId, takeCount, out _)) {
+                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 PointAggregateTower.Level++;
@@ -361,7 +361,7 @@ public static class BuildingOperate {
             + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItem(takeId, takeCount, out _)) {
+                if (!TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
                 if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
