@@ -283,7 +283,7 @@ public static class TicketRaffle {
             }
             return;
         }
-        if (!TakeItem(SelectedTicketId1, raffleCount, out _, showMessage)) {
+        if (!TakeItemWithTip(SelectedTicketId1, raffleCount, out _, showMessage)) {
             return;
         }
         Dictionary<int, int> specialItemDic = [];
@@ -506,7 +506,7 @@ public static class TicketRaffle {
         }
         //排序一下
         items.Sort();
-        if (!TakeItem(SelectedTicketId2, raffleCount, out _, showMessage)) {
+        if (!TakeItemWithTip(SelectedTicketId2, raffleCount, out _, showMessage)) {
             return;
         }
         Dictionary<int, int> specialItemDic = [];
