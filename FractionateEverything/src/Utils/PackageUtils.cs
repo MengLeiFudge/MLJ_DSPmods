@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
+using BuildBarTool;
 using FE.Compatibility;
 using FE.UI.View.Setting;
 using HarmonyLib;
@@ -159,6 +161,100 @@ public static partial class Utils {
     }
 
     /// <summary>
+    /// 背包物品总数、快捷建造栏的相关修改也兼容BuildBarTool
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.Low)]
+    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuSetCurrentCategoryPostPatch))]
+    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
+        [typeof(UIBuildMenu)], [ArgumentType.Ref])]
+    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.OnChildButtonClick))]
+    private static IEnumerable<CodeInstruction> BuildBarTool_Transpiler(
+        IEnumerable<CodeInstruction> instructions, MethodBase original) {
+        try {
+            //移除以下代码：
+            //if (DeliverySlotsTweaksCompat.enabled)
+            //    itemCount += uiBuildMenu.player.deliveryPackage.GetItemCount(id);
+            var codes = new List<CodeInstruction>(instructions);
+            bool foundAny = false;
+            // 从后往前遍历，避免索引变化问题
+            for (int i = codes.Count - 1; i >= 10; i--) {
+                // 查找模式：ldsfld DeliverySlotsTweaksCompat::enabled -> brfalse -> ... -> callvirt GetItemCount -> add
+                if (codes[i].opcode == OpCodes.Add
+                    && i >= 1
+                    && codes[i - 1].opcode == OpCodes.Callvirt
+                    && codes[i - 1].operand?.ToString().Contains("GetItemCount") == true) {
+                    // 向前查找 DeliverySlotsTweaksCompat.enabled 的加载
+                    int startIndex = -1;
+                    for (int j = i - 10; j >= 0 && j <= i - 2; j++) {
+                        if (codes[j].opcode == OpCodes.Ldsfld
+                            && codes[j].operand?.ToString().Contains("DeliverySlotsTweaksCompat") == true
+                            && codes[j].operand?.ToString().Contains("enabled") == true) {
+                            startIndex = j;
+                            break;
+                        }
+                    }
+                    if (startIndex != -1) {
+                        // 查找对应的 brfalse 指令
+                        Label? jumpLabel = null;
+                        for (int k = startIndex + 1; k < i - 1; k++) {
+                            if ((codes[k].opcode == OpCodes.Brfalse_S || codes[k].opcode == OpCodes.Brfalse)) {
+                                jumpLabel = (Label)codes[k].operand;
+                                break;
+                            }
+                        }
+                        if (jumpLabel.HasValue) {
+                            // 找到跳转目标位置
+                            int endIndex = -1;
+                            for (int m = i; m < codes.Count; m++) {
+                                if (codes[m].labels.Contains(jumpLabel.Value)) {
+                                    endIndex = m;
+                                    break;
+                                }
+                            }
+                            if (endIndex != -1) {
+                                // 移除整个 if 块
+                                int removeCount = endIndex - startIndex;
+                                codes.RemoveRange(startIndex, removeCount);
+                                foundAny = true;
+                                // 调整索引继续查找
+                                i = startIndex;
+                                LogInfo($"Removed DeliverySlotsTweaksCompat logic from {original.Name}");
+                            }
+                        }
+                    }
+                }
+            }
+            if (!foundAny) {
+                LogWarning($"No DeliverySlotsTweaksCompat logic found in {original.Name}");
+            }
+            // Replace player.package.GetItemCount(int itemId)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
+                [typeof(int)]);
+            var codeMacher = new CodeMatcher(codes)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(GetItemCount))));
+            // Replace history.ItemUnlocked(int itemId)
+            method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
+                [typeof(int)]);
+            codeMacher = new CodeMatcher(codeMacher.InstructionEnumeration())
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(ItemUnlocked))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in GetItemCount_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
     /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
     /// </summary>
     [HarmonyTranspiler]
@@ -166,6 +262,8 @@ public static partial class Utils {
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
+    [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
+        [typeof(UIFunctionPanel)], [ArgumentType.Ref])]
     private static IEnumerable<CodeInstruction> ItemUnlocked_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace history.ItemUnlocked(int itemId)
