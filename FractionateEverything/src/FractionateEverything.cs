@@ -122,7 +122,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             }
             //在LDBTool已执行完毕所有PostAddData、EditData后，执行最终修改操作
             harmony.Patch(
-                AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
+                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
                 null,
                 new(typeof(FractionateEverything), nameof(FinalAction)) {
                     after = [LDBToolPlugin.MODGUID]
@@ -130,7 +130,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             );
             // //在载入语言时、CommonAPIPlugin添加翻译后，添加额外的所有翻译
             // harmony.Patch(
-            //     AccessTools.Method(typeof(Localization), "LoadLanguage"),
+            //     AccessTools.Method(typeof(Localization), nameof(Localization.LoadLanguage)),
             //     null,
             //     new(typeof(Utils), nameof(Utils.LoadLanguagePostfixAfterCommonApi)) {
             //         after = [CommonAPIPlugin.GUID]

@@ -89,7 +89,7 @@ public class CheckPlugins : BaseUnityPlugin {
         NebulaMultiplayerModAPI.Compatible();
 
         new Harmony(GUID).Patch(
-            AccessTools.Method(typeof(VFPreload), "InvokeOnLoadWorkEnded"),
+            AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
             null,
             new(typeof(CheckPlugins), nameof(OnMainMenuOpen)) { priority = Priority.Last }
         );

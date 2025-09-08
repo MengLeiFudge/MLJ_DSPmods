@@ -125,7 +125,7 @@ public static partial class Utils {
     private static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.GetItemCount(int itemId)
-            var method = AccessTools.Method(typeof(StorageComponent), "GetItemCount",
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
                 [typeof(int)]);
             var codeMacher = new CodeMatcher(instructions)
                 .MatchForward(false,
@@ -156,6 +156,40 @@ public static partial class Utils {
             return 999;
         }
         return (int)Math.Min(int.MaxValue, GetItemTotalCount(itemId));
+    }
+
+    /// <summary>
+    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.Low)]
+    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
+    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
+    [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
+    private static IEnumerable<CodeInstruction> ItemUnlocked_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace history.ItemUnlocked(int itemId)
+            var method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
+                [typeof(int)]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(ItemUnlocked))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in ItemUnlocked_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
+    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    /// </summary>
+    private static bool ItemUnlocked(GameHistoryData history, int itemId) {
+        return history.ItemUnlocked(itemId) || GetItemTotalCount(itemId) > 0;
     }
 
     /// <summary>
@@ -300,7 +334,7 @@ public static partial class Utils {
     private static IEnumerable<CodeInstruction> TakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.TakeItem(int itemId, int count, out int inc)
-            var method = AccessTools.Method(typeof(StorageComponent), "TakeItem",
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
                 [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
             var codeMacher = new CodeMatcher(instructions)
                 .MatchForward(false,
@@ -437,7 +471,7 @@ public static partial class Utils {
     private static IEnumerable<CodeInstruction> TakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
-            var method = AccessTools.Method(typeof(StorageComponent), "TakeTailItems",
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
                 [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
             var codeMacher = new CodeMatcher(instructions)
                 .MatchForward(false,
@@ -532,6 +566,10 @@ public static partial class Utils {
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
             count = Math.Min(int.MaxValue / 10, count);
+            if (count <= 0) {
+                inc = 0;
+                return 0;
+            }
             inc = (int)split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId], count);
             return count;
         }
