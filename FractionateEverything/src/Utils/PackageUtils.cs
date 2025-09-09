@@ -354,6 +354,45 @@ public static partial class Utils {
     }
 
     /// <summary>
+    /// 移除“物品不足”的提示
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.Low)]
+    [HarmonyAfter("dsp.nebula-multiplayer")]
+    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
+    public static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        try
+        {
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(OpCodes.Ldc_I4_2), // EBuildCondition.NotEnoughItem
+                    new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(BuildPreview), nameof(BuildPreview.condition)))
+                );
+            if (codeMacher.IsInvalid)
+            {
+                LogWarning("Can't find EBuildCondition.NotEnoughItem");
+                return instructions;
+            }
+            codeMacher
+                .Advance(-1)
+                .SetAndAdvance(OpCodes.Nop, null)
+                .SetAndAdvance(OpCodes.Nop, null)
+                .SetAndAdvance(OpCodes.Nop, null);
+            if (codeMacher.Opcode == OpCodes.Br)
+                codeMacher.RemoveInstruction();
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in CheckBuildConditions_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
