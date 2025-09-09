@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
@@ -45,6 +46,9 @@ public static class RecipeOperate {
     private static Text txtCoreCount;
     private static Text[] txtRecipeInfo = new Text[30];
     private static float txtRecipeInfoBaseY = 0;
+    private static UIButton[] incBtns = new UIButton[5];
+    private static int[] incs = [0,1,2,4,10];
+    private static int fluidInputIncAvg = incs[0];
 
     public static void AddTranslations() {
         Register("配方操作", "Recipe Operate");
@@ -138,6 +142,12 @@ public static class RecipeOperate {
             wnd.AddButton(3, 4, y, tab, "升满",
                 onClick: () => { FullUpgrade(SelectedRecipe); });
         }
+        // 切换不同增产点数输出详情的按钮
+        for (int i = 0; i < incs.Length; i++) {
+            int inc = incs[i];
+            incBtns[i] = wnd.AddButton(0f, 0f, 50f, tab, $"{inc:D2}",
+                onClick: () => fluidInputIncAvg = inc);
+        }
         y += 36f;
         txtRecipeInfoBaseY = y;
         for (int i = 0; i < txtRecipeInfo.Length; i++) {
@@ -154,6 +164,9 @@ public static class RecipeOperate {
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         int line = 0;
+        foreach (UIButton incBtn in incBtns) {
+            incBtn.gameObject.SetActive(false);
+        }
         if (recipe == null) {
             txtRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
@@ -211,63 +224,61 @@ public static class RecipeOperate {
             txtRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 {"完全处理后的输出如下：".Translate()}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
-            int totalAddLine = 0;
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 0, out int lineCount0);
-            totalAddLine += lineCount0 - 1;
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
-            line++;
-            if (!GenesisBook.Enable) {
-                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 1, out int lineCount1);
-                totalAddLine += lineCount1 - 1;
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
-                line++;
-                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 2, out int lineCount2);
-                totalAddLine += lineCount2 - 1;
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
-                line++;
+
+            txtRecipeInfo[line].text = $"{"增产点数".Translate()}";
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            int j = 0;
+            for (int i = 0; i < incBtns.Length; i++) {
+                if (GenesisBook.Enable && i == 1) {
+                    i++;
+                }
+                j++;
+                incBtns[i].SetPosition(60 + j * 60, txtRecipeInfoBaseY + 24f * line);
+                incBtns[i].gameObject.SetActive(true);
             }
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 4, out int lineCount4);
-            totalAddLine += lineCount4 - 1;
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
-            line++;
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 10, out int lineCount10);
-            totalAddLine += lineCount10 - 1;
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
             line++;
 
+            string sameRecipeStr = GetSameRecipeStr(recipe, fluidInputIncAvg);
+            string[] strs = sameRecipeStr.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
+            foreach (string str in strs) {
+                txtRecipeInfo[line].text = str; 
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                line ++;
+            }
+
             txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
 
             if (recipe.FullUpgrade) {
                 txtRecipeInfo[line].text = "配方已完全升级！".Translate().WithColor(Orange);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             } else if (recipe.IsMaxQuality) {
                 txtRecipeInfo[line].text = "配方已到最高品质！".Translate().WithColor(Blue);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             } else {
                 txtRecipeInfo[line].text = "配方品质可突破，突破条件：".Translate();
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsCurrQualityMaxLevel ? "√" : "x")}] "
                     + $"{"达到当前品质最高等级（".Translate()}{recipe.Level} / {recipe.CurrQualityMaxLevel}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityMaxLevel ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] "
                     + $"{"达到当前等级经验上限（".Translate()}{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityCurrLevelMaxExp ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] "
                     + $"{"拥有足够的同名回响（".Translate()}{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}{"）".Translate()}"
                         .WithColor(recipe.IsEnoughMemoryToBreak ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             }
             //todo: 展示配方特殊加成
@@ -280,8 +291,7 @@ public static class RecipeOperate {
         }
     }
 
-    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg, out int lineCount) {
-        lineCount = 1;
+    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
         var recipe0 = recipe as QuantumCopyRecipe;
         ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
         float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
@@ -328,6 +338,7 @@ public static class RecipeOperate {
         }
         StringBuilder sb = new($"{"增产点数".Translate()} {fluidInputIncAvg:D2}    ");
         bool sandboxMode = GameMain.sandboxToolsEnabled;
+        int lineCount = 1;
         foreach (var p in outputDic) {
             var tuple = p.Value;
             if (sb.Length > 80 * lineCount) {
