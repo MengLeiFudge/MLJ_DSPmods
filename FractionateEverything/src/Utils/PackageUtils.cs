@@ -130,13 +130,13 @@ public static partial class Utils {
             // Replace player.package.GetItemCount(int itemId)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
                 [typeof(int)]);
-            var codeMacher = new CodeMatcher(instructions)
+            var codeMatcher = new CodeMatcher(instructions)
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(GetItemCount))));
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in GetItemCount_Transpiler: {ex}");
@@ -176,63 +176,25 @@ public static partial class Utils {
             //移除以下代码：
             //if (DeliverySlotsTweaksCompat.enabled)
             //    itemCount += uiBuildMenu.player.deliveryPackage.GetItemCount(id);
-            var codes = new List<CodeInstruction>(instructions);
-            bool foundAny = false;
-            // 从后往前遍历，避免索引变化问题
-            for (int i = codes.Count - 1; i >= 10; i--) {
-                // 查找模式：ldsfld DeliverySlotsTweaksCompat::enabled -> brfalse -> ... -> callvirt GetItemCount -> add
-                if (codes[i].opcode == OpCodes.Add
-                    && i >= 1
-                    && codes[i - 1].opcode == OpCodes.Callvirt
-                    && codes[i - 1].operand?.ToString().Contains("GetItemCount") == true) {
-                    // 向前查找 DeliverySlotsTweaksCompat.enabled 的加载
-                    int startIndex = -1;
-                    for (int j = i - 10; j >= 0 && j <= i - 2; j++) {
-                        if (codes[j].opcode == OpCodes.Ldsfld
-                            && codes[j].operand?.ToString().Contains("DeliverySlotsTweaksCompat") == true
-                            && codes[j].operand?.ToString().Contains("enabled") == true) {
-                            startIndex = j;
-                            break;
-                        }
-                    }
-                    if (startIndex != -1) {
-                        // 查找对应的 brfalse 指令
-                        Label? jumpLabel = null;
-                        for (int k = startIndex + 1; k < i - 1; k++) {
-                            if ((codes[k].opcode == OpCodes.Brfalse_S || codes[k].opcode == OpCodes.Brfalse)) {
-                                jumpLabel = (Label)codes[k].operand;
-                                break;
-                            }
-                        }
-                        if (jumpLabel.HasValue) {
-                            // 找到跳转目标位置
-                            int endIndex = -1;
-                            for (int m = i; m < codes.Count; m++) {
-                                if (codes[m].labels.Contains(jumpLabel.Value)) {
-                                    endIndex = m;
-                                    break;
-                                }
-                            }
-                            if (endIndex != -1) {
-                                // 移除整个 if 块
-                                int removeCount = endIndex - startIndex;
-                                codes.RemoveRange(startIndex, removeCount);
-                                foundAny = true;
-                                // 调整索引继续查找
-                                i = startIndex;
-                                LogInfo($"Removed DeliverySlotsTweaksCompat logic from {original.Name}");
-                            }
-                        }
-                    }
+            var codeMatcher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(OpCodes.Ldsfld, AccessTools.Field(typeof(DeliverySlotsTweaksCompat), "enabled")),
+                    new CodeMatch(OpCodes.Stloc_S),
+                    new CodeMatch(OpCodes.Ldloc_S),
+                    new CodeMatch(OpCodes.Brfalse)
+                );
+            //查IL可知要将12行设置为Nop
+            if (codeMatcher.IsValid && codeMatcher.Length >= codeMatcher.Pos + 12) {
+                for (int i = 0; i <= 12; i++) {
+                    codeMatcher.SetAndAdvance(OpCodes.Nop, null);
                 }
-            }
-            if (!foundAny) {
-                LogWarning($"No DeliverySlotsTweaksCompat logic found in {original.Name}");
+            } else {
+                LogWarning($"MethodBase {original}, DeliverySlotsTweaksCompat.enabled not found");
             }
             // Replace player.package.GetItemCount(int itemId)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
                 [typeof(int)]);
-            var codeMacher = new CodeMatcher(codes)
+            codeMatcher = new CodeMatcher(codeMatcher.InstructionEnumeration())
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
@@ -241,13 +203,13 @@ public static partial class Utils {
             // Replace history.ItemUnlocked(int itemId)
             method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
                 [typeof(int)]);
-            codeMacher = new CodeMatcher(codeMacher.InstructionEnumeration())
+            codeMatcher = new CodeMatcher(codeMatcher.InstructionEnumeration())
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(ItemUnlocked))));
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in GetItemCount_Transpiler: {ex}");
@@ -271,13 +233,13 @@ public static partial class Utils {
             // Replace history.ItemUnlocked(int itemId)
             var method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
                 [typeof(int)]);
-            var codeMacher = new CodeMatcher(instructions)
+            var codeMatcher = new CodeMatcher(instructions)
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(ItemUnlocked))));
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in ItemUnlocked_Transpiler: {ex}");
@@ -300,7 +262,7 @@ public static partial class Utils {
     [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PlaceItems))]
     private static IEnumerable<CodeInstruction> PlaceItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            var codeMacher = new CodeMatcher(instructions);
+            var codeMatcher = new CodeMatcher(instructions);
             /*
             if (this.entityId == 0)
             {
@@ -315,7 +277,7 @@ public static partial class Utils {
             {
                 ...
             */
-            codeMacher.MatchForward(false,
+            codeMatcher.MatchForward(false,
                     new CodeMatch(OpCodes.Br),
                     new CodeMatch(OpCodes.Ldarg_0),
                     new CodeMatch(OpCodes.Ldfld,
@@ -331,7 +293,7 @@ public static partial class Utils {
                     new CodeInstruction(OpCodes.Call,
                         AccessTools.Method(typeof(Utils), nameof(AddConstructableCountsInStorage)))
                 );
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in PlaceItems_Transpiler: {ex}");
@@ -363,28 +325,27 @@ public static partial class Utils {
     [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
-    public static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        try
-        {
-            var codeMacher = new CodeMatcher(instructions)
+    public static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        try {
+            var codeMatcher = new CodeMatcher(instructions)
                 .MatchForward(false,
-                    new CodeMatch(OpCodes.Ldc_I4_2), // EBuildCondition.NotEnoughItem
-                    new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(BuildPreview), nameof(BuildPreview.condition)))
+                    new CodeMatch(OpCodes.Ldc_I4_2),// EBuildCondition.NotEnoughItem
+                    new CodeMatch(OpCodes.Stfld,
+                        AccessTools.Field(typeof(BuildPreview), nameof(BuildPreview.condition)))
                 );
-            if (codeMacher.IsInvalid)
-            {
+            if (codeMatcher.IsInvalid) {
                 LogWarning("Can't find EBuildCondition.NotEnoughItem");
                 return instructions;
             }
-            codeMacher
+            codeMatcher
                 .Advance(-1)
                 .SetAndAdvance(OpCodes.Nop, null)
                 .SetAndAdvance(OpCodes.Nop, null)
                 .SetAndAdvance(OpCodes.Nop, null);
-            if (codeMacher.Opcode == OpCodes.Br)
-                codeMacher.RemoveInstruction();
-            return codeMacher.InstructionEnumeration();
+            if (codeMatcher.Opcode == OpCodes.Br)
+                codeMatcher.RemoveInstruction();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in CheckBuildConditions_Transpiler: {ex}");
@@ -475,13 +436,13 @@ public static partial class Utils {
             // Replace player.package.TakeItem(int itemId, int count, out int inc)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
                 [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
-            var codeMacher = new CodeMatcher(instructions)
+            var codeMatcher = new CodeMatcher(instructions)
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeItem))));
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in TakeItem_Transpiler: {ex}");
@@ -561,13 +522,13 @@ public static partial class Utils {
     //         // Replace player.package.TakeItemFromGrid(int gridIndex, ref int itemId, ref int count, out int inc)
     //         var method = AccessTools.Method(typeof(StorageComponent), "TakeItemFromGrid",
     //             [typeof(int), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType()]);
-    //         var codeMacher = new CodeMatcher(instructions)
+    //         var codeMatcher = new CodeMatcher(instructions)
     //             .MatchForward(false,
     //                 new CodeMatch(i => i.opcode == OpCodes.Callvirt
     //                                    && i.operand.Equals(method)))
     //             .Repeat(matcher => matcher
     //                 .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeItemFromGrid))));
-    //         return codeMacher.InstructionEnumeration();
+    //         return codeMatcher.InstructionEnumeration();
     //     }
     //     catch (Exception ex) {
     //         LogError($"Error in TakeItemFromGrid_Transpiler: {ex}");
@@ -612,13 +573,13 @@ public static partial class Utils {
             // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
                 [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
-            var codeMacher = new CodeMatcher(instructions)
+            var codeMatcher = new CodeMatcher(instructions)
                 .MatchForward(false,
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
                     .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeTailItems))));
-            return codeMacher.InstructionEnumeration();
+            return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
             LogError($"Error in TakeTailItems_Transpiler: {ex}");
