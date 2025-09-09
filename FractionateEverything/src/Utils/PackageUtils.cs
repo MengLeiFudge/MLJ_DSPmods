@@ -248,7 +248,7 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏、物品选择界面显示。
     /// </summary>
     private static bool ItemUnlocked(GameHistoryData history, int itemId) {
         return history.ItemUnlocked(itemId) || GetItemTotalCount(itemId) > 0;
@@ -472,8 +472,6 @@ public static partial class Utils {
             return count;
         }
         //背包
-        count -= storage.TakeItem(itemId, count, out inc);
-
         int countReal = 0;
         int itemIdOri = itemId;
         int countNeed = count;
@@ -505,44 +503,38 @@ public static partial class Utils {
         return countReal;
     }
 
-    // /// <summary>
-    // /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
-    // /// </summary>
-    // [HarmonyTranspiler]
-    // [HarmonyPriority(Priority.Low)]
-    // [HarmonyPatch(typeof(Mecha), nameof(PlanetFactory.EntityFastFillIn))]
-    // [HarmonyPatch(typeof(Mecha), nameof(Player.SetHandItems))]
-    // [HarmonyPatch(typeof(Mecha), nameof(PlayerPackageUtility.ThrowAllItemsInAllPackage))]
-    // [HarmonyPatch(typeof(Mecha), nameof(StorageComponent.TransferTo),
-    //     [typeof(StorageComponent)], [ArgumentType.Normal])]
-    // [HarmonyPatch(typeof(Mecha), nameof(StorageComponent.TransferTo),
-    //     [typeof(StorageComponent), typeof(ItemBundle)], [ArgumentType.Normal, ArgumentType.Normal])]
-    // private static IEnumerable<CodeInstruction> TakeItemFromGrid_Transpiler(IEnumerable<CodeInstruction> instructions) {
-    //     try {
-    //         // Replace player.package.TakeItemFromGrid(int gridIndex, ref int itemId, ref int count, out int inc)
-    //         var method = AccessTools.Method(typeof(StorageComponent), "TakeItemFromGrid",
-    //             [typeof(int), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType()]);
-    //         var codeMatcher = new CodeMatcher(instructions)
-    //             .MatchForward(false,
-    //                 new CodeMatch(i => i.opcode == OpCodes.Callvirt
-    //                                    && i.operand.Equals(method)))
-    //             .Repeat(matcher => matcher
-    //                 .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeItemFromGrid))));
-    //         return codeMatcher.InstructionEnumeration();
-    //     }
-    //     catch (Exception ex) {
-    //         LogError($"Error in TakeItemFromGrid_Transpiler: {ex}");
-    //         return instructions;
-    //     }
-    // }
-    //
-    // /// <summary>
-    // /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
-    // /// </summary>
-    // private static int TakeItemFromGrid(StorageComponent storage, int gridIndex, ref int itemId, ref int count,
-    //     out int inc) {
-    //
-    // }
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.Low)]
+    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
+    private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace player.package.TakeItem(int itemId, int count, out int inc)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
+                [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TryTakeItem))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in TakeItem_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
+        inc = 0;
+        return (int)Math.Min(count, GetItemTotalCount(itemId));
+    }
 
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
