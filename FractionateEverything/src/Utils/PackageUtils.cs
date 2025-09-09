@@ -471,35 +471,36 @@ public static partial class Utils {
         if (ArchitectMode && item.BuildMode != 0) {
             return count;
         }
-        //背包
+        //其他情况，根据设置的顺序拿取物品
+        int[] TakeItemPriority = ExtractAndPopup.TakeItemPriority;
         int countReal = 0;
         int itemIdOri = itemId;
         int countNeed = count;
-        //执行TakeItem后，count表示实际取到的数目
-        count = storage.TakeItem(itemId, count, out inc);
-        countReal += count;
-        if (countReal >= countNeed) {
-            return countReal;
+        int incTemp;
+        for (int i = 0; i < TakeItemPriority.Length; i++) {
+            //0：背包  1：物流背包  2：Mod背包
+            if (TakeItemPriority[i] == 0) {
+                //背包
+                //执行TakeItem后，count表示实际取到的数目
+                count = storage.TakeItem(itemId, count, out incTemp);
+            } else if (TakeItemPriority[i] == 1) {
+                //物流背包
+                //执行TakeItems后，count表示实际取到的数目
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out incTemp);
+            } else {
+                //Mod背包
+                //执行TakeItemFromModData后，count表示实际取到的数目
+                count = TakeItemFromModData(itemId, count, out incTemp);
+            }
+            inc += incTemp;
+            countReal += count;
+            if (countReal >= countNeed) {
+                return countReal;
+            }
+            //itemId还原，count改为还需要获取的物品数目
+            itemId = itemIdOri;
+            count = countNeed - countReal;
         }
-        //count改为还需要获取的物品数目
-        count = countNeed - countReal;
-        //物流背包
-        //执行TakeItems后，count表示实际取到的数目
-        GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out int incDP);
-        inc += incDP;
-        countReal += count;
-        if (countReal >= countNeed) {
-            return countReal;
-        }
-        //itemId还原，count改为还需要获取的物品数目
-        itemId = itemIdOri;
-        count = countNeed - countReal;
-        //Mod背包
-        //执行TakeItemFromModData后，count表示实际取到的数目
-        count = TakeItemFromModData(itemId, count, out int incMP);
-        inc += incMP;
-        countReal += count;
-        //返回实际取到的数目
         return countReal;
     }
 
@@ -606,43 +607,37 @@ public static partial class Utils {
         if (ArchitectMode && item.BuildMode != 0) {
             return;
         }
-        //背包
+        //其他情况，根据设置的顺序拿取物品
+        int[] TakeItemPriority = ExtractAndPopup.TakeItemPriority;
         int countReal = 0;
         int itemIdOri = itemId;
         int countNeed = count;
-        //执行TakeTailItems后，count表示实际取到的数目
-        storage.TakeTailItems(ref itemId, ref count, out inc, useBan);
-        countReal += count;
-        if (countReal >= countNeed) {
-            return;
-        }
-        //itemId还原，count改为还需要获取的物品数目
-        itemId = itemIdOri;
-        count = countNeed - countReal;
-        //物流背包
-        //执行TakeItems后，count表示实际取到的数目
-        GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out int incDP);
-        inc += incDP;
-        countReal += count;
-        if (countReal >= countNeed) {
-            return;
-        }
-        //itemId还原，count改为还需要获取的物品数目
-        itemId = itemIdOri;
-        count = countNeed - countReal;
-        //Mod背包
-        //执行TakeItemFromModData后，count表示实际取到的数目
-        count = TakeItemFromModData(itemId, count, out int incMP);
-        inc += incMP;
-        countReal += count;
-        if (countReal >= countNeed) {
-            return;
-        }
-        //物品不够，判断获取的物品数目是否为0，如果为0则itemId置为0
-        if (countReal > 0) {
+        int incTemp;
+        for (int i = 0; i < TakeItemPriority.Length; i++) {
+            //0：背包  1：物流背包  2：Mod背包
+            if (TakeItemPriority[i] == 0) {
+                //背包
+                //执行TakeTailItems后，count表示实际取到的数目
+                storage.TakeTailItems(ref itemId, ref count, out incTemp, useBan);
+            } else if (TakeItemPriority[i] == 1) {
+                //物流背包
+                //执行TakeItems后，count表示实际取到的数目
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out incTemp);
+            } else {
+                //Mod背包
+                //执行TakeItemFromModData后，count表示实际取到的数目
+                count = TakeItemFromModData(itemId, count, out incTemp);
+            }
+            inc += incTemp;
+            countReal += count;
+            if (countReal >= countNeed) {
+                return;
+            }
+            //itemId还原，count改为还需要获取的物品数目
             itemId = itemIdOri;
-            count = countReal;
-        } else {
+            count = countNeed - countReal;
+        }
+        if (countReal == 0) {
             itemId = 0;
             count = 0;
         }
@@ -701,16 +696,7 @@ public static partial class Utils {
             GameMain.mainPlayer.sandCount -= count;
             return true;
         }
-        count -= TakeItemFromModData(itemId, count, out int inc1);
-        inc += inc1;
-        if (count > 0) {
-            count -= GameMain.mainPlayer.package.TakeItem(itemId, count, out int inc2);
-            inc += inc2;
-            if (count > 0) {
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out int inc3);
-                inc += inc3;
-            }
-        }
+        TakeTailItems(GameMain.mainPlayer.package, ref itemId, ref count, out inc);
         return true;
     }
 
