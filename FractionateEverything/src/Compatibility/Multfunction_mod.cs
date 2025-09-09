@@ -7,7 +7,7 @@ using xiaoye97;
 
 namespace FE.Compatibility;
 
-public class Multfunction_mod {
+public static class Multfunction_mod {
     public const string GUID = "cn.blacksnipe.dsp.Multfuntion_mod";
     public static bool Enable;
     public static Assembly assembly;
