@@ -211,57 +211,63 @@ public static class RecipeOperate {
             txtRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 {"完全处理后的输出如下：".Translate()}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 0);
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            int totalAddLine = 0;
+            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 0, out int lineCount0);
+            totalAddLine += lineCount0 - 1;
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
             line++;
             if (!GenesisBook.Enable) {
-                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 1);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 1, out int lineCount1);
+                totalAddLine += lineCount1 - 1;
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
-                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 2);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 2, out int lineCount2);
+                totalAddLine += lineCount2 - 1;
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
             }
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 4);
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 4, out int lineCount4);
+            totalAddLine += lineCount4 - 1;
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
             line++;
-            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 10);
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            txtRecipeInfo[line].text = GetSameRecipeStr(recipe, 10, out int lineCount10);
+            totalAddLine += lineCount10 - 1;
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
             line++;
 
             txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
             line++;
 
             if (recipe.FullUpgrade) {
                 txtRecipeInfo[line].text = "配方已完全升级！".Translate().WithColor(Orange);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
             } else if (recipe.IsMaxQuality) {
                 txtRecipeInfo[line].text = "配方已到最高品质！".Translate().WithColor(Blue);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
             } else {
                 txtRecipeInfo[line].text = "配方品质可突破，突破条件：".Translate();
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsCurrQualityMaxLevel ? "√" : "x")}] "
                     + $"{"达到当前品质最高等级（".Translate()}{recipe.Level} / {recipe.CurrQualityMaxLevel}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityMaxLevel ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] "
                     + $"{"达到当前等级经验上限（".Translate()}{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityCurrLevelMaxExp ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] "
                     + $"{"拥有足够的同名回响（".Translate()}{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}{"）".Translate()}"
                         .WithColor(recipe.IsEnoughMemoryToBreak ? Green : Red);
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
+                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * (line + totalAddLine));
                 line++;
             }
             //todo: 展示配方特殊加成
@@ -274,7 +280,8 @@ public static class RecipeOperate {
         }
     }
 
-    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
+    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg, out int lineCount) {
+        lineCount = 1;
         var recipe0 = recipe as QuantumCopyRecipe;
         ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
         float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
@@ -323,6 +330,11 @@ public static class RecipeOperate {
         bool sandboxMode = GameMain.sandboxToolsEnabled;
         foreach (var p in outputDic) {
             var tuple = p.Value;
+            if (sb.Length > 80 * lineCount) {
+                sb.AppendLine();
+                sb.Append("    ");
+                lineCount++;
+            }
             sb.Append($"{(tuple.Item2 || sandboxMode ? LDB.items.Select(p.Key).name : "???")}"
                       + $" x {(tuple.Item3 || sandboxMode ? tuple.Item1.ToString("F3") : "???")}  ");
         }
