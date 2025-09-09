@@ -109,7 +109,7 @@ public static partial class Utils {
     /// 获取玩家持有的物品数目时，返回 背包+物流背包+Mod背包 的物品总数
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
@@ -165,7 +165,7 @@ public static partial class Utils {
     /// 背包物品总数、快捷建造栏的相关修改也兼容BuildBarTool
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuSetCurrentCategoryPostPatch))]
     [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
         [typeof(UIBuildMenu)], [ArgumentType.Ref])]
@@ -221,7 +221,7 @@ public static partial class Utils {
     /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏、物品选择界面显示。
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
@@ -258,7 +258,7 @@ public static partial class Utils {
     /// 修正建造可用的物品数目
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(ConstructionModuleComponent), nameof(ConstructionModuleComponent.PlaceItems))]
     private static IEnumerable<CodeInstruction> PlaceItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
@@ -319,7 +319,7 @@ public static partial class Utils {
     /// 移除“物品不足”的提示
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyAfter("dsp.nebula-multiplayer")]
     [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
@@ -425,7 +425,7 @@ public static partial class Utils {
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishAmmo))]
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishBomb))]
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishFuel))]
@@ -507,7 +507,7 @@ public static partial class Utils {
     /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
     private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
@@ -540,7 +540,7 @@ public static partial class Utils {
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CreatePrebuilds))]
     [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CreatePrebuilds))]
     [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
