@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using BuildBarTool;
+using CommonAPI.Patches;
 using FE.Compatibility;
 using FE.UI.View.Setting;
 using HarmonyLib;
@@ -255,13 +256,14 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏、物品选择界面显示。
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.Low)]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
+    [HarmonyPatch(typeof(UIItemPicker_Patch), nameof(UIItemPicker_Patch.CheckItem))]
     [HarmonyPatch(typeof(BuildBarToolPlugin), nameof(BuildBarToolPlugin.UIBuildMenuOnUpdatePostPatch),
         [typeof(UIFunctionPanel)], [ArgumentType.Ref])]
     private static IEnumerable<CodeInstruction> ItemUnlocked_Transpiler(IEnumerable<CodeInstruction> instructions) {
