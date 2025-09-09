@@ -1,7 +1,7 @@
 - v2.1.4
     + 添加行星内物流交互站、星际物流交互站。
     + 丢弃的物品会自动输入到分馏数据中心。
-    + 建造建筑、自动填充等操作可以直接使用分馏数据中心的物品。
+    + 建造建筑、自动填充、手动制造等操作可以直接使用分馏数据中心的物品。
     + 当某个建筑总数大于0时，无论是否已解锁，都在快捷建造栏显示。
     + Add Planetary Interaction Station and Interstellar Interaction Station。
     + Discarded items are automatically imported into the fractionation data centre.
