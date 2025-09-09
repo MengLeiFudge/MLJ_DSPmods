@@ -78,7 +78,7 @@ public static class GenesisBook {
         return matcher.InstructionEnumeration();
     }
 
-    public static bool IsFracTech(int id) {
+    private static bool IsFracTech(int id) {
         return id >= TFE分馏数据中心 && id <= TFE超值礼包9;
     }
 
