@@ -445,39 +445,33 @@ public static class TechManager {
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
             [],
-            [IFE交互塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE交互塔],
             GetTechPos(2, 2)
         );
         tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品交互.AddItems = [IFE交互塔];
-        tech物品交互.AddItemCounts = [10];
         tech物品交互.PropertyOverrideItems = [I电磁矩阵];
         tech物品交互.PropertyItemCounts = [200];
 
         var tech矿物复制 = ProtoRegistry.RegisterTech(
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
             [],
-            [IFE矿物复制塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE矿物复制塔],
             GetTechPos(2, 3)
         );
         tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
-        tech矿物复制.AddItems = [IFE矿物复制塔];
-        tech矿物复制.AddItemCounts = [10];
         tech矿物复制.PropertyOverrideItems = [I电磁矩阵];
         tech矿物复制.PropertyItemCounts = [200];
 
         var tech增产点数聚集 = ProtoRegistry.RegisterTech(
             TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
             [],
-            [IFE点数聚集塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE点数聚集塔],
             GetTechPos(2, 4)
         );
         tech增产点数聚集.PreTechsImplicit = [TFE分馏塔原胚];
-        tech增产点数聚集.AddItems = [IFE点数聚集塔];
-        tech增产点数聚集.AddItemCounts = [10];
         tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
         tech增产点数聚集.PropertyItemCounts = [200];
 
@@ -490,46 +484,38 @@ public static class TechManager {
         );
         tech量子复制.PreTechsImplicit = [TFE分馏塔原胚, TFE增产点数聚集];
         tech量子复制.IsHiddenTech = true;
-        tech量子复制.PreItem = [I物质重组器];
-        tech量子复制.AddItems = [IFE量子复制塔];
-        tech量子复制.AddItemCounts = [16];
+        tech量子复制.PreItem = [I黑雾矩阵];
 
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
             [],
-            [IFE点金塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE点金塔],
             GetTechPos(2, 6)
         );
         tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品点金.AddItems = [IFE点金塔];
-        tech物品点金.AddItemCounts = [10];
         tech物品点金.PropertyOverrideItems = [I电磁矩阵];
         tech物品点金.PropertyItemCounts = [200];
 
         var tech物品分解 = ProtoRegistry.RegisterTech(
             TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
             [],
-            [IFE分解塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE分解塔],
             GetTechPos(2, 7)
         );
         tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品分解.AddItems = [IFE分解塔];
-        tech物品分解.AddItemCounts = [10];
         tech物品分解.PropertyOverrideItems = [I电磁矩阵];
         tech物品分解.PropertyItemCounts = [200];
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
-            [IFE转化塔], [10], 3600,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE转化塔],
             GetTechPos(2, 8)
         );
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品转化.AddItems = [IFE转化塔];
-        tech物品转化.AddItemCounts = [10];
         tech物品转化.PropertyOverrideItems = [I电磁矩阵];
         tech物品转化.PropertyItemCounts = [200];
 
@@ -594,6 +580,32 @@ public static class TechManager {
         return GenesisBook.Enable
             ? new(9 + column * 4, -47 - row * 4)
             : new(13 + column * 4, -67 - row * 4);
+    }
+
+    /// <summary>
+    /// 分馏数据中心输入指定分馏塔时，解锁对应科技。
+    /// </summary>
+    public static void CheckTechUnlockCondition(int itemId) {
+        switch (itemId) {
+            case IFE交互塔:
+                GameMain.history.UnlockTech(TFE物品交互);
+                break;
+            case IFE矿物复制塔:
+                GameMain.history.UnlockTech(TFE矿物复制);
+                break;
+            case IFE点数聚集塔:
+                GameMain.history.UnlockTech(TFE增产点数聚集);
+                break;
+            case IFE点金塔:
+                GameMain.history.UnlockTech(TFE物品点金);
+                break;
+            case IFE分解塔:
+                GameMain.history.UnlockTech(TFE物品分解);
+                break;
+            case IFE转化塔:
+                GameMain.history.UnlockTech(TFE物品转化);
+                break;
+        }
     }
 
     [HarmonyPrefix]
@@ -667,6 +679,7 @@ public static class TechManager {
     //
     // /// <summary>
     // /// 处于沙盒模式下时，在点击“解锁全部”按钮后额外执行的操作
+    // /// 应群友要求，屏蔽跟随“解锁全部”同步解锁所有配方功能，只能通过面板的沙盒页按钮手动解锁
     // /// </summary>
     // [HarmonyPostfix]
     // [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]

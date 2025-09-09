@@ -244,7 +244,7 @@ public static class LimitedTimeStore {
                 null);
             return;
         }
-        UIItemup.Up(IFE商店刷新提示, 1);
+        UIItemup.Up(IFE万物分馏商店刷新提示, 1);
         if (gameTick >= nextFreshTick) {
             long tickDiff = gameTick - nextFreshTick;
             long skipCycles = tickDiff / baseFreshTs + 1;
