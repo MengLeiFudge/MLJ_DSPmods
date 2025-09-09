@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BuildBarTool;
@@ -20,16 +21,17 @@ namespace FE.Compatibility;
 [BepInDependency(DSPModSavePlugin.MODGUID)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(BuildBarToolPlugin.GUID)]
-[BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(DeliverySlotsTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(GenesisBook.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(OrbitalRing.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-[BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
