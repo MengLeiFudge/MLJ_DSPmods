@@ -56,13 +56,13 @@ public class CheckPlugins : BaseUnityPlugin {
     public static void AddTranslations() {
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
         Register("FE信息",
-            "Thank you for using Fractionation Everything! This mod adds 7 different functions of fractionators and nearly a thousand fractionation recipes.\n"
-            + $"The default shortcut key is {"Shift + F".WithColor(Orange)}, and you can also modify the shortcut key on the settings page.\n"
+            "Thank you for using Fractionation Everything! This mod adds 7 different functioning fractionators, 2 interaction stations, and nearly 1,000 fractionation recipes.\n"
+            + $"After researching the 'Fractionation data centre' tech, press {"Shift + F".WithColor(Orange)} (can be changed on the settings page) to call out the panel.\n"
             + "This mod has been compatible with some large mods, such as Genesis Book, They Come From Void, and More Mega Structure.\n"
             + $"If you have any issues or ideas about the mod, please feedback to {"Github Issue".WithColor(Blue)}.\n"
             + "Have fun with fractionation!".WithColor(Orange),
-            "感谢你使用万物分馏！该Mod添加了7种不同功能的分馏塔，以及近千个分馏配方。\n"
-            + $"默认快捷键为 {"Shift + F".WithColor(Orange)}，你也可以在设置页面修改快捷键。\n"
+            "感谢你使用万物分馏！该Mod添加了7种不同功能的分馏塔，2个物流交互站，以及近千个分馏配方。\n"
+            + $"研究“分馏数据中心”科技后，按下 {"Shift + F".WithColor(Orange)} （可在设置页面修改）即可呼出面板。\n"
             + $"该Mod已对部分大型Mod进行了兼容，例如创世之书（Genesis Book）、深空来敌（They Come From Void）、更多巨构（More Mega Structure）。\n"
             + $"如果你在游玩时遇到了任何问题，或者有宝贵的意见或建议，欢迎加入{"万物分馏MOD交流群".WithColor(Blue)}反馈。\n"
             + "尽情享受分馏的乐趣吧！".WithColor(Orange));
