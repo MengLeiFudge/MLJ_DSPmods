@@ -82,13 +82,13 @@ public class CheckPlugins : BaseUnityPlugin {
         AddTranslations();
 
         CheatEnabler.Compatible();
-        Cosmogenesis.Compatible();
         CustomCreateBirthStar.Compatible();
         DeliverySlotsTweaks.Compatible();
         GenesisBook.Compatible();
         MoreMegaStructure.Compatible();
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
+        OrbitalRing.Compatible();
         SmelterMiner.Compatible();
         TheyComeFromVoid.Compatible();
         UxAssist.Compatible();
