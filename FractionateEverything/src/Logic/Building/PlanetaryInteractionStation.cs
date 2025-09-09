@@ -34,7 +34,7 @@ public static class PlanetaryInteractionStation {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE行星内物流交互站, "行星内物流交互站", "I行星内物流交互站",
-            LDB.items.Select(I行星内物流运输站).IconPath, tab分馏 * 1000 + 308, 10, EItemType.Production,
+            "Assets/fe/interaction-station", tab分馏 * 1000 + 308, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
             ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE交互塔], [1, 12], [IFE行星内物流交互站], [1],
