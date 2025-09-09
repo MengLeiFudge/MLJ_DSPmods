@@ -248,7 +248,7 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    /// 某个建筑在所有背包的物品总数大于0时，无论是否已解锁，都在快捷建造栏、物品选择界面显示。
     /// </summary>
     private static bool ItemUnlocked(GameHistoryData history, int itemId) {
         return history.ItemUnlocked(itemId) || GetItemTotalCount(itemId) > 0;
@@ -451,6 +451,36 @@ public static partial class Utils {
     }
 
     /// <summary>
+    /// 尝试从临时玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.Low)]
+    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
+    private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace player.package.TakeItem(int itemId, int count, out int inc)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
+                [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TryTakeItem))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in TakeItem_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
+        return (int)GetModDataItemCount(itemId) + storage.TakeItem(itemId, count, out inc) +
+               GetDeliveryPackageItemCount(itemId);
+    }
+
+    /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
     private static int TakeItem(StorageComponent storage, int itemId, int count, out int inc) {
@@ -458,7 +488,7 @@ public static partial class Utils {
         if (storage != GameMain.mainPlayer.package) {
             return storage.TakeItem(itemId, count, out inc);
         }
-        //如果是玩家背包，按照 背包-Mod背包-物流背包 的顺序取走物品
+        //如果是玩家背包，按照 背包-物流背包-Mod背包 的顺序取走物品
         //如果是建筑师模式并且为建筑，不需要消耗物品
         inc = 0;
         if (itemId <= 0) {
@@ -472,7 +502,7 @@ public static partial class Utils {
             return count;
         }
         //背包
-        count -= storage.TakeItem(itemId, count, out inc);
+        // count -= storage.TakeItem(itemId, count, out inc);
 
         int countReal = 0;
         int itemIdOri = itemId;
