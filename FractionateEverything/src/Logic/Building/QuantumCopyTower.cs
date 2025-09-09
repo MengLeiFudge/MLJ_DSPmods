@@ -51,7 +51,7 @@ public static class QuantumCopyTower {
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE量子复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
-        item.SetBuildBar(Cosmogenesis.Enable ? 6 : 5, item.GridIndex % 10, true);
+        item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
 
     public static void SetMaterial() {
