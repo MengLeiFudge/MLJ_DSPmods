@@ -89,7 +89,7 @@ public class CheckPlugins : BaseUnityPlugin {
         DeliverySlotsTweaks.Compatible();
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
-        
+
         SmelterMiner.Compatible();
         CustomCreateBirthStar.Compatible();
 
