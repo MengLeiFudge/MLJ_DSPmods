@@ -46,9 +46,8 @@ public static class RecipeOperate {
     private static Text txtCoreCount;
     private static Text[] txtRecipeInfo = new Text[30];
     private static float txtRecipeInfoBaseY = 0;
-    private static UIButton[] incBtns = new UIButton[5];
-    private static int[] incs = [0,1,2,4,10];
-    private static int fluidInputIncAvg = incs[0];
+    private static MySlider incSlider;
+    private static ConfigEntry<int> selectedInc;
 
     public static void AddTranslations() {
         Register("配方操作", "Recipe Operate");
@@ -104,6 +103,10 @@ public static class RecipeOperate {
         if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
             RecipeTypeEntry.Value = 0;
         }
+        selectedInc = configFile.Bind("Recipe Operate", "Selected Inc", 0, "想要查看的最终输出的增产点数");
+        if (selectedInc.Value is < 0 or > 10) {
+            selectedInc.Value = 0;
+        }
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -142,19 +145,22 @@ public static class RecipeOperate {
             wnd.AddButton(3, 4, y, tab, "升满",
                 onClick: () => { FullUpgrade(SelectedRecipe); });
         }
-        // 切换不同增产点数输出详情的按钮
-        for (int i = 0; i < incs.Length; i++) {
-            int inc = incs[i];
-            incBtns[i] = wnd.AddButton(0f, 0f, 50f, tab, $"{inc:D2}",
-                onClick: () => fluidInputIncAvg = inc);
+        int[] rang;
+        if (!GenesisBook.Enable) {
+            rang = [0, 1, 2, 4, 10];
+        } else {
+            rang = [0, 4, 10];
         }
+        incSlider = wnd.AddSlider(0f, 0f, tab,
+            selectedInc, rang, null, 200f);
+
         y += 36f;
         txtRecipeInfoBaseY = y;
         for (int i = 0; i < txtRecipeInfo.Length; i++) {
             txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "动态刷新");
         }
     }
-
+    
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
             return;
@@ -164,9 +170,7 @@ public static class RecipeOperate {
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         int line = 0;
-        foreach (UIButton incBtn in incBtns) {
-            incBtn.gameObject.SetActive(false);
-        }
+        incSlider.gameObject.SetActive(false);
         if (recipe == null) {
             txtRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
@@ -227,18 +231,12 @@ public static class RecipeOperate {
 
             txtRecipeInfo[line].text = $"{"增产点数".Translate()}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            int j = 0;
-            for (int i = 0; i < incBtns.Length; i++) {
-                if (GenesisBook.Enable && i == 1) {
-                    i++;
-                }
-                j++;
-                incBtns[i].SetPosition(60 + j * 60, txtRecipeInfoBaseY + 24f * line);
-                incBtns[i].gameObject.SetActive(true);
-            }
+            
+            incSlider.SetPosition(120, txtRecipeInfoBaseY + 24f * line);
+            incSlider.gameObject.SetActive(true);
             line++;
 
-            string sameRecipeStr = GetSameRecipeStr(recipe, fluidInputIncAvg);
+            string sameRecipeStr = GetSameRecipeStr(recipe, selectedInc.Value);
             string[] strs = sameRecipeStr.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
             foreach (string str in strs) {
                 txtRecipeInfo[line].text = str; 

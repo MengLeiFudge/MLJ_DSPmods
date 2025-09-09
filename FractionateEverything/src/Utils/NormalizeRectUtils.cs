@@ -1,4 +1,5 @@
 ﻿using System;
+using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -100,8 +101,8 @@ public static partial class Utils {
         NormalizeRectWithMidLeft(text, x, y);
     }
     
-    public static void SetPosition(this UIButton btn, float x, float y) {
-        NormalizeRectWithMidLeft(btn, x, y);
+    public static void SetPosition(this MySlider slider, float x, float y) {
+        NormalizeRectWithMidLeft(slider, x, y);
     }
 
     public static (float, float) GetPosition(int index, int count, float totalPx = 800f) {
