@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using HarmonyLib;
+using xiaoye97;
 
 namespace FE.Compatibility;
 
@@ -22,6 +23,18 @@ public static class DeliverySlotsTweaks {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.DeliverySlotsTweaks");
+        harmony.PatchAll(typeof(DeliverySlotsTweaks));
+        CheckPlugins.LogInfo("DeliverySlotsTweaks Compat finish.");
+    }
+
+    private static bool _finished = false;
+
+    [HarmonyPostfix]
+    [HarmonyAfter(LDBToolPlugin.MODGUID)]
+    [HarmonyPatch(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded))]
+    private static void AfterLDBToolPostAddData() {
+        if (_finished) return;
         try {
             Type classType = assembly.GetType("DeliverySlotsTweaks.Plugin");
             ArchitectModeEnabledEntry =
@@ -32,8 +45,6 @@ public static class DeliverySlotsTweaks {
         catch (Exception ex) {
             CheckPlugins.LogWarning($"Failed to compat DeliverySlotsTweaks: {ex}");
         }
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.DeliverySlotsTweaks");
-        harmony.PatchAll(typeof(DeliverySlotsTweaks));
-        CheckPlugins.LogInfo("DeliverySlotsTweaks Compat finish.");
+        _finished = true;
     }
 }

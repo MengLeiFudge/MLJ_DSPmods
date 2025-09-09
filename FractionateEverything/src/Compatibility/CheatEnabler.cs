@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using HarmonyLib;
+using xiaoye97;
 
 namespace FE.Compatibility;
 
@@ -20,6 +21,18 @@ public static class CheatEnabler {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.CheatEnabler");
+        harmony.PatchAll(typeof(CheatEnabler));
+        CheckPlugins.LogInfo("CheatEnabler Compat finish.");
+    }
+
+    private static bool _finished = false;
+
+    [HarmonyPostfix]
+    [HarmonyAfter(LDBToolPlugin.MODGUID)]
+    [HarmonyPatch(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded))]
+    private static void AfterLDBToolPostAddData() {
+        if (_finished) return;
         try {
             Type classType = assembly.GetType("CheatEnabler.Patches.FactoryPatch");
             ArchitectModeEnabledEntry =
@@ -28,8 +41,6 @@ public static class CheatEnabler {
         catch (Exception ex) {
             CheckPlugins.LogWarning($"Failed to compat CheatEnabler: {ex}");
         }
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.CheatEnabler");
-        harmony.PatchAll(typeof(CheatEnabler));
-        CheckPlugins.LogInfo("CheatEnabler Compat finish.");
+        _finished = true;
     }
 }

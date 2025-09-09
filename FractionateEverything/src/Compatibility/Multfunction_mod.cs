@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using HarmonyLib;
+using xiaoye97;
 
 namespace FE.Compatibility;
 
@@ -20,6 +21,18 @@ public class Multfunction_mod {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.Multfunction_mod");
+        harmony.PatchAll(typeof(Multfunction_mod));
+        CheckPlugins.LogInfo("Multfunction_mod Compat finish.");
+    }
+
+    private static bool _finished = false;
+
+    [HarmonyPostfix]
+    [HarmonyAfter(LDBToolPlugin.MODGUID)]
+    [HarmonyPatch(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded))]
+    private static void AfterLDBToolPostAddData() {
+        if (_finished) return;
         try {
             Type classType = assembly.GetType("Multifunction_mod.Multifunction");
             ArchitectModeEnabledEntry =
@@ -28,8 +41,6 @@ public class Multfunction_mod {
         catch (Exception ex) {
             CheckPlugins.LogWarning($"Failed to compat Multfunction_mod: {ex}");
         }
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.Multfunction_mod");
-        harmony.PatchAll(typeof(DeliverySlotsTweaks));
-        CheckPlugins.LogInfo("Multfunction_mod Compat finish.");
+        _finished = true;
     }
 }
