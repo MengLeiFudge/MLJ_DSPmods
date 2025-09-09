@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using BuildBarTool;
 using CommonAPI.Patches;
 using FE.Compatibility;
+using FE.Logic.Manager;
 using FE.UI.View.Setting;
 using HarmonyLib;
 using static FE.Logic.Manager.ItemManager;
@@ -80,6 +81,7 @@ public static partial class Utils {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
         }
+        TechManager.CheckTechUnlockCondition(itemId);
     }
 
     /// <summary>
@@ -316,44 +318,6 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 移除“物品不足”的提示
-    /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyAfter("dsp.nebula-multiplayer")]
-    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
-    public static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(
-        IEnumerable<CodeInstruction> instructions) {
-        try {
-            var codeMatcher = new CodeMatcher(instructions)
-                .MatchForward(false,
-                    new CodeMatch(OpCodes.Ldc_I4_2),// EBuildCondition.NotEnoughItem
-                    new CodeMatch(OpCodes.Stfld,
-                        AccessTools.Field(typeof(BuildPreview), nameof(BuildPreview.condition)))
-                );
-            if (codeMatcher.IsInvalid) {
-                LogWarning("Can't find EBuildCondition.NotEnoughItem");
-                return instructions;
-            }
-            codeMatcher
-                .Advance(-1)
-                .SetAndAdvance(OpCodes.Nop, null)
-                .SetAndAdvance(OpCodes.Nop, null)
-                .SetAndAdvance(OpCodes.Nop, null);
-            if (codeMatcher.Opcode == OpCodes.Br)
-                codeMatcher.RemoveInstruction();
-            return codeMatcher.InstructionEnumeration();
-        }
-        catch (Exception ex) {
-            LogError($"Error in CheckBuildConditions_Transpiler: {ex}");
-            return instructions;
-        }
-    }
-
-    /// <summary>
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
@@ -505,39 +469,6 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
-    /// </summary>
-    [HarmonyTranspiler]
-    [HarmonyPriority(Priority.High)]
-    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
-    private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
-        try {
-            // Replace player.package.TakeItem(int itemId, int count, out int inc)
-            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
-                [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
-            var codeMacher = new CodeMatcher(instructions)
-                .MatchForward(false,
-                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
-                                       && i.operand.Equals(method)))
-                .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TryTakeItem))));
-            return codeMacher.InstructionEnumeration();
-        }
-        catch (Exception ex) {
-            LogError($"Error in TakeItem_Transpiler: {ex}");
-            return instructions;
-        }
-    }
-
-    /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
-    /// </summary>
-    private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
-        inc = 0;
-        return (int)Math.Min(count, GetItemTotalCount(itemId));
-    }
-
-    /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
     [HarmonyTranspiler]
@@ -640,6 +571,79 @@ public static partial class Utils {
         if (countReal == 0) {
             itemId = 0;
             count = 0;
+        }
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.High)]
+    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
+    private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace player.package.TakeItem(int itemId, int count, out int inc)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
+                [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TryTakeItem))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in TryTakeItem_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
+        inc = 0;
+        return (int)Math.Min(count, GetItemTotalCount(itemId));
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.High)]
+    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
+    private static IEnumerable<CodeInstruction> TryTakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
+                [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TryTakeTailItems))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in TryTakeItem_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// </summary>
+    private static void TryTakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc,
+        bool useBan = false) {
+        inc = 0;
+        count = (int)Math.Min(count, GetItemTotalCount(itemId));
+        if (count == 0) {
+            itemId = 0;
         }
     }
 

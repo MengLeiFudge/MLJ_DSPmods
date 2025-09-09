@@ -292,7 +292,6 @@ public static partial class Utils {
     internal const int IGB光学信息传输纤维 = 7804;
     internal const int IGB量子计算主机 = 7805;
     internal const int IGB超越X1型光学主机 = 7806;
-    internal const int IFE商店刷新提示 = 8000;
     internal const int IFE电磁奖券 = 8001;
     internal const int IFE能量奖券 = 8002;
     internal const int IFE结构奖券 = 8003;
@@ -328,6 +327,8 @@ public static partial class Utils {
     internal const int IFE点金精华 = 8042;
     internal const int IFE分解精华 = 8043;
     internal const int IFE转化精华 = 8044;
+    internal const int IFE万物分馏商店刷新提示 = 8048;
+    internal const int IFE万物分馏科技解锁提示 = 8049;
     internal const int IBC插件效果分享塔 = 8051;
     internal const int IBC插件效果分享站 = 8052;
     internal const int IBC速度插件MK1 = 8061;
