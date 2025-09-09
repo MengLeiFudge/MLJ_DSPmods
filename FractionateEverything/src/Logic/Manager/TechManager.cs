@@ -1,4 +1,5 @@
-﻿using CommonAPI.Systems;
+﻿using System;
+using CommonAPI.Systems;
 using FE.Compatibility;
 using FE.Logic.Recipe;
 using HarmonyLib;
@@ -577,34 +578,43 @@ public static class TechManager {
     /// <param name="column">从0开始，数字越大越靠右</param>
     /// <returns></returns>
     private static Vector2 GetTechPos(int row, int column) {
-        return GenesisBook.Enable
-            ? new(9 + column * 4, -47 - row * 4)
-            : new(13 + column * 4, -67 - row * 4);
+        if (GenesisBook.Enable) {
+            return new(9 + column * 4, -27 - row * 4);
+        }
+        if (OrbitalRing.Enable) {
+            return new(8 + column * 4, -76 - row * 4);
+        }
+        return new(13 + column * 4, -67 - row * 4);
     }
 
     /// <summary>
     /// 分馏数据中心输入指定分馏塔时，解锁对应科技。
     /// </summary>
     public static void CheckTechUnlockCondition(int itemId) {
-        switch (itemId) {
-            case IFE交互塔:
-                GameMain.history.UnlockTech(TFE物品交互);
-                break;
-            case IFE矿物复制塔:
-                GameMain.history.UnlockTech(TFE矿物复制);
-                break;
-            case IFE点数聚集塔:
-                GameMain.history.UnlockTech(TFE增产点数聚集);
-                break;
-            case IFE点金塔:
-                GameMain.history.UnlockTech(TFE物品点金);
-                break;
-            case IFE分解塔:
-                GameMain.history.UnlockTech(TFE物品分解);
-                break;
-            case IFE转化塔:
-                GameMain.history.UnlockTech(TFE物品转化);
-                break;
+        try {
+            switch (itemId) {
+                case IFE交互塔:
+                    GameMain.history.UnlockTechUnlimited(TFE物品交互, true);
+                    break;
+                case IFE矿物复制塔:
+                    GameMain.history.UnlockTechUnlimited(TFE矿物复制, true);
+                    break;
+                case IFE点数聚集塔:
+                    GameMain.history.UnlockTechUnlimited(TFE增产点数聚集, true);
+                    break;
+                case IFE点金塔:
+                    GameMain.history.UnlockTechUnlimited(TFE物品点金, true);
+                    break;
+                case IFE分解塔:
+                    GameMain.history.UnlockTechUnlimited(TFE物品分解, true);
+                    break;
+                case IFE转化塔:
+                    GameMain.history.UnlockTechUnlimited(TFE物品转化, true);
+                    break;
+            }
+        }
+        catch (Exception ex) {
+            LogError($"Error in CheckTechUnlockCondition: {ex}");
         }
     }
 

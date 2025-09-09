@@ -18,8 +18,8 @@ public static class ItemManager {
 
         Register("万物分馏科技解锁提示", "Tech Unlock Tip", "科技解锁提示");
         Register("I万物分馏科技解锁提示",
-            "When the fractionation data centre contains the corresponding fractionator, the corresponding technology is automatically unlocked.",
-            "分馏数据中心存有对应分馏塔时，自动解锁对应科技。");
+            "The tech will be automatically unlocked when the corresponding fractionator is entered into the fractionation data centre.",
+            "对应分馏塔输入到分馏数据中心时，将会自动解锁该科技。");
 
         Register("电磁奖券", "Electromagnetic Ticket");
         Register("I电磁奖券",
