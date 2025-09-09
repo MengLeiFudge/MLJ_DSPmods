@@ -1,5 +1,6 @@
 ﻿using BuildBarTool;
 using CommonAPI.Systems;
+using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -43,7 +44,7 @@ public static class InterstellarInteractionStation {
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE星际物流交互站, item,
             "Entities/Prefabs/interstellar-logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
-        item.SetBuildBar(5, item.GridIndex % 10, true);
+        item.SetBuildBar(Cosmogenesis.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
 
     public static void SetMaterial() {

@@ -4,8 +4,8 @@ using HarmonyLib;
 
 namespace FE.Compatibility;
 
-public static class UxAssist {
-    public const string GUID = "org.soardev.uxassist";
+public static class Cosmogenesis {
+    public const string GUID = "org.LoShin.Cosmogenesis";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class UxAssist {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.UxAssist");
-        harmony.PatchAll(typeof(UxAssist));
-        CheckPlugins.LogInfo("UxAssist Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.Cosmogenesis");
+        harmony.PatchAll(typeof(Cosmogenesis));
+        CheckPlugins.LogInfo("Cosmogenesis Compat finish.");
     }
 }

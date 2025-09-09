@@ -2,6 +2,7 @@
 using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
+using FE.Compatibility;
 using FE.Logic.Manager;
 using UnityEngine;
 using static FE.FractionateEverything;
@@ -69,7 +70,7 @@ public static class PointAggregateTower {
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
-        item.SetBuildBar(5, item.GridIndex % 10, true);
+        item.SetBuildBar(Cosmogenesis.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
 
     public static void SetMaterial() {

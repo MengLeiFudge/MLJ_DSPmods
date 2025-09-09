@@ -7,7 +7,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility;
 
-public class TheyComeFromVoid {
+public static class TheyComeFromVoid {
     public const string GUID = "com.ckcz123.DSP_Battle";
     public static bool Enable;
     public static Assembly assembly;

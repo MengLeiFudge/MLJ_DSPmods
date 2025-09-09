@@ -81,17 +81,17 @@ public class CheckPlugins : BaseUnityPlugin {
 
         AddTranslations();
 
-        MoreMegaStructure.Compatible();
-        TheyComeFromVoid.Compatible();
-        GenesisBook.Compatible();
-        UxAssist.Compatible();
         CheatEnabler.Compatible();
+        Cosmogenesis.Compatible();
+        CustomCreateBirthStar.Compatible();
         DeliverySlotsTweaks.Compatible();
+        GenesisBook.Compatible();
+        MoreMegaStructure.Compatible();
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
-
         SmelterMiner.Compatible();
-        CustomCreateBirthStar.Compatible();
+        TheyComeFromVoid.Compatible();
+        UxAssist.Compatible();
 
         new Harmony(GUID).Patch(
             AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
