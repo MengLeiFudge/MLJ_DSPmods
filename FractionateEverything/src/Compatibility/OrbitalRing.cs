@@ -4,8 +4,8 @@ using HarmonyLib;
 
 namespace FE.Compatibility;
 
-public static class Cosmogenesis {
-    public const string GUID = "org.LoShin.Cosmogenesis";
+public static class OrbitalRing {
+    public const string GUID = "org.LoShin.OrbitalRing";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class Cosmogenesis {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.Cosmogenesis");
-        harmony.PatchAll(typeof(Cosmogenesis));
-        CheckPlugins.LogInfo("Cosmogenesis Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.OrbitalRing");
+        harmony.PatchAll(typeof(OrbitalRing));
+        CheckPlugins.LogInfo("OrbitalRing Compat finish.");
     }
 }
