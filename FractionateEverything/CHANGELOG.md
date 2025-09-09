@@ -1,7 +1,6 @@
 - v2.1.5
-    + 
-
-
+    + 可自定义物品消耗的顺序。
+    + The order in which items are consumed can be customised.
 
 - v2.1.4
     + 添加行星内物流交互站、星际物流交互站。
