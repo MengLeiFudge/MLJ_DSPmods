@@ -43,6 +43,7 @@ public static class ExtractAndPopup {
         Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
 
+        Register("物品消耗顺序", "Order of consumption of items");
         Register("背包", "Package");
         Register("物流背包", "Delivery Package");
         //Register("分馏数据中心", "Fractionation Data Centre");
@@ -57,7 +58,7 @@ public static class ExtractAndPopup {
         if (RightClickTakeCountEntry.Value < 0 || RightClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             RightClickTakeCountEntry.Value = 3;
         }
-        TakeItemPriorityEntry = configFile.Bind("Extract & Pop-up", "TakeItemPriority", 1, "使用物品顺序");
+        TakeItemPriorityEntry = configFile.Bind("Extract & Pop-up", "TakeItemPriority", 1, "物品消耗顺序");
         if (TakeItemPriorityEntry.Value < 0 || TakeItemPriorityEntry.Value >= TakeItemPriorityArr.Length) {
             TakeItemPriorityEntry.Value = 1;
         }
@@ -74,7 +75,7 @@ public static class ExtractAndPopup {
         wnd.AddComboBox(x, y, tab, "右键单击时提取几组物品")
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
         y += 36f;
-        wnd.AddComboBox(x, y, tab, "使用物品顺序")
+        wnd.AddComboBox(x, y, tab, "物品消耗顺序")
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
     }
 
