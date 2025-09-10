@@ -112,6 +112,7 @@ public static partial class Utils {
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.High)]
+    [HarmonyAfter(BuildToolOpt.GUID)]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
