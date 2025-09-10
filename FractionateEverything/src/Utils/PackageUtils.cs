@@ -575,7 +575,24 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// 临时背包已经消耗的物品数目
+    /// </summary>
+    private static readonly int[] testPackageUsedCounts = new int[12000];
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTask))]
+    [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryTaskWithTestPackage))]
+    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon._OnTick))]
+    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click._OnTick))]
+    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter._OnTick))]
+    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path._OnTick))]
+    private static bool ClearTestPackageUsedCounts() {
+        Array.Clear(testPackageUsedCounts, 0, 12000);
+        return true;
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.High)]
@@ -600,21 +617,23 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
     private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
         inc = 0;
-        return (int)Math.Min(count, GetItemTotalCount(itemId));
+        count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        testPackageUsedCounts[itemId] += count;
+        return count;
     }
 
     /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.High)]
+    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
-    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
     private static IEnumerable<CodeInstruction> TryTakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
@@ -636,12 +655,13 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 从临时玩家背包获取物品时，返回 背包/物流背包/Mod背包 的物品总数
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
     private static void TryTakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc,
         bool useBan = false) {
         inc = 0;
-        count = (int)Math.Min(count, GetItemTotalCount(itemId));
+        count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        testPackageUsedCounts[itemId] += count;
         if (count == 0) {
             itemId = 0;
         }
