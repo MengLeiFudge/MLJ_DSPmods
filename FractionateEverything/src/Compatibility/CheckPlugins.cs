@@ -32,6 +32,7 @@ namespace FE.Compatibility;
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class CheckPlugins : BaseUnityPlugin {
     public const string GUID = PluginInfo.PLUGIN_GUID + ".CheckPlugins";
     public const string NAME = PluginInfo.PLUGIN_NAME + ".CheckPlugins";
@@ -94,6 +95,7 @@ public class CheckPlugins : BaseUnityPlugin {
         SmelterMiner.Compatible();
         TheyComeFromVoid.Compatible();
         UxAssist.Compatible();
+        BuildToolOpt.Compatible();
 
         new Harmony(GUID).Patch(
             AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
