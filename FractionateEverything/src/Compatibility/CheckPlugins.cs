@@ -21,6 +21,7 @@ namespace FE.Compatibility;
 [BepInDependency(DSPModSavePlugin.MODGUID)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(BuildBarToolPlugin.GUID)]
+[BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(DeliverySlotsTweaks.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -83,6 +84,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
         AddTranslations();
 
+        BuildToolOpt.Compatible();
         CheatEnabler.Compatible();
         CustomCreateBirthStar.Compatible();
         DeliverySlotsTweaks.Compatible();
