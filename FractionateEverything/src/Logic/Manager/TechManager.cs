@@ -579,7 +579,7 @@ public static class TechManager {
     /// <returns></returns>
     private static Vector2 GetTechPos(int row, int column) {
         if (GenesisBook.Enable) {
-            return new(9 + column * 4, -27 - row * 4);
+            return new(9 + column * 4, -47 - row * 4);
         }
         if (OrbitalRing.Enable) {
             return new(8 + column * 4, -76 - row * 4);
