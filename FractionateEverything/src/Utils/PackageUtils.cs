@@ -111,7 +111,8 @@ public static partial class Utils {
     /// 获取玩家持有的物品数目时，返回 背包+物流背包+Mod背包 的物品总数
     /// </summary>
     [HarmonyTranspiler]
-    [HarmonyAfter(BuildToolOpt.GUID), HarmonyPriority(Priority.High)]
+    [HarmonyPriority(Priority.High)]
+    [HarmonyAfter(BuildToolOpt.GUID)]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.ReformAction))]
     [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.RemoveBasePit))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
