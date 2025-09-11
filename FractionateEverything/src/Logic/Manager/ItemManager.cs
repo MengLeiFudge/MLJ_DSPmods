@@ -449,11 +449,19 @@ public static class ItemManager {
                 foreach (int itemId in outputIDs) {
                     if (unitValue < itemValue[itemId]) {
                         itemValue[itemId] = unitValue;
-                        ItemProto item = LDB.items.Select(itemId);
+                        // ItemProto item = LDB.items.Select(itemId);
                         // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
                         //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
-                        if (itemId == I蓄电器) {
-                            itemValue[I蓄电器满] = unitValue * 2;
+                        if (OrbitalRing.Enable) {
+                            if (itemId == IOR蓄电器) {
+                                itemValue[IOR蓄电器满] = unitValue * 2;
+                            } else if (itemId == IOR蓄电器mk2) {
+                                itemValue[IOR蓄电器mk2满] = unitValue * 2;
+                            }
+                        } else {
+                            if (itemId == I蓄电器) {
+                                itemValue[I蓄电器满] = unitValue * 2;
+                            }
                         }
                         changed = true;
                     }
