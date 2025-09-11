@@ -297,7 +297,7 @@ public static class ItemManager {
     public static void CalculateItemValues() {
         //所有矿物都设置价值为1
         foreach (VeinProto vein in LDB.veins.dataArray) {
-            itemValue[vein.ID] = 1.0f;
+            itemValue[vein.MiningItem] = 1.0f;
         }
         //设置普通原矿价值
         itemValue[I木材] = 1.0f;
