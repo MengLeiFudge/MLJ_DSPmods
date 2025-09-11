@@ -18,33 +18,33 @@ public class ConversionRecipe : BaseRecipe {
     public static void CreateAll() {
         //添加特有转化配方
         //物品页面
-        if (GenesisBook.Enable) {
-            CreateChain([[I铁块], [I钢材], [I钛合金], [IGB钨合金], [IGB三元精金]]);
-        } else if (OrbitalRing.Enable) {
-            CreateChain([[I铁块], [I钢材]]);
-        } else {
-            CreateChain(I铁块, [], [I铁块], [I钢材]);
-            CreateChain(I钢材, [I铁块], [I钢材], [I钛合金]);
-            CreateChain(I钛合金, [I钛块, I钢材], [I钛合金], []);
-        }
-        CreateChain([[I框架材料], [I戴森球组件], [I小型运载火箭]]);
-        CreateChain([[I高纯硅块], [I晶格硅]]);
-        CreateChain([[I棱镜], [I电浆激发器], [I光子合并器], [I太阳帆]]);
-        CreateChain([[I高能石墨], [I金刚石, I石墨烯], [I碳纳米管], [I粒子宽带], [IGB光学信息传输纤维]]);
-        CreateChain([[I粒子容器], [I奇异物质], [I引力透镜], [I空间翘曲器]]);
-        CreateChain([[I钛晶石], [I卡西米尔晶体]]);
+        // if (GenesisBook.Enable) {
+        //     CreateChain([[I铁块], [I钢材], [I钛合金], [IGB钨合金], [IGB三元精金]]);
+        // } else if (OrbitalRing.Enable) {
+        //     CreateChain([[I铁块], [I钢材]]);
+        // } else {
+        //     CreateChain(I铁块, [], [I铁块], [I钢材]);
+        //     CreateChain(I钢材, [I铁块], [I钢材], [I钛合金]);
+        //     CreateChain(I钛合金, [I钛块, I钢材], [I钛合金], []);
+        // }
+        // CreateChain([[I框架材料], [I戴森球组件], [I小型运载火箭]]);
+        // CreateChain([[I高纯硅块], [I晶格硅]]);
+        // CreateChain([[I棱镜], [I电浆激发器], [I光子合并器], [I太阳帆]]);
+        // CreateChain([[I高能石墨], [I金刚石, I石墨烯], [I碳纳米管], [I粒子宽带], [IGB光学信息传输纤维]]);
+        // CreateChain([[I粒子容器], [I奇异物质], [I引力透镜], [I空间翘曲器]]);
+        // CreateChain([[I钛晶石], [I卡西米尔晶体]]);
         if (GenesisBook.Enable) {
             CreateChain([[IGB基础机械组件], [IGB先进机械组件], [IGB尖端机械组件], [IGB超级机械组件]]);
             CreateChain([[IGB塑料基板], [IGB光学基板]]);
             CreateChain([[IGB量子计算主机], [IGB超越X1型光学主机]]);
         }
-        CreateChain([[I玻璃], [I钛化玻璃], [IGB钨强化玻璃]]);
-        CreateChain([[I氢], [I重氢]]);
-        CreateChain([[IGB氦], [IGB氦三]]);
-        CreateChain([[I磁线圈], [I电动机], [I电磁涡轮], [I超级磁场环]]);
-        CreateChain([[I电路板, I微晶元件], [I处理器, I位面过滤器], [I量子芯片], [IGB光学处理器]]);
-        CreateChain([[I临界光子], [I反物质]]);
-        CreateChain([[I动力引擎], [I推进器], [I加力推进器]]);
+        // CreateChain([[I玻璃], [I钛化玻璃], [IGB钨强化玻璃]]);
+        // CreateChain([[I氢], [I重氢]]);
+        // CreateChain([[IGB氦], [IGB氦三]]);
+        // CreateChain([[I磁线圈], [I电动机], [I电磁涡轮], [I超级磁场环]]);
+        // CreateChain([[I电路板, I微晶元件], [I处理器, I位面过滤器], [I量子芯片], [IGB光学处理器]]);
+        // CreateChain([[I临界光子], [I反物质]]);
+        // CreateChain([[I动力引擎], [I推进器], [I加力推进器]]);
         CreateChain([[I配送运输机], [I物流运输机], [I星际物流运输船]]);
         CreateChain([[I能量碎片], [I黑雾矩阵], [I物质重组器], [I硅基神经元], [I负熵奇点], [I核心素]]);
         CreateChain([[I电磁矩阵], [I能量矩阵], [I结构矩阵], [I信息矩阵], [I引力矩阵]]);
