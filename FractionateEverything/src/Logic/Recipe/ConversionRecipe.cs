@@ -18,16 +18,26 @@ public class ConversionRecipe : BaseRecipe {
     public static void CreateAll() {
         //添加特有转化配方
         //物品页面
-        CreateChain([[I铁块], [I钢材], [I钛合金], [IGB钨合金], [IGB三元精金]]);
+        if (GenesisBook.Enable) {
+            CreateChain([[I铁块], [I钢材], [I钛合金], [IGB钨合金], [IGB三元精金]]);
+        } else if (OrbitalRing.Enable) {
+            CreateChain([[I铁块], [I钢材]]);
+        } else {
+            CreateChain(I铁块, [], [I铁块], [I钢材]);
+            CreateChain(I钢材, [I铁块], [I钢材], [I钛合金]);
+            CreateChain(I钛合金, [I钛块, I钢材], [I钛合金], []);
+        }
         CreateChain([[I框架材料], [I戴森球组件], [I小型运载火箭]]);
         CreateChain([[I高纯硅块], [I晶格硅]]);
         CreateChain([[I棱镜], [I电浆激发器], [I光子合并器], [I太阳帆]]);
         CreateChain([[I高能石墨], [I金刚石, I石墨烯], [I碳纳米管], [I粒子宽带], [IGB光学信息传输纤维]]);
         CreateChain([[I粒子容器], [I奇异物质], [I引力透镜], [I空间翘曲器]]);
         CreateChain([[I钛晶石], [I卡西米尔晶体]]);
-        CreateChain([[IGB基础机械组件], [IGB先进机械组件], [IGB尖端机械组件], [IGB超级机械组件]]); //创世独有配方
-        CreateChain([[IGB塑料基板], [IGB光学基板]]); //创世独有配方
-        CreateChain([[IGB量子计算主机], [IGB超越X1型光学主机]]); //创世独有配方
+        if (GenesisBook.Enable) {
+            CreateChain([[IGB基础机械组件], [IGB先进机械组件], [IGB尖端机械组件], [IGB超级机械组件]]);
+            CreateChain([[IGB塑料基板], [IGB光学基板]]);
+            CreateChain([[IGB量子计算主机], [IGB超越X1型光学主机]]);
+        }
         CreateChain([[I玻璃], [I钛化玻璃], [IGB钨强化玻璃]]);
         CreateChain([[I氢], [I重氢]]);
         CreateChain([[IGB氦], [IGB氦三]]);
@@ -43,23 +53,27 @@ public class ConversionRecipe : BaseRecipe {
         CreateChain([[I电力感应塔], [I无线输电塔], [I卫星配电站]]);
         if (!SmelterMiner.Enable && CustomCreateBirthStar.Enable) {
             CreateChain([
-                [I风力涡轮机, I太阳能板, IGB同位素温差发电机], 
+                [I风力涡轮机, I太阳能板, IGB同位素温差发电机],
                 [I蓄电器, ICCBS能量核心],
                 [I能量枢纽, ICCBS星际能量枢纽],
                 [ICCBS星际能量枢纽MK2]
             ]);
         } else {
             CreateChain([
-                [I风力涡轮机, I太阳能板, IGB同位素温差发电机], 
-                [I蓄电器, ICCBS_xxldm_能量核心], 
+                [I风力涡轮机, I太阳能板, IGB同位素温差发电机],
+                [I蓄电器, ICCBS_xxldm_能量核心],
                 [I能量枢纽, ICCBS_xxldm_星际能量枢纽],
                 [ICCBS_xxldm_星际能量枢纽MK2]
             ]);
         }
 
-        CreateChain([[I火力发电厂_GB燃料电池发电厂], [I地热发电站], [I微型聚变发电站_GB裂变能源发电站], [I人造恒星_GB朱曦K型人造恒星], [IGB湛曦O型人造恒星]]);
+        if (GenesisBook.Enable) {
+            CreateChain([[IGB燃料电池发电厂], [I地热发电站], [IGB裂变能源发电站], [IGB朱曦K型人造恒星], [IGB湛曦O型人造恒星]]);
+        } else {
+            CreateChain([[I火力发电厂], [I地热发电站], [I微型聚变发电站], [I人造恒星]]);
+        }
         CreateChain([[I传送带], [I高速传送带], [I极速传送带]]);
-        CreateChain([[I四向分流器, I流速监测器, IGB大气采集站, I喷涂机, I自动集装机]]); //注意科技解锁顺序
+        CreateChain([[I四向分流器, I流速监测器, IGB大气采集站, I喷涂机, I自动集装机]]);
         CreateChain([[I小型储物仓], [I大型储物仓], [IGB量子储物仓]]);
         CreateChain([[I储液罐], [IGB量子储液罐]]);
         CreateChain([[I物流配送器], [I行星内物流运输站], [I星际物流运输站, IMS物资交换物流站], [I轨道采集器]]);
@@ -86,11 +100,24 @@ public class ConversionRecipe : BaseRecipe {
         }
 
         CreateChain([[I抽水站], [IGB聚束液体汲取设施]]);
-        CreateChain([[I化工厂], [I量子化工厂_GB先进化学反应釜]]);
+        if (GenesisBook.Enable) {
+            CreateChain([[I化工厂], [IGB先进化学反应釜]]);
+        } else {
+            CreateChain([[I化工厂], [I量子化工厂]]);
+        }
         CreateChain([[I电弧熔炉, IGB矿物处理厂], [I位面熔炉], [I负熵熔炉]]);
-        CreateChain([[I制造台MkI_GB基础制造台], [I制造台MkII_GB标准制造单元], [I制造台MkIII_GB高精度装配线], [I重组式制造台_GB物质重组工厂]]);
+        if (GenesisBook.Enable) {
+            CreateChain([[IGB基础制造台], [IGB标准制造单元], [IGB高精度装配线], [IGB物质重组工厂]]);
+        } else {
+            CreateChain([[I制造台MkI], [I制造台MkII], [I制造台MkIII], [I重组式制造台]]);
+        }
+
         CreateChain([[I矩阵研究站], [I自演化研究站]]);
-        CreateChain([[I电磁轨道弹射器, I射线接收站_MS射线重构站, I垂直发射井, I微型粒子对撞机]]);
+        if (MoreMegaStructure.Enable) {
+            CreateChain([[I电磁轨道弹射器, IMS射线重构站, I垂直发射井, I微型粒子对撞机]]);
+        } else {
+            CreateChain([[I电磁轨道弹射器, I射线接收站, I垂直发射井, I微型粒子对撞机]]);
+        }
         CreateChain([[IGB物质裂解塔, IGB天穹装配厂, IGB埃克森美孚化工厂, IGB物质分解设施, IGB工业先锋精密加工中心, IGB苍穹粒子加速器]]);
 
         //精炼页面
@@ -102,12 +129,14 @@ public class ConversionRecipe : BaseRecipe {
         ]);
 
         //化工页面
-        CreateChain([[I塑料_GB聚丙烯], [IGB聚苯硫醚PPS], [IGB聚酰亚胺PI]]);
-        CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII_GB增产剂]]);
+        if (GenesisBook.Enable) {
+            CreateChain([[IGB聚丙烯], [IGB聚苯硫醚PPS], [IGB聚酰亚胺PI]]);
+        } else {
+            CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII]]);
+        }
 
         //防御页面
-        CreateChain([[I原型机], [I精准无人机, I攻击无人机]]);
-        CreateChain([[I护卫舰], [I驱逐舰], [IMS水滴]]);
+        CreateChain([[I原型机], [I精准无人机, I攻击无人机], [I护卫舰], [I驱逐舰], [IMS水滴]]);
         CreateChain([[I高频激光塔, IGB紫外激光塔, I近程电浆塔, I磁化电浆炮]]);
         CreateChain([[I战场分析基站, I信号塔, I干扰塔, I行星护盾发生器]]);
         CreateChain([[I高斯机枪塔, I聚爆加农炮, IGB电磁加农炮, I导弹防御塔]]);
@@ -120,7 +149,6 @@ public class ConversionRecipe : BaseRecipe {
         //分馏页面
         CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
         CreateChain([[IFE分馏塔原胚普通], [IFE分馏塔原胚精良], [IFE分馏塔原胚稀有], [IFE分馏塔原胚史诗], [IFE分馏塔原胚传说]]);
-        //CreateChain([[IFE分馏配方通用核心, IFE分馏塔增幅芯片]]);
         CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
         CreateChain([[IFE行星矿物复制塔], [IFE行星交互塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔], [IFE行星点数聚集塔], [IFE行星量子复制塔]]);
         CreateChain([[IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华]]);
@@ -133,7 +161,7 @@ public class ConversionRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 构建一个物品逐步升级的配方链
+    /// 构建多个物品混合的转化配方链
     /// </summary>
     private static void CreateChain(List<List<int>> itemLists) {
         //移除不存在的物品
@@ -142,8 +170,9 @@ public class ConversionRecipe : BaseRecipe {
         }
         //移除空的物品层次
         itemLists.RemoveAll(itemList => itemList.Count == 0);
-        //如果移除之后没有任何物品层次，或者只有一个层次且层次内只有一个物品，直接返回
-        if (itemLists.Count == 0 || (itemLists.Count == 1 && itemLists[0].Count == 1)) {
+        List<int> items = itemLists.SelectMany(itemList => itemList).Distinct().ToList();
+        //如果移除之后物品种类过少，直接返回
+        if (items.Count <= 1) {
             return;
         }
         //每个物品只能转化成低1层次任何物品、同层次其他物品或高1层次任何物品
@@ -151,50 +180,72 @@ public class ConversionRecipe : BaseRecipe {
         for (int i = 0; i < itemLists.Count; i++) {
             for (int j = 0; j < itemLists[i].Count; j++) {
                 int inputID = itemLists[i][j];
-                //构建候选物品ID、候选物品出现概率列表
-                List<int> itemIDs = [];
-                List<float> itemValuePercents = [];
-                for (int k = i - 1; k <= i + 1; k++) {
-                    if (k < 0 || k >= itemLists.Count) {
-                        continue;
-                    }
-                    for (int l = 0; l < itemLists[k].Count; l++) {
-                        int targetItemID = itemLists[k][l];
-                        //排除自身
-                        if (targetItemID == inputID) {
-                            continue;
-                        }
-                        itemIDs.Add(targetItemID);
-                        float basePercent = itemValue[targetItemID] * LDB.items.Select(targetItemID).StackSize;
-                        if (k == i - 1) {
-                            itemValuePercents.Add(basePercent * 0.8f);
-                        } else if (k == i) {
-                            itemValuePercents.Add(basePercent * 1.0f);
-                        } else {
-                            itemValuePercents.Add(basePercent * 1.25f);
-                        }
-                    }
-                }
-                //构建转化列表
-                float successRate = 1.0f / itemIDs.Count;
-                float totalValuePercent = itemValuePercents.Sum();
-                List<OutputInfo> outputMain = [];
-                for (int k = 0; k < itemIDs.Count; k++) {
-                    int outputID = itemIDs[k];
-                    //计算分配给这个输出的价值
-                    float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
-                    //根据输出物品的价值计算数量
-                    float outputCount = allocatedValue / (successRate * itemValue[outputID]);
-                    outputMain.Add(new(successRate, outputID, outputCount));
-                }
-                Create(inputID, 0.05f, outputMain);
+                List<int> itemListDown = i - 1 >= 0 ? itemLists[i - 1] : [];
+                List<int> itemListCommon = itemLists[i];
+                List<int> itemListUp = i + 1 < itemLists.Count - 1 ? itemLists[i + 1] : [];
+                CreateChain(inputID, itemListDown, itemListCommon, itemListUp);
             }
         }
     }
 
-    private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputMain) {
-        //由于上层已经做过价值的相关判断（也就是某个物品是否存在的判断），此处不需要再判断
-        AddRecipe(new ConversionRecipe(inputID, baseSuccessRate,
+    /// <summary>
+    /// 构建一个物品的转化配方链
+    /// </summary>
+    private static void CreateChain(int itemId,
+        List<int> itemListDown, List<int> itemListCommon, List<int> itemListUp) {
+        itemListDown ??= [];
+        itemListCommon ??= [itemId];
+        itemListUp ??= [];
+        if (!itemListCommon.Contains(itemId)) {
+            itemListCommon.Add(itemId);
+        }
+        List<List<int>> itemLists = [itemListDown, itemListCommon, itemListUp];
+        //移除不存在的物品
+        foreach (List<int> itemList in itemLists) {
+            itemList.RemoveAll(itemID => itemValue[itemID] >= maxValue);
+        }
+        List<int> items = itemLists.SelectMany(itemList => itemList).Distinct().ToList();
+        //如果移除之后物品种类过少，直接返回
+        if (!items.Contains(itemId) || items.Count <= 1) {
+            return;
+        }
+        //每个物品只能转化成低1层次任何物品、同层次其他物品或高1层次任何物品
+        //转化时，需要保证物品整体价值不变。也就是说，必须先确定所有物品的概率，再确定数目
+        int inputID = itemId;
+        //构建候选物品ID、候选物品出现概率列表
+        List<int> itemIDs = [];
+        List<float> itemValuePercents = [];
+        for (int k = 0; k < itemLists.Count; k++) {
+            for (int l = 0; l < itemLists[k].Count; l++) {
+                int targetItemID = itemLists[k][l];
+                //排除自身
+                if (targetItemID == inputID) {
+                    continue;
+                }
+                itemIDs.Add(targetItemID);
+                float basePercent = itemValue[targetItemID] * LDB.items.Select(targetItemID).StackSize;
+                if (k == 0) {
+                    itemValuePercents.Add(basePercent * 0.8f);
+                } else if (k == 1) {
+                    itemValuePercents.Add(basePercent * 1.0f);
+                } else {
+                    itemValuePercents.Add(basePercent * 1.25f);
+                }
+            }
+        }
+        //构建转化列表
+        float successRate = 1.0f / itemIDs.Count;
+        float totalValuePercent = itemValuePercents.Sum();
+        List<OutputInfo> outputMain = [];
+        for (int k = 0; k < itemIDs.Count; k++) {
+            int outputID = itemIDs[k];
+            //计算分配给这个输出的价值
+            float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
+            //根据输出物品的价值计算数量
+            float outputCount = allocatedValue / (successRate * itemValue[outputID]);
+            outputMain.Add(new(successRate, outputID, outputCount));
+        }
+        AddRecipe(new ConversionRecipe(inputID, 0.05f,
             outputMain,
             [
                 new OutputInfo(0.01f, IFE转化精华, 1),
