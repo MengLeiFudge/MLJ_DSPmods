@@ -116,7 +116,7 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 兑换不同矩阵层次的配方所需的矩阵数目
     /// </summary>
-    private static readonly int[] matrixRecipeCosts = [100, 300, 500, 700, 900, 900];
+    private static readonly int[] matrixRecipeCosts = [250, 400, 550, 700, 850, 1000];
 
     private static readonly int[][] itemIdOriArr = [
         [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
