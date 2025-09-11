@@ -738,8 +738,9 @@ public static partial class Utils {
 
     /// <summary>
     /// 原版分割增产点数的方法。
+    /// 使用前需注意物品总数n不能为0。
     /// </summary>
-    /// <param name="n">物品总数</param>
+    /// <param name="n">物品总数，不能为0</param>
     /// <param name="m">物品总增产点数</param>
     /// <param name="p">要取走的物品数目</param>
     /// <returns>被取走的物品增产点数</returns>
@@ -755,8 +756,9 @@ public static partial class Utils {
 
     /// <summary>
     /// 原版分割增产点数的方法。
+    /// 使用前需注意物品总数n不能为0。
     /// </summary>
-    /// <param name="n">物品总数</param>
+    /// <param name="n">物品总数，不能为0</param>
     /// <param name="m">物品总增产点数</param>
     /// <param name="p">要取走的物品数目</param>
     /// <returns>被取走的物品增产点数</returns>
