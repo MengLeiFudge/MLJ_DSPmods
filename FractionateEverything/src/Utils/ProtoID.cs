@@ -398,6 +398,7 @@ public static partial class Utils {
     internal const int IGB塑料基板 = 7501;
     internal const int IGB光学基板 = 7504;
     internal const int IGB钢芯弹箱 = 7607;
+    internal const int IOR钢芯弹箱 = 7607;
     internal const int IGB钨芯弹箱 = 7608;
     internal const int IOR贫铀弹箱 = 7608;
     internal const int IGB三元弹箱 = 7609;

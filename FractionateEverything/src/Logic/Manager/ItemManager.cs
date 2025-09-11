@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
+using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -294,22 +295,27 @@ public static class ItemManager {
     /// 计算所有物品的价值
     /// </summary>
     public static void CalculateItemValues() {
+        //所有矿物都设置价值为1
+        foreach (VeinProto vein in LDB.veins.dataArray) {
+            itemValue[vein.ID] = 1.0f;
+        }
         //设置普通原矿价值
-        itemValue[I铁矿] = 1.0f;
-        itemValue[I铜矿] = 1.0f;
-        itemValue[IGB铝矿] = 1.0f;
-        itemValue[IGB钨矿] = 1.0f;
-        itemValue[I煤矿] = 1.0f;
-        itemValue[I石矿] = 1.0f;
-        itemValue[IGB硫矿] = 1.2f;
-        itemValue[IGB放射性矿物] = 1.2f;
         itemValue[I木材] = 1.0f;
         itemValue[I植物燃料] = 1.0f;
         itemValue[I沙土] = 1.0f;
+        if (GenesisBook.Enable) {
+            itemValue[IGB硫矿] = 1.2f;
+            itemValue[IGB放射性矿物] = 1.2f;
+        }
         //设置母星系其他星球普通原矿价值
         itemValue[I硅石] = 2.0f;
         itemValue[I钛石] = 2.0f;
         //设置其他星系珍奇矿物价值
+        if (OrbitalRing.Enable) {
+            itemValue[IOR黄铁矿] = 5f;
+            itemValue[IOR铀矿] = 5f;
+            itemValue[IOR石墨矿] = 5f;
+        }
         itemValue[I可燃冰] = 5.0f;
         itemValue[I金伯利矿石] = 8.0f;
         itemValue[I分形硅石] = 8.0f;
@@ -321,8 +327,6 @@ public static class ItemManager {
         itemValue[I氢] = 2.0f;
         itemValue[I重氢] = 5.0f;
         itemValue[IGB氦] = 20.0f;
-        //itemValue[I可燃冰] = 2.0f;
-        //itemValue[IGB氨] = 3.0f;
         //设置可直接抽取的物品价值
         itemValue[I原油] = 1.0f;
         itemValue[IGB海水] = 1.0f;
