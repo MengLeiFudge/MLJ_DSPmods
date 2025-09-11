@@ -75,6 +75,10 @@ public static class StationManager {
                                 // 下载物品
                                 TakeItem(ref store, count);
                             } else if (storeCount > num) {
+                                // 不是沙盒模式，如果keepMode大于0，并且数据中心已存在的数量大于设置的上限，就不上传了
+                                if (!GameMain.sandboxToolsEnabled && store.keepMode > 0 && GetModDataItemCount(store.itemId) >= store.max) {
+                                    continue;
+                                }
                                 // 如果数量大于一半
                                 // 计算上传的数量
                                 var count = storeCount - num;
@@ -131,5 +135,61 @@ public static class StationManager {
         store.count += itemFromModData;
         // 添加增产点到行星内物流交互站中
         store.inc += inc;
+    }
+
+    /// <summary>
+    /// 在物流交互站中启用沙盒模式的keepModeButton
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.RefreshValues))]
+    public static void UIStationStorage__RefreshValues_Postfix(UIStationStorage __instance) {
+        // 如果是沙盒，不用处理，会自动启用按钮
+        if (GameMain.sandboxToolsEnabled) {
+            return;
+        }
+        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
+        // 如果不是自定义的塔，不处理
+        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+            return;
+        }
+        StationStore stationStore = new();
+        if (__instance.station != null && __instance.index < __instance.station.storage.Length)
+            stationStore = __instance.station.storage[__instance.index];
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 = LDB.items.Select(buildingID);
+        // 如果物品或者塔不是游戏中存在的物品，不处理
+        if (itemProto1 == null || itemProto2 == null) {
+            return;
+        }
+        // 如果不是仓储，不处理
+        if (stationStore.localLogic != ELogisticStorage.None) {
+            return;
+        }
+        // 原版逻辑会先禁用这个按钮，所以在切换成供应或需求的时候不需要手动禁用
+        // 启用keepModeButton
+        __instance.keepModeButton.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// 点击keepModeButton按钮
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
+    public static bool UIStationStorage__OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
+        // 如果是沙盒，不用处理，走默认逻辑
+        if (GameMain.sandboxToolsEnabled) {
+            return true;
+        }
+
+        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
+        // 如果不是自定义的塔，不处理
+        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+            return true;
+        }
+
+        __instance.station.storage[__instance.index].keepMode = 
+            __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
+        // 原版有4个keepMode，需要点4下，用不上，这里只处理0和1
+        return false;
     }
 }
