@@ -595,32 +595,32 @@ public static class TechManager {
             switch (itemId) {
                 case IFE交互塔:
                     if (!GameMain.history.TechUnlocked(TFE物品交互)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品交互, false);
+                        GameMain.history.UnlockTechUnlimited(TFE物品交互, true);
                     }
                     break;
                 case IFE矿物复制塔:
                     if (!GameMain.history.TechUnlocked(TFE矿物复制)) {
-                        GameMain.history.UnlockTechUnlimited(TFE矿物复制, false);
+                        GameMain.history.UnlockTechUnlimited(TFE矿物复制, true);
                     }
                     break;
                 case IFE点数聚集塔:
                     if (!GameMain.history.TechUnlocked(TFE增产点数聚集)) {
-                        GameMain.history.UnlockTechUnlimited(TFE增产点数聚集, false);
+                        GameMain.history.UnlockTechUnlimited(TFE增产点数聚集, true);
                     }
                     break;
                 case IFE点金塔:
                     if (!GameMain.history.TechUnlocked(TFE物品点金)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品点金, false);
+                        GameMain.history.UnlockTechUnlimited(TFE物品点金, true);
                     }
                     break;
                 case IFE分解塔:
                     if (!GameMain.history.TechUnlocked(TFE物品分解)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品分解, false);
+                        GameMain.history.UnlockTechUnlimited(TFE物品分解, true);
                     }
                     break;
                 case IFE转化塔:
                     if (!GameMain.history.TechUnlocked(TFE物品转化)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品转化, false);
+                        GameMain.history.UnlockTechUnlimited(TFE物品转化, true);
                     }
                     break;
             }

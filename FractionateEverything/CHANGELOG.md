@@ -1,7 +1,14 @@
 - V2.1.6
+    + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
     + 修复拿取物品数目不对的bug。
     + 调整矿物复制配方、转化配方的生成逻辑。
     + 物流交互站不再对无法显示在界面的物品进行特殊处理。
+    + 物流交互站调整运行逻辑，仓储模式可以限制上传数量。
+    + Fix game flashing directly when typing fractionator to data centre.
+    + Fix the bug that the number of items taken is not correct.
+    + Adjust the generation logic of mineral copy recipes and transformation recipes.
+    + The Interaction Station no longer performs special handling for items that cannot be displayed in the interface.
+    + Adjusted the operation logic of Interaction Station so that the number of uploads can be limited in storage mode.
 
 - v2.1.5
     + 可自定义物品消耗的顺序。
