@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using FE.Compatibility;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -22,26 +23,33 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I钛石, 0.04f);
         Create(I石矿, 0.04f, [new OutputInfo(0.01f, I硅石, 1), new OutputInfo(0.01f, I钛石, 1)]);
         Create(I煤矿, 0.04f, [new OutputInfo(0.01f, I金刚石, 1)]);
-        Create(IGB钨矿, 0.04f);
-        Create(IGB铝矿, 0.04f);
-        Create(IGB硫矿, 0.04f, [new OutputInfo(0.01f, I硫酸, 1), new OutputInfo(0.01f, IGB二氧化硫, 1)]);
-        Create(IGB放射性矿物, 0.04f, [new OutputInfo(0.01f, IGB铀矿, 1), new OutputInfo(0.01f, IGB钚矿, 1)]);
-        Create(IGB海水, 0.04f, [new OutputInfo(0.01f, IGB氯化钠, 1)]);
         Create(I水, 0.04f);
         Create(I原油, 0.04f);
         Create(I硫酸, 0.04f);
-        Create(IGB盐酸, 0.04f);
-        Create(IGB硝酸, 0.04f);
-        Create(IGB氨, 0.04f, [new OutputInfo(0.01f, IGB氮, 1), new OutputInfo(0.01f, I氢, 1)]);
         Create(I氢, 0.04f, [new OutputInfo(0.01f, I重氢, 1)]);
         Create(I重氢, 0.04f, [new OutputInfo(0.01f, I氢, 1)]);
-        Create(IGB氮, 0.04f, [new OutputInfo(0.01f, IGB氨, 1)]);
-        Create(IGB氧, 0.04f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
-        Create(IGB氦, 0.04f, [new OutputInfo(0.01f, IGB氦三, 1)]);
-        Create(IGB氦三, 0.04f, [new OutputInfo(0.01f, IGB氦, 1)]);
-        Create(IGB二氧化碳, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, I高能石墨, 1)]);
-        Create(IGB二氧化硫, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, IGB硫粉, 1)]);
         Create(I临界光子, 0.04f);
+        if (GenesisBook.Enable) {
+            Create(IGB钨矿, 0.04f);
+            Create(IGB铝矿, 0.04f);
+            Create(IGB硫矿, 0.04f, [new OutputInfo(0.01f, I硫酸, 1), new OutputInfo(0.01f, IGB二氧化硫, 1)]);
+            Create(IGB放射性矿物, 0.04f, [new OutputInfo(0.01f, IGB铀矿, 1), new OutputInfo(0.01f, IGB钚矿, 1)]);
+            Create(IGB海水, 0.04f, [new OutputInfo(0.01f, IGB氯化钠, 1)]);
+            Create(IGB盐酸, 0.04f);
+            Create(IGB硝酸, 0.04f);
+            Create(IGB氨, 0.04f, [new OutputInfo(0.01f, IGB氮, 1), new OutputInfo(0.01f, I氢, 1)]);
+            Create(IGB氮, 0.04f, [new OutputInfo(0.01f, IGB氨, 1)]);
+            Create(IGB氧, 0.04f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
+            Create(IGB氦, 0.04f, [new OutputInfo(0.01f, IGB氦三, 1)]);
+            Create(IGB氦三, 0.04f, [new OutputInfo(0.01f, IGB氦, 1)]);
+            Create(IGB二氧化碳, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, I高能石墨, 1)]);
+            Create(IGB二氧化硫, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, IGB硫粉, 1)]);
+        }
+        if (OrbitalRing.Enable) {
+            Create(IOR黄铁矿, 0.02f);
+            Create(IOR铀矿, 0.02f);
+            Create(IOR石墨矿, 0.02f);
+        }
 
         Create(I可燃冰, 0.02f);
         Create(I金伯利矿石, 0.02f);
@@ -57,6 +65,13 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I核心素, 0.02f);
         Create(I能量碎片, 0.02f);
         Create(I反物质, 0.02f);
+
+        //添加其他矿物的复制配方
+        foreach (VeinProto vein in LDB.veins.dataArray) {
+            if (GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, vein.ID) == null) {
+                Create(vein.ID, 0.04f);
+            }
+        }
     }
 
     private static void Create(int inputID, float baseSuccessRate) {
