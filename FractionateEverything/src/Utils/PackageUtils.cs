@@ -50,8 +50,11 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowTrash))]
     private static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, int count, int inc) {
-        AddItemToModData(itemId, count, inc);
-        return false;
+        if (itemValue[itemId] < maxValue) {
+            AddItemToModData(itemId, count, inc);
+            return false;
+        }
+        return true;
     }
 
     /// <summary>
@@ -60,13 +63,16 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowHandItems))]
     private static bool Player_ThrowHandItems_Prefix(Player __instance) {
-        if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
-            AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
+        if (itemValue[__instance.inhandItemId] < maxValue) {
+            if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
+                AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
+            }
+            __instance.inhandItemId = 0;
+            __instance.inhandItemCount = 0;
+            __instance.inhandItemInc = 0;
+            return false;
         }
-        __instance.inhandItemId = 0;
-        __instance.inhandItemCount = 0;
-        __instance.inhandItemInc = 0;
-        return false;
+        return true;
     }
 
     /// <summary>
