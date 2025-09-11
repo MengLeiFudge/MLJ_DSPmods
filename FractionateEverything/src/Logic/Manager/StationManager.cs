@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using HarmonyLib;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -96,6 +97,10 @@ public static class StationManager {
     }
 
     private static void AddItem(ref StationStore store, int count, int inc) {
+        // todo: 考虑patch选择物品的界面，不让选择无价物品？
+        if (itemValue[store.itemId] >= maxValue) {
+            return;
+        }
         // 上传物品到数据中心
         AddItemToModData(store.itemId, count, inc);
         // 移除行星内物流交互站中对应的数量
@@ -107,6 +112,10 @@ public static class StationManager {
     private static void TakeItem(ref StationStore store, int count) {
         // 如果请求下载的数量小于0，则返回
         if (count <= 0) {
+            return;
+        }
+        // todo: 考虑patch选择物品的界面，不让选择无价物品？
+        if (itemValue[store.itemId] >= maxValue) {
             return;
         }
         // 从数据中心获取物品数量
