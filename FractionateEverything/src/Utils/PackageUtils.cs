@@ -563,6 +563,8 @@ public static partial class Utils {
             inc += incTemp;
             countReal += count;
             if (countReal >= countNeed) {
+                // return 需要把实际获取数量设置回去
+                count = countReal;
                 return;
             }
             //itemId还原，count改为还需要获取的物品数目
@@ -572,6 +574,9 @@ public static partial class Utils {
         if (countReal == 0) {
             itemId = 0;
             count = 0;
+        } else {
+            // return 需要把实际获取数量设置回去
+            count = countReal;
         }
     }
 
