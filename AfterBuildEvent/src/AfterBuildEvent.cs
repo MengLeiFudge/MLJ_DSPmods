@@ -339,7 +339,8 @@ static class AfterBuildEvent {
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
             "HiddenCirno-GenesisBook",//mod c：创世之书
-            "MengLei-FractionateEverything",//mod d：万物分馏
+            "Unknown-OrbitalRing",//mod d：星环
+            "MengLei-FractionateEverything",//mod e：万物分馏
         ];
         // Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
         // string s = Console.ReadLine();
@@ -363,6 +364,10 @@ static class AfterBuildEvent {
                 List<ModInfo> state = result[index];
                 //深空来敌启用时，更多巨构也必须启用
                 if (!state.Contains(modInfos[0]) && state.Contains(modInfos[1])) {
+                    continue;
+                }
+                //创世和星环不能同时启用
+                if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])) {
                     continue;
                 }
                 //开始准备json相关内容
