@@ -23,8 +23,7 @@ public static class StationManager {
                 return;
             }
             lastTickDic[__instance.stationPool] = time;
-            // 打乱所有物流塔的顺序，尽可能的让每个物流塔都有机会拿到物品
-            // TODO 要不加个开关，毕竟需要消耗性能
+            // 获取所有的交互站后，执行随机排序，让每个塔都有机会拿到物品
             List<StationComponent> stations = [];
             for (int index = 1; index < __instance.stationCursor; ++index) {
                 StationComponent stationComponent = __instance.stationPool[index];
@@ -37,55 +36,35 @@ public static class StationManager {
                 }
             }
             stations.Sort((_, _) => (int)(GetRandDouble() * 100));
+            // 循环所有的交互站
             foreach (StationComponent stationComponent in stations) {
-                // 循环所有的栏位
-                for (var i = 0; i < stationComponent.storage.Length; ++i) {
-                    ref var store = ref stationComponent.storage[i];
-                    // 暂存栏位数据
-                    var storeCount = store.count;
-                    var storeInc = store.inc;
-                    // TODO 要不根据物品堆叠，消耗电量？
-                    // 1堆叠10%的消耗
+                // 循环交互站的所有的栏位
+                for (int i = 0; i < stationComponent.storage.Length; i++) {
+                    // 必须使用引用，不然物流塔的槽位信息不会改变
+                    ref StationStore store = ref stationComponent.storage[i];
+                    // TODO 根据转移的物品数量，消耗电量
                     switch (store.localLogic) {
                         case ELogisticStorage.Supply: {
                             // 供应 = 从数据中心下载到塔里，然后提供出去
-                            // 计算需求的数量
-                            var count = store.max - storeCount;
-                            // 下载物品
-                            TakeItem(ref store, count);
+                            store.SetTargetCount(store.max);
                             break;
                         }
                         case ELogisticStorage.Demand: {
                             // 需求 = 需求物品到塔里，然后上传数据中心
-                            // 如果存在物品，则上传
-                            if (storeCount > 0) {
-                                // 上传物品
-                                AddItem(ref store, storeCount, storeInc);
-                            }
+                            store.SetTargetCount(0);
                             break;
                         }
                         case ELogisticStorage.None: {
-                            // 仓储 = 维持数目为上限的一半
-                            // 计算上限一半的数量
-                            var num = store.max / 2;
-                            if (storeCount < num) {
-                                // 如果数量小于一半
-                                // 计算下载的数量
-                                var count = num - storeCount;
-                                // 下载物品
-                                TakeItem(ref store, count);
-                            } else if (storeCount > num) {
-                                // 不是沙盒模式，如果keepMode大于0，并且数据中心已存在的数量大于设置的上限，就不上传了
-                                if (!GameMain.sandboxToolsEnabled && store.keepMode > 0 && GetModDataItemCount(store.itemId) >= store.max) {
-                                    continue;
-                                }
-                                // 如果数量大于一半
-                                // 计算上传的数量
-                                var count = storeCount - num;
-                                // 计算上传的增产点
-                                var inc = count / storeCount * storeInc;
-                                // 上传物品
-                                AddItem(ref store, count, inc);
+                            // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+总物品)/2)
+                            if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
+                                int totalCount = (int)Math.Min(int.MaxValue,
+                                    store.count + GetItemTotalCount(store.itemId));
+                                // avgCount: 使交互站与分馏数据中心各持有一半物品的物品数目
+                                int avgCount = totalCount / 2;
+                                // +100以超过设定上限，从而能优先消耗数据中心的物品
+                                store.SetTargetCount(Math.Min(store.max + 100, avgCount));
+                            } else {
+                                store.SetTargetCount(store.max / 2);
                             }
                             break;
                         }
@@ -100,41 +79,23 @@ public static class StationManager {
         }
     }
 
-    private static void AddItem(ref StationStore store, int count, int inc) {
+    private static void SetTargetCount(this ref StationStore store, int targetCount) {
         // todo: 考虑patch选择物品的界面，不让选择无价物品？
-        if (itemValue[store.itemId] >= maxValue) {
+        if (store.count == targetCount || itemValue[store.itemId] >= maxValue) {
             return;
         }
-        // 上传物品到数据中心
-        AddItemToModData(store.itemId, count, inc);
-        // 移除行星内物流交互站中对应的数量
-        store.count -= count;
-        // 移除行星内物流交互站中对应的增产点
-        store.inc -= inc;
-    }
-
-    private static void TakeItem(ref StationStore store, int count) {
-        // 如果请求下载的数量小于0，则返回
-        if (count <= 0) {
-            return;
+        if (store.count < targetCount) {
+            // 将数据中心的物品下载到交互站
+            int count = targetCount - store.count;
+            count = TakeItemFromModData(store.itemId, count, out int inc);
+            store.count += count;
+            store.inc += inc;
+        } else {
+            // 将交互站的物品上传到数据中心
+            int count = store.count - targetCount;
+            int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
+            AddItemToModData(store.itemId, count, inc);
         }
-        // todo: 考虑patch选择物品的界面，不让选择无价物品？
-        if (itemValue[store.itemId] >= maxValue) {
-            return;
-        }
-        // 从数据中心获取物品数量
-        var modDataItemCount = GetModDataItemCount(store.itemId);
-        // 如果数据中心没有物品，则返回
-        if (modDataItemCount <= 0L) {
-            return;
-        }
-        // 从数据中心下载的增产点
-        // 从数据中心下载物品
-        var itemFromModData = TakeItemFromModData(store.itemId, count, out var inc);
-        // 添加物品到行星内物流交互站中
-        store.count += itemFromModData;
-        // 添加增产点到行星内物流交互站中
-        store.inc += inc;
     }
 
     /// <summary>
@@ -176,20 +137,18 @@ public static class StationManager {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
     public static bool UIStationStorage__OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
-        // 如果是沙盒，不用处理，走默认逻辑
+        // 沙盒使用默认逻辑
         if (GameMain.sandboxToolsEnabled) {
             return true;
         }
-
+        // 只处理物流交互站
         int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
-        // 如果不是自定义的塔，不处理
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
-
-        __instance.station.storage[__instance.index].keepMode = 
-            __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
         // 原版有4个keepMode，需要点4下，用不上，这里只处理0和1
+        __instance.station.storage[__instance.index].keepMode =
+            __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
         return false;
     }
 }
