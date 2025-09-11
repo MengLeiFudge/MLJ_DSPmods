@@ -18,13 +18,13 @@ public static class PlanetaryInteractionStation {
             An planetary logistics station that allows for automatic item interaction with fractionation data centres.
             Supply = Items will be downloaded up to the set limit as much as possible 
             Demand = Items will be uploaded in full 
-            Storage = Items will be kept at half the set limit as much as possible
+            Storage = Items will be kept at half the set limit as much as possible (In lock mode, the data centre will not automatically upload the corresponding items when the number of items is greater than the set limit)
             """,
             """
             可以与分馏数据中心自动进行物品交互操作的行星内物流运输站。
             供应 = 物品会尽可能下载至设定上限
             需求 = 物品会全部上传
-            仓储 = 物品会尽可能维持数目为设定上限的一半
+            仓储 = 物品会尽可能维持数目为设定上限的一半（锁定模式下，数据中心对应物品数目大于设定上限时不会自动上传）
             """);
     }
 
