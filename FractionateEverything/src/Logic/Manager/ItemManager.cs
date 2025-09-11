@@ -494,7 +494,7 @@ public static class ItemManager {
             }
         }
         // 使用所有配方计算结果的最大值
-        if (maxCalculatedValue > 0 && maxCalculatedValue < maxValue && maxCalculatedValue > itemValue[IMS多功能集成组件]) {
+        if (maxCalculatedValue > 0) {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
