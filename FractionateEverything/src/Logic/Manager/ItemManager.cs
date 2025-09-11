@@ -289,10 +289,6 @@ public static class ItemManager {
     /// 交互塔可接收的所有物品id
     /// </summary>
     public static int[] needs = [];
-#if DEBUG
-    private const string ITEM_VALUE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
-    private const string ITEM_VALUE_CSV_PATH = $@"{ITEM_VALUE_CSV_DIR}\itemValue.csv";
-#endif
 
     /// <summary>
     /// 计算所有物品的价值
@@ -502,23 +498,6 @@ public static class ItemManager {
             itemValue[IMS多功能集成组件] = maxCalculatedValue;
         }
 
-#if DEBUG
-        //按照从小到大的顺序输出所有物品的原材料点数
-        if (Directory.Exists(ITEM_VALUE_CSV_DIR)) {
-            using StreamWriter sw = new StreamWriter(ITEM_VALUE_CSV_PATH);
-            sw.WriteLine("ID,名称,价值");
-            Dictionary<int, float> dic = [];
-            for (int i = 0; i < itemValue.Length; i++) {
-                if (LDB.items.Exist(i)) {
-                    dic[i] = itemValue[i];
-                }
-            }
-            foreach (var p in dic.OrderBy(p => p.Value)) {
-                ItemProto item = LDB.items.Select(p.Key);
-                sw.WriteLine($"{p.Key},{item.name},{p.Value:F2}");
-            }
-        }
-#endif
         //根据物品价值构建交互塔可接受物品列表
         needs = LDB.items.dataArray
             .Where(item => itemValue[item.ID] < maxValue && item.GridIndexValid())
