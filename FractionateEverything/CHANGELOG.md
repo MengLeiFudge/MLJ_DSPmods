@@ -2,10 +2,14 @@
     + 可自定义物品消耗的顺序。
     + 调整分馏塔科技解锁条件，只要将对应分馏塔输入中心即可解锁。
     + 适配星环（一个新的大型Mod）。
+    + 修复手动制造数目上限计算错误的问题。
+    + 修复多功能集成组件价值异常的问题。
     + The order in which items are consumed can be customised.
     + Adjusted the conditions for unlocking the technology of fractionator, so that it can be unlocked by entering the
       corresponding fractionator into the centre.
     + Adaptation of Orbital Ring (a new large mod).
+    + Fix the issue that the upper limit of the number of manual manufacturing is calculated incorrectly.
+    + Fix an issue where the value of the multifunctional integration component is abnormal.
 
 - v2.1.4
     + 添加行星内物流交互站、星际物流交互站。
