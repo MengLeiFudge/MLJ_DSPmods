@@ -36,8 +36,23 @@ public static class TicketRaffle {
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
-    private static int RecipeRaffleCount = 1;
-    private static double RecipeRaffleRate => 0.006 + Math.Max(0, RecipeRaffleCount - 73) * 0.06;
+    private static readonly int[] RecipeRaffleCounts = new int[7];
+    private static readonly int[] RecipeRaffleMaxCounts = [25, 40, 55, 70, 85, 100, 100];
+    /// <summary>
+    /// 计算某次抽奖的配方获取概率。
+    /// 最后20%次数（也就是蓝糖从20开始，白糖从80开始）概率上升，直至RecipeRaffleMaxCount是达到100%。
+    /// </summary>
+    private static double RecipeRaffleRate {
+        get {
+            //baseRate: 2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%
+            float baseRate = 0.6f / RecipeRaffleMaxCounts[TicketTypeEntry1.Value];
+            int countP20 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] / 5;
+            //countP80: 20, 32, 44, 56, 68, 80, 80
+            int countP80 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] - countP20;
+            float plusRate = (1.0f - baseRate) / countP20;
+            return baseRate + Math.Max(0, RecipeRaffleCounts[TicketTypeEntry1.Value] - countP80) * plusRate;
+        }
+    }
 
     private static ConfigEntry<int> TicketTypeEntry2;
     private static int TicketType2;
@@ -52,17 +67,19 @@ public static class TicketRaffle {
         Register("配方奖池", "Recipe pool");
         Register("配方奖池说明",
             "Except for Dark Fog Tickets, other lottery tickets can draw all recipes up to the level of the lottery ticket used.\n"
+            + "The Quantum Copy recipes can only be drawn after all the other recipes are full of echoes.\n"
             + "Only Dark Fog Tickets, can draw Dark Fog recipes; non-Dark Fog Tickets cannot.\n\n"
             + "Probability announcement:\n"
-            + "Fractionate Recipe Core: <=0.20% (the higher the value of the lottery ticket, the higher the probability)\n"
-            + "Fractionate recipe: ≈0.6% (guaranteed to appear within 90 draws)\n"
+            + "Fractionate Recipe Core: 0.0020%-0.20% (the higher the value of the lottery ticket, the higher the probability)\n"
+            + "Fractionate recipe: 2.4%-0.6% (guaranteed to appear within 90 draws)\n"
             + "Miscellaneous items: ≈60% (unlocked items only)\n"
             + "Sand: ≈40%",
             "除黑雾奖券外，其他奖券可以抽取不超过所用奖券层级的所有配方。\n"
+            + "其他配方全部满回响后，才能抽取到量子复制配方。\n"
             + "只有黑雾奖券可以抽取黑雾配方，非黑雾奖券无法抽取。\n\n"
             + "概率公示：\n"
-            + "分馏配方通用核心：<=0.20%（奖券价值越高则概率越高）\n"
-            + "分馏配方：≈0.6%（至多90抽必出）\n"
+            + "分馏配方通用核心：0.0020%-0.20%（奖券价值越高则概率越高）\n"
+            + "分馏配方：2.4%-0.6%（至多25-100抽必出）\n"
             + "杂项物品：≈60%（仅限已解锁的物品）\n"
             + "沙土：≈40%");
 
@@ -77,22 +94,20 @@ public static class TicketRaffle {
 
         Register("建筑奖池", "Building pool");
         Register("建筑奖池说明",
-            "The type of lottery ticket does not affect the reward content or probability.\n"
-            + "Furthermore, the prize pool may include buildings that have not yet been unlocked.\n\n"
+            "The type of lottery ticket does not affect the reward content or probability.\n\n"
             + "Probability announcement:\n"
-            + "Fractionator Increase Chip: <=0.12% (the higher the value of the lottery ticket, the higher the probability)\n"
+            + "Fractionator Increase Chip: 0.0012%-0.12% (the higher the value of the lottery ticket, the higher the probability)\n"
             + "Frac Building Proto: ≈25% (non-directional only)\n"
             + "Fractionator: ≈5% (the higher the value of the fractionator, the lower the probability)\n"
-            + "Miscellaneous buildings: ≈40% (including unlocked buildings)\n"
-            + "Sand: ≈40%",
-            "奖券类型不影响奖励内容与概率。\n"
-            + "并且，该奖池有可能抽出尚未解锁的建筑。\n\n"
+            + "Miscellaneous buildings: ≈42% (unlocked buildings only)\n"
+            + "Sand: ≈28%",
+            "奖券类型不影响奖励内容与概率。\n\n"
             + "概率公示：\n"
-            + "分馏塔增幅芯片：<=0.12%（奖券价值越高则概率越高）\n"
+            + "分馏塔增幅芯片：0.0012%-0.12%（奖券价值越高则概率越高）\n"
             + "分馏塔原胚：≈25%（仅限非定向原胚）\n"
             + "分馏塔：≈5%（价值越高的分馏塔概率越低）\n"
-            + "其他建筑：≈40%（包括未解锁的建筑）\n"
-            + "沙土：≈40%");
+            + "其他建筑：≈42%（仅限已解锁的建筑）\n"
+            + "沙土：≈28%");
 
         Register("时机未到，再探索一会当前星球吧！", "The time is not right yet, so let's explore the current planet a little more!");
         Register("该奖池已经没有配方可以抽取了！", "There are no more recipes left to draw from this prize pool!");
@@ -291,6 +306,12 @@ public static class TicketRaffle {
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
         StringBuilder sb2 = new();
         oneLineCount = 0;
+        List<BaseRecipe> recipesOri = [..recipes];
+        ReCreateRecipeList:
+        recipesOri.RemoveAll(recipe => recipe.IsMaxMemory);
+        recipes = recipesOri.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)
+            ? recipesOri.Where(recipe => recipe.RecipeType != ERecipe.QuantumCopy).ToList()
+            : [..recipesOri];
         while (raffleCount > 0) {
             raffleCount--;
             double currRate = 0;
@@ -312,7 +333,7 @@ public static class TicketRaffle {
                 }
                 sb.Append($"{LDB.items.Select(IFE分馏配方通用核心).name} x 1".WithValueColor(IFE分馏配方通用核心));
                 oneLineCount++;
-                RecipeRaffleCount = 1;
+                RecipeRaffleCounts[TicketTypeEntry1.Value]++;
                 continue;
             }
             //配方（0.6%，74抽开始后每抽增加6%）
@@ -322,9 +343,6 @@ public static class TicketRaffle {
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
                     recipe.RewardThis();
-                    if (recipe.IsMaxMemory) {
-                        recipes.Remove(recipe);
-                    }
                     if (recipe.Memory == 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(Orange));
                     } else {
@@ -339,10 +357,13 @@ public static class TicketRaffle {
                     }
                     sb.Append($"{recipe.TypeName}".WithColor(Gold));
                     oneLineCount++;
-                    RecipeRaffleCount = 1;
+                    RecipeRaffleCounts[TicketTypeEntry1.Value] = 1;
+                    if (recipe.IsMaxMemory) {
+                        goto ReCreateRecipeList;
+                    }
                     continue;
                 }
-                RecipeRaffleCount++;
+                RecipeRaffleCounts[TicketTypeEntry1.Value]++;
             }
             //剩余的概率中，60%各种非建筑的物品（不含分馏某些特殊物品）
             double ratioItem = (1 - currRate) * 0.6 / items.Count;
@@ -663,25 +684,26 @@ public static class TicketRaffle {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        RecipeRaffleCount = r.ReadInt32();
-        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
-        //     EnableAutoRaffle[i] = r.ReadBoolean();
-        // }
+        if (version >= 2) {
+            for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
+                RecipeRaffleCounts[i] = r.ReadInt32();
+            }
+        } else {
+            RecipeRaffleCounts[RecipeRaffleCounts.Length - 1] = r.ReadInt32();
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(RecipeRaffleCount);
-        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
-        //     w.Write(EnableAutoRaffle[i]);
-        // }
+        w.Write(2);
+        for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
+            w.Write(RecipeRaffleCounts[i]);
+        }
     }
 
     public static void IntoOtherSave() {
-        RecipeRaffleCount = 0;
-        // for (int i = 0; i < EnableAutoRaffle.Length; i++) {
-        //     EnableAutoRaffle[i] = false;
-        // }
+        for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
+            RecipeRaffleCounts[i] = 0;
+        }
     }
 
     #endregion

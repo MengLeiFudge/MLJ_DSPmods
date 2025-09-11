@@ -4,12 +4,28 @@
     + 适配星环（一个新的大型Mod）。
     + 修复手动制造数目上限计算错误的问题。
     + 修复多功能集成组件价值异常的问题。
+    + 配方抽奖调整。
+        + 配方获取概率由固定0.6%改为[2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%]。
+        + 保底数目由固定90改为[25, 40, 55, 70, 85, 100, 100]，现在每个奖池将分别计算保底。
+        + 只有将所有非量子复制配方全部抽到满回响后，才能抽出量子复制配方。
+    + 限时商店调整。
+        + 配方兑换需要的矩阵由[100, 300, 500, 700, 900, 900]改为[250, 400, 550, 700, 850, 1000]。
     + The order in which items are consumed can be customised.
     + Adjusted the conditions for unlocking the technology of fractionator, so that it can be unlocked by entering the
       corresponding fractionator into the centre.
     + Adaptation of Orbital Ring (a new large mod).
     + Fix the issue that the upper limit of the number of manual manufacturing is calculated incorrectly.
     + Fix an issue where the value of the multifunctional integration component is abnormal.
+    + Recipes Draw Adjustment.
+        + The probability of getting recipes has been changed from a fixed 0.6%
+          to [2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%].
+        + The number of guarantees has been changed from a fixed 90 to [25, 40, 55, 70, 85, 100, 100], and guarantees
+          will now be counted separately for each jackpot.
+        + Quantum Duplicate recipes can only be drawn after all non-Quantum Duplicate recipes have been drawn to full
+          echo.
+    + Limited Time Store Adjustment.
+        + Matrix required for recipes redemption changed from [100, 300, 500, 700, 900, 900]
+          to [250, 400, 550, 700, 850, 1000].
 
 - v2.1.4
     + 添加行星内物流交互站、星际物流交互站。
