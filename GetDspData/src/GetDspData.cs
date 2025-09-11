@@ -39,6 +39,7 @@ namespace GetDspData;
 [BepInDependency(MoreMegaStructureGUID, SoftDependency)]
 [BepInDependency(TheyComeFromVoidGUID, SoftDependency)]
 [BepInDependency(GenesisBookGUID, SoftDependency)]
+[BepInDependency(OrbitalRingGUID, SoftDependency)]
 [BepInDependency(FractionateEverythingGUID, SoftDependency)]
 public class GetDspData : BaseUnityPlugin {
     #region Logger
@@ -58,7 +59,11 @@ public class GetDspData : BaseUnityPlugin {
     public const string TheyComeFromVoidGUID = "com.ckcz123.DSP_Battle";
     public static bool TheyComeFromVoidEnable;
     public const string GenesisBookGUID = "org.LoShin.GenesisBook";
+    public const string GBMSHarmonyPatchID = "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool GenesisBookEnable;
+    public const string OrbitalRingGUID = "org.LoShin.OrbitalRing";
+    public const string ORMSHarmonyPatchID = "ProjectOrbitalRing.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
+    public static bool OrbitalRingEnable;
     public const string FractionateEverythingGUID = "com.menglei.dsp.fe";
     public static bool FractionateEverythingEnable;
 
@@ -76,6 +81,7 @@ public class GetDspData : BaseUnityPlugin {
         MoreMegaStructureEnable = Chainloader.PluginInfos.ContainsKey(MoreMegaStructureGUID);
         TheyComeFromVoidEnable = Chainloader.PluginInfos.ContainsKey(TheyComeFromVoidGUID);
         GenesisBookEnable = Chainloader.PluginInfos.ContainsKey(GenesisBookGUID);
+        OrbitalRingEnable = Chainloader.PluginInfos.ContainsKey(OrbitalRingGUID);
         FractionateEverythingEnable = Chainloader.PluginInfos.ContainsKey(FractionateEverythingGUID);
 
         Harmony harmony = new(PluginInfo.PLUGIN_GUID);
@@ -88,8 +94,10 @@ public class GetDspData : BaseUnityPlugin {
                     MoreMegaStructureGUID,
                     TheyComeFromVoidGUID,
                     GenesisBookGUID,
+                    GBMSHarmonyPatchID,
+                    OrbitalRingGUID,
+                    ORMSHarmonyPatchID,
                     FractionateEverythingGUID,
-                    "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure"
                 ],
                 priority = Priority.Last,
             }
@@ -97,10 +105,12 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     private static void WriteDataToFile() {
-        if (MoreMegaStructureEnable && GenesisBookEnable) {
-            if (Harmony.HasAnyPatches("ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure")) {
-                LogInfo("已正常patch");
-            } else {
+        if (MoreMegaStructureEnable) {
+            if (GenesisBookEnable && !Harmony.HasAnyPatches(GBMSHarmonyPatchID)) {
+                LogFatal("未能正常patch");
+                return;
+            }
+            if (OrbitalRingEnable && !Harmony.HasAnyPatches(ORMSHarmonyPatchID)) {
                 LogFatal("未能正常patch");
                 return;
             }
@@ -109,9 +119,46 @@ public class GetDspData : BaseUnityPlugin {
         try {
             Dictionary<int, string> itemIdNameDic = new();
 
+            string modFullStr = "";
+            string modShortStr = "";
+            bool[] enable = [
+                MoreMegaStructureEnable,
+                TheyComeFromVoidEnable,
+                GenesisBookEnable,
+                OrbitalRingEnable,
+                FractionateEverythingEnable
+            ];
+            string[] modFullName = [
+                "MoreMegaStructure",
+                "TheyComeFromVoid",
+                "GenesisBook",
+                "OrbitalRing",
+                "FractionateEverything"
+            ];
+            string[] modShortName = [
+                "MS",
+                "VD",
+                "GB",
+                "OR",
+                "FE"
+            ];
+            for (int i = 0; i < enable.Length; i++) {
+                if (enable[i]) {
+                    LogInfo($"已启用{modFullName[i]}");
+                    modFullStr += "_" + modFullName[i];
+                    modShortStr += "_" + modShortName[i];
+                }
+            }
+            modShortStr = modShortStr == "" ? "Vanilla" : modShortStr.Substring(1);
+            modFullStr = modFullStr == "" ? "Vanilla" : modFullStr.Substring(1);
+            string baseDir = $@"{dir}\{modShortStr}";
+            if (!Directory.Exists(baseDir)) {
+                Directory.CreateDirectory(baseDir);
+            }
+
             #region 代码中使用
 
-            string filePath = $@"{dir}\DSP_ProtoID.txt";
+            string filePath = $@"{baseDir}\protoID.txt";
             if (!File.Exists(filePath)) {
                 File.Create(filePath).Close();
             }
@@ -174,7 +221,11 @@ public class GetDspData : BaseUnityPlugin {
 
             #region csv数据
 
-            filePath = $@"{dir}\DSP_DataInfo.csv";
+            if (FractionateEverythingEnable) {
+                SaveFEItemValue(baseDir);
+            }
+
+            filePath = $@"{baseDir}\gameData.csv";
             if (!File.Exists(filePath)) {
                 File.Create(filePath).Close();
             }
@@ -278,19 +329,6 @@ public class GetDspData : BaseUnityPlugin {
             if (!Directory.Exists(dirCalc)) {
                 Directory.CreateDirectory(dirCalc);
             }
-
-            string fileName = "";
-            bool[] enable =
-                [MoreMegaStructureEnable, TheyComeFromVoidEnable, GenesisBookEnable, FractionateEverythingEnable];
-            string[] mod = ["MoreMegaStructure", "TheyComeFromVoid", "GenesisBook", "FractionateEverything"];
-            for (int i = 0; i < enable.Length; i++) {
-                if (enable[i]) {
-                    fileName += "_" + mod[i];
-                    LogInfo($"已启用{mod[i]}");
-                }
-            }
-            bool isVanilla = fileName == "";
-            fileName = isVanilla ? "Vanilla" : fileName.Substring(1);
 
             var dataObj = new JObject();
             //配方
@@ -505,7 +543,7 @@ public class GetDspData : BaseUnityPlugin {
             }
 
             //保存json到本项目内。文件不复制到戴森球计算器，而是在AfterBuildEvent复制
-            filePath = $@"{dirCalc}\{fileName}.json";
+            filePath = $@"{dirCalc}\{modFullStr}.json";
             if (!File.Exists(filePath)) {
                 File.Create(filePath).Close();
             }
@@ -519,6 +557,27 @@ public class GetDspData : BaseUnityPlugin {
         }
         catch (Exception ex) {
             LogError(ex.ToString());
+        }
+    }
+
+    private static void SaveFEItemValue(string baseDir) {
+        //按照从小到大的顺序输出所有物品的价值
+        string filePath = $@"{baseDir}\itemValue.csv";
+        if (!File.Exists(filePath)) {
+            File.Create(filePath).Close();
+        }
+        using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
+            sw.WriteLine("ID,名称,价值");
+            Dictionary<int, float> dic = [];
+            for (int i = 0; i < ItemManager.itemValue.Length; i++) {
+                if (LDB.items.Exist(i)) {
+                    dic[i] = ItemManager.itemValue[i];
+                }
+            }
+            foreach (var p in dic.OrderBy(p => p.Value)) {
+                ItemProto item = LDB.items.Select(p.Key);
+                sw.WriteLine($"{p.Key},{item.name},{p.Value:F2}");
+            }
         }
     }
 
