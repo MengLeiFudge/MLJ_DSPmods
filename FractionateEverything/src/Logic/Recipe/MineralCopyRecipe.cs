@@ -68,8 +68,9 @@ public class MineralCopyRecipe : BaseRecipe {
 
         //添加其他矿物的复制配方
         foreach (VeinProto vein in LDB.veins.dataArray) {
-            if (GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, vein.ID) == null) {
-                Create(vein.ID, 0.04f);
+            if (GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, vein.MiningItem) == null) {
+                Create(vein.MiningItem, 0.04f);
+                LogWarning($"自动添加其他矿物复制配方，物品{LDB.items.Select(vein.MiningItem).name}");
             }
         }
     }
