@@ -29,52 +29,52 @@ public static class TechManager {
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
         Register("超值礼包1描述",
-            "Super Value Gift Pack! As long as you have 100 electromagnetic matrices, you can obtain 100 electromagnetic lottery tickets and other useful items! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100电磁矩阵，就可以获取100张电磁奖券，以及其他实用物品！你还在等什么？\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Electromagnetic Matrix, you can get a lot of Electromagnetic Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100电磁矩阵，就可以获取大量电磁奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包1结果",
-            "Electromagnetic ticket x100, fractionation formula universal core x5, and fractionator amplification chip x3 have been received.",
-            "电磁奖券x100，分馏配方通用核心x5，分馏塔增幅芯片x3 已到账。");
+            "Downloaded Electromagnetic Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6, Interaction Tower x1, Frac Building Proto(Normal) x100 to the fractionation data centre.",
+            "已下载 电磁奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6，交互塔x1，分馏塔原胚（普通）x100 到分馏数据中心。");
         Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
         Register("超值礼包2描述",
-            "Super Value Gift Pack! As long as you have 100 energy matrices, you can get 100 energy tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100能量矩阵，就可以获取100张能量奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Energy Matrix, you can get a lot of Energy Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100能量矩阵，就可以获取大量能量奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包2结果",
-            "Energy ticket x100 have been received.",
-            "能量奖券x100 已到账。");
+            "Downloaded Energy Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 能量奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
         Register("超值礼包3描述",
-            "Super Value Gift Pack! As long as you have 100 structure matrices, you can get 100 structure tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100结构矩阵，就可以获取100张结构奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Structure Matrix, you can get a lot of Structure Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100结构矩阵，就可以获取大量结构奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包3结果",
-            "Structure ticket x100 have been received.",
-            "结构奖券x100 已到账。");
+            "Downloaded Structure Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 结构奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
         Register("超值礼包4描述",
-            "Super Value Gift Pack! As long as you have 100 information matrices, you can get 100 information tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100信息矩阵，就可以获取100张信息奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Information Matrix, you can get a lot of Information Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100信息矩阵，就可以获取大量信息奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包4结果",
-            "Information ticket x100 have been received.",
-            "信息奖券x100 已到账。");
+            "Downloaded Information Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 信息奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
         Register("超值礼包5描述",
-            "Super Value Gift Pack! As long as you have 100 gravity matrices, you can get 100 gravity tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100引力矩阵，就可以获取100张引力奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Gravity Matrix, you can get a lot of Gravity Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100引力矩阵，就可以获取大量引力奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包5结果",
-            "Gravity ticket x100 have been received.",
-            "引力奖券x100 已到账。");
+            "Downloaded Gravity Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 引力奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
         Register("超值礼包6描述",
-            "Super Value Gift Pack! As long as you have 100 universe matrices, you can get 100 universe tickets! What are you waiting for? \n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100宇宙矩阵，就可以获取100张宇宙奖券！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! For as little as 100 Universe Matrix, you can get a lot of Universe Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
+            "超值礼包！只要100宇宙矩阵，就可以获取大量宇宙奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包6结果",
-            "Universe ticket x100 have been received.",
-            "宇宙奖券x100 已到账。");
+            "Downloaded Universe Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 宇宙奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
 
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
@@ -269,7 +269,7 @@ public static class TechManager {
         );
         tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
         tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片, IFE交互塔, IFE分馏塔原胚普通];
-        tech超值礼包1.AddItemCounts = [100, 5, 3, 1, 100];
+        tech超值礼包1.AddItemCounts = [200, 3, 6, 1, 100];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
 
@@ -281,8 +281,8 @@ public static class TechManager {
             GetTechPos(0, 2)
         );
         tech超值礼包2.PreTechsImplicit = [T能量矩阵];
-        tech超值礼包2.AddItems = [IFE能量奖券];
-        tech超值礼包2.AddItemCounts = [100];
+        tech超值礼包2.AddItems = [IFE能量奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包2.AddItemCounts = [200, 3, 6];
         tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
         tech超值礼包2.PropertyItemCounts = [100];
 
@@ -294,8 +294,8 @@ public static class TechManager {
             GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE结构奖券];
-        tech超值礼包3.AddItemCounts = [100];
+        tech超值礼包3.AddItems = [IFE结构奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包3.AddItemCounts = [200, 3, 6];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
 
@@ -307,8 +307,8 @@ public static class TechManager {
             GetTechPos(0, 4)
         );
         tech超值礼包4.PreTechsImplicit = [T信息矩阵];
-        tech超值礼包4.AddItems = [IFE信息奖券];
-        tech超值礼包4.AddItemCounts = [100];
+        tech超值礼包4.AddItems = [IFE信息奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包4.AddItemCounts = [200, 3, 6];
         tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
         tech超值礼包4.PropertyItemCounts = [100];
 
@@ -320,8 +320,8 @@ public static class TechManager {
             GetTechPos(0, 5)
         );
         tech超值礼包5.PreTechsImplicit = [T引力矩阵];
-        tech超值礼包5.AddItems = [IFE引力奖券];
-        tech超值礼包5.AddItemCounts = [100];
+        tech超值礼包5.AddItems = [IFE引力奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包5.AddItemCounts = [200, 3, 6];
         tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
         tech超值礼包5.PropertyItemCounts = [100];
 
@@ -333,8 +333,8 @@ public static class TechManager {
             GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE宇宙奖券];
-        tech超值礼包6.AddItemCounts = [100];
+        tech超值礼包6.AddItems = [IFE宇宙奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包6.AddItemCounts = [200, 3, 6];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
 
