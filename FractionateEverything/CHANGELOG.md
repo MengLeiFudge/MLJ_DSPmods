@@ -1,7 +1,11 @@
 - v2.1.7
     + 星环启用时，为蓄电器、蓄电器mk2的空、满状态添加价值。
-    + 优化物流交互站锁定时的处理逻辑。
-  
+    + 优化物流交互站的仓储槽位锁定时的处理逻辑。
+    + 调整超值礼包科技的奖励，给予更多的核心、芯片。
+    + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
+    + Optimise the processing logic when a storage slot is locked at a interaction station.
+    + Adjust the rewards of Super Value Gift Pack tech to give more cores and chips.
+
 - v2.1.6
     + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
     + 修复拿取物品数目不对的bug。
