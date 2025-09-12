@@ -13,8 +13,8 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
-        //1s更新一次
-        if (time % 60L != 0L) {
+        // 10帧更新一次，取3作为特殊值
+        if (time % 10L == 3L) {
             return;
         }
         try {
@@ -40,7 +40,7 @@ public static class StationManager {
             foreach (StationComponent stationComponent in stations) {
                 // 循环交互站的所有的栏位
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
-                    // 必须使用引用，不然物流塔的槽位信息不会改变
+                    // StationStore为struct，必须使用引用修改内容
                     ref StationStore store = ref stationComponent.storage[i];
                     // TODO 根据转移的物品数量，消耗电量
                     switch (store.localLogic) {
@@ -55,11 +55,11 @@ public static class StationManager {
                             break;
                         }
                         case ELogisticStorage.None: {
-                            // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+总物品)/2)
+                            // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
                                 int totalCount = (int)Math.Min(int.MaxValue,
-                                    store.count + GetItemTotalCount(store.itemId));
-                                // avgCount: 使交互站与分馏数据中心各持有一半物品的物品数目
+                                    store.count + GetModDataItemCount(store.itemId));
+                                // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
                                 int avgCount = totalCount / 2;
                                 // +100以超过设定上限，从而能优先消耗数据中心的物品
                                 store.SetTargetCount(Math.Min(store.max + 100, avgCount));
