@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FE.Compatibility;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
@@ -71,6 +72,15 @@ public class MineralCopyRecipe : BaseRecipe {
             if (GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, vein.MiningItem) == null) {
                 Create(vein.MiningItem, 0.04f);
                 LogWarning($"自动添加其他矿物复制配方，物品{LDB.items.Select(vein.MiningItem).name}");
+            }
+        }
+        foreach (ItemProto item in LDB.items.dataArray) {
+            if (item.Type == EItemType.Resource
+                && GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, item.ID) == null
+                && LDB.recipes.dataArray.Any(recipe =>
+                    recipe.Items.Contains(item.ID) || recipe.Results.Contains(item.ID))) {
+                Create(item.ID, 0.04f);
+                LogWarning($"自动添加其他矿物复制配方，物品{item.name}");
             }
         }
     }
