@@ -174,27 +174,27 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 回响数目
     /// </summary>
-    public int Memory { get; private set; } = 0;
+    public int Echo { get; private set; } = 0;
     /// <summary>
     /// 突破上一品质需要的回响数目
     /// </summary>
-    public int BreakPreviousQualityNeedMemory => Math.Max(0, Quality - 2);
+    public int BreakPreviousQualityNeedEcho => Math.Max(0, Quality - 2);
     /// <summary>
     /// 突破当前品质需要的回响数目
     /// </summary>
-    public int BreakCurrQualityNeedMemory => Math.Max(0, NextQuality - 2);
+    public int BreakCurrQualityNeedEcho => Math.Max(0, NextQuality - 2);
     /// <summary>
     /// 回响数目是否已达到突破当前品质所需的数目
     /// </summary>
-    public bool IsEnoughMemoryToBreak => Memory >= BreakCurrQualityNeedMemory;
+    public bool IsEnoughEchoToBreak => Echo >= BreakCurrQualityNeedEcho;
     /// <summary>
     /// 最高回响数目
     /// </summary>
-    public int MaxMemory => MaxQuality - 2;
+    public int MaxEcho => MaxQuality - 2;
     /// <summary>
     /// 回响数目是否已达到上限
     /// </summary>
-    public bool IsMaxMemory => Memory >= MaxMemory;
+    public bool IsMaxEcho => Echo >= MaxEcho;
 
     /// <summary>
     /// 等级
@@ -284,7 +284,7 @@ public abstract class BaseRecipe(
                 Exp = 0;
                 return;
             }
-            Memory++;
+            Echo++;
             CheckState();
         }
     }
@@ -301,7 +301,7 @@ public abstract class BaseRecipe(
                 Level++;
             }
             //是否可突破
-            while (!IsMaxQuality && IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp && IsEnoughMemoryToBreak) {
+            while (!IsMaxQuality && IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp && IsEnoughEchoToBreak) {
                 if (GetRandDouble() < 1.0f - (Quality - 1) * 0.15f) {
                     Exp -= CurrQualityCurrLevelExp;
                     Level = 1;
@@ -342,7 +342,7 @@ public abstract class BaseRecipe(
                 Level = CurrQualityMaxLevel;
             }
         }
-        Memory = BreakPreviousQualityNeedMemory;
+        Echo = BreakPreviousQualityNeedEcho;
         Exp = 0;
     }
 
@@ -353,11 +353,11 @@ public abstract class BaseRecipe(
         if (up) {
             Quality = MaxQuality;
             Level = CurrQualityMaxLevel;
-            Memory = MaxMemory;
+            Echo = MaxEcho;
         } else {
             Quality = 0;
             Level = 0;
-            Memory = 0;
+            Echo = 0;
         }
         Exp = 0;
     }
@@ -398,7 +398,7 @@ public abstract class BaseRecipe(
         Quality = r.ReadInt32();
         Level = r.ReadInt32();
         Exp = r.ReadSingle();
-        Memory = r.ReadInt32();
+        Echo = r.ReadInt32();
         if (Quality < 0) {
             Quality = 0;
             Level = 0;
@@ -417,13 +417,13 @@ public abstract class BaseRecipe(
         if (Exp < 0) {
             Exp = 0;
         }
-        if (Memory < 0) {
-            Memory = 0;
-        } else if (Memory > MaxMemory) {
-            Memory = MaxMemory;
+        if (Echo < 0) {
+            Echo = 0;
+        } else if (Echo > MaxEcho) {
+            Echo = MaxEcho;
         }
-        if (Memory < BreakPreviousQualityNeedMemory) {
-            Memory = BreakPreviousQualityNeedMemory;
+        if (Echo < BreakPreviousQualityNeedEcho) {
+            Echo = BreakPreviousQualityNeedEcho;
         }
         AddExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
@@ -444,7 +444,7 @@ public abstract class BaseRecipe(
         w.Write(Quality);
         w.Write(Level);
         w.Write(Exp);
-        w.Write(Memory);
+        w.Write(Echo);
         // 子类特定数据由重写的方法处理
     }
 
@@ -458,7 +458,7 @@ public abstract class BaseRecipe(
         Quality = 0;
         Level = 0;
         Exp = 0;
-        Memory = 0;
+        Echo = 0;
     }
 
     #endregion
