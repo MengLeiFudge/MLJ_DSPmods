@@ -33,6 +33,10 @@ public static class TicketRaffle {
     private static int SelectedTicketMatrixId1 => LDB.items.Select(SelectedTicketId1).maincraft.Items[0];
     private static Text txtCoreCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry1;
+    private static UIButton btnHalfRaffle1;
+    private static int HalfRaffleCount1 => GetItemTotalCount(SelectedTicketId1) > 100
+        ? (int)Math.Min(int.MaxValue, GetItemTotalCount(SelectedTicketId1) / 2)
+        : (int)GetItemTotalCount(SelectedTicketId1);
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
@@ -60,6 +64,10 @@ public static class TicketRaffle {
     private static int SelectedTicketMatrixId2 => LDB.items.Select(SelectedTicketId2).maincraft.Items[0];
     private static Text txtChipCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry2;
+    private static UIButton btnHalfRaffle2;
+    private static int HalfRaffleCount2 => GetItemTotalCount(SelectedTicketId2) > 100
+        ? (int)Math.Min(int.MaxValue, GetItemTotalCount(SelectedTicketId2) / 2)
+        : (int)GetItemTotalCount(SelectedTicketId2);
 
     public static void AddTranslations() {
         Register("奖券抽奖", "Ticket Raffle");
@@ -169,13 +177,16 @@ public static class TicketRaffle {
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
-        wnd.AddButton(0, 4, y, tab, "单抽",
+        wnd.AddButton(0, 3, y, tab, "单抽",
             onClick: () => RaffleRecipe(1));
-        wnd.AddButton(1, 4, y, tab, "十连",
+        wnd.AddButton(1, 3, y, tab, "十连",
             onClick: () => RaffleRecipe(10));
-        wnd.AddButton(2, 4, y, tab, "百连",
+        wnd.AddButton(2, 3, y, tab, "百连",
             onClick: () => RaffleRecipe(100, 5));
-        wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry1, "自动百连");
+        y += 36f;
+        wnd.AddCheckBox(GetPosition(0, 2).Item1, y, tab, EnableAutoRaffleEntry1, "自动百连");
+        btnHalfRaffle1 = wnd.AddButton(1, 2, y, tab, "动态刷新",
+            onClick: () => RaffleRecipe(-1, 5));
         y += 36f;
         y += 36f + 7f;
         txt = wnd.AddText2(x, y, tab, "建筑奖池");
@@ -185,13 +196,16 @@ public static class TicketRaffle {
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
-        wnd.AddButton(0, 4, y, tab, "单抽",
+        wnd.AddButton(0, 3, y, tab, "单抽",
             onClick: () => RaffleBuilding(1));
-        wnd.AddButton(1, 4, y, tab, "十连",
+        wnd.AddButton(1, 3, y, tab, "十连",
             onClick: () => RaffleBuilding(10));
-        wnd.AddButton(2, 4, y, tab, "百连",
+        wnd.AddButton(2, 3, y, tab, "百连",
             onClick: () => RaffleBuilding(100, 5));
-        wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
+        y += 36f;
+        wnd.AddCheckBox(GetPosition(0, 2).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
+        btnHalfRaffle2 = wnd.AddButton(1, 2, y, tab, "动态刷新",
+            onClick: () => RaffleBuilding(-1, 5));
     }
 
     public static void UpdateUI() {
@@ -206,6 +220,8 @@ public static class TicketRaffle {
         }
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
+        btnHalfRaffle1.SetText($"{"抽奖".Translate()} x {HalfRaffleCount1}");
+        btnHalfRaffle2.SetText($"{"抽奖".Translate()} x {HalfRaffleCount2}");
     }
 
     /// <summary>
@@ -217,6 +233,10 @@ public static class TicketRaffle {
     private static void RaffleRecipe(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
+        }
+        if (raffleCount == -1) {
+            raffleCount = HalfRaffleCount1;
+            showMessage &= raffleCount <= 100;
         }
         //构建杂项物品奖励列表
         //主体为已解锁的非建筑物品，可抽到精华，不可抽到原胚、核心等
@@ -465,6 +485,10 @@ public static class TicketRaffle {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
+        if (raffleCount == -1) {
+            raffleCount = HalfRaffleCount2;
+            showMessage &= raffleCount <= 100;
+        }
         //构建杂项物品奖励列表
         //主体为已解锁的建筑物品，可抽到原胚，不可抽到精华、核心等
         List<int> baseItems = [];
@@ -668,7 +692,7 @@ public static class TicketRaffle {
             EnableAutoRaffleEntry2.Value = false;
         }
         //todo: vip可以提速
-        if (GameMain.gameTick % 10 != 0 || lastAutoRaffleTick == GameMain.gameTick) {
+        if (GameMain.gameTick - lastAutoRaffleTick < 6) {
             return;
         }
         lastAutoRaffleTick = GameMain.gameTick;
