@@ -8,6 +8,7 @@
     + 双击玩家背包排序按钮时，背包内的所有物品会转移到分馏数据中心。
     + 移除一部分转化配方。
     + 修复交互塔上传的物品不带增产点数的问题。
+    + 添加使用当前奖券的一半抽奖的功能。
     + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
     + Optimise the processing logic when a storage slot is locked at a interaction station.
     + Adjust the rewards of Super Value Gift Pack tech to give more cores and chips.
@@ -19,6 +20,7 @@
       fractionation data centre.
     + Removed some conversion recipes.
     + Fix an issue where items uploaded from the interaction tower did not carry proliferator points.
+    + Add the ability to draw a prize using half of the current raffle ticket.
 
 - v2.1.6
     + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
