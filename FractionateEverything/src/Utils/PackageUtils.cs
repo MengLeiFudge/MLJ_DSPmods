@@ -80,7 +80,7 @@ public static partial class Utils {
     /// </summary>
     public static void AddItemToModData(int itemId, int count, int inc = 0) {
         if (itemId == I沙土) {
-            AddItemToPackage(itemId, count);
+            GameMain.mainPlayer.sandCount += count;
             return;
         }
         lock (centerItemCount) {
@@ -328,6 +328,13 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
+        if (itemId == I沙土) {
+            //如果是沙盒模式并且无限沙土开启，直接返回long最大值
+            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
+                return long.MaxValue;
+            }
+            return GameMain.mainPlayer.sandCount;
+        }
         return centerItemCount[itemId];
     }
 
@@ -370,13 +377,6 @@ public static partial class Utils {
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
-        if (itemId == I沙土) {
-            //如果是沙盒模式并且无限沙土开启，直接返回long最大值
-            if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
-                return long.MaxValue;
-            }
-            return GameMain.mainPlayer.sandCount;
-        }
         return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
     }
 
@@ -529,8 +529,19 @@ public static partial class Utils {
             return;
         }
         //如果是玩家背包，按照 背包-Mod背包-物流背包 的顺序取走物品
-        //如果是建筑师模式并且为建筑，不需要消耗物品
         inc = 0;
+        //如果是沙土，直接拿取
+        if (itemId == I沙土) {
+            if (GameMain.mainPlayer.sandCount >= count) {
+                //count不变，表示成功拿取count个沙土
+                GameMain.mainPlayer.sandCount -= count;
+            } else {
+                count = (int)GameMain.mainPlayer.sandCount;
+                GameMain.mainPlayer.sandCount = 0;
+            }
+            return;
+        }
+        //如果是建筑师模式并且为建筑，不需要消耗物品
         if (itemId <= 0) {
             itemId = 0;
             count = 0;
@@ -686,6 +697,19 @@ public static partial class Utils {
     /// </summary>
     /// <returns>实际拿到的数目</returns>
     public static int TakeItemFromModData(int itemId, int count, out int inc) {
+        //如果是沙土，直接拿取
+        if (itemId == I沙土) {
+            inc = 0;
+            if (GameMain.mainPlayer.sandCount >= count) {
+                //count不变，表示成功拿取count个沙土
+                GameMain.mainPlayer.sandCount -= count;
+                return count;
+            } else {
+                count = (int)GameMain.mainPlayer.sandCount;
+                GameMain.mainPlayer.sandCount = 0;
+                return count;
+            }
+        }
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
             count = Math.Min(int.MaxValue / 10, count);
