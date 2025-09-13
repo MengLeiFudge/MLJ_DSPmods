@@ -364,6 +364,7 @@ public static class ItemManager {
                 itemValue[i] = maxValue;
             }
         }
+        CalculateItemValue:
         //获取所有配方（排除分馏配方、含有多功能集成组件的配方、GridIndex超限配方）
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             r.Type != ERecipeType.Fractionate
@@ -468,6 +469,59 @@ public static class ItemManager {
                 }
             }
         } while (changed && iteration < 10);
+
+        //根据分馏配方计算未知价值物品的价值
+        iEnumerable = LDB.recipes.dataArray.Where(r => r.Type == ERecipeType.Fractionate && r.GridIndexValid());
+        recipes = iEnumerable.ToArray();
+        foreach (var recipe in recipes) {
+            // 复制配方数据
+            List<int> inputIDs = recipe.Items.ToList();
+            List<int> outputIDs = recipe.Results.ToList();
+            List<int> inputCounts = recipe.ItemCounts.ToList();
+            List<int> outputCounts = recipe.ResultCounts.ToList();
+
+            // 检查输入物品是否都有已知价值
+            bool canProcess = true;
+            foreach (int itemId in inputIDs) {
+                if (Math.Abs(itemValue[itemId] - maxValue) < 0.0001f) {
+                    canProcess = false;
+                    break;
+                }
+            }
+            if (!canProcess) continue;
+
+            // 计算输入总价值和输出总单位数
+            float inputValue = 0;
+            for (int i = 0; i < inputIDs.Count; i++) {
+                inputValue += inputCounts[i] * itemValue[inputIDs[i]];
+            }
+
+            int outputUnits = outputCounts.Sum();
+
+            // 如果输出总单位数为0，则跳过（没有净产出）
+            if (outputUnits <= 0) continue;
+
+            // 计算时间成本
+            // 分馏成功率为p时，时间成本为 inputValue*0.01/p
+            float adjustedTimeValue = inputValue * 0.01f / (recipe.ResultCounts[0] / (float)recipe.ItemCounts[0]);
+
+            // 计算单位价值
+            float unitValue = (inputValue + adjustedTimeValue) / outputUnits;
+
+            // 更新输出物品价值（取最小值）
+            foreach (int itemId in outputIDs) {
+                if (unitValue < itemValue[itemId]) {
+                    itemValue[itemId] = unitValue;
+                    // ItemProto item = LDB.items.Select(itemId);
+                    // LogDebug($"更新物品{item.name}({itemId})价值为{unitValue:F3}("
+                    //          + $"{inputValue / outputUnits:F3}+{adjustedTimeValue / outputUnits:F3})");
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            goto CalculateItemValue;
+        }
 
         //设置核心、芯片价值
         itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
