@@ -340,11 +340,6 @@ public static class ProcessManager {
                             lock (productRegister) {
                                 productRegister[itemID] += itemCount;
                             }
-                            if (itemID == I沙土) {
-                                //不要用AddItem，会导致UI显示问题
-                                GameMain.mainPlayer.sandCount += itemCount;
-                                continue;
-                            }
                             if (itemID == product0Id) {
                                 product0.count += itemCount;
                                 __instance.productOutputCount = product0.count;
