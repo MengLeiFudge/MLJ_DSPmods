@@ -82,15 +82,36 @@ public static class ItemInteraction {
         Dictionary<ItemProto, long> itemCountDic = [];
         float valueRangeMin = ItemValueRangeEntry.Value == 0 ? 0 : ItemValueRanges[ItemValueRangeEntry.Value - 1];
         float valueRangeMax = ItemValueRanges[ItemValueRangeEntry.Value];
-        foreach (ItemProto item in LDB.items.dataArray) {
-            if (itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
-                continue;
+        if (ItemValueRangeEntry.Value == ItemValueRanges.Length - 1) {
+            //如果一个无价值的物品在Mod背包数目大于0，则显示它
+            foreach (ItemProto item in LDB.items.dataArray) {
+                if (itemValue[item.ID] < valueRangeMin) {
+                    continue;
+                }
+                long count = GetModDataItemCount(item.ID);
+                if (itemValue[item.ID] < maxValue) {
+                    if (count <= 0 && !ShowNotStoredItem) {
+                        continue;
+                    }
+                } else {
+                    if (count <= 0) {
+                        continue;
+                    }
+                }
+                itemCountDic[item] = count;
             }
-            long count = GetModDataItemCount(item.ID);
-            if (count <= 0 && !ShowNotStoredItem) {
-                continue;
+        } else {
+            //正常处理，只显示符合物品价值区间的物品
+            foreach (ItemProto item in LDB.items.dataArray) {
+                if (itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
+                    continue;
+                }
+                long count = GetModDataItemCount(item.ID);
+                if (count <= 0 && !ShowNotStoredItem) {
+                    continue;
+                }
+                itemCountDic[item] = count;
             }
-            itemCountDic[item] = count;
         }
         int i = 0;
         foreach (var p in itemCountDic.OrderBy(kvp => kvp.Key.GridIndex)) {
