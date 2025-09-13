@@ -339,7 +339,7 @@ static class AfterBuildEvent {
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
             "HiddenCirno-GenesisBook",//mod c：创世之书
-            "Unknown-OrbitalRing",//mod d：星环
+            "ProfessorCat305-OrbitalRing",//mod d：星环
             "MengLei-FractionateEverything",//mod e：万物分馏
         ];
         // Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");

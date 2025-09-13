@@ -816,8 +816,11 @@ public static partial class Utils {
 
     #region 背包排序
 
+    private static DateTime lastSortTime = DateTime.MinValue;
+
     /// <summary>
-    /// 排序时背包内的物品会尽可能转移到物流背包。
+    /// 单击玩家背包排序按钮时，背包内的物品会尽可能转移到物流背包；
+    /// 双击玩家背包排序按钮时，背包物品会全部转移到Mod背包。
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StorageComponent), nameof(StorageComponent.Sort))]
@@ -828,19 +831,33 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null || !GameMain.mainPlayer.deliveryPackage.unlocked) {
             return true;
         }
-        StorageComponent package = GameMain.mainPlayer.package;
-        DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
-        for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
-            int itemId = deliveryPackage.grids[gridIndex].itemId;
-            for (int index = 0; index < package.size; index++) {
-                if (package.grids[index].itemId == itemId) {
-                    int count = deliveryPackage.AddItem(itemId,
-                        package.grids[index].count, package.grids[index].inc, out int remainInc);
-                    package.grids[index].count -= count;
-                    package.grids[index].inc = remainInc;
+        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && FracDataCentreUnlocked;
+        if (!isDoubleClick) {
+            //一次排序
+            StorageComponent package = GameMain.mainPlayer.package;
+            DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
+            for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
+                int itemId = deliveryPackage.grids[gridIndex].itemId;
+                for (int index = 0; index < package.size; index++) {
+                    if (package.grids[index].itemId == itemId) {
+                        int count = deliveryPackage.AddItem(itemId,
+                            package.grids[index].count, package.grids[index].inc, out int remainInc);
+                        package.grids[index].count -= count;
+                        package.grids[index].inc = remainInc;
+                    }
                 }
             }
+        } else {
+            //二次排序
+            StorageComponent package = GameMain.mainPlayer.package;
+            for (int index = 0; index < package.size; index++) {
+                AddItemToModData(package.grids[index].itemId, package.grids[index].count, package.grids[index].inc);
+                package.grids[index].itemId = 0;
+                package.grids[index].count = 0;
+                package.grids[index].inc = 0;
+            }
         }
+        lastSortTime = DateTime.Now;
         return true;
     }
 
