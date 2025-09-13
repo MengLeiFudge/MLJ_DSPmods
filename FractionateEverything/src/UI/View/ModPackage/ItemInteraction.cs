@@ -83,7 +83,7 @@ public static class ItemInteraction {
         float valueRangeMin = ItemValueRangeEntry.Value == 0 ? 0 : ItemValueRanges[ItemValueRangeEntry.Value - 1];
         float valueRangeMax = ItemValueRanges[ItemValueRangeEntry.Value];
         foreach (ItemProto item in LDB.items.dataArray) {
-            if (item.ID == I沙土 || itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
+            if (itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
                 continue;
             }
             long count = GetModDataItemCount(item.ID);
