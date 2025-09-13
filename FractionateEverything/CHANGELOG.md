@@ -5,6 +5,8 @@
     + 配方图鉴添加“完全升级”的数目显示。
     + 分解配方得到的沙土将以实体形式输出，以适配某些需要沙土物品的mod。
     + 分馏数据中心支持物品沙土的相关操作。
+    + 双击背包排序时，背包内的所有物品会转移到分馏数据中心。
+    + 移除一部分转化配方。
     + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
     + Optimise the processing logic when a storage slot is locked at a interaction station.
     + Adjust the rewards of Super Value Gift Pack tech to give more cores and chips.
