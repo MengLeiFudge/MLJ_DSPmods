@@ -273,9 +273,9 @@ public static class RecipeOperate {
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
                 txtRecipeInfo[line].text =
-                    $"[{(recipe.IsEnoughMemoryToBreak ? "√" : "x")}] "
-                    + $"{"拥有足够的同名回响（".Translate()}{recipe.Memory} / {recipe.BreakCurrQualityNeedMemory}{"）".Translate()}"
-                        .WithColor(recipe.IsEnoughMemoryToBreak ? Green : Red);
+                    $"[{(recipe.IsEnoughEchoToBreak ? "√" : "x")}] "
+                    + $"{"拥有足够的同名回响（".Translate()}{recipe.Echo} / {recipe.BreakCurrQualityNeedEcho}{"）".Translate()}"
+                        .WithColor(recipe.IsEnoughEchoToBreak ? Green : Red);
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             }
@@ -372,7 +372,7 @@ public static class RecipeOperate {
                 null);
             return;
         }
-        if (recipe.IsMaxMemory) {
+        if (recipe.IsMaxEcho) {
             UIMessageBox.Show("提示".Translate(),
                 "配方回响数目已达到上限！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
@@ -380,7 +380,7 @@ public static class RecipeOperate {
             return;
         }
         int takeId = IFE分馏配方通用核心;
-        int takeCount = recipe.Locked ? 1 : Math.Max(0, recipe.BreakCurrQualityNeedMemory - recipe.Memory);
+        int takeCount = recipe.Locked ? 1 : Math.Max(0, recipe.BreakCurrQualityNeedEcho - recipe.Echo);
         if (takeCount == 0) {
             UIMessageBox.Show("提示".Translate(),
                 "配方回响数目已达到突破要求，暂时无法兑换！".Translate(),
@@ -492,7 +492,7 @@ public static class RecipeOperate {
                 null);
             return;
         }
-        if (!recipe.IsEnoughMemoryToBreak) {
+        if (!recipe.IsEnoughEchoToBreak) {
             UIMessageBox.Show("提示".Translate(),
                 "配方回响数目不足！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,

@@ -24,7 +24,7 @@ public class ExchangeInfo {
     public int matrixDiscountedCount => (int)Math.Ceiling(matrixCount * VipFeatures.vipDiscount);
     public bool exchanged = false;
     public bool IsValid => (item != null && itemCount > 0 && matrix != null && matrixCount >= 0)
-                           || (recipe != null && !recipe.IsMaxMemory && matrix != null && matrixCount >= 0);
+                           || (recipe != null && !recipe.IsMaxEcho && matrix != null && matrixCount >= 0);
 
     /// <summary>
     /// 一个空的兑换信息。
@@ -302,11 +302,11 @@ public static class LimitedTimeStore {
             recipeLockedExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
         //3.构建已解锁但未满回响配方列表
-        List<ExchangeInfo> recipeNotMaxMemoryExchangeList = [];
-        foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxMemory).ToList()) {
+        List<ExchangeInfo> recipeNotMaxEchoExchangeList = [];
+        foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxEcho).ToList()) {
             ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
             float matrixCount = matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵];
-            recipeNotMaxMemoryExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
+            recipeNotMaxEchoExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
 
         //构建可能出现的随机兑换信息列表
@@ -323,11 +323,11 @@ public static class LimitedTimeStore {
             }
         }
         // 添加已解锁但未满回响的配方（<=30%概率）
-        if (recipeNotMaxMemoryExchangeList.Count > 0) {
+        if (recipeNotMaxEchoExchangeList.Count > 0) {
             // 计算需要添加的未解锁配方数量，使其占总数的30%
-            int notMaxMemoryRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.3f / 0.5f);
-            for (int i = 0; i < notMaxMemoryRecipeCount; i++) {
-                exchangeList.Add(recipeNotMaxMemoryExchangeList[GetRandInt(0, recipeNotMaxMemoryExchangeList.Count)]);
+            int notMaxEchoRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.3f / 0.5f);
+            for (int i = 0; i < notMaxEchoRecipeCount; i++) {
+                exchangeList.Add(recipeNotMaxEchoExchangeList[GetRandInt(0, recipeNotMaxEchoExchangeList.Count)]);
             }
         }
 

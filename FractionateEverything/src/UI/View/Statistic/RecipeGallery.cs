@@ -26,8 +26,8 @@ public static class RecipeGallery {
         Register("配方图鉴", "Recipe Gallery");
 
         Register("配方解锁情况",
-            $"The recipe unlock status is as follows ({"Full Echo".WithColor(Orange)}/{"Unlocked".WithColor(Blue)}/Total):",
-            $"配方解锁情况如下（{"满回响".WithColor(Orange)}/{"已解锁".WithColor(Blue)}/总数）：");
+            $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(Orange)}/{"Max Echo".WithColor(Red)}/{"Unlocked".WithColor(Blue)}/Total):",
+            $"配方解锁情况如下（{"完全升级".WithColor(Orange)}/{"最大回响".WithColor(Red)}/{"已解锁".WithColor(Blue)}/总数）：");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -63,7 +63,8 @@ public static class RecipeGallery {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        int[,] maxMemoryCountArr = new int[9, 8];
+        int[,] fullUpgradeCountArr = new int[9, 8];
+        int[,] maxEchoCountArr = new int[9, 8];
         int[,] unlockCountArr = new int[9, 8];
         int[,] totalCountArr = new int[9, 8];
         for (int i = 1; i <= 7; i++) {
@@ -81,17 +82,25 @@ public static class RecipeGallery {
                 unlockCountArr[8, j] += recipes.Count;
                 unlockCountArr[i, 7] += recipes.Count;
                 unlockCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.IsMaxMemory).ToList();
-                maxMemoryCountArr[i, j] = recipes.Count;
-                maxMemoryCountArr[8, j] += recipes.Count;
-                maxMemoryCountArr[i, 7] += recipes.Count;
-                maxMemoryCountArr[8, 7] += recipes.Count;
+                recipes = recipes.Where(r => r.IsMaxEcho).ToList();
+                maxEchoCountArr[i, j] = recipes.Count;
+                maxEchoCountArr[8, j] += recipes.Count;
+                maxEchoCountArr[i, 7] += recipes.Count;
+                maxEchoCountArr[8, 7] += recipes.Count;
+                recipes = recipes.Where(r => r.FullUpgrade).ToList();
+                fullUpgradeCountArr[i, j] = recipes.Count;
+                fullUpgradeCountArr[8, j] += recipes.Count;
+                fullUpgradeCountArr[i, 7] += recipes.Count;
+                fullUpgradeCountArr[8, 7] += recipes.Count;
             }
         }
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 7; j++) {
                 recipeUnlockInfoText[i, j].text =
-                    $"{maxMemoryCountArr[i, j].ToString().WithColor(Orange)}/{unlockCountArr[i, j].ToString().WithColor(Blue)}/{totalCountArr[i, j]}";
+                    $"{fullUpgradeCountArr[i, j].ToString().WithColor(Orange)}"
+                    + $"/{maxEchoCountArr[i, j].ToString().WithColor(Red)}"
+                    + $"/{unlockCountArr[i, j].ToString().WithColor(Blue)}"
+                    + $"/{totalCountArr[i, j]}";
             }
         }
     }

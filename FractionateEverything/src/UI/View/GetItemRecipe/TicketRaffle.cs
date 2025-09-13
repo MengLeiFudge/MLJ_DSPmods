@@ -267,7 +267,7 @@ public static class TicketRaffle {
         //构建可抽到的分馏配方列表
         //todo: 优化配方出现情况，当前层次概率至少翻倍（也许现在这样也行？）
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(list => list).ToList();
-        recipes.RemoveAll(recipe => recipe.IsMaxMemory);
+        recipes.RemoveAll(recipe => recipe.IsMaxEcho);
         if (SelectedTicketId1 < IFE宇宙奖券 && recipes.Count == 0) {
             if (showMessage) {
                 UIMessageBox.Show("提示".Translate(),
@@ -308,7 +308,7 @@ public static class TicketRaffle {
         oneLineCount = 0;
         List<BaseRecipe> recipesOri = [..recipes];
         ReCreateRecipeList:
-        recipesOri.RemoveAll(recipe => recipe.IsMaxMemory);
+        recipesOri.RemoveAll(recipe => recipe.IsMaxEcho);
         recipes = recipesOri.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)
             ? recipesOri.Where(recipe => recipe.RecipeType != ERecipe.QuantumCopy).ToList()
             : [..recipesOri];
@@ -343,10 +343,10 @@ public static class TicketRaffle {
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipes[GetRandInt(0, recipes.Count)];
                     recipe.RewardThis();
-                    if (recipe.Memory == 0) {
+                    if (recipe.Echo == 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(Orange));
                     } else {
-                        string tip = string.Format("已转为同名回响提示".Translate(), recipe.Memory);
+                        string tip = string.Format("已转为同名回响提示".Translate(), recipe.Echo);
                         sb2.AppendLine($"{recipe.TypeName} {tip}".WithColor(Orange));
                     }
                     if (oneLineCount >= oneLineMaxCount) {
@@ -358,7 +358,7 @@ public static class TicketRaffle {
                     sb.Append($"{recipe.TypeName}".WithColor(Gold));
                     oneLineCount++;
                     RecipeRaffleCounts[TicketTypeEntry1.Value] = 1;
-                    if (recipe.IsMaxMemory) {
+                    if (recipe.IsMaxEcho) {
                         goto ReCreateRecipeList;
                     }
                     continue;
