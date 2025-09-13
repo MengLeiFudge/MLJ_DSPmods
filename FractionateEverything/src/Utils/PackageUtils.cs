@@ -851,6 +851,9 @@ public static partial class Utils {
             //二次排序
             StorageComponent package = GameMain.mainPlayer.package;
             for (int index = 0; index < package.size; index++) {
+                if (itemValue[package.grids[index].itemId] >= maxValue) {
+                    continue;
+                }
                 AddItemToModData(package.grids[index].itemId, package.grids[index].count, package.grids[index].inc);
                 package.grids[index].itemId = 0;
                 package.grids[index].count = 0;
