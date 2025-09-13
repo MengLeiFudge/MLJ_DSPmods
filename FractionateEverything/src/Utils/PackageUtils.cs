@@ -33,6 +33,11 @@ public static partial class Utils {
                                          || CheatEnabler.ArchitectMode
                                          || DeliverySlotsTweaks.ArchitectMode;
 
+    /// <summary>
+    /// 指示分馏数据中心是否已解锁
+    /// </summary>
+    private static bool FracDataCentreUnlocked => GameMain.history.TechUnlocked(TFE分馏数据中心);
+
     #region 向背包添加物品
 
     //配送器与玩家交互：GameMain.mainPlayer.packageUtility.AddItemToAllPackages
@@ -50,11 +55,14 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowTrash))]
     private static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, int count, int inc) {
-        if (itemValue[itemId] < maxValue) {
-            AddItemToModData(itemId, count, inc);
-            return false;
+        if (!FracDataCentreUnlocked) {
+            return true;
         }
-        return true;
+        if (itemValue[itemId] >= maxValue) {
+            return true;
+        }
+        AddItemToModData(itemId, count, inc);
+        return false;
     }
 
     /// <summary>
@@ -63,22 +71,28 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowHandItems))]
     private static bool Player_ThrowHandItems_Prefix(Player __instance) {
-        if (itemValue[__instance.inhandItemId] < maxValue) {
-            if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
-                AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
-            }
-            __instance.inhandItemId = 0;
-            __instance.inhandItemCount = 0;
-            __instance.inhandItemInc = 0;
-            return false;
+        if (!FracDataCentreUnlocked) {
+            return true;
         }
-        return true;
+        if (itemValue[__instance.inhandItemId] >= maxValue) {
+            return true;
+        }
+        if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
+            AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
+        }
+        __instance.inhandItemId = 0;
+        __instance.inhandItemCount = 0;
+        __instance.inhandItemInc = 0;
+        return false;
     }
 
     /// <summary>
     /// 将指定物品添加到ModData背包
     /// </summary>
     public static void AddItemToModData(int itemId, int count, int inc = 0) {
+        if (!FracDataCentreUnlocked) {
+            return;
+        }
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount += count;
             return;
@@ -86,8 +100,10 @@ public static partial class Utils {
         lock (centerItemCount) {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
+            if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
+                TechManager.CheckTechUnlockCondition(itemId);
+            }
         }
-        TechManager.CheckTechUnlockCondition(itemId);
     }
 
     /// <summary>
@@ -846,7 +862,15 @@ public static partial class Utils {
         lock (centerItemCount) {
             count = TakeItemFromModData(itemId, count, out inc);
         }
-        AddItemToPackage(itemId, count, inc, false);
+        if (itemId == I沙土) {
+            if (GameMain.mainPlayer.inhandItemId != I沙土) {
+                GameMain.mainPlayer.ThrowHandItems();
+            }
+            GameMain.mainPlayer.inhandItemId = I沙土;
+            GameMain.mainPlayer.inhandItemCount += count;
+        } else {
+            AddItemToPackage(itemId, count, inc, false);
+        }
     }
 
     /// <summary>
