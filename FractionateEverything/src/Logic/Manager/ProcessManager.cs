@@ -553,9 +553,9 @@ public static class ProcessManager {
                 }
             } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
                 //正面作为输入，数据传到数据中心。可接受未到最大价值，且GridIndex可见的物品。
-                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out _);
+                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out inc);
                 if (itemId > 0) {
-                    AddItemToModData(itemId, stack);
+                    AddItemToModData(itemId, stack, inc);
                 }
             }
         }
