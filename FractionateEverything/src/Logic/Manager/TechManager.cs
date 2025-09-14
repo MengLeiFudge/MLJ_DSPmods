@@ -25,6 +25,7 @@ public static class TechManager {
         Register("允许连接到分馏数据中心", "Allow connection to fractionation data centre");
         Register("解锁全部建筑培养配方", "Unlock all building train recipes");
         Register("解锁普通矿物复制配方", "Unlock common mineral copy recipes");
+        Register("给予交互塔和普通原胚", "Give Interaction Tower and Common Frac Proto");
 
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
@@ -32,8 +33,8 @@ public static class TechManager {
             "Super Value Gift Pack! For as little as 100 Electromagnetic Matrix, you can get a lot of Electromagnetic Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
             "超值礼包！只要100电磁矩阵，就可以获取大量电磁奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包1结果",
-            "Downloaded Electromagnetic Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6, Interaction Tower x1, Frac Building Proto(Normal) x100 to the fractionation data centre.",
-            "已下载 电磁奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6，交互塔x1，分馏塔原胚（普通）x100 到分馏数据中心。");
+            "Downloaded Electromagnetic Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
+            "已下载 电磁奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
         Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
@@ -136,8 +137,8 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new distillation technology, the new fractionator is not made from materials but obtained through lottery draws and cultivation. After interacting with the lottery page in the fractionation data centre, you can use lottery tickets to obtain fractionator prototypes or fractionators. After interacting with the tower, the prototype will produce different fractionators. Additionally, COSMO provides a technology for artificially synthesising directed prototypes, which can be directly cultivated into specified buildings.",
-            "在全新的分馏科技中，新分馏塔并非用材料制作，而是通过抽奖与培养获取。与分馏数据中心的奖券抽奖页面交互后，可以使用奖券获取分馏塔原胚或分馏塔。原胚经过交互塔培养后，会产出不同的分馏塔。同时，主脑也提供了一种人工合成定向原胚的科技，可以直接将其培养为指定的建筑。");
+            "In the new distillation technology, the new fractionator is not crafted from materials but obtained through building cultivation or lottery draws. Using the Interactive Tower to cultivate non-targeted fractionator prototypes (i.e., using the Interactive Tower to distill Prototypes) yields different types of fractionators. Drawing from the building card pool using lottery tickets at the fractionation data centre yields fractionator prototypes and fractionators. Additionally, the COSMO offers technology to artificially synthesize targeted prototypes from different base prototypes. These synthesized targeted prototypes can be directly cultivated into specific buildings.",
+            "在全新的分馏科技中，新分馏塔并非用材料制作，而是通过建筑培养或奖券抽奖的方式获取。使用交互塔培养非定向的分馏塔原胚（也就是使用交互塔分馏原胚），可以得到不同类型的分馏塔；在分馏数据中心使用奖券对建筑卡池抽奖，可以得到分馏塔原胚和分馏塔。同时，主脑也提供了一种将不同原胚人工合成为定向原胚的科技，合成的定向原胚可以直接培养出指定的建筑。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
@@ -256,26 +257,28 @@ public static class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
+        tech分馏数据中心.AddItems = [IFE交互塔, IFE分馏塔原胚普通];
+        tech分馏数据中心.AddItemCounts = [1, 120];
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
 
 
         var tech超值礼包1 = ProtoRegistry.RegisterTech(
             TFE超值礼包1, "T超值礼包1", "超值礼包1描述", "超值礼包1结果", "Assets/fe/tech超值礼包",
-            [tech分馏数据中心.ID],
+            [TFE分馏数据中心],
             [I电磁矩阵], [100], 3600,
             [],
             GetTechPos(0, 1)
         );
-        tech超值礼包1.PreTechsImplicit = [T电磁矩阵];
-        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片, IFE交互塔, IFE分馏塔原胚普通];
-        tech超值礼包1.AddItemCounts = [200, 3, 6, 1, 100];
+        tech超值礼包1.PreTechsImplicit = [TFE分馏塔原胚];
+        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包1.AddItemCounts = [200, 3, 6];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
 
         var tech超值礼包2 = ProtoRegistry.RegisterTech(
             TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包",
-            [tech超值礼包1.ID],
+            [TFE超值礼包1],
             [I能量矩阵], [100], 3600,
             [],
             GetTechPos(0, 2)
@@ -288,7 +291,7 @@ public static class TechManager {
 
         var tech超值礼包3 = ProtoRegistry.RegisterTech(
             TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包",
-            [tech超值礼包2.ID],
+            [TFE超值礼包2],
             [I结构矩阵], [100], 3600,
             [],
             GetTechPos(0, 3)
@@ -301,7 +304,7 @@ public static class TechManager {
 
         var tech超值礼包4 = ProtoRegistry.RegisterTech(
             TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包",
-            [tech超值礼包3.ID],
+            [TFE超值礼包3],
             [I信息矩阵], [100], 3600,
             [],
             GetTechPos(0, 4)
@@ -314,7 +317,7 @@ public static class TechManager {
 
         var tech超值礼包5 = ProtoRegistry.RegisterTech(
             TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包",
-            [tech超值礼包4.ID],
+            [TFE超值礼包4],
             [I引力矩阵], [100], 3600,
             [],
             GetTechPos(0, 5)
@@ -327,7 +330,7 @@ public static class TechManager {
 
         var tech超值礼包6 = ProtoRegistry.RegisterTech(
             TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包",
-            [tech超值礼包5.ID],
+            [TFE超值礼包5],
             [I宇宙矩阵], [100], 3600,
             [],
             GetTechPos(0, 6)
@@ -341,12 +344,12 @@ public static class TechManager {
 
         var tech电磁奖券 = ProtoRegistry.RegisterTech(
             TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech分馏奖券",
-            [tech分馏数据中心.ID],
+            [TFE分馏数据中心],
             [I电磁矩阵], [40], 18000,
             [RFE电磁奖券],
             GetTechPos(1, 1)
         );
-        tech电磁奖券.PreTechsImplicit = [T电磁矩阵];
+        tech电磁奖券.PreTechsImplicit = [TFE分馏塔原胚];
         tech电磁奖券.AddItems = [IFE电磁奖券];
         tech电磁奖券.AddItemCounts = [10];
         tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
@@ -354,7 +357,7 @@ public static class TechManager {
 
         var tech能量奖券 = ProtoRegistry.RegisterTech(
             TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech分馏奖券",
-            [tech电磁奖券.ID],
+            [TFE电磁奖券],
             [I能量矩阵], [40], 36000,
             [RFE能量奖券],
             GetTechPos(1, 2)
@@ -367,7 +370,7 @@ public static class TechManager {
 
         var tech结构奖券 = ProtoRegistry.RegisterTech(
             TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech分馏奖券",
-            [tech能量奖券.ID],
+            [TFE能量奖券],
             [I结构矩阵], [40], 54000,
             [RFE结构奖券],
             GetTechPos(1, 3)
@@ -380,7 +383,7 @@ public static class TechManager {
 
         var tech信息奖券 = ProtoRegistry.RegisterTech(
             TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech分馏奖券",
-            [tech结构奖券.ID],
+            [TFE结构奖券],
             [I信息矩阵], [40], 72000,
             [RFE信息奖券],
             GetTechPos(1, 4)
@@ -393,7 +396,7 @@ public static class TechManager {
 
         var tech引力奖券 = ProtoRegistry.RegisterTech(
             TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech分馏奖券",
-            [tech信息奖券.ID],
+            [TFE信息奖券],
             [I引力矩阵], [40], 90000,
             [RFE引力奖券],
             GetTechPos(1, 5)
@@ -406,7 +409,7 @@ public static class TechManager {
 
         var tech宇宙奖券 = ProtoRegistry.RegisterTech(
             TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech分馏奖券",
-            [tech引力奖券.ID],
+            [TFE引力奖券],
             [I宇宙矩阵], [40], 108000,
             [RFE宇宙奖券],
             GetTechPos(1, 6)
@@ -426,20 +429,20 @@ public static class TechManager {
         );
         tech黑雾奖券.IsHiddenTech = true;
         tech黑雾奖券.PreItem = [I黑雾矩阵];
-        tech黑雾奖券.PreTechsImplicit = [TFE分馏数据中心];
+        tech黑雾奖券.PreTechsImplicit = [TFE分馏塔原胚];
         tech黑雾奖券.AddItems = [IFE黑雾奖券];
         tech黑雾奖券.AddItemCounts = [10];
 
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
-            [tech分馏数据中心.ID],
-            [IFE分馏塔原胚普通], [10], 3600,
+            [TFE分馏数据中心],
+            [IFE分馏塔原胚普通], [20], 3600,
             [RFE分馏塔原胚定向],
             GetTechPos(2, 1)
         );
         tech分馏塔原胚.AddItems = [IFE分馏塔原胚定向];
-        tech分馏塔原胚.AddItemCounts = [10];
+        tech分馏塔原胚.AddItemCounts = [20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
 
@@ -483,7 +486,7 @@ public static class TechManager {
             [RFE量子复制塔],
             GetTechPos(2, 5)
         );
-        tech量子复制.PreTechsImplicit = [TFE分馏塔原胚, TFE增产点数聚集];
+        tech量子复制.PreTechsImplicit = [TFE分馏塔原胚];
         tech量子复制.IsHiddenTech = true;
         tech量子复制.PreItem = [I黑雾矩阵];
 
@@ -636,7 +639,8 @@ public static class TechManager {
         if (__instance.ID == TFE分馏数据中心) {
             __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
                        + $"{"解锁全部建筑培养配方".Translate()}\r\n"
-                       + $"{"解锁普通矿物复制配方".Translate()}";
+                       + $"{"解锁普通矿物复制配方".Translate()}\r\n"
+                       + $"{"给予交互塔和普通原胚".Translate()}";
             return false;
         }
         if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
