@@ -14,7 +14,7 @@ public static class StationManager {
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
         // 10帧更新一次，取3作为特殊值
-        if (time % 10L == 3L) {
+        if (time % 10L != 3L) {
             return;
         }
         try {
@@ -35,7 +35,11 @@ public static class StationManager {
                     stations.Add(stationComponent);
                 }
             }
-            stations.Sort((_, _) => (int)(GetRandDouble() * 100));
+            // 使用 Fisher-Yates 洗牌算法进行真正的随机排序
+            for (int i = stations.Count - 1; i > 0; i--) {
+                int j = GetRandInt(0, i + 1);
+                (stations[i], stations[j]) = (stations[j], stations[i]);
+            }
             // 循环所有的交互站
             foreach (StationComponent stationComponent in stations) {
                 // 循环交互站的所有的栏位
