@@ -12,6 +12,8 @@
     + 移除一部分转化配方。
     + 修复交互塔上传的物品不带增产点数的问题。
     + 添加使用当前奖券的一半抽奖的功能。
+    + 限时商店刷新时，自动兑换所有价值为0的物品/配方。
+    + 量子复制精华消耗减少从仅在金色配方减少改为均匀分散到整个升级中。
     + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
     + Optimise the processing logic when a storage slot is locked at a interaction station.
     + When configuring slot allocations for logistics hubs, the default settings are: local storage, interstellar
@@ -28,6 +30,9 @@
     + Removed some conversion recipes.
     + Fix an issue where items uploaded from the interaction tower did not carry proliferator points.
     + Add the ability to draw a prize using half of the current raffle ticket.
+    + When the Limited-Time Shop refreshes, it will automatically exchange all items/recipes with a value of 0.
+    + The reduction in essence consumption for quantum replication has been adjusted from being exclusively applied to
+      golden recipes to being evenly distributed throughout the entire upgrade process.
 
 - v2.1.6
     + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
