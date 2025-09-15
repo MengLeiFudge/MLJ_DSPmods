@@ -18,20 +18,24 @@ public static class BuildingOperate {
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
     private static readonly int[] BuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔
+        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔, IFE行星内物流交互站
     ];
     private static readonly string[] BuildingTypeNames = [
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(),
-        "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate()
+        "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate(),
+        "物流交互站".Translate()
     ];
     private static Text txtChipCount;
 
     private static Text txtBuildingInfo1;
+    private static UIButton btnTip1;
     private static UIButton btnBuildingInfo1;
     private static Text txtBuildingInfo2;
+    private static UIButton btnTip2;
     private static UIButton btnBuildingInfo2;
     private static Text txtBuildingInfo3;
     private static UIButton btnBuildingInfo3;
+    private static UIButton btnTip3;
     private static Text txtBuildingInfo4;
     private static UIButton btnTip4;
     private static UIButton btnBuildingInfo4;
@@ -57,6 +61,8 @@ public static class BuildingOperate {
         Register("启用", "Enable");
         Register("启用流动输出集装", "to enable flow output integration");
 
+        Register("输出集装：", "output integration: ");
+        Register("输出集装", "output integration");
         Register("产物输出集装：", "Product output integration: ");
         Register("产物输出集装", "Product output integration");
         Register("产物输出集装说明",
@@ -128,17 +134,17 @@ public static class BuildingOperate {
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         y += 36f;
         txtBuildingInfo1 = wnd.AddText2(x, y, tab, "动态刷新");
-        wnd.AddTipsButton2(x + 250, y, tab, "流动输出集装", "流动输出集装说明");
+        btnTip1 = wnd.AddTipsButton2(x + 250, y, tab, "流动输出集装", "流动输出集装说明");
         btnBuildingInfo1 = wnd.AddButton(1, 2, y, tab, "启用",
             onClick: SetFluidOutputStack);
         y += 36f;
         txtBuildingInfo2 = wnd.AddText2(x, y, tab, "动态刷新");
-        wnd.AddTipsButton2(x + 250, y, tab, "产物输出集装", "产物输出集装说明");
+        btnTip2 = wnd.AddTipsButton2(x + 250, y, tab, "产物输出集装", "产物输出集装说明");
         btnBuildingInfo2 = wnd.AddButton(1, 2, y, tab, "+1 集装数目",
             onClick: AddMaxProductOutputStack);
         y += 36f;
         txtBuildingInfo3 = wnd.AddText2(x, y, tab, "动态刷新");
-        wnd.AddTipsButton2(x + 250, y, tab, "分馏永动", "分馏永动说明");
+        btnTip3 = wnd.AddTipsButton2(x + 250, y, tab, "分馏永动", "分馏永动说明");
         btnBuildingInfo3 = wnd.AddButton(1, 2, y, tab, "启用",
             onClick: SetFracForever);
         y += 36f;
@@ -178,25 +184,41 @@ public static class BuildingOperate {
 
         bool reinforcementPreCondition = true;
 
-        reinforcementPreCondition &= SelectedBuilding.EnableFluidOutputStack();
-        txtBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
-            ? "已启用流动输出集装".Translate().WithColor(Orange)
-            : "未启用流动输出集装".Translate().WithColor(Red);
-        //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
-        btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidOutputStack());
+        if (SelectedBuilding.ID != IFE行星内物流交互站) {
+            reinforcementPreCondition &= SelectedBuilding.EnableFluidOutputStack();
+            txtBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
+                ? "已启用流动输出集装".Translate().WithColor(Orange)
+                : "未启用流动输出集装".Translate().WithColor(Red);
+            //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
+            btnTip1.gameObject.SetActive(true);
+            btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidOutputStack());
+        } else {
+            txtBuildingInfo1.text = "";
+            btnTip1.gameObject.SetActive(false);
+            btnBuildingInfo1.gameObject.SetActive(false);
+        }
 
-        string s = $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}";
+        string s = SelectedBuilding.ID != IFE行星内物流交互站
+            ? $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}"
+            : $"{"输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}";
         reinforcementPreCondition &= SelectedBuilding.MaxProductOutputStack() >= 4;
         txtBuildingInfo2.text = SelectedBuilding.MaxProductOutputStack() >= 4
             ? s.WithColor(Orange)
             : s.WithQualityColor(SelectedBuilding.MaxProductOutputStack());
         btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
-
-        reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
-        txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
-            ? "已启用分馏永动".Translate().WithColor(Orange)
-            : "未启用分馏永动".Translate().WithColor(Red);
-        btnBuildingInfo3.gameObject.SetActive(!SelectedBuilding.EnableFracForever());
+            
+        if (SelectedBuilding.ID != IFE行星内物流交互站) {
+            reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
+            txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
+                ? "已启用分馏永动".Translate().WithColor(Orange)
+                : "未启用分馏永动".Translate().WithColor(Red);
+            btnTip3.gameObject.SetActive(false);
+            btnBuildingInfo3.gameObject.SetActive(!SelectedBuilding.EnableFracForever());
+        } else {
+            txtBuildingInfo3.text = "";
+            btnTip3.gameObject.SetActive(false);
+            btnBuildingInfo3.gameObject.SetActive(false);
+        }
 
         if (SelectedBuilding.ID == IFE点数聚集塔) {
             s = $"{"点数聚集效率层次：".Translate()}{PointAggregateTower.Level}";
@@ -225,14 +247,26 @@ public static class BuildingOperate {
                 reinforcementBtn[3].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
             }
 
-            string[] strs = [
-                "当前强化加成：".Translate(),
-                $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-                $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
-                $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
-                $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
-                $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
-            ];
+            string[] strs;
+            if (SelectedBuilding.ID != IFE行星内物流交互站) {
+                strs = [
+                    "当前强化加成：".Translate(),
+                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                    $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                    $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
+                    $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
+                    $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}"
+                ];
+            } else {
+                strs = [
+                    "当前强化加成：".Translate(),
+                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                    $"{"电力消耗".Translate()} -{1-SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                    "",
+                    "",
+                    ""
+                ];
+            }
             for (int i = 0; i < txtReinforcementBonus.Length; i++) {
                 txtReinforcementBonus[i].text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
                     ? strs[i].WithColor(Orange)
