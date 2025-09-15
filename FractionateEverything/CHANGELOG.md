@@ -1,7 +1,9 @@
 - v2.1.7
     + 星环启用时，为蓄电器、蓄电器mk2的空、满状态添加价值。
     + 优化物流交互站的仓储槽位锁定时的处理逻辑。
+    + 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
     + 调整超值礼包科技的奖励，给予更多的核心、芯片。
+    + 下调量子复制科技需要的哈希值，可以更快研究。
     + 调整科技的依赖关系，确保科技按照正确的顺序解锁。
     + 配方图鉴添加“完全升级”的数目显示。
     + 分解配方得到的沙土将以实体形式输出，以适配某些需要沙土物品的mod。
@@ -12,7 +14,10 @@
     + 添加使用当前奖券的一半抽奖的功能。
     + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
     + Optimise the processing logic when a storage slot is locked at a interaction station.
+    + When configuring slot allocations for logistics hubs, the default settings are: local storage, interstellar
+      storage, with a maximum capacity of 100.
     + Adjust the rewards of Super Value Gift Pack tech to give more cores and chips.
+    + Lowering the hash value required for quantum cloning technology can accelerate research.
     + Adjust technology dependencies to ensure technologies unlock in the correct sequence.
     + Added 'Fully Upgraded' count display to recipes gallery.
     + The sandy soil obtained from deconstruction recipes will be exported in solid form to fit certain mods that
