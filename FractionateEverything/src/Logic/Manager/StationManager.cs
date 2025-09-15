@@ -48,17 +48,15 @@ public static class StationManager {
                     ref StationStore store = ref stationComponent.storage[i];
                     // TODO 根据转移的物品数量，消耗电量
                     switch (store.localLogic) {
-                        case ELogisticStorage.Supply: {
+                        case ELogisticStorage.Supply:
                             // 供应 = 从数据中心下载到塔里，然后提供出去
                             store.SetTargetCount(store.max);
                             break;
-                        }
-                        case ELogisticStorage.Demand: {
+                        case ELogisticStorage.Demand:
                             // 需求 = 需求物品到塔里，然后上传数据中心
                             store.SetTargetCount(0);
                             break;
-                        }
-                        case ELogisticStorage.None: {
+                        case ELogisticStorage.None:
                             // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
                                 int totalCount = (int)Math.Min(int.MaxValue,
@@ -71,7 +69,6 @@ public static class StationManager {
                                 store.SetTargetCount(store.max / 2);
                             }
                             break;
-                        }
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -107,7 +104,7 @@ public static class StationManager {
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.RefreshValues))]
-    public static void UIStationStorage__RefreshValues_Postfix(UIStationStorage __instance) {
+    public static void UIStationStorage_RefreshValues_Postfix(UIStationStorage __instance) {
         // 如果是沙盒，不用处理，会自动启用按钮
         if (GameMain.sandboxToolsEnabled) {
             return;
@@ -140,7 +137,7 @@ public static class StationManager {
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
-    public static bool UIStationStorage__OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
+    public static bool UIStationStorage_OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
         // 沙盒使用默认逻辑
         if (GameMain.sandboxToolsEnabled) {
             return true;
@@ -154,5 +151,44 @@ public static class StationManager {
         __instance.station.storage[__instance.index].keepMode =
             __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
         return false;
+    }
+
+    /// <summary>
+    /// 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.SetStationStorage))]
+    public static bool PlanetTransport_SetStationStorage_Prefix(PlanetTransport __instance,
+        int stationId, int storageIdx, int itemId, out int __state) {
+        __state = itemId;
+        StationComponent stationComponent = __instance.GetStationComponent(stationId);
+        if (stationComponent != null) {
+            int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
+            if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
+                __state = stationComponent.storage[storageIdx].itemId;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.SetStationStorage))]
+    public static void PlanetTransport_SetStationStorage_Postfix(PlanetTransport __instance,
+        int stationId, int storageIdx, int itemId, int __state) {
+        if (itemId == __state || itemId <= 0) {
+            return;
+        }
+        StationComponent stationComponent = __instance.GetStationComponent(stationId);
+        if (stationComponent != null) {
+            int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
+            if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
+                stationComponent.storage[storageIdx].max = 100;
+                stationComponent.storage[storageIdx].localLogic = ELogisticStorage.None;
+                stationComponent.storage[storageIdx].remoteLogic = ELogisticStorage.None;
+            }
+        }
     }
 }
