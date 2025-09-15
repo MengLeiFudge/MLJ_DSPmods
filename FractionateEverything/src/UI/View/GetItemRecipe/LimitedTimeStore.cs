@@ -330,7 +330,6 @@ public static class LimitedTimeStore {
                 exchangeList.Add(recipeNotMaxEchoExchangeList[GetRandInt(0, recipeNotMaxEchoExchangeList.Count)]);
             }
         }
-
         //从随机兑换信息列表中挑选exchangeInfoMaxCount个，组成新的兑换信息列表
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             if (exchangeList.Count == 0) {
@@ -342,6 +341,12 @@ public static class LimitedTimeStore {
             //前vipFreeCount个交换信息改为免费
             if (i < VipFeatures.vipFreeCount) {
                 exchangeInfos[i].matrixCount = 0;
+            }
+        }
+        //自动兑换所有价值为0的物品/配方
+        for (int i = 0; i < exchangeInfos.Length; i++) {
+            if (exchangeInfos[i].matrixCount == 0) {
+                Exchange(i, false);
             }
         }
     }
