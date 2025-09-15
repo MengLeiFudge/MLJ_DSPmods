@@ -66,9 +66,9 @@ public class QuantumCopyRecipe : BaseRecipe {
     public float EssenceCost { get; }
 
     /// <summary>
-    /// 精华消耗削弱
+    /// 精华消耗受进度影响而减少的比例（0%->50%）
     /// </summary>
-    public float EssenceDec => IsMaxQuality ? 0.05f * Level : 0;
+    public float EssenceDec => (Progress - 0.56f) / 0.88f;
 
     /// <summary>
     /// 获取某次输出的执行结果。
