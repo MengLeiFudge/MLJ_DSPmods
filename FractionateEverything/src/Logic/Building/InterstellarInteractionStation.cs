@@ -61,7 +61,8 @@ public static class InterstellarInteractionStation {
 
     public static void UpdateHpAndEnergy() {
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
-        model.HpMax = stationModel.HpMax;
+        // 强化与小塔共用1个
+        model.HpMax = (int)(stationModel.HpMax * PlanetaryInteractionStation.propertyRatio * (1 + PlanetaryInteractionStation.ReinforcementBonusDurability));
         model.prefabDesc.workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         model.prefabDesc.idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
