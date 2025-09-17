@@ -2,21 +2,40 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using HarmonyLib;
-using UnityEngine;
-using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 
 public static class StationManager {
+    private static int updateTick = 30;
+    private static readonly int[] itemModSaveCount = new int[12000];
+    private static int maxUploadCount;
+    private static int maxDownloadCount;
+
+    public static void CalculateItemModSaveCount() {
+        foreach (var item in LDB.items.dataArray) {
+            if (item.BuildMode != 0) {
+                //建筑10组
+                itemModSaveCount[item.ID] = item.StackSize * 10;
+            } else {
+                //其他至多100组
+                itemModSaveCount[item.ID] = (int)Math.Min(100000 / itemValue[item.ID] + 1, item.StackSize * 100);
+            }
+        }
+        //上传速率至多12满带4堆叠
+        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 12;
+        //下载速率至多3满带4堆叠
+        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 3;
+    }
+
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
-        // 10帧更新一次，取3作为特殊值
-        if (time % 10L != 3L) {
+        // 30帧更新一次，取3作为特殊值
+        if (time % updateTick != 3L) {
             return;
         }
         try {
@@ -48,27 +67,43 @@ public static class StationManager {
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
                     // StationStore为struct，必须使用引用修改内容
                     ref StationStore store = ref stationComponent.storage[i];
+                    if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
+                        continue;
+                    }
                     // TODO 根据转移的物品数量，消耗电量
                     switch (store.localLogic) {
                         case ELogisticStorage.Supply:
-                            // 供应 = 从数据中心下载到塔里，然后提供出去
-                            store.SetTargetCount(stationComponent, store.max);
+                            // 供应：自身 -> 其他塔/Mod背包
+                            if (store.count > store.max * 0.9 && store.totalSupplyCount > store.max * 0.1) {
+                                int modTargetCount = itemModSaveCount[store.itemId];
+                                long modCurrCount = GetModDataItemCount(store.itemId);
+                                if (modCurrCount < modTargetCount) {
+                                    int transferCount = Math.Min(store.count - (int)(store.max * 0.9),
+                                        modTargetCount - (int)modCurrCount);
+                                    store.SetTargetCount(store.count - transferCount);
+                                }
+                            }
                             break;
                         case ELogisticStorage.Demand:
-                            // 需求 = 需求物品到塔里，然后上传数据中心
-                            store.SetTargetCount(stationComponent, 0);
+                            // 需求：其他塔/Mod背包 -> 自身
+                            if (store.totalSupplyCount < store.max * 0.1) {
+                                store.SetTargetCount(Math.Max(store.count,
+                                    (int)(store.max * 0.1 - store.totalOrdered)));
+                            }
                             break;
                         case ELogisticStorage.None:
-                            // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
+                            // 仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
+                            // 仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
                                 int totalCount = (int)Math.Min(int.MaxValue,
                                     store.count + GetModDataItemCount(store.itemId));
                                 // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
                                 int avgCount = totalCount / 2;
                                 // +100以超过设定上限，从而能优先消耗数据中心的物品
-                                store.SetTargetCount(stationComponent, Math.Min(store.max + 100, avgCount));
+                                // store.SetTargetCount(Math.Min(store.max + 100, avgCount));
+                                store.SetTargetCount(Math.Min(store.max, avgCount));
                             } else {
-                                store.SetTargetCount(stationComponent, store.max / 2);
+                                store.SetTargetCount(store.max / 2);
                             }
                             break;
                         default:
@@ -82,44 +117,22 @@ public static class StationManager {
         }
     }
 
-    private static void SetTargetCount(this ref StationStore store, StationComponent stationComponent, int targetCount) {
+    private static void SetTargetCount(this ref StationStore store, int targetCount) {
         // todo: 考虑patch选择物品的界面，不让选择无价物品？
-        if (store.count == targetCount || itemValue[store.itemId] >= maxValue) {
+        if (store.count == targetCount) {
             return;
         }
-
-        ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
-        // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
-        float cost = itemValue[store.itemId] * 10000 * itemProto.ReinforcementBonusEnergy();
         if (store.count < targetCount) {
             // 将数据中心的物品下载到交互站
-            int count = targetCount - store.count;
-            // 总耗电大于剩余电量，修改数量
-            if (cost * count > stationComponent.energy) {
-                // 1个都玩不起直接放弃
-                if (cost > stationComponent.energy) {
-                    return;
-                }
-                count = Mathf.FloorToInt(stationComponent.energy / cost);
-            }
+            int count = Math.Min(maxDownloadCount, targetCount - store.count);
             count = TakeItemFromModData(store.itemId, count, out int inc);
             store.count += count;
             store.inc += inc;
-            stationComponent.energy -= Mathf.CeilToInt(cost * count);
         } else {
             // 将交互站的物品上传到数据中心
-            int count = store.count - targetCount;
-            // 总耗电大于剩余电量，修改数量
-            if (cost * count > stationComponent.energy) {
-                // 1个都玩不起直接放弃
-                if (cost > stationComponent.energy) {
-                    return;
-                }
-                count = Mathf.FloorToInt(stationComponent.energy / cost);
-            }
+            int count = Math.Min(maxUploadCount, store.count - targetCount);
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
             AddItemToModData(store.itemId, count, inc);
-            stationComponent.energy -= Mathf.CeilToInt(cost * count);
         }
     }
 
@@ -175,330 +188,5 @@ public static class StationManager {
         __instance.station.storage[__instance.index].keepMode =
             __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
         return false;
-    }
-
-    /// <summary>
-    /// 修改物流交互站的面板
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.OnStationIdChange))]
-    public static void UIStationWindow_OnStationIdChange_Postfix(UIStationWindow __instance) {
-        __instance.event_lock = true;
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            __instance.event_lock = false;
-            return;
-        }
-        // 修改集装输出的描述
-        Component label = __instance.techPilerButton.transform.Find("label");
-        Text text = label.GetComponent<Text>();
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = "  使用科技上限";
-            __instance.event_lock = false;
-            return;
-        }
-        text.text = "  使用强化上限";
-        // 修改集装输出的可选上限
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
-        int pilerCount = station.pilerCount;
-        if (pilerCount == 0) {
-            // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
-        } else {
-            // 手动，设置为当前值
-            __instance.minPilerSlider.value = pilerCount;
-            __instance.minPilerValue.text = pilerCount.ToString();
-        }
-        if (maxProductOutputStack > 1) {
-            // 堆叠上限大于1，显示修改滑条
-            __instance.minPilerGroup.gameObject.SetActive(true);
-            __instance.pilerTechGroup.gameObject.SetActive(true);
-        }
-        __instance.event_lock = false;
-    }
-
-    /// <summary>
-    /// 修改物流交互站的面板的高度
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.RefreshTrans))]
-    public static void UIStationWindow_RefreshTrans_Postfix(UIStationWindow __instance, StationComponent station) {
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        if (maxProductOutputStack <= 1) {
-            // 没解锁堆叠，不调整
-            return;
-        }
-        if (station.isStellar) {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float) (360 + 76 * station.storage.Length + 36));
-            __instance.panelDownTrans.anchoredPosition = new Vector2(__instance.panelDownTrans.anchoredPosition.x, 186f);
-        } else {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float) (300 + 76 * station.storage.Length + 36));
-            __instance.panelDownTrans.anchoredPosition = new Vector2(__instance.panelDownTrans.anchoredPosition.x, 126f);
-        }
-    }
-
-
-    /// <summary>
-    /// 修改物流交互站的面板（新加的I面板）
-    /// 内容同上面那个一摸一样，唯一的不同是参数类型，怎么合并一下
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.OnStationIdChange))]
-    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.RefreshTabPanelUI))]
-    public static void UIControlPanelStationInspector_OnStationIdChange_Postfix(UIControlPanelStationInspector __instance) {
-        __instance.event_lock = true;
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            __instance.event_lock = false;
-            return;
-        }
-        // 修改集装输出的描述
-        Component label = __instance.techPilerButton.transform.Find("label");
-        Text text = label.GetComponent<Text>();
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = "  使用科技上限";
-            __instance.event_lock = false;
-            return;
-        }
-        text.text = "  使用强化上限";
-        // 修改集装输出的可选上限
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
-        int pilerCount = station.pilerCount;
-        if (pilerCount == 0) {
-            // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
-        } else {
-            // 手动，设置为当前值
-            __instance.minPilerSlider.value = pilerCount;
-            __instance.minPilerValue.text = pilerCount.ToString();
-        }
-        if (maxProductOutputStack > 1) {
-            // 堆叠上限大于1，显示修改滑条
-            __instance.minPilerGroup.gameObject.SetActive(true);
-            __instance.pilerTechGroup.gameObject.SetActive(true);
-        }
-        __instance.event_lock = false;
-    }
-
-    /// <summary>
-    /// 修改物流交互站的集装数
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.OnMinPilerValueChange))]
-    public static bool UIStationWindow_OnMinPilerValueChange_Prefix(UIStationWindow __instance, float value) {
-        if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
-            return false;
-        }
-        
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            return false;
-        }
-        
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
-        }
-        // 不是自动
-        if (!__instance.techPilerCheck.enabled) {
-            ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
-            int newVal = Mathf.RoundToInt(value);
-            // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
-            }
-            __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
-            __instance.minPilerValue.text = newVal.ToString();
-        }
-        __instance.OnStationIdChange();
-        return false;
-    }
-    
-    /// <summary>
-    /// 修改物流交互站的集装数
-    /// 内容同上面那个一摸一样，唯一的不同是参数类型，怎么合并一下
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.OnMinPilerValueChange))]
-    public static bool UIControlPanelStationInspector_OnMinPilerValueChange_Prefix(UIControlPanelStationInspector __instance, float value) {
-        if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
-            return false;
-        }
-        
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            return false;
-        }
-        
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
-        }
-        // 不是自动
-        if (!__instance.techPilerCheck.enabled) {
-            ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
-            int newVal = Mathf.RoundToInt(value);
-            // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
-            }
-            __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
-            __instance.minPilerValue.text = newVal.ToString();
-        }
-        __instance.OnStationIdChange();
-        return false;
-    }
-
-    /// <summary>
-    /// 修改物流交互站的集装使用强化上限
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.OnTechPilerClick))]
-    public static bool UIStationWindow_OnTechPilerClick_Prefix(UIStationWindow __instance) {
-        if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
-            return false;
-        }
-        
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            return false;
-        }
-        
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
-        }
-        
-        __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        
-        __instance.transport.stationPool[__instance.stationId].pilerCount = 
-            __instance.techPilerCheck.enabled
-                ? 0
-                : maxProductOutputStack;
-        
-        __instance.OnStationIdChange();
-        return false;
-    }
-
-    /// <summary>
-    /// 修改物流交互站的集装使用强化上限
-    /// 内容同上面那个一摸一样，唯一的不同是参数类型，怎么合并一下
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.OnTechPilerClick))]
-    public static bool UIControlPanelStationInspector_OnTechPilerClick_Prefix(UIControlPanelStationInspector __instance) {
-        if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
-            return false;
-        }
-        
-        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
-        if (station == null || station.id != __instance.stationId) {
-            return false;
-        }
-        
-        // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
-        }
-        
-        __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        
-        __instance.transport.stationPool[__instance.stationId].pilerCount = 
-            __instance.techPilerCheck.enabled
-                ? 0
-                : maxProductOutputStack;
-        
-        __instance.OnStationIdChange();
-        return false;
-    }
-
-    /// <summary>
-    /// 非常不礼貌的覆盖了原方法，用来给物流交互站集装输出使用强化上限
-    /// 建议直接手写IL 或 想办法在 UpdateOutputSlots 方法里拿到物流交互站的物品ID
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick_OutputToBelt))]
-    public static bool PlanetTransport_GameTick_OutputToBelt_Prefix(PlanetTransport __instance, int maxPilerCount, long time) {
-        CargoTraffic cargoTraffic = __instance.factory.cargoTraffic;
-        SignData[] entitySignPool = __instance.factory.entitySignPool;
-        bool active = (time + (long) __instance.factory.index) % 30L == 0L || __instance.planet == __instance.gameData.localPlanet;
-        for (int index = 1; index < __instance.stationCursor; ++index) {
-            if (__instance.stationPool[index] == null || __instance.stationPool[index].id != index) {
-                continue;
-            }
-            int buildingID = __instance.factory.entityPool[__instance.stationPool[index].entityId].protoId;
-            // ↓ 改动 ↓
-            if (buildingID is not (IFE行星内物流交互站 or IFE星际物流交互站)) {
-                __instance.stationPool[index].UpdateOutputSlots(cargoTraffic, entitySignPool, maxPilerCount, active);
-            } else {
-                ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-                int maxProductOutputStack = building.MaxProductOutputStack();
-                __instance.stationPool[index].UpdateOutputSlots(cargoTraffic, entitySignPool, maxProductOutputStack, active);
-            }
-            // ↑ 改动 ↑
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.SetStationStorage))]
-    public static void PlanetTransport_SetStationStorage_Prefix(
-        PlanetTransport __instance,
-        int stationId, 
-        int storageIdx, 
-        int itemId, 
-        ref int itemCountMax,
-        ref ELogisticStorage localLogic, 
-        ref ELogisticStorage remoteLogic) {
-        
-        StationComponent stationComponent = __instance.GetStationComponent(stationId);
-        if (stationComponent == null) {
-            return;
-        }
-
-        int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return;
-        }
-
-        int oldId = stationComponent.storage[storageIdx].itemId;
-        if (itemId == oldId || itemId <= 0) {
-            // 物品未改变，或者清除栏位
-            return;
-        }
-        
-        itemCountMax = 100;
-        localLogic = ELogisticStorage.None;
-        remoteLogic = ELogisticStorage.None;
     }
 }
