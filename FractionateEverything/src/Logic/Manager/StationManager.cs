@@ -8,13 +8,34 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class StationManager {
+    private static int updateTick = 30;
+    private static readonly int[] itemModSaveCount = new int[12000];
+    private static int maxUploadCount;
+    private static int maxDownloadCount;
+
+    public static void CalculateItemModSaveCount() {
+        foreach (var item in LDB.items.dataArray) {
+            if (item.BuildMode != 0) {
+                //建筑10组
+                itemModSaveCount[item.ID] = item.StackSize * 10;
+            } else {
+                //其他至多100组
+                itemModSaveCount[item.ID] = (int)Math.Min(100000 / itemValue[item.ID] + 1, item.StackSize * 100);
+            }
+        }
+        //上传速率至多12满带4堆叠
+        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 12;
+        //下载速率至多3满带4堆叠
+        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 3;
+    }
+
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
-        // 10帧更新一次，取3作为特殊值
-        if (time % 10L != 3L) {
+        // 30帧更新一次，取3作为特殊值
+        if (time % updateTick != 3L) {
             return;
         }
         try {
@@ -46,25 +67,41 @@ public static class StationManager {
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
                     // StationStore为struct，必须使用引用修改内容
                     ref StationStore store = ref stationComponent.storage[i];
+                    if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
+                        continue;
+                    }
                     // TODO 根据转移的物品数量，消耗电量
                     switch (store.localLogic) {
                         case ELogisticStorage.Supply:
-                            // 供应 = 从数据中心下载到塔里，然后提供出去
-                            store.SetTargetCount(store.max);
+                            // 供应：自身 -> 其他塔/Mod背包
+                            if (store.count > store.max * 0.9 && store.totalSupplyCount > store.max * 0.1) {
+                                int modTargetCount = itemModSaveCount[store.itemId];
+                                long modCurrCount = GetModDataItemCount(store.itemId);
+                                if (modCurrCount < modTargetCount) {
+                                    int transferCount = Math.Min(store.count - (int)(store.max * 0.9),
+                                        modTargetCount - (int)modCurrCount);
+                                    store.SetTargetCount(store.count - transferCount);
+                                }
+                            }
                             break;
                         case ELogisticStorage.Demand:
-                            // 需求 = 需求物品到塔里，然后上传数据中心
-                            store.SetTargetCount(0);
+                            // 需求：其他塔/Mod背包 -> 自身
+                            if (store.totalSupplyCount < store.max * 0.1) {
+                                store.SetTargetCount(Math.Max(store.count,
+                                    (int)(store.max * 0.1 - store.totalOrdered)));
+                            }
                             break;
                         case ELogisticStorage.None:
-                            // 仓储 = 维持数目为上限的一半；如果锁定，则维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
+                            // 仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
+                            // 仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
                                 int totalCount = (int)Math.Min(int.MaxValue,
                                     store.count + GetModDataItemCount(store.itemId));
                                 // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
                                 int avgCount = totalCount / 2;
                                 // +100以超过设定上限，从而能优先消耗数据中心的物品
-                                store.SetTargetCount(Math.Min(store.max + 100, avgCount));
+                                // store.SetTargetCount(Math.Min(store.max + 100, avgCount));
+                                store.SetTargetCount(Math.Min(store.max, avgCount));
                             } else {
                                 store.SetTargetCount(store.max / 2);
                             }
@@ -82,18 +119,18 @@ public static class StationManager {
 
     private static void SetTargetCount(this ref StationStore store, int targetCount) {
         // todo: 考虑patch选择物品的界面，不让选择无价物品？
-        if (store.count == targetCount || itemValue[store.itemId] >= maxValue) {
+        if (store.count == targetCount) {
             return;
         }
         if (store.count < targetCount) {
             // 将数据中心的物品下载到交互站
-            int count = targetCount - store.count;
+            int count = Math.Min(maxDownloadCount, targetCount - store.count);
             count = TakeItemFromModData(store.itemId, count, out int inc);
             store.count += count;
             store.inc += inc;
         } else {
             // 将交互站的物品上传到数据中心
-            int count = store.count - targetCount;
+            int count = Math.Min(maxUploadCount, store.count - targetCount);
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
             AddItemToModData(store.itemId, count, inc);
         }
@@ -151,44 +188,5 @@ public static class StationManager {
         __instance.station.storage[__instance.index].keepMode =
             __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
         return false;
-    }
-
-    /// <summary>
-    /// 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.SetStationStorage))]
-    public static bool PlanetTransport_SetStationStorage_Prefix(PlanetTransport __instance,
-        int stationId, int storageIdx, int itemId, out int __state) {
-        __state = itemId;
-        StationComponent stationComponent = __instance.GetStationComponent(stationId);
-        if (stationComponent != null) {
-            int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
-            if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
-                __state = stationComponent.storage[storageIdx].itemId;
-            }
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// 物流交互站设置槽位时，默认为本地仓储、星际仓储、上限100。
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.SetStationStorage))]
-    public static void PlanetTransport_SetStationStorage_Postfix(PlanetTransport __instance,
-        int stationId, int storageIdx, int itemId, int __state) {
-        if (itemId == __state || itemId <= 0) {
-            return;
-        }
-        StationComponent stationComponent = __instance.GetStationComponent(stationId);
-        if (stationComponent != null) {
-            int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
-            if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
-                stationComponent.storage[storageIdx].max = 100;
-                stationComponent.storage[storageIdx].localLogic = ELogisticStorage.None;
-                stationComponent.storage[storageIdx].remoteLogic = ELogisticStorage.None;
-            }
-        }
     }
 }
