@@ -6,6 +6,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -41,18 +42,17 @@ public static class TicketRaffle {
     /// 下一抽是第几抽。
     /// </summary>
     private static readonly int[] RecipeRaffleCounts = new int[7];
-    private static readonly int[] RecipeRaffleMaxCounts = [25, 40, 55, 70, 85, 100, 100];
+    private static readonly float[] RecipeRaffleMaxCounts = [32.768f, 40.96f, 51.2f, 64, 80, 100, 100];
     /// <summary>
     /// 计算某次抽奖的配方获取概率。
-    /// 最后20%次数（也就是蓝糖从20开始，白糖从80开始）概率上升，直至RecipeRaffleMaxCount是达到100%。
+    /// 当前抽奖次数未超过RecipeRaffleMaxCount*0.8时，概率恒定为对应基础概率；
+    /// 超过RecipeRaffleMaxCount*0.8时，每次抽奖都会增加概率，直至达到RecipeRaffleMaxCount次时，概率为100%。
     /// </summary>
     private static double RecipeRaffleRate {
         get {
-            //baseRate: 2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%
             float baseRate = 0.6f / RecipeRaffleMaxCounts[TicketTypeEntry1.Value];
-            int countP20 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] / 5;
-            //countP80: 20, 32, 44, 56, 68, 80, 80
-            int countP80 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] - countP20;
+            float countP20 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] / 5.0f;
+            float countP80 = RecipeRaffleMaxCounts[TicketTypeEntry1.Value] - countP20;
             float plusRate = (1.0f - baseRate) / countP20;
             return baseRate + Math.Max(0, RecipeRaffleCounts[TicketTypeEntry1.Value] - countP80) * plusRate;
         }
@@ -210,11 +210,8 @@ public static class TicketRaffle {
 
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
-            EnableAutoRaffleEntry1.Value = false;
-            EnableAutoRaffleEntry2.Value = false;
             return;
         }
-        AutoRaffle();
         for (int i = 0; i < TicketIds.Length; i++) {
             txtTicketCount[i].text = $"x {GetItemTotalCount(TicketIds[i])}";
         }
@@ -680,9 +677,15 @@ public static class TicketRaffle {
     private static long lastAutoRaffleTick = 0;
 
     /// <summary>
-    /// 每0.1s左右自动抽取一次百连。
+    /// 每隔一段时间（至少6tick）自动抽取一次百连。
     /// </summary>
-    private static void AutoRaffle() {
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
+    public static void GameMain_FixedUpdate_Postfix(GameMain __instance) {
+        if (!__instance._running || __instance._paused) {
+            return;
+        }
+        //如果奖券类型切换，重置自动抽奖标记
         if (TicketType1 != TicketTypeEntry1.Value) {
             TicketType1 = TicketTypeEntry1.Value;
             EnableAutoRaffleEntry1.Value = false;
@@ -692,10 +695,10 @@ public static class TicketRaffle {
             EnableAutoRaffleEntry2.Value = false;
         }
         //todo: vip可以提速
-        if (GameMain.gameTick - lastAutoRaffleTick < 6) {
+        if (__instance.timei - lastAutoRaffleTick < 6) {
             return;
         }
-        lastAutoRaffleTick = GameMain.gameTick;
+        lastAutoRaffleTick = __instance.timei;
         if (EnableAutoRaffleEntry1.Value) {
             RaffleRecipe(100, 5, false);
         }

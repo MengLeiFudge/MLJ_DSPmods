@@ -201,9 +201,8 @@ public class ConversionRecipe : BaseRecipe {
         }
         //移除空的物品层次
         itemLists.RemoveAll(itemList => itemList.Count == 0);
-        List<int> items = itemLists.SelectMany(itemList => itemList).Distinct().ToList();
-        //如果移除之后物品种类过少，直接返回
-        if (items.Count <= 1) {
+        //如果移除之后没有任何物品层次，或者只有一个层次且层次内只有一个物品，直接返回
+        if (itemLists.Count == 0 || (itemLists.Count == 1 && itemLists[0].Count == 1)) {
             return;
         }
         //每个物品只能转化成低1层次任何物品、同层次其他物品或高1层次任何物品
@@ -211,76 +210,49 @@ public class ConversionRecipe : BaseRecipe {
         for (int i = 0; i < itemLists.Count; i++) {
             for (int j = 0; j < itemLists[i].Count; j++) {
                 int inputID = itemLists[i][j];
-                List<int> itemListDown = i - 1 >= 0 ? itemLists[i - 1] : [];
-                List<int> itemListCommon = itemLists[i];
-                List<int> itemListUp = i + 1 < itemLists.Count - 1 ? itemLists[i + 1] : [];
-                CreateChain(inputID, itemListDown, itemListCommon, itemListUp);
+                //构建候选物品ID、候选物品出现概率列表
+                List<int> itemIDs = [];
+                List<float> itemValuePercents = [];
+                for (int k = i - 1; k <= i + 1; k++) {
+                    if (k < 0 || k >= itemLists.Count) {
+                        continue;
+                    }
+                    for (int l = 0; l < itemLists[k].Count; l++) {
+                        int targetItemID = itemLists[k][l];
+                        //排除自身
+                        if (targetItemID == inputID) {
+                            continue;
+                        }
+                        itemIDs.Add(targetItemID);
+                        float basePercent = itemValue[targetItemID] * LDB.items.Select(targetItemID).StackSize;
+                        if (k == i - 1) {
+                            itemValuePercents.Add(basePercent * 0.8f);
+                        } else if (k == i) {
+                            itemValuePercents.Add(basePercent * 1.0f);
+                        } else {
+                            itemValuePercents.Add(basePercent * 1.25f);
+                        }
+                    }
+                }
+                //构建转化列表
+                float successRate = 1.0f / itemIDs.Count;
+                float totalValuePercent = itemValuePercents.Sum();
+                List<OutputInfo> outputMain = [];
+                for (int k = 0; k < itemIDs.Count; k++) {
+                    int outputID = itemIDs[k];
+                    //计算分配给这个输出的价值
+                    float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
+                    //根据输出物品的价值计算数量
+                    float outputCount = allocatedValue / (successRate * itemValue[outputID]);
+                    outputMain.Add(new(successRate, outputID, outputCount));
+                }
+                AddRecipe(new ConversionRecipe(inputID, 0.05f,
+                    outputMain,
+                    [
+                        new OutputInfo(0.01f, IFE转化精华, 1),
+                    ]));
             }
         }
-    }
-
-    /// <summary>
-    /// 构建一个物品的转化配方链
-    /// </summary>
-    private static void CreateChain(int itemId,
-        List<int> itemListDown, List<int> itemListCommon, List<int> itemListUp) {
-        itemListDown ??= [];
-        itemListCommon ??= [itemId];
-        itemListUp ??= [];
-        if (!itemListCommon.Contains(itemId)) {
-            itemListCommon.Add(itemId);
-        }
-        List<List<int>> itemLists = [itemListDown, itemListCommon, itemListUp];
-        //移除不存在的物品
-        foreach (List<int> itemList in itemLists) {
-            itemList.RemoveAll(itemID => itemValue[itemID] >= maxValue);
-        }
-        List<int> items = itemLists.SelectMany(itemList => itemList).Distinct().ToList();
-        //如果移除之后物品种类过少，直接返回
-        if (!items.Contains(itemId) || items.Count <= 1) {
-            return;
-        }
-        //每个物品只能转化成低1层次任何物品、同层次其他物品或高1层次任何物品
-        //转化时，需要保证物品整体价值不变。也就是说，必须先确定所有物品的概率，再确定数目
-        int inputID = itemId;
-        //构建候选物品ID、候选物品出现概率列表
-        List<int> itemIDs = [];
-        List<float> itemValuePercents = [];
-        for (int k = 0; k < itemLists.Count; k++) {
-            for (int l = 0; l < itemLists[k].Count; l++) {
-                int targetItemID = itemLists[k][l];
-                //排除自身
-                if (targetItemID == inputID) {
-                    continue;
-                }
-                itemIDs.Add(targetItemID);
-                float basePercent = itemValue[targetItemID] * LDB.items.Select(targetItemID).StackSize;
-                if (k == 0) {
-                    itemValuePercents.Add(basePercent * 0.8f);
-                } else if (k == 1) {
-                    itemValuePercents.Add(basePercent * 1.0f);
-                } else {
-                    itemValuePercents.Add(basePercent * 1.25f);
-                }
-            }
-        }
-        //构建转化列表
-        float successRate = 1.0f / itemIDs.Count;
-        float totalValuePercent = itemValuePercents.Sum();
-        List<OutputInfo> outputMain = [];
-        for (int k = 0; k < itemIDs.Count; k++) {
-            int outputID = itemIDs[k];
-            //计算分配给这个输出的价值
-            float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
-            //根据输出物品的价值计算数量
-            float outputCount = allocatedValue / (successRate * itemValue[outputID]);
-            outputMain.Add(new(successRate, outputID, outputCount));
-        }
-        AddRecipe(new ConversionRecipe(inputID, 0.05f,
-            outputMain,
-            [
-                new OutputInfo(0.01f, IFE转化精华, 1),
-            ]));
     }
 
     /// <summary>
