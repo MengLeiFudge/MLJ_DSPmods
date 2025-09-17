@@ -234,6 +234,7 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.MaxProductOutputStack,
             IFE分解塔 => DeconstructionTower.MaxProductOutputStack,
             IFE转化塔 => ConversionTower.MaxProductOutputStack,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.MaxProductOutputStack,
             _ => 1
         };
     }
@@ -260,6 +261,9 @@ public static class BuildingManager {
                 break;
             case IFE转化塔:
                 ConversionTower.MaxProductOutputStack = stack;
+                break;
+            case IFE行星内物流交互站:
+                PlanetaryInteractionStation.MaxProductOutputStack = stack;
                 break;
             default:
                 return;
@@ -350,6 +354,7 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.ReinforcementLevel,
             IFE分解塔 => DeconstructionTower.ReinforcementLevel,
             IFE转化塔 => ConversionTower.ReinforcementLevel,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementLevel,
             _ => 0
         };
     }
@@ -384,6 +389,10 @@ public static class BuildingManager {
                 ConversionTower.ReinforcementLevel = level;
                 ConversionTower.UpdateHpAndEnergy();
                 break;
+            case IFE行星内物流交互站:
+                PlanetaryInteractionStation.ReinforcementLevel = level;
+                PlanetaryInteractionStation.UpdateHpAndEnergy();
+                break;
             default:
                 return;
         }
@@ -398,6 +407,7 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.ReinforcementSuccessRate,
             IFE分解塔 => DeconstructionTower.ReinforcementSuccessRate,
             IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementSuccessRate,
             _ => 0
         };
     }
@@ -411,6 +421,7 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.ReinforcementBonusDurability,
             IFE分解塔 => DeconstructionTower.ReinforcementBonusDurability,
             IFE转化塔 => ConversionTower.ReinforcementBonusDurability,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusDurability,
             _ => 0
         };
     }
@@ -424,6 +435,7 @@ public static class BuildingManager {
             IFE点金塔 => AlchemyTower.ReinforcementBonusEnergy,
             IFE分解塔 => DeconstructionTower.ReinforcementBonusEnergy,
             IFE转化塔 => ConversionTower.ReinforcementBonusEnergy,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusEnergy,
             _ => 0
         };
     }
@@ -488,6 +500,7 @@ public static class BuildingManager {
         AlchemyTower.Import(r);
         DeconstructionTower.Import(r);
         ConversionTower.Import(r);
+        PlanetaryInteractionStation.Import(r);
     }
 
     public static void Export(BinaryWriter w) {
@@ -500,6 +513,7 @@ public static class BuildingManager {
         AlchemyTower.Export(w);
         DeconstructionTower.Export(w);
         ConversionTower.Export(w);
+        PlanetaryInteractionStation.Export(w);
     }
 
     public static void IntoOtherSave() {
@@ -511,6 +525,7 @@ public static class BuildingManager {
         AlchemyTower.IntoOtherSave();
         DeconstructionTower.IntoOtherSave();
         ConversionTower.IntoOtherSave();
+        PlanetaryInteractionStation.IntoOtherSave();
     }
 
     #endregion
