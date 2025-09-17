@@ -6,6 +6,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -209,11 +210,8 @@ public static class TicketRaffle {
 
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
-            EnableAutoRaffleEntry1.Value = false;
-            EnableAutoRaffleEntry2.Value = false;
             return;
         }
-        AutoRaffle();
         for (int i = 0; i < TicketIds.Length; i++) {
             txtTicketCount[i].text = $"x {GetItemTotalCount(TicketIds[i])}";
         }
@@ -679,9 +677,15 @@ public static class TicketRaffle {
     private static long lastAutoRaffleTick = 0;
 
     /// <summary>
-    /// 每0.1s左右自动抽取一次百连。
+    /// 每隔一段时间（至少6tick）自动抽取一次百连。
     /// </summary>
-    private static void AutoRaffle() {
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
+    public static void GameMain_FixedUpdate_Postfix(GameMain __instance) {
+        if (!__instance._running || __instance._paused) {
+            return;
+        }
+        //如果奖券类型切换，重置自动抽奖标记
         if (TicketType1 != TicketTypeEntry1.Value) {
             TicketType1 = TicketTypeEntry1.Value;
             EnableAutoRaffleEntry1.Value = false;
@@ -691,10 +695,10 @@ public static class TicketRaffle {
             EnableAutoRaffleEntry2.Value = false;
         }
         //todo: vip可以提速
-        if (GameMain.gameTick - lastAutoRaffleTick < 6) {
+        if (__instance.timei - lastAutoRaffleTick < 6) {
             return;
         }
-        lastAutoRaffleTick = GameMain.gameTick;
+        lastAutoRaffleTick = __instance.timei;
         if (EnableAutoRaffleEntry1.Value) {
             RaffleRecipe(100, 5, false);
         }
