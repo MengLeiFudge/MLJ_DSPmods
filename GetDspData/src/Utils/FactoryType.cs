@@ -1,4 +1,4 @@
-﻿namespace GetDspData;
+﻿namespace GetDspData.Utils;
 
 public enum FactoryType {
     //异常类型

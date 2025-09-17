@@ -116,7 +116,7 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 兑换不同矩阵层次的配方所需的矩阵数目
     /// </summary>
-    private static readonly int[] matrixRecipeCosts = [250, 400, 550, 700, 850, 1000];
+    private static readonly float[] matrixRecipeCosts = [327.68f, 409.6f, 512, 640, 800, 1000];
 
     private static readonly int[][] itemIdOriArr = [
         [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
@@ -229,14 +229,15 @@ public static class LimitedTimeStore {
         }
         ItemProto matrix = LDB.items.Select(matrixID);
         //获取兑换矩阵对应层次配方需要的矩阵数目
-        int matrixRecipeCost = matrixRecipeCosts[matrixID - I电磁矩阵];
+        float matrixRecipeCost = matrixRecipeCosts[matrixID - I电磁矩阵];
+        int matrixRecipeCostInt = (int)Math.Ceiling(matrixRecipeCost);
         if (manual) {
             //todo: 添加vip影响
             UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCost} {"刷新商店吗？".Translate()}",
+                $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCostInt} {"刷新商店吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
-                    if (!TakeItemWithTip(matrixID, matrixRecipeCost, out _)) {
+                    if (!TakeItemWithTip(matrixID, matrixRecipeCostInt, out _)) {
                         return;
                     }
                     nextFreshTick = gameTick - baseFreshTs + 1;
