@@ -500,11 +500,13 @@ public static class BuildingManager {
         AlchemyTower.Import(r);
         DeconstructionTower.Import(r);
         ConversionTower.Import(r);
-        PlanetaryInteractionStation.Import(r);
+        if (version >= 2) {
+            PlanetaryInteractionStation.Import(r);
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralCopyTower.Export(w);
