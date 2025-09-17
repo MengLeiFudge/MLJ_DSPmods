@@ -206,7 +206,7 @@ public static class BuildingOperate {
             ? s.WithColor(Orange)
             : s.WithQualityColor(SelectedBuilding.MaxProductOutputStack());
         btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
-            
+
         if (SelectedBuilding.ID != IFE行星内物流交互站) {
             reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
             txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
@@ -261,7 +261,7 @@ public static class BuildingOperate {
                 strs = [
                     "当前强化加成：".Translate(),
                     $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-                    $"{"电力消耗".Translate()} -{1-SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                    $"{"电力消耗".Translate()} -{1 - SelectedBuilding.ReinforcementBonusEnergy():P1}",
                     "",
                     "",
                     ""
@@ -316,7 +316,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 1;
+        int takeCount = SelectedBuilding.ID != IFE行星内物流交互站 ? 6 : 1;
         if (SelectedBuilding.MaxProductOutputStack() >= 4) {
             return;
         }
