@@ -599,7 +599,11 @@ public static class ProcessManager {
         num2 = num2 * num1 - MaxBeltSpeed;
         if (num2 < 0.0)
             num2 = 0.0;
-        double powerRatio = buildingID == IFE点数聚集塔 ? 1.0 : Cargo.powerTableRatio[fractionator.incLevel];
+        double powerRatio = buildingID switch {
+            IFE点数聚集塔 => 1.0,
+            IFE量子复制塔 => 1.0 + (Cargo.powerTableRatio[fractionator.incLevel] - 1.0) / 3.9,
+            _ => Cargo.powerTableRatio[fractionator.incLevel]
+        };
         pcPool[fractionator.pcId].workEnergyPerTick = building.workEnergyPerTick();
         pcPool[fractionator.pcId].idleEnergyPerTick = building.idleEnergyPerTick();
         int permillage = (int)((num2 * 50.0 * 30.0 / MaxBeltSpeed + 1000.0) * powerRatio + 0.5);
