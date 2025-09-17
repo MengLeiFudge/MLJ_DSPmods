@@ -10,6 +10,7 @@ using CommonAPI;
 using crecheng.DSPModSave;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using GetDspData.Utils;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,7 +18,7 @@ using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
-using static GetDspData.Utils;
+using static GetDspData.Utils.Utils;
 
 namespace GetDspData;
 //item.UnlockKey
@@ -105,6 +106,13 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     private static void WriteDataToFile() {
+        //如果当前语言索引非中文，直接返回
+        if (Localization.CurrentLanguageLCID != Localization.LCID_ZHCN) {
+            LogWarning("当前语言非中文，不生成数据文件");
+            return;
+        }
+
+        //检测兼容补丁是否已执行完毕
         if (MoreMegaStructureEnable) {
             if (GenesisBookEnable && !Harmony.HasAnyPatches(GBMSHarmonyPatchID)) {
                 LogFatal("未能正常patch");
@@ -163,15 +171,12 @@ public class GetDspData : BaseUnityPlugin {
                 File.Create(filePath).Close();
             }
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                sw.WriteLine("static class Utils");
-                sw.WriteLine("{");
-
                 List<ItemProto> itemList = [..LDB.items.dataArray];
                 itemList.Sort((p1, p2) => p1.ID - p2.ID);
                 List<(string, int)> modelNameIdList = new();
                 foreach (var item in itemList) {
                     int id = item.ID;
-                    string name = FormatName(item.name, item.Name);
+                    string name = item.FName();
                     sw.WriteLine($"    internal const int I{name} = {id};");
                     itemIdNameDic.Add(id, name);
                     int modelID = item.ModelIndex;
@@ -179,26 +184,21 @@ public class GetDspData : BaseUnityPlugin {
                         modelNameIdList.Add((name, modelID));
                     }
                 }
-
                 sw.WriteLine();
 
                 modelNameIdList.Sort((p1, p2) => p1.Item2 - p2.Item2);
                 foreach (var p in modelNameIdList) {
                     sw.WriteLine($"    internal const int M{p.Item1} = {p.Item2};");
                 }
-
                 sw.WriteLine();
 
                 List<RecipeProto> recipeList = [..LDB.recipes.dataArray];
                 recipeList.Sort((p1, p2) => p1.ID - p2.ID);
                 foreach (var recipe in recipeList) {
                     int id = recipe.ID;
-                    string name = FormatName(recipe.name, recipe.Name);
-                    //if (!regex.IsMatch(name)) {
+                    string name = recipe.FName();
                     sw.WriteLine($"    internal const int R{name} = {id};");
-                    //}
                 }
-
                 sw.WriteLine();
 
                 List<TechProto> techList = [..LDB.techs.dataArray];
@@ -206,15 +206,13 @@ public class GetDspData : BaseUnityPlugin {
                 string lastTechName = "";
                 foreach (var tech in techList) {
                     int id = tech.ID;
-                    string name = FormatName(tech.name, tech.Name);
+                    string name = tech.FName();
                     if (name == lastTechName) {
                         continue;
                     }
                     lastTechName = name;
                     sw.WriteLine($"    internal const int T{name} = {id};");
                 }
-
-                sw.Write("}");
             }
 
             #endregion
@@ -231,69 +229,87 @@ public class GetDspData : BaseUnityPlugin {
             }
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
                 sw.WriteLine("物品ID,GridIndex,name,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
-                foreach (var item in LDB.items.dataArray) {
-                    sw.WriteLine(item.ID
-                                 + ","
-                                 + item.GridIndex
-                                 + ","
-                                 + itemIdNameDic[item.ID]
-                                 + ","
-                                 + Enum.GetName(typeof(EItemType), (int)item.Type)
-                                 + ","
-                                 + item.BuildMode
-                                 + ","
-                                 + item.BuildIndex
-                                 + ","
-                                 + (item.maincraft == null ? "null" : item.maincraft.ID)
-                                 + ","
-                                 + item.UnlockKey
-                                 + ","
-                                 + (item.preTech == null ? "null" : item.preTech.ID));
+                //先处理有配方的物品
+                List<ItemProto> itemProtoList1 = [..LDB.items.dataArray];
+                itemProtoList1.RemoveAll(item => !LDB.recipes.dataArray
+                    .Any(recipe => recipe.Items.Contains(item.ID) || recipe.Results.Contains(item.ID)));
+                //再处理无配方的物品
+                List<ItemProto> itemProtoList2 = [..LDB.items.dataArray];
+                itemProtoList2.RemoveAll(item => itemProtoList1.Contains(item));
+                //拼起来，处理
+                List<ItemProto> itemProtoList = itemProtoList1.Concat(itemProtoList2).ToList();
+                foreach (var item in itemProtoList) {
+                    sw.Write($"I{item.ID},");
+                    sw.Write($"{item.GridIndex},");
+                    sw.Write($"{itemIdNameDic[item.ID]},");
+                    sw.Write($"{Enum.GetName(typeof(EItemType), (int)item.Type)},");
+                    sw.Write($"{item.BuildMode},");
+                    sw.Write($"{item.BuildIndex},");
+                    sw.Write($"{(item.maincraft == null ? "null" : ("R" + item.maincraft.ID))},");
+                    sw.Write($"{item.UnlockKey},");
+                    sw.Write($"{(item.preTech == null ? "null" : item.preTech.ID)},");
+                    sw.WriteLine();
                 }
                 sw.WriteLine();
                 sw.WriteLine();
 
                 sw.WriteLine("配方ID,GridIndex,name,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
                 foreach (var recipe in LDB.recipes.dataArray) {
-                    int[] itemIDs = recipe.Items;
-                    int[] itemCounts = recipe.ItemCounts;
-                    int[] resultIDs = recipe.Results;
-                    int[] resultCounts = recipe.ResultCounts;
-                    float timeSpeed = recipe.TimeSpend / 60.0f;
-                    string s = recipe.ID
-                               + ","
-                               + recipe.GridIndex
-                               + ","
-                               + FormatName(recipe.name, recipe.Name)
-                               + ","
-                               + Enum.GetName(typeof(Utils_ERecipeType), (int)recipe.Type)
-                               + ",";
-                    for (int i = 0; i < itemIDs.Length; i++) {
-                        s += itemIdNameDic[itemIDs[i]] + "(" + itemIDs[i] + ")*" + itemCounts[i] + " + ";
+                    sw.Write($"R{recipe.ID},");
+                    sw.Write($"{recipe.GridIndex},");
+                    sw.Write($"{recipe.FName()},");
+                    sw.Write($"{Enum.GetName(typeof(Utils_ERecipeType), (int)recipe.Type)},");
+                    StringBuilder sb = new();
+                    bool first = true;
+                    for (int i = 0; i < recipe.Items.Length; i++) {
+                        if (!first) {
+                            sb.Append(" + ");
+                        }
+                        first = false;
+                        sb.Append($"{itemIdNameDic[recipe.Items[i]]}(I{recipe.Items[i]})*{recipe.ItemCounts[i]}");
                     }
-                    s = s.Substring(0, s.Length - 3) + ",";
-                    for (int i = 0; i < resultIDs.Length; i++) {
-                        s += itemIdNameDic[resultIDs[i]] + "(" + resultIDs[i] + ")*" + resultCounts[i] + " + ";
+                    sw.Write($"{sb},");
+                    sb = new();
+                    first = true;
+                    for (int i = 0; i < recipe.Results.Length; i++) {
+                        if (!first) {
+                            sb.Append(" + ");
+                        }
+                        first = false;
+                        sb.Append($"{itemIdNameDic[recipe.Results[i]]}(I{recipe.Results[i]})*{recipe.ResultCounts[i]}");
                     }
-                    s = s.Substring(0, s.Length - 3) + ",";
-                    s += recipe.TimeSpend
-                         + "("
-                         + timeSpeed.ToString("F1")
-                         + "s)"
-                         + ","
-                         + recipe.Handcraft
-                         + ","
-                         + recipe.productive
-                         + ","
-                         + (recipe.preTech == null ? "null" : recipe.preTech.ID);
-                    sw.WriteLine(s);
+                    sw.Write($"{sb},");
+                    sw.Write($"{recipe.TimeSpend}({(recipe.TimeSpend / 60.0f):F1}s),");
+                    sw.Write($"{recipe.Handcraft},");
+                    sw.Write($"{recipe.productive},");
+                    sw.Write($"{(recipe.preTech == null ? "null" : ("T" + recipe.preTech.ID))},");
+                    sw.WriteLine();
                 }
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("科技ID,name,UnlockRecipes");
+                sw.WriteLine("科技ID,name,PreTechs,PreItem,PreTechsImplicit,UnlockRecipes");
                 foreach (var tech in LDB.techs.dataArray) {
-                    sw.Write(tech.ID + "," + FormatName(tech.name, tech.Name));
+                    sw.Write($"{tech.ID},");
+                    sw.Write($"{tech.FName()},");
+                    if (tech.PreTechs != null && tech.PreTechs.Length > 0) {
+                        StringBuilder sb = new();
+                        bool first = true;
+                        for (int i = 0; i < tech.PreTechs.Length; i++) {
+                            if (!first) {
+                                sb.Append(" + ");
+                            }
+                            first = false;
+                            //sb.Append($"{itemIdNameDic[recipe.Items[i]]}({recipe.Items[i]})*{recipe.ItemCounts[i]}");
+                        }
+                    }
+
+
+                    sw.Write($"{tech.PreTechs},");
+                    sw.Write($"{tech.PreItem},");
+                    sw.Write($"{tech.PreTechsImplicit},");
+
+
                     if (tech.UnlockRecipes != null) {
                         foreach (var recipeID in tech.UnlockRecipes) {
                             RecipeProto recipe = LDB.recipes.Select(recipeID);
@@ -301,9 +317,10 @@ public class GetDspData : BaseUnityPlugin {
                                 LogError($"科技{tech.ID}解锁的配方ID{recipeID}不存在");
                                 continue;
                             }
-                            sw.Write("," + FormatName(recipe.name, recipe.Name));
+                            sw.Write(",配方" + recipe.FName());
                         }
                     }
+                    //if
                     sw.WriteLine();
                 }
                 sw.WriteLine();
@@ -313,7 +330,7 @@ public class GetDspData : BaseUnityPlugin {
                 foreach (var model in LDB.models.dataArray) {
                     sw.WriteLine(model.ID
                                  + ","
-                                 + FormatName(model.name, model.Name)
+                                 + model.FName()
                                  + ","
                                  + model.displayName
                                  + ","
@@ -411,11 +428,12 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 //2.射线接受站，以及巨构的射线重构站
                 if (item.canMiningByRayReceiver()) {
+                    int buildingID = MoreMegaStructureEnable ? IMS射线重构站 : I射线接收站;
                     //不带透镜的公式
                     //此公式比较特殊，有明确速率0.1/s，此处不使用大部分“无中生有”的1/s速率
                     recipes.Insert(firstIdx, new JObject {
                         { "Type", -1 },
-                        { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
+                        { "Factories", new JArray(new[] { buildingID }) },
                         { "Name", $"[无中生有]{item.name}" },
                         { "Items", new JArray(Array.Empty<int>()) },
                         { "ItemCounts", new JArray(Array.Empty<int>()) },
@@ -430,7 +448,7 @@ public class GetDspData : BaseUnityPlugin {
                     //此公式比较特殊，有明确的速率0.2/s
                     recipes.Insert(firstIdx, new JObject {
                         { "Type", -1 },
-                        { "Factories", new JArray(new[] { I射线接收站_MS射线重构站 }) },
+                        { "Factories", new JArray(new[] { buildingID }) },
                         { "Name", $"[射线接收带透镜]{item.name}" },
                         { "Items", new JArray(new[] { I引力透镜 }) },
                         { "ItemCounts", new JArray(new[] { 1.0 / 120.0 }) },
@@ -473,9 +491,9 @@ public class GetDspData : BaseUnityPlugin {
                 //4.创世满燃料棒烧完变空燃料棒
                 if (GenesisBookEnable) {
                     int[] factoryID = [
-                        I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂, I火力发电厂_GB燃料电池发电厂,
-                        I微型聚变发电站_GB裂变能源发电站, I微型聚变发电站_GB裂变能源发电站, I微型聚变发电站_GB裂变能源发电站,
-                        I人造恒星_GB朱曦K型人造恒星, I人造恒星_GB朱曦K型人造恒星, I人造恒星_GB朱曦K型人造恒星,
+                        IGB燃料电池发电厂, IGB燃料电池发电厂, IGB燃料电池发电厂,
+                        IGB裂变能源发电站, IGB裂变能源发电站, IGB裂变能源发电站,
+                        IGB朱曦K型人造恒星, IGB朱曦K型人造恒星, IGB朱曦K型人造恒星,
                         IGB湛曦O型人造恒星, IGB湛曦O型人造恒星,
                     ];
                     int[] itemID = [
@@ -739,11 +757,27 @@ public class GetDspData : BaseUnityPlugin {
                 RecipeProto proto2 = new RecipeProto();
                 proto.CopyPropsTo(ref proto2);
                 proto2.Type = (ERecipeType)(-1);
-                proto2.name = $"[负熵翻倍]{proto.name}";
+                proto2.name = $"[负熵熔炉双倍产物]{proto.name}";
                 for (int i = 0; i < proto2.ResultCounts.Length; i++) {
                     proto2.ResultCounts[i] *= 2;
                 }
                 addRecipe(proto2, add, [I负熵熔炉]);
+                return;
+            }
+        }
+        if (OrbitalRingEnable && Factories.Contains(I量子化工厂)) {
+            if ((int)proto.Type is (int)Utils_ERecipeType.Chemical) {
+                Factories = Factories.Where(x => x != I量子化工厂).ToArray();
+                addRecipe(proto, add, Factories);
+
+                RecipeProto proto2 = new RecipeProto();
+                proto.CopyPropsTo(ref proto2);
+                proto2.Type = (ERecipeType)(-1);
+                proto2.name = $"[量子化工厂双倍产物]{proto.name}";
+                for (int i = 0; i < proto2.ResultCounts.Length; i++) {
+                    proto2.ResultCounts[i] *= 2;
+                }
+                addRecipe(proto2, add, [I量子化工厂]);
                 return;
             }
         }
@@ -799,25 +833,6 @@ public class GetDspData : BaseUnityPlugin {
             productive = ori.productive,
             _iconSprite = ori.iconSprite,
         };
-    }
-
-    static string FormatName(string name, string Name) {
-        //优先使用Name，例如分馏的“超值礼包1”
-        string str = string.IsNullOrEmpty(Name) ? name : Name;
-        return str.Translate()
-            .Replace(" ", "")
-            .Replace(" ", "")
-            .Replace(" ", "")
-            .Replace("“", "")
-            .Replace("”", "")
-            .Replace(":", "")
-            .Replace("：", "")
-            .Replace("!", "")
-            .Replace("-", "")
-            .Replace(".", "")
-            .Replace("（", "")
-            .Replace("）", "")
-            .Replace("Recipe", "");
     }
 
     // private void test() {
