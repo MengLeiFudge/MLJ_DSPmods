@@ -1,31 +1,7 @@
 ﻿using System.Collections.Generic;
 using static GetDspData.GetDspData;
 
-namespace GetDspData;
-
-public enum Utils_ERecipeType {
-    None = 0,
-    Smelt = 1,
-    Chemical = 2,
-    Refine = 3,
-    Assemble = 4,
-    Particle = 5,
-    Exchange = 6,
-    PhotonStore = 7,
-    Fractionate = 8,
-    标准制造 = 9,
-    高精度加工 = 10,
-    矿物处理 = 11,
-    所有制造 = 12,// 4 + 9 + 10
-    垃圾回收 = 14,
-    Research = 15,
-    高分子化工 = 16,
-    所有化工 = 17,// 2 + 3 + 16
-    复合制造 = 18,// 4 + 9
-    所有熔炉 = 19,// 1 + 11
-    Custom = 20,
-    巨构星际组装厂 = 21,
-}
+namespace GetDspData.Utils;
 
 public static partial class Utils {
     //可通过矿脉开采
@@ -135,26 +111,26 @@ public static partial class Utils {
                 : [I电弧熔炉, I位面熔炉, I负熵熔炉],
             (int)Utils_ERecipeType.Chemical => GenesisBookEnable
                 ? [I化工厂, IGB埃克森美孚化工厂]
-                : [I化工厂, I量子化工厂_GB先进化学反应釜],
+                : [I化工厂, I量子化工厂],
             (int)Utils_ERecipeType.Refine => GenesisBookEnable
                 ? [I原油精炼厂, IGB埃克森美孚化工厂]
                 : [I原油精炼厂],
             (int)Utils_ERecipeType.Assemble => GenesisBookEnable
-                ? [I制造台MkI_GB基础制造台, I重组式制造台_GB物质重组工厂, IGB天穹装配厂]
-                : [I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂],
+                ? [IGB基础制造台, IGB物质重组工厂, IGB天穹装配厂]
+                : [I制造台MkI, I制造台MkII, I制造台MkIII, I重组式制造台],
             (int)Utils_ERecipeType.Particle => GenesisBookEnable
                 ? [I微型粒子对撞机, IGB苍穹粒子加速器]
                 : [I微型粒子对撞机],
-            (int)Utils_ERecipeType.PhotonStore => [I射线接收站_MS射线重构站],
+            (int)Utils_ERecipeType.PhotonStore => MoreMegaStructureEnable
+                ? [IMS射线重构站]
+                : [I射线接收站],
             (int)Utils_ERecipeType.Fractionate => [I分馏塔],//万物分馏配方在代码中处理，不在此处
-            (int)Utils_ERecipeType.标准制造 => [I制造台MkII_GB标准制造单元, I重组式制造台_GB物质重组工厂, IGB天穹装配厂],
-            (int)Utils_ERecipeType.高精度加工 => [I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂, IGB工业先锋精密加工中心],
+            (int)Utils_ERecipeType.标准制造 => [IGB标准制造单元, IGB物质重组工厂, IGB天穹装配厂],
+            (int)Utils_ERecipeType.高精度加工 => [IGB高精度装配线, IGB物质重组工厂, IGB工业先锋精密加工中心],
             (int)Utils_ERecipeType.矿物处理 => [IGB矿物处理厂, I负熵熔炉, IGB物质裂解塔],
-            // (int)Utils_ERecipeType.所有制造 =>
-            //     [I制造台MkI_GB基础制造台, I制造台MkII_GB标准制造单元, I制造台MkIII_GB高精度装配线, I重组式制造台_GB物质重组工厂, IGB天穹装配厂, IGB工业先锋精密加工中心],
             (int)Utils_ERecipeType.垃圾回收 => [IGB物质分解设施],
             (int)Utils_ERecipeType.Research => [I矩阵研究站, I自演化研究站],
-            (int)Utils_ERecipeType.高分子化工 => [I量子化工厂_GB先进化学反应釜, IGB埃克森美孚化工厂],
+            (int)Utils_ERecipeType.高分子化工 => [IGB先进化学反应釜, IGB埃克森美孚化工厂],
             _ => throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}")
         };
     }
@@ -162,8 +138,9 @@ public static partial class Utils {
     public static float GetSpace(this ItemProto item) {
         return item.ID switch {
             I电弧熔炉 or I位面熔炉 or I负熵熔炉 or IGB矿物处理厂 => 5.76f,
-            I制造台MkI_GB基础制造台 or I制造台MkII_GB标准制造单元 or I制造台MkIII_GB高精度装配线 or I重组式制造台_GB物质重组工厂 => 10.24f,
-            I化工厂 or I量子化工厂_GB先进化学反应釜 => 23.76f,
+            I制造台MkI or IGB基础制造台 or I制造台MkII or IGB标准制造单元
+                or I制造台MkIII or IGB高精度装配线 or I重组式制造台 or IGB物质重组工厂 => 10.24f,
+            I化工厂 or I量子化工厂 or IGB先进化学反应釜 => 23.76f,
             I矩阵研究站 or I自演化研究站 => 20.25f,
             I采矿机 => 15f,
             I大型采矿机 => 25f,
@@ -171,7 +148,7 @@ public static partial class Utils {
             I原油萃取站 or IGB天穹装配厂 or IGB物质裂解塔 or IGB埃克森美孚化工厂 or IGB工业先锋精密加工中心
                 or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
             I原油精炼厂 => 18f,
-            I射线接收站_MS射线重构站 => 54.82f,
+            I射线接收站 or IMS射线重构站 => 54.82f,
             I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE量子复制塔
                 or IFE点金塔 or IFE分解塔 or IFE转化塔 => 12.96f,
             I微型粒子对撞机 => 45.12f,
@@ -180,27 +157,5 @@ public static partial class Utils {
             I轨道采集器 or I伊卡洛斯 or I行星基地 or I巨构星际组装厂 => 0f,
             _ => -1f,
         };
-    }
-
-    public static bool IsGridIndexValid(int gridIndex) {
-        if (GenesisBookEnable) {
-            return gridIndex % 1000 / 100 >= 1
-                   && gridIndex % 1000 / 100 <= 7
-                   && gridIndex % 100 >= 1
-                   && gridIndex % 100 <= 17;
-        } else {
-            return gridIndex % 1000 / 100 >= 1
-                   && gridIndex % 1000 / 100 <= 8
-                   && gridIndex % 100 >= 1
-                   && gridIndex % 100 <= 14;
-        }
-    }
-
-    public static bool GridIndexValid(this ItemProto proto) {
-        return IsGridIndexValid(proto.GridIndex);
-    }
-
-    public static bool GridIndexValid(this RecipeProto proto) {
-        return IsGridIndexValid(proto.GridIndex);
     }
 }
