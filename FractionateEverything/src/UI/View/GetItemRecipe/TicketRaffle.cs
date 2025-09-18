@@ -282,18 +282,17 @@ public static class TicketRaffle {
         //排序一下
         items.Sort();
         //构建可抽到的分馏配方列表
-        //todo: 优化配方出现情况，当前层次概率至少翻倍（也许现在这样也行？）
-        List<BaseRecipe> recipes = GetRecipesUnderMatrix(SelectedTicketMatrixId1).SelectMany(list => list).ToList();
+        List<BaseRecipe> recipes = GetRecipesByMatrix(SelectedTicketMatrixId1);
         recipes.RemoveAll(recipe => recipe.IsMaxEcho);
-        if (SelectedTicketId1 < IFE宇宙奖券 && recipes.Count == 0) {
-            if (showMessage) {
-                UIMessageBox.Show("提示".Translate(),
-                    "该奖池已经没有配方可以抽取了！".Translate(),
-                    "确定".Translate(), UIMessageBox.WARNING,
-                    null);
-            }
-            return;
-        }
+        // if (SelectedTicketId1 < IFE宇宙奖券 && recipes.Count == 0) {
+        //     if (showMessage) {
+        //         UIMessageBox.Show("提示".Translate(),
+        //             "该奖池已经没有配方可以抽取了！".Translate(),
+        //             "确定".Translate(), UIMessageBox.WARNING,
+        //             null);
+        //     }
+        //     return;
+        // }
         int oneLineCount = 0;
         if (SelectedTicketId1 < IFE宇宙奖券 && recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))) {
             if (showMessage) {
