@@ -45,7 +45,7 @@ public static class QuantumCopyTower {
             "Assets/fe/quantum-copy-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE量子复制塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [5], [IFE量子复制塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE量子复制塔], [2],
             "I量子复制塔", TFE量子复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

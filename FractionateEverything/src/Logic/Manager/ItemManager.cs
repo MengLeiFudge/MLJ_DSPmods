@@ -237,13 +237,7 @@ public static class ItemManager {
         item = ProtoRegistry.RegisterItem(IFE分馏塔原胚定向, "分馏塔原胚定向", "I分馏塔原胚定向",
             "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE分馏塔原胚定向, ERecipeType.Assemble, 300,
-            [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说], [1, 1, 1, 1, 1],
-            [IFE分馏塔原胚定向], [1],
-            "I分馏塔原胚定向", TFE分馏塔原胚, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
+        item.UnlockKey = -1;
 
         item = ProtoRegistry.RegisterItem(IFE分馏配方通用核心, "分馏配方通用核心", "I分馏配方通用核心",
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
@@ -347,17 +341,30 @@ public static class ItemManager {
         itemValue[I核心素] = 30f;
         //设置临界光子价值
         itemValue[I临界光子] = 400.0f;
-        //设置分馏塔原胚价值
-        itemValue[IFE分馏塔原胚普通] = 200.0f;
-        itemValue[IFE分馏塔原胚精良] = 400.0f;
-        itemValue[IFE分馏塔原胚稀有] = 800.0f;
-        itemValue[IFE分馏塔原胚史诗] = 1600.0f;
-        itemValue[IFE分馏塔原胚传说] = 3200.0f;
+        //设置分馏塔、分馏塔原胚价值
+        float v1 = 2000.0f / 10;
+        float v2 = 2000.0f / 5;
+        float v3 = 2000.0f / 3;
+        float v4 = 2000.0f / 2;
+        itemValue[IFE交互塔] = v2;
+        itemValue[IFE矿物复制塔] = v1;
+        itemValue[IFE点数聚集塔] = v3;
+        itemValue[IFE量子复制塔] = v4;
+        itemValue[IFE点金塔] = v2;
+        itemValue[IFE分解塔] = v2;
+        itemValue[IFE转化塔] = v2;
+        //设置
+        itemValue[IFE分馏塔原胚普通] = 0.6f * v1 + 0.4f * v2;
+        itemValue[IFE分馏塔原胚精良] = 0.08f * v1 + 0.84f * v2 + 0.08f * v3;
+        itemValue[IFE分馏塔原胚稀有] = 0.8f * v2 + 0.2f * v3;
+        itemValue[IFE分馏塔原胚史诗] = 0.3f * v2 + 0.6f * v3 + 0.1f * v4;
+        itemValue[IFE分馏塔原胚传说] = 0.4f * v3 + 0.6f * v4;
+        itemValue[IFE分馏塔原胚定向] = 1.5f * v4;
         //设置精华价值
-        itemValue[IFE复制精华] = 500.0f;
-        itemValue[IFE点金精华] = 500.0f;
-        itemValue[IFE分解精华] = 500.0f;
-        itemValue[IFE转化精华] = 500.0f;
+        itemValue[IFE复制精华] = 200.0f;
+        itemValue[IFE点金精华] = 200.0f;
+        itemValue[IFE分解精华] = 200.0f;
+        itemValue[IFE转化精华] = 200.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
@@ -370,6 +377,8 @@ public static class ItemManager {
             r.Type != ERecipeType.Fractionate
             && !r.Items.Contains(IMS多功能集成组件)
             && !r.Results.Contains(IMS多功能集成组件)
+            && !r.Items.Contains(IFE分馏塔原胚定向)
+            && !r.Results.Contains(IFE分馏塔原胚定向)
             && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 
