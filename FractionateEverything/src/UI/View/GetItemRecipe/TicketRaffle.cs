@@ -79,16 +79,16 @@ public static class TicketRaffle {
             + "Only Dark Fog Tickets, can draw Dark Fog recipes; non-Dark Fog Tickets cannot.\n\n"
             + "Probability announcement:\n"
             + "Fractionate Recipe Core: 0.0020%-0.20% (the higher the value of the lottery ticket, the higher the probability)\n"
-            + "Fractionate recipe: 2.4%-0.6% (guaranteed to appear within 90 draws)\n"
-            + "Miscellaneous items: ≈60% (unlocked items only)\n"
+            + "Fractionate recipe: 1.83%-0.60% (guaranteed to appear within 33-100 draws)\n"
+            + "Miscellaneous items: ≈60% (unlocked items only, excludes tickets and not-dark-fog-matrix)\n"
             + "Sand: ≈40%",
             "除黑雾奖券外，其他奖券可以抽取不超过所用奖券层级的所有配方。\n"
             + "其他配方全部满回响后，才能抽取到量子复制配方。\n"
             + "只有黑雾奖券可以抽取黑雾配方，非黑雾奖券无法抽取。\n\n"
             + "概率公示：\n"
             + "分馏配方通用核心：0.0020%-0.20%（奖券价值越高则概率越高）\n"
-            + "分馏配方：2.4%-0.6%（至多25-100抽必出）\n"
-            + "杂项物品：≈60%（仅限已解锁的物品）\n"
+            + "分馏配方：1.83%-0.60%（至多33-100抽必出）\n"
+            + "杂项物品：≈60%（仅限已解锁的物品，不包含奖券和非黑雾矩阵）\n"
             + "沙土：≈40%");
 
         Register("当前奖券", "Current ticket");
@@ -105,15 +105,17 @@ public static class TicketRaffle {
             "The type of lottery ticket does not affect the reward content or probability.\n\n"
             + "Probability announcement:\n"
             + "Fractionator Increase Chip: 0.0012%-0.12% (the higher the value of the lottery ticket, the higher the probability)\n"
-            + "Frac Building Proto: ≈25% (non-directional only)\n"
-            + "Fractionator: ≈5% (the higher the value of the fractionator, the lower the probability)\n"
+            + "Planetary Interaction Station: 0.0462%-4.62% (the higher the value of the lottery ticket, the higher the probability)\n"
+            + "Interstellar Interaction Station: 0.0176%-1.76% (the higher the value of the lottery ticket, the higher the probability)\n"
+            + "Frac Building Proto: ≈30% (non-directional only)\n"
             + "Miscellaneous buildings: ≈42% (unlocked buildings only)\n"
             + "Sand: ≈28%",
             "奖券类型不影响奖励内容与概率。\n\n"
             + "概率公示：\n"
             + "分馏塔增幅芯片：0.0012%-0.12%（奖券价值越高则概率越高）\n"
-            + "分馏塔原胚：≈25%（仅限非定向原胚）\n"
-            + "分馏塔：≈5%（价值越高的分馏塔概率越低）\n"
+            + "行星内物流交互站：0.0462%-4.62%（奖券价值越高则概率越高）\n"
+            + "星际物流交互站：0.0176%-1.76%（奖券价值越高则概率越高）\n"
+            + "分馏塔原胚：≈30%（仅限非定向原胚）\n"
             + "其他建筑：≈42%（仅限已解锁的建筑）\n"
             + "沙土：≈28%");
 
@@ -239,12 +241,13 @@ public static class TicketRaffle {
         //主体为已解锁的非建筑物品，可抽到精华，不可抽到原胚、核心等
         List<int> baseItems = [];
         foreach (ItemProto item in LDB.items.dataArray) {
-            if ((item.ID >= IFE分馏塔原胚普通 && item.ID <= IFE分馏塔原胚定向)
-                //这里先排除掉精华，后面再加
+            if ((item.ID >= IFE电磁奖券 && item.ID <= IFE黑雾奖券)
+                || (item.ID >= IFE分馏塔原胚普通 && item.ID <= IFE分馏塔原胚定向)
                 || (item.ID >= IFE复制精华 && item.ID <= IFE转化精华)
                 || (item.ID >= IFE分馏配方通用核心 && item.ID <= IFE分馏塔增幅芯片)
                 || item.ID == I沙土
                 || item.BuildMode != 0
+                || item.Type == EItemType.Matrix
                 || itemValue[item.ID] >= maxValue) {
                 continue;
             }
@@ -294,7 +297,9 @@ public static class TicketRaffle {
         //     return;
         // }
         int oneLineCount = 0;
-        if (SelectedTicketId1 < IFE宇宙奖券 && recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))) {
+        if (SelectedTicketId1 < IFE宇宙奖券
+            && recipes.All(recipe => !GameMain.history.ItemUnlocked(recipe.InputID))
+            && recipes.Count > 0) {
             if (showMessage) {
                 StringBuilder tip = new(string.Format("未解锁物品抽不到配方".Translate(), recipes.Count));
                 foreach (BaseRecipe recipe in recipes) {
@@ -489,8 +494,8 @@ public static class TicketRaffle {
         //主体为已解锁的建筑物品，可抽到原胚，不可抽到精华、核心等
         List<int> baseItems = [];
         foreach (ItemProto item in LDB.items.dataArray) {
-            //这里先排除掉分馏塔和原胚，后面再加
-            if ((item.ID >= IFE交互塔 && item.ID <= IFE转化塔)
+            //排除原胚、分馏塔、交互站，后面再加原胚和交互站
+            if ((item.ID >= IFE交互塔 && item.ID <= IFE星际物流交互站)
                 || item.BuildMode == 0
                 || itemValue[item.ID] >= maxValue) {
                 continue;
@@ -518,31 +523,15 @@ public static class TicketRaffle {
         while (items.Count < 10000) {
             items.InsertRange(items.Count, baseItems);
         }
-        //分馏塔概率增加至总比例5%以上，原胚概率增加至总比例25%以上
-        int buildingCount = 0;
+        //分馏塔原胚概率增加至总比例30%以上
         int protoCount = 0;
-        int[] buildingAddCount = [10, 30, 5, 2, 10, 10, 10];
-        int[] protoAddCount = [16, 8, 4, 2, 1];
-        while (true) {
-            while ((float)buildingCount / items.Count < 0.05f / 0.6f) {
-                for (int itemID = IFE交互塔; itemID <= IFE转化塔; itemID++) {
-                    for (int i = 0; i < buildingAddCount[itemID - IFE交互塔]; i++) {
-                        items.Add(itemID);
-                        buildingCount++;
-                    }
+        int[] protoAddCount = [50, 35, 20, 10, 5, 1];
+        while ((float)protoCount / items.Count < 0.3f / 0.6f) {
+            for (int itemID = IFE分馏塔原胚普通; itemID <= IFE分馏塔原胚定向; itemID++) {
+                for (int i = 0; i < protoAddCount[itemID - IFE分馏塔原胚普通]; i++) {
+                    items.Add(itemID);
+                    protoCount++;
                 }
-            }
-            while ((float)protoCount / items.Count < 0.25f / 0.6f) {
-                for (int itemID = IFE分馏塔原胚普通; itemID <= IFE分馏塔原胚传说; itemID++) {
-                    for (int i = 0; i < protoAddCount[itemID - IFE分馏塔原胚普通]; i++) {
-                        items.Add(itemID);
-                        protoCount++;
-                    }
-                }
-            }
-            if ((float)buildingCount / items.Count >= 0.05f / 0.6f
-                && (float)protoCount / items.Count >= 0.25f / 0.6f) {
-                break;
             }
         }
         //排序一下
@@ -577,6 +566,42 @@ public static class TicketRaffle {
                 oneLineCount++;
                 continue;
             }
+            //行星内物流交互站（动态概率）
+            currRate += itemValue[SelectedTicketId2] / itemValue[IFE行星内物流交互站] / 25;
+            if (randDouble < currRate) {
+                if (specialItemDic.ContainsKey(IFE行星内物流交互站)) {
+                    specialItemDic[IFE行星内物流交互站]++;
+                } else {
+                    specialItemDic[IFE行星内物流交互站] = 1;
+                }
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else if (oneLineCount > 0) {
+                    sb.Append("          ");
+                }
+                sb.Append($"{LDB.items.Select(IFE行星内物流交互站).name} x 1".WithValueColor(IFE行星内物流交互站));
+                oneLineCount++;
+                continue;
+            }
+            //星际物流交互站（动态概率）
+            currRate += itemValue[SelectedTicketId2] / itemValue[IFE星际物流交互站] / 25;
+            if (randDouble < currRate) {
+                if (specialItemDic.ContainsKey(IFE星际物流交互站)) {
+                    specialItemDic[IFE星际物流交互站]++;
+                } else {
+                    specialItemDic[IFE星际物流交互站] = 1;
+                }
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else if (oneLineCount > 0) {
+                    sb.Append("          ");
+                }
+                sb.Append($"{LDB.items.Select(IFE星际物流交互站).name} x 1".WithValueColor(IFE星际物流交互站));
+                oneLineCount++;
+                continue;
+            }
             //剩余的概率中，60%各种建筑（含有分馏某些特殊物品）
             double ratioItem = (1 - currRate) * 0.6 / items.Count;
             bool getItem = false;
@@ -587,18 +612,10 @@ public static class TicketRaffle {
                     int count = ratio <= 49
                         ? (int)Math.Ceiling(ratio * 0.5f)
                         : (int)Math.Ceiling(Math.Sqrt(ratio) * 7 * 0.5f);
-                    if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
-                        if (specialItemDic.ContainsKey(itemId)) {
-                            specialItemDic[itemId] += count;
-                        } else {
-                            specialItemDic[itemId] = count;
-                        }
+                    if (commonItemDic.ContainsKey(itemId)) {
+                        commonItemDic[itemId] += count;
                     } else {
-                        if (commonItemDic.ContainsKey(itemId)) {
-                            commonItemDic[itemId] += count;
-                        } else {
-                            commonItemDic[itemId] = count;
-                        }
+                        commonItemDic[itemId] = count;
                     }
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
