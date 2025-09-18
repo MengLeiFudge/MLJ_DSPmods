@@ -108,11 +108,20 @@ public static class RecipeManager {
         return RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
     }
 
+    public static List<BaseRecipe> GetRecipesByMatrix(int matrixId) {
+        if (matrixId < I电磁矩阵 || matrixId > I宇宙矩阵) {
+            //当成黑雾矩阵处理
+            return RecipeMatrixDic.TryGetValue(I黑雾矩阵, out List<BaseRecipe> recipeList) ? recipeList : [];
+        } else {
+            return RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipeList) ? recipeList : [];
+        }
+    }
+
     public static List<List<BaseRecipe>> GetRecipesUnderMatrix(int topMatrixId) {
         List<List<BaseRecipe>> ret = [];
         if (topMatrixId < I电磁矩阵 || topMatrixId > I宇宙矩阵) {
             //当成黑雾矩阵处理
-            ret.Add(RecipeMatrixDic.TryGetValue(topMatrixId, out List<BaseRecipe> recipeList) ? recipeList : []);
+            ret.Add(RecipeMatrixDic.TryGetValue(I黑雾矩阵, out List<BaseRecipe> recipeList) ? recipeList : []);
         } else {
             for (int matrixId = I电磁矩阵; matrixId <= topMatrixId; matrixId++) {
                 ret.Add(RecipeMatrixDic.TryGetValue(matrixId, out List<BaseRecipe> recipeList) ? recipeList : []);
