@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
@@ -44,6 +43,7 @@ public static class RecipeOperate {
     private static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     private static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
     private static Text txtCoreCount;
+    private static UIButton btnGetRecipe;
     private static Text[] txtRecipeInfo = new Text[30];
     private static float txtRecipeInfoBaseY = 0;
     private static MySlider incSlider;
@@ -58,7 +58,9 @@ public static class RecipeOperate {
             "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
         Register("配方类型", "Recipe type");
 
-        Register("解锁/兑换配方", "Unlock/exchange recipe");
+        Register("解锁配方", "Unlock recipe");
+        Register("兑换回响", "Exchange echo");
+        Register("无法解锁", "Can not unlock");
         Register("升至下一级", "Upgrade to next level");
         Register("升至最高级", "Upgrade to max level");
         Register("突破品质", "Breakthrough quality");
@@ -127,7 +129,7 @@ public static class RecipeOperate {
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
-            wnd.AddButton(0, 4, y, tab, "解锁/兑换配方",
+            btnGetRecipe = wnd.AddButton(0, 4, y, tab, "动态刷新",
                 onClick: () => { GetRecipe(SelectedRecipe); });
             wnd.AddButton(1, 4, y, tab, "升至下一级",
                 onClick: () => { UpgradeLevel(SelectedRecipe, false); });
@@ -160,7 +162,7 @@ public static class RecipeOperate {
             txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "动态刷新");
         }
     }
-    
+
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
             return;
@@ -169,17 +171,33 @@ public static class RecipeOperate {
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
+
         int line = 0;
         incSlider.gameObject.SetActive(false);
         if (recipe == null) {
+            if (!GameMain.sandboxToolsEnabled) {
+                btnGetRecipe.enabled = false;
+                btnGetRecipe.button.enabled = false;
+                btnGetRecipe.SetText("无法解锁".Translate());
+            }
             txtRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
         } else if (recipe.Locked) {
+            if (!GameMain.sandboxToolsEnabled) {
+                btnGetRecipe.enabled = true;
+                btnGetRecipe.button.enabled = true;
+                btnGetRecipe.SetText("解锁配方".Translate());
+            }
             txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
         } else {
+            if (!GameMain.sandboxToolsEnabled) {
+                btnGetRecipe.enabled = true;
+                btnGetRecipe.button.enabled = true;
+                btnGetRecipe.SetText("兑换回响".Translate());
+            }
             txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
@@ -231,7 +249,7 @@ public static class RecipeOperate {
 
             txtRecipeInfo[line].text = $"{"增产点数".Translate()}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            
+
             incSlider.SetPosition(120, txtRecipeInfoBaseY + 24f * line);
             incSlider.gameObject.SetActive(true);
             line++;
@@ -239,9 +257,9 @@ public static class RecipeOperate {
             string sameRecipeStr = GetSameRecipeStr(recipe, selectedInc.Value);
             string[] strs = sameRecipeStr.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
             foreach (string str in strs) {
-                txtRecipeInfo[line].text = str; 
+                txtRecipeInfo[line].text = str;
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-                line ++;
+                line++;
             }
 
             txtRecipeInfo[line].text = "";
