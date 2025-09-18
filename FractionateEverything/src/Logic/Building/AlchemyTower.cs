@@ -45,7 +45,7 @@ public static class AlchemyTower {
             "Assets/fe/alchemy-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE点金塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [1], [IFE点金塔], [1],
+            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE点金塔], [5],
             "I点金塔", TFE物品点金, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
