@@ -25,10 +25,16 @@ public static class StationManager {
                 itemModSaveCount[item.ID] = (int)Math.Min(100000 / itemValue[item.ID] + 1, item.StackSize * 100);
             }
         }
-        //上传速率至多12满带4堆叠
-        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 12;
-        //下载速率至多3满带4堆叠
-        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * 4 / 60 * 3;
+        SetMaxCount();
+    }
+
+    public static void SetMaxCount() {
+        ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
+        int stackSize = itemProto.MaxProductOutputStack();
+        //上传速率至多12满带stackSize堆叠
+        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 12;
+        //下载速率至多3满带stackSize堆叠
+        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 3;
     }
 
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
@@ -125,7 +131,7 @@ public static class StationManager {
         }
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
-        float cost = itemValue[store.itemId] * 10000 * itemProto.ReinforcementBonusEnergy();
+        float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.ReinforcementBonusEnergy();
         if (store.count < targetCount) {
             // 将数据中心的物品下载到交互站
             int count = Math.Min(maxDownloadCount, targetCount - store.count);

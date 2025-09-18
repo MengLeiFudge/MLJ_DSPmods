@@ -2,6 +2,9 @@
 
 public static partial class Utils {
     public static string Name(this Proto proto) {
+        if (proto == null) {
+            return "null";
+        }
         return string.IsNullOrEmpty(proto.Name) ? proto.name : proto.Name;
     }
 
