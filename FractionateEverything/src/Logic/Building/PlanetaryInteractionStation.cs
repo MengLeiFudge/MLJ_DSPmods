@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
@@ -18,31 +17,21 @@ public static class PlanetaryInteractionStation {
         Register("物流交互站", "Interaction Station");
         Register("行星内物流交互站", "Planetary Interaction Station");
         Register("I行星内物流交互站",
-            """
-            An planetary logistics station that allows for automatic item interaction with fractionation data centres.
-            Supply = Items will be downloaded up to the set limit as much as possible 
-            Demand = Items will be uploaded in full 
-            Storage = Items will be kept at half the set limit as much as possible (In lock mode, the data centre will not automatically upload the corresponding items when the number of items is greater than the set limit)
-            """,
-            """
-            可以与分馏数据中心自动进行物品交互操作的行星内物流运输站。
-            供应 = 物品会尽可能下载至设定上限
-            需求 = 物品会全部上传
-            仓储 = 物品会尽可能维持数目为设定上限的一半（锁定模式下，数据中心对应物品数目大于设定上限时不会自动上传）
-            """);
+            "Planetary logistics station capable of interacting with the fractionation data centre regarding goods. In supply mode, goods are uploaded to the data centre when surplus exists; in demand mode, goods are downloaded from the data centre when shortages occur; in storage unlocked mode, stock levels are maintained at half capacity; in storage locked mode, stock levels are kept identical to those in the data centre.",
+            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n供应模式下，物品过多时上传到数据中心；需求模式下，物品过少时从数据中心下载；仓储无锁定模式下，物品数目维持在一半；仓储锁定模式下，物品数目与数据中心保持一致。");
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     private static Color color = new(0.8f, 0.3f, 0.6f);
-    
+
     public static int MaxProductOutputStack = 1;
     public static int ReinforcementLevel = 0;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
-    public static float ReinforcementBonusEnergy => (float)((100 - 90 * Math.Pow(ReinforcementLevel / 20f, 1.4f)) / 100);
+    public static float ReinforcementBonusEnergy => 1 / (1 + ReinforcementBonus * 9);
     public static readonly float propertyRatio = 1.0f;
 
     public static void Create() {
@@ -80,8 +69,8 @@ public static class PlanetaryInteractionStation {
         model.prefabDesc.workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         model.prefabDesc.idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
-    
-    
+
+
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
@@ -118,5 +107,4 @@ public static class PlanetaryInteractionStation {
     }
 
     #endregion
-
 }
