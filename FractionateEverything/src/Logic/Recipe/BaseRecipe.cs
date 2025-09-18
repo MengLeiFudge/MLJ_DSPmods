@@ -93,7 +93,7 @@ public abstract class BaseRecipe(
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp((float)Math.Log10(1 + itemValue[InputID]));
+            AddExp(1 + itemValue[InputID] / 100 * ExpFix * 2);
             return null;
         }
         //无变化
@@ -119,7 +119,7 @@ public abstract class BaseRecipe(
                 }
                 list.Add(new(true, outputInfo.OutputID, countReal));
                 outputInfo.OutputTotalCount += countReal;
-                AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * countReal * 0.2));
+                AddExp(1 + itemValue[outputInfo.OutputID] / 100 * countReal * ExpFix);
                 break;
             }
         }
@@ -223,9 +223,13 @@ public abstract class BaseRecipe(
     /// 当前品质、当前等级下，达到多少经验可以升级
     /// </summary>
     public int CurrQualityCurrLevelExp => GetExp(Quality, Level);
+    /// <summary>
+    /// 不同配方获取经验效率不同
+    /// </summary>
+    public virtual float ExpFix => 1.0f;
 
     public int GetExp(int quality, int level) {
-        return (int)(200 * Math.Pow(quality * 2 + level + 2, 2.0));
+        return (int)(40 * Math.Pow(quality * 2 + level + 2, 2.0));
     }
 
     public float GetExpToNextLevel() {

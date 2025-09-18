@@ -125,6 +125,11 @@ public class MineralCopyRecipe : BaseRecipe {
     /// </summary>
     public override float MainOutputCountInc => (Progress - 0.56f) / 0.88f;
 
+    /// <summary>
+    /// 不同配方获取经验效率不同
+    /// </summary>
+    public override float ExpFix => 2.0f;
+
     #region IModCanSave
 
     public override void Import(BinaryReader r) {

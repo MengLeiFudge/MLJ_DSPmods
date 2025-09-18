@@ -445,7 +445,7 @@ public static class RecipeOperate {
                 null);
             return;
         }
-        int takeCount = (int)Math.Ceiling(needExp * 0.5);
+        int takeCount = (int)Math.Ceiling(needExp * 10);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
@@ -501,7 +501,7 @@ public static class RecipeOperate {
         }
         int takeId = I沙土;
         float needExp = recipe.GetExpToMaxLevel();
-        int takeCount = (int)Math.Ceiling(needExp * 0.5);
+        int takeCount = (int)Math.Ceiling(needExp * 10);
         ItemProto takeProto = LDB.items.Select(I沙土);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()}{"一定量的".Translate()} {takeProto.name} "
@@ -519,7 +519,7 @@ public static class RecipeOperate {
                 int nextQuality = recipe.NextQuality;
                 while (recipe.Quality != nextQuality) {
                     needExp = recipe.GetExpToNextLevel();
-                    takeCount = (int)Math.Ceiling(needExp * 0.5);
+                    takeCount = (int)Math.Ceiling(needExp * 10);
                     if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
