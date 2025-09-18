@@ -16,6 +16,7 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class ProcessManager {
     public static void AddTranslations() {
+        Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
         Register("搬运模式", "Transport mode");
         Register("缺少精华", "Lack of essence");
@@ -508,6 +509,8 @@ public static class ProcessManager {
                 }
             }
         }
+        bool interactionMode = false;
+        int interactionItemId = 0;
         if (__instance.belt0 > 0) {
             if (__instance.isOutput0) {
                 if (products.Count > 0) {
@@ -551,30 +554,43 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else if (buildingID == IFE交互塔 && __instance.belt1 <= 0 && __instance.belt2 <= 0) {
+            } else if (buildingID == IFE交互塔
+                       && __instance.belt1 <= 0
+                       && __instance.belt2 <= 0
+                       && products.All(p => p.count == 0)) {
                 //正面作为输入，数据传到数据中心。可接受未到最大价值，且GridIndex可见的物品。
-                int itemId = cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out inc);
-                if (itemId > 0) {
-                    AddItemToModData(itemId, stack, inc);
+                interactionMode = true;
+                interactionItemId =
+                    cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out inc);
+                if (interactionItemId > 0) {
+                    AddItemToModData(interactionItemId, stack, inc);
+                    __instance.fluidId = interactionItemId;
+                    __instance.productId = interactionItemId;
+                    __instance.produceProb = 0.01f;
+                    signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
+                    signPool[__instance.entityId].iconType = 1U;
                 }
             }
         }
 
-        // 如果缓存区全部清空，重置全部
-        if (__instance.fluidInputCount == 0
-            && __instance.fluidOutputCount == 0
-            && products.All(p => p.count == 0)) {
-            __instance.fluidId = 0;
-            __instance.productId = 0;
-            products.Clear();
-            signPool[__instance.entityId].iconId0 = 0;
-            signPool[__instance.entityId].iconType = 0U;
+        if (interactionMode) {
+            __instance.isWorking = true;
+        } else {
+            // 如果缓存区全部清空，重置全部
+            if (__instance.fluidInputCount == 0
+                && __instance.fluidOutputCount == 0
+                && products.All(p => p.count == 0)) {
+                __instance.fluidId = 0;
+                __instance.productId = 0;
+                products.Clear();
+                signPool[__instance.entityId].iconId0 = 0;
+                signPool[__instance.entityId].iconType = 0U;
+            }
+            __instance.isWorking = __instance.fluidInputCount > 0
+                                   && products.All(p => p.count < productOutputMax)
+                                   && __instance.fluidOutputCount < fluidOutputMax
+                                   && !moveDirectly;
         }
-
-        __instance.isWorking = __instance.fluidInputCount > 0
-                               && products.All(p => p.count < productOutputMax)
-                               && __instance.fluidOutputCount < fluidOutputMax
-                               && !moveDirectly;
 
         __result = !__instance.isWorking ? 0U : 1U;
     }
@@ -772,6 +788,15 @@ public static class ProcessManager {
                     __instance.stateText.color = __instance.workStoppedColor;
                     transportMode = true;
                 }
+            }
+        } else {
+            //todo: 没有判断是否缺电
+            if (buildingID == IFE交互塔
+                && fractionator.belt0 > 0
+                && fractionator.belt1 <= 0
+                && fractionator.belt2 <= 0) {
+                __instance.stateText.text = "交互模式".Translate();
+                __instance.stateText.color = __instance.workNormalColor;
             }
         }
 
