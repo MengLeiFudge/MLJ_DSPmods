@@ -150,7 +150,7 @@ public static partial class Utils {
     [HarmonyPatch(typeof(UIRemoveBasePitButton), nameof(UIRemoveBasePitButton._OnUpdate))]
     [HarmonyPatch(typeof(UISandboxMenu), nameof(UISandboxMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UITurretWindow), nameof(UITurretWindow.OnHandFillAmmoButtonClick))]
-    private static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
+    public static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.GetItemCount(int itemId)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.GetItemCount),
@@ -515,7 +515,7 @@ public static partial class Utils {
     [HarmonyPatch(typeof(PlayerPackageUtility), nameof(PlayerPackageUtility.TryTakeItemFromAllPackages))]
     [HarmonyPatch(typeof(UIControlPanelObjectEntry), nameof(UIControlPanelObjectEntry.ReplenishItems))]
     [HarmonyPatch(typeof(UITurretWindow), nameof(UITurretWindow.OnHandFillAmmoButtonClick))]
-    private static IEnumerable<CodeInstruction> TakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
+    public static IEnumerable<CodeInstruction> TakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
             // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),

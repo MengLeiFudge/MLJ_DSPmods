@@ -20,6 +20,15 @@ public static class TheyComeFromVoid {
         assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
+        //任务链可使用所有来源物品
+        harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.RefreshRequestMeetData)),
+            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.GetItemCount_Transpiler)));
+        //任务链可使用所有来源物品
+        harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.Decision)),
+            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
+        //元驱动刷新可使用所有来源物品
+        harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
+            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
         CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
     }
 
@@ -46,5 +55,19 @@ public static class TheyComeFromVoid {
             CheckPlugins.LogInfo("TheyComeFromVoid: Replaced ldc.i4 8035 with ldc.i4 9514 in UIButton.LateUpdate");
         }
         return matcher.InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// 元驱动刷新可使用所有来源物品
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIRelic), nameof(UIRelic.CheckEnoughMatrixToRoll))]
+    private static bool UIRelic_CheckEnoughMatrixToRoll_Prefix(ref bool __result) {
+        if (Relic.rollCount <= 0) {
+            return true;
+        }
+        int need = Relic.basicMatrixCost << Relic.rollCount;
+        __result = Utils.Utils.GetItemTotalCount(5201) >= need;
+        return false;
     }
 }
