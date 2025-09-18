@@ -14,18 +14,8 @@ public static class InterstellarInteractionStation {
     public static void AddTranslations() {
         Register("星际物流交互站", "Interstellar Interaction Station");
         Register("I星际物流交互站",
-            """
-            An interstellar logistics station that allows for automatic item interaction with fractionation data centres.
-            Local Supply = Items will be downloaded up to the set limit as much as possible 
-            Local Demand = Items will be uploaded in full 
-            Local Storage = Items will be kept at half the set limit as much as possible (In lock mode, the data centre will not automatically upload the corresponding items when the number of items is greater than the set limit)
-            """,
-            """
-            可以与分馏数据中心自动进行物品交互操作的星际物流运输站。
-            本地供应 = 物品会尽可能下载至设定上限
-            本地需求 = 物品会全部上传
-            本地仓储 = 物品会尽可能维持数目为设定上限的一半（锁定模式下，数据中心对应物品数目大于设定上限时不会自动上传）
-            """);
+            "Interstellar logistics station capable of interacting with the fractionation data centre regarding goods. In local supply mode, goods are uploaded to the data centre when surplus exists; in local demand mode, goods are downloaded from the data centre when shortages occur; in local storage unlocked mode, stock levels are maintained at half capacity; in local storage locked mode, stock levels are kept identical to those in the data centre.",
+            "可以与分馏数据中心进行物品交互的星际物流运输站。\n本地供应模式下，物品过多时上传到数据中心；本地需求模式下，物品过少时从数据中心下载；本地仓储无锁定模式下，物品数目维持在一半；本地仓储锁定模式下，物品数目与数据中心保持一致。");
     }
 
     private static ItemProto item;
