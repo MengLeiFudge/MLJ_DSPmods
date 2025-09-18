@@ -125,8 +125,6 @@ public class GetDspData : BaseUnityPlugin {
         }
 
         try {
-            Dictionary<int, string> itemIdNameDic = new();
-
             string modFullStr = "";
             string modShortStr = "";
             bool[] enable = [
@@ -178,7 +176,6 @@ public class GetDspData : BaseUnityPlugin {
                     int id = item.ID;
                     string name = item.FName();
                     sw.WriteLine($"    internal const int I{name} = {id};");
-                    itemIdNameDic.Add(id, name);
                     int modelID = item.ModelIndex;
                     if (modelID > 0) {
                         modelNameIdList.Add((name, modelID));
@@ -241,13 +238,13 @@ public class GetDspData : BaseUnityPlugin {
                 foreach (var item in itemProtoList) {
                     sw.Write($"I{item.ID},");
                     sw.Write($"{item.GridIndex},");
-                    sw.Write($"{itemIdNameDic[item.ID]},");
+                    sw.Write($"{item.FName()},");
                     sw.Write($"{Enum.GetName(typeof(EItemType), (int)item.Type)},");
                     sw.Write($"{item.BuildMode},");
                     sw.Write($"{item.BuildIndex},");
                     sw.Write($"{(item.maincraft == null ? "null" : ("R" + item.maincraft.ID))},");
                     sw.Write($"{item.UnlockKey},");
-                    sw.Write($"{(item.preTech == null ? "null" : item.preTech.ID)},");
+                    sw.Write($"{(item.preTech == null ? "null" : ("T" + item.preTech.ID))},");
                     sw.WriteLine();
                 }
                 sw.WriteLine();
@@ -266,7 +263,8 @@ public class GetDspData : BaseUnityPlugin {
                             sb.Append(" + ");
                         }
                         first = false;
-                        sb.Append($"{itemIdNameDic[recipe.Items[i]]}(I{recipe.Items[i]})*{recipe.ItemCounts[i]}");
+                        sb.Append(
+                            $"{LDB.items.Select(recipe.Items[i]).FName()}(I{recipe.Items[i]})*{recipe.ItemCounts[i]}");
                     }
                     sw.Write($"{sb},");
                     sb = new();
@@ -276,7 +274,8 @@ public class GetDspData : BaseUnityPlugin {
                             sb.Append(" + ");
                         }
                         first = false;
-                        sb.Append($"{itemIdNameDic[recipe.Results[i]]}(I{recipe.Results[i]})*{recipe.ResultCounts[i]}");
+                        sb.Append(
+                            $"{LDB.items.Select(recipe.Results[i]).FName()}(I{recipe.Results[i]})*{recipe.ResultCounts[i]}");
                     }
                     sw.Write($"{sb},");
                     sw.Write($"{recipe.TimeSpend}({(recipe.TimeSpend / 60.0f):F1}s),");
@@ -288,44 +287,72 @@ public class GetDspData : BaseUnityPlugin {
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("科技ID,name,PreTechs,PreItem,PreTechsImplicit,UnlockRecipes");
+                sw.WriteLine("科技ID,name,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,UnlockRecipes");
                 foreach (var tech in LDB.techs.dataArray) {
-                    sw.Write($"{tech.ID},");
+                    sw.Write($"T{tech.ID},");
                     sw.Write($"{tech.FName()},");
                     if (tech.PreTechs != null && tech.PreTechs.Length > 0) {
                         StringBuilder sb = new();
                         bool first = true;
                         for (int i = 0; i < tech.PreTechs.Length; i++) {
                             if (!first) {
-                                sb.Append(" + ");
+                                sb.Append("_");
                             }
                             first = false;
-                            //sb.Append($"{itemIdNameDic[recipe.Items[i]]}({recipe.Items[i]})*{recipe.ItemCounts[i]}");
+                            sb.Append($"{LDB.techs.Select(tech.PreTechs[i]).FName()}(T{tech.PreTechs[i]})");
                         }
+                        sw.Write($"{sb},");
+                    } else {
+                        sw.Write("empty,");
                     }
-
-
-                    sw.Write($"{tech.PreTechs},");
-                    sw.Write($"{tech.PreItem},");
-                    sw.Write($"{tech.PreTechsImplicit},");
-
-
-                    if (tech.UnlockRecipes != null) {
-                        foreach (var recipeID in tech.UnlockRecipes) {
-                            RecipeProto recipe = LDB.recipes.Select(recipeID);
-                            if (recipe == null) {
-                                LogError($"科技{tech.ID}解锁的配方ID{recipeID}不存在");
-                                continue;
+                    if (tech.PreTechsImplicit != null && tech.PreTechsImplicit.Length > 0) {
+                        StringBuilder sb = new();
+                        bool first = true;
+                        for (int i = 0; i < tech.PreTechsImplicit.Length; i++) {
+                            if (!first) {
+                                sb.Append("_");
                             }
-                            sw.Write(",配方" + recipe.FName());
+                            first = false;
+                            sb.Append(
+                                $"{LDB.techs.Select(tech.PreTechsImplicit[i]).FName()}(T{tech.PreTechsImplicit[i]})");
                         }
+                        sw.Write($"{sb},");
+                    } else {
+                        sw.Write("empty,");
                     }
-                    //if
+                    sw.Write($"{tech.IsHiddenTech},");
+                    if (tech.PreItem != null && tech.PreItem.Length > 0) {
+                        StringBuilder sb = new();
+                        bool first = true;
+                        for (int i = 0; i < tech.PreItem.Length; i++) {
+                            if (!first) {
+                                sb.Append("_");
+                            }
+                            first = false;
+                            sb.Append($"{LDB.items.Select(tech.PreItem[i]).FName()}(I{tech.PreItem[i]})");
+                        }
+                        sw.Write($"{sb},");
+                    } else {
+                        sw.Write("empty,");
+                    }
+                    if (tech.UnlockRecipes != null && tech.UnlockRecipes.Length > 0) {
+                        StringBuilder sb = new();
+                        bool first = true;
+                        for (int i = 0; i < tech.UnlockRecipes.Length; i++) {
+                            if (!first) {
+                                sb.Append("_");
+                            }
+                            first = false;
+                            sb.Append($"{LDB.recipes.Select(tech.UnlockRecipes[i]).FName()}(I{tech.UnlockRecipes[i]})");
+                        }
+                        sw.Write($"{sb},");
+                    } else {
+                        sw.Write("empty,");
+                    }
                     sw.WriteLine();
                 }
                 sw.WriteLine();
                 sw.WriteLine();
-
                 sw.WriteLine("模型ID,name,displayName,PrefabPath");
                 foreach (var model in LDB.models.dataArray) {
                     sw.WriteLine(model.ID
