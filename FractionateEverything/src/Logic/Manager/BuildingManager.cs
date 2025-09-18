@@ -264,6 +264,7 @@ public static class BuildingManager {
                 break;
             case IFE行星内物流交互站:
                 PlanetaryInteractionStation.MaxProductOutputStack = stack;
+                StationManager.SetMaxCount();
                 break;
             default:
                 return;
