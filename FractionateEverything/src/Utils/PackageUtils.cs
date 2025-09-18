@@ -728,12 +728,26 @@ public static partial class Utils {
         }
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
-            count = Math.Min(int.MaxValue / 10, count);
+            count = Math.Min(100000, count);
             if (count <= 0) {
                 inc = 0;
                 return 0;
             }
-            inc = (int)split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId], count);
+            if (centerItemInc[itemId] / centerItemCount[itemId] >= 4) {
+                //如果平均增产点数大于等于4，按照原版分割
+                inc = (int)split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId], count);
+            } else {
+                //否则尽量输出4点
+                if (centerItemInc[itemId] >= count * 4) {
+                    centerItemCount[itemId] -= count;
+                    inc = count * 4;
+                    centerItemInc[itemId] -= inc;
+                } else {
+                    centerItemCount[itemId] -= count;
+                    inc = (int)centerItemInc[itemId];
+                    centerItemInc[itemId] = 0;
+                }
+            }
             return count;
         }
     }
