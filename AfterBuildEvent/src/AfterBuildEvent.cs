@@ -127,9 +127,9 @@ static class AfterBuildEvent {
             //额外文件
             if (projectName == "GetDspData") {
                 //Newtonsoft.Json.dll
-                //C:\Users\MLJ\.nuget\packages\newtonsoft.json\13.0.3\lib\net45\Newtonsoft.Json.dll
+                //C:\Users\MLJ\.nuget\packages\newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll
                 string jsonDll =
-                    $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\.nuget\packages\newtonsoft.json\13.0.3\lib\net45\Newtonsoft.Json.dll";
+                    $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\.nuget\packages\newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll";
                 if (File.Exists(jsonDll)) {
                     fileList.Add(jsonDll);
                 }
