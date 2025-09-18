@@ -61,6 +61,11 @@ public class QuantumCopyRecipe : BaseRecipe {
     public override float MainOutputCountInc => (Progress - 0.56f) / 0.88f;
 
     /// <summary>
+    /// 不同配方获取经验效率不同
+    /// </summary>
+    public override float ExpFix => 2.0f;
+
+    /// <summary>
     /// 精华消耗基础值
     /// </summary>
     public float EssenceCost { get; }
@@ -86,7 +91,7 @@ public class QuantumCopyRecipe : BaseRecipe {
         notEnoughEssence = false;
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp((float)Math.Log10(1 + itemValue[InputID]));
+            AddExp(1 + itemValue[InputID] / 100 * ExpFix * 2);
             return null;
         }
         //无变化，量子复制时增产剂不影响此概率，强化等级影响此概率
@@ -122,7 +127,7 @@ public class QuantumCopyRecipe : BaseRecipe {
         }
         list.Add(new(true, outputInfo.OutputID, countReal));
         outputInfo.OutputTotalCount += countReal;
-        AddExp((float)(Math.Log10(1 + itemValue[outputInfo.OutputID]) * countReal * 0.2));
+        AddExp(1 + itemValue[outputInfo.OutputID] / 100 * countReal * ExpFix);
         //如果仍然没有产出（例如产物数目<1且小数判定未通过），由于原料已消耗，应该返回损毁而非空列表
         return list.Count == 0 ? null : list;
     }
