@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.GetItemRecipe;
@@ -34,10 +35,8 @@ public static class TicketRaffle {
     private static int SelectedTicketMatrixId1 => LDB.items.Select(SelectedTicketId1).maincraft.Items[0];
     private static Text txtCoreCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry1;
-    private static UIButton btnHalfRaffle1;
-    private static int HalfRaffleCount1 => GetItemTotalCount(SelectedTicketId1) > 100
-        ? (int)Math.Min(int.MaxValue, GetItemTotalCount(SelectedTicketId1) / 2)
-        : (int)GetItemTotalCount(SelectedTicketId1);
+    private static UIButton btnMaxRaffle1;
+    private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
     /// <summary>
     /// 下一抽是第几抽。
     /// </summary>
@@ -57,6 +56,10 @@ public static class TicketRaffle {
             return baseRate + Math.Max(0, RecipeRaffleCounts[TicketTypeEntry1.Value] - countP80) * plusRate;
         }
     }
+    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方6种（横）+总计
+    private static Text[,] recipeUnlockInfoText = new Text[2, 7];
+    private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
+    private static int SelectedMatrixId1 => Matrixes[TicketTypeEntry1.Value];
 
     private static ConfigEntry<int> TicketTypeEntry2;
     private static int TicketType2;
@@ -64,10 +67,8 @@ public static class TicketRaffle {
     private static int SelectedTicketMatrixId2 => LDB.items.Select(SelectedTicketId2).maincraft.Items[0];
     private static Text txtChipCount;
     private static ConfigEntry<bool> EnableAutoRaffleEntry2;
-    private static UIButton btnHalfRaffle2;
-    private static int HalfRaffleCount2 => GetItemTotalCount(SelectedTicketId2) > 100
-        ? (int)Math.Min(int.MaxValue, GetItemTotalCount(SelectedTicketId2) / 2)
-        : (int)GetItemTotalCount(SelectedTicketId2);
+    private static UIButton btnMaxRaffle2;
+    private static int MaxRaffleCount2 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId2));
 
     public static void AddTranslations() {
         Register("奖券抽奖", "Ticket Raffle");
@@ -95,9 +96,7 @@ public static class TicketRaffle {
         Register("奖券数目", "Ticket count");
         Register("：", ": ");
 
-        Register("单抽", "Single draw");
-        Register("十连", "Ten draws");
-        Register("百连", "Hundred draws");
+        Register("抽奖", "Draw");
         Register("自动百连", "Auto hundred draws");
 
         Register("建筑奖池", "Building pool");
@@ -179,17 +178,28 @@ public static class TicketRaffle {
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
-        wnd.AddButton(0, 3, y, tab, "单抽",
+        wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
             onClick: () => RaffleRecipe(1));
-        wnd.AddButton(1, 3, y, tab, "十连",
+        wnd.AddButton(1, 4, y, tab, $"{"抽奖".Translate()} x 10",
             onClick: () => RaffleRecipe(10));
-        wnd.AddButton(2, 3, y, tab, "百连",
-            onClick: () => RaffleRecipe(100, 5));
-        y += 36f;
-        wnd.AddCheckBox(GetPosition(0, 2).Item1, y, tab, EnableAutoRaffleEntry1, "自动百连");
-        btnHalfRaffle1 = wnd.AddButton(1, 2, y, tab, "动态刷新",
+        btnMaxRaffle1 = wnd.AddButton(2, 4, y, tab, "动态刷新",
             onClick: () => RaffleRecipe(-1, 5));
+        wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry1, "自动百连");
         y += 36f;
+        wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
+        y += 36f;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 7; j++) {
+                (float, float) position = GetPosition(j, 7);
+                recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
+                recipeUnlockInfoText[i, j].supportRichText = true;
+            }
+            y += 36f;
+        }
+        for (int j = 0; j <= 5; j++) {
+            recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j];
+        }
+        recipeUnlockInfoText[0, 6].text = "总计".Translate();
         y += 36f + 7f;
         txt = wnd.AddText2(x, y, tab, "建筑奖池");
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "建筑奖池", "建筑奖池说明");
@@ -198,16 +208,13 @@ public static class TicketRaffle {
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
-        wnd.AddButton(0, 3, y, tab, "单抽",
+        wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
             onClick: () => RaffleBuilding(1));
-        wnd.AddButton(1, 3, y, tab, "十连",
+        wnd.AddButton(1, 4, y, tab, $"{"抽奖".Translate()} x 10",
             onClick: () => RaffleBuilding(10));
-        wnd.AddButton(2, 3, y, tab, "百连",
-            onClick: () => RaffleBuilding(100, 5));
-        y += 36f;
-        wnd.AddCheckBox(GetPosition(0, 2).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
-        btnHalfRaffle2 = wnd.AddButton(1, 2, y, tab, "动态刷新",
+        btnMaxRaffle2 = wnd.AddButton(2, 4, y, tab, "动态刷新",
             onClick: () => RaffleBuilding(-1, 5));
+        wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffleEntry2, "自动百连");
     }
 
     public static void UpdateUI() {
@@ -219,8 +226,36 @@ public static class TicketRaffle {
         }
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
-        btnHalfRaffle1.SetText($"{"抽奖".Translate()} x {HalfRaffleCount1}");
-        btnHalfRaffle2.SetText($"{"抽奖".Translate()} x {HalfRaffleCount2}");
+        btnMaxRaffle1.SetText($"{"抽奖".Translate()} x {MaxRaffleCount1}");
+        btnMaxRaffle2.SetText($"{"抽奖".Translate()} x {MaxRaffleCount2}");
+        int[,] fullUpgradeCountArr = new int[2, 7];
+        int[,] maxEchoCountArr = new int[2, 7];
+        int[,] unlockCountArr = new int[2, 7];
+        int[,] totalCountArr = new int[2, 7];
+        for (int j = 0; j <= 5; j++) {
+            int matrixID = SelectedMatrixId1;
+            ERecipe type = (ERecipe)(j + 1);
+            List<BaseRecipe> recipes = GetRecipesByType(type)
+                .Where(r => itemToMatrix[r.InputID] == matrixID).ToList();
+            totalCountArr[1, j] = recipes.Count;
+            totalCountArr[1, 6] += recipes.Count;
+            recipes = recipes.Where(r => r.Unlocked).ToList();
+            unlockCountArr[1, j] = recipes.Count;
+            unlockCountArr[1, 6] += recipes.Count;
+            recipes = recipes.Where(r => r.IsMaxEcho).ToList();
+            maxEchoCountArr[1, j] = recipes.Count;
+            maxEchoCountArr[1, 6] += recipes.Count;
+            recipes = recipes.Where(r => r.FullUpgrade).ToList();
+            fullUpgradeCountArr[1, j] = recipes.Count;
+            fullUpgradeCountArr[1, 6] += recipes.Count;
+        }
+        for (int j = 0; j <= 6; j++) {
+            recipeUnlockInfoText[1, j].text =
+                $"{fullUpgradeCountArr[1, j].ToString().WithColor(Orange)}"
+                + $"/{maxEchoCountArr[1, j].ToString().WithColor(Red)}"
+                + $"/{unlockCountArr[1, j].ToString().WithColor(Blue)}"
+                + $"/{totalCountArr[1, j]}";
+        }
     }
 
     /// <summary>
@@ -234,8 +269,7 @@ public static class TicketRaffle {
             return;
         }
         if (raffleCount == -1) {
-            raffleCount = HalfRaffleCount1;
-            showMessage &= raffleCount <= 100;
+            raffleCount = MaxRaffleCount1;
         }
         //构建杂项物品奖励列表
         //主体为已解锁的非建筑物品，可抽到精华，不可抽到原胚、核心等
@@ -487,8 +521,7 @@ public static class TicketRaffle {
             return;
         }
         if (raffleCount == -1) {
-            raffleCount = HalfRaffleCount2;
-            showMessage &= raffleCount <= 100;
+            raffleCount = MaxRaffleCount2;
         }
         //构建杂项物品奖励列表
         //主体为已解锁的建筑物品，可抽到原胚，不可抽到精华、核心等
