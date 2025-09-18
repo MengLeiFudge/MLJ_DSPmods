@@ -2,6 +2,7 @@
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
+using FE.Logic.Manager;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Manager.ProcessManager;
@@ -81,6 +82,7 @@ public static class PlanetaryInteractionStation {
         } else if (MaxProductOutputStack > 4) {
             MaxProductOutputStack = 4;
         }
+        StationManager.SetMaxCount();
         if (version < 2) {
             ReinforcementLevel = 0;
         } else {
@@ -102,6 +104,7 @@ public static class PlanetaryInteractionStation {
 
     public static void IntoOtherSave() {
         MaxProductOutputStack = 1;
+        StationManager.SetMaxCount();
         ReinforcementLevel = 0;
         UpdateHpAndEnergy();
     }
