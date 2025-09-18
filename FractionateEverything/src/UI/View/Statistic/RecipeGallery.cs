@@ -17,7 +17,6 @@ public static class RecipeGallery {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static Text recipeUnlockTitleText;
     //矩阵7种（竖），配方6种（横）
     private static Text[,] recipeUnlockInfoText = new Text[9, 8];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
@@ -37,8 +36,7 @@ public static class RecipeGallery {
         tab = wnd.AddTab(trans, "配方图鉴");
         float x = 0f;
         float y = 18f;
-        recipeUnlockTitleText = wnd.AddText2(x, y, tab, "配方解锁情况");
-        recipeUnlockTitleText.supportRichText = true;
+        wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
         y += 36f;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 8; j++) {
