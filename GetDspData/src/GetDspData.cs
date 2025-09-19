@@ -124,6 +124,8 @@ public class GetDspData : BaseUnityPlugin {
             }
         }
 
+        InitMiningData();
+
         try {
             string modFullStr = "";
             string modShortStr = "";
@@ -411,31 +413,41 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 //1.可直接采集
                 List<int> factorySpecial = [];
+                LogInfo($"{item.FName()} canMiningFromVein: {item.canMiningFromVein()}");
                 if (item.canMiningFromVein()) {
                     factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
                 }
+                LogInfo($"{item.FName()} canMiningFromSea: {item.canMiningFromSea()}");
                 if (item.canMiningFromSea()) {
                     factorySpecial = [..factorySpecial, I抽水站];
                     if (GenesisBookEnable) {
                         factorySpecial = [..factorySpecial, IGB聚束液体汲取设施];
                     }
                 }
+                LogInfo($"{item.FName()} canMiningFromOilWell: {item.canMiningFromOilWell()}");
                 if (item.canMiningFromOilWell()) {
                     factorySpecial = [..factorySpecial, I原油萃取站];
                 }
+                LogInfo($"{item.FName()} canMiningFromGasGiant: {item.canMiningFromGasGiant()}");
                 if (item.canMiningFromGasGiant()) {
                     factorySpecial = [..factorySpecial, I轨道采集器];
                 }
+                LogInfo($"{item.FName()} canMiningFromAtmosphere: {item.canMiningFromAtmosphere()}");
                 if (item.canMiningFromAtmosphere()) {
                     factorySpecial = [..factorySpecial, IGB大气采集站];
                 }
-                if (item.canMiningByIcarus() || item.recipes == null || item.recipes.Count == 0) {
-                    factorySpecial = [..factorySpecial, I伊卡洛斯];
+                if (factorySpecial.Count == 0) {
+                    LogInfo($"{item.FName()} canMiningByIcarus: {item.canMiningByIcarus()}");
+                    if (item.canMiningByIcarus() || item.recipes == null || item.recipes.Count == 0) {
+                        factorySpecial = [..factorySpecial, I伊卡洛斯];
+                    }
                 }
                 if (item.canMiningByMS()) {
+                    LogInfo($"{item.FName()} canMiningByMS: {item.canMiningByMS()}");
                     factorySpecial = [..factorySpecial, I巨构星际组装厂];
                 }
                 if (item.canDropFromEnemy()) {
+                    LogInfo($"{item.FName()} canMiningByMS: {item.canDropFromEnemy()}");
                     factorySpecial = [..factorySpecial, I行星基地];
                 }
                 if (factorySpecial.Count > 0) {
@@ -488,32 +500,87 @@ public class GetDspData : BaseUnityPlugin {
                     firstIdx++;
                 }
                 //3.蓄电器空与蓄电器满的相互转化
-                if (item.ID == I蓄电器满) {
-                    //蓄电器->蓄电器满，两个公式，一个放下充电，一个通过能量枢纽充电
-                    recipes.Add(new JObject {
-                        { "Type", -1 },
-                        { "Factories", new JArray(new[] { I蓄电器满 }) },
-                        { "Name", $"[充电]{item.name}-放置充电" },
-                        { "Items", new JArray(new[] { I蓄电器 }) },
-                        { "ItemCounts", new JArray(new[] { 1 }) },
-                        { "Results", new JArray(new[] { I蓄电器满 }) },
-                        { "ResultCounts", new JArray(new[] { 1 }) },
-                        { "TimeSpend", 21600 },
-                        { "Proliferator", 0 },
-                        { "IconName", item.iconSprite.name },
-                    });
-                    recipes.Add(new JObject {
-                        { "Type", -1 },
-                        { "Factories", new JArray(new[] { I能量枢纽 }) },
-                        { "Name", $"[充电]{item.name}-能量枢纽充电" },
-                        { "Items", new JArray(new[] { I蓄电器 }) },
-                        { "ItemCounts", new JArray(new[] { 1 }) },
-                        { "Results", new JArray(new[] { I蓄电器满 }) },
-                        { "ResultCounts", new JArray(new[] { 1 }) },
-                        { "TimeSpend", 600 },
-                        { "Proliferator", 1 },
-                        { "IconName", item.iconSprite.name },
-                    });
+                //蓄电器->蓄电器满，两个公式，一个放下充电，一个通过能量枢纽充电
+                if (OrbitalRingEnable) {
+                    //todo: 更新充电速率
+                    if (item.ID == IOR蓄电器满) {
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { IOR蓄电器满 }) },
+                            { "Name", $"[充电]{item.name}-放置充电" },
+                            { "Items", new JArray(new[] { IOR蓄电器 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { IOR蓄电器满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 21600 },
+                            { "Proliferator", 0 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { I能量枢纽 }) },
+                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                            { "Items", new JArray(new[] { IOR蓄电器 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { IOR蓄电器满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 600 },
+                            { "Proliferator", 1 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                    } else if (item.ID == IOR蓄电器mk2满) {
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { IOR蓄电器mk2满 }) },
+                            { "Name", $"[充电]{item.name}-放置充电" },
+                            { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 21600 },
+                            { "Proliferator", 0 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { I能量枢纽 }) },
+                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                            { "Items", new JArray(new[] { IOR蓄电器mk2 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { IOR蓄电器mk2满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 600 },
+                            { "Proliferator", 1 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                    }
+                } else {
+                    if (item.ID == I蓄电器满) {
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { I蓄电器满 }) },
+                            { "Name", $"[充电]{item.name}-放置充电" },
+                            { "Items", new JArray(new[] { I蓄电器 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { I蓄电器满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 21600 },
+                            { "Proliferator", 0 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                        recipes.Add(new JObject {
+                            { "Type", -1 },
+                            { "Factories", new JArray(new[] { I能量枢纽 }) },
+                            { "Name", $"[充电]{item.name}-能量枢纽充电" },
+                            { "Items", new JArray(new[] { I蓄电器 }) },
+                            { "ItemCounts", new JArray(new[] { 1 }) },
+                            { "Results", new JArray(new[] { I蓄电器满 }) },
+                            { "ResultCounts", new JArray(new[] { 1 }) },
+                            { "TimeSpend", 600 },
+                            { "Proliferator", 1 },
+                            { "IconName", item.iconSprite.name },
+                        });
+                    }
                 }
                 //4.创世满燃料棒烧完变空燃料棒
                 if (GenesisBookEnable) {
@@ -762,9 +829,8 @@ public class GetDspData : BaseUnityPlugin {
             //可以转为等价配方：1氢->100s->1重氢
             float produceProb = proto.ResultCounts[0] / (float)proto.ItemCounts[0];
             proto2.ItemCounts[0] = 1;
-            proto2.TimeSpend = (int)Math.Round(60 / produceProb);
             proto2.ResultCounts[0] = 1;
-            addRecipe(proto2, add, [I分馏塔]);
+            addRecipe(proto2, add, [I分馏塔], (float)Math.Round(1.0f / produceProb));
             return;
         }
         int[] Factories;
@@ -777,7 +843,7 @@ public class GetDspData : BaseUnityPlugin {
             return;
         }
         if (GenesisBookEnable && Factories.Contains(I负熵熔炉)) {
-            if ((int)proto.Type is (int)Utils_ERecipeType.Smelt or (int)Utils_ERecipeType.矿物处理) {
+            if ((int)proto.Type is (int)Utils_ERecipeType.Smelt or (int)Utils_ERecipeType.GB矿物处理) {
                 Factories = Factories.Where(x => x != I负熵熔炉).ToArray();
                 addRecipe(proto, add, Factories);
 
@@ -811,7 +877,7 @@ public class GetDspData : BaseUnityPlugin {
         addRecipe(proto, add, Factories);
     }
 
-    static void addRecipe(RecipeProto proto, JArray add, int[] Factories) {
+    static void addRecipe(RecipeProto proto, JArray add, int[] Factories, float TimeSpend = 0.0f) {
         if (Factories == null || Factories.Length == 0) {
             return;
         }
@@ -838,9 +904,7 @@ public class GetDspData : BaseUnityPlugin {
             { "ItemCounts", new JArray(proto.ItemCounts) },
             { "Results", new JArray(proto.Results) },
             { "ResultCounts", new JArray(proto.ResultCounts) },
-            //分馏配方TimeSpend=ratio*100000
-            //{ "TimeSpend", flag4 ? (1.0 / (proto.TimeSpend / 100000.0)) * 60 : proto.TimeSpend },
-            { "TimeSpend", proto.TimeSpend },
+            { "TimeSpend", TimeSpend == 0.0f ? proto.TimeSpend.ToString("F0") : TimeSpend.ToString() },
             { "Proliferator", flag4 || !flag2 ? 1 : 3 },
             { "IconName", proto.iconSprite.name },
         };

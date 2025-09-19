@@ -254,7 +254,7 @@ public static partial class Utils {
     internal const int IOR次级维度工厂 = 6214;
     internal const int IOR掌中工厂 = 6215;
     internal const int IGB四氢双环戊二烯燃料棒 = 6216;
-    internal const int IOR未知射线遗留样本 = 6216;
+    internal const int IOR终末螺旋 = 6216;
     internal const int IGB焦油燃料棒 = 6217;
     internal const int IOR化学燃料棒 = 6217;
     internal const int IOR蓄电器 = 6218;
