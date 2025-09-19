@@ -100,7 +100,7 @@ public static partial class Utils {
     public static void SetPosition(this Text text, float x, float y) {
         NormalizeRectWithMidLeft(text, x, y);
     }
-    
+
     public static void SetPosition(this MySlider slider, float x, float y) {
         NormalizeRectWithMidLeft(slider, x, y);
     }

@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BuildBarTool;
