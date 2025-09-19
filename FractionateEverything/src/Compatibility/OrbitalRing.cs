@@ -5,7 +5,7 @@ using HarmonyLib;
 namespace FE.Compatibility;
 
 public static class OrbitalRing {
-    public const string GUID = "org.LoShin.OrbitalRing";
+    public const string GUID = "org.ProfessorCat305.OrbitalRing";
     public static bool Enable;
     public static Assembly assembly;
 

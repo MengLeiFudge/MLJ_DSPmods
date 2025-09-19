@@ -62,7 +62,7 @@ public class GetDspData : BaseUnityPlugin {
     public const string GenesisBookGUID = "org.LoShin.GenesisBook";
     public const string GBMSHarmonyPatchID = "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool GenesisBookEnable;
-    public const string OrbitalRingGUID = "org.LoShin.OrbitalRing";
+    public const string OrbitalRingGUID = "org.ProfessorCat305.OrbitalRing";
     public const string ORMSHarmonyPatchID = "ProjectOrbitalRing.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool OrbitalRingEnable;
     public const string FractionateEverythingGUID = "com.menglei.dsp.fe";
