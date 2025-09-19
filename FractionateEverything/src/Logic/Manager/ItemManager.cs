@@ -575,7 +575,7 @@ public static class ItemManager {
 
         //根据物品价值构建交互塔可接受物品列表
         needs = LDB.items.dataArray
-            .Where(item => itemValue[item.ID] < maxValue && item.GridIndexValid())
+            .Where(item => itemValue[item.ID] < maxValue)
             .Select(item => item.ID)
             .ToArray();
     }
