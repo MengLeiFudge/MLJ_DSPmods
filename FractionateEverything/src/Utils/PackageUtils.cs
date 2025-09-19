@@ -842,12 +842,15 @@ public static partial class Utils {
         if (__instance != GameMain.mainPlayer?.package) {
             return true;
         }
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null || !GameMain.mainPlayer.deliveryPackage.unlocked) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return true;
         }
         bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && FracDataCentreUnlocked;
         if (!isDoubleClick) {
             //一次排序
+            if (!GameMain.mainPlayer.deliveryPackage.unlocked) {
+                return true;
+            }
             StorageComponent package = GameMain.mainPlayer.package;
             DeliveryPackage deliveryPackage = GameMain.mainPlayer.deliveryPackage;
             for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
