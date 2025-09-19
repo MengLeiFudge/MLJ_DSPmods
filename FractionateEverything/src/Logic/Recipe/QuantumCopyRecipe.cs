@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
