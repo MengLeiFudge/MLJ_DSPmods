@@ -11,10 +11,14 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="SharpZipLib" Version="1.4.2"/>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+        </Reference>
     </ItemGroup>
 </Project>

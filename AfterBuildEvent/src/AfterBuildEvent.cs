@@ -127,12 +127,8 @@ static class AfterBuildEvent {
             //额外文件
             if (projectName == "GetDspData") {
                 //Newtonsoft.Json.dll
-                //C:\Users\MLJ\.nuget\packages\newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll
-                string jsonDll =
-                    $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\.nuget\packages\newtonsoft.json\13.0.4\lib\net45\Newtonsoft.Json.dll";
-                if (File.Exists(jsonDll)) {
-                    fileList.Add(jsonDll);
-                }
+                string jsonDll = @"..\..\..\..\lib\Newtonsoft.Json.dll";
+                fileList.Add(jsonDll);
             } else if (projectName == "FractionateEverything") {
                 //fe
                 string originFEAssets = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
@@ -337,7 +333,7 @@ static class AfterBuildEvent {
         //判断所有mod是否均已存在
         List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
-            "ckcz123-TheyComeFromVoid",//mod b：虚空来敌
+            "ckcz123-TheyComeFromVoid",//mod b：深空来敌
             "HiddenCirno-GenesisBook",//mod c：创世之书
             "ProfessorCat305-OrbitalRing",//mod d：星环
             "MengLei-FractionateEverything",//mod e：万物分馏
@@ -368,6 +364,10 @@ static class AfterBuildEvent {
                 }
                 //创世和星环不能同时启用
                 if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])) {
+                    continue;
+                }
+                //星环还没适配深空
+                if (state.Contains(modInfos[1]) && state.Contains(modInfos[3])) {
                     continue;
                 }
                 //开始准备json相关内容
