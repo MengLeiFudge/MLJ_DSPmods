@@ -21,6 +21,12 @@ public static class TheyComeFromVoid {
         assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
+        //Compatible必定执行，所以此方法中不能出现深空的类，否则会报错
+        PatchMethods(harmony);
+        CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
+    }
+
+    private static void PatchMethods(Harmony harmony) {
         //任务链可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.RefreshRequestMeetData)),
             transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.GetItemCount_Transpiler)));
@@ -30,7 +36,6 @@ public static class TheyComeFromVoid {
         //元驱动刷新可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
             transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
-        CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
     }
 
     [HarmonyPrefix]
