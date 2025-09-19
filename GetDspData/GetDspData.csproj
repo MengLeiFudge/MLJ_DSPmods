@@ -14,22 +14,23 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DebugType>full</DebugType>
+        <DebugType>full</DebugType>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0"/>
-        <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
-        <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
-        <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.32.25779-r.0"/>
+        <PackageReference Include="BepInEx.Core" Version="5.4.17" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0" />
+        <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5" />
+        <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0" />
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.32.25779-r.0" />
         <!-- 本地 Assembly-CSharp-publicized.dll 手动覆盖 GameLibs 的对应 dll 即可 -->
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj"/>
+        <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
-        <Exec Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md"/>
+        <Exec
+            Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md" />
     </Target>
 </Project>
