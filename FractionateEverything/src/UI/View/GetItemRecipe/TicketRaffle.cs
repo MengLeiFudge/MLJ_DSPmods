@@ -156,7 +156,7 @@ public static class TicketRaffle {
             TicketTypeEntry2.Value = 0;
         }
         TicketType2 = TicketTypeEntry2.Value;
-        EnableAutoRaffleEntry2 = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 2", false, "配方抽奖是否自动百连。");
+        EnableAutoRaffleEntry2 = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 2", false, "建筑抽奖是否自动百连。");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -780,6 +780,7 @@ public static class TicketRaffle {
         for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
             RecipeRaffleCounts[i] = 0;
         }
+        lastAutoRaffleTick = 0;
     }
 
     #endregion
