@@ -413,41 +413,33 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 //1.可直接采集
                 List<int> factorySpecial = [];
-                LogInfo($"{item.FName()} canMiningFromVein: {item.canMiningFromVein()}");
                 if (item.canMiningFromVein()) {
                     factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
                 }
-                LogInfo($"{item.FName()} canMiningFromSea: {item.canMiningFromSea()}");
                 if (item.canMiningFromSea()) {
                     factorySpecial = [..factorySpecial, I抽水站];
                     if (GenesisBookEnable) {
                         factorySpecial = [..factorySpecial, IGB聚束液体汲取设施];
                     }
                 }
-                LogInfo($"{item.FName()} canMiningFromOilWell: {item.canMiningFromOilWell()}");
                 if (item.canMiningFromOilWell()) {
                     factorySpecial = [..factorySpecial, I原油萃取站];
                 }
-                LogInfo($"{item.FName()} canMiningFromGasGiant: {item.canMiningFromGasGiant()}");
                 if (item.canMiningFromGasGiant()) {
                     factorySpecial = [..factorySpecial, I轨道采集器];
                 }
-                LogInfo($"{item.FName()} canMiningFromAtmosphere: {item.canMiningFromAtmosphere()}");
                 if (item.canMiningFromAtmosphere()) {
                     factorySpecial = [..factorySpecial, IGB大气采集站];
                 }
                 if (factorySpecial.Count == 0) {
-                    LogInfo($"{item.FName()} canMiningByIcarus: {item.canMiningByIcarus()}");
                     if (item.canMiningByIcarus() || item.recipes == null || item.recipes.Count == 0) {
                         factorySpecial = [..factorySpecial, I伊卡洛斯];
                     }
                 }
                 if (item.canMiningByMS()) {
-                    LogInfo($"{item.FName()} canMiningByMS: {item.canMiningByMS()}");
                     factorySpecial = [..factorySpecial, I巨构星际组装厂];
                 }
                 if (item.canDropFromEnemy()) {
-                    LogInfo($"{item.FName()} canMiningByMS: {item.canDropFromEnemy()}");
                     factorySpecial = [..factorySpecial, I行星基地];
                 }
                 if (factorySpecial.Count > 0) {
