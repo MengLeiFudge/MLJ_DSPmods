@@ -317,21 +317,22 @@ public static class ItemManager {
         itemValue[I光栅石] = 20.0f;
         itemValue[I刺笋结晶] = 20.0f;
         itemValue[I单极磁石] = 200.0f;
-        //设置气巨、冰巨可开采物品价值
+        //设置气巨、冰巨、可直接抽取的物品价值
         itemValue[I氢] = 2.0f;
         itemValue[I重氢] = 5.0f;
-        itemValue[IGB氦] = 20.0f;
-        //设置可直接抽取的物品价值
         itemValue[I原油] = 1.0f;
-        itemValue[IGB海水] = 1.0f;
         itemValue[I水] = 1.0f;
-        itemValue[IGB盐酸] = 5.0f;
         itemValue[I硫酸] = 5.0f;
-        itemValue[IGB硝酸] = 5.0f;
-        itemValue[IGB氨] = 5.0f;
-        itemValue[IGB二氧化硫] = 5.0f;
-        itemValue[IGB二氧化碳] = 5.0f;
-        itemValue[IGB氮] = 3.0f;
+        if (GenesisBook.Enable) {
+            itemValue[IGB氦] = 20.0f;
+            itemValue[IGB海水] = 2.0f;
+            itemValue[IGB盐酸] = 5.0f;
+            itemValue[IGB硝酸] = 5.0f;
+            itemValue[IGB氨] = 5.0f;
+            itemValue[IGB二氧化硫] = 5.0f;
+            itemValue[IGB二氧化碳] = 5.0f;
+            itemValue[IGB氮] = 3.0f;
+        }
         //设置黑雾掉落价值
         itemValue[I能量碎片] = 2f;
         itemValue[I黑雾矩阵] = 2.5f;
@@ -353,7 +354,6 @@ public static class ItemManager {
         itemValue[IFE点金塔] = v2;
         itemValue[IFE分解塔] = v2;
         itemValue[IFE转化塔] = v2;
-        //设置
         itemValue[IFE分馏塔原胚普通] = 0.6f * v1 + 0.4f * v2;
         itemValue[IFE分馏塔原胚精良] = 0.08f * v1 + 0.84f * v2 + 0.08f * v3;
         itemValue[IFE分馏塔原胚稀有] = 0.8f * v2 + 0.2f * v3;
@@ -372,10 +372,9 @@ public static class ItemManager {
             }
         }
         CalculateItemValue:
-        //获取所有配方（排除分馏配方、含有多功能集成组件的配方、GridIndex超限配方）
+        //获取所有配方（排除含有多功能集成组件的配方、GridIndex超限配方）
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
-            r.Type != ERecipeType.Fractionate
-            && !r.Items.Contains(IMS多功能集成组件)
+            !r.Items.Contains(IMS多功能集成组件)
             && !r.Results.Contains(IMS多功能集成组件)
             && !r.Items.Contains(IFE分馏塔原胚定向)
             && !r.Results.Contains(IFE分馏塔原胚定向)
@@ -437,23 +436,33 @@ public static class ItemManager {
                 }
                 if (!canProcess) continue;
 
-                // 计算输入总价值和输出总单位数
-                float inputValue = 0;
-                for (int i = 0; i < inputIDs.Count; i++) {
-                    inputValue += inputCounts[i] * itemValue[inputIDs[i]];
+                // 计算这种产物的单位价值
+                float unitValue;
+                if (recipe.Type == ERecipeType.Fractionate) {
+                    if (inputIDs.Count != 1 || outputIDs.Count != 1) {
+                        // 无法处理非A=>B的分馏配方
+                        LogWarning($"无法处理非A=>B的分馏配方：{recipe.Name}({recipe.ID})，"
+                                   + $"inputIDs.Count={inputIDs.Count}，outputIDs.Count={outputIDs.Count}");
+                        continue;
+                    }
+                    // 分馏配方的原料数目、产物数目表示比例，需要用其他方式计算价值
+                    float produceProb = recipe.ResultCounts[0] / (float)recipe.ItemCounts[0];
+                    // 假设1%概率对应的时间价值为1个原材料的1.5倍，p概率对应1.5/(p/0.01)，即0.015/p
+                    unitValue = itemValue[inputIDs[0]] * (1 + 0.015f / produceProb);
+                } else {
+                    int outputUnits = outputCounts.Sum();
+                    if (outputUnits <= 0) continue;
+                    // 计算原材料总价值
+                    float inputValue = 0;
+                    for (int i = 0; i < inputIDs.Count; i++) {
+                        inputValue += inputCounts[i] * itemValue[inputIDs[i]];
+                    }
+                    // 计算配方时间成本，原料价值越高则单位时间的价值越高
+                    // 别问为什么参数是 0.03 和 1.5，问就是经验
+                    float adjustedTimeValue = recipe.TimeSpend / 60.0f * (0.03f * inputValue + 1.5f);
+                    // 计算单位价值
+                    unitValue = (inputValue + adjustedTimeValue) / outputUnits;
                 }
-
-                int outputUnits = outputCounts.Sum();
-
-                // 如果输出总单位数为0，则跳过（没有净产出）
-                if (outputUnits <= 0) continue;
-
-                // 计算时间成本，原料价值越高则单位时间的价值越高
-                // 别问为什么参数是 0.03 和 1.5，问就是经验
-                float adjustedTimeValue = recipe.TimeSpend / 60.0f * (0.03f * inputValue + 1.5f);
-
-                // 计算单位价值
-                float unitValue = (inputValue + adjustedTimeValue) / outputUnits;
 
                 // 更新输出物品价值（取最小值）
                 foreach (int itemId in outputIDs) {
