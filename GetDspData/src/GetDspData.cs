@@ -257,7 +257,13 @@ public class GetDspData : BaseUnityPlugin {
                     sw.Write($"R{recipe.ID},");
                     sw.Write($"{recipe.GridIndex},");
                     sw.Write($"{recipe.FName()},");
-                    sw.Write($"{Enum.GetName(typeof(Utils_ERecipeType), (int)recipe.Type)},");
+                    if (GenesisBookEnable) {
+                        sw.Write($"{Enum.GetName(typeof(ERecipeType_GB), (int)recipe.Type)},");
+                    } else if (OrbitalRingEnable) {
+                        sw.Write($"{Enum.GetName(typeof(ERecipeType_OR), (int)recipe.Type)},");
+                    } else {
+                        sw.Write($"{Enum.GetName(typeof(ERecipeType_DSP), (int)recipe.Type)},");
+                    }
                     StringBuilder sb = new();
                     bool first = true;
                     for (int i = 0; i < recipe.Items.Length; i++) {
@@ -759,7 +765,6 @@ public class GetDspData : BaseUnityPlugin {
                 Results.Add(p.Key);
                 ResultCounts.Add(p.Value.Item1);
             }
-            int TimeSpend = (int)Math.Round(60.0f / recipe.SuccessRate);
             recipes.Add(new JObject {
                 { "Type", -1 },
                 { "Factories", new JArray(new[] { building.ID }) },
@@ -768,7 +773,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ItemCounts", new JArray(ItemCounts) },
                 { "Results", new JArray(Results) },
                 { "ResultCounts", new JArray(ResultCounts) },
-                { "TimeSpend", TimeSpend },
+                { "TimeSpend", Math.Round(60.0f / recipe.SuccessRate) },
                 { "Proliferator", 1 },
                 { "IconName", item.iconSprite.name },
             });
@@ -835,7 +840,7 @@ public class GetDspData : BaseUnityPlugin {
             return;
         }
         if (GenesisBookEnable && Factories.Contains(I负熵熔炉)) {
-            if ((int)proto.Type is (int)Utils_ERecipeType.Smelt or (int)Utils_ERecipeType.GB矿物处理) {
+            if ((int)proto.Type is (int)ERecipeType_GB.Smelt or (int)ERecipeType_GB.矿物处理) {
                 Factories = Factories.Where(x => x != I负熵熔炉).ToArray();
                 addRecipe(proto, add, Factories);
 
@@ -851,7 +856,7 @@ public class GetDspData : BaseUnityPlugin {
             }
         }
         if (OrbitalRingEnable && Factories.Contains(I量子化工厂)) {
-            if ((int)proto.Type is (int)Utils_ERecipeType.Chemical) {
+            if ((int)proto.Type is (int)ERecipeType_OR.Chemical) {
                 Factories = Factories.Where(x => x != I量子化工厂).ToArray();
                 addRecipe(proto, add, Factories);
 
@@ -888,19 +893,35 @@ public class GetDspData : BaseUnityPlugin {
         //Proliferator=4：无，使用引力透镜
         bool flag2 = proto.productive;
         bool flag4 = proto.Type == ERecipeType.Fractionate;
-        var obj = new JObject {
-            { "Type", (int)proto.Type },
-            { "Factories", new JArray(Factories) },
-            { "Name", proto.name },
-            { "Items", new JArray(proto.Items) },
-            { "ItemCounts", new JArray(proto.ItemCounts) },
-            { "Results", new JArray(proto.Results) },
-            { "ResultCounts", new JArray(proto.ResultCounts) },
-            { "TimeSpend", TimeSpend == 0.0f ? proto.TimeSpend.ToString("F0") : TimeSpend.ToString() },
-            { "Proliferator", flag4 || !flag2 ? 1 : 3 },
-            { "IconName", proto.iconSprite.name },
-        };
-        add.Add(obj);
+        if (TimeSpend == 0.0f) {
+            var obj = new JObject {
+                { "Type", (int)proto.Type },
+                { "Factories", new JArray(Factories) },
+                { "Name", proto.name },
+                { "Items", new JArray(proto.Items) },
+                { "ItemCounts", new JArray(proto.ItemCounts) },
+                { "Results", new JArray(proto.Results) },
+                { "ResultCounts", new JArray(proto.ResultCounts) },
+                { "TimeSpend", proto.TimeSpend },
+                { "Proliferator", flag4 || !flag2 ? 1 : 3 },
+                { "IconName", proto.iconSprite.name },
+            };
+            add.Add(obj);
+        } else {
+            var obj = new JObject {
+                { "Type", (int)proto.Type },
+                { "Factories", new JArray(Factories) },
+                { "Name", proto.name },
+                { "Items", new JArray(proto.Items) },
+                { "ItemCounts", new JArray(proto.ItemCounts) },
+                { "Results", new JArray(proto.Results) },
+                { "ResultCounts", new JArray(proto.ResultCounts) },
+                { "TimeSpend", TimeSpend },
+                { "Proliferator", flag4 || !flag2 ? 1 : 3 },
+                { "IconName", proto.iconSprite.name },
+            };
+            add.Add(obj);
+        }
     }
 
     static RecipeProto CopyRecipeProto(RecipeProto ori) {
