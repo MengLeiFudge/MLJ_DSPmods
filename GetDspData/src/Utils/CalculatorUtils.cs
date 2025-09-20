@@ -23,7 +23,7 @@ public static partial class Utils {
             ];
             //气巨[氢，重氢] 冰巨[氢，甲烷]
             miningFromGasGiant = [I氢, I重氢, IOR甲烷];
-            miningFromSea = [I水, I硫酸, I原油, IOR甲烷];
+            miningFromSea = [I水, I硫酸, I原油, IOR甲烷, IOR岩浆];
             miningFromOilWell = [I原油, I水, IOR深层熔岩];
         } else {
             miningFromVein = [
@@ -107,7 +107,7 @@ public static partial class Utils {
                 (int)Utils_ERecipeType.Fractionate => [I分馏塔],
                 (int)Utils_ERecipeType.OR太空船坞 => [IOR太空船坞],
                 (int)Utils_ERecipeType.OR粒子打印 => [IOR粒子打印车间, IOR物质重组工厂],
-                (int)Utils_ERecipeType.OR等离子熔炼 => [IOR等离子熔炉, I负熵熔炉, IOR轨道熔炼站],
+                (int)Utils_ERecipeType.OR等离子熔炼 => [IOR等离子熔炉, I负熵熔炉],
                 (int)Utils_ERecipeType.OR物质重组 => [IOR物质重组工厂],
                 (int)Utils_ERecipeType.OR生物化工 => [IOR生态穹顶],
                 (int)Utils_ERecipeType.Research => [I矩阵研究站, I自演化研究站],
