@@ -78,10 +78,42 @@ public static class StationManager {
                     if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
                         continue;
                     }
-                    // TODO 根据转移的物品数量，消耗电量
+                    switch (store.remoteLogic) {
+                        case ELogisticStorage.Supply:
+                            // 星际供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
+                            if (store.totalSupplyCount < store.max * 0.2) {
+                                stationComponent.SetTargetCount(i,
+                                    Math.Max(store.count, (int)(store.max * 0.2 - store.totalOrdered)));
+                            }
+                            break;
+                        case ELogisticStorage.Demand:
+                            // 星际需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
+                            if (store.count > store.max * 0.8 && store.totalSupplyCount > store.max * 0.2) {
+                                int modTargetCount = itemModSaveCount[store.itemId];
+                                long modCurrCount = GetModDataItemCount(store.itemId);
+                                if (modCurrCount < modTargetCount) {
+                                    int transferCount = Math.Min(store.count - (int)(store.max * 0.8),
+                                        modTargetCount - (int)modCurrCount);
+                                    stationComponent.SetTargetCount(i, store.count - transferCount);
+                                }
+                            }
+                            break;
+                        case ELogisticStorage.None:
+                            // 星际仓储：说明无星际物流，应该根据本地策略决定塔的处理方式
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                     switch (store.localLogic) {
                         case ELogisticStorage.Supply:
-                            // 供应：自身 -> 其他塔/Mod背包
+                            // 本地供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
+                            if (store.totalSupplyCount < store.max * 0.1) {
+                                stationComponent.SetTargetCount(i,
+                                    Math.Max(store.count, (int)(store.max * 0.1 - store.totalOrdered)));
+                            }
+                            break;
+                        case ELogisticStorage.Demand:
+                            // 本地需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
                             if (store.count > store.max * 0.9 && store.totalSupplyCount > store.max * 0.1) {
                                 int modTargetCount = itemModSaveCount[store.itemId];
                                 long modCurrCount = GetModDataItemCount(store.itemId);
@@ -92,16 +124,9 @@ public static class StationManager {
                                 }
                             }
                             break;
-                        case ELogisticStorage.Demand:
-                            // 需求：其他塔/Mod背包 -> 自身
-                            if (store.totalSupplyCount < store.max * 0.1) {
-                                stationComponent.SetTargetCount(i,
-                                    Math.Max(store.count, (int)(store.max * 0.1 - store.totalOrdered)));
-                            }
-                            break;
                         case ELogisticStorage.None:
-                            // 仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
-                            // 仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
+                            // 本地仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
+                            // 本地仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
                                 int totalCount = (int)Math.Min(int.MaxValue,
                                     store.count + GetModDataItemCount(store.itemId));
