@@ -71,7 +71,6 @@ public static class PlanetaryInteractionStation {
         model.prefabDesc.idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
 
-
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
