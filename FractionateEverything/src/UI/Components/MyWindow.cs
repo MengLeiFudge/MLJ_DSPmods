@@ -41,7 +41,8 @@ public class MyWindow : ManualBehaviour {
     }
 
     public static T Create<T>(string name, string title = "") where T : MyWindow {
-        var go = Instantiate(_baseObject, UIRoot.instance.uiGame.transform.parent);
+        // var go = Instantiate(_baseObject, UIRoot.instance.uiGame.transform.parent);
+        var go = Instantiate(_baseObject, UIRoot.instance.uiGame.inserterWindow.transform.parent);
         go.name = name;
         go.SetActive(false);
         MyWindow win = go.AddComponent<T>();

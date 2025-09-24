@@ -34,9 +34,9 @@ public static partial class Utils {
                                          || DeliverySlotsTweaks.ArchitectMode;
 
     /// <summary>
-    /// 指示分馏数据中心是否已解锁
+    /// 指示物品交互科技是否已解锁
     /// </summary>
-    private static bool FracDataCentreUnlocked => GameMain.history.TechUnlocked(TFE分馏数据中心);
+    private static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
 
     #region 向背包添加物品
 
@@ -55,7 +55,7 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowTrash))]
     private static bool Player_ThrowTrash_Prefix(Player __instance, int itemId, int count, int inc) {
-        if (!FracDataCentreUnlocked) {
+        if (!TechItemInteractionUnlocked) {
             return true;
         }
         if (itemValue[itemId] >= maxValue) {
@@ -71,7 +71,7 @@ public static partial class Utils {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ThrowHandItems))]
     private static bool Player_ThrowHandItems_Prefix(Player __instance) {
-        if (!FracDataCentreUnlocked) {
+        if (!TechItemInteractionUnlocked) {
             return true;
         }
         if (itemValue[__instance.inhandItemId] >= maxValue) {
@@ -90,9 +90,6 @@ public static partial class Utils {
     /// 将指定物品添加到ModData背包
     /// </summary>
     public static void AddItemToModData(int itemId, int count, int inc = 0) {
-        if (!FracDataCentreUnlocked) {
-            return;
-        }
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount += count;
             return;
@@ -845,7 +842,7 @@ public static partial class Utils {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return true;
         }
-        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && FracDataCentreUnlocked;
+        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && TechItemInteractionUnlocked;
         if (!isDoubleClick) {
             //一次排序
             if (!GameMain.mainPlayer.deliveryPackage.unlocked) {
@@ -866,6 +863,9 @@ public static partial class Utils {
             }
         } else {
             //二次排序
+            if (!TechItemInteractionUnlocked) {
+                return true;
+            }
             StorageComponent package = GameMain.mainPlayer.package;
             for (int index = 0; index < package.size; index++) {
                 if (itemValue[package.grids[index].itemId] >= maxValue) {
