@@ -59,8 +59,9 @@ public static class ItemInteraction {
             .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry)
             .WithOnSelChanged(SelectedItemIDChanged);
         wnd.AddCheckBox(GetPosition(2, 4).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
+        float popupY = y + 36f / 2;
         wnd.AddButton(3, 4, y, tab, "查找指定物品",
-            onClick: () => { SearchSpecifiedItem(); });
+            onClick: () => { SearchSpecifiedItem(popupY); });
         y += 36f;
         Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提取物品", "提取物品说明");
@@ -127,13 +128,12 @@ public static class ItemInteraction {
         }
     }
 
-    private static void SearchSpecifiedItem() {
-        //_windowTrans.anchoredPosition是窗口的中心点
-        //Popup的位置是弹出窗口的左上角
-        //所以要向右（x+）向上（y+）
-        float x = window.anchoredPosition.x + window.rect.width / 2;
-        float y = window.anchoredPosition.y + window.rect.height / 2;
-        UIItemPickerExtension.Popup(new(x, y), item => {
+    private static void SearchSpecifiedItem(float y) {
+        //物品选取窗口左上角的X值（anchoredPosition是中心点）
+        float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
+        //物品选取窗口左上角的Y值（anchoredPosition是中心点）
+        float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
+        UIItemPickerExtension.Popup(new(popupX, popupY), item => {
             if (item == null) return;
             float value = itemValue[item.ID];
             for (int i = 0; i < ItemValueRanges.Length; i++) {
