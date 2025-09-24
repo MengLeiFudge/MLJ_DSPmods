@@ -150,6 +150,9 @@ public static class TechManager {
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
+        Register("自动上传被扔掉的物品", "Automatically upload dropped items");
+        Register("双击背包排序按钮，自动上传背包内物品",
+            "Double-click the backpack sort button to automatically upload the items within the backpack");
 
         Register("T矿物复制", "Mineral Copy", "矿物复制");
         Register("矿物复制描述",
@@ -258,7 +261,7 @@ public static class TechManager {
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
         tech分馏数据中心.AddItems = [IFE交互塔, IFE分馏塔原胚普通];
-        tech分馏数据中心.AddItemCounts = [1, 120];
+        tech分馏数据中心.AddItemCounts = [1, 80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
 
@@ -270,7 +273,7 @@ public static class TechManager {
             [],
             GetTechPos(0, 1)
         );
-        tech超值礼包1.PreTechsImplicit = [TFE分馏塔原胚];
+        tech超值礼包1.PreTechsImplicit = [TFE物品交互];
         tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
         tech超值礼包1.AddItemCounts = [200, 3, 6];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
@@ -349,7 +352,7 @@ public static class TechManager {
             [RFE电磁奖券],
             GetTechPos(1, 1)
         );
-        tech电磁奖券.PreTechsImplicit = [TFE分馏塔原胚];
+        tech电磁奖券.PreTechsImplicit = [TFE物品交互];
         tech电磁奖券.AddItems = [IFE电磁奖券];
         tech电磁奖券.AddItemCounts = [10];
         tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
@@ -441,8 +444,8 @@ public static class TechManager {
             [RFE分馏塔原胚定向],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE分馏塔原胚定向];
-        tech分馏塔原胚.AddItemCounts = [20];
+        tech分馏塔原胚.AddItems = [IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚定向];
+        tech分馏塔原胚.AddItemCounts = [30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
 
@@ -643,6 +646,12 @@ public static class TechManager {
                        + $"{"解锁全部建筑培养配方".Translate()}\r\n"
                        + $"{"解锁普通矿物复制配方".Translate()}\r\n"
                        + $"{"给予交互塔和普通原胚".Translate()}";
+            return false;
+        }
+
+        if (__instance.ID == TFE物品交互) {
+            __result = $"{"自动上传被扔掉的物品".Translate()}\r\n"
+                       + $"{"双击背包排序按钮，自动上传背包内物品".Translate()}";
             return false;
         }
         if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
