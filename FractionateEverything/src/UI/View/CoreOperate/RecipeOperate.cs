@@ -24,13 +24,12 @@ public static class RecipeOperate {
     private static Text txtCurrItem;
     private static MyImageButton btnSelectedItem;
 
-    private static void OnButtonChangeItemClick(bool showLocked) {
-        //_windowTrans.anchoredPosition是窗口的中心点
-        //Popup的位置是弹出窗口的左上角
-        //所以要向右（x+）向上（y+）
-        float x = window.anchoredPosition.x + window.rect.width / 2;
-        float y = window.anchoredPosition.y + window.rect.height / 2;
-        UIItemPickerExtension.Popup(new(x, y), item => {
+    private static void OnButtonChangeItemClick(bool showLocked, float y) {
+        //物品选取窗口左上角的X值（anchoredPosition是中心点）
+        float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
+        //物品选取窗口左上角的Y值（anchoredPosition是中心点）
+        float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
+        UIItemPickerExtension.Popup(new(popupX, popupY), item => {
             if (item == null) return;
             SelectedItem = item;
         }, true, item => {
@@ -117,9 +116,10 @@ public static class RecipeOperate {
         float x = 0f;
         float y = 18f + 7f;
         txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
+        float popupY = y + (36f + 7f) / 2;
         btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
-            () => { OnButtonChangeItemClick(false); }, () => { OnButtonChangeItemClick(true); });
+            () => { OnButtonChangeItemClick(false, popupY); }, () => { OnButtonChangeItemClick(true, popupY); });
         //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
