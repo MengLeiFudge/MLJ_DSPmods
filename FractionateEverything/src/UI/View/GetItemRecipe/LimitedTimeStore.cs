@@ -202,6 +202,9 @@ public static class LimitedTimeStore {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
+        if (!GameMain.history.TechUnlocked(TFE分馏数据中心)) {
+            return;
+        }
         if (GameMain.gameTick >= nextFreshTick) {
             ModifyExchangeItemInfo();
         }
@@ -530,7 +533,6 @@ public static class LimitedTimeStore {
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
             exchangeInfos[i] = new();
         }
-        ModifyExchangeItemInfo();
     }
 
     #endregion
