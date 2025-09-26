@@ -113,7 +113,11 @@ public static partial class Utils {
                 (int)ERecipeType_OR.生物化工 => [IOR生态穹顶],
                 (int)ERecipeType_OR.Research => [I矩阵研究站, I自演化研究站],
                 (int)ERecipeType_OR.星际组装厂 => [I巨构星际组装厂],
-                _ => throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}")
+                //星环有些动态配方一开始类型是none，需要额外处理一下
+                //_ => throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}")
+                _ => recipe.Results.Length > 0 && (recipe.Results[0] == IOR手动研究加速 || recipe.Results[0] == IOR哈希值)
+                    ? throw new($"配方类型异常，配方名称{recipe.name}，配方类型{recipe.Type}")
+                    : [IOR基础制造台, IOR高速装配线, IOR粒子打印车间, IOR物质重组工厂],
             };
         } else {
             return (int)recipe.Type switch {
