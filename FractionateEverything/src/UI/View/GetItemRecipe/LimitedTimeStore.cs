@@ -116,10 +116,10 @@ public static class LimitedTimeStore {
     /// <summary>
     /// 兑换不同矩阵层次的配方所需的矩阵数目
     /// </summary>
-    private static readonly float[] matrixRecipeCosts = [327.68f, 409.6f, 512, 640, 800, 1000];
+    private static readonly float[] matrixRecipeCosts = [327.68f, 409.6f, 512, 640, 800, 1000, 10000];
 
     private static readonly int[][] itemIdOriArr = [
-        [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
+        //[IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
         [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向],
         [IFE分馏配方通用核心, IFE分馏塔增幅芯片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
@@ -426,7 +426,7 @@ public static class LimitedTimeStore {
         }
         if (info.item != null) {
             if (info.matrixDiscountedCount == 0 || !showMessage) {
-                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                     return;
                 }
                 if (info.itemCount >= info.item.StackSize) {
@@ -441,7 +441,7 @@ public static class LimitedTimeStore {
                     + $"{"来兑换".Translate()} {info.item.name} x {info.itemCount} {"吗？".Translate()}",
                     "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                     () => {
-                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                             return;
                         }
                         if (info.itemCount >= info.item.StackSize) {
@@ -455,7 +455,7 @@ public static class LimitedTimeStore {
             }
         } else {
             if (info.matrixDiscountedCount == 0 || !showMessage) {
-                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                     return;
                 }
                 info.recipe.RewardThis();
@@ -466,7 +466,7 @@ public static class LimitedTimeStore {
                     + $"{"来兑换".Translate()} {info.recipe.TypeName} {"吗？".Translate()}",
                     "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                     () => {
-                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _)) {
+                        if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                             return;
                         }
                         info.recipe.RewardThis();
