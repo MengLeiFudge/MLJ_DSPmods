@@ -43,8 +43,6 @@ static class AfterBuildEvent {
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
-        //等待游戏进程关闭
-        Thread.Sleep(1000);
         //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
         foreach (var dirInfo in new DirectoryInfo(@"..\..\..\..").GetDirectories()) {
             string csproj = $@"{dirInfo.FullName}\{dirInfo.Name}.csproj";
@@ -166,8 +164,14 @@ static class AfterBuildEvent {
                 if (!fileInfo.Directory.Exists) {
                     Directory.CreateDirectory(fileInfo.Directory.FullName);
                 }
-                File.Copy(file, targetPath, true);
-                Console.WriteLine($"复制 {file} -> {targetPath}");
+                while (true) {
+                    try {
+                        File.Copy(file, targetPath, true);
+                        Console.WriteLine($"复制 {file} -> {targetPath}");
+                        break;
+                    }
+                    catch { }
+                }
             }
             //额外打包
             if (projectName == "FractionateEverything") {
