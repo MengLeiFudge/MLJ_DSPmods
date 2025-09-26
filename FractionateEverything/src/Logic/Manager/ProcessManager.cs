@@ -686,7 +686,7 @@ public static class ProcessManager {
                 if (fractionator.fluidInputCount == 0)
                     fractionator.fluidInputCargoCount = 0.0f;
                 else
-                    fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1E-07
+                    fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1e-4
                         ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
                         : 4.0;
                 double speed = consumerRatio
@@ -811,7 +811,7 @@ public static class ProcessManager {
         if (fractionator.fluidInputCount == 0)
             fractionator.fluidInputCargoCount = 0.0f;
         else
-            fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1E-07
+            fluidInputCountPerCargo = fractionator.fluidInputCargoCount > 1e-4
                 ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
                 : 4.0;
         double speed = consumerRatio
