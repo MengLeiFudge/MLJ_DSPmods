@@ -429,11 +429,7 @@ public static class LimitedTimeStore {
                 if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                     return;
                 }
-                if (info.itemCount >= info.item.StackSize) {
-                    AddItemToModData(info.item.ID, info.itemCount);
-                } else {
-                    AddItemToPackage(info.item.ID, info.itemCount);
-                }
+                AddItemToModData(info.item.ID, info.itemCount);
                 info.exchanged = true;
             } else {
                 UIMessageBox.Show("提示".Translate(),
@@ -444,11 +440,7 @@ public static class LimitedTimeStore {
                         if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                             return;
                         }
-                        if (info.itemCount >= info.item.StackSize) {
-                            AddItemToModData(info.item.ID, info.itemCount);
-                        } else {
-                            AddItemToPackage(info.item.ID, info.itemCount);
-                        }
+                        AddItemToModData(info.item.ID, info.itemCount);
                         info.exchanged = true;
                     },
                     null);
