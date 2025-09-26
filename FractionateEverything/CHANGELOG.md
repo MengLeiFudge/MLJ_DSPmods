@@ -5,8 +5,8 @@
         + 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
         + 物流交互站调整。
             + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
-            + 星际供应/本地供应时，若物品数目超过90%/80%且未预定物品数目超过10%/20%，则上传物品直至达到指定的数目。
-            + 星际需求/本地需求时，若物品数目小于10%/20%，则下载物品直至达到10%/20%。
+            + 星际需求/本地需求时，若物品数目超过90%/80%且未预定物品数目超过10%/20%，则上传物品直至达到指定的数目。
+            + 星际供应/本地供应时，若物品数目小于10%/20%，则下载物品直至达到10%/20%。
             + 本地仓储时，如果不锁定，则保持上限一半数目，可以存取物品；如果锁定，将与中心保持相同数目。
             + 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
             + 可以用芯片提升物流交互站的输出堆叠，最多升至4堆叠。
@@ -26,40 +26,90 @@
         + 调整科技的依赖关系，确保科技按照正确的顺序解锁。
     + 分馏数据中心调整。
         + 物品交互支持沙土相关操作。
-        + 配方抽奖。
-            + 调整配方抽取概率，适当减少前期抽取概率（2.4%->1.8%），提高保底次数（25->33）。
-            + 奖券无法抽出更低级的配方，只能抽出同级配方。
-            + 某种奖券对应的配方全部抽取完毕后，仍可以继续抽奖。
-            + 配方抽奖无法获得任何奖券，或非黑雾的矩阵。
+        + 奖券抽奖调整。
+            + 现在，奖池被拆分为四个：配方奖池、原胚奖池、材料奖池、建筑奖池。
+                + 配方奖池可以抽取分馏配方、分馏配方通用核心、分馏精华。
+                + 原胚奖池可以抽取分馏塔原胚、分馏塔增幅芯片。
+                + 材料奖池可以抽取已解锁的材料（不含矩阵、奖券）。
+                + 建筑奖池可以抽取已解锁的建筑（不含新增分馏塔、物流交互站）。
+            + 重构了抽奖逻辑，调整了各个奖项的概率和数目。现在抽奖遵循等价原则。
+            + 配方奖池只能抽出同级配方。
             + 自动百连在面板关闭时也能正常执行。
-            + 添加当前奖券对应配方抽取情况显示。
-        + 建筑抽奖。
-            + 建筑抽奖无法获得分馏塔，只能获得原胚；原胚概率上调至30%，且可以抽出定向原胚。
-            + 建筑抽奖可以以较低概率获得行星内物流交互站、星际物流交互站。
-            + 自动百连在面板关闭时也能正常执行。
-        + 限时商店刷新时，自动兑换所有价值为0的物品/配方。
+            + 抽奖的奖品不再进入背包，而是直接存储在分馏数据中心。
+        + 限时商店调整。
+            + 限时商店仅在“物品交互”科技研究后启用。
+            + 刷新时，自动兑换所有价值为0的物品/配方。
+            + 移除矩阵兑换项。
+            + 兑换的物品不再进入背包，而是直接存储在分馏数据中心。
         + 配方图鉴添加“完全升级”的数目显示。
     + 玩家背包排序优化。
         + 单击时，会将背包内物品尽可能转移到已设置的物流槽位中。
-        + 双击时，背包内的所有物品会转移到分馏数据中心（物流背包不受影响）。
+        + “物品交互”科技研究后，双击时，将背包内的所有物品转移到分馏数据中心（物流背包不受影响）。
     + 深空来敌完成任务链物品要求、刷新元驱动、重置授权点时，可以使用分馏数据中心的物品。
 
-    + Add value for empty and full state of accumulator, accumulator mk2 when Orbital Ring is enabled.
-    + Adjust the rewards of Super Value Gift Pack tech to give more cores and chips.
-    + Lowering the hash value required for quantum cloning technology can accelerate research.
-    + Adjust technology dependencies to ensure technologies unlock in the correct sequence.
-    + Added 'Fully Upgraded' count display to recipes gallery.
-    + The sandy soil obtained from deconstruction recipes will be exported in solid form to fit certain mods that
-      require sandy soil items.
-    + The fractionation data centre supports item sand related operations.
-    + When double-clicking the player's backpack sorting button, all items in the backpack are transferred to the
-      fractionation data centre.
-    + Removed some conversion recipes.
-    + Fix an issue where items uploaded from the interaction tower did not carry proliferator points.
-    + Add the ability to draw a prize using half of the current raffle ticket.
-    + When the Limited-Time Shop refreshes, it will automatically exchange all items/recipes with a value of 0.
-    + The reduction in essence consumption for quantum replication has been adjusted from being exclusively applied to
-      golden recipes to being evenly distributed throughout the entire upgrade process.
+    + Building adjustments.
+        + Fixed an issue where items uploaded via the Interaction Tower did not carry proliferator points.
+        + When inputting at the front of the Interaction Tower, the interaction mode will be displayed and power
+          consumption will proceed as per normal operational status.
+        + Reduced the impact of proliferator points on the Quantum Duplication Tower's power consumption; power usage
+          for 10 proliferator points has been reduced from 4.9 times to 2.0 times.
+        + Logistics Interchange Station Adjustments.
+            + For interstellar storage, strategy follows local policy (equivalent to planetary logistics interchange
+              stations).
+            + For interstellar/local demand, if item quantity exceeds 90%/80% and unreserved quantity exceeds 10%/20%,
+              upload items until specified quantity is reached.
+            + For interstellar/local supply, if item quantity falls below 10%/20%, items are downloaded until reaching
+              10%/20%.
+            + For local storage, if unlocked, half the maximum capacity is maintained for item access; if locked,
+              quantities synchronise with the central hub.
+            + Uploading/downloading consumes power; higher item quantities or values increase consumption.
+            + Chips may be used to enhance the logistics hub's output stacking capacity, up to a maximum of 4 stacks.
+            + Chips may be employed to fortify the logistics hub, reducing power consumption during uploads/downloads by
+              up to 90%.
+            + When downloading items, priority is given to those with proliferator points of 4 points or higher.
+    + Recipe adjustments.
+        + Removed certain conversion recipes.
+        + Fixed abnormal conversion recipe output issues.
+        + Quantum Duplication Essence consumption reduction now evenly distributed across the entire upgrade process,
+          rather than solely affecting golden recipes.
+        + Sand obtained from decomposition recipes will now output as solid entities to accommodate mods requiring sand
+          items.
+        + Significantly increased recipe experience gain rate while reducing the experience ratio for sand exchange.
+        + Removed synthesis recipes for specific primal forms, adjusted values for all primal forms, fractionators, and
+          logistics hubs.
+        + Reduced essence value (500->200).
+    + Technology adjustments.
+        + Revised rewards for the Value Pack technology, granting increased cores and chips.
+        + Reduced hash value requirements for Quantum Cloning technology, enabling faster research.
+        + Adjusted technology dependencies to ensure correct unlock sequence.
+    + fractionation data centre adjustments.
+        + Item interactions now support sand-related operations.
+        + Prize draw adjustments.
+            + The prize pool is now divided into four categories: recipes pool, prototype pool, material pool, and
+              construction pool.
+                + The recipes pool yields distillation recipes, universal distillation recipe cores, and distillation
+                  essences.
+                + The Prototype Pool yields fractionator prototypes and fractionator enhancement chips.
+                + The Materials Pool yields unlocked materials (excluding Matrix and Lottery Tickets).
+                + The Building Pool can yield unlocked buildings (excluding newly added fractionators and Logistics
+                  Interchange Stations).
+            + Reward logic has been restructured, with adjusted probabilities and quantities for each prize category.
+              The system now adheres to the principle of equivalent value.
+            + The Recipes Pool can only yield recipes of the same tier.
+            + Auto-100 draws now function correctly even when the interface is minimised.
+            + Draw prizes no longer enter the backpack but are stored directly in the fractionation data centre.
+        + Limited-time shop adjustments.
+            + The limited-time shop is only enabled after researching the ‘Item Interaction’ technology.
+            + Upon refresh, all items/recipes with a value of 0 are automatically exchanged.
+            + Matrix exchange items have been removed.
+            + Exchanged items no longer enter the backpack but are stored directly in the fractionation data centre.
+        + Recipes now display the count of “Fully Upgraded” items in the recipes encyclopaedia.
+    + Optimised player backpack sorting.
+        + Single-clicking transfers items from the backpack to designated logistics slots where possible.
+        + After researching the ‘Item Interaction’ technology, double-clicking transfers all backpack items to the
+          fractionation data centre (logistics backpack unaffected).
+    + Items stored in the fractionation data centre can be used when completing Deep Space Enemy mission chains,
+      refreshing Meta Drives, or resetting Authorisation Points.
 
 - v2.1.6
     + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
