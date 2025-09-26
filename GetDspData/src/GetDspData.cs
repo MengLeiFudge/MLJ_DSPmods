@@ -112,6 +112,16 @@ public class GetDspData : BaseUnityPlugin {
             return;
         }
 
+        //冲突的mod同时启用时，直接返回
+        if (GenesisBookEnable && OrbitalRingEnable) {
+            LogWarning("创世与星环同时启用");
+            return;
+        }
+        if (TheyComeFromVoidEnable && OrbitalRingEnable) {
+            LogWarning("深空与星环同时启用");
+            return;
+        }
+
         //检测兼容补丁是否已执行完毕
         if (MoreMegaStructureEnable) {
             if (GenesisBookEnable && !Harmony.HasAnyPatches(GBMSHarmonyPatchID)) {
@@ -401,7 +411,7 @@ public class GetDspData : BaseUnityPlugin {
                     || item.canMiningFromSea()
                     || item.canMiningFromOilWell()
                     || item.canMiningFromGasGiant()
-                    || item.canMiningFromAtmosphere()
+                    || (GenesisBookEnable && item.canMiningFromAtmosphere())
                     || item.canMiningByRayReceiver()) {
                     foreach (var recipe in recipes) {
                         var resultsArr = ((JArray)((JObject)recipe)["Results"]).Values<int>();
@@ -423,18 +433,25 @@ public class GetDspData : BaseUnityPlugin {
                     factorySpecial = [..factorySpecial, I采矿机, I大型采矿机];
                 }
                 if (item.canMiningFromSea()) {
-                    factorySpecial = [..factorySpecial, I抽水站];
                     if (GenesisBookEnable) {
-                        factorySpecial = [..factorySpecial, IGB聚束液体汲取设施];
+                        factorySpecial = [..factorySpecial, I抽水站, IGB聚束液体汲取设施];
+                    } else if (OrbitalRingEnable) {
+                        factorySpecial = [..factorySpecial, IOR流体抽取平台];
+                    } else {
+                        factorySpecial = [..factorySpecial, I抽水站];
                     }
                 }
                 if (item.canMiningFromOilWell()) {
-                    factorySpecial = [..factorySpecial, I原油萃取站];
+                    if (OrbitalRingEnable) {
+                        factorySpecial = [..factorySpecial, IOR激光钻井平台];
+                    } else {
+                        factorySpecial = [..factorySpecial, I原油萃取站];
+                    }
                 }
                 if (item.canMiningFromGasGiant()) {
                     factorySpecial = [..factorySpecial, I轨道采集器];
                 }
-                if (item.canMiningFromAtmosphere()) {
+                if (GenesisBookEnable && item.canMiningFromAtmosphere()) {
                     factorySpecial = [..factorySpecial, IGB大气采集站];
                 }
                 if (factorySpecial.Count == 0) {
