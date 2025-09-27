@@ -5,8 +5,8 @@
         + 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
         + 物流交互站调整。
             + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
-            + 星际需求/本地需求时，若物品数目超过90%/80%且未预定物品数目超过10%/20%，则上传物品直至达到指定的数目。
-            + 星际供应/本地供应时，若物品数目小于10%/20%，则下载物品直至达到10%/20%。
+            + 星际供应/本地供应时，若物品数目不足20%/10%，则下载至20%/10%。
+            + 星际需求/本地需求时，若物品数目超过80%/90%，中心物品数目不足10组，未被预定数目超过20%/10%，则下载至80%/90%。
             + 本地仓储时，如果不锁定，则保持上限一半数目，可以存取物品；如果锁定，将与中心保持相同数目。
             + 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
             + 可以用芯片提升物流交互站的输出堆叠，最多升至4堆叠。
@@ -56,10 +56,9 @@
         + Logistics Interchange Station Adjustments.
             + For interstellar storage, strategy follows local policy (equivalent to planetary logistics interchange
               stations).
-            + For interstellar/local demand, if item quantity exceeds 90%/80% and unreserved quantity exceeds 10%/20%,
-              upload items until specified quantity is reached.
-            + For interstellar/local supply, if item quantity falls below 10%/20%, items are downloaded until reaching
-              10%/20%.
+            + For interstellar/local supply, if the item quantity falls below 20%/10%, download to 20%/10%.
+            + For interstellar/local demand, if the item quantity exceeds 80%/90%, the central item count is less than
+              10 sets, and the unreserved quantity exceeds 20%/10%, download to 80%/90%.
             + For local storage, if unlocked, half the maximum capacity is maintained for item access; if locked,
               quantities synchronise with the central hub.
             + Uploading/downloading consumes power; higher item quantities or values increase consumption.
