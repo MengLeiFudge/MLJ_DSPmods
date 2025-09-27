@@ -30,7 +30,6 @@ public static class MainWindow {
         ImportantItem.AddTranslations();
         Register("资源获取", "Resource Collection");
         TicketRaffle.AddTranslations();
-        SelectedRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
         Register("进度系统", "Progress System");
         MainTask.AddTranslations();
@@ -54,7 +53,6 @@ public static class MainWindow {
         ImportantItem.LoadConfig(configFile);
 
         TicketRaffle.LoadConfig(configFile);
-        SelectedRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
 
         MainTask.LoadConfig(configFile);
@@ -94,7 +92,6 @@ public static class MainWindow {
         ImportantItem.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "资源获取");
         TicketRaffle.CreateUI(wnd, trans);
-        SelectedRaffle.CreateUI(wnd, trans);
         LimitedTimeStore.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "进度系统");
         MainTask.CreateUI(wnd, trans);
@@ -120,7 +117,6 @@ public static class MainWindow {
         ImportantItem.UpdateUI();
 
         TicketRaffle.UpdateUI();
-        SelectedRaffle.UpdateUI();
         LimitedTimeStore.UpdateUI();
 
         MainTask.UpdateUI();
@@ -192,7 +188,9 @@ public static class MainWindow {
         ImportantItem.Import(r);
 
         TicketRaffle.Import(r);
-        SelectedRaffle.Import(r);
+        if (version <= 1) {
+            r.ReadInt32();
+        }
         LimitedTimeStore.Import(r);
 
         MainTask.Import(r);
@@ -209,7 +207,7 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
 
         BuildingOperate.Export(w);
         RecipeOperate.Export(w);
@@ -218,7 +216,6 @@ public static class MainWindow {
         ImportantItem.Export(w);
 
         TicketRaffle.Export(w);
-        SelectedRaffle.Export(w);
         LimitedTimeStore.Export(w);
 
         MainTask.Export(w);
@@ -242,7 +239,6 @@ public static class MainWindow {
         ImportantItem.IntoOtherSave();
 
         TicketRaffle.IntoOtherSave();
-        SelectedRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();
 
         MainTask.IntoOtherSave();
