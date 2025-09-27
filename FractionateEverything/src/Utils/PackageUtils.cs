@@ -456,7 +456,7 @@ public static partial class Utils {
             return count;
         }
         //其他情况，根据设置的顺序拿取物品
-        int[] TakeItemPriority = ExtractAndPopup.TakeItemPriority;
+        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
         int countReal = 0;
         int itemIdOri = itemId;
         int countNeed = count;
@@ -570,7 +570,7 @@ public static partial class Utils {
             return;
         }
         //其他情况，根据设置的顺序拿取物品
-        int[] TakeItemPriority = ExtractAndPopup.TakeItemPriority;
+        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
         int countReal = 0;
         int itemIdOri = itemId;
         int countNeed = count;
@@ -893,8 +893,8 @@ public static partial class Utils {
             return;
         }
         int count = leftClick
-            ? item.StackSize * ExtractAndPopup.LeftClickTakeCount
-            : item.StackSize * ExtractAndPopup.RightClickTakeCount;
+            ? item.StackSize * Miscellaneous.LeftClickTakeCount
+            : item.StackSize * Miscellaneous.RightClickTakeCount;
         int inc;
         lock (centerItemCount) {
             count = TakeItemFromModData(itemId, count, out inc);

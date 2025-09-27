@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.UI.Components;
@@ -7,7 +8,7 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
 
-public static class ExtractAndPopup {
+public static class Miscellaneous {
     private static RectTransform window;
     private static RectTransform tab;
 
@@ -37,8 +38,24 @@ public static class ExtractAndPopup {
     private static ConfigEntry<int> TakeItemPriorityEntry;
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
 
+    private static ConfigEntry<float> DownloadThresholdEntry;
+    public static float DownloadThreshold => DownloadThresholdEntry.Value;
+
+    private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 8) {
+        public override float IndexToValue(int index) => index * 0.05f;
+        public override int ValueToIndex(float value) => (int)Math.Round(value / 0.05f);
+    }
+
+    private static ConfigEntry<float> UploadThresholdEntry;
+    public static float UploadThreshold => UploadThresholdEntry.Value;
+
+    private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 8) {
+        public override float IndexToValue(int index) => 0.6f + index * 0.05f;
+        public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.05f);
+    }
+
     public static void AddTranslations() {
-        Register("提取&弹窗", "Extract & Pop-up");
+        Register("杂项设置", "Miscellaneous");
 
         Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
@@ -47,26 +64,39 @@ public static class ExtractAndPopup {
         Register("背包", "Package");
         Register("物流背包", "Delivery Package");
         //Register("分馏数据中心", "Fractionation Data Centre");
+
+        Register("物流交互站下载阈值", "Interaction Station download threshold");
+        Register("物流交互站上传阈值", "Interaction Station upload threshold");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        LeftClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "LeftClickTakeCount", 0, "左键单击时提取几组物品");
+        LeftClickTakeCountEntry = configFile.Bind("Miscellaneous", "LeftClickTakeCount", 0, "左键单击时提取几组物品");
         if (LeftClickTakeCountEntry.Value < 0 || LeftClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             LeftClickTakeCountEntry.Value = 0;
         }
-        RightClickTakeCountEntry = configFile.Bind("Extract & Pop-up", "RightClickTakeCount", 3, "右键单击时提取几组物品");
+        RightClickTakeCountEntry = configFile.Bind("Miscellaneous", "RightClickTakeCount", 3, "右键单击时提取几组物品");
         if (RightClickTakeCountEntry.Value < 0 || RightClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             RightClickTakeCountEntry.Value = 3;
         }
-        TakeItemPriorityEntry = configFile.Bind("Extract & Pop-up", "TakeItemPriority", 1, "物品消耗顺序");
+
+        TakeItemPriorityEntry = configFile.Bind("Miscellaneous", "TakeItemPriority", 1, "物品消耗顺序");
         if (TakeItemPriorityEntry.Value < 0 || TakeItemPriorityEntry.Value >= TakeItemPriorityArr.Length) {
             TakeItemPriorityEntry.Value = 1;
+        }
+
+        DownloadThresholdEntry = configFile.Bind("Miscellaneous", "DownloadThreshold", 0.2f, "物流交互站下载阈值");
+        if (DownloadThresholdEntry.Value < 0 || DownloadThresholdEntry.Value > 0.4f) {
+            DownloadThresholdEntry.Value = 0.2f;
+        }
+        UploadThresholdEntry = configFile.Bind("Miscellaneous", "UploadThreshold", 0.8f, "物流交互站上传阈值");
+        if (UploadThresholdEntry.Value < 0.6f || UploadThresholdEntry.Value > 1) {
+            UploadThresholdEntry.Value = 0.8f;
         }
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "提取&弹窗");
+        tab = wnd.AddTab(trans, "杂项设置");
         float x = 0f;
         float y = 18f;
         wnd.AddComboBox(x, y, tab, "左键单击时提取几组物品")
@@ -77,6 +107,14 @@ public static class ExtractAndPopup {
         y += 36f;
         wnd.AddComboBox(x, y, tab, "物品消耗顺序")
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
+        y += 36f;
+        var txt = wnd.AddText2(x, y, tab, "物流交互站下载阈值");
+        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+            DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
+        y += 36f;
+        txt = wnd.AddText2(x, y, tab, "物流交互站上传阈值");
+        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+            UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
     }
 
     public static void UpdateUI() {
