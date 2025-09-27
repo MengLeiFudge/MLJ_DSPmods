@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.UI.View.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,6 +71,9 @@ public static class StationManager {
                 (stations[i], stations[j]) = (stations[j], stations[i]);
             }
             // 循环所有的交互站
+            float downloadThreshold = Miscellaneous.DownloadThreshold;
+            float uploadThreshold = Miscellaneous.UploadThreshold;
+            float uploadThreshold2 = 1 - uploadThreshold;
             foreach (StationComponent stationComponent in stations) {
                 // 循环交互站的所有的栏位
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
@@ -78,67 +82,39 @@ public static class StationManager {
                     if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
                         continue;
                     }
-                    switch (store.remoteLogic) {
-                        case ELogisticStorage.Supply:
-                            // 星际供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
-                            if (store.totalSupplyCount < store.max * 0.2) {
-                                stationComponent.SetTargetCount(i,
-                                    Math.Max(store.count, (int)(store.max * 0.2 - store.totalOrdered)));
-                            }
-                            break;
-                        case ELogisticStorage.Demand:
-                            // 星际需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
-                            if (store.count > store.max * 0.8 && store.totalSupplyCount > store.max * 0.2) {
-                                int modTargetCount = itemModSaveCount[store.itemId];
-                                long modCurrCount = GetModDataItemCount(store.itemId);
-                                if (modCurrCount < modTargetCount) {
-                                    int transferCount = Math.Min(store.count - (int)(store.max * 0.8),
-                                        modTargetCount - (int)modCurrCount);
-                                    stationComponent.SetTargetCount(i, store.count - transferCount);
-                                }
-                            }
-                            break;
-                        case ELogisticStorage.None:
-                            // 星际仓储：说明无星际物流，应该根据本地策略决定塔的处理方式
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                    if (store.remoteLogic == ELogisticStorage.Supply || store.localLogic == ELogisticStorage.Supply) {
+                        // 供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
+                        if (store.totalSupplyCount < store.max * downloadThreshold) {
+                            stationComponent.SetTargetCount(i,
+                                Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)));
+                        }
                     }
-                    switch (store.localLogic) {
-                        case ELogisticStorage.Supply:
-                            // 本地供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
-                            if (store.totalSupplyCount < store.max * 0.1) {
-                                stationComponent.SetTargetCount(i,
-                                    Math.Max(store.count, (int)(store.max * 0.1 - store.totalOrdered)));
+                    if (store.remoteLogic == ELogisticStorage.Demand || store.localLogic == ELogisticStorage.Demand) {
+                        // 需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
+                        if (store.count > store.max * uploadThreshold
+                            && store.totalSupplyCount > store.max * uploadThreshold2) {
+                            int modTargetCount = itemModSaveCount[store.itemId];
+                            long modCurrCount = GetModDataItemCount(store.itemId);
+                            if (modCurrCount < modTargetCount) {
+                                int transferCount = Math.Min(store.count - (int)(store.max * uploadThreshold),
+                                    modTargetCount - (int)modCurrCount);
+                                stationComponent.SetTargetCount(i, store.count - transferCount);
                             }
-                            break;
-                        case ELogisticStorage.Demand:
-                            // 本地需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
-                            if (store.count > store.max * 0.9 && store.totalSupplyCount > store.max * 0.1) {
-                                int modTargetCount = itemModSaveCount[store.itemId];
-                                long modCurrCount = GetModDataItemCount(store.itemId);
-                                if (modCurrCount < modTargetCount) {
-                                    int transferCount = Math.Min(store.count - (int)(store.max * 0.9),
-                                        modTargetCount - (int)modCurrCount);
-                                    stationComponent.SetTargetCount(i, store.count - transferCount);
-                                }
-                            }
-                            break;
-                        case ELogisticStorage.None:
-                            // 本地仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
-                            // 本地仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
-                            if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
-                                int totalCount = (int)Math.Min(int.MaxValue,
-                                    store.count + GetModDataItemCount(store.itemId));
-                                // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
-                                int avgCount = totalCount / 2;
-                                stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount));
-                            } else {
-                                stationComponent.SetTargetCount(i, store.max / 2);
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    if (store.localLogic == ELogisticStorage.None) {
+                        // 本地仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
+                        // 本地仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
+                        if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
+                            int totalCount = (int)Math.Min(int.MaxValue,
+                                store.count + GetModDataItemCount(store.itemId));
+                            // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
+                            int avgCount = totalCount / 2;
+                            stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount));
+                        } else {
+                            stationComponent.SetTargetCount(i, store.max / 2);
+                        }
+                        break;
                     }
                 }
             }

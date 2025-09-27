@@ -4,7 +4,6 @@ using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
-using UnityEngine.UI;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
@@ -13,11 +12,13 @@ public static class SandboxMode {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static UIButton btnUnlockAll;
     private static ConfigEntry<float> ExpMultiRateEntry;
     public static float ExpMultiRate { get; private set; }
-    private static Text txtExpMultiRate;
-    private static MySlider sliderExpMultiRate;
+
+    private class MultiRateMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
+        public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
+        public override int ValueToIndex(float value) => (int)(Math.Log10(value) * 10.0 + 10);
+    }
 
     public static void AddTranslations() {
         Register("沙盒模式", "Sandbox Mode");
@@ -34,23 +35,18 @@ public static class SandboxMode {
         ExpMultiRate = ExpMultiRateEntry.Value;
     }
 
-    private class MultiRateMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
-        public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
-        public override int ValueToIndex(float value) => (int)(Math.Log10(value) * 10.0 + 10);
-    }
-
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
         float y = 18f;
-        btnUnlockAll = wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
+        wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
-        txtExpMultiRate = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-        sliderExpMultiRate = wnd.AddSlider(x + txtExpMultiRate.preferredWidth + 5, y, tab,
+        var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
+        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
             ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + txtExpMultiRate.preferredWidth + 5 + 200 + 5, y, tab,
+        wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
             "经验获取倍率", "经验获取倍率说明");
     }
 
@@ -60,10 +56,7 @@ public static class SandboxMode {
         }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
         bool sandboxMode = GameMain.sandboxToolsEnabled;
-        btnUnlockAll.enabled = sandboxMode;
-        btnUnlockAll.button.enabled = sandboxMode;
         ExpMultiRate = sandboxMode ? ExpMultiRateEntry.Value : 1;
-        sliderExpMultiRate.slider.enabled = sandboxMode;
     }
 
     #region IModCanSave
