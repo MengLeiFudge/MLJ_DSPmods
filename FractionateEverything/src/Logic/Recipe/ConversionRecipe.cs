@@ -33,11 +33,11 @@ public class ConversionRecipe : BaseRecipe {
         // CreateChain([[I高能石墨], [I金刚石, I石墨烯], [I碳纳米管], [I粒子宽带], [IGB光学信息传输纤维]]);
         // CreateChain([[I粒子容器], [I奇异物质], [I引力透镜], [I空间翘曲器]]);
         // CreateChain([[I钛晶石], [I卡西米尔晶体]]);
-        if (GenesisBook.Enable) {
-            CreateChain([[IGB基础机械组件], [IGB先进机械组件], [IGB尖端机械组件], [IGB超级机械组件]]);
-            CreateChain([[IGB塑料基板], [IGB光学基板]]);
-            CreateChain([[IGB量子计算主机], [IGB超越X1型光学主机]]);
-        }
+        // if (GenesisBook.Enable) {
+        //     CreateChain([[IGB基础机械组件], [IGB先进机械组件], [IGB尖端机械组件], [IGB超级机械组件]]);
+        //     CreateChain([[IGB塑料基板], [IGB光学基板]]);
+        //     CreateChain([[IGB量子计算主机], [IGB超越X1型光学主机]]);
+        // }
         // CreateChain([[I玻璃], [I钛化玻璃], [IGB钨强化玻璃]]);
         // CreateChain([[I氢], [I重氢]]);
         // CreateChain([[IGB氦], [IGB氦三]]);
