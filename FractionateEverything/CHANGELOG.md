@@ -5,8 +5,9 @@
         + 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
         + 物流交互站调整。
             + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
-            + 星际供应/本地供应时，若物品数目不足20%/10%，则下载至20%/10%。
-            + 星际需求/本地需求时，若物品数目超过80%/90%，中心物品数目不足10组，未被预定数目超过20%/10%，则下载至80%/90%。
+            + 星际供应/本地供应时，若物品数目不足20%，则下载至20%。
+            + 星际需求/本地需求时，若物品数目超过80%，未被预定数目超过20%，中心物品数目不足10组，则上传至80%。
+            + 可以在分馏数据中心的设置页面调整上传/下载阈值。
             + 本地仓储时，如果不锁定，则保持上限一半数目，可以存取物品；如果锁定，将与中心保持相同数目。
             + 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
             + 可以用芯片提升物流交互站的输出堆叠，最多升至4堆叠。
@@ -56,11 +57,12 @@
         + Logistics Interchange Station Adjustments.
             + For interstellar storage, strategy follows local policy (equivalent to planetary logistics interchange
               stations).
-            + For interstellar/local supply, if the item quantity falls below 20%/10%, download to 20%/10%.
-            + For interstellar/local demand, if the item quantity exceeds 80%/90%, the central item count is less than
-              10 sets, and the unreserved quantity exceeds 20%/10%, download to 80%/90%.
+            + For interstellar/local supply, if the item quantity falls below 20%, download to 20%.
+            + For interstellar/local demand, if the item quantity exceeds 80%, the unreserved quantity exceeds 20%, and
+              the central item count is less than 10 sets, upload to 80%.
             + For local storage, if unlocked, half the maximum capacity is maintained for item access; if locked,
               quantities synchronise with the central hub.
+            + The upload/download thresholds can be adjusted on the settings page of the fractionation data centre.
             + Uploading/downloading consumes power; higher item quantities or values increase consumption.
             + Chips may be used to enhance the logistics hub's output stacking capacity, up to a maximum of 4 stacks.
             + Chips may be employed to fortify the logistics hub, reducing power consumption during uploads/downloads by
