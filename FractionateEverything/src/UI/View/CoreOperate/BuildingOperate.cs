@@ -248,22 +248,32 @@ public static class BuildingOperate {
             }
 
             string[] strs;
-            if (SelectedBuilding.ID != IFE行星内物流交互站) {
+            if (SelectedBuilding.ID == IFE点数聚集塔) {
                 strs = [
                     "当前强化加成：".Translate(),
                     $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
                     $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
                     $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
-                    $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
-                    $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}"
+                    "",
+                    "",
+                    ""
                 ];
-            } else {
+            } else if (SelectedBuilding.ID == IFE行星内物流交互站) {
                 strs = [
                     "当前强化加成：".Translate(),
                     $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
                     $"{"电力消耗".Translate()} -{1 - SelectedBuilding.ReinforcementBonusEnergy():P1}",
                     "",
                     "",
+                    ""
+                ];
+            } else {
+                strs = [
+                    "当前强化加成：".Translate(),
+                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                    $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                    $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
+                    $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
                     ""
                 ];
             }
@@ -316,7 +326,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = SelectedBuilding.ID != IFE行星内物流交互站 ? 6 : 1;
+        int takeCount = SelectedBuilding.ID == IFE行星内物流交互站 ? 6 : 1;
         if (SelectedBuilding.MaxProductOutputStack() >= 4) {
             return;
         }
@@ -342,7 +352,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 5;
+        int takeCount = 2;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
