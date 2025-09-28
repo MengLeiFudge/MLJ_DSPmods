@@ -42,25 +42,9 @@ public static class TicketRaffle {
     private static UIButton btnMaxRaffle1;
     private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
     private static ConfigEntry<bool> EnableAutoRaffle1Entry;
-    /// <summary>
-    /// 下一抽是第几抽。
-    /// </summary>
-    private static readonly int[] RecipeRaffleCounts = new int[7];
-    private static readonly float[] RecipeRaffleMaxCounts = [32.768f, 40.96f, 51.2f, 64, 80, 100, 100];
-    /// <summary>
-    /// 计算某次抽奖的配方获取概率。
-    /// 当前抽奖次数未超过RecipeRaffleMaxCount*0.8时，概率恒定为对应基础概率；
-    /// 超过RecipeRaffleMaxCount*0.8时，每次抽奖都会增加概率，直至达到RecipeRaffleMaxCount次时，概率为100%。
-    /// </summary>
-    private static float RecipeRaffleRate {
-        get {
-            float baseRate = 0.6f / RecipeRaffleMaxCounts[TicketIdx1];
-            float countP20 = RecipeRaffleMaxCounts[TicketIdx1] / 5.0f;
-            float countP80 = RecipeRaffleMaxCounts[TicketIdx1] - countP20;
-            float plusRate = (1.0f - baseRate) / countP20;
-            return baseRate + Math.Max(0, RecipeRaffleCounts[TicketIdx1] - countP80) * plusRate;
-        }
-    }
+    private static readonly float[] RecipeRaffleMaxCounts = [33.614f, 48.02f, 68.6f, 98, 140, 200, 100];
+    private static float RecipeRaffleMaxCount => RecipeRaffleMaxCounts[TicketIdx1];
+    private static float RecipeValue => (float)Math.Sqrt(itemValue[SelectedMatrixId1] * RecipeRaffleMaxCount);
     //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方6种（横）+总计
     private static Text[,] recipeUnlockInfoText = new Text[2, 7];
 
@@ -348,8 +332,8 @@ public static class TicketRaffle {
     /// <returns>返回一个元组(概率[12000], 数目[12000])，索引表示物品id（0表示配方）</returns>
     private static (float[], int[]) GeneratePool(int ticketId, int[] specialItems, float[] specialRates,
         List<ItemProto> commonItems, float recipeValue = float.MaxValue) {
-        float ticketValue = itemValue[ticketId];
-        float leftValue = itemValue[ticketId];
+        float ticketValue = itemValue[ticketId] * VipFeatures.TicketValueMulti;
+        float leftValue = ticketValue;
         //1.计算已预订奖券价值物品的pc
         //每个物品的pc（如果c为1，则pc等于p）
         float[] pc = new float[12000];
@@ -372,6 +356,7 @@ public static class TicketRaffle {
             }
             leftValue -= pc[id];
             counts[id] = 1;
+            LogWarning($"GeneratePool: pc[{id}] = {pc[id]}, 1/RecipeRaffleMaxCount = {1.0 / RecipeRaffleMaxCount}");
         }
         if (specialRatesOverRange) {
             return (pc, counts);
@@ -422,32 +407,31 @@ public static class TicketRaffle {
         if (!TakeItemWithTip(SelectedTicketId1, raffleCount, out _, showMessage)) {
             return;
         }
-        VipFeatures.AddExp(itemValue[SelectedTicketId1] * raffleCount);
+        float ticketValue = itemValue[SelectedTicketId1];
+        VipFeatures.AddExp(ticketValue * raffleCount);
+        //构建奖池
         List<BaseRecipe> recipes = GetRecipesByMatrix(SelectedMatrixId1);
-        float recipeValue = RecipeRaffleMaxCounts[TicketIdx1];
+        recipes.RemoveAll(recipe => recipe.IsMaxEcho);
+        int[] specialItems = [IFE分馏配方通用核心, 0];
+        float[] specialRates = new float[2];
+        //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
+        specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+        //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
+        specialRates[1] = recipes.Count == 0
+            ? 0
+            : (1.0f / RecipeRaffleMaxCounts[TicketIdx1]) * RecipeValue / ticketValue / VipFeatures.TicketValueMulti;
+        List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
+            item.ID >= IFE复制精华 && item.ID <= IFE转化精华
+        ).ToList();
+        (float[] rates, int[] counts) = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems,
+            RecipeValue);
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
         StringBuilder sb2 = new();
         int oneLineCount = 0;
         while (raffleCount > 0) {
-            //todo: 性能开销太大！需要优化
-            //构建奖池
-            recipes.RemoveAll(recipe => recipe.IsMaxEcho);
-            int[] specialItems = [IFE分馏配方通用核心, 0];
-            float[] specialRates = new float[2];
-            //奖券价值*specialRates[1]=配方分配到的价值=配方概率*配方单价
-            //specialRates[1]=配方概率*配方单价/奖券价值
-            specialRates[1] = recipes.Count == 0 ? 0 : RecipeRaffleRate * recipeValue / itemValue[SelectedTicketId1];
-            specialRates[0] = Math.Max(0, 0.8f - specialRates[1]);
-            List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
-                item.ID >= IFE复制精华 && item.ID <= IFE转化精华
-            ).ToList();
-            (float[] rates, int[] counts) = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems,
-                recipeValue);
-            //抽奖
             raffleCount--;
-            RecipeRaffleCounts[TicketIdx1]++;
             double currRate = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
@@ -458,7 +442,6 @@ public static class TicketRaffle {
                 }
                 nothing = false;
                 if (i == 0) {
-                    RecipeRaffleCounts[TicketIdx1] = 0;
                     //优先抽取非量子复制配方
                     List<BaseRecipe> recipesOptimize = [..recipes];
                     if (recipesOptimize.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)) {
@@ -480,6 +463,13 @@ public static class TicketRaffle {
                         sb.Append("          ");
                     }
                     sb.Append($"{recipe.TypeName}".WithColor(Gold));
+                    //更新可抽取的配方状态
+                    recipes.RemoveAll(recipe => recipe.IsMaxEcho);
+                    if (recipes.Count == 0) {
+                        specialRates[1] = 0;
+                        (rates, counts) = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems,
+                            RecipeValue);
+                    }
                     oneLineCount++;
                 } else {
                     int count = counts[i];
@@ -556,15 +546,16 @@ public static class TicketRaffle {
             IFE分馏塔原胚传说,
             IFE分馏塔原胚定向,
         ];
-        float[] specialRates = [
-            0.8f,
-            0.2f * 50 / 121,
-            0.2f * 35 / 121,
-            0.2f * 20 / 121,
-            0.2f * 10 / 121,
-            0.2f * 5 / 121,
-            0.2f * 1 / 121,
-        ];
+        float[] specialRates = new float[7];
+        //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
+        specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+        float specialRates16Sum = 1 - specialRates[0];
+        specialRates[1] = specialRates16Sum * 50 / 121;
+        specialRates[2] = specialRates16Sum * 35 / 121;
+        specialRates[3] = specialRates16Sum * 20 / 121;
+        specialRates[4] = specialRates16Sum * 10 / 121;
+        specialRates[5] = specialRates16Sum * 5 / 121;
+        specialRates[6] = specialRates16Sum * 1 / 121;
         List<ItemProto> commonItems = [];
         (float[] rates, int[] counts) = GeneratePool(SelectedTicketId2, specialItems, specialRates, commonItems);
         //开抽！
@@ -842,12 +833,12 @@ public static class TicketRaffle {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        if (version >= 2) {
-            for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
-                RecipeRaffleCounts[i] = r.ReadInt32();
+        if (version == 1) {
+            r.ReadInt32();
+        } else if (version == 2 || version == 3) {
+            for (int i = 0; i < 7; i++) {
+                r.ReadInt32();
             }
-        } else {
-            RecipeRaffleCounts[RecipeRaffleCounts.Length - 1] = r.ReadInt32();
         }
         if (version >= 3) {
             TicketIdx1Entry.Value = r.ReadInt32();
@@ -862,10 +853,7 @@ public static class TicketRaffle {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(3);
-        for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
-            w.Write(RecipeRaffleCounts[i]);
-        }
+        w.Write(4);
         w.Write(TicketIdx1Entry.Value);
         w.Write(EnableAutoRaffle1Entry.Value);
         w.Write(TicketIdx2Entry.Value);
@@ -877,9 +865,6 @@ public static class TicketRaffle {
     }
 
     public static void IntoOtherSave() {
-        for (int i = 0; i < RecipeRaffleCounts.Length; i++) {
-            RecipeRaffleCounts[i] = 0;
-        }
         lastAutoRaffleTick = 0;
         TicketIdx1Entry.Value = 0;
         EnableAutoRaffle1Entry.Value = false;

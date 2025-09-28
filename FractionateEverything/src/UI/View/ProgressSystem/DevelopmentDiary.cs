@@ -103,7 +103,7 @@ public static class DevelopmentDiary {
             + $"不过，新项目叫什么名字呢？肯定不能跟之前的一样。\n"
             + $"嗯——有了！不如，就叫它{"万物分馏（Fractionate Everything）".WithColor(Orange)}吧！");
 
-        Register("FE1.0-6",
+        Register("FE1.0-7",
             "",
             "2023年12月"
             + $"我新建了一个项目\n"
