@@ -45,8 +45,19 @@ public static class TicketRaffle {
     private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
     private static ConfigEntry<bool> EnableAutoRaffle1Entry;
     private static readonly float[] RecipeRaffleMaxCounts = [33.614f, 48.02f, 68.6f, 98, 140, 200, 100];
-    private static float RecipeRaffleMaxCount => RecipeRaffleMaxCounts[TicketIdx1];
-    private static float RecipeValue => (float)Math.Sqrt(itemValue[SelectedMatrixId1] * RecipeRaffleMaxCount);
+    private static float[] _recipeValues;
+    public static float[] RecipeValues {
+        get {
+            if (_recipeValues == null && itemValue[IFE电磁奖券] > 0) {
+                _recipeValues = new float[7];
+                for (int i = 0; i < 7; i++) {
+                    _recipeValues[i] = (float)Math.Sqrt(itemValue[TicketIds[i]] * RecipeRaffleMaxCounts[i]);
+                }
+            }
+            return _recipeValues;
+        }
+    }
+    private static float RecipeValue => RecipeValues == null ? float.MaxValue : RecipeValues[TicketIdx1];
     //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方6种（横）+总计
     private static Text[,] recipeUnlockInfoText = new Text[2, 7];
 
@@ -517,10 +528,10 @@ public static class TicketRaffle {
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
                     recipe.RewardThis();
                     if (recipe.Echo == 0) {
-                        sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(Orange));
+                        sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
                     } else {
                         string tip = string.Format("已转为同名回响提示".Translate(), recipe.Echo);
-                        sb2.AppendLine($"{recipe.TypeName} {tip}".WithColor(Orange));
+                        sb2.AppendLine($"{recipe.TypeName} {tip}".WithColor(RecipeValue));
                     }
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
@@ -528,7 +539,7 @@ public static class TicketRaffle {
                     } else if (oneLineCount > 0) {
                         sb.Append("          ");
                     }
-                    sb.Append($"{recipe.TypeName}".WithColor(Gold));
+                    sb.Append($"{recipe.TypeName}".WithColor(RecipeValue));
                     //更新可抽取的配方状态
                     recipes.RemoveAll(recipe => recipe.IsMaxEcho);
                     if (recipes.Count == 0) {
@@ -549,7 +560,7 @@ public static class TicketRaffle {
                     } else if (oneLineCount > 0) {
                         sb.Append("          ");
                     }
-                    sb.Append($"{LDB.items.Select(i).name} x {count}".WithValueColor(i));
+                    sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
                     oneLineCount++;
                 }
                 break;
@@ -630,7 +641,7 @@ public static class TicketRaffle {
                 } else if (oneLineCount > 0) {
                     sb.Append("          ");
                 }
-                sb.Append($"{LDB.items.Select(i).name} x {count}".WithValueColor(i));
+                sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
                 oneLineCount++;
                 break;
             }
@@ -721,7 +732,7 @@ public static class TicketRaffle {
                 } else if (oneLineCount > 0) {
                     sb.Append("          ");
                 }
-                sb.Append($"{LDB.items.Select(i).name} x {count}".WithValueColor(i));
+                sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
                 oneLineCount++;
                 break;
             }
@@ -810,7 +821,7 @@ public static class TicketRaffle {
                 } else if (oneLineCount > 0) {
                     sb.Append("          ");
                 }
-                sb.Append($"{LDB.items.Select(i).name} x {count}".WithValueColor(i));
+                sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
                 oneLineCount++;
                 break;
             }

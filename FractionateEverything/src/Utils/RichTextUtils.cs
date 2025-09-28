@@ -25,12 +25,12 @@ public static partial class Utils {
     public static Color Gray2 = new(255 / 255f, 255 / 255f, 255 / 255f, 102 / 255f);//UX使用的颜色
     public static Color Gray3 = new(178 / 255f, 178 / 255f, 178 / 255f, 168 / 255f);//UX使用的颜色
     public static Color White = new(0xE0 / 255f, 0xE0 / 255f, 0xE0 / 255f, 0xB7 / 255f);
-    public static Color Green = new(0x60 / 255f, 0xC0 / 255f, 0x00 / 255f, 0xB7 / 255f);
+    public static Color Green = new(0x60 / 255f, 0xC0 / 255f, 0x00 / 255f, 0xCC / 255f);
     public static Color Blue = new(0x61 / 255f, 0xD8 / 255f, 0xFF / 255f, 0xB8 / 255f);
     public static Color Purple = new(0xB0 / 255f, 0x60 / 255f, 0xC0 / 255f, 0xB7 / 255f);
     public static Color Red = new(0xFF / 255f, 0x5D / 255f, 0x4C / 255f, 0xB7 / 255f);
     public static Color Orange = new(0xFD / 255f, 0x96 / 255f, 0x5E / 255f, 0xCC / 255f);
-    public static Color Gold = new(0xE0 / 255f, 0xB0 / 255f, 0x00 / 255f, 0xB7 / 255f);
+    public static Color Gold = new(0xE0 / 255f, 0xB0 / 255f, 0x00 / 255f, 0xCC / 255f);
 
     /// <summary>
     /// 为字符串添加指定颜色的富文本标签。
@@ -60,8 +60,8 @@ public static partial class Utils {
     /// <summary>
     /// 根据物品价值为字符串添加对应颜色的富文本标签。
     /// </summary>
-    public static string WithValueColor(this string s, int itemID) {
-        return itemValue[itemID] switch {
+    public static string WithColor(this string s, float itemValue) {
+        return itemValue switch {
             <= 5 => s.WithColor(Gray),
             <= 20 => s.WithColor(White),
             <= 100 => s.WithColor(Green),
