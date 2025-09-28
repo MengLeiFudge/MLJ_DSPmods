@@ -43,6 +43,10 @@
             + 移除矩阵兑换项。
             + 兑换的物品不再进入背包，而是直接存储在分馏数据中心。
         + 配方图鉴添加“完全升级”的数目显示。
+        + 添加VIP系统。
+            + 使用奖券抽奖，或在限时商店购买物品，可以获取经验、提升VIP等级。
+            + VIP等级越高，抽奖时将会获得更多奖励。
+            + VIP等级越高，限时商店的免费项数目越多，购买折扣越大。
     + 玩家背包排序优化。
         + 单击时，会将背包内物品尽可能转移到已设置的物流槽位中。
         + “物品交互”科技研究后，双击时，将背包内的所有物品转移到分馏数据中心（物流背包不受影响）。
@@ -104,7 +108,13 @@
             + Upon refresh, all items/recipes with a value of 0 are automatically exchanged.
             + Matrix exchange items have been removed.
             + Exchanged items no longer enter the backpack but are stored directly in the fractionation data centre.
-        + Recipes now display the count of “Fully Upgraded” items in the recipes encyclopaedia.
+        + Recipes now display the count of "Fully Upgraded" items in the recipes encyclopaedia.
+        + Add VIP system.
+            + Earn experience and advance VIP levels by using reward vouchers for draws or purchasing items from the
+              limited-time shop.
+            + Higher VIP levels yield greater rewards during draws.
+            + Higher VIP levels unlock more complimentary items in the limited-time shop alongside increased purchase
+              discounts.
     + Optimised player backpack sorting.
         + Single-clicking transfers items from the backpack to designated logistics slots where possible.
         + After researching the ‘Item Interaction’ technology, double-clicking transfers all backpack items to the
