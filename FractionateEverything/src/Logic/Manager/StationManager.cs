@@ -82,15 +82,29 @@ public static class StationManager {
                     if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
                         continue;
                     }
-                    if (store.remoteLogic == ELogisticStorage.Supply || store.localLogic == ELogisticStorage.Supply) {
-                        // 供应：产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
+                    bool storeLocked = !GameMain.sandboxToolsEnabled && store.keepMode > 0;
+                    bool station2Mod;
+                    bool mod2Station;
+                    if (storeLocked) {
+                        station2Mod = store.remoteLogic == ELogisticStorage.Supply
+                                      || store.localLogic == ELogisticStorage.Supply;
+                        mod2Station = store.remoteLogic == ELogisticStorage.Demand
+                                      || store.localLogic == ELogisticStorage.Demand;
+                    } else {
+                        station2Mod = store.remoteLogic == ELogisticStorage.Demand
+                                      || store.localLogic == ELogisticStorage.Demand;
+                        mod2Station = store.remoteLogic == ELogisticStorage.Supply
+                                      || store.localLogic == ELogisticStorage.Supply;
+                    }
+                    if (mod2Station) {
+                        // 产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
                         if (store.totalSupplyCount < store.max * downloadThreshold) {
                             stationComponent.SetTargetCount(i,
                                 Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)));
                         }
                     }
-                    if (store.remoteLogic == ELogisticStorage.Demand || store.localLogic == ELogisticStorage.Demand) {
-                        // 需求：其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
+                    if (station2Mod) {
+                        // 其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
                         if (store.count > store.max * uploadThreshold
                             && store.totalSupplyCount > store.max * uploadThreshold2) {
                             int modTargetCount = itemModSaveCount[store.itemId];
@@ -103,18 +117,17 @@ public static class StationManager {
                         }
                     }
                     if (store.localLogic == ELogisticStorage.None) {
-                        // 本地仓储解锁 = 维持数目为上限的一半，可以无限投入/取出
-                        // 本地仓储锁定 = 维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
-                        if (!GameMain.sandboxToolsEnabled && store.keepMode > 0) {
+                        if (storeLocked) {
+                            // 仓储锁定：维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
                             int totalCount = (int)Math.Min(int.MaxValue,
                                 store.count + GetModDataItemCount(store.itemId));
                             // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
                             int avgCount = totalCount / 2;
                             stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount));
                         } else {
+                            // 仓储解锁：维持数目为上限的一半，可以无限投入/取出
                             stationComponent.SetTargetCount(i, store.max / 2);
                         }
-                        break;
                     }
                 }
             }
@@ -187,10 +200,6 @@ public static class StationManager {
         ItemProto itemProto2 = LDB.items.Select(buildingID);
         // 如果物品或者塔不是游戏中存在的物品，不处理
         if (itemProto1 == null || itemProto2 == null) {
-            return;
-        }
-        // 如果不是仓储，不处理
-        if (stationStore.localLogic != ELogisticStorage.None) {
             return;
         }
         // 原版逻辑会先禁用这个按钮，所以在切换成供应或需求的时候不需要手动禁用
@@ -289,7 +298,6 @@ public static class StationManager {
         }
     }
 
-
     /// <summary>
     /// 修改物流交互站的面板（新加的I面板）
     /// 内容同上面那个一摸一样，唯一的不同是参数类型，怎么合并一下
@@ -349,12 +357,10 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
-
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
-
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
@@ -387,12 +393,10 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
-
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
-
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
@@ -423,28 +427,22 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
-
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
-
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
-
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxProductOutputStack = building.MaxProductOutputStack();
-
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
                 : maxProductOutputStack;
-
         __instance.OnStationIdChange();
         return false;
     }
@@ -460,28 +458,22 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
-
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
-
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
-
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxProductOutputStack = building.MaxProductOutputStack();
-
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
                 : maxProductOutputStack;
-
         __instance.OnStationIdChange();
         return false;
     }
