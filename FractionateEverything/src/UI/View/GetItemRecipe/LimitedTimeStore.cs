@@ -21,7 +21,7 @@ public class ExchangeInfo {
     public BaseRecipe recipe = null;
     public ItemProto matrix = null;
     public float matrixCount = 0;
-    public int matrixDiscountedCount => (int)Math.Ceiling(matrixCount * VipFeatures.vipDiscount);
+    public int matrixDiscountedCount => (int)Math.Ceiling(matrixCount * VipFeatures.ExchangeDiscount);
     public bool exchanged = false;
     public bool IsValid => (item != null && itemCount > 0 && matrix != null && matrixCount >= 0)
                            || (recipe != null && !recipe.IsMaxEcho && matrix != null && matrixCount >= 0);
@@ -243,6 +243,7 @@ public static class LimitedTimeStore {
                     if (!TakeItemWithTip(matrixID, matrixRecipeCostInt, out _)) {
                         return;
                     }
+                    VipFeatures.AddExp(itemValue[matrixID] * matrixRecipeCostInt);
                     nextFreshTick = gameTick - baseFreshTs + 1;
                     ModifyExchangeItemInfo();
                 },
@@ -343,7 +344,7 @@ public static class LimitedTimeStore {
                 exchangeInfos[i] = exchangeList[GetRandInt(0, exchangeList.Count)].DeepCopy();
             }
             //前vipFreeCount个交换信息改为免费
-            if (i < VipFeatures.vipFreeCount) {
+            if (i < VipFeatures.FreeExchangeCount) {
                 exchangeInfos[i].matrixCount = 0;
             }
         }
@@ -429,6 +430,7 @@ public static class LimitedTimeStore {
                 if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                     return;
                 }
+                VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
                 AddItemToModData(info.item.ID, info.itemCount);
                 info.exchanged = true;
             } else {
@@ -440,6 +442,7 @@ public static class LimitedTimeStore {
                         if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                             return;
                         }
+                        VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
                         AddItemToModData(info.item.ID, info.itemCount);
                         info.exchanged = true;
                     },
@@ -450,6 +453,7 @@ public static class LimitedTimeStore {
                 if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                     return;
                 }
+                VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
                 info.recipe.RewardThis();
                 info.exchanged = true;
             } else {
@@ -461,6 +465,7 @@ public static class LimitedTimeStore {
                         if (!TakeItemWithTip(info.matrix.ID, info.matrixDiscountedCount, out _, showMessage)) {
                             return;
                         }
+                        VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
                         info.recipe.RewardThis();
                         info.exchanged = true;
                     },
