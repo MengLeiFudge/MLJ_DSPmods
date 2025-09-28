@@ -267,15 +267,15 @@ public static class RecipeOperate {
             line++;
 
             if (recipe.FullUpgrade) {
-                txtRecipeInfo[line].text = "配方已完全升级！".Translate().WithColor(Orange);
+                txtRecipeInfo[line].text = "配方已完全升级！".Translate().WithColor(Gold);
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             } else if (recipe.IsMaxQuality) {
-                txtRecipeInfo[line].text = "配方已到最高品质！".Translate().WithColor(Blue);
+                txtRecipeInfo[line].text = "配方已到最高品质！".Translate().WithColor(Orange);
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             } else {
-                txtRecipeInfo[line].text = "配方品质可突破，突破条件：".Translate();
+                txtRecipeInfo[line].text = "配方品质可突破，突破条件：".Translate().WithColor(recipe.Quality);
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
                 txtRecipeInfo[line].text =
