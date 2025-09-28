@@ -2,6 +2,7 @@
 using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
+using FE.UI.View.GetItemRecipe;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -35,6 +36,9 @@ public static class VipFeatures {
         Exp += exp / itemValue[IFE宇宙奖券] * 50;
         while (Exp >= ExpLevelUp) {
             Level++;
+            for (int i = 0; i < 4; i++) {
+                TicketRaffle.FreshPool(i);
+            }
         }
     }
 
