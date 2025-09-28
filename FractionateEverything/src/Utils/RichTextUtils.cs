@@ -44,33 +44,16 @@ public static partial class Utils {
     /// <summary>
     /// 根据品质等级为字符串添加对应颜色的富文本标签。
     /// </summary>
-    public static string WithQualityColor(this string s, int quality) {
-        return quality switch {
-            0 => s.WithColor(Gray),
-            1 => s.WithColor(White),
-            2 => s.WithColor(Green),
-            3 => s.WithColor(Blue),
-            4 => s.WithColor(Purple),
-            5 => s.WithColor(Red),
-            //6 => s.WithColor(Orange),
-            7 => s.WithColor(Gold),
-            _ => $"Invalid quality {quality}".WithColor(Red)
-        };
-    }
-
-    /// <summary>
-    /// 根据点数聚集塔的等级为字符串添加对应颜色的富文本标签。
-    /// </summary>
-    public static string WithPALvColor(this string s, int level) {
-        return level switch {
+    public static string WithColor(this string s, int colorIdx) {
+        return colorIdx switch {
+            <= 0 => s.WithColor(Gray),
             1 => s.WithColor(White),
             2 => s.WithColor(Green),
             3 => s.WithColor(Blue),
             4 => s.WithColor(Purple),
             5 => s.WithColor(Red),
             6 => s.WithColor(Orange),
-            7 => s.WithColor(Gold),
-            _ => $"Invalid point aggregate level {level}".WithColor(Red)
+            >= 7 => s.WithColor(Gold),
         };
     }
 
@@ -78,8 +61,7 @@ public static partial class Utils {
     /// 根据物品价值为字符串添加对应颜色的富文本标签。
     /// </summary>
     public static string WithValueColor(this string s, int itemID) {
-        float value = itemValue[itemID];
-        return value switch {
+        return itemValue[itemID] switch {
             <= 5 => s.WithColor(Gray),
             <= 20 => s.WithColor(White),
             <= 100 => s.WithColor(Green),

@@ -6,6 +6,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using FE.UI.View.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -310,10 +311,10 @@ public static class TicketRaffle {
         }
         for (int j = 0; j <= 6; j++) {
             recipeUnlockInfoText[1, j].text =
-                $"{fullUpgradeCountArr[1, j].ToString().WithColor(Orange)}"
-                + $"/{maxEchoCountArr[1, j].ToString().WithColor(Red)}"
-                + $"/{unlockCountArr[1, j].ToString().WithColor(Blue)}"
-                + $"/{totalCountArr[1, j]}";
+                $"{fullUpgradeCountArr[1, j].ToString().WithColor(7)}"
+                + $"/{maxEchoCountArr[1, j].ToString().WithColor(5)}"
+                + $"/{unlockCountArr[1, j].ToString().WithColor(3)}"
+                + $"/{totalCountArr[1, j].ToString().WithColor(1)}";
         }
     }
 
@@ -421,6 +422,7 @@ public static class TicketRaffle {
         if (!TakeItemWithTip(SelectedTicketId1, raffleCount, out _, showMessage)) {
             return;
         }
+        VipFeatures.AddExp(itemValue[SelectedTicketId1] * raffleCount);
         List<BaseRecipe> recipes = GetRecipesByMatrix(SelectedMatrixId1);
         float recipeValue = RecipeRaffleMaxCounts[TicketIdx1];
         //开抽！
@@ -543,6 +545,7 @@ public static class TicketRaffle {
         if (!TakeItemWithTip(SelectedTicketId2, raffleCount, out _, showMessage)) {
             return;
         }
+        VipFeatures.AddExp(itemValue[SelectedTicketId2] * raffleCount);
         //构建奖池
         int[] specialItems = [
             IFE分馏塔增幅芯片,
@@ -639,6 +642,7 @@ public static class TicketRaffle {
         if (!TakeItemWithTip(SelectedTicketId3, raffleCount, out _, showMessage)) {
             return;
         }
+        VipFeatures.AddExp(itemValue[SelectedTicketId3] * raffleCount);
         //构建奖池
         int[] specialItems = [];
         float[] specialRates = [];
@@ -727,6 +731,7 @@ public static class TicketRaffle {
         if (!TakeItemWithTip(SelectedTicketId4, raffleCount, out _, showMessage)) {
             return;
         }
+        VipFeatures.AddExp(itemValue[SelectedTicketId4] * raffleCount);
         //构建奖池
         int[] specialItems = [];
         float[] specialRates = [];
@@ -822,6 +827,12 @@ public static class TicketRaffle {
         }
         if (EnableAutoRaffle2Entry.Value) {
             RaffleFracProto(100, 5, false);
+        }
+        if (EnableAutoRaffle3Entry.Value) {
+            RaffleMaterial(100, 5, false);
+        }
+        if (EnableAutoRaffle4Entry.Value) {
+            RaffleBuilding(100, 5, false);
         }
     }
 

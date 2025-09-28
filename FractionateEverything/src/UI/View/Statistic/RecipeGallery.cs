@@ -25,8 +25,8 @@ public static class RecipeGallery {
         Register("配方图鉴", "Recipe Gallery");
 
         Register("配方解锁情况",
-            $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(Orange)}/{"Max Echo".WithColor(Red)}/{"Unlocked".WithColor(Blue)}/Total):",
-            $"配方解锁情况如下（{"完全升级".WithColor(Orange)}/{"最大回响".WithColor(Red)}/{"已解锁".WithColor(Blue)}/总数）：");
+            $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(7)}/{"Max Echo".WithColor(5)}/{"Unlocked".WithColor(3)}/{"Total".WithColor(1)}):",
+            $"配方解锁情况如下（{"完全升级".WithColor(7)}/{"最大回响".WithColor(5)}/{"已解锁".WithColor(3)}/{"总数".WithColor(1)}）：");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -95,10 +95,10 @@ public static class RecipeGallery {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 7; j++) {
                 recipeUnlockInfoText[i, j].text =
-                    $"{fullUpgradeCountArr[i, j].ToString().WithColor(Orange)}"
-                    + $"/{maxEchoCountArr[i, j].ToString().WithColor(Red)}"
-                    + $"/{unlockCountArr[i, j].ToString().WithColor(Blue)}"
-                    + $"/{totalCountArr[i, j]}";
+                    $"{fullUpgradeCountArr[i, j].ToString().WithColor(7)}"
+                    + $"/{maxEchoCountArr[i, j].ToString().WithColor(5)}"
+                    + $"/{unlockCountArr[i, j].ToString().WithColor(3)}"
+                    + $"/{totalCountArr[i, j].ToString().WithColor(1)}";
             }
         }
     }
