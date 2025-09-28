@@ -32,16 +32,16 @@ public static class VipFeatures {
     /// 获取VIP经验，并检测能否升级。注意，VIP升级不清空现有经验。
     /// </summary>
     public static void AddExp(float exp) {
-        Exp += exp / itemValue[IFE电磁奖券];
+        Exp += exp / itemValue[IFE宇宙奖券] * 50;
         while (Exp >= ExpLevelUp) {
             Level++;
         }
     }
 
     /// <summary>
-    /// 抽奖时，奖券价值视为 原有价值*(1+TicketValueBonus)
+    /// 抽奖时，奖券价值视为 原有价值*TicketValueMulti
     /// </summary>
-    public static float TicketValueBonus => (float)Math.Pow(1.1f, Level);
+    public static float TicketValueMulti => (float)Math.Pow(1.07f, Level);
     /// <summary>
     /// 限时商店免费兑换项数
     /// </summary>
@@ -49,7 +49,7 @@ public static class VipFeatures {
     /// <summary>
     /// 限时商店购买折扣
     /// </summary>
-    public static float ExchangeDiscount => 1.0f / TicketValueBonus;
+    public static float ExchangeDiscount => 1.0f / TicketValueMulti;
 
     #endregion
 
@@ -62,14 +62,14 @@ public static class VipFeatures {
         Register("VIP等级：", "VIP level: ");
         Register("VIP加成如下：", "VIP bonus are as follows:");
         Register("奖券抽奖加成",
-            "When using lottery tickets for prize draws, the rewards obtained are +{0:P2}",
-            "使用奖券抽奖时，获得的奖励 +{0:P2}");
+            "When using lottery tickets for prize draws, the rewards obtained x{0:P2}",
+            "使用奖券抽奖时，获得的奖励 x{0:P2}");
         Register("限时商店免费兑换项数",
             "Free exchange for the first {0} recipes/items in the limited-time shop",
             "免费兑换限时商店的前{0}项配方/物品");
         Register("限时商店购买折扣",
             "Exchange recipes/items from the limited-time shop at the price of {0:P2}",
-            "以{0:P2}的价格兑换兑换限时商店的配方/物品");
+            "以{0:P2}的价格兑换限时商店的配方/物品");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -94,9 +94,9 @@ public static class VipFeatures {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        txtVipInfo.text = $"{"VIP等级：".Translate()}{Level} ({(int)Exp} / {(int)Math.Ceiling(ExpLevelUp)})"
+        txtVipInfo.text = $"{"VIP等级：".Translate()}{Level} ({Exp:F0} / {Math.Ceiling(ExpLevelUp):F0})"
             .WithColor((Level - 1) / 3 + 1);
-        txtVipBonus[0].text = string.Format("奖券抽奖加成".Translate(), TicketValueBonus)
+        txtVipBonus[0].text = string.Format("奖券抽奖加成".Translate(), TicketValueMulti)
             .WithColor((Level - 1) / 3 + 1);
         txtVipBonus[1].text = string.Format("限时商店免费兑换项数".Translate(), FreeExchangeCount)
             .WithColor((Level - 1) / 3 + 1);
