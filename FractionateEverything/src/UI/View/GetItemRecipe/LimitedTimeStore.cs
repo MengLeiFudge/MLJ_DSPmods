@@ -113,20 +113,15 @@ public static class LimitedTimeStore {
     private static MyImageButton[] exchangeImages3 = new MyImageButton[exchangeInfoMaxCount];
     private static Text[] txtExchangeInfos3 = new Text[exchangeInfoMaxCount];
     private static UIButton[] btnExchangeInfos = new UIButton[exchangeInfoMaxCount];
-    /// <summary>
-    /// 兑换不同矩阵层次的配方所需的矩阵数目
-    /// </summary>
-    private static readonly float[] matrixRecipeCosts = [327.68f, 409.6f, 512, 640, 800, 1000, 10000];
-
     private static readonly int[][] itemIdOriArr = [
-        //[IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
+        [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
         [IFE分馏塔原胚普通, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚史诗, IFE分馏塔原胚传说, IFE分馏塔原胚定向],
         [IFE分馏配方通用核心, IFE分馏塔增幅芯片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
         [IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔],
         //[IFE行星交互塔, IFE行星矿物复制塔, IFE行星点数聚集塔, IFE行星量子复制塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔],
         [IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华],
-        [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
+        //[I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
         [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
     ];
     private static readonly int[] itemIdArr = itemIdOriArr.SelectMany(arr => arr).ToArray();
@@ -232,7 +227,7 @@ public static class LimitedTimeStore {
         }
         ItemProto matrix = LDB.items.Select(matrixID);
         //获取兑换矩阵对应层次配方需要的矩阵数目
-        float matrixRecipeCost = matrixRecipeCosts[matrixID - I电磁矩阵];
+        float matrixRecipeCost = TicketRaffle.RecipeValues[matrixID - I电磁矩阵];
         int matrixRecipeCostInt = (int)Math.Ceiling(matrixRecipeCost);
         if (manual) {
             //todo: 添加vip影响
@@ -303,14 +298,14 @@ public static class LimitedTimeStore {
         List<ExchangeInfo> recipeLockedExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Locked).ToList()) {
             ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
-            float matrixCount = matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵];
+            float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
             recipeLockedExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
         //3.构建已解锁但未满回响配方列表
         List<ExchangeInfo> recipeNotMaxEchoExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxEcho).ToList()) {
             ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
-            float matrixCount = matrixRecipeCosts[recipeMatrix.ID - I电磁矩阵];
+            float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
             recipeNotMaxEchoExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
 

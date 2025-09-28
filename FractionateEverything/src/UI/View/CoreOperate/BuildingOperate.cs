@@ -41,8 +41,9 @@ public static class BuildingOperate {
     private static UIButton btnBuildingInfo4;
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
-    private static UIButton btnBuildingInfo5;
-    private static UIButton[] reinforcementBtn = new UIButton[4];
+    private static UIButton btnReinforcement;
+    private static UIButton btnReinforcementMax;
+    private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[6];
 
     public static void AddTranslations() {
@@ -103,9 +104,13 @@ public static class BuildingOperate {
             $"Reinforcement increases durability, power consumption, fractionation success rate, and product quantity. The relationship between reinforcement level and base reinforcement bonuses, as well as reinforcement success rate, is as follows:{en}",
             $"强化会增加耐久度、电力消耗、分馏成功率和产物数目。强化级别与强化基础加成、强化成功率的关系如下：{cn}");
         Register("敲一下！", "Knock once!");
+        Register("一直敲！", "Keep knocking!");
         Register("强化此建筑", "Reinforce this building");
         Register("强化成功提示", "Great! The enhancement worked!", "耶，塔诺西！强化成功了！");
         Register("强化失败提示", "Awful! The enhancement failed...", "呜，苦露西！强化失败了……");
+        Register("一键强化提示",
+            "Confirm that you wish to enhance this building using multiple Fractionator Increase Chips until it reaches Level 20?",
+            "确认使用数个分馏塔增幅芯片强化此建筑，直至达到20级吗？");
         Register("当前强化加成：", "Current Enhancement Bonuses:");
         Register("耐久度", "Durability");
         Register("电力消耗", "Power consumption");
@@ -158,22 +163,23 @@ public static class BuildingOperate {
         btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
 
         if (!GameMain.sandboxToolsEnabled) {
-            btnBuildingInfo5 = wnd.AddButton(1, 2, y, tab, "敲一下！",
+            btnReinforcement = wnd.AddButton(1, 2, y, tab, "敲一下！",
                 onClick: Reinforcement);
+            btnReinforcementMax = wnd.AddButton(1, 2, y + 36f, tab, "一直敲！",
+                onClick: ReinforcementMax);
         } else {
-            reinforcementBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
+            reinforcementSandboxBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
                 onClick: Reset);
-            reinforcementBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
+            reinforcementSandboxBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
                 onClick: Downgrade);
-            reinforcementBtn[2] = wnd.AddButton(1, 2, y + 36f * 2, tab, "升级",
+            reinforcementSandboxBtn[2] = wnd.AddButton(1, 2, y + 36f * 2, tab, "升级",
                 onClick: Upgrade);
-            reinforcementBtn[3] = wnd.AddButton(1, 2, y + 36f * 3, tab, "升满",
+            reinforcementSandboxBtn[3] = wnd.AddButton(1, 2, y + 36f * 3, tab, "升满",
                 onClick: FullUpgrade);
         }
-        y += 36f;
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
-            txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
             y += 36f;
+            txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
         }
     }
 
@@ -188,7 +194,7 @@ public static class BuildingOperate {
         if (SelectedBuilding.ID != IFE行星内物流交互站) {
             reinforcementPreCondition &= SelectedBuilding.EnableFluidOutputStack();
             txtBuildingInfo1.text = SelectedBuilding.EnableFluidOutputStack()
-                ? "已启用流动输出集装".Translate().WithColor(Orange)
+                ? "已启用流动输出集装".Translate().WithColor(Gold)
                 : "未启用流动输出集装".Translate().WithColor(Red);
             //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
             btnTip1.gameObject.SetActive(true);
@@ -203,18 +209,21 @@ public static class BuildingOperate {
             ? $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}"
             : $"{"输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}";
         reinforcementPreCondition &= SelectedBuilding.MaxProductOutputStack() >= 4;
-        txtBuildingInfo2.text = SelectedBuilding.MaxProductOutputStack() >= 4
-            ? s.WithColor(Orange)
-            : s.WithColor(SelectedBuilding.MaxProductOutputStack());
+        txtBuildingInfo2.text = s.WithColor(SelectedBuilding.MaxProductOutputStack() * 2 - 1);
+        btnTip2.gameObject.SetActive(true);
         btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
 
         if (SelectedBuilding.ID != IFE行星内物流交互站) {
             reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
             txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
-                ? "已启用分馏永动".Translate().WithColor(Orange)
+                ? "已启用分馏永动".Translate().WithColor(Gold)
                 : "未启用分馏永动".Translate().WithColor(Red);
-            btnTip3.gameObject.SetActive(false);
-            btnBuildingInfo3.gameObject.SetActive(!SelectedBuilding.EnableFracForever());
+            btnTip3.gameObject.SetActive(true);
+            btnBuildingInfo3.gameObject.SetActive(
+                SelectedBuilding.EnableFluidOutputStack()
+                && SelectedBuilding.MaxProductOutputStack() >= 4
+                && !SelectedBuilding.EnableFracForever()
+            );
         } else {
             txtBuildingInfo3.text = "";
             btnTip3.gameObject.SetActive(false);
@@ -233,69 +242,53 @@ public static class BuildingOperate {
             btnBuildingInfo4.gameObject.SetActive(false);
         }
 
-        if (reinforcementPreCondition) {
-            s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
-            txtBuildingInfo5.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
-                ? s.WithColor(Orange)
-                : s.WithColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
-            btnTip5.gameObject.SetActive(true);
-            if (!GameMain.sandboxToolsEnabled) {
-                btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
-            } else {
-                reinforcementBtn[0].gameObject.SetActive(true);
-                reinforcementBtn[1].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() > 0);
-                reinforcementBtn[2].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
-                reinforcementBtn[3].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
-            }
-
-            string[] strs;
-            if (SelectedBuilding.ID == IFE点数聚集塔) {
-                strs = [
-                    "当前强化加成：".Translate(),
-                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-                    $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
-                    $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
-                    "",
-                    "",
-                    ""
-                ];
-            } else if (SelectedBuilding.ID == IFE行星内物流交互站) {
-                strs = [
-                    "当前强化加成：".Translate(),
-                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-                    $"{"电力消耗".Translate()} -{1 - SelectedBuilding.ReinforcementBonusEnergy():P1}",
-                    "",
-                    "",
-                    ""
-                ];
-            } else {
-                strs = [
-                    "当前强化加成：".Translate(),
-                    $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-                    $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
-                    $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
-                    $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
-                    ""
-                ];
-            }
-            for (int i = 0; i < txtReinforcementBonus.Length; i++) {
-                txtReinforcementBonus[i].text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
-                    ? strs[i].WithColor(Orange)
-                    : strs[i].WithColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
-            }
+        s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
+        txtBuildingInfo5.text = s.WithColor(SelectedBuilding.ReinforcementLevel() / 3 + 1);
+        btnTip5.gameObject.SetActive(true);
+        if (!GameMain.sandboxToolsEnabled) {
+            bool showBtn = reinforcementPreCondition && SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel;
+            btnReinforcement.gameObject.SetActive(showBtn);
+            btnReinforcementMax.gameObject.SetActive(showBtn);
         } else {
-            txtBuildingInfo5.text = "分馏塔强化功能将在以上升级全部升满后解锁。".Translate();
-            btnTip5.gameObject.SetActive(false);
-            if (!GameMain.sandboxToolsEnabled) {
-                btnBuildingInfo5.gameObject.SetActive(false);
-            } else {
-                for (int i = 0; i < reinforcementBtn.Length; i++) {
-                    reinforcementBtn[i].gameObject.SetActive(false);
-                }
-            }
-            for (int i = 0; i < txtReinforcementBonus.Length; i++) {
-                txtReinforcementBonus[i].text = "";
-            }
+            reinforcementSandboxBtn[0].gameObject.SetActive(true);
+            reinforcementSandboxBtn[1].gameObject.SetActive(SelectedBuilding.ReinforcementLevel() > 0);
+            reinforcementSandboxBtn[2].gameObject
+                .SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+            reinforcementSandboxBtn[3].gameObject
+                .SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
+        }
+        string[] strs;
+        if (SelectedBuilding.ID == IFE点数聚集塔) {
+            strs = [
+                "当前强化加成：".Translate(),
+                $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
+                "",
+                "",
+                ""
+            ];
+        } else if (SelectedBuilding.ID == IFE行星内物流交互站) {
+            strs = [
+                "当前强化加成：".Translate(),
+                $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                $"{"电力消耗".Translate()} -{1 - SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                "",
+                "",
+                ""
+            ];
+        } else {
+            strs = [
+                "当前强化加成：".Translate(),
+                $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
+                $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
+                $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
+                $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
+                ""
+            ];
+        }
+        for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+            txtReinforcementBonus[i].text = strs[i].WithColor(SelectedBuilding.ReinforcementLevel() / 3 + 1);
         }
     }
 
@@ -421,6 +414,35 @@ public static class BuildingOperate {
                     "强化成功提示".Translate(),
                     "确定".Translate(), UIMessageBox.INFO,
                     null);
+            },
+            null);
+    }
+
+    private static void ReinforcementMax() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel) {
+            return;
+        }
+        int takeId = IFE分馏塔增幅芯片;
+        int takeCount = 1;
+        UIMessageBox.Show("提示".Translate(),
+            "一键强化提示".Translate(),
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
+                while (true) {
+                    if (SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel) {
+                        return;
+                    }
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
+                        continue;
+                    }
+                    SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+                }
             },
             null);
     }
