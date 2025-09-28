@@ -4,13 +4,14 @@
         + 交互塔正面输入时，将会显示交互模式，并按正常工作状态耗电。
         + 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
         + 物流交互站调整。
-            + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
-            + 星际供应/本地供应时，若物品数目不足20%，则下载至20%。
-            + 星际需求/本地需求时，若物品数目超过80%，未被预定数目超过20%，中心物品数目不足10组，则上传至80%。
+            + 未锁定且供应，或锁定且需求时，如果塔内物品过少，将从分馏数据中心下载一些物品到塔中。
+            + 未锁定且需求，或锁定且供应时，如果塔内物品过多且中心物品不足，将从塔上传一些物品到分馏数据中心中。
             + 可以在分馏数据中心的设置页面调整上传/下载阈值。
-            + 本地仓储时，如果不锁定，则保持上限一半数目，可以存取物品；如果锁定，将与中心保持相同数目。
+            + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
+            + 未锁定且本地仓储时，塔内物品数目将尽量维持在上限的一半。
+            + 锁定且本地仓储时，塔内物品数目将尽量与中心保持相同。
             + 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
-            + 可以用芯片提升物流交互站的输出堆叠，最多升至4堆叠。
+            + 可以用芯片提升物流交互站的输出堆叠（每次消耗6芯片），最多升至4堆叠。
             + 可以用芯片强化物流交互站，减少上传/下载物品消耗的电力，最多减少90%。
             + 下载物品时，会尽量下载增产点数4点及以上的物品。
     + 配方调整。
@@ -26,6 +27,9 @@
         + 下调量子复制科技需要的哈希值，可以更快研究。
         + 调整科技的依赖关系，确保科技按照正确的顺序解锁。
     + 分馏数据中心调整。
+        + 建筑强化调整。
+            + 分馏永动需要的芯片由5降低至2，且只有流动输出堆叠启用、产物输出堆叠达到4时，才可以升级此项。
+            + 添加一键强化按钮。
         + 物品交互支持沙土相关操作。
         + 奖券抽奖调整。
             + 现在，奖池被拆分为四个：配方奖池、原胚奖池、材料奖池、建筑奖池。
@@ -58,19 +62,22 @@
         + Reduced the impact of proliferator points on the Quantum Duplication Tower's power consumption; power usage
           for 10 proliferator points has been reduced from 4.9 times to 2.0 times.
         + Logistics Interchange Station Adjustments.
-            + For interstellar storage, strategy follows local policy (equivalent to planetary logistics interchange
-              stations).
-            + For interstellar/local supply, if the item quantity falls below 20%, download to 20%.
-            + For interstellar/local demand, if the item quantity exceeds 80%, the unreserved quantity exceeds 20%, and
-              the central item count is less than 10 sets, upload to 80%.
-            + For local storage, if unlocked, half the maximum capacity is maintained for item access; if locked,
-              quantities synchronise with the central hub.
-            + The upload/download thresholds can be adjusted on the settings page of the fractionation data centre.
-            + Uploading/downloading consumes power; higher item quantities or values increase consumption.
-            + Chips may be used to enhance the logistics hub's output stacking capacity, up to a maximum of 4 stacks.
-            + Chips may be employed to fortify the logistics hub, reducing power consumption during uploads/downloads by
-              up to 90%.
-            + When downloading items, priority is given to those with proliferator points of 4 points or higher.
+            + When unlocked and in supply, or locked and in demand, if the tower holds insufficient items, some items
+              will be downloaded from the fractionation data centre to the tower.
+            + When unlocked and in demand, or locked and in supply, if the tower holds excessive items and the centre
+              lacks sufficient stock, some items will be uploaded from the tower to the fractionation data centre.
+            + Upload/download thresholds may be adjusted via the fractionation data centre settings page.
+            + During interstellar storage, the strategy follows local protocols (equivalent to planetary logistics
+              hubs).
+            + When unlocked and locally stored, the tower's inventory will endeavour to maintain half the maximum
+              capacity.
+            + When locked and using local storage, the tower's item count will strive to match the central storage.
+            + Uploading/downloading consumes power; higher item quantities and values increase power expenditure.
+            + Chips may be used to enhance the logistics hub's output stacking (6 chips per upgrade), up to a maximum of
+              4 stacks.
+            + Chips may be used to reinforce the Logistics Interface Station, reducing power consumption for
+              uploading/downloading items by up to 90%.
+            + When downloading items, priority is given to downloading items with proliferator points of 4 or higher.
     + Recipe adjustments.
         + Removed certain conversion recipes.
         + Fixed abnormal conversion recipe output issues.
@@ -87,6 +94,10 @@
         + Reduced hash value requirements for Quantum Cloning technology, enabling faster research.
         + Adjusted technology dependencies to ensure correct unlock sequence.
     + fractionation data centre adjustments.
+        + Building enhancement adjustments.
+            + The chips required for Distillation Perpetual Motion have been reduced from 5 to 2. This upgrade may only
+              be activated when the Flow Output Stack is enabled and the Product Output Stack reaches level 4.
+            + A one-click enhancement button has been added.
         + Item interactions now support sand-related operations.
         + Prize draw adjustments.
             + The prize pool is now divided into four categories: recipes pool, prototype pool, material pool, and
