@@ -122,6 +122,7 @@ public static class BuildingOperate {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        //todo: 优化显示，强化添加一键强化
         window = trans;
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
@@ -204,7 +205,7 @@ public static class BuildingOperate {
         reinforcementPreCondition &= SelectedBuilding.MaxProductOutputStack() >= 4;
         txtBuildingInfo2.text = SelectedBuilding.MaxProductOutputStack() >= 4
             ? s.WithColor(Orange)
-            : s.WithQualityColor(SelectedBuilding.MaxProductOutputStack());
+            : s.WithColor(SelectedBuilding.MaxProductOutputStack());
         btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
 
         if (SelectedBuilding.ID != IFE行星内物流交互站) {
@@ -223,7 +224,7 @@ public static class BuildingOperate {
         if (SelectedBuilding.ID == IFE点数聚集塔) {
             s = $"{"点数聚集效率层次：".Translate()}{PointAggregateTower.Level}";
             reinforcementPreCondition &= PointAggregateTower.IsMaxLevel;
-            txtBuildingInfo4.text = s.WithPALvColor(PointAggregateTower.Level);
+            txtBuildingInfo4.text = s.WithColor(PointAggregateTower.Level);
             btnTip4.gameObject.SetActive(true);
             btnBuildingInfo4.gameObject.SetActive(!PointAggregateTower.IsMaxLevel);
         } else {
@@ -236,7 +237,7 @@ public static class BuildingOperate {
             s = $"{"强化等级：".Translate()}{SelectedBuilding.ReinforcementLevel()}";
             txtBuildingInfo5.text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
                 ? s.WithColor(Orange)
-                : s.WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
+                : s.WithColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
             btnTip5.gameObject.SetActive(true);
             if (!GameMain.sandboxToolsEnabled) {
                 btnBuildingInfo5.gameObject.SetActive(SelectedBuilding.ReinforcementLevel() < MaxReinforcementLevel);
@@ -280,7 +281,7 @@ public static class BuildingOperate {
             for (int i = 0; i < txtReinforcementBonus.Length; i++) {
                 txtReinforcementBonus[i].text = SelectedBuilding.ReinforcementLevel() >= MaxReinforcementLevel
                     ? strs[i].WithColor(Orange)
-                    : strs[i].WithQualityColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
+                    : strs[i].WithColor(SelectedBuilding.ReinforcementLevel() / 4 + 1);
             }
         } else {
             txtBuildingInfo5.text = "分馏塔强化功能将在以上升级全部升满后解锁。".Translate();

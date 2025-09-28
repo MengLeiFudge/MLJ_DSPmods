@@ -57,7 +57,7 @@ public static class PointAggregateTower {
     public static float SuccessRate => 0.11f + Level * 0.02f;
 
     public static string Lv => $"Lv{Level}";
-    public static string LvWC => Lv.WithPALvColor(Level);
+    public static string LvWC => Lv.WithColor(Level);
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
