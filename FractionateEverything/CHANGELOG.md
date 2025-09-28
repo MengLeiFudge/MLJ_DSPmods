@@ -51,7 +51,6 @@
         + 单击时，会将背包内物品尽可能转移到已设置的物流槽位中。
         + “物品交互”科技研究后，双击时，将背包内的所有物品转移到分馏数据中心（物流背包不受影响）。
     + 深空来敌完成任务链物品要求、刷新元驱动、重置授权点时，可以使用分馏数据中心的物品。
-
     + Building adjustments.
         + Fixed an issue where items uploaded via the Interaction Tower did not carry proliferator points.
         + When inputting at the front of the Interaction Tower, the interaction mode will be displayed and power
