@@ -38,6 +38,8 @@ public static class TicketRaffle {
     private static int SelectedTicketId1 => TicketIds[TicketIdx1];
     private static int SelectedMatrixId1 => MatrixIds[TicketIdx1];
     private static Text txtCoreCount;
+    private static (float[] rates, int[] counts) pool1;
+    private static List<BaseRecipe> recipes;
 
     private static UIButton btnMaxRaffle1;
     private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
@@ -53,6 +55,7 @@ public static class TicketRaffle {
     private static int SelectedTicketId2 => TicketIds[TicketIdx2];
     private static int SelectedMatrixId2 => MatrixIds[TicketIdx2];
     private static Text txtChipCount;
+    private static (float[] rates, int[] counts) pool2;
 
     private static UIButton btnMaxRaffle2;
     private static int MaxRaffleCount2 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId2));
@@ -63,6 +66,8 @@ public static class TicketRaffle {
     private static int TicketIdx3 => TicketIdx3Entry.Value;
     private static int SelectedTicketId3 => TicketIds[TicketIdx3];
     private static int SelectedMatrixId3 => MatrixIds[TicketIdx3];
+    private static List<ItemProto> commonItems3 = [];
+    private static (float[] rates, int[] counts) pool3;
 
     private static UIButton btnMaxRaffle3;
     private static int MaxRaffleCount3 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId3));
@@ -72,6 +77,8 @@ public static class TicketRaffle {
     private static int TicketIdx4 => TicketIdx4Entry.Value;
     private static int SelectedTicketId4 => TicketIds[TicketIdx4];
     private static int SelectedMatrixId4 => MatrixIds[TicketIdx4];
+    private static List<ItemProto> commonItems4 = [];
+    private static (float[] rates, int[] counts) pool4;
 
     private static UIButton btnMaxRaffle4;
     private static int MaxRaffleCount4 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId4));
@@ -136,6 +143,7 @@ public static class TicketRaffle {
         }
         EnableAutoRaffle1Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 1", false, "配方抽奖是否自动百连。");
         TicketIdx1Entry.SettingChanged += (_, _) => EnableAutoRaffle1Entry.Value = false;
+        TicketIdx1Entry.SettingChanged += (_, _) => FreshPool(1);
 
         TicketIdx2Entry = configFile.Bind("Ticket Raffle", "Ticket Idx 2", 0, "原胚抽奖奖券索引。");
         if (TicketIdx2Entry.Value < 0 || TicketIdx2Entry.Value >= TicketIds.Length) {
@@ -143,6 +151,7 @@ public static class TicketRaffle {
         }
         EnableAutoRaffle2Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 2", false, "原胚抽奖是否自动百连。");
         TicketIdx2Entry.SettingChanged += (_, _) => EnableAutoRaffle2Entry.Value = false;
+        TicketIdx2Entry.SettingChanged += (_, _) => FreshPool(2);
 
         TicketIdx3Entry = configFile.Bind("Ticket Raffle", "Ticket Idx 3", 0, "材料抽奖奖券索引。");
         if (TicketIdx3Entry.Value < 0 || TicketIdx3Entry.Value >= TicketIds.Length) {
@@ -150,6 +159,7 @@ public static class TicketRaffle {
         }
         EnableAutoRaffle3Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 3", false, "材料抽奖是否自动百连。");
         TicketIdx3Entry.SettingChanged += (_, _) => EnableAutoRaffle3Entry.Value = false;
+        TicketIdx3Entry.SettingChanged += (_, _) => FreshPool(3);
 
         TicketIdx4Entry = configFile.Bind("Ticket Raffle", "Ticket Idx 4", 0, "建筑抽奖奖券索引。");
         if (TicketIdx4Entry.Value < 0 || TicketIdx4Entry.Value >= TicketIds.Length) {
@@ -157,6 +167,7 @@ public static class TicketRaffle {
         }
         EnableAutoRaffle4Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 4", false, "建筑抽奖是否自动百连。");
         TicketIdx4Entry.SettingChanged += (_, _) => EnableAutoRaffle4Entry.Value = false;
+        TicketIdx4Entry.SettingChanged += (_, _) => FreshPool(4);
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -356,7 +367,6 @@ public static class TicketRaffle {
             }
             leftValue -= pc[id];
             counts[id] = 1;
-            LogWarning($"GeneratePool: pc[{id}] = {pc[id]}, 1/RecipeRaffleMaxCount = {1.0 / RecipeRaffleMaxCount}");
         }
         if (specialRatesOverRange) {
             return (pc, counts);
@@ -387,6 +397,76 @@ public static class TicketRaffle {
         return (pc, counts);
     }
 
+    /// <summary>
+    /// 刷新现有奖池的奖励内容。
+    /// </summary>
+    public static void FreshPool(int poolId) {
+        if (poolId == 1) {
+            recipes = GetRecipesByMatrix(SelectedMatrixId1);
+            recipes.RemoveAll(recipe => recipe.IsMaxEcho);
+            int[] specialItems = [IFE分馏配方通用核心, 0];
+            float[] specialRates = new float[2];
+            //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
+            specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
+            specialRates[1] = recipes.Count == 0
+                ? 0
+                : (1.0f / RecipeRaffleMaxCounts[TicketIdx1])
+                  * RecipeValue
+                  / itemValue[SelectedTicketId1]
+                  / VipFeatures.TicketValueMulti;
+            List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
+                item.ID >= IFE复制精华 && item.ID <= IFE转化精华
+            ).ToList();
+            pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems, RecipeValue);
+        } else if (poolId == 2) {
+            int[] specialItems = [
+                IFE分馏塔增幅芯片,
+                IFE分馏塔原胚普通,
+                IFE分馏塔原胚精良,
+                IFE分馏塔原胚稀有,
+                IFE分馏塔原胚史诗,
+                IFE分馏塔原胚传说,
+                IFE分馏塔原胚定向,
+            ];
+            float[] specialRates = new float[7];
+            //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
+            specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            float specialRates16Sum = 1 - specialRates[0];
+            specialRates[1] = specialRates16Sum * 50 / 121;
+            specialRates[2] = specialRates16Sum * 35 / 121;
+            specialRates[3] = specialRates16Sum * 20 / 121;
+            specialRates[4] = specialRates16Sum * 10 / 121;
+            specialRates[5] = specialRates16Sum * 5 / 121;
+            specialRates[6] = specialRates16Sum * 1 / 121;
+            pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRates, []);
+        } else if (poolId == 3) {
+            if (commonItems3.Count == 0) {
+                commonItems3 = LDB.items.dataArray.Where(item =>
+                    itemValue[item.ID] < maxValue
+                    && item.BuildMode == 0
+                    && item.Type != EItemType.Matrix
+                    && (item.ID < IFE电磁奖券 || item.ID > IFE黑雾奖券)
+                    && (item.ID < IFE分馏塔原胚普通 || item.ID > IFE分馏塔增幅芯片)
+                    && item.ID != I沙土
+                    && GameMain.history.ItemUnlocked(item.ID)
+                ).ToList();
+            }
+            pool3 = GeneratePool(SelectedTicketId3, [], [], commonItems3);
+        } else if (poolId == 4) {
+            if (commonItems4.Count == 0) {
+                commonItems4 = LDB.items.dataArray.Where(item =>
+                    itemValue[item.ID] < maxValue
+                    && item.BuildMode != 0
+                    && (item.ID < IFE交互塔 || item.ID > IFE星际物流交互站)
+                    && item.ID != I沙土
+                    && GameMain.history.ItemUnlocked(item.ID)
+                ).ToList();
+            }
+            pool4 = GeneratePool(SelectedTicketId4, [], [], commonItems4);
+        }
+    }
+
     #endregion
 
     #region 抽奖
@@ -410,21 +490,7 @@ public static class TicketRaffle {
         float ticketValue = itemValue[SelectedTicketId1];
         VipFeatures.AddExp(ticketValue * raffleCount);
         //构建奖池
-        List<BaseRecipe> recipes = GetRecipesByMatrix(SelectedMatrixId1);
-        recipes.RemoveAll(recipe => recipe.IsMaxEcho);
-        int[] specialItems = [IFE分馏配方通用核心, 0];
-        float[] specialRates = new float[2];
-        //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-        specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-        //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
-        specialRates[1] = recipes.Count == 0
-            ? 0
-            : (1.0f / RecipeRaffleMaxCounts[TicketIdx1]) * RecipeValue / ticketValue / VipFeatures.TicketValueMulti;
-        List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
-            item.ID >= IFE复制精华 && item.ID <= IFE转化精华
-        ).ToList();
-        (float[] rates, int[] counts) = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems,
-            RecipeValue);
+        (float[] rates, int[] counts) = pool1;
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
@@ -466,9 +532,8 @@ public static class TicketRaffle {
                     //更新可抽取的配方状态
                     recipes.RemoveAll(recipe => recipe.IsMaxEcho);
                     if (recipes.Count == 0) {
-                        specialRates[1] = 0;
-                        (rates, counts) = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems,
-                            RecipeValue);
+                        FreshPool(1);
+                        (rates, counts) = pool1;
                     }
                     oneLineCount++;
                 } else {
@@ -537,27 +602,7 @@ public static class TicketRaffle {
         }
         VipFeatures.AddExp(itemValue[SelectedTicketId2] * raffleCount);
         //构建奖池
-        int[] specialItems = [
-            IFE分馏塔增幅芯片,
-            IFE分馏塔原胚普通,
-            IFE分馏塔原胚精良,
-            IFE分馏塔原胚稀有,
-            IFE分馏塔原胚史诗,
-            IFE分馏塔原胚传说,
-            IFE分馏塔原胚定向,
-        ];
-        float[] specialRates = new float[7];
-        //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-        specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-        float specialRates16Sum = 1 - specialRates[0];
-        specialRates[1] = specialRates16Sum * 50 / 121;
-        specialRates[2] = specialRates16Sum * 35 / 121;
-        specialRates[3] = specialRates16Sum * 20 / 121;
-        specialRates[4] = specialRates16Sum * 10 / 121;
-        specialRates[5] = specialRates16Sum * 5 / 121;
-        specialRates[6] = specialRates16Sum * 1 / 121;
-        List<ItemProto> commonItems = [];
-        (float[] rates, int[] counts) = GeneratePool(SelectedTicketId2, specialItems, specialRates, commonItems);
+        (float[] rates, int[] counts) = pool2;
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
@@ -635,8 +680,6 @@ public static class TicketRaffle {
         }
         VipFeatures.AddExp(itemValue[SelectedTicketId3] * raffleCount);
         //构建奖池
-        int[] specialItems = [];
-        float[] specialRates = [];
         List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
             itemValue[item.ID] < maxValue
             && item.BuildMode == 0
@@ -646,7 +689,11 @@ public static class TicketRaffle {
             && item.ID != I沙土
             && GameMain.history.ItemUnlocked(item.ID)
         ).ToList();
-        (float[] rates, int[] counts) = GeneratePool(SelectedTicketId3, specialItems, specialRates, commonItems);
+        if (commonItems.Count != commonItems3.Count) {
+            commonItems3 = commonItems;
+            FreshPool(3);
+        }
+        (float[] rates, int[] counts) = pool3;
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
@@ -724,8 +771,6 @@ public static class TicketRaffle {
         }
         VipFeatures.AddExp(itemValue[SelectedTicketId4] * raffleCount);
         //构建奖池
-        int[] specialItems = [];
-        float[] specialRates = [];
         List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
             itemValue[item.ID] < maxValue
             && item.BuildMode != 0
@@ -733,7 +778,11 @@ public static class TicketRaffle {
             && item.ID != I沙土
             && GameMain.history.ItemUnlocked(item.ID)
         ).ToList();
-        (float[] rates, int[] counts) = GeneratePool(SelectedTicketId4, specialItems, specialRates, commonItems);
+        if (commonItems.Count != commonItems4.Count) {
+            commonItems4 = commonItems;
+            FreshPool(4);
+        }
+        (float[] rates, int[] counts) = pool4;
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
@@ -813,16 +862,45 @@ public static class TicketRaffle {
             return;
         }
         lastAutoRaffleTick = __instance.timei;
+        //如果有多个后台抽奖勾选，并且选定了同一个奖券，只有在奖券数目大于100*选择此奖券的奖池数时，才对这些池子抽奖
+        int[] usedTickets = new int[7];
+        bool[] autoRaffles = new bool[4];
         if (EnableAutoRaffle1Entry.Value) {
-            RaffleRecipe(100, 5, false);
+            usedTickets[TicketIdx1]++;
+            autoRaffles[0] = true;
         }
         if (EnableAutoRaffle2Entry.Value) {
-            RaffleFracProto(100, 5, false);
+            usedTickets[TicketIdx2]++;
+            autoRaffles[1] = true;
         }
         if (EnableAutoRaffle3Entry.Value) {
-            RaffleMaterial(100, 5, false);
+            usedTickets[TicketIdx3]++;
+            autoRaffles[2] = true;
         }
         if (EnableAutoRaffle4Entry.Value) {
+            usedTickets[TicketIdx4]++;
+            autoRaffles[3] = true;
+        }
+        int[] currTicketCounts = new int[7];
+        for (int i = 0; i < 7; i++) {
+            if (usedTickets[i] > 0) {
+                currTicketCounts[i] = (int)Math.Min(int.MaxValue, GetItemTotalCount(IFE电磁奖券 + i));
+            }
+        }
+        autoRaffles[0] &= currTicketCounts[TicketIdx1] >= 100 * usedTickets[TicketIdx1];
+        autoRaffles[1] &= currTicketCounts[TicketIdx2] >= 100 * usedTickets[TicketIdx2];
+        autoRaffles[2] &= currTicketCounts[TicketIdx3] >= 100 * usedTickets[TicketIdx3];
+        autoRaffles[3] &= currTicketCounts[TicketIdx4] >= 100 * usedTickets[TicketIdx4];
+        if (autoRaffles[0]) {
+            RaffleRecipe(100, 5, false);
+        }
+        if (autoRaffles[1]) {
+            RaffleFracProto(100, 5, false);
+        }
+        if (autoRaffles[2]) {
+            RaffleMaterial(100, 5, false);
+        }
+        if (autoRaffles[3]) {
             RaffleBuilding(100, 5, false);
         }
     }
@@ -850,6 +928,9 @@ public static class TicketRaffle {
             TicketIdx4Entry.Value = r.ReadInt32();
             EnableAutoRaffle4Entry.Value = r.ReadBoolean();
         }
+        for (int i = 0; i < 4; i++) {
+            FreshPool(i);
+        }
     }
 
     public static void Export(BinaryWriter w) {
@@ -874,6 +955,11 @@ public static class TicketRaffle {
         EnableAutoRaffle3Entry.Value = false;
         TicketIdx4Entry.Value = 0;
         EnableAutoRaffle4Entry.Value = false;
+        commonItems3 = [];
+        commonItems4 = [];
+        for (int i = 0; i < 4; i++) {
+            FreshPool(i);
+        }
     }
 
     #endregion
