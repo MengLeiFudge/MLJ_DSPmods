@@ -286,7 +286,7 @@ public static class RecipeOperate {
                 line++;
                 txtRecipeInfo[line].text =
                     $"[{(recipe.IsCurrQualityCurrLevelMaxExp ? "√" : "x")}] "
-                    + $"{"达到当前等级经验上限（".Translate()}{(int)recipe.Exp} / {recipe.CurrQualityCurrLevelExp}{"）".Translate()}"
+                    + $"{"达到当前等级经验上限（".Translate()}{recipe.Exp:F0} / {recipe.CurrQualityCurrLevelExp}{"）".Translate()}"
                         .WithColor(recipe.IsCurrQualityCurrLevelMaxExp ? Green : Red);
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
