@@ -892,10 +892,10 @@ public static class TicketRaffle {
             usedTickets[TicketIdx4]++;
             autoRaffles[3] = true;
         }
-        int[] currTicketCounts = new int[7];
+        long[] currTicketCounts = new long[7];
         for (int i = 0; i < 7; i++) {
             if (usedTickets[i] > 0) {
-                currTicketCounts[i] = (int)Math.Min(int.MaxValue, GetItemTotalCount(IFE电磁奖券 + i));
+                currTicketCounts[i] = GetItemTotalCount(IFE电磁奖券 + i);
             }
         }
         autoRaffles[0] &= currTicketCounts[TicketIdx1] >= 100 * usedTickets[TicketIdx1];
