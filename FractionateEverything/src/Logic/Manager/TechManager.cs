@@ -648,7 +648,6 @@ public static class TechManager {
                        + $"{"给予交互塔和普通原胚".Translate()}";
             return false;
         }
-
         if (__instance.ID == TFE物品交互) {
             __result = $"{"自动上传被扔掉的物品".Translate()}\r\n"
                        + $"{"双击背包排序按钮，自动上传背包内物品".Translate()}";
@@ -684,45 +683,4 @@ public static class TechManager {
             }
         }
     }
-
-    /// <summary>
-    /// 如果已经解锁分馏数据中心科技，但是某些配方未解锁，解锁这些配方
-    /// </summary>
-    public static void CheckRecipesWhenImport() {
-        if (GameMain.history.TechUnlocked(TFE分馏数据中心)) {
-            bool recipesUnlocked = true;
-            //判断所有建筑培养配方是否全部解锁
-            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                if (recipe.Locked) {
-                    recipesUnlocked = false;
-                    break;
-                }
-            }
-            //判断非珍奇的原矿复制配方是否全部解锁
-            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
-                if (recipe.IsCommonMineralCopyRecipe() && recipe.Locked) {
-                    recipesUnlocked = false;
-                    break;
-                }
-            }
-            //如果有配方未解锁，可能是旧存档，解锁这部分配方
-            if (!recipesUnlocked) {
-                GameHistoryData_NotifyTechUnlock_Postfix(TFE分馏数据中心);
-            }
-        }
-    }
-
-    // #region 一键解锁
-    //
-    // /// <summary>
-    // /// 处于沙盒模式下时，在点击“解锁全部”按钮后额外执行的操作
-    // /// 应群友要求，屏蔽跟随“解锁全部”同步解锁所有配方功能，只能通过面板的沙盒页按钮手动解锁
-    // /// </summary>
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(UITechTree), nameof(UITechTree.Do1KeyUnlock))]
-    // public static void UITechTree_Do1KeyUnlock_Postfix() {
-    //     UnlockAllFracRecipes();
-    // }
-    //
-    // #endregion
 }

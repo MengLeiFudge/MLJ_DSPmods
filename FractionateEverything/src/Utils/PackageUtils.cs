@@ -843,6 +843,7 @@ public static partial class Utils {
             return true;
         }
         bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && TechItemInteractionUnlocked;
+        lastSortTime = DateTime.Now;
         if (!isDoubleClick) {
             //一次排序
             if (!GameMain.mainPlayer.deliveryPackage.unlocked) {
@@ -877,7 +878,6 @@ public static partial class Utils {
                 package.grids[index].inc = 0;
             }
         }
-        lastSortTime = DateTime.Now;
         return true;
     }
 
