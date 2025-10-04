@@ -485,15 +485,13 @@ public static class TechManager {
         var tech量子复制 = ProtoRegistry.RegisterTech(
             TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
             [],
-            [IFE量子复制塔, I黑雾矩阵], [1, 400], 18000,
+            [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE量子复制塔],
             GetTechPos(2, 5)
         );
         tech量子复制.PreTechsImplicit = [TFE分馏塔原胚];
-        tech量子复制.IsHiddenTech = true;
-        tech量子复制.PreItem = [I黑雾矩阵];
-        tech量子复制.AddItems = [IFE量子复制塔];
-        tech量子复制.AddItemCounts = [5];
+        tech量子复制.PropertyOverrideItems = [I电磁矩阵];
+        tech量子复制.PropertyItemCounts = [200];
 
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
