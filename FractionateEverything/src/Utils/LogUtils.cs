@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using UnityEngine;
 
 namespace FE.Utils;
 
@@ -9,9 +10,43 @@ public static partial class Utils {
         Utils.logger = logger;
     }
 
-    public static void LogDebug(object data) => logger.LogDebug(data);
-    public static void LogInfo(object data) => logger.LogInfo(data);
-    public static void LogWarning(object data) => logger.LogWarning(data);
-    public static void LogError(object data) => logger.LogError(data);
-    public static void LogFatal(object data) => logger.LogFatal(data);
+    public static void LogDebug(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}]{data}");
+        } else {
+            logger.LogDebug(data);
+        }
+    }
+
+    public static void LogInfo(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}]{data}");
+        } else {
+            logger.LogInfo(data);
+        }
+    }
+
+    public static void LogWarning(object data) {
+        if (logger == null) {
+            Debug.LogWarning($"[{PluginInfo.PLUGIN_NAME}]{data}");
+        } else {
+            logger.LogWarning(data);
+        }
+    }
+
+    public static void LogError(object data) {
+        if (logger == null) {
+            Debug.LogError($"[{PluginInfo.PLUGIN_NAME}]{data}");
+        } else {
+            logger.LogError(data);
+        }
+    }
+
+    public static void LogFatal(object data) {
+        if (logger == null) {
+            Debug.LogError($"[{PluginInfo.PLUGIN_NAME}]{data}");
+        } else {
+            logger.LogFatal(data);
+        }
+    }
 }
