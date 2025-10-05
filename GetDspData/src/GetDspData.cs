@@ -14,6 +14,7 @@ using GetDspData.Utils;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 using xiaoye97;
 using static BepInEx.BepInDependency.DependencyFlags;
 using static FE.Logic.Manager.RecipeManager;
@@ -46,11 +47,46 @@ public class GetDspData : BaseUnityPlugin {
     #region Logger
 
     private static ManualLogSource logger;
-    public static void LogDebug(object data) => logger.LogDebug(data);
-    public static void LogInfo(object data) => logger.LogInfo(data);
-    public static void LogWarning(object data) => logger.LogWarning(data);
-    public static void LogError(object data) => logger.LogError(data);
-    public static void LogFatal(object data) => logger.LogFatal(data);
+
+    public static void LogDebug(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}][Debug]{data}");
+        } else {
+            logger.LogDebug(data);
+        }
+    }
+
+    public static void LogInfo(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}][Info]{data}");
+        } else {
+            logger.LogInfo(data);
+        }
+    }
+
+    public static void LogWarning(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}][Warning]{data}");
+        } else {
+            logger.LogWarning(data);
+        }
+    }
+
+    public static void LogError(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}][Error]{data}");
+        } else {
+            logger.LogError(data);
+        }
+    }
+
+    public static void LogFatal(object data) {
+        if (logger == null) {
+            Debug.Log($"[{PluginInfo.PLUGIN_NAME}][Fatal]{data}");
+        } else {
+            logger.LogFatal(data);
+        }
+    }
 
     #endregion
 
@@ -305,7 +341,7 @@ public class GetDspData : BaseUnityPlugin {
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("科技ID,name,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,UnlockRecipes");
+                sw.WriteLine("科技ID,name,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,Items,HashNeeded,UnlockRecipes");
                 foreach (var tech in LDB.techs.dataArray) {
                     sw.Write($"T{tech.ID},");
                     sw.Write($"{tech.FName()},");
@@ -353,6 +389,23 @@ public class GetDspData : BaseUnityPlugin {
                     } else {
                         sw.Write("empty,");
                     }
+                    float countMultiple = tech.HashNeeded / 3600f;
+                    if (tech.Items != null && tech.Items.Length > 0) {
+                        StringBuilder sb = new();
+                        bool first = true;
+                        for (int i = 0; i < tech.Items.Length; i++) {
+                            if (!first) {
+                                sb.Append(" + ");
+                            }
+                            first = false;
+                            sb.Append(
+                                $"{LDB.items.Select(tech.Items[i]).FName()}(I{tech.Items[i]})*{tech.ItemPoints[i] * countMultiple:F0}");
+                        }
+                        sw.Write($"{sb},");
+                    } else {
+                        sw.Write("empty,");
+                    }
+                    sw.Write($"{tech.HashNeeded},");
                     if (tech.UnlockRecipes != null && tech.UnlockRecipes.Length > 0) {
                         StringBuilder sb = new();
                         bool first = true;
@@ -371,6 +424,7 @@ public class GetDspData : BaseUnityPlugin {
                 }
                 sw.WriteLine();
                 sw.WriteLine();
+
                 sw.WriteLine("模型ID,name,displayName,PrefabPath");
                 foreach (var model in LDB.models.dataArray) {
                     sw.WriteLine(model.ID
