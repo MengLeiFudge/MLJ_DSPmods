@@ -70,7 +70,7 @@ public static class RecipeGallery {
                 int matrixID = Matrixes[i - 1];
                 ERecipe type = (ERecipe)j;
                 List<BaseRecipe> recipes = GetRecipesByType(type)
-                    .Where(r => itemToMatrix[r.InputID] == matrixID).ToList();
+                    .Where(r => r.MatrixID == matrixID).ToList();
                 totalCountArr[i, j] = recipes.Count;
                 totalCountArr[8, j] += recipes.Count;
                 totalCountArr[i, 7] += recipes.Count;

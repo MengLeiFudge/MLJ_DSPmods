@@ -297,14 +297,14 @@ public static class LimitedTimeStore {
         //2.构建未解锁配方列表
         List<ExchangeInfo> recipeLockedExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Locked).ToList()) {
-            ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
+            ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
             float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
             recipeLockedExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
         //3.构建已解锁但未满回响配方列表
         List<ExchangeInfo> recipeNotMaxEchoExchangeList = [];
         foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxEcho).ToList()) {
-            ItemProto recipeMatrix = LDB.items.Select(itemToMatrix[recipe.InputID]);
+            ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
             float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
             recipeNotMaxEchoExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }

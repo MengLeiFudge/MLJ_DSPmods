@@ -85,8 +85,13 @@ public static class RecipeManager {
         //RecipeTypeArr
         RecipeTypeArr[(int)recipeType][inputID] = recipe;
         //RecipeMatrixDic
-        if (!RecipeMatrixDic.TryGetValue(itemToMatrix[inputID], out var recipeMatrixList)) {
-            RecipeMatrixDic[itemToMatrix[inputID]] = [recipe];
+        recipe.MatrixID = itemToMatrix[inputID];
+        //量子复制配方自动提升一个矩阵级别
+        if (recipe.RecipeType == ERecipe.QuantumCopy && recipe.MatrixID >= I电磁矩阵 && recipe.MatrixID < I宇宙矩阵) {
+            recipe.MatrixID++;
+        }
+        if (!RecipeMatrixDic.TryGetValue(recipe.MatrixID, out var recipeMatrixList)) {
+            RecipeMatrixDic[recipe.MatrixID] = [recipe];
         } else {
             recipeMatrixList.Add(recipe);
         }
