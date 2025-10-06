@@ -302,7 +302,7 @@ public static class TicketRaffle {
             int matrixID = SelectedMatrixId1;
             ERecipe type = (ERecipe)(j + 1);
             List<BaseRecipe> recipes = GetRecipesByType(type)
-                .Where(r => itemToMatrix[r.InputID] == matrixID).ToList();
+                .Where(r => r.MatrixID == matrixID).ToList();
             totalCountArr[1, j] = recipes.Count;
             totalCountArr[1, 6] += recipes.Count;
             recipes = recipes.Where(r => r.Unlocked).ToList();
