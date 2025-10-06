@@ -32,10 +32,10 @@ public static class StationManager {
     public static void SetMaxCount() {
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
         int stackSize = itemProto.MaxProductOutputStack();
-        //上传速率至多12满带stackSize堆叠
-        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 12;
-        //下载速率至多3满带stackSize堆叠
-        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 3;
+        //上传速率至多12*4满带stackSize堆叠
+        maxUploadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 12 * 4;
+        //下载速率至多3*4满带stackSize堆叠
+        maxDownloadCount = ProcessManager.MaxBeltSpeed * updateTick * stackSize / 60 * 3 * 4;
     }
 
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
