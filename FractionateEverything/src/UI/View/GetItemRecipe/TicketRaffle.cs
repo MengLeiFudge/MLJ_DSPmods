@@ -114,7 +114,7 @@ public static class TicketRaffle {
         Register("抽奖", "Draw");
         Register("自动百连", "Auto hundred draws");
 
-        Register("原胚奖池", "Frac proto pool");
+        Register("原胚奖池", "Fractionator Proto pool");
         Register("原胚奖池说明",
             "Various fractionator prototypes and Fractionator Increase Chip can be drawn.",
             "可以抽取各种分馏塔原胚，以及分馏塔增幅芯片。");

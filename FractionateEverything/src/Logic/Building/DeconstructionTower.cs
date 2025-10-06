@@ -16,8 +16,8 @@ public static class DeconstructionTower {
     public static void AddTranslations() {
         Register("分解塔", "Deconstruction Tower");
         Register("I分解塔",
-            "Break down items into the materials or sand used to make them. There is a certain probability of obtaining deconstruction essence.",
-            "将物品分解为制作它的材料或沙土。有一定概率得到分解精华。");
+            "Break down items into the materials or sand used to make them. There is a certain probability of obtaining deconstruction essence. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "将物品分解为制作它的材料或沙土。有一定概率得到分解精华。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     private static ItemProto item;
