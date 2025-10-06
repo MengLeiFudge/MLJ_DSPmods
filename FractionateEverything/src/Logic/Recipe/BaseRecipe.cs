@@ -29,6 +29,11 @@ public abstract class BaseRecipe(
     public int InputID => inputID;
 
     /// <summary>
+    /// 配方层次对应的矩阵ID
+    /// </summary>
+    public int MatrixID = 0;
+
+    /// <summary>
     /// 通过品质和等级得到的综合进度，范围为0.56~1.00
     /// </summary>
     public float Progress => IsMaxQuality

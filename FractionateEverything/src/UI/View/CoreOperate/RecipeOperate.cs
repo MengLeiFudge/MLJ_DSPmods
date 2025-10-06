@@ -383,7 +383,7 @@ public static class RecipeOperate {
             return;
         }
         if (!GameMain.history.ItemUnlocked(recipe.InputID)
-            || !GameMain.history.ItemUnlocked(ItemManager.itemToMatrix[recipe.InputID])) {
+            || !GameMain.history.ItemUnlocked(recipe.MatrixID)) {
             UIMessageBox.Show("提示".Translate(),
                 "当前物品尚未解锁，或科技层次不足！".Translate(),
                 "确定".Translate(), UIMessageBox.WARNING,
