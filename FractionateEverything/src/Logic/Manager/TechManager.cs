@@ -175,12 +175,8 @@ public static class TechManager {
 
         Register("T量子复制", "Quantum Copy", "量子复制");
         Register("量子复制描述",
-            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n"
-            + "Obviously, the research process of combining material reorganisation technology with proliferator points and distillation essence is highly unpredictable. This research only exists in rumours, and whether it can be achieved remains unknown.\n"
-            + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
-            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。它可以应用在绝大多数物品上。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。\n"
-            + "显然，将物质重组技术与增产点数、分馏精华关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
-            + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
+            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.",
+            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。");
         Register("量子复制结果",
             "You have mastered quantum replication technology and can now batch replicate items with Fractionate Essence.",
             "你已经掌握了量子复制技术，可以用分馏精华批量复制物品了。");
