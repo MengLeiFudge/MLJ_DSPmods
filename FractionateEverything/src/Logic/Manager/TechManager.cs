@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility;
 using FE.Logic.Recipe;
@@ -21,11 +22,9 @@ public static class TechManager {
             $"随着探索的星区越来越多，分馏科技有了极大的拓展。按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心，这是全新的数据交互方式，也是新分馏科技的主要载体。同时，为了嘉奖伊卡洛斯的探索精神，一些初期的分馏配方也会随之解锁。");
         Register("分馏数据中心结果",
             "You have mastered the method of connecting to the fractionation data centre, and now you can connect to the fractionation data centre.",
-            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。部分分馏配方已解锁。");
+            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
         Register("允许连接到分馏数据中心", "Allow connection to fractionation data centre");
-        Register("解锁全部建筑培养配方", "Unlock all building train recipes");
-        Register("解锁普通矿物复制配方", "Unlock common mineral copy recipes");
-        Register("给予交互塔和普通原胚", "Give Interaction Tower and Common Frac Proto");
+        Register("给予一些分馏塔原胚", "Provide some fractionator protos");
 
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
@@ -137,11 +136,14 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new distillation technology, the new fractionator is not crafted from materials but obtained through building cultivation or lottery draws. Using the Interactive Tower to cultivate non-targeted fractionator prototypes (i.e., using the Interactive Tower to distill Prototypes) yields different types of fractionators. Drawing from the building card pool using lottery tickets at the fractionation data centre yields fractionator prototypes and fractionators. Additionally, the COSMO offers technology to artificially synthesize targeted prototypes from different base prototypes. These synthesized targeted prototypes can be directly cultivated into specific buildings.",
-            "在全新的分馏科技中，新分馏塔并非用材料制作，而是通过建筑培养或奖券抽奖的方式获取。使用交互塔培养非定向的分馏塔原胚（也就是使用交互塔分馏原胚），可以得到不同类型的分馏塔；在分馏数据中心使用奖券对建筑卡池抽奖，可以得到分馏塔原胚和分馏塔。同时，主脑也提供了一种将不同原胚人工合成为定向原胚的科技，合成的定向原胚可以直接培养出指定的建筑。");
+            "In the new fractionate technology, the new fractionator cannot be crafted using materials. At the fractionation data centre's lottery page, using vouchers to draw from the Prototype Pool yields various prototypes. Interacting with the fractionator to process these prototypes cultivates different fractionators. Additionally, the prototype lottery carries a minuscule chance of yielding a Targeted Prototype for a specific fractionator, which can be directly cultivated into that designated fractionator.",
+            "在全新的分馏科技中，新分馏塔无法使用材料制作。在分馏数据中心的奖券抽奖页面使用奖券抽取原胚奖池，可以得到不同的原胚；使用交互塔分馏原胚，可以培养出不同的分馏塔。除此之外，原胚抽奖有极小概率得到分馏塔定向原胚，它可以直接培养出指定的分馏塔。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
-            "你已经了解了分馏塔原胚的相关信息，可以将不同品质的分馏塔原胚合成为定向分馏塔原胚了。");
+            "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
+        Register("解锁全部建筑培养配方", "Unlock all building train recipes");
+        Register("给予一个交互塔", "Provide a Interactive Tower");
+        // Register("给予一些分馏塔原胚", "Provide some fractionator protos");//上面有了
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
@@ -161,90 +163,51 @@ public static class TechManager {
         Register("矿物复制结果",
             "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
+        Register("解锁部分矿物复制配方", "Unlock some mineral copy recipes");
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points on certain items so that they carry more than 4 proliferator points.",
-            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而使物品携带超过4点增产点数。");
+            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.",
+            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。");
         Register("增产点数聚集结果",
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T量子复制", "Quantum Copy", "量子复制");
         Register("量子复制描述",
-            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By restructuring the item at the microscopic level and adding distilled essence as a catalyst, the item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n"
+            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n"
             + "Obviously, the research process of combining material reorganisation technology with proliferator points and distillation essence is highly unpredictable. This research only exists in rumours, and whether it can be achieved remains unknown.\n"
             + $"{"Warning:".WithColor(Orange)} The technology associated with this technology has been banned by the COSMO Technology Ethics Committee, {"Please research manually.".WithColor(Orange)}",
-            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。它可以应用在绝大多数物品上。如果将物品在微观层面进行重组，并添加分馏精华作为催化剂，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。\n"
+            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。它可以应用在绝大多数物品上。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。\n"
             + "显然，将物质重组技术与增产点数、分馏精华关联的研究过程高度不可控。这项研究仅存在于在传闻中，能否做到是仍是未知。\n"
             + $"{"警告：".WithColor(Orange)}该科技的相关技术已被COSMO技术伦理委员会禁用，{"请手动研究。".WithColor(Orange)}");
         Register("量子复制结果",
-            "You have mastered quantum replication technology and can use distilled essence as a catalyst to replicate most items in bulk.",
-            "你已经掌握了量子复制技术，可以用分馏精华作为催化剂批量复制大多数物品了。");
+            "You have mastered quantum replication technology and can now batch replicate items with Fractionate Essence.",
+            "你已经掌握了量子复制技术，可以用分馏精华批量复制物品了。");
 
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
-            "Item Alchemy Technology can transform items into various matrices. This is a simple and direct way to obtain matrices, but low-value items seem to have difficulty successfully transforming into matrices.",
-            "物品点金科技可以将物品点金为各种矩阵。这是一种简单、直接获取矩阵的方式，不过低价值物品似乎很难成功点出矩阵。");
+            "Item Alchemy Technology can transform items into various matrices. It's a simple, straightforward way to get matrices, but low-value items seem to have a hard time spawning matrices.",
+            "物品点金科技可以将物品点金成各种矩阵。这是一种简单、直接获取矩阵的方式，但是低价值物品似乎很难产出矩阵。");
         Register("物品点金结果",
             "You have mastered the art of item alchemy and can now transform items into various matrices.",
-            "你已经掌握了物品点金技术，可以将物品点金为各种矩阵了。");
+            "你已经掌握了物品点金技术，可以将物品点金成各种矩阵了。");
 
         Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",
-            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but is it really useless when put into practice?",
-            "物品分解科技可以将物品分解为制作它的材料或沙土。这看起来似乎没有用，实际用起来也没有用……吗？");
+            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but it can be powerful in certain specific scenarios.",
+            "物品分解科技可以将物品分解成制作它的材料或沙土。这看起来似乎没有用，但是在某些特定的场景下，它能发挥出强大的威力。");
         Register("物品分解结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了物品分解技术，可以将物品分解为制作它的材料或沙土了。");
+            "你已经掌握了物品分解技术，可以将物品分解成制作它的材料或沙土了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "Item conversion technology can convert items into other items related to them. Is this a gain or a loss? Even COSMO cannot reach a definite conclusion.",
-            "物品转化科技可以将物品转化为与其相关的其他物品。这到底是赚了还是亏了？主脑也无法得到确切的结论。");
+            "Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...",
+            "物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……");
         Register("物品转化结果",
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
-            "你已经掌握了物品转化技术，可以将物品转化为与其相关的其他物品了。");
-
-
-        // Register("T分馏流动输出集装", "Fractionate Fluid Output Integrate", "分馏流动输出集装");
-        // Register("分馏流动输出集装等级",
-        //     " Integration count of fractionate fluid output",
-        //     " 分馏流动输出集装数量");
-        // Register("分馏流动输出集装描述",
-        //     "Failed fractionated items will be integrated as much as possible in a cargo.",
-        //     "分馏失败的原料将会尽可能以集装形式输出。");
-        // Register("分馏流动输出集装结果",
-        //     "All failed fractionated items will now be integrated as much as possible in a cargo.",
-        //     "现在，所有分馏失败的原料都将尽可能集装后再输出。");
-        //
-        // Register("T分馏产物输出集装", "Fractionate Product Output Integrate", "分馏产物输出集装");
-        // Register("分馏产物输出集装等级",
-        //     " Integration count of fractionate product output",
-        //     " 分馏产物输出集装数量");
-        // Register("分馏产物输出集装描述1",
-        //     "Successful fractionated items will be integrated as much as possible in a cargo.",
-        //     "分馏成功的产物将会尽可能以集装形式输出。");
-        // Register("分馏产物输出集装结果1",
-        //     "All successful fractionated items will now be integrated as much as possible in a cargo.",
-        //     "现在，所有分馏成功的产物都将尽可能集装后再输出。");
-        // Register("分馏产物输出集装描述2",
-        //     "Further increases the integration count of fractionate product in a cargo.",
-        //     "进一步提高分馏产物的集装数量。");
-        // Register("分馏产物输出集装结果2",
-        //     "The integration count of fractionate product in a cargo was further improved.",
-        //     "所有分馏产物的集装数量进一步提升了。");
-        //
-        // Register("T分馏永动", "Fractionate Forever", "分馏永动");
-        // Register("分馏持续运行",
-        //     "Make specific types of fractionators keep running",
-        //     "使特定种类的分馏塔可以持续运行");
-        // Register("分馏永动描述",
-        //     "It has been found that when multiple fractionators form a loop, there is often a buildup of product from one fractionator, which causes all fractionators to stop working. To solve this problem, the Mastermind provides technology that can control the fractionation process. Any time the number of products reaches 75% of the internal storage limit, the fractionator will not fractionate any products, but only maintain the flow of raw materials, thus ensuring the normal operation of the other fractionators in the loop.",
-        //     "研究发现，多个分馏塔形成环路时，经常出现某个分馏塔产物堆积，从而导致所有分馏塔停止工作的情况。为了解决这个问题，主脑提供了可以控制分馏过程的科技。任何产物数目达到内部存储上限75%时，分馏塔将不会分馏出任何产物，仅维持原料的流动，以此确保环路其他分馏塔的正常运行。");
-        // Register("分馏永动结果",
-        //     "Now, fractionators will keep running without product buildup.",
-        //     "现在，分馏塔将会持续运行，不会出现产物堆积的情况了。");
+            "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
     }
 
     /// <summary>
@@ -260,8 +223,8 @@ public static class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
-        tech分馏数据中心.AddItems = [IFE交互塔, IFE分馏塔原胚普通];
-        tech分馏数据中心.AddItemCounts = [1, 80];//20用于解锁分馏塔原胚科技，60赠送
+        tech分馏数据中心.AddItems = [IFE分馏塔原胚普通];
+        tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
 
@@ -444,8 +407,8 @@ public static class TechManager {
             [RFE分馏塔原胚定向],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚定向];
-        tech分馏塔原胚.AddItemCounts = [30, 30, 20];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚定向];
+        tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
 
@@ -525,56 +488,6 @@ public static class TechManager {
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品转化.PropertyOverrideItems = [I电磁矩阵];
         tech物品转化.PropertyItemCounts = [200];
-
-        //todo: 添加行星分馏塔
-
-        // var tech3807 = ProtoRegistry.RegisterTech(TFE分馏流动输出集装,
-        //     "T分馏流动输出集装", "分馏流动输出集装描述", "分馏流动输出集装结果",
-        //     LDB.techs.Select(T运输站集装物流 + 2).IconPath,
-        //     [],
-        //     [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-        //     [], new(37, -31));
-        // tech3807.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
-        //
-        // var tech3804 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装,
-        //     "T分馏产物输出集装1", "分馏产物输出集装描述1", "分馏产物输出集装结果1",
-        //     LDB.techs.Select(T运输站集装物流).IconPath,
-        //     [],
-        //     [I电磁矩阵, I能量矩阵, I结构矩阵], [8, 8, 8], 180000,
-        //     [], new(37, -35));
-        // tech3804.Name = "T分馏产物输出集装";
-        // tech3804.PreTechsImplicit = GenesisBook.Enable ? [TGB集装物流系统] : [T集装物流系统_GB物品仓储];
-        // tech3804.Level = 1;
-        // tech3804.MaxLevel = 1;
-        //
-        // var tech3805 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 1,
-        //     "T分馏产物输出集装2", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
-        //     LDB.techs.Select(T运输站集装物流 + 1).IconPath,
-        //     [tech3804.ID],
-        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵], [8, 8, 8, 8], 360000,
-        //     [], new(41, -35));
-        // tech3805.Name = "T分馏产物输出集装";
-        // tech3805.Level = 2;
-        // tech3805.MaxLevel = 2;
-        //
-        // var tech3806 = ProtoRegistry.RegisterTech(TFE分馏产物输出集装 + 2,
-        //     "T分馏产物输出集装", "分馏产物输出集装描述2", "分馏产物输出集装结果2",
-        //     LDB.techs.Select(T运输站集装物流 + 2).IconPath,
-        //     [tech3805.ID],
-        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-        //     [], new(45, -35));
-        // tech3806.Name = "T分馏产物输出集装";
-        // tech3806.Level = 3;
-        // tech3806.MaxLevel = 3;
-        //
-        // var tech3808 = ProtoRegistry.RegisterTech(TFE分馏永动,
-        //     "T分馏永动", "分馏永动描述", "分馏永动结果",
-        //     "Assets/fe/tech分馏永动",
-        //     [],
-        //     [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵], [8, 8, 8, 8, 8], 720000,
-        //     [], new(45, -31));
-        // tech3808.Name = "T分馏永动";
-        // tech3808.PreTechsImplicit = [tech3806.ID];
     }
 
     /// <summary>
@@ -641,9 +554,17 @@ public static class TechManager {
     public static bool TechProto_UnlockFunctionText_Prefix(ref TechProto __instance, ref string __result) {
         if (__instance.ID == TFE分馏数据中心) {
             __result = $"{"允许连接到分馏数据中心".Translate()}\r\n"
-                       + $"{"解锁全部建筑培养配方".Translate()}\r\n"
-                       + $"{"解锁普通矿物复制配方".Translate()}\r\n"
-                       + $"{"给予交互塔和普通原胚".Translate()}";
+                       + $"{"给予一些分馏塔原胚".Translate()}";
+            return false;
+        }
+        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
+            __result = $"{"一个物超所值的礼包".Translate()}";
+            return false;
+        }
+        if (__instance.ID == TFE分馏塔原胚) {
+            __result = $"{"解锁全部建筑培养配方".Translate()}\r\n"
+                       + $"{"给予一个交互塔".Translate()}\r\n"
+                       + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
         }
         if (__instance.ID == TFE物品交互) {
@@ -651,31 +572,29 @@ public static class TechManager {
                        + $"{"双击背包排序按钮，自动上传背包内物品".Translate()}";
             return false;
         }
-        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
-            __result = $"{"一个物超所值的礼包".Translate()}";
+        if (__instance.ID == TFE矿物复制) {
+            __result = $"{"解锁部分矿物复制配方".Translate()}";
             return false;
         }
         return true;
     }
 
-    private static bool IsCommonMineralCopyRecipe(this BaseRecipe recipe) {
-        ItemProto item = LDB.items.Select(recipe.InputID);
-        return recipe.RecipeType == ERecipe.MineralCopy
-               && item.Type == EItemType.Resource
-               && (recipe.InputID < I可燃冰 || recipe.InputID > I单极磁石);
-    }
-
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.NotifyTechUnlock))]
     public static void GameHistoryData_NotifyTechUnlock_Postfix(int _techId) {
-        if (_techId == TFE分馏数据中心) {
+        if (_techId == TFE分馏塔原胚) {
             //解锁所有建筑培养配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
                 recipe.RewardThis();
             }
+        } else if (_techId == TFE矿物复制) {
             //解锁非珍奇的原矿复制配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
-                if (recipe.IsCommonMineralCopyRecipe()) {
+                int itemID = recipe.InputID;
+                ItemProto item = LDB.items.Select(itemID);
+                if (recipe.RecipeType == ERecipe.MineralCopy
+                    && (LDB.veins.dataArray.Any(vein => vein.MiningItem == itemID) || item.Type == EItemType.Resource)
+                    && (itemID < I可燃冰 || itemID > I单极磁石)) {
                     recipe.RewardThis();
                 }
             }

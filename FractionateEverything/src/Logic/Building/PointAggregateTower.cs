@@ -18,8 +18,8 @@ public static class PointAggregateTower {
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");
         Register("I点数聚集塔",
-            "Concentrate proliferator points on certain items so that they carry more than 4 proliferator points.",
-            "将增产点数集中到部分物品上，从而使物品携带超过4点增产点数。");
+            "Concentrate proliferator points onto specific items to produce goods carrying greater proliferator points. Requires upgrading the proliferator point aggregation efficiency tier at the fractionation data centre.",
+            "将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。");
     }
 
     private static ItemProto item;
