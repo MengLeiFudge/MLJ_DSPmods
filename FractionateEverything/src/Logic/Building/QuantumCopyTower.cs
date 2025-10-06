@@ -16,8 +16,8 @@ public static class QuantumCopyTower {
     public static void AddTranslations() {
         Register("量子复制塔", "Quantum Copy Tower");
         Register("I量子复制塔",
-            "Rearrange the item at the microscopic level and add distilled essence as a catalyst to replicate the item in bulk. Proliferator points no longer increase processing speed, but they can reduce the consumption of distilled essence. Consumed distillation essence will be automatically deducted from the fractionation data centre.",
-            "将物品在微观层面进行重组，并添加分馏精华作为催化剂，从而批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的损耗。消耗的分馏精华会自动从分馏数据中心扣除。");
+            "Leveraging the exceptional malleability of fractionate essences to replicate diverse objects. Proliferator points reduce the consumption of distillation essences. During operation, four types of fractionation essences are automatically deducted from the fractionation data centre. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "利用分馏精华卓越的可塑性复制各种物品。增产点数可以减少分馏精华的消耗。运行时会自动从分馏数据中心扣除四种分馏精华。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     private static ItemProto item;
