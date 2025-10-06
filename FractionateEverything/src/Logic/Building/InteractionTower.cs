@@ -16,8 +16,8 @@ public static class InteractionTower {
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
         Register("I交互塔",
-            "In interactive mode, the input items are transmitted to the fractionation data centre in the form of data, and the selected items are output in physical form. In cultivation mode, non-directional fractionator prototypes can be cultivated into different fractionators.",
-            "交互模式下，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。培养模式下，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
+            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
+            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
     }
 
     private static ItemProto item;

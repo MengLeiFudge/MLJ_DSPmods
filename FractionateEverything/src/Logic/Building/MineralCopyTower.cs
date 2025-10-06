@@ -16,8 +16,8 @@ public static class MineralCopyTower {
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Copy Tower");
         Register("I矿物复制塔",
-            "Duplicate most minerals, including those unique to dark fog.",
-            "复制大多数矿物，包括黑雾特有掉落。");
+            "Replicate various minerals, including dark fog-specific drops. There is a certain probability of obtaining copy essence. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "复制各种矿物，包括黑雾特有掉落。有一定概率得到复制精华。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     private static ItemProto item;
