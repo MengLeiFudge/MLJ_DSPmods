@@ -247,6 +247,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
+        TechManager.ResetTechUnlockFlags();
     }
 
     #endregion
