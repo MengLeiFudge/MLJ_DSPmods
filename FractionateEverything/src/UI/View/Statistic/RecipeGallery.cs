@@ -6,7 +6,6 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;

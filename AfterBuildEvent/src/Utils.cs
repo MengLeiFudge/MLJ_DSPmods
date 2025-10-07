@@ -4,30 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using static AfterBuildEvent.PathConfig;
 
 namespace AfterBuildEvent;
 
 public static class Utils {
-    public const string R2_Default =
-        @"C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
-    public const string R2_Mods_Config = $@"{R2_Default}\mods.yml";
-    public const string R2_BepInEx = $@"{R2_Default}\BepInEx";
-    public const string DSPGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
-
-    public static FileInfo PublicizerExe => new(@"..\..\..\..\lib\BepInEx.AssemblyPublicizer.Cli.exe");
-    public const string R2_DumpedDll_Origin = $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
-    public const string R2_DumpedDll_Publicized =
-        $@"{R2_BepInEx}\DumpedAssemblies\DSPGAME\Assembly-CSharp-publicized.dll";
-    public const string Project_DumpedDll_Publicized = @"..\..\..\..\lib\Assembly-CSharp-publicized.dll";
-    public const string R2_GenesisDll_Origin = $@"{R2_BepInEx}\plugins\HiddenCirno-GenesisBook\ProjectGenesis.dll";
-    public const string R2_GenesisDll_Publicized =
-        $@"{R2_BepInEx}\plugins\HiddenCirno-GenesisBook\ProjectGenesis-publicized.dll";
-    public const string Project_GenesisDll_Publicized = @"..\..\..\..\lib\ProjectGenesis-publicized.dll";
-
-    public static FileInfo Pdb2mdbExe => new(@"..\..\..\..\lib\pdb2mdb.exe");
-
-    public const string KillDSP = "taskkill /f /im DSPGAME.exe";
-    public const string RunModded = "start steam://rungameid/1366540";
+    public static readonly string KillDSP = "taskkill /f /im DSPGAME.exe";
+    public static readonly string RunDSP = "start steam://rungameid/1366540";
 
     #region C(n,r)
 
@@ -66,8 +49,8 @@ public static class Utils {
     /// <param name="mod">要处理的模组名称，格式为作者名字-模组名字</param>
     /// <param name="enable">是否启用</param>
     public static void ChangeModEnable(string mod, bool enable) {
-        string modPatchersDir = $@"{R2_BepInEx}\patchers\{mod}";
-        string modPluginsDir = $@"{R2_BepInEx}\plugins\{mod}";
+        string modPatchersDir = $@"{R2ProfileDir}\BepInEx\patchers\{mod}";
+        string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{mod}";
         ChangeEnable(modPatchersDir, enable);
         ChangeEnable(modPluginsDir, enable);
     }
@@ -128,7 +111,7 @@ public static class Utils {
     /// </summary>
     public static void LoadModInfos() {
         modInfos.Clear();
-        using StreamReader sr = File.OpenText(R2_Mods_Config);
+        using StreamReader sr = File.OpenText($@"{R2ProfileDir}\mods.yml");
         ModInfo modInfo = null;
         string line;
         Regex regex = new Regex("    - .+-.+-[0-9]+.[0-9]+.[0-9]+");

@@ -9,16 +9,12 @@ using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
 using static AfterBuildEvent.Utils;
+using static AfterBuildEvent.PathConfig;
 
 namespace AfterBuildEvent;
 
 static class AfterBuildEvent {
     public static void Main(string[] args) {
-        //已注入preloader的Assembly-CSharp.dll
-        //ProjectGenesis-publicized.dll
-        //现有project的dll
-        //任意project的mdb
-
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
         Console.WriteLine("输入要执行的命令（直接回车表示1）：");
         Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
@@ -44,26 +40,24 @@ static class AfterBuildEvent {
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
         //遍历所有csproj，拷贝dll（本程序Debug则仅拷贝所有debug的dll，Release则仅拷贝release的dll）
-        foreach (var dirInfo in new DirectoryInfo(@"..\..\..\..").GetDirectories()) {
+        foreach (var dirInfo in new DirectoryInfo(SolutionDir).GetDirectories()) {
             string csproj = $@"{dirInfo.FullName}\{dirInfo.Name}.csproj";
             if (!File.Exists(csproj)) {
                 continue;
             }
-            XmlDocument xml = new();
-            XmlReader reader = XmlReader.Create(csproj);
-            xml.Load(reader);
-            reader.Close();
-            if (xml.SelectSingleNode("/Project/PropertyGroup/BepInExPluginGuid") == null) {
+            XmlDocument xmlDocument = new();
+            xmlDocument.Load(csproj);
+            if (xmlDocument.SelectSingleNode("/Project/PropertyGroup/BepInExPluginGuid") == null) {
                 continue;
             }
-            string projectName = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText;
-            string targetFramework = xml.SelectSingleNode("/Project/PropertyGroup/TargetFramework")?.InnerText;
+            string projectName = xmlDocument.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText;
+            string targetFramework = xmlDocument.SelectSingleNode("/Project/PropertyGroup/TargetFramework")?.InnerText;
             if (projectName == null || targetFramework == null) {
                 continue;
             }
             //要打包的所有文件，也是要复制到R2_BepInEx的文件
             List<string> fileList = [];
-            string r2ModDir = $@"{R2_BepInEx}\plugins\MengLei-{projectName}";
+            string r2ModDir = $@"{R2ProfileDir}\BepInEx\plugins\MengLei-{projectName}";
             string projectDir = dirInfo.FullName;
             //mod.dll
 #if DEBUG
@@ -125,12 +119,12 @@ static class AfterBuildEvent {
             //额外文件
             if (projectName == "GetDspData") {
                 //Newtonsoft.Json.dll
-                string jsonDll = @"..\..\..\..\lib\Newtonsoft.Json.dll";
+                string jsonDll = $@"{SolutionDir}\lib\Newtonsoft.Json.dll";
                 fileList.Add(jsonDll);
             } else if (projectName == "FractionateEverything") {
                 //fe
                 string originFEAssets = @"D:\project\unity\DSP_FEAssets\AssetBundles\StandaloneWindows64\fe";
-                string projectFEAssets = @"..\..\..\..\FractionateEverything\Assets\fe";
+                string projectFEAssets = $@"{SolutionDir}\FractionateEverything\Assets\fe";
                 if (File.Exists(originFEAssets)) {
                     File.Copy(originFEAssets, projectFEAssets, true);
                 }
@@ -157,7 +151,7 @@ static class AfterBuildEvent {
             fileList.Add(projectModMdbFile);
             foreach (var file in fileList) {
                 string relativePath = Path.GetFileName(file);
-                string r2FilePath = $@"{R2_BepInEx}\plugins\MengLei-{projectName}\{relativePath}";
+                string r2FilePath = $@"{R2ProfileDir}\BepInEx\plugins\MengLei-{projectName}\{relativePath}";
                 string r2OldFilePath = $"{r2FilePath}.old";
                 string targetPath = !File.Exists(r2OldFilePath) ? r2FilePath : r2OldFilePath;
                 FileInfo fileInfo = new FileInfo(targetPath);
@@ -173,29 +167,12 @@ static class AfterBuildEvent {
                     catch { }
                 }
             }
-            //额外打包
+            //复制导入教学视频
             if (projectName == "FractionateEverything") {
-                //给群友提供的测试版本，包含了如何使用R2导入的视频
-                //移除旧的zip
-                string dir = $@".\ModZips";
-                if (Directory.Exists(dir)) {
-                    foreach (string file in Directory.GetFiles(dir)) {
-                        FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.Name.StartsWith("[0.10.32]万物分馏") && fileInfo.Name.EndsWith(".zip")) {
-                            fileInfo.Delete();
-                        }
-                    }
-                }
-                //生成新的zip
-                string techVideo = $@"{projectDir}\Assets\[看我看我！]如何导入测试版万物分馏.mp4";
-                if (File.Exists(techVideo)) {
-                    fileList.Clear();
-                    fileList.Add(zipFile);
-                    fileList.Add(techVideo);
-                    zipFile = $@".\ModZips\[0.10.32]万物分馏{version}-{DateTime.Now.ToString("MMddHHmm")} 群319567534.zip";
-                    ZipMod(fileList, zipFile);
-                    Console.WriteLine($"创建 {zipFile}");
-                }
+                string file = $@"{projectDir}\Assets\[看我看我！]如何导入测试版万物分馏.mp4";
+                string targetPath = $@"{projectDir}\Assets\[看我看我！]如何导入测试版万物分馏.mp4";
+                File.Copy(file, @".\ModZips\[看我看我！]如何导入测试版万物分馏.mp4", true);
+                Console.WriteLine($"复制 {file} -> {targetPath}");
             }
         }
 
@@ -203,18 +180,16 @@ static class AfterBuildEvent {
         Process.Start("explorer", @".\ModZips");
 
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
-        File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
+        File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
         string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
-        File.Copy($@"{R2_Default}\doorstop_config.ini", doorstop_config, true);
+        File.Copy($@"{R2ProfileDir}\doorstop_config.ini", doorstop_config, true);
         //修改doorstop_config.ini，使其目标指向R2的preloader.dll
         string[] lines = File.ReadAllLines(doorstop_config);
-        for (int i = 0;
-             i < lines.Length;
-             i++) {
+        for (int i = 0; i < lines.Length; i++) {
             if (lines[i].StartsWith("enabled=")) {
                 lines[i] = "enabled=true";
             } else if (lines[i].StartsWith("targetAssembly=")) {
-                lines[i] = $@"targetAssembly={R2_BepInEx}\core\BepInEx.Preloader.dll";
+                lines[i] = $@"targetAssembly={R2ProfileDir}\BepInEx\core\BepInEx.Preloader.dll";
             } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
                 lines[i] = "ignoreDisableSwitch=false";
             }
@@ -225,7 +200,7 @@ static class AfterBuildEvent {
         Console.WriteLine("是否启动游戏？1或回车表示启动，其他表示结束程序");
         string str = Console.ReadLine();
         if (str == "" || str == "1") {
-            cmd.Exec(RunModded);
+            cmd.Exec(RunDSP);
         }
     }
 
@@ -264,50 +239,54 @@ static class AfterBuildEvent {
 
     private static void UpdateLibDll() {
         using CmdProcess cmd = new();
-        //publicize已注入preloader的Assembly-CSharp.dll，然后将其拷贝到项目的lib
-        //注：将BepInEX.cfg的DumpAssemblies设为true，就会生成已注入preloader的Assembly-CSharp.dll
-        if (File.Exists(R2_DumpedDll_Origin)) {
-            Console.WriteLine("开始尝试将注入preloader的Assembly-CSharp.dll公开");
-            if (File.Exists(R2_DumpedDll_Publicized)) {
-                File.Delete(R2_DumpedDll_Publicized);
-            }
-            cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
-            cmd.Exec($".\\{PublicizerExe.Name} \"{R2_DumpedDll_Origin}\"");//引号防止路径包含空格
-            while (!File.Exists(R2_DumpedDll_Publicized)) {
-                Thread.Sleep(100);
-            }
-            Retry1:
-            try {
-                File.Copy(R2_DumpedDll_Publicized, Project_DumpedDll_Publicized, true);
-            }
-            catch (Exception) {
-                //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
-                goto Retry1;
-            }
-            Console.WriteLine("已将注入preloader的Assembly-CSharp.dll公开，并复制到本地");
+        Console.WriteLine("输入要使用哪个Assembly-CSharp.dll（直接回车表示1）：");
+        Console.WriteLine($"1表示使用{DSPACDll}");
+        Console.WriteLine($"2表示使用{R2ACDll}");
+        string str = Console.ReadLine();
+        string ACDll;
+        if (str == "1" || str == "") {
+            ACDll = DSPACDll;
+        } else if (str == "2") {
+            ACDll = R2ACDll;
         } else {
-            Console.WriteLine("未找到注入preloader的Assembly-CSharp.dll");
+            Console.WriteLine("输入有误！");
+            return;
         }
-        //publicize创世之书的dll，然后将其拷贝到项目的lib
-        //注：如果R2禁用创世，也会出现找不到dll的情况
-        if (File.Exists(R2_GenesisDll_Origin)) {
-            Console.WriteLine("开始尝试将创世之书的dll公开");
-            cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
-            cmd.Exec($".\\{PublicizerExe.Name} \"{R2_GenesisDll_Origin}\"");//引号防止路径包含空格，必须绝对路径
-            Retry2:
+        PublizeDll(cmd, ACDll, $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll");
+        PublizeDll(cmd, DSPUIDll, $@"{NugetGameLibNet45Dir}\UnityEngine.UI.dll");
+        PublizeDll(cmd, R2VDDll, $@"{SolutionDir}\lib\DSP_Battle-publicized.dll");
+        PublizeDll(cmd, R2GBDll, $@"{SolutionDir}\lib\ProjectGenesis-publicized.dll");
+        PublizeDll(cmd, R2ORDll, $@"{SolutionDir}\lib\ProjectOrbitalRing-publicized.dll");
+    }
+
+    private static void PublizeDll(CmdProcess cmd, string dllPath, string targetPath) {
+        if (!File.Exists(dllPath)) {
+            Console.WriteLine($"未找到{dllPath}！");
+            return;
+        }
+        if (!dllPath.EndsWith(".dll")) {
+            Console.WriteLine($"{dllPath}不是dll！");
+            return;
+        }
+        Console.WriteLine($"开始publicize {dllPath}");
+        cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
+        cmd.Exec($".\\{PublicizerExe.Name} \"{dllPath}\"");//引号防止路径包含空格
+        string publicizedPath = dllPath.Replace(".dll", "-publicized.dll");
+        while (!File.Exists(publicizedPath)) {
+            Thread.Sleep(100);
+        }
+        while (true) {
             try {
-                File.Copy(R2_GenesisDll_Publicized, Project_GenesisDll_Publicized, true);
+                File.Copy(publicizedPath, targetPath, true);
+                Console.WriteLine($"复制 {publicizedPath} -> {targetPath}");
+                break;
             }
-            catch (Exception) {
-                //文件刚生成不代表已经写完，所以如果仍在publicize，可能会抛出IOException
-                Thread.Sleep(100);
-                goto Retry2;
-            }
-            File.Delete(R2_GenesisDll_Publicized);
-            Console.WriteLine("已将创世之书的dll公开，并复制到本地");
-        } else {
-            Console.WriteLine("未找到创世之书的dll");
+            catch { }
         }
+        try {
+            File.Delete(publicizedPath);
+        }
+        catch { }
     }
 
     #endregion
@@ -319,16 +298,16 @@ static class AfterBuildEvent {
         //终止游戏
         cmd.Exec(KillDSP);
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
-        File.Copy($@"{R2_Default}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
+        File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
         string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
-        File.Copy($@"{R2_Default}\doorstop_config.ini", doorstop_config, true);
+        File.Copy($@"{R2ProfileDir}\doorstop_config.ini", doorstop_config, true);
         //修改doorstop_config.ini，使其目标指向R2的preloader.dll
         string[] lines = File.ReadAllLines(doorstop_config);
         for (int i = 0; i < lines.Length; i++) {
             if (lines[i].StartsWith("enabled=")) {
                 lines[i] = "enabled=true";
             } else if (lines[i].StartsWith("targetAssembly=")) {
-                lines[i] = $@"targetAssembly={R2_BepInEx}\core\BepInEx.Preloader.dll";
+                lines[i] = $@"targetAssembly={R2ProfileDir}\BepInEx\core\BepInEx.Preloader.dll";
             } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
                 lines[i] = "ignoreDisableSwitch=false";
             }
@@ -348,7 +327,7 @@ static class AfterBuildEvent {
         //     names[2] = "GenesisBook-GenesisBook_Experimental";
         // }
         for (int i = 0; i < names.Count; i++) {
-            string modPluginsDir = $@"{R2_BepInEx}\plugins\{names[i]}";
+            string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{names[i]}";
             if (!Directory.Exists(modPluginsDir)) {
                 Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
                 return;
@@ -400,7 +379,7 @@ static class AfterBuildEvent {
                     sb.Append(modInfos[i].displayName).Append(state.Contains(modInfos[i]) ? "启用 " : "禁用 ");
                 }
                 Console.WriteLine(sb.ToString());
-                cmd.Exec(RunModded);
+                cmd.Exec(RunDSP);
                 while (!File.Exists(oriFilePath)) {
                     Thread.Sleep(100);
                 }
