@@ -45,7 +45,7 @@ public static class InteractionTower {
             "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE交互塔], [5],
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE交互塔], [5],
             "I交互塔", TFE物品交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;

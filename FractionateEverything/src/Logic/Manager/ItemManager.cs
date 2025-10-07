@@ -14,92 +14,92 @@ public static class ItemManager {
     public static void AddTranslations() {
         Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
         Register("I万物分馏商店刷新提示",
-            $"The shop has been refreshed, don't forget to claim your relief supplies! ~\n(This is just a store refresh prompt and has no practical use. However, {"you should NOT be able to see this text, right?".WithColor(Red)})",
+            $"The shop has been refreshed, don't forget to claim your relief supplies~\n(This is just a store refresh prompt and has no practical use. However, {"you should NOT be able to see this text, right?".WithColor(Red)})",
             $"商店已刷新，别忘了领取救济粮哦~\n（只是一个商店刷新的提示，没有实际用途。但是，{"你应该看不到这段话才对呀？".WithColor(Red)}）");
 
         Register("万物分馏科技解锁提示", "Tech Unlock Tip", "科技解锁提示");
         Register("I万物分馏科技解锁提示",
-            "The tech will be automatically unlocked when the corresponding fractionator is entered into the fractionation data centre.",
-            "对应分馏塔输入到分馏数据中心时，将会自动解锁该科技。");
+            "The tech will be automatically unlocked when the corresponding fractionator is uploaded to the fractionation data centre. The possible upload methods are as follows:\n1.Enter the item from the front of the interaction tower.\n2.Discard the item after unlocking the item interaction tech.\n3.Raffle prizes (but the fractionator is not in any prize pool) or store-bought items.\n4.Upload items via the Logistics Interaction Station.",
+            "将对应分馏塔上传至分馏数据中心时，将会自动解锁该科技。可能的上传方式如下：\n1.从交互塔正面输入物品。\n2.解锁物品交互科技后，丢弃物品。\n3.抽奖奖励（但分馏塔不在任何奖池中）或商店购买物品。\n4.通过物流交互站上传物品。");
 
         Register("电磁奖券", "Electromagnetic Ticket");
         Register("I电磁奖券",
-            "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量电磁矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量电磁矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("能量奖券", "Energy Ticket");
         Register("I能量奖券",
-            "A high-tech ticket with a lot of energy matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量能量矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of energy matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量能量矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("结构奖券", "Structure Ticket");
         Register("I结构奖券",
-            "A high-tech ticket with a lot of structure matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量结构矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of structure matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量结构矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("信息奖券", "Information Ticket");
         Register("I信息奖券",
-            "A high-tech ticket with a lot of information matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量信息矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of information matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量信息矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("引力奖券", "Gravity Ticket");
         Register("I引力奖券",
-            "A high-tech ticket with a lot of gravity matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量引力矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of gravity matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量引力矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("宇宙奖券", "Universe Ticket");
         Register("I宇宙奖券",
-            "A high-tech ticket with a lot of universe matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量宇宙矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of universe matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量宇宙矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("黑雾奖券", "Dark Fog Ticket");
         Register("I黑雾奖券",
-            "A high-tech ticket with a lot of dark fog matrices encapsulated inside. It is also a lottery voucher for certain card pools in the data centre.",
-            "一张高科技奖券，内部封装了大量黑雾矩阵。也是分馏数据中心某些奖池的抽奖凭证。");
+            "A high-tech ticket with a lot of dark fog matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
+            "一张高科技奖券，内部封装了大量黑雾矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
 
-        Register("分馏塔原胚普通", "Frac Building Proto(Normal)", "分馏塔原胚（普通）");
-        Register("I分馏塔原胚普通",
-            "The precursor of the fractionator can be seen everywhere. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "随处可见的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
-        Register("分馏塔原胚精良", "Frac Building Proto(Uncommon)", "分馏塔原胚（精良）");
-        Register("I分馏塔原胚精良",
-            "Carefully crafted distillation tower precursor. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "精心打造的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
-        Register("分馏塔原胚稀有", "Frac Building Proto(Rare)", "分馏塔原胚（稀有）");
-        Register("I分馏塔原胚稀有",
-            "Limited edition distillation tower embryo for sale. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "限量发售的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
-        Register("分馏塔原胚史诗", "Frac Building Proto(Epic)", "分馏塔原胚（史诗）");
-        Register("I分馏塔原胚史诗",
-            "A once-in-a-century rare distillation tower embryo. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "百年难遇的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
-        Register("分馏塔原胚传说", "Frac Building Proto(Legendary)", "分馏塔原胚（传说）");
-        Register("I分馏塔原胚传说",
-            "The primitive distillation tower with a long history. Various fractionators can be cultured from interactive towers, or transformed into other embryos from conversion towers.",
-            "历史悠久的分馏塔原胚。可由交互塔培养出各种分馏塔，或由转化塔转化为其他原胚。");
-        Register("分馏塔原胚定向", "Frac Building Proto(Directional)", "分馏塔原胚（定向）");
-        Register("I分馏塔原胚定向",
-            "Artificially synthesized distillation tower embryo. It can be directly cultivated as a designated fractionator.",
-            "人工合成的分馏塔原胚。可以直接培养为指定的分馏塔。");
+        Register("分馏塔原胚I型", "Fractionator Proto I");
+        Register("I分馏塔原胚I型",
+            "One of the fractionator protos. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
+        Register("分馏塔原胚I型", "Fractionator Proto II");
+        Register("I分馏塔原胚II型",
+            "One of the fractionator protos. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
+        Register("分馏塔原胚III型", "Fractionator Proto III");
+        Register("I分馏塔原胚III型",
+            "One of the fractionator protos. After trained by Interaction Tower, Alchemy Tower, Deconstruction Tower and Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到点金塔、分解塔、转化塔，也有较低几率得到分馏塔定向原胚。");
+        Register("分馏塔原胚IV型", "Fractionator Proto IV");
+        Register("I分馏塔原胚IV型",
+            "One of the fractionator protos. After trained by Interaction Tower, Point Aggregate Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到点数聚集塔，也有较低几率得到分馏塔定向原胚。");
+        Register("分馏塔原胚V型", "Fractionator Proto V");
+        Register("I分馏塔原胚V型",
+            "One of the fractionator protos. After trained by Interaction Tower, Quantum Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到量子复制塔，也有较低几率得到分馏塔定向原胚。");
+        Register("分馏塔定向原胚", "Fractionator Directed Proto");
+        Register("I分馏塔定向原胚",
+            "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
+            "培养过程中发生变异的分馏塔原胚，具有极高的可塑性，可以直接培养为指定的分馏塔。");
         Register("分馏配方通用核心", "Fractionate Recipe Core");
         Register("I分馏配方通用核心",
-            "A cube containing peculiar energy. You can submit it to the COSMO and exchange it for any fractionation formula.",
-            "含有奇特能量的立方体。可以提交给主脑，兑换任意分馏配方。");
+            "A cube containing strange energy. There is a very small chance of getting it by drawing it in the recipes prize pool, and it will also be refreshed in the limited time shop. It can be used to unlock any recipes or redeem corresponding echoes in the Recipe Operations screen.",
+            "含有奇特能量的立方体。有极小概率在配方奖池中抽取得到，限时商店也会刷新。在配方操作界面，可以用它解锁任何配方，或是兑换对应的回响。");
         Register("分馏塔增幅芯片", "Fractionator Increase Chip");
         Register("I分馏塔增幅芯片",
-            "Highly integrated electronic chips. It can be submitted to the COSMO to enhance the effectiveness of various distillation towers.",
-            "高度集成的电子芯片。可以提交给主脑，增强各种分馏塔的效果。");
+            "Highly integrated electronic chip. There is a very small chance of getting it by drawing it from the Original Embryo Pool, and it will also be refreshed in the Limited Time Store. It can be used to enhance the effects of the fractionator and logistics interaction station in the building operations interface.",
+            "高度集成的电子芯片。有极小概率在原胚奖池中抽取得到，限时商店也会刷新。在建筑操作界面，可以用它提升分馏塔和物流交互站的效果。");
 
         Register("复制精华", "Copy Essence");
         Register("I复制精华",
-            "The essence produced by the mineral replication tower is one of the consumables required for the operation of the quantum replication tower.",
-            "矿物复制塔产出的精华，是量子复制塔运转所需的耗材之一。");
+            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
+            "分馏精华之一，矿物复制塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
         Register("点金精华", "Alchemy Essence");
         Register("I点金精华",
-            "The essence produced by the golden tower is one of the consumables required for the operation of the quantum replication tower.",
-            "点金塔产出的精华，是量子复制塔运转所需的耗材之一。");
+            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
+            "分馏精华之一，点金塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
         Register("分解精华", "Deconstruction Essence");
         Register("I分解精华",
-            "The essence produced by the decomposition tower is one of the consumables required for the operation of the quantum replication tower.",
-            "分解塔产出的精华，是量子复制塔运转所需的耗材之一。");
+            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
+            "分馏精华之一，分解塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
         Register("转化精华", "Conversion Essence");
         Register("I转化精华",
-            "The essence produced by the conversion tower is one of the consumables required for the operation of the quantum replication tower.",
-            "转化塔产出的精华，是量子复制塔运转所需的耗材之一。");
+            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
+            "分馏精华之一，转化塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
     }
 
     #region 添加新物品
@@ -209,32 +209,32 @@ public static class ItemManager {
         recipe.NonProductive = true;
 
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚普通, "分馏塔原胚普通", "I分馏塔原胚普通",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚I型, "分馏塔原胚I型", "I分馏塔原胚I型",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚精良, "分馏塔原胚精良", "I分馏塔原胚精良",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚II型, "分馏塔原胚II型", "I分馏塔原胚II型",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚稀有, "分馏塔原胚稀有", "I分馏塔原胚稀有",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚III型, "分馏塔原胚III型", "I分馏塔原胚III型",
             "Assets/fe/frac-proto-rare", tab分馏 * 1000 + 203, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚史诗, "分馏塔原胚史诗", "I分馏塔原胚史诗",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚IV型, "分馏塔原胚IV型", "I分馏塔原胚IV型",
             "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚传说, "分馏塔原胚传说", "I分馏塔原胚传说",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚V型, "分馏塔原胚V型", "I分馏塔原胚V型",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚定向, "分馏塔原胚定向", "I分馏塔原胚定向",
+        item = ProtoRegistry.RegisterItem(IFE分馏塔定向原胚, "分馏塔定向原胚", "I分馏塔定向原胚",
             "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         item.UnlockKey = -1;
@@ -345,21 +345,22 @@ public static class ItemManager {
         //设置分馏塔、分馏塔原胚价值
         float v1 = 2000.0f / 10;
         float v2 = 2000.0f / 5;
-        float v3 = 2000.0f / 3;
-        float v4 = 2000.0f / 2;
-        itemValue[IFE交互塔] = v2;
+        float v3 = 2000.0f / 5;
+        float v4 = 2000.0f / 3;
+        float v5 = 2000.0f / 2;
         itemValue[IFE矿物复制塔] = v1;
-        itemValue[IFE点数聚集塔] = v3;
-        itemValue[IFE量子复制塔] = v4;
-        itemValue[IFE点金塔] = v2;
-        itemValue[IFE分解塔] = v2;
-        itemValue[IFE转化塔] = v2;
-        itemValue[IFE分馏塔原胚普通] = 0.6f * v1 + 0.4f * v2;
-        itemValue[IFE分馏塔原胚精良] = 0.08f * v1 + 0.84f * v2 + 0.08f * v3;
-        itemValue[IFE分馏塔原胚稀有] = 0.8f * v2 + 0.2f * v3;
-        itemValue[IFE分馏塔原胚史诗] = 0.3f * v2 + 0.6f * v3 + 0.1f * v4;
-        itemValue[IFE分馏塔原胚传说] = 0.4f * v3 + 0.6f * v4;
-        itemValue[IFE分馏塔原胚定向] = 1.5f * v4;
+        itemValue[IFE交互塔] = v2;
+        itemValue[IFE点金塔] = v3;
+        itemValue[IFE分解塔] = v3;
+        itemValue[IFE转化塔] = v3;
+        itemValue[IFE点数聚集塔] = v4;
+        itemValue[IFE量子复制塔] = v5;
+        itemValue[IFE分馏塔定向原胚] = v5;
+        itemValue[IFE分馏塔原胚I型] = 0.96f * v1 + 0.04f * v5;
+        itemValue[IFE分馏塔原胚II型] = 0.96f * v2 + 0.04f * v5;
+        itemValue[IFE分馏塔原胚III型] = 0.96f * v3 + 0.04f * v5;
+        itemValue[IFE分馏塔原胚IV型] = 0.96f * v4 + 0.04f * v5;
+        itemValue[IFE分馏塔原胚V型] = 0.96f * v5 + 0.04f * v5;
         //设置精华价值
         itemValue[IFE复制精华] = 200.0f;
         itemValue[IFE点金精华] = 200.0f;
@@ -376,8 +377,8 @@ public static class ItemManager {
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             !r.Items.Contains(IMS多功能集成组件)
             && !r.Results.Contains(IMS多功能集成组件)
-            && !r.Items.Contains(IFE分馏塔原胚定向)
-            && !r.Results.Contains(IFE分馏塔原胚定向)
+            && !r.Items.Contains(IFE分馏塔定向原胚)
+            && !r.Results.Contains(IFE分馏塔定向原胚)
             && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 

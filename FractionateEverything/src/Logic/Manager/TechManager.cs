@@ -156,14 +156,14 @@ public static class TechManager {
         Register("双击背包排序按钮，自动上传背包内物品",
             "Double-click the backpack sort button to automatically upload the items within the backpack");
 
-        Register("T矿物复制", "Mineral Copy", "矿物复制");
+        Register("T矿物复制", "Mineral Replication", "矿物复制");
         Register("矿物复制描述",
             "During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.",
             "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。");
         Register("矿物复制结果",
             "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
-        Register("解锁部分矿物复制配方", "Unlock some mineral copy recipes");
+        Register("解锁部分矿物复制配方", "Unlock some Mineral Replication recipes");
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
@@ -173,7 +173,7 @@ public static class TechManager {
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
-        Register("T量子复制", "Quantum Copy", "量子复制");
+        Register("T量子复制", "Quantum Replication", "量子复制");
         Register("量子复制描述",
             "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.",
             "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。");
@@ -219,7 +219,7 @@ public static class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
-        tech分馏数据中心.AddItems = [IFE分馏塔原胚普通];
+        tech分馏数据中心.AddItems = [IFE分馏塔原胚I型];
         tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
@@ -399,11 +399,11 @@ public static class TechManager {
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
             [TFE分馏数据中心],
-            [IFE分馏塔原胚普通], [20], 3600,
+            [IFE分馏塔原胚I型], [20], 3600,
             [RFE分馏塔原胚定向],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚精良, IFE分馏塔原胚稀有, IFE分馏塔原胚定向];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔定向原胚];
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];

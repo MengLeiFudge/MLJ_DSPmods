@@ -102,7 +102,7 @@ public static class TicketRaffle {
         Register("配方奖池说明",
             "Various fractionate recipes and Fractionate Recipe Core can be drawn.\n"
             + "Each type of lottery ticket can only yield recipes for items of the same technological tier.\n"
-            + "The Quantum Copy recipes can only be drawn after all the other recipes are full of echoes.",
+            + "The Quantum Replication recipes can only be drawn after all the other recipes are full of echoes.",
             "可以抽取各种分馏配方，以及分馏配方通用核心。\n"
             + "每种奖券只能抽到相同科技层次物品的相关配方。\n"
             + "其他配方全部满回响后，才能抽取到量子复制配方。");
@@ -242,7 +242,7 @@ public static class TicketRaffle {
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle2Entry, "自动百连");
         y += 36f + 7f;
         for (int i = 0; i < 6; i++) {
-            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, IFE分馏塔原胚普通 + i);
+            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, IFE分馏塔原胚I型 + i);
             txtFracProtoCounts[i] = wnd.AddText2(GetPosition(i, 6).Item1 + 40 + 5, y, tab, "动态刷新");
         }
         y += 36f + 7f;
@@ -287,7 +287,7 @@ public static class TicketRaffle {
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
         for (int i = 0; i < 6; i++) {
-            txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE分馏塔原胚普通 + i)}";
+            txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE分馏塔原胚I型 + i)}";
         }
         btnMaxRaffle1.SetText($"{"抽奖".Translate()} x {MaxRaffleCount1}");
         btnMaxRaffle2.SetText($"{"抽奖".Translate()} x {MaxRaffleCount2}");
@@ -433,12 +433,12 @@ public static class TicketRaffle {
         } else if (poolId == 2) {
             int[] specialItems = [
                 IFE分馏塔增幅芯片,
-                IFE分馏塔原胚普通,
-                IFE分馏塔原胚精良,
-                IFE分馏塔原胚稀有,
-                IFE分馏塔原胚史诗,
-                IFE分馏塔原胚传说,
-                IFE分馏塔原胚定向,
+                IFE分馏塔原胚I型,
+                IFE分馏塔原胚II型,
+                IFE分馏塔原胚III型,
+                IFE分馏塔原胚IV型,
+                IFE分馏塔原胚V型,
+                IFE分馏塔定向原胚,
             ];
             float[] specialRates = new float[7];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
@@ -458,7 +458,7 @@ public static class TicketRaffle {
                     && item.BuildMode == 0
                     && item.Type != EItemType.Matrix
                     && (item.ID < IFE电磁奖券 || item.ID > IFE黑雾奖券)
-                    && (item.ID < IFE分馏塔原胚普通 || item.ID > IFE分馏塔增幅芯片)
+                    && (item.ID < IFE分馏塔原胚I型 || item.ID > IFE分馏塔增幅芯片)
                     && item.ID != I沙土
                     && GameMain.history.ItemUnlocked(item.ID)
                 ).ToList();
@@ -696,7 +696,7 @@ public static class TicketRaffle {
             && item.BuildMode == 0
             && item.Type != EItemType.Matrix
             && (item.ID < IFE电磁奖券 || item.ID > IFE黑雾奖券)
-            && (item.ID < IFE分馏塔原胚普通 || item.ID > IFE分馏塔增幅芯片)
+            && (item.ID < IFE分馏塔原胚I型 || item.ID > IFE分馏塔增幅芯片)
             && item.ID != I沙土
             && GameMain.history.ItemUnlocked(item.ID)
         ).ToList();
