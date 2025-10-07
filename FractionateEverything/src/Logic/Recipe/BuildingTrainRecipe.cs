@@ -14,11 +14,11 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加所有建筑培养配方
     /// </summary>
     public static void CreateAll() {
-        Create(IFE分馏塔原胚普通, 0.05f);
-        Create(IFE分馏塔原胚精良, 0.05f);
-        Create(IFE分馏塔原胚稀有, 0.05f);
-        Create(IFE分馏塔原胚史诗, 0.05f);
-        Create(IFE分馏塔原胚传说, 0.05f);
+        Create(IFE分馏塔原胚I型, 0.05f);
+        Create(IFE分馏塔原胚II型, 0.05f);
+        Create(IFE分馏塔原胚III型, 0.05f);
+        Create(IFE分馏塔原胚IV型, 0.05f);
+        Create(IFE分馏塔原胚V型, 0.05f);
     }
 
     /// <summary>
@@ -26,11 +26,11 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// </summary>
     private static void Create(int inputID, float maxSuccessRate) {
         float[] ratioArr = inputID switch {
-            IFE分馏塔原胚普通 => [0.60f, 0.10f, 0.10f, 0.10f, 0.10f, 0.00f, 0.00f],
-            IFE分馏塔原胚精良 => [0.08f, 0.60f, 0.08f, 0.08f, 0.08f, 0.08f, 0.00f],
-            IFE分馏塔原胚稀有 => [0.00f, 0.20f, 0.20f, 0.20f, 0.20f, 0.20f, 0.00f],
-            IFE分馏塔原胚史诗 => [0.00f, 0.00f, 0.10f, 0.10f, 0.10f, 0.60f, 0.10f],
-            IFE分馏塔原胚传说 => [0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.40f, 0.60f],
+            IFE分馏塔原胚I型 => [0.96f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.04f],
+            IFE分馏塔原胚II型 => [0.00f, 0.96f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.04f],
+            IFE分馏塔原胚III型 => [0.00f, 0.00f, 0.32f, 0.32f, 0.32f, 0.00f, 0.00f, 0.04f],
+            IFE分馏塔原胚IV型 => [0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.96f, 0.00f, 0.04f],
+            IFE分馏塔原胚V型 => [0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.96f, 0.04f],
             _ => null
         };
         if (ratioArr == null) {
@@ -45,6 +45,7 @@ public class BuildingTrainRecipe : BaseRecipe {
             new(ratioArr[4] / sum, IFE转化塔, 1),
             new(ratioArr[5] / sum, IFE点数聚集塔, 1),
             new(ratioArr[6] / sum, IFE量子复制塔, 1),
+            new(ratioArr[7] / sum, IFE分馏塔定向原胚, 1),
         ];
         OutputMain.RemoveAll(info => info.SuccessRate <= 0);
         AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));

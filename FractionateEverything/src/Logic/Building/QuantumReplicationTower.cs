@@ -10,20 +10,20 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Building;
 
 /// <summary>
-/// 矿物复制塔
+/// 量子复制塔
 /// </summary>
-public static class MineralCopyTower {
+public static class QuantumReplicationTower {
     public static void AddTranslations() {
-        Register("矿物复制塔", "Mineral Copy Tower");
-        Register("I矿物复制塔",
-            "Replicate various minerals, including dark fog-specific drops. There is a certain probability of obtaining copy essence. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "复制各种矿物，包括黑雾特有掉落。有一定概率得到复制精华。需要在分馏数据中心解锁并升级对应配方。");
+        Register("量子复制塔", "Quantum Replication Tower");
+        Register("I量子复制塔",
+            "Leveraging the exceptional malleability of fractionate essences to replicate diverse objects. Proliferator points reduce the consumption of distillation essences. During operation, four types of fractionation essences are automatically deducted from the fractionation data centre. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "利用分馏精华卓越的可塑性复制各种物品。增产点数可以减少分馏精华的消耗。运行时会自动从分馏数据中心扣除四种分馏精华。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.4f, 1.0f, 0.949f);
+    private static Color color = new(0.6235f, 0.6941f, 0.8f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
@@ -35,21 +35,21 @@ public static class MineralCopyTower {
     public static float ReinforcementBonusEnergy => ReinforcementBonus;
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
-    public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    private static readonly float propertyRatio = 1.0f / (float)Cargo.powerTableRatio[4];
+    public static float ReinforcementBonusAppendOutputRate => 0;
+    private static readonly float propertyRatio = 2.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
-            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE量子复制塔, "量子复制塔", "I量子复制塔",
+            "Assets/fe/quantum-copy-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
-        recipe = ProtoRegistry.RegisterRecipe(RFE矿物复制塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔原胚定向], [2], [IFE矿物复制塔], [10],
-            "I矿物复制塔", TFE矿物复制, item.GridIndex, item.Name, item.IconPath);
+        recipe = ProtoRegistry.RegisterRecipe(RFE量子复制塔,
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE量子复制塔], [2],
+            "I量子复制塔", TFE量子复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
-        model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
+        model = ProtoRegistry.RegisterModel(MFE量子复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }
