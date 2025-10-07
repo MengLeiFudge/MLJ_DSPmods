@@ -43,15 +43,15 @@ public static class ERecipeExtension {
     public static void AddTranslations() {
         Register("未知", "Unknown");
         Register("建筑培养", "Building Train");
-        Register("矿物复制", "Mineral Copy");
-        Register("量子复制", "Quantum Copy");
+        Register("矿物复制", "Mineral Replication");
+        Register("量子复制", "Quantum Replication");
         Register("点金", "Alchemy");
         Register("分解", "Deconstruction");
         Register("转化", "Conversion");
         Register("未知配方", "Unknown Recipe");
         Register("建筑培养配方", "Building Train Recipe");
-        Register("矿物复制配方", "Mineral Copy Recipe");
-        Register("量子复制配方", "Quantum Copy Recipe");
+        Register("矿物复制配方", "Mineral Replication Recipe");
+        Register("量子复制配方", "Quantum Replication Recipe");
         Register("点金配方", "Alchemy Recipe");
         Register("分解配方", "Deconstruction Recipe");
         Register("转化配方", "Conversion Recipe");
