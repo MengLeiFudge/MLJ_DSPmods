@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup Label="DefaultPath">
+        <ProfileDir>C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
+        <DSPGameDir>D:\Steam\steamapps\common\Dyson Sphere Program</DSPGameDir>
+        <NugetGameLibDir>C:\Users\MLJ\.nuget\packages\dysonsphereprogram.gamelibs</NugetGameLibDir>
+    </PropertyGroup>
+</Project>

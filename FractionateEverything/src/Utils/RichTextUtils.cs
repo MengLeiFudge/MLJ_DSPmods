@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
 
