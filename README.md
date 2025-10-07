@@ -34,6 +34,18 @@ file.
 
 ## [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 
-包含5个不同的分馏塔，以及超过200个分馏配方。尽情享受分馏的乐趣吧！
+包含7种分馏塔，2种物流交互站，以及接近1000个分馏配方。尽情享受分馏的乐趣吧！
 
-Includes 5 different fractionators and over 200 fractionation recipes. Have fun with fractionation!
+Includes 7 fractionators, 2 logistics station and almost 1000 fractionation recipes. Have fun with fractionation!
+
+## [Beacon 插件塔](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/Beacon)
+
+包含2种插件塔和12种插件。使用它们可以大幅提升产能。
+
+Includes 7 fractionators, 2 logistics station and almost 1000 fractionation recipes. Have fun with fractionation!
+
+## [Quality System 品质系统](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/QualitySystem)
+
+哇，传说！
+
+Wow, Legendary!
