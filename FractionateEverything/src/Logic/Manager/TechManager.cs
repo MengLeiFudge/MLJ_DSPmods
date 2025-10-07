@@ -502,46 +502,31 @@ public static class TechManager {
         return new(13 + column * 4, -67 - row * 4);
     }
 
+    private static readonly bool[] techUnlockFlags = new bool[7];
+
+    public static void ResetTechUnlockFlags() {
+        Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
+    }
+
     /// <summary>
-    /// 分馏数据中心输入指定分馏塔时，解锁对应科技。
+    /// 当分馏塔上传至数据中心时，将解锁标记置为true。
     /// </summary>
     public static void CheckTechUnlockCondition(int itemId) {
-        try {
-            switch (itemId) {
-                case IFE交互塔:
-                    if (!GameMain.history.TechUnlocked(TFE物品交互)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品交互, true);
-                    }
-                    break;
-                case IFE矿物复制塔:
-                    if (!GameMain.history.TechUnlocked(TFE矿物复制)) {
-                        GameMain.history.UnlockTechUnlimited(TFE矿物复制, true);
-                    }
-                    break;
-                case IFE点数聚集塔:
-                    if (!GameMain.history.TechUnlocked(TFE增产点数聚集)) {
-                        GameMain.history.UnlockTechUnlimited(TFE增产点数聚集, true);
-                    }
-                    break;
-                case IFE点金塔:
-                    if (!GameMain.history.TechUnlocked(TFE物品点金)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品点金, true);
-                    }
-                    break;
-                case IFE分解塔:
-                    if (!GameMain.history.TechUnlocked(TFE物品分解)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品分解, true);
-                    }
-                    break;
-                case IFE转化塔:
-                    if (!GameMain.history.TechUnlocked(TFE物品转化)) {
-                        GameMain.history.UnlockTechUnlimited(TFE物品转化, true);
-                    }
-                    break;
-            }
+        if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
+            techUnlockFlags[itemId - IFE交互塔] = true;
         }
-        catch (Exception ex) {
-            LogError($"Error in CheckTechUnlockCondition: {ex}");
+    }
+
+    /// <summary>
+    /// 对于所有解锁标记为true的分馏塔，解锁对应科技。
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(Player), nameof(Player.GameTick))]
+    public static void Player_GameTick_Postfix() {
+        for (int i = 0; i < techUnlockFlags.Length; i++) {
+            if (techUnlockFlags[i] && !GameMain.history.TechUnlocked(TFE物品交互 + i)) {
+                GameMain.history.UnlockTechUnlimited(TFE物品交互 + i, false);
+            }
         }
     }
 
