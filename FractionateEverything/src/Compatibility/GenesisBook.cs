@@ -81,36 +81,4 @@ public static class GenesisBook {
     private static bool IsFracTech(int id) {
         return id >= TFE分馏数据中心 && id <= TFE超值礼包9;
     }
-
-    // /// <summary>
-    // /// 修复开启“科技探索”时，分馏塔的科技不能显示的问题
-    // /// </summary>
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(InitialTechPatches), nameof(InitialTechPatches.RefreshNode))]
-    // private static bool InitialTechPatches_RefreshNode_Prefix(ref UITechTree __instance) {
-    //     GameHistoryData history = GameMain.history;
-    //     foreach ((int techId, UITechNode node) in __instance.nodes) {
-    //         TechProto tech = node?.techProto;
-    //         CheckPlugins.LogInfo($"RefreshNode[start]: techId{techId}, TechProto{tech}");
-    //         if (techId > 1999 || node == null || tech.IsHiddenTech) {
-    //             CheckPlugins.LogWarning($"RefreshNode[continue]: techId{techId}, TechProto{tech} ");
-    //             continue;
-    //         }
-    //         bool techUnlocked = history.TechUnlocked(techId);
-    //         bool active = techUnlocked;
-    //         if (tech.PreTechs.Length > 0) {
-    //             active |= tech.PreTechs.Any(history.TechUnlocked);
-    //         } else if (tech.PreTechsImplicit.Length > 0) {
-    //             active |= tech.PreTechsImplicit.Any(history.TechUnlocked);
-    //         } else {
-    //             active = true;
-    //         }
-    //         node.gameObject.SetActive(active);
-    //         if (tech.postTechArray.Length > 0) {
-    //             node.connGroup.gameObject.SetActive(techUnlocked);
-    //         }
-    //         CheckPlugins.LogInfo($"RefreshNode[end]: techId{techId}, TechProto{tech}");
-    //     }
-    //     return false;
-    // }
 }
