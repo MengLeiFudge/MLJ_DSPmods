@@ -524,8 +524,12 @@ public static class TechManager {
     [HarmonyPatch(typeof(Player), nameof(Player.GameTick))]
     public static void Player_GameTick_Postfix() {
         for (int i = 0; i < techUnlockFlags.Length; i++) {
-            if (techUnlockFlags[i] && !GameMain.history.TechUnlocked(TFE物品交互 + i)) {
-                GameMain.history.UnlockTechUnlimited(TFE物品交互 + i, false);
+            if (techUnlockFlags[i]) {
+                if (!GameMain.history.TechUnlocked(TFE物品交互 + i)) {
+                    GameMain.history.UnlockTechUnlimited(TFE物品交互 + i, false);
+                } else {
+                    techUnlockFlags[i] = false;
+                }
             }
         }
     }
