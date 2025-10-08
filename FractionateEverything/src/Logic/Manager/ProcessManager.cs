@@ -749,6 +749,10 @@ public static class ProcessManager {
         List<ProductOutputInfo> products = fractionator.products(__instance.factory);
         int fluidOutputMax = building.FluidOutputMax();
         int productOutputMax = building.ProductOutputMax();
+        int fluidInputIncAvg = fractionator.fluidInputCount > 0
+            ? fractionator.fluidInputInc / fractionator.fluidInputCount
+            : 0;
+        float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
         bool transportMode = false;
         if (!fractionator.isWorking) {
             if (fractionator.fluidId == 0) {
@@ -773,7 +777,9 @@ public static class ProcessManager {
                 QuantumCopyRecipe recipe0 =
                     GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
                 if (recipe0 != null) {
-                    int essenceCost = (int)Math.Ceiling(recipe0.EssenceCost * (1 - recipe0.EssenceDec));
+                    float EssenceDec2 = pointsBonus * 0.5f / (float)MaxTableMilli(10);
+                    int essenceCost =
+                        (int)Math.Ceiling(recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2));
                     if (GetEssenceMinCount() < essenceCost) {
                         __instance.stateText.text = "缺少精华".Translate();
                         __instance.stateText.color = __instance.workStoppedColor;
@@ -826,11 +832,7 @@ public static class ProcessManager {
         //根据分馏塔以及配方情况，计算实际处理情况，生成上方字符串s1以及下方字符串s2
         string s1;
         string s2;
-        int fluidInputIncAvg = fractionator.fluidInputCount > 0
-            ? fractionator.fluidInputInc / fractionator.fluidInputCount
-            : 0;
         BaseRecipe recipe;
-        float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
         float buffBonus1 = building.ReinforcementBonusFracSuccess();
         float buffBonus2 = building.ReinforcementBonusMainOutputCount();
         float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
