@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
@@ -87,6 +88,13 @@ public class QuantumCopyRecipe : BaseRecipe {
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
     public List<ProductOutputInfo> GetOutputs(ref uint seed, float pointsBonus, float buffBonus1, float buffBonus2,
         int[] consumeRegister, out bool notEnoughEssence) {
+        //检查精华数目是否够一次最大消耗
+        float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
+        float essenceCostAvg = EssenceCost * (1 - EssenceDec) * (1 - EssenceDec2);
+        if (GetEssenceMinCount() < Math.Ceiling(essenceCostAvg)) {
+            notEnoughEssence = true;
+            return ProcessManager.emptyOutputs;
+        }
         notEnoughEssence = false;
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
@@ -110,9 +118,7 @@ public class QuantumCopyRecipe : BaseRecipe {
                 countReal++;
             }
         }
-        //根据有没有精华判定是否成功输出
-        float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
-        float essenceCostAvg = EssenceCost * (1 - EssenceDec) * (1 - EssenceDec2);
+        //判定精华消耗数目
         int essenceCostReal = (int)essenceCostAvg;
         essenceCostAvg -= essenceCostReal;
         if (essenceCostAvg > 0.0001) {
