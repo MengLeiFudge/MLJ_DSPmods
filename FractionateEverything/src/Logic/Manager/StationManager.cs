@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using FE.UI.View.Setting;
 using HarmonyLib;
 using UnityEngine;
@@ -299,7 +300,7 @@ public static class StationManager {
     }
 
     /// <summary>
-    /// 修改物流交互站的面板（新加的I面板）
+    /// 修改物流交互站的面板（新加的面板）
     /// 内容同上面那个一摸一样，唯一的不同是参数类型，怎么合并一下
     /// </summary>
     [HarmonyPostfix]
@@ -349,7 +350,7 @@ public static class StationManager {
     }
 
     /// <summary>
-    /// 修改物流交互站的集装数
+    /// 拖动集装数滑条时（说明必然没有使用当前上限），修改物流交互站的集装数
     /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.OnMinPilerValueChange))]
@@ -479,33 +480,81 @@ public static class StationManager {
     }
 
     /// <summary>
-    /// 非常不礼貌的覆盖了原方法，用来给物流交互站集装输出使用强化上限
-    /// 建议直接手写IL 或 想办法在 UpdateOutputSlots 方法里拿到物流交互站的物品ID
+    /// 实际处理时，物流交互站的集装上限使用强化上限
     /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick_OutputToBelt))]
-    public static bool PlanetTransport_GameTick_OutputToBelt_Prefix(PlanetTransport __instance, int maxPilerCount,
-        long time) {
-        CargoTraffic cargoTraffic = __instance.factory.cargoTraffic;
-        SignData[] entitySignPool = __instance.factory.entitySignPool;
-        bool active = (time + (long)__instance.factory.index) % 30L == 0L
-                      || __instance.planet == __instance.gameData.localPlanet;
-        for (int index = 1; index < __instance.stationCursor; ++index) {
-            if (__instance.stationPool[index] == null || __instance.stationPool[index].id != index) {
-                continue;
-            }
-            int buildingID = __instance.factory.entityPool[__instance.stationPool[index].entityId].protoId;
-            // ↓ 改动 ↓
-            if (buildingID is not (IFE行星内物流交互站 or IFE星际物流交互站)) {
-                __instance.stationPool[index].UpdateOutputSlots(cargoTraffic, entitySignPool, maxPilerCount, active);
-            } else {
-                ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-                int maxProductOutputStack = building.MaxProductOutputStack();
-                __instance.stationPool[index]
-                    .UpdateOutputSlots(cargoTraffic, entitySignPool, maxProductOutputStack, active);
-            }
-            // ↑ 改动 ↑
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(GameLogic), nameof(GameLogic._station_output_parallel))]
+    private static IEnumerable<CodeInstruction> GameLogic__station_output_parallel_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        var matcher = new CodeMatcher(instructions);
+        // 查找 UpdateOutputSlots 调用的模式
+        matcher.MatchForward(false,
+            new CodeMatch(OpCodes.Ldloc_S),// cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_S),// entitySignPool
+            new CodeMatch(OpCodes.Ldloc_S),// stationPilerLevel
+            new CodeMatch(OpCodes.Ldloc_S),// active
+            new CodeMatch(OpCodes.Callvirt,
+                AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
+        );
+        if (matcher.IsInvalid) {
+            LogError("Failed to find UpdateOutputSlots call pattern in GameLogic._station_output_parallel");
+            return instructions;
         }
-        return false;
+        // 移动到 stationPilerLevel 参数加载的位置
+        matcher.Advance(2);
+        // 替换为 GetOutputStack
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7))// 加载 factory
+            .Insert(
+                new CodeInstruction(OpCodes.Ldloc_S, (byte)19),// 加载 &local2
+                new CodeInstruction(OpCodes.Ldind_Ref),// 解引用得到 StationComponent
+                new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+            );
+        return matcher.InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// 实际处理时，物流交互站的集装上限使用强化上限
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick_OutputToBelt))]
+    private static IEnumerable<CodeInstruction> PlanetTransport_GameTick_OutputToBelt_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        var matcher = new CodeMatcher(instructions);
+        // 查找 UpdateOutputSlots 调用的模式
+        matcher.MatchForward(false,
+            new CodeMatch(OpCodes.Ldloc_0),// cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_1),// entitySignPool
+            new CodeMatch(OpCodes.Ldarg_1),// maxPilerCount
+            new CodeMatch(OpCodes.Ldloc_2),// active
+            new CodeMatch(OpCodes.Callvirt,
+                AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
+        );
+        if (matcher.IsInvalid) {
+            LogError("Failed to find UpdateOutputSlots call pattern in PlanetTransport.GameTick_OutputToBelt");
+            return instructions;
+        }
+        // 移动到 maxPilerCount 参数加载的位置
+        matcher.Advance(2);
+        // 替换为 GetOutputStack
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// this (PlanetTransport)
+            .Insert(
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")),// factory
+                new CodeInstruction(OpCodes.Ldarg_0),// this (PlanetTransport) 再次加载
+                new CodeInstruction(OpCodes.Ldfld,
+                    AccessTools.Field(typeof(PlanetTransport), "stationPool")),// stationPool
+                new CodeInstruction(OpCodes.Ldloc_3),// index
+                new CodeInstruction(OpCodes.Ldelem_Ref),// stationPool[index]
+                new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+            );
+        return matcher.InstructionEnumeration();
+    }
+
+    private static int GetOutputStack(PlanetFactory factory, StationComponent station) {
+        int buildingID = factory.entityPool[station.entityId].protoId;
+        return buildingID is IFE行星内物流交互站 or IFE星际物流交互站
+            ? LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
+            : GameMain.history.stationPilerLevel;
     }
 }
