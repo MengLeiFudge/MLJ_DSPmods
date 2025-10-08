@@ -55,7 +55,7 @@ public static class ItemManager {
         Register("I分馏塔原胚I型",
             "One of the fractionator protos. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
-        Register("分馏塔原胚I型", "Fractionator Proto II");
+        Register("分馏塔原胚II型", "Fractionator Proto II");
         Register("I分馏塔原胚II型",
             "One of the fractionator protos. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
