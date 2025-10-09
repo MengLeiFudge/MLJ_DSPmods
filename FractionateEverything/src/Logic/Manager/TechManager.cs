@@ -311,9 +311,7 @@ public static class TechManager {
             [RFE电磁奖券],
             GetTechPos(1, 1)
         );
-        tech电磁奖券.PreTechsImplicit = [TFE物品交互];
-        tech电磁奖券.AddItems = [IFE电磁奖券];
-        tech电磁奖券.AddItemCounts = [10];
+         tech电磁奖券.PreTechsImplicit = [TFE物品交互, TFE超值礼包1];
         tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
         tech电磁奖券.PropertyItemCounts = [200];
 
@@ -325,8 +323,6 @@ public static class TechManager {
             GetTechPos(1, 2)
         );
         tech能量奖券.PreTechsImplicit = [T能量矩阵];
-        tech能量奖券.AddItems = [IFE能量奖券];
-        tech能量奖券.AddItemCounts = [10];
         tech能量奖券.PropertyOverrideItems = [I能量矩阵];
         tech能量奖券.PropertyItemCounts = [400];
 
@@ -338,8 +334,6 @@ public static class TechManager {
             GetTechPos(1, 3)
         );
         tech结构奖券.PreTechsImplicit = [T结构矩阵];
-        tech结构奖券.AddItems = [IFE结构奖券];
-        tech结构奖券.AddItemCounts = [10];
         tech结构奖券.PropertyOverrideItems = [I结构矩阵];
         tech结构奖券.PropertyItemCounts = [600];
 
@@ -351,8 +345,6 @@ public static class TechManager {
             GetTechPos(1, 4)
         );
         tech信息奖券.PreTechsImplicit = [T信息矩阵];
-        tech信息奖券.AddItems = [IFE信息奖券];
-        tech信息奖券.AddItemCounts = [10];
         tech信息奖券.PropertyOverrideItems = [I信息矩阵];
         tech信息奖券.PropertyItemCounts = [800];
 
@@ -364,8 +356,6 @@ public static class TechManager {
             GetTechPos(1, 5)
         );
         tech引力奖券.PreTechsImplicit = [T引力矩阵];
-        tech引力奖券.AddItems = [IFE引力奖券];
-        tech引力奖券.AddItemCounts = [10];
         tech引力奖券.PropertyOverrideItems = [I引力矩阵];
         tech引力奖券.PropertyItemCounts = [1000];
 
@@ -377,8 +367,6 @@ public static class TechManager {
             GetTechPos(1, 6)
         );
         tech宇宙奖券.PreTechsImplicit = [T宇宙矩阵];
-        tech宇宙奖券.AddItems = [IFE宇宙奖券];
-        tech宇宙奖券.AddItemCounts = [10];
         tech宇宙奖券.PropertyOverrideItems = [I宇宙矩阵];
         tech宇宙奖券.PropertyItemCounts = [1200];
 
@@ -392,8 +380,6 @@ public static class TechManager {
         tech黑雾奖券.IsHiddenTech = true;
         tech黑雾奖券.PreItem = [I黑雾矩阵];
         tech黑雾奖券.PreTechsImplicit = [TFE分馏塔原胚];
-        tech黑雾奖券.AddItems = [IFE黑雾奖券];
-        tech黑雾奖券.AddItemCounts = [10];
 
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
