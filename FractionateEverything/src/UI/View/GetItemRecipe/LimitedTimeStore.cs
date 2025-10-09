@@ -255,7 +255,7 @@ public static class LimitedTimeStore {
         //计算矩阵总价值
         float matrixTotalValue = itemValue[matrixID] * matrixRecipeCost;
 
-        //1.构建物品基础列表
+        //1.构建可兑换的物品列表
         List<ExchangeInfo> itemExchangeList = [];
         //计算所有物品的概率总和（假设至少有10000个物品，因为电磁矩阵的概率是建筑增幅芯片的1150倍）
         int[] itemIdArr0 = itemIdArr.Where(itemId => GameMain.history.ItemUnlocked(itemId)).ToArray();
@@ -290,53 +290,42 @@ public static class LimitedTimeStore {
                 itemExchangeList.Add(info);
             }
         }
-        //获取可从抽奖获取的所有配方
+        //2.构建可兑换的配方列表
+        List<ExchangeInfo> recipeExchangeList = [];
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list)
-            .Where(recipe => GameMain.history.ItemUnlocked(recipe.InputID))
+            .Where(recipe => !recipe.IsMaxEcho
+                             && GameMain.history.ItemUnlocked(recipe.InputID)
+                             && GameMain.history.ItemUnlocked(recipe.MatrixID))
             .ToList();
-        //2.构建未解锁配方列表
-        List<ExchangeInfo> recipeLockedExchangeList = [];
-        foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Locked).ToList()) {
-            ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
-            float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
-            recipeLockedExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
+        if (recipes.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)) {
+            recipes.RemoveAll(recipe => recipe.RecipeType == ERecipe.QuantumCopy);
         }
-        //3.构建已解锁但未满回响配方列表
-        List<ExchangeInfo> recipeNotMaxEchoExchangeList = [];
-        foreach (BaseRecipe recipe in recipes.Where(recipe => recipe.Unlocked && !recipe.IsMaxEcho).ToList()) {
+        foreach (BaseRecipe recipe in recipes) {
             ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
             float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
-            recipeNotMaxEchoExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
+            recipeExchangeList.Add(new(recipe, recipeMatrix, matrixCount));
         }
 
-        //构建可能出现的随机兑换信息列表
-        List<ExchangeInfo> exchangeList = [];
-        // 添加Mod独有物品（>=50%概率）
-        // 物品列表已经按照概率权重重复添加，直接添加到兑换列表
-        exchangeList.AddRange(itemExchangeList);
-        // 添加未解锁的配方（<=20%概率）
-        if (recipeLockedExchangeList.Count > 0) {
-            // 计算需要添加的未解锁配方数量，使其占总数的20%
-            int lockedRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.2f / 0.5f);
-            for (int i = 0; i < lockedRecipeCount; i++) {
-                exchangeList.Add(recipeLockedExchangeList[GetRandInt(0, recipeLockedExchangeList.Count)]);
-            }
-        }
-        // 添加已解锁但未满回响的配方（<=30%概率）
-        if (recipeNotMaxEchoExchangeList.Count > 0) {
-            // 计算需要添加的未解锁配方数量，使其占总数的30%
-            int notMaxEchoRecipeCount = (int)Math.Ceiling(itemExchangeList.Count * 0.3f / 0.5f);
-            for (int i = 0; i < notMaxEchoRecipeCount; i++) {
-                exchangeList.Add(recipeNotMaxEchoExchangeList[GetRandInt(0, recipeNotMaxEchoExchangeList.Count)]);
-            }
-        }
-        //从随机兑换信息列表中挑选exchangeInfoMaxCount个，组成新的兑换信息列表
+        //从兑换列表中挑选exchangeInfoMaxCount个，组成新的兑换列表
+        Dictionary<BaseRecipe, int> recipeExchangeCounts = [];
         for (int i = 0; i < exchangeInfoMaxCount; i++) {
-            if (exchangeList.Count == 0) {
-                exchangeInfos[i] = new();
+            if (recipeExchangeList.Count > 0 && GetRandDouble() < 0.5) {
+                //兑换信息为配方（深拷贝以避免兑换信息之间互相影响）
+                ExchangeInfo info = recipeExchangeList[GetRandInt(0, recipeExchangeList.Count)];
+                BaseRecipe recipe = info.recipe;
+                if (recipeExchangeCounts.ContainsKey(recipe)) {
+                    recipeExchangeCounts[recipe]++;
+                    int maxExchangeCount = recipe.Locked ? 1 + recipe.MaxEcho : recipe.MaxEcho - recipe.Echo;
+                    if (recipeExchangeCounts[recipe] >= maxExchangeCount) {
+                        recipeExchangeList.Remove(info);
+                    }
+                } else {
+                    recipeExchangeCounts[recipe] = 1;
+                }
+                exchangeInfos[i] = info.DeepCopy();
             } else {
-                //由于List的info是同一个对象，这里需要深拷贝
-                exchangeInfos[i] = exchangeList[GetRandInt(0, exchangeList.Count)].DeepCopy();
+                //兑换信息为物品（深拷贝以避免兑换信息之间互相影响）
+                exchangeInfos[i] = itemExchangeList[GetRandInt(0, itemExchangeList.Count)].DeepCopy();
             }
             //前vipFreeCount个交换信息改为免费
             if (i < VipFeatures.FreeExchangeCount) {
