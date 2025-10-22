@@ -13,7 +13,7 @@ public static class SandboxMode {
     private static RectTransform tab;
 
     private static ConfigEntry<float> ExpMultiRateEntry;
-    public static float ExpMultiRate { get; private set; }
+    public static float ExpMultiRate => GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
 
     private class MultiRateMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
         public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
@@ -32,7 +32,6 @@ public static class SandboxMode {
 
     public static void LoadConfig(ConfigFile configFile) {
         ExpMultiRateEntry = configFile.Bind("TabSetting", "ExpMultiRate", 1.0f, "经验获取倍率");
-        ExpMultiRate = ExpMultiRateEntry.Value;
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -55,8 +54,6 @@ public static class SandboxMode {
             return;
         }
         //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
-        bool sandboxMode = GameMain.sandboxToolsEnabled;
-        ExpMultiRate = sandboxMode ? ExpMultiRateEntry.Value : 1;
     }
 
     #region IModCanSave
