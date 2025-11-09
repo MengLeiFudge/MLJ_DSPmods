@@ -19,15 +19,16 @@
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.0.0"/>
-        <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.5"/>
-        <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2022.3.53" IncludeAssets="compile"/>
+        <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="*-*"/>
+        <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="*-*"/>
         <!--
         DysonSphereProgram.GameLibs缺点是只有定义，没有内容。
         有两种方式将其修改为可见内容，且所有字段、属性、方法全部变为public：
         1.通过AfterBuildEvent的功能1自动调整并替换，但是需要设定好目录
         2.使用BepInEx.AssemblyPublicizer.Cli.exe，手动publicize戴森球目录的对应dll，再将处理过的dll覆盖nuget
         -->
-        <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.33.26943-r.0"/>
+        <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*"/>
         <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj"/>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
