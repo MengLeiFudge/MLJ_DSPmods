@@ -137,14 +137,16 @@ public static partial class Utils {
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.EntityAutoReplenishIfNeeded))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.StationAutoReplenishIfNeeded))]
     [HarmonyPatch(typeof(PlayerAction_Inspect), nameof(PlayerAction_Inspect.GameTick))]
-    [HarmonyPatch(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector.OnPlayerPackageChange))]
     [HarmonyPatch(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector.SetComponentItem))]
+    [HarmonyPatch(typeof(UIBlueprintInspector), nameof(UIBlueprintInspector._OnUpdate))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu.SetCurrentCategory))]
     [HarmonyPatch(typeof(UIBuildMenu), nameof(UIBuildMenu._OnUpdate))]
     [HarmonyPatch(typeof(UIControlPanelObjectEntry), nameof(UIControlPanelObjectEntry.ReplenishItems))]
     [HarmonyPatch(typeof(UIHandTip), nameof(UIHandTip._OnUpdate))]
+    [HarmonyPatch(typeof(UIItemup), nameof(UIItemup.Up))]
     [HarmonyPatch(typeof(UIRemoveBasePitButton), nameof(UIRemoveBasePitButton._OnUpdate))]
+    [HarmonyPatch(typeof(UIReplicatorWindow), nameof(UIReplicatorWindow._OnUpdate))]
     [HarmonyPatch(typeof(UISandboxMenu), nameof(UISandboxMenu.OnChildButtonClick))]
     [HarmonyPatch(typeof(UITurretWindow), nameof(UITurretWindow.OnHandFillAmmoButtonClick))]
     public static IEnumerable<CodeInstruction> GetItemCount_Transpiler(IEnumerable<CodeInstruction> instructions) {
@@ -341,6 +343,14 @@ public static partial class Utils {
     /// 获取MOD数据中指定物品的数量。
     /// </summary>
     public static long GetModDataItemCount(int itemId) {
+        return GetModDataItemCount(itemId, out _);
+    }
+
+    /// <summary>
+    /// 获取MOD数据中指定物品的数量。
+    /// </summary>
+    public static long GetModDataItemCount(int itemId, out long inc) {
+        inc = 0;
         if (itemId == I沙土) {
             //如果是沙盒模式并且无限沙土开启，直接返回long最大值
             if (GameMain.data.history.HasFeatureKey(1100001) && GameMain.sandboxToolsEnabled) {
@@ -348,13 +358,15 @@ public static partial class Utils {
             }
             return GameMain.mainPlayer.sandCount;
         }
+        inc = centerItemInc[itemId];
         return centerItemCount[itemId];
     }
 
     /// <summary>
     /// 获取背包中指定物品的数量。
     /// </summary>
-    public static int GetPackageItemCount(int itemId) {
+    public static int GetPackageItemCount(int itemId, out int inc) {
+        inc = 0;
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return 0;
         }
@@ -363,6 +375,7 @@ public static partial class Utils {
         for (int index = 0; index < package.size; index++) {
             if (package.grids[index].itemId == itemId) {
                 count += package.grids[index].count;
+                inc += package.grids[index].inc;
             }
         }
         return count;
@@ -371,7 +384,8 @@ public static partial class Utils {
     /// <summary>
     /// 获取物流背包中指定物品的数量。
     /// </summary>
-    public static int GetDeliveryPackageItemCount(int itemId) {
+    public static int GetDeliveryPackageItemCount(int itemId, out int inc) {
+        inc = 0;
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null || !GameMain.mainPlayer.deliveryPackage.unlocked) {
             return 0;
         }
@@ -380,6 +394,7 @@ public static partial class Utils {
         for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
             if (deliveryPackage.grids[gridIndex].itemId == itemId) {
                 count += deliveryPackage.grids[gridIndex].count;
+                inc += deliveryPackage.grids[gridIndex].inc;
                 break;
             }
         }
@@ -390,20 +405,93 @@ public static partial class Utils {
     /// 获取所有背包中指定物品的总数。
     /// </summary>
     public static long GetItemTotalCount(int itemId) {
-        return GetModDataItemCount(itemId) + GetPackageItemCount(itemId) + GetDeliveryPackageItemCount(itemId);
+        return GetModDataItemCount(itemId, out _)
+               + GetPackageItemCount(itemId, out _)
+               + GetDeliveryPackageItemCount(itemId, out _);
+    }
+
+    /// <summary>
+    /// 获取所有背包中指定物品的总数。
+    /// </summary>
+    public static long GetItemTotalCountAndInc(int itemId, out long inc) {
+        long ret = GetModDataItemCount(itemId, out long inc1)
+                   + GetPackageItemCount(itemId, out int inc2)
+                   + GetDeliveryPackageItemCount(itemId, out int inc3);
+        inc = inc1 + inc2 + inc3;
+        return ret;
     }
 
     #endregion
 
     #region 从背包拿取物品
 
-    //StorageComponent取出物品方法一览：
-    //public int TakeItem(int itemId, int count, out int inc)：player.package多处调用此方法
-    //public void TakeItemFromGrid(int gridIndex, ref int itemId, ref int count, out int inc)：player.package多处调用此方法
-    //public void TakeHeadItems(ref int itemId, ref int count, out int inc)：player.package不调用此方法
-    //public void TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)：player.package多处调用此方法
-    //public bool TakeTailItems(ref int itemId, ref int count, int[] needs, out int inc, bool useBan = false)：player.package不调用此方法
-    //public TakeTailItemsFiltered(ref int filter, ref int count, out int inc, bool useBan = false)：player.package不调用此方法
+    //StorageComponent取出物品方法一览（下面说明了是否关联，以及关联到背包还是测试背包）：
+    //[背包][测试背包]int TakeItem(int itemId, int count, out int inc)
+    //[不关联]void TakeItemFromGrid(int gridIndex, ref int itemId, ref int count, out int inc)
+    //[不关联]void TakeHeadItems(ref int itemId, ref int count, out int inc)
+    //[背包][测试背包]void TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+    //[不关联]bool TakeTailItems(ref int itemId, ref int count, int[] needs, out int inc, bool useBan = false)
+    //[不关联]void TakeTailItemsFiltered(ref int filter, ref int count, out int inc, bool useBan = false)
+    //[测试背包]void void TakeTailItemsWithIncTable(int itemId, ref int count, out int inc, ref int[] incTable, bool useBan = false)
+    //[背包]bool TakeTailItemsByIncTable(int itemId, out int count, ref int[] incTable, bool useBan = false)
+
+    /// <summary>
+    /// 按照玩家设定的顺序，从各个背包拿取物品。
+    /// 使用前需要检测是不是目标背包。
+    /// </summary>
+    private static void TakeItemInternal(this StorageComponent storage, int itemId, int needCount, out int realCount,
+        out int inc, bool useBan = false) {
+        realCount = 0;
+        inc = 0;
+        if (itemId <= 0) {
+            return;
+        }
+        //如果是沙土，直接拿取
+        if (itemId == I沙土) {
+            if (GameMain.mainPlayer.sandCount >= needCount) {
+                realCount = needCount;
+                GameMain.mainPlayer.sandCount -= needCount;
+            } else {
+                realCount = (int)GameMain.mainPlayer.sandCount;
+                GameMain.mainPlayer.sandCount = 0;
+            }
+            return;
+        }
+        ItemProto item = LDB.items.Select(itemId);
+        if (item == null) {
+            return;
+        }
+        //如果是建筑师模式并且为建筑，不消耗物品
+        if (ArchitectMode && item.BuildMode != 0) {
+            realCount = needCount;
+            return;
+        }
+        //根据玩家设置的顺序拿取物品
+        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
+        for (int i = 0; i < TakeItemPriority.Length; i++) {
+            int itemIdTmp = itemId;
+            int realCountTemp = needCount;
+            int incTemp;
+            if (TakeItemPriority[i] == 0) {
+                //背包
+                storage.TakeTailItems(ref itemIdTmp, ref realCountTemp, out incTemp, useBan);
+            } else if (TakeItemPriority[i] == 1) {
+                //物流背包
+                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
+            } else {
+                //Mod背包
+                realCountTemp = TakeItemFromModData(itemIdTmp, realCountTemp, out incTemp);
+            }
+            needCount -= realCountTemp;
+            realCount += realCountTemp;
+            inc += incTemp;
+            if (needCount == 0) {
+                return;
+            }
+        }
+    }
+
+    #region Player.package
 
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
@@ -414,6 +502,7 @@ public static partial class Utils {
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishBomb))]
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishFuel))]
     [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishFuelAll))]
+    [HarmonyPatch(typeof(Mecha), nameof(Mecha.AutoReplenishWarper))]
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.AddTaskIterate))]
     private static IEnumerable<CodeInstruction> TakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
@@ -438,54 +527,11 @@ public static partial class Utils {
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>
     private static int TakeItem(StorageComponent storage, int itemId, int count, out int inc) {
-        //如果不是玩家背包，直接调用原始方法并返回
         if (storage != GameMain.mainPlayer.package) {
             return storage.TakeItem(itemId, count, out inc);
         }
-        //如果是玩家背包，按照 背包-Mod背包-物流背包 的顺序取走物品
-        //如果是建筑师模式并且为建筑，不需要消耗物品
-        inc = 0;
-        if (itemId <= 0) {
-            return 0;
-        }
-        ItemProto item = LDB.items.Select(itemId);
-        if (item == null) {
-            return 0;
-        }
-        if (ArchitectMode && item.BuildMode != 0) {
-            return count;
-        }
-        //其他情况，根据设置的顺序拿取物品
-        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
-        int countReal = 0;
-        int itemIdOri = itemId;
-        int countNeed = count;
-        int incTemp;
-        for (int i = 0; i < TakeItemPriority.Length; i++) {
-            //0：背包  1：物流背包  2：Mod背包
-            if (TakeItemPriority[i] == 0) {
-                //背包
-                //执行TakeItem后，count表示实际取到的数目
-                count = storage.TakeItem(itemId, count, out incTemp);
-            } else if (TakeItemPriority[i] == 1) {
-                //物流背包
-                //执行TakeItems后，count表示实际取到的数目
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out incTemp);
-            } else {
-                //Mod背包
-                //执行TakeItemFromModData后，count表示实际取到的数目
-                count = TakeItemFromModData(itemId, count, out incTemp);
-            }
-            inc += incTemp;
-            countReal += count;
-            if (countReal >= countNeed) {
-                return countReal;
-            }
-            //itemId还原，count改为还需要获取的物品数目
-            itemId = itemIdOri;
-            count = countNeed - countReal;
-        }
-        return countReal;
+        storage.TakeItemInternal(itemId, count, out int realCount, out inc);
+        return realCount;
     }
 
     /// <summary>
@@ -536,93 +582,85 @@ public static partial class Utils {
     /// </summary>
     private static void TakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc,
         bool useBan = false) {
-        //如果不是玩家背包，直接调用原始方法并返回
         if (storage != GameMain.mainPlayer.package) {
             storage.TakeTailItems(ref itemId, ref count, out inc, useBan);
             return;
         }
-        //如果是玩家背包，按照 背包-Mod背包-物流背包 的顺序取走物品
-        inc = 0;
-        //如果是沙土，直接拿取
-        if (itemId == I沙土) {
-            if (GameMain.mainPlayer.sandCount >= count) {
-                //count不变，表示成功拿取count个沙土
-                GameMain.mainPlayer.sandCount -= count;
-            } else {
-                count = (int)GameMain.mainPlayer.sandCount;
-                GameMain.mainPlayer.sandCount = 0;
-            }
-            return;
-        }
-        //如果是建筑师模式并且为建筑，不需要消耗物品
-        if (itemId <= 0) {
+        storage.TakeItemInternal(itemId, count, out int realCount, out inc, useBan);
+        if (realCount == 0) {
             itemId = 0;
-            count = 0;
-            return;
         }
-        ItemProto item = LDB.items.Select(itemId);
-        if (item == null) {
-            itemId = 0;
-            count = 0;
-            return;
+        count = realCount;
+    }
+
+    /// <summary>
+    /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.High)]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
+    private static IEnumerable<CodeInstruction> TakeTailItemsByIncTable_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace player.package.TakeTailItemsByIncTable(int itemId, out int count, ref int[] incTable, bool useBan = false)
+            var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItemsByIncTable),
+                [typeof(int), typeof(int).MakeByRefType(), typeof(int[]).MakeByRefType(), typeof(bool)]);
+            var codeMatcher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeTailItemsByIncTable))));
+            return codeMatcher.InstructionEnumeration();
         }
-        if (ArchitectMode && item.BuildMode != 0) {
-            return;
-        }
-        //其他情况，根据设置的顺序拿取物品
-        int[] TakeItemPriority = Miscellaneous.TakeItemPriority;
-        int countReal = 0;
-        int itemIdOri = itemId;
-        int countNeed = count;
-        int incTemp;
-        for (int i = 0; i < TakeItemPriority.Length; i++) {
-            //0：背包  1：物流背包  2：Mod背包
-            if (TakeItemPriority[i] == 0) {
-                //背包
-                //执行TakeTailItems后，count表示实际取到的数目
-                storage.TakeTailItems(ref itemId, ref count, out incTemp, useBan);
-            } else if (TakeItemPriority[i] == 1) {
-                //物流背包
-                //执行TakeItems后，count表示实际取到的数目
-                GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemId, ref count, out incTemp);
-            } else {
-                //Mod背包
-                //执行TakeItemFromModData后，count表示实际取到的数目
-                count = TakeItemFromModData(itemId, count, out incTemp);
-            }
-            inc += incTemp;
-            countReal += count;
-            if (countReal >= countNeed) {
-                // return 需要把实际获取数量设置回去
-                count = countReal;
-                return;
-            }
-            //itemId还原，count改为还需要获取的物品数目
-            itemId = itemIdOri;
-            count = countNeed - countReal;
-        }
-        if (countReal == 0) {
-            itemId = 0;
-            count = 0;
-        } else {
-            // return 需要把实际获取数量设置回去
-            count = countReal;
+        catch (Exception ex) {
+            LogError($"Error in TakeTailItemsByIncTable_Transpiler: {ex}");
+            return instructions;
         }
     }
+
+    /// <summary>
+    /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
+    /// </summary>
+    private static bool TakeTailItemsByIncTable(StorageComponent storage, int itemId, out int count, ref int[] incTable,
+        bool useBan = false) {
+        if (storage != GameMain.mainPlayer.package) {
+            return storage.TakeTailItemsByIncTable(itemId, out count, ref incTable, useBan);
+        }
+        count = 0;
+        for (int i = 0; i < incTable.Length; i++) {
+            count += incTable[i];
+        }
+        storage.TakeItemInternal(itemId, count, out int realCount, out int inc, useBan);
+        count = realCount;
+        for (int i = incTable.Length - 1; i >= 0; i--) {
+            if (realCount >= incTable[i]) {
+                incTable[i] = 0;
+                realCount -= incTable[i];
+            } else {
+                incTable[i] -= realCount;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    #endregion
 
     /// <summary>
     /// 临时背包已经消耗的物品数目
     /// </summary>
     private static readonly int[] testPackageUsedCounts = new int[12000];
 
+    #region MechaForge._test_storage
+
+    /// <summary>
+    /// 初始化临时背包已经消耗的物品数目
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTask))]
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryTaskWithTestPackage))]
-    [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon._OnTick))]
-    [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click._OnTick))]
-    [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter._OnTick))]
-    [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path._OnTick))]
-    private static bool ClearTestPackageUsedCounts() {
+    private static bool MechaForge_ClearTestPackageUsedCounts(MechaForge __instance) {
         Array.Clear(testPackageUsedCounts, 0, 12000);
         return true;
     }
@@ -635,7 +673,7 @@ public static partial class Utils {
     [HarmonyPatch(typeof(MechaForge), nameof(MechaForge.TryAddTaskIterate))]
     private static IEnumerable<CodeInstruction> TryTakeItem_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.TakeItem(int itemId, int count, out int inc)
+            // Replace _test_storage.TakeItem(int itemId, int count, out int inc)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeItem),
                 [typeof(int), typeof(int), typeof(int).MakeByRefType()]);
             var codeMacher = new CodeMatcher(instructions)
@@ -662,18 +700,59 @@ public static partial class Utils {
         return count;
     }
 
+    #endregion
+
+    #region BuildTool.tmpPackage
+
+    /// <summary>
+    /// 初始化临时背包已经消耗的物品数目
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(BuildTool), nameof(BuildTool._GameTick))]
+    private static bool BuildTool_ClearTestPackageUsedCounts(BuildTool __instance) {
+        if (!__instance.active) {
+            return true;
+        }
+        Array.Clear(testPackageUsedCounts, 0, 12000);
+        return true;
+    }
+
+    /// <summary>
+    /// 初始化临时背包已经消耗的物品数目
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CalculateReformData))]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
+    private static void BuildTool_BlueprintPaste_ClearTestPackageUsedCounts() {
+        Array.Clear(testPackageUsedCounts, 0, 12000);
+    }
+
+    /// <summary>
+    /// 初始化临时背包已经消耗的物品数目
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.GetNeedSandCountByInc))]
+    private static bool BuildTool_Reform_ClearTestPackageUsedCounts(BuildTool_Reform __instance) {
+        if (!__instance.active) {
+            Array.Clear(testPackageUsedCounts, 0, 12000);
+        }
+        return true;
+    }
+
     /// <summary>
     /// 从临时玩家背包获取物品时，返回正确的可用物品总数
     /// </summary>
     [HarmonyTranspiler]
     [HarmonyPriority(Priority.High)]
     [HarmonyPatch(typeof(BuildTool_Addon), nameof(BuildTool_Addon.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.CalculateReformData))]
     [HarmonyPatch(typeof(BuildTool_Click), nameof(BuildTool_Click.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Inserter), nameof(BuildTool_Inserter.CheckBuildConditions))]
     [HarmonyPatch(typeof(BuildTool_Path), nameof(BuildTool_Path.CheckBuildConditions))]
+    [HarmonyPatch(typeof(BuildTool_Reform), nameof(BuildTool_Reform.GetNeedSandCountByInc))]
     private static IEnumerable<CodeInstruction> TryTakeTailItems_Transpiler(IEnumerable<CodeInstruction> instructions) {
         try {
-            // Replace player.package.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+            // Replace BuildTool.tmpPackage.TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
             var method = AccessTools.Method(typeof(StorageComponent), nameof(StorageComponent.TakeTailItems),
                 [typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(), typeof(bool)]);
             var codeMacher = new CodeMatcher(instructions)
@@ -685,7 +764,7 @@ public static partial class Utils {
             return codeMacher.InstructionEnumeration();
         }
         catch (Exception ex) {
-            LogError($"Error in TryTakeItem_Transpiler: {ex}");
+            LogError($"Error in TryTakeTailItems_Transpiler: {ex}");
             return instructions;
         }
     }
@@ -702,6 +781,74 @@ public static partial class Utils {
             itemId = 0;
         }
     }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
+    /// </summary>
+    [HarmonyTranspiler]
+    [HarmonyPriority(Priority.High)]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.DetermineReforms))]
+    private static IEnumerable<CodeInstruction> TakeTailItemsWithIncTable_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
+        try {
+            // Replace BuildTool.tmpPackage.TakeTailItemsWithIncTable(int itemId, ref int count, out int inc, ref int[] incTable, bool useBan = false)
+            var method = AccessTools.Method(typeof(StorageComponent),
+                nameof(StorageComponent.TakeTailItemsWithIncTable),
+                [
+                    typeof(int), typeof(int).MakeByRefType(), typeof(int).MakeByRefType(),
+                    typeof(int[]).MakeByRefType(), typeof(bool)
+                ]);
+            var codeMacher = new CodeMatcher(instructions)
+                .MatchForward(false,
+                    new CodeMatch(i => i.opcode == OpCodes.Callvirt
+                                       && i.operand.Equals(method)))
+                .Repeat(matcher => matcher
+                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(Utils), nameof(TakeTailItemsWithIncTable))));
+            return codeMacher.InstructionEnumeration();
+        }
+        catch (Exception ex) {
+            LogError($"Error in TakeTailItemsWithIncTable_Transpiler: {ex}");
+            return instructions;
+        }
+    }
+
+    /// <summary>
+    /// 从临时玩家背包获取物品时，返回正确的可用物品总数
+    /// </summary>
+    private static void TakeTailItemsWithIncTable(StorageComponent storage, int itemId, ref int count, out int inc,
+        ref int[] incTable, bool useBan = false) {
+        inc = 0;
+        if (incTable == null || incTable.Length <= 10) {
+            incTable = new int[11];
+        } else {
+            Array.Clear(incTable, 0, incTable.Length);
+        }
+        count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        testPackageUsedCounts[itemId] += count;
+        long n = GetItemTotalCountAndInc(itemId, out long m);
+        long takeInc = split_inc(ref n, ref m, count);
+        int incLow = (int)(takeInc / count);
+        int incHighCount = (int)(takeInc - count * incLow);
+        int incLowCount = count - incHighCount;
+        if (incLow > 10) {
+            incLow = 10;
+        }
+        incTable[incLow] += incLowCount;
+        inc += incLow * incLowCount;
+        if (incLow + 1 > 10) {
+            incTable[10] += incHighCount;
+            inc += 10 * incHighCount;
+        } else {
+            incTable[incLow + 1] += incHighCount;
+            inc += (incLow + 1) * incHighCount;
+        }
+        if (count > 0) {
+            storage.lastFullItem = -1;
+            storage.NotifyStorageChange();
+        }
+    }
+
+    #endregion
 
     /// <summary>
     /// 从ModData背包取出指定物品。
