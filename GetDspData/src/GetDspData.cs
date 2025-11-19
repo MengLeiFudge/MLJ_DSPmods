@@ -273,7 +273,7 @@ public class GetDspData : BaseUnityPlugin {
                 File.Create(filePath).Close();
             }
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8)) {
-                sw.WriteLine("物品ID,GridIndex,name,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
+                sw.WriteLine("物品ID,GridIndex,name,IconPath,EItemType,BuildMode,BuildIndex,MainCraft,UnlockKey,PreTech");
                 //先处理有配方的物品
                 List<ItemProto> itemProtoList1 = [..LDB.items.dataArray];
                 itemProtoList1.RemoveAll(item => !LDB.recipes.dataArray
@@ -287,6 +287,7 @@ public class GetDspData : BaseUnityPlugin {
                     sw.Write($"I{item.ID},");
                     sw.Write($"{item.GridIndex},");
                     sw.Write($"{item.FName()},");
+                    sw.Write($"{item.IconPath},");
                     sw.Write($"{Enum.GetName(typeof(EItemType), (int)item.Type)},");
                     sw.Write($"{item.BuildMode},");
                     sw.Write($"{item.BuildIndex},");
@@ -298,11 +299,13 @@ public class GetDspData : BaseUnityPlugin {
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("配方ID,GridIndex,name,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
+                sw.WriteLine(
+                    "配方ID,GridIndex,name,IconPath,ERecipeType,Items,Results,TimeSpend,Handcraft,Productive,PreTech");
                 foreach (var recipe in LDB.recipes.dataArray) {
                     sw.Write($"R{recipe.ID},");
                     sw.Write($"{recipe.GridIndex},");
                     sw.Write($"{recipe.FName()},");
+                    sw.Write($"{recipe.IconPath},");
                     if (GenesisBookEnable) {
                         sw.Write($"{Enum.GetName(typeof(ERecipeType_GB), (int)recipe.Type)},");
                     } else if (OrbitalRingEnable) {
@@ -341,10 +344,12 @@ public class GetDspData : BaseUnityPlugin {
                 sw.WriteLine();
                 sw.WriteLine();
 
-                sw.WriteLine("科技ID,name,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,Items,HashNeeded,UnlockRecipes");
+                sw.WriteLine(
+                    "科技ID,name,IconPath,PreTechs,PreTechsImplicit,IsHiddenTech,PreItem,Items,HashNeeded,UnlockRecipes");
                 foreach (var tech in LDB.techs.dataArray) {
                     sw.Write($"T{tech.ID},");
                     sw.Write($"{tech.FName()},");
+                    sw.Write($"{tech.IconPath},");
                     if (tech.PreTechs != null && tech.PreTechs.Length > 0) {
                         StringBuilder sb = new();
                         bool first = true;
@@ -891,6 +896,11 @@ public class GetDspData : BaseUnityPlugin {
     /// TimeSpend：帧数，一秒对应60帧。也就是说TimeSpend为60时，表示1秒内可以完成制造。
     /// </summary>
     static void addRecipe(RecipeProto proto, JArray add) {
+        if (!proto.GridIndexValid()) {
+            LogWarning(
+                $"proto.GridIndex is not valid, proto: {proto.FName()}({proto.ID}), GridIndex: {proto.GridIndex}");
+            return;
+        }
         if (proto.Type == ERecipeType.Fractionate) {
             RecipeProto proto2 = CopyRecipeProto(proto);
             //1%概率分馏出1个重氢，假设传送带速度为x每秒，显然重氢生成速率为x/100每秒
@@ -949,6 +959,10 @@ public class GetDspData : BaseUnityPlugin {
         if (Factories == null || Factories.Length == 0) {
             return;
         }
+        if (proto.iconSprite == null) {
+            LogError($"proto.iconSprite is null, proto: {proto.FName()}({proto.ID})");
+            return;
+        }
         //UIItemTip 313-351行
         //增产公式描述1：加速或增产
         //增产公式描述2：加速
@@ -975,7 +989,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 { "TimeSpend", proto.TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
-                { "IconName", proto.iconSprite.name },
+                { "IconName", proto.iconSprite?.name },
             };
             add.Add(obj);
         } else {
@@ -989,7 +1003,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 { "TimeSpend", TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
-                { "IconName", proto.iconSprite.name },
+                { "IconName", proto.iconSprite?.name },
             };
             add.Add(obj);
         }

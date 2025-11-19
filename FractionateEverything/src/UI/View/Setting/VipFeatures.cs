@@ -61,7 +61,7 @@ public static class VipFeatures {
     private static Text[] txtVipBonus = new Text[3];
 
     public static void AddTranslations() {
-        Register("VIP功能", "VIP Features");
+        Register("VIP特权", "VIP Features");
 
         Register("VIP等级：", "VIP level: ");
         Register("VIP加成如下：", "VIP bonus are as follows:");
@@ -80,7 +80,7 @@ public static class VipFeatures {
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "VIP功能");
+        tab = wnd.AddTab(trans, "VIP特权");
         float x = 0f;
         float y = 18f;
         txtVipInfo = wnd.AddText2(x, y, tab, "动态刷新");
