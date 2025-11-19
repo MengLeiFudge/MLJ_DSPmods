@@ -73,12 +73,14 @@ public static class Utils {
                 try {
                     if (enable) {
                         while (path.EndsWith(".old")) {
-                            File.Move(path, path.Substring(0, path.Length - 4));
+                            File.Copy(path, path.Substring(0, path.Length - 4), true);
+                            File.Delete(path);
                             path = path.Substring(0, path.Length - 4);
                         }
                     } else {
                         if (!path.EndsWith(".old")) {
-                            File.Move(path, path + ".old");
+                            File.Copy(path, path + ".old", true);
+                            File.Delete(path);
                         }
                     }
                     break;
