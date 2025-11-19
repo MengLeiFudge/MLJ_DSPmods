@@ -10,7 +10,7 @@ public static class MoreMegaStructure {
     public static bool Enable;
     public static Assembly assembly;
 
-    public static int tab巨构;
+    // public static int tab巨构;
 
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
@@ -18,7 +18,7 @@ public static class MoreMegaStructure {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        tab巨构 = TabSystem.GetTabId("MegaStructures:MegaStructuresTab");
+        // tab巨构 = TabSystem.GetTabId("MegaStructures:MegaStructuresTab");
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.MoreMegaStructure");
         harmony.PatchAll(typeof(MoreMegaStructure));
         CheckPlugins.LogInfo("MoreMegaStructure Compat finish.");
