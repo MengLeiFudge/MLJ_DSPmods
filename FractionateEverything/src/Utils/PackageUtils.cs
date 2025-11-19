@@ -824,6 +824,9 @@ public static partial class Utils {
             Array.Clear(incTable, 0, incTable.Length);
         }
         count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
+        if (count <= 0) {
+            return;
+        }
         testPackageUsedCounts[itemId] += count;
         long n = GetItemTotalCountAndInc(itemId, out long m);
         long takeInc = split_inc(ref n, ref m, count);
