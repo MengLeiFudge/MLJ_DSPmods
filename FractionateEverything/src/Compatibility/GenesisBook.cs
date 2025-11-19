@@ -14,9 +14,8 @@ public static class GenesisBook {
     public static bool Enable;
     public static Assembly assembly;
 
-    public static int tab精炼;
-    public static int tab化工;
-    public static int tab防御;
+    // public static int tab化工;
+    // public static int tab防御;
 
     #region 创世ERecipeType拓展
 
@@ -32,9 +31,8 @@ public static class GenesisBook {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        tab精炼 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab1");
-        tab化工 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab2");
-        tab防御 = TabSystem.GetTabId("org.LoShin.GenesisBook:org.LoShin.GenesisBookTab3");
+        // tab化工 = TabSystem.GetTabId($"{GUID}:{GUID}Tab2");
+        // tab防御 = TabSystem.GetTabId($"{GUID}:{GUID}Tab3");
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.GenesisBook");
         harmony.PatchAll(typeof(GenesisBook));
         CheckPlugins.LogInfo("GenesisBook Compat finish.");
