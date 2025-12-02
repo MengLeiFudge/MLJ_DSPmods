@@ -76,6 +76,8 @@ public static class StationManager {
             float uploadThreshold = Miscellaneous.UploadThreshold;
             float uploadThreshold2 = 1 - uploadThreshold;
             foreach (StationComponent stationComponent in stations) {
+                // 单个槽位可用最大电量
+                long maxSlotEnergy = stationComponent.energy / stationComponent.storage.Length;
                 // 循环交互站的所有的栏位
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
                     // StationStore为struct，必须使用引用修改内容
@@ -101,7 +103,8 @@ public static class StationManager {
                         // 产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
                         if (store.totalSupplyCount < store.max * downloadThreshold) {
                             stationComponent.SetTargetCount(i,
-                                Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)));
+                                Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)),
+                                maxSlotEnergy);
                         }
                     }
                     if (station2Mod) {
@@ -113,7 +116,7 @@ public static class StationManager {
                             if (modCurrCount < modTargetCount) {
                                 int transferCount = Math.Min(store.count - (int)(store.max * uploadThreshold),
                                     modTargetCount - (int)modCurrCount);
-                                stationComponent.SetTargetCount(i, store.count - transferCount);
+                                stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
                             }
                         }
                     }
@@ -124,10 +127,10 @@ public static class StationManager {
                                 store.count + GetModDataItemCount(store.itemId));
                             // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
                             int avgCount = totalCount / 2;
-                            stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount));
+                            stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount), maxSlotEnergy);
                         } else {
                             // 仓储解锁：维持数目为上限的一半，可以无限投入/取出
-                            stationComponent.SetTargetCount(i, store.max / 2);
+                            stationComponent.SetTargetCount(i, store.max / 2, maxSlotEnergy);
                         }
                     }
                 }
@@ -138,7 +141,8 @@ public static class StationManager {
         }
     }
 
-    private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount) {
+    private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
+        long maxSlotEnergy) {
         ref StationStore store = ref stationComponent.storage[index];
         if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
             return;
@@ -148,14 +152,14 @@ public static class StationManager {
         float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.ReinforcementBonusEnergy();
         if (store.count < targetCount) {
             // 将数据中心的物品下载到交互站
-            int count = Math.Min(maxDownloadCount, targetCount - store.count);
+            int count = targetCount - store.count;
             // 总耗电大于剩余电量，修改数量
-            if (cost * count > stationComponent.energy) {
+            if (cost * count > maxSlotEnergy) {
                 // 1个都玩不起直接放弃
-                if (cost > stationComponent.energy) {
+                if (cost > maxSlotEnergy) {
                     return;
                 }
-                count = Mathf.FloorToInt(stationComponent.energy / cost);
+                count = Mathf.FloorToInt(maxSlotEnergy / cost);
             }
             count = TakeItemFromModData(store.itemId, count, out int inc);
             store.count += count;
@@ -163,14 +167,14 @@ public static class StationManager {
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
         } else {
             // 将交互站的物品上传到数据中心
-            int count = Math.Min(maxUploadCount, store.count - targetCount);
+            int count = store.count - targetCount;
             // 总耗电大于剩余电量，修改数量
-            if (cost * count > stationComponent.energy) {
+            if (cost * count > maxSlotEnergy) {
                 // 1个都玩不起直接放弃
-                if (cost > stationComponent.energy) {
+                if (cost > maxSlotEnergy) {
                     return;
                 }
-                count = Mathf.FloorToInt(stationComponent.energy / cost);
+                count = Mathf.FloorToInt(maxSlotEnergy / cost);
             }
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
             AddItemToModData(store.itemId, count, inc);
