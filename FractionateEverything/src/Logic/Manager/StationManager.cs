@@ -139,9 +139,8 @@ public static class StationManager {
     }
 
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount) {
-        // todo: 考虑patch选择物品的界面，不让选择无价物品？
         ref StationStore store = ref stationComponent.storage[index];
-        if (store.count == targetCount) {
+        if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
             return;
         }
         ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
