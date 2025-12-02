@@ -47,6 +47,13 @@ public static class PlanetaryInteractionStation {
         model = ProtoRegistry.RegisterModel(MFE行星内物流交互站, item,
             "Entities/Prefabs/logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
+        //设定升降级关系
+        ItemProto oriItem = LDB.items.Select(I行星内物流运输站);
+        int[] upgrades = [I行星内物流运输站, IFE行星内物流交互站];
+        oriItem.Upgrades = upgrades;
+        oriItem.Grade = 1;
+        item.Upgrades = upgrades;
+        item.Grade = 2;
     }
 
     public static void SetMaterial() {
