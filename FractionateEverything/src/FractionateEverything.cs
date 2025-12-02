@@ -76,11 +76,12 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
             Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
             ERecipeExtension.AddTranslations();
             OutputInfo.AddTranslations();
-            AddTranslations();
+            AddTranslations();//Utils.AddTranslations()
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
             ProcessManager.AddTranslations();
             TechManager.AddTranslations();
+            TutorialManager.AddTranslations();
             MainWindow.AddTranslations();
 
             LoadConfig();
@@ -161,6 +162,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         BuildingManager.AddFractionators();
         //添加科技
         TechManager.AddTechs();
+        //添加指引手册
+        TutorialManager.AddTutorials();
     }
 
     public void PostAddData() {

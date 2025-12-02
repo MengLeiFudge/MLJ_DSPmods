@@ -311,7 +311,7 @@ public static class TechManager {
             [RFE电磁奖券],
             GetTechPos(1, 1)
         );
-        tech电磁奖券.PreTechsImplicit = [TFE物品交互, TFE超值礼包1];
+        tech电磁奖券.PreTechsImplicit = [TFE物品交互];
         tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
         tech电磁奖券.PropertyItemCounts = [200];
 
