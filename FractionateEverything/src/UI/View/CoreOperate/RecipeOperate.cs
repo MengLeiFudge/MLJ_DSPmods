@@ -120,7 +120,6 @@ public static class RecipeOperate {
         btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
             SelectedItem.ID, "button-change-item",
             () => { OnButtonChangeItemClick(false, popupY); }, () => { OnButtonChangeItemClick(true, popupY); });
-        //todo: 修复按钮提示窗后移除该内容
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
         wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "配方类型")
@@ -297,7 +296,7 @@ public static class RecipeOperate {
                 txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
                 line++;
             }
-            //todo: 展示配方特殊加成
+            //todo: 展示配方特殊加成（配方特殊加成/分馏塔对配方加成）
             // txtRecipeInfo[line].text = "特殊突破加成：无";
             // line++;
         }

@@ -868,7 +868,7 @@ public static class TicketRaffle {
         if (!__instance._running || __instance._paused) {
             return;
         }
-        //todo: vip可以提速
+        //todo: 抽奖逻辑执行效率进一步优化，减少时间；开放自动抽取次数
         if (__instance.timei - lastAutoRaffleTick < 6) {
             return;
         }

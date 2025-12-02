@@ -127,7 +127,7 @@ public static class BuildingOperate {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        //todo: 优化显示，强化添加一键强化
+        //todo: 优化显示（把文字改成图片）
         window = trans;
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;

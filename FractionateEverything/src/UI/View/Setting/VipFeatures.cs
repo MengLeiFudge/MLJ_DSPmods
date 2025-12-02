@@ -74,6 +74,7 @@ public static class VipFeatures {
         Register("限时商店购买折扣",
             "Exchange recipes/items from the limited-time shop at the price of {0:P2}",
             "以{0:P2}的价格兑换限时商店的配方/物品");
+        //todo: 商店刷新间隔减少，刷新需要矩阵减少
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
