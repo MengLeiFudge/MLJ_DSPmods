@@ -10,14 +10,26 @@ public static partial class Utils {
     /// 添加翻译，仅在Awake结束前可用。
     /// </summary>
     public static void Register(string key, string enTrans, string cnTrans = null) {
-        LocalizationModule.RegisterTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        // LocalizationModule.RegisterTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        // 对于当前CommonAPI版本（1.6.7），RegisterTranslation(key, dic)不会检测trans为null或空字符串的情况
+        Dictionary<string, string> dic = [];
+        dic["enUS"] = enTrans;
+        dic["zhCN"] = cnTrans ?? key;
+        dic["frFR"] = enTrans;
+        LocalizationModule.RegisterTranslation(key, dic);
     }
 
     /// <summary>
     /// 修改翻译，仅在Awake结束前可用。
     /// </summary>
     public static void Edit(string key, string enTrans, string cnTrans = null) {
-        LocalizationModule.EditTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        // LocalizationModule.EditTranslation(key, enTrans, cnTrans ?? key, enTrans);
+        // 对于当前CommonAPI版本（1.6.7），EditTranslation(key, dic)不会检测trans为null或空字符串的情况
+        Dictionary<string, string> dic = [];
+        dic["enUS"] = enTrans;
+        dic["zhCN"] = cnTrans ?? key;
+        dic["frFR"] = enTrans;
+        LocalizationModule.EditTranslation(key, dic);
     }
 
     private record struct ModStr {
