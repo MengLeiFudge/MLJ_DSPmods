@@ -35,6 +35,13 @@ public static class InterstellarInteractionStation {
         model = ProtoRegistry.RegisterModel(MFE星际物流交互站, item,
             "Entities/Prefabs/interstellar-logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
+        //设定升降级关系
+        ItemProto oriItem = LDB.items.Select(I星际物流运输站);
+        int[] upgrades = [I星际物流运输站, IFE星际物流交互站];
+        oriItem.Upgrades = upgrades;
+        oriItem.Grade = 1;
+        item.Upgrades = upgrades;
+        item.Grade = 2;
     }
 
     public static void SetMaterial() {
