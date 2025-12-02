@@ -84,7 +84,7 @@ public static class ItemManager {
             "Highly integrated electronic chip. There is a very small chance of getting it by drawing it from the Original Embryo Pool, and it will also be refreshed in the Limited Time Store. It can be used to enhance the effects of the fractionator and logistics interaction station in the building operations interface.",
             "高度集成的电子芯片。有极小概率在原胚奖池中抽取得到，限时商店也会刷新。在建筑操作界面，可以用它提升分馏塔和物流交互站的效果。");
 
-        Register("复制精华", "Copy Essence");
+        Register("复制精华", "Replication Essence");
         Register("I复制精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，矿物复制塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
