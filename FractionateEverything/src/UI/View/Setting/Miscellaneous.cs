@@ -54,6 +54,9 @@ public static class Miscellaneous {
         public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.05f);
     }
 
+    private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
+    public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
+
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
 
@@ -67,6 +70,8 @@ public static class Miscellaneous {
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
         Register("物流交互站上传阈值", "Interaction Station upload threshold");
+
+        Register("显示分馏配方详细信息", "Show fractionate recipe details");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -92,6 +97,9 @@ public static class Miscellaneous {
         if (UploadThresholdEntry.Value < 0.6f || UploadThresholdEntry.Value > 1) {
             UploadThresholdEntry.Value = 0.8f;
         }
+
+        ShowFractionateRecipeDetailsEntry =
+            configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "显示分馏配方详细信息");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -115,6 +123,8 @@ public static class Miscellaneous {
         txt = wnd.AddText2(x, y, tab, "物流交互站上传阈值");
         wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
             UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
+        y += 36f;
+        wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
     }
 
     public static void UpdateUI() {

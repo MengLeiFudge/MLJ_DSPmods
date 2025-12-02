@@ -1,4 +1,7 @@
-﻿using static FE.Utils.Utils;
+﻿using System;
+using FE.UI.View.Setting;
+using static FE.Logic.Manager.ItemManager;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
@@ -31,16 +34,16 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
     /// </summary>
     public int OutputTotalCount { get; set; } = 0;
 
-    public bool ShowSuccessRate => OutputTotalCount >= 500;
+    public bool ShowSuccessRate => OutputTotalCount >= Math.Sqrt(500000 / itemValue[OutputID]);
     public bool ShowOutputName => OutputTotalCount > 0;
-    public bool ShowOutputCount => OutputTotalCount >= 200;
+    public bool ShowOutputCount => OutputTotalCount >= Math.Sqrt(80000 / itemValue[OutputID]);
 
     public override string ToString() {
         ItemProto item = LDB.items.Select(OutputID);
-        bool sandboxMode = GameMain.sandboxToolsEnabled;
-        string s1 = ShowOutputCount || sandboxMode ? OutputCount.ToString("F3") : "???";
-        string s2 = ShowOutputName || sandboxMode ? item.name : "???";
-        string s3 = ShowSuccessRate || sandboxMode ? SuccessRate.ToString("P3") : "???";
+        bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
+        string s1 = forceShow || ShowOutputCount ? OutputCount.ToString("F3") : "???";
+        string s2 = forceShow || ShowOutputName ? item.name : "???";
+        string s3 = forceShow || ShowSuccessRate ? SuccessRate.ToString("P3") : "???";
         return $"{s1} {s2} ~ {s3} ({"总计".Translate()} {OutputTotalCount})";
     }
 }
