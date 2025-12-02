@@ -141,7 +141,6 @@ public static class LimitedTimeStore {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        //todo: 增加选项，可以选择物品去向
         window = trans;
         tab = wnd.AddTab(trans, "限时商店");
         float x = 0f;
@@ -230,7 +229,6 @@ public static class LimitedTimeStore {
         float matrixRecipeCost = TicketRaffle.RecipeValues[matrixID - I电磁矩阵];
         int matrixRecipeCostInt = (int)Math.Ceiling(matrixRecipeCost);
         if (manual) {
-            //todo: 添加vip影响
             UIMessageBox.Show("提示".Translate(),
                 $"{"要花费".Translate()} {matrix.name} x {matrixRecipeCostInt} {"刷新商店吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
@@ -249,7 +247,6 @@ public static class LimitedTimeStore {
         if (gameTick >= nextFreshTick) {
             long tickDiff = gameTick - nextFreshTick;
             long skipCycles = tickDiff / baseFreshTs + 1;
-            //todo: 添加vip影响
             nextFreshTick += skipCycles * baseFreshTs;
         }
         //计算矩阵总价值
