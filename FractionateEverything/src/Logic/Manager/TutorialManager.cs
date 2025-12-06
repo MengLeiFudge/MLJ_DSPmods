@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using UnityEngine.UI;
 using xiaoye97;
 using static FE.Utils.Utils;
 
@@ -474,12 +475,13 @@ public static class TutorialManager {
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnOpen))]
-    static void UITutorialWindow_OnOpen_Postfix(UITutorialWindow __instance)
+    private static void UITutorialWindow_OnOpen_Postfix(UITutorialWindow __instance)
     {
         if (!__instance.entryList.VertScroll)
         {
             __instance.entryList.VertScroll = true;
             __instance.entryList.m_ScrollRect.vertical = true;
+            __instance.entryList.m_ScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
             // Trigger ScrollRect.OnEnable() to add listeners
             __instance.entryList.m_ScrollRect.enabled = false;
             __instance.entryList.m_ScrollRect.enabled = true;

@@ -12,6 +12,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.Components;
 
 // MyWindow modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyWindowCtl.cs
+// 大部分UI来源为UXAssist，感谢@soarqin的源码以供参考！
 
 public class MyWindow : ManualBehaviour {
     private float _maxX;
