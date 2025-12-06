@@ -1,4 +1,5 @@
-﻿using xiaoye97;
+﻿using HarmonyLib;
+using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -465,5 +466,23 @@ public static class TutorialManager {
         LDBTool.PreAddProto(proto);
         proto.Preload();
         currTutorialID++;
+    }
+
+    /// <summary>
+    /// 在指引窗口打开时，将左侧区域的垂直滚动条设为可见并添加事件监听器。
+    /// 感谢海星佬（@starfi5h）的帮助！
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnOpen))]
+    static void UITutorialWindow_OnOpen_Postfix(UITutorialWindow __instance)
+    {
+        if (!__instance.entryList.VertScroll)
+        {
+            __instance.entryList.VertScroll = true;
+            __instance.entryList.m_ScrollRect.vertical = true;
+            // Trigger ScrollRect.OnEnable() to add listeners
+            __instance.entryList.m_ScrollRect.enabled = false;
+            __instance.entryList.m_ScrollRect.enabled = true;
+        }
     }
 }
