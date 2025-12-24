@@ -1019,6 +1019,10 @@ public static partial class Utils {
             }
             StorageComponent package = GameMain.mainPlayer.package;
             for (int index = 0; index < package.size; index++) {
+                // 忽略过滤格
+                if (package.grids[index].filter != 0) {
+                    continue;
+                }
                 if (itemValue[package.grids[index].itemId] >= maxValue) {
                     continue;
                 }
