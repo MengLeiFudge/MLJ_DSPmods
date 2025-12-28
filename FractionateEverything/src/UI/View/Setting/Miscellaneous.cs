@@ -41,17 +41,17 @@ public static class Miscellaneous {
     private static ConfigEntry<float> DownloadThresholdEntry;
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
 
-    private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 8) {
-        public override float IndexToValue(int index) => index * 0.05f;
-        public override int ValueToIndex(float value) => (int)Math.Round(value / 0.05f);
+    private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
+        public override float IndexToValue(int index) => index * 0.02f;
+        public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
     }
 
     private static ConfigEntry<float> UploadThresholdEntry;
     public static float UploadThreshold => UploadThresholdEntry.Value;
 
-    private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 8) {
-        public override float IndexToValue(int index) => 0.6f + index * 0.05f;
-        public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.05f);
+    private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
+        public override float IndexToValue(int index) => 0.6f + index * 0.02f;
+        public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.02f);
     }
 
     private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
