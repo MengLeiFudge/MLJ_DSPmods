@@ -15,6 +15,7 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View;
 using HarmonyLib;
+using NebulaAPI.Interfaces;
 using xiaoye97;
 using static FE.Utils.Utils;
 
@@ -28,7 +29,7 @@ namespace FE;
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
-public class FractionateEverything : BaseUnityPlugin, IModCanSave {
+public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
     #region Fields
 
     /// <summary>
@@ -217,13 +218,14 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
         StorageComponent.LoadStatic();
     }
 
-    #region IModCanSave
+    #region IModCanSave & IMultiplayerModWithSettings
 
     /// <summary>
     /// 载入存档时执行。
     /// </summary>
     public void Import(BinaryReader r) {
         IntoOtherSave();
+        LogDebug("FE Import");
         int version = r.ReadInt32();
         RecipeManager.Import(r);
         BuildingManager.Import(r);
@@ -235,6 +237,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
+        LogDebug("FE Export");
         w.Write(1);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
@@ -246,11 +249,18 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave {
     /// 新建存档时执行。
     /// </summary>
     public void IntoOtherSave() {
+        LogDebug("FE IntoOtherSave");
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         TechManager.ResetTechUnlockFlags();
+    }
+
+    public string Version => PluginInfo.PLUGIN_VERSION;
+
+    public bool CheckVersion(string hostVersion, string clientVersion) {
+        return hostVersion.Equals(clientVersion);
     }
 
     #endregion

@@ -164,31 +164,29 @@ public static class RecipeManager {
         for (int i = 0; i < recipeCount; i++) {
             ERecipe recipeType = (ERecipe)r.ReadInt32();
             int inputID = r.ReadInt32();
-            // 读取单个配方的数据长度，用于跳过未知配方
+            // 读取单个配方的数据长度
             int recipeDataLength = r.ReadInt32();
-            long startPosition = r.BaseStream.Position;
+            // 直接读取配方数据到字节数组
+            byte[] recipeData = r.ReadBytes(recipeDataLength);
             BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, inputID);
             if (recipe == null) {
-                // 配方不存在，跳过这个配方的数据
+                // 配方不存在，数据已经被读取并跳过
                 LogWarning($"Recipe not found: {recipeType} with input {inputID}, skipping data");
-                r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
-            } else {
-                try {
-                    recipe.Import(r);
-                    // 验证读取的数据长度是否正确
-                    long actualRead = r.BaseStream.Position - startPosition;
-                    if (actualRead != recipeDataLength) {
-                        LogWarning(
-                            $"Recipe data length mismatch for {recipeType}-{inputID}: expected {recipeDataLength}, actual {actualRead}");
-                        // 调整到正确位置
-                        r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
-                    }
+                continue;
+            }
+            // 使用内存流来读取配方数据
+            try {
+                using var memoryStream = new MemoryStream(recipeData);
+                using var tempReader = new BinaryReader(memoryStream);
+                recipe.Import(tempReader);
+                // 验证是否读取了所有数据
+                if (memoryStream.Position != recipeDataLength) {
+                    LogWarning(
+                        $"Recipe data length mismatch for {recipeType}-{inputID}: expected {recipeDataLength}, actual {memoryStream.Position}");
                 }
-                catch (Exception ex) {
-                    LogError($"Failed to import recipe {recipeType}-{inputID}: {ex.Message}");
-                    // 跳过损坏的数据
-                    r.BaseStream.Seek(startPosition + recipeDataLength, SeekOrigin.Begin);
-                }
+            }
+            catch (Exception ex) {
+                LogError($"Failed to import recipe {recipeType}-{inputID}: {ex.Message}");
             }
         }
     }
