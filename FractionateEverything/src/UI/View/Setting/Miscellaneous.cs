@@ -80,6 +80,9 @@ public static class Miscellaneous {
             "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
 
         Register("显示分馏配方详细信息", "Show fractionate recipe details");
+        Register("显示分馏配方详细信息说明",
+            "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
+            "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -136,7 +139,9 @@ public static class Miscellaneous {
         UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
             "物流交互站上传阈值", "物流交互站阈值修改说明");
         y += 36f;
-        wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
+        var cb = wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
+        wnd.AddTipsButton2(x + cb.Width + 5, y, tab,
+            "显示分馏配方详细信息", "显示分馏配方详细信息说明");
     }
 
     public static void UpdateUI() {
