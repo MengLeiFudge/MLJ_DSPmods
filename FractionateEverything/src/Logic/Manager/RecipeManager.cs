@@ -146,7 +146,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (recipe.Locked) {
-                recipe.RewardThis();
+                recipe.RewardThis(true);
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }

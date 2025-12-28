@@ -415,7 +415,7 @@ public static class RecipeOperate {
                     return;
                 }
                 for (int i = 0; i < takeCount; i++) {
-                    recipe.RewardThis();
+                    recipe.RewardThis(true);
                 }
             },
             null);
@@ -472,7 +472,7 @@ public static class RecipeOperate {
                 if (!TakeItemWithTip(takeId, takeCount, out _)) {
                     return;
                 }
-                recipe.AddExp(needExp, false);
+                recipe.AddExp(needExp, false, true);
             },
             null);
     }
@@ -530,7 +530,7 @@ public static class RecipeOperate {
                     if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
-                    recipe.AddExp(needExp, false);
+                    recipe.AddExp(needExp, false, true);
                 }
                 //购买经验突破品质，直至突破成功，或沙土不足
                 int nextQuality = recipe.NextQuality;
@@ -540,7 +540,7 @@ public static class RecipeOperate {
                     if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
-                    recipe.AddExp(needExp, false);
+                    recipe.AddExp(needExp, false, true);
                 }
             },
             null);
@@ -550,28 +550,28 @@ public static class RecipeOperate {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        recipe?.SandBoxUpDowngrade(true);
+        recipe?.SandBoxUpDowngrade(true, true);
     }
 
     public static void Downgrade(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        recipe?.SandBoxUpDowngrade(false);
+        recipe?.SandBoxUpDowngrade(false, true);
     }
 
     public static void FullUpgrade(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        recipe?.SandBoxMaxUpDowngrade(true);
+        recipe?.SandBoxMaxUpDowngrade(true, true);
     }
 
     public static void Reset(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        recipe?.SandBoxMaxUpDowngrade(false);
+        recipe?.SandBoxMaxUpDowngrade(false, true);
     }
 
     #region IModCanSave
