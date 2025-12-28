@@ -1,3 +1,7 @@
+- v2.3.0
+    + 调整物流交互站阈值设置。
+    + Adjust the Logistics Interaction Station threshold setting.
+
 - v2.2.2
     + 修复未解锁物流背包前，双击移动物品功能失效的问题。
     + 修复分馏塔相关科技解锁时，没有提示的问题。
@@ -13,9 +17,28 @@
     + 调整了分馏塔原胚的价格，以及培养原胚的产物。
     + 修复某些情况下无法使用分馏数据中心物品的问题。
     + 配方详细信息增加开关，降低解锁需求。
+    + Fixed the issue that the double-click to move items function did not work before unlocking the logistics backpack.
+    + Fixed the issue that there is no prompt when unlocking technology related to Fractionation Tower.
+    + Fixed the issue that the technology limit is still used when ‘Use reinforcement limit’ is ticked in Logistics
+      Interactive Station.
+    + Fixed an issue where the experience multiplier still counts as sandbox experience when not in sandbox mode.
+    + Adjusted most descriptions to make them easier to understand.
+    + Added guidelines (press G to access).
+    + Quantum Replication tech has been changed from a hidden tech to a normal tech, unlocked in the same way as other
+      Fractionator techs.
+    + Quantum Replication recipes need to go to the next matrix level to be extracted.
+    + Before quantum replication, it will detect if the current essence meets the maximum possible number of
+      consumptions, and will not replicate if it doesn't.
+    + The upload/download rate of Logistics Interactive Stations is no longer limited by a fixed number, but varies
+      based on current power.
+    + Original Logistics Transport Station can be upgraded to Logistics Interaction Station.
+    + Adjusted the price of Fractionation Tower proto-germs, as well as the product of culturing proto-germs.
+    + Fixed an issue that prevented the use of Fractionation Data Centre items in some cases.
+    + Recipe details added switches to reduce unlock requirements.
 
 - v2.2.1
     + 修复图标集Destroy的一个错误。
+    + Fix a bug in the icon set Destroy.
 
 - v2.2.0
     + 建筑调整。
