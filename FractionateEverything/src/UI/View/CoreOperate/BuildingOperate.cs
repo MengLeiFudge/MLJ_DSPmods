@@ -1,9 +1,11 @@
 ﻿using System.IO;
 using System.Text;
 using BepInEx.Configuration;
+using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.UI.Components;
+using NebulaAPI;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ProcessManager;
@@ -311,6 +313,7 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 1));
             },
             null);
     }
@@ -334,6 +337,7 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 2));
             },
             null);
     }
@@ -357,6 +361,7 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 3));
             },
             null);
     }
@@ -380,6 +385,7 @@ public static class BuildingOperate {
                     return;
                 }
                 PointAggregateTower.Level++;
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 4));
             },
             null);
     }
@@ -409,7 +415,7 @@ public static class BuildingOperate {
                         null);
                     return;
                 }
-                SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+                SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1, true);
                 UIMessageBox.Show("提示".Translate(),
                     "强化成功提示".Translate(),
                     "确定".Translate(), UIMessageBox.INFO,
@@ -441,7 +447,7 @@ public static class BuildingOperate {
                     if (GetRandDouble() > SelectedBuilding.ReinforcementSuccessRate()) {
                         continue;
                     }
-                    SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+                    SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1, true);
                 }
             },
             null);
@@ -451,28 +457,32 @@ public static class BuildingOperate {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1);
+        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() + 1, true);
     }
 
     private static void Downgrade() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() - 1);
+        SelectedBuilding.ReinforcementLevel(SelectedBuilding.ReinforcementLevel() - 1, true);
     }
 
     private static void FullUpgrade() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        SelectedBuilding.ReinforcementLevel(MaxReinforcementLevel);
+        SelectedBuilding.ReinforcementLevel(MaxReinforcementLevel, true);
     }
 
     private static void Reset() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        SelectedBuilding.ReinforcementLevel(0);
+        SelectedBuilding.ReinforcementLevel(0, true);
+    }
+    
+    public static ItemProto GetItemProto(int index) {
+        return LDB.items.Select(BuildingIds[index]);
     }
 
     #region IModCanSave
