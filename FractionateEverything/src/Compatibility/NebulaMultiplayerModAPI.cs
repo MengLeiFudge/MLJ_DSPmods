@@ -11,8 +11,14 @@ public static class NebulaMultiplayerModAPI {
     public static bool Enable;
     public static Assembly assembly;
 
-    public static bool IsPatched;
-    public static bool IsActive;
+    /// <summary>
+    /// 玩家是否在多人游戏中。
+    /// </summary>
+    public static bool IsMultiplayerActive;
+    /// <summary>
+    /// 玩家是否为客户端。
+    /// </summary>
+    public static bool IsClient;
 
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
@@ -22,7 +28,22 @@ public static class NebulaMultiplayerModAPI {
         assembly = pluginInfo.Instance.GetType().Assembly;
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.NebulaMultiplayerModAPI");
         harmony.PatchAll(typeof(NebulaMultiplayerModAPI));
+        NebulaModAPI.RegisterPackets(Assembly.GetExecutingAssembly());
+        NebulaModAPI.OnMultiplayerGameStarted += OnMultiplayerGameStarted;
+        NebulaModAPI.OnMultiplayerGameEnded += OnMultiplayerGameEnded;
         CheckPlugins.LogInfo("NebulaMultiplayerModAPI Compat finish.");
+    }
+
+    public static void OnMultiplayerGameStarted()
+    {
+        IsMultiplayerActive = NebulaModAPI.IsMultiplayerActive;
+        IsClient = IsMultiplayerActive && NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient;
+    }
+
+    public static void OnMultiplayerGameEnded()
+    {
+        IsMultiplayerActive = false;
+        IsClient = false;
     }
 
     public static bool IsOthers()// Action triggered by packets from other player
@@ -30,31 +51,5 @@ public static class NebulaMultiplayerModAPI {
         var factoryManager = NebulaModAPI.MultiplayerSession.Factories;
         return factoryManager.IsIncomingRequest.Value
                && factoryManager.PacketAuthor != NebulaModAPI.MultiplayerSession.LocalPlayer.Id;
-    }
-
-    private static void Patch(Harmony harmony) {
-        // Separate for using NebulaModAPI
-        if (!NebulaModAPI.NebulaIsInstalled || IsPatched)
-            return;
-        NebulaModAPI.OnMultiplayerGameStarted += OnMultiplayerGameStarted;
-        NebulaModAPI.OnMultiplayerGameEnded += OnMultiplayerGameEnded;
-
-        Type classType = assembly.GetType("NebulaWorld.SimulatedWorld");
-        MethodInfo postfixMethod =
-            AccessTools.Method(typeof(FractionateEverything), nameof(FractionateEverything.SaveConfig));
-        harmony.Patch(AccessTools.Method(classType, "SetupInitialPlayerState"), null, new(postfixMethod));
-
-#if DEBUG
-        OnMultiplayerGameStarted();
-#endif
-        IsPatched = true;
-    }
-
-    private static void OnMultiplayerGameStarted() {
-        IsActive = NebulaModAPI.IsMultiplayerActive;
-    }
-
-    private static void OnMultiplayerGameEnded() {
-        IsActive = false;
     }
 }
