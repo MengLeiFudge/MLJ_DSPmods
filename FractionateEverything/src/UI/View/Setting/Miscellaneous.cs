@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
+using FE.Compatibility;
 using FE.UI.Components;
 using UnityEngine;
 using static FE.Utils.Utils;
@@ -38,6 +39,8 @@ public static class Miscellaneous {
     private static ConfigEntry<int> TakeItemPriorityEntry;
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
 
+    private static MySlider DownloadThresholdSlider;
+    private static UIButton DownloadThresholdTipsButton2;
     private static ConfigEntry<float> DownloadThresholdEntry;
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
 
@@ -46,6 +49,8 @@ public static class Miscellaneous {
         public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
     }
 
+    private static MySlider UploadThresholdSlider;
+    private static UIButton UploadThresholdTipsButton2;
     private static ConfigEntry<float> UploadThresholdEntry;
     public static float UploadThreshold => UploadThresholdEntry.Value;
 
@@ -70,6 +75,9 @@ public static class Miscellaneous {
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
         Register("物流交互站上传阈值", "Interaction Station upload threshold");
+        Register("物流交互站阈值修改说明",
+            "To ensure consistent processing logic, this value cannot be modified in multiplayer games. You can change it in single player mode and save it before playing online.",
+            "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
 
         Register("显示分馏配方详细信息", "Show fractionate recipe details");
     }
@@ -117,12 +125,16 @@ public static class Miscellaneous {
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
         y += 36f;
         var txt = wnd.AddText2(x, y, tab, "物流交互站下载阈值");
-        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+        DownloadThresholdSlider = wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
             DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
+        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
+            "物流交互站下载阈值", "物流交互站阈值修改说明");
         y += 36f;
         txt = wnd.AddText2(x, y, tab, "物流交互站上传阈值");
-        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+        UploadThresholdSlider = wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
             UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
+        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
+            "物流交互站上传阈值", "物流交互站阈值修改说明");
         y += 36f;
         wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
     }
@@ -131,16 +143,31 @@ public static class Miscellaneous {
         if (!tab.gameObject.activeSelf) {
             return;
         }
+        bool isMultiplayer = NebulaMultiplayerModAPI.IsMultiplayerActive;
+        DownloadThresholdSlider.slider.interactable = !isMultiplayer;
+        DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
+        UploadThresholdSlider.slider.interactable = !isMultiplayer;
+        UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
     }
 
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
+        if (version >= 2) {
+            float downloadThreshold = r.ReadSingle();
+            float uploadThreshold = r.ReadSingle();
+            if (NebulaMultiplayerModAPI.IsClient) {
+                DownloadThresholdEntry.Value = downloadThreshold;
+                UploadThresholdEntry.Value = uploadThreshold;
+            }
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
+        w.Write(DownloadThreshold);
+        w.Write(UploadThreshold);
     }
 
     public static void IntoOtherSave() { }
