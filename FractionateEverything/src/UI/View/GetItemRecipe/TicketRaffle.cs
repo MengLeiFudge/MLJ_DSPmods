@@ -585,12 +585,12 @@ public static class TicketRaffle {
                 "确定".Translate(), UIMessageBox.INFO,
                 () => {
                     foreach (var p in rewardDic) {
-                        AddItemToModData(p.Key, p.Value);
+                        AddItemToModData(p.Key, p.Value, 0, true);
                     }
                 });
         } else {
             foreach (var p in rewardDic) {
-                AddItemToModData(p.Key, p.Value);
+                AddItemToModData(p.Key, p.Value, 0, true);
             }
         }
     }
@@ -663,12 +663,12 @@ public static class TicketRaffle {
                 "确定".Translate(), UIMessageBox.INFO,
                 () => {
                     foreach (var p in rewardDic) {
-                        AddItemToModData(p.Key, p.Value);
+                        AddItemToModData(p.Key, p.Value, 0, true);
                     }
                 });
         } else {
             foreach (var p in rewardDic) {
-                AddItemToModData(p.Key, p.Value);
+                AddItemToModData(p.Key, p.Value, 0, true);
             }
         }
     }
@@ -754,12 +754,12 @@ public static class TicketRaffle {
                 "确定".Translate(), UIMessageBox.INFO,
                 () => {
                     foreach (var p in rewardDic) {
-                        AddItemToModData(p.Key, p.Value);
+                        AddItemToModData(p.Key, p.Value, 0, true);
                     }
                 });
         } else {
             foreach (var p in rewardDic) {
-                AddItemToModData(p.Key, p.Value);
+                AddItemToModData(p.Key, p.Value, 0, true);
             }
         }
     }
@@ -843,12 +843,12 @@ public static class TicketRaffle {
                 "确定".Translate(), UIMessageBox.INFO,
                 () => {
                     foreach (var p in rewardDic) {
-                        AddItemToModData(p.Key, p.Value);
+                        AddItemToModData(p.Key, p.Value, 0, true);
                     }
                 });
         } else {
             foreach (var p in rewardDic) {
-                AddItemToModData(p.Key, p.Value);
+                AddItemToModData(p.Key, p.Value, 0, true);
             }
         }
     }

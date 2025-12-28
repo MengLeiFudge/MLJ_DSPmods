@@ -475,10 +475,8 @@ public static class TutorialManager {
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnOpen))]
-    private static void UITutorialWindow_OnOpen_Postfix(UITutorialWindow __instance)
-    {
-        if (!__instance.entryList.VertScroll)
-        {
+    private static void UITutorialWindow_OnOpen_Postfix(UITutorialWindow __instance) {
+        if (!__instance.entryList.VertScroll) {
             __instance.entryList.VertScroll = true;
             __instance.entryList.m_ScrollRect.vertical = true;
             __instance.entryList.m_ScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
