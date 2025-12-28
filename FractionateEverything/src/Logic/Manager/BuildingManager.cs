@@ -1,9 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
 using HarmonyLib;
+using NebulaAPI;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -360,7 +362,7 @@ public static class BuildingManager {
         };
     }
 
-    public static void ReinforcementLevel(this ItemProto building, int level) {
+    public static void ReinforcementLevel(this ItemProto building, int level, bool manual = false) {
         switch (building.ID) {
             case IFE交互塔:
                 InteractionTower.ReinforcementLevel = level;
@@ -396,6 +398,9 @@ public static class BuildingManager {
                 break;
             default:
                 return;
+        }
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(building.ID, 5, level));
         }
     }
 

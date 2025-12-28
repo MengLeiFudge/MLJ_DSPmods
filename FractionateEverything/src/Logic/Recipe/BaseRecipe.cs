@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Compatibility;
 using FE.Logic.Manager;
+using NebulaAPI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.Setting.SandboxMode;
 using static FE.Utils.Utils;
@@ -274,10 +276,15 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 添加经验，同时触发升级与突破
     /// </summary>
-    public void AddExp(float exp, bool useExpMultiRate = true) {
+    public void AddExp(float exp, bool useExpMultiRate = true, bool manual = false) {
+        float finalExp = useExpMultiRate ? exp * ExpMultiRate : exp;
         lock (this) {
-            Exp += useExpMultiRate ? exp * ExpMultiRate : exp;
+            Exp += finalExp;
             CheckState();
+        }
+
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2, finalExp));
         }
     }
 
@@ -285,16 +292,20 @@ public abstract class BaseRecipe(
     /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
-    public void RewardThis() {
+    public void RewardThis(bool manual = false) {
         lock (this) {
             if (Locked) {
                 Level = 1;
                 Quality = 1;
                 Exp = 0;
-                return;
+            } else {
+                Echo++;
+                CheckState();
             }
-            Echo++;
-            CheckState();
+        }
+
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
         }
     }
 
@@ -325,7 +336,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 沙盒模式下，将配方升一级/降一级
     /// </summary>
-    public void SandBoxUpDowngrade(bool up) {
+    public void SandBoxUpDowngrade(bool up, bool manual = false) {
         if (up) {
             if (FullUpgrade) {
                 //do nothing
@@ -353,12 +364,15 @@ public abstract class BaseRecipe(
         }
         Echo = BreakPreviousQualityNeedEcho;
         Exp = 0;
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 3, up ? 1 : 0));
+        }
     }
 
     /// <summary>
     /// 沙盒模式下，将配方升到最高品质、最高级/重置到最低品质、最低级
     /// </summary>
-    public void SandBoxMaxUpDowngrade(bool up) {
+    public void SandBoxMaxUpDowngrade(bool up, bool manual = false) {
         if (up) {
             Quality = MaxQuality;
             Level = CurrQualityMaxLevel;
@@ -369,6 +383,9 @@ public abstract class BaseRecipe(
             Echo = 0;
         }
         Exp = 0;
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 4, up ? 1 : 0));
+        }
     }
 
     #endregion
