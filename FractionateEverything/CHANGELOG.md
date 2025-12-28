@@ -1,6 +1,8 @@
 - v2.3.0
     + 调整物流交互站阈值设置。
+    + 适配联机Mod（NebulaMultiplayerMod）。
     + Adjust the Logistics Interaction Station threshold setting.
+    + Adaptation of the multiplayer mod (NebulaMultiplayerMod).
 
 - v2.2.2
     + 修复未解锁物流背包前，双击移动物品功能失效的问题。

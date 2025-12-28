@@ -8,6 +8,7 @@ using FE.Compatibility;
 using FE.Logic.Manager;
 using FE.UI.View.Setting;
 using HarmonyLib;
+using NebulaAPI;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
@@ -61,7 +62,7 @@ public static partial class Utils {
         if (itemValue[itemId] >= maxValue) {
             return true;
         }
-        AddItemToModData(itemId, count, inc);
+        AddItemToModData(itemId, count, inc, true);
         return false;
     }
 
@@ -78,7 +79,7 @@ public static partial class Utils {
             return true;
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
-            AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc);
+            AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc, true);
         }
         __instance.inhandItemId = 0;
         __instance.inhandItemCount = 0;
@@ -89,7 +90,7 @@ public static partial class Utils {
     /// <summary>
     /// 将指定物品添加到ModData背包
     /// </summary>
-    public static void AddItemToModData(int itemId, int count, int inc = 0) {
+    public static void AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount += count;
             return;
@@ -100,6 +101,9 @@ public static partial class Utils {
             if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
                 TechManager.CheckTechUnlockCondition(itemId);
             }
+        }
+        if (manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangePacket(itemId, count, inc));
         }
     }
 
@@ -480,7 +484,7 @@ public static partial class Utils {
                 GameMain.mainPlayer.deliveryPackage.TakeItems(ref itemIdTmp, ref realCountTemp, out incTemp);
             } else {
                 //Mod背包
-                realCountTemp = TakeItemFromModData(itemIdTmp, realCountTemp, out incTemp);
+                realCountTemp = TakeItemFromModData(itemIdTmp, realCountTemp, out incTemp, true);
             }
             needCount -= realCountTemp;
             realCount += realCountTemp;
@@ -859,7 +863,7 @@ public static partial class Utils {
     /// 注意，通过此方法取出的物品数目应该远小于int.MaxValue，以避免增产点数超过int。
     /// </summary>
     /// <returns>实际拿到的数目</returns>
-    public static int TakeItemFromModData(int itemId, int count, out int inc) {
+    public static int TakeItemFromModData(int itemId, int count, out int inc, bool manual = false) {
         //如果是沙土，直接拿取
         if (itemId == I沙土) {
             inc = 0;
@@ -894,6 +898,9 @@ public static partial class Utils {
                     inc = (int)centerItemInc[itemId];
                     centerItemInc[itemId] = 0;
                 }
+            }
+            if (manual) {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangePacket(itemId, -count, -inc));
             }
             return count;
         }
@@ -1026,7 +1033,8 @@ public static partial class Utils {
                 if (itemValue[package.grids[index].itemId] >= maxValue) {
                     continue;
                 }
-                AddItemToModData(package.grids[index].itemId, package.grids[index].count, package.grids[index].inc);
+                AddItemToModData(package.grids[index].itemId, package.grids[index].count, package.grids[index].inc,
+                    true);
                 package.grids[index].itemId = 0;
                 package.grids[index].count = 0;
                 package.grids[index].inc = 0;
@@ -1051,7 +1059,7 @@ public static partial class Utils {
             : item.StackSize * Miscellaneous.RightClickTakeCount;
         int inc;
         lock (centerItemCount) {
-            count = TakeItemFromModData(itemId, count, out inc);
+            count = TakeItemFromModData(itemId, count, out inc, true);
         }
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.inhandItemId != I沙土) {
