@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using BepInEx.Bootstrap;
 using HarmonyLib;
 using NebulaAPI;
@@ -14,11 +13,11 @@ public static class NebulaMultiplayerModAPI {
     /// <summary>
     /// 玩家是否在多人游戏中。
     /// </summary>
-    public static bool IsMultiplayerActive;
+    public static bool IsMultiplayerActive = false;
     /// <summary>
     /// 玩家是否为客户端。
     /// </summary>
-    public static bool IsClient;
+    public static bool IsClient = false;
 
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
@@ -34,14 +33,12 @@ public static class NebulaMultiplayerModAPI {
         CheckPlugins.LogInfo("NebulaMultiplayerModAPI Compat finish.");
     }
 
-    public static void OnMultiplayerGameStarted()
-    {
+    public static void OnMultiplayerGameStarted() {
         IsMultiplayerActive = NebulaModAPI.IsMultiplayerActive;
         IsClient = IsMultiplayerActive && NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient;
     }
 
-    public static void OnMultiplayerGameEnded()
-    {
+    public static void OnMultiplayerGameEnded() {
         IsMultiplayerActive = false;
         IsClient = false;
     }

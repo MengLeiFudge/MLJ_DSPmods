@@ -15,6 +15,7 @@ using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View;
 using HarmonyLib;
+using NebulaAPI;
 using NebulaAPI.Interfaces;
 using xiaoye97;
 using static FE.Utils.Utils;
@@ -95,6 +96,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             FEAssets = new(PluginInfo.PLUGIN_GUID, "fe", ModPath);
             FEAssets.LoadAssetBundle("fe");
             ProtoRegistry.AddResource(FEAssets);
+
+            NebulaModAPI.RegisterPackets(executingAssembly);
 
             //加载顺序：
             //LDBTool.PreAddDataAction
@@ -224,8 +227,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 载入存档时执行。
     /// </summary>
     public void Import(BinaryReader r) {
-        IntoOtherSave();
-        LogDebug("FE Import");
+        BaseIntoOtherSave();
         int version = r.ReadInt32();
         RecipeManager.Import(r);
         BuildingManager.Import(r);
@@ -237,7 +239,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        LogDebug("FE Export");
         w.Write(1);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
@@ -249,7 +250,17 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 新建存档时执行。
     /// </summary>
     public void IntoOtherSave() {
-        LogDebug("FE IntoOtherSave");
+        // 联机时客户端会先执行Import（源于Nebula），再执行IntoOtherSave（源于DSPModSave），所以客户端需要跳过
+        if (NebulaMultiplayerModAPI.IsClient) {
+            return;
+        }
+        BaseIntoOtherSave();
+    }
+
+    /// <summary>
+    /// 新建存档时执行。
+    /// </summary>
+    public void BaseIntoOtherSave() {
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
