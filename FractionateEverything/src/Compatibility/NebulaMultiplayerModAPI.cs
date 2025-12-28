@@ -1,7 +1,12 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using BepInEx.Bootstrap;
 using HarmonyLib;
 using NebulaAPI;
+using NebulaAPI.Interfaces;
+using NebulaAPI.Networking;
+using NebulaAPI.Packets;
+using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
@@ -48,5 +53,38 @@ public static class NebulaMultiplayerModAPI {
         var factoryManager = NebulaModAPI.MultiplayerSession.Factories;
         return factoryManager.IsIncomingRequest.Value
                && factoryManager.PacketAuthor != NebulaModAPI.MultiplayerSession.LocalPlayer.Id;
+    }
+}
+
+public class CenterItemChangePacket {
+    public byte[] data { get; set; }
+
+    public CenterItemChangePacket() { }
+
+    public CenterItemChangePacket(int itemId, int count, int inc = 0) {
+        using IWriterProvider p = NebulaModAPI.GetBinaryWriter();
+        BinaryWriter w = p.BinaryWriter;
+        w.Write(itemId);
+        w.Write(count);
+        w.Write(inc);
+        data = p.CloseAndGetBytes();
+    }
+}
+
+/// <summary>
+/// 在多人游戏中，当物品发生改变时，向其他玩家推送此事件。
+/// </summary>
+[RegisterPacketProcessor]
+public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemChangePacket> {
+    public override void ProcessPacket(CenterItemChangePacket packet, INebulaConnection conn) {
+        using IReaderProvider p = NebulaModAPI.GetBinaryReader(packet.data);
+        BinaryReader r = p.BinaryReader;
+        int itemId = r.ReadInt32();
+        int count = r.ReadInt32();
+        int inc = r.ReadInt32();
+        AddItemToModData(itemId, count, inc);
+        if (IsHost) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
+        }
     }
 }
