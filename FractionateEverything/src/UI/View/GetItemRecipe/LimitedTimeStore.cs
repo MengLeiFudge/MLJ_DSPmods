@@ -435,7 +435,7 @@ public static class LimitedTimeStore {
                     return;
                 }
                 VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
-                info.recipe.RewardThis();
+                info.recipe.RewardThis(true);
                 info.exchanged = true;
             } else {
                 UIMessageBox.Show("提示".Translate(),
@@ -447,7 +447,7 @@ public static class LimitedTimeStore {
                             return;
                         }
                         VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
-                        info.recipe.RewardThis();
+                        info.recipe.RewardThis(true);
                         info.exchanged = true;
                     },
                     null);

@@ -526,7 +526,7 @@ public static class TicketRaffle {
                     }
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
-                    recipe.RewardThis();
+                    recipe.RewardThis(true);
                     if (recipe.Echo == 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
                     } else {
