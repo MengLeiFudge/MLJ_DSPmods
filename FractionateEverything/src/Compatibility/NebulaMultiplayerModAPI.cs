@@ -88,7 +88,7 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
         int count = r.ReadInt32();
         int inc = r.ReadInt32();
         AddItemToModData(itemId, count, inc);
-        if (IsHost) {
+        if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
         }
     }
@@ -135,7 +135,7 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
                 recipe.SandBoxMaxUpDowngrade(packet.num > 0);
                 break;
         }
-        if (IsHost) {
+        if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
         }
     }
@@ -184,7 +184,7 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
                 selectedBuilding.ReinforcementLevel(packet.num);
                 break;
         }
-        if (IsHost) {
+        if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
         }
     }
