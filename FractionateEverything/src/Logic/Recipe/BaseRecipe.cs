@@ -283,7 +283,7 @@ public abstract class BaseRecipe(
             CheckState();
         }
 
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2, finalExp));
         }
     }
@@ -304,7 +304,7 @@ public abstract class BaseRecipe(
             }
         }
 
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
         }
     }
@@ -364,7 +364,7 @@ public abstract class BaseRecipe(
         }
         Echo = BreakPreviousQualityNeedEcho;
         Exp = 0;
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 3, up ? 1 : 0));
         }
     }
@@ -383,7 +383,7 @@ public abstract class BaseRecipe(
             Echo = 0;
         }
         Exp = 0;
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 4, up ? 1 : 0));
         }
     }

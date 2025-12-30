@@ -399,7 +399,7 @@ public static class BuildingManager {
             default:
                 return;
         }
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(building.ID, 5, level));
         }
     }
