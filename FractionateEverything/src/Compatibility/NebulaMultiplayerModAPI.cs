@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 namespace FE.Compatibility;
 
 public static class NebulaMultiplayerModAPI {
-    public const string GUID = "dsp.nebula-multiplayer";
+    public const string GUID = "dsp.nebula-multiplayer-api";
     public static bool Enable;
     public static Assembly assembly;
 
