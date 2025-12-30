@@ -102,7 +102,7 @@ public static partial class Utils {
                 TechManager.CheckTechUnlockCondition(itemId);
             }
         }
-        if (manual) {
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangePacket(itemId, count, inc));
         }
     }
@@ -899,7 +899,7 @@ public static partial class Utils {
                     centerItemInc[itemId] = 0;
                 }
             }
-            if (manual) {
+            if (NebulaModAPI.IsMultiplayerActive && manual) { 
                 NebulaModAPI.MultiplayerSession.Network.SendPacket(new CenterItemChangePacket(itemId, -count, -inc));
             }
             return count;

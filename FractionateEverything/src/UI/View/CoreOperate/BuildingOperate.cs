@@ -313,7 +313,9 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
-                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 1));
+                if (NebulaModAPI.IsMultiplayerActive) {
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 1));
+                }
             },
             null);
     }
@@ -337,7 +339,9 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
-                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 2));
+                if (NebulaModAPI.IsMultiplayerActive) {
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 2));
+                }
             },
             null);
     }
@@ -361,7 +365,9 @@ public static class BuildingOperate {
                     return;
                 }
                 SelectedBuilding.EnableFracForever(true);
-                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 3));
+                if (NebulaModAPI.IsMultiplayerActive) {
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 3));
+                }
             },
             null);
     }
@@ -385,7 +391,9 @@ public static class BuildingOperate {
                     return;
                 }
                 PointAggregateTower.Level++;
-                NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 4));
+                if (NebulaModAPI.IsMultiplayerActive) {
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 4));
+                }
             },
             null);
     }
