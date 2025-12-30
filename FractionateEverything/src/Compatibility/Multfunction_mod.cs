@@ -8,7 +8,7 @@ using xiaoye97;
 namespace FE.Compatibility;
 
 public static class Multfunction_mod {
-    public const string GUID = "cn.blacksnipe.dsp.Multfuntion_mod";
+    public const string GUID = "dsp.nebula-multiplayer";
     public static bool Enable;
     public static Assembly assembly;
 
