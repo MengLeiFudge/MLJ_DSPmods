@@ -27,6 +27,7 @@ namespace FE;
 [BepInDependency(DSPModSavePlugin.MODGUID)]
 [BepInDependency(CommonAPIPlugin.GUID)]
 [BepInDependency(BuildBarToolPlugin.GUID)]
+[BepInDependency(NebulaMultiplayerModAPI.GUID)]
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]

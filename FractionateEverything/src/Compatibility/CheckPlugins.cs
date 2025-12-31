@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using System.Text;
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BuildBarTool;
@@ -16,11 +18,11 @@ namespace FE.Compatibility;
 /// 加载万物分馏主插件前，检测是否使用其他mod，并对其进行适配。
 /// </summary>
 [BepInPlugin(GUID, NAME, VERSION)]
-[BepInDependency(LDBToolPlugin.MODGUID)]
-[BepInDependency(DSPModSavePlugin.MODGUID)]
-[BepInDependency(CommonAPIPlugin.GUID)]
-[BepInDependency(BuildBarToolPlugin.GUID)]
-[BepInDependency(NebulaMultiplayerModAPI.GUID)]
+[BepInDependency(LDBToolPlugin.MODGUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(DSPModSavePlugin.MODGUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(CommonAPIPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(BuildBarToolPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -38,6 +40,7 @@ public class CheckPlugins : BaseUnityPlugin {
     public const string VERSION = PluginInfo.PLUGIN_VERSION;
 
     private static bool _shown;
+    private static string _missingModMessage;
 
     /// <summary>
     /// 是否在游戏加载时禁用提示信息。
@@ -56,8 +59,13 @@ public class CheckPlugins : BaseUnityPlugin {
     #endregion
 
     public static void AddTranslations() {
+        Register("缺少模组警告标题", "Tip", "提示");
+        Register("缺少模组警告内容",
+            "The following prerequisite mods are required for Fractionate Everything:",
+            "万物分馏缺少以下前置模组：");
+
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
-        Register("FE信息",
+        Register("FE内容",
             "Thank you for using Fractionation Everything! This mod adds 7 different functioning fractionators, 2 interaction stations, and nearly 1,000 fractionation recipes.\n"
             + $"After researching the 'Fractionation data centre' tech, press {"Shift + F".WithColor(Orange)} (can be changed on the settings page) to call out the panel.\n"
             + "This mod has been compatible with some large mods, such as Genesis Book, They Come From Void, and More Mega Structure.\n"
@@ -83,6 +91,38 @@ public class CheckPlugins : BaseUnityPlugin {
 
         AddTranslations();
 
+        bool dependencyOk = true;
+        StringBuilder sb = new StringBuilder("缺少模组警告内容".Translate());
+        if (!Chainloader.PluginInfos.ContainsKey(LDBToolPlugin.MODGUID)) {
+            dependencyOk = false;
+            sb.Append($"\nLDBTool ({LDBToolPlugin.MODGUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(DSPModSavePlugin.MODGUID)) {
+            dependencyOk = false;
+            sb.Append($"\nDSPModSave ({DSPModSavePlugin.MODGUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(CommonAPIPlugin.GUID)) {
+            dependencyOk = false;
+            sb.Append($"\nCommonAPI ({CommonAPIPlugin.GUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(BuildBarToolPlugin.GUID)) {
+            dependencyOk = false;
+            sb.Append($"\nBuildBarTool ({BuildBarToolPlugin.GUID})");
+        }
+        if (!Chainloader.PluginInfos.ContainsKey(NebulaMultiplayerModAPI.GUID)) {
+            dependencyOk = false;
+            sb.Append($"\nNebulaMultiplayerModAPI ({NebulaMultiplayerModAPI.GUID})");
+        }
+        if (!dependencyOk) {
+            _missingModMessage = sb.ToString();
+            new Harmony(GUID).Patch(
+                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
+                null,
+                new(typeof(CheckPlugins), nameof(ShowMissingModMessage)) { priority = Priority.Last }
+            );
+            return;
+        }
+
         BuildToolOpt.Compatible();
         CheatEnabler.Compatible();
         CustomCreateBirthStar.Compatible();
@@ -103,6 +143,22 @@ public class CheckPlugins : BaseUnityPlugin {
         );
     }
 
+    private static void ShowMissingModMessage() {
+        UIMessageBox.Show("缺少模组警告标题".Translate(),
+            _missingModMessage,
+            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
+            null,
+            () => {
+#if DEBUG
+                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+#else
+                Application.OpenURL("FE日志链接".Translate());
+#endif
+            },
+            () => Application.OpenURL("FE交流群链接".Translate())
+        );
+    }
+
     public static void OnMainMenuOpen() {
         if (_shown) return;
         if (!DisableMessageBox.Value) {
@@ -115,7 +171,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
     private static void ShowMessageBox() {
         UIMessageBox.Show("FE标题".Translate(),
-            "FE信息".Translate(),
+            "FE内容".Translate(),
             "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.INFO,
             null,
             () => {
