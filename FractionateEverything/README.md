@@ -1,388 +1,122 @@
-![](https://s2.loli.net/2024/04/08/LtlNkxZD4jmdbFX.jpg)
+`![](https://s2.loli.net/2024/04/08/LtlNkxZD4jmdbFX.jpg)`
 
 > “走自己的路，不要随波逐流。” —— 重氢
 >
 > "Don't just follow the path. Make your own trail." —— Deuterium
 
-# ~~万物分馏(Fractionate Everything)~~ 万物抽卡(Raffle Everything)
+# 万物分馏 Fractionate Everything
 
-新增了7种不同功能的分馏塔，以及接近1000个独特设计的分馏配方。
-
-使用 Shift + F 打开面板，在分馏数据中心中实现各种操作！
-
-**2.0版本全新抽卡模式来袭！** 是兄弟，就来抽卡获取高级分馏科技！
+不同功能的分馏塔、大量独特的分馏配方，还有全新的总控面板可以抽取、升级相关配方和建筑！
 
 **_尽情享受分馏的乐趣吧！_**
 
-Includes 7 fractionators with different functions and over 1000 fractionate recipes.
-
-Use Shift+F to open the panel and perform various operations in the fractionation data centre!
-
-**The new card drawing mode of version 2.0 is coming!** Bro, come and draw cards to obtain advanced fractionation
-technology!
+Different functioning fractionators, tons of unique fractionation recipes, and a brand new master control panel to
+extract and upgrade related recipes and buildings!
 
 **_Have fun with fractionation!_**
 
-## 模组介绍 Mod Introduction
+## 模组简介 Mod Introduction
 
-### 全新分馏塔与分馏配方
+### 新分馏塔、物流交互站 New fractionator, logistics interaction station
 
-![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)
+`![](https://s2.loli.net/2024/05/19/wqcyU5M2QOr3knC.png)`
 
-#### 交互塔 & 建筑培养配方 Interaction Tower and Building Train Recipe
+万物分馏添加了全新的建筑，它们的效果非常强大！
 
-交互塔是与分馏数据中心（以下简称“中心”）进行物品交互的重要手段。
+* 交互塔：将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。
+* 矿物复制塔：复制各种矿物，包括黑雾特有掉落。有一定概率得到复制精华。需要在分馏数据中心解锁并升级对应配方。
+* 点数聚集塔：将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。
+* 量子复制塔：利用分馏精华卓越的可塑性复制各种物品。增产点数可以减少分馏精华的消耗。运行时会自动从分馏数据中心扣除四种分馏精华。需要在分馏数据中心解锁并升级对应配方。
+* 转化塔：将物品转化为与其相关的其他物品。有一定概率得到转化精华。需要在分馏数据中心解锁并升级对应配方。
+* 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
 
-交互塔正面输入时，可以将任意物品以数据形式输入到中心；
-通过抽卡获取的物品，也可以选择暂存到中心。
+Fractionate Everything has added brand new buildings which are very powerful in their effects!
 
-中心缓存的物品可以在指定面板手动提取，也可以使用交互塔自动提取。
+* Interaction Tower: Cultivates the fractionator proto-germ into a different fractionator. In addition to this, when the
+  front of the Interaction Tower is input and there are no connections on either side, the input items will be uploaded
+  to the Fractionation Data Center.
+* Mineral Duplication Tower: Duplicates various minerals, including Black Mist-specific drops. There is a certain
+  probability of getting a replication essence. You need to unlock and upgrade the corresponding recipe in the
+  Fractionation Data Center.
+* Point Aggregation Tower: Concentrate production increase points on some items, thus producing items with more
+  production increase points. Requires upgrading the Point Aggregation Efficiency Level in the Fractionation Data
+  Center.
+* Quantum Replication Tower: Utilizes the superior malleability of Fractionation Essence to replicate various items.
+  Increased production points reduce the consumption of Fractionation Essence. Four types of Fractionated Essence are
+  automatically deducted from the Fractionation Data Center when running. You need to unlock and upgrade the
+  corresponding recipe in the Fractionation Data Center.
+* Conversion Tower: Convert items into other items related to them. There is a certain probability of obtaining
+  Transformation Essence. You need to unlock and upgrade the corresponding recipe in the Fractionation Data Center.
+* Logistics Interaction Station: An intra-planetary logistics station that can interact with the Fractionation Data
+  Center.
 
-除此之外，交互塔还承担着将分馏塔原胚培养为各种不同的分馏建筑的职责。
+### 抽奖系统 Raffle System
 
-提示：后面会介绍分馏塔原胚的相关信息。
+抽奖是很重要的一环。快来试试你的手气吧！
 
-#### 矿物复制塔 & 矿物复制配方
+* 配方奖池：可以抽取各种分馏配方，运气好还可以得到分馏配方通用核心。
+* 原胚奖池：可以抽取各种分馏塔原胚，运气好还可以得到分馏塔增幅芯片。
+* 材料奖池：可以抽取各种已解锁的材料。
+* 建筑奖池：可以抽取各种已解锁的建筑。
 
-矿物复制塔可用于复制普通矿物、珍奇矿物，以及黑雾特有资源，并有一定概率产出复制精华。
+Raffles are an important part of the process. Come and try your luck!
 
-资源越稀有，成功率就越低。大体上从高到低为：
+* Recipe Prize Pool: You can draw all kinds of Fractionation Recipes, and if you are lucky, you can also get the
+  Fractionation Recipe Universal Core.
+* Original embryo prize pool: you can extract a variety of fractionator embryo, good luck can also get the fractionator
+  increase chip.
+* Material Pool: You can extract various unlocked materials.
+* Building Pool: You can draw various unlocked buildings.
 
-- 单极磁石（仅黑洞中子星）
-- 刺笋 / 光栅（有星球大量存在）
-- 分型硅 / 金伯利 / 有机晶体（分布散）
-- 可燃冰（巨星） 硫酸
-- 黑雾掉落
-- 钛石、硅石
-- 铁矿、铜矿、煤矿、石矿、油井
+### 配方升级与突破、建筑升级与强化 Recipe upgrades and breakthroughs, building upgrades and enhancements
 
-同时，矿物利用科技的等级越高，矿物复制的成功率越高。
+无论是配方还是建筑，都需要不断升级，才能达到最强力的状态！
 
-#### 点数聚集塔 & 点数聚集科技
+* 配方升级：使用指定配方分馏即可持续获得经验，经验达标后可自动升级！
+* 配方突破：配方品质有白、绿、蓝、紫、红、金，达到一定等级，收集足够数目的回响，即可突破到新的品质！
+* 建筑升级：建筑有很多实用的升级项，例如流动输出堆叠、产物输出堆叠，可以摆脱集装的烦恼！
+* 建筑强化：建筑完全升级后，即可逐步强化至+20，加快速率，提升产能！
 
-在原版游戏中，将物品用增产剂MkI、增产剂MkII、增产剂MkIII喷涂后，物品将会带有1点、2点、4点增产点数。
+Both recipes and buildings need to be constantly upgraded to reach their most powerful state!
 
-提示：将鼠标移动到物品上，即可看到物品带有的增产点数。
+* Recipe upgrading: using the specified recipe fractionation can be continuously gained experience, experience can be
+  automatically upgraded after reaching the standard!
+* Recipe Breakthrough: Recipe qualities are white, green, blue, purple, red, and gold, reaching a certain level and
+  collecting a sufficient number of echoes can break through to a new quality!
+* Building Upgrade: There are many practical upgrades for buildings, such as flow output stacking and product output
+  stacking, which can get rid of the trouble of assembling!
+* Building Enhancement: Once a building is fully upgraded, it can be gradually enhanced to +20 to speed up the rate and
+  increase production capacity!
 
-点数聚集科技，指的就是在物品总增产点数不变的情况下，将增产点数集中在少部分物品上，从而输出超过4点增产点数的物品。
+### 新分馏科技 New Fractionation Technology
 
-点数聚集塔是**唯一**不需要特定配方就能运行的建筑，它允许任何物品输入。不过，如果输入的物品增产点数不足，则无法聚集。
+除了使用矩阵解锁的常规科技，还有一部分科技是通过特殊方式解锁的！
 
-随着点数聚集塔等级的提升，输出物品的增产点数会从4点逐步提升到10点。
+将产物上传至分馏数据中心，即可解锁对应科技，得到合成它的配方~
 
-#### 量子复制塔 & 量子复制配方
+至于怎么做，就需要你在游戏中研究了！
 
-量子复制塔可以复制任何物品——只要中心有足够的精华。
+In addition to the regular techs that are unlocked using the Matrix, there are some techs that are unlocked in a special
+way!
 
-提示：精华来源于其他分馏塔，后面会介绍各种精华的相关信息。
+By uploading a product to the Fractionation Data Center, you can unlock the corresponding technology and get the recipe
+to synthesize it.
 
-复制时需要各种精华的数目是根据物品价值确定的，价值越高需要的数目也就越高。
+As for how to do it, you need to research it in the game!
 
-只有复制成功时，才会消耗精华。具体消耗数目可以在配方详情面板查看。
+### 任务系统、成就系统 Quest System, Achievement System
 
-#### 点金塔 & 点金配方
+一个游戏怎么能没有任务系统和成就系统呢？你说是吧！
 
-点金塔可以将除了矩阵、建筑之外的物品点金为矩阵，并有一定概率产出点金精华。
+接取任务并完成，即可获得各种奖励~
 
-根据物品所处的科技层次，将会产出不同的矩阵。
+完成成就，就会解锁开发日志！等等，你是在这里写小说吗？
 
-同时，被点金的物品越**“接近”**矩阵，点金的成功率就越高，输出的矩阵数目也越多。
+How can a game not have a quest system and an achievement system? You think so!
 
-例如，电路板是制作电磁矩阵的原材料之一，所以电路板点金后会输出电磁矩阵。
-并且，由于它是最接近电磁矩阵的物品之一，点金时的成功率和数目加成也是最大的。
+Take a mission and complete it to get various rewards.
 
-#### 分解塔 & 分解配方
-
-分解塔可以将物品分解为制作它的原材料，并有一定概率产出分解精华。
-
-随着配方等级的提升，至多可以回收1.25倍的原材料。
-
-对于没有制作配方的物品，分解塔将会彻底粉碎它，然后输出沙土或地基（取决于正面是否用传送带输出）。
-
-#### 转化塔 & 转化配方
-
-转化塔可以将物品转化为与其相关的其他物品，并有一定概率产出转化精华。
-
-只要解锁了某个物品的转化配方，就可以将其使用转化塔转化为其他。
-
-### 新增物品与获取方式
-
-#### 分馏塔原胚与分馏塔
-
-以上提到的7种不同的分馏塔，不能像常规建筑一样通过某些材料合成得到。
-
-分馏塔的获取方式有：
-
-- 通过建筑奖池抽到分馏塔
-- 通过交互塔，将分馏塔原胚培养为不同的分馏塔
-- 通过转化塔，将某种分馏塔转化为其他类型的分馏塔
-- 通过制造台，将分馏塔定向原胚制作为指定的分馏塔
-- 某些任务/活动/科技奖励可以获取
-
-由于分馏塔原胚培养得到的分馏塔完全是随机的，所以一般结合第二点与第三点，以平衡各种不同分馏塔的数目。
-
-当有大量原胚后，也可以选择直接通过转化塔转化原胚，然后将它们合成分馏塔定向原胚，再通过第四点制作为指定分馏塔。
-
-分馏塔原胚的唯一功能就是通过各种方式转变为不同的分馏塔。它分为六种：
-
-- 分馏塔原胚I型
-- 分馏塔原胚II型
-- 分馏塔原胚III型
-- 分馏塔原胚IV型
-- 分馏塔原胚V型
-- 分馏塔定向原胚
-
-对于前五种原胚，越高级的原胚培养为分馏塔的成功率越高，出现稀有分馏塔的概率也越高。
-
-分馏塔定向原胚可以直接转换为指定的分馏塔，是非常稀有且强力的道具。
-
-分馏塔原胚的获取方式有：
-
-- 通过建筑奖池抽到分馏塔原胚（只能抽取到前五种原胚）
-- 通过转化塔，将某种分馏塔原胚转化为其他类型的分馏塔原胚（只有前五种原胚可以互相转化）
-- 通过制造台，将前五种原胚合成为分馏塔原胚（定向）
-- 某些任务/活动/科技奖励可以获取
-
-#### 精华
-
-精华的主要用途是量子复制的耗材。它分为四种：
-
-- 复制精华（主要由矿物复制塔产出）
-- 点金精华（主要由点金塔产出）
-- 分解精华（主要由分解塔产出）
-- 转化精华（主要由转化塔产出）
-
-精华的获取方式有：
-
-- 通过配方奖池抽到精华
-- 通过转化塔，将某种精华转化为其他类型的精华
-- 通过分馏塔，在成功处理物品时，有小概率同时产出精华（上面写了精华与分馏塔的关系）
-- 某些任务/活动/科技奖励可以获取
-
-#### 分馏配方核心
-
-在抽取配方奖池时，有较小概率获取到分馏配方核心。
-
-它可以兑换任何一个分馏配方（被处理的物品必须已解锁）。
-如果配方未解锁，则解锁配方；如果已解锁，则转为该配方的同名回响。
-
-提示：后面会介绍配方奖池与回响的相关信息。
-
-#### 分馏塔增幅芯片
-
-在抽取建筑奖池时，有较小概率获取到分馏塔增幅芯片。
-
-它可以用于分馏塔的升级，进一步提升分馏塔的功能。
-
-例如，大部分分馏塔都有如下升级：
-
-- 流动输出堆叠，启用后流动输出将尽可能堆叠
-- 产物输出堆叠，随着升级，产物堆叠的上限将会变高，至多为4
-- 分馏永动，启用后如果产物输出已满，分馏塔不会停止运转，而是直接将流动输入搬运到流动输出
-
-除此之外，某些分馏塔还有独属于自己的升级（例如点数聚集塔）。
-
-### 抽卡系统
-
-抽卡系统是这个模组的核心玩法之一。
-
-#### 配方奖池
-
-配方奖池是解锁配方、获取同名回响的主要手段。
-
-选择某种奖券后，只能抽取对应层次的配方。
-
-提示：配方的层次指的是配方原材料所属科技层次，后面会介绍物品科技层次的相关信息。
-
-宇宙奖券比其他奖券效果更强，不仅可以抽取所有配方，还能以双倍概率获取配方和分馏配方通用核心。
-
-概率公示（非宇宙奖券）：
-
-- 分馏配方通用核心：0.05%
-- 分馏配方：0.6%（根据奖券不同，能抽到的范围也不同，至多90抽必出）
-- 杂项物品：59.61%（不包含建筑，且只会抽出已解锁的物品）
-- 沙土：39.74%
-
-概率公示（宇宙奖券）：
-
-- 分馏配方通用核心：0.1%
-- 分馏配方：1.2%（根据奖券不同，能抽到的范围也不同，至多90抽必出）
-- 杂项物品：59.22%（不包含建筑，且只会抽出已解锁的物品）
-- 沙土：39.48%
-
-#### 建筑奖池
-
-在此模组中，分馏塔原胚和分馏塔的主要获取来源是建筑奖池。
-
-不管使用哪种奖券，可以获得的建筑类型都是相同的。
-
-宇宙奖券比其他奖券效果更强，可以以双倍概率获取分馏塔增幅芯片。
-
-概率公示（非宇宙奖券）：
-
-- 分馏塔增幅芯片：0.3%
-- 分馏塔原胚（普通）：12.90%
-- 分馏塔原胚（精良）：6.452%
-- 分馏塔原胚（稀有）：3.226%
-- 分馏塔原胚（史诗）：1.613%
-- 分馏塔原胚（传说）：0.806%
-- 交互塔：0.649%
-- 矿物复制塔：1.948%
-- 点数聚集塔：0.325%
-- 量子复制塔：0.130%
-- 点金塔：0.649%
-- 分解塔：0.649%
-- 转化塔：0.649%
-- 其他建筑：29.82%（所有非分馏塔的建筑，包括未解锁的建筑）
-- 沙土：39.88%
-
-概率公示（非宇宙奖券）：
-
-- 分馏塔增幅芯片：0.6%
-- 分馏塔原胚（普通）：12.90%
-- 分馏塔原胚（精良）：6.452%
-- 分馏塔原胚（稀有）：3.226%
-- 分馏塔原胚（史诗）：1.613%
-- 分馏塔原胚（传说）：0.806%
-- 交互塔：0.649%
-- 矿物复制塔：1.948%
-- 点数聚集塔：0.325%
-- 量子复制塔：0.130%
-- 点金塔：0.649%
-- 分解塔：0.649%
-- 转化塔：0.649%
-- 其他建筑：29.64%（所有非分馏塔的建筑，包括未解锁的建筑）
-- 沙土：39.76%
-
-#### 自选奖池
-
-在自选奖池中，可以选择10个物品/配方，出金时配方必定是其中之一。
-
-自选奖池有抽卡次数限制，每种奖券抽取次数分别计算。
-
-### 配方培养系统
-
-#### 配方解锁与同名回响
-
-在此模组中，有接近1000个新增的分馏配方。这些配方在一开始都是“锁定”状态，你需要“解锁”之后才能使用它们。
-
-配方的获取方式有如下几种：
-
-- 随科技“分馏数据中心”解锁（仅限建筑培养配方，以及部分矿物复制配方）
-- 从配方奖池中抽奖获取
-- 使用分馏配方通用核心兑换
-
-当获取到一个配方后，如果配方未解锁，则解锁配方；如果已解锁，则转为该配方的同名回响。
-
-配方最多持有5个同名回响，回响是配方突破某些品质的前置条件（后面的会介绍回响的具体数目需求）。
-
-#### 配方等级与升级
-
-配方解锁之后，就可以使用这个配方了。
-
-在使用这个配方的过程中，无论是原材料损毁，还是成功处理为产物，都会获得一定的配方经验。
-
-达到升级所需经验后，如果未达到当前品质的等级上限，等级会自动提升。升级所需的经验数目受品质和等级影响。
-
-配方等级有上限，等级上限受品质影响。最低品质只能升到4级；最高品质可以升到10级。
-
-等级达到当前品质的等级上限并且经验达到升级经验后，仍然可以通过使用配方继续积累经验。
-
-在配方详情页面，可以使用一定量的沙土兑换配方经验，从而快速提升配方的等级。
-
-随着等级不断提升，配方的成功率也会提升，损毁率会下降。
-
-#### 配方品质与品质突破
-
-配方有6个品质，分别为白、绿、蓝、紫、红、金。
-
-品质越高，配方的等级上限就越高，配方也越强。
-
-满足以下条件后，配方将自动尝试突破到下一个品质：
-
-- 达到当前品质最高等级
-- 达到当前等级经验上限
-- 拥有足够的同名回响
-
-突破时有概率判定，品质越高突破成功率越低。
-
-成功突破则提升到下一品质，并且等级重置为1（超出上限的经验会无损转化）；否则扣除等同于20%经验上限的经验。
-
-| 品质     | 白    | 绿   | 蓝   | 紫   | 红   | 金  |
-|--------|------|-----|-----|-----|-----|----|
-| 等级上限   | 4    | 5   | 6   | 7   | 8   | 10 |
-| 突破所需回响 | 0    | 1   | 2   | 3   | 5   | -  |
-| 突破成功率  | 100% | 85% | 70% | 55% | 40% | -  |
-
-#### 配方效果
-
-万物分馏的分馏配方不像原版一样只能从一种物品转为另一种物品。
-
-配方有损毁机制，如果损毁，原材料将会消失。
-尽管增产剂并不能降低损毁概率，但是增产剂可以提升成功率，相当于减少了的损毁的数目。
-
-并且，虽然输入的原料只能有一种，但输出的产出可以有多种。
-也就是说，一种原料可以转变成多种产物。这极大丰富了该模组的可玩性。
-
-所有新增的分馏塔都可以输入任意物品，但如果没有对应配方，将不会做处理，仅仅将其从流动输入搬运到流动输出。
-
-### 独特的分馏科技
-
-【图】
-
-分馏的科技比较特殊，其中一部分为“倒因为果”型科技，还有一部分为“奖励”型科技。
-
-所谓“倒因为果”型科技，指的是需要物品才能研究科技，科技解锁才获取物品的制作配方。
-
-这是故意设计如此，因为建筑奖池可以获取分馏原胚，原胚可以直接培养为不同的分馏塔。
-
-这些科技解锁的配方，是使用定向原胚合成分馏塔的配方。也就是说，完全可以先获取物品，再解锁此科技。
-
-提示：量子复制科技是隐藏科技。在解锁物品“黑雾矩阵”后，才可以看到此科技。
-
-所谓“奖励”型科技，指的是需求矩阵少，不会解锁配方，但是会给予大量物品的科技。
-
-由于科技只能研究一次，所以奖励也只能获取一次哦。
-
-【图】
-
-除此之外，还有一些无限科技，可以进一步提升分馏塔的效果。
-
-### 全新UI——分馏数据中心
-
-万物分馏2.0添加了一个全新的面板，用于与主脑进行通讯。
-
-大部分信息都可以在此处看到。
-
-### 任务系统
-
-暂定。
-
-每日任务：给予奖券。
-
-### 开发彩蛋
-
-解锁某些成就，或完成某些任务后，可以在分馏数据中心的彩蛋页面查看开发日志。
-
-### 补充说明
-
-#### 物品价值、物品所属科技层次
-
-每个物品都有自己的价值。这个价值是通过配方的输入、输出、时间综合考虑，然后自动计算的。
-
-每个物品也有自己的科技层次。这是通过物品的“主制作配方”对应科技的最高级矩阵确定的。
-
-例如，钢材的前置科技为钢材冶炼，此科技需求的最高级矩阵为电磁矩阵，所以钢材的相关分馏配方都需要使用电磁奖券进行抽取。
-
-#### 小数机制
-
-在这个模组中，物品的消耗数目、输出数目不一定是整数，也有可能是小数。
-
-当出现小数时，整数部分保持不变，小数部分会再次进行概率判定，从而确定最终的数目。
-
-例如消耗0.1复制精华，含义为有10%概率消耗1个复制精华，有90%概率不消耗复制精华。
-
-例如输出2.5个传送带MkII，含义为有50%概率输出2个传送带MkII，有50%概率输出3个传送带MkII。
+Completing achievements will unlock the development log! Wait, are you writing a novel here?
 
 ## 安装方法 Installation
 
@@ -414,30 +148,24 @@ Download and enable **FractionateEverything**.
 - 特别感谢使用万物分馏的每一位玩家，希望你们能感受到分馏的乐趣。
   如果你有任何错误信息或建议，欢迎加入[万物分馏反馈群](https://qm.qq.com/q/zzicz6j9zW)
   并反馈给我（@萌泪酱）。
-
 - Special thanks to jinxOAO. the mod was inspired by
   his [FractionateUniverse](https://dsp.thunderstore.io/package/jinxOAO/FractionateUniverse/), without his module there
   would be no Fractionate Everything. He also helped me solve the problem of buildings not accepting new fractionation
   recipes when tech is unlocked, provided a way to modify the power consumption of buildings, and pointed out that there
   was little point in upgrading fractionator towers, and that it would be better to make fractionators with new
   features. This is exactly why the fractionator now has a different function, not just an efficiency boost.
-
 - Special thanks to Awbugl. as the current coder of the Genesis Book, he has helped me solve most of the difficulties in
   writing the mod, and his selfless help is greatly appreciated. Moreover, many of the code logic of Fractionate
   Everything references the code of Book of Genesis, such as loading pop-up windows on the main page, adapting with
   other mods, etc., which facilitates my development.
-
 - Special thanks to L, as the first batch of testers, his active testing and encouragement make me have the
   determination to insist on perfecting Fractionation. The [image](https://s2.loli.net/2024/04/08/LtlNkxZD4jmdbFX.jpg)
   at the top of the document is provided by him.
-
 - Special thanks to 飞鸿, who tested the MOD and provided tons of advice. He provided some of the ideas for the
   functionality of the fractionator and gave me feedback on the irrationality of the matrix fractionation recipe. The
   Fractionation Damage feature originated from his testing, and this feature drastically improves the gameplay
   experience of the mod.
-
 - Special thanks to the group members of the Genesis Book exchange group, it was thanks to their constant feedback that
   I was able to fix the problems in the mod and make functional changes to the mod.
-
 - Special thanks to every player who uses Fractionate Everything, I hope you have fun with fractionation. If you have
   any bug or idea, please give me feedback on [Github Issue](https://github.com/MengLeiFudge/MLJ_DSPmods/issues/new).
