@@ -1,4 +1,4 @@
-- v2.3.0
+- v2.2.3
     + 调整物流交互站阈值设置。
     + 适配联机Mod（NebulaMultiplayerMod）。
     + Adjust the Logistics Interaction Station threshold setting.
