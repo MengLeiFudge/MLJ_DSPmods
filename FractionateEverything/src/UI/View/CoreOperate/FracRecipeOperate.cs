@@ -118,13 +118,14 @@ public static class FracRecipeOperate {
         txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
         float popupY = y + (36f + 7f) / 2;
         btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
-            SelectedItem.ID, "button-change-item",
-            () => { OnButtonChangeItemClick(false, popupY); }, () => { OnButtonChangeItemClick(true, popupY); });
+            SelectedItem, "button-change-item").WithClickEvent(
+            () => { OnButtonChangeItemClick(false, popupY); },
+            () => { OnButtonChangeItemClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
         wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "配方类型")
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏配方通用核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
@@ -166,7 +167,7 @@ public static class FracRecipeOperate {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        btnSelectedItem.ItemId = SelectedItem.ID;
+        btnSelectedItem.Proto = SelectedItem;
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";

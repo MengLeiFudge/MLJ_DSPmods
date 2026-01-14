@@ -95,11 +95,12 @@ public static class VanillaRecipeOperate {
         txtCurrRecipe = wnd.AddText2(x, y, tab, "当前配方", 15, "textCurrItem");
         float popupY = y + (36f + 7f) / 2;
         btnSelectedRecipe = wnd.AddImageButton(x + txtCurrRecipe.preferredWidth + 5, y, tab,
-            SelectedRecipe.ID, "button-change-item",
-            () => { OnButtonChangeRecipeClick(false, popupY); }, () => { OnButtonChangeRecipeClick(true, popupY); });
+            SelectedRecipe, "button-change-item").WithClickEvent(
+            () => { OnButtonChangeRecipeClick(false, popupY); },
+            () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE原版配方升级核心);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE原版配方升级核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, "升级第一项",
@@ -122,7 +123,7 @@ public static class VanillaRecipeOperate {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        btnSelectedRecipe.ItemId = SelectedRecipe.ID;
+        btnSelectedRecipe.Proto = SelectedRecipe;
         txtCoreCount.text = $"x {GetItemTotalCount(IFE原版配方升级核心)}";
 
         int line = 0;

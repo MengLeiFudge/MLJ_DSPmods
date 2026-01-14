@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Recipe;
 
 /// <summary>
-/// 建筑培养配方（1分馏塔原胚 -> 1随机分馏塔）
+/// 建筑培养配方（分馏塔原胚 -> 分馏塔）
 /// </summary>
 public class BuildingTrainRecipe : BaseRecipe {
     /// <summary>

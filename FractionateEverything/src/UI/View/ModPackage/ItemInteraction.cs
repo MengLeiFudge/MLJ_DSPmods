@@ -68,7 +68,7 @@ public static class ItemInteraction {
         y += 36f + 7f;
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 5; j++) {
-                btnItems[i, j] = wnd.AddImageButtonWithDefAction(GetPosition(j, 5).Item1, y, tab);
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, 5).Item1, y, tab).WithTakeItemClickEvent();
                 txtItemCounts[i, j] = wnd.AddText2(GetPosition(j, 5).Item1 + 40 + 5, y, tab, "动态刷新");
             }
             y += 36f + 7f;
@@ -117,8 +117,8 @@ public static class ItemInteraction {
         int i = 0;
         foreach (var p in itemCountDic.OrderBy(kvp => kvp.Key.GridIndex)) {
             btnItems[i / 5, i % 5].gameObject.SetActive(true);
-            btnItems[i / 5, i % 5].ItemId = p.Key.ID;
-            btnItems[i / 5, i % 5].IsSelected = SelectedItemID > 0 && p.Key.ID == SelectedItemID;
+            btnItems[i / 5, i % 5].Proto = p.Key;
+            btnItems[i / 5, i % 5].Selected = SelectedItemID > 0 && p.Key.ID == SelectedItemID;
             txtItemCounts[i / 5, i % 5].text = $"x {p.Value}";
             i++;
         }

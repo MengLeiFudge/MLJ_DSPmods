@@ -147,7 +147,7 @@ public static class LimitedTimeStore {
         float y = 18f + 7f;
         for (int i = 0; i < Matrixes.Length; i++) {
             var posX = GetPosition(i, Matrixes.Length).Item1;
-            wnd.AddImageButton(posX, y, tab, Matrixes[i]);
+            wnd.AddImageButton(posX, y, tab, LDB.items.Select(Matrixes[i]));
             txtMatrixCount[i] = wnd.AddText2(posX + 40 + 5, y, tab, "动态刷新");
         }
         y += 36f + 7f;
@@ -337,12 +337,12 @@ public static class LimitedTimeStore {
             ExchangeInfo info = exchangeInfos[i];
             if (info.item != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
-                exchangeImages1[i].ItemId = info.item.ID;
+                exchangeImages1[i].Proto = info.item;
                 exchangeImages2[i].gameObject.SetActive(false);
                 txtExchangeInfos1[i].text = $"x {info.itemCount}";
                 txtExchangeInfos2[i].text = "<=";
                 exchangeImages3[i].gameObject.SetActive(true);
-                exchangeImages3[i].ItemId = info.matrix.ID;
+                exchangeImages3[i].Proto = info.matrix;
                 txtExchangeInfos3[i].gameObject.SetActive(true);
                 txtExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);
@@ -358,13 +358,13 @@ public static class LimitedTimeStore {
                 }
             } else if (info.recipe != null) {
                 exchangeImages1[i].gameObject.SetActive(true);
-                exchangeImages1[i].ItemId = info.recipe.RecipeType.GetSpriteItemId();
+                exchangeImages1[i].Proto = LDB.items.Select(info.recipe.RecipeType.GetSpriteItemId());
                 exchangeImages2[i].gameObject.SetActive(true);
-                exchangeImages2[i].ItemId = info.recipe.InputID;
+                exchangeImages2[i].Proto = LDB.items.Select(info.recipe.InputID);
                 txtExchangeInfos1[i].text = "";
                 txtExchangeInfos2[i].text = "<=";
                 exchangeImages3[i].gameObject.SetActive(true);
-                exchangeImages3[i].ItemId = info.matrix.ID;
+                exchangeImages3[i].Proto = info.matrix;
                 txtExchangeInfos3[i].gameObject.SetActive(true);
                 txtExchangeInfos3[i].text = $"x {info.matrixDiscountedCount}";
                 btnExchangeInfos[i].gameObject.SetActive(true);
