@@ -24,7 +24,7 @@ public class ExchangeInfo {
     public int matrixDiscountedCount => (int)Math.Ceiling(matrixCount * VipFeatures.ExchangeDiscount);
     public bool exchanged = false;
     public bool IsValid => (item != null && itemCount > 0 && matrix != null && matrixCount >= 0)
-                           || (recipe != null && !recipe.IsMaxEcho && matrix != null && matrixCount >= 0);
+                           || (recipe != null && matrix != null && matrixCount >= 0);
 
     /// <summary>
     /// 一个空的兑换信息。
@@ -115,10 +115,10 @@ public static class LimitedTimeStore {
     private static UIButton[] btnExchangeInfos = new UIButton[exchangeInfoMaxCount];
     private static readonly int[][] itemIdOriArr = [
         [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
-        [IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔原胚IV型, IFE分馏塔原胚V型, IFE分馏塔定向原胚],
+        [IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔原胚IV型, IFE分馏塔定向原胚],
         [IFE分馏配方通用核心, IFE分馏塔增幅芯片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
-        [IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔],
+        [IFE矿物复制塔, IFE点数聚集塔, IFE转化塔],
         //[IFE行星交互塔, IFE行星矿物复制塔, IFE行星点数聚集塔, IFE行星量子复制塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔],
         [IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华],
         //[I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
@@ -290,13 +290,9 @@ public static class LimitedTimeStore {
         //2.构建可兑换的配方列表
         List<ExchangeInfo> recipeExchangeList = [];
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list)
-            .Where(recipe => !recipe.IsMaxEcho
-                             && GameMain.history.ItemUnlocked(recipe.InputID)
+            .Where(recipe => GameMain.history.ItemUnlocked(recipe.InputID)
                              && GameMain.history.ItemUnlocked(recipe.MatrixID))
             .ToList();
-        if (recipes.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)) {
-            recipes.RemoveAll(recipe => recipe.RecipeType == ERecipe.QuantumCopy);
-        }
         foreach (BaseRecipe recipe in recipes) {
             ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
             float matrixCount = TicketRaffle.RecipeValues[recipeMatrix.ID - I电磁矩阵];
@@ -312,10 +308,6 @@ public static class LimitedTimeStore {
                 BaseRecipe recipe = info.recipe;
                 if (recipeExchangeCounts.ContainsKey(recipe)) {
                     recipeExchangeCounts[recipe]++;
-                    int maxExchangeCount = recipe.Locked ? 1 + recipe.MaxEcho : recipe.MaxEcho - recipe.Echo;
-                    if (recipeExchangeCounts[recipe] >= maxExchangeCount) {
-                        recipeExchangeList.Remove(info);
-                    }
                 } else {
                     recipeExchangeCounts[recipe] = 1;
                 }

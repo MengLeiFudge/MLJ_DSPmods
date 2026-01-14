@@ -179,8 +179,8 @@ public class ConversionRecipe : BaseRecipe {
 
         //分馏页面
         CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
-        CreateChain([[IFE分馏塔原胚I型], [IFE分馏塔原胚II型], [IFE分馏塔原胚III型], [IFE分馏塔原胚IV型], [IFE分馏塔原胚V型]]);
-        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE点金塔, IFE分解塔, IFE转化塔], [IFE点数聚集塔], [IFE量子复制塔]]);
+        CreateChain([[IFE分馏塔原胚I型], [IFE分馏塔原胚II型], [IFE分馏塔原胚III型], [IFE分馏塔原胚IV型]]);
+        CreateChain([[IFE矿物复制塔], [IFE交互塔, IFE转化塔], [IFE点数聚集塔]]);
         CreateChain([[IFE行星矿物复制塔], [IFE行星交互塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔], [IFE行星点数聚集塔], [IFE行星量子复制塔]]);
         CreateChain([[IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华]]);
         CreateChain([[IBC插件效果分享塔], [IBC插件效果分享站]]);
@@ -264,17 +264,12 @@ public class ConversionRecipe : BaseRecipe {
     /// 创建转化塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="maxSuccessRate">最大成功率</param>
+    /// <param name="baseSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public ConversionRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
+    public ConversionRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
-
-    /// <summary>
-    /// 主产物数目增幅
-    /// </summary>
-    public override float MainOutputCountInc => (Progress - 0.56f) / 0.88f;
+        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
 
     #region IModCanSave
 

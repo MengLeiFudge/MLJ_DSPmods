@@ -159,18 +159,6 @@ public static class ProcessManager {
                 PointAggregateTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result);
                 return false;
-            case IFE量子复制塔:
-                InternalUpdate<QuantumCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.QuantumCopy);
-                return false;
-            case IFE点金塔:
-                InternalUpdate<AlchemyRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Alchemy);
-                return false;
-            case IFE分解塔:
-                InternalUpdate<DeconstructionRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Deconstruction);
-                return false;
             case IFE转化塔:
                 InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Conversion);
@@ -234,7 +222,7 @@ public static class ProcessManager {
         }
         //第一个主输出，recipe有则必定有，recipe没有则必定没有
         int product0Id = __instance.productId;
-        ProductOutputInfo product0 = products.FirstOrDefault(p => p.itemId == product0Id);
+        ProductOutputInfo product0 = products.Find(p => p.itemId == product0Id);
         //如果通过面板取了物品，需要同步数目到products
         if (product0 != null) {
             product0.count = __instance.productOutputCount;
@@ -303,18 +291,8 @@ public static class ProcessManager {
                 float buffBonus1 = building.ReinforcementBonusFracSuccess();
                 float buffBonus2 = building.ReinforcementBonusMainOutputCount();
                 float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
-                List<ProductOutputInfo> outputs;
-                if (recipe.RecipeType == ERecipe.QuantumCopy) {
-                    var recipe0 = recipe as QuantumCopyRecipe;
-                    outputs = recipe0.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2,
-                        consumeRegister, out bool essenceNotEnough);
-                    if (essenceNotEnough) {
-                        moveDirectly = true;
-                        goto MoveDirectly;
-                    }
-                } else {
-                    outputs = recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3);
-                }
+                List<ProductOutputInfo> outputs = recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1,
+                    buffBonus2, buffBonus3);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;
@@ -345,7 +323,7 @@ public static class ProcessManager {
                                 product0.count += itemCount;
                                 __instance.productOutputCount = product0.count;
                             } else {
-                                products.FirstOrDefault(product => product.itemId == itemID).count += itemCount;
+                                products.Find(product => product.itemId == itemID).count += itemCount;
                             }
                         }
                     }
@@ -617,7 +595,7 @@ public static class ProcessManager {
             num2 = 0.0;
         double powerRatio = buildingID switch {
             IFE点数聚集塔 => 1.0,
-            IFE量子复制塔 => 1.0 + (Cargo.powerTableRatio[fractionator.incLevel] - 1.0) / 3.9,
+            // IFE量子复制塔 => 1.0 + (Cargo.powerTableRatio[fractionator.incLevel] - 1.0) / 3.9,
             _ => Cargo.powerTableRatio[fractionator.incLevel]
         };
         pcPool[fractionator.pcId].workEnergyPerTick = building.workEnergyPerTick();
@@ -774,26 +752,9 @@ public static class ProcessManager {
                     __instance.stateText.color = __instance.workStoppedColor;
                 }
             } else {
-                QuantumCopyRecipe recipe0 =
-                    GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
-                if (recipe0 != null) {
-                    float EssenceDec2 = pointsBonus * 0.5f / (float)MaxTableMilli(10);
-                    int essenceCost =
-                        (int)Math.Ceiling(recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2));
-                    if (GetEssenceMinCount() < essenceCost) {
-                        __instance.stateText.text = "缺少精华".Translate();
-                        __instance.stateText.color = __instance.workStoppedColor;
-                        transportMode = true;
-                    } else {
-                        __instance.stateText.text = "搬运模式".Translate();
-                        __instance.stateText.color = __instance.workStoppedColor;
-                        transportMode = true;
-                    }
-                } else {
-                    __instance.stateText.text = "搬运模式".Translate();
-                    __instance.stateText.color = __instance.workStoppedColor;
-                    transportMode = true;
-                }
+                __instance.stateText.text = "搬运模式".Translate();
+                __instance.stateText.color = __instance.workStoppedColor;
+                transportMode = true;
             }
         } else {
             //todo: 没有判断是否缺电
@@ -846,15 +807,6 @@ public static class ProcessManager {
             case IFE点数聚集塔:
                 recipe = null;
                 break;
-            case IFE量子复制塔:
-                recipe = GetRecipe<QuantumCopyRecipe>(ERecipe.QuantumCopy, fractionator.fluidId);
-                break;
-            case IFE点金塔:
-                recipe = GetRecipe<AlchemyRecipe>(ERecipe.Alchemy, fractionator.fluidId);
-                break;
-            case IFE分解塔:
-                recipe = GetRecipe<DeconstructionRecipe>(ERecipe.Deconstruction, fractionator.fluidId);
-                break;
             case IFE转化塔:
                 recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
                 break;
@@ -885,10 +837,7 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
-            float recipeSuccessRate = recipe.SuccessRate * (1 + buffBonus1);
-            if (buildingID != IFE量子复制塔) {
-                recipeSuccessRate *= 1 + pointsBonus;
-            }
+            float recipeSuccessRate = recipe.SuccessRate * (1 + buffBonus1) * (1 + pointsBonus);
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
@@ -900,14 +849,6 @@ public static class ProcessManager {
                 sb1.Append($"{name}x{countStr} ({ratioStr})\n");
                 if (!transportMode) {
                     flowRatio -= ratio;
-                }
-                if (buildingID == IFE量子复制塔) {
-                    var recipe0 = recipe as QuantumCopyRecipe;
-                    float EssenceDec2 = pointsBonus * 0.5f / (float)MaxTableMilli(10);
-                    float essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
-                    name = output.ShowOutputName || sandboxMode ? "每种精华".Translate() : "???";
-                    countStr = output.ShowOutputCount || sandboxMode ? essenceCostAvg.ToString("F3") : "???";
-                    sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }
             }
             if (recipe.OutputAppend.Count > 0) {

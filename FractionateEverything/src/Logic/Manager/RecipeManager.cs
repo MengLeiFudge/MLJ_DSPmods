@@ -30,6 +30,11 @@ public static class RecipeManager {
     /// </summary>
     private static readonly Dictionary<int, List<BaseRecipe>> RecipeMatrixDic = [];
 
+    /// <summary>
+    /// 游戏配方
+    /// </summary>
+    private static readonly List<VanillaRecipe> VanillaRecipeList = [];
+
 #if DEBUG
     private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
     private const string SPRITE_CSV_PATH = $@"{SPRITE_CSV_DIR}\fracIconPath.csv";
@@ -52,9 +57,6 @@ public static class RecipeManager {
 
         BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
-        QuantumCopyRecipe.CreateAll();
-        AlchemyRecipe.CreateAll();
-        DeconstructionRecipe.CreateAll();
         ConversionRecipe.CreateAll();
 
         LogInfo($"Added {RecipeList.Count} fractionate recipes.");
@@ -86,10 +88,6 @@ public static class RecipeManager {
         RecipeTypeArr[(int)recipeType][inputID] = recipe;
         //RecipeMatrixDic
         recipe.MatrixID = itemToMatrix[inputID];
-        //量子复制配方自动提升一个矩阵级别
-        if (recipe.RecipeType == ERecipe.QuantumCopy && recipe.MatrixID >= I电磁矩阵 && recipe.MatrixID < I宇宙矩阵) {
-            recipe.MatrixID++;
-        }
         if (!RecipeMatrixDic.TryGetValue(recipe.MatrixID, out var recipeMatrixList)) {
             RecipeMatrixDic[recipe.MatrixID] = [recipe];
         } else {
@@ -133,6 +131,24 @@ public static class RecipeManager {
             }
         }
         return ret;
+    }
+
+    /// <summary>
+    /// 添加原版配方
+    /// </summary>
+    public static void AddVanillaRecipes() {
+        LogInfo("Add vanilla recipes...");
+        foreach (var recipe in LDB.recipes.dataArray) {
+            VanillaRecipeList.Add(new(recipe));
+        }
+        LogInfo($"Added {VanillaRecipeList.Count} vanilla recipes.");
+    }
+
+    /// <summary>
+    /// 获取指定配方ID对应的原版配方
+    /// </summary>
+    public static VanillaRecipe GetVanillaRecipe(int recipeId) {
+        return VanillaRecipeList.Find(vr => vr.recipe.ID == recipeId);
     }
 
     #endregion
@@ -189,10 +205,17 @@ public static class RecipeManager {
                 LogError($"Failed to import recipe {recipeType}-{inputID}: {ex.Message}");
             }
         }
+        if (version >= 2) {
+            int vanillaRecipeCount = r.ReadInt32();
+            for (int i = 0; i < vanillaRecipeCount; i++) {
+                int recipeID = r.ReadInt32();
+                GetVanillaRecipe(recipeID)?.Import(r);
+            }
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(RecipeList.Count);
         foreach (var recipe in RecipeList) {
             w.Write((int)recipe.RecipeType);
@@ -206,6 +229,11 @@ public static class RecipeManager {
             w.Write(recipeData.Length);
             w.Write(recipeData);
         }
+        w.Write(VanillaRecipeList.Count);
+        foreach (var vanillaRecipe in VanillaRecipeList) {
+            w.Write(vanillaRecipe.recipe.ID);
+            vanillaRecipe.Export(w);
+        }
     }
 
     public static void IntoOtherSave() {
@@ -213,6 +241,9 @@ public static class RecipeManager {
             foreach (BaseRecipe recipe in p.Value) {
                 recipe.IntoOtherSave();
             }
+        }
+        foreach (var vanillaRecipe in VanillaRecipeList) {
+            vanillaRecipe.IntoOtherSave();
         }
     }
 

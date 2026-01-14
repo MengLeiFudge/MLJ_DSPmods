@@ -20,31 +20,31 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I植物燃料, 0.04f);
         Create(I铁矿, 0.04f);
         Create(I铜矿, 0.04f);
-        Create(I硅石, 0.04f, [new OutputInfo(0.01f, I分形硅石, 1)]);
+        Create(I硅石, 0.04f, [new(0.01f, I分形硅石, 1)]);
         Create(I钛石, 0.04f);
-        Create(I石矿, 0.04f, [new OutputInfo(0.01f, I硅石, 1), new OutputInfo(0.01f, I钛石, 1)]);
-        Create(I煤矿, 0.04f, [new OutputInfo(0.01f, I金刚石, 1)]);
+        Create(I石矿, 0.04f, [new(0.01f, I硅石, 1), new(0.01f, I钛石, 1)]);
+        Create(I煤矿, 0.04f, [new(0.01f, I金刚石, 1)]);
         Create(I水, 0.04f);
         Create(I原油, 0.04f);
         Create(I硫酸, 0.04f);
-        Create(I氢, 0.04f, [new OutputInfo(0.01f, I重氢, 1)]);
-        Create(I重氢, 0.04f, [new OutputInfo(0.01f, I氢, 1)]);
+        Create(I氢, 0.04f, [new(0.01f, I重氢, 1)]);
+        Create(I重氢, 0.04f, [new(0.01f, I氢, 1)]);
         Create(I临界光子, 0.04f);
         if (GenesisBook.Enable) {
             Create(IGB钨矿, 0.04f);
             Create(IGB铝矿, 0.04f);
-            Create(IGB硫矿, 0.04f, [new OutputInfo(0.01f, I硫酸, 1), new OutputInfo(0.01f, IGB二氧化硫, 1)]);
-            Create(IGB放射性矿物, 0.04f, [new OutputInfo(0.01f, IGB铀矿, 1), new OutputInfo(0.01f, IGB钚矿, 1)]);
-            Create(IGB海水, 0.04f, [new OutputInfo(0.01f, IGB氯化钠, 1)]);
+            Create(IGB硫矿, 0.04f, [new(0.01f, I硫酸, 1), new(0.01f, IGB二氧化硫, 1)]);
+            Create(IGB放射性矿物, 0.04f, [new(0.01f, IGB铀矿, 1), new(0.01f, IGB钚矿, 1)]);
+            Create(IGB海水, 0.04f, [new(0.01f, IGB氯化钠, 1)]);
             Create(IGB盐酸, 0.04f);
             Create(IGB硝酸, 0.04f);
-            Create(IGB氨, 0.04f, [new OutputInfo(0.01f, IGB氮, 1), new OutputInfo(0.01f, I氢, 1)]);
-            Create(IGB氮, 0.04f, [new OutputInfo(0.01f, IGB氨, 1)]);
-            Create(IGB氧, 0.04f, [new OutputInfo(0.01f, IGB二氧化碳, 1)]);
-            Create(IGB氦, 0.04f, [new OutputInfo(0.01f, IGB氦三, 1)]);
-            Create(IGB氦三, 0.04f, [new OutputInfo(0.01f, IGB氦, 1)]);
-            Create(IGB二氧化碳, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, I高能石墨, 1)]);
-            Create(IGB二氧化硫, 0.04f, [new OutputInfo(0.01f, IGB氧, 1), new OutputInfo(0.01f, IGB硫粉, 1)]);
+            Create(IGB氨, 0.04f, [new(0.01f, IGB氮, 1), new(0.01f, I氢, 1)]);
+            Create(IGB氮, 0.04f, [new(0.01f, IGB氨, 1)]);
+            Create(IGB氧, 0.04f, [new(0.01f, IGB二氧化碳, 1)]);
+            Create(IGB氦, 0.04f, [new(0.01f, IGB氦三, 1)]);
+            Create(IGB氦三, 0.04f, [new(0.01f, IGB氦, 1)]);
+            Create(IGB二氧化碳, 0.04f, [new(0.01f, IGB氧, 1), new(0.01f, I高能石墨, 1)]);
+            Create(IGB二氧化硫, 0.04f, [new(0.01f, IGB氧, 1), new(0.01f, IGB硫粉, 1)]);
         }
         if (OrbitalRing.Enable) {
             Create(IOR黄铁矿, 0.02f);
@@ -96,11 +96,11 @@ public class MineralCopyRecipe : BaseRecipe {
         outputAppend.RemoveAll(info => itemValue[info.OutputID] >= maxValue);
         AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRate,
             [
-                new OutputInfo(1.000f, inputID, 2),
+                new(1.000f, inputID, 2),
             ],
             [
                 ..outputAppend,
-                new OutputInfo(0.01f, IFE复制精华, 1),
+                new(0.01f, IFE复制精华, 1),
             ]));
     }
 
@@ -113,22 +113,12 @@ public class MineralCopyRecipe : BaseRecipe {
     /// 创建矿物复制塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="maxSuccessRate">最大成功率</param>
+    /// <param name="baseSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public MineralCopyRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
+    public MineralCopyRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
-
-    /// <summary>
-    /// 主产物数目增幅
-    /// </summary>
-    public override float MainOutputCountInc => (Progress - 0.56f) / 0.88f;
-
-    /// <summary>
-    /// 不同配方获取经验效率不同
-    /// </summary>
-    public override float ExpFix => 2.0f;
+        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
 
     #region IModCanSave
 

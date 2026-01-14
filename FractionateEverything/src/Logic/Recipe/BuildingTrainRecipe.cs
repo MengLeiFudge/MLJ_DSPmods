@@ -18,7 +18,6 @@ public class BuildingTrainRecipe : BaseRecipe {
         Create(IFE分馏塔原胚II型, 0.05f);
         Create(IFE分馏塔原胚III型, 0.05f);
         Create(IFE分馏塔原胚IV型, 0.05f);
-        Create(IFE分馏塔原胚V型, 0.05f);
     }
 
     /// <summary>
@@ -26,11 +25,10 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// </summary>
     private static void Create(int inputID, float maxSuccessRate) {
         float[] ratioArr = inputID switch {
-            IFE分馏塔原胚I型 => [0.96f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.04f],
-            IFE分馏塔原胚II型 => [0.00f, 0.96f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.04f],
-            IFE分馏塔原胚III型 => [0.00f, 0.00f, 0.32f, 0.32f, 0.32f, 0.00f, 0.00f, 0.04f],
-            IFE分馏塔原胚IV型 => [0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.96f, 0.00f, 0.04f],
-            IFE分馏塔原胚V型 => [0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.96f, 0.04f],
+            IFE分馏塔原胚I型 => [0.96f, 0.00f, 0.00f, 0.00f, 0.04f],
+            IFE分馏塔原胚II型 => [0.00f, 0.96f, 0.00f, 0.00f, 0.04f],
+            IFE分馏塔原胚III型 => [0.00f, 0.00f, 0.96f, 0.00f, 0.04f],
+            IFE分馏塔原胚IV型 => [0.00f, 0.00f, 0.00f, 0.96f, 0.04f],
             _ => null
         };
         if (ratioArr == null) {
@@ -38,14 +36,11 @@ public class BuildingTrainRecipe : BaseRecipe {
         }
         float sum = ratioArr.Sum();
         List<OutputInfo> OutputMain = [
-            new(ratioArr[0] / sum, IFE矿物复制塔, 1),
-            new(ratioArr[1] / sum, IFE交互塔, 1),
-            new(ratioArr[2] / sum, IFE点金塔, 1),
-            new(ratioArr[3] / sum, IFE分解塔, 1),
-            new(ratioArr[4] / sum, IFE转化塔, 1),
-            new(ratioArr[5] / sum, IFE点数聚集塔, 1),
-            new(ratioArr[6] / sum, IFE量子复制塔, 1),
-            new(ratioArr[7] / sum, IFE分馏塔定向原胚, 1),
+            new(ratioArr[0] / sum, IFE交互塔, 1),
+            new(ratioArr[1] / sum, IFE矿物复制塔, 1),
+            new(ratioArr[2] / sum, IFE点数聚集塔, 1),
+            new(ratioArr[3] / sum, IFE转化塔, 1),
+            new(ratioArr[4] / sum, IFE分馏塔定向原胚, 1),
         ];
         OutputMain.RemoveAll(info => info.SuccessRate <= 0);
         AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));
@@ -60,12 +55,12 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 创建建筑培养配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="maxSuccessRate">最大成功率</param>
+    /// <param name="baseSuccessRate">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public BuildingTrainRecipe(int inputID, float maxSuccessRate, List<OutputInfo> outputMain,
+    public BuildingTrainRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, maxSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
 
     #region IModCanSave
 

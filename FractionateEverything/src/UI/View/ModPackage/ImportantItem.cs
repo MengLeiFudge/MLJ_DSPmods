@@ -14,10 +14,10 @@ public static class ImportantItem {
 
     private static readonly int[][] itemIdOriArr = [
         [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
-        [IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔原胚IV型, IFE分馏塔原胚V型, IFE分馏塔定向原胚],
+        [IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔原胚IV型, IFE分馏塔定向原胚],
         [IFE分馏配方通用核心, IFE分馏塔增幅芯片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
-        [IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔],
+        [IFE矿物复制塔, IFE点数聚集塔, IFE转化塔],
         //[IFE行星交互塔, IFE行星矿物复制塔, IFE行星点数聚集塔, IFE行星量子复制塔, IFE行星点金塔, IFE行星分解塔, IFE行星转化塔],
         [IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],

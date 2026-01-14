@@ -15,7 +15,7 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public abstract class BaseRecipe(
     int inputID,
-    float maxSuccessRate,
+    float baseSuccessRate,
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     #region 配方类型、输入输出
@@ -36,31 +36,17 @@ public abstract class BaseRecipe(
     public int MatrixID = 0;
 
     /// <summary>
-    /// 通过品质和等级得到的综合进度，范围为0.56~1.00
+    /// 配方增幅
     /// </summary>
-    public float Progress => IsMaxQuality
-        ? 0.928f + 0.008f * (Level - 1)
-        : 0.536f + 0.016f * Quality + 0.008f * Quality * Quality + 0.008f * (Level - 1);
-
+    public float Progress => (float)Math.Sqrt(Echo);
     /// <summary>
-    /// 成功率上限
+    /// 配方成功率
     /// </summary>
-    public float MaxSuccessRate => maxSuccessRate;
-
+    public float SuccessRate => baseSuccessRate * Progress;
     /// <summary>
-    /// 实际成功率，随着等级和品质的提高而提高。
+    /// 配方损毁率
     /// </summary>
-    public float SuccessRate => MaxSuccessRate * Progress;
-
-    /// <summary>
-    /// 损毁率上限
-    /// </summary>
-    public float MaxDestroyRate => maxSuccessRate;
-
-    /// <summary>
-    /// 损毁率，随着等级和品质的提高而降低。
-    /// </summary>
-    public float DestroyRate => MaxDestroyRate * (1 - Progress);
+    public float DestroyRate => 0.05f / Progress;
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。
@@ -70,6 +56,11 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputMain => outputMain;
 
     /// <summary>
+    /// 主产物数目增幅
+    /// </summary>
+    public virtual float MainOutputCountInc => Progress - 1;
+
+    /// <summary>
     /// 副产物信息。
     /// 当判定成功时，该列表内每一项分别判定是否成功。
     /// 如果输出的物品数目为小数，则进行二次判定。
@@ -77,14 +68,9 @@ public abstract class BaseRecipe(
     public List<OutputInfo> OutputAppend => outputAppend;
 
     /// <summary>
-    /// 主产物数目增幅
-    /// </summary>
-    public virtual float MainOutputCountInc => 0.0f;
-
-    /// <summary>
     /// 附加产物概率增幅
     /// </summary>
-    public virtual float AppendOutputRatioInc => (Quality - 1) * 0.25f;
+    public virtual float AppendOutputRatioInc => Progress - 1;
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -100,7 +86,7 @@ public abstract class BaseRecipe(
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp(1 + itemValue[InputID] / 100 * ExpFix * 2);
+            AddExp(1 + itemValue[InputID] / 100 * 2);
             return null;
         }
         //无变化
@@ -126,7 +112,7 @@ public abstract class BaseRecipe(
                 }
                 list.Add(new(true, outputInfo.OutputID, countReal));
                 outputInfo.OutputTotalCount += countReal;
-                AddExp(1 + itemValue[outputInfo.OutputID] / 100 * countReal * ExpFix);
+                AddExp(1 + itemValue[outputInfo.OutputID] / 100 * countReal);
                 break;
             }
         }
@@ -155,123 +141,26 @@ public abstract class BaseRecipe(
     #region 配方品质、等级
 
     /// <summary>
-    /// 品质
-    /// </summary>
-    /// <details>
-    /// 未解锁时为0。解锁之后，最低为1，最高为7。0灰、1白、2绿、3蓝、4紫、5红、7金。
-    /// </details>
-    public int Quality { get; private set; } = 0;
-    /// <summary>
-    /// 下一品质
-    /// </summary>
-    public int PreviousQuality => Math.Max(1, Quality == MaxQuality ? Quality - 2 : Quality - 1);
-    /// <summary>
-    /// 下一品质
-    /// </summary>
-    public int NextQuality => Math.Min(MaxQuality, Quality == MaxQuality - 2 ? MaxQuality : Quality + 1);
-    /// <summary>
-    /// 最高品质
-    /// </summary>
-    public int MaxQuality => 7;
-    /// <summary>
-    /// 品质是否达到上限
-    /// </summary>
-    public bool IsMaxQuality => Quality == MaxQuality;
-
-    /// <summary>
     /// 回响数目
     /// </summary>
     public int Echo { get; private set; } = 0;
     /// <summary>
-    /// 突破上一品质需要的回响数目
+    /// 是否未解锁
     /// </summary>
-    public int BreakPreviousQualityNeedEcho => Math.Max(0, Quality - 2);
+    public bool Locked => Echo <= 0;
     /// <summary>
-    /// 突破当前品质需要的回响数目
+    /// 是否已解锁
     /// </summary>
-    public int BreakCurrQualityNeedEcho => Math.Max(0, NextQuality - 2);
-    /// <summary>
-    /// 回响数目是否已达到突破当前品质所需的数目
-    /// </summary>
-    public bool IsEnoughEchoToBreak => Echo >= BreakCurrQualityNeedEcho;
-    /// <summary>
-    /// 最高回响数目
-    /// </summary>
-    public int MaxEcho => MaxQuality - 2;
-    /// <summary>
-    /// 回响数目是否已达到上限
-    /// </summary>
-    public bool IsMaxEcho => Echo >= MaxEcho;
-
-    /// <summary>
-    /// 等级
-    /// </summary>
-    /// <details>
-    /// 未解锁时为0。解锁之后，最低为1，最高为Quality + 3。
-    /// </details>
-    public int Level { get; private set; } = 0;
-    /// <summary>
-    /// 当前品质下的最高等级
-    /// </summary>
-    public int CurrQualityMaxLevel => Quality + 3;
-    /// <summary>
-    /// 等级是否达到当前品质的上限
-    /// </summary>
-    public bool IsCurrQualityMaxLevel => Level == CurrQualityMaxLevel;
+    public bool Unlocked => Echo > 0;
 
     /// <summary>
     /// 经验值
     /// </summary>
-    /// <details>
-    /// 达到下一级所需经验会自动升级。突破后会扣除当前经验上限的经验。
-    /// </details>
     public float Exp { get; private set; } = 0;
-    /// <summary>
-    /// 当前品质、当前等级下，达到多少经验可以升级
-    /// </summary>
-    public int CurrQualityCurrLevelExp => GetExp(Quality, Level);
-    /// <summary>
-    /// 不同配方获取经验效率不同
-    /// </summary>
-    public virtual float ExpFix => 1.0f;
 
     public int GetExp(int quality, int level) {
         return (int)(40 * Math.Pow(quality * 2 + level + 2, 2.0));
     }
-
-    public float GetExpToNextLevel() {
-        return Math.Max(0, CurrQualityCurrLevelExp - Exp);
-    }
-
-    public float GetExpToMaxLevel() {
-        if (Level == CurrQualityMaxLevel) {
-            return 0;
-        }
-        float ret = CurrQualityCurrLevelExp - Exp;
-        for (int i = Level + 1; i < CurrQualityMaxLevel; i++) {
-            ret += GetExp(Quality, i);
-        }
-        return ret;
-    }
-
-    /// <summary>
-    /// 经验是否达到当前品质、当前等级的上限
-    /// </summary>
-    public bool IsCurrQualityCurrLevelMaxExp => (Quality == MaxQuality && Level == CurrQualityMaxLevel)
-                                                || Exp >= CurrQualityCurrLevelExp;
-
-    /// <summary>
-    /// 是否未解锁
-    /// </summary>
-    public bool Locked => Level <= 0;
-    /// <summary>
-    /// 是否已解锁
-    /// </summary>
-    public bool Unlocked => Level > 0;
-    /// <summary>
-    /// 是否已达到最大升级
-    /// </summary>
-    public bool FullUpgrade => IsMaxQuality && IsCurrQualityMaxLevel;
 
     /// <summary>
     /// 添加经验，同时触发升级与突破
@@ -280,11 +169,10 @@ public abstract class BaseRecipe(
         float finalExp = useExpMultiRate ? exp * ExpMultiRate : exp;
         lock (this) {
             Exp += finalExp;
-            CheckState();
         }
-
         if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2, finalExp));
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
+                finalExp));
         }
     }
 
@@ -294,106 +182,19 @@ public abstract class BaseRecipe(
     /// </summary>
     public void RewardThis(bool manual = false) {
         lock (this) {
-            if (Locked) {
-                Level = 1;
-                Quality = 1;
-                Exp = 0;
-            } else {
-                Echo++;
-                CheckState();
-            }
+            Echo++;
         }
-
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
-        }
-    }
-
-    /// <summary>
-    /// 检查配方是否可以升级与突破
-    /// </summary>
-    public void CheckState() {
-        lock (this) {
-            //是否可升级
-            CheckLevel:
-            while (!IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp) {
-                Exp -= CurrQualityCurrLevelExp;
-                Level++;
-            }
-            //是否可突破
-            while (!IsMaxQuality && IsCurrQualityMaxLevel && IsCurrQualityCurrLevelMaxExp && IsEnoughEchoToBreak) {
-                if (GetRandDouble() < 1.0f - (Quality - 1) * 0.15f) {
-                    Exp -= CurrQualityCurrLevelExp;
-                    Level = 1;
-                    Quality = NextQuality;
-                    goto CheckLevel;
-                }
-                Exp -= CurrQualityCurrLevelExp / 5.0f;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 沙盒模式下，将配方升一级/降一级
-    /// </summary>
-    public void SandBoxUpDowngrade(bool up, bool manual = false) {
-        if (up) {
-            if (FullUpgrade) {
-                //do nothing
-            } else if (Locked) {
-                Quality = 1;
-                Level = 1;
-            } else if (IsCurrQualityMaxLevel) {
-                Quality = NextQuality;
-                Level = 1;
-            } else {
-                Level++;
-            }
-        } else {
-            if (Level > 1) {
-                Level--;
-            } else if (Locked) {
-                //do nothing
-            } else if (Quality == 1 && Level == 1) {
-                Quality = 0;
-                Level = 0;
-            } else {
-                Quality = PreviousQuality;
-                Level = CurrQualityMaxLevel;
-            }
-        }
-        Echo = BreakPreviousQualityNeedEcho;
-        Exp = 0;
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 3, up ? 1 : 0));
-        }
-    }
-
-    /// <summary>
-    /// 沙盒模式下，将配方升到最高品质、最高级/重置到最低品质、最低级
-    /// </summary>
-    public void SandBoxMaxUpDowngrade(bool up, bool manual = false) {
-        if (up) {
-            Quality = MaxQuality;
-            Level = CurrQualityMaxLevel;
-            Echo = MaxEcho;
-        } else {
-            Quality = 0;
-            Level = 0;
-            Echo = 0;
-        }
-        Exp = 0;
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 4, up ? 1 : 0));
         }
     }
 
     #endregion
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
-    public string TypeNameWC => TypeName.WithColor(Quality);
-    public string LvExp => $"Lv{Level} ({Exp:F0} / {(FullUpgrade ? "∞" : CurrQualityCurrLevelExp)})";
-    public string LvExpWC => LvExp.WithColor(Quality);
+    public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
+    public string LvExp => $"Echo{Echo}  Exp{Exp:F0}";
+    public string LvExpWC => LvExp.WithColor(MatrixID - I电磁矩阵);
 
     #region IModCanSave
 
@@ -421,42 +222,24 @@ public abstract class BaseRecipe(
                 LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
-        Quality = r.ReadInt32();
-        Level = r.ReadInt32();
+        if (version < 2) {
+            r.ReadInt32();
+            r.ReadInt32();
+        }
         Exp = r.ReadSingle();
         Echo = r.ReadInt32();
-        if (Quality < 0) {
-            Quality = 0;
-            Level = 0;
-        } else if (Quality == MaxQuality - 1) {
-            Quality++;
-        } else if (Quality > MaxQuality) {
-            Quality = MaxQuality;
-        }
-        if (Level == 0) {
-            if (Quality > 0.0001) {
-                Level = 1;
-            }
-        } else if (Level > CurrQualityMaxLevel) {
-            Level = CurrQualityMaxLevel;
-        }
         if (Exp < 0) {
             Exp = 0;
         }
         if (Echo < 0) {
             Echo = 0;
-        } else if (Echo > MaxEcho) {
-            Echo = MaxEcho;
-        }
-        if (Echo < BreakPreviousQualityNeedEcho) {
-            Echo = BreakPreviousQualityNeedEcho;
         }
         AddExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
     }
 
     public virtual void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(OutputMain.Count);
         foreach (OutputInfo info in OutputMain) {
             w.Write(info.OutputID);
@@ -467,8 +250,6 @@ public abstract class BaseRecipe(
             w.Write(info.OutputID);
             w.Write(info.OutputTotalCount);
         }
-        w.Write(Quality);
-        w.Write(Level);
         w.Write(Exp);
         w.Write(Echo);
         // 子类特定数据由重写的方法处理
@@ -481,8 +262,6 @@ public abstract class BaseRecipe(
         foreach (OutputInfo info in OutputAppend) {
             info.OutputTotalCount = 0;
         }
-        Quality = 0;
-        Level = 0;
         Exp = 0;
         Echo = 0;
     }
