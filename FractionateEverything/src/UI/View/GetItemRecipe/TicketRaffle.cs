@@ -58,8 +58,8 @@ public static class TicketRaffle {
         }
     }
     private static float RecipeValue => RecipeValues == null ? float.MaxValue : RecipeValues[TicketIdx1];
-    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方6种（横）+总计
-    private static Text[,] recipeUnlockInfoText = new Text[2, 7];
+    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方3种（横）+总计
+    private static Text[,] recipeUnlockInfoText = new Text[2, 4];
 
     private static ConfigEntry<int> TicketIdx2Entry;
     private static int TicketIdx2 => TicketIdx2Entry.Value;
@@ -189,7 +189,7 @@ public static class TicketRaffle {
         float y = 18f + 7f;
         for (int i = 0; i < TicketIds.Length; i++) {
             var posX = GetPosition(i, TicketIds.Length).Item1;
-            wnd.AddImageButton(posX, y, tab, TicketIds[i]);
+            wnd.AddImageButton(posX, y, tab, LDB.items.Select(TicketIds[i]));
             txtTicketCount[i] = wnd.AddText2(posX + 40 + 5, y, tab, "动态刷新");
         }
         y += 36f + 7f;
@@ -199,7 +199,7 @@ public static class TicketRaffle {
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "配方奖池", "配方奖池说明");
         wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx1Entry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏配方通用核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
@@ -213,16 +213,16 @@ public static class TicketRaffle {
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
         for (int i = 0; i < 2; i++) {
             y += 36f;
-            for (int j = 0; j < 7; j++) {
-                (float, float) position = GetPosition(j, 7);
+            for (int j = 0; j < 4; j++) {
+                (float, float) position = GetPosition(j, 4);
                 recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
         }
-        for (int j = 0; j <= 5; j++) {
+        for (int j = 0; j <= 2; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j];
         }
-        recipeUnlockInfoText[0, 6].text = "总计".Translate();
+        recipeUnlockInfoText[0, 3].text = "总计".Translate();
         y += 36f;
 
         y += 20f + 7f;
@@ -230,7 +230,7 @@ public static class TicketRaffle {
         wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "原胚奖池", "原胚奖池说明");
         wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx2Entry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏塔增幅芯片));
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
@@ -241,8 +241,8 @@ public static class TicketRaffle {
             onClick: () => RaffleFracProto(-1, 5));
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle2Entry, "自动百连");
         y += 36f + 7f;
-        for (int i = 0; i < 6; i++) {
-            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, IFE分馏塔原胚I型 + i);
+        for (int i = 0; i < 5; i++) {
+            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, LDB.items.Select(IFE分馏塔原胚I型 + i));
             txtFracProtoCounts[i] = wnd.AddText2(GetPosition(i, 6).Item1 + 40 + 5, y, tab, "动态刷新");
         }
         y += 36f + 7f;
@@ -286,7 +286,7 @@ public static class TicketRaffle {
         }
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
             txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE分馏塔原胚I型 + i)}";
         }
         btnMaxRaffle1.SetText($"{"抽奖".Translate()} x {MaxRaffleCount1}");
@@ -315,7 +315,7 @@ public static class TicketRaffle {
             // fullUpgradeCountArr[1, j] = recipes.Count;
             // fullUpgradeCountArr[1, 6] += recipes.Count;
         }
-        for (int j = 0; j <= 6; j++) {
+        for (int j = 0; j <= 3; j++) {
             recipeUnlockInfoText[1, j].text =
                 $"{fullUpgradeCountArr[1, j].ToString().WithColor(7)}"
                 + $"/{maxEchoCountArr[1, j].ToString().WithColor(5)}"
