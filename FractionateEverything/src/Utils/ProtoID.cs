@@ -447,16 +447,13 @@ public static partial class Utils {
     internal const int IFE分馏塔原胚II型 = 8012;
     internal const int IFE分馏塔原胚III型 = 8013;
     internal const int IFE分馏塔原胚IV型 = 8014;
-    internal const int IFE分馏塔原胚V型 = 8015;
     internal const int IFE分馏塔定向原胚 = 8016;
     internal const int IFE分馏配方通用核心 = 8017;
     internal const int IFE分馏塔增幅芯片 = 8018;
+    internal const int IFE原版配方升级核心 = 8019;
     internal const int IFE交互塔 = 8021;
     internal const int IFE矿物复制塔 = 8022;
     internal const int IFE点数聚集塔 = 8023;
-    internal const int IFE量子复制塔 = 8024;
-    internal const int IFE点金塔 = 8025;
-    internal const int IFE分解塔 = 8026;
     internal const int IFE转化塔 = 8027;
     internal const int IFE行星内物流交互站 = 8028;
     internal const int IFE星际物流交互站 = 8029;

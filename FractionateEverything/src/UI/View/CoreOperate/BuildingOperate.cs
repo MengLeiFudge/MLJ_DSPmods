@@ -20,11 +20,10 @@ public static class BuildingOperate {
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
     private static readonly int[] BuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔, IFE行星内物流交互站
+        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE行星内物流交互站
     ];
     private static readonly string[] BuildingTypeNames = [
-        "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(),
-        "量子复制塔".Translate(), "点金塔".Translate(), "分解塔".Translate(), "转化塔".Translate(),
+        "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(), "转化塔".Translate(),
         "物流交互站".Translate()
     ];
     private static Text txtChipCount;
@@ -314,7 +313,8 @@ public static class BuildingOperate {
                 }
                 SelectedBuilding.EnableFluidOutputStack(true);
                 if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 1));
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                        new BuildingChangePacket(BuildingTypeEntry.Value, 1));
                 }
             },
             null);
@@ -340,7 +340,8 @@ public static class BuildingOperate {
                 }
                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
                 if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 2));
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                        new BuildingChangePacket(BuildingTypeEntry.Value, 2));
                 }
             },
             null);
@@ -366,7 +367,8 @@ public static class BuildingOperate {
                 }
                 SelectedBuilding.EnableFracForever(true);
                 if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 3));
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                        new BuildingChangePacket(BuildingTypeEntry.Value, 3));
                 }
             },
             null);
@@ -392,7 +394,8 @@ public static class BuildingOperate {
                 }
                 PointAggregateTower.Level++;
                 if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(BuildingTypeEntry.Value, 4));
+                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                        new BuildingChangePacket(BuildingTypeEntry.Value, 4));
                 }
             },
             null);
@@ -488,7 +491,7 @@ public static class BuildingOperate {
         }
         SelectedBuilding.ReinforcementLevel(0, true);
     }
-    
+
     public static ItemProto GetItemProto(int index) {
         return LDB.items.Select(BuildingIds[index]);
     }

@@ -773,10 +773,9 @@ public class GetDspData : BaseUnityPlugin {
             if (recipe == null) {
                 continue;
             }
-            var recipe0 = recipe as QuantumCopyRecipe;
             ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
             //↓测试环境调整↓
-            recipe.SandBoxMaxUpDowngrade(true);
+            // recipe.SandBoxMaxUpDowngrade(true);
             building.ReinforcementLevel(20);
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
@@ -785,9 +784,7 @@ public class GetDspData : BaseUnityPlugin {
             float buffBonus2 = building.ReinforcementBonusMainOutputCount();
             float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
             //成功率
-            float successRate = recipe0 == null
-                ? recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)
-                : recipe.SuccessRate * (1 + buffBonus1);
+            float successRate = recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1);
             //损毁率
             float destroyRate = recipe.DestroyRate;
             //最终产物转化率
@@ -799,10 +796,6 @@ public class GetDspData : BaseUnityPlugin {
                 float outputCount = processRate;
                 outputCount *= info.SuccessRate;
                 outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
-                if (recipe0 != null) {
-                    float EssenceDec2 = pointsBonus * 0.5f / (float)ProcessManager.MaxTableMilli(10);
-                    essenceCostAvg = recipe0.EssenceCost * (1 - recipe0.EssenceDec) * (1 - EssenceDec2);
-                }
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
@@ -824,16 +817,6 @@ public class GetDspData : BaseUnityPlugin {
             }
             List<int> Items = [item.ID];
             List<float> ItemCounts = [1];
-            if (recipe0 != null) {
-                Items.Add(IFE复制精华);
-                ItemCounts.Add(essenceCostAvg);
-                Items.Add(IFE点金精华);
-                ItemCounts.Add(essenceCostAvg);
-                Items.Add(IFE分解精华);
-                ItemCounts.Add(essenceCostAvg);
-                Items.Add(IFE转化精华);
-                ItemCounts.Add(essenceCostAvg);
-            }
             //物品数目是outputDic[物品ID].Item1
             List<int> Results = [];
             List<float> ResultCounts = [];

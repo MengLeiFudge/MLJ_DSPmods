@@ -194,6 +194,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.SetFractionatorCacheSize();
         //AddFracRecipes用到了Init生成的数据
         RecipeManager.AddFracRecipes();
+        RecipeManager.AddVanillaRecipes();
         //CalculateItemModSaveCount用到了CalculateItemValues生成的数据
         StationManager.CalculateItemModSaveCount();
         _finished = true;
