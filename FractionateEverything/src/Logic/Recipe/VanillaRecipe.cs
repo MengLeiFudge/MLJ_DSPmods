@@ -61,7 +61,7 @@ public class VanillaRecipe {
         }
         inputUpgrades.TryGetValue(itemID, out int currUpgradeCount);
         inputUpgrades[itemID] = currUpgradeCount + 1;
-        recipe.Items[info[0]] = info[2];
+        recipe.ItemCounts[info[0]] = info[2];
         return true;
     }
 
@@ -133,7 +133,7 @@ public class VanillaRecipe {
         for (int i = 0; i < recipe.Items.Length; i++) {
             inputCounts.TryGetValue(recipe.Items[i], out int count);
             if (count > 0) {
-                inputCounts.Add(recipe.Items[i], recipe.ItemCounts[i]);
+                recipe.ItemCounts[i] = count;
             }
         }
         recipe.TimeSpend = timeSpend;

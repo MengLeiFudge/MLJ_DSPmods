@@ -51,7 +51,7 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButtonWithDefAction(position.Item1, y, tab, itemId);
+                wnd.AddImageButton(position.Item1, y, tab, LDB.items.Select(itemId)).WithTakeItemClickEvent();
                 itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
                 index++;
             }

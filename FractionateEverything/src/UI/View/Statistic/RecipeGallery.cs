@@ -16,8 +16,8 @@ public static class RecipeGallery {
     private static RectTransform window;
     private static RectTransform tab;
 
-    //矩阵7种（竖），配方6种（横）
-    private static Text[,] recipeUnlockInfoText = new Text[9, 8];
+    //矩阵7种（竖），配方3种（横）
+    private static Text[,] recipeUnlockInfoText = new Text[9, 5];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
     public static void AddTranslations() {
@@ -38,22 +38,22 @@ public static class RecipeGallery {
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
         y += 36f;
         for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 8; j++) {
-                (float, float) position = GetPosition(j, 8);
+            for (int j = 0; j < 5; j++) {
+                (float, float) position = GetPosition(j, 5);
                 recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
             y += 36f;
         }
         recipeUnlockInfoText[0, 0].text = "";
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 1; i <= 4; i++) {
             recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name.Replace(" Matrix", "");
         }
-        recipeUnlockInfoText[8, 0].text = "总计".Translate();
-        for (int j = 1; j <= 6; j++) {
+        recipeUnlockInfoText[5, 0].text = "总计".Translate();
+        for (int j = 1; j <= 3; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];
         }
-        recipeUnlockInfoText[0, 7].text = "总计".Translate();
+        recipeUnlockInfoText[0, 4].text = "总计".Translate();
     }
 
     public static void UpdateUI() {
