@@ -16,9 +16,6 @@ public static class BuildingManager {
         InteractionTower.AddTranslations();
         MineralReplicationTower.AddTranslations();
         PointAggregateTower.AddTranslations();
-        QuantumReplicationTower.AddTranslations();
-        AlchemyTower.AddTranslations();
-        DeconstructionTower.AddTranslations();
         ConversionTower.AddTranslations();
 
         PlanetaryInteractionStation.AddTranslations();
@@ -35,9 +32,6 @@ public static class BuildingManager {
         InteractionTower.Create();
         MineralReplicationTower.Create();
         PointAggregateTower.Create();
-        QuantumReplicationTower.Create();
-        AlchemyTower.Create();
-        DeconstructionTower.Create();
         ConversionTower.Create();
 
         PlanetaryInteractionStation.Create();
@@ -48,9 +42,6 @@ public static class BuildingManager {
         InteractionTower.SetMaterial();
         MineralReplicationTower.SetMaterial();
         PointAggregateTower.SetMaterial();
-        QuantumReplicationTower.SetMaterial();
-        AlchemyTower.SetMaterial();
-        DeconstructionTower.SetMaterial();
         ConversionTower.SetMaterial();
 
         PlanetaryInteractionStation.SetMaterial();
@@ -61,9 +52,6 @@ public static class BuildingManager {
         InteractionTower.UpdateHpAndEnergy();
         MineralReplicationTower.UpdateHpAndEnergy();
         PointAggregateTower.UpdateHpAndEnergy();
-        QuantumReplicationTower.UpdateHpAndEnergy();
-        AlchemyTower.UpdateHpAndEnergy();
-        DeconstructionTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
 
         PlanetaryInteractionStation.UpdateHpAndEnergy();
@@ -109,9 +97,6 @@ public static class BuildingManager {
             IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxProductOutputStack,
             IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxProductOutputStack,
             IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxProductOutputStack,
-            IFE量子复制塔 => BaseFracProductOutputMax * QuantumReplicationTower.MaxProductOutputStack,
-            IFE点金塔 => BaseFracProductOutputMax * AlchemyTower.MaxProductOutputStack,
-            IFE分解塔 => BaseFracProductOutputMax * DeconstructionTower.MaxProductOutputStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxProductOutputStack,
             _ => BaseFracProductOutputMax
         };
@@ -191,9 +176,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.EnableFluidOutputStack,
             IFE矿物复制塔 => MineralReplicationTower.EnableFluidOutputStack,
             IFE点数聚集塔 => PointAggregateTower.EnableFluidOutputStack,
-            IFE量子复制塔 => QuantumReplicationTower.EnableFluidOutputStack,
-            IFE点金塔 => AlchemyTower.EnableFluidOutputStack,
-            IFE分解塔 => DeconstructionTower.EnableFluidOutputStack,
             IFE转化塔 => ConversionTower.EnableFluidOutputStack,
             _ => false
         };
@@ -210,15 +192,6 @@ public static class BuildingManager {
             case IFE点数聚集塔:
                 PointAggregateTower.EnableFluidOutputStack = enable;
                 break;
-            case IFE量子复制塔:
-                QuantumReplicationTower.EnableFluidOutputStack = enable;
-                break;
-            case IFE点金塔:
-                AlchemyTower.EnableFluidOutputStack = enable;
-                break;
-            case IFE分解塔:
-                DeconstructionTower.EnableFluidOutputStack = enable;
-                break;
             case IFE转化塔:
                 ConversionTower.EnableFluidOutputStack = enable;
                 break;
@@ -232,9 +205,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.MaxProductOutputStack,
             IFE矿物复制塔 => MineralReplicationTower.MaxProductOutputStack,
             IFE点数聚集塔 => PointAggregateTower.MaxProductOutputStack,
-            IFE量子复制塔 => QuantumReplicationTower.MaxProductOutputStack,
-            IFE点金塔 => AlchemyTower.MaxProductOutputStack,
-            IFE分解塔 => DeconstructionTower.MaxProductOutputStack,
             IFE转化塔 => ConversionTower.MaxProductOutputStack,
             IFE行星内物流交互站 => PlanetaryInteractionStation.MaxProductOutputStack,
             _ => 1
@@ -251,15 +221,6 @@ public static class BuildingManager {
                 break;
             case IFE点数聚集塔:
                 PointAggregateTower.MaxProductOutputStack = stack;
-                break;
-            case IFE量子复制塔:
-                QuantumReplicationTower.MaxProductOutputStack = stack;
-                break;
-            case IFE点金塔:
-                AlchemyTower.MaxProductOutputStack = stack;
-                break;
-            case IFE分解塔:
-                DeconstructionTower.MaxProductOutputStack = stack;
                 break;
             case IFE转化塔:
                 ConversionTower.MaxProductOutputStack = stack;
@@ -278,9 +239,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.EnableFracForever,
             IFE矿物复制塔 => MineralReplicationTower.EnableFracForever,
             IFE点数聚集塔 => PointAggregateTower.EnableFracForever,
-            IFE量子复制塔 => QuantumReplicationTower.EnableFracForever,
-            IFE点金塔 => AlchemyTower.EnableFracForever,
-            IFE分解塔 => DeconstructionTower.EnableFracForever,
             IFE转化塔 => ConversionTower.EnableFracForever,
             _ => false
         };
@@ -297,15 +255,6 @@ public static class BuildingManager {
             case IFE点数聚集塔:
                 PointAggregateTower.EnableFracForever = enable;
                 break;
-            case IFE量子复制塔:
-                QuantumReplicationTower.EnableFracForever = enable;
-                break;
-            case IFE点金塔:
-                AlchemyTower.EnableFracForever = enable;
-                break;
-            case IFE分解塔:
-                DeconstructionTower.EnableFracForever = enable;
-                break;
             case IFE转化塔:
                 ConversionTower.EnableFracForever = enable;
                 break;
@@ -319,9 +268,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.workEnergyPerTick,
             IFE矿物复制塔 => MineralReplicationTower.workEnergyPerTick,
             IFE点数聚集塔 => PointAggregateTower.workEnergyPerTick,
-            IFE量子复制塔 => QuantumReplicationTower.workEnergyPerTick,
-            IFE点金塔 => AlchemyTower.workEnergyPerTick,
-            IFE分解塔 => DeconstructionTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
             _ => LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick
         };
@@ -335,12 +281,6 @@ public static class BuildingManager {
                 return MineralReplicationTower.idleEnergyPerTick;
             case IFE点数聚集塔:
                 return PointAggregateTower.idleEnergyPerTick;
-            case IFE量子复制塔:
-                return QuantumReplicationTower.idleEnergyPerTick;
-            case IFE点金塔:
-                return AlchemyTower.idleEnergyPerTick;
-            case IFE分解塔:
-                return DeconstructionTower.idleEnergyPerTick;
             case IFE转化塔:
                 return ConversionTower.idleEnergyPerTick;
             default:
@@ -353,9 +293,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementLevel,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementLevel,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementLevel,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementLevel,
-            IFE点金塔 => AlchemyTower.ReinforcementLevel,
-            IFE分解塔 => DeconstructionTower.ReinforcementLevel,
             IFE转化塔 => ConversionTower.ReinforcementLevel,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementLevel,
             _ => 0
@@ -375,18 +312,6 @@ public static class BuildingManager {
             case IFE点数聚集塔:
                 PointAggregateTower.ReinforcementLevel = level;
                 PointAggregateTower.UpdateHpAndEnergy();
-                break;
-            case IFE量子复制塔:
-                QuantumReplicationTower.ReinforcementLevel = level;
-                QuantumReplicationTower.UpdateHpAndEnergy();
-                break;
-            case IFE点金塔:
-                AlchemyTower.ReinforcementLevel = level;
-                AlchemyTower.UpdateHpAndEnergy();
-                break;
-            case IFE分解塔:
-                DeconstructionTower.ReinforcementLevel = level;
-                DeconstructionTower.UpdateHpAndEnergy();
                 break;
             case IFE转化塔:
                 ConversionTower.ReinforcementLevel = level;
@@ -409,9 +334,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementSuccessRate,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementSuccessRate,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementSuccessRate,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementSuccessRate,
-            IFE点金塔 => AlchemyTower.ReinforcementSuccessRate,
-            IFE分解塔 => DeconstructionTower.ReinforcementSuccessRate,
             IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementSuccessRate,
             _ => 0
@@ -423,9 +345,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementBonusDurability,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusDurability,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusDurability,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementBonusDurability,
-            IFE点金塔 => AlchemyTower.ReinforcementBonusDurability,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonusDurability,
             IFE转化塔 => ConversionTower.ReinforcementBonusDurability,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusDurability,
             _ => 0
@@ -437,9 +356,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementBonusEnergy,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusEnergy,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusEnergy,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementBonusEnergy,
-            IFE点金塔 => AlchemyTower.ReinforcementBonusEnergy,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonusEnergy,
             IFE转化塔 => ConversionTower.ReinforcementBonusEnergy,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusEnergy,
             _ => 0
@@ -454,9 +370,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementBonusFracSuccess,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusFracSuccess,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusFracSuccess,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementBonusFracSuccess,
-            IFE点金塔 => AlchemyTower.ReinforcementBonusFracSuccess,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonusFracSuccess,
             IFE转化塔 => ConversionTower.ReinforcementBonusFracSuccess,
             _ => 0
         };
@@ -470,9 +383,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementBonusMainOutputCount,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusMainOutputCount,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusMainOutputCount,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementBonusMainOutputCount,
-            IFE点金塔 => AlchemyTower.ReinforcementBonusMainOutputCount,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonusMainOutputCount,
             IFE转化塔 => ConversionTower.ReinforcementBonusMainOutputCount,
             _ => 0
         };
@@ -486,9 +396,6 @@ public static class BuildingManager {
             IFE交互塔 => InteractionTower.ReinforcementBonusAppendOutputRate,
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusAppendOutputRate,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusAppendOutputRate,
-            IFE量子复制塔 => QuantumReplicationTower.ReinforcementBonusAppendOutputRate,
-            IFE点金塔 => AlchemyTower.ReinforcementBonusAppendOutputRate,
-            IFE分解塔 => DeconstructionTower.ReinforcementBonusAppendOutputRate,
             IFE转化塔 => ConversionTower.ReinforcementBonusAppendOutputRate,
             _ => 0
         };
@@ -502,9 +409,15 @@ public static class BuildingManager {
         InteractionTower.Import(r);
         MineralReplicationTower.Import(r);
         PointAggregateTower.Import(r);
-        QuantumReplicationTower.Import(r);
-        AlchemyTower.Import(r);
-        DeconstructionTower.Import(r);
+        if (version < 3) {
+            for (int i = 0; i < 3; i++) {
+                r.ReadInt32();
+                r.ReadBoolean();
+                r.ReadInt32();
+                r.ReadBoolean();
+                r.ReadInt32();
+            }
+        }
         ConversionTower.Import(r);
         if (version >= 2) {
             PlanetaryInteractionStation.Import(r);
@@ -512,14 +425,11 @@ public static class BuildingManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(3);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
         PointAggregateTower.Export(w);
-        QuantumReplicationTower.Export(w);
-        AlchemyTower.Export(w);
-        DeconstructionTower.Export(w);
         ConversionTower.Export(w);
         PlanetaryInteractionStation.Export(w);
     }
@@ -529,9 +439,6 @@ public static class BuildingManager {
         InteractionTower.IntoOtherSave();
         MineralReplicationTower.IntoOtherSave();
         PointAggregateTower.IntoOtherSave();
-        QuantumReplicationTower.IntoOtherSave();
-        AlchemyTower.IntoOtherSave();
-        DeconstructionTower.IntoOtherSave();
         ConversionTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();
     }

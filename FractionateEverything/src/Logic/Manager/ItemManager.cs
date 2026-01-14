@@ -229,11 +229,6 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚V型, "分馏塔原胚V型", "I分馏塔原胚V型",
-            "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        item.UnlockKey = -1;
-
         item = ProtoRegistry.RegisterItem(IFE分馏塔定向原胚, "分馏塔定向原胚", "I分馏塔定向原胚",
             "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
@@ -350,17 +345,13 @@ public static class ItemManager {
         float v5 = 2000.0f / 2;
         itemValue[IFE矿物复制塔] = v1;
         itemValue[IFE交互塔] = v2;
-        itemValue[IFE点金塔] = v3;
-        itemValue[IFE分解塔] = v3;
         itemValue[IFE转化塔] = v3;
         itemValue[IFE点数聚集塔] = v4;
-        itemValue[IFE量子复制塔] = v5;
         itemValue[IFE分馏塔定向原胚] = v5;
         itemValue[IFE分馏塔原胚I型] = 0.96f * v1 + 0.04f * v5;
         itemValue[IFE分馏塔原胚II型] = 0.96f * v2 + 0.04f * v5;
         itemValue[IFE分馏塔原胚III型] = 0.96f * v3 + 0.04f * v5;
         itemValue[IFE分馏塔原胚IV型] = 0.96f * v4 + 0.04f * v5;
-        itemValue[IFE分馏塔原胚V型] = 0.96f * v5 + 0.04f * v5;
         //设置精华价值
         itemValue[IFE复制精华] = 200.0f;
         itemValue[IFE点金精华] = 200.0f;

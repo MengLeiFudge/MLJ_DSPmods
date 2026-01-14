@@ -24,7 +24,7 @@ public static class UIItemTipPatch {
         //     //降级的就不管了
         //     dic = GetNumRatioUpgrade(recipe.Items[0]);
         // }
-        // var p = dic.FirstOrDefault(p => p.Key > 0);
+        // var p = dic.Find(p => p.Key > 0);
         // int index1 = 0;
         // int x1 = 0;
         //

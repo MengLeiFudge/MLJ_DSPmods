@@ -23,7 +23,8 @@ public static class MainWindow {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
         Register("分馏数据中心", "Fractionation Data Centre");
         Register("核心操作", "Core Operation");
-        RecipeOperate.AddTranslations();
+        FracRecipeOperate.AddTranslations();
+        VanillaRecipeOperate.AddTranslations();
         BuildingOperate.AddTranslations();
         Register("物品管理", "Item Management");
         ItemInteraction.AddTranslations();
@@ -46,7 +47,8 @@ public static class MainWindow {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        RecipeOperate.LoadConfig(configFile);
+        FracRecipeOperate.LoadConfig(configFile);
+        VanillaRecipeOperate.LoadConfig(configFile);
         BuildingOperate.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
@@ -85,7 +87,8 @@ public static class MainWindow {
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         wnd.AddTabGroup(trans, "核心操作");
-        RecipeOperate.CreateUI(wnd, trans);
+        FracRecipeOperate.CreateUI(wnd, trans);
+        VanillaRecipeOperate.CreateUI(wnd, trans);
         BuildingOperate.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "物品管理");
         ItemInteraction.CreateUI(wnd, trans);
@@ -110,7 +113,8 @@ public static class MainWindow {
     }
 
     private static void UpdateUI() {
-        RecipeOperate.UpdateUI();
+        FracRecipeOperate.UpdateUI();
+        VanillaRecipeOperate.UpdateUI();
         BuildingOperate.UpdateUI();
 
         ItemInteraction.UpdateUI();
@@ -181,7 +185,10 @@ public static class MainWindow {
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
 
-        RecipeOperate.Import(r);
+        FracRecipeOperate.Import(r);
+        if (version >= 3) {
+            VanillaRecipeOperate.Import(r);
+        }
         BuildingOperate.Import(r);
 
         ItemInteraction.Import(r);
@@ -207,10 +214,11 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(3);
 
+        FracRecipeOperate.Export(w);
+        VanillaRecipeOperate.Export(w);
         BuildingOperate.Export(w);
-        RecipeOperate.Export(w);
 
         ItemInteraction.Export(w);
         ImportantItem.Export(w);
@@ -232,8 +240,9 @@ public static class MainWindow {
     }
 
     public static void IntoOtherSave() {
+        FracRecipeOperate.IntoOtherSave();
+        VanillaRecipeOperate.IntoOtherSave();
         BuildingOperate.IntoOtherSave();
-        RecipeOperate.IntoOtherSave();
 
         ItemInteraction.IntoOtherSave();
         ImportantItem.IntoOtherSave();

@@ -95,13 +95,12 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
 }
 
 public class RecipeChangePacket {
-    
     public int eRecipe { get; set; }
-    
+
     public int inputId { get; set; }
-    
+
     public int mode { get; set; }
-    
+
     public float num { get; set; }
 
     public RecipeChangePacket() { }
@@ -128,12 +127,6 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
             case 2:
                 recipe.AddExp(packet.num, false);
                 break;
-            case 3:
-                recipe.SandBoxUpDowngrade(packet.num > 0);
-                break;
-            case 4:
-                recipe.SandBoxMaxUpDowngrade(packet.num > 0);
-                break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
@@ -142,11 +135,10 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
 }
 
 public class BuildingChangePacket {
-    
     public int index { get; set; }
-    
+
     public int mode { get; set; }
-    
+
     public int num { get; set; }
 
     public BuildingChangePacket() { }

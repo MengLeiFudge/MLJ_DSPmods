@@ -79,16 +79,16 @@ public static class RecipeGallery {
                 unlockCountArr[8, j] += recipes.Count;
                 unlockCountArr[i, 7] += recipes.Count;
                 unlockCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.IsMaxEcho).ToList();
-                maxEchoCountArr[i, j] = recipes.Count;
-                maxEchoCountArr[8, j] += recipes.Count;
-                maxEchoCountArr[i, 7] += recipes.Count;
-                maxEchoCountArr[8, 7] += recipes.Count;
-                recipes = recipes.Where(r => r.FullUpgrade).ToList();
-                fullUpgradeCountArr[i, j] = recipes.Count;
-                fullUpgradeCountArr[8, j] += recipes.Count;
-                fullUpgradeCountArr[i, 7] += recipes.Count;
-                fullUpgradeCountArr[8, 7] += recipes.Count;
+                // recipes = recipes.Where(r => r.IsMaxEcho).ToList();
+                // maxEchoCountArr[i, j] = recipes.Count;
+                // maxEchoCountArr[8, j] += recipes.Count;
+                // maxEchoCountArr[i, 7] += recipes.Count;
+                // maxEchoCountArr[8, 7] += recipes.Count;
+                // recipes = recipes.Where(r => r.FullUpgrade).ToList();
+                // fullUpgradeCountArr[i, j] = recipes.Count;
+                // fullUpgradeCountArr[8, j] += recipes.Count;
+                // fullUpgradeCountArr[i, 7] += recipes.Count;
+                // fullUpgradeCountArr[8, 7] += recipes.Count;
             }
         }
         for (int i = 1; i <= 8; i++) {

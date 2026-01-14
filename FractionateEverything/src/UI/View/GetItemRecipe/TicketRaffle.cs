@@ -308,12 +308,12 @@ public static class TicketRaffle {
             recipes = recipes.Where(r => r.Unlocked).ToList();
             unlockCountArr[1, j] = recipes.Count;
             unlockCountArr[1, 6] += recipes.Count;
-            recipes = recipes.Where(r => r.IsMaxEcho).ToList();
-            maxEchoCountArr[1, j] = recipes.Count;
-            maxEchoCountArr[1, 6] += recipes.Count;
-            recipes = recipes.Where(r => r.FullUpgrade).ToList();
-            fullUpgradeCountArr[1, j] = recipes.Count;
-            fullUpgradeCountArr[1, 6] += recipes.Count;
+            // recipes = recipes.Where(r => r.IsMaxEcho).ToList();
+            // maxEchoCountArr[1, j] = recipes.Count;
+            // maxEchoCountArr[1, 6] += recipes.Count;
+            // recipes = recipes.Where(r => r.FullUpgrade).ToList();
+            // fullUpgradeCountArr[1, j] = recipes.Count;
+            // fullUpgradeCountArr[1, 6] += recipes.Count;
         }
         for (int j = 0; j <= 6; j++) {
             recipeUnlockInfoText[1, j].text =
@@ -414,7 +414,6 @@ public static class TicketRaffle {
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
             recipes = GetRecipesByMatrix(SelectedMatrixId1);
-            recipes.RemoveAll(recipe => recipe.IsMaxEcho);
             int[] specialItems = [IFE分馏配方通用核心, 0];
             float[] specialRates = new float[2];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
@@ -437,19 +436,17 @@ public static class TicketRaffle {
                 IFE分馏塔原胚II型,
                 IFE分馏塔原胚III型,
                 IFE分馏塔原胚IV型,
-                IFE分馏塔原胚V型,
                 IFE分馏塔定向原胚,
             ];
             float[] specialRates = new float[7];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             float specialRates16Sum = 1 - specialRates[0];
-            specialRates[1] = specialRates16Sum * 50 / 121;
-            specialRates[2] = specialRates16Sum * 35 / 121;
-            specialRates[3] = specialRates16Sum * 20 / 121;
-            specialRates[4] = specialRates16Sum * 10 / 121;
-            specialRates[5] = specialRates16Sum * 5 / 121;
-            specialRates[6] = specialRates16Sum * 1 / 121;
+            specialRates[1] = specialRates16Sum * 50 / 116;
+            specialRates[2] = specialRates16Sum * 35 / 116;
+            specialRates[3] = specialRates16Sum * 20 / 116;
+            specialRates[4] = specialRates16Sum * 10 / 116;
+            specialRates[5] = specialRates16Sum * 1 / 116;
             pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRates, []);
         } else if (poolId == 3) {
             if (commonItems3.Count == 0) {
@@ -521,9 +518,6 @@ public static class TicketRaffle {
                 if (i == 0) {
                     //优先抽取非量子复制配方
                     List<BaseRecipe> recipesOptimize = [..recipes];
-                    if (recipesOptimize.Any(recipe => recipe.RecipeType != ERecipe.QuantumCopy)) {
-                        recipesOptimize.RemoveAll(recipe => recipe.RecipeType == ERecipe.QuantumCopy);
-                    }
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
                     recipe.RewardThis(true);
@@ -541,7 +535,6 @@ public static class TicketRaffle {
                     }
                     sb.Append($"{recipe.TypeName}".WithColor(RecipeValue));
                     //更新可抽取的配方状态
-                    recipes.RemoveAll(recipe => recipe.IsMaxEcho);
                     if (recipes.Count == 0) {
                         FreshPool(1);
                         (rates, counts) = pool1;

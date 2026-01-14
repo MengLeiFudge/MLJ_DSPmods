@@ -446,7 +446,7 @@ public static class TutorialManager {
 
         AddTutorial("万物分馏简介", "TOR_GameSecond", [10]);
         AddTutorial("分馏数据中心", "TOR_TechUnlocked", [TFE分馏数据中心, 4]);
-        AddTutorial("分馏塔使用指南", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔]);
+        AddTutorial("分馏塔使用指南", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔]);
         AddTutorial("物流交互站使用指南", "TOR_OnBuild", [IFE行星内物流交互站, IFE星际物流交互站]);
     }
 

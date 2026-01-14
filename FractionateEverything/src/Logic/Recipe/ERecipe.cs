@@ -19,21 +19,6 @@ public enum ERecipe {
     MineralCopy,
 
     /// <summary>
-    /// 量子复制配方
-    /// </summary>
-    QuantumCopy,
-
-    /// <summary>
-    /// 点金配方
-    /// </summary>
-    Alchemy,
-
-    /// <summary>
-    /// 分解配方
-    /// </summary>
-    Deconstruction,
-
-    /// <summary>
     /// 转化配方
     /// </summary>
     Conversion,
@@ -44,16 +29,10 @@ public static class ERecipeExtension {
         Register("未知", "Unknown");
         Register("建筑培养", "Building Train");
         Register("矿物复制", "Mineral Replication");
-        Register("量子复制", "Quantum Replication");
-        Register("点金", "Alchemy");
-        Register("分解", "Deconstruction");
         Register("转化", "Conversion");
         Register("未知配方", "Unknown Recipe");
         Register("建筑培养配方", "Building Train Recipe");
         Register("矿物复制配方", "Mineral Replication Recipe");
-        Register("量子复制配方", "Quantum Replication Recipe");
-        Register("点金配方", "Alchemy Recipe");
-        Register("分解配方", "Deconstruction Recipe");
         Register("转化配方", "Conversion Recipe");
     }
 
@@ -68,9 +47,6 @@ public static class ERecipeExtension {
         return recipe switch {
             ERecipe.BuildingTrain => "建筑培养".Translate(),
             ERecipe.MineralCopy => "矿物复制".Translate(),
-            ERecipe.QuantumCopy => "量子复制".Translate(),
-            ERecipe.Alchemy => "点金".Translate(),
-            ERecipe.Deconstruction => "分解".Translate(),
             ERecipe.Conversion => "转化".Translate(),
             _ => "未知".Translate()
         };
@@ -80,9 +56,6 @@ public static class ERecipeExtension {
         return recipe switch {
             ERecipe.BuildingTrain => "建筑培养配方".Translate(),
             ERecipe.MineralCopy => "矿物复制配方".Translate(),
-            ERecipe.QuantumCopy => "量子复制配方".Translate(),
-            ERecipe.Alchemy => "点金配方".Translate(),
-            ERecipe.Deconstruction => "分解配方".Translate(),
             ERecipe.Conversion => "转化配方".Translate(),
             _ => "未知配方".Translate()
         };
@@ -92,9 +65,6 @@ public static class ERecipeExtension {
         return recipe switch {
             ERecipe.BuildingTrain => IFE交互塔,
             ERecipe.MineralCopy => IFE矿物复制塔,
-            ERecipe.QuantumCopy => IFE量子复制塔,
-            ERecipe.Alchemy => IFE点金塔,
-            ERecipe.Deconstruction => IFE分解塔,
             ERecipe.Conversion => IFE转化塔,
             _ => 0,
         };
