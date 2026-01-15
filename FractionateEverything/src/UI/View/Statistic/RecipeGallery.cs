@@ -92,7 +92,7 @@ public static class RecipeGallery {
             }
         }
         for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 7; j++) {
+            for (int j = 1; j <= 4; j++) {
                 recipeUnlockInfoText[i, j].text =
                     $"{fullUpgradeCountArr[i, j].ToString().WithColor(7)}"
                     + $"/{maxEchoCountArr[i, j].ToString().WithColor(5)}"

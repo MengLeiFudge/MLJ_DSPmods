@@ -68,7 +68,8 @@ public static class ItemInteraction {
         y += 36f + 7f;
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 5; j++) {
-                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, 5).Item1, y, tab).WithTakeItemClickEvent();
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, 5).Item1, y, tab)
+                    .WithTakeItemClickEvent().WithDeselectOnHover(true, () => SelectedItemID = 0);
                 txtItemCounts[i, j] = wnd.AddText2(GetPosition(j, 5).Item1 + 40 + 5, y, tab, "动态刷新");
             }
             y += 36f + 7f;
