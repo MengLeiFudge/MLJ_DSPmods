@@ -34,6 +34,9 @@ public abstract class BaseRecipe(
     /// </summary>
     public int MatrixID = 0;
 
+    // 抽到的回响+经验得到的回响
+    
+    
     /// <summary>
     /// 配方增幅
     /// </summary>

@@ -173,7 +173,6 @@ public static class VanillaRecipeOperate {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        //todo 检查数目够不够
         VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
         if (!vanillaRecipe.CanUpgradeTime()) {
             UIMessageBox.Show("提示".Translate(),

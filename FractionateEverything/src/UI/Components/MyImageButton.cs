@@ -136,7 +136,6 @@ public class MyImageButton : MonoBehaviour {
         var eventTrigger = go.AddComponent<EventTrigger>();
         var pointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
         pointerEnter.callback.AddListener(_ => {
-            LogWarning($"_deselectOnHover = {ibtn._deselectOnHover}; Selected = {ibtn.Selected}");
             if (ibtn._deselectOnHover && ibtn.Selected) {
                 ibtn.Selected = false;
                 ibtn._onDeselectCallback?.Invoke();
