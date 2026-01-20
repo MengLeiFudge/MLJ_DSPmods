@@ -415,7 +415,7 @@ public static class TicketRaffle {
         if (poolId == 1) {
             recipes = GetRecipesByMatrix(SelectedMatrixId1);
             int[] specialItems = [IFE分馏配方通用核心, IFE原版配方核心, 0];//最后一个是分馏配方
-            float[] specialRates = new float[2];
+            float[] specialRates = new float[3];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.5f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             specialRates[1] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
