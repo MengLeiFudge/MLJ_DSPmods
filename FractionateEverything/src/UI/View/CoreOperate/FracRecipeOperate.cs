@@ -64,10 +64,7 @@ public static class FracRecipeOperate {
         Register("升至最高级", "Upgrade to max level");
         Register("突破品质", "Breakthrough quality");
 
-        Register("重置", "Reset");
-        Register("降级", "Downgrade");
-        Register("升级", "Upgrade");
-        Register("升满", "Full upgrade");
+        Register("回响", "Echo");
 
         Register("配方不存在！", "Recipe does not exist!");
         Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
@@ -129,23 +126,17 @@ public static class FracRecipeOperate {
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
-            btnGetRecipe = wnd.AddButton(0, 4, y, tab, "动态刷新",
-                onClick: () => { GetRecipe(SelectedRecipe); });
-            wnd.AddButton(1, 4, y, tab, "升至下一级",
-                onClick: () => { UpgradeLevel(SelectedRecipe, false); });
-            wnd.AddButton(2, 4, y, tab, "升至最高级",
-                onClick: () => { UpgradeLevel(SelectedRecipe, true); });
-            wnd.AddButton(3, 4, y, tab, "突破品质",
-                onClick: () => { BreakthroughQualityUntilSuccess(SelectedRecipe); });
+            wnd.AddButton(0, 1, y, tab, "兑换回响",
+                onClick: () => { GetRecipeEcho(SelectedRecipe); });
         } else {
-            wnd.AddButton(0, 4, y, tab, "重置",
-                onClick: () => { Reset(SelectedRecipe); });
-            wnd.AddButton(1, 4, y, tab, "降级",
-                onClick: () => { Downgrade(SelectedRecipe); });
-            wnd.AddButton(2, 4, y, tab, "升级",
-                onClick: () => { Upgrade(SelectedRecipe); });
-            wnd.AddButton(3, 4, y, tab, "升满",
-                onClick: () => { FullUpgrade(SelectedRecipe); });
+            wnd.AddButton(0, 4, y, tab, "回响-10",
+                onClick: () => { ChangeEchoCount(SelectedRecipe, -10); });
+            wnd.AddButton(1, 4, y, tab, "回响-1",
+                onClick: () => { ChangeEchoCount(SelectedRecipe, -1); });
+            wnd.AddButton(2, 4, y, tab, "回响+1",
+                onClick: () => { ChangeEchoCount(SelectedRecipe, 1); });
+            wnd.AddButton(3, 4, y, tab, "回响+10",
+                onClick: () => { ChangeEchoCount(SelectedRecipe, 10); });
         }
         int[] rang;
         if (!GenesisBook.Enable) {
@@ -324,7 +315,7 @@ public static class FracRecipeOperate {
         return sb.ToString();
     }
 
-    private static void GetRecipe(BaseRecipe recipe) {
+    private static void GetRecipeEcho(BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -355,117 +346,20 @@ public static class FracRecipeOperate {
                     return;
                 }
                 for (int i = 0; i < takeCount; i++) {
-                    recipe.RewardThis(true);
+                    recipe.ChangeEchoCount(true);
                 }
             },
             null);
     }
 
-    private static void UpgradeLevel(BaseRecipe recipe, bool maxLevel) {
+    public static void ChangeEchoCount(BaseRecipe recipe, int changeCount) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
         if (recipe == null) {
-            UIMessageBox.Show("提示".Translate(),
-                "配方不存在！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
             return;
         }
-        if (recipe.Locked) {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"分馏配方未解锁".Translate()}{"！".Translate()}",
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        int takeId = I沙土;
-        float needExp = 0;//todo
-        if (maxLevel && needExp <= 0) {
-            UIMessageBox.Show("提示".Translate(),
-                "配方已升至当前品质最高等级！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        int takeCount = (int)Math.Ceiling(needExp * 10);
-        ItemProto takeProto = LDB.items.Select(I沙土);
-        UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
-            + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()} x {(int)needExp} {"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                recipe.AddExp(needExp, false, true);
-            },
-            null);
-    }
-
-    private static void BreakthroughQualityUntilSuccess(BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        if (recipe == null) {
-            UIMessageBox.Show("提示".Translate(),
-                "配方不存在！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        if (recipe.Locked) {
-            UIMessageBox.Show("提示".Translate(),
-                $"{"分馏配方未解锁".Translate()}{"！".Translate()}",
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        int takeId = I沙土;
-        float needExp = 0;//todo
-        int takeCount = (int)Math.Ceiling(needExp * 10);
-        ItemProto takeProto = LDB.items.Select(I沙土);
-        UIMessageBox.Show("提示".Translate(),
-            $"{"要花费".Translate()}{"一定量的".Translate()} {takeProto.name} "
-            + $"{"来兑换".Translate()} {recipe.TypeNameWC} {"配方经验".Translate()}{"，直至突破成功".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                needExp = 0;
-                takeCount = (int)Math.Ceiling(needExp * 10);
-                if (!TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                recipe.AddExp(needExp, false, true);
-            },
-            null);
-    }
-
-    public static void Upgrade(BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        //recipe?.SandBoxUpDowngrade(true, true); todo
-    }
-
-    public static void Downgrade(BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        //recipe?.SandBoxUpDowngrade(false, true); todo
-    }
-
-    public static void FullUpgrade(BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        //recipe?.SandBoxMaxUpDowngrade(true, true); todo
-    }
-
-    public static void Reset(BaseRecipe recipe) {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        //recipe?.SandBoxMaxUpDowngrade(false, true); todo
+        recipe.ChangeEchoCount(true, changeCount);
     }
 
     #region IModCanSave

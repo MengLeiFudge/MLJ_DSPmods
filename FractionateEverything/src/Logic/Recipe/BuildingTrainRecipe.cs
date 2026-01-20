@@ -14,10 +14,10 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加所有建筑培养配方
     /// </summary>
     public static void CreateAll() {
-        Create(IFE分馏塔原胚I型, 0.05f);
-        Create(IFE分馏塔原胚II型, 0.05f);
-        Create(IFE分馏塔原胚III型, 0.05f);
-        Create(IFE分馏塔原胚IV型, 0.05f);
+        Create(IFE分馏塔原胚I型, 0.01f);
+        Create(IFE分馏塔原胚II型, 0.01f);
+        Create(IFE分馏塔原胚III型, 0.01f);
+        Create(IFE分馏塔原胚IV型, 0.01f);
     }
 
     /// <summary>

@@ -83,6 +83,10 @@ public static class ItemManager {
         Register("I分馏塔增幅芯片",
             "Highly integrated electronic chip. There is a very small chance of getting it by drawing it from the Original Embryo Pool, and it will also be refreshed in the Limited Time Store. It can be used to enhance the effects of the fractionator and logistics interaction station in the building operations interface.",
             "高度集成的电子芯片。有极小概率在原胚奖池中抽取得到，限时商店也会刷新。在建筑操作界面，可以用它提升分馏塔和物流交互站的效果。");
+        Register("原版配方核心", "Origin Recipe Core");
+        Register("I原版配方核心",
+            "Modify origin recipe input counts and time spend.",
+            "可以修改原版配方的原料数目、制作时间。");
 
         Register("复制精华", "Replication Essence");
         Register("I复制精华",
@@ -244,6 +248,11 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
 
+        item = ProtoRegistry.RegisterItem(IFE原版配方核心, "原版配方核心", "I原版配方核心",
+            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 209, 100, EItemType.Product,
+            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
+        item.UnlockKey = -1;
+
 
         item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
@@ -338,20 +347,17 @@ public static class ItemManager {
         //设置临界光子价值
         itemValue[I临界光子] = 400.0f;
         //设置分馏塔、分馏塔原胚价值
-        float v1 = 2000.0f / 10;
-        float v2 = 2000.0f / 5;
-        float v3 = 2000.0f / 5;
-        float v4 = 2000.0f / 3;
-        float v5 = 2000.0f / 2;
-        itemValue[IFE矿物复制塔] = v1;
-        itemValue[IFE交互塔] = v2;
-        itemValue[IFE转化塔] = v3;
-        itemValue[IFE点数聚集塔] = v4;
-        itemValue[IFE分馏塔定向原胚] = v5;
-        itemValue[IFE分馏塔原胚I型] = 0.96f * v1 + 0.04f * v5;
-        itemValue[IFE分馏塔原胚II型] = 0.96f * v2 + 0.04f * v5;
-        itemValue[IFE分馏塔原胚III型] = 0.96f * v3 + 0.04f * v5;
-        itemValue[IFE分馏塔原胚IV型] = 0.96f * v4 + 0.04f * v5;
+        float modFractionatorValue = 400.0f;
+        float directionalFracProtoValue = 2000.0f;
+        itemValue[IFE矿物复制塔] = modFractionatorValue;
+        itemValue[IFE交互塔] = modFractionatorValue;
+        itemValue[IFE转化塔] = modFractionatorValue;
+        itemValue[IFE点数聚集塔] = modFractionatorValue;
+        itemValue[IFE分馏塔定向原胚] = directionalFracProtoValue;
+        itemValue[IFE分馏塔原胚I型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE分馏塔原胚II型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE分馏塔原胚III型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE分馏塔原胚IV型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         //设置精华价值
         itemValue[IFE复制精华] = 200.0f;
         itemValue[IFE点金精华] = 200.0f;
@@ -534,8 +540,9 @@ public static class ItemManager {
         }
 
         //设置核心、芯片价值
-        itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
+        itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.01f;
         itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
+        itemValue[IFE原版配方核心] = itemValue[IFE宇宙奖券] / 0.05f;
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1

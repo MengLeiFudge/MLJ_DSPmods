@@ -122,7 +122,7 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>((ERecipe)packet.eRecipe, packet.inputId);
         switch (packet.mode) {
             case 1:
-                recipe.RewardThis();
+                recipe.ChangeEchoCount(false, (int)packet.num);
                 break;
             case 2:
                 recipe.AddExp(packet.num, false);
