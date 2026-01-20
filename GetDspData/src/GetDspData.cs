@@ -98,6 +98,7 @@ public class GetDspData : BaseUnityPlugin {
     public const string GenesisBookGUID = "org.LoShin.GenesisBook";
     public const string GBMSHarmonyPatchID = "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool GenesisBookEnable;
+    public static bool GenesisBookExperimentalEnable;
     public const string OrbitalRingGUID = "org.ProfessorCat305.OrbitalRing";
     public const string ORMSHarmonyPatchID = "ProjectOrbitalRing.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool OrbitalRingEnable;
@@ -117,7 +118,11 @@ public class GetDspData : BaseUnityPlugin {
         }
         MoreMegaStructureEnable = Chainloader.PluginInfos.ContainsKey(MoreMegaStructureGUID);
         TheyComeFromVoidEnable = Chainloader.PluginInfos.ContainsKey(TheyComeFromVoidGUID);
-        GenesisBookEnable = Chainloader.PluginInfos.ContainsKey(GenesisBookGUID);
+        Chainloader.PluginInfos.TryGetValue(GenesisBookGUID, out BepInEx.PluginInfo pluginInfo);
+        if (pluginInfo != null) {
+            GenesisBookEnable = pluginInfo.Metadata.Version.Major > 0;
+            GenesisBookExperimentalEnable = pluginInfo.Metadata.Version.Major == 0;
+        }
         OrbitalRingEnable = Chainloader.PluginInfos.ContainsKey(OrbitalRingGUID);
         FractionateEverythingEnable = Chainloader.PluginInfos.ContainsKey(FractionateEverythingGUID);
 
@@ -153,10 +158,6 @@ public class GetDspData : BaseUnityPlugin {
             LogWarning("创世与星环同时启用");
             return;
         }
-        if (TheyComeFromVoidEnable && OrbitalRingEnable) {
-            LogWarning("深空与星环同时启用");
-            return;
-        }
 
         //检测兼容补丁是否已执行完毕
         if (MoreMegaStructureEnable) {
@@ -179,6 +180,7 @@ public class GetDspData : BaseUnityPlugin {
                 MoreMegaStructureEnable,
                 TheyComeFromVoidEnable,
                 GenesisBookEnable,
+                GenesisBookExperimentalEnable,
                 OrbitalRingEnable,
                 FractionateEverythingEnable
             ];
@@ -186,6 +188,7 @@ public class GetDspData : BaseUnityPlugin {
                 "MoreMegaStructure",
                 "TheyComeFromVoid",
                 "GenesisBook",
+                "GenesisBook_Experimental",
                 "OrbitalRing",
                 "FractionateEverything"
             ];
@@ -193,6 +196,7 @@ public class GetDspData : BaseUnityPlugin {
                 "MS",
                 "VD",
                 "GB",
+                "GBEx",
                 "OR",
                 "FE"
             ];

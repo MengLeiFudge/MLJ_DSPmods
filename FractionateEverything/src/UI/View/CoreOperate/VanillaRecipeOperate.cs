@@ -50,10 +50,7 @@ public static class VanillaRecipeOperate {
         Register("升至最高级", "Upgrade to max level");
         Register("突破品质", "Breakthrough quality");
 
-        Register("重置", "Reset");
-        Register("降级", "Downgrade");
-        Register("升级", "Upgrade");
-        Register("升满", "Full upgrade");
+        Register("回响", "Echo");
 
         Register("配方不存在！", "Recipe does not exist!");
         Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
@@ -100,7 +97,7 @@ public static class VanillaRecipeOperate {
             () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE原版配方升级核心));
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE原版配方核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, "升级第一项",
@@ -124,7 +121,7 @@ public static class VanillaRecipeOperate {
             return;
         }
         btnSelectedRecipe.Proto = SelectedRecipe;
-        txtCoreCount.text = $"x {GetItemTotalCount(IFE原版配方升级核心)}";
+        txtCoreCount.text = $"x {GetItemTotalCount(IFE原版配方核心)}";
 
         int line = 0;
         //写一些东西
@@ -134,17 +131,42 @@ public static class VanillaRecipeOperate {
         }
     }
 
-    public static void UpgradeInput(int itemID) {
+    public static void UpgradeInput(int itemIdx) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        //todo 检查数目够不够
         VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
-        if (!vanillaRecipe.CanUpgradeInput(itemID)) {
-            //提示不能升级
+        int[] items = vanillaRecipe.recipe.Items;
+        if (itemIdx >= items.Length) {
             return;
         }
-        vanillaRecipe.UpgradeInput(itemID);
+        int itemID = items[itemIdx];
+        ItemProto item = LDB.items.Select(itemID);
+        if (!vanillaRecipe.CanUpgradeInput(itemID)) {
+            UIMessageBox.Show("提示".Translate(),
+                $"此配方的原料{item.name}已经无法升级！".Translate(),
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
+            return;
+        }
+        if (GameMain.sandboxToolsEnabled) {
+            vanillaRecipe.UpgradeInput(items[itemIdx]);
+        } else {
+            int takeId = IFE原版配方核心;
+            int takeCount = 1;
+            ItemProto takeProto = LDB.items.Select(takeId);
+            UIMessageBox.Show("提示".Translate(),
+                $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+                + $"{"来修改此项".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    vanillaRecipe.UpgradeInput(items[itemIdx]);
+                },
+                null);
+        }
     }
 
     public static void UpgradeTimeSpend() {
@@ -154,10 +176,30 @@ public static class VanillaRecipeOperate {
         //todo 检查数目够不够
         VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
         if (!vanillaRecipe.CanUpgradeTime()) {
-            //提示不能升级
+            UIMessageBox.Show("提示".Translate(),
+                "此配方的时间已经无法升级！".Translate(),
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
-        vanillaRecipe.UpgradeTime();
+        if (GameMain.sandboxToolsEnabled) {
+            vanillaRecipe.UpgradeTime();
+        } else {
+            int takeId = IFE原版配方核心;
+            int takeCount = 1;
+            ItemProto takeProto = LDB.items.Select(takeId);
+            UIMessageBox.Show("提示".Translate(),
+                $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+                + $"{"来修改此项".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    vanillaRecipe.UpgradeTime();
+                },
+                null);
+        }
     }
 
     #region IModCanSave
