@@ -389,7 +389,7 @@ public static class TechManager {
             [RFE分馏塔原胚定向],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔定向原胚];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔定向原胚];
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
@@ -427,38 +427,38 @@ public static class TechManager {
         tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
         tech增产点数聚集.PropertyItemCounts = [200];
 
-        var tech量子复制 = ProtoRegistry.RegisterTech(
-            TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
-            [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
-            [RFE量子复制塔],
-            GetTechPos(2, 5)
-        );
-        tech量子复制.PreTechsImplicit = [TFE分馏塔原胚];
-        tech量子复制.PropertyOverrideItems = [I电磁矩阵];
-        tech量子复制.PropertyItemCounts = [200];
-
-        var tech物品点金 = ProtoRegistry.RegisterTech(
-            TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
-            [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
-            [RFE点金塔],
-            GetTechPos(2, 6)
-        );
-        tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品点金.PropertyOverrideItems = [I电磁矩阵];
-        tech物品点金.PropertyItemCounts = [200];
-
-        var tech物品分解 = ProtoRegistry.RegisterTech(
-            TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
-            [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
-            [RFE分解塔],
-            GetTechPos(2, 7)
-        );
-        tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品分解.PropertyOverrideItems = [I电磁矩阵];
-        tech物品分解.PropertyItemCounts = [200];
+        // var tech量子复制 = ProtoRegistry.RegisterTech(
+        //     TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
+        //     [],
+        //     [IFE万物分馏科技解锁提示], [1], 3600000,
+        //     [RFE量子复制塔],
+        //     GetTechPos(2, 5)
+        // );
+        // tech量子复制.PreTechsImplicit = [TFE分馏塔原胚];
+        // tech量子复制.PropertyOverrideItems = [I电磁矩阵];
+        // tech量子复制.PropertyItemCounts = [200];
+        //
+        // var tech物品点金 = ProtoRegistry.RegisterTech(
+        //     TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
+        //     [],
+        //     [IFE万物分馏科技解锁提示], [1], 3600000,
+        //     [RFE点金塔],
+        //     GetTechPos(2, 6)
+        // );
+        // tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
+        // tech物品点金.PropertyOverrideItems = [I电磁矩阵];
+        // tech物品点金.PropertyItemCounts = [200];
+        //
+        // var tech物品分解 = ProtoRegistry.RegisterTech(
+        //     TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
+        //     [],
+        //     [IFE万物分馏科技解锁提示], [1], 3600000,
+        //     [RFE分解塔],
+        //     GetTechPos(2, 7)
+        // );
+        // tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
+        // tech物品分解.PropertyOverrideItems = [I电磁矩阵];
+        // tech物品分解.PropertyItemCounts = [200];
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
@@ -556,7 +556,7 @@ public static class TechManager {
         if (_techId == TFE分馏塔原胚) {
             //解锁所有建筑培养配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                recipe.RewardThis();
+                recipe.ChangeEchoCount();
             }
         } else if (_techId == TFE矿物复制) {
             //解锁非珍奇的原矿复制配方
@@ -566,7 +566,7 @@ public static class TechManager {
                 if (recipe.RecipeType == ERecipe.MineralCopy
                     && (LDB.veins.dataArray.Any(vein => vein.MiningItem == itemID) || item.Type == EItemType.Resource)
                     && (itemID < I可燃冰 || itemID > I单极磁石)) {
-                    recipe.RewardThis();
+                    recipe.ChangeEchoCount();
                 }
             }
         }

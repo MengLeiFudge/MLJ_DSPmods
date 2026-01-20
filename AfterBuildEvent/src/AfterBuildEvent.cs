@@ -317,20 +317,21 @@ static class AfterBuildEvent {
         List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：深空来敌
-            "HiddenCirno-GenesisBook",//mod c：创世之书
+            "HiddenCirno-GenesisBook",//mod c1：创世之书
+            "GenesisBook-GenesisBook_Experimental",//mod c2：创世之书测试版
             "ProfessorCat305-OrbitalRing",//mod d：星环
             "MengLei-FractionateEverything",//mod e：万物分馏
         ];
-        // Console.WriteLine("确认创世之书版本：回车表示原版，其他表示测试版");
-        // string s = Console.ReadLine();
-        // if (s != "") {
-        //     names[2] = "GenesisBook-GenesisBook_Experimental";
-        // }
+        bool GBExExists = false;
         for (int i = 0; i < names.Count; i++) {
             string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{names[i]}";
             if (!Directory.Exists(modPluginsDir)) {
-                Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
-                return;
+                if (i == 3) {
+                    GBExExists = true;
+                } else {
+                    Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
+                    return;
+                }
             }
         }
         //载入Mod数据，然后构建ModInfo数组
@@ -341,55 +342,54 @@ static class AfterBuildEvent {
             List<List<ModInfo>> result = Combinations(modInfos, r);
             for (int index = 0; index < result.Count; index++) {
                 List<ModInfo> state = result[index];
-                //深空来敌启用时，更多巨构也必须启用
+                if (!GBExExists && state.Contains(modInfos[3])) {
+                    continue;
+                }
+                //巨构是深空的前置依赖
                 if (!state.Contains(modInfos[0]) && state.Contains(modInfos[1])) {
                     continue;
                 }
-                //创世和星环不能同时启用
-                if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])) {
-                    continue;
-                }
-                //星环还没适配深空
-                if (state.Contains(modInfos[1]) && state.Contains(modInfos[3])) {
+                //创世、创世测试版、星环只能启用一个
+                if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])
+                    || state.Contains(modInfos[2]) && state.Contains(modInfos[4])
+                    || state.Contains(modInfos[3]) && state.Contains(modInfos[4])) {
                     continue;
                 }
                 //开始准备json相关内容
                 string oriFilePath = GetJsonFilePath(state, false);
                 string calcFilePath = GetJsonFilePath(state, true);
-                if (File.Exists(oriFilePath)) {
-                    Console.WriteLine($"{oriFilePath} 已存在，跳过生成");
-                    continue;
-                }
-                Console.WriteLine("终止游戏进程...");
-                cmd.Exec(KillDSP);
-                //仅启用指定的模组
-                HashSet<string> nameList = [];
-                state.Add(GetModInfo("MengLei-GetDspData"));
-                state.Add(GetModInfo("starfi5h-ErrorAnalyzer"));
-                foreach (ModInfo modInfo in state) {
-                    nameList.Add(modInfo.name);
-                    List<string> dependencies = GetDependencies(modInfo.name);
-                    foreach (string dependency in dependencies) {
-                        nameList.Add(dependency);
+                if (!File.Exists(oriFilePath)) {
+                    Console.WriteLine("终止游戏进程...");
+                    cmd.Exec(KillDSP);
+                    //仅启用指定的模组
+                    HashSet<string> nameList = [];
+                    state.Add(GetModInfo("MengLei-GetDspData"));
+                    state.Add(GetModInfo("starfi5h-ErrorAnalyzer"));
+                    foreach (ModInfo modInfo in state) {
+                        nameList.Add(modInfo.name);
+                        List<string> dependencies = GetDependencies(modInfo.name);
+                        foreach (string dependency in dependencies) {
+                            nameList.Add(dependency);
+                        }
                     }
+                    OnlyEnableInputMods(nameList.ToList());
+                    StringBuilder sb = new("启动游戏，mod情况：");
+                    for (int i = 0; i < modInfos.Length; i++) {
+                        sb.Append(modInfos[i].displayName).Append(state.Contains(modInfos[i]) ? "启用 " : "禁用 ");
+                    }
+                    Console.WriteLine(sb.ToString());
+                    cmd.Exec(RunDSP);
+                    while (!File.Exists(oriFilePath)) {
+                        Thread.Sleep(100);
+                    }
+                    //多等一会，确保文件已经全部写入
+                    Thread.Sleep(500);
                 }
-                OnlyEnableInputMods(nameList.ToList());
-                StringBuilder sb = new("启动游戏，mod情况：");
-                for (int i = 0; i < modInfos.Length; i++) {
-                    sb.Append(modInfos[i].displayName).Append(state.Contains(modInfos[i]) ? "启用 " : "禁用 ");
-                }
-                Console.WriteLine(sb.ToString());
-                cmd.Exec(RunDSP);
-                while (!File.Exists(oriFilePath)) {
-                    Thread.Sleep(100);
-                }
-                //多等一会，确保文件已经全部写入
-                Thread.Sleep(500);
                 Console.WriteLine($"已生成 {oriFilePath}");
                 DirectoryInfo info = new FileInfo(calcFilePath).Directory;
                 if (info == null || !info.Exists) {
                     Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
-                    return;
+                    continue;
                 }
                 //这里必须删除目标文件，再复制，因为windows忽略大小写，有可能导致名称有问题
                 File.Delete(calcFilePath);
@@ -397,7 +397,7 @@ static class AfterBuildEvent {
                 if (!File.Exists(calcFilePath)
                     || new FileInfo(calcFilePath).Length != new FileInfo(oriFilePath).Length) {
                     Console.WriteLine("复制计算器json文件失败");
-                    return;
+                    continue;
                 }
                 Console.WriteLine($"已复制到 {calcFilePath}");
             }

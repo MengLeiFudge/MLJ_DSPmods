@@ -4,7 +4,6 @@ using System.IO;
 using FE.Compatibility;
 using FE.Logic.Manager;
 using NebulaAPI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.UI.View.Setting.SandboxMode;
 using static FE.Utils.Utils;
 
@@ -86,7 +85,7 @@ public abstract class BaseRecipe(
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp(1 + itemValue[InputID] / 100 * 2);
+            AddExp(1);
             return null;
         }
         //无变化
@@ -112,7 +111,7 @@ public abstract class BaseRecipe(
                 }
                 list.Add(new(true, outputInfo.OutputID, countReal));
                 outputInfo.OutputTotalCount += countReal;
-                AddExp(1 + itemValue[outputInfo.OutputID] / 100 * countReal);
+                AddExp(countReal);
                 break;
             }
         }
@@ -169,6 +168,10 @@ public abstract class BaseRecipe(
         float finalExp = useExpMultiRate ? exp * ExpMultiRate : exp;
         lock (this) {
             Exp += finalExp;
+            if (Exp > 10000) {
+                Exp -= 10000;
+                Echo++;
+            }
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
@@ -180,12 +183,15 @@ public abstract class BaseRecipe(
     /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
-    public void RewardThis(bool manual = false) {
+    public void ChangeEchoCount(bool manual = false, int count = 1) {
         lock (this) {
-            Echo++;
+            Echo += count;
+            if (Echo < 0) {
+                Echo = 0;
+            }
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1, count));
         }
     }
 

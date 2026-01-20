@@ -414,12 +414,13 @@ public static class TicketRaffle {
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
             recipes = GetRecipesByMatrix(SelectedMatrixId1);
-            int[] specialItems = [IFE分馏配方通用核心, 0];
+            int[] specialItems = [IFE分馏配方通用核心, IFE原版配方核心, 0];//最后一个是分馏配方
             float[] specialRates = new float[2];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-            specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            specialRates[0] = 0.5f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            specialRates[1] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
-            specialRates[1] = recipes.Count == 0
+            specialRates[2] = recipes.Count == 0
                 ? 0
                 : (1.0f / RecipeRaffleMaxCounts[TicketIdx1])
                   * RecipeValue
@@ -442,11 +443,11 @@ public static class TicketRaffle {
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             float specialRates16Sum = 1 - specialRates[0];
-            specialRates[1] = specialRates16Sum * 50 / 116;
-            specialRates[2] = specialRates16Sum * 35 / 116;
-            specialRates[3] = specialRates16Sum * 20 / 116;
-            specialRates[4] = specialRates16Sum * 10 / 116;
-            specialRates[5] = specialRates16Sum * 1 / 116;
+            specialRates[1] = specialRates16Sum * 20 / 81;
+            specialRates[2] = specialRates16Sum * 20 / 81;
+            specialRates[3] = specialRates16Sum * 20 / 81;
+            specialRates[4] = specialRates16Sum * 20 / 81;
+            specialRates[5] = specialRates16Sum * 1 / 81;
             pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRates, []);
         } else if (poolId == 3) {
             if (commonItems3.Count == 0) {
@@ -520,7 +521,7 @@ public static class TicketRaffle {
                     List<BaseRecipe> recipesOptimize = [..recipes];
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
-                    recipe.RewardThis(true);
+                    recipe.ChangeEchoCount(true);
                     if (recipe.Echo == 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
                     } else {
