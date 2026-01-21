@@ -4,7 +4,6 @@ using System.IO;
 using FE.Compatibility;
 using FE.Logic.Manager;
 using NebulaAPI;
-using static FE.UI.View.Setting.SandboxMode;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -34,13 +33,10 @@ public abstract class BaseRecipe(
     /// </summary>
     public int MatrixID = 0;
 
-    // 抽到的回响+经验得到的回响
-    
-    
     /// <summary>
     /// 配方增幅
     /// </summary>
-    public float Progress => (float)Math.Sqrt(Echo);
+    public float Progress => (float)Math.Sqrt(Echo + Level + 8) / 5;
     /// <summary>
     /// 配方成功率
     /// </summary>
@@ -88,7 +84,7 @@ public abstract class BaseRecipe(
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
-            AddExp(1);
+            RewardExp(1);
             return null;
         }
         //无变化
@@ -114,7 +110,7 @@ public abstract class BaseRecipe(
                 }
                 list.Add(new(true, outputInfo.OutputID, countReal));
                 outputInfo.OutputTotalCount += countReal;
-                AddExp(countReal);
+                RewardExp(countReal);
                 break;
             }
         }
@@ -143,58 +139,87 @@ public abstract class BaseRecipe(
     #region 配方品质、等级
 
     /// <summary>
-    /// 回响数目
+    /// 回响，第二次抽到此配方后每次+1
     /// </summary>
-    public int Echo { get; private set; } = 0;
+    public int Echo { get; set; } = 0;
     /// <summary>
-    /// 是否未解锁
+    /// 等级，初始为0，抽到之后变为1，之后只能通过经验升级
     /// </summary>
-    public bool Locked => Echo <= 0;
-    /// <summary>
-    /// 是否已解锁
-    /// </summary>
-    public bool Unlocked => Echo > 0;
-
+    public int Level { get; set; } = 0;
     /// <summary>
     /// 经验值
     /// </summary>
     public float Exp { get; private set; } = 0;
-
-    public int GetExp(int quality, int level) {
-        return (int)(40 * Math.Pow(quality * 2 + level + 2, 2.0));
-    }
-
     /// <summary>
-    /// 添加经验，同时触发升级与突破
+    /// 升级所需经验
     /// </summary>
-    public void AddExp(float exp, bool useExpMultiRate = true, bool manual = false) {
-        float finalExp = useExpMultiRate ? exp * ExpMultiRate : exp;
-        lock (this) {
-            Exp += finalExp;
-            if (Exp > 10000) {
-                Exp -= 10000;
-                Echo++;
-            }
-        }
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
-                finalExp));
-        }
-    }
+    public int CurrLevelMaxExp => (int)(1000 * Math.Pow(2, Level - 1));
+    /// <summary>
+    /// 是否未解锁
+    /// </summary>
+    public bool Locked => Level <= 0;
+    /// <summary>
+    /// 是否已解锁
+    /// </summary>
+    public bool Unlocked => Level > 0;
 
     /// <summary>
     /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则回响数目+1，并检查是否可突破。
     /// </summary>
-    public void ChangeEchoCount(bool manual = false, int count = 1) {
+    public void RewardEcho(bool manual = false) {
         lock (this) {
-            Echo += count;
-            if (Echo < 0) {
-                Echo = 0;
+            if (Locked) {
+                Level = 1;
+            } else {
+                Echo++;
             }
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1, count));
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
+        }
+    }
+
+    /// <summary>
+    /// 沙盒模式修改回响
+    /// </summary>
+    public void ChangeEchoTo(int targetEcho, bool manual = false) {
+        lock (this) {
+            Echo = Math.Max(0, targetEcho);
+        }
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
+                targetEcho));
+        }
+    }
+
+    /// <summary>
+    /// 添加经验，同时触发升级与突破
+    /// </summary>
+    public void RewardExp(float exp, bool manual = false) {
+        lock (this) {
+            Exp += exp;
+            if (Exp >= CurrLevelMaxExp) {
+                Exp -= CurrLevelMaxExp;
+                Level++;
+            }
+        }
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 3,
+                exp));
+        }
+    }
+
+    /// <summary>
+    /// 沙盒模式修改等级
+    /// </summary>
+    public void ChangeLevelTo(int targetLevel, bool manual = false) {
+        lock (this) {
+            Level = Math.Max(0, targetLevel);
+        }
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 4,
+                targetLevel));
         }
     }
 
@@ -202,7 +227,7 @@ public abstract class BaseRecipe(
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
-    public string LvExp => $"Echo{Echo}  Exp{Exp:F0}";
+    public string LvExp => $"{"回响".Translate()} {Echo}    {"等级".Translate()} {Level} ({Exp:F0}/{CurrLevelMaxExp})";
     public string LvExpWC => LvExp.WithColor(MatrixID - I电磁矩阵);
 
     #region IModCanSave
@@ -231,24 +256,15 @@ public abstract class BaseRecipe(
                 LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
-        if (version < 2) {
-            r.ReadInt32();
-            r.ReadInt32();
-        }
-        Exp = r.ReadSingle();
-        Echo = r.ReadInt32();
-        if (Exp < 0) {
-            Exp = 0;
-        }
-        if (Echo < 0) {
-            Echo = 0;
-        }
-        AddExp(0);//触发升级、突破判断
+        Echo = Math.Max(0, r.ReadInt32());
+        Level = Math.Max(0, r.ReadInt32());
+        Exp = Math.Max(0, r.ReadSingle());
+        RewardExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
     }
 
     public virtual void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(OutputMain.Count);
         foreach (OutputInfo info in OutputMain) {
             w.Write(info.OutputID);
@@ -259,8 +275,9 @@ public abstract class BaseRecipe(
             w.Write(info.OutputID);
             w.Write(info.OutputTotalCount);
         }
-        w.Write(Exp);
         w.Write(Echo);
+        w.Write(Level);
+        w.Write(Exp);
         // 子类特定数据由重写的方法处理
     }
 
@@ -271,8 +288,9 @@ public abstract class BaseRecipe(
         foreach (OutputInfo info in OutputAppend) {
             info.OutputTotalCount = 0;
         }
-        Exp = 0;
         Echo = 0;
+        Level = 0;
+        Exp = 0;
     }
 
     #endregion

@@ -162,7 +162,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (recipe.Locked) {
-                recipe.ChangeEchoCount(true);
+                recipe.RewardEcho(true);
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }

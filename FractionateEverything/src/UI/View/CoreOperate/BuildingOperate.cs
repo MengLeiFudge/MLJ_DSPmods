@@ -492,10 +492,6 @@ public static class BuildingOperate {
         SelectedBuilding.ReinforcementLevel(0, true);
     }
 
-    public static ItemProto GetItemProto(int index) {
-        return LDB.items.Select(BuildingIds[index]);
-    }
-
     #region IModCanSave
 
     public static void Import(BinaryReader r) {

@@ -126,16 +126,29 @@ public static class FracRecipeOperate {
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
             wnd.AddButton(0, 1, y, tab, "兑换回响",
-                onClick: () => { GetRecipeEcho(SelectedRecipe); });
+                onClick: () => { SelectedRecipe.GetRecipeEcho(); });
         } else {
-            wnd.AddButton(0, 4, y, tab, "回响-10",
-                onClick: () => { ChangeEchoCount(SelectedRecipe, -10); });
-            wnd.AddButton(1, 4, y, tab, "回响-1",
-                onClick: () => { ChangeEchoCount(SelectedRecipe, -1); });
-            wnd.AddButton(2, 4, y, tab, "回响+1",
-                onClick: () => { ChangeEchoCount(SelectedRecipe, 1); });
-            wnd.AddButton(3, 4, y, tab, "回响+10",
-                onClick: () => { ChangeEchoCount(SelectedRecipe, 10); });
+            wnd.AddButton(0, 5, y, tab, "重置回响",
+                onClick: () => { SelectedRecipe.ChangeEchoTo(0); });
+            wnd.AddButton(1, 5, y, tab, "回响-10",
+                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 10); });
+            wnd.AddButton(1, 5, y, tab, "回响-1",
+                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 1); });
+            wnd.AddButton(2, 5, y, tab, "回响+1",
+                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 1); });
+            wnd.AddButton(3, 5, y, tab, "回响+10",
+                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 10); });
+            y += 36f;
+            wnd.AddButton(0, 5, y, tab, "重置等级",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(0); });
+            wnd.AddButton(1, 5, y, tab, "等级-10",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 10); });
+            wnd.AddButton(1, 5, y, tab, "等级-1",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 1); });
+            wnd.AddButton(2, 5, y, tab, "等级+1",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 1); });
+            wnd.AddButton(3, 5, y, tab, "等级+10",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 10); });
         }
         int[] rang;
         if (!GenesisBook.Enable) {
@@ -299,7 +312,7 @@ public static class FracRecipeOperate {
         return sb.ToString();
     }
 
-    private static void GetRecipeEcho(BaseRecipe recipe) {
+    private static void GetRecipeEcho(this BaseRecipe recipe) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -330,20 +343,24 @@ public static class FracRecipeOperate {
                     return;
                 }
                 for (int i = 0; i < takeCount; i++) {
-                    recipe.ChangeEchoCount(true);
+                    recipe.RewardEcho(true);
                 }
             },
             null);
     }
 
-    public static void ChangeEchoCount(BaseRecipe recipe, int changeCount) {
+    private static void ChangeEchoTo(this BaseRecipe recipe, int target) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
         if (recipe == null) {
+            UIMessageBox.Show("提示".Translate(),
+                "配方不存在！".Translate(),
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
             return;
         }
-        recipe.ChangeEchoCount(true, changeCount);
+        recipe.ChangeEchoTo(target);
     }
 
     #region IModCanSave
