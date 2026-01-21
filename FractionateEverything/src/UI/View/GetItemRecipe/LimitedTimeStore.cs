@@ -291,7 +291,8 @@ public static class LimitedTimeStore {
         List<ExchangeInfo> recipeExchangeList = [];
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list)
             .Where(recipe => GameMain.history.ItemUnlocked(recipe.InputID)
-                             && GameMain.history.ItemUnlocked(recipe.MatrixID))
+                             && GameMain.history.ItemUnlocked(recipe.MatrixID)
+                             && !recipe.IsMaxEcho)
             .ToList();
         foreach (BaseRecipe recipe in recipes) {
             ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);

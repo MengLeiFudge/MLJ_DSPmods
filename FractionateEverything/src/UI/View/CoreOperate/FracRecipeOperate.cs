@@ -132,22 +132,22 @@ public static class FracRecipeOperate {
                 onClick: () => { SelectedRecipe.ChangeEchoTo(0); });
             wnd.AddButton(1, 5, y, tab, "回响-10",
                 onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 10); });
-            wnd.AddButton(1, 5, y, tab, "回响-1",
+            wnd.AddButton(2, 5, y, tab, "回响-1",
                 onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 1); });
-            wnd.AddButton(2, 5, y, tab, "回响+1",
+            wnd.AddButton(3, 5, y, tab, "回响+1",
                 onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 1); });
-            wnd.AddButton(3, 5, y, tab, "回响+10",
+            wnd.AddButton(4, 5, y, tab, "回响+10",
                 onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 10); });
             y += 36f;
             wnd.AddButton(0, 5, y, tab, "重置等级",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(0); });
             wnd.AddButton(1, 5, y, tab, "等级-10",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 10); });
-            wnd.AddButton(1, 5, y, tab, "等级-1",
+            wnd.AddButton(2, 5, y, tab, "等级-1",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 1); });
-            wnd.AddButton(2, 5, y, tab, "等级+1",
+            wnd.AddButton(3, 5, y, tab, "等级+1",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 1); });
-            wnd.AddButton(3, 5, y, tab, "等级+10",
+            wnd.AddButton(4, 5, y, tab, "等级+10",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 10); });
         }
         int[] rang;
@@ -186,7 +186,7 @@ public static class FracRecipeOperate {
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
         } else {
-            txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {recipe.LvExpWC}";
+            txtRecipeInfo[line].text = $"{recipe.TypeNameWC}    {recipe.LvExpWC}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
 
