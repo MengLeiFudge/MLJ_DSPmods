@@ -5,7 +5,6 @@ using BepInEx.Bootstrap;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
-using FE.UI.View.CoreOperate;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -96,20 +95,34 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
 
 public class RecipeChangePacket {
     public int eRecipe { get; set; }
-
     public int inputId { get; set; }
+    public int packetType { get; set; }
+    public int intVal { get; set; } = 0;
+    public float floatVal { get; set; } = 0;
 
-    public int mode { get; set; }
-
-    public float num { get; set; }
-
+    /// <summary>
+    /// 空构造方法必须保留
+    /// </summary>
     public RecipeChangePacket() { }
 
-    public RecipeChangePacket(ERecipe eRecipe, int inputId, int mode, float num = 0) {
+    public RecipeChangePacket(ERecipe eRecipe, int inputId, int packetType) {
         this.eRecipe = Convert.ToInt32(eRecipe);
         this.inputId = inputId;
-        this.mode = mode;
-        this.num = num;
+        this.packetType = packetType;
+    }
+
+    public RecipeChangePacket(ERecipe eRecipe, int inputId, int packetType, int intVal) {
+        this.eRecipe = Convert.ToInt32(eRecipe);
+        this.inputId = inputId;
+        this.packetType = packetType;
+        this.intVal = intVal;
+    }
+
+    public RecipeChangePacket(ERecipe eRecipe, int inputId, int packetType, float floatVal) {
+        this.eRecipe = Convert.ToInt32(eRecipe);
+        this.inputId = inputId;
+        this.packetType = packetType;
+        this.floatVal = floatVal;
     }
 }
 
@@ -120,12 +133,18 @@ public class RecipeChangePacket {
 public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacket> {
     public override void ProcessPacket(RecipeChangePacket packet, INebulaConnection conn) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>((ERecipe)packet.eRecipe, packet.inputId);
-        switch (packet.mode) {
+        switch (packet.packetType) {
             case 1:
-                recipe.ChangeEchoCount(false, (int)packet.num);
+                recipe.RewardEcho();
                 break;
             case 2:
-                recipe.AddExp(packet.num, false);
+                recipe.ChangeEchoTo(packet.intVal);
+                break;
+            case 3:
+                recipe.RewardExp(packet.floatVal);
+                break;
+            case 4:
+                recipe.ChangeLevelTo(packet.intVal);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
@@ -135,18 +154,28 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
 }
 
 public class BuildingChangePacket {
-    public int index { get; set; }
-
-    public int mode { get; set; }
-
-    public int num { get; set; }
+    public int buildingId { get; set; }
+    public int packetType { get; set; }
+    public int intVal { get; set; } = 0;
+    public float floatVal { get; set; } = 0;
 
     public BuildingChangePacket() { }
 
-    public BuildingChangePacket(int index, int mode, int num = 0) {
-        this.index = index;
-        this.mode = mode;
-        this.num = num;
+    public BuildingChangePacket(int buildingId, int packetType) {
+        this.buildingId = buildingId;
+        this.packetType = packetType;
+    }
+
+    public BuildingChangePacket(int buildingId, int packetType, int intVal) {
+        this.buildingId = buildingId;
+        this.packetType = packetType;
+        this.intVal = intVal;
+    }
+
+    public BuildingChangePacket(int buildingId, int packetType, float floatVal) {
+        this.buildingId = buildingId;
+        this.packetType = packetType;
+        this.floatVal = floatVal;
     }
 }
 
@@ -156,10 +185,8 @@ public class BuildingChangePacket {
 [RegisterPacketProcessor]
 public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangePacket> {
     public override void ProcessPacket(BuildingChangePacket packet, INebulaConnection conn) {
-        ItemProto selectedBuilding = packet.mode == 5
-            ? LDB.items.Select(packet.index)
-            : BuildingOperate.GetItemProto(packet.index);
-        switch (packet.mode) {
+        ItemProto selectedBuilding = LDB.items.Select(packet.buildingId);
+        switch (packet.packetType) {
             case 1:
                 selectedBuilding.EnableFluidOutputStack(true);
                 break;
@@ -173,7 +200,7 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
                 PointAggregateTower.Level++;
                 break;
             case 5:
-                selectedBuilding.ReinforcementLevel(packet.num);
+                selectedBuilding.ReinforcementLevel(packet.intVal);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
