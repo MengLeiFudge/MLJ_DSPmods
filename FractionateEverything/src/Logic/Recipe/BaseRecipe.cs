@@ -34,9 +34,9 @@ public abstract class BaseRecipe(
     public int MatrixID = 0;
 
     /// <summary>
-    /// 配方增幅
+    /// 配方进度，最小值为1，最大值为3
     /// </summary>
-    public float Progress => (float)Math.Sqrt(Echo + Level + 8) / 5;
+    public float Progress => 1 + 0.5f * (float)Math.Log(0.3f * (Math.Min(51, Level + Echo) - 1) + 1, 2);
     /// <summary>
     /// 配方成功率
     /// </summary>
@@ -44,7 +44,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率
     /// </summary>
-    public float DestroyRate => 0.05f / Progress;
+    public float DestroyRate => 0.05f;
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。
@@ -100,7 +100,7 @@ public abstract class BaseRecipe(
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * (1 + MainOutputCountInc + buffBonus2);
+                float countAvg = outputInfo.OutputCount * (1 + MainOutputCountInc) * (1 + buffBonus2);
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -162,6 +162,14 @@ public abstract class BaseRecipe(
     /// 是否已解锁
     /// </summary>
     public bool Unlocked => Level > 0;
+    /// <summary>
+    /// 回响是否已达上限
+    /// </summary>
+    public bool IsMaxEcho => Echo >= 40;
+    /// <summary>
+    /// 等级是否已达上限
+    /// </summary>
+    public bool IsMaxLevel => Level >= 20;
 
     /// <summary>
     /// 通过某种方式（例如抽奖，科技奖励等）获取到该配方。
@@ -171,8 +179,10 @@ public abstract class BaseRecipe(
         lock (this) {
             if (Locked) {
                 Level = 1;
-            } else {
+            } else if (!IsMaxEcho) {
                 Echo++;
+            } else {
+                return;
             }
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
@@ -185,7 +195,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public void ChangeEchoTo(int targetEcho, bool manual = false) {
         lock (this) {
-            Echo = Math.Max(0, targetEcho);
+            Echo = Math.Max(0, Math.Min(40, targetEcho));
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
@@ -198,10 +208,16 @@ public abstract class BaseRecipe(
     /// </summary>
     public void RewardExp(float exp, bool manual = false) {
         lock (this) {
+            if (IsMaxLevel) {
+                return;
+            }
             Exp += exp;
             if (Exp >= CurrLevelMaxExp) {
                 Exp -= CurrLevelMaxExp;
                 Level++;
+                if (IsMaxLevel) {
+                    Exp = 0;
+                }
             }
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
@@ -215,7 +231,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public void ChangeLevelTo(int targetLevel, bool manual = false) {
         lock (this) {
-            Level = Math.Max(0, targetLevel);
+            Level = Math.Max(0, Math.Min(20, targetLevel));
         }
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 4,
@@ -227,7 +243,8 @@ public abstract class BaseRecipe(
 
     public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
-    public string LvExp => $"{"回响".Translate()} {Echo}    {"等级".Translate()} {Level} ({Exp:F0}/{CurrLevelMaxExp})";
+    public string LvExp => $"{"回响".Translate()} {Echo}    {"等级".Translate()} {Level} "
+                           + (Level >= 20 ? "(MAX)" : $"({Exp:F0}/{CurrLevelMaxExp})");
     public string LvExpWC => LvExp.WithColor(MatrixID - I电磁矩阵);
 
     #region IModCanSave
@@ -256,8 +273,8 @@ public abstract class BaseRecipe(
                 LogWarning($"Output {outputID} not found in {TypeName} append outputs");
             }
         }
-        Echo = Math.Max(0, r.ReadInt32());
-        Level = Math.Max(0, r.ReadInt32());
+        Echo = Math.Max(0, Math.Min(40, r.ReadInt32()));
+        Level = Math.Max(0, Math.Min(20, r.ReadInt32()));
         Exp = Math.Max(0, r.ReadSingle());
         RewardExp(0);//触发升级、突破判断
         // 子类特定数据由重写的方法处理
