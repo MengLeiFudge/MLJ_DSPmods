@@ -413,7 +413,7 @@ public static class TicketRaffle {
     /// </summary>
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
-            recipes = GetRecipesByMatrix(SelectedMatrixId1);
+            recipes = GetRecipesByMatrix(SelectedMatrixId1).Where(r => !r.IsMaxEcho).ToList();
             int[] specialItems = [IFE分馏配方通用核心, IFE原版配方核心, 0];//最后一个是分馏配方
             float[] specialRates = new float[3];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
@@ -522,6 +522,9 @@ public static class TicketRaffle {
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
                     recipe.RewardEcho(true);
+                    if (recipe.IsMaxEcho) {
+                        recipes.Remove(recipe);
+                    }
                     if (recipe.Echo == 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
                     } else {

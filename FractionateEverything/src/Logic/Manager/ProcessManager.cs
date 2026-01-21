@@ -841,7 +841,7 @@ public static class ProcessManager {
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
-                float count = output.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
+                float count = output.OutputCount * (1 + recipe.MainOutputCountInc) * (1 + buffBonus2);
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                 //ratio: 不考虑损毁的情况下，物品转换为此项的综合概率
                 float ratio = recipeSuccessRate * output.SuccessRate;
