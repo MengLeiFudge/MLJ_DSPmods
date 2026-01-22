@@ -36,13 +36,13 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方进度，最小值为1，最大值为3
     /// </summary>
-    public float Progress => 1 + 0.5f * (float)Math.Log(0.3f * (Math.Min(51, Level + Echo) - 1) + 1, 2);
+    public float Progress => 1 + 2f * (float)Math.Log(0.1f * (Math.Min(51, Level + Echo) - 1) + 1, 6);
     /// <summary>
     /// 配方成功率
     /// </summary>
     public float SuccessRate => baseSuccessRate * Progress;
     /// <summary>
-    /// 配方损毁率
+    /// 配方损毁率，强制5%以使增产剂对分馏效果有明显提升
     /// </summary>
     public float DestroyRate => 0.05f;
 
