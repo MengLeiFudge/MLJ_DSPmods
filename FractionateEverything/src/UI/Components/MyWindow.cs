@@ -30,7 +30,7 @@ public class MyWindow : ManualBehaviour {
         var go = Instantiate(UIRoot.instance.uiGame.inserterWindow.gameObject);
         go.SetActive(false);
         go.name = "my-window";
-        Destroy(go.GetComponent<UITankWindow>());
+        Destroy(go.GetComponent<UIInserterWindow>());
         for (var i = go.transform.childCount - 1; i >= 0; i--) {
             var child = go.transform.GetChild(i).gameObject;
             if (child.name != "panel-bg" && child.name != "shadow") {
@@ -58,6 +58,10 @@ public class MyWindow : ManualBehaviour {
             win._Init(win.data);
         }
         return (T)win;
+    }
+
+    public override void _OnOpen() {
+        AutoFitWindowSize();
     }
 
     public override void _OnFree() {
@@ -229,8 +233,8 @@ public class MyWindow : ManualBehaviour {
     //     return cb;
     // }
 
-    public MyComboBox AddComboBox(float x, float y, RectTransform parent, string label = "", int fontSize = 15) {
-        var comboBox = MyComboBox.CreateComboBox(x, y, parent).WithPrompt(label).WithFontSize(fontSize);
+    public MyComboBox AddComboBox(float x, float y, RectTransform parent, int fontSize = 15) {
+        var comboBox = MyComboBox.CreateComboBox(x, y, parent).WithFontSize(fontSize);
         _maxX = Math.Max(_maxX, x + comboBox.Width);
         MaxY = Math.Max(MaxY, y + comboBox.Height);
         return comboBox;

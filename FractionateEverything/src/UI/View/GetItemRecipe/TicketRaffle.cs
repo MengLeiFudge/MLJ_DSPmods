@@ -196,8 +196,9 @@ public static class TicketRaffle {
 
         y += 20f + 7f;
         var txt = wnd.AddText2(x, y, tab, "配方奖池");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "配方奖池", "配方奖池说明");
-        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "配方奖池", "配方奖池说明");
+        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx1Entry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
@@ -227,8 +228,9 @@ public static class TicketRaffle {
 
         y += 20f + 7f;
         txt = wnd.AddText2(x, y, tab, "原胚奖池");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "原胚奖池", "原胚奖池说明");
-        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "原胚奖池", "原胚奖池说明");
+        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx2Entry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
@@ -249,8 +251,9 @@ public static class TicketRaffle {
 
         y += 20f;
         txt = wnd.AddText2(x, y, tab, "材料奖池");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "材料奖池", "材料奖池说明");
-        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "材料奖池", "材料奖池说明");
+        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx3Entry);
         y += 36f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
@@ -264,8 +267,9 @@ public static class TicketRaffle {
 
         y += 20f;
         txt = wnd.AddText2(x, y, tab, "建筑奖池");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "建筑奖池", "建筑奖池说明");
-        wnd.AddComboBox(GetPosition(1, 4).Item1, y, tab, "当前奖券")
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "建筑奖池", "建筑奖池说明");
+        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx4Entry);
         y += 36f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",

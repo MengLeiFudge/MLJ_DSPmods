@@ -627,30 +627,13 @@ public static class ProcessManager {
     }
 
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTickBeforePower))]
-    public static void FactorySystem_GameTickBeforePower_Postfix(ref FactorySystem __instance) {
+    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
+    public static void FactorySystem_GameTick_Postfix(ref FactorySystem __instance) {
         EntityData[] entityPool = __instance.factory.entityPool;
         PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
         for (int index = 1; index < __instance.fractionatorCursor; ++index) {
             if (__instance.fractionatorPool[index].id == index)
                 __instance.fractionatorPool[index].SetPCState(consumerPool, entityPool);
-        }
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.ParallelGameTickBeforePower))]
-    public static void FactorySystem_ParallelGameTickBeforePower_Postfix(ref FactorySystem __instance,
-        int _usedThreadCnt, int _curThreadIdx, int _minimumMissionCnt) {
-        EntityData[] entityPool = __instance.factory.entityPool;
-        PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
-        int _start;
-        int _end;
-        if (WorkerThreadExecutor.CalculateMissionIndex(1, __instance.fractionatorCursor - 1, _usedThreadCnt,
-                _curThreadIdx, _minimumMissionCnt, out _start, out _end)) {
-            for (int index = _start; index < _end; ++index) {
-                if (__instance.fractionatorPool[index].id == index)
-                    __instance.fractionatorPool[index].SetPCState(consumerPool, entityPool);
-            }
         }
     }
 
