@@ -914,7 +914,7 @@ public class GetDspData : BaseUnityPlugin {
 
                 RecipeProto proto2 = new RecipeProto();
                 proto.CopyPropsTo(ref proto2);
-                proto2.Type = (ERecipeType)(-1);
+                proto2.Type = unchecked((ERecipeType)(-1));
                 proto2.name = $"[负熵熔炉双倍产物]{proto.name}";
                 for (int i = 0; i < proto2.ResultCounts.Length; i++) {
                     proto2.ResultCounts[i] *= 2;
@@ -930,7 +930,7 @@ public class GetDspData : BaseUnityPlugin {
 
                 RecipeProto proto2 = new RecipeProto();
                 proto.CopyPropsTo(ref proto2);
-                proto2.Type = (ERecipeType)(-1);
+                proto2.Type = unchecked((ERecipeType)(-1));
                 proto2.name = $"[量子化工厂双倍产物]{proto.name}";
                 for (int i = 0; i < proto2.ResultCounts.Length; i++) {
                     proto2.ResultCounts[i] *= 2;
