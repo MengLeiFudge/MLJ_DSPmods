@@ -38,7 +38,7 @@ public static class ImportantItem {
         float x = 0f;
         float y = 18f;
         Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提取物品", "提取物品说明");
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "提取物品", "提取物品说明");
         y += 36f + 7f;
         int index = 0;
         for (int i = 0; i < itemIdOriArr.Length; i++) {
