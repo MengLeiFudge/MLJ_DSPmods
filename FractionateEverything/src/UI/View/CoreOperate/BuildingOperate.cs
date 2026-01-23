@@ -133,7 +133,8 @@ public static class BuildingOperate {
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
         float y = 18f + 7f;
-        wnd.AddComboBox(x, y, tab, "建筑类型")
+        var txt = wnd.AddText2(x, y, tab, "建筑类型");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏塔增幅芯片));
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");

@@ -10,6 +10,15 @@
         <AssemblyName>AfterBuildEvent</AssemblyName>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PlatformTarget>x64</PlatformTarget>
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="SharpZipLib" Version="*"/>
     </ItemGroup>
