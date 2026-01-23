@@ -43,9 +43,9 @@ public static class SandboxMode {
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
         var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
-        wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+        wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
             ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
             "经验获取倍率", "经验获取倍率说明");
     }
 

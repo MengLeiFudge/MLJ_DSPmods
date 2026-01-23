@@ -118,25 +118,28 @@ public static class Miscellaneous {
         tab = wnd.AddTab(trans, "杂项设置");
         float x = 0f;
         float y = 18f;
-        wnd.AddComboBox(x, y, tab, "左键单击时提取几组物品")
+        var txt = wnd.AddText2(x, y, tab, "左键单击时提取几组物品");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
         y += 36f;
-        wnd.AddComboBox(x, y, tab, "右键单击时提取几组物品")
+        txt = wnd.AddText2(x, y, tab, "右键单击时提取几组物品");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
         y += 36f;
-        wnd.AddComboBox(x, y, tab, "物品消耗顺序")
+        txt = wnd.AddText2(x, y, tab, "物品消耗顺序");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
         y += 36f;
-        var txt = wnd.AddText2(x, y, tab, "物流交互站下载阈值");
-        DownloadThresholdSlider = wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+        txt = wnd.AddText2(x, y, tab, "物流交互站下载阈值");
+        DownloadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
             DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
+        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
             "物流交互站下载阈值", "物流交互站阈值修改说明");
         y += 36f;
         txt = wnd.AddText2(x, y, tab, "物流交互站上传阈值");
-        UploadThresholdSlider = wnd.AddSlider(x + txt.preferredWidth + 5, y, tab,
+        UploadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
             UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + txt.preferredWidth + 5 + 200 + 5, y, tab,
+        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
             "物流交互站上传阈值", "物流交互站阈值修改说明");
         y += 36f;
         var cb = wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");

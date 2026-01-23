@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using UnityEngine.UI;
-using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -453,20 +452,20 @@ public static class TutorialManager {
     private static int currTutorialID = 51;
 
     private static void AddTutorial(string name, string determinatorName, long[] determinatorParams) {
-        TutorialProto proto = new() {
-            ID = currTutorialID,
-            SID = "",
-            Name = $"{name}标题",
-            name = $"{name}标题",
-            PreText = $"{name}前字",
-            PostText = $"{name}后字",
-            Video = "",
-            DeterminatorName = determinatorName,
-            DeterminatorParams = determinatorParams,
-        };
-        LDBTool.PreAddProto(proto);
-        proto.Preload();
-        currTutorialID++;
+        // TutorialProto proto = new() {
+        //     ID = currTutorialID,
+        //     SID = "",
+        //     Name = $"{name}标题",
+        //     name = $"{name}标题",
+        //     PreText = $"{name}前字",
+        //     PostText = $"{name}后字",
+        //     Video = "",
+        //     DeterminatorName = determinatorName,
+        //     DeterminatorParams = determinatorParams,
+        // };
+        // LDBTool.PreAddProto(proto);
+        // proto.Preload();
+        // currTutorialID++;
     }
 
     /// <summary>
