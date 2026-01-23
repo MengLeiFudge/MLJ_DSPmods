@@ -55,7 +55,8 @@ public static class ItemInteraction {
         tab = wnd.AddTab(trans, "物品交互");
         float x = 0f;
         float y = 18f;
-        wnd.AddComboBox(x, y, tab, "物品价值区间")
+        var txt = wnd.AddText2(x, y, tab, "物品价值区间");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry)
             .WithOnSelChanged(SelectedItemIDChanged);
         wnd.AddCheckBox(GetPosition(2, 4).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
@@ -63,8 +64,8 @@ public static class ItemInteraction {
         wnd.AddButton(3, 4, y, tab, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
         y += 36f;
-        Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + txt.preferredWidth + 5, y, tab, "提取物品", "提取物品说明");
+        txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "提取物品", "提取物品说明");
         y += 36f + 7f;
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 5; j++) {
