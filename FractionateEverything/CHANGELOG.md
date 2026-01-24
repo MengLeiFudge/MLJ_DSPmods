@@ -1,3 +1,7 @@
+- v2.2.4
+    + 适配游戏版本 0.10.34。
+    + Adaptation of game version 0.10.34.
+
 - v2.2.3
     + 调整物流交互站阈值设置。
     + 适配联机Mod（NebulaMultiplayerMod）。
