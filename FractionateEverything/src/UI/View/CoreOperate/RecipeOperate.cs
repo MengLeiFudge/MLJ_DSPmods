@@ -122,7 +122,7 @@ public static class RecipeOperate {
             () => { OnButtonChangeItemClick(false, popupY); }, () => { OnButtonChangeItemClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
             "提示", "配方操作提示按钮说明1");
-        var txt = wnd.AddText2(x, y, tab, "配方类型");
+        var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
