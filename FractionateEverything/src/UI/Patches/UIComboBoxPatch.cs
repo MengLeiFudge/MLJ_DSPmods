@@ -15,9 +15,9 @@ public static class UIComboBoxPatch {
     [HarmonyPatch(typeof(UIComboBox), nameof(UIComboBox.SetState))]
     private static IEnumerable<CodeInstruction> UIComboBox_SetState_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
-        if (UxAssist.Enable) {
-            return instructions;
-        }
+        // if (UxAssist.Enable) {
+        //     return instructions;
+        // }
         var matcher = new CodeMatcher(instructions, generator);
         // 在 m_DropDownList.gameObject.SetActive(this.isDroppedDown) 之后插入 SetAsLastSibling
         matcher.MatchForward(false,
@@ -37,6 +37,10 @@ public static class UIComboBoxPatch {
             new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(UIComboBox), "m_DropDownList")),
             new CodeInstruction(OpCodes.Callvirt,
                 AccessTools.PropertyGetter(typeof(Transform), nameof(Transform.parent))),
+            new CodeInstruction(OpCodes.Callvirt,
+                AccessTools.Method(typeof(Transform), nameof(Transform.SetAsLastSibling))),
+            new CodeInstruction(OpCodes.Ldarg_0),
+            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(UIComboBox), "m_DropDownList")),
             new CodeInstruction(OpCodes.Callvirt,
                 AccessTools.Method(typeof(Transform), nameof(Transform.SetAsLastSibling)))
         );

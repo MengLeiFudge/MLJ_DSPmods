@@ -197,7 +197,7 @@ public static class TicketRaffle {
         y += 20f + 7f;
         var txt = wnd.AddText2(x, y, tab, "配方奖池");
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "配方奖池", "配方奖池说明");
-        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx1Entry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
@@ -229,7 +229,7 @@ public static class TicketRaffle {
         y += 20f + 7f;
         txt = wnd.AddText2(x, y, tab, "原胚奖池");
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "原胚奖池", "原胚奖池说明");
-        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx2Entry);
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
@@ -252,7 +252,7 @@ public static class TicketRaffle {
         y += 20f;
         txt = wnd.AddText2(x, y, tab, "材料奖池");
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "材料奖池", "材料奖池说明");
-        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx3Entry);
         y += 36f;
@@ -268,7 +268,7 @@ public static class TicketRaffle {
         y += 20f;
         txt = wnd.AddText2(x, y, tab, "建筑奖池");
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "建筑奖池", "建筑奖池说明");
-        txt = wnd.AddText2(x, y, tab, "当前奖券");
+        txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx4Entry);
         y += 36f;
@@ -935,12 +935,24 @@ public static class TicketRaffle {
         }
         if (version >= 3) {
             TicketIdx1Entry.Value = r.ReadInt32();
+            if (TicketIdx1Entry.Value < 0 || TicketIdx1Entry.Value >= TicketIds.Length) {
+                TicketIdx1Entry.Value = 0;
+            }
             EnableAutoRaffle1Entry.Value = r.ReadBoolean();
             TicketIdx2Entry.Value = r.ReadInt32();
+            if (TicketIdx2Entry.Value < 0 || TicketIdx2Entry.Value >= TicketIds.Length) {
+                TicketIdx2Entry.Value = 0;
+            }
             EnableAutoRaffle2Entry.Value = r.ReadBoolean();
             TicketIdx3Entry.Value = r.ReadInt32();
+            if (TicketIdx3Entry.Value < 0 || TicketIdx3Entry.Value >= TicketIds.Length) {
+                TicketIdx3Entry.Value = 0;
+            }
             EnableAutoRaffle3Entry.Value = r.ReadBoolean();
             TicketIdx4Entry.Value = r.ReadInt32();
+            if (TicketIdx4Entry.Value < 0 || TicketIdx4Entry.Value >= TicketIds.Length) {
+                TicketIdx4Entry.Value = 0;
+            }
             EnableAutoRaffle4Entry.Value = r.ReadBoolean();
         }
         for (int i = 0; i < 4; i++) {
