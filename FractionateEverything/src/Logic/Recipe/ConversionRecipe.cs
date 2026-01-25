@@ -246,7 +246,7 @@ public class ConversionRecipe : BaseRecipe {
                     float outputCount = allocatedValue / (successRate * itemValue[outputID]);
                     outputMain.Add(new(successRate, outputID, outputCount));
                 }
-                AddRecipe(new ConversionRecipe(inputID, 0.05f,
+                AddRecipe(new ConversionRecipe(inputID, 0.02f,
                     outputMain,
                     [
                         new OutputInfo(0.01f, IFE转化精华, 1),
