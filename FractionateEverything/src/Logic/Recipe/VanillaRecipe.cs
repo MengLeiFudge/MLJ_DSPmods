@@ -116,6 +116,7 @@ public class VanillaRecipe {
         for (int i = 0; i < upgrade2; i++) {
             UpgradeTime();
         }
+        RecipeProto.InitRecipeItems();
     }
 
     public virtual void Export(BinaryWriter w) {
@@ -140,6 +141,7 @@ public class VanillaRecipe {
         //清空缓存
         inputUpgrades.Clear();
         timeSpendUpgrade = 0;
+        RecipeProto.InitRecipeItems();
     }
 
     #endregion
