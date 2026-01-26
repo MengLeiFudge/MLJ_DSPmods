@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI.Youthcat;
 
 namespace FE.UI.Patches;
 
@@ -36,12 +37,14 @@ public static class IconSetPatch {
         __instance.spriteIndexMap = new();
         __instance.texture.SetPixels(new Color[4000000]);
         __instance.texture.Apply();
+        List<TextIconMapping.IconConfig> iconConfigList = new();
         uint num1 = 0;
         ItemProto[] dataArray1 = LDB.items.dataArray;
         int length1 = dataArray1.Length;
         for (int index = 0; index < length1; ++index) {
             uint num2 = 0;
-            Sprite iconSprite = dataArray1[index].iconSprite;
+            ItemProto itemProto = dataArray1[index];
+            Sprite iconSprite = itemProto.iconSprite;
             if (iconSprite != null) {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
                     num2 = __instance.spriteIndexMap[iconSprite];
@@ -53,11 +56,18 @@ public static class IconSetPatch {
                     } else {
                         int num3 = (int)num2 % 25;
                         int num4 = (int)num2 / 25;
-                        Graphics.CopyTexture(dataArray1[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
-                            80/*0x50*/, __instance.texture, 0, 0, num3 * 80/*0x50*/, num4 * 80/*0x50*/);
-                        //LogDebug($"添加图标到图集，idx={num2}，物品{dataArray1[index].name}({dataArray1[index].ID})");
+                        Graphics.CopyTexture(itemProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/, 80/*0x50*/,
+                            __instance.texture, 0, 0, num3 * 80/*0x50*/, num4 * 80/*0x50*/);
                     }
                     __instance.spriteIndexMap[iconSprite] = num2;
+                }
+                if (!string.IsNullOrEmpty(itemProto.IconTag)) {
+                    int num5 = (int)num2 % 25;
+                    int num6 = (int)num2 / 25;
+                    TextIconMapping.IconConfig iconConfig = new TextIconMapping.IconConfig(itemProto.name,
+                        itemProto.IconTag, new(num5 / 25f, num6 / 25f),
+                        new((num5 + 1) / 25f, (num6 + 1) / 25f), new(24f, 24f), true);
+                    iconConfigList.Add(iconConfig);
                 }
             }
             __instance.itemIconIndex[dataArray1[index].ID] = num2;
@@ -67,53 +77,63 @@ public static class IconSetPatch {
         VeinProto[] dataArray2 = LDB.veins.dataArray;
         int length2 = dataArray2.Length;
         for (int index = 0; index < length2; ++index) {
-            uint num5 = 0;
-            Sprite iconSprite = dataArray2[index].iconSprite;
+            uint num7 = 0;
+            VeinProto veinProto = dataArray2[index];
+            Sprite iconSprite = veinProto.iconSprite;
             if (iconSprite != null) {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
-                    num5 = __instance.spriteIndexMap[iconSprite];
+                    num7 = __instance.spriteIndexMap[iconSprite];
                 } else {
-                    num5 = ++num1;
-                    if (num5 >= 625U) {
-                        num5 = 0U;
+                    num7 = ++num1;
+                    if (num7 >= 625U) {
+                        num7 = 0U;
                         Debug.LogWarning("图标图集空间不足！");
                     } else {
-                        int num6 = (int)num5 % 25;
-                        int num7 = (int)num5 / 25;
-                        Graphics.CopyTexture(dataArray2[index].iconSprite80px.texture, 0, 0, 0, 0, 80/*0x50*/,
-                            80/*0x50*/, __instance.texture, 0, 0, num6 * 80/*0x50*/, num7 * 80/*0x50*/);
+                        int num8 = (int)num7 % 25;
+                        int num9 = (int)num7 / 25;
+                        Graphics.CopyTexture(veinProto.iconSprite80px.texture, 0, 0, 0, 0, 80/*0x50*/,
+                            80/*0x50*/, __instance.texture, 0, 0, num8 * 80/*0x50*/, num9 * 80/*0x50*/);
                     }
-                    __instance.spriteIndexMap[iconSprite] = num5;
+                    __instance.spriteIndexMap[iconSprite] = num7;
                 }
             }
-            __instance.veinIconIndex[dataArray2[index].ID] = num5;
-            __instance.signalIconIndex[dataArray2[index].ID + 12000] = num5;
+            __instance.veinIconIndex[dataArray2[index].ID] = num7;
+            __instance.signalIconIndex[dataArray2[index].ID + 12000] = num7;
         }
         __instance.veinIconIndexBuffer.SetData(__instance.veinIconIndex);
         RecipeProto[] dataArray3 = LDB.recipes.dataArray;
         int length3 = dataArray3.Length;
         for (int index = 0; index < length3; ++index) {
-            uint num8 = 0;
-            Sprite iconSprite = dataArray3[index].iconSprite;
+            uint num12 = 0;
+            RecipeProto recipeProto = dataArray3[index];
+            Sprite iconSprite = recipeProto.iconSprite;
             if (iconSprite != null) {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
-                    num8 = __instance.spriteIndexMap[iconSprite];
+                    num12 = __instance.spriteIndexMap[iconSprite];
                 } else {
-                    num8 = ++num1;
-                    if (num8 >= 625U) {
-                        num8 = 0U;
+                    num12 = ++num1;
+                    if (num12 >= 625U) {
+                        num12 = 0U;
                         Debug.LogWarning("图标图集空间不足！");
                     } else {
-                        int num9 = (int)num8 % 25;
-                        int num10 = (int)num8 / 25;
-                        Graphics.CopyTexture(dataArray3[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
-                            80/*0x50*/, __instance.texture, 0, 0, num9 * 80/*0x50*/, num10 * 80/*0x50*/);
+                        int num13 = (int)num12 % 25;
+                        int num14 = (int)num12 / 25;
+                        Graphics.CopyTexture(recipeProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
+                            80/*0x50*/, __instance.texture, 0, 0, num13 * 80/*0x50*/, num14 * 80/*0x50*/);
                     }
-                    __instance.spriteIndexMap[iconSprite] = num8;
+                    __instance.spriteIndexMap[iconSprite] = num12;
+                }
+                if (!string.IsNullOrEmpty(recipeProto.IconTag)) {
+                    int num15 = (int)num12 % 25;
+                    int num16 = (int)num12 / 25;
+                    TextIconMapping.IconConfig iconConfig = new TextIconMapping.IconConfig(recipeProto.name,
+                        recipeProto.IconTag, new(num15 / 25f, num16 / 25f),
+                        new((num15 + 1) / 25f, (num16 + 1) / 25f), new(24f, 24f), true);
+                    iconConfigList.Add(iconConfig);
                 }
             }
-            __instance.recipeIconIndex[dataArray3[index].ID] = num8;
-            __instance.signalIconIndex[dataArray3[index].ID + 20000] = num8;
+            __instance.recipeIconIndex[dataArray3[index].ID] = num12;
+            __instance.signalIconIndex[dataArray3[index].ID + 20000] = num12;
         }
         __instance.recipeIconIndexBuffer.SetData(__instance.recipeIconIndex);
         TechProto[] dataArray4 = LDB.techs.dataArray;
@@ -121,65 +141,78 @@ public static class IconSetPatch {
         int lastTechId = 0;
         List<string> iconPathSet = [];
         for (int index = length4 - 1; index >= 0; --index) {
-            int techId = dataArray4[index].ID;
-            uint num11 = 0;
-            Sprite iconSprite = dataArray4[index].iconSprite;
+            uint num17 = 0;
+            TechProto techProto = dataArray4[index];
+            Sprite iconSprite = techProto.iconSprite;
             if (iconSprite != null) {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
-                    num11 = __instance.spriteIndexMap[iconSprite];
+                    num17 = __instance.spriteIndexMap[iconSprite];
                 } else {
-                    if (techId > 2000 && techId == lastTechId - 1) {
-                        //LogInfo($"添加图标到图集，跳过无限科技{dataArray4[index].name}({dataArray4[index].ID})");
-                        lastTechId = techId;
+                    if (techProto.ID > 2000 && techProto.ID == lastTechId - 1) {
+                        lastTechId = techProto.ID;
                         continue;
                     }
-                    lastTechId = techId;
+                    lastTechId = techProto.ID;
                     if (iconPathSet.Contains(dataArray4[index].IconPath)) {
-                        // LogInfo($"添加图标到图集，跳过相同图标科技{dataArray4[index].name}({dataArray4[index].ID})");
                         continue;
                     }
-                    iconPathSet.Add(dataArray4[index].IconPath);
-                    num11 = ++num1;
-                    // Utils.Utils.LogInfo($"添加图标到图集，num11={num11}，科技{dataArray4[index].name}({dataArray4[index].ID})，IconPath:{dataArray4[index].IconPath}");
-                    if (num11 >= 625U) {
-                        num11 = 0U;
+                    num17 = ++num1;
+                    if (num17 >= 625U) {
+                        num17 = 0U;
                         Debug.LogWarning("图标图集空间不足！");
                     } else {
-                        int num12 = (int)num11 % 25;
-                        int num13 = (int)num11 / 25;
-                        Graphics.CopyTexture(dataArray4[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
-                            80/*0x50*/, __instance.texture, 0, 0, num12 * 80/*0x50*/, num13 * 80/*0x50*/);
+                        int num18 = (int)num17 % 25;
+                        int num19 = (int)num17 / 25;
+                        Graphics.CopyTexture(techProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/, 80/*0x50*/,
+                            __instance.texture, 0, 0, num18 * 80/*0x50*/, num19 * 80/*0x50*/);
                     }
-                    __instance.spriteIndexMap[iconSprite] = num11;
+                    __instance.spriteIndexMap[iconSprite] = num17;
+                }
+                if (!string.IsNullOrEmpty(techProto.IconTag)) {
+                    int num20 = (int)num17 % 25;
+                    int num21 = (int)num17 / 25;
+                    TextIconMapping.IconConfig iconConfig = new TextIconMapping.IconConfig(techProto.name,
+                        techProto.IconTag, new(num20 / 25f, num21 / 25f),
+                        new((num20 + 1) / 25f, (num21 + 1) / 25f), new(24f, 24f), true);
+                    iconConfigList.Add(iconConfig);
                 }
             }
-            __instance.techIconIndex[dataArray4[index].ID] = num11;
-            __instance.signalIconIndex[dataArray4[index].ID + 40000] = num11;
+            __instance.techIconIndex[dataArray4[index].ID] = num17;
+            __instance.signalIconIndex[dataArray4[index].ID + 40000] = num17;
         }
         __instance.techIconIndexBuffer.SetData(__instance.techIconIndex);
         SignalProto[] dataArray5 = LDB.signals.dataArray;
         int length5 = dataArray5.Length;
         for (int index = 0; index < length5; ++index) {
-            uint num14 = 0;
-            Sprite iconSprite = dataArray5[index].iconSprite;
+            uint num22 = 0;
+            SignalProto signalProto = dataArray5[index];
+            Sprite iconSprite = signalProto.iconSprite;
             if (iconSprite != null) {
                 if (__instance.spriteIndexMap.ContainsKey(iconSprite)) {
-                    num14 = __instance.spriteIndexMap[iconSprite];
+                    num22 = __instance.spriteIndexMap[iconSprite];
                 } else {
-                    num14 = ++num1;
-                    if (num14 >= 625U) {
-                        num14 = 0U;
+                    num22 = ++num1;
+                    if (num22 >= 625U) {
+                        num22 = 0U;
                         Debug.LogWarning("图标图集空间不足！");
                     } else {
-                        int num15 = (int)num14 % 25;
-                        int num16 = (int)num14 / 25;
-                        Graphics.CopyTexture(dataArray5[index].iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
-                            80/*0x50*/, __instance.texture, 0, 0, num15 * 80/*0x50*/, num16 * 80/*0x50*/);
+                        int num23 = (int)num22 % 25;
+                        int num24 = (int)num22 / 25;
+                        Graphics.CopyTexture(signalProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/,
+                            80/*0x50*/, __instance.texture, 0, 0, num23 * 80/*0x50*/, num24 * 80/*0x50*/);
                     }
-                    __instance.spriteIndexMap[iconSprite] = num14;
+                    __instance.spriteIndexMap[iconSprite] = num22;
+                }
+                if (!string.IsNullOrEmpty(signalProto.IconTag)) {
+                    int num25 = (int)num22 % 25;
+                    int num26 = (int)num22 / 25;
+                    TextIconMapping.IconConfig iconConfig = new TextIconMapping.IconConfig(signalProto.name,
+                        signalProto.IconTag, new(num25 / 25f, num26 / 25f),
+                        new((num25 + 1) / 25f, (num26 + 1) / 25f), new(24f, 24f), true);
+                    iconConfigList.Add(iconConfig);
                 }
             }
-            __instance.signalIconIndex[dataArray5[index].ID] = num14;
+            __instance.signalIconIndex[dataArray5[index].ID] = num22;
         }
         __instance.signalIconIndexBuffer.SetData(__instance.signalIconIndex);
         __instance.texture.Apply(true);
@@ -189,15 +222,15 @@ public static class IconSetPatch {
             using (MemoryStream input = new MemoryStream(textAsset.bytes)) {
                 using (BinaryReader binaryReader = new BinaryReader(input)) {
                     binaryReader.ReadInt32();
-                    int num17 = binaryReader.ReadInt32();
-                    for (int index1 = 0; index1 < num17; ++index1) {
+                    int num27 = binaryReader.ReadInt32();
+                    for (int index1 = 0; index1 < num27; ++index1) {
                         binaryReader.ReadInt32();
                         int index2 = binaryReader.ReadInt32();
-                        uint num18 = index2 >= 12000 || index2 <= 0 ? 0U : __instance.itemIconIndex[index2];
+                        uint num28 = index2 >= 12000 || index2 <= 0 ? 0U : __instance.itemIconIndex[index2];
                         for (int index3 = 0; index3 < 40; ++index3) {
-                            float num19 = binaryReader.ReadSingle();
-                            if (num18 > 0U)
-                                __instance.itemDescArr[num18 * 40U + index3] = num19;
+                            float num29 = binaryReader.ReadSingle();
+                            if (num28 > 0U)
+                                __instance.itemDescArr[num28 * 40U + index3] = num29;
                         }
                     }
                 }
@@ -205,8 +238,12 @@ public static class IconSetPatch {
         }
         __instance.itemIconDescBuffer.SetData(__instance.itemDescArr);
         __instance.loaded = true;
-        Debug.Log($"添加图标到图集，共计添加{num1}（需要<=625）");
         Debug.Log($"Icon set generated. Time cost: {highStopwatch.duration:0.000} s");
+        Debug.Log($"共计添加{num1}个图标到图集。只有图标数目<=625时，才能看到除屏蔽之外的所有图标。");
+        TextIconMapping generalIconMapping = Configs.builtin.generalIconMapping;
+        generalIconMapping.iconMappings = iconConfigList.ToArray();
+        generalIconMapping.Refresh();
+        Shader.SetGlobalTexture("_Global_IconSet_Tex", __instance.texture);
         return false;
     }
 }
