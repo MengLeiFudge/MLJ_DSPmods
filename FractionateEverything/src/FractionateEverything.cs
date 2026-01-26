@@ -216,7 +216,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         ModelProto.InitMaxModelIndex();
         ModelProto.InitModelIndices();
         ModelProto.InitModelOrders();
+        RecipeProto.InitRecipeItems();
         RecipeProto.InitFractionatorNeeds();
+        SignalProtoSet.InitSignalKeyIdPairs();
         RaycastLogic.LoadStatic();
         //重新设定堆叠大小
         StorageComponent.staticLoaded = false;
@@ -249,7 +251,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     }
 
     /// <summary>
-    /// 新建存档时执行。
+    /// 新建存档时执行，此方法无需修改。
     /// </summary>
     public void IntoOtherSave() {
         // 联机时客户端会先执行Import（源于Nebula），再执行IntoOtherSave（源于DSPModSave），所以客户端需要跳过
@@ -262,7 +264,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// <summary>
     /// 新建存档时执行。
     /// </summary>
-    public void BaseIntoOtherSave() {
+    private void BaseIntoOtherSave() {
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
