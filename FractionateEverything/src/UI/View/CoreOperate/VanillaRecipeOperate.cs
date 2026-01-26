@@ -37,49 +37,11 @@ public static class VanillaRecipeOperate {
     public static void AddTranslations() {
         Register("原版配方", "Vanilla Recipe");
 
-        Register("当前配方", "Current item");
+        Register("当前配方", "Current recipe");
         Register("配方操作提示按钮说明1",
             "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
             "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
         Register("配方类型", "Recipe type");
-
-        Register("解锁配方", "Unlock recipe");
-        Register("兑换回响", "Exchange echo");
-        Register("无法解锁", "Can not unlock");
-        Register("升至下一级", "Upgrade to next level");
-        Register("升至最高级", "Upgrade to max level");
-        Register("突破品质", "Breakthrough quality");
-
-        Register("回响", "Echo");
-
-        Register("配方不存在！", "Recipe does not exist!");
-        Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
-        Register("费用", "Cost");
-        Register("每种精华", "Each essence");
-        Register("成功率", "Success Rate");
-        Register("损毁率", "Destroy Rate");
-        Register("产出", "Output");
-        //Register("增产点数", "Proliferator Points");//原版已翻译
-        //Register("其他", "Others");//原版已翻译
-
-        Register("完全处理后的输出如下：", "The fully processed output is as follows:");
-        Register("配方已完全升级！", "Recipe has been completely upgraded!");
-        Register("配方已到最高品质！", "Recipe has reached the highest quality!");
-        Register("配方品质可突破，突破条件：",
-            "Recipe quality can be broken through. Conditions for breaking through:");
-        Register("达到当前品质最高等级（", "Reaching the highest current quality level (");
-        Register("）", ")");
-        Register("达到当前等级经验上限（", "Reach the current level experience cap (");
-        Register("拥有足够的同名回响（", "Have sufficient echoes of the same name (");
-
-        Register("当前配方尚未解锁，或科技层次不足！",
-            "The current item has not been unlocked, or the technology level is insufficient!");
-        Register("配方回响数目已达到上限！", "The number of recipe echoes has reached the limit!");
-        Register("配方回响数目已达到突破要求，暂时无法兑换！",
-            "The number of recipe echoes has reached the breakthrough requirement and cannot be exchanged for the time being!");
-        Register("配方经验已达上限！", "Recipe experience has reached the limit!");
-        Register("配方已升至当前品质最高等级！", "Recipe has been upgraded to the highest quality level currently available!");
-        Register("配方回响数目不足！", "Insufficient number of recipe echoes!");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
