@@ -22,6 +22,11 @@ public enum ERecipe {
     /// 转化配方
     /// </summary>
     Conversion,
+
+    /// <summary>
+    /// 回收配方
+    /// </summary>
+    Recycle,
 }
 
 public static class ERecipeExtension {
@@ -30,10 +35,12 @@ public static class ERecipeExtension {
         Register("建筑培养", "Building Train");
         Register("矿物复制", "Mineral Replication");
         Register("转化", "Conversion");
+        Register("回收", "Recycle");
         Register("未知配方", "Unknown Recipe");
         Register("建筑培养配方", "Building Train Recipe");
         Register("矿物复制配方", "Mineral Replication Recipe");
         Register("转化配方", "Conversion Recipe");
+        Register("回收配方", "Recycle Recipe");
     }
 
     public static readonly ERecipe[] RecipeTypes = (ERecipe[])Enum.GetValues(typeof(ERecipe));
@@ -48,6 +55,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => "建筑培养".Translate(),
             ERecipe.MineralCopy => "矿物复制".Translate(),
             ERecipe.Conversion => "转化".Translate(),
+            ERecipe.Recycle => "回收".Translate(),
             _ => "未知".Translate()
         };
     }
@@ -57,6 +65,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => "建筑培养配方".Translate(),
             ERecipe.MineralCopy => "矿物复制配方".Translate(),
             ERecipe.Conversion => "转化配方".Translate(),
+            ERecipe.Recycle => "回收配方".Translate(),
             _ => "未知配方".Translate()
         };
     }
@@ -66,6 +75,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => IFE交互塔,
             ERecipe.MineralCopy => IFE矿物复制塔,
             ERecipe.Conversion => IFE转化塔,
+            ERecipe.Recycle => IFE回收塔,
             _ => 0,
         };
     }

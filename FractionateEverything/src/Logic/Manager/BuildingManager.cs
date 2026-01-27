@@ -17,6 +17,7 @@ public static class BuildingManager {
         MineralReplicationTower.AddTranslations();
         PointAggregateTower.AddTranslations();
         ConversionTower.AddTranslations();
+        RecycleTower.AddTranslations();
 
         PlanetaryInteractionStation.AddTranslations();
         InterstellarInteractionStation.AddTranslations();
@@ -33,6 +34,7 @@ public static class BuildingManager {
         MineralReplicationTower.Create();
         PointAggregateTower.Create();
         ConversionTower.Create();
+        RecycleTower.Create();
 
         PlanetaryInteractionStation.Create();
         InterstellarInteractionStation.Create();
@@ -43,6 +45,7 @@ public static class BuildingManager {
         MineralReplicationTower.SetMaterial();
         PointAggregateTower.SetMaterial();
         ConversionTower.SetMaterial();
+        RecycleTower.SetMaterial();
 
         PlanetaryInteractionStation.SetMaterial();
         InterstellarInteractionStation.SetMaterial();
@@ -53,6 +56,7 @@ public static class BuildingManager {
         MineralReplicationTower.UpdateHpAndEnergy();
         PointAggregateTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
+        RecycleTower.UpdateHpAndEnergy();
 
         PlanetaryInteractionStation.UpdateHpAndEnergy();
         InterstellarInteractionStation.UpdateHpAndEnergy();
@@ -98,6 +102,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxProductOutputStack,
             IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxProductOutputStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxProductOutputStack,
+            IFE回收塔 => BaseFracProductOutputMax * RecycleTower.MaxProductOutputStack,
             _ => BaseFracProductOutputMax
         };
     }
@@ -335,6 +340,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementSuccessRate,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementSuccessRate,
             IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
+            IFE回收塔 => RecycleTower.ReinforcementSuccessRate,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementSuccessRate,
             _ => 0
         };
@@ -346,6 +352,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusDurability,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusDurability,
             IFE转化塔 => ConversionTower.ReinforcementBonusDurability,
+            IFE回收塔 => RecycleTower.ReinforcementBonusDurability,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusDurability,
             _ => 0
         };
@@ -357,6 +364,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusEnergy,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusEnergy,
             IFE转化塔 => ConversionTower.ReinforcementBonusEnergy,
+            IFE回收塔 => RecycleTower.ReinforcementBonusEnergy,
             IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusEnergy,
             _ => 0
         };
@@ -371,6 +379,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusFracSuccess,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusFracSuccess,
             IFE转化塔 => ConversionTower.ReinforcementBonusFracSuccess,
+            IFE回收塔 => RecycleTower.ReinforcementBonusFracSuccess,
             _ => 0
         };
     }
@@ -384,6 +393,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusMainOutputCount,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusMainOutputCount,
             IFE转化塔 => ConversionTower.ReinforcementBonusMainOutputCount,
+            IFE回收塔 => RecycleTower.ReinforcementBonusMainOutputCount,
             _ => 0
         };
     }
@@ -397,6 +407,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusAppendOutputRate,
             IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusAppendOutputRate,
             IFE转化塔 => ConversionTower.ReinforcementBonusAppendOutputRate,
+            IFE回收塔 => RecycleTower.ReinforcementBonusAppendOutputRate,
             _ => 0
         };
     }
@@ -422,16 +433,20 @@ public static class BuildingManager {
         if (version >= 2) {
             PlanetaryInteractionStation.Import(r);
         }
+        if (version >= 4) {
+            RecycleTower.Import(r);
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(3);
+        w.Write(4);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
         PointAggregateTower.Export(w);
         ConversionTower.Export(w);
         PlanetaryInteractionStation.Export(w);
+        RecycleTower.Export(w);
     }
 
     public static void IntoOtherSave() {
@@ -441,6 +456,7 @@ public static class BuildingManager {
         PointAggregateTower.IntoOtherSave();
         ConversionTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();
+        RecycleTower.IntoOtherSave();
     }
 
     #endregion

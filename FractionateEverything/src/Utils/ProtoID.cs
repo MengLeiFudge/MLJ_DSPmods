@@ -470,6 +470,7 @@ public static partial class Utils {
     internal const int IFE转化精华 = 8044;
     internal const int IFE万物分馏商店刷新提示 = 8048;
     internal const int IFE万物分馏科技解锁提示 = 8049;
+    internal const int IFE回收塔 = 8050;
     internal const int IBC插件效果分享塔 = 8051;
     internal const int IBC插件效果分享站 = 8052;
     internal const int IBC速度插件MK1 = 8061;
@@ -647,6 +648,7 @@ public static partial class Utils {
     internal const int MFE行星点金塔 = 615;
     internal const int MFE行星分解塔 = 616;
     internal const int MFE行星转化塔 = 617;
+    internal const int MFE回收塔 = 618;
     internal const int MBC插件效果分享塔 = 621;
     internal const int MBC插件效果分享站 = 622;
     internal const int MGB量子储液罐 = 801;
@@ -1029,6 +1031,7 @@ public static partial class Utils {
     internal const int RFE行星点金塔 = 935;
     internal const int RFE行星分解塔 = 936;
     internal const int RFE行星转化塔 = 937;
+    internal const int RFE回收塔 = 950;
     internal const int RBC插件效果分享塔 = 951;
     internal const int RBC插件效果分享站 = 952;
     internal const int RBC速度插件MK1 = 961;
@@ -1103,6 +1106,7 @@ public static partial class Utils {
     internal const int TFE行星物品点金 = 1264;
     internal const int TFE行星物品分解 = 1265;
     internal const int TFE行星物品转化 = 1266;
+    internal const int TFE回收塔 = 1270;
     internal const int TFE电磁奖券 = 1271;
     internal const int TFE能量奖券 = 1272;
     internal const int TFE结构奖券 = 1273;

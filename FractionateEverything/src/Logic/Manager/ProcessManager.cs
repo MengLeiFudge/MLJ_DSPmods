@@ -163,6 +163,10 @@ public static class ProcessManager {
                 InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Conversion);
                 return false;
+            case IFE回收塔:
+                InternalUpdate<RecycleRecipe>(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result, ERecipe.Recycle);
+                return false;
         }
         //原版分馏塔不做处理
         return true;
