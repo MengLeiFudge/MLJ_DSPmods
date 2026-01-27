@@ -58,6 +58,7 @@ public static class RecipeManager {
         BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
         ConversionRecipe.CreateAll();
+        RecycleRecipe.CreateAll();
 
         LogInfo($"Added {RecipeList.Count} fractionate recipes.");
     }
