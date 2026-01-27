@@ -908,7 +908,8 @@ public class GetDspData : BaseUnityPlugin {
             return;
         }
         if (GenesisBookEnable && Factories.Contains(I负熵熔炉)) {
-            if ((int)proto.Type is (int)ERecipeType_GB.Smelt or (int)ERecipeType_GB.矿物处理) {
+            if ((int)proto.Type is (int)ERecipeType_GB.Smelt or (int)ERecipeType_GB.标准冶炼) {
+                //todo: 确认配方
                 Factories = Factories.Where(x => x != I负熵熔炉).ToArray();
                 addRecipe(proto, add, Factories);
 
