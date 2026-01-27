@@ -457,11 +457,12 @@ public static class TutorialManager {
         //     SID = "",
         //     Name = $"{name}标题",
         //     name = $"{name}标题",
-        //     PreText = $"{name}前字",
-        //     PostText = $"{name}后字",
-        //     Video = "",
+        //     // PreText = $"{name}前字",
+        //     // PostText = $"{name}后字",
+        //     // Video = "",
         //     DeterminatorName = determinatorName,
         //     DeterminatorParams = determinatorParams,
+        //     LayoutFileName = $"tutorial-fe-{currTutorialID - 50}"
         // };
         // LDBTool.PreAddProto(proto);
         // proto.Preload();

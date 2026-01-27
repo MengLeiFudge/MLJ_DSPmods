@@ -90,7 +90,8 @@ public static partial class Utils {
                 (int)ERecipeType_GB.Fractionate => [I分馏塔],
                 (int)ERecipeType_GB.标准制造 => [IGB标准制造单元, IGB物质重组工厂, IGB天穹装配厂],
                 (int)ERecipeType_GB.高精度加工 => [IGB高精度装配线, IGB物质重组工厂, IGB工业先锋精密加工中心],
-                (int)ERecipeType_GB.矿物处理 => [IGB矿物处理厂, I负熵熔炉, IGB物质裂解塔],
+                (int)ERecipeType_GB.标准冶炼 => [IGB矿物处理厂, I负熵熔炉, IGB物质裂解塔],
+                (int)ERecipeType_GB.高热冶炼 => [I负熵熔炉],//todo
                 (int)ERecipeType_GB.垃圾回收 => [IGB物质分解设施],
                 (int)ERecipeType_GB.Research => [I矩阵研究站, I自演化研究站],
                 (int)ERecipeType_GB.高分子化工 => [IGB先进化学反应釜, IGB埃克森美孚化工厂],
