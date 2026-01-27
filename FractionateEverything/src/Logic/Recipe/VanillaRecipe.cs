@@ -100,6 +100,23 @@ public class VanillaRecipe {
         return true;
     }
 
+    /// <summary>
+    /// 获取指定物品的升级次数
+    /// </summary>
+    public int GetInputUpgradeCount(int itemID) {
+        if (inputUpgrades.TryGetValue(itemID, out int count)) {
+            return count;
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// 获取时间的升级次数
+    /// </summary>
+    public int GetTimeUpgradeCount() {
+        return timeSpendUpgrade;
+    }
+
     #region IModCanSave
 
     public virtual void Import(BinaryReader r) {
