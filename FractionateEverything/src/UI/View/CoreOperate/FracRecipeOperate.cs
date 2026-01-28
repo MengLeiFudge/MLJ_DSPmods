@@ -122,7 +122,7 @@ public static class FracRecipeOperate {
         var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏配方通用核心));
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏配方核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
@@ -174,7 +174,7 @@ public static class FracRecipeOperate {
         btnSelectedItem.Proto = SelectedItem;
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
-        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
+        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方核心)}";
 
         int line = 0;
         incSlider.gameObject.SetActive(false);
@@ -332,7 +332,7 @@ public static class FracRecipeOperate {
                 null);
             return;
         }
-        int takeId = IFE分馏配方通用核心;
+        int takeId = IFE分馏配方核心;
         int takeCount = 1;
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),

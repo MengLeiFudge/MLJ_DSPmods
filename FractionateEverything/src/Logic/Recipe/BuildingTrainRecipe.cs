@@ -14,10 +14,11 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加所有建筑培养配方
     /// </summary>
     public static void CreateAll() {
-        Create(IFE分馏塔原胚I型, 0.01f);
-        Create(IFE分馏塔原胚II型, 0.01f);
-        Create(IFE分馏塔原胚III型, 0.01f);
-        Create(IFE分馏塔原胚IV型, 0.01f);
+        Create(IFE交互塔原胚, 0.01f);
+        Create(IFE矿物复制塔原胚, 0.01f);
+        Create(IFE点数聚集塔原胚, 0.01f);
+        Create(IFE转化塔原胚, 0.01f);
+        Create(IFE回收塔原胚, 0.01f);
     }
 
     /// <summary>
@@ -25,10 +26,11 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// </summary>
     private static void Create(int inputID, float maxSuccessRate) {
         float[] ratioArr = inputID switch {
-            IFE分馏塔原胚I型 => [0.96f, 0.00f, 0.00f, 0.00f, 0.04f],
-            IFE分馏塔原胚II型 => [0.00f, 0.96f, 0.00f, 0.00f, 0.04f],
-            IFE分馏塔原胚III型 => [0.00f, 0.00f, 0.96f, 0.00f, 0.04f],
-            IFE分馏塔原胚IV型 => [0.00f, 0.00f, 0.00f, 0.96f, 0.04f],
+            IFE交互塔原胚 => [0.96f, 0.00f, 0.00f, 0.00f, 0.00f, 0.04f],
+            IFE矿物复制塔原胚 => [0.00f, 0.96f, 0.00f, 0.00f, 0.00f, 0.04f],
+            IFE点数聚集塔原胚 => [0.00f, 0.00f, 0.96f, 0.00f, 0.00f, 0.04f],
+            IFE转化塔原胚 => [0.00f, 0.00f, 0.00f, 0.96f, 0.00f, 0.04f],
+            IFE回收塔原胚 => [0.00f, 0.00f, 0.00f, 0.00f, 0.96f, 0.04f],
             _ => null
         };
         if (ratioArr == null) {
@@ -40,7 +42,8 @@ public class BuildingTrainRecipe : BaseRecipe {
             new(ratioArr[1] / sum, IFE矿物复制塔, 1),
             new(ratioArr[2] / sum, IFE点数聚集塔, 1),
             new(ratioArr[3] / sum, IFE转化塔, 1),
-            new(ratioArr[4] / sum, IFE分馏塔定向原胚, 1),
+            new(ratioArr[4] / sum, IFE回收塔, 1),
+            new(ratioArr[5] / sum, IFE分馏塔定向原胚, 1),
         ];
         OutputMain.RemoveAll(info => info.SuccessRate <= 0);
         AddRecipe(new BuildingTrainRecipe(inputID, maxSuccessRate, OutputMain, []));

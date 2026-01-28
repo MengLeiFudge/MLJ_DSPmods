@@ -25,7 +25,7 @@ public static class PointAggregateTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.2509f, 0.8392f, 1.0f);
+    public static Color color = new(0.2509f, 0.8392f, 1.0f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
@@ -379,15 +379,11 @@ public static class PointAggregateTower {
             MaxProductOutputStack = 4;
         }
         EnableFracForever = r.ReadBoolean();
-        if (version < 2) {
+        ReinforcementLevel = r.ReadInt32();
+        if (ReinforcementLevel < 0) {
             ReinforcementLevel = 0;
-        } else {
-            ReinforcementLevel = r.ReadInt32();
-            if (ReinforcementLevel < 0) {
-                ReinforcementLevel = 0;
-            } else if (ReinforcementLevel > MaxReinforcementLevel) {
-                ReinforcementLevel = MaxReinforcementLevel;
-            }
+        } else if (ReinforcementLevel > MaxReinforcementLevel) {
+            ReinforcementLevel = MaxReinforcementLevel;
         }
         UpdateHpAndEnergy();
         Level = r.ReadInt32();
@@ -399,7 +395,7 @@ public static class PointAggregateTower {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(EnableFluidOutputStack);
         w.Write(MaxProductOutputStack);
         w.Write(EnableFracForever);

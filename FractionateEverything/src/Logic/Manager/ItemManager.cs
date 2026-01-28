@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility;
+using FE.Logic.Building;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
@@ -51,32 +52,32 @@ public static class ItemManager {
             "A high-tech ticket with a lot of dark fog matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
             "一张高科技奖券，内部封装了大量黑雾矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
 
-        Register("分馏塔原胚I型", "Fractionator Proto I");
-        Register("I分馏塔原胚I型",
-            "One of the fractionator protos. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
-        Register("分馏塔原胚II型", "Fractionator Proto II");
-        Register("I分馏塔原胚II型",
+        Register("交互塔原胚", "Interaction Tower Proto");
+        Register("I交互塔原胚",
             "One of the fractionator protos. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
-        Register("分馏塔原胚III型", "Fractionator Proto III");
-        Register("I分馏塔原胚III型",
-            "One of the fractionator protos. After trained by Interaction Tower, Alchemy Tower, Deconstruction Tower and Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到点金塔、分解塔、转化塔，也有较低几率得到分馏塔定向原胚。");
-        Register("分馏塔原胚IV型", "Fractionator Proto IV");
-        Register("I分馏塔原胚IV型",
+        Register("矿物复制塔原胚", "Mineral Replication Tower Proto");
+        Register("I矿物复制塔原胚",
+            "One of the fractionator protos. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
+        Register("点数聚集塔原胚", "Point Aggregate Tower Proto");
+        Register("I点数聚集塔原胚",
             "One of the fractionator protos. After trained by Interaction Tower, Point Aggregate Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一。经过交互塔培养后，可以得到点数聚集塔，也有较低几率得到分馏塔定向原胚。");
-        Register("分馏塔原胚V型", "Fractionator Proto V");
-        Register("I分馏塔原胚V型",
-            "One of the fractionator protos. After trained by Interaction Tower, Quantum Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到量子复制塔，也有较低几率得到分馏塔定向原胚。");
+        Register("转化塔原胚", "Conversion Tower Proto");
+        Register("I转化塔原胚",
+            "One of the fractionator protos. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
+        Register("回收塔原胚", "Recycle Tower Proto");
+        Register("I回收塔原胚",
+            "One of the fractionator protos. After trained by Interaction Tower, Recycle Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一。经过交互塔培养后，可以得到回收塔，也有较低几率得到分馏塔定向原胚。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
         Register("I分馏塔定向原胚",
             "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
             "培养过程中发生变异的分馏塔原胚，具有极高的可塑性，可以直接培养为指定的分馏塔。");
-        Register("分馏配方通用核心", "Fractionate Recipe Core");
-        Register("I分馏配方通用核心",
+        Register("分馏配方核心", "Fractionate Recipe Core");
+        Register("I分馏配方核心",
             "A cube containing strange energy. There is a very small chance of getting it by drawing it in the recipes prize pool, and it will also be refreshed in the limited time shop. It can be used to unlock any recipes or redeem corresponding echoes in the Recipe Operations screen.",
             "含有奇特能量的立方体。有极小概率在配方奖池中抽取得到，限时商店也会刷新。在配方操作界面，可以用它解锁任何配方，或是兑换对应的回响。");
         Register("分馏塔增幅芯片", "Fractionator Increase Chip");
@@ -213,24 +214,29 @@ public static class ItemManager {
         recipe.NonProductive = true;
 
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚I型, "分馏塔原胚I型", "I分馏塔原胚I型",
+        item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(InteractionTower.color, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚II型, "分馏塔原胚II型", "I分馏塔原胚II型",
+        item = ProtoRegistry.RegisterItem(IFE矿物复制塔原胚, "矿物复制塔原胚", "I矿物复制塔原胚",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(MineralReplicationTower.color, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚III型, "分馏塔原胚III型", "I分馏塔原胚III型",
+        item = ProtoRegistry.RegisterItem(IFE点数聚集塔原胚, "点数聚集塔原胚", "I点数聚集塔原胚",
             "Assets/fe/frac-proto-rare", tab分馏 * 1000 + 203, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(PointAggregateTower.color, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏塔原胚IV型, "分馏塔原胚IV型", "I分馏塔原胚IV型",
+        item = ProtoRegistry.RegisterItem(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚",
             "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(ConversionTower.color, Color.gray));
+        item.UnlockKey = -1;
+
+        item = ProtoRegistry.RegisterItem(IFE回收塔原胚, "回收塔原胚", "I回收塔原胚",
+            "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
+            ProtoRegistry.GetDefaultIconDesc(RecycleTower.color, Color.gray));
         item.UnlockKey = -1;
 
         item = ProtoRegistry.RegisterItem(IFE分馏塔定向原胚, "分馏塔定向原胚", "I分馏塔定向原胚",
@@ -238,7 +244,7 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分馏配方通用核心, "分馏配方通用核心", "I分馏配方通用核心",
+        item = ProtoRegistry.RegisterItem(IFE分馏配方核心, "分馏配方核心", "I分馏配方核心",
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
@@ -353,11 +359,13 @@ public static class ItemManager {
         itemValue[IFE交互塔] = modFractionatorValue;
         itemValue[IFE转化塔] = modFractionatorValue;
         itemValue[IFE点数聚集塔] = modFractionatorValue;
+        itemValue[IFE回收塔] = modFractionatorValue;
         itemValue[IFE分馏塔定向原胚] = directionalFracProtoValue;
-        itemValue[IFE分馏塔原胚I型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE分馏塔原胚II型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE分馏塔原胚III型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE分馏塔原胚IV型] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE交互塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE矿物复制塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE点数聚集塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE回收塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         //设置精华价值
         itemValue[IFE复制精华] = 200.0f;
         itemValue[IFE点金精华] = 200.0f;
@@ -540,7 +548,7 @@ public static class ItemManager {
         }
 
         //设置核心、芯片价值
-        itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.01f;
+        itemValue[IFE分馏配方核心] = itemValue[IFE宇宙奖券] / 0.01f;
         itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
         itemValue[IFE原版配方核心] = itemValue[IFE宇宙奖券] / 0.05f;
 
@@ -601,7 +609,7 @@ public static class ItemManager {
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
-            if (item.ID == IFE分馏配方通用核心 || item.ID == IFE分馏塔增幅芯片) {
+            if (item.ID == IFE分馏配方核心 || item.ID == IFE分馏塔增幅芯片) {
                 //核心与芯片只有转化配方，归到宇宙矩阵
                 topMatrixID = I宇宙矩阵;
             } else if (item.Type == EItemType.Matrix) {
@@ -626,7 +634,7 @@ public static class ItemManager {
                 //黑雾特有材料或资源
                 topMatrixID = item.UnlockKey == -2 ? I黑雾矩阵 : I电磁矩阵;
             } else {
-                //主制作配方无前置科技（铁块），或没有主制作配方（分馏配方通用核心）
+                //主制作配方无前置科技（铁块），或没有主制作配方（分馏配方核心）
                 //此时尝试从其他配方的原料确认该物品可能的层级。如果仍未找到，归到黑雾矩阵
                 List<RecipeProto> recipes = LDB.recipes.dataArray
                     .Where(r => r.Items.Contains(item.ID)).ToList();

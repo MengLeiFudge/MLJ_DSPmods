@@ -420,26 +420,13 @@ public static class BuildingManager {
         InteractionTower.Import(r);
         MineralReplicationTower.Import(r);
         PointAggregateTower.Import(r);
-        if (version < 3) {
-            for (int i = 0; i < 3; i++) {
-                r.ReadInt32();
-                r.ReadBoolean();
-                r.ReadInt32();
-                r.ReadBoolean();
-                r.ReadInt32();
-            }
-        }
         ConversionTower.Import(r);
-        if (version >= 2) {
-            PlanetaryInteractionStation.Import(r);
-        }
-        if (version >= 4) {
-            RecycleTower.Import(r);
-        }
+        PlanetaryInteractionStation.Import(r);
+        RecycleTower.Import(r);
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(4);
+        w.Write(1);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
