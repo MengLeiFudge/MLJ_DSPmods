@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using CommonAPI.Systems;
 using FE.Utils;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -18,30 +20,26 @@ public class RecycleRecipe : BaseRecipe {
     public static void CreateAll() {
         // 遍历所有物品，为有maincraft配方的物品创建回收配方
         foreach (ItemProto item in LDB.items.dataArray) {
-            if (item == null || item.ID <= 0) continue;
-
             // 获取物品的主要配方
             RecipeProto mainRecipe = item.maincraft;
-            if (mainRecipe == null) continue;
-
+            if (mainRecipe == null) {
+                continue;
+            }
             // 跳过没有输入材料的配方
-            if (mainRecipe.Items == null || mainRecipe.Items.Length == 0) continue;
-
+            if (mainRecipe.Items.Length == 0) {
+                continue;
+            }
             // 跳过输出多个物品的配方（只处理单一产物的配方）
-            if (mainRecipe.Results == null || mainRecipe.Results.Length != 1) continue;
-            if (mainRecipe.Results[0] != item.ID) continue;
+            if (mainRecipe.Results.Length != 1) {
+                continue;
+            }
 
             // 计算25%的材料产出
             List<OutputInfo> outputs = new List<OutputInfo>();
             for (int i = 0; i < mainRecipe.Items.Length; i++) {
                 int materialId = mainRecipe.Items[i];
                 int materialCount = mainRecipe.ItemCounts[i];
-
-                // 计算25%的数量（至少为0.25）
-                float recycleCount = materialCount * 0.25f;
-                if (recycleCount < 0.25f) recycleCount = 0.25f;
-
-                outputs.Add(new OutputInfo(1.0f, materialId, recycleCount));
+                outputs.Add(new OutputInfo(0.25f, materialId, materialCount));
             }
 
             // 如果没有有效的输出，跳过
@@ -49,6 +47,19 @@ public class RecycleRecipe : BaseRecipe {
 
             // 创建回收配方，基础成功率100%
             AddRecipe(new RecycleRecipe(item.ID, 1.0f, outputs, []));
+        }
+        //遍历配方，为每个配方添加对应的高品质版本配方
+        foreach (RecipeProto recipe in LDB.recipes.dataArray) {
+            if (recipe.ID > 1000 && recipe.ID < 10000) {
+                int[] qualityArr = [10, 100, 1000, 10000];
+                foreach (int multi in qualityArr) {
+                    ProtoRegistry.RegisterRecipe(recipe.ID * multi,
+                        recipe.Type, recipe.TimeSpend,
+                        recipe.Items.Select(id => id * multi).ToArray(), recipe.ItemCounts,
+                        recipe.Results.Select(id => id * multi).ToArray(), recipe.ResultCounts,
+                        recipe.Description, recipe.preTech?.ID ?? 0, recipe.GridIndex, recipe.Name, recipe.IconPath);
+                }
+            }
         }
     }
 

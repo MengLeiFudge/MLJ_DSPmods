@@ -25,7 +25,7 @@ public static class RecycleTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.6f, 0.8f, 0.3f);
+    public static Color color = new(0.6f, 0.8f, 0.3f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
@@ -44,11 +44,11 @@ public static class RecycleTower {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE回收塔, "回收塔", "I回收塔",
-            "Assets/fe/recycle-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
+            "Assets/fe/recycle-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE回收塔,
             ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE回收塔], [5],
-            "I回收塔", TFE回收塔, item.GridIndex, item.Name, item.IconPath);
+            "I回收塔", TFE物品回收, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         model = ProtoRegistry.RegisterModel(MFE回收塔, item,
@@ -95,21 +95,17 @@ public static class RecycleTower {
             MaxProductOutputStack = 4;
         }
         EnableFracForever = r.ReadBoolean();
-        if (version < 2) {
+        ReinforcementLevel = r.ReadInt32();
+        if (ReinforcementLevel < 0) {
             ReinforcementLevel = 0;
-        } else {
-            ReinforcementLevel = r.ReadInt32();
-            if (ReinforcementLevel < 0) {
-                ReinforcementLevel = 0;
-            } else if (ReinforcementLevel > MaxReinforcementLevel) {
-                ReinforcementLevel = MaxReinforcementLevel;
-            }
+        } else if (ReinforcementLevel > MaxReinforcementLevel) {
+            ReinforcementLevel = MaxReinforcementLevel;
         }
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(EnableFluidOutputStack);
         w.Write(MaxProductOutputStack);
         w.Write(EnableFracForever);

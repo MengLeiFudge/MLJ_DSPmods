@@ -113,14 +113,12 @@ public static class VipFeatures {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        if (version >= 2) {
-            Exp = r.ReadSingle();
-            AddExp(0);
-        }
+        Exp = r.ReadSingle();
+        AddExp(0);
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(Exp);
     }
 

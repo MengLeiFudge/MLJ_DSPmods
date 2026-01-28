@@ -162,18 +162,16 @@ public static class Miscellaneous {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        if (version >= 2) {
-            float downloadThreshold = r.ReadSingle();
-            float uploadThreshold = r.ReadSingle();
-            if (NebulaMultiplayerModAPI.IsClient) {
-                DownloadThresholdEntry.Value = downloadThreshold;
-                UploadThresholdEntry.Value = uploadThreshold;
-            }
+        float downloadThreshold = r.ReadSingle();
+        float uploadThreshold = r.ReadSingle();
+        if (NebulaMultiplayerModAPI.IsClient) {
+            DownloadThresholdEntry.Value = downloadThreshold;
+            UploadThresholdEntry.Value = uploadThreshold;
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(DownloadThreshold);
         w.Write(UploadThreshold);
     }

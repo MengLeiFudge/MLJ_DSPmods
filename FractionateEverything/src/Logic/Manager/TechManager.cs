@@ -33,7 +33,7 @@ public static class TechManager {
             "超值礼包！只要100电磁矩阵，就可以获取大量电磁奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包1结果",
             "Downloaded Electromagnetic Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 电磁奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 电磁奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
         Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
@@ -42,7 +42,7 @@ public static class TechManager {
             "超值礼包！只要100能量矩阵，就可以获取大量能量奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包2结果",
             "Downloaded Energy Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 能量奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 能量奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
         Register("超值礼包3描述",
@@ -50,7 +50,7 @@ public static class TechManager {
             "超值礼包！只要100结构矩阵，就可以获取大量结构奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包3结果",
             "Downloaded Structure Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 结构奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 结构奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
         Register("超值礼包4描述",
@@ -58,7 +58,7 @@ public static class TechManager {
             "超值礼包！只要100信息矩阵，就可以获取大量信息奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包4结果",
             "Downloaded Information Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 信息奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 信息奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
         Register("超值礼包5描述",
@@ -66,7 +66,7 @@ public static class TechManager {
             "超值礼包！只要100引力矩阵，就可以获取大量引力奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包5结果",
             "Downloaded Gravity Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 引力奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 引力奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
         Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
         Register("超值礼包6描述",
@@ -74,7 +74,7 @@ public static class TechManager {
             "超值礼包！只要100宇宙矩阵，就可以获取大量宇宙奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包6结果",
             "Downloaded Universe Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 宇宙奖券x200，分馏配方通用核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "已下载 宇宙奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
 
 
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
@@ -173,30 +173,6 @@ public static class TechManager {
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
-        Register("T量子复制", "Quantum Replication", "量子复制");
-        Register("量子复制描述",
-            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.",
-            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。");
-        Register("量子复制结果",
-            "You have mastered quantum replication technology and can now batch replicate items with Fractionate Essence.",
-            "你已经掌握了量子复制技术，可以用分馏精华批量复制物品了。");
-
-        Register("T物品点金", "Item Alchemy", "物品点金");
-        Register("物品点金描述",
-            "Item Alchemy Technology can transform items into various matrices. It's a simple, straightforward way to get matrices, but low-value items seem to have a hard time spawning matrices.",
-            "物品点金科技可以将物品点金成各种矩阵。这是一种简单、直接获取矩阵的方式，但是低价值物品似乎很难产出矩阵。");
-        Register("物品点金结果",
-            "You have mastered the art of item alchemy and can now transform items into various matrices.",
-            "你已经掌握了物品点金技术，可以将物品点金成各种矩阵了。");
-
-        Register("T物品分解", "Item Deconstruction", "物品分解");
-        Register("物品分解描述",
-            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but it can be powerful in certain specific scenarios.",
-            "物品分解科技可以将物品分解成制作它的材料或沙土。这看起来似乎没有用，但是在某些特定的场景下，它能发挥出强大的威力。");
-        Register("物品分解结果",
-            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了物品分解技术，可以将物品分解成制作它的材料或沙土了。");
-
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
             "Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...",
@@ -204,6 +180,14 @@ public static class TechManager {
         Register("物品转化结果",
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
+
+        Register("T物品回收", "Item Deconstruction", "物品回收");
+        Register("物品回收描述",
+            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
+            "物品回收科技可以将物品回收成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+        Register("物品回收结果",
+            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
+            "你已经掌握了物品回收技术，可以将物品回收成制作它的原料了。");
     }
 
     /// <summary>
@@ -219,7 +203,7 @@ public static class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
-        tech分馏数据中心.AddItems = [IFE分馏塔原胚I型];
+        tech分馏数据中心.AddItems = [IFE交互塔原胚];
         tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
@@ -233,7 +217,7 @@ public static class TechManager {
             GetTechPos(0, 1)
         );
         tech超值礼包1.PreTechsImplicit = [TFE物品交互];
-        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包1.AddItemCounts = [200, 3, 6];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
@@ -246,7 +230,7 @@ public static class TechManager {
             GetTechPos(0, 2)
         );
         tech超值礼包2.PreTechsImplicit = [T能量矩阵];
-        tech超值礼包2.AddItems = [IFE能量奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包2.AddItems = [IFE能量奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包2.AddItemCounts = [200, 3, 6];
         tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
         tech超值礼包2.PropertyItemCounts = [100];
@@ -259,7 +243,7 @@ public static class TechManager {
             GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE结构奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包3.AddItems = [IFE结构奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包3.AddItemCounts = [200, 3, 6];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
@@ -272,7 +256,7 @@ public static class TechManager {
             GetTechPos(0, 4)
         );
         tech超值礼包4.PreTechsImplicit = [T信息矩阵];
-        tech超值礼包4.AddItems = [IFE信息奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包4.AddItems = [IFE信息奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包4.AddItemCounts = [200, 3, 6];
         tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
         tech超值礼包4.PropertyItemCounts = [100];
@@ -285,7 +269,7 @@ public static class TechManager {
             GetTechPos(0, 5)
         );
         tech超值礼包5.PreTechsImplicit = [T引力矩阵];
-        tech超值礼包5.AddItems = [IFE引力奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包5.AddItems = [IFE引力奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包5.AddItemCounts = [200, 3, 6];
         tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
         tech超值礼包5.PropertyItemCounts = [100];
@@ -298,7 +282,7 @@ public static class TechManager {
             GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE宇宙奖券, IFE分馏配方通用核心, IFE分馏塔增幅芯片];
+        tech超值礼包6.AddItems = [IFE宇宙奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包6.AddItemCounts = [200, 3, 6];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
@@ -385,11 +369,11 @@ public static class TechManager {
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
             [TFE分馏数据中心],
-            [IFE分馏塔原胚I型], [20], 3600,
-            [RFE分馏塔原胚定向],
+            [IFE交互塔原胚], [20], 3600,
+            [],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔定向原胚];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE分馏塔定向原胚];
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
@@ -427,49 +411,51 @@ public static class TechManager {
         tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
         tech增产点数聚集.PropertyItemCounts = [200];
 
-        // var tech量子复制 = ProtoRegistry.RegisterTech(
-        //     TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
-        //     [],
-        //     [IFE万物分馏科技解锁提示], [1], 3600000,
-        //     [RFE量子复制塔],
-        //     GetTechPos(2, 5)
-        // );
-        // tech量子复制.PreTechsImplicit = [TFE分馏塔原胚];
-        // tech量子复制.PropertyOverrideItems = [I电磁矩阵];
-        // tech量子复制.PropertyItemCounts = [200];
-        //
-        // var tech物品点金 = ProtoRegistry.RegisterTech(
-        //     TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
-        //     [],
-        //     [IFE万物分馏科技解锁提示], [1], 3600000,
-        //     [RFE点金塔],
-        //     GetTechPos(2, 6)
-        // );
-        // tech物品点金.PreTechsImplicit = [TFE分馏塔原胚];
-        // tech物品点金.PropertyOverrideItems = [I电磁矩阵];
-        // tech物品点金.PropertyItemCounts = [200];
-        //
-        // var tech物品分解 = ProtoRegistry.RegisterTech(
-        //     TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
-        //     [],
-        //     [IFE万物分馏科技解锁提示], [1], 3600000,
-        //     [RFE分解塔],
-        //     GetTechPos(2, 7)
-        // );
-        // tech物品分解.PreTechsImplicit = [TFE分馏塔原胚];
-        // tech物品分解.PropertyOverrideItems = [I电磁矩阵];
-        // tech物品分解.PropertyItemCounts = [200];
-
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
             [IFE万物分馏科技解锁提示], [1], 3600000,
             [RFE转化塔],
-            GetTechPos(2, 8)
+            GetTechPos(2, 5)
         );
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品转化.PropertyOverrideItems = [I电磁矩阵];
         tech物品转化.PropertyItemCounts = [200];
+
+        var tech物品回收 = ProtoRegistry.RegisterTech(
+            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品回收",
+            [],
+            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [RFE回收塔],
+            GetTechPos(2, 6)
+        );
+        tech物品回收.PreTechsImplicit = [TFE分馏塔原胚];
+        tech物品回收.PropertyOverrideItems = [I电磁矩阵];
+        tech物品回收.PropertyItemCounts = [200];
+
+        var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
+        var tech行星内物流交互 = ProtoRegistry.RegisterTech(
+            TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果", tech行星物流系统.IconPath,
+            [tech行星物流系统.ID],
+            [..tech行星物流系统.Items], [..tech行星物流系统.ItemPoints], tech行星物流系统.HashNeeded,
+            [RFE回收塔],
+            GetTechPos(2, 7)
+        );
+        tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互];
+        tech行星内物流交互.PropertyOverrideItems = [..tech行星物流系统.PropertyOverrideItems];
+        tech行星内物流交互.PropertyItemCounts = [..tech行星物流系统.PropertyItemCounts];
+
+        var tech星际物流系统 = LDB.techs.Select(T星际物流系统);
+        var tech星际物流交互 = ProtoRegistry.RegisterTech(
+            TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果", tech星际物流系统.IconPath,
+            [tech星际物流系统.ID],
+            [..tech星际物流系统.Items], [..tech星际物流系统.ItemPoints], tech星际物流系统.HashNeeded,
+            [RFE回收塔],
+            GetTechPos(2, 8)
+        );
+        tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互];
+        tech星际物流交互.PropertyOverrideItems = [..tech星际物流系统.PropertyOverrideItems];
+        tech星际物流交互.PropertyItemCounts = [..tech星际物流系统.PropertyItemCounts];
     }
 
     /// <summary>
@@ -498,7 +484,7 @@ public static class TechManager {
     /// 当分馏塔上传至数据中心时，将解锁标记置为true。
     /// </summary>
     public static void CheckTechUnlockCondition(int itemId) {
-        if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
+        if (itemId >= IFE交互塔 && itemId <= IFE回收塔) {
             techUnlockFlags[itemId - IFE交互塔] = true;
         }
     }
@@ -528,7 +514,7 @@ public static class TechManager {
                        + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
         }
-        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
+        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包9) {
             __result = $"{"一个物超所值的礼包".Translate()}";
             return false;
         }

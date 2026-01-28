@@ -584,7 +584,7 @@ public static class ProcessManager {
     private static void SetPCState(this FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, EntityData[] entityPool) {
         int buildingID = entityPool[fractionator.entityId].protoId;
-        if (buildingID < IFE交互塔 || buildingID > IFE行星转化塔) {
+        if (buildingID < IFE交互塔 || buildingID > IFE回收塔) {
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
@@ -705,7 +705,7 @@ public static class ProcessManager {
             return;
         }
         int buildingID = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingID < IFE交互塔 || buildingID > IFE行星转化塔) {
+        if (buildingID < IFE交互塔 || buildingID > IFE回收塔) {
             __instance.productProbText.transform.localPosition = new(0, productProbTextBaseY, 0);
             __instance.oriProductProbText.transform.localPosition = new(0, oriProductProbTextBaseY, 0);
             return;

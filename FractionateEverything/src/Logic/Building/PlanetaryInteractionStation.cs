@@ -25,7 +25,7 @@ public static class PlanetaryInteractionStation {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.8f, 0.3f, 0.6f);
+    public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static int MaxProductOutputStack = 1;
     public static int ReinforcementLevel = 0;
@@ -37,7 +37,7 @@ public static class PlanetaryInteractionStation {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE行星内物流交互站, "行星内物流交互站", "I行星内物流交互站",
-            "Assets/fe/interaction-station", tab分馏 * 1000 + 308, 10, EItemType.Production,
+            "Assets/fe/interaction-station", tab分馏 * 1000 + 306, 10, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
             ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE交互塔], [1, 12], [IFE行星内物流交互站], [1],
@@ -89,21 +89,17 @@ public static class PlanetaryInteractionStation {
             MaxProductOutputStack = 4;
         }
         StationManager.SetMaxCount();
-        if (version < 2) {
+        ReinforcementLevel = r.ReadInt32();
+        if (ReinforcementLevel < 0) {
             ReinforcementLevel = 0;
-        } else {
-            ReinforcementLevel = r.ReadInt32();
-            if (ReinforcementLevel < 0) {
-                ReinforcementLevel = 0;
-            } else if (ReinforcementLevel > MaxReinforcementLevel) {
-                ReinforcementLevel = MaxReinforcementLevel;
-            }
+        } else if (ReinforcementLevel > MaxReinforcementLevel) {
+            ReinforcementLevel = MaxReinforcementLevel;
         }
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(MaxProductOutputStack);
         w.Write(ReinforcementLevel);
     }

@@ -206,17 +206,15 @@ public static class RecipeManager {
                 LogError($"Failed to import recipe {recipeType}-{inputID}: {ex.Message}");
             }
         }
-        if (version >= 2) {
-            int vanillaRecipeCount = r.ReadInt32();
-            for (int i = 0; i < vanillaRecipeCount; i++) {
-                int recipeID = r.ReadInt32();
-                GetVanillaRecipe(recipeID)?.Import(r);
-            }
+        int vanillaRecipeCount = r.ReadInt32();
+        for (int i = 0; i < vanillaRecipeCount; i++) {
+            int recipeID = r.ReadInt32();
+            GetVanillaRecipe(recipeID)?.Import(r);
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(1);
         w.Write(RecipeList.Count);
         foreach (var recipe in RecipeList) {
             w.Write((int)recipe.RecipeType);
