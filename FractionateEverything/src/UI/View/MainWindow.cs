@@ -186,18 +186,13 @@ public static class MainWindow {
         int version = r.ReadInt32();
 
         FracRecipeOperate.Import(r);
-        if (version >= 3) {
-            VanillaRecipeOperate.Import(r);
-        }
+        VanillaRecipeOperate.Import(r);
         BuildingOperate.Import(r);
 
         ItemInteraction.Import(r);
         ImportantItem.Import(r);
 
         TicketRaffle.Import(r);
-        if (version <= 1) {
-            r.ReadInt32();
-        }
         LimitedTimeStore.Import(r);
 
         MainTask.Import(r);
@@ -214,7 +209,7 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(3);
+        w.Write(1);
 
         FracRecipeOperate.Export(w);
         VanillaRecipeOperate.Export(w);
