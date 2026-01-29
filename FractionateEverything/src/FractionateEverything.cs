@@ -174,6 +174,10 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void PostAddData() {
         //设置分馏塔、物流交互站颜色
         BuildingManager.SetFractionatorMaterial();
+        //添加品质物品
+        ItemManager.AddQualityItems();
+        //添加品质配方
+        RecipeManager.AddQualityRecipes();
     }
 
     /// <summary>

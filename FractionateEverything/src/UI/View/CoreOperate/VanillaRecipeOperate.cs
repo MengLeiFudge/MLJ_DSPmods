@@ -49,10 +49,9 @@ public static class VanillaRecipeOperate {
         Register("原版配方", "Vanilla Recipe");
 
         Register("当前配方", "Current recipe");
-        Register("配方操作提示按钮说明1",
-            "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
-            "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
-        Register("配方类型", "Recipe type");
+        Register("原版配方提示按钮说明1",
+            "Left-click to switch between unlocked recipes, right-click to switch between all available recipes.",
+            "左键在已解锁配方之间切换，右键在全部可用配方中切换。");
         Register("输入物品", "Input Items");
         Register("当前数量", "Current Count");
         Register("升级次数", "Upgrade Times");
@@ -78,7 +77,7 @@ public static class VanillaRecipeOperate {
             () => { OnButtonChangeRecipeClick(false, popupY); },
             () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
-            "提示", "配方操作提示按钮说明1");
+            "提示", "原版配方提示按钮说明1");
         wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE原版配方核心));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
 

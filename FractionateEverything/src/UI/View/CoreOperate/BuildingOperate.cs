@@ -20,11 +20,11 @@ public static class BuildingOperate {
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
     private static readonly int[] BuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE行星内物流交互站
+        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔, IFE行星内物流交互站
     ];
     private static readonly string[] BuildingTypeNames = [
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(), "转化塔".Translate(),
-        "物流交互站".Translate()
+        "回收塔".Translate(), "物流交互站".Translate()
     ];
     private static Text txtChipCount;
 

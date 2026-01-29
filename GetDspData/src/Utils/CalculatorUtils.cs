@@ -81,7 +81,7 @@ public static partial class Utils {
     public static int[] getAcceptFactories(this RecipeProto recipe) {
         if (GenesisBookEnable) {
             return (int)recipe.Type switch {
-                (int)ERecipeType_GB.Smelt => [I电弧熔炉, I位面熔炉, I负熵熔炉, IGB物质裂解塔],
+                (int)ERecipeType_GB.Smelt => [I电弧熔炉, I负熵熔炉, IGB物质裂解塔],
                 (int)ERecipeType_GB.Chemical => [I化工厂, IGB埃克森美孚化工厂],
                 (int)ERecipeType_GB.Refine => [I原油精炼厂, IGB埃克森美孚化工厂],
                 (int)ERecipeType_GB.Assemble => [IGB基础制造台, IGB物质重组工厂, IGB天穹装配厂],
@@ -90,8 +90,8 @@ public static partial class Utils {
                 (int)ERecipeType_GB.Fractionate => [I分馏塔],
                 (int)ERecipeType_GB.标准制造 => [IGB标准制造单元, IGB物质重组工厂, IGB天穹装配厂],
                 (int)ERecipeType_GB.高精度加工 => [IGB高精度装配线, IGB物质重组工厂, IGB工业先锋精密加工中心],
-                (int)ERecipeType_GB.标准冶炼 => [IGB矿物处理厂, I负熵熔炉, IGB物质裂解塔],
-                (int)ERecipeType_GB.高热冶炼 => [I负熵熔炉],//todo
+                (int)ERecipeType_GB.标准冶炼 => [IGB等离子熔炉, I负熵熔炉, IGB物质裂解塔],
+                (int)ERecipeType_GB.高热冶炼 => [I位面熔炉, I负熵熔炉, IGB物质裂解塔],
                 (int)ERecipeType_GB.垃圾回收 => [IGB物质分解设施],
                 (int)ERecipeType_GB.Research => [I矩阵研究站, I自演化研究站],
                 (int)ERecipeType_GB.高分子化工 => [IGB先进化学反应釜, IGB埃克森美孚化工厂],
@@ -138,7 +138,7 @@ public static partial class Utils {
 
     public static float GetSpace(this ItemProto item) {
         return item.ID switch {
-            I电弧熔炉 or I位面熔炉 or IOR等离子熔炉 or I负熵熔炉 or IGB矿物处理厂 => 5.76f,
+            I电弧熔炉 or I位面熔炉 or IOR等离子熔炉 or I负熵熔炉 or IGB等离子熔炉 => 5.76f,
             I制造台MkI or IGB基础制造台 or IOR基础制造台
                 or I制造台MkII or IGB标准制造单元 or IOR高速装配线
                 or I制造台MkIII or IGB高精度装配线
@@ -152,8 +152,7 @@ public static partial class Utils {
                 or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
             I原油精炼厂 => 18f,
             I射线接收站 or IMS射线重构站 => 54.82f,
-            I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE量子复制塔
-                or IFE点金塔 or IFE分解塔 or IFE转化塔 => 12.96f,
+            I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE转化塔 or IFE回收塔 => 12.96f,
             I微型粒子对撞机 => 45.12f,
             I能量枢纽 => 64f,
             I蓄电器 or I蓄电器满 or IGB同位素温差发电机 => 4f,
