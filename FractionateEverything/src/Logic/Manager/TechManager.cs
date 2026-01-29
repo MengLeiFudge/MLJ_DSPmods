@@ -381,7 +381,7 @@ public static class TechManager {
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE交互塔],
             GetTechPos(2, 2)
         );
@@ -392,7 +392,7 @@ public static class TechManager {
         var tech矿物复制 = ProtoRegistry.RegisterTech(
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE矿物复制塔],
             GetTechPos(2, 3)
         );
@@ -403,7 +403,7 @@ public static class TechManager {
         var tech增产点数聚集 = ProtoRegistry.RegisterTech(
             TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE点数聚集塔],
             GetTechPos(2, 4)
         );
@@ -414,7 +414,7 @@ public static class TechManager {
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE转化塔],
             GetTechPos(2, 5)
         );
@@ -425,7 +425,7 @@ public static class TechManager {
         var tech物品回收 = ProtoRegistry.RegisterTech(
             TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品回收",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE回收塔],
             GetTechPos(2, 6)
         );
