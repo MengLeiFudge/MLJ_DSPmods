@@ -18,10 +18,10 @@ public static class ItemManager {
             $"The shop has been refreshed, don't forget to claim your relief supplies~\n(This is just a store refresh prompt and has no practical use. However, {"you should NOT be able to see this text, right?".WithColor(Red)})",
             $"商店已刷新，别忘了领取救济粮哦~\n（只是一个商店刷新的提示，没有实际用途。但是，{"你应该看不到这段话才对呀？".WithColor(Red)}）");
 
-        Register("万物分馏科技解锁提示", "Tech Unlock Tip", "科技解锁提示");
-        Register("I万物分馏科技解锁提示",
-            "The tech will be automatically unlocked when the corresponding fractionator is uploaded to the fractionation data centre. The possible upload methods are as follows:\n1.Enter the item from the front of the interaction tower.\n2.Discard the item after unlocking the item interaction tech.\n3.Raffle prizes (but the fractionator is not in any prize pool) or store-bought items.\n4.Upload items via the Logistics Interaction Station.",
-            "将对应分馏塔上传至分馏数据中心时，将会自动解锁该科技。可能的上传方式如下：\n1.从交互塔正面输入物品。\n2.解锁物品交互科技后，丢弃物品。\n3.抽奖奖励（但分馏塔不在任何奖池中）或商店购买物品。\n4.通过物流交互站上传物品。");
+        Register("万物分馏科技解锁说明", "Tech Unlock Tip", "科技解锁说明");
+        Register("I万物分馏科技解锁说明",
+            "Use the Interactive Tower to fractionate various raw materials, yielding corresponding fractionation towers. Input the fractionation towers into the front interface of the Interactive Tower to unlock the corresponding technology.",
+            "使用交互塔分馏各种原胚，即可得到对应分馏塔；将分馏塔从交互塔正面接口输入，即可解锁对应科技。");
 
         Register("电磁奖券", "Electromagnetic Ticket");
         Register("I电磁奖券",
@@ -137,7 +137,7 @@ public static class ItemManager {
 
         ProtoRegistry.RegisterItem(IFE万物分馏商店刷新提示, "万物分馏商店刷新提示", "I万物分馏商店刷新提示",
             Tech1134IconPath, 0, 100, EItemType.Decoration);
-        ProtoRegistry.RegisterItem(IFE万物分馏科技解锁提示, "万物分馏科技解锁提示", "I万物分馏科技解锁提示",
+        ProtoRegistry.RegisterItem(IFE万物分馏科技解锁说明, "万物分馏科技解锁说明", "I万物分馏科技解锁说明",
             Tech1134IconPath, 0, 100, EItemType.Decoration);
 
         ItemProto item;
