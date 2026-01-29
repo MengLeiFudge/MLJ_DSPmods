@@ -274,7 +274,7 @@ public static partial class Utils {
     internal const int IOR占位物 = 6228;
     internal const int IGB量子储液罐 = 6229;
     internal const int IOR量子储液罐 = 6229;
-    internal const int IGB矿物处理厂 = 6230;
+    internal const int IGB等离子熔炉 = 6230;
     internal const int IOR深空货舰 = 6230;
     internal const int IGB量子储物仓 = 6231;
     internal const int IOR量子储物仓 = 6231;
@@ -464,7 +464,7 @@ public static partial class Utils {
     internal const int IFE分解精华 = 8043;
     internal const int IFE转化精华 = 8044;
     internal const int IFE万物分馏商店刷新提示 = 8048;
-    internal const int IFE万物分馏科技解锁提示 = 8049;
+    internal const int IFE万物分馏科技解锁说明 = 8049;
     internal const int IBC插件效果分享塔 = 8051;
     internal const int IBC插件效果分享站 = 8052;
     internal const int IBC速度插件MK1 = 8061;
@@ -636,7 +636,7 @@ public static partial class Utils {
     internal const int MBC插件效果分享塔 = 621;
     internal const int MBC插件效果分享站 = 622;
     internal const int MGB量子储液罐 = 801;
-    internal const int MGB矿物处理厂 = 802;
+    internal const int MGB等离子熔炉 = 802;
     internal const int MGB天穹装配厂 = 803;
     internal const int MGB物质裂解塔 = 804;
     internal const int MGB埃克森美孚化工厂 = 805;
@@ -922,7 +922,7 @@ public static partial class Utils {
     internal const int RGB焦油燃料棒 = 516;
     internal const int RGB处理器高效 = 519;
     internal const int RGB量子储液罐 = 522;
-    internal const int RGB矿物处理厂 = 523;
+    internal const int RGB等离子熔炉 = 523;
     internal const int RGB量子储物仓 = 524;
     internal const int RGB铁矿粉 = 531;
     internal const int RGB铜矿粉 = 532;

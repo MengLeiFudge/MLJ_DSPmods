@@ -74,13 +74,14 @@ public abstract class BaseRecipe(
     /// 获取某次输出的执行结果。
     /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
     /// </summary>
+    /// <param name="quality">输入物品的品质，0到5</param>
     /// <param name="seed">随机数种子</param>
     /// <param name="pointsBonus">增产剂加成</param>
     /// <param name="buffBonus1">强化对配方成功率加成</param>
     /// <param name="buffBonus2">强化对主产物数目加成</param>
     /// <param name="buffBonus3">强化对副产物概率加成</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
-    public List<ProductOutputInfo> GetOutputs(ref uint seed, float pointsBonus,
+    public virtual List<ProductOutputInfo> GetOutputs(byte quality, ref uint seed, float pointsBonus,
         float buffBonus1, float buffBonus2, float buffBonus3) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
@@ -96,6 +97,7 @@ public abstract class BaseRecipe(
         //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
         double ratio = GetRandDouble(ref seed);
         float ratioMain = 0.0f;//用于累计概率
+        int qualityMultiplier = (int)Math.Pow(10, quality);
         foreach (var outputInfo in OutputMain) {
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
@@ -108,7 +110,7 @@ public abstract class BaseRecipe(
                         countReal++;
                     }
                 }
-                list.Add(new(true, outputInfo.OutputID, countReal));
+                list.Add(new(true, outputInfo.OutputID * qualityMultiplier, countReal));
                 outputInfo.OutputTotalCount += countReal;
                 RewardExp(countReal);
                 break;
@@ -125,7 +127,7 @@ public abstract class BaseRecipe(
                         countReal++;
                     }
                 }
-                list.Add(new(false, outputInfo.OutputID, countReal));
+                list.Add(new(false, outputInfo.OutputID * qualityMultiplier, countReal));
                 outputInfo.OutputTotalCount += countReal;
                 //附加输出无经验
             }
