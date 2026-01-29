@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using CommonAPI.Systems;
 using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -171,6 +173,21 @@ public static class RecipeManager {
             "所有分馏配方已解锁。".Translate(),
             "确定".Translate(), UIMessageBox.INFO,
             null);
+    }
+
+    public static void AddQualityRecipes() {
+        foreach (byte quality in qualityList) {
+            if (quality == 0) {
+                continue;
+            }
+            foreach (RecipeProto recipe in LDB.recipes.dataArray) {
+                ProtoRegistry.RegisterRecipe(GetQualityItemId(recipe.ID, quality),
+                    recipe.Type, recipe.TimeSpend,
+                    recipe.Items.Select(id => GetQualityItemId(id, quality)).ToArray(), recipe.ItemCounts,
+                    recipe.Results.Select(id => GetQualityItemId(id, quality)).ToArray(), recipe.ResultCounts,
+                    recipe.Description, recipe.preTech?.ID ?? 0, recipe.GridIndex, recipe.Name, recipe.IconPath);
+            }
+        }
     }
 
     #region 从存档读取配方数据

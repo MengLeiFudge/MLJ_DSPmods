@@ -180,7 +180,8 @@ public static class ProcessManager {
         ref uint __result, ERecipe recipeType) where T : BaseRecipe {
         //所有产物输出
         List<ProductOutputInfo> products = __instance.products(factory);
-        int fluidId = __instance.fluidId;
+        int fluidId = GetQualityItemId(__instance.fluidId);
+        byte quality = GetQuality(__instance.fluidId);
         T recipe = GetRecipe<T>(recipeType, fluidId);
         //检测products和recipe的输出是否一致
         if (recipe == null) {
@@ -295,8 +296,8 @@ public static class ProcessManager {
                 float buffBonus1 = building.ReinforcementBonusFracSuccess();
                 float buffBonus2 = building.ReinforcementBonusMainOutputCount();
                 float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
-                List<ProductOutputInfo> outputs = recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1,
-                    buffBonus2, buffBonus3);
+                List<ProductOutputInfo> outputs = recipe.GetOutputs(quality, ref __instance.seed, pointsBonus,
+                    buffBonus1, buffBonus2, buffBonus3);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
                 __instance.fluidInputCount--;

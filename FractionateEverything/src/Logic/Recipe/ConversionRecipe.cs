@@ -105,7 +105,7 @@ public class ConversionRecipe : BaseRecipe {
         } else {
             CreateChain([[I化工厂], [I量子化工厂]]);
         }
-        CreateChain([[I电弧熔炉, IGB矿物处理厂], [I位面熔炉], [I负熵熔炉]]);
+        CreateChain([[I电弧熔炉], [IGB等离子熔炉], [I位面熔炉], [I负熵熔炉]]);
         if (GenesisBook.Enable) {
             CreateChain([[IGB基础制造台], [IGB标准制造单元], [IGB高精度装配线], [IGB物质重组工厂]]);
         } else {

@@ -51,7 +51,7 @@ public static class FracRecipeOperate {
         Register("分馏配方", "Fractionate Recipe");
 
         Register("当前物品", "Current item");
-        Register("配方操作提示按钮说明1",
+        Register("分馏配方提示按钮说明1",
             "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
             "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
         Register("配方类型", "Recipe type");
@@ -118,7 +118,7 @@ public static class FracRecipeOperate {
             () => { OnButtonChangeItemClick(false, popupY); },
             () => { OnButtonChangeItemClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
-            "提示", "配方操作提示按钮说明1");
+            "提示", "分馏配方提示按钮说明1");
         var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);

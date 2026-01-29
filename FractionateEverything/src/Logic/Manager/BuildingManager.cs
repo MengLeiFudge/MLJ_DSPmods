@@ -447,4 +447,28 @@ public static class BuildingManager {
     }
 
     #endregion
+
+    /// <summary>
+    /// 将已建造的建筑转为新的ID
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(EntityData), nameof(EntityData.Import))]
+    public static void EntityData_Import_Postfix(ref EntityData __instance) {
+        if (__instance.modelIndex == 606) {
+            __instance.protoId = IFE回收塔;
+            __instance.modelIndex = MFE回收塔;
+        }
+        if (__instance.modelIndex == 607) {
+            __instance.protoId = IFE转化塔;
+            __instance.modelIndex = MFE转化塔;
+        }
+        if (__instance.modelIndex == 608) {
+            __instance.protoId = IFE行星内物流交互站;
+            __instance.modelIndex = MFE行星内物流交互站;
+        }
+        if (__instance.modelIndex == 609) {
+            __instance.protoId = IFE星际物流交互站;
+            __instance.modelIndex = MFE星际物流交互站;
+        }
+    }
 }
