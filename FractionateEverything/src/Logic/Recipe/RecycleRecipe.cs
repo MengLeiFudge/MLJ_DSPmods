@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -15,32 +14,32 @@ public class RecycleRecipe : BaseRecipe {
     /// 添加所有回收配方
     /// </summary>
     public static void CreateAll() {
-        // 遍历所有物品，为有maincraft配方的物品创建回收配方
-        foreach (ItemProto item in LDB.items.dataArray) {
-            List<OutputInfo> outputs = [];
-            RecipeProto mainRecipe = item.maincraft;
-            // 只有物品满足一定条件，且主配方满足一定条件的情况下，才按照配方进行还原
-            // 否则，只能产出自己
-            if (item.Type != EItemType.Resource
-                && item.Type != EItemType.Material
-                && mainRecipe != null
-                && mainRecipe.Type != ERecipeType.Smelt
-                && mainRecipe.Type != ERecipeType.Chemical
-                && mainRecipe.Type != ERecipeType.Fractionate
-                && mainRecipe.Type != ERecipeType.Refine
-                && mainRecipe.Type != ERecipeType.Particle
-                && mainRecipe.Items.Length > 0
-                && mainRecipe.Results.Length == 1) {
-                for (int i = 0; i < mainRecipe.Items.Length; i++) {
-                    int materialId = mainRecipe.Items[i];
-                    int materialCount = mainRecipe.ItemCounts[i];
-                    outputs.Add(new(0.25f, materialId, materialCount));
-                }
-                AddRecipe(new RecycleRecipe(item.ID, 1.0f, outputs, []));
-            } else {
-                AddRecipe(new RecycleRecipe(item.ID, 1.0f, [new(0.25f, item.ID, 1)], []));
-            }
-        }
+        // // 遍历所有物品，为有maincraft配方的物品创建回收配方
+        // foreach (ItemProto item in LDB.items.dataArray) {
+        //     List<OutputInfo> outputs = [];
+        //     RecipeProto mainRecipe = item.maincraft;
+        //     // 只有物品满足一定条件，且主配方满足一定条件的情况下，才按照配方进行还原
+        //     // 否则，只能产出自己
+        //     if (item.Type != EItemType.Resource
+        //         && item.Type != EItemType.Material
+        //         && mainRecipe != null
+        //         && mainRecipe.Type != ERecipeType.Smelt
+        //         && mainRecipe.Type != ERecipeType.Chemical
+        //         && mainRecipe.Type != ERecipeType.Fractionate
+        //         && mainRecipe.Type != ERecipeType.Refine
+        //         && mainRecipe.Type != ERecipeType.Particle
+        //         && mainRecipe.Items.Length > 0
+        //         && mainRecipe.Results.Length == 1) {
+        //         for (int i = 0; i < mainRecipe.Items.Length; i++) {
+        //             int materialId = mainRecipe.Items[i];
+        //             int materialCount = mainRecipe.ItemCounts[i];
+        //             outputs.Add(new(0.25f, materialId, materialCount));
+        //         }
+        //         AddRecipe(new RecycleRecipe(item.ID, 1.0f, outputs, []));
+        //     } else {
+        //         AddRecipe(new RecycleRecipe(item.ID, 1.0f, [new(0.25f, item.ID, 1)], []));
+        //     }
+        // }
     }
 
     /// <summary>
