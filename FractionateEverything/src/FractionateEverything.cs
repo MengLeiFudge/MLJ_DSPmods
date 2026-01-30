@@ -240,6 +240,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RecipeManager.Import(r);
         BuildingManager.Import(r);
         ItemManager.Import(r);
+        if (version >= 2) {
+            RuneManager.Import(r);
+        }
         MainWindow.Import(r);
     }
 
@@ -247,10 +250,11 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
         ItemManager.Export(w);
+        RuneManager.Export(w);
         MainWindow.Export(w);
     }
 
@@ -272,6 +276,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
+        RuneManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         TechManager.ResetTechUnlockFlags();
     }

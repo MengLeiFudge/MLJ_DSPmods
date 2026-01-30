@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BepInEx.Configuration;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View.Setting;
@@ -95,6 +96,16 @@ public static class TicketRaffle {
     private static int MaxRaffleCount4 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId4));
     private static ConfigEntry<bool> EnableAutoRaffle4Entry;
 
+    private static ConfigEntry<int> TicketIdx5Entry;
+    private static int TicketIdx5 => TicketIdx5Entry.Value;
+    private static int SelectedTicketId5 => TicketIds[TicketIdx5];
+    private static int SelectedMatrixId5 => MatrixIds[TicketIdx5];
+    private static (float[] rates, int[] counts) pool5;
+
+    private static UIButton btnMaxRaffle5;
+    private static int MaxRaffleCount5 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId5));
+    private static ConfigEntry<bool> EnableAutoRaffle5Entry;
+
     public static void AddTranslations() {
         Register("奖券抽奖", "Ticket Raffle");
 
@@ -136,6 +147,15 @@ public static class TicketRaffle {
             "可以抽取各种建筑。\n"
             + "只能抽到已解锁的建筑。\n"
             + "无法抽到新增的分馏塔、物流交互站。");
+
+        Register("符文奖池", "Rune pool");
+        Register("符文奖池说明",
+            "Various Runes and Fractionation Essences can be drawn.\n"
+            + "Rune star level depends on the type of ticket used.\n"
+            + "Universe Ticket provides guaranteed sub-stats.",
+            "可以抽取各种符文，以及分馏精华。\n"
+            + "符文星级取决于使用的奖券种类。\n"
+            + "宇宙奖券提供保底子词条。");
 
         Register("抽奖结果", "Raffle results");
         Register("获得了以下物品", "Obtained the following items");
@@ -179,6 +199,14 @@ public static class TicketRaffle {
         EnableAutoRaffle4Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 4", false, "建筑抽奖是否自动百连。");
         TicketIdx4Entry.SettingChanged += (_, _) => EnableAutoRaffle4Entry.Value = false;
         TicketIdx4Entry.SettingChanged += (_, _) => FreshPool(4);
+
+        TicketIdx5Entry = configFile.Bind("Ticket Raffle", "Ticket Idx 5", 0, "符文抽奖奖券索引。");
+        if (TicketIdx5Entry.Value < 0 || TicketIdx5Entry.Value >= TicketIds.Length - 1) {
+            TicketIdx5Entry.Value = 0;
+        }
+        EnableAutoRaffle5Entry = configFile.Bind("Ticket Raffle", "Enable Auto Raffle 5", false, "符文抽奖是否自动百连。");
+        TicketIdx5Entry.SettingChanged += (_, _) => EnableAutoRaffle5Entry.Value = false;
+        TicketIdx5Entry.SettingChanged += (_, _) => FreshPool(5);
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -279,6 +307,22 @@ public static class TicketRaffle {
         btnMaxRaffle4 = wnd.AddButton(2, 4, y, tab, "动态刷新",
             onClick: () => RaffleBuilding(-1, 5));
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle4Entry, "自动百连");
+        y += 36f;
+
+        y += 20f;
+        txt = wnd.AddText2(x, y, tab, "符文奖池");
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "符文奖池", "符文奖池说明");
+        txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
+        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
+            .WithItems(TicketNames.Take(6).ToArray()).WithSize(200, 0).WithConfigEntry(TicketIdx5Entry);
+        y += 36f;
+        wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
+            onClick: () => RaffleRune(1));
+        wnd.AddButton(1, 4, y, tab, $"{"抽奖".Translate()} x 10",
+            onClick: () => RaffleRune(10));
+        btnMaxRaffle5 = wnd.AddButton(2, 4, y, tab, "动态刷新",
+            onClick: () => RaffleRune(-1, 5));
+        wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle5Entry, "自动百连");
     }
 
     public static void UpdateUI() {
@@ -297,6 +341,7 @@ public static class TicketRaffle {
         btnMaxRaffle2.SetText($"{"抽奖".Translate()} x {MaxRaffleCount2}");
         btnMaxRaffle3.SetText($"{"抽奖".Translate()} x {MaxRaffleCount3}");
         btnMaxRaffle4.SetText($"{"抽奖".Translate()} x {MaxRaffleCount4}");
+        btnMaxRaffle5.SetText($"{"抽奖".Translate()} x {MaxRaffleCount5}");
 
         int[,] fullUpgradeCountArr = new int[2, 7];
         int[,] maxEchoCountArr = new int[2, 7];
@@ -477,6 +522,14 @@ public static class TicketRaffle {
                 ).ToList();
             }
             pool4 = GeneratePool(SelectedTicketId4, [], [], commonItems4);
+        } else if (poolId == 5) {
+            int[] specialItems = [0]; // 0 represents Rune
+            float[] specialRates = [0.1f];
+            List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
+                item.ID >= IFE速度精华 && item.ID <= IFE增产精华
+            ).ToList();
+            float runeValue = itemValue[SelectedTicketId5] * VipFeatures.TicketValueMulti;
+            pool5 = GeneratePool(SelectedTicketId5, specialItems, specialRates, commonItems, runeValue);
         }
     }
 
@@ -854,6 +907,136 @@ public static class TicketRaffle {
         }
     }
 
+    /// <summary>
+    /// 符文抽奖。
+    /// </summary>
+    private static void RaffleRune(int raffleCount, int oneLineMaxCount = 1, bool showMessage = true) {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (raffleCount == -1) {
+            raffleCount = MaxRaffleCount5;
+        }
+        if (!TakeItemWithTip(SelectedTicketId5, raffleCount, out _, showMessage)) {
+            return;
+        }
+        VipFeatures.AddExp(itemValue[SelectedTicketId5] * raffleCount);
+        //构建奖池
+        (float[] rates, int[] counts) = pool5;
+        //开抽！
+        Dictionary<int, int> rewardDic = [];
+        List<Rune> tempRunes = [];
+        StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
+        int oneLineCount = 0;
+        int ticketIdx = TicketIdx5; // 0-5
+        bool isUniverseTicket = (SelectedTicketId5 == IFE宇宙奖券);
+
+        while (raffleCount > 0) {
+            raffleCount--;
+            double currRate = 0;
+            double randDouble = GetRandDouble();
+            bool nothing = true;
+            for (int i = 0; i < 12000; i++) {
+                currRate += rates[i];
+                if (randDouble >= currRate) {
+                    continue;
+                }
+                nothing = false;
+                if (i == 0) {
+                    // 抽到符文，计算星级
+                    // 星级比例 16:8:4:2:1
+                    int maxStar = Math.Min(5, ticketIdx + 1);
+                    int[] weights = { 16, 8, 4, 2, 1 };
+                    int totalWeight = 0;
+                    for (int s = 0; s < maxStar; s++) totalWeight += weights[s];
+
+                    int randWeight = GetRandInt(0, totalWeight);
+                    int star = 1;
+                    int currentWeight = 0;
+                    for (int s = 0; s < maxStar; s++) {
+                        currentWeight += weights[s];
+                        if (randWeight < currentWeight) {
+                            star = s + 1;
+                            break;
+                        }
+                    }
+
+                    int? subCountOverride = null;
+                    if (isUniverseTicket) {
+                        if (star == 5) subCountOverride = 3;
+                        else if (star == 3) subCountOverride = 2;
+                    }
+
+                    Rune rune = RuneManager.CreateRuneData(star, subCountOverride);
+                    tempRunes.Add(rune);
+
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else if (oneLineCount > 0) {
+                        sb.Append("          ");
+                    }
+                    string mainStatName = rune.mainStat switch {
+                        ERuneStatType.Speed => "速度".Translate(),
+                        ERuneStatType.Productivity => "产能".Translate(),
+                        ERuneStatType.EnergySaving => "节能".Translate(),
+                        ERuneStatType.Yield => "增产".Translate(),
+                        _ => ""
+                    };
+                    sb.Append($"{star}{"星符文".Translate()}({mainStatName}) x 1".WithColor(star));
+                    oneLineCount++;
+                } else {
+                    int count = counts[i];
+                    if (rewardDic.ContainsKey(i)) {
+                        rewardDic[i] += count;
+                    } else {
+                        rewardDic[i] = count;
+                    }
+                    if (oneLineCount >= oneLineMaxCount) {
+                        sb.Append("\n");
+                        oneLineCount = 0;
+                    } else if (oneLineCount > 0) {
+                        sb.Append("          ");
+                    }
+                    sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
+                    oneLineCount++;
+                }
+                break;
+            }
+            if (nothing) {
+                if (oneLineCount >= oneLineMaxCount) {
+                    sb.Append("\n");
+                    oneLineCount = 0;
+                } else if (oneLineCount > 0) {
+                    sb.Append("          ");
+                }
+                sb.Append($"{"谢谢惠顾喵".Translate()} x 1".WithColor(Gray));
+                oneLineCount++;
+            }
+        }
+        if (showMessage) {
+            UIMessageBox.Show("抽奖结果".Translate(),
+                sb.ToString().TrimEnd('\n')
+                + $"\n\n{"所有奖励已存储至分馏数据中心。".Translate()}",
+                "确定".Translate(), UIMessageBox.INFO,
+                () => {
+                    foreach (var p in rewardDic) {
+                        AddItemToModData(p.Key, p.Value, 0, true);
+                    }
+                    foreach (var r in tempRunes) {
+                        RuneManager.allRunes.Add(r);
+                    }
+                });
+        } else {
+            foreach (var p in rewardDic) {
+                AddItemToModData(p.Key, p.Value, 0, true);
+            }
+            foreach (var r in tempRunes) {
+                RuneManager.allRunes.Add(r);
+            }
+        }
+    }
+
     #endregion
 
     #region 后台抽奖
@@ -876,7 +1059,7 @@ public static class TicketRaffle {
         lastAutoRaffleTick = __instance.timei;
         //如果有多个后台抽奖勾选，并且选定了同一个奖券，只有在奖券数目大于100*选择此奖券的奖池数时，才对这些池子抽奖
         int[] usedTickets = new int[7];
-        bool[] autoRaffles = new bool[4];
+        bool[] autoRaffles = new bool[5];
         if (EnableAutoRaffle1Entry.Value) {
             usedTickets[TicketIdx1]++;
             autoRaffles[0] = true;
@@ -893,6 +1076,10 @@ public static class TicketRaffle {
             usedTickets[TicketIdx4]++;
             autoRaffles[3] = true;
         }
+        if (EnableAutoRaffle5Entry.Value) {
+            usedTickets[TicketIdx5]++;
+            autoRaffles[4] = true;
+        }
         long[] currTicketCounts = new long[7];
         for (int i = 0; i < 7; i++) {
             if (usedTickets[i] > 0) {
@@ -903,6 +1090,7 @@ public static class TicketRaffle {
         autoRaffles[1] &= currTicketCounts[TicketIdx2] >= 100 * usedTickets[TicketIdx2];
         autoRaffles[2] &= currTicketCounts[TicketIdx3] >= 100 * usedTickets[TicketIdx3];
         autoRaffles[3] &= currTicketCounts[TicketIdx4] >= 100 * usedTickets[TicketIdx4];
+        autoRaffles[4] &= currTicketCounts[TicketIdx5] >= 100 * usedTickets[TicketIdx5];
         if (autoRaffles[0]) {
             RaffleRecipe(100, 5, false);
         }
@@ -915,7 +1103,35 @@ public static class TicketRaffle {
         if (autoRaffles[3]) {
             RaffleBuilding(100, 5, false);
         }
+        if (autoRaffles[4]) {
+            RaffleRune(100, 5, false);
+        }
     }
+
+    // private static void RollMiscellaneousReward(ref int oneLineCount, int oneLineMaxCount, StringBuilder sb, Dictionary<int, int> rewardDic, List<Rune> runeRewards) {
+    //     if (oneLineCount >= oneLineMaxCount) {
+    //         sb.Append("\n");
+    //         oneLineCount = 0;
+    //     } else if (oneLineCount > 0) {
+    //         sb.Append("          ");
+    //     }
+    //
+    //     float rand = UnityEngine.Random.value;
+    //     if (rand < 0.05f) { // 5% chance for Rune
+    //         int star = RollRuneStar();
+    //         Rune rune = CreateRuneData(star);
+    //         runeRewards.Add(rune);
+    //         sb.Append($"{star}{"星符文".Translate()} x 1".WithColor(star));
+    //     } else {
+    //         // Give Essence
+    //         int essenceId = IFE速度精华 + UnityEngine.Random.Range(0, 4);
+    //         int count = 10;
+    //         if (rewardDic.ContainsKey(essenceId)) rewardDic[essenceId] += count;
+    //         else rewardDic[essenceId] = count;
+    //         sb.Append($"{LDB.items.Select(essenceId).name} x {count}".WithColor(itemValue[essenceId]));
+    //     }
+    //     oneLineCount++;
+    // }
 
     #endregion
 
@@ -943,13 +1159,20 @@ public static class TicketRaffle {
             TicketIdx4Entry.Value = 0;
         }
         EnableAutoRaffle4Entry.Value = r.ReadBoolean();
-        for (int i = 0; i < 4; i++) {
+        if (version >= 2) {
+            TicketIdx5Entry.Value = r.ReadInt32();
+            if (TicketIdx5Entry.Value < 0 || TicketIdx5Entry.Value >= TicketIds.Length - 1) {
+                TicketIdx5Entry.Value = 0;
+            }
+            EnableAutoRaffle5Entry.Value = r.ReadBoolean();
+        }
+        for (int i = 1; i <= 5; i++) {
             FreshPool(i);
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(TicketIdx1Entry.Value);
         w.Write(EnableAutoRaffle1Entry.Value);
         w.Write(TicketIdx2Entry.Value);
@@ -958,6 +1181,8 @@ public static class TicketRaffle {
         w.Write(EnableAutoRaffle3Entry.Value);
         w.Write(TicketIdx4Entry.Value);
         w.Write(EnableAutoRaffle4Entry.Value);
+        w.Write(TicketIdx5Entry.Value);
+        w.Write(EnableAutoRaffle5Entry.Value);
     }
 
     public static void IntoOtherSave() {
@@ -970,9 +1195,11 @@ public static class TicketRaffle {
         EnableAutoRaffle3Entry.Value = false;
         TicketIdx4Entry.Value = 0;
         EnableAutoRaffle4Entry.Value = false;
+        TicketIdx5Entry.Value = 0;
+        EnableAutoRaffle5Entry.Value = false;
         commonItems3 = [];
         commonItems4 = [];
-        for (int i = 0; i < 4; i++) {
+        for (int i = 1; i <= 5; i++) {
             FreshPool(i);
         }
     }
