@@ -18,7 +18,7 @@ public static class ImportantItem {
         [IFE分馏配方核心, IFE分馏塔增幅芯片, IFE原版配方核心],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
         [IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔],
-        [IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华],
+        [IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
         [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
     ];

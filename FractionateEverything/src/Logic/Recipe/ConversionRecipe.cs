@@ -182,7 +182,7 @@ public class ConversionRecipe : BaseRecipe {
         // 屏蔽原胚、分馏塔的转化，以提升定向原胚价值
         // CreateChain([[IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE回收塔原胚]]);
         // CreateChain([[IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔]]);
-        CreateChain([[IFE复制精华, IFE点金精华, IFE分解精华, IFE转化精华]]);
+        CreateChain([[IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华]]);
         CreateChain([[IBC插件效果分享塔], [IBC插件效果分享站]]);
         CreateChain([
             [IBC速度插件MK1, IBC产能插件MK1, IBC节能插件MK1, IBC品质插件MK1],
@@ -248,9 +248,7 @@ public class ConversionRecipe : BaseRecipe {
                 }
                 AddRecipe(new ConversionRecipe(inputID, 0.02f,
                     outputMain,
-                    [
-                        new OutputInfo(0.01f, IFE转化精华, 1),
-                    ]));
+                    []));
             }
         }
     }

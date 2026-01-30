@@ -98,10 +98,7 @@ public class MineralCopyRecipe : BaseRecipe {
             [
                 new(1.000f, inputID, 2),
             ],
-            [
-                ..outputAppend,
-                new(0.01f, IFE复制精华, 1),
-            ]));
+            outputAppend));
     }
 
     /// <summary>

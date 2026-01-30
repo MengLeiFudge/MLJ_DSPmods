@@ -17,7 +17,7 @@ public static class ConversionTower {
         Register("转化塔", "Conversion Tower");
         Register("I转化塔",
             "Convert items into other items related to them. There is a certain probability of obtaining conversion essence. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "将物品转化为与其相关的其他物品。有一定概率得到转化精华。需要在分馏数据中心解锁并升级对应配方。");
+            "将物品转化为与其相关的其他物品。有一定概率得到增产精华。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     private static ItemProto item;
