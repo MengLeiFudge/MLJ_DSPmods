@@ -459,10 +459,10 @@ public static partial class Utils {
     internal const int IFE回收塔 = 8025;
     internal const int IFE行星内物流交互站 = 8031;
     internal const int IFE星际物流交互站 = 8032;
-    internal const int IFE复制精华 = 8041;
-    internal const int IFE点金精华 = 8042;
-    internal const int IFE分解精华 = 8043;
-    internal const int IFE转化精华 = 8044;
+    internal const int IFE速度精华 = 8041;
+    internal const int IFE产能精华 = 8042;
+    internal const int IFE节能精华 = 8043;
+    internal const int IFE增产精华 = 8044;
     internal const int IFE万物分馏商店刷新提示 = 8048;
     internal const int IFE万物分馏科技解锁说明 = 8049;
     internal const int IBC插件效果分享塔 = 8051;
