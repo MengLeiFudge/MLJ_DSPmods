@@ -431,7 +431,7 @@ public static class TicketRaffle {
                   / itemValue[SelectedTicketId1]
                   / VipFeatures.TicketValueMulti;
             List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
-                item.ID >= IFE复制精华 && item.ID <= IFE转化精华
+                item.ID >= IFE速度精华 && item.ID <= IFE增产精华
             ).ToList();
             pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems, RecipeValue);
         } else if (poolId == 2) {

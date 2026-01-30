@@ -1076,9 +1076,9 @@ public static partial class Utils {
     /// 获取当前MOD数据中最少的精华的数目。
     /// </summary>
     public static int GetEssenceMinCount() {
-        long minCount = Math.Min(centerItemCount[IFE复制精华], centerItemCount[IFE点金精华]);
-        minCount = Math.Min(minCount, centerItemCount[IFE分解精华]);
-        minCount = Math.Min(minCount, centerItemCount[IFE转化精华]);
+        long minCount = Math.Min(centerItemCount[IFE速度精华], centerItemCount[IFE产能精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE节能精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE增产精华]);
         return (int)Math.Min(int.MaxValue, minCount);
     }
 
@@ -1087,23 +1087,23 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// </summary>
     public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
-        if (centerItemCount[IFE复制精华] < n
-            || centerItemCount[IFE点金精华] < n
-            || centerItemCount[IFE分解精华] < n
-            || centerItemCount[IFE转化精华] < n) {
+        if (centerItemCount[IFE速度精华] < n
+            || centerItemCount[IFE产能精华] < n
+            || centerItemCount[IFE节能精华] < n
+            || centerItemCount[IFE增产精华] < n) {
             return false;
         }
         lock (centerItemCount) {
-            TakeItemFromModData(IFE复制精华, n, out _);
-            TakeItemFromModData(IFE点金精华, n, out _);
-            TakeItemFromModData(IFE分解精华, n, out _);
-            TakeItemFromModData(IFE转化精华, n, out _);
+            TakeItemFromModData(IFE速度精华, n, out _);
+            TakeItemFromModData(IFE产能精华, n, out _);
+            TakeItemFromModData(IFE节能精华, n, out _);
+            TakeItemFromModData(IFE增产精华, n, out _);
         }
         lock (consumeRegister) {
-            consumeRegister[IFE复制精华] += n;
-            consumeRegister[IFE点金精华] += n;
-            consumeRegister[IFE分解精华] += n;
-            consumeRegister[IFE转化精华] += n;
+            consumeRegister[IFE速度精华] += n;
+            consumeRegister[IFE产能精华] += n;
+            consumeRegister[IFE节能精华] += n;
+            consumeRegister[IFE增产精华] += n;
         }
         return true;
     }

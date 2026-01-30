@@ -89,20 +89,20 @@ public static class ItemManager {
             "Modify origin recipe input counts and time spend.",
             "可以修改原版配方的原料数目、制作时间。");
 
-        Register("复制精华", "Replication Essence");
-        Register("I复制精华",
+        Register("速度精华", "Replication Essence");
+        Register("I速度精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，矿物复制塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
-        Register("点金精华", "Alchemy Essence");
-        Register("I点金精华",
+        Register("产能精华", "Alchemy Essence");
+        Register("I产能精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，点金塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
-        Register("分解精华", "Deconstruction Essence");
-        Register("I分解精华",
+        Register("节能精华", "Deconstruction Essence");
+        Register("I节能精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，分解塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
-        Register("转化精华", "Conversion Essence");
-        Register("I转化精华",
+        Register("增产精华", "Conversion Essence");
+        Register("I增产精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，转化塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
     }
@@ -260,22 +260,22 @@ public static class ItemManager {
         item.UnlockKey = -1;
 
 
-        item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
+        item = ProtoRegistry.RegisterItem(IFE速度精华, "速度精华", "I速度精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE点金精华, "点金精华", "I点金精华",
+        item = ProtoRegistry.RegisterItem(IFE产能精华, "产能精华", "I产能精华",
             "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE分解精华, "分解精华", "I分解精华",
+        item = ProtoRegistry.RegisterItem(IFE节能精华, "节能精华", "I节能精华",
             "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
 
-        item = ProtoRegistry.RegisterItem(IFE转化精华, "转化精华", "I转化精华",
+        item = ProtoRegistry.RegisterItem(IFE增产精华, "增产精华", "I增产精华",
             "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
@@ -380,10 +380,10 @@ public static class ItemManager {
         itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE回收塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         //设置精华价值
-        itemValue[IFE复制精华] = 200.0f;
-        itemValue[IFE点金精华] = 200.0f;
-        itemValue[IFE分解精华] = 200.0f;
-        itemValue[IFE转化精华] = 200.0f;
+        itemValue[IFE速度精华] = 200.0f;
+        itemValue[IFE产能精华] = 200.0f;
+        itemValue[IFE节能精华] = 200.0f;
+        itemValue[IFE增产精华] = 200.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
