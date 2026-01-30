@@ -8,6 +8,7 @@ using FE.UI.View.ModPackage;
 using FE.UI.View.ProgressSystem;
 using FE.UI.View.Setting;
 using FE.UI.View.Statistic;
+using FE.UI.View.RuneSystem;
 using UnityEngine;
 using static FE.Utils.Utils;
 
@@ -29,6 +30,7 @@ public static class MainWindow {
         Register("物品管理", "Item Management");
         ItemInteraction.AddTranslations();
         ImportantItem.AddTranslations();
+        RuneMenu.AddTranslations();
         Register("资源获取", "Resource Collection");
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
@@ -53,6 +55,7 @@ public static class MainWindow {
 
         ItemInteraction.LoadConfig(configFile);
         ImportantItem.LoadConfig(configFile);
+        RuneMenu.LoadConfig(configFile);
 
         TicketRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
@@ -93,6 +96,7 @@ public static class MainWindow {
         wnd.AddTabGroup(trans, "物品管理");
         ItemInteraction.CreateUI(wnd, trans);
         ImportantItem.CreateUI(wnd, trans);
+        RuneMenu.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "资源获取");
         TicketRaffle.CreateUI(wnd, trans);
         LimitedTimeStore.CreateUI(wnd, trans);
@@ -119,6 +123,7 @@ public static class MainWindow {
 
         ItemInteraction.UpdateUI();
         ImportantItem.UpdateUI();
+        RuneMenu.UpdateUI();
 
         TicketRaffle.UpdateUI();
         LimitedTimeStore.UpdateUI();
@@ -191,6 +196,9 @@ public static class MainWindow {
 
         ItemInteraction.Import(r);
         ImportantItem.Import(r);
+        if (version >= 2) {
+            RuneMenu.Import(r);
+        }
 
         TicketRaffle.Import(r);
         LimitedTimeStore.Import(r);
@@ -217,6 +225,7 @@ public static class MainWindow {
 
         ItemInteraction.Export(w);
         ImportantItem.Export(w);
+        RuneMenu.Export(w);
 
         TicketRaffle.Export(w);
         LimitedTimeStore.Export(w);
@@ -241,6 +250,7 @@ public static class MainWindow {
 
         ItemInteraction.IntoOtherSave();
         ImportantItem.IntoOtherSave();
+        RuneMenu.IntoOtherSave();
 
         TicketRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();

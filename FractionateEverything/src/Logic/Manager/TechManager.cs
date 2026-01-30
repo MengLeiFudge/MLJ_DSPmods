@@ -539,6 +539,7 @@ public static class TechManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.NotifyTechUnlock))]
     public static void GameHistoryData_NotifyTechUnlock_Postfix(int _techId) {
+        RuneManager.UpdateSlotCount();
         if (_techId == TFE分馏塔原胚) {
             //解锁所有建筑培养配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
