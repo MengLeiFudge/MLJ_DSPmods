@@ -54,24 +54,24 @@ public static class ItemManager {
 
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
-            "One of the fractionator protos. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
         Register("矿物复制塔原胚", "Mineral Replication Tower Proto");
         Register("I矿物复制塔原胚",
-            "One of the fractionator protos. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
         Register("点数聚集塔原胚", "Point Aggregate Tower Proto");
         Register("I点数聚集塔原胚",
-            "One of the fractionator protos. After trained by Interaction Tower, Point Aggregate Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到点数聚集塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Point Aggregate Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到点数聚集塔，也有较低几率得到分馏塔定向原胚。");
         Register("转化塔原胚", "Conversion Tower Proto");
         Register("I转化塔原胚",
-            "One of the fractionator protos. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
         Register("回收塔原胚", "Recycle Tower Proto");
         Register("I回收塔原胚",
-            "One of the fractionator protos. After trained by Interaction Tower, Recycle Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一。经过交互塔培养后，可以得到回收塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Recycle Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到回收塔，也有较低几率得到分馏塔定向原胚。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
         Register("I分馏塔定向原胚",
             "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
@@ -91,20 +91,20 @@ public static class ItemManager {
 
         Register("速度精华", "Replication Essence");
         Register("I速度精华",
-            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
-            "分馏精华之一，矿物复制塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
+            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
+            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
         Register("产能精华", "Alchemy Essence");
         Register("I产能精华",
-            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
-            "分馏精华之一，点金塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
+            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
+            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
         Register("节能精华", "Deconstruction Essence");
         Register("I节能精华",
-            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
-            "分馏精华之一，分解塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
+            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
+            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
         Register("增产精华", "Conversion Essence");
         Register("I增产精华",
-            "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
-            "分馏精华之一，转化塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
+            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
+            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
     }
 
     #region 添加新物品
