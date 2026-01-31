@@ -50,7 +50,7 @@ public static class RuneMenu {
         Register("Speed", "Speed", "速度");
         Register("Productivity", "Productivity", "产能");
         Register("EnergySaving", "Energy Saving", "节能");
-        Register("Yield", "Yield", "增产");
+        Register("Proliferator", "Proliferator", "增产");
         Register("词条", "Stat");
         Register("主词条", "Main Stat");
         Register("副词条", "Sub Stat");
@@ -315,7 +315,7 @@ public static class RuneMenu {
             ERuneStatType.Productivity =>
                 $"{"产能".Translate()} +{(multiplier * 0.1f).FormatP()}, {"电力消耗".Translate()} +{(multiplier * 0.8f).FormatP()}, {"速度".Translate()} -{(multiplier * 0.15f).FormatP()}",
             ERuneStatType.EnergySaving => $"{"电力消耗".Translate()} -{(multiplier * 0.5f).FormatP()}",
-            ERuneStatType.Yield => $"{"增产".Translate()} +{(multiplier * 0.05f).FormatP()}",
+            ERuneStatType.Proliferator => $"{"增产".Translate()} +{(multiplier * 0.05f).FormatP()}",
             _ => ""
         };
     }
