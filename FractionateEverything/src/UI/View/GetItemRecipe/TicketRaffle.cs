@@ -488,7 +488,7 @@ public static class TicketRaffle {
                 IFE转化塔原胚,
                 IFE分馏塔定向原胚,
             ];
-            float[] specialRates = new float[7];
+            float[] specialRates = new float[6];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             float specialRates16Sum = 1 - specialRates[0];
