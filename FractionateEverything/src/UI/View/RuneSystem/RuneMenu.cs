@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -57,6 +55,7 @@ public static class RuneMenu {
         Register("主词条", "Main Stat");
         Register("副词条", "Sub Stat");
         Register("没有空余槽位", "No empty slots");
+        Register("星符文", "-Star Rune", "星符文");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }

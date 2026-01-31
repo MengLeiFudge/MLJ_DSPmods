@@ -105,7 +105,6 @@ public static class ItemManager {
         Register("I增产精华",
             "One of the Fractionation Essences, with a small probability of spawning when the Mineral Replication Tower is running. After uploading it to the fractionation data centre, it can be used as one of the raw materials for batch copying items from the Quantum Replication Tower.",
             "分馏精华之一，转化塔运行时有小概率产出。将其上传至分馏数据中心后，可作为量子复制塔批量复制物品的原材料之一。");
-        Register("星符文", "-Star Rune", "星符文");
     }
 
     #region 添加新物品
