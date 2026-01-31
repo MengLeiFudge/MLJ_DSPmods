@@ -8,6 +8,9 @@ public static partial class Utils {
     /// 将浮点数转化为百分数，至少保留一位有效数字。
     /// </summary>
     public static string FormatP(this float value) {
+        if (value < 0) {
+            return "-" + (-value).FormatP();
+        }
         int i = 3;
         StringBuilder sb = new StringBuilder("0.###");
         while (i < 10) {
