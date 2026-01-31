@@ -304,21 +304,29 @@ public static class BuildingOperate {
         int takeId = IFE分馏塔增幅芯片;
         int takeCount = 3;
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-            + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                SelectedBuilding.EnableFluidOutputStack(true);
-                if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                        new BuildingChangePacket(BuildingTypeEntry.Value, 1));
-                }
-            },
-            null);
+        if (GameMain.sandboxToolsEnabled) {
+            SelectedBuilding.EnableFluidOutputStack(true);
+            if (NebulaModAPI.IsMultiplayerActive) {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                    new BuildingChangePacket(BuildingTypeEntry.Value, 1));
+            }
+        } else {
+            UIMessageBox.Show("提示".Translate(),
+                $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+                + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    SelectedBuilding.EnableFluidOutputStack(true);
+                    if (NebulaModAPI.IsMultiplayerActive) {
+                        NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                            new BuildingChangePacket(BuildingTypeEntry.Value, 1));
+                    }
+                },
+                null);
+        }
     }
 
     private static void AddMaxProductOutputStack() {
@@ -331,21 +339,29 @@ public static class BuildingOperate {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-            + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
-                if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                        new BuildingChangePacket(BuildingTypeEntry.Value, 2));
-                }
-            },
-            null);
+        if (GameMain.sandboxToolsEnabled) {
+            SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
+            if (NebulaModAPI.IsMultiplayerActive) {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                    new BuildingChangePacket(BuildingTypeEntry.Value, 2));
+            }
+        } else {
+            UIMessageBox.Show("提示".Translate(),
+                (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+                + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
+                    if (NebulaModAPI.IsMultiplayerActive) {
+                        NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                            new BuildingChangePacket(BuildingTypeEntry.Value, 2));
+                    }
+                },
+                null);
+        }
     }
 
     private static void SetFracForever() {
@@ -358,21 +374,29 @@ public static class BuildingOperate {
         int takeId = IFE分馏塔增幅芯片;
         int takeCount = 2;
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-            + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                SelectedBuilding.EnableFracForever(true);
-                if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                        new BuildingChangePacket(BuildingTypeEntry.Value, 3));
-                }
-            },
-            null);
+        if (GameMain.sandboxToolsEnabled) {
+            SelectedBuilding.EnableFracForever(true);
+            if (NebulaModAPI.IsMultiplayerActive) {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                    new BuildingChangePacket(BuildingTypeEntry.Value, 3));
+            }
+        } else {
+            UIMessageBox.Show("提示".Translate(),
+                (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+                + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    SelectedBuilding.EnableFracForever(true);
+                    if (NebulaModAPI.IsMultiplayerActive) {
+                        NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                            new BuildingChangePacket(BuildingTypeEntry.Value, 3));
+                    }
+                },
+                null);
+        }
     }
 
     private static void AddPointAggregateLevel() {
@@ -385,21 +409,29 @@ public static class BuildingOperate {
             return;
         }
         ItemProto takeProto = LDB.items.Select(takeId);
-        UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-            + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                PointAggregateTower.Level++;
-                if (NebulaModAPI.IsMultiplayerActive) {
-                    NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                        new BuildingChangePacket(BuildingTypeEntry.Value, 4));
-                }
-            },
-            null);
+        if (GameMain.sandboxToolsEnabled) {
+            PointAggregateTower.Level++;
+            if (NebulaModAPI.IsMultiplayerActive) {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                    new BuildingChangePacket(BuildingTypeEntry.Value, 4));
+            }
+        } else {
+            UIMessageBox.Show("提示".Translate(),
+                (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+                + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
+                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+                () => {
+                    if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
+                        return;
+                    }
+                    PointAggregateTower.Level++;
+                    if (NebulaModAPI.IsMultiplayerActive) {
+                        NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                            new BuildingChangePacket(BuildingTypeEntry.Value, 4));
+                    }
+                },
+                null);
+        }
     }
 
     private static void Reinforcement() {
