@@ -320,7 +320,6 @@ public static class TutorialManager {
 
              {"[Mineral Replication Tower]".WithColor(Blue)} 
              Mineral Replication Towers can replicate various minerals in multiples. This is helpful for resource-poor star zones.
-             In addition to this, there is a certain probability of obtaining Replication Essence.
 
              {"[Points Aggregate Tower]".WithColor(Blue)} 
              The Points Aggregate Tower allows you to adjust the number of points for input items, focusing points on some items to break through the limitations of the Increaser.
@@ -333,15 +332,12 @@ public static class TutorialManager {
 
              {"[Alchemy Tower]".WithColor(Blue)} 
              The Alchemy Tower converts items to the corresponding level of the matrix.
-             In addition to this, there is a certain probability of obtaining Alchemy Essence.
 
              {"[Deconstruction Tower]".WithColor(Blue)} 
              The Deconstruction Tower can decompose an item into the raw materials used to craft it. If the item being decomposed does not have a corresponding single-product recipe, it will be processed as sand.
-             In addition to this, there is a certain probability of obtaining Deconstruction Essence.
 
              {"[Conversion Tower Mutual Tower]".WithColor(Blue)} 
              The Conversion Tower can convert items into other related items.
-             In addition to this, there is a certain probability of obtaining Conversion Essence.
              """,
             $"""
              {"【培养分馏塔】".WithColor(Blue)}
@@ -360,7 +356,6 @@ public static class TutorialManager {
 
              {"【矿物复制塔】".WithColor(Blue)}
              矿物复制塔可以将各种矿物复制为多个。这对资源贫瘠的星区很有帮助。
-             除此之外，还有一定概率获得速度精华。
 
              {"【点数聚集塔】".WithColor(Blue)}
              点数聚集塔可以调整输入物品的点数，将点数集中在部分物品上，突破增产剂的限制。
@@ -373,15 +368,12 @@ public static class TutorialManager {
 
              {"【点金塔】".WithColor(Blue)}
              点金塔可以将物品转换为对应层次的矩阵。
-             除此之外，还有一定概率获得产能精华。
 
              {"【分解塔】".WithColor(Blue)}
              分解塔可以将物品回收为制作它的原料。如果被分解的物品没有对应的单产物配方，将会被处理为沙土。
-             除此之外，还有一定概率获得节能精华。
 
              {"【转化塔】".WithColor(Blue)}
              转化塔可以将物品转化为其他相关的物品。
-             除此之外，还有一定概率获得增产精华。
              """
         );
         Register("分馏塔使用指南后字", "", "");
