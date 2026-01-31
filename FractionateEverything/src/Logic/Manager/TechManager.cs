@@ -188,6 +188,25 @@ public static class TechManager {
         Register("物品回收结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
             "你已经掌握了物品回收技术，可以将物品回收成制作它的原料了。");
+
+
+        Register("T行星内物流交互", "Item Deconstruction", "行星内物流交互");
+        Register("行星内物流交互描述",
+            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
+            "行星内物流交互科技可以将行星内物流交互成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+        Register("行星内物流交互结果",
+            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
+            "你已经掌握了行星内物流交互技术，可以将行星内物流交互成制作它的原料了。");
+
+        Register("T星际物流交互", "Item Deconstruction", "星际物流交互");
+        Register("星际物流交互描述",
+            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
+            "星际物流交互科技可以将星际物流交互成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+        Register("星际物流交互结果",
+            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
+            "你已经掌握了星际物流交互技术，可以将星际物流交互成制作它的原料了。");
+
+
     }
 
     /// <summary>
@@ -423,7 +442,7 @@ public static class TechManager {
         tech物品转化.PropertyItemCounts = [200];
 
         var tech物品回收 = ProtoRegistry.RegisterTech(
-            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品回收",
+            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品分解",//todo
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE回收塔],
@@ -436,24 +455,24 @@ public static class TechManager {
         var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
         var tech行星内物流交互 = ProtoRegistry.RegisterTech(
             TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果", tech行星物流系统.IconPath,
-            [tech行星物流系统.ID],
+            [],
             [..tech行星物流系统.Items], [..tech行星物流系统.ItemPoints], tech行星物流系统.HashNeeded,
-            [RFE回收塔],
+            [],
             GetTechPos(2, 7)
         );
-        tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互];
+        tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech行星物流系统.ID];
         tech行星内物流交互.PropertyOverrideItems = [..tech行星物流系统.PropertyOverrideItems];
         tech行星内物流交互.PropertyItemCounts = [..tech行星物流系统.PropertyItemCounts];
 
         var tech星际物流系统 = LDB.techs.Select(T星际物流系统);
         var tech星际物流交互 = ProtoRegistry.RegisterTech(
             TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果", tech星际物流系统.IconPath,
-            [tech星际物流系统.ID],
+            [],
             [..tech星际物流系统.Items], [..tech星际物流系统.ItemPoints], tech星际物流系统.HashNeeded,
-            [RFE回收塔],
+            [],
             GetTechPos(2, 8)
         );
-        tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互];
+        tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech星际物流系统.ID];
         tech星际物流交互.PropertyOverrideItems = [..tech星际物流系统.PropertyOverrideItems];
         tech星际物流交互.PropertyItemCounts = [..tech星际物流系统.PropertyItemCounts];
     }
