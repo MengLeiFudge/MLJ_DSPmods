@@ -153,10 +153,9 @@ public static class RuneManager {
     }
 
     public static int GetUpgradeCost(int level, int star) =>
-        // 0-11级二次函数，12-19级指数增长
-        level < 12
-            ? (int)(600 + 145 * level + 5 * level * level) * star
-            : (int)(2600 * Math.Pow(1.45 + 0.05 * (level - 12), level - 12)) * star;
+        level < 11
+            ? (600 + 160 * level) * star
+            : (2400 + 600 * (level - 11)) * star;
 
     public static void DeconstructRune(Rune rune) {
         int essenceId = rune.GetEssenceId();
