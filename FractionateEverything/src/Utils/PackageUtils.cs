@@ -14,6 +14,18 @@ using static FE.Logic.Manager.ItemManager;
 namespace FE.Utils;
 
 public static partial class Utils {
+    /// <summary>
+    ///     建筑师模式，所有建筑数目显示为999且建造时不消耗
+    /// </summary>
+    private static bool ArchitectMode => Multfunction_mod.ArchitectMode
+                                         || CheatEnabler.ArchitectMode
+                                         || DeliverySlotsTweaks.ArchitectMode;
+
+    /// <summary>
+    ///     指示物品交互科技是否已解锁
+    /// </summary>
+    private static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
+
     public static void AddTranslations() {
         Register("提示", "Tip");
         Register("确定", "Confirm");
@@ -28,16 +40,67 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 建筑师模式，所有建筑数目显示为999且建造时不消耗
+    /// 从ModData背包取出指定物品，再将其放入玩家背包/物流背包/手上。
+    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
     /// </summary>
-    private static bool ArchitectMode => Multfunction_mod.ArchitectMode
-                                         || CheatEnabler.ArchitectMode
-                                         || DeliverySlotsTweaks.ArchitectMode;
+    public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
+        ItemProto item = LDB.items.Select(itemId);
+        if (item == null) {
+            return;
+        }
+        int count = leftClick
+            ? item.StackSize * Miscellaneous.LeftClickTakeCount
+            : item.StackSize * Miscellaneous.RightClickTakeCount;
+        int inc;
+        lock (centerItemCount) {
+            count = TakeItemFromModData(itemId, count, out inc, true);
+        }
+        if (itemId == I沙土) {
+            if (GameMain.mainPlayer.inhandItemId != I沙土) {
+                GameMain.mainPlayer.ThrowHandItems();
+            }
+            GameMain.mainPlayer.inhandItemId = I沙土;
+            GameMain.mainPlayer.inhandItemCount += count;
+        } else {
+            AddItemToPackage(itemId, count, inc, false);
+        }
+    }
 
     /// <summary>
-    /// 指示物品交互科技是否已解锁
+    /// 获取当前MOD数据中最少的精华的数目。
     /// </summary>
-    private static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
+    public static int GetEssenceMinCount() {
+        long minCount = Math.Min(centerItemCount[IFE速度精华], centerItemCount[IFE产能精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE节能精华]);
+        minCount = Math.Min(minCount, centerItemCount[IFE增产精华]);
+        return (int)Math.Min(int.MaxValue, minCount);
+    }
+
+    /// <summary>
+    ///     从Mod数据中拿取每种精华各n个。
+    ///     如果数目不足，则不拿取；否则扣除对应物品。
+    /// </summary>
+    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
+        if (centerItemCount[IFE速度精华] < n
+            || centerItemCount[IFE产能精华] < n
+            || centerItemCount[IFE节能精华] < n
+            || centerItemCount[IFE增产精华] < n) {
+            return false;
+        }
+        lock (centerItemCount) {
+            TakeItemFromModData(IFE速度精华, n, out _);
+            TakeItemFromModData(IFE产能精华, n, out _);
+            TakeItemFromModData(IFE节能精华, n, out _);
+            TakeItemFromModData(IFE增产精华, n, out _);
+        }
+        lock (consumeRegister) {
+            consumeRegister[IFE速度精华] += n;
+            consumeRegister[IFE产能精华] += n;
+            consumeRegister[IFE节能精华] += n;
+            consumeRegister[IFE增产精华] += n;
+        }
+        return true;
+    }
 
     #region 向背包添加物品
 
@@ -911,7 +974,7 @@ public static partial class Utils {
     /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
     /// </summary>
     /// <returns>是否拿取成功</returns>
-    public static bool TakeItemWithTip(int itemId, int count, out int inc, bool showMessage = true) {
+    public static bool TakeItemWithTip(int itemId, int count, out int inc, bool showTakeFailMessage = true) {
         inc = 0;
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return false;
@@ -924,7 +987,7 @@ public static partial class Utils {
             return true;
         }
         if (GetItemTotalCount(itemId) < count) {
-            if (showMessage) {
+            if (showTakeFailMessage) {
                 UIMessageBox.Show("提示".Translate(),
                     $"{takeProto.name} 不足 {count}！",
                     "确定".Translate(), UIMessageBox.WARNING,
@@ -1044,67 +1107,4 @@ public static partial class Utils {
     }
 
     #endregion
-
-    /// <summary>
-    /// 从ModData背包取出指定物品，再将其放入玩家背包/物流背包/手上。
-    /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
-    /// </summary>
-    public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
-        ItemProto item = LDB.items.Select(itemId);
-        if (item == null) {
-            return;
-        }
-        int count = leftClick
-            ? item.StackSize * Miscellaneous.LeftClickTakeCount
-            : item.StackSize * Miscellaneous.RightClickTakeCount;
-        int inc;
-        lock (centerItemCount) {
-            count = TakeItemFromModData(itemId, count, out inc, true);
-        }
-        if (itemId == I沙土) {
-            if (GameMain.mainPlayer.inhandItemId != I沙土) {
-                GameMain.mainPlayer.ThrowHandItems();
-            }
-            GameMain.mainPlayer.inhandItemId = I沙土;
-            GameMain.mainPlayer.inhandItemCount += count;
-        } else {
-            AddItemToPackage(itemId, count, inc, false);
-        }
-    }
-
-    /// <summary>
-    /// 获取当前MOD数据中最少的精华的数目。
-    /// </summary>
-    public static int GetEssenceMinCount() {
-        long minCount = Math.Min(centerItemCount[IFE速度精华], centerItemCount[IFE产能精华]);
-        minCount = Math.Min(minCount, centerItemCount[IFE节能精华]);
-        minCount = Math.Min(minCount, centerItemCount[IFE增产精华]);
-        return (int)Math.Min(int.MaxValue, minCount);
-    }
-
-    /// <summary>
-    /// 从Mod数据中拿取每种精华各n个。
-    /// 如果数目不足，则不拿取；否则扣除对应物品。
-    /// </summary>
-    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
-        if (centerItemCount[IFE速度精华] < n
-            || centerItemCount[IFE产能精华] < n
-            || centerItemCount[IFE节能精华] < n
-            || centerItemCount[IFE增产精华] < n) {
-            return false;
-        }
-        lock (centerItemCount) {
-            TakeItemFromModData(IFE速度精华, n, out _);
-            TakeItemFromModData(IFE产能精华, n, out _);
-            TakeItemFromModData(IFE节能精华, n, out _);
-            TakeItemFromModData(IFE增产精华, n, out _);
-        }
-        lock (consumeRegister) {
-            consumeRegister[IFE速度精华] += n;
-            consumeRegister[IFE产能精华] += n;
-            consumeRegister[IFE节能精华] += n;
-            consumeRegister[IFE增产精华] += n;
-        }
-        return true;
-    }
 }

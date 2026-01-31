@@ -35,18 +35,48 @@ public static class TicketRaffle {
     private static readonly Text[] txtTicketCount = new Text[TicketIds.Length];
 
     private static ConfigEntry<int> TicketIdx1Entry;
-    private static int TicketIdx1 => TicketIdx1Entry.Value;
-    private static int SelectedTicketId1 => TicketIds[TicketIdx1];
-    private static int SelectedMatrixId1 => MatrixIds[TicketIdx1];
     private static Text txtCoreCount;
     private static (float[] rates, int[] counts) pool1;
     private static List<BaseRecipe> recipes;
 
     private static UIButton btnMaxRaffle1;
-    private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
     private static ConfigEntry<bool> EnableAutoRaffle1Entry;
     private static readonly float[] RecipeRaffleMaxCounts = [33.614f, 48.02f, 68.6f, 98, 140, 200, 100];
     private static float[] _recipeValues;
+    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方3种（横）+总计
+    private static readonly Text[,] recipeUnlockInfoText = new Text[2, 4];
+
+    private static ConfigEntry<int> TicketIdx2Entry;
+    private static Text txtChipCount;
+    private static (float[] rates, int[] counts) pool2;
+
+    private static UIButton btnMaxRaffle2;
+    private static ConfigEntry<bool> EnableAutoRaffle2Entry;
+    private static readonly Text[] txtFracProtoCounts = new Text[6];
+
+    private static ConfigEntry<int> TicketIdx3Entry;
+    private static List<ItemProto> commonItems3 = [];
+    private static (float[] rates, int[] counts) pool3;
+
+    private static UIButton btnMaxRaffle3;
+    private static ConfigEntry<bool> EnableAutoRaffle3Entry;
+
+    private static ConfigEntry<int> TicketIdx4Entry;
+    private static List<ItemProto> commonItems4 = [];
+    private static (float[] rates, int[] counts) pool4;
+
+    private static UIButton btnMaxRaffle4;
+    private static ConfigEntry<bool> EnableAutoRaffle4Entry;
+
+    private static ConfigEntry<int> TicketIdx5Entry;
+    private static (float[] rates, int[] counts) pool5;
+
+    private static UIButton btnMaxRaffle5;
+    private static ConfigEntry<bool> EnableAutoRaffle5Entry;
+    private static int TicketIdx1 => TicketIdx1Entry.Value;
+    private static int SelectedTicketId1 => TicketIds[TicketIdx1];
+    private static int SelectedMatrixId1 => MatrixIds[TicketIdx1];
+    private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
     public static float[] RecipeValues {
         get {
             if (_recipeValues == null && itemValue[IFE电磁奖券] > 0) {
@@ -59,52 +89,22 @@ public static class TicketRaffle {
         }
     }
     private static float RecipeValue => RecipeValues == null ? float.MaxValue : RecipeValues[TicketIdx1];
-    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方3种（横）+总计
-    private static Text[,] recipeUnlockInfoText = new Text[2, 4];
-
-    private static ConfigEntry<int> TicketIdx2Entry;
     private static int TicketIdx2 => TicketIdx2Entry.Value;
     private static int SelectedTicketId2 => TicketIds[TicketIdx2];
     private static int SelectedMatrixId2 => MatrixIds[TicketIdx2];
-    private static Text txtChipCount;
-    private static (float[] rates, int[] counts) pool2;
-
-    private static UIButton btnMaxRaffle2;
     private static int MaxRaffleCount2 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId2));
-    private static ConfigEntry<bool> EnableAutoRaffle2Entry;
-    private static Text[] txtFracProtoCounts = new Text[6];
-
-    private static ConfigEntry<int> TicketIdx3Entry;
     private static int TicketIdx3 => TicketIdx3Entry.Value;
     private static int SelectedTicketId3 => TicketIds[TicketIdx3];
     private static int SelectedMatrixId3 => MatrixIds[TicketIdx3];
-    private static List<ItemProto> commonItems3 = [];
-    private static (float[] rates, int[] counts) pool3;
-
-    private static UIButton btnMaxRaffle3;
     private static int MaxRaffleCount3 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId3));
-    private static ConfigEntry<bool> EnableAutoRaffle3Entry;
-
-    private static ConfigEntry<int> TicketIdx4Entry;
     private static int TicketIdx4 => TicketIdx4Entry.Value;
     private static int SelectedTicketId4 => TicketIds[TicketIdx4];
     private static int SelectedMatrixId4 => MatrixIds[TicketIdx4];
-    private static List<ItemProto> commonItems4 = [];
-    private static (float[] rates, int[] counts) pool4;
-
-    private static UIButton btnMaxRaffle4;
     private static int MaxRaffleCount4 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId4));
-    private static ConfigEntry<bool> EnableAutoRaffle4Entry;
-
-    private static ConfigEntry<int> TicketIdx5Entry;
     private static int TicketIdx5 => TicketIdx5Entry.Value;
     private static int SelectedTicketId5 => TicketIds[TicketIdx5];
     private static int SelectedMatrixId5 => MatrixIds[TicketIdx5];
-    private static (float[] rates, int[] counts) pool5;
-
-    private static UIButton btnMaxRaffle5;
     private static int MaxRaffleCount5 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId5));
-    private static ConfigEntry<bool> EnableAutoRaffle5Entry;
 
     public static void AddTranslations() {
         Register("奖券抽奖", "Ticket Raffle");
@@ -523,7 +523,7 @@ public static class TicketRaffle {
             }
             pool4 = GeneratePool(SelectedTicketId4, [], [], commonItems4);
         } else if (poolId == 5) {
-            int[] specialItems = [0]; // 0 represents Rune
+            int[] specialItems = [0];// 0 represents Rune
             float[] specialRates = [0.1f];
             List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
                 item.ID >= IFE速度精华 && item.ID <= IFE增产精华
@@ -928,7 +928,7 @@ public static class TicketRaffle {
         List<Rune> tempRunes = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
         int oneLineCount = 0;
-        int ticketIdx = TicketIdx5; // 0-5
+        int ticketIdx = TicketIdx5;// 0-5
         bool isUniverseTicket = (SelectedTicketId5 == IFE宇宙奖券);
 
         while (raffleCount > 0) {
@@ -980,7 +980,7 @@ public static class TicketRaffle {
                         ERuneStatType.Speed => "速度".Translate(),
                         ERuneStatType.Productivity => "产能".Translate(),
                         ERuneStatType.EnergySaving => "节能".Translate(),
-                        ERuneStatType.Yield => "增产".Translate(),
+                        ERuneStatType.Proliferator => "增产".Translate(),
                         _ => ""
                     };
                     sb.Append($"{star}{"星符文".Translate()}({mainStatName}) x 1".WithColor(star));
