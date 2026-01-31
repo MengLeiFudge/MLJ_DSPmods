@@ -44,7 +44,7 @@ public static class RecycleTower {
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE回收塔, "回收塔", "I回收塔",
-            "Assets/fe/recycle-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
+            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,//todo
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE回收塔,
             ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE回收塔], [5],
