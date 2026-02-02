@@ -74,7 +74,7 @@ public static class RuneManager {
             Steps = [0.35f, 0.40f, 0.45f, 0.50f], MainStatMax = 4,
         },
         new() {
-            Star = 2, MaxLevel = 8, InitSubCountMin = 1, InitSubCountMax = 1, RollCount = 2,
+            Star = 2, MaxLevel = 8, InitSubCountMin = 0, InitSubCountMax = 1, RollCount = 2,
             Steps = [0.70f, 0.80f, 0.90f, 1.00f], MainStatMax = 8,
         },
         new() {
@@ -82,11 +82,11 @@ public static class RuneManager {
             Steps = [1.05f, 1.20f, 1.35f, 1.50f], MainStatMax = 12,
         },
         new() {
-            Star = 4, MaxLevel = 16, InitSubCountMin = 2, InitSubCountMax = 2, RollCount = 4,
+            Star = 4, MaxLevel = 16, InitSubCountMin = 2, InitSubCountMax = 3, RollCount = 4,
             Steps = [1.40f, 1.60f, 1.80f, 2.00f], MainStatMax = 16,
         },
         new() {
-            Star = 5, MaxLevel = 20, InitSubCountMin = 2, InitSubCountMax = 3, RollCount = 5,
+            Star = 5, MaxLevel = 20, InitSubCountMin = 3, InitSubCountMax = 4, RollCount = 5,
             Steps = [1.75f, 2.00f, 2.25f, 2.50f], MainStatMax = 20,
         },
     ];
@@ -189,8 +189,7 @@ public static class RuneManager {
             return;
         }
         int[] techIds = [T电磁矩阵, T能量矩阵, T结构矩阵, T信息矩阵, T引力矩阵];
-        int count = techIds.Count(id => GameMain.history.TechUnlocked(id));
-        slotCount = count;
+        slotCount = techIds.Count(id => GameMain.history.TechUnlocked(id));
     }
 
     public static void GetTotalStats(out float speed, out float power, out float productivity, out float yield) {

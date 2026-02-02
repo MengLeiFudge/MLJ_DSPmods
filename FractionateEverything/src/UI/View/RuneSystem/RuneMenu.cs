@@ -462,10 +462,10 @@ public static class RuneMenu {
 
         GetTotalStats(out float speed, out float power, out float productivity, out float yield);
         totalStatsText.text = $"{"总加成".Translate()}： "
-                              + $"{"制作速度".Translate()} {speed.FormatP()}    "
-                              + $"{"产品产能".Translate()} {productivity.FormatP()}    "
-                              + $"{"电力消耗".Translate()} {power.FormatP()}    "
-                              + $"{"增产效果".Translate()} {yield.FormatP()}";
+                              + $"{"制作速度".Translate()} {speed.FormatPWithSymbol()}    "
+                              + $"{"产品产能".Translate()} {productivity.FormatPWithSymbol()}    "
+                              + $"{"电力消耗".Translate()} {power.FormatPWithSymbol()}    "
+                              + $"{"增产效果".Translate()} {yield.FormatPWithSymbol()}";
 
         for (int i = 0; i < 5; i++) {
             if (i >= slotCount) {
@@ -495,6 +495,8 @@ public static class RuneMenu {
                 }
             }
         }
+        UpdateRuneListUI();
+        // UpdateDetailUI();
     }
 
     private static void UpdateRuneListUI() {
@@ -602,13 +604,13 @@ public static class RuneMenu {
     private static string GetStatDescription(ERuneStatType stat, float multiplier) {
         return stat switch {
             ERuneStatType.Speed =>
-                $"{"制作速度".Translate()} {(multiplier * 0.5f).FormatP()}, {"电力消耗".Translate()} {(multiplier * 0.7f).FormatP()}",
+                $"{"制作速度".Translate()} {(multiplier * 0.5f).FormatPWithSymbol()}, {"电力消耗".Translate()} {(multiplier * 0.7f).FormatPWithSymbol()}",
             ERuneStatType.Productivity =>
-                $"{"产品产能".Translate()} {(multiplier * 0.1f).FormatP()}, {"电力消耗".Translate()} {(multiplier * 0.8f).FormatP()}, {"制作速度".Translate()} {(multiplier * 0.15f).FormatP()}",
+                $"{"产品产能".Translate()} {(multiplier * 0.1f).FormatPWithSymbol()}, {"电力消耗".Translate()} {(multiplier * 0.8f).FormatPWithSymbol()}, {"制作速度".Translate()} {(multiplier * 0.15f).FormatPWithSymbol()}",
             ERuneStatType.EnergySaving =>
-                $"{"电力消耗".Translate()} {(multiplier * 0.5f).FormatP()}",
+                $"{"电力消耗".Translate()} {(multiplier * 0.5f).FormatPWithSymbol()}",
             ERuneStatType.Proliferator =>
-                $"{"增产效果".Translate()} {(multiplier * 0.05f).FormatP()}",
+                $"{"增产效果".Translate()} {(multiplier * 0.05f).FormatPWithSymbol()}",
             _ => ""
         };
     }
