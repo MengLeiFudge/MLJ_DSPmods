@@ -28,7 +28,7 @@ public static partial class Utils {
     /// </summary>
     public static string FormatPWithSymbol(this float value) {
         if (value < 0) {
-            return "-" + (-value).FormatPWithSymbol();
+            return (-value).FormatPWithSymbol().Replace("+", "-");
         }
         int i = 3;
         var sb = new StringBuilder("+0.###");

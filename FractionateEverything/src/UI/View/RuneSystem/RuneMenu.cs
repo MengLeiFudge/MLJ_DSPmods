@@ -606,9 +606,9 @@ public static class RuneMenu {
             ERuneStatType.Speed =>
                 $"{"制作速度".Translate()} {(multiplier * 0.5f).FormatPWithSymbol()}, {"电力消耗".Translate()} {(multiplier * 0.7f).FormatPWithSymbol()}",
             ERuneStatType.Productivity =>
-                $"{"产品产能".Translate()} {(multiplier * 0.1f).FormatPWithSymbol()}, {"电力消耗".Translate()} {(multiplier * 0.8f).FormatPWithSymbol()}, {"制作速度".Translate()} {(multiplier * 0.15f).FormatPWithSymbol()}",
+                $"{"产品产能".Translate()} {(multiplier * 0.1f).FormatPWithSymbol()}, {"电力消耗".Translate()} {(multiplier * 0.8f).FormatPWithSymbol()}, {"制作速度".Translate()} {(multiplier * -0.15f).FormatPWithSymbol()}",
             ERuneStatType.EnergySaving =>
-                $"{"电力消耗".Translate()} {(multiplier * 0.5f).FormatPWithSymbol()}",
+                $"{"电力消耗".Translate()} {(multiplier * -0.5f).FormatPWithSymbol()}",
             ERuneStatType.Proliferator =>
                 $"{"增产效果".Translate()} {(multiplier * 0.05f).FormatPWithSymbol()}",
             _ => ""
