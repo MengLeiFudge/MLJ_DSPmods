@@ -56,7 +56,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 主产物数目增幅
     /// </summary>
-    public virtual float MainOutputCountInc => Progress - 1;
+    public virtual float MainOutputCountInc => (Progress - 1) / 4;
 
     /// <summary>
     /// 副产物信息。
@@ -68,7 +68,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 附加产物概率增幅
     /// </summary>
-    public virtual float AppendOutputRatioInc => Progress - 1;
+    public virtual float AppendOutputRatioInc => (Progress - 1) / 4;
 
     /// <summary>
     /// 获取某次输出的执行结果。
