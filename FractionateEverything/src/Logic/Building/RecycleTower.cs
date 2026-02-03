@@ -11,17 +11,8 @@ namespace FE.Logic.Building;
 
 /// <summary>
 /// 回收塔
-/// 将物品按照主要配方回收为制作物品所需原材料的25%
-/// 在回收过程中，得到的产物有12.4%概率提高品质
 /// </summary>
 public static class RecycleTower {
-    public static void AddTranslations() {
-        Register("回收塔", "Recycle Tower");
-        Register("I回收塔",
-            "Recycles items into 25% of their crafting materials based on the main recipe. During recycling, there is a 12.4% chance to upgrade the quality of the output materials.",
-            "将物品按照主要配方回收为制作物品所需原材料的25%。在回收过程中，得到的产物有12.4%概率提高品质。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -31,6 +22,7 @@ public static class RecycleTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
+    private static readonly float propertyRatio = 1.0f;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
@@ -38,9 +30,15 @@ public static class RecycleTower {
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.2f;
     public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    private static readonly float propertyRatio = 1.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
+
+    public static void AddTranslations() {
+        Register("回收塔", "Recycle Tower");
+        Register("I回收塔",
+            "Recycle items and reshape them into various lottery tickets. Operates without requiring distillation recipes.",
+            "将物品回收，并重塑为各种奖券。无需分馏配方即可运行。");
+    }
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE回收塔, "回收塔", "I回收塔",
