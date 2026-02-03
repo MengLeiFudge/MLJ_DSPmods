@@ -11,28 +11,14 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.CoreOperate;
 
 public static class VanillaRecipeOperate {
+    // UI元素：输入物品
+    private const int MaxInputCount = 6;
     private static RectTransform window;
     private static RectTransform tab;
-
-    private static RecipeProto SelectedRecipe { get; set; } = LDB.recipes.Select(R铁块);
     private static Text txtCurrRecipe;
     private static MyImageButton btnSelectedRecipe;
 
-    private static void OnButtonChangeRecipeClick(bool showLocked, float y) {
-        //配方选取窗口左上角的X值（anchoredPosition是中心点）
-        float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
-        //配方选取窗口左上角的Y值（anchoredPosition是中心点）
-        float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
-        UIRecipePickerExtension.Popup(new(popupX, popupY), recipe => {
-            if (recipe == null) return;
-            SelectedRecipe = recipe;
-        }, true, recipe => recipe != null && GameMain.history.RecipeUnlocked(recipe.ID));
-    }
-
     private static Text txtCoreCount;
-
-    // UI元素：输入物品
-    private const int MaxInputCount = 6;
     private static MyImageButton[] inputImages = new MyImageButton[MaxInputCount];
     private static Text[] txtInputNames = new Text[MaxInputCount];
     private static Text[] txtInputCounts = new Text[MaxInputCount];
@@ -45,6 +31,21 @@ public static class VanillaRecipeOperate {
     private static Text txtTimeUpgrade;
     private static UIButton btnTimeUpgrade;
 
+    private static RecipeProto SelectedRecipe { get; set; } = LDB.recipes.Select(R铁块);
+
+    private static void OnButtonChangeRecipeClick(bool showLocked, float y) {
+        //配方选取窗口左上角的X值（anchoredPosition是中心点）
+        float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
+        //配方选取窗口左上角的Y值（anchoredPosition是中心点）
+        float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
+        UIRecipePickerExtension.Popup(new(popupX, popupY), recipe => {
+            if (recipe == null) {
+                return;
+            }
+            SelectedRecipe = recipe;
+        }, true, recipe => recipe != null && GameMain.history.RecipeUnlocked(recipe.ID));
+    }
+
     public static void AddTranslations() {
         Register("原版配方", "Vanilla Recipe");
 
@@ -56,7 +57,8 @@ public static class VanillaRecipeOperate {
         Register("当前数量", "Current Count");
         Register("升级次数", "Upgrade Times");
         Register("升级", "Upgrade");
-        Register("已达上限", "Max Level");
+        Register("科技层次不足", "Higher matrix tier required", "科技层次不足");
+        Register("已达上限", "Max upgrade reached", "已达上限");
         Register("制作时间", "Crafting Time");
         Register("当前时间", "Current Time");
     }
@@ -138,6 +140,8 @@ public static class VanillaRecipeOperate {
         int[] items = vanillaRecipe.recipe.Items;
         int[] itemCounts = vanillaRecipe.recipe.ItemCounts;
 
+        bool limitedByMatrix = vanillaRecipe.LimitedByMatrix;
+
         for (int i = 0; i < MaxInputCount; i++) {
             if (i < items.Length) {
                 // 显示该输入物品
@@ -164,7 +168,11 @@ public static class VanillaRecipeOperate {
 
                 // 如果已达上限，修改按钮文本
                 if (!canUpgrade) {
-                    btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "已达上限".Translate();
+                    if (limitedByMatrix) {
+                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "科技层次不足".Translate();
+                    } else {
+                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "已达上限".Translate();
+                    }
                 } else {
                     btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "升级".Translate();
                 }
@@ -189,7 +197,11 @@ public static class VanillaRecipeOperate {
         btnTimeUpgrade.button.interactable = canUpgradeTime;
 
         if (!canUpgradeTime) {
-            btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "已达上限".Translate();
+            if (limitedByMatrix) {
+                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "科技层次不足".Translate();
+            } else {
+                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "已达上限".Translate();
+            }
         } else {
             btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "升级".Translate();
         }
