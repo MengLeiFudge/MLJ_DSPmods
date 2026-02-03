@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
@@ -8,10 +9,11 @@ namespace FE.Logic.Recipe;
 /// 原版配方升级信息
 /// </summary>
 public class VanillaRecipe {
-    public readonly RecipeProto recipe;
+    private static readonly int[] UpgradeLimitTechIds = [T电磁矩阵, T能量矩阵, T结构矩阵, T信息矩阵, T引力矩阵];
     private readonly Dictionary<int, int> inputCounts = [];
-    private Dictionary<int, int> inputUpgrades = [];
+    public readonly RecipeProto recipe;
     private readonly int timeSpend;
+    private readonly Dictionary<int, int> inputUpgrades = [];
     private int timeSpendUpgrade = 0;
 
     public VanillaRecipe(RecipeProto recipe) {
@@ -20,6 +22,37 @@ public class VanillaRecipe {
             inputCounts.Add(recipe.Items[i], recipe.ItemCounts[i]);
         }
         timeSpend = recipe.TimeSpend;
+    }
+
+    public bool LimitedByMatrix => !CanUpgradeMore();
+
+    private static int GetUpgradeLimit() {
+        if (GameMain.history == null) {
+            return 0;
+        }
+        if (GameMain.history.TechUnlocked(T宇宙矩阵)) {
+            return int.MaxValue;
+        }
+        int count = 0;
+        for (int i = 0; i < UpgradeLimitTechIds.Length; i++) {
+            if (GameMain.history.TechUnlocked(UpgradeLimitTechIds[i])) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int GetTotalUpgradeCount() {
+        int count = timeSpendUpgrade;
+        foreach (int upgrade in inputUpgrades.Values) {
+            count += upgrade;
+        }
+        return count;
+    }
+
+    private bool CanUpgradeMore() {
+        int limit = GetUpgradeLimit();
+        return limit == int.MaxValue || GetTotalUpgradeCount() < limit;
     }
 
     /// <summary>
@@ -47,6 +80,9 @@ public class VanillaRecipe {
     /// 返回能否升级配方的指定输入
     /// </summary>
     public bool CanUpgradeInput(int itemID) {
+        if (!CanUpgradeMore()) {
+            return false;
+        }
         int[] info = GetIdxCurrAndNextCount(itemID);
         return info[0] != -1 && info[1] > info[2];
     }
@@ -83,6 +119,9 @@ public class VanillaRecipe {
     /// 返回能否升级配方的花费时间
     /// </summary>
     public bool CanUpgradeTime() {
+        if (!CanUpgradeMore()) {
+            return false;
+        }
         int[] info = GetCurrAndNextTimeSpend();
         return info[0] > info[1];
     }
