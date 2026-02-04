@@ -16,6 +16,12 @@ public abstract class BaseRecipe(
     float baseSuccessRate,
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
+    public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
+    public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
+    public string LvExp => $"{"回响".Translate()} {Echo}    {"等级".Translate()} {Level} "
+                           + (Level >= 20 ? "(MAX)" : $"({Exp:F0}/{CurrLevelMaxExp})");
+    public string LvExpWC => LvExp.WithColor(MatrixID - I电磁矩阵);
+
     #region 配方类型、输入输出
 
     /// <summary>
@@ -37,6 +43,7 @@ public abstract class BaseRecipe(
     /// 配方进度，最小值为1，最大值为3
     /// </summary>
     public float Progress => 1 + 2f * (float)Math.Log(0.1f * (Math.Min(51, Level + Echo) - 1) + 1, 6);
+    public bool FullUpgrade => Level + Echo >= 51;
     /// <summary>
     /// 配方成功率
     /// </summary>
@@ -242,12 +249,6 @@ public abstract class BaseRecipe(
     }
 
     #endregion
-
-    public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name}";
-    public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
-    public string LvExp => $"{"回响".Translate()} {Echo}    {"等级".Translate()} {Level} "
-                           + (Level >= 20 ? "(MAX)" : $"({Exp:F0}/{CurrLevelMaxExp})");
-    public string LvExpWC => LvExp.WithColor(MatrixID - I电磁矩阵);
 
     #region IModCanSave
 
