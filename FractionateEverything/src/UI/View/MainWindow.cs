@@ -6,9 +6,9 @@ using FE.UI.View.CoreOperate;
 using FE.UI.View.GetItemRecipe;
 using FE.UI.View.ModPackage;
 using FE.UI.View.ProgressSystem;
+using FE.UI.View.RuneSystem;
 using FE.UI.View.Setting;
 using FE.UI.View.Statistic;
-using FE.UI.View.RuneSystem;
 using UnityEngine;
 using static FE.Utils.Utils;
 
@@ -196,9 +196,7 @@ public static class MainWindow {
 
         ItemInteraction.Import(r);
         ImportantItem.Import(r);
-        if (version >= 2) {
-            RuneMenu.Import(r);
-        }
+        RuneMenu.Import(r);
 
         TicketRaffle.Import(r);
         LimitedTimeStore.Import(r);
