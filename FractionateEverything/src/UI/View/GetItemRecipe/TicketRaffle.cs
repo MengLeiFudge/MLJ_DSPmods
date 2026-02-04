@@ -19,6 +19,9 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
+    //行数：配方类型+矩阵1种    列数：配方3种+总计
+    private const int MatrixCount = 1;
+    private const int RecipeCount = 3;
     private static RectTransform window;
     private static RectTransform tab;
 
@@ -36,15 +39,14 @@ public static class TicketRaffle {
 
     private static ConfigEntry<int> TicketIdx1Entry;
     private static Text txtCoreCount;
+    private static Text txtCore2Count;
     private static (float[] rates, int[] counts) pool1;
     private static List<BaseRecipe> recipes;
 
     private static UIButton btnMaxRaffle1;
     private static ConfigEntry<bool> EnableAutoRaffle1Entry;
     private static readonly float[] RecipeRaffleMaxCounts = [33.614f, 48.02f, 68.6f, 98, 140, 200, 100];
-    private static float[] _recipeValues;
-    //矩阵7种（竖），但是由于有奖券选择，所以相当于指定矩阵；配方3种（横）+总计
-    private static readonly Text[,] recipeUnlockInfoText = new Text[2, 4];
+    private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 1, RecipeCount + 1];
 
     private static ConfigEntry<int> TicketIdx2Entry;
     private static Text txtChipCount;
@@ -73,6 +75,7 @@ public static class TicketRaffle {
 
     private static UIButton btnMaxRaffle5;
     private static ConfigEntry<bool> EnableAutoRaffle5Entry;
+    private static float[] _recipeValues;
     private static int TicketIdx1 => TicketIdx1Entry.Value;
     private static int SelectedTicketId1 => TicketIds[TicketIdx1];
     private static int SelectedMatrixId1 => MatrixIds[TicketIdx1];
@@ -228,8 +231,10 @@ public static class TicketRaffle {
         txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx1Entry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏配方核心));
-        txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        wnd.AddImageButton(GetPosition(3, 5).Item1, y, tab, LDB.items.Select(IFE分馏配方核心));
+        txtCoreCount = wnd.AddText2(GetPosition(3, 5).Item1 + 40 + 5, y, tab, "动态刷新");
+        wnd.AddImageButton(GetPosition(4, 5).Item1, y, tab, LDB.items.Select(IFE原版配方核心));
+        txtCore2Count = wnd.AddText2(GetPosition(4, 5).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
             onClick: () => RaffleRecipe(1));
@@ -240,18 +245,19 @@ public static class TicketRaffle {
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle1Entry, "自动百连");
         y += 36f;
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < MatrixCount + 1; i++) {
             y += 36f;
-            for (int j = 0; j < 4; j++) {
-                (float, float) position = GetPosition(j, 4);
+            for (int j = 0; j < RecipeCount + 1; j++) {
+                (float, float) position = GetPosition(j, RecipeCount + 1);
                 recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
         }
-        for (int j = 0; j <= 2; j++) {
+        //第一行，配方类型
+        for (int j = 0; j < RecipeCount; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j];
         }
-        recipeUnlockInfoText[0, 3].text = "总计".Translate();
+        recipeUnlockInfoText[0, RecipeCount].text = "总计".Translate();
         y += 36f;
 
         y += 20f + 7f;
@@ -333,6 +339,7 @@ public static class TicketRaffle {
             txtTicketCount[i].text = $"x {GetItemTotalCount(TicketIds[i])}";
         }
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方核心)}";
+        txtCore2Count.text = $"x {GetItemTotalCount(IFE原版配方核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
         for (int i = 0; i < 5; i++) {
             txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE交互塔原胚 + i)}";
@@ -343,33 +350,28 @@ public static class TicketRaffle {
         btnMaxRaffle4.SetText($"{"抽奖".Translate()} x {MaxRaffleCount4}");
         btnMaxRaffle5.SetText($"{"抽奖".Translate()} x {MaxRaffleCount5}");
 
-        int[,] fullUpgradeCountArr = new int[2, 7];
-        int[,] maxEchoCountArr = new int[2, 7];
-        int[,] unlockCountArr = new int[2, 7];
-        int[,] totalCountArr = new int[2, 7];
-        for (int j = 0; j <= 5; j++) {
-            int matrixID = SelectedMatrixId1;
+        int[,] fullUpgradeCountArr = new int[MatrixCount, RecipeCount + 1];
+        int[,] unlockCountArr = new int[MatrixCount, RecipeCount + 1];
+        int[,] totalCountArr = new int[MatrixCount, RecipeCount + 1];
+        int matrixID = SelectedMatrixId1;
+        for (int j = 0; j < RecipeCount; j++) {
             ERecipe type = (ERecipe)(j + 1);
             List<BaseRecipe> recipes = GetRecipesByType(type)
                 .Where(r => r.MatrixID == matrixID).ToList();
-            totalCountArr[1, j] = recipes.Count;
-            totalCountArr[1, 6] += recipes.Count;
+            totalCountArr[0, j] = recipes.Count;
+            totalCountArr[0, RecipeCount] += recipes.Count;
             recipes = recipes.Where(r => r.Unlocked).ToList();
-            unlockCountArr[1, j] = recipes.Count;
-            unlockCountArr[1, 6] += recipes.Count;
-            // recipes = recipes.Where(r => r.IsMaxEcho).ToList();
-            // maxEchoCountArr[1, j] = recipes.Count;
-            // maxEchoCountArr[1, 6] += recipes.Count;
-            // recipes = recipes.Where(r => r.FullUpgrade).ToList();
-            // fullUpgradeCountArr[1, j] = recipes.Count;
-            // fullUpgradeCountArr[1, 6] += recipes.Count;
+            unlockCountArr[0, j] = recipes.Count;
+            unlockCountArr[0, RecipeCount] += recipes.Count;
+            recipes = recipes.Where(r => r.FullUpgrade).ToList();
+            fullUpgradeCountArr[0, j] = recipes.Count;
+            fullUpgradeCountArr[0, RecipeCount] += recipes.Count;
         }
-        for (int j = 0; j <= 3; j++) {
+        for (int j = 0; j < RecipeCount + 1; j++) {
             recipeUnlockInfoText[1, j].text =
-                $"{fullUpgradeCountArr[1, j].ToString().WithColor(7)}"
-                + $"/{maxEchoCountArr[1, j].ToString().WithColor(5)}"
-                + $"/{unlockCountArr[1, j].ToString().WithColor(3)}"
-                + $"/{totalCountArr[1, j].ToString().WithColor(1)}";
+                $"{fullUpgradeCountArr[0, j].ToString().WithColor(7)}"
+                + $"/{unlockCountArr[0, j].ToString().WithColor(4)}"
+                + $"/{totalCountArr[0, j].ToString().WithColor(1)}";
         }
     }
 
@@ -486,17 +488,19 @@ public static class TicketRaffle {
                 IFE矿物复制塔原胚,
                 IFE点数聚集塔原胚,
                 IFE转化塔原胚,
+                IFE回收塔原胚,
                 IFE分馏塔定向原胚,
             ];
-            float[] specialRates = new float[6];
+            float[] specialRates = new float[7];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             float specialRates16Sum = 1 - specialRates[0];
-            specialRates[1] = specialRates16Sum * 20 / 81;
-            specialRates[2] = specialRates16Sum * 20 / 81;
-            specialRates[3] = specialRates16Sum * 20 / 81;
-            specialRates[4] = specialRates16Sum * 20 / 81;
-            specialRates[5] = specialRates16Sum * 1 / 81;
+            specialRates[1] = specialRates16Sum * 20 / 101;
+            specialRates[2] = specialRates16Sum * 20 / 101;
+            specialRates[3] = specialRates16Sum * 20 / 101;
+            specialRates[4] = specialRates16Sum * 20 / 101;
+            specialRates[5] = specialRates16Sum * 20 / 101;
+            specialRates[6] = specialRates16Sum * 1 / 101;
             pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRates, []);
         } else if (poolId == 3) {
             if (commonItems3.Count == 0) {
