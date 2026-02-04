@@ -16,9 +16,7 @@ public static class Miscellaneous {
     private static int[] ClickTakeCounts = [1, 3, 5, 10, 30, 50, 100];
     private static string[] ClickTakeCountsStr = ClickTakeCounts.Select(count => count.ToString()).ToArray();
     private static ConfigEntry<int> LeftClickTakeCountEntry;
-    public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
     private static ConfigEntry<int> RightClickTakeCountEntry;
-    public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
 
     private static readonly string[] TakeItemPriorityStrs = [
         $"{"背包".Translate()} -> {"物流背包".Translate()} -> {"分馏数据中心".Translate()}",
@@ -37,30 +35,26 @@ public static class Miscellaneous {
         [2, 1, 0],
     ];
     private static ConfigEntry<int> TakeItemPriorityEntry;
-    public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
 
     private static MySlider DownloadThresholdSlider;
     private static UIButton DownloadThresholdTipsButton2;
     private static ConfigEntry<float> DownloadThresholdEntry;
-    public static float DownloadThreshold => DownloadThresholdEntry.Value;
-
-    private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
-        public override float IndexToValue(int index) => index * 0.02f;
-        public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
-    }
 
     private static MySlider UploadThresholdSlider;
     private static UIButton UploadThresholdTipsButton2;
     private static ConfigEntry<float> UploadThresholdEntry;
-    public static float UploadThreshold => UploadThresholdEntry.Value;
-
-    private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
-        public override float IndexToValue(int index) => 0.6f + index * 0.02f;
-        public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.02f);
-    }
 
     private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
+
+    private static MyCheckBox PackageSortTwiceCheckBox;
+    private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
+    public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
+    public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
+    public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
+    public static float DownloadThreshold => DownloadThresholdEntry.Value;
+    public static float UploadThreshold => UploadThresholdEntry.Value;
     public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
+    public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
 
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
@@ -83,6 +77,9 @@ public static class Miscellaneous {
         Register("显示分馏配方详细信息说明",
             "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
             "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
+
+        Register("双击背包排序按钮将多余物品收入分馏数据中心",
+            "Double-click the backpack sort button to store excess items in the distillation data center");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -111,6 +108,9 @@ public static class Miscellaneous {
 
         ShowFractionateRecipeDetailsEntry =
             configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "显示分馏配方详细信息");
+
+        EnablePackageSortTwiceEntry =
+            configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -145,6 +145,8 @@ public static class Miscellaneous {
         var cb = wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
         wnd.AddTipsButton2(x + cb.Width + 5, y, tab,
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
+        y += 36f;
+        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "显示分馏配方详细信息");
     }
 
     public static void UpdateUI() {
@@ -156,6 +158,17 @@ public static class Miscellaneous {
         DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
         UploadThresholdSlider.slider.interactable = !isMultiplayer;
         UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
+        PackageSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+    }
+
+    private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
+        public override float IndexToValue(int index) => index * 0.02f;
+        public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
+    }
+
+    private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
+        public override float IndexToValue(int index) => 0.6f + index * 0.02f;
+        public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.02f);
     }
 
     #region IModCanSave
