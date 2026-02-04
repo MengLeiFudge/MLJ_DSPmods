@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
@@ -12,27 +13,31 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ModPackage;
 
 public static class ItemInteraction {
+    private const int RowCount = 12;
+    private const int ColumnCount = 5;
+    private const int ItemsPerPage = RowCount * ColumnCount;
+
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static float[] ItemValueRanges = [5, 20, 100, 500, 2500, 10000, 100000, maxValue];
-    private static string[] ItemValueRangesStr = [
-        "0-5", "5-20", "20-100", "100-500", "500-2500", "2500-10000", "10000-100000", "100000-∞"
-    ];
-    private static ConfigEntry<int> ItemValueRangeEntry;
     private static ConfigEntry<bool> ShowNotStoredItemEntry;
-    private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
-    private static int SelectedItemID = 0;
+    private static int SelectedItemID;
+    private static int _currentPage;
 
-    private static MyImageButton[,] btnItems = new MyImageButton[12, 5];
-    private static Text[,] txtItemCounts = new Text[12, 5];
+    private static readonly MyImageButton[,] btnItems = new MyImageButton[RowCount, ColumnCount];
+    private static readonly Text[,] txtItemCounts = new Text[RowCount, ColumnCount];
+    private static UIButton _prevPageButton;
+    private static UIButton _nextPageButton;
+    private static Text _pageIndicator;
+    private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
     public static void AddTranslations() {
         Register("物品交互", "Item Interaction");
 
-        Register("物品价值区间", "Item value range");
         Register("显示未存储的物品", "Display items not stored");
         Register("查找指定物品", "Search for a specified item");
+        Register("上一页", "Previous page");
+        Register("下一页", "Next page");
 
         Register("以下物品在分馏数据中心的存储量为：",
             "The storage capacity of the following items in the Fractionation data centre are: ");
@@ -43,10 +48,6 @@ public static class ItemInteraction {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        ItemValueRangeEntry = configFile.Bind("Item Interaction", "Item Value Range", 0, "想要查看的物品价值区间。");
-        if (ItemValueRangeEntry.Value < 0 || ItemValueRangeEntry.Value >= ItemValueRangesStr.Length) {
-            ItemValueRangeEntry.Value = 0;
-        }
         ShowNotStoredItemEntry = configFile.Bind("Item Interaction", "Show Not Stored Item", false, "是否显示未存储的物品。");
     }
 
@@ -55,78 +56,65 @@ public static class ItemInteraction {
         tab = wnd.AddTab(trans, "物品交互");
         float x = 0f;
         float y = 18f;
-        var txt = wnd.AddText2(x, y, tab, "物品价值区间");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
-            .WithItems(ItemValueRangesStr).WithSize(200, 0).WithConfigEntry(ItemValueRangeEntry)
-            .WithOnSelChanged(SelectedItemIDChanged);
-        wnd.AddCheckBox(GetPosition(2, 4).Item1, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
+        wnd.AddCheckBox(x, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
         float popupY = y + 36f / 2;
         wnd.AddButton(3, 4, y, tab, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
         y += 36f;
-        txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
+        Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "提取物品", "提取物品说明");
         y += 36f + 7f;
-        for (int i = 0; i < 12; i++) {
-            for (int j = 0; j < 5; j++) {
-                btnItems[i, j] = wnd.AddImageButtonWithDefAction(GetPosition(j, 5).Item1, y, tab);
-                txtItemCounts[i, j] = wnd.AddText2(GetPosition(j, 5).Item1 + 40 + 5, y, tab, "动态刷新");
+        for (int i = 0; i < RowCount; i++) {
+            for (int j = 0; j < ColumnCount; j++) {
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1, y, tab)
+                    .WithTakeItemClickEvent().WithDeselectOnHover(true, () => SelectedItemID = 0);
+                txtItemCounts[i, j] = wnd.AddText2(GetPosition(j, ColumnCount).Item1 + 40 + 5, y, tab, "动态刷新");
             }
             y += 36f + 7f;
         }
+
+        float paginationY = y;
+        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, tab, "上一页", onClick: PrevPage);
+        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, tab, "");
+        _pageIndicator.alignment = TextAnchor.MiddleCenter;
+        RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
+        pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
+        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, tab, "下一页", onClick: NextPage);
     }
 
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        //根据选择的物品价值层次，获取物品并更新UI
-        Dictionary<ItemProto, long> itemCountDic = [];
-        float valueRangeMin = ItemValueRangeEntry.Value == 0 ? 0 : ItemValueRanges[ItemValueRangeEntry.Value - 1];
-        float valueRangeMax = ItemValueRanges[ItemValueRangeEntry.Value];
-        if (ItemValueRangeEntry.Value == ItemValueRanges.Length - 1) {
-            //如果一个无价值的物品在Mod背包数目大于0，则显示它
-            foreach (ItemProto item in LDB.items.dataArray) {
-                if (itemValue[item.ID] < valueRangeMin) {
-                    continue;
-                }
-                long count = GetModDataItemCount(item.ID);
-                if (itemValue[item.ID] < maxValue) {
-                    if (count <= 0 && !ShowNotStoredItem) {
-                        continue;
-                    }
-                } else {
-                    if (count <= 0) {
-                        continue;
-                    }
-                }
-                itemCountDic[item] = count;
-            }
-        } else {
-            //正常处理，只显示符合物品价值区间的物品
-            foreach (ItemProto item in LDB.items.dataArray) {
-                if (itemValue[item.ID] < valueRangeMin || itemValue[item.ID] >= valueRangeMax) {
-                    continue;
-                }
-                long count = GetModDataItemCount(item.ID);
-                if (count <= 0 && !ShowNotStoredItem) {
-                    continue;
-                }
-                itemCountDic[item] = count;
-            }
+
+        List<(ItemProto item, long count)> items = GetDisplayItems();
+        int totalPages = Math.Max(1, (items.Count + ItemsPerPage - 1) / ItemsPerPage);
+        if (_currentPage >= totalPages) {
+            _currentPage = totalPages - 1;
         }
+
+        int startIndex = _currentPage * ItemsPerPage;
+        int endIndex = Math.Min(startIndex + ItemsPerPage, items.Count);
+
         int i = 0;
-        foreach (var p in itemCountDic.OrderBy(kvp => kvp.Key.GridIndex)) {
-            btnItems[i / 5, i % 5].gameObject.SetActive(true);
-            btnItems[i / 5, i % 5].ItemId = p.Key.ID;
-            btnItems[i / 5, i % 5].IsSelected = SelectedItemID > 0 && p.Key.ID == SelectedItemID;
-            txtItemCounts[i / 5, i % 5].text = $"x {p.Value}";
+        for (int idx = startIndex; idx < endIndex; idx++) {
+            (ItemProto item, long count) = items[idx];
+            int row = i / ColumnCount;
+            int col = i % ColumnCount;
+            btnItems[row, col].gameObject.SetActive(true);
+            btnItems[row, col].Proto = item;
+            btnItems[row, col].Selected = SelectedItemID > 0 && item.ID == SelectedItemID;
+            txtItemCounts[row, col].text = $"x {count}";
             i++;
         }
-        for (; i < 12 * 5; i++) {
-            btnItems[i / 5, i % 5].gameObject.SetActive(false);
-            txtItemCounts[i / 5, i % 5].text = "";
+        for (; i < ItemsPerPage; i++) {
+            int row = i / ColumnCount;
+            int col = i % ColumnCount;
+            btnItems[row, col].gameObject.SetActive(false);
+            txtItemCounts[row, col].text = "";
         }
+
+        UpdatePagination(totalPages);
     }
 
     private static void SearchSpecifiedItem(float y) {
@@ -136,22 +124,55 @@ public static class ItemInteraction {
         float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
         UIItemPickerExtension.Popup(new(popupX, popupY), item => {
             if (item == null) return;
-            float value = itemValue[item.ID];
-            for (int i = 0; i < ItemValueRanges.Length; i++) {
-                if (value < ItemValueRanges[i]) {
-                    ItemValueRangeEntry.Value = i;
-                    if (GetModDataItemCount(item.ID) == 0) {
-                        ShowNotStoredItemEntry.Value = true;
-                    }
-                    SelectedItemID = item.ID;
-                    return;
-                }
+            if (GetModDataItemCount(item.ID) == 0) {
+                ShowNotStoredItemEntry.Value = true;
+            }
+            SelectedItemID = item.ID;
+
+            List<(ItemProto item, long count)> items = GetDisplayItems();
+            int index = items.FindIndex(tuple => tuple.item.ID == item.ID);
+            if (index >= 0) {
+                _currentPage = index / ItemsPerPage;
             }
         }, true, item => true);
     }
 
-    private static void SelectedItemIDChanged(int idx) {
-        SelectedItemID = 0;
+    private static List<(ItemProto item, long count)> GetDisplayItems() {
+        List<(ItemProto, long)> itemCountList = [];
+        foreach (ItemProto item in LDB.items.dataArray) {
+            long count = GetModDataItemCount(item.ID);
+            if (itemValue[item.ID] >= maxValue && count <= 0) {
+                continue;
+            }
+            if (count <= 0 && !ShowNotStoredItem) {
+                continue;
+            }
+            itemCountList.Add((item, count));
+        }
+        return itemCountList.OrderBy(tuple => itemValue[tuple.Item1.ID]).ToList();
+    }
+
+    private static void PrevPage() {
+        if (_currentPage <= 0) {
+            return;
+        }
+        _currentPage--;
+    }
+
+    private static void NextPage() {
+        _currentPage++;
+    }
+
+    private static void UpdatePagination(int totalPages) {
+        if (_pageIndicator != null) {
+            _pageIndicator.text = $"第{_currentPage + 1}页 / 共{totalPages}页";
+        }
+        if (_prevPageButton != null) {
+            _prevPageButton.button.interactable = _currentPage > 0;
+        }
+        if (_nextPageButton != null) {
+            _nextPageButton.button.interactable = _currentPage < totalPages - 1;
+        }
     }
 
     #region IModCanSave
@@ -166,6 +187,7 @@ public static class ItemInteraction {
 
     public static void IntoOtherSave() {
         SelectedItemID = 0;
+        _currentPage = 0;
     }
 
     #endregion
