@@ -13,13 +13,6 @@ namespace FE.Logic.Building;
 /// 矿物复制塔
 /// </summary>
 public static class MineralReplicationTower {
-    public static void AddTranslations() {
-        Register("矿物复制塔", "Mineral Replication Tower");
-        Register("I矿物复制塔",
-            "Replicate various minerals, including dark fog-specific drops. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -29,6 +22,7 @@ public static class MineralReplicationTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
+    private static readonly float propertyRatio = 1.0f / (float)Cargo.powerTableRatio[4];
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
@@ -36,9 +30,15 @@ public static class MineralReplicationTower {
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
     public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    private static readonly float propertyRatio = 1.0f / (float)Cargo.powerTableRatio[4];
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
+
+    public static void AddTranslations() {
+        Register("矿物复制塔", "Mineral Replication Tower");
+        Register("I矿物复制塔",
+            "Replicate various minerals, including dark fog-specific drops. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。");
+    }
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
@@ -49,6 +49,8 @@ public static class MineralReplicationTower {
             "I矿物复制塔", TFE矿物复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "kwfzt";
+        recipe.IconTag = "kwfzt";
         model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
