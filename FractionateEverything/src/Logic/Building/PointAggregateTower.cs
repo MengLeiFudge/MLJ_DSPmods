@@ -15,13 +15,6 @@ namespace FE.Logic.Building;
 /// 点数聚集塔
 /// </summary>
 public static class PointAggregateTower {
-    public static void AddTranslations() {
-        Register("点数聚集塔", "Points Aggregate Tower");
-        Register("I点数聚集塔",
-            "Concentrate proliferator points onto specific items to produce goods carrying greater proliferator points. Requires upgrading the proliferator point aggregation efficiency tier at the fractionation data centre.",
-            "将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -31,6 +24,11 @@ public static class PointAggregateTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
+    private static readonly float propertyRatio = 2.0f;
+    /// <summary>
+    ///     建筑等级，1-7。
+    /// </summary>
+    public static int Level = 1;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
@@ -38,13 +36,8 @@ public static class PointAggregateTower {
     public static float ReinforcementBonusFracSuccess => ReinforcementBonus;
     public static float ReinforcementBonusMainOutputCount => 0;
     public static float ReinforcementBonusAppendOutputRate => 0;
-    private static readonly float propertyRatio = 2.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
-    /// <summary>
-    /// 建筑等级，1-7。
-    /// </summary>
-    public static int Level = 1;
     public static int MaxLevel => 7;
     public static bool IsMaxLevel => Level == MaxLevel;
     /// <summary>
@@ -59,6 +52,13 @@ public static class PointAggregateTower {
     public static string Lv => $"Lv{Level}";
     public static string LvWC => Lv.WithColor(Level);
 
+    public static void AddTranslations() {
+        Register("点数聚集塔", "Points Aggregate Tower");
+        Register("I点数聚集塔",
+            "Concentrate proliferator points onto specific items to produce goods carrying greater proliferator points. Requires upgrading the proliferator point aggregation efficiency tier at the fractionation data centre.",
+            "将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。");
+    }
+
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
             "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 303, 30, EItemType.Production,
@@ -68,6 +68,8 @@ public static class PointAggregateTower {
             "I点数聚集塔", TFE增产点数聚集, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "dsjjt";
+        recipe.IconTag = "dsjjt";
         model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
