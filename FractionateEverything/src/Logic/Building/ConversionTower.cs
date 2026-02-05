@@ -49,6 +49,8 @@ public static class ConversionTower {
             "I转化塔", TFE物品转化, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "zht";
+        recipe.IconTag = "zht";
         model = ProtoRegistry.RegisterModel(MFE转化塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);

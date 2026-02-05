@@ -23,7 +23,7 @@ public static class MineralReplicationTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.4f, 1.0f, 0.949f);
+    public static Color color = new(0.4f, 1.0f, 0.949f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
@@ -49,6 +49,8 @@ public static class MineralReplicationTower {
             "I矿物复制塔", TFE矿物复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "kwfzt";
+        recipe.IconTag = "kwfzt";
         model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
