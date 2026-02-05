@@ -32,6 +32,8 @@ public static class InterstellarInteractionStation {
             "I星际物流交互站", T星际物流系统, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "xjjhz";
+        recipe.IconTag = "xjjhz";
         model = ProtoRegistry.RegisterModel(MFE星际物流交互站, item,
             "Entities/Prefabs/interstellar-logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);

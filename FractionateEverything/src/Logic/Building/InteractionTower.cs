@@ -13,13 +13,6 @@ namespace FE.Logic.Building;
 /// 交互塔
 /// </summary>
 public static class InteractionTower {
-    public static void AddTranslations() {
-        Register("交互塔", "Interaction Tower");
-        Register("I交互塔",
-            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
-            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -29,6 +22,7 @@ public static class InteractionTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
+    private static readonly float propertyRatio = 1.0f;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
@@ -36,9 +30,15 @@ public static class InteractionTower {
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.2f;
     public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    private static readonly float propertyRatio = 1.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
+
+    public static void AddTranslations() {
+        Register("交互塔", "Interaction Tower");
+        Register("I交互塔",
+            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
+            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
+    }
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
@@ -49,6 +49,8 @@ public static class InteractionTower {
             "I交互塔", TFE物品交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "jht";
+        recipe.IconTag = "jht";
         model = ProtoRegistry.RegisterModel(MFE交互塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
