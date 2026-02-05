@@ -14,14 +14,6 @@ namespace FE.Logic.Building;
 /// 行星内物流交互站
 /// </summary>
 public static class PlanetaryInteractionStation {
-    public static void AddTranslations() {
-        Register("物流交互站", "Interaction Station");
-        Register("行星内物流交互站", "Planetary Interaction Station");
-        Register("I行星内物流交互站",
-            "Planetary logistics station capable of interacting with the fractionation data centre regarding goods.\nWhen supply is unlocked or demand is locked, items may be downloaded from the data centre; When supply is locked or demand is unlocked, items may be uploaded to the data centre; When storage is unlocked, the item count remains at half; When storage is locked, the item count remains consistent with the data centre.",
-            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n供应无锁或需求锁定时，可从数据中心下载物品；供应锁定或需求无锁时，可上传物品至数据中心；仓储无锁时，物品数目维持在一半；仓储锁定时，物品数目与数据中心保持一致。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -29,11 +21,19 @@ public static class PlanetaryInteractionStation {
 
     public static int MaxProductOutputStack = 1;
     public static int ReinforcementLevel = 0;
+    public static readonly float propertyRatio = 1.0f;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
     public static float ReinforcementBonusEnergy => 1 / (1 + ReinforcementBonus * 9);
-    public static readonly float propertyRatio = 1.0f;
+
+    public static void AddTranslations() {
+        Register("物流交互站", "Interaction Station");
+        Register("行星内物流交互站", "Planetary Interaction Station");
+        Register("I行星内物流交互站",
+            "Planetary logistics station capable of interacting with the fractionation data centre regarding goods.\nWhen supply is unlocked or demand is locked, items may be downloaded from the data centre; When supply is locked or demand is unlocked, items may be uploaded to the data centre; When storage is unlocked, the item count remains at half; When storage is locked, the item count remains consistent with the data centre.",
+            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n供应无锁或需求锁定时，可从数据中心下载物品；供应锁定或需求无锁时，可上传物品至数据中心；仓储无锁时，物品数目维持在一半；仓储锁定时，物品数目与数据中心保持一致。");
+    }
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE行星内物流交互站, "行星内物流交互站", "I行星内物流交互站",
@@ -44,6 +44,8 @@ public static class PlanetaryInteractionStation {
             "I行星内物流交互站", T行星物流系统, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "xxnjhz";
+        recipe.IconTag = "xxnjhz";
         model = ProtoRegistry.RegisterModel(MFE行星内物流交互站, item,
             "Entities/Prefabs/logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);

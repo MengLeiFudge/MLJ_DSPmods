@@ -152,6 +152,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "dcjq";
+        recipe.IconTag = "dcjq";
 
         item = ProtoRegistry.RegisterItem(IFE能量奖券, "能量奖券", "I能量奖券",
             "Assets/fe/energy-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
@@ -162,6 +164,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "nljq";
+        recipe.IconTag = "nljq";
 
         item = ProtoRegistry.RegisterItem(IFE结构奖券, "结构奖券", "I结构奖券",
             "Assets/fe/structure-ticket", tab分馏 * 1000 + 103, 100, EItemType.Product,
@@ -172,6 +176,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "jgjq";
+        recipe.IconTag = "jgjq";
 
         item = ProtoRegistry.RegisterItem(IFE信息奖券, "信息奖券", "I信息奖券",
             "Assets/fe/information-ticket", tab分馏 * 1000 + 104, 100, EItemType.Product,
@@ -182,6 +188,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "xxjq";
+        recipe.IconTag = "xxjq";
 
         item = ProtoRegistry.RegisterItem(IFE引力奖券, "引力奖券", "I引力奖券",
             "Assets/fe/gravity-ticket", tab分馏 * 1000 + 105, 100, EItemType.Product,
@@ -192,6 +200,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "yljq";
+        recipe.IconTag = "yljq";
 
         item = ProtoRegistry.RegisterItem(IFE宇宙奖券, "宇宙奖券", "I宇宙奖券",
             "Assets/fe/universe-ticket", tab分馏 * 1000 + 106, 100, EItemType.Product,
@@ -202,6 +212,8 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "yzjq";
+        recipe.IconTag = "yzjq";
 
         item = ProtoRegistry.RegisterItem(IFE黑雾奖券, "黑雾奖券", "I黑雾奖券",
             "Assets/fe/dark-fog-ticket", tab分馏 * 1000 + 107, 100, EItemType.Product,
@@ -212,73 +224,88 @@ public static class ItemManager {
         recipe.IconPath = "";
         recipe.Handcraft = false;
         recipe.NonProductive = true;
+        item.IconTag = "hwjq";
+        recipe.IconTag = "hwjq";
 
 
         item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(InteractionTower.color, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "jhtyp";
 
         item = ProtoRegistry.RegisterItem(IFE矿物复制塔原胚, "矿物复制塔原胚", "I矿物复制塔原胚",
             "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(MineralReplicationTower.color, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "kwfzyp";
 
         item = ProtoRegistry.RegisterItem(IFE点数聚集塔原胚, "点数聚集塔原胚", "I点数聚集塔原胚",
             "Assets/fe/frac-proto-rare", tab分馏 * 1000 + 203, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(PointAggregateTower.color, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "dsjjyp";
 
         item = ProtoRegistry.RegisterItem(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚",
             "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(ConversionTower.color, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "zhtyp";
 
         item = ProtoRegistry.RegisterItem(IFE回收塔原胚, "回收塔原胚", "I回收塔原胚",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(RecycleTower.color, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "hstyp";
 
         item = ProtoRegistry.RegisterItem(IFE分馏塔定向原胚, "分馏塔定向原胚", "I分馏塔定向原胚",
             "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "fldxyp";
 
         item = ProtoRegistry.RegisterItem(IFE分馏配方核心, "分馏配方核心", "I分馏配方核心",
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "flpfhx";
 
         item = ProtoRegistry.RegisterItem(IFE分馏塔增幅芯片, "分馏塔增幅芯片", "I分馏塔增幅芯片",
             "Assets/fe/building-increase-chip", tab分馏 * 1000 + 208, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "flzfxp";
 
         item = ProtoRegistry.RegisterItem(IFE原版配方核心, "原版配方核心", "I原版配方核心",
             "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 209, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "ybpfhx";
 
 
         item = ProtoRegistry.RegisterItem(IFE速度精华, "速度精华", "I速度精华",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "sdjh";
 
         item = ProtoRegistry.RegisterItem(IFE产能精华, "产能精华", "I产能精华",
             "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "cnjh";
 
         item = ProtoRegistry.RegisterItem(IFE节能精华, "节能精华", "I节能精华",
             "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "jnjh";
 
         item = ProtoRegistry.RegisterItem(IFE增产精华, "增产精华", "I增产精华",
             "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
+        item.IconTag = "zcjh";
     }
 
     public static void AddQualityItems() {

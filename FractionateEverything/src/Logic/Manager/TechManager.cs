@@ -15,6 +15,8 @@ namespace FE.Logic.Manager;
 /// Preload2会初始化unlockRecipeArray，之后LDBTool添加就不会报空指针异常。
 /// </summary>
 public static class TechManager {
+    private static readonly bool[] techUnlockFlags = new bool[7];
+
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
         Register("分馏数据中心描述",
@@ -226,6 +228,7 @@ public static class TechManager {
         tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
+        tech分馏数据中心.IconTag = "flsjzx";
 
 
         var tech超值礼包1 = ProtoRegistry.RegisterTech(
@@ -240,6 +243,7 @@ public static class TechManager {
         tech超值礼包1.AddItemCounts = [200, 3, 6];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
+        tech超值礼包1.IconTag = "tczlb1";
 
         var tech超值礼包2 = ProtoRegistry.RegisterTech(
             TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包",
@@ -253,6 +257,7 @@ public static class TechManager {
         tech超值礼包2.AddItemCounts = [200, 3, 6];
         tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
         tech超值礼包2.PropertyItemCounts = [100];
+        tech超值礼包2.IconTag = "tczlb2";
 
         var tech超值礼包3 = ProtoRegistry.RegisterTech(
             TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包",
@@ -266,6 +271,7 @@ public static class TechManager {
         tech超值礼包3.AddItemCounts = [200, 3, 6];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
+        tech超值礼包3.IconTag = "tczlb3";
 
         var tech超值礼包4 = ProtoRegistry.RegisterTech(
             TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包",
@@ -279,6 +285,7 @@ public static class TechManager {
         tech超值礼包4.AddItemCounts = [200, 3, 6];
         tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
         tech超值礼包4.PropertyItemCounts = [100];
+        tech超值礼包4.IconTag = "tczlb4";
 
         var tech超值礼包5 = ProtoRegistry.RegisterTech(
             TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包",
@@ -292,6 +299,7 @@ public static class TechManager {
         tech超值礼包5.AddItemCounts = [200, 3, 6];
         tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
         tech超值礼包5.PropertyItemCounts = [100];
+        tech超值礼包5.IconTag = "tczlb5";
 
         var tech超值礼包6 = ProtoRegistry.RegisterTech(
             TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包",
@@ -305,6 +313,7 @@ public static class TechManager {
         tech超值礼包6.AddItemCounts = [200, 3, 6];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
+        tech超值礼包6.IconTag = "tczlb6";
 
 
         var tech电磁奖券 = ProtoRegistry.RegisterTech(
@@ -317,6 +326,7 @@ public static class TechManager {
         tech电磁奖券.PreTechsImplicit = [TFE物品交互];
         tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
         tech电磁奖券.PropertyItemCounts = [200];
+        tech电磁奖券.IconTag = "tdcjq";
 
         var tech能量奖券 = ProtoRegistry.RegisterTech(
             TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech分馏奖券",
@@ -328,6 +338,7 @@ public static class TechManager {
         tech能量奖券.PreTechsImplicit = [T能量矩阵];
         tech能量奖券.PropertyOverrideItems = [I能量矩阵];
         tech能量奖券.PropertyItemCounts = [400];
+        tech能量奖券.IconTag = "tnljq";
 
         var tech结构奖券 = ProtoRegistry.RegisterTech(
             TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech分馏奖券",
@@ -339,6 +350,7 @@ public static class TechManager {
         tech结构奖券.PreTechsImplicit = [T结构矩阵];
         tech结构奖券.PropertyOverrideItems = [I结构矩阵];
         tech结构奖券.PropertyItemCounts = [600];
+        tech结构奖券.IconTag = "tjgjq";
 
         var tech信息奖券 = ProtoRegistry.RegisterTech(
             TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech分馏奖券",
@@ -350,6 +362,7 @@ public static class TechManager {
         tech信息奖券.PreTechsImplicit = [T信息矩阵];
         tech信息奖券.PropertyOverrideItems = [I信息矩阵];
         tech信息奖券.PropertyItemCounts = [800];
+        tech信息奖券.IconTag = "txxjq";
 
         var tech引力奖券 = ProtoRegistry.RegisterTech(
             TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech分馏奖券",
@@ -361,6 +374,7 @@ public static class TechManager {
         tech引力奖券.PreTechsImplicit = [T引力矩阵];
         tech引力奖券.PropertyOverrideItems = [I引力矩阵];
         tech引力奖券.PropertyItemCounts = [1000];
+        tech引力奖券.IconTag = "tyljq";
 
         var tech宇宙奖券 = ProtoRegistry.RegisterTech(
             TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech分馏奖券",
@@ -372,6 +386,7 @@ public static class TechManager {
         tech宇宙奖券.PreTechsImplicit = [T宇宙矩阵];
         tech宇宙奖券.PropertyOverrideItems = [I宇宙矩阵];
         tech宇宙奖券.PropertyItemCounts = [1200];
+        tech宇宙奖券.IconTag = "tyzjq";
 
         var tech黑雾奖券 = ProtoRegistry.RegisterTech(
             TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech分馏奖券",
@@ -383,6 +398,7 @@ public static class TechManager {
         tech黑雾奖券.IsHiddenTech = true;
         tech黑雾奖券.PreItem = [I黑雾矩阵];
         tech黑雾奖券.PreTechsImplicit = [TFE分馏塔原胚];
+        tech黑雾奖券.IconTag = "thwjq";
 
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
@@ -396,6 +412,7 @@ public static class TechManager {
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
+        tech分馏塔原胚.IconTag = "tfltyp";
 
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
@@ -407,6 +424,7 @@ public static class TechManager {
         tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品交互.PropertyOverrideItems = [I电磁矩阵];
         tech物品交互.PropertyItemCounts = [200];
+        tech物品交互.IconTag = "twpjh";
 
         var tech矿物复制 = ProtoRegistry.RegisterTech(
             TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
@@ -418,6 +436,7 @@ public static class TechManager {
         tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
         tech矿物复制.PropertyOverrideItems = [I电磁矩阵];
         tech矿物复制.PropertyItemCounts = [200];
+        tech矿物复制.IconTag = "tkwfz";
 
         var tech增产点数聚集 = ProtoRegistry.RegisterTech(
             TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
@@ -429,6 +448,7 @@ public static class TechManager {
         tech增产点数聚集.PreTechsImplicit = [TFE分馏塔原胚];
         tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
         tech增产点数聚集.PropertyItemCounts = [200];
+        tech增产点数聚集.IconTag = "zcdsjj";
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
@@ -440,6 +460,7 @@ public static class TechManager {
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品转化.PropertyOverrideItems = [I电磁矩阵];
         tech物品转化.PropertyItemCounts = [200];
+        tech物品转化.IconTag = "twpzh";
 
         var tech物品回收 = ProtoRegistry.RegisterTech(
             TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品分解",//todo
@@ -451,6 +472,7 @@ public static class TechManager {
         tech物品回收.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品回收.PropertyOverrideItems = [I电磁矩阵];
         tech物品回收.PropertyItemCounts = [200];
+        tech物品回收.IconTag = "twphs";
 
         var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
         var tech行星内物流交互 = ProtoRegistry.RegisterTech(
@@ -463,6 +485,7 @@ public static class TechManager {
         tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech行星物流系统.ID];
         tech行星内物流交互.PropertyOverrideItems = [..tech行星物流系统.PropertyOverrideItems];
         tech行星内物流交互.PropertyItemCounts = [..tech行星物流系统.PropertyItemCounts];
+        tech行星内物流交互.IconTag = "txxnjh";
 
         var tech星际物流系统 = LDB.techs.Select(T星际物流系统);
         var tech星际物流交互 = ProtoRegistry.RegisterTech(
@@ -475,6 +498,7 @@ public static class TechManager {
         tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech星际物流系统.ID];
         tech星际物流交互.PropertyOverrideItems = [..tech星际物流系统.PropertyOverrideItems];
         tech星际物流交互.PropertyItemCounts = [..tech星际物流系统.PropertyItemCounts];
+        tech星际物流交互.IconTag = "txjjh";
     }
 
     /// <summary>
@@ -492,8 +516,6 @@ public static class TechManager {
         }
         return new(13 + column * 4, -67 - row * 4);
     }
-
-    private static readonly bool[] techUnlockFlags = new bool[7];
 
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
