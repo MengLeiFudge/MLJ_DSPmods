@@ -49,6 +49,8 @@ public static class RecycleTower {
             "I回收塔", TFE物品回收, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "hst";
+        recipe.IconTag = "hst";
         model = ProtoRegistry.RegisterModel(MFE回收塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);

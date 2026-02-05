@@ -13,13 +13,6 @@ namespace FE.Logic.Building;
 /// 转化塔
 /// </summary>
 public static class ConversionTower {
-    public static void AddTranslations() {
-        Register("转化塔", "Conversion Tower");
-        Register("I转化塔",
-            "Convert items into other items related to them. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。");
-    }
-
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
@@ -29,6 +22,7 @@ public static class ConversionTower {
     public static int MaxProductOutputStack = 1;
     public static bool EnableFracForever = false;
     public static int ReinforcementLevel = 0;
+    private static readonly float propertyRatio = 1.0f;
     private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
     public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
     public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
@@ -36,9 +30,15 @@ public static class ConversionTower {
     public static float ReinforcementBonusFracSuccess => 0;
     public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
     public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    private static readonly float propertyRatio = 1.0f;
     public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
     public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
+
+    public static void AddTranslations() {
+        Register("转化塔", "Conversion Tower");
+        Register("I转化塔",
+            "Convert items into other items related to them. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。");
+    }
 
     public static void Create() {
         item = ProtoRegistry.RegisterItem(IFE转化塔, "转化塔", "I转化塔",
@@ -49,6 +49,8 @@ public static class ConversionTower {
             "I转化塔", TFE物品转化, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
+        item.IconTag = "zht";
+        recipe.IconTag = "zht";
         model = ProtoRegistry.RegisterModel(MFE转化塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
