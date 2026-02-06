@@ -722,10 +722,11 @@ public static class ItemManager {
 
     #endregion
 
-    #region 分馏数据中心背包（也就是Mod物品缓存区数据）
+    #region 分馏数据中心背包（也就是Mod物品缓存区数据）以及剩余的增产点数
 
     public static readonly long[] centerItemCount = new long[12000];
     public static readonly long[] centerItemInc = new long[12000];
+    public static int[] leftInc = new int[3];
 
     #endregion
 
@@ -751,10 +752,15 @@ public static class ItemManager {
                 centerItemInc[itemId] = inc;
             }
         }
+        if (version >= 2) {
+            for (int i = 0; i < leftInc.Length; i++) {
+                leftInc[i] = r.ReadInt32();
+            }
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         List<int> centerItemId = [];
         for (int i = 0; i < centerItemCount.Length; i++) {
             if (centerItemCount[i] > 0) {
@@ -767,12 +773,18 @@ public static class ItemManager {
             w.Write(centerItemCount[itemId]);
             w.Write(centerItemInc[itemId]);
         }
+        for (int i = 0; i < leftInc.Length; i++) {
+            w.Write(leftInc[i]);
+        }
     }
 
     public static void IntoOtherSave() {
         for (int i = 0; i < centerItemCount.Length; i++) {
             centerItemCount[i] = 0;
             centerItemInc[i] = 0;
+        }
+        for (int i = 0; i < leftInc.Length; i++) {
+            leftInc[i] = 0;
         }
     }
 
