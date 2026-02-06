@@ -1107,4 +1107,33 @@ public static partial class Utils {
     }
 
     #endregion
+
+    #region 物流交互站自动喷涂
+
+    private static readonly int[] proliferatorIDs = [I增产剂MkI, I增产剂MkII, I增产剂MkIII];
+    private static readonly int[] proliferatorPoints =
+        [(12 - 1 + 12 / 4) * 1, (30 - 1 + 30 / 4) * 2, (60 - 1 + 60 / 4) * 4];
+
+    /// <summary>
+    /// 使用分馏数据中心的增产剂喷涂物品
+    /// </summary>
+    public void AddIncToItem(int itemCount, ref int itemInc) {
+        //先用高等级增产剂喷涂，不足时再用低等级增产剂喷涂
+        for (int i = proliferatorIDs.Length; i >= 0; i--) {
+            int plrId = proliferatorIDs[i];
+            int plrPoint = proliferatorPoints[i];
+            int needPoint = itemCount * plrPoint - itemInc;
+            if (needPoint <= 0) {
+                return;
+            }
+            int needCount = (needPoint + 1) / plrPoint;
+            long currCount = GetModDataItemCount(plrId);
+            TakeItemFromModData(plrId,)
+            int takeCount = Math.Min(needCount, currCount);
+        }
+
+
+    }
+
+    #endregion
 }
