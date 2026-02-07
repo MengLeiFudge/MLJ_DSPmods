@@ -1185,66 +1185,77 @@ public static partial class Utils {
     //     }
     // }
 
-
-    private const int REFILL_THRESHOLD = 1000;// 低于这个值就触发补给
-    private const int TARGET_CAPACITY = 40000;// 目标蓄水量
+    public static long[] leftInc = new long[3];// 三个独立的水池
+    private const long TARGET_CAPACITY = 40000;// 每个池子的目标保水量
 
     /// <summary>
-    /// 使用分馏数据中心的增产剂喷涂物品
+    /// 核心消耗逻辑：从高到低尝试喷涂
     /// </summary>
     public static void AddIncToItem(int itemCount, ref int itemInc) {
+        // i=2: MkIII (4点), i=1: MkII (2点), i=0: MkI (1点)
         for (int i = 2; i >= 0; i--) {
-            int targetPoints = itemCount * basePoints[i];
-            if (itemInc >= targetPoints) continue;
+            int targetTotal = itemCount * basePoints[i];
 
-            int need = targetPoints - itemInc;
+            // 如果当前物品的点数已经达到或超过该档位，直接跳过
+            if (itemInc >= targetTotal) continue;
 
-            // 1. 尝试直接从蓄水池扣除
+            // 检查当前档位的水池是否够用
+            int need = targetTotal - itemInc;
             if (leftInc[i] < need) {
-                // 2. 蓄水池不足，触发一次批量补给
-                RefillInc(i);
+                RefillInc(i);// 触发该档位专属的注水操作
             }
 
-            // 3. 再次检查并扣除（如果补给后还是不够，能扣多少扣多少）
-            int take = Math.Min(need, leftInc[i]);
-            itemInc += take;
+            // 从该档位水池取水
+            long take = Math.Min((long)need, leftInc[i]);
+            itemInc += (int)take;
             leftInc[i] -= take;
 
-            // 如果已经补到了当前最高级别，直接返回
-            if (itemInc >= targetPoints) return;
+            // 如果补满了，就不用再看低级药剂了
+            if (itemInc >= targetTotal) return;
         }
     }
 
+    /// <summary>
+    /// 核心补给逻辑：针对特定等级注水
+    /// </summary>
     private static void RefillInc(int index) {
         int plrId = proliferatorIDs[index];
-        if (centerItemCount[plrId] <= 0) return;
 
-        // 计算当前缺口
-        int gap = TARGET_CAPACITY - leftInc[index];
-        if (gap <= 0) return;
+        // 锁定数据中心操作，防止多人模式或多线程冲突
+        lock (centerItemCount) {
+            if (centerItemCount[plrId] <= 0) return;
 
-        // 预估需要多少个增产剂（按最差情况：无增产状态计算）
-        int singleFullPoints = baseUseCounts[index] * basePoints[index];
-        int countToTake = (gap + singleFullPoints - 1) / singleFullPoints;
+            long gap = TARGET_CAPACITY - leftInc[index];
+            if (gap <= 0) return;
 
-        // 批量从数据中心提取
-        int actualTake = TakeItemFromModData(plrId, countToTake, out int totalSelfInc);
-        if (actualTake <= 0) return;
+            // 1. 预估：按该药剂基础能提供的点数计算
+            int singleBasePoints = baseUseCounts[index] * basePoints[index];
+            int countToTake = (int)((gap + singleBasePoints - 1) / singleBasePoints);
 
-        // 计算这批增产剂的平均增产等级
-        int avgInc = totalSelfInc / actualTake;
-        avgInc = Math.Min(10, avgInc);
+            // 限制单次提取量，避免单次锁时间过长 (限制为 200 个)
+            countToTake = Math.Min(countToTake, 200);
 
-        // --- 自喷涂自动升级逻辑 ---
-        // 如果这批增产剂没达到4级，且池子里还有点水，尝试花点小钱给它们全部“升级”
-        if (avgInc < 4 && leftInc[index] > actualTake * (4 - avgInc)) {
-            leftInc[index] -= actualTake * (4 - avgInc);
-            avgInc = 4;
+            // 2. 提取
+            int actualTake = TakeItemFromModData(plrId, countToTake, out int totalSelfInc);
+            if (actualTake <= 0) return;
+
+            // 3. 计算提取到的平均增产点数
+            int avgInc = totalSelfInc / actualTake;
+            avgInc = Math.Min(10, avgInc);
+
+            // 4. 自喷涂升级（内部闭环）：
+            // 如果池子里原本就有超过 4 点的点数，我们拿 4 点出来给这个刚取出来的药剂喷上
+            // 这样它能产出的点数会从 (基础次*点数) 变成 (基础+额外-1)*点数
+            if (avgInc < 4 && leftInc[index] >= 4) {
+                // 简单处理：只要有水就默认消耗 4 点把它升到最高级（4点）
+                // 这是最高效的工业逻辑
+                leftInc[index] -= 4;
+                avgInc = 4;
+            }
+
+            // 5. 注入池子
+            leftInc[index] += (long)actualTake * totalPointsLookup[index, avgInc];
         }
-
-        // 查表转换成总点数注入蓄水池
-        // 注意：totalPointsLookup[index, avgInc] 内部已经处理了 (次数-1)
-        leftInc[index] += actualTake * totalPointsLookup[index, avgInc];
     }
 
     #endregion
