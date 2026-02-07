@@ -1110,29 +1110,141 @@ public static partial class Utils {
 
     #region 物流交互站自动喷涂
 
-    private static readonly int[] proliferatorIDs = [I增产剂MkI, I增产剂MkII, I增产剂MkIII];
-    private static readonly int[] proliferatorPoints =
-        [(12 - 1 + 12 / 4) * 1, (30 - 1 + 30 / 4) * 2, (60 - 1 + 60 / 4) * 4];
+    private static readonly int[] proliferatorIDs = { I增产剂MkI, I增产剂MkII, I增产剂MkIII };
+    private static readonly int[] baseUseCounts = { 12, 30, 60 };
+    private static readonly int[] basePoints = { 1, 2, 4 };
+
+    // 存储：[增产剂等级0-2, 自身携带点数0-10] = 该增产剂总共能提供的喷涂点数
+    private static readonly int[,] totalPointsLookup = new int[3, 11];
+
+    private static int _authInitializer = InitLookup();
+
+    private static int InitLookup() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j <= 10; j++) {
+                // 额外次数 = 基础次数 * 增加比例 (来自 Cargo.incTableMilli)
+                double bonusPercent = Cargo.incTableMilli[j];
+                int extraUses = (int)(baseUseCounts[i] * bonusPercent + 1e-6);// 加微小值防止浮点误差
+                int totalUses = baseUseCounts[i] + extraUses;
+
+                // 如果是自喷涂，消耗1次掉，剩下 totalUses - 1 次服务于其他物品
+                // 注意：如果 j=0 说明没喷涂，则不减去自消耗
+                int effectiveUses = (j > 0) ? (totalUses - 1) : totalUses;
+                totalPointsLookup[i, j] = effectiveUses * basePoints[i];
+            }
+        }
+        return 1;
+    }
+
+
+    // /// <summary>
+    // /// 使用分馏数据中心的增产剂喷涂物品
+    // /// </summary>
+    // public static void AddIncToItem(int itemCount, ref int itemInc) {
+    //     // 从 MkIII 到 MkI 尝试喷涂
+    //     for (int i = 2; i >= 0; i--) {
+    //         int plrId = proliferatorIDs[i];
+    //         int targetPoints = itemCount * basePoints[i];
+    //
+    //         if (itemInc >= targetPoints) continue;
+    //
+    //         while (itemInc < targetPoints) {
+    //             // 1. 优先消耗 leftInc 缓存
+    //             if (leftInc[i] > 0) {
+    //                 int need = targetPoints - itemInc;
+    //                 int take = Math.Min(need, leftInc[i]);
+    //                 itemInc += take;
+    //                 leftInc[i] -= take;
+    //                 if (itemInc >= targetPoints) return;
+    //             }
+    //
+    //             // 2. 缓存不足，提取一个增产剂
+    //             int actualTake = TakeItemFromModData(plrId, 1, out int selfInc);
+    //             if (actualTake > 0) {
+    //                 // 如果拿出来的增产剂点数不足 4 (MkIII的最高点数)，尝试将其补到 4 点
+    //                 if (selfInc < 4) {
+    //                     int selfNeed = 4 - selfInc;
+    //                     // 我们尝试用同级别的 leftInc 缓存或者递归调用来补齐这 4 点
+    //                     // 简化逻辑：直接从当前等级的缓存中扣除（因为我们优先用最高级增产）
+    //                     if (leftInc[i] >= selfNeed) {
+    //                         leftInc[i] -= selfNeed;
+    //                         selfInc = 4;
+    //                     } else {
+    //                         // 如果缓存连补自喷涂都不够，那就按原始点数算，不强求补满
+    //                     }
+    //                 }
+    //                 // ---------------------------
+    //
+    //                 // 使用预计算表 totalPointsLookup 获取该增产剂能提供的总点数
+    //                 // 此时 selfInc 已经尽可能被补正了
+    //                 leftInc[i] += totalPointsLookup[i, Math.Min(10, selfInc)];
+    //             } else {
+    //                 break; // 没药剂了
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    private const int REFILL_THRESHOLD = 1000;// 低于这个值就触发补给
+    private const int TARGET_CAPACITY = 40000;// 目标蓄水量
 
     /// <summary>
     /// 使用分馏数据中心的增产剂喷涂物品
     /// </summary>
-    public void AddIncToItem(int itemCount, ref int itemInc) {
-        //先用高等级增产剂喷涂，不足时再用低等级增产剂喷涂
-        for (int i = proliferatorIDs.Length; i >= 0; i--) {
-            int plrId = proliferatorIDs[i];
-            int plrPoint = proliferatorPoints[i];
-            int needPoint = itemCount * plrPoint - itemInc;
-            if (needPoint <= 0) {
-                return;
+    public static void AddIncToItem(int itemCount, ref int itemInc) {
+        for (int i = 2; i >= 0; i--) {
+            int targetPoints = itemCount * basePoints[i];
+            if (itemInc >= targetPoints) continue;
+
+            int need = targetPoints - itemInc;
+
+            // 1. 尝试直接从蓄水池扣除
+            if (leftInc[i] < need) {
+                // 2. 蓄水池不足，触发一次批量补给
+                RefillInc(i);
             }
-            int needCount = (needPoint + 1) / plrPoint;
-            long currCount = GetModDataItemCount(plrId);
-            TakeItemFromModData(plrId,)
-            int takeCount = Math.Min(needCount, currCount);
+
+            // 3. 再次检查并扣除（如果补给后还是不够，能扣多少扣多少）
+            int take = Math.Min(need, leftInc[i]);
+            itemInc += take;
+            leftInc[i] -= take;
+
+            // 如果已经补到了当前最高级别，直接返回
+            if (itemInc >= targetPoints) return;
+        }
+    }
+
+    private static void RefillInc(int index) {
+        int plrId = proliferatorIDs[index];
+        if (centerItemCount[plrId] <= 0) return;
+
+        // 计算当前缺口
+        int gap = TARGET_CAPACITY - leftInc[index];
+        if (gap <= 0) return;
+
+        // 预估需要多少个增产剂（按最差情况：无增产状态计算）
+        int singleFullPoints = baseUseCounts[index] * basePoints[index];
+        int countToTake = (gap + singleFullPoints - 1) / singleFullPoints;
+
+        // 批量从数据中心提取
+        int actualTake = TakeItemFromModData(plrId, countToTake, out int totalSelfInc);
+        if (actualTake <= 0) return;
+
+        // 计算这批增产剂的平均增产等级
+        int avgInc = totalSelfInc / actualTake;
+        avgInc = Math.Min(10, avgInc);
+
+        // --- 自喷涂自动升级逻辑 ---
+        // 如果这批增产剂没达到4级，且池子里还有点水，尝试花点小钱给它们全部“升级”
+        if (avgInc < 4 && leftInc[index] > actualTake * (4 - avgInc)) {
+            leftInc[index] -= actualTake * (4 - avgInc);
+            avgInc = 4;
         }
 
-
+        // 查表转换成总点数注入蓄水池
+        // 注意：totalPointsLookup[index, avgInc] 内部已经处理了 (次数-1)
+        leftInc[index] += actualTake * totalPointsLookup[index, avgInc];
     }
 
     #endregion
