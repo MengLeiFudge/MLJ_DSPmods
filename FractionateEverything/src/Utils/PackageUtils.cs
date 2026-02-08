@@ -1136,55 +1136,6 @@ public static partial class Utils {
         return 1;
     }
 
-
-    // /// <summary>
-    // /// 使用分馏数据中心的增产剂喷涂物品
-    // /// </summary>
-    // public static void AddIncToItem(int itemCount, ref int itemInc) {
-    //     // 从 MkIII 到 MkI 尝试喷涂
-    //     for (int i = 2; i >= 0; i--) {
-    //         int plrId = proliferatorIDs[i];
-    //         int targetPoints = itemCount * basePoints[i];
-    //
-    //         if (itemInc >= targetPoints) continue;
-    //
-    //         while (itemInc < targetPoints) {
-    //             // 1. 优先消耗 leftInc 缓存
-    //             if (leftInc[i] > 0) {
-    //                 int need = targetPoints - itemInc;
-    //                 int take = Math.Min(need, leftInc[i]);
-    //                 itemInc += take;
-    //                 leftInc[i] -= take;
-    //                 if (itemInc >= targetPoints) return;
-    //             }
-    //
-    //             // 2. 缓存不足，提取一个增产剂
-    //             int actualTake = TakeItemFromModData(plrId, 1, out int selfInc);
-    //             if (actualTake > 0) {
-    //                 // 如果拿出来的增产剂点数不足 4 (MkIII的最高点数)，尝试将其补到 4 点
-    //                 if (selfInc < 4) {
-    //                     int selfNeed = 4 - selfInc;
-    //                     // 我们尝试用同级别的 leftInc 缓存或者递归调用来补齐这 4 点
-    //                     // 简化逻辑：直接从当前等级的缓存中扣除（因为我们优先用最高级增产）
-    //                     if (leftInc[i] >= selfNeed) {
-    //                         leftInc[i] -= selfNeed;
-    //                         selfInc = 4;
-    //                     } else {
-    //                         // 如果缓存连补自喷涂都不够，那就按原始点数算，不强求补满
-    //                     }
-    //                 }
-    //                 // ---------------------------
-    //
-    //                 // 使用预计算表 totalPointsLookup 获取该增产剂能提供的总点数
-    //                 // 此时 selfInc 已经尽可能被补正了
-    //                 leftInc[i] += totalPointsLookup[i, Math.Min(10, selfInc)];
-    //             } else {
-    //                 break; // 没药剂了
-    //             }
-    //         }
-    //     }
-    // }
-
     public static long[] leftInc = new long[3];// 三个独立的水池
     private const long TARGET_CAPACITY = 40000;// 每个池子的目标保水量
 
