@@ -90,7 +90,6 @@ public static class PlanetaryInteractionStation {
         } else if (MaxProductOutputStack > 4) {
             MaxProductOutputStack = 4;
         }
-        StationManager.SetMaxCount();
         ReinforcementLevel = r.ReadInt32();
         if (ReinforcementLevel < 0) {
             ReinforcementLevel = 0;
@@ -108,7 +107,6 @@ public static class PlanetaryInteractionStation {
 
     public static void IntoOtherSave() {
         MaxProductOutputStack = 1;
-        StationManager.SetMaxCount();
         ReinforcementLevel = 0;
         UpdateHpAndEnergy();
     }
