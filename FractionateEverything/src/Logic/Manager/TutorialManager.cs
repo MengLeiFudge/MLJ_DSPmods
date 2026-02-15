@@ -1,5 +1,8 @@
-﻿using HarmonyLib;
+﻿using System.Collections.Generic;
+using System.Reflection.Emit;
+using HarmonyLib;
 using UnityEngine.UI;
+using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -177,7 +180,7 @@ public static class TutorialManager {
              面板有很多功能，其中你必须了解的核心功能是抽奖和升级。一般而言，推进流程是这样的：
              1.研究礼包科技和奖券科技。这样你就可以自动化制作奖券。
              2.制作奖券并上传。如果你不了解如何上传物品，可以查阅下面的【物品交互】。
-             3.使用奖券抽奖。抽取配方奖池，可以得到分馏配方、分馏配方通用核心，第一次抽到配方会解锁该配方，之后会转为同名回响（配方突破的条件之一）。抽取原胚奖池，可以得到分馏塔原胚、分馏塔增幅芯片。
+             3.使用奖券抽奖。抽取配方奖池，可以得到分馏配方、分馏配方核心，第一次抽到配方会解锁该配方，之后会转为同名回响（配方突破的条件之一）。抽取原胚奖池，可以得到分馏塔原胚、分馏塔增幅芯片。
              4.配方需要解锁、升级、突破，满级为金色10级。使用分馏塔处理对应物品时，无论成功失败都可以得到经验；也可以使用沙土直接兑换经验。核心可以转为指定的配方，相当于抽奖抽到配方。
              5.建筑需要使用芯片升级、强化，强化最高+20。芯片可以直接提升建筑效果。这是很珍贵的资源，需要合理规划。升级项全部升满后即可强化，进一步提升建筑效果。
 
@@ -191,7 +194,7 @@ public static class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-铁矿]和[点金-铁矿]是不同的配方，它们之间没有任何关联。铁矿输入矿物复制塔，将会根据[矿物复制-铁矿]配方进行处理；铁矿输入点金塔，将会根据[点金-铁矿]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方的获取途径有：配方奖池抽奖、限时商店购买、直接使用分馏配方通用核心兑换（配方操作页面上方按钮）。
+             配方的获取途径有：配方奖池抽奖、限时商店购买、直接使用分馏配方核心兑换（配方操作页面上方按钮）。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限受品质影响。
@@ -252,7 +255,7 @@ public static class TutorialManager {
              非黑雾奖券只能抽到非黑雾配方，黑雾奖券只能抽到黑雾独属配方。
              量子复制配方只有在使用高一级的奖券，并且在高一级奖池的非量子复制配方全部抽取完成后，才能抽到。
              当使用某种奖券抽奖时，会先抽取当前层次配方，再抽取上一层次的量子复制配方，最后只能抽到分馏精华。
-             抽奖时有小概率获取“分馏配方通用核心”，可用于解锁任意配方，或转换为任意同名回响。
+             抽奖时有小概率获取“分馏配方核心”，可用于解锁任意配方，或转换为任意同名回响。
              解锁是相对自由的。例如，在能量矩阵配方池中的非量子复制配方未抽取完之前，你仍然可以使用核心兑换电磁矩阵层次的量子复制配方。
 
              2.原胚奖池
@@ -346,13 +349,8 @@ public static class TutorialManager {
             $"""
              {"【培养分馏塔】".WithColor(Blue)}
              在新的分馏科技中，分馏塔不再通过制造得到，而是主要通过交互塔培养得到。
-             简而言之，使用交互塔分馏非定向的“分馏塔原胚”，即可得到不同的分馏塔，同时还有小概率得到“分馏塔定向原胚”。
-             非定向原胚共有5种，它们的产物情况如下（原胚的介绍信息也展示了产物类型）：
-             I型：矿物复制塔（96%）、分馏塔定向原胚（4%）
-             II型：交互塔（96%）、分馏塔定向原胚（4%）
-             III型：点金塔（32%）、分解塔（32%）、转化塔（32%）、分馏塔定向原胚（4%）
-             IV型：点数聚集塔（96%）、分馏塔定向原胚（4%）
-             V型：量子复制塔（96%）、分馏塔定向原胚（4%）
+             简而言之，使用交互塔分馏各种原胚，即可得到不同的分馏塔，同时还有小概率（4%）得到“分馏塔定向原胚”。
+             分馏塔定向原胚可以直接制作为指定的分馏塔，无需经过交互塔处理。
              注意，{"任何分馏塔同一时间只能处理一种物品".WithColor(Orange)}，所以不同类型的原胚不要混投！
              将产出的分馏塔通过传送带输入至另一个交互塔的正面接口，即可上传物品至分馏数据中心，从而解锁对应的科技。
              上传不同分馏塔会解锁不同科技。例如，上传矿物复制塔将解锁矿物复制科技，上传交互塔将解锁物品交互科技。
@@ -449,23 +447,21 @@ public static class TutorialManager {
         AddTutorial("物流交互站使用指南", "TOR_OnBuild", [IFE行星内物流交互站, IFE星际物流交互站]);
     }
 
-    private static int currTutorialID = 51;
+    private static int currTutorialID = 201;
 
     private static void AddTutorial(string name, string determinatorName, long[] determinatorParams) {
-        // TutorialProto proto = new() {
-        //     ID = currTutorialID,
-        //     SID = "",
-        //     Name = $"{name}标题",
-        //     name = $"{name}标题",
-        //     PreText = $"{name}前字",
-        //     PostText = $"{name}后字",
-        //     Video = "",
-        //     DeterminatorName = determinatorName,
-        //     DeterminatorParams = determinatorParams,
-        // };
-        // LDBTool.PreAddProto(proto);
-        // proto.Preload();
-        // currTutorialID++;
+        TutorialProto proto = new() {
+            ID = currTutorialID,
+            SID = "",
+            Name = $"{name}标题",
+            name = $"{name}标题",
+            LayoutFileName = $"tutorial-fe-{currTutorialID}",
+            DeterminatorName = determinatorName,
+            DeterminatorParams = determinatorParams,
+        };
+        LDBTool.PreAddProto(proto);
+        proto.Preload();
+        currTutorialID++;
     }
 
     /// <summary>
@@ -483,5 +479,82 @@ public static class TutorialManager {
             __instance.entryList.m_ScrollRect.enabled = false;
             __instance.entryList.m_ScrollRect.enabled = true;
         }
+    }
+
+    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> UITutorialWindow_Transpiler(
+        IEnumerable<CodeInstruction> instructions, ILGenerator ilGenerator) {
+        var matcher = new CodeMatcher(instructions, ilGenerator);
+
+        /*
+            string layoutStr = UILayoutParserManager.GetLayoutStr(UITutorialWindow.textFolder, this.tutorialProto.LayoutFileName);
+
+            Ldarg_0
+            Ldfld tutorialProto
+            Call IsFELayout
+            Brfalse_S originalLogicLabel
+
+            Ldarg_0
+            Ldfld tutorialProto
+            Call GetLayoutStr
+            Br_S endLabel
+
+            IL_0027: ldsfld       string UITutorialWindow::textFolder // originalLogicLabel
+            IL_002c: ldarg.0      // this
+            IL_002d: ldfld        class TutorialProto UITutorialWindow::tutorialProto
+            IL_0032: ldfld        string TutorialProto::LayoutFileName
+            IL_0037: call         string UILayoutParserManager::GetLayoutStr(string, string)
+            IL_003c: stloc.0      // layoutStr // endLabel
+
+         */
+
+        matcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_0));
+        matcher.CreateLabelAt(matcher.Pos, out var endLabel);
+
+        matcher.MatchBack(false,
+            new CodeMatch(OpCodes.Ldsfld,
+                AccessTools.Field(typeof(UITutorialWindow), nameof(UITutorialWindow.textFolder))));
+        matcher.CreateLabelAt(matcher.Pos, out var originalLogicLabel);
+
+        // 插入预加载和判断
+        matcher.InsertAndAdvance(
+            new CodeInstruction(OpCodes.Ldarg_0),
+            new CodeInstruction(OpCodes.Ldfld,
+                AccessTools.Field(typeof(UITutorialWindow), nameof(UITutorialWindow.tutorialProto))),
+            new CodeInstruction(OpCodes.Call,
+                AccessTools.Method(typeof(TutorialManager), nameof(IsFELayout))),
+            new CodeInstruction(OpCodes.Brfalse_S, originalLogicLabel)
+        );
+
+        matcher.InsertAndAdvance(
+            new CodeInstruction(OpCodes.Ldarg_0),
+            new CodeInstruction(OpCodes.Ldfld,
+                AccessTools.Field(typeof(UITutorialWindow), nameof(UITutorialWindow.tutorialProto))),
+            new CodeInstruction(OpCodes.Call,
+                AccessTools.Method(typeof(TutorialManager), nameof(GetLayoutStr))),
+            new CodeInstruction(OpCodes.Br_S, endLabel)
+        );
+
+        return matcher.InstructionEnumeration();
+    }
+
+    public static bool IsFELayout(TutorialProto proto) {
+        var layoutFileName = proto.LayoutFileName;
+        return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith("tutorial-fe-");
+    }
+    
+    const string preText =
+        "{$Text|fontsize=16;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,30}\n";
+    const string postText =
+        "{$Text|fontsize=14;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,20}\n";
+
+    public static string GetLayoutStr(TutorialProto proto) {
+        string protoName = proto.Name;
+        if (!protoName.EndsWith("标题")) {
+            return string.Empty;
+        }
+        var text = protoName.Replace("标题", "前字");
+        return $"{preText}{protoName.Translate()}{postText}{text.Translate()}";
     }
 }
