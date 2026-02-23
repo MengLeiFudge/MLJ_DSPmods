@@ -23,6 +23,7 @@ namespace FE.Compatibility;
 [BepInDependency(CommonAPIPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildBarToolPlugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(NebulaMultiplayerModAPI.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(AutoSorter.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(BuildToolOpt.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CheatEnabler.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(CustomCreateBirthStar.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -41,6 +42,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
     private static bool _shown;
     private static string _missingModMessage;
+    private static string _disableModMessage;
 
     /// <summary>
     /// 是否在游戏加载时禁用提示信息。
@@ -59,10 +61,14 @@ public class CheckPlugins : BaseUnityPlugin {
     #endregion
 
     public static void AddTranslations() {
-        Register("缺少模组警告标题", "Tip", "提示");
+        Register("缺少模组警告标题", "Missing Mod Warning", "缺少模组警告");
         Register("缺少模组警告内容",
-            "The following prerequisite mods are required for Fractionate Everything:",
-            "万物分馏缺少以下前置模组：");
+            "Fractionate Everything requires the following prerequisite mods to function:",
+            "万物分馏缺少以下前置模组，无法运行：");
+        Register("禁用模组警告标题", "Disabled Mod Warning", "禁用模组警告");
+        Register("禁用模组警告内容",
+            "Fractionate Everything conflicts with the following mods and has automatically disabled them:",
+            "万物分馏与以下模组冲突，已自动禁用它们：");
 
         Register("FE标题", "Fractionate Everything Mod Tips", "万物分馏提示");
         Register("FE内容",
@@ -91,6 +97,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
         AddTranslations();
 
+        //缺少模组提示
         bool dependencyOk = true;
         StringBuilder sb = new StringBuilder("缺少模组警告内容".Translate());
         if (!Chainloader.PluginInfos.ContainsKey(LDBToolPlugin.MODGUID)) {
@@ -122,7 +129,20 @@ public class CheckPlugins : BaseUnityPlugin {
             );
             return;
         }
+        
+        //禁用模组提示
+        if (!Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
+            StringBuilder sb2 = new StringBuilder("禁用模组警告内容".Translate());
+            sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
+            _disableModMessage = sb2.ToString();
+            new Harmony(GUID).Patch(
+                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
+                null,
+                new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
+            );
+        }
 
+        AutoSorter.Compatible();
         BuildToolOpt.Compatible();
         CheatEnabler.Compatible();
         CustomCreateBirthStar.Compatible();
@@ -146,6 +166,22 @@ public class CheckPlugins : BaseUnityPlugin {
     private static void ShowMissingModMessage() {
         UIMessageBox.Show("缺少模组警告标题".Translate(),
             _missingModMessage,
+            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
+            null,
+            () => {
+#if DEBUG
+                Application.OpenURL(Path.Combine(FractionateEverything.ModPath, "CHANGELOG.md"));
+#else
+                Application.OpenURL("FE日志链接".Translate());
+#endif
+            },
+            () => Application.OpenURL("FE交流群链接".Translate())
+        );
+    }
+
+    private static void ShowDisableModMessage() {
+        UIMessageBox.Show("禁用模组警告标题".Translate(),
+            _disableModMessage,
             "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
             null,
             () => {
