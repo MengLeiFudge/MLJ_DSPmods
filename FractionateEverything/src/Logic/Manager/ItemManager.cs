@@ -726,7 +726,7 @@ public static class ItemManager {
 
     public static readonly long[] centerItemCount = new long[12000];
     public static readonly long[] centerItemInc = new long[12000];
-    public static int[] leftInc = new int[3];
+    public static int leftInc = 0;
 
     #endregion
 
@@ -752,15 +752,16 @@ public static class ItemManager {
                 centerItemInc[itemId] = inc;
             }
         }
-        if (version >= 2) {
-            for (int i = 0; i < leftInc.Length; i++) {
-                leftInc[i] = r.ReadInt32();
-            }
+        if (version == 2) {
+            leftInc = r.ReadInt32() + r.ReadInt32() + r.ReadInt32();
+        }
+        if (version >= 3) {
+            leftInc = r.ReadInt32();
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(3);
         List<int> centerItemId = [];
         for (int i = 0; i < centerItemCount.Length; i++) {
             if (centerItemCount[i] > 0) {
@@ -773,9 +774,7 @@ public static class ItemManager {
             w.Write(centerItemCount[itemId]);
             w.Write(centerItemInc[itemId]);
         }
-        for (int i = 0; i < leftInc.Length; i++) {
-            w.Write(leftInc[i]);
-        }
+        w.Write(leftInc);
     }
 
     public static void IntoOtherSave() {
@@ -783,9 +782,7 @@ public static class ItemManager {
             centerItemCount[i] = 0;
             centerItemInc[i] = 0;
         }
-        for (int i = 0; i < leftInc.Length; i++) {
-            leftInc[i] = 0;
-        }
+        leftInc = 0;
     }
 
     #endregion
