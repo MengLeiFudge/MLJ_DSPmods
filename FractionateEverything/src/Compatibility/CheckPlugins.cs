@@ -41,8 +41,8 @@ public class CheckPlugins : BaseUnityPlugin {
     public const string VERSION = PluginInfo.PLUGIN_VERSION;
 
     private static bool _shown;
-    private static string _missingModMessage;
-    private static string _disableModMessage;
+    private static string _missingModsList;
+    private static string _disabledModsList;
 
     /// <summary>
     /// 是否在游戏加载时禁用提示信息。
@@ -61,12 +61,12 @@ public class CheckPlugins : BaseUnityPlugin {
     #endregion
 
     public static void AddTranslations() {
-        Register("缺少模组警告标题", "Missing Mod Warning", "缺少模组警告");
-        Register("缺少模组警告内容",
+        Register("万物分馏缺少模组标题", "Missing Mods", "缺少模组");
+        Register("万物分馏缺少模组内容",
             "Fractionate Everything requires the following prerequisite mods to function:",
             "万物分馏缺少以下前置模组，无法运行：");
-        Register("禁用模组警告标题", "Disabled Mod Warning", "禁用模组警告");
-        Register("禁用模组警告内容",
+        Register("万物分馏禁用模组标题", "Disabled Mod Warning", "禁用模组");
+        Register("万物分馏禁用模组内容",
             "Fractionate Everything conflicts with the following mods and has automatically disabled them:",
             "万物分馏与以下模组冲突，已自动禁用它们：");
 
@@ -99,7 +99,7 @@ public class CheckPlugins : BaseUnityPlugin {
 
         //缺少模组提示
         bool dependencyOk = true;
-        StringBuilder sb = new StringBuilder("缺少模组警告内容".Translate());
+        StringBuilder sb = new StringBuilder();
         if (!Chainloader.PluginInfos.ContainsKey(LDBToolPlugin.MODGUID)) {
             dependencyOk = false;
             sb.Append($"\nLDBTool ({LDBToolPlugin.MODGUID})");
@@ -121,7 +121,7 @@ public class CheckPlugins : BaseUnityPlugin {
             sb.Append($"\nNebulaMultiplayerModAPI ({NebulaMultiplayerModAPI.GUID})");
         }
         if (!dependencyOk) {
-            _missingModMessage = sb.ToString();
+            _missingModsList = sb.ToString();
             new Harmony(GUID).Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
                 null,
@@ -129,12 +129,12 @@ public class CheckPlugins : BaseUnityPlugin {
             );
             return;
         }
-        
+
         //禁用模组提示
         if (!Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
-            StringBuilder sb2 = new StringBuilder("禁用模组警告内容".Translate());
+            StringBuilder sb2 = new StringBuilder();
             sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
-            _disableModMessage = sb2.ToString();
+            _disabledModsList = sb2.ToString();
             new Harmony(GUID).Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
                 null,
@@ -164,8 +164,8 @@ public class CheckPlugins : BaseUnityPlugin {
     }
 
     private static void ShowMissingModMessage() {
-        UIMessageBox.Show("缺少模组警告标题".Translate(),
-            _missingModMessage,
+        UIMessageBox.Show("万物分馏缺少模组标题".Translate(),
+            "万物分馏缺少模组内容".Translate() + _missingModsList,
             "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
             null,
             () => {
@@ -180,8 +180,8 @@ public class CheckPlugins : BaseUnityPlugin {
     }
 
     private static void ShowDisableModMessage() {
-        UIMessageBox.Show("禁用模组警告标题".Translate(),
-            _disableModMessage,
+        UIMessageBox.Show("万物分馏禁用模组标题".Translate(),
+            "万物分馏禁用模组内容".Translate() + _disabledModsList,
             "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
             null,
             () => {
