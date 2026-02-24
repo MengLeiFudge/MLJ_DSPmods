@@ -1110,102 +1110,104 @@ public static partial class Utils {
 
     #region 物流交互站自动喷涂
 
-    private static readonly int[] proliferatorIDs = { I增产剂MkI, I增产剂MkII, I增产剂MkIII };
-    private static readonly int[] baseUseCounts = { 12, 30, 60 };
-    private static readonly int[] basePoints = { 1, 2, 4 };
-
-    // 存储：[增产剂等级0-2, 自身携带点数0-10] = 该增产剂总共能提供的喷涂点数
-    private static readonly int[,] totalPointsLookup = new int[3, 11];
+    private static readonly int[] plrIDs = [I增产剂MkI, I增产剂MkII, I增产剂MkIII];
+    private static readonly int[] plrBaseUseCounts = [12, 24, 60];
+    private static readonly int[] plrBasePoints = [1, 2, 4];
+    /// <summary>
+    /// [增产剂MkI-MkIII, 自身携带点数0-10] = 该增产剂可提供的点数总和
+    /// </summary>
+    private static readonly int[,] plrTotalPoints = new int[3, 11];
 
     private static int _authInitializer = InitLookup();
 
     private static int InitLookup() {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j <= 10; j++) {
-                // 额外次数 = 基础次数 * 增加比例 (来自 Cargo.incTableMilli)
-                double bonusPercent = Cargo.incTableMilli[j];
-                int extraUses = (int)(baseUseCounts[i] * bonusPercent + 1e-6);// 加微小值防止浮点误差
-                int totalUses = baseUseCounts[i] + extraUses;
-
-                // 如果是自喷涂，消耗1次掉，剩下 totalUses - 1 次服务于其他物品
-                // 注意：如果 j=0 说明没喷涂，则不减去自消耗
-                int effectiveUses = (j > 0) ? (totalUses - 1) : totalUses;
-                totalPointsLookup[i, j] = effectiveUses * basePoints[i];
+                int useCount = (int)(plrBaseUseCounts[i] * (1 + Cargo.incTableMilli[j]) + 1e-6);
+                plrTotalPoints[i, j] = useCount * plrBasePoints[i];
             }
         }
         return 1;
     }
 
-    public static long[] leftInc = new long[3];// 三个独立的水池
-    private const long TARGET_CAPACITY = 40000;// 每个池子的目标保水量
-
     /// <summary>
-    /// 核心消耗逻辑：从高到低尝试喷涂
+    /// 消耗池内点数，将物品的增产点数提升到至多4点。
     /// </summary>
     public static void AddIncToItem(int itemCount, ref int itemInc) {
-        // i=2: MkIII (4点), i=1: MkII (2点), i=0: MkI (1点)
-        for (int i = 2; i >= 0; i--) {
-            int targetTotal = itemCount * basePoints[i];
-
-            // 如果当前物品的点数已经达到或超过该档位，直接跳过
-            if (itemInc >= targetTotal) continue;
-
-            // 检查当前档位的水池是否够用
-            int need = targetTotal - itemInc;
-            if (leftInc[i] < need) {
-                RefillInc(i);// 触发该档位专属的注水操作
-            }
-
-            // 从该档位水池取水
-            long take = Math.Min((long)need, leftInc[i]);
-            itemInc += (int)take;
-            leftInc[i] -= take;
-
-            // 如果补满了，就不用再看低级药剂了
-            if (itemInc >= targetTotal) return;
+        //如果本身携带的平均点数有4点，直接跳过
+        int targetTotal = itemCount * plrBasePoints[2];
+        if (itemInc >= targetTotal) {
+            return;
         }
-    }
-
-    /// <summary>
-    /// 核心补给逻辑：针对特定等级注水
-    /// </summary>
-    private static void RefillInc(int index) {
-        int plrId = proliferatorIDs[index];
-
-        // 锁定数据中心操作，防止多人模式或多线程冲突
         lock (centerItemCount) {
-            if (centerItemCount[plrId] <= 0) return;
-
-            long gap = TARGET_CAPACITY - leftInc[index];
-            if (gap <= 0) return;
-
-            // 1. 预估：按该药剂基础能提供的点数计算
-            int singleBasePoints = baseUseCounts[index] * basePoints[index];
-            int countToTake = (int)((gap + singleBasePoints - 1) / singleBasePoints);
-
-            // 限制单次提取量，避免单次锁时间过长 (限制为 200 个)
-            countToTake = Math.Min(countToTake, 200);
-
-            // 2. 提取
-            int actualTake = TakeItemFromModData(plrId, countToTake, out int totalSelfInc);
-            if (actualTake <= 0) return;
-
-            // 3. 计算提取到的平均增产点数
-            int avgInc = totalSelfInc / actualTake;
-            avgInc = Math.Min(10, avgInc);
-
-            // 4. 自喷涂升级（内部闭环）：
-            // 如果池子里原本就有超过 4 点的点数，我们拿 4 点出来给这个刚取出来的药剂喷上
-            // 这样它能产出的点数会从 (基础次*点数) 变成 (基础+额外-1)*点数
-            if (avgInc < 4 && leftInc[index] >= 4) {
-                // 简单处理：只要有水就默认消耗 4 点把它升到最高级（4点）
-                // 这是最高效的工业逻辑
-                leftInc[index] -= 4;
-                avgInc = 4;
+            int need = targetTotal - itemInc;
+            //如果池内点数不足，尝试用各种增产剂（高级增产剂优先）补充点数
+            //需要考虑自喷涂影响；不足的情况下尽量一次性补充大量点数以减少运算消耗
+            if (leftInc < need) {
+                //i=2: MkIII (4点), i=1: MkII (2点), i=0: MkI (1点)
+                for (int i = 2; i >= 0; i--) {
+                    //本次喷涂预估需要need / plrBasePoints[i] + 1，额外再拿plrBaseUseCounts[i] * 2个
+                    int needCount = need / plrBasePoints[i] + 1 + plrBaseUseCounts[i] * 2;
+                    //取增产剂
+                    int actualTake = TakeItemFromModData(plrIDs[i], needCount, out int actualInc);
+                    if (actualTake == 0) {
+                        continue;
+                    }
+                    if (actualInc >= actualTake * 4) {
+                        // 1. 增产剂平均点数 >= 4 (例如平均 7.5 点)
+                        // 计算高点位 (Ceil) 和 低点位 (Floor)
+                        int highPoint = (actualInc + actualTake - 1) / actualTake;// 向上取整
+                        int lowPoint = highPoint - 1;
+                        // 设 highCount * highPoint + lowCount * lowPoint = actualInc
+                        // 且 highCount + lowCount = actualTake
+                        // 解得：highCount = actualInc - actualTake * lowPoint
+                        int highCount = actualInc - (actualTake * lowPoint);
+                        int lowCount = actualTake - highCount;
+                        leftInc += highCount * plrTotalPoints[i, Math.Min(10, highPoint)];
+                        leftInc += lowCount * plrTotalPoints[i, Math.Min(10, lowPoint)];
+                    } else {
+                        // 2. 增产剂平均点数 < 4
+                        int needToUpgrade = actualTake * 4 - actualInc;
+                        if (leftInc >= needToUpgrade) {
+                            // 2a. 点数池充足，消耗点数将这些增产剂全部“补齐”到 4 点级别
+                            leftInc -= needToUpgrade;
+                            leftInc += actualTake * (plrTotalPoints[i, 4]);
+                        } else {
+                            // 2b. 点数池也不够，执行极限“自喷涂”
+                            // 优先把现有的点数给一部分药剂喷到4点，剩下的药剂没水喷了，执行自喷涂逻辑
+                            // 自喷涂逻辑：消耗该药剂自身的 1 次（即 plrBasePoints[i] 点）来换取全额增产
+                            // 先计算目前 leftInc 能把多少个药剂强行提升到 4 点
+                            // 每提升一个需要：4点 - 该药剂当前平均携带点数
+                            float avgNow = (float)actualInc / actualTake;
+                            float costPerItem = 4.0f - avgNow;
+                            int canUpgradeCount = (int)(leftInc / costPerItem);
+                            if (canUpgradeCount > actualTake) canUpgradeCount = actualTake;
+                            // 剩下的只能靠自喷涂（消耗自身点数）
+                            int selfSprayCount = actualTake - canUpgradeCount;
+                            // 处理提升的部分
+                            leftInc -= (int)(canUpgradeCount * costPerItem);
+                            leftInc += canUpgradeCount * plrTotalPoints[i, 4];
+                            // 处理自喷涂部分：视为0点喷涂，但扣除一次消耗
+                            // 逻辑：(基础次数 * (1 + 0喷涂增益) - 1次自消耗) * 基础点数
+                            // 对应之前定义的 plrTotalPoints[i, 0] 是不扣消耗的，
+                            // 所以此处应为：plrTotalPoints[i, 0] - plrBasePoints[i]
+                            leftInc += selfSprayCount * (plrTotalPoints[i, 4] - plrBasePoints[i]);
+                        }
+                    }
+                    //如果点数池充足，跳出循环
+                    if (leftInc >= need) {
+                        break;
+                    }
+                }
             }
-
-            // 5. 注入池子
-            leftInc[index] += (long)actualTake * totalPointsLookup[index, avgInc];
+            //用池内点数补足物品点数
+            if (leftInc >= need) {
+                itemInc += need;
+                leftInc -= need;
+            } else {
+                itemInc += leftInc;
+                leftInc = 0;
+            }
         }
     }
 
