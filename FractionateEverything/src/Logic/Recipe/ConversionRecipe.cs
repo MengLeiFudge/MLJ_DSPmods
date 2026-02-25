@@ -183,12 +183,6 @@ public class ConversionRecipe : BaseRecipe {
         // CreateChain([[IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE回收塔原胚]]);
         // CreateChain([[IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔]]);
         CreateChain([[IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华]]);
-        CreateChain([[IBC插件效果分享塔], [IBC插件效果分享站]]);
-        CreateChain([
-            [IBC速度插件MK1, IBC产能插件MK1, IBC节能插件MK1, IBC品质插件MK1],
-            [IBC速度插件MK2, IBC产能插件MK2, IBC节能插件MK2, IBC品质插件MK2],
-            [IBC速度插件MK3, IBC产能插件MK3, IBC节能插件MK3, IBC品质插件MK3]
-        ]);
     }
 
     /// <summary>
