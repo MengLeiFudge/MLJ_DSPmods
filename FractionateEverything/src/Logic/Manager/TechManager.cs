@@ -475,7 +475,7 @@ public static class TechManager {
         var tech量子复制 = ProtoRegistry.RegisterTech(
             TFE量子复制, "T量子复制", "量子复制描述", "量子复制结果", "Assets/fe/tech量子复制",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE量子复制塔],
             GetTechPos(2, 5)
         );
@@ -487,7 +487,7 @@ public static class TechManager {
         var tech物品点金 = ProtoRegistry.RegisterTech(
             TFE物品点金, "T物品点金", "物品点金描述", "物品点金结果", "Assets/fe/tech物品点金",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE点金塔],
             GetTechPos(2, 6)
         );
@@ -499,7 +499,7 @@ public static class TechManager {
         var tech物品分解 = ProtoRegistry.RegisterTech(
             TFE物品分解, "T物品分解", "物品分解描述", "物品分解结果", "Assets/fe/tech物品分解",
             [],
-            [IFE万物分馏科技解锁提示], [1], 3600000,
+            [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE分解塔],
             GetTechPos(2, 7)
         );
