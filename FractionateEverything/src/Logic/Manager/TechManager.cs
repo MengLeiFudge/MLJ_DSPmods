@@ -149,8 +149,8 @@ public static class TechManager {
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            "COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.",
-            "主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
+            $"COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
@@ -160,8 +160,8 @@ public static class TechManager {
 
         Register("T矿物复制", "Mineral Replication", "矿物复制");
         Register("矿物复制描述",
-            "During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.",
-            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。");
+            $"During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("矿物复制结果",
             "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
@@ -169,24 +169,24 @@ public static class TechManager {
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.",
-            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。");
+            $"Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("增产点数聚集结果",
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...",
-            "物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……");
+            $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("物品转化结果",
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
 
         Register("T物品回收", "Item Deconstruction", "物品回收");
         Register("物品回收描述",
-            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
-            "物品回收科技可以将物品回收成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+            $"Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"物品回收科技可以将物品回收成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("物品回收结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
             "你已经掌握了物品回收技术，可以将物品回收成制作它的原料了。");
@@ -207,8 +207,6 @@ public static class TechManager {
         Register("星际物流交互结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
             "你已经掌握了星际物流交互技术，可以将星际物流交互成制作它的原料了。");
-
-
     }
 
     /// <summary>
@@ -479,7 +477,7 @@ public static class TechManager {
             TFE行星内物流交互, "T行星内物流交互", "行星内物流交互描述", "行星内物流交互结果", tech行星物流系统.IconPath,
             [],
             [..tech行星物流系统.Items], [..tech行星物流系统.ItemPoints], tech行星物流系统.HashNeeded,
-            [],
+            [RFE行星内物流交互站],
             GetTechPos(2, 7)
         );
         tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech行星物流系统.ID];
@@ -492,7 +490,7 @@ public static class TechManager {
             TFE星际物流交互, "T星际物流交互", "星际物流交互描述", "星际物流交互结果", tech星际物流系统.IconPath,
             [],
             [..tech星际物流系统.Items], [..tech星际物流系统.ItemPoints], tech星际物流系统.HashNeeded,
-            [],
+            [RFE星际物流交互站],
             GetTechPos(2, 8)
         );
         tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech星际物流系统.ID];

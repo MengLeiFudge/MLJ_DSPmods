@@ -41,7 +41,7 @@ public static class PlanetaryInteractionStation {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
             ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE交互塔], [1, 12], [IFE行星内物流交互站], [1],
-            "I行星内物流交互站", T行星物流系统, item.GridIndex, item.Name, item.IconPath);
+            "I行星内物流交互站", TFE行星内物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         item.IconTag = "xxnjhz";
