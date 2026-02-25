@@ -29,7 +29,7 @@ public static class InterstellarInteractionStation {
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
         recipe = ProtoRegistry.RegisterRecipe(RFE星际物流交互站,
             ERecipeType.Assemble, 1800, [I星际物流运输站, IFE交互塔], [1, 12], [IFE星际物流交互站], [1],
-            "I星际物流交互站", T星际物流系统, item.GridIndex, item.Name, item.IconPath);
+            "I星际物流交互站", TFE星际物流交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
         item.IconTag = "xjjhz";
