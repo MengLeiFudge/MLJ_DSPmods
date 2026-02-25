@@ -16,7 +16,7 @@ public static class InteractionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.8f, 0.3f, 0.6f);
+    public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;

@@ -23,7 +23,7 @@ public static class ConversionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.7f, 0.6f, 0.8f);
+    public static Color color = new(0.7f, 0.6f, 0.8f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
