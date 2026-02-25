@@ -1,930 +1,931 @@
 - v2.3.0
-    + 移除点金塔、分解塔、量子复制塔。
-    + 配方奖池新增“原版配方核心”，可强化原版配方；同时大幅提升分馏配方核心的抽取概率。
-    + 移除配方的品质，重新设计了升级曲线，回响上限由5改为40。
-    + 配方的效果大幅提升，改为使用“配方等级+回响个数”综合判定配方效果，最高可到3倍。
-    + 配方奖池添加“原版配方核心”，新增修改原版配方的相关可视化页面。
-    + 配方数目大幅减少，每个配方回响上限提升至40，“分馏配方核心”的出货率变为5倍。
-    + 全新配方效果体系，初始100%强度，等级+回响>=51时达到最高300%强度。
-    + 建筑强化对主产物数目增幅改为独立乘区。
-    + 修复各种新版本迁移问题，新增了回收塔、行星交互站、星际交互站科技。
-    + 暂时屏蔽了所有回收配方，回收塔暂时没用了。
-    + 初步添加符文系统，现在只能抽，还有升级 分解，但是加成没有实装
-    + 为符文添加一键分解 筛选 排序功能
-    + 降低配方进度对主产物数目的增幅。（+200%->+50%）
-    + 添加了是否启用双击背包自动转移物品到数据中心的开关。
-    + 修复了配方数据统计信息的显示。
-    + 修改了“数据中心”页面的物品显示，现在改为可翻页的设计。
-    + 符文系统暂时仍未处理，目前正在调整部分平衡性数据（当前有130个配方左右，考虑减少回响的需求量）
-    + 禁用AutoSorter模组。
-    + 修复G键指引缺失的问题。
-    + 修复下拉框显示错误的问题。
-    + 调整点数池逻辑，任何增产剂都以至少4点添加到点数池中。
+    - 移除点金塔、分解塔、量子复制塔。
+    - 配方奖池新增“原版配方核心”，可强化原版配方；同时大幅提升分馏配方核心的抽取概率。
+    - 移除配方的品质，重新设计了升级曲线，回响上限由5改为40。
+    - 配方的效果大幅提升，改为使用“配方等级+回响个数”综合判定配方效果，最高可到3倍。
+    - 配方奖池添加“原版配方核心”，新增修改原版配方的相关可视化页面。
+    - 配方数目大幅减少，每个配方回响上限提升至40，“分馏配方核心”的出货率变为5倍。
+    - 全新配方效果体系，初始100%强度，等级+回响>=51时达到最高300%强度。
+    - 建筑强化对主产物数目增幅改为独立乘区。
+    - 修复各种新版本迁移问题，新增了回收塔、行星交互站、星际交互站科技。
+    - 暂时屏蔽了所有回收配方，回收塔暂时没用了。
+    - 初步添加符文系统，现在只能抽，还有升级 分解，但是加成没有实装
+    - 为符文添加一键分解 筛选 排序功能
+    - 降低配方进度对主产物数目的增幅。（+200%->+50%）
+    - 添加了是否启用双击背包自动转移物品到数据中心的开关。
+    - 修复了配方数据统计信息的显示。
+    - 修改了“数据中心”页面的物品显示，现在改为可翻页的设计。
+    - 符文系统暂时仍未处理，目前正在调整部分平衡性数据（当前有130个配方左右，考虑减少回响的需求量）
+    - 禁用AutoSorter模组。
+    - 修复G键指引缺失的问题。
+    - 修复下拉框显示错误的问题。
+    - 调整点数池逻辑，任何增产剂都以至少4点添加到点数池中。
+    - 将物流交互站拆分到新的科技中。
 
 - v2.2.3
-    + 调整物流交互站阈值设置。
-    + 适配联机Mod（NebulaMultiplayerMod）。
-    + Adjust the Logistics Interaction Station threshold setting.
-    + Adaptation of the multiplayer mod (NebulaMultiplayerMod).
+    - 调整物流交互站阈值设置。
+    - 适配联机Mod（NebulaMultiplayerMod）。
+    - Adjust the Logistics Interaction Station threshold setting.
+    - Adaptation of the multiplayer mod (NebulaMultiplayerMod).
 
 - v2.2.2
-    + 修复未解锁物流背包前，双击移动物品功能失效的问题。
-    + 修复分馏塔相关科技解锁时，没有提示的问题。
-    + 修复物流交互站“使用强化上限”勾选时，仍使用科技上限的问题。
-    + 修复非沙盒模式下，获取经验倍率仍然计算沙盒经验加成的问题。
-    + 调整了大多数描述，使其便于理解。
-    + 添加了指引（按G键查阅）。
-    + 量子复制科技从隐藏科技改为普通科技，解锁方式与其他分馏塔科技相同。
-    + 量子复制配方需要到下一矩阵层次才能抽取。
-    + 量子复制前会检测当前精华是否满足消耗的最大可能数目，不满足不会复制。
-    + 物流交互站的上传/下载速率不再受固定数目限制，而是根据当前电量变化。
-    + 原版物流运输站可升级为物流交互站。
-    + 调整了分馏塔原胚的价格，以及培养原胚的产物。
-    + 修复某些情况下无法使用分馏数据中心物品的问题。
-    + 配方详细信息增加开关，降低解锁需求。
-    + Fixed the issue that the double-click to move items function did not work before unlocking the logistics backpack.
-    + Fixed the issue that there is no prompt when unlocking technology related to Fractionation Tower.
-    + Fixed the issue that the technology limit is still used when ‘Use reinforcement limit’ is ticked in Logistics
+    - 修复未解锁物流背包前，双击移动物品功能失效的问题。
+    - 修复分馏塔相关科技解锁时，没有提示的问题。
+    - 修复物流交互站“使用强化上限”勾选时，仍使用科技上限的问题。
+    - 修复非沙盒模式下，获取经验倍率仍然计算沙盒经验加成的问题。
+    - 调整了大多数描述，使其便于理解。
+    - 添加了指引（按G键查阅）。
+    - 量子复制科技从隐藏科技改为普通科技，解锁方式与其他分馏塔科技相同。
+    - 量子复制配方需要到下一矩阵层次才能抽取。
+    - 量子复制前会检测当前精华是否满足消耗的最大可能数目，不满足不会复制。
+    - 物流交互站的上传/下载速率不再受固定数目限制，而是根据当前电量变化。
+    - 原版物流运输站可升级为物流交互站。
+    - 调整了分馏塔原胚的价格，以及培养原胚的产物。
+    - 修复某些情况下无法使用分馏数据中心物品的问题。
+    - 配方详细信息增加开关，降低解锁需求。
+    - Fixed the issue that the double-click to move items function did not work before unlocking the logistics backpack.
+    - Fixed the issue that there is no prompt when unlocking technology related to Fractionation Tower.
+    - Fixed the issue that the technology limit is still used when ‘Use reinforcement limit’ is ticked in Logistics
       Interactive Station.
-    + Fixed an issue where the experience multiplier still counts as sandbox experience when not in sandbox mode.
-    + Adjusted most descriptions to make them easier to understand.
-    + Added guidelines (press G to access).
-    + Quantum Replication tech has been changed from a hidden tech to a normal tech, unlocked in the same way as other
+    - Fixed an issue where the experience multiplier still counts as sandbox experience when not in sandbox mode.
+    - Adjusted most descriptions to make them easier to understand.
+    - Added guidelines (press G to access).
+    - Quantum Replication tech has been changed from a hidden tech to a normal tech, unlocked in the same way as other
       Fractionator techs.
-    + Quantum Replication recipes need to go to the next matrix level to be extracted.
-    + Before quantum replication, it will detect if the current essence meets the maximum possible number of
+    - Quantum Replication recipes need to go to the next matrix level to be extracted.
+    - Before quantum replication, it will detect if the current essence meets the maximum possible number of
       consumptions, and will not replicate if it doesn't.
-    + The upload/download rate of Logistics Interactive Stations is no longer limited by a fixed number, but varies
+    - The upload/download rate of Logistics Interactive Stations is no longer limited by a fixed number, but varies
       based on current power.
-    + Original Logistics Transport Station can be upgraded to Logistics Interaction Station.
-    + Adjusted the price of Fractionation Tower proto-germs, as well as the product of culturing proto-germs.
-    + Fixed an issue that prevented the use of Fractionation Data Centre items in some cases.
-    + Recipe details added switches to reduce unlock requirements.
+    - Original Logistics Transport Station can be upgraded to Logistics Interaction Station.
+    - Adjusted the price of Fractionation Tower proto-germs, as well as the product of culturing proto-germs.
+    - Fixed an issue that prevented the use of Fractionation Data Centre items in some cases.
+    - Recipe details added switches to reduce unlock requirements.
 
 - v2.2.1
-    + 修复图标集Destroy的一个错误。
-    + Fix a bug in the icon set Destroy.
+    - 修复图标集Destroy的一个错误。
+    - Fix a bug in the icon set Destroy.
 
 - v2.2.0
-    + 建筑调整。
-        + 修复交互塔上传的物品不带增产点数的问题。
-        + 交互塔正面输入时，将会显示交互模式，并按正常工作状态耗电。
-        + 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
-        + 物流交互站调整。
-            + 未锁定且供应，或锁定且需求时，如果塔内物品过少，将从分馏数据中心下载一些物品到塔中。
-            + 未锁定且需求，或锁定且供应时，如果塔内物品过多且中心物品不足，将从塔上传一些物品到分馏数据中心中。
-            + 可以在分馏数据中心的设置页面调整上传/下载阈值。
-            + 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
-            + 未锁定且本地仓储时，塔内物品数目将尽量维持在上限的一半。
-            + 锁定且本地仓储时，塔内物品数目将尽量与中心保持相同。
-            + 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
-            + 可以用芯片提升物流交互站的输出堆叠（每次消耗6芯片），最多升至4堆叠。
-            + 可以用芯片强化物流交互站，减少上传/下载物品消耗的电力，最多减少90%。
-            + 下载物品时，会尽量下载增产点数4点及以上的物品。
-    + 配方调整。
-        + 移除一部分转化配方。
-        + 修复转化配方输出异常的问题。
-        + 量子复制的精华消耗减少从仅在金色配方减少改为均匀分散到整个升级中。
-        + 分解配方得到的沙土将以实体形式输出，以适配某些需要沙土物品的mod。
-        + 大幅提升配方经验获取速度，降低沙土兑换经验比例。
-        + 移除定向原胚的合成配方，调整所有原胚、分馏塔、物流交互站的价值。
-        + 下调精华价值（500->200）。
-    + 科技调整。
-        + 调整超值礼包科技的奖励，给予更多的核心、芯片。
-        + 下调量子复制科技需要的哈希值，可以更快研究。
-        + 调整科技的依赖关系，确保科技按照正确的顺序解锁。
-    + 分馏数据中心调整。
-        + 建筑强化调整。
-            + 分馏永动需要的芯片由5降低至2，且只有流动输出堆叠启用、产物输出堆叠达到4时，才可以升级此项。
-            + 添加一键强化按钮。
-        + 物品交互支持沙土相关操作。
-        + 奖券抽奖调整。
-            + 现在，奖池被拆分为四个：配方奖池、原胚奖池、材料奖池、建筑奖池。
-                + 配方奖池可以抽取分馏配方、分馏配方核心、分馏精华。
-                + 原胚奖池可以抽取分馏塔原胚、分馏塔增幅芯片。
-                + 材料奖池可以抽取已解锁的材料（不含矩阵、奖券）。
-                + 建筑奖池可以抽取已解锁的建筑（不含新增分馏塔、物流交互站）。
-            + 重构了抽奖逻辑，调整了各个奖项的概率和数目。现在抽奖遵循等价原则。
-            + 配方奖池只能抽出同级配方。
-            + 自动百连在面板关闭时也能正常执行。
-            + 抽奖的奖品不再进入背包，而是直接存储在分馏数据中心。
-        + 限时商店调整。
-            + 限时商店仅在“物品交互”科技研究后启用。
-            + 刷新时，自动兑换所有价值为0的物品/配方。
-            + 移除矩阵兑换项。
-            + 兑换的物品不再进入背包，而是直接存储在分馏数据中心。
-        + 配方图鉴添加“完全升级”的数目显示。
-        + 添加VIP系统。
-            + 使用奖券抽奖，或在限时商店购买物品，可以获取经验、提升VIP等级。
-            + VIP等级越高，抽奖时将会获得更多奖励。
-            + VIP等级越高，限时商店的免费项数目越多，购买折扣越大。
-    + 玩家背包排序优化。
-        + 单击时，会将背包内物品尽可能转移到已设置的物流槽位中。
-        + “物品交互”科技研究后，双击时，将背包内的所有物品转移到分馏数据中心（物流背包不受影响）。
-    + 深空来敌完成任务链物品要求、刷新元驱动、重置授权点时，可以使用分馏数据中心的物品。
-    + Building adjustments.
-        + Fixed an issue where items uploaded via the Interaction Tower did not carry proliferator points.
-        + When inputting at the front of the Interaction Tower, the interaction mode will be displayed and power
+    - 建筑调整。
+        - 修复交互塔上传的物品不带增产点数的问题。
+        - 交互塔正面输入时，将会显示交互模式，并按正常工作状态耗电。
+        - 下调增产点数对量子复制塔耗电的影响，10增产点数耗电从4.9倍减少至2.0倍。
+        - 物流交互站调整。
+            - 未锁定且供应，或锁定且需求时，如果塔内物品过少，将从分馏数据中心下载一些物品到塔中。
+            - 未锁定且需求，或锁定且供应时，如果塔内物品过多且中心物品不足，将从塔上传一些物品到分馏数据中心中。
+            - 可以在分馏数据中心的设置页面调整上传/下载阈值。
+            - 星际仓储时，策略按本地策略判断（相当于行星内物流交互站）。
+            - 未锁定且本地仓储时，塔内物品数目将尽量维持在上限的一半。
+            - 锁定且本地仓储时，塔内物品数目将尽量与中心保持相同。
+            - 上传/下载需要消耗一定电量，物品数目越多、价值越高，消耗的电量就越大。
+            - 可以用芯片提升物流交互站的输出堆叠（每次消耗6芯片），最多升至4堆叠。
+            - 可以用芯片强化物流交互站，减少上传/下载物品消耗的电力，最多减少90%。
+            - 下载物品时，会尽量下载增产点数4点及以上的物品。
+    - 配方调整。
+        - 移除一部分转化配方。
+        - 修复转化配方输出异常的问题。
+        - 量子复制的精华消耗减少从仅在金色配方减少改为均匀分散到整个升级中。
+        - 分解配方得到的沙土将以实体形式输出，以适配某些需要沙土物品的mod。
+        - 大幅提升配方经验获取速度，降低沙土兑换经验比例。
+        - 移除定向原胚的合成配方，调整所有原胚、分馏塔、物流交互站的价值。
+        - 下调精华价值（500->200）。
+    - 科技调整。
+        - 调整超值礼包科技的奖励，给予更多的核心、芯片。
+        - 下调量子复制科技需要的哈希值，可以更快研究。
+        - 调整科技的依赖关系，确保科技按照正确的顺序解锁。
+    - 分馏数据中心调整。
+        - 建筑强化调整。
+            - 分馏永动需要的芯片由5降低至2，且只有流动输出堆叠启用、产物输出堆叠达到4时，才可以升级此项。
+            - 添加一键强化按钮。
+        - 物品交互支持沙土相关操作。
+        - 奖券抽奖调整。
+            - 现在，奖池被拆分为四个：配方奖池、原胚奖池、材料奖池、建筑奖池。
+                - 配方奖池可以抽取分馏配方、分馏配方核心、分馏精华。
+                - 原胚奖池可以抽取分馏塔原胚、分馏塔增幅芯片。
+                - 材料奖池可以抽取已解锁的材料（不含矩阵、奖券）。
+                - 建筑奖池可以抽取已解锁的建筑（不含新增分馏塔、物流交互站）。
+            - 重构了抽奖逻辑，调整了各个奖项的概率和数目。现在抽奖遵循等价原则。
+            - 配方奖池只能抽出同级配方。
+            - 自动百连在面板关闭时也能正常执行。
+            - 抽奖的奖品不再进入背包，而是直接存储在分馏数据中心。
+        - 限时商店调整。
+            - 限时商店仅在“物品交互”科技研究后启用。
+            - 刷新时，自动兑换所有价值为0的物品/配方。
+            - 移除矩阵兑换项。
+            - 兑换的物品不再进入背包，而是直接存储在分馏数据中心。
+        - 配方图鉴添加“完全升级”的数目显示。
+        - 添加VIP系统。
+            - 使用奖券抽奖，或在限时商店购买物品，可以获取经验、提升VIP等级。
+            - VIP等级越高，抽奖时将会获得更多奖励。
+            - VIP等级越高，限时商店的免费项数目越多，购买折扣越大。
+    - 玩家背包排序优化。
+        - 单击时，会将背包内物品尽可能转移到已设置的物流槽位中。
+        - “物品交互”科技研究后，双击时，将背包内的所有物品转移到分馏数据中心（物流背包不受影响）。
+    - 深空来敌完成任务链物品要求、刷新元驱动、重置授权点时，可以使用分馏数据中心的物品。
+    - Building adjustments.
+        - Fixed an issue where items uploaded via the Interaction Tower did not carry proliferator points.
+        - When inputting at the front of the Interaction Tower, the interaction mode will be displayed and power
           consumption will proceed as per normal operational status.
-        + Reduced the impact of proliferator points on the Quantum Duplication Tower's power consumption; power usage
+        - Reduced the impact of proliferator points on the Quantum Duplication Tower's power consumption; power usage
           for 10 proliferator points has been reduced from 4.9 times to 2.0 times.
-        + Logistics Interchange Station Adjustments.
-            + When unlocked and in supply, or locked and in demand, if the tower holds insufficient items, some items
+        - Logistics Interchange Station Adjustments.
+            - When unlocked and in supply, or locked and in demand, if the tower holds insufficient items, some items
               will be downloaded from the fractionation data centre to the tower.
-            + When unlocked and in demand, or locked and in supply, if the tower holds excessive items and the centre
+            - When unlocked and in demand, or locked and in supply, if the tower holds excessive items and the centre
               lacks sufficient stock, some items will be uploaded from the tower to the fractionation data centre.
-            + Upload/download thresholds may be adjusted via the fractionation data centre settings page.
-            + During interstellar storage, the strategy follows local protocols (equivalent to planetary logistics
+            - Upload/download thresholds may be adjusted via the fractionation data centre settings page.
+            - During interstellar storage, the strategy follows local protocols (equivalent to planetary logistics
               hubs).
-            + When unlocked and locally stored, the tower's inventory will endeavour to maintain half the maximum
+            - When unlocked and locally stored, the tower's inventory will endeavour to maintain half the maximum
               capacity.
-            + When locked and using local storage, the tower's item count will strive to match the central storage.
-            + Uploading/downloading consumes power; higher item quantities and values increase power expenditure.
-            + Chips may be used to enhance the logistics hub's output stacking (6 chips per upgrade), up to a maximum of
+            - When locked and using local storage, the tower's item count will strive to match the central storage.
+            - Uploading/downloading consumes power; higher item quantities and values increase power expenditure.
+            - Chips may be used to enhance the logistics hub's output stacking (6 chips per upgrade), up to a maximum of
               4 stacks.
-            + Chips may be used to reinforce the Logistics Interface Station, reducing power consumption for
+            - Chips may be used to reinforce the Logistics Interface Station, reducing power consumption for
               uploading/downloading items by up to 90%.
-            + When downloading items, priority is given to downloading items with proliferator points of 4 or higher.
-    + Recipe adjustments.
-        + Removed certain conversion recipes.
-        + Fixed abnormal conversion recipe output issues.
-        + Quantum Duplication Essence consumption reduction now evenly distributed across the entire upgrade process,
+            - When downloading items, priority is given to downloading items with proliferator points of 4 or higher.
+    - Recipe adjustments.
+        - Removed certain conversion recipes.
+        - Fixed abnormal conversion recipe output issues.
+        - Quantum Duplication Essence consumption reduction now evenly distributed across the entire upgrade process,
           rather than solely affecting golden recipes.
-        + Sand obtained from decomposition recipes will now output as solid entities to accommodate mods requiring sand
+        - Sand obtained from decomposition recipes will now output as solid entities to accommodate mods requiring sand
           items.
-        + Significantly increased recipe experience gain rate while reducing the experience ratio for sand exchange.
-        + Removed synthesis recipes for specific primal forms, adjusted values for all primal forms, fractionators, and
+        - Significantly increased recipe experience gain rate while reducing the experience ratio for sand exchange.
+        - Removed synthesis recipes for specific primal forms, adjusted values for all primal forms, fractionators, and
           logistics hubs.
-        + Reduced essence value (500->200).
-    + Technology adjustments.
-        + Revised rewards for the Value Pack technology, granting increased cores and chips.
-        + Reduced hash value requirements for Quantum Cloning technology, enabling faster research.
-        + Adjusted technology dependencies to ensure correct unlock sequence.
-    + fractionation data centre adjustments.
-        + Building enhancement adjustments.
-            + The chips required for Distillation Perpetual Motion have been reduced from 5 to 2. This upgrade may only
+        - Reduced essence value (500->200).
+    - Technology adjustments.
+        - Revised rewards for the Value Pack technology, granting increased cores and chips.
+        - Reduced hash value requirements for Quantum Cloning technology, enabling faster research.
+        - Adjusted technology dependencies to ensure correct unlock sequence.
+    - fractionation data centre adjustments.
+        - Building enhancement adjustments.
+            - The chips required for Distillation Perpetual Motion have been reduced from 5 to 2. This upgrade may only
               be activated when the Flow Output Stack is enabled and the Product Output Stack reaches level 4.
-            + A one-click enhancement button has been added.
-        + Item interactions now support sand-related operations.
-        + Prize draw adjustments.
-            + The prize pool is now divided into four categories: recipes pool, prototype pool, material pool, and
+            - A one-click enhancement button has been added.
+        - Item interactions now support sand-related operations.
+        - Prize draw adjustments.
+            - The prize pool is now divided into four categories: recipes pool, prototype pool, material pool, and
               construction pool.
-                + The recipes pool yields distillation recipes, universal distillation recipe cores, and distillation
+                - The recipes pool yields distillation recipes, universal distillation recipe cores, and distillation
                   essences.
-                + The Prototype Pool yields fractionator prototypes and fractionator enhancement chips.
-                + The Materials Pool yields unlocked materials (excluding Matrix and Lottery Tickets).
-                + The Building Pool can yield unlocked buildings (excluding newly added fractionators and Logistics
+                - The Prototype Pool yields fractionator prototypes and fractionator enhancement chips.
+                - The Materials Pool yields unlocked materials (excluding Matrix and Lottery Tickets).
+                - The Building Pool can yield unlocked buildings (excluding newly added fractionators and Logistics
                   Interchange Stations).
-            + Reward logic has been restructured, with adjusted probabilities and quantities for each prize category.
+            - Reward logic has been restructured, with adjusted probabilities and quantities for each prize category.
               The system now adheres to the principle of equivalent value.
-            + The Recipes Pool can only yield recipes of the same tier.
-            + Auto-100 draws now function correctly even when the interface is minimised.
-            + Draw prizes no longer enter the backpack but are stored directly in the fractionation data centre.
-        + Limited-time shop adjustments.
-            + The limited-time shop is only enabled after researching the ‘Item Interaction’ technology.
-            + Upon refresh, all items/recipes with a value of 0 are automatically exchanged.
-            + Matrix exchange items have been removed.
-            + Exchanged items no longer enter the backpack but are stored directly in the fractionation data centre.
-        + Recipes now display the count of "Fully Upgraded" items in the recipes encyclopaedia.
-        + Add VIP system.
-            + Earn experience and advance VIP levels by using reward vouchers for draws or purchasing items from the
+            - The Recipes Pool can only yield recipes of the same tier.
+            - Auto-100 draws now function correctly even when the interface is minimised.
+            - Draw prizes no longer enter the backpack but are stored directly in the fractionation data centre.
+        - Limited-time shop adjustments.
+            - The limited-time shop is only enabled after researching the ‘Item Interaction’ technology.
+            - Upon refresh, all items/recipes with a value of 0 are automatically exchanged.
+            - Matrix exchange items have been removed.
+            - Exchanged items no longer enter the backpack but are stored directly in the fractionation data centre.
+        - Recipes now display the count of "Fully Upgraded" items in the recipes encyclopaedia.
+        - Add VIP system.
+            - Earn experience and advance VIP levels by using reward vouchers for draws or purchasing items from the
               limited-time shop.
-            + Higher VIP levels yield greater rewards during draws.
-            + Higher VIP levels unlock more complimentary items in the limited-time shop alongside increased purchase
+            - Higher VIP levels yield greater rewards during draws.
+            - Higher VIP levels unlock more complimentary items in the limited-time shop alongside increased purchase
               discounts.
-    + Optimised player backpack sorting.
-        + Single-clicking transfers items from the backpack to designated logistics slots where possible.
-        + After researching the ‘Item Interaction’ technology, double-clicking transfers all backpack items to the
+    - Optimised player backpack sorting.
+        - Single-clicking transfers items from the backpack to designated logistics slots where possible.
+        - After researching the ‘Item Interaction’ technology, double-clicking transfers all backpack items to the
           fractionation data centre (logistics backpack unaffected).
-    + Items stored in the fractionation data centre can be used when completing Deep Space Enemy mission chains,
+    - Items stored in the fractionation data centre can be used when completing Deep Space Enemy mission chains,
       refreshing Meta Drives, or resetting Authorisation Points.
 
 - v2.1.6
-    + 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
-    + 修复拿取物品数目不对的bug。
-    + 调整矿物复制配方、转化配方的生成逻辑。
-    + 物流交互站不再对无法显示在界面的物品进行特殊处理。
-    + 物流交互站调整运行逻辑，仓储模式可以限制上传数量。
-    + Fix game flashing directly when typing fractionator to data centre.
-    + Fix the bug that the number of items taken is not correct.
-    + Adjust the generation logic of mineral copy recipes and transformation recipes.
-    + The Interaction Station no longer performs special handling for items that cannot be displayed in the interface.
-    + Adjusted the operation logic of Interaction Station so that the number of uploads can be limited in storage mode.
+    - 修复输入分馏塔到数据中心时，游戏直接闪退的问题。
+    - 修复拿取物品数目不对的bug。
+    - 调整矿物复制配方、转化配方的生成逻辑。
+    - 物流交互站不再对无法显示在界面的物品进行特殊处理。
+    - 物流交互站调整运行逻辑，仓储模式可以限制上传数量。
+    - Fix game flashing directly when typing fractionator to data centre.
+    - Fix the bug that the number of items taken is not correct.
+    - Adjust the generation logic of mineral copy recipes and transformation recipes.
+    - The Interaction Station no longer performs special handling for items that cannot be displayed in the interface.
+    - Adjusted the operation logic of Interaction Station so that the number of uploads can be limited in storage mode.
 
 - v2.1.5
-    + 可自定义物品消耗的顺序。
-    + 调整分馏塔科技解锁条件，只要将对应分馏塔输入中心即可解锁。
-    + 适配星环（一个新的大型Mod）。
-    + 修复手动制造数目上限计算错误的问题。
-    + 修复多功能集成组件价值异常的问题。
-    + 配方抽奖调整。
-        + 配方获取概率由固定0.6%改为[2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%]。
-        + 保底数目由固定90改为[25, 40, 55, 70, 85, 100, 100]，现在每个奖池将分别计算保底。
-        + 只有将所有非量子复制配方全部抽到满回响后，才能抽出量子复制配方。
-    + 限时商店调整。
-        + 配方兑换需要的矩阵由[100, 300, 500, 700, 900, 900]改为[250, 400, 550, 700, 850, 1000]。
-    + The order in which items are consumed can be customised.
-    + Adjusted the conditions for unlocking the technology of fractionator, so that it can be unlocked by entering the
+    - 可自定义物品消耗的顺序。
+    - 调整分馏塔科技解锁条件，只要将对应分馏塔输入中心即可解锁。
+    - 适配星环（一个新的大型Mod）。
+    - 修复手动制造数目上限计算错误的问题。
+    - 修复多功能集成组件价值异常的问题。
+    - 配方抽奖调整。
+        - 配方获取概率由固定0.6%改为[2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%]。
+        - 保底数目由固定90改为[25, 40, 55, 70, 85, 100, 100]，现在每个奖池将分别计算保底。
+        - 只有将所有非量子复制配方全部抽到满回响后，才能抽出量子复制配方。
+    - 限时商店调整。
+        - 配方兑换需要的矩阵由[100, 300, 500, 700, 900, 900]改为[250, 400, 550, 700, 850, 1000]。
+    - The order in which items are consumed can be customised.
+    - Adjusted the conditions for unlocking the technology of fractionator, so that it can be unlocked by entering the
       corresponding fractionator into the centre.
-    + Adaptation of Orbital Ring (a new large mod).
-    + Fix the issue that the upper limit of the number of manual manufacturing is calculated incorrectly.
-    + Fix an issue where the value of the multifunctional integration component is abnormal.
-    + Recipes Draw Adjustment.
-        + The probability of getting recipes has been changed from a fixed 0.6%
+    - Adaptation of Orbital Ring (a new large mod).
+    - Fix the issue that the upper limit of the number of manual manufacturing is calculated incorrectly.
+    - Fix an issue where the value of the multifunctional integration component is abnormal.
+    - Recipes Draw Adjustment.
+        - The probability of getting recipes has been changed from a fixed 0.6%
           to [2.4%, 1.5%, 1.09%, 0.857%, 0.706%, 0.6%, 0.6%].
-        + The number of guarantees has been changed from a fixed 90 to [25, 40, 55, 70, 85, 100, 100], and guarantees
+        - The number of guarantees has been changed from a fixed 90 to [25, 40, 55, 70, 85, 100, 100], and guarantees
           will now be counted separately for each jackpot.
-        + Quantum Duplicate recipes can only be drawn after all non-Quantum Duplicate recipes have been drawn to full
+        - Quantum Duplicate recipes can only be drawn after all non-Quantum Duplicate recipes have been drawn to full
           echo.
-    + Limited Time Store Adjustment.
-        + Matrix required for recipes redemption changed from [100, 300, 500, 700, 900, 900]
+    - Limited Time Store Adjustment.
+        - Matrix required for recipes redemption changed from [100, 300, 500, 700, 900, 900]
           to [250, 400, 550, 700, 850, 1000].
 
 - v2.1.4
-    + 添加行星内物流交互站、星际物流交互站。
-    + 丢弃的物品会自动输入到分馏数据中心。
-    + 建造建筑、自动填充、手动制造等操作可以直接使用分馏数据中心的物品。
-    + 当某个建筑总数大于0时，无论是否已解锁，都在快捷建造栏显示。
-    + Add Planetary Interaction Station and Interstellar Interaction Station。
-    + Discarded items are automatically imported into the fractionation data centre.
-    + Operations such as building construction and autofill can use items from the fractionation data centre directly.
-    + When the total number of a building is greater than 0, it is displayed in the quick build bar, regardless of
+    - 添加行星内物流交互站、星际物流交互站。
+    - 丢弃的物品会自动输入到分馏数据中心。
+    - 建造建筑、自动填充、手动制造等操作可以直接使用分馏数据中心的物品。
+    - 当某个建筑总数大于0时，无论是否已解锁，都在快捷建造栏显示。
+    - Add Planetary Interaction Station and Interstellar Interaction Station。
+    - Discarded items are automatically imported into the fractionation data centre.
+    - Operations such as building construction and autofill can use items from the fractionation data centre directly.
+    - When the total number of a building is greater than 0, it is displayed in the quick build bar, regardless of
       whether it has been unlocked or not.
 
 - v2.1.3
-    + 矿物复制配方添加木材、植物燃料。
-    + 调整初始解锁的矿物复制配方。
-    + 调整转化配方。
-        + 转化配方不再产出输入的物品。
-        + 转化配方将按照物品价值调整产物数目，从而确保配方的整体收益不变。
-        + 转化配方满级产物增幅从0%改为50%，满级强化加成从20%改为50%。
-    + 点金配方移除黑雾矩阵、黑雾奖券。
-    + 沙盒模式一键解锁科技不解锁所有分馏配方。
-    + 更换精华图标，添加科技图标。
-    + 优化物品交互界面操作，现在被查找的物品会高亮显示。
-    + Mineral replication recipes now incorporate timber and plant-based fuels.
-    + Adjusted the initial unlocked mineral replication recipes.
-    + Modified conversion recipes.
-        + Conversion recipes no longer yield the input items.
-        + Conversion recipes will adjust output quantities based on item value, ensuring overall recipe profitability
+    - 矿物复制配方添加木材、植物燃料。
+    - 调整初始解锁的矿物复制配方。
+    - 调整转化配方。
+        - 转化配方不再产出输入的物品。
+        - 转化配方将按照物品价值调整产物数目，从而确保配方的整体收益不变。
+        - 转化配方满级产物增幅从0%改为50%，满级强化加成从20%改为50%。
+    - 点金配方移除黑雾矩阵、黑雾奖券。
+    - 沙盒模式一键解锁科技不解锁所有分馏配方。
+    - 更换精华图标，添加科技图标。
+    - 优化物品交互界面操作，现在被查找的物品会高亮显示。
+    - Mineral replication recipes now incorporate timber and plant-based fuels.
+    - Adjusted the initial unlocked mineral replication recipes.
+    - Modified conversion recipes.
+        - Conversion recipes no longer yield the input items.
+        - Conversion recipes will adjust output quantities based on item value, ensuring overall recipe profitability
           remains unchanged.
-        + Max-level conversion recipe output boost changed from 0% to 50%, max-level enhancement bonus changed from 20%
+        - Max-level conversion recipe output boost changed from 0% to 50%, max-level enhancement bonus changed from 20%
           to 50%.
-    + Alchemy recipes removes the Dark Fog Matrix and Dark Fog Lottery Tickets.
-    + Sandbox Mode's one-click tech unlock no longer unlocks all distillation recipes.
-    + Replaced essence icons and added tech icons.
-    + Optimised item interaction interface: items being searched for now highlight.
+    - Alchemy recipes removes the Dark Fog Matrix and Dark Fog Lottery Tickets.
+    - Sandbox Mode's one-click tech unlock no longer unlocks all distillation recipes.
+    - Replaced essence icons and added tech icons.
+    - Optimised item interaction interface: items being searched for now highlight.
 
 - v2.1.2
-    + 优化物品交互界面，添加查找指定物品的功能，并将物品按位置排序而非价值。
-    + 未完全升级分馏塔时，无法对分馏塔进行强化。
-    + 修复获取对应建筑后，白色虚影不会变绿的问题。
-    + 调整强化增幅，平衡配方效果。
-    + Optimised the item interaction interface, added functionality to locate specific items, and sorted items by
+    - 优化物品交互界面，添加查找指定物品的功能，并将物品按位置排序而非价值。
+    - 未完全升级分馏塔时，无法对分馏塔进行强化。
+    - 修复获取对应建筑后，白色虚影不会变绿的问题。
+    - 调整强化增幅，平衡配方效果。
+    - Optimised the item interaction interface, added functionality to locate specific items, and sorted items by
       location rather than value.
-    + The fractionator cannot be enhanced until it has been fully upgraded.
-    + Fixed an issue where the white phantom would not turn green after acquiring the corresponding structure.
-    + Adjust and enhance the amplification, balancing the recipe's effects.
+    - The fractionator cannot be enhanced until it has been fully upgraded.
+    - Fixed an issue where the white phantom would not turn green after acquiring the corresponding structure.
+    - Adjust and enhance the amplification, balancing the recipe's effects.
 
 - v2.1.1
-    + 修复分馏塔弹窗的概率显示字体的位置错误的问题。
-    + 分馏塔将显示为输入的物品，而非第一个产物。
-    + 调整转化配方概率，现在降级、同级、升级的概率都为1/3。
-    + 添加分馏塔强化功能，可以为分馏塔带来极其强力的增幅！
-    + 沙盒模式下，启用无限沙土时，获取配方经验将不再消耗沙土。
-    + 优化物品交互界面，添加左右键点击时提取物品组数的设置。
-    + 添加刷新商店的提示。
-    + Fixed an issue where the probability display font position was incorrect in the fractionator pop-up window.
-    + The fractionator will now display the input item instead of the first product.
-    + Adjusted the conversion recipe probabilities; downgrade, same-level, and upgrade probabilities are now all 1/3.
-    + Added a fractionator enhancement feature, which can provide extremely powerful boosts to the fractionator!
-    + In sandbox mode, when infinite sand is enabled, obtaining recipe experience will no longer consume sand.
-    + Optimised item interaction interface, added settings for extracting item groups when left and right clicks are
+    - 修复分馏塔弹窗的概率显示字体的位置错误的问题。
+    - 分馏塔将显示为输入的物品，而非第一个产物。
+    - 调整转化配方概率，现在降级、同级、升级的概率都为1/3。
+    - 添加分馏塔强化功能，可以为分馏塔带来极其强力的增幅！
+    - 沙盒模式下，启用无限沙土时，获取配方经验将不再消耗沙土。
+    - 优化物品交互界面，添加左右键点击时提取物品组数的设置。
+    - 添加刷新商店的提示。
+    - Fixed an issue where the probability display font position was incorrect in the fractionator pop-up window.
+    - The fractionator will now display the input item instead of the first product.
+    - Adjusted the conversion recipe probabilities; downgrade, same-level, and upgrade probabilities are now all 1/3.
+    - Added a fractionator enhancement feature, which can provide extremely powerful boosts to the fractionator!
+    - In sandbox mode, when infinite sand is enabled, obtaining recipe experience will no longer consume sand.
+    - Optimised item interaction interface, added settings for extracting item groups when left and right clicks are
       made.
-    + Added prompt to refresh the store.
+    - Added prompt to refresh the store.
 
 - v2.1.0
-    + 科技调整。
-        + 为所有科技添加解锁所需的元数据。
-        + 调整部分科技需要的矩阵数目（尤其是隐藏科技的研究需求）。
-        + 超值礼包1添加交互塔与普通原胚，避免前期没有分馏塔而卡死。
-    + 为不同的配方添加独特的品质影响。
-        + 所有红色配方的副产物概率翻倍。
-        + 建筑培养、矿物复制金色配方会提升等级*10%的物品产出，至多+100%。
-        + 量子复制金色配方会减少等级*8%的精华消耗，至多-80%。
-        + 点金、分解、转化金色配方会提升等级*1%的物品产出，至多+10%。
-    + 配方平衡性调整。
-        + 调整奖券合成需要的矩阵数目，统一为10矩阵->1奖券（黑雾为200黑雾矩阵->1黑雾奖券）。
-        + 重新调整所有分馏配方效果曲线，现在品质突破不会降低配方效果。
-        + 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
-        + 调整分解配方、点金配方的平衡性。
-    + 优化分馏塔的处理逻辑。
-        + 分馏永动状态条件改为产物输出达到上限。
-        + 分馏塔产物输出最大堆叠为n时，分馏塔产物输出上限也会变为n倍。
-        + 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种，从而减少增产剂的消耗。
-    + 统计面板可以正确显示量子复制时各个精华的消耗情况了。
-    + 分馏数据中心优化。
-        + 重构了分馏数据中心的UI，现在分类更为详细。
-        + 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
-        + 增加前台自动百连抽功能。
-        + 增加限时商店，商店内随机刷新物品、配方。
-    + 添加大部分英文翻译。
-    + Technology adjustments.
-        + Added metadata required to unlock all technologies.
-        + Adjusted the number of matrices required for some technologies (especially hidden technology research
+    - 科技调整。
+        - 为所有科技添加解锁所需的元数据。
+        - 调整部分科技需要的矩阵数目（尤其是隐藏科技的研究需求）。
+        - 超值礼包1添加交互塔与普通原胚，避免前期没有分馏塔而卡死。
+    - 为不同的配方添加独特的品质影响。
+        - 所有红色配方的副产物概率翻倍。
+        - 建筑培养、矿物复制金色配方会提升等级*10%的物品产出，至多+100%。
+        - 量子复制金色配方会减少等级*8%的精华消耗，至多-80%。
+        - 点金、分解、转化金色配方会提升等级*1%的物品产出，至多+10%。
+    - 配方平衡性调整。
+        - 调整奖券合成需要的矩阵数目，统一为10矩阵->1奖券（黑雾为200黑雾矩阵->1黑雾奖券）。
+        - 重新调整所有分馏配方效果曲线，现在品质突破不会降低配方效果。
+        - 调整部分矿物复制配方的概率，添加黑雾独有材料的矿物复制配方。
+        - 调整分解配方、点金配方的平衡性。
+    - 优化分馏塔的处理逻辑。
+        - 分馏永动状态条件改为产物输出达到上限。
+        - 分馏塔产物输出最大堆叠为n时，分馏塔产物输出上限也会变为n倍。
+        - 点数聚集塔流动输出物品不再是平均增产点数，而是0或4中的一种，从而减少增产剂的消耗。
+    - 统计面板可以正确显示量子复制时各个精华的消耗情况了。
+    - 分馏数据中心优化。
+        - 重构了分馏数据中心的UI，现在分类更为详细。
+        - 分馏数据中心可存储的物品数目上限由int变为long，并支持增产点数的存储。
+        - 增加前台自动百连抽功能。
+        - 增加限时商店，商店内随机刷新物品、配方。
+    - 添加大部分英文翻译。
+    - Technology adjustments.
+        - Added metadata required to unlock all technologies.
+        - Adjusted the number of matrices required for some technologies (especially hidden technology research
           requirements).
-        + Added interaction towers and normal prototypes to the Value Pack 1 to avoid getting stuck in the early stages
+        - Added interaction towers and normal prototypes to the Value Pack 1 to avoid getting stuck in the early stages
           without fractionators.
-    + Added unique quality effects to different recipes.
-        + Doubled the probability of by-products for all red recipes.
-        + Building cultivation and mineral replication golden recipes will increase item output by 10% per level, up to
+    - Added unique quality effects to different recipes.
+        - Doubled the probability of by-products for all red recipes.
+        - Building cultivation and mineral replication golden recipes will increase item output by 10% per level, up to
           a maximum of +100%.
-        + Quantum replication golden recipes will reduce essence consumption by 8% per level, up to a maximum of -80%.
-        + Alchemy, decomposition, and conversion golden recipes will increase item output by 1% per level, up to a
+        - Quantum replication golden recipes will reduce essence consumption by 8% per level, up to a maximum of -80%.
+        - Alchemy, decomposition, and conversion golden recipes will increase item output by 1% per level, up to a
           maximum of +10%.
-    + Recipe balance adjustments.
-        + Adjusted the number of matrices required for lottery ticket synthesis, unified to 10 matrices -> 1 lottery
+    - Recipe balance adjustments.
+        - Adjusted the number of matrices required for lottery ticket synthesis, unified to 10 matrices -> 1 lottery
           ticket (200 Black Mist matrices -> 1 Black Mist lottery ticket).
-        + Readjusted the effect curve of all distillation recipes, now quality breakthroughs will not reduce the recipe
+        - Readjusted the effect curve of all distillation recipes, now quality breakthroughs will not reduce the recipe
           effect.
-        + Adjusted the probability of some mineral replication recipes and added mineral replication recipes unique to
+        - Adjusted the probability of some mineral replication recipes and added mineral replication recipes unique to
           Black Mist.
-        + Adjusted the balance of decomposition recipes and alchemy recipes.
-    + Optimised the processing logic of the fractionator.
-        + Changed the condition for perpetual motion of the fractionator to 'output reaches the upper limit'.
-        + When the maximum stack of fractionator products is n, the upper limit of fractionator product output will also
+        - Adjusted the balance of decomposition recipes and alchemy recipes.
+    - Optimised the processing logic of the fractionator.
+        - Changed the condition for perpetual motion of the fractionator to 'output reaches the upper limit'.
+        - When the maximum stack of fractionator products is n, the upper limit of fractionator product output will also
           become n times.
-        + The flow output items of the point accumulation tower are no longer the average production increase points,
+        - The flow output items of the point accumulation tower are no longer the average production increase points,
           but either 0 or 4, thereby reducing the consumption of production increase agents.
-    + The statistics panel can now correctly display the consumption of each essence during quantum replication.
-    + Optimised the fractionation data centre.
-        + The distillation data centre UI has been restructured for more detailed categorisation.
-        + The maximum number of items the distillation data centre can store has been changed from int to long, and it
+    - The statistics panel can now correctly display the consumption of each essence during quantum replication.
+    - Optimised the fractionation data centre.
+        - The distillation data centre UI has been restructured for more detailed categorisation.
+        - The maximum number of items the distillation data centre can store has been changed from int to long, and it
           now supports the storage of production points.
-        + Added a front-end auto-100-draw feature.
-        + Added a limited-time shop with randomly refreshed items and recipes.
+        - Added a front-end auto-100-draw feature.
+        - Added a limited-time shop with randomly refreshed items and recipes.
 
 - v2.0.4
-    + 分馏塔提示窗口内容受配方信息显示情况控制。
-    + 修复科技黑雾奖券需要的矩阵数目。
-    + 修复分馏成功时，主输出产物只能输出至多一个物品的错误。
-    + 调整分解配方的平衡性，增加输出。
-    + 调整配方升级曲线，调整沙土换经验的比例。
-    + 修复等效配方计算错误的问题。
-    + 调整抽奖结果按钮的显示。
-    + 调整显示分馏数据中心全部物品弹窗的排版。
-    + 调整奖券的制作速度。
-    + 物品未解锁时，无法使用分馏配方核心兑换相关配方。
-    + The content of the fractionation tower prompt window is controlled by the display of recipe information.
-    + Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
-    + Fix the error where the main output product can only output up to one item when fractionation is successful.
-    + Adjust the balance of the deconstruction recipe to increase output.
-    + Adjust the recipe upgrade curve and adjust the ratio of sand to experience.
-    + Fix the issue of equivalent recipe calculation errors.
-    + Adjust the display of the raffle result button.
-    + Adjust the layout of the pop-up window displaying all items in the fractionation data centre.
-    + Adjust the production speed of lottery tickets.
-    + When the item is not unlocked, the fractionation recipe core cannot be used to exchange for related recipes.
+    - 分馏塔提示窗口内容受配方信息显示情况控制。
+    - 修复科技黑雾奖券需要的矩阵数目。
+    - 修复分馏成功时，主输出产物只能输出至多一个物品的错误。
+    - 调整分解配方的平衡性，增加输出。
+    - 调整配方升级曲线，调整沙土换经验的比例。
+    - 修复等效配方计算错误的问题。
+    - 调整抽奖结果按钮的显示。
+    - 调整显示分馏数据中心全部物品弹窗的排版。
+    - 调整奖券的制作速度。
+    - 物品未解锁时，无法使用分馏配方核心兑换相关配方。
+    - The content of the fractionation tower prompt window is controlled by the display of recipe information.
+    - Fixed the required number of dark fog matrices for tech Dark Fog Ticket.
+    - Fix the error where the main output product can only output up to one item when fractionation is successful.
+    - Adjust the balance of the deconstruction recipe to increase output.
+    - Adjust the recipe upgrade curve and adjust the ratio of sand to experience.
+    - Fix the issue of equivalent recipe calculation errors.
+    - Adjust the display of the raffle result button.
+    - Adjust the layout of the pop-up window displaying all items in the fractionation data centre.
+    - Adjust the production speed of lottery tickets.
+    - When the item is not unlocked, the fractionation recipe core cannot be used to exchange for related recipes.
 
 - v2.0.3
-    + 修复沙土交换配方经验无效的问题。
-    + 抽奖后可以选择三种不同的提取方式。
-    + 修复分馏塔配方科技需求的分馏塔数目错误的问题。
-    + 调整部分科技位置与需求。
-    + 创世之书快速开局不再解锁分馏科技。
-    + 添加等效配方显示。
-    + 交互塔可以输入任意物品。
-    + 调整量子复制科技需要的哈希块数目，以及科技的奖励。
-    + 分馏数据中心在游戏没有运行时，或者对应科技未解锁时，将无法打开。
-    + 调整科技“分馏数据中心”的效果，研究完成后会解锁部分配方。
-    + Fixed the issue of ineffective recipe experience in sand exchange.
-    + After raffle, you can choose three different extraction methods.
-    + Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
-    + Adjust the position and demand of some technologies.
-    + Genesis Book fast start mode no longer unlocks fractionation technology.
-    + Add equivalent recipe display.
-    + The interaction tower can input any item.
-    + Adjusting the number of hash blocks required for quantum replication technology and the rewards for the
+    - 修复沙土交换配方经验无效的问题。
+    - 抽奖后可以选择三种不同的提取方式。
+    - 修复分馏塔配方科技需求的分馏塔数目错误的问题。
+    - 调整部分科技位置与需求。
+    - 创世之书快速开局不再解锁分馏科技。
+    - 添加等效配方显示。
+    - 交互塔可以输入任意物品。
+    - 调整量子复制科技需要的哈希块数目，以及科技的奖励。
+    - 分馏数据中心在游戏没有运行时，或者对应科技未解锁时，将无法打开。
+    - 调整科技“分馏数据中心”的效果，研究完成后会解锁部分配方。
+    - Fixed the issue of ineffective recipe experience in sand exchange.
+    - After raffle, you can choose three different extraction methods.
+    - Fixed the issue of incorrect number of fractionators required for the formulation technology of the fractionator.
+    - Adjust the position and demand of some technologies.
+    - Genesis Book fast start mode no longer unlocks fractionation technology.
+    - Add equivalent recipe display.
+    - The interaction tower can input any item.
+    - Adjusting the number of hash blocks required for quantum replication technology and the rewards for the
       technology.
-    + The fractionation data centre cannot be opened when the game is not running or the corresponding technology is not
+    - The fractionation data centre cannot be opened when the game is not running or the corresponding technology is not
       unlocked.
-    + Adjust the effectiveness of the technology "fractionation data centre" and unlock some recipes after the research
+    - Adjust the effectiveness of the technology "fractionation data centre" and unlock some recipes after the research
       is completed.
 
 - v2.0.2
-    + 添加沙土交换配方经验的功能。
-    + 修复“提取所有分馏塔原胚”、“提取所有分馏塔”收不到物品的问题。
-    + 修复弹窗物品选择显示不全的问题。
-    + 添加查看Mod背包所有物品的按钮。
-    + 添加配方解锁情况显示。
-    + The function of adding sand exchange recipe experience.
-    + Fixed the issue of not receiving items for "extracting all fractionator protos" and "extracting all
+    - 添加沙土交换配方经验的功能。
+    - 修复“提取所有分馏塔原胚”、“提取所有分馏塔”收不到物品的问题。
+    - 修复弹窗物品选择显示不全的问题。
+    - 添加查看Mod背包所有物品的按钮。
+    - 添加配方解锁情况显示。
+    - The function of adding sand exchange recipe experience.
+    - Fixed the issue of not receiving items for "extracting all fractionator protos" and "extracting all
       fractionators".
-    + Fixed the issue of incomplete display of pop-up item selection.
-    + Add a button to view all items in the Mod backpack.
-    + Display the unlocking status of fractionate recipes.
+    - Fixed the issue of incomplete display of pop-up item selection.
+    - Add a button to view all items in the Mod backpack.
+    - Display the unlocking status of fractionate recipes.
 
 - v2.0.1
-    + 修复与其他Mod兼容出错的相关逻辑。
-    + 修复抽取配方时导致的内存溢出问题。
-    + 部分平衡性调整。
-    + 添加英文翻译。
-    + Fix the logic related to compatibility errors with other mods.
-    + Fix memory overflow issue caused by extracting recipe.
-    + Partial balance adjustment.
-    + Add English translation.
+    - 修复与其他Mod兼容出错的相关逻辑。
+    - 修复抽取配方时导致的内存溢出问题。
+    - 部分平衡性调整。
+    - 添加英文翻译。
+    - Fix the logic related to compatibility errors with other mods.
+    - Fix memory overflow issue caused by extracting recipe.
+    - Partial balance adjustment.
+    - Add English translation.
 
 - v2.0.0
-    + 新建筑、新配方、新界面，还有全新的抽奖体验！
-    + 使用 Shift + F 打开面板，剩下的就请自行探索吧！
-    + New building, new recipe, new interface, and also a brand new card drawing experience!
-    + Use Shift + F to open the panel, please explore the rest on your own!
+    - 新建筑、新配方、新界面，还有全新的抽奖体验！
+    - 使用 Shift - F 打开面板，剩下的就请自行探索吧！
+    - New building, new recipe, new interface, and also a brand new card drawing experience!
+    - Use Shift - F to open the panel, please explore the rest on your own!
 
 - v1.4.5
-    + 适配创世之书3.0。
-        + 调整部分图标位置。
-        + 自然资源分馏增加盐酸、硝酸、海水、二氧化碳、二氧化硫等。
-        + 移除分馏对量化计算器的适配，以避免创世之书3.1报错问题。
-    + Adapted Genesis Book 3.0.
-        + Adapted some icon positions.
-        + Added hydrochloric acid, nitric acid, seawater, carbon dioxide and sulfur dioxide to natural resources
+    - 适配创世之书3.0。
+        - 调整部分图标位置。
+        - 自然资源分馏增加盐酸、硝酸、海水、二氧化碳、二氧化硫等。
+        - 移除分馏对量化计算器的适配，以避免创世之书3.1报错问题。
+    - Adapted Genesis Book 3.0.
+        - Adapted some icon positions.
+        - Added hydrochloric acid, nitric acid, seawater, carbon dioxide and sulfur dioxide to natural resources
           fractionation.
-        + Removed the adaptation of the Quantization Calculator for Fractionation to avoid the problem of error
+        - Removed the adaptation of the Quantization Calculator for Fractionation to avoid the problem of error
           reporting in Genesis Book 3.1.
 
 - v1.4.3
-    + 修复原版分馏塔无法将氢分馏为重氢的问题。
-    + Fix the issue that hydrogen can not fractionate to deuterium.
+    - 修复原版分馏塔无法将氢分馏为重氢的问题。
+    - Fix the issue that hydrogen can not fractionate to deuterium.
 
 - v1.4.2
-    + 修复设置页面报错的问题，适配版本0.10.30.23430。
-    + 修复蓝图文件未能正确添加的问题。
-    + Fix an issue where the settings page reported errors, adapted to version 0.10.30.23430.
-    + Fix the issue that blueprint files are not added correctly.
+    - 修复设置页面报错的问题，适配版本0.10.30.23430。
+    - 修复蓝图文件未能正确添加的问题。
+    - Fix an issue where the settings page reported errors, adapted to version 0.10.30.23430.
+    - Fix the issue that blueprint files are not added correctly.
 
 - v1.4.1
-    + 修复鼠标移动至已放置的分馏塔时，简洁提示小窗口显示的速率与实际不符的问题。
-    + 增产点数对所有分馏塔的影响不再基于加速效果，而是加速效果、增产效果中加成更大的一方。
-        + 深空来敌中，有增产调节公理和满增产效果，与无增产调节公理和满加速效果，二者加成是一致的，都为200%。
-        + 以深空来敌为例，启用增产调节公理，并升满增产效果，可以算出增产加成为50%，加速加成为175%。
-        + 此时增产对分馏的加成为50%/25%=200%，加速对分馏的加成为175%/100%=175%，最终取最大值200%。
-    + 调整了万物分馏新增的分馏塔，修改部分分馏塔的相关描述。
-        + 移除精准分馏塔。
-            + 旧存档中已放置的精准分馏塔会自动转换为矿物分馏塔，未知物品2320（原精准分馏塔）需要手动丢弃。
-        + 移除建筑极速分馏塔。
-        + 不再将原版分馏塔修改为通用分馏塔。
-            + 原版分馏塔改为只能用于将氢分馏为重氢，但分馏塔输出优化科技对其依然有效。
-            + 原版分馏塔可以升级为矿物分馏塔，不可降级。
-                + 此项改动可以快速替换分馏塔，并且BlueprintTweaks修改建筑时，也可以将原版分馏塔与万物分馏的分馏塔互相替换。
-                + 注意，当创世之书与BPT同时启用时，由于原版分馏塔被屏蔽，你无法将万物分馏的分馏塔换为原版分馏塔。
-        + 添加矿物分馏塔，可分馏所有能直接采集到的矿物（包括氢、水、硫酸、原油等自然资源）。
-            + 珍奇矿物的分馏成功率（2.5%）是普通矿物（5%）的一半。
-        + 添加升级分馏塔，可将部分物品转换为更少的高级物品。
-        + 添加降级分馏塔，可将部分物品转换为更多的低级物品。
-            + 升降级的概率与物品的堆叠大小有关。10堆叠物品（轨道采集器）概率为0.5%，300堆叠物品（传送带）概率为15%。
-        + 垃圾回收分馏塔优化。
-            + 默认禁止输入建筑，以避免误操作。你可以在设置-杂项中开启它。
-            + 移除输入物品增产点数的加成。现在，物品转换得到的点数仅与物品价值有关，与是否带有增产点数无关。
-            + 调整了电力消耗计算方式，大幅降低处理高价值物品时需要的电力。
-        + 点数聚集分馏塔优化。
-            + 进一步提升效率，从4%增加至10%。这意味着满带所需建筑数目从25降低到10，占地更小。
-            + 优化流动输出物品的增产点数。流动输出平均增产点数不足4时，将输出4点或0点的物品，减少增产剂的消耗。
-        + 增产分馏塔优化。
-            + 分馏概率不再使用固定值，改为与输入物品的价值有关。价值越高，概率上限就越低。
-            + 实际分馏概率与输入物品的增产点数有关。增产点数越多，实际概率越大。0点对应概率0，10点对应概率上限。
-    + 优化了新增分馏塔的前置科技。
-        + 降低矿物分馏科技、升降级分馏科技所需的矩阵数目，以便于前期可以快速解锁它们。
-        + 为部分分馏科技绘制了新的科技图标。
-        + 为大多数分馏科技添加前置条件，避免提前解锁的情况。
-    + 移除了部分配方，添加了部分矿物自分馏的配方（例如原油、水、硫酸），以符合现在的分馏塔情形。
-        + 矩阵分馏链默认关闭。你可以在设置-杂项中开启它。
-        + 燃料棒分馏链默认关闭。你可以在设置-杂项中开启它。
-    + 调整了创世之书量化计算器的适配，移除了所有分馏配方。你仍然可以选择增产10点和加速10点，将其用于其他工厂的生产。
-    + 为庆祝本次更新，加载完成时会附送一些蓝图到蓝图文件夹。
-        + 如果你需要再次获取蓝图，请将配置文件中的CurrentVersion改为1.4.0，并重新启动游戏。
-        + 或者，直接将`BepInEx\plugins\MengLei-FractionateEverything\blueprints`复制到蓝图文件夹内。
-    + Fixed an issue where the rate shown in the Succinct Tips mini-window did not match the actual rate when mousing
+    - 修复鼠标移动至已放置的分馏塔时，简洁提示小窗口显示的速率与实际不符的问题。
+    - 增产点数对所有分馏塔的影响不再基于加速效果，而是加速效果、增产效果中加成更大的一方。
+        - 深空来敌中，有增产调节公理和满增产效果，与无增产调节公理和满加速效果，二者加成是一致的，都为200%。
+        - 以深空来敌为例，启用增产调节公理，并升满增产效果，可以算出增产加成为50%，加速加成为175%。
+        - 此时增产对分馏的加成为50%/25%=200%，加速对分馏的加成为175%/100%=175%，最终取最大值200%。
+    - 调整了万物分馏新增的分馏塔，修改部分分馏塔的相关描述。
+        - 移除精准分馏塔。
+            - 旧存档中已放置的精准分馏塔会自动转换为矿物分馏塔，未知物品2320（原精准分馏塔）需要手动丢弃。
+        - 移除建筑极速分馏塔。
+        - 不再将原版分馏塔修改为通用分馏塔。
+            - 原版分馏塔改为只能用于将氢分馏为重氢，但分馏塔输出优化科技对其依然有效。
+            - 原版分馏塔可以升级为矿物分馏塔，不可降级。
+                - 此项改动可以快速替换分馏塔，并且BlueprintTweaks修改建筑时，也可以将原版分馏塔与万物分馏的分馏塔互相替换。
+                - 注意，当创世之书与BPT同时启用时，由于原版分馏塔被屏蔽，你无法将万物分馏的分馏塔换为原版分馏塔。
+        - 添加矿物分馏塔，可分馏所有能直接采集到的矿物（包括氢、水、硫酸、原油等自然资源）。
+            - 珍奇矿物的分馏成功率（2.5%）是普通矿物（5%）的一半。
+        - 添加升级分馏塔，可将部分物品转换为更少的高级物品。
+        - 添加降级分馏塔，可将部分物品转换为更多的低级物品。
+            - 升降级的概率与物品的堆叠大小有关。10堆叠物品（轨道采集器）概率为0.5%，300堆叠物品（传送带）概率为15%。
+        - 垃圾回收分馏塔优化。
+            - 默认禁止输入建筑，以避免误操作。你可以在设置-杂项中开启它。
+            - 移除输入物品增产点数的加成。现在，物品转换得到的点数仅与物品价值有关，与是否带有增产点数无关。
+            - 调整了电力消耗计算方式，大幅降低处理高价值物品时需要的电力。
+        - 点数聚集分馏塔优化。
+            - 进一步提升效率，从4%增加至10%。这意味着满带所需建筑数目从25降低到10，占地更小。
+            - 优化流动输出物品的增产点数。流动输出平均增产点数不足4时，将输出4点或0点的物品，减少增产剂的消耗。
+        - 增产分馏塔优化。
+            - 分馏概率不再使用固定值，改为与输入物品的价值有关。价值越高，概率上限就越低。
+            - 实际分馏概率与输入物品的增产点数有关。增产点数越多，实际概率越大。0点对应概率0，10点对应概率上限。
+    - 优化了新增分馏塔的前置科技。
+        - 降低矿物分馏科技、升降级分馏科技所需的矩阵数目，以便于前期可以快速解锁它们。
+        - 为部分分馏科技绘制了新的科技图标。
+        - 为大多数分馏科技添加前置条件，避免提前解锁的情况。
+    - 移除了部分配方，添加了部分矿物自分馏的配方（例如原油、水、硫酸），以符合现在的分馏塔情形。
+        - 矩阵分馏链默认关闭。你可以在设置-杂项中开启它。
+        - 燃料棒分馏链默认关闭。你可以在设置-杂项中开启它。
+    - 调整了创世之书量化计算器的适配，移除了所有分馏配方。你仍然可以选择增产10点和加速10点，将其用于其他工厂的生产。
+    - 为庆祝本次更新，加载完成时会附送一些蓝图到蓝图文件夹。
+        - 如果你需要再次获取蓝图，请将配置文件中的CurrentVersion改为1.4.0，并重新启动游戏。
+        - 或者，直接将`BepInEx\plugins\MengLei-FractionateEverything\blueprints`复制到蓝图文件夹内。
+    - Fixed an issue where the rate shown in the Succinct Tips mini-window did not match the actual rate when mousing
       over a placed fractionator.
-    + The effect of Increase Production Fractionator points on all fractionators is no longer based on the accelerate
+    - The effect of Increase Production Fractionator points on all fractionators is no longer based on the accelerate
       effect, but rather on the side with the greater bonus of accelerate effect or increase effect.
-        + In They Come From Void, with Increase Adjustment Axiom and full Increase Bonus, and without Increase
+        - In They Come From Void, with Increase Adjustment Axiom and full Increase Bonus, and without Increase
           Adjustment Axiom and full Accelerate Bonus, the two bonuses are the same, both are 200%.
-        + For example, if you use the Axiom of Increase Inc Bonus and upgrade to max Inc Bonus, you can calculate that
+        - For example, if you use the Axiom of Increase Inc Bonus and upgrade to max Inc Bonus, you can calculate that
           Total Inc Bonus is 50% and Total Acc Bonus is 175%.
-        + At this point, Inc Bonus is 50%/25% = 200% for Fractionation, and Acc Bonus is 175%/100% = 175% for
+        - At this point, Inc Bonus is 50%/25% = 200% for Fractionation, and Acc Bonus is 175%/100% = 175% for
           Fractionation, taking the final maximum of 200%.
-    + Adjusted the fractionator added to Fractionate Everything, and modified the descriptions associated with some of
+    - Adjusted the fractionator added to Fractionate Everything, and modified the descriptions associated with some of
       the fractionators.
-        + Removed Precision Fractionator.
-            + Placed Precision Fractionators in old archives are automatically converted to Mineral Fractionators, and
+        - Removed Precision Fractionator.
+            - Placed Precision Fractionators in old archives are automatically converted to Mineral Fractionators, and
               unknown item 2320 (formerly Precision Fractionator) needs to be manually discarded.
-        + Removed Building-HighSpeed Fractionator.
-        + No longer modifies Original Fractionator to Universal Fractionator.
-            + Original fractionator changed to only be used to fractionate hydrogen into heavy hydrogen, but the
+        - Removed Building-HighSpeed Fractionator.
+        - No longer modifies Original Fractionator to Universal Fractionator.
+            - Original fractionator changed to only be used to fractionate hydrogen into heavy hydrogen, but the
               Fractionator Output Optimization tech still works for it.
-            + Original fractionator can be upgraded to a mineral fractionator, not downgraded.
-                + This change allows for quick replacement of Fractionators, and BlueprintTweaks modifying
+            - Original fractionator can be upgraded to a mineral fractionator, not downgraded.
+                - This change allows for quick replacement of Fractionators, and BlueprintTweaks modifying
                   buildings can also replace Original Fractionators with Fractionators from Everything
                   Fractionation with each other.
-                + Note that when Book of Creation and BPT are enabled at the same time, you can't replace the fractional
+                - Note that when Book of Creation and BPT are enabled at the same time, you can't replace the fractional
                   towers of Everything Fractionation with the original fractional towers because the original fractional
                   towers are blocked.
-        + Added Mineral Fractionator to fractionate all minerals that can be harvested directly (including
+        - Added Mineral Fractionator to fractionate all minerals that can be harvested directly (including
           natural resources such as hydrogen, water, sulfuric acid, crude oil, etc.).
-            + The fractionation success rate for rare minerals (2.5%) is half that of normal minerals (5%).
-        + Added upgraded fractionators that convert some items into fewer premium items.
-        + Adding downgraded fractionators converts some items to more low-level items.
-            + The probability of upgrading is related to the stack size of the item. 0.5% for 10 stacked items (Orbital
+            - The fractionation success rate for rare minerals (2.5%) is half that of normal minerals (5%).
+        - Added upgraded fractionators that convert some items into fewer premium items.
+        - Adding downgraded fractionators converts some items to more low-level items.
+            - The probability of upgrading is related to the stack size of the item. 0.5% for 10 stacked items (Orbital
               Collector) and 15% for 300 stacked items (Conveyor Belt).
-        + Optimization of garbage recycling fractionators.
-            + Input of buildings is disabled by default to avoid misuse. You can turn it on in Settings - Miscellaneous.
-            + Removed bonus to inputting items to increase production points. Now, the points obtained from item
+        - Optimization of garbage recycling fractionators.
+            - Input of buildings is disabled by default to avoid misuse. You can turn it on in Settings - Miscellaneous.
+            - Removed bonus to inputting items to increase production points. Now, the points obtained from item
               conversion are only related to the value of the item, not to whether it comes with yield increase points
               or not.
-            + Adjusted power consumption calculations to significantly reduce the amount of power needed to process
+            - Adjusted power consumption calculations to significantly reduce the amount of power needed to process
               high-value items.
-        + Points aggregate fractionator optimization.
-            + Further increased efficiency from 4% to 10%. This means that the number of buildings required for a full
+        - Points aggregate fractionator optimization.
+            - Further increased efficiency from 4% to 10%. This means that the number of buildings required for a full
               belt has been reduced from 25 to 10, with a smaller footprint.
-            + Optimized production increase points for flow output items. When the average number of incremental
+            - Optimized production increase points for flow output items. When the average number of incremental
               production points for flow output is less than 4, items with 4 or 0 points will be output, reducing the
               consumption of incremental production agents.
-        + Yield Increasing Fractionator Optimization.
-            + Fractionation probability no longer uses a fixed value and is instead related to the value of the input
+        - Yield Increasing Fractionator Optimization.
+            - Fractionation probability no longer uses a fixed value and is instead related to the value of the input
               item. The higher the value, the lower the probability cap.
-            + The actual fractionation probability is related to the number of yield increasing points of the input
+            - The actual fractionation probability is related to the number of yield increasing points of the input
               item. The greater the number of production enhancement points, the greater the actual probability. 0
               points corresponds to probability 0, and 10 points corresponds to the probability cap.
-    + Optimized the pre-tech for the addition of new fractionators.
-        + Reduced the number of matrices required for Mineral Fractionation techs and Elevation Fractionation techs so
+    - Optimized the pre-tech for the addition of new fractionators.
+        - Reduced the number of matrices required for Mineral Fractionation techs and Elevation Fractionation techs so
           that they can be unlocked quickly upfront.
-        + Painted new tech icons for some Fractionation techs.
-        + Add pre-conditions to most fractionation techs to avoid unlocking them early.
-    + Removed some recipes and added some recipes for mineral self-fractionation (e.g. Crude Oil, Water, Sulfuric
+        - Painted new tech icons for some Fractionation techs.
+        - Add pre-conditions to most fractionation techs to avoid unlocking them early.
+    - Removed some recipes and added some recipes for mineral self-fractionation (e.g. Crude Oil, Water, Sulfuric
       Acid) to match the current fractionator scenario.
-        + Matrix Fractionation Chain is turned off by default. You can turn it on in Settings - Miscellaneous.
-        + Fuel rod fractionation chain is off by default. You can turn it on in Settings - Miscellaneous.
-    + Adapted the Genesis Book Quantization Calculator to remove all fractionation recipes. You can still choose
+        - Matrix Fractionation Chain is turned off by default. You can turn it on in Settings - Miscellaneous.
+        - Fuel rod fractionation chain is off by default. You can turn it on in Settings - Miscellaneous.
+    - Adapted the Genesis Book Quantization Calculator to remove all fractionation recipes. You can still choose
       to increase production by 10 points and accelerate it by 10 points to use it for other factories.
-    + To celebrate this update, some blueprints will be attached to the blueprints folder when loading completes.
-        + If you need to get the blueprints again, change the CurrentVersion in the config file to 1.4.0 and restart
+    - To celebrate this update, some blueprints will be attached to the blueprints folder when loading completes.
+        - If you need to get the blueprints again, change the CurrentVersion in the config file to 1.4.0 and restart
           the game.
-        + Alternatively, copy `BepInEx\plugins\MengLei-FractionateEverything\blueprints` directly into the
+        - Alternatively, copy `BepInEx\plugins\MengLei-FractionateEverything\blueprints` directly into the
           blueprints folder.
 
 - v1.4.0
-    + Bug修复
-        + 修复黑雾物品未解锁时，仍显示对应分馏配方的问题。
-        + 修复普通分馏塔与特殊分馏塔升降级时，产物类型没有正确切换的问题。
-        + 修复传送带速度较高时，分馏塔无法满速运行、显示分馏速率错误的问题。
-        + 修复分馏塔集装物流科技未显示等级的问题。
-        + 修复建筑极速分馏塔显示的速率与实际不符的问题。
-        + 修复分馏塔堆叠上限不是30的问题。
-    + 调整&优化
-        + 【重要】大幅上调增产点数对增产分馏塔的影响。输入10增产点数的物品时，相比之前，产物数目大约变为2.5倍。
-        + 【重要】为所有物品添加了1%损毁概率。关闭损毁概率的开关对此次改动同样有效。
-        + 拆分图标资源包，修改加载图标的逻辑，现在可以在信号选择页面找到所有的分馏配方图标了。
-        + 为部分分馏塔解锁科技添加一定数目的对应的分馏塔作为科技研究奖励。
-        + 调整了部分分馏塔的制作配方与HP。
-        + 修复拖动分馏详情窗口时，分馏概率字体显示位置错误的问题。
-        + 优化分馏配方概率描述。
-            + 分馏配方描述中部分数目、概率增加黄色、红色显示，更容易确认分馏配方中特殊的部分。
-            + 调整了损毁的描述方式，使其更易于理解。
-            + 调整了最下方分馏制作公式的显示，使其与对应分馏配方的概率描述保持一致。
-        + 修改特殊分馏塔的处理逻辑，从而大幅提高游戏性能。特殊分馏塔提升80%以上游戏性能。
-        + 优化点数聚集分馏塔的处理逻辑，运行效果与之前一致，但概率曲线更为平滑。
-        + 【重要】调整所有分馏塔的耗电情况。
-            + 垃圾回收分馏塔的耗电与输入的原材点数成正比。分馏详情窗口中左侧输入数目表示原材总点数。
-            + 输入物品的增产点数不再影响点数聚集分馏塔的耗电。
-            + 输入物品的增产点数对增产分馏塔的耗电影响减半。
-            + 启用创世之书时，堆叠对分馏塔耗电影响减半。
-        + 适配更多巨构v1.5.0，移除巨构建造页之前的接收器配方，调整所有巨构火箭分馏配方的位置。
-        + 调整了创世之书防御页面的大部分图标位置，避免冲突。
-    + 新增内容
-        + 将所有分馏物品的快捷选择更改为类似巨构的双行选择模式，不再占用原有快捷栏位置。
-        + 【重要】新增垃圾回收分馏塔，可以将任意物品转换为沙土或随机物品。
-            + 垃圾回收分馏塔的所有接口都可输入，但只有正面的接口能够输出。
-            + 如果正面接口未连接，或正面接口不是输出，它将会把所有输入转换为沙土。
-            + 如果正面接口是输出，它将会尽可能把输入转换为地基。如果地基数目达到上限，则剩余输入会转换为沙土。
-        + 添加精准分馏塔、建筑极速分馏塔、垃圾回收分馏塔的专属解锁科技。
-        + 添加分馏塔产物输出集装科技，可以使产物以4堆叠形式输出。所有分馏塔提升10%游戏性能。该科技对精准分馏塔无效。
-    + Bug Fixes
-        + Fixed the issue that when Black Mist items were not unlocked, the corresponding fractionation recipe was still
+    - Bug修复
+        - 修复黑雾物品未解锁时，仍显示对应分馏配方的问题。
+        - 修复普通分馏塔与特殊分馏塔升降级时，产物类型没有正确切换的问题。
+        - 修复传送带速度较高时，分馏塔无法满速运行、显示分馏速率错误的问题。
+        - 修复分馏塔集装物流科技未显示等级的问题。
+        - 修复建筑极速分馏塔显示的速率与实际不符的问题。
+        - 修复分馏塔堆叠上限不是30的问题。
+    - 调整&优化
+        - 【重要】大幅上调增产点数对增产分馏塔的影响。输入10增产点数的物品时，相比之前，产物数目大约变为2.5倍。
+        - 【重要】为所有物品添加了1%损毁概率。关闭损毁概率的开关对此次改动同样有效。
+        - 拆分图标资源包，修改加载图标的逻辑，现在可以在信号选择页面找到所有的分馏配方图标了。
+        - 为部分分馏塔解锁科技添加一定数目的对应的分馏塔作为科技研究奖励。
+        - 调整了部分分馏塔的制作配方与HP。
+        - 修复拖动分馏详情窗口时，分馏概率字体显示位置错误的问题。
+        - 优化分馏配方概率描述。
+            - 分馏配方描述中部分数目、概率增加黄色、红色显示，更容易确认分馏配方中特殊的部分。
+            - 调整了损毁的描述方式，使其更易于理解。
+            - 调整了最下方分馏制作公式的显示，使其与对应分馏配方的概率描述保持一致。
+        - 修改特殊分馏塔的处理逻辑，从而大幅提高游戏性能。特殊分馏塔提升80%以上游戏性能。
+        - 优化点数聚集分馏塔的处理逻辑，运行效果与之前一致，但概率曲线更为平滑。
+        - 【重要】调整所有分馏塔的耗电情况。
+            - 垃圾回收分馏塔的耗电与输入的原材点数成正比。分馏详情窗口中左侧输入数目表示原材总点数。
+            - 输入物品的增产点数不再影响点数聚集分馏塔的耗电。
+            - 输入物品的增产点数对增产分馏塔的耗电影响减半。
+            - 启用创世之书时，堆叠对分馏塔耗电影响减半。
+        - 适配更多巨构v1.5.0，移除巨构建造页之前的接收器配方，调整所有巨构火箭分馏配方的位置。
+        - 调整了创世之书防御页面的大部分图标位置，避免冲突。
+    - 新增内容
+        - 将所有分馏物品的快捷选择更改为类似巨构的双行选择模式，不再占用原有快捷栏位置。
+        - 【重要】新增垃圾回收分馏塔，可以将任意物品转换为沙土或随机物品。
+            - 垃圾回收分馏塔的所有接口都可输入，但只有正面的接口能够输出。
+            - 如果正面接口未连接，或正面接口不是输出，它将会把所有输入转换为沙土。
+            - 如果正面接口是输出，它将会尽可能把输入转换为地基。如果地基数目达到上限，则剩余输入会转换为沙土。
+        - 添加精准分馏塔、建筑极速分馏塔、垃圾回收分馏塔的专属解锁科技。
+        - 添加分馏塔产物输出集装科技，可以使产物以4堆叠形式输出。所有分馏塔提升10%游戏性能。该科技对精准分馏塔无效。
+    - Bug Fixes
+        - Fixed the issue that when Black Mist items were not unlocked, the corresponding fractionation recipe was still
           displayed.
-        + Fixed the issue that the product type was not switched correctly when normal fractionator and special
+        - Fixed the issue that the product type was not switched correctly when normal fractionator and special
           fractionator were leveled up or down.
-        + Fixed the issue that when the conveyor belt speed is high, the fractionator cannot run at full speed and the
+        - Fixed the issue that when the conveyor belt speed is high, the fractionator cannot run at full speed and the
           fractionation rate is displayed incorrectly.
-        + Fixed the issue that the level of fractionator assembly and logistics technology is not displayed.
-        + Fix an issue where the displayed rate of Building-HighSpeed Fractionator does not match the actual rate.
-        + Fix issue with fractionator stacking cap not being 30.
-    + Adjustments & Optimizations
-        + [IMPORTANT] Significantly upgraded the effect of proliferator points on Increase Production Fractionators.
+        - Fixed the issue that the level of fractionator assembly and logistics technology is not displayed.
+        - Fix an issue where the displayed rate of Building-HighSpeed Fractionator does not match the actual rate.
+        - Fix issue with fractionator stacking cap not being 30.
+    - Adjustments & Optimizations
+        - [IMPORTANT] Significantly upgraded the effect of proliferator points on Increase Production Fractionators.
           When entering items with 10 proliferator points, the number of products becomes approximately 2.5 times higher
           compared to before.
-        + [IMPORTANT] Added 1% destruction probability to all items. The switch to turn off the probability of
+        - [IMPORTANT] Added 1% destruction probability to all items. The switch to turn off the probability of
           destruction also works for this change.
-        + Split the icon resource pack and modified the logic for loading icons, now you can find all fractionation
+        - Split the icon resource pack and modified the logic for loading icons, now you can find all fractionation
           recipe icons on the signal selection page.
-        + Added a certain number of corresponding fractionators as a tech research bonus for some fractionator unlock
+        - Added a certain number of corresponding fractionators as a tech research bonus for some fractionator unlock
           techs.
-        + Adjusted the crafting recipes and HP for some fractionators.
-        + Fixed the issue that the Fractionation Probability font was displayed in the wrong position when dragging the
+        - Adjusted the crafting recipes and HP for some fractionators.
+        - Fixed the issue that the Fractionation Probability font was displayed in the wrong position when dragging the
           Fractionation Details window.
-        + Optimized fractionation recipe probability descriptions.
-            + Added yellow and red color display for number of parts and probability in the description of fractionation
+        - Optimized fractionation recipe probability descriptions.
+            - Added yellow and red color display for number of parts and probability in the description of fractionation
               recipes, making it easier to identify special parts of fractionation recipes.
-            + Adjusted the description of damage to make it easier to understand.
-            + Adjusted the display of the fractionation crafting formula at the bottom to be consistent with the
+            - Adjusted the description of damage to make it easier to understand.
+            - Adjusted the display of the fractionation crafting formula at the bottom to be consistent with the
               probability description of the corresponding fractionation recipe.
-        + Modified the processing logic for special fractionators, resulting in a significant increase in game
+        - Modified the processing logic for special fractionators, resulting in a significant increase in game
           performance. Special fractionators improve game performance by more than 80%.
-        + Optimizing the processing logic for the Points Aggregate Fractionator runs as before, but with a smoother
+        - Optimizing the processing logic for the Points Aggregate Fractionator runs as before, but with a smoother
           probability profile.
-        + [IMPORTANT] Adjusted power consumption of all fractionators.
-            + The power consumption of the Trash Recycle Fractionator is proportional to the number of raw material
+        - [IMPORTANT] Adjusted power consumption of all fractionators.
+            - The power consumption of the Trash Recycle Fractionator is proportional to the number of raw material
               points entered. The number of inputs on the left in the Fractionation Details window represents the total
               number of raw material points.
-            + Inputting item's Increase Production Fractionator points no longer affects the power consumption of Points
+            - Inputting item's Increase Production Fractionator points no longer affects the power consumption of Points
               Aggregate Fractionator.
-            + The effect of inputting items' proliferator points on the power consumption of the Increase Production
+            - The effect of inputting items' proliferator points on the power consumption of the Increase Production
               Fractionator is halved.
-            + When Book of Creation is enabled, stacking halves the effect on fractionator power consumption.
-        + Adapted more megastructures for v1.5.0, removed receiver recipes before the megastructure build page, and
+            - When Book of Creation is enabled, stacking halves the effect on fractionator power consumption.
+        - Adapted more megastructures for v1.5.0, removed receiver recipes before the megastructure build page, and
           adjusted the placement of all megastructure rocket fractionation recipes.
-        + Adjusted the position of most icons on the Genesis Book defense page to avoid conflicts.
-    + New additions
-        + Changed the shortcut selection of all fractionated items to a two-line selection mode similar to the Mega
+        - Adjusted the position of most icons on the Genesis Book defense page to avoid conflicts.
+    - New additions
+        - Changed the shortcut selection of all fractionated items to a two-line selection mode similar to the Mega
           Construct, which no longer occupies the original shortcut bar position.
-        + [IMPORTANT] Added Trash Recycling Fractionator, which can convert any item into sand or random items.
-            + All ports of the Trash Recycling Fractionator can be input, but only the front port can be output.
-            + If the front interface is not connected, or if the front interface is not an output, it will convert all
+        - [IMPORTANT] Added Trash Recycling Fractionator, which can convert any item into sand or random items.
+            - All ports of the Trash Recycling Fractionator can be input, but only the front port can be output.
+            - If the front interface is not connected, or if the front interface is not an output, it will convert all
               inputs to sand and earth.
-            + If the front interface is an output, it will convert the inputs to foundations if possible. If the number
+            - If the front interface is an output, it will convert the inputs to foundations if possible. If the number
               of foundations reaches the upper limit, the remaining inputs will be converted to sand.
-        + Added exclusive unlockable techs for Precision Fractionator, Building-HighSpeed Fractionator, and Trash
+        - Added exclusive unlockable techs for Precision Fractionator, Building-HighSpeed Fractionator, and Trash
           Recycling Fractionator.
-        + Adds the Fractionator Product Output Setting tech, which allows products to be output in stacks of 4. All
+        - Adds the Fractionator Product Output Setting tech, which allows products to be output in stacks of 4. All
           fractionators boost game performance by 10%. This tech does not work on Precision Fractionators.
 
 - v1.3.6
-    + 修复了损毁分馏在关闭时仍然生效的问题。
-    + Fixed an issue where EnableDestroy was still in effect when it was turned off.
+    - 修复了损毁分馏在关闭时仍然生效的问题。
+    - Fixed an issue where EnableDestroy was still in effect when it was turned off.
 
 - v1.3.5
-    + 修复了未添加创世之书时，mod会导致无法进入游戏的问题。
-    + Fixed an issue where the mod would cause the game to be inaccessible when Genesis Book was not added.
+    - 修复了未添加创世之书时，mod会导致无法进入游戏的问题。
+    - Fixed an issue where the mod would cause the game to be inaccessible when Genesis Book was not added.
 
 - v1.3.4
-    + 更改设置后，无需重启游戏，只要重新载入存档即可应用修改。
-    + 修改了原版重氢分馏配方。
-        + 制作了另外两个样式的图标。
-        + 配方描述结尾添加概率说明。
-        + 移动配方位置到分馏I。
-    + 现已适配创世之书内置的量化工具。
-        + 增加两个新的增产策略：加速10点、增产10点。
-        + 可以选择分馏配方作为合成路线了。
-        + 右键点击工厂，可以将建筑切换为增产分馏塔。
-        + 选择的物品配方存在递归时，会在“原料需求”添加额外需要的物品以避免递归计算。
-        + 分馏所需建筑的数目与传送带速率有关，计算时强制使用传送带MK3且4堆叠的速率，建筑数目仅供参考。
-    + After changing the settings, there is no need to restart the game, just reload the save to apply changes.
-    + Modified the original Deuterium Fractionation recipe.
-        + Added other two icon styles.
-        + Added probability note at end of recipe description.
-        + Moved recipe grid index to Fractionate I.
-    + Adapted the quantization tool built into Genesis Book.
-        + Added two new yield increase strategies: 10 points of acceleration and 10 points of yield increase.
-        + Can now select Fractionation recipes as synthesis routes.
-        + Right-clicking on a factory switches the building to an Increase Production Fractionator.
-        + If the selected recipe is recursive, additional items will be added to the "Raw Material Requirements" to
+    - 更改设置后，无需重启游戏，只要重新载入存档即可应用修改。
+    - 修改了原版重氢分馏配方。
+        - 制作了另外两个样式的图标。
+        - 配方描述结尾添加概率说明。
+        - 移动配方位置到分馏I。
+    - 现已适配创世之书内置的量化工具。
+        - 增加两个新的增产策略：加速10点、增产10点。
+        - 可以选择分馏配方作为合成路线了。
+        - 右键点击工厂，可以将建筑切换为增产分馏塔。
+        - 选择的物品配方存在递归时，会在“原料需求”添加额外需要的物品以避免递归计算。
+        - 分馏所需建筑的数目与传送带速率有关，计算时强制使用传送带MK3且4堆叠的速率，建筑数目仅供参考。
+    - After changing the settings, there is no need to restart the game, just reload the save to apply changes.
+    - Modified the original Deuterium Fractionation recipe.
+        - Added other two icon styles.
+        - Added probability note at end of recipe description.
+        - Moved recipe grid index to Fractionate I.
+    - Adapted the quantization tool built into Genesis Book.
+        - Added two new yield increase strategies: 10 points of acceleration and 10 points of yield increase.
+        - Can now select Fractionation recipes as synthesis routes.
+        - Right-clicking on a factory switches the building to an Increase Production Fractionator.
+        - If the selected recipe is recursive, additional items will be added to the "Raw Material Requirements" to
           avoid recursive calculations.
-        + The number of buildings needed for Fractionation is related to the conveyor belt rate, the calculation is
+        - The number of buildings needed for Fractionation is related to the conveyor belt rate, the calculation is
           forced to use the conveyor belt MK3 and 4 stacking rate, the number of buildings is for reference only.
 
 - v1.3.3
-    + 载入存档时判断科技解锁状态， 并解锁未解锁的配方。
+    - 载入存档时判断科技解锁状态， 并解锁未解锁的配方。
       这有助于解决为现有存档添加万物分馏时，导致部分分馏塔、分馏配方未能正确解锁的问题。
-    + 修复了新增的分馏塔在传送带上流动时，图标未能正确显示的问题。
-    + 优化了使用分馏塔时的统计信息。
-        + 点数聚集分馏塔不再添加生产、消耗信息。
-        + 增产分馏塔仅添加增加物品的生产信息。
-    + 调整部分翻译。
-    + 调整了README.md的内容，添加了对应的图片。
-    + 使用新的mod介绍图标。
-    + Determine technology unlock status when loading an archive and unlock unlocked recipes.
+    - 修复了新增的分馏塔在传送带上流动时，图标未能正确显示的问题。
+    - 优化了使用分馏塔时的统计信息。
+        - 点数聚集分馏塔不再添加生产、消耗信息。
+        - 增产分馏塔仅添加增加物品的生产信息。
+    - 调整部分翻译。
+    - 调整了README.md的内容，添加了对应的图片。
+    - 使用新的mod介绍图标。
+    - Determine technology unlock status when loading an archive and unlock unlocked recipes.
       This helps to solve the problem of adding Fractionate Everything to an existing archive, which causes some
       fractionators and fractionate recipes to not unlock correctly.
-    + Fixed an issue where the icon for the new fractionator was not displayed correctly when it was flowing on the
+    - Fixed an issue where the icon for the new fractionator was not displayed correctly when it was flowing on the
       conveyor belt.
-    + Optimized statistics when using fractionators.
-        + Points Aggregate Fractionator no longer adds production and consumption information.
-        + Increase Production Fractionator only adds production information for increasing items.
-    + Adjusted some translations.
-    + Adjusted the content of README.md and added corresponding images.
-    + Use new mod introduction icon.
+    - Optimized statistics when using fractionators.
+        - Points Aggregate Fractionator no longer adds production and consumption information.
+        - Increase Production Fractionator only adds production information for increasing items.
+    - Adjusted some translations.
+    - Adjusted the content of README.md and added corresponding images.
+    - Use new mod introduction icon.
 
 - v1.3.2
-    + 修复了氢分馏重氢会报错的问题。
-    + 修复了切换查看分馏塔时，可能会报错的问题。
-    + 修复了分馏塔详情界面中，分馏塔名称没有完全显示的问题。
-    + 为重氢分馏配方增加概率描述。
-    + 调整了README.md的内容，使其与模组现有内容一致。
-    + 调整了加载后弹窗的按钮位置。
-    + Fixed an issue where hydrogen fractionate to deuterium would report an error.
-    + Fixed an issue where an error could be reported when switching to view fractionators.
-    + Fixed an issue where fractionator names were not fully displayed in the fractionator details screen.
-    + Added probability description for deuterium fractionation recipes.
-    + Adjusted the content of README.md to match the existing content of the module.
-    + Adjusted the button position of the popup window after loading.
+    - 修复了氢分馏重氢会报错的问题。
+    - 修复了切换查看分馏塔时，可能会报错的问题。
+    - 修复了分馏塔详情界面中，分馏塔名称没有完全显示的问题。
+    - 为重氢分馏配方增加概率描述。
+    - 调整了README.md的内容，使其与模组现有内容一致。
+    - 调整了加载后弹窗的按钮位置。
+    - Fixed an issue where hydrogen fractionate to deuterium would report an error.
+    - Fixed an issue where an error could be reported when switching to view fractionators.
+    - Fixed an issue where fractionator names were not fully displayed in the fractionator details screen.
+    - Added probability description for deuterium fractionation recipes.
+    - Adjusted the content of README.md to match the existing content of the module.
+    - Adjusted the button position of the popup window after loading.
 
 - v1.3.1
-    + 原版增加分馏配方155个；创世之书、更多巨构、深空来袭同时启用时，增加分馏配方217个。
-    + 新增首次加载的弹窗，并提供了跳转创世之书交流群、打开更新日志的功能。
-    + 为点数聚集分馏塔、增产分馏塔添加了概率说明，并调整了处理逻辑与概率显示。
-        + 对于增产分馏塔，如果输入具有自增值分馏配方，将使用该配方概率进行增产；否则使用默认概率。
-        + 对于点数聚集分馏塔，输入物品种类不会影响其效果。优化了概率显示。
-    + 将所有分馏塔放在同一个升级链中，现在可以使用升降级自由切换分馏塔类型了。
-    + 调整部分翻译。
-    + 调整部分物品、配方的位置，调整了部分分馏配方。
-        + 添加微型粒子对撞机的自分馏配方。
-        + 将创世之书部分物品位置改为与配方一致。
-        + 调整了创世之书黑雾物品位置、黑雾物品分馏配方位置。
-        + 将创世的玻璃改为循环分馏（相当于增加一个分馏配方）。
-        + 为创世之书的巨构建筑添加了循环分馏链，但是没有循环链尾加成。
-        + 为创世之书添加高斯机枪塔、导弹防御塔的自分馏配方。
-        + 调整了更多巨构中运载火箭的分馏顺序，使其符合科技顺序。
-    + 配置文件优化。
-        + 移除是否显示分馏图标的开关，添加关闭首次加载弹窗的开关。
-        + 现在，除了手动修改配置文件，你也可以在游戏的设置页面修改所有配置。
-    + 修复大量bug。
-        + 修复语言非中文时，矿脉等显示为中文的问题。
-        + 修复精准分馏塔、通用分馏塔前置科技异常，从而导致无法制作这些建筑的问题。
-            + 启用创世之书时，通用分馏塔的前置科技描述也随之修改。
-        + 修复更多巨构中巨构接收器图标重置、效果丢失的问题。
-        + 修复创世之书中导弹防御塔配方隐藏的问题。
-    + Added 155 fractionation recipes to the original version; 217 fractionation recipes when Genesis Book, More Mega
+    - 原版增加分馏配方155个；创世之书、更多巨构、深空来袭同时启用时，增加分馏配方217个。
+    - 新增首次加载的弹窗，并提供了跳转创世之书交流群、打开更新日志的功能。
+    - 为点数聚集分馏塔、增产分馏塔添加了概率说明，并调整了处理逻辑与概率显示。
+        - 对于增产分馏塔，如果输入具有自增值分馏配方，将使用该配方概率进行增产；否则使用默认概率。
+        - 对于点数聚集分馏塔，输入物品种类不会影响其效果。优化了概率显示。
+    - 将所有分馏塔放在同一个升级链中，现在可以使用升降级自由切换分馏塔类型了。
+    - 调整部分翻译。
+    - 调整部分物品、配方的位置，调整了部分分馏配方。
+        - 添加微型粒子对撞机的自分馏配方。
+        - 将创世之书部分物品位置改为与配方一致。
+        - 调整了创世之书黑雾物品位置、黑雾物品分馏配方位置。
+        - 将创世的玻璃改为循环分馏（相当于增加一个分馏配方）。
+        - 为创世之书的巨构建筑添加了循环分馏链，但是没有循环链尾加成。
+        - 为创世之书添加高斯机枪塔、导弹防御塔的自分馏配方。
+        - 调整了更多巨构中运载火箭的分馏顺序，使其符合科技顺序。
+    - 配置文件优化。
+        - 移除是否显示分馏图标的开关，添加关闭首次加载弹窗的开关。
+        - 现在，除了手动修改配置文件，你也可以在游戏的设置页面修改所有配置。
+    - 修复大量bug。
+        - 修复语言非中文时，矿脉等显示为中文的问题。
+        - 修复精准分馏塔、通用分馏塔前置科技异常，从而导致无法制作这些建筑的问题。
+            - 启用创世之书时，通用分馏塔的前置科技描述也随之修改。
+        - 修复更多巨构中巨构接收器图标重置、效果丢失的问题。
+        - 修复创世之书中导弹防御塔配方隐藏的问题。
+    - Added 155 fractionation recipes to the original version; 217 fractionation recipes when Genesis Book, More Mega
       Structure, and They Come From Void are enabled at the same time.
-    + Added a popup window for the first load, and provided the ability to jump to the Genesis Book exchange group
+    - Added a popup window for the first load, and provided the ability to jump to the Genesis Book exchange group
       and open the update log.
-    + Added probability description for Points Aggregate Fractionator and Increase Production Fractionator, and adjusted
+    - Added probability description for Points Aggregate Fractionator and Increase Production Fractionator, and adjusted
       processing logic and probability display.
-        + For Increase Production Fractionator, if the input has a self-value-added fractionation recipe, the
+        - For Increase Production Fractionator, if the input has a self-value-added fractionation recipe, the
           probability of the recipe will be used to increase production; otherwise, the default probability will be
           used.
-        + For Points Aggregate Fractionators, entering the item type will not affect its effect. Optimized probability
+        - For Points Aggregate Fractionators, entering the item type will not affect its effect. Optimized probability
           display.
-    + Putting all fractionators in the same upgrade chain now allows you to freely switch fractionator types using
+    - Putting all fractionators in the same upgrade chain now allows you to freely switch fractionator types using
       elevation.
-    + Adjusted some translations.
-    + Adjusted the location of some items and recipes, and adjusted some fractionation recipes.
-        + Added self-fractionation recipe for Micro Particle Collider.
-        + Changed the location of some items in the Genesis Book to match the recipe.
-        + Adjusted Genesis Book Dark Fog item locations, Dark Fog item fractionation recipe locations.
-        + Changed Genesis' glass to circular fractionation (equivalent to adding a fractionation recipe).
-        + Added cyclic fractionation chain to Genesis Book' megastructure building, but without the cyclic chain tail
+    - Adjusted some translations.
+    - Adjusted the location of some items and recipes, and adjusted some fractionation recipes.
+        - Added self-fractionation recipe for Micro Particle Collider.
+        - Changed the location of some items in the Genesis Book to match the recipe.
+        - Adjusted Genesis Book Dark Fog item locations, Dark Fog item fractionation recipe locations.
+        - Changed Genesis' glass to circular fractionation (equivalent to adding a fractionation recipe).
+        - Added cyclic fractionation chain to Genesis Book' megastructure building, but without the cyclic chain tail
           bonus.
-        + Added self-fractionation recipes for Gauss Machine Gun Towers and Missile Defense Towers to the Genesis Book.
-        + Adjusted the fractionation order of carrier rockets in More Mega Structure to match the tech order.
-    + Configuration file optimization.
-        + Removed the switch for whether to show the fractionation icon, and added a switch to turn off the first load
+        - Added self-fractionation recipes for Gauss Machine Gun Towers and Missile Defense Towers to the Genesis Book.
+        - Adjusted the fractionation order of carrier rockets in More Mega Structure to match the tech order.
+    - Configuration file optimization.
+        - Removed the switch for whether to show the fractionation icon, and added a switch to turn off the first load
           popup.
-        + You can now change all configurations from the game's settings page, in addition to manually changing the
+        - You can now change all configurations from the game's settings page, in addition to manually changing the
           config files.
-    + Fix a lot of bugs.
-        + Fixed the problem that veins etc. are displayed in Chinese when the language is not Chinese.
-        + Fix an issue where Precision Fractionator and Universal Fractionator had abnormal technology in front of them,
+    - Fix a lot of bugs.
+        - Fixed the problem that veins etc. are displayed in Chinese when the language is not Chinese.
+        - Fix an issue where Precision Fractionator and Universal Fractionator had abnormal technology in front of them,
           which prevented them from crafting these buildings.
-            + Fixed an issue where Universal Fractionator's tech description was changed when the Book of Creation was
+            - Fixed an issue where Universal Fractionator's tech description was changed when the Book of Creation was
               enabled.
-        + Fixed an issue where the Mega Structure Receiver icon was reset and the effect was lost in More Mega
+        - Fixed an issue where the Mega Structure Receiver icon was reset and the effect was lost in More Mega
           Structures.
-        + Fix an issue where the Missile Defense Tower recipe was hidden in the Genesis Book.
+        - Fix an issue where the Missile Defense Tower recipe was hidden in the Genesis Book.
 
 - v1.3.0
-    + 适配创世之书、深空来敌、更多巨构。
-        + 这些MOD全部启用时，新增配方个数将超过200。
-        + 新的配方同样具有三种样式可供选择。
-        + 当同时启用创世之书与万物分馏时，将会使用创世独有材料制作分馏塔。
-    + 配置文件优化。
-        + 移除配置文件中的配方起始ID，现在会自动使用不重复的配方ID。
-        + 添加了自动清除配置文件中无用项目的功能。
-    + 现在对于任意速率的传送带，分馏塔都可以满速输出了（之前最大速率为30/s）。
-    + 优化了分馏塔界面的分馏成功率显示。
-        + 分馏成功率从单行改为多行，可以清晰看到所有概率了。
-        + 将“F/D”替换为“流动/损毁”。
-    + 调整了部分分馏配方。
-        + 提升增产剂分馏配方的产物数目（1,1% -> 2,1%），可以更快产出大量增产剂了。
-        + 现在所有循环分馏链的最后一个分馏配方（即分馏链尾变分馏链头）将根据分馏链长度提升物品数目。
-    + Adapts Genesis Book, They Come From Void, and More Mega Structure.
-        + When all of these mods are enabled, the number of new recipes will be over 200.
-        + New recipes are also available in three styles.
-        + When both Genesis Book and Fractionation of Everything are enabled, fractionators will be crafted using
+    - 适配创世之书、深空来敌、更多巨构。
+        - 这些MOD全部启用时，新增配方个数将超过200。
+        - 新的配方同样具有三种样式可供选择。
+        - 当同时启用创世之书与万物分馏时，将会使用创世独有材料制作分馏塔。
+    - 配置文件优化。
+        - 移除配置文件中的配方起始ID，现在会自动使用不重复的配方ID。
+        - 添加了自动清除配置文件中无用项目的功能。
+    - 现在对于任意速率的传送带，分馏塔都可以满速输出了（之前最大速率为30/s）。
+    - 优化了分馏塔界面的分馏成功率显示。
+        - 分馏成功率从单行改为多行，可以清晰看到所有概率了。
+        - 将“F/D”替换为“流动/损毁”。
+    - 调整了部分分馏配方。
+        - 提升增产剂分馏配方的产物数目（1,1% -> 2,1%），可以更快产出大量增产剂了。
+        - 现在所有循环分馏链的最后一个分馏配方（即分馏链尾变分馏链头）将根据分馏链长度提升物品数目。
+    - Adapts Genesis Book, They Come From Void, and More Mega Structure.
+        - When all of these mods are enabled, the number of new recipes will be over 200.
+        - New recipes are also available in three styles.
+        - When both Genesis Book and Fractionation of Everything are enabled, fractionators will be crafted using
           materials unique to Genesis.
-    + Config file optimization.
-        + Removed recipe start IDs from profiles, now automatically uses non-repeating recipe IDs.
-        + Added automatic clearing of useless items from config files.
-    + The fractionator can now output at full speed for any rate of conveyor (previously the maximum rate was 30/s).
-    + Optimized the display of fractionation success rate in the fractionator interface.
-        + Fractionation success rate has been changed from single line to multiple lines, so that all probabilities can
+    - Config file optimization.
+        - Removed recipe start IDs from profiles, now automatically uses non-repeating recipe IDs.
+        - Added automatic clearing of useless items from config files.
+    - The fractionator can now output at full speed for any rate of conveyor (previously the maximum rate was 30/s).
+    - Optimized the display of fractionation success rate in the fractionator interface.
+        - Fractionation success rate has been changed from single line to multiple lines, so that all probabilities can
           be clearly seen.
-        + Replaced "F/D" with "Flow/Destroy".
-    + Adjusted some fractionation recipes.
-        + Upgraded the number of products for the Enhancer Fractionation recipe (1,1% -> 2,1%), so that you can produce
+        - Replaced "F/D" with "Flow/Destroy".
+    - Adjusted some fractionation recipes.
+        - Upgraded the number of products for the Enhancer Fractionation recipe (1,1% -> 2,1%), so that you can produce
           large amounts of Enhancers much faster.
-        + The last fractionation recipe of all circular fractionation chains (i.e. the end of the fractionation chain
+        - The last fractionation recipe of all circular fractionation chains (i.e. the end of the fractionation chain
           becomes the head of the fractionation chain) will now boost the number of items based on the length of the
           fractionation chain.
 
 - v1.2.2
-    + 精准分馏塔（原名低功率分馏塔）效果改为缓存的产物越多，分馏效率越低。
-    + 新增点数聚集分馏塔，可以将输入物品的增产点数聚集到几个物品上，从而得到10点增产点数的物品。前置科技为新增科技“增产点数聚集”。
-    + 增产分馏塔（原名增殖分馏塔）去除本身的10%加成。前置科技为新增隐藏科技“增产分馏”。
-    + 点数聚集分馏塔、增产分馏塔可以接受任意物品，无需配方，且产物与输入一致。这次真的万物皆可分馏了！
-    + 各种分馏塔现在具有不同的颜色（图标也是如此），可以轻松区分它们了。
-    + 新增科技“分馏塔产物集装物流”，研究后，所有分馏塔的产物将以集装形式输出。
-    + 增添、移除、调整了部分配方。将所有矩阵分馏配方概率改为1%1个，3%损毁（可以在设置中禁用损毁）。
-    + 为所有分馏配方新增了斜线样式、圆弧样式图标。你可以在配置文件中选择三种图标风格之一。
-    + 调整了分馏塔的概率显示内容，现在可以准确显示实际的分馏效果。
-    + 调整了分馏塔的概率显示刷新频率，从1帧一次减慢至20帧一次，以便清晰看到概率（不会影响建筑处理速率）。
-    + The effect of the Precision Fractionator (formerly known as the Low Power Fractionator) has been changed to be
+    - 精准分馏塔（原名低功率分馏塔）效果改为缓存的产物越多，分馏效率越低。
+    - 新增点数聚集分馏塔，可以将输入物品的增产点数聚集到几个物品上，从而得到10点增产点数的物品。前置科技为新增科技“增产点数聚集”。
+    - 增产分馏塔（原名增殖分馏塔）去除本身的10%加成。前置科技为新增隐藏科技“增产分馏”。
+    - 点数聚集分馏塔、增产分馏塔可以接受任意物品，无需配方，且产物与输入一致。这次真的万物皆可分馏了！
+    - 各种分馏塔现在具有不同的颜色（图标也是如此），可以轻松区分它们了。
+    - 新增科技“分馏塔产物集装物流”，研究后，所有分馏塔的产物将以集装形式输出。
+    - 增添、移除、调整了部分配方。将所有矩阵分馏配方概率改为1%1个，3%损毁（可以在设置中禁用损毁）。
+    - 为所有分馏配方新增了斜线样式、圆弧样式图标。你可以在配置文件中选择三种图标风格之一。
+    - 调整了分馏塔的概率显示内容，现在可以准确显示实际的分馏效果。
+    - 调整了分馏塔的概率显示刷新频率，从1帧一次减慢至20帧一次，以便清晰看到概率（不会影响建筑处理速率）。
+    - The effect of the Precision Fractionator (formerly known as the Low Power Fractionator) has been changed to be
       less efficient at fractionation the more product is cached.
-    + Added Points Aggregate Fractionator, which allows you to aggregate the input item's Production Increase Points to
+    - Added Points Aggregate Fractionator, which allows you to aggregate the input item's Production Increase Points to
       several items, resulting in a 10 Point Production Increase item. The pre-requisite technology is the new “Yield
       Gathering” technology.
-    + Increase Production Fractionator (formerly Increase Production Fractionator) removes its 10% bonus. The new Hidden
+    - Increase Production Fractionator (formerly Increase Production Fractionator) removes its 10% bonus. The new Hidden
       Technology “Fractionation” has been added as a Pre-Tech.
-    + Points Aggregate Fractionator and Increase Production Fractionator can accept any item without a recipe, and the
+    - Points Aggregate Fractionator and Increase Production Fractionator can accept any item without a recipe, and the
       product is the same as the input. Everything can be fractionated this time!
-    + The various fractionators now have different colors (and icons as well), making it easy to tell them apart.
-    + Added a new tech called “Fractionator Product Collector Logistics”, which will allow all fractionator products to
+    - The various fractionators now have different colors (and icons as well), making it easy to tell them apart.
+    - Added a new tech called “Fractionator Product Collector Logistics”, which will allow all fractionator products to
       be exported in a collector form.
-    + Added, removed, and adjusted some recipes. Changed the probability of all matrix fractionation recipes to 1% for
+    - Added, removed, and adjusted some recipes. Changed the probability of all matrix fractionation recipes to 1% for
       1, 3% for destruction (destruction can be disabled in settings).
-    + Added new slash style, arc style icons for all fractionation recipes. You can choose one of the three icon styles
+    - Added new slash style, arc style icons for all fractionation recipes. You can choose one of the three icon styles
       in the config file.
-    + Adjusted the probability display content for fractionators, which now accurately displays the actual fractionation
+    - Adjusted the probability display content for fractionators, which now accurately displays the actual fractionation
       effect.
-    + Adjusted the probability display refresh frequency for fractionators, slowing it down from 1 frame at a time to 20
+    - Adjusted the probability display refresh frequency for fractionators, slowing it down from 1 frame at a time to 20
       frames at a time, so that the probabilities can be seen clearly (without affecting the building processing rate).
 
 - v1.2.0
-    + 调整了绝大多数配方的分馏路线！目前新增分馏配方共计155个。其中包括分馏循环链、矿物自分馏等。
-    + 为所有分馏配方增加了概率显示。你可以在制作页面查看它们的分馏概率。
-    + 将所有配方的图标替换为类似重氢分馏的样式。
-    + 物品制作路径中可以看到相关分馏配方了。
-    + 修复了解锁科技时，新的分馏配方无法立刻使用的问题。
-    + 移除了配置文件中的调整分馏成功率的选项，基础分馏成功率强制使用1%。
-    + 原版分馏塔改名为通用分馏塔，建筑效果不变。
-    + 增加低功率分馏塔，耗电量变为1/5，分馏成功率变为1/3。
-    + 增加建筑极速分馏塔，输入建筑时有12.5%概率分馏成功，否则仅有0.1%概率分馏成功。
-    + 增加增殖分馏塔，每次分馏成功有10%概率将输出物品数目翻倍，且增产点数视为增产而非加速。
-    + Adjusted the fractionation routes for the vast majority of recipes! A total of 155 new fractionation recipes have
+    - 调整了绝大多数配方的分馏路线！目前新增分馏配方共计155个。其中包括分馏循环链、矿物自分馏等。
+    - 为所有分馏配方增加了概率显示。你可以在制作页面查看它们的分馏概率。
+    - 将所有配方的图标替换为类似重氢分馏的样式。
+    - 物品制作路径中可以看到相关分馏配方了。
+    - 修复了解锁科技时，新的分馏配方无法立刻使用的问题。
+    - 移除了配置文件中的调整分馏成功率的选项，基础分馏成功率强制使用1%。
+    - 原版分馏塔改名为通用分馏塔，建筑效果不变。
+    - 增加低功率分馏塔，耗电量变为1/5，分馏成功率变为1/3。
+    - 增加建筑极速分馏塔，输入建筑时有12.5%概率分馏成功，否则仅有0.1%概率分馏成功。
+    - 增加增殖分馏塔，每次分馏成功有10%概率将输出物品数目翻倍，且增产点数视为增产而非加速。
+    - Adjusted the fractionation routes for the vast majority of recipes! A total of 155 new fractionation recipes have
       now been added. These include Fractionation Cycle Chain, Mineral Self-Fractionation, and more.
-    + Added probability display for all fractionation recipes. You can view their fractionation probabilities on the
+    - Added probability display for all fractionation recipes. You can view their fractionation probabilities on the
       crafting page.
-    + Replaced the icons for all recipes with a style similar to deuterium fractionation.
-    + Related fractionation recipes are now visible in the item crafting path.
-    + Fixed an issue where new fractionation recipes were not immediately available when unlocking tech.
-    + Removed the option to adjust the fractionation success rate in the config file, and forced the base fractionation
+    - Replaced the icons for all recipes with a style similar to deuterium fractionation.
+    - Related fractionation recipes are now visible in the item crafting path.
+    - Fixed an issue where new fractionation recipes were not immediately available when unlocking tech.
+    - Removed the option to adjust the fractionation success rate in the config file, and forced the base fractionation
       success rate to be 1%.
-    + Original Fractionator renamed to Universal Fractionator, building effect remains unchanged.
-    + Add low power fractionator, power consumption becomes 1/5, fractionation success rate becomes 1/3.
-    + Add Building-HighSpeed Fractionator, 12.5% probability of fractionation success when building is entered,
+    - Original Fractionator renamed to Universal Fractionator, building effect remains unchanged.
+    - Add low power fractionator, power consumption becomes 1/5, fractionation success rate becomes 1/3.
+    - Add Building-HighSpeed Fractionator, 12.5% probability of fractionation success when building is entered,
       otherwise only 0.1% probability of fractionation success.
-    + Add Augmentation fractionator, each successful fractionation has a 10% chance of doubling the number of output
+    - Add Augmentation fractionator, each successful fractionation has a 10% chance of doubling the number of output
       items, and augmentation points are treated as augmentation instead of acceleration.
 
 - v1.1.0
-    + 适配版本 0.10.29.22015。
-    + 新增了1个分馏配方，目前新增分馏配方共计105个。
-    + 为每个分馏配方添加了图标显示，图标为产物图标。
-    + 为每个分馏配方添加了前置科技，解锁科技将会同步解锁相应的分馏配方。
-    + 允许自定义是否启用前置科技。如果不启用，所有分馏配方将在开局可用。
-    + 允许自定义是否显示所有的分馏配方。
-    + 允许自定义从哪一页开始显示新的分馏配方（用于避免mod之间可能存在的配方显示冲突）。
-    + 允许自定义从哪个ID开始添加分馏配方（用于避免mod之间可能存在的配方ID冲突）。
-    + Updated to work with game version 0.10.29.22015.
-    + 1 new fractionation recipe has been added, for a current total of 105 new fractionation recipes.
-    + Pre-techs have been added for each fractionation recipe, and unlocking a tech will unlock the corresponding
+    - 适配版本 0.10.29.22015。
+    - 新增了1个分馏配方，目前新增分馏配方共计105个。
+    - 为每个分馏配方添加了图标显示，图标为产物图标。
+    - 为每个分馏配方添加了前置科技，解锁科技将会同步解锁相应的分馏配方。
+    - 允许自定义是否启用前置科技。如果不启用，所有分馏配方将在开局可用。
+    - 允许自定义是否显示所有的分馏配方。
+    - 允许自定义从哪一页开始显示新的分馏配方（用于避免mod之间可能存在的配方显示冲突）。
+    - 允许自定义从哪个ID开始添加分馏配方（用于避免mod之间可能存在的配方ID冲突）。
+    - Updated to work with game version 0.10.29.22015.
+    - 1 new fractionation recipe has been added, for a current total of 105 new fractionation recipes.
+    - Pre-techs have been added for each fractionation recipe, and unlocking a tech will unlock the corresponding
       fractionation recipe at the same time.
-    + Allows customization of whether previous technology is enabled. If not enabled, all fractionation recipes will be
+    - Allows customization of whether previous technology is enabled. If not enabled, all fractionation recipes will be
       available at the beginning.
-    + Add icon display for each fractionated recipe.
-    + Allow customization of whether all fractionated recipes are displayed.
-    + Allow to customize from which page new fractionated recipes are displayed (used to avoid possible recipe display
+    - Add icon display for each fractionated recipe.
+    - Allow customization of whether all fractionated recipes are displayed.
+    - Allow to customize from which page new fractionated recipes are displayed (used to avoid possible recipe display
       conflicts between mods).
-    + Allow to customize from which ID to start adding fractionated recipes (used to avoid possible recipe ID conflicts
+    - Allow to customize from which ID to start adding fractionated recipes (used to avoid possible recipe ID conflicts
       between mods).
 
 - v1.0.1
-    + 适配版本 0.10.29.21950。
-    + 新增了3个分馏配方，目前新增分馏配方共计104个。
-    + Updated to work with game version 0.10.29.21950.
-    + 3 new fractionation recipes has been added, for a current total of 105 new fractionation recipes.
+    - 适配版本 0.10.29.21950。
+    - 新增了3个分馏配方，目前新增分馏配方共计104个。
+    - Updated to work with game version 0.10.29.21950.
+    - 3 new fractionation recipes has been added, for a current total of 105 new fractionation recipes.
 
 - v1.0.0
-    + 适配版本 0.10.28.21014。
-    + 新增了一些分馏配方，包括新的武器、物品等。目前新增分馏配方共计101个。
-    + Updated to work with game version 0.10.28.21014.
-    + Add some fractionate recipes with new buildings and items. A total of 101 new fractionation recipes have now been
+    - 适配版本 0.10.28.21014。
+    - 新增了一些分馏配方，包括新的武器、物品等。目前新增分馏配方共计101个。
+    - Updated to work with game version 0.10.28.21014.
+    - Add some fractionate recipes with new buildings and items. A total of 101 new fractionation recipes have now been
       added.
