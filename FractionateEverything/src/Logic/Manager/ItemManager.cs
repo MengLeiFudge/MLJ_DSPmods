@@ -68,8 +68,8 @@ public static class ItemManager {
         Register("I转化塔原胚",
             "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
-        Register("回收塔原胚", "Recycle Tower Proto");
-        Register("I回收塔原胚",
+        Register("分解塔原胚", "Recycle Tower Proto");
+        Register("I分解塔原胚",
             "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Recycle Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到回收塔，也有较低几率得到分馏塔定向原胚。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
@@ -252,9 +252,9 @@ public static class ItemManager {
         item.UnlockKey = -1;
         item.IconTag = "zhtyp";
 
-        item = ProtoRegistry.RegisterItem(IFE回收塔原胚, "回收塔原胚", "I回收塔原胚",
+        item = ProtoRegistry.RegisterItem(IFE分解塔原胚, "分解塔原胚", "I分解塔原胚",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(RecycleTower.color, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(DeconstructionTower.color, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = "hstyp";
 
@@ -275,12 +275,6 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = "flzfxp";
-
-        item = ProtoRegistry.RegisterItem(IFE原版配方核心, "原版配方核心", "I原版配方核心",
-            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 209, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "ybpfhx";
 
 
         item = ProtoRegistry.RegisterItem(IFE复制精华, "复制精华", "I复制精华",
@@ -575,7 +569,7 @@ public static class ItemManager {
         }
 
         //设置核心、芯片价值
-        itemValue[IFE分馏配方通用核心] = itemValue[IFE宇宙奖券] / 0.05f;
+        itemValue[IFE分馏配方核心] = itemValue[IFE宇宙奖券] / 0.05f;
         itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
 
         //设置多功能集成组件的价值

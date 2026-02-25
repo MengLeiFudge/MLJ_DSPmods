@@ -200,7 +200,7 @@ public static class TicketRaffle {
         txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "当前奖券");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(TicketNames).WithSize(200, 0).WithConfigEntry(TicketIdx1Entry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方核心);
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddButton(0, 4, y, tab, $"{"抽奖".Translate()} x 1",
@@ -244,7 +244,7 @@ public static class TicketRaffle {
         wnd.AddCheckBox(GetPosition(3, 4).Item1, y, tab, EnableAutoRaffle2Entry, "自动百连");
         y += 36f + 7f;
         for (int i = 0; i < 6; i++) {
-            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, IFE分馏塔原胚I型 + i);
+            wnd.AddImageButton(GetPosition(i, 6).Item1, y, tab, IFE交互塔原胚 + i);
             txtFracProtoCounts[i] = wnd.AddText2(GetPosition(i, 6).Item1 + 40 + 5, y, tab, "动态刷新");
         }
         y += 36f + 7f;
@@ -288,10 +288,10 @@ public static class TicketRaffle {
         for (int i = 0; i < TicketIds.Length; i++) {
             txtTicketCount[i].text = $"x {GetItemTotalCount(TicketIds[i])}";
         }
-        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
+        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方核心)}";
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
         for (int i = 0; i < 6; i++) {
-            txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE分馏塔原胚I型 + i)}";
+            txtFracProtoCounts[i].text = $"x {GetItemTotalCount(IFE交互塔原胚 + i)}";
         }
         btnMaxRaffle1.SetText($"{"抽奖".Translate()} x {MaxRaffleCount1}");
         btnMaxRaffle2.SetText($"{"抽奖".Translate()} x {MaxRaffleCount2}");
@@ -419,7 +419,7 @@ public static class TicketRaffle {
         if (poolId == 1) {
             recipes = GetRecipesByMatrix(SelectedMatrixId1);
             recipes.RemoveAll(recipe => recipe.IsMaxEcho);
-            int[] specialItems = [IFE分馏配方通用核心, 0];
+            int[] specialItems = [IFE分馏配方核心, 0];
             float[] specialRates = new float[2];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
             specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
@@ -437,11 +437,11 @@ public static class TicketRaffle {
         } else if (poolId == 2) {
             int[] specialItems = [
                 IFE分馏塔增幅芯片,
-                IFE分馏塔原胚I型,
-                IFE分馏塔原胚II型,
-                IFE分馏塔原胚III型,
-                IFE分馏塔原胚IV型,
-                IFE分馏塔原胚V型,
+                IFE交互塔原胚,
+                IFE矿物复制塔原胚,
+                IFE点数聚集塔原胚,
+                IFE转化塔原胚,
+                IFE分解塔原胚,
                 IFE分馏塔定向原胚,
             ];
             float[] specialRates = new float[7];
@@ -462,7 +462,7 @@ public static class TicketRaffle {
                     && item.BuildMode == 0
                     && item.Type != EItemType.Matrix
                     && (item.ID < IFE电磁奖券 || item.ID > IFE黑雾奖券)
-                    && (item.ID < IFE分馏塔原胚I型 || item.ID > IFE分馏塔增幅芯片)
+                    && (item.ID < IFE交互塔原胚 || item.ID > IFE分馏塔增幅芯片)
                     && item.ID != I沙土
                     && GameMain.history.ItemUnlocked(item.ID)
                 ).ToList();
@@ -700,7 +700,7 @@ public static class TicketRaffle {
             && item.BuildMode == 0
             && item.Type != EItemType.Matrix
             && (item.ID < IFE电磁奖券 || item.ID > IFE黑雾奖券)
-            && (item.ID < IFE分馏塔原胚I型 || item.ID > IFE分馏塔增幅芯片)
+            && (item.ID < IFE交互塔原胚 || item.ID > IFE分馏塔增幅芯片)
             && item.ID != I沙土
             && GameMain.history.ItemUnlocked(item.ID)
         ).ToList();

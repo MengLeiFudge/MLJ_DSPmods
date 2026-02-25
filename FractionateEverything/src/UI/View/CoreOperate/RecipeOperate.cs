@@ -125,7 +125,7 @@ public static class RecipeOperate {
         var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方通用核心);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏配方核心);
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         if (!GameMain.sandboxToolsEnabled) {
@@ -170,7 +170,7 @@ public static class RecipeOperate {
         btnSelectedItem.ItemId = SelectedItem.ID;
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
-        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方通用核心)}";
+        txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方核心)}";
 
         int line = 0;
         incSlider.gameObject.SetActive(false);
@@ -397,7 +397,7 @@ public static class RecipeOperate {
                 null);
             return;
         }
-        int takeId = IFE分馏配方通用核心;
+        int takeId = IFE分馏配方核心;
         int takeCount = recipe.Locked ? 1 : Math.Max(0, recipe.BreakCurrQualityNeedEcho - recipe.Echo);
         if (takeCount == 0) {
             UIMessageBox.Show("提示".Translate(),

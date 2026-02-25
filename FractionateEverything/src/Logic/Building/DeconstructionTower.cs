@@ -23,7 +23,7 @@ public static class DeconstructionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    private static Color color = new(0.4f, 1.0f, 0.5f);
+    public static Color color = new(0.4f, 1.0f, 0.5f);
 
     public static bool EnableFluidOutputStack = false;
     public static int MaxProductOutputStack = 1;
