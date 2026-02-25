@@ -7,48 +7,59 @@ using static FE.Utils.Utils;
 namespace FE.UI.Components;
 
 /// <summary>
-/// 带有边框和图片的按钮，默认大小为80x80，可以调整大小
+/// 带图片的按钮，默认大小为80x80
 /// </summary>
 public class MyImageButton : MonoBehaviour {
+    private static GameObject _baseObject;
     public RectTransform rectTrans;
     public UIButton uiButton;
-    public Image borderImage;
+    public Image backgroundImage;
     public Image spriteImage;
-
-    private static GameObject _baseObject;
-
+    //背景图在不同状态下的颜色
+    private static Color normalColor = Color.clear;
     private static Color mouseOverColor;
     private static Color pressColor;
-    private static Color normalColor;
-
-    // 修改为半透明背景色，而不是边框色
-    private static Color NotSelectedBgColor => normalColor;
-    private static readonly Color SelectedBgColor = new(1f, 0.9f, 0.2f, 0.6f);// 亮金黄色选中背景
-    private static readonly Color SpriteColor = new(1f, 1f, 1f, 1f);
-
-    // 选中状态相关
-    private bool _isSelected = false;
-    public bool IsSelected {
-        get => _isSelected;
-        set {
-            if (_isSelected != value) {
-                SetSelected(value);
-            }
-        }
-    }
+    private static Color selectedColor = new(1f, 0.9f, 0.2f, 0.2f);
+    //是否选中与按钮组
     private MyImageButtonGroup _buttonGroup = null;
-
-    //图标对应的物品ID
-    private int _itemId = 0;
-    public int ItemId {
-        get => _itemId;
+    private bool _selected = false;
+    private bool _deselectOnHover = false;
+    private UnityAction _onDeselectCallback = null;
+    public bool Selected {
+        get => _selected;
         set {
-            if (_itemId != value) {
-                _itemId = value;
-                SetSpriteAsItemSprite(_itemId);
+            _selected = value;
+            backgroundImage.color = _selected ? selectedColor : normalColor;
+            // 通知按钮组
+            if (_buttonGroup != null && _selected) {
+                _buttonGroup.OnButtonSelected(this);
             }
         }
     }
+    //配方与图片
+    private Proto _proto = null;
+    public Proto Proto {
+        get => _proto;
+        set {
+            if (value is ItemProto item) {
+                _proto = value;
+                Sprite sprite = item.iconSprite;
+                spriteImage.sprite = sprite;
+            } else if (value is RecipeProto recipe) {
+                _proto = value;
+                Sprite sprite = recipe.iconSprite;
+                spriteImage.sprite = sprite;
+            } else if (value is TechProto tech) {
+                _proto = value;
+                Sprite sprite = tech.iconSprite;
+                spriteImage.sprite = sprite;
+            } else {
+                _proto = null;
+                spriteImage.sprite = null;
+            }
+        }
+    }
+    public int ProtoID => _proto?.ID ?? 0;
 
     public static void InitBaseObject() {
         if (_baseObject) return;
@@ -57,42 +68,47 @@ public class MyImageButton : MonoBehaviour {
         var tankWindow = UIRoot.instance.uiGame.tankWindow;
         mouseOverColor = tankWindow.closeMouseOverColor;
         pressColor = tankWindow.closePressColor;
-        normalColor = tankWindow.closeNormalColor;
+        // normalColor = tankWindow.closeNormalColor;
 
-        // 创建一个全新的按钮对象，而不是使用现有的
-        _baseObject = new GameObject("my-image-button-base");
-
-        // 添加必要的组件
+        // 创建一个新的GameObject
+        _baseObject = new("my-image-button-base");
         _baseObject.AddComponent<RectTransform>();
-        var image = _baseObject.AddComponent<Image>();
-        image.color = NotSelectedBgColor;
 
-        // 添加Button组件
-        _baseObject.AddComponent<Button>();
-
-        // 添加UIButton组件
+        // 添加UIButton用于添加点击事件
         var uiButton = _baseObject.AddComponent<UIButton>();
-        uiButton.button = _baseObject.GetComponent<Button>();
+        _baseObject.AddComponent<Button>();
+        uiButton.Init();// 初始化以绑定uiButton和button
 
-        // 创建一个子对象用于显示图标
-        var spriteObj = new GameObject("sprite");
+        // 创建背景图片子对象
+        var backgroundObj = new GameObject("backgroundImage");
+        backgroundObj.transform.SetParent(_baseObject.transform, false);
+        var backgroundRect = backgroundObj.AddComponent<RectTransform>();
+        backgroundRect.anchorMin = Vector2.zero;
+        backgroundRect.anchorMax = Vector2.one;
+        backgroundRect.sizeDelta = Vector2.zero;
+        backgroundRect.anchoredPosition = Vector2.zero;
+        var backgroundImage = backgroundObj.AddComponent<Image>();
+        backgroundImage.color = normalColor;
+        backgroundImage.raycastTarget = false;// 确保背景不拦截射线检测
+
+        // 创建精灵图片子对象
+        var spriteObj = new GameObject("spriteImage");
         spriteObj.transform.SetParent(_baseObject.transform, false);
         var spriteRect = spriteObj.AddComponent<RectTransform>();
-        spriteRect.anchorMin = new Vector2(0, 0);
-        spriteRect.anchorMax = new Vector2(1, 1);
-        spriteRect.offsetMin = new Vector2(5, 5);// 内边距
-        spriteRect.offsetMax = new Vector2(-5, -5);// 内边距
+        spriteRect.anchorMin = Vector2.zero;
+        spriteRect.anchorMax = Vector2.one;
+        spriteRect.sizeDelta = Vector2.zero;
+        spriteRect.anchoredPosition = Vector2.zero;
         var spriteImage = spriteObj.AddComponent<Image>();
-        spriteImage.color = SpriteColor;
+        spriteImage.color = Color.white;
 
         // 设置过渡效果
         uiButton.transitions = new UIButton.Transition[1];
         uiButton.transitions[0] = new UIButton.Transition();
-        uiButton.transitions[0].target = image;
+        uiButton.transitions[0].target = spriteImage;
         uiButton.transitions[0].normalColor = normalColor;
         uiButton.transitions[0].mouseoverColor = mouseOverColor;
         uiButton.transitions[0].pressedColor = pressColor;
-
         // 设置过渡效果的大小变化（避免大小变化导致的问题）
         uiButton.transitions[0].highlightSizeMultiplier = 1.0f;
         uiButton.transitions[0].mouseoverSize = 1.0f;
@@ -101,15 +117,8 @@ public class MyImageButton : MonoBehaviour {
         _baseObject.SetActive(false);
     }
 
-    public static MyImageButton CreateImageButtonWithDefAction(float x, float y, RectTransform parent, int itemID) {
-        MyImageButton ibtn = CreateImageButton(x, y, parent, itemID);
-        ibtn.SetClickEvent(() => ibtn.DefaultClick(true), () => ibtn.DefaultClick(false));
-        return ibtn;
-    }
-
     public static MyImageButton CreateImageButton(float x, float y, RectTransform parent,
-        int itemID, float width = 40f, float height = 40f,
-        UnityAction onLeftClick = null, UnityAction onRightClick = null,
+        Proto proto, float width = 40f, float height = 40f,
         string tipTitle = "", string tipContent = "") {
         var go = Instantiate(_baseObject);
         go.name = "my-image-button";
@@ -120,12 +129,22 @@ public class MyImageButton : MonoBehaviour {
 
         ibtn.rectTrans = rect;
         ibtn.uiButton = go.GetComponent<UIButton>();
-        ibtn.borderImage = go.GetComponent<Image>();
-        ibtn.spriteImage = go.transform.Find("sprite").GetComponent<Image>();
+        ibtn.backgroundImage = go.transform.Find("backgroundImage").GetComponent<Image>();
+        ibtn.spriteImage = go.transform.Find("spriteImage").GetComponent<Image>();
 
-        ibtn.SetClickEvent(onLeftClick, onRightClick);
+        // 添加EventTrigger监听鼠标进入事件
+        var eventTrigger = go.AddComponent<EventTrigger>();
+        var pointerEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        pointerEnter.callback.AddListener(_ => {
+            if (ibtn._deselectOnHover && ibtn.Selected) {
+                ibtn.Selected = false;
+                ibtn._onDeselectCallback?.Invoke();
+            }
+        });
+        eventTrigger.triggers.Add(pointerEnter);
+
         rect.sizeDelta = new(width, height);
-        ibtn.ItemId = itemID;
+        ibtn.Proto = proto;
 
         //添加按钮悬浮提示
         ibtn.uiButton.tips.topLevel = true;
@@ -136,112 +155,20 @@ public class MyImageButton : MonoBehaviour {
         return ibtn;
     }
 
-    private void SetClickEvent(UnityAction onLeftClick, UnityAction onRightClick) {
-        if (uiButton.button != null) {
-            uiButton.button.onClick.RemoveAllListeners();
-            if (onLeftClick != null) uiButton.button.onClick.AddListener(onLeftClick);
-            if (onRightClick != null) {
-                EventTrigger eventTrigger = gameObject.GetComponent<EventTrigger>();
-                if (eventTrigger == null) {
-                    eventTrigger = gameObject.AddComponent<EventTrigger>();
-                }
-                if (eventTrigger.triggers == null) {
-                    eventTrigger.triggers = [];
-                }
-                eventTrigger.triggers.RemoveAll(entry => entry.eventID == EventTriggerType.PointerClick);
-                EventTrigger.Entry entry = new EventTrigger.Entry {
-                    eventID = EventTriggerType.PointerClick,
-                };
-                entry.callback.AddListener(data => {
-                    PointerEventData pointerData = (PointerEventData)data;
-                    if (pointerData.button == PointerEventData.InputButton.Right) {
-                        onRightClick.Invoke();
-                    }
-                });
-                eventTrigger.triggers.Add(entry);
-            }
-        }
+    public MyImageButton WithTakeItemClickEvent() {
+        WithClickEvent(() => ClickToMoveModDataItem(ProtoID, true), () => ClickToMoveModDataItem(ProtoID, false));
+        return this;
     }
 
-    private void SetSpriteAsItemSprite(int itemId) {
-        Sprite sprite = LDB.items.Select(itemId)?.iconSprite;
-        spriteImage.sprite = sprite;
-        spriteImage.gameObject.SetActive(sprite != null);
-    }
-
-    private void DefaultClick(bool isLeftClick) {
-        ClickToMoveModDataItem(ItemId, isLeftClick);
-    }
-
-    public void SetEnable(bool on) {
-        // //if (uiButton) uiButton.enabled = on;
-        //
-        // if (borderImage == null) return;
-        //
-        // Color targetColor;
-        // if (_isSelected) {
-        //     targetColor = SelectedBgColor;
-        // } else {
-        //     targetColor = NotSelectedBgColor;
-        // }
-        //
-        // if (!uiButton.enabled) {
-        //     targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, targetColor.a * 0.5f);
-        // }
-        //
-        // //borderImage.color = targetColor;
-        //
-        // // 更新精灵颜色
-        // if (spriteImage) {
-        //     Color spriteTargetColor = SpriteColor;
-        //     if (!uiButton.enabled) {
-        //         spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
-        //             spriteTargetColor.a * 0.5f);
-        //     }
-        //     spriteImage.color = spriteTargetColor;
-        // }
-        // // if (on) {
-        // //     if (borderImage) borderImage.color = NotSelectedBgColor;
-        // //     if (spriteImage) spriteImage.color = SpriteColor;
-        // // } else {
-        // //     if (borderImage)
-        // //         borderImage.color = new Color(NotSelectedBgColor.r, NotSelectedBgColor.g, NotSelectedBgColor.b,
-        // //             NotSelectedBgColor.a * 0.5f);
-        // //     if (spriteImage)
-        // //         spriteImage.color = new Color(SpriteColor.r, SpriteColor.g, SpriteColor.b, SpriteColor.a * 0.5f);
-        // // }
-        //
-        // //borderImage.color先不改，只改spriteImage.color；且uiButton.enabled也不改
-        // if (spriteImage) {
-        //     Color spriteTargetColor = SpriteColor;
-        //     if (!uiButton.enabled) {
-        //         spriteTargetColor = new Color(spriteTargetColor.r, spriteTargetColor.g, spriteTargetColor.b,
-        //             spriteTargetColor.a * 0.5f);
-        //     }
-        //     spriteImage.color = spriteTargetColor;
-        // }
-        if (borderImage == null) return;
-        borderImage.color = _isSelected ? SelectedBgColor : NotSelectedBgColor;
-    }
-
-    private void SetSelected(bool selected) {
-        _isSelected = selected;
-        SetEnable(selected);
-
-        // 通知按钮组
-        if (_buttonGroup != null && selected) {
-            _buttonGroup.OnButtonSelected(this);
-        }
+    public MyImageButton WithClickEvent(UnityAction onLeftClick, UnityAction onRightClick) {
+        uiButton.onClick += _ => onLeftClick?.Invoke();
+        uiButton.onRightClick += _ => onRightClick?.Invoke();
+        return this;
     }
 
     public MyImageButton WithSize(float width, float height) {
         rectTrans.sizeDelta = new(width, height);
         // spriteImage.rectTransform.sizeDelta = new(width, height);
-        return this;
-    }
-
-    public MyImageButton WithEnable(bool on) {
-        SetEnable(on);
         return this;
     }
 
@@ -258,7 +185,7 @@ public class MyImageButton : MonoBehaviour {
     }
 
     public MyImageButton WithSelected(bool selected) {
-        IsSelected = selected;
+        Selected = selected;
         return this;
     }
 
@@ -268,19 +195,9 @@ public class MyImageButton : MonoBehaviour {
         return this;
     }
 
-    // 添加点击切换选中状态的功能
-    public MyImageButton WithToggleOnClick() {
-        if (uiButton?.button != null) {
-            uiButton.button.onClick.AddListener(() => {
-                if (_buttonGroup == null) {
-                    // 没有按钮组时，直接切换状态
-                    IsSelected = !IsSelected;
-                } else {
-                    // 有按钮组时，让按钮组处理
-                    _buttonGroup.ToggleButton(this);
-                }
-            });
-        }
+    public MyImageButton WithDeselectOnHover(bool enable = true, UnityAction onDeselect = null) {
+        _deselectOnHover = enable;
+        _onDeselectCallback = onDeselect;
         return this;
     }
 

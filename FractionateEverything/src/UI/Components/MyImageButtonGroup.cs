@@ -23,8 +23,8 @@ public class MyImageButtonGroup(bool singleSelection = true) {
         if (singleSelection) {
             // 单选组：取消其他按钮的选中状态
             foreach (var button in _buttons) {
-                if (button != selectedButton && button.IsSelected) {
-                    button.IsSelected = false;
+                if (button != selectedButton && button.Selected) {
+                    button.Selected = false;
                 }
             }
         }
@@ -32,35 +32,35 @@ public class MyImageButtonGroup(bool singleSelection = true) {
 
     public void ToggleButton(MyImageButton button) {
         if (singleSelection) {
-            if (button.IsSelected) {
+            if (button.Selected) {
                 // 单选组中，如果当前按钮已选中，不允许取消选中（保证至少有一个选中）
                 return;
             } else {
-                button.IsSelected = true;
+                button.Selected = true;
             }
         } else {
             // 多选组：直接切换状态
-            button.IsSelected = !button.IsSelected;
+            button.Selected = !button.Selected;
         }
     }
 
     public List<MyImageButton> GetSelectedButtons() {
-        return _buttons.FindAll(b => b.IsSelected);
+        return _buttons.FindAll(b => b.Selected);
     }
 
     public MyImageButton GetSelectedButton() {
-        return _buttons.Find(b => b.IsSelected);
+        return _buttons.Find(b => b.Selected);
     }
 
     public void ClearSelection() {
         foreach (var button in _buttons) {
-            button.IsSelected = false;
+            button.Selected = false;
         }
     }
 
     public void SelectButton(MyImageButton button) {
         if (_buttons.Contains(button)) {
-            button.IsSelected = true;
+            button.Selected = true;
         }
     }
 }
