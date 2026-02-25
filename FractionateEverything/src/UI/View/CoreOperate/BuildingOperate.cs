@@ -137,7 +137,7 @@ public static class BuildingOperate {
         var txt = wnd.AddText2(x, y, tab, "建筑类型");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, IFE分馏塔增幅芯片);
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏塔增幅芯片));
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
