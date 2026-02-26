@@ -131,7 +131,7 @@ public class CheckPlugins : BaseUnityPlugin {
         }
 
         //禁用模组提示
-        if (!Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
+        if (Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
             StringBuilder sb2 = new StringBuilder();
             sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
             _disabledModsList = sb2.ToString();
