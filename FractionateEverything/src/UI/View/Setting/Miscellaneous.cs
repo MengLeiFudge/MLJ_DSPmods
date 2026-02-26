@@ -50,6 +50,7 @@ public static class Miscellaneous {
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
+    private static ConfigEntry<bool> EnablePackageLogisticEntry;
     public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
     public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
@@ -58,6 +59,7 @@ public static class Miscellaneous {
     public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
     public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
     public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
+    public static bool EnablePackageLogistic => EnablePackageLogisticEntry.Value;
 
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
@@ -118,6 +120,8 @@ public static class Miscellaneous {
             configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
         EnablePackageAutoSortTwiceEntry =
             configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将多余物品收入分馏数据中心");
+        EnablePackageLogisticEntry =
+            configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容数据中心");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
