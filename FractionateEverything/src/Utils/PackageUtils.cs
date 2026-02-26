@@ -1049,19 +1049,40 @@ public static partial class Utils {
 
     private static DateTime lastSortTime = DateTime.MinValue;
 
-    /// <summary>
-    /// 单击玩家背包排序按钮时，背包内的物品会尽可能转移到物流背包；
-    /// 双击玩家背包排序按钮时，背包物品会全部转移到Mod背包。
-    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStorageGrid), nameof(UIStorageGrid.OnSort))]
+    private static bool PrefixUIStorageGridOnSort(UIStorageGrid __instance) {
+        if (Miscellaneous.EnablePackageAutoSortTwice) {
+            return true;
+        }
+        if (__instance.storage.type != EStorageType.Default && !__instance.sortableFilter) {
+            return false;
+        }
+        if (__instance.storage != GameMain.mainPlayer?.package) {
+            return true;
+        }
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return false;
+        }
+        return sortUpload();
+    }
+    
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StorageComponent), nameof(StorageComponent.Sort))]
     private static bool StorageComponent_Sort_Prefix(StorageComponent __instance) {
+        if (!Miscellaneous.EnablePackageAutoSortTwice) {
+            return true;
+        }
         if (__instance != GameMain.mainPlayer?.package) {
             return true;
         }
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return true;
         }
+        return !Miscellaneous.EnablePackageAutoSortTwice || sortUpload();
+    }
+
+    private static bool sortUpload() {
         bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && TechItemInteractionUnlocked;
         lastSortTime = DateTime.Now;
         if (!isDoubleClick) {
@@ -1074,12 +1095,14 @@ public static partial class Utils {
             for (int gridIndex = 99; gridIndex >= 0; gridIndex--) {
                 int itemId = deliveryPackage.grids[gridIndex].itemId;
                 for (int index = 0; index < package.size; index++) {
-                    if (package.grids[index].itemId == itemId) {
-                        int count = deliveryPackage.AddItem(itemId,
-                            package.grids[index].count, package.grids[index].inc, out int remainInc);
-                        package.grids[index].count -= count;
-                        package.grids[index].inc = remainInc;
+                    if (package.grids[index].itemId != itemId) {
+                        continue;
                     }
+
+                    int count = deliveryPackage.AddItem(itemId,
+                        package.grids[index].count, package.grids[index].inc, out int remainInc);
+                    package.grids[index].count -= count;
+                    package.grids[index].inc = remainInc;
                 }
             }
         } else {
