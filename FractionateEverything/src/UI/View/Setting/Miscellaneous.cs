@@ -47,7 +47,9 @@ public static class Miscellaneous {
     private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
 
     private static MyCheckBox PackageSortTwiceCheckBox;
+    private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
+    private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
     public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
     public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
@@ -55,6 +57,7 @@ public static class Miscellaneous {
     public static float UploadThreshold => UploadThresholdEntry.Value;
     public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
     public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
+    public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
 
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
@@ -80,6 +83,8 @@ public static class Miscellaneous {
 
         Register("双击背包排序按钮将多余物品收入分馏数据中心",
             "Double-click the backpack sort button to store excess items in the distillation data center");
+        Register("AutoSorter模组将背包中多余物品收入分馏数据中心",
+            "The AutoSorter module collects surplus items into the distillation data center.");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -111,6 +116,8 @@ public static class Miscellaneous {
 
         EnablePackageSortTwiceEntry =
             configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
+        EnablePackageAutoSortTwiceEntry =
+            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将多余物品收入分馏数据中心");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -145,8 +152,12 @@ public static class Miscellaneous {
         var cb = wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
         wnd.AddTipsButton2(x + cb.Width + 5, y, tab,
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
+        if (AutoSorter.Enable) {
+            y += 36f;
+            PackageAutoSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+        }
         y += 36f;
-        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "显示分馏配方详细信息");
+        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
     }
 
     public static void UpdateUI() {
@@ -159,6 +170,9 @@ public static class Miscellaneous {
         UploadThresholdSlider.slider.interactable = !isMultiplayer;
         UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
         PackageSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+        if (AutoSorter.Enable) {
+            PackageAutoSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+        }
     }
 
     private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
