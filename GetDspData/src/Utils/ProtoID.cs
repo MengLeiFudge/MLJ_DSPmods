@@ -443,11 +443,11 @@ public static partial class Utils {
     internal const int IFE引力奖券 = 8005;
     internal const int IFE宇宙奖券 = 8006;
     internal const int IFE黑雾奖券 = 8007;
-    internal const int IFE交互塔原胚 = 8011;
-    internal const int IFE矿物复制塔原胚 = 8012;
-    internal const int IFE点数聚集塔原胚 = 8013;
-    internal const int IFE转化塔原胚 = 8014;
-    internal const int IFE分解塔原胚 = 8015;
+    internal const int IFE分馏塔原胚I型 = 8011;
+    internal const int IFE分馏塔原胚II型 = 8012;
+    internal const int IFE分馏塔原胚III型 = 8013;
+    internal const int IFE分馏塔原胚IV型 = 8014;
+    internal const int IFE分馏塔原胚V型 = 8015;
     internal const int IFE分馏塔定向原胚 = 8016;
     internal const int IFE分馏配方核心 = 8017;
     internal const int IFE分馏塔增幅芯片 = 8018;
