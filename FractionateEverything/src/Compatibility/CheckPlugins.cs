@@ -32,6 +32,7 @@ namespace FE.Compatibility;
 [BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(OrbitalRing.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(PackageLogistic.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -152,6 +153,7 @@ public class CheckPlugins : BaseUnityPlugin {
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
         OrbitalRing.Compatible();
+        PackageLogistic.Compatible();
         SmelterMiner.Compatible();
         TheyComeFromVoid.Compatible();
         UxAssist.Compatible();
