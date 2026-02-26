@@ -131,16 +131,16 @@ public class CheckPlugins : BaseUnityPlugin {
         }
 
         //禁用模组提示
-        if (Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
-            StringBuilder sb2 = new StringBuilder();
-            sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
-            _disabledModsList = sb2.ToString();
-            new Harmony(GUID).Patch(
-                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
-                null,
-                new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
-            );
-        }
+        // if (Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
+        //     StringBuilder sb2 = new StringBuilder();
+        //     sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
+        //     _disabledModsList = sb2.ToString();
+        //     new Harmony(GUID).Patch(
+        //         AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
+        //         null,
+        //         new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
+        //     );
+        // }
 
         AutoSorter.Compatible();
         BuildToolOpt.Compatible();
