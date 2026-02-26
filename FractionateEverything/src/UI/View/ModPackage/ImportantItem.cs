@@ -14,7 +14,7 @@ public static class ImportantItem {
 
     private static readonly int[][] itemIdOriArr = [
         [IFE电磁奖券, IFE能量奖券, IFE结构奖券, IFE信息奖券, IFE引力奖券, IFE宇宙奖券, IFE黑雾奖券],
-        [IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE分解塔原胚, IFE分馏塔定向原胚],
+        [IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔原胚III型, IFE分馏塔原胚IV型, IFE分馏塔原胚V型, IFE分馏塔定向原胚],
         [IFE分馏配方核心, IFE分馏塔增幅芯片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
         [IFE矿物复制塔, IFE点数聚集塔, IFE量子复制塔, IFE点金塔, IFE分解塔, IFE转化塔],
@@ -51,7 +51,7 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButtonWithDefAction(position.Item1, y, tab, itemId);
+                wnd.AddImageButton(position.Item1, y, tab, LDB.items.Select(itemId)).WithTakeItemClickEvent();
                 itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
                 index++;
             }
