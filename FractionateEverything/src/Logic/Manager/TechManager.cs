@@ -246,7 +246,7 @@ public static class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
-        tech分馏数据中心.AddItems = [IFE交互塔原胚];
+        tech分馏数据中心.AddItems = [IFE分馏塔原胚I型];
         tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
@@ -426,11 +426,11 @@ public static class TechManager {
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
             [TFE分馏数据中心],
-            [IFE交互塔原胚], [20], 3600,
+            [IFE分馏塔原胚I型], [20], 3600,
             [],
             GetTechPos(2, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE分馏塔定向原胚];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE分馏塔原胚I型, IFE分馏塔原胚II型, IFE分馏塔定向原胚];
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
