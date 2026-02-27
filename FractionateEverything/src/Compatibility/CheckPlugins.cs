@@ -32,6 +32,7 @@ namespace FE.Compatibility;
 [BepInDependency(MoreMegaStructure.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(Multfunction_mod.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(OrbitalRing.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(PackageLogistic.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(SmelterMiner.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(TheyComeFromVoid.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(UxAssist.GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -131,16 +132,16 @@ public class CheckPlugins : BaseUnityPlugin {
         }
 
         //禁用模组提示
-        if (!Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
-            StringBuilder sb2 = new StringBuilder();
-            sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
-            _disabledModsList = sb2.ToString();
-            new Harmony(GUID).Patch(
-                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
-                null,
-                new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
-            );
-        }
+        // if (Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
+        //     StringBuilder sb2 = new StringBuilder();
+        //     sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
+        //     _disabledModsList = sb2.ToString();
+        //     new Harmony(GUID).Patch(
+        //         AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
+        //         null,
+        //         new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
+        //     );
+        // }
 
         AutoSorter.Compatible();
         BuildToolOpt.Compatible();
@@ -152,6 +153,7 @@ public class CheckPlugins : BaseUnityPlugin {
         Multfunction_mod.Compatible();
         NebulaMultiplayerModAPI.Compatible();
         OrbitalRing.Compatible();
+        PackageLogistic.Compatible();
         SmelterMiner.Compatible();
         TheyComeFromVoid.Compatible();
         UxAssist.Compatible();
