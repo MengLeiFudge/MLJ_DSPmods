@@ -17,16 +17,16 @@ public static class Achievements {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = wnd.AddTab(trans, "成就详情");
-        float x = 0f;
-        float y = 18f;
+        // window = trans;
+        // tab = wnd.AddTab(trans, "成就详情");
+        // float x = 0f;
+        // float y = 18f;
     }
 
     public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) {
-            return;
-        }
+        // if (!tab.gameObject.activeSelf) {
+        //     return;
+        // }
     }
 
     #region IModCanSave
