@@ -1,3 +1,19 @@
+- v2.2.7
+    + 修复下拉框不在最上面的问题。
+    + Fix dropdown box not at the top.
+
+- v2.2.6
+    + 数据中心的物品改为按页显示。
+    + 修复指引缺失的问题。
+    + 修复科技中图标无法正常显示的问题。
+    + Data center items changed to display by page.
+    + Fixed the issue of missing guidelines.
+    + Fixed the issue that icons in tech are not displayed properly.
+
+- v2.2.5
+    + 修复部分报错。
+    + Fix some bugs.
+
 - v2.2.4
     + 适配游戏版本 0.10.34。
     + Adaptation of game version 0.10.34.
