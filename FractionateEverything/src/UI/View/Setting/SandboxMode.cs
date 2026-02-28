@@ -12,10 +12,10 @@ public static class SandboxMode {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private static ConfigEntry<float> ExpMultiRateEntry;
-    public static float ExpMultiRate => GameMain.sandboxToolsEnabled ? ExpMultiRateEntry.Value : 1;
+    private static ConfigEntry<float> ExpMultiRatioEntry;
+    public static float ExpMultiRatio => GameMain.sandboxToolsEnabled ? ExpMultiRatioEntry.Value : 1;
 
-    private class MultiRateMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
+    private class MultiRatioMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
         public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
         public override int ValueToIndex(float value) => (int)(Math.Log10(value) * 10.0 + 10);
     }
@@ -31,7 +31,7 @@ public static class SandboxMode {
     }
 
     public static void LoadConfig(ConfigFile configFile) {
-        ExpMultiRateEntry = configFile.Bind("TabSetting", "ExpMultiRate", 1.0f, "经验获取倍率");
+        ExpMultiRatioEntry = configFile.Bind("TabSetting", "ExpMultiRatio", 1.0f, "经验获取倍率");
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -42,9 +42,9 @@ public static class SandboxMode {
         wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
             RecipeManager.UnlockAllFracRecipes);
         y += 36f;
-        var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-rate");
+        var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-ratio");
         wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
-            ExpMultiRateEntry, new MultiRateMapper(), "0.#", 200f);
+            ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
         wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
             "经验获取倍率", "经验获取倍率说明");
     }

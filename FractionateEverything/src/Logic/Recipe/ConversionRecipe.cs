@@ -229,7 +229,7 @@ public class ConversionRecipe : BaseRecipe {
                     }
                 }
                 //构建转化列表
-                float successRate = 1.0f / itemIDs.Count;
+                float successRatio = 1.0f / itemIDs.Count;
                 float totalValuePercent = itemValuePercents.Sum();
                 List<OutputInfo> outputMain = [];
                 for (int k = 0; k < itemIDs.Count; k++) {
@@ -237,8 +237,8 @@ public class ConversionRecipe : BaseRecipe {
                     //计算分配给这个输出的价值
                     float allocatedValue = itemValue[inputID] * (itemValuePercents[k] / totalValuePercent);
                     //根据输出物品的价值计算数量
-                    float outputCount = allocatedValue / (successRate * itemValue[outputID]);
-                    outputMain.Add(new(successRate, outputID, outputCount));
+                    float outputCount = allocatedValue / (successRatio * itemValue[outputID]);
+                    outputMain.Add(new(successRatio, outputID, outputCount));
                 }
                 AddRecipe(new ConversionRecipe(inputID, 0.02f,
                     outputMain,
@@ -256,12 +256,12 @@ public class ConversionRecipe : BaseRecipe {
     /// 创建转化塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">最大成功率</param>
+    /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public ConversionRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public ConversionRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
     #region IModCanSave
 

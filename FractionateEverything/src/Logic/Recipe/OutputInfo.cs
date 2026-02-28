@@ -9,7 +9,7 @@ namespace FE.Logic.Recipe;
 /// 分馏配方某一项产物信息。
 /// 注意，只有<see cref="FE.Logic.Recipe.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
 /// </summary>
-public class OutputInfo(float successRate, int outputID, float outputCount) {
+public class OutputInfo(float successRatio, int outputID, float outputCount) {
     public static void AddTranslations() {
         Register("总计", "Total");
     }
@@ -17,7 +17,7 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
     /// <summary>
     /// 输出物品的概率
     /// </summary>
-    public float SuccessRate => successRate;
+    public float SuccessRatio => successRatio;
 
     /// <summary>
     /// 输出物品的ID
@@ -34,7 +34,7 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
     /// </summary>
     public int OutputTotalCount { get; set; } = 0;
 
-    public bool ShowSuccessRate => OutputTotalCount >= Math.Sqrt(500000 / itemValue[OutputID]);
+    public bool ShowSuccessRatio => OutputTotalCount >= Math.Sqrt(500000 / itemValue[OutputID]);
     public bool ShowOutputName => OutputTotalCount > 0;
     public bool ShowOutputCount => OutputTotalCount >= Math.Sqrt(80000 / itemValue[OutputID]);
 
@@ -43,7 +43,7 @@ public class OutputInfo(float successRate, int outputID, float outputCount) {
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         string s1 = forceShow || ShowOutputCount ? OutputCount.ToString("F3") : "???";
         string s2 = forceShow || ShowOutputName ? item.name : "???";
-        string s3 = forceShow || ShowSuccessRate ? SuccessRate.ToString("P3") : "???";
+        string s3 = forceShow || ShowSuccessRatio ? SuccessRatio.ToString("P3") : "???";
         return $"{s1} {s2} ~ {s3} ({"总计".Translate()} {OutputTotalCount})";
     }
 }

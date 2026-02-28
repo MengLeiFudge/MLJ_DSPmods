@@ -85,16 +85,16 @@ public class MineralCopyRecipe : BaseRecipe {
         }
     }
 
-    private static void Create(int inputID, float baseSuccessRate) {
-        Create(inputID, baseSuccessRate, []);
+    private static void Create(int inputID, float baseSuccessRatio) {
+        Create(inputID, baseSuccessRatio, []);
     }
 
-    private static void Create(int inputID, float baseSuccessRate, List<OutputInfo> outputAppend) {
+    private static void Create(int inputID, float baseSuccessRatio, List<OutputInfo> outputAppend) {
         if (itemValue[inputID] >= maxValue) {
             return;
         }
         outputAppend.RemoveAll(info => itemValue[info.OutputID] >= maxValue);
-        AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRate,
+        AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRatio,
             [
                 new(1.000f, inputID, 2),
             ],
@@ -110,12 +110,12 @@ public class MineralCopyRecipe : BaseRecipe {
     /// 创建矿物复制塔配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">最大成功率</param>
+    /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public MineralCopyRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public MineralCopyRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
     #region IModCanSave
 

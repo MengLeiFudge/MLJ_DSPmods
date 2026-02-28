@@ -40,7 +40,7 @@ public static class TicketRaffle {
     private static ConfigEntry<int> TicketIdx1Entry;
     private static Text txtCoreCount;
     private static Text txtCore2Count;
-    private static (float[] rates, int[] counts) pool1;
+    private static (float[] ratios, int[] counts) pool1;
     private static List<BaseRecipe> recipes;
 
     private static UIButton btnMaxRaffle1;
@@ -50,7 +50,7 @@ public static class TicketRaffle {
 
     private static ConfigEntry<int> TicketIdx2Entry;
     private static Text txtChipCount;
-    private static (float[] rates, int[] counts) pool2;
+    private static (float[] ratios, int[] counts) pool2;
 
     private static UIButton btnMaxRaffle2;
     private static ConfigEntry<bool> EnableAutoRaffle2Entry;
@@ -58,20 +58,20 @@ public static class TicketRaffle {
 
     private static ConfigEntry<int> TicketIdx3Entry;
     private static List<ItemProto> commonItems3 = [];
-    private static (float[] rates, int[] counts) pool3;
+    private static (float[] ratios, int[] counts) pool3;
 
     private static UIButton btnMaxRaffle3;
     private static ConfigEntry<bool> EnableAutoRaffle3Entry;
 
     private static ConfigEntry<int> TicketIdx4Entry;
     private static List<ItemProto> commonItems4 = [];
-    private static (float[] rates, int[] counts) pool4;
+    private static (float[] ratios, int[] counts) pool4;
 
     private static UIButton btnMaxRaffle4;
     private static ConfigEntry<bool> EnableAutoRaffle4Entry;
 
     private static ConfigEntry<int> TicketIdx5Entry;
-    private static (float[] rates, int[] counts) pool5;
+    private static (float[] ratios, int[] counts) pool5;
 
     private static UIButton btnMaxRaffle5;
     private static ConfigEntry<bool> EnableAutoRaffle5Entry;
@@ -399,11 +399,11 @@ public static class TicketRaffle {
     /// </summary>
     /// <param name="ticketId">奖券id</param>
     /// <param name="specialItems">已预订奖券价值的物品id（配方使用0替代）</param>
-    /// <param name="specialRates">已预订奖券价值的物品占据奖券价值的比例</param>
+    /// <param name="specialRatios">已预订奖券价值的物品占据奖券价值的比例</param>
     /// <param name="commonItems">未预订奖券价值，但是在奖池中的物品</param>
     /// <param name="recipeValue">配方价值</param>
     /// <returns>返回一个元组(概率[12000], 数目[12000])，索引表示物品id（0表示配方）</returns>
-    private static (float[], int[]) GeneratePool(int ticketId, int[] specialItems, float[] specialRates,
+    private static (float[], int[]) GeneratePool(int ticketId, int[] specialItems, float[] specialRatios,
         List<ItemProto> commonItems, float recipeValue = float.MaxValue) {
         float ticketValue = itemValue[ticketId] * VipFeatures.TicketValueMulti;
         float leftValue = ticketValue;
@@ -412,25 +412,25 @@ public static class TicketRaffle {
         float[] pc = new float[12000];
         //每个物品的数目
         int[] counts = new int[12000];
-        //如果specialRates过大，归一化specialRates，然后直接返回
-        float specialRatesSum = specialRates.Sum();
-        bool specialRatesOverRange = specialRatesSum > 1;
-        if (specialRatesOverRange) {
+        //如果specialRatios过大，归一化specialRatios，然后直接返回
+        float specialRatiosSum = specialRatios.Sum();
+        bool specialRatiosOverRange = specialRatiosSum > 1;
+        if (specialRatiosOverRange) {
             for (int i = 0; i < specialItems.Length; i++) {
-                specialRates[i] /= specialRatesSum;
+                specialRatios[i] /= specialRatiosSum;
             }
         }
         for (int i = 0; i < specialItems.Length; i++) {
             int id = specialItems[i];
             if (itemValue[id] < maxValue) {
-                pc[id] = ticketValue * specialRates[i] / itemValue[id];
+                pc[id] = ticketValue * specialRatios[i] / itemValue[id];
             } else {
-                pc[id] = ticketValue * specialRates[i] / recipeValue;
+                pc[id] = ticketValue * specialRatios[i] / recipeValue;
             }
             leftValue -= pc[id];
             counts[id] = 1;
         }
-        if (specialRatesOverRange) {
+        if (specialRatiosOverRange) {
             return (pc, counts);
         }
         //2.计算未预订奖券价值物品的pc
@@ -464,14 +464,14 @@ public static class TicketRaffle {
     /// </summary>
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
-            recipes = GetRecipesByMatrix(SelectedMatrixId1).Where(r => !r.IsMaxEcho).ToList();
+            recipes = GetRecipesByMatrix(SelectedMatrixId1).Where(r => !r.IsMaxLevel).ToList();
             int[] specialItems = [IFE分馏配方核心, IFE原版配方核心, 0];//最后一个是分馏配方
-            float[] specialRates = new float[3];
+            float[] specialRatios = new float[3];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-            specialRates[0] = 0.5f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-            specialRates[1] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            specialRatios[0] = 0.5f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            specialRatios[1] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
-            specialRates[2] = recipes.Count == 0
+            specialRatios[2] = recipes.Count == 0
                 ? 0
                 : (1.0f / RecipeRaffleMaxCounts[TicketIdx1])
                   * RecipeValue
@@ -480,7 +480,7 @@ public static class TicketRaffle {
             List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
                 item.ID >= IFE速度精华 && item.ID <= IFE增产精华
             ).ToList();
-            pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRates, commonItems, RecipeValue);
+            pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRatios, commonItems, RecipeValue);
         } else if (poolId == 2) {
             int[] specialItems = [
                 IFE分馏塔增幅芯片,
@@ -491,17 +491,17 @@ public static class TicketRaffle {
                 IFE回收塔原胚,
                 IFE分馏塔定向原胚,
             ];
-            float[] specialRates = new float[7];
+            float[] specialRatios = new float[7];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-            specialRates[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-            float specialRates16Sum = 1 - specialRates[0];
-            specialRates[1] = specialRates16Sum * 20 / 101;
-            specialRates[2] = specialRates16Sum * 20 / 101;
-            specialRates[3] = specialRates16Sum * 20 / 101;
-            specialRates[4] = specialRates16Sum * 20 / 101;
-            specialRates[5] = specialRates16Sum * 20 / 101;
-            specialRates[6] = specialRates16Sum * 1 / 101;
-            pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRates, []);
+            specialRatios[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
+            float specialRatios16Sum = 1 - specialRatios[0];
+            specialRatios[1] = specialRatios16Sum * 20 / 101;
+            specialRatios[2] = specialRatios16Sum * 20 / 101;
+            specialRatios[3] = specialRatios16Sum * 20 / 101;
+            specialRatios[4] = specialRatios16Sum * 20 / 101;
+            specialRatios[5] = specialRatios16Sum * 20 / 101;
+            specialRatios[6] = specialRatios16Sum * 1 / 101;
+            pool2 = GeneratePool(SelectedTicketId2, specialItems, specialRatios, []);
         } else if (poolId == 3) {
             if (commonItems3.Count == 0) {
                 commonItems3 = LDB.items.dataArray.Where(item =>
@@ -528,12 +528,12 @@ public static class TicketRaffle {
             pool4 = GeneratePool(SelectedTicketId4, [], [], commonItems4);
         } else if (poolId == 5) {
             int[] specialItems = [0];// 0 represents Rune
-            float[] specialRates = [0.1f];
+            float[] specialRatios = [0.1f];
             List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
                 item.ID >= IFE速度精华 && item.ID <= IFE增产精华
             ).ToList();
             float runeValue = itemValue[SelectedTicketId5] * VipFeatures.TicketValueMulti;
-            pool5 = GeneratePool(SelectedTicketId5, specialItems, specialRates, commonItems, runeValue);
+            pool5 = GeneratePool(SelectedTicketId5, specialItems, specialRatios, commonItems, runeValue);
         }
     }
 
@@ -568,12 +568,12 @@ public static class TicketRaffle {
         int oneLineCount = 0;
         while (raffleCount > 0) {
             raffleCount--;
-            double currRate = 0;
+            double currRatio = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
             for (int i = 0; i < 12000; i++) {
-                currRate += rates[i];
-                if (randDouble >= currRate) {
+                currRatio += rates[i];
+                if (randDouble >= currRatio) {
                     continue;
                 }
                 nothing = false;
@@ -582,14 +582,14 @@ public static class TicketRaffle {
                     List<BaseRecipe> recipesOptimize = [..recipes];
                     //按照当前配方奖池随机抽取
                     BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
-                    recipe.RewardEcho(true);
-                    if (recipe.IsMaxEcho) {
+                    recipe.RewardThis(true);
+                    if (recipe.IsMaxLevel) {
                         recipes.Remove(recipe);
                     }
-                    if (recipe.Echo == 0) {
+                    if (recipe.Level < 0) {
                         sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
                     } else {
-                        string tip = string.Format("已转为同名回响提示".Translate(), recipe.Echo);
+                        string tip = string.Format("已转为同名回响提示".Translate(), recipe.Level);
                         sb2.AppendLine($"{recipe.TypeName} {tip}".WithColor(RecipeValue));
                     }
                     if (oneLineCount >= oneLineMaxCount) {
@@ -678,12 +678,12 @@ public static class TicketRaffle {
         int oneLineCount = 0;
         while (raffleCount > 0) {
             raffleCount--;
-            double currRate = 0;
+            double currRatio = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
             for (int i = 0; i < 12000; i++) {
-                currRate += rates[i];
-                if (randDouble >= currRate) {
+                currRatio += rates[i];
+                if (randDouble >= currRatio) {
                     continue;
                 }
                 nothing = false;
@@ -769,12 +769,12 @@ public static class TicketRaffle {
         int oneLineCount = 0;
         while (raffleCount > 0) {
             raffleCount--;
-            double currRate = 0;
+            double currRatio = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
             for (int i = 0; i < 12000; i++) {
-                currRate += rates[i];
-                if (randDouble >= currRate) {
+                currRatio += rates[i];
+                if (randDouble >= currRatio) {
                     continue;
                 }
                 nothing = false;
@@ -858,12 +858,12 @@ public static class TicketRaffle {
         int oneLineCount = 0;
         while (raffleCount > 0) {
             raffleCount--;
-            double currRate = 0;
+            double currRatio = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
             for (int i = 0; i < 12000; i++) {
-                currRate += rates[i];
-                if (randDouble >= currRate) {
+                currRatio += rates[i];
+                if (randDouble >= currRatio) {
                     continue;
                 }
                 nothing = false;
@@ -937,12 +937,12 @@ public static class TicketRaffle {
 
         while (raffleCount > 0) {
             raffleCount--;
-            double currRate = 0;
+            double currRatio = 0;
             double randDouble = GetRandDouble();
             bool nothing = true;
             for (int i = 0; i < 12000; i++) {
-                currRate += rates[i];
-                if (randDouble >= currRate) {
+                currRatio += rates[i];
+                if (randDouble >= currRatio) {
                     continue;
                 }
                 nothing = false;

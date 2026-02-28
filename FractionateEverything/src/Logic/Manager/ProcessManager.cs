@@ -41,7 +41,7 @@ public static class ProcessManager {
     private static readonly double[] incTableFixedRatio = new double[Cargo.incTableMilli.Length];
     public static readonly List<ProductOutputInfo> emptyOutputs = [];
     public static readonly int MaxLevel = 12;
-    public static readonly float[] ReinforcementSuccessRateArr = new float[MaxLevel + 1];
+    public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
 
     #endregion
@@ -49,12 +49,12 @@ public static class ProcessManager {
     static ProcessManager() {
         //强化成功率
         int index = 0;
-        float rate = 0.5f;
-        for (int loopCount = 1; index < ReinforcementSuccessRateArr.Length - 1 && rate > 0; loopCount++) {
-            for (int j = 0; j < loopCount && index < ReinforcementSuccessRateArr.Length - 1; j++) {
-                ReinforcementSuccessRateArr[index++] = rate;
+        float ratio = 0.5f;
+        for (int loopCount = 1; index < ReinforcementSuccessRatioArr.Length - 1 && ratio > 0; loopCount++) {
+            for (int j = 0; j < loopCount && index < ReinforcementSuccessRatioArr.Length - 1; j++) {
+                ReinforcementSuccessRatioArr[index++] = ratio;
             }
-            rate -= 0.05f;
+            ratio -= 0.05f;
         }
         //强化加成
         for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
@@ -180,8 +180,7 @@ public static class ProcessManager {
         ref uint __result, ERecipe recipeType) where T : BaseRecipe {
         //所有产物输出
         List<ProductOutputInfo> products = __instance.products(factory);
-        int fluidId = GetQualityItemId(__instance.fluidId);
-        byte quality = GetQuality(__instance.fluidId);
+        int fluidId = __instance.fluidId;
         T recipe = GetRecipe<T>(recipeType, fluidId);
         //检测products和recipe的输出是否一致
         if (recipe == null) {
@@ -253,6 +252,7 @@ public static class ProcessManager {
         if (__instance.fluidInputCount > 0
             && (products.All(p => p.count < productOutputMax) || enableFracForever)
             && __instance.fluidOutputCount < fluidOutputMax) {
+            //分馏塔正常运转时，计算进度，10000点进度可以处理一次
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
                                          * (__instance.fluidInputCargoCount < MaxBeltSpeed
@@ -260,16 +260,17 @@ public static class ProcessManager {
                                              : MaxBeltSpeed)
                                          * fluidInputCountPerCargo
                                          + 0.75);
-            if (__instance.progress > 100000)
+            if (__instance.progress > 100000) {
                 __instance.progress = 100000;
-            //是否直接将输入搬运到输出，不进行任何处理
+                LogWarning($"{building.name}进度超过100000！");
+            }
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
+                //在原版方法中，处理一次是一个物品被处理，这里则是可能会涉及多个原料
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
                     : __instance.fluidInputInc / __instance.fluidInputCount;
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
-
                 MoveDirectly:
                 if (moveDirectly) {
                     //直接将输入搬运到输出，不进行任何处理
@@ -296,11 +297,13 @@ public static class ProcessManager {
                 float buffBonus1 = 0;//todo
                 float buffBonus2 = 0;
                 float buffBonus3 = 0;
-                List<ProductOutputInfo> outputs = recipe.GetOutputs(quality, ref __instance.seed, pointsBonus,
-                    buffBonus1, buffBonus2, buffBonus3);
+                recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3,
+                    out int inputChange, out List<ProductOutputInfo> outputs);
                 __instance.fluidInputInc -= fluidInputIncAvg;
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
-                __instance.fluidInputCount--;
+                if (GetRandDouble(ref __instance.seed) > recipe.RemainInputRatio) {
+                    __instance.fluidInputCount--;
+                }
                 __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
                 if (__instance.fluidInputCargoCount < 0f) {
                     __instance.fluidInputCargoCount = 0f;
@@ -318,9 +321,10 @@ public static class ProcessManager {
                         }
                         //todo: 现在分馏塔详情面板的输出统计是 成功转化/总数
                         __instance.productOutputTotal++;
+                        bool doubleOutput = GetRandDouble(ref __instance.seed) > recipe.DoubleOutputRatio;
                         foreach (ProductOutputInfo p in outputs) {
                             int itemID = p.itemId;
-                            int itemCount = p.count;
+                            int itemCount = doubleOutput ? p.count * 2 : p.count;
                             lock (productRegister) {
                                 productRegister[itemID] += itemCount;
                             }
@@ -813,15 +817,15 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
-            float recipeSuccessRate = recipe.SuccessRate * (1 + buffBonus1) * (1 + pointsBonus);
+            float recipeSuccessRatio = recipe.SuccessRatio * (1 + buffBonus1) * (1 + pointsBonus);
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
-                float count = output.OutputCount * (1 + recipe.MainOutputCountInc) * (1 + buffBonus2);
+                float count = output.OutputCount * (1 + buffBonus2);
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                 //ratio: 不考虑损毁的情况下，物品转换为此项的综合概率
-                float ratio = recipeSuccessRate * output.SuccessRate;
-                string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
+                float ratio = recipeSuccessRatio * output.SuccessRatio;
+                string ratioStr = output.ShowSuccessRatio || sandboxMode ? ratio.FormatP() : "???";
                 sb1.Append($"{name}x{countStr} ({ratioStr})\n");
                 if (!transportMode) {
                     flowRatio -= ratio;
@@ -834,20 +838,19 @@ public static class ProcessManager {
                     string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
                     float count = output.OutputCount;
                     string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
-                    float ratio = recipeSuccessRate
-                                  * output.SuccessRate
-                                  * (1 + recipe.AppendOutputRatioInc)
-                                  * (1 + buffBonus3);
-                    string ratioStr = output.ShowSuccessRate || sandboxMode ? ratio.FormatP() : "???";
+                    float rate = recipeSuccessRatio
+                                 * output.SuccessRatio
+                                 * (1 + buffBonus3);
+                    string ratioStr = output.ShowSuccessRatio || sandboxMode ? rate.FormatP() : "???";
                     sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }
             }
             float destroyRatio = 0;
             if (!transportMode) {
-                destroyRatio = recipe.DestroyRate;
+                destroyRatio = recipe.DestroyRatio;
                 flowRatio -= destroyRatio;
             }
-            s1 = recipe.LvExpWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+            s1 = recipe.TypeNameWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
             s2 = $"{"流动".Translate()} ({flowRatio.FormatP()})";
             if (destroyRatio > 0) {
                 string destroy = $"{"损毁".Translate()} ({destroyRatio.FormatP()})";

@@ -24,18 +24,11 @@ public static class MineralReplicationTower {
         < 9 => 1,
         _ => 4,
     };
-    public static float PlrRatio => Level switch {
-        < 1 => 1.0f,
-        < 4 => 1.1f,
-        < 7 => 1.3f,
-        < 10 => 1.6f,
-        _ => 2.0f,
-    };
     public static float EnergyRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 0.95f,
-        < 8 => 0.85f,
-        < 11 => 0.7f,
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
         _ => 0.5f,
     };
     public static long workEnergyPerTick {
@@ -46,6 +39,13 @@ public static class MineralReplicationTower {
         get => model.prefabDesc.idleEnergyPerTick;
         set => model.prefabDesc.idleEnergyPerTick = value;
     }
+    public static float PlrRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 1.1f,
+        < 8 => 1.3f,
+        < 11 => 1.6f,
+        _ => 2.0f,
+    };
 
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Replication Tower");
