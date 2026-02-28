@@ -188,19 +188,7 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
         ItemProto selectedBuilding = LDB.items.Select(packet.buildingId);
         switch (packet.packetType) {
             case 1:
-                selectedBuilding.EnableFluidOutputStack(true);
-                break;
-            case 2:
-                selectedBuilding.MaxProductOutputStack(selectedBuilding.MaxProductOutputStack() + 1);
-                break;
-            case 3:
-                selectedBuilding.EnableFracForever(true);
-                break;
-            case 4:
-                PointAggregateTower.Level++;
-                break;
-            case 5:
-                selectedBuilding.ReinforcementLevel(packet.intVal);
+                selectedBuilding.Level(packet.intVal);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {

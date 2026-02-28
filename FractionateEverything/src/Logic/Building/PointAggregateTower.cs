@@ -20,37 +20,35 @@ public static class PointAggregateTower {
     private static ModelProto model;
     public static Color color = new(0.2509f, 0.8392f, 1.0f);
 
-    public static bool EnableFluidOutputStack = false;
-    public static int MaxProductOutputStack = 1;
-    public static bool EnableFracForever = false;
-    public static int ReinforcementLevel = 0;
-    private static readonly float propertyRatio = 2.0f;
-    /// <summary>
-    ///     建筑等级，1-7。
-    /// </summary>
-    public static int Level = 1;
-    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
-    public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
-    public static float ReinforcementBonusEnergy => ReinforcementBonus;
-    public static float ReinforcementBonusFracSuccess => ReinforcementBonus;
-    public static float ReinforcementBonusMainOutputCount => 0;
-    public static float ReinforcementBonusAppendOutputRate => 0;
-    public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
-    public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
-    public static int MaxLevel => 7;
-    public static bool IsMaxLevel => Level == MaxLevel;
-    /// <summary>
-    /// 产出物品的最大增产点数，4-10。
-    /// </summary>
-    public static int MaxInc => Math.Min(10, Level + 3);
-    /// <summary>
-    /// 产出物品的概率。
-    /// </summary>
-    public static float SuccessRate => 0.11f + Level * 0.02f;
-
-    public static string Lv => $"Lv{Level}";
-    public static string LvWC => Lv.WithColor(Level);
+    public static int Level = 0;
+    public static bool EnableFluidEnhancement => Level >= 3;
+    public static int MaxProductOutputStack => Level switch {
+        < 9 => 1,
+        _ => 4,
+    };
+    public static int MaxInc => Math.Min(Level + 4, 10);
+    public static float PlrRatio => Level switch {
+        < 1 => 1.0f,
+        < 4 => 1.1f,
+        < 7 => 1.3f,
+        < 10 => 1.6f,
+        _ => 2.0f,
+    };
+    public static float EnergyRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 0.95f,
+        < 8 => 0.85f,
+        < 11 => 0.7f,
+        _ => 0.5f,
+    };
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
 
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");
@@ -96,10 +94,8 @@ public static class PointAggregateTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
-        double energyRatio = propertyRatio * (1 + ReinforcementBonusEnergy);
-        model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
+        workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * EnergyRatio);
+        idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
     }
 
     public static void InternalUpdate(ref FractionatorComponent __instance, PlanetFactory factory,
@@ -121,7 +117,7 @@ public static class PointAggregateTower {
         int fluidInputMax = building.FluidInputMax();
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
-        bool enableFracForever = building.EnableFracForever();
+        bool enableFracForever = building.EnableFluidEnhancement();
         if (__instance.fluidInputCount > 0
             && (__instance.productOutputCount < productOutputMax || enableFracForever)
             && __instance.fluidOutputCount < fluidOutputMax) {
@@ -165,7 +161,7 @@ public static class PointAggregateTower {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float rate = __instance.fluidInputInc >= MaxInc ? SuccessRate * (1 + ReinforcementBonusFracSuccess) : 0;
+                float rate = __instance.fluidInputInc >= MaxInc ? (Level / 20.0f) : 0;
                 __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
                 if (__instance.fractionSuccess) {
                     __instance.fluidInputInc -= MaxInc;
@@ -198,7 +194,7 @@ public static class PointAggregateTower {
                         //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
                         //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        if (!building.EnableFluidEnhancement()) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (buildingID == IFE点数聚集塔
@@ -266,7 +262,7 @@ public static class PointAggregateTower {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        if (!building.EnableFluidEnhancement()) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (buildingID == IFE点数聚集塔
                                     && fluidOutputIncAvg < 4
@@ -373,45 +369,31 @@ public static class PointAggregateTower {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStack = r.ReadBoolean();
-        MaxProductOutputStack = r.ReadInt32();
-        if (MaxProductOutputStack < 0) {
-            MaxProductOutputStack = 0;
-        } else if (MaxProductOutputStack > 4) {
-            MaxProductOutputStack = 4;
+        if (version < 2) {
+            r.ReadBoolean();
+            r.ReadInt32();
+            r.ReadBoolean();
         }
-        EnableFracForever = r.ReadBoolean();
-        ReinforcementLevel = r.ReadInt32();
-        if (ReinforcementLevel < 0) {
-            ReinforcementLevel = 0;
-        } else if (ReinforcementLevel > MaxReinforcementLevel) {
-            ReinforcementLevel = MaxReinforcementLevel;
+        Level = r.ReadInt32();
+        if (Level < 0) {
+            Level = 0;
+        } else if (Level > MaxLevel) {
+            Level = MaxLevel;
         }
         UpdateHpAndEnergy();
-        Level = r.ReadInt32();
-        if (Level < 1) {
-            Level = 1;
-        } else if (Level > 7) {
-            Level = 7;
+        if (version < 2) {
+            r.ReadInt32();
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(EnableFluidOutputStack);
-        w.Write(MaxProductOutputStack);
-        w.Write(EnableFracForever);
-        w.Write(ReinforcementLevel);
+        w.Write(2);
         w.Write(Level);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStack = false;
-        MaxProductOutputStack = 1;
-        EnableFracForever = false;
-        ReinforcementLevel = 0;
+        Level = 0;
         UpdateHpAndEnergy();
-        Level = 1;
     }
 
     #endregion

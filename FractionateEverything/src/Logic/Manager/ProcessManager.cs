@@ -40,9 +40,9 @@ public static class ProcessManager {
     public static int BaseFracFluidOutputMax = 20;
     private static readonly double[] incTableFixedRatio = new double[Cargo.incTableMilli.Length];
     public static readonly List<ProductOutputInfo> emptyOutputs = [];
-    public static readonly int MaxReinforcementLevel = 20;
-    public static readonly float[] ReinforcementSuccessRateArr = new float[MaxReinforcementLevel + 1];
-    public static readonly float[] ReinforcementBonusArr = new float[MaxReinforcementLevel + 1];
+    public static readonly int MaxLevel = 12;
+    public static readonly float[] ReinforcementSuccessRateArr = new float[MaxLevel + 1];
+    public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
 
     #endregion
 
@@ -98,7 +98,7 @@ public static class ProcessManager {
     //         return;
     //     }
     //     // //从科技获取流动输出最大堆叠数目、产物输出最大堆叠数目
-    //     // EnableFluidOutputStack = GameMain.history.TechUnlocked(TFE分馏流动输出集装);
+    //     // EnableFluidEnhancement = GameMain.history.TechUnlocked(TFE分馏流动输出集装);
     //     // int maxStack = 1;
     //     // for (int i = 0; i < 3; i++) {
     //     //     if (GameMain.history.TechUnlocked(TFE分馏产物输出集装 + i)) {
@@ -108,7 +108,7 @@ public static class ProcessManager {
     //     // MaxProductOutputStack = maxStack;
     //     // //从科技获取是否分馏永动
     //     // EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
-    //     // EnableFluidOutputStack = false;
+    //     // EnableFluidEnhancement = false;
     //     // MaxProductOutputStack = 1;
     //     // EnableFracForever = true;
     // }
@@ -248,7 +248,7 @@ public static class ProcessManager {
         int fluidInputMax = building.FluidInputMax();
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
-        bool enableFracForever = building.EnableFracForever();
+        bool enableFracForever = building.EnableFluidEnhancement();
         bool moveDirectly = recipe == null || recipe.Locked;
         if (__instance.fluidInputCount > 0
             && (products.All(p => p.count < productOutputMax) || enableFracForever)
@@ -293,9 +293,9 @@ public static class ProcessManager {
                 }
                 //正常处理，获取处理结果
                 float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
-                float buffBonus1 = building.ReinforcementBonusFracSuccess();
-                float buffBonus2 = building.ReinforcementBonusMainOutputCount();
-                float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+                float buffBonus1 = 0;//todo
+                float buffBonus2 = 0;
+                float buffBonus3 = 0;
                 List<ProductOutputInfo> outputs = recipe.GetOutputs(quality, ref __instance.seed, pointsBonus,
                     buffBonus1, buffBonus2, buffBonus3);
                 __instance.fluidInputInc -= fluidInputIncAvg;
@@ -354,7 +354,7 @@ public static class ProcessManager {
                         //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
                         //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        if (!building.EnableFluidEnhancement()) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
@@ -428,7 +428,7 @@ public static class ProcessManager {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        if (!building.EnableFluidEnhancement()) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -731,7 +731,7 @@ public static class ProcessManager {
                 __instance.stateText.text = "原料堆积".Translate();
                 __instance.stateText.color = __instance.workStoppedColor;
             } else if (products.Any(p => p.count >= productOutputMax)) {
-                if (building.EnableFracForever()) {
+                if (building.EnableFluidEnhancement()) {
                     __instance.stateText.text = "分馏永动".Translate();
                     __instance.stateText.color = __instance.workStoppedColor;
                     transportMode = true;
@@ -782,9 +782,9 @@ public static class ProcessManager {
         string s1;
         string s2;
         BaseRecipe recipe;
-        float buffBonus1 = building.ReinforcementBonusFracSuccess();
-        float buffBonus2 = building.ReinforcementBonusMainOutputCount();
-        float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+        float buffBonus1 = 0;//todo
+        float buffBonus2 = 0;
+        float buffBonus3 = 0;
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
@@ -803,21 +803,9 @@ public static class ProcessManager {
         }
         float flowRatio = 1.0f;
         if (recipe == null) {
-            if (buildingID == IFE点数聚集塔) {
-                StringBuilder sb1 = new StringBuilder();
-                float ratio = PointAggregateTower.SuccessRate * (1 + buffBonus1);
-                string name = FormatName(LDB.items.Select(fractionator.fluidId).Name);
-                sb1.Append($"{name} x 1.000 ({ratio.FormatP()})\n");
-                if (!transportMode) {
-                    flowRatio -= ratio;
-                }
-                s1 = PointAggregateTower.LvWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            } else {
-                s1 = "无配方".Translate();
-                s1 = s1.WithColor(Red);
-                s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
-            }
+            s1 = "无配方".Translate();
+            s1 = s1.WithColor(Red);
+            s2 = $"{"流动".Translate()}({flowRatio.FormatP()})";
         } else if (recipe.Locked) {
             s1 = "分馏配方未解锁".Translate();//“配方未解锁”已经被原版游戏注册过
             s1 = s1.WithColor(Red);

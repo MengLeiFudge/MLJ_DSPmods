@@ -138,7 +138,7 @@ public static class StationManager {
             }
             ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
             // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
-            float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.ReinforcementBonusEnergy();
+            float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
             if (store.count < targetCount) {
                 // 将数据中心的物品下载到交互站
                 int count = targetCount - store.count;
