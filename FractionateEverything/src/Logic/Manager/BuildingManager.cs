@@ -304,6 +304,17 @@ public static class BuildingManager {
         };
     }
 
+    public static float PlrRatio(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.PlrRatio,
+            IFE矿物复制塔 => MineralReplicationTower.PlrRatio,
+            IFE点数聚集塔 => PointAggregateTower.PlrRatio,
+            IFE转化塔 => ConversionTower.PlrRatio,
+            IFE回收塔 => RecycleTower.PlrRatio,
+            _ => 1.0f
+        };
+    }
+
     #region IModCanSave
 
     public static void Import(BinaryReader r) {

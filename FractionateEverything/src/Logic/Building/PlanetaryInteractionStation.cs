@@ -26,18 +26,18 @@ public static class PlanetaryInteractionStation {
         _ => 12,
     };
     public static float EnergyRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 0.95f,
-        < 8 => 0.85f,
-        < 11 => 0.7f,
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
         _ => 0.5f,
     };
     public static float InteractEnergyRatio => Level switch {
         < 2 => 1.0f,
-        < 5 => 0.95f,
-        < 8 => 0.85f,
-        < 11 => 0.7f,
-        _ => 0.5f,
+        < 5 => 0.68f,
+        < 8 => 0.44f,
+        < 11 => 0.28f,
+        _ => 0.2f,
     };
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;

@@ -788,34 +788,34 @@ public class GetDspData : BaseUnityPlugin {
             float buffBonus2 = 0;
             float buffBonus3 = 0;
             //成功率
-            float successRate = recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1);
+            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + buffBonus1);
             //损毁率
-            float destroyRate = recipe.DestroyRate;
+            float destroyRatio = recipe.DestroyRatio;
             //最终产物转化率
-            float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
+            float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
             Dictionary<int, (float, bool, bool)> outputDic = [];
             float essenceCostAvg = 0.0f;
             foreach (var info in recipe.OutputMain) {
                 int outputId = info.OutputID;
-                float outputCount = processRate;
-                outputCount *= info.SuccessRate;
-                outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
+                float outputCount = processRatio;
+                outputCount *= info.SuccessRatio;
+                outputCount *= info.OutputCount * (1 + buffBonus2);
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
                 }
                 outputDic[outputId] = tuple;
             }
             foreach (var info in recipe.OutputAppend) {
                 int outputId = info.OutputID;
-                float outputCount = processRate;
-                outputCount *= info.SuccessRate * (1 + recipe.AppendOutputRatioInc) * (1 + buffBonus3);
+                float outputCount = processRatio;
+                outputCount *= info.SuccessRatio * (1 + buffBonus3);
                 outputCount *= info.OutputCount;
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
                 }
                 outputDic[outputId] = tuple;
             }
@@ -836,7 +836,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ItemCounts", new JArray(ItemCounts) },
                 { "Results", new JArray(Results) },
                 { "ResultCounts", new JArray(ResultCounts) },
-                { "TimeSpend", Math.Round(60.0f / recipe.SuccessRate) },
+                { "TimeSpend", Math.Round(60.0f / recipe.SuccessRatio) },
                 { "Proliferator", 1 },
                 { "IconName", item.iconSprite.name },
             });

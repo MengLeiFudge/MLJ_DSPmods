@@ -61,7 +61,6 @@ public static class FracRecipeOperate {
         Register("无法解锁", "Can not unlock");
         Register("升至下一级", "Upgrade to next level");
         Register("升至最高级", "Upgrade to max level");
-        Register("突破品质", "Breakthrough quality");
 
         Register("回响", "Echo");
 
@@ -69,21 +68,14 @@ public static class FracRecipeOperate {
         Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
         Register("费用", "Cost");
         Register("每种精华", "Each essence");
-        Register("成功率", "Success Rate");
-        Register("损毁率", "Destroy Rate");
+        Register("成功率", "Success Ratio");
+        Register("损毁率", "Destroy Ratio");
         Register("产出", "Output");
         //Register("增产点数", "Proliferator Points");//原版已翻译
         //Register("其他", "Others");//原版已翻译
 
         Register("完全处理后的输出如下：", "The fully processed output is as follows:");
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
-        Register("配方已到最高品质！", "Recipe has reached the highest quality!");
-        Register("配方品质可突破，突破条件：",
-            "Recipe quality can be broken through. Conditions for breaking through:");
-        Register("达到当前品质最高等级（", "Reaching the highest current quality level (");
-        Register("）", ")");
-        Register("达到当前等级经验上限（", "Reach the current level experience cap (");
-        Register("拥有足够的同名回响（", "Have sufficient echoes of the same name (");
 
         Register("当前物品尚未解锁，或科技层次不足！",
             "The current item has not been unlocked, or the technology level is insufficient!");
@@ -91,7 +83,7 @@ public static class FracRecipeOperate {
         Register("配方回响数目已达到突破要求，暂时无法兑换！",
             "The number of recipe echoes has reached the breakthrough requirement and cannot be exchanged for the time being!");
         Register("配方经验已达上限！", "Recipe experience has reached the limit!");
-        Register("配方已升至当前品质最高等级！", "Recipe has been upgraded to the highest quality level currently available!");
+        Register("配方已升至当前品质最高等级！", "Recipe has been upgraded to the highest level currently available!");
         Register("配方回响数目不足！", "Insufficient number of recipe echoes!");
     }
 
@@ -129,27 +121,14 @@ public static class FracRecipeOperate {
             wnd.AddButton(0, 1, y, tab, "兑换回响",
                 onClick: () => { SelectedRecipe.GetRecipeEcho(); });
         } else {
-            wnd.AddButton(0, 5, y, tab, "重置回响",
-                onClick: () => { SelectedRecipe.ChangeEchoTo(0); });
-            wnd.AddButton(1, 5, y, tab, "回响-10",
-                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 10); });
-            wnd.AddButton(2, 5, y, tab, "回响-1",
-                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo - 1); });
-            wnd.AddButton(3, 5, y, tab, "回响+1",
-                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 1); });
-            wnd.AddButton(4, 5, y, tab, "回响+10",
-                onClick: () => { SelectedRecipe.ChangeEchoTo(SelectedRecipe.Echo + 10); });
-            y += 36f;
-            wnd.AddButton(0, 5, y, tab, "重置等级",
+            wnd.AddButton(0, 4, y, tab, "重置等级",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(0); });
-            wnd.AddButton(1, 5, y, tab, "等级-10",
-                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 10); });
-            wnd.AddButton(2, 5, y, tab, "等级-1",
+            wnd.AddButton(1, 4, y, tab, "等级-1",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level - 1); });
-            wnd.AddButton(3, 5, y, tab, "等级+1",
+            wnd.AddButton(2, 4, y, tab, "等级+1",
                 onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 1); });
-            wnd.AddButton(4, 5, y, tab, "等级+10",
-                onClick: () => { SelectedRecipe.ChangeLevelTo(SelectedRecipe.Level + 10); });
+            wnd.AddButton(3, 4, y, tab, "等级升满",
+                onClick: () => { SelectedRecipe.ChangeLevelTo(10); });
         }
         int[] rang;
         if (!GenesisBook.Enable) {
@@ -187,7 +166,7 @@ public static class FracRecipeOperate {
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
         } else {
-            txtRecipeInfo[line].text = $"{recipe.TypeNameWC}    {recipe.LvExpWC}";
+            txtRecipeInfo[line].text = $"{recipe.TypeNameWC}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
 
@@ -198,9 +177,9 @@ public static class FracRecipeOperate {
             txtRecipeInfo[line].text = $"{"费用".Translate()} 1 {SelectedItem.name}";
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
-            txtRecipeInfo[line].text = $"{"成功率".Translate()} {recipe.SuccessRate:P3}".WithColor(Orange)
+            txtRecipeInfo[line].text = $"{"成功率".Translate()} {recipe.SuccessRatio:P3}".WithColor(Orange)
                                        + "      "
-                                       + $"{"损毁率".Translate()} {recipe.DestroyRate:P3}".WithColor(Red);
+                                       + $"{"损毁率".Translate()} {recipe.DestroyRatio:P3}".WithColor(Red);
             txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
             line++;
             bool isFirst = true;
@@ -266,34 +245,34 @@ public static class FracRecipeOperate {
         float buffBonus2 = 0;
         float buffBonus3 = 0;
         //成功率
-        float successRate = recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1);
+        float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + buffBonus1);
         //损毁率
-        float destroyRate = recipe.DestroyRate;
+        float destroyRatio = recipe.DestroyRatio;
         //最终产物转化率
-        float processRate = (1 - destroyRate) * successRate / (destroyRate + (1 - destroyRate) * successRate);
+        float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
         Dictionary<int, (float, bool, bool)> outputDic = [];
         float essenceCostAvg = 0.0f;
         foreach (var info in recipe.OutputMain) {
             int outputId = info.OutputID;
-            float outputCount = processRate;
-            outputCount *= info.SuccessRate;
-            outputCount *= info.OutputCount * (1 + recipe.MainOutputCountInc + buffBonus2);
+            float outputCount = processRatio;
+            outputCount *= info.SuccessRatio;
+            outputCount *= info.OutputCount * (1 + buffBonus2);
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
-                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
             }
             outputDic[outputId] = tuple;
         }
         foreach (var info in recipe.OutputAppend) {
             int outputId = info.OutputID;
-            float outputCount = processRate;
-            outputCount *= info.SuccessRate * (1 + recipe.AppendOutputRatioInc) * (1 + buffBonus3);
+            float outputCount = processRatio;
+            outputCount *= info.SuccessRatio * (1 + buffBonus3);
             outputCount *= info.OutputCount;
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
-                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRate);
+                tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
             }
             outputDic[outputId] = tuple;
         }
@@ -333,7 +312,7 @@ public static class FracRecipeOperate {
             return;
         }
         int takeId = IFE分馏配方核心;
-        int takeCount = 1;
+        int takeCount = (int)Math.Pow(2, recipe.Level);
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
@@ -344,13 +323,13 @@ public static class FracRecipeOperate {
                     return;
                 }
                 for (int i = 0; i < takeCount; i++) {
-                    recipe.RewardEcho(true);
+                    recipe.RewardThis(true);
                 }
             },
             null);
     }
 
-    private static void ChangeEchoTo(this BaseRecipe recipe, int target) {
+    private static void ChangeLevelTo(this BaseRecipe recipe, int target) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
@@ -361,7 +340,7 @@ public static class FracRecipeOperate {
                 null);
             return;
         }
-        recipe.ChangeEchoTo(target);
+        recipe.ChangeLevelTo(target);
     }
 
     #region IModCanSave

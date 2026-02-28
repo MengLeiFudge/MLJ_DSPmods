@@ -582,7 +582,7 @@ public static class TechManager {
         if (_techId == TFE分馏塔原胚) {
             //解锁所有建筑培养配方
             foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                recipe.RewardEcho();
+                recipe.RewardThis();
             }
         } else if (_techId == TFE矿物复制) {
             //解锁非珍奇的原矿复制配方
@@ -592,7 +592,7 @@ public static class TechManager {
                 if (recipe.RecipeType == ERecipe.MineralCopy
                     && (LDB.veins.dataArray.Any(vein => vein.MiningItem == itemID) || item.Type == EItemType.Resource)
                     && (itemID < I可燃冰 || itemID > I单极磁石)) {
-                    recipe.RewardEcho();
+                    recipe.RewardThis();
                 }
             }
         }

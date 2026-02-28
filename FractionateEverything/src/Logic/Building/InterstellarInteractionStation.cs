@@ -18,14 +18,18 @@ public static class InterstellarInteractionStation {
     private static ModelProto model;
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
-    public static int Level = 0;
-    public static bool EnableFluidEnhancement => Level >= 3;
-    public static int MaxProductOutputStack => Level;
+    public static int Level => PlanetaryInteractionStation.Level;
+    public static int MaxProductOutputStack => Level switch {
+        < 6 => 1,
+        < 9 => 4,
+        < 12 => 8,
+        _ => 12,
+    };
     public static float EnergyRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 0.95f,
-        < 8 => 0.85f,
-        < 11 => 0.7f,
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
         _ => 0.5f,
     };
     public static float InteractEnergyRatio => Level switch {

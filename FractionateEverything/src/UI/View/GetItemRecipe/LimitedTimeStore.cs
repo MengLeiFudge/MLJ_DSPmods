@@ -291,7 +291,7 @@ public static class LimitedTimeStore {
         List<BaseRecipe> recipes = GetRecipesUnderMatrix(matrix.ID).SelectMany(list => list)
             .Where(recipe => GameMain.history.ItemUnlocked(recipe.InputID)
                              && GameMain.history.ItemUnlocked(recipe.MatrixID)
-                             && !recipe.IsMaxEcho)
+                             && !recipe.IsMaxLevel)
             .ToList();
         foreach (BaseRecipe recipe in recipes) {
             ItemProto recipeMatrix = LDB.items.Select(recipe.MatrixID);
@@ -427,7 +427,7 @@ public static class LimitedTimeStore {
                     return;
                 }
                 VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
-                info.recipe.RewardEcho(true);
+                info.recipe.RewardThis(true);
                 info.exchanged = true;
             } else {
                 UIMessageBox.Show("提示".Translate(),
@@ -439,7 +439,7 @@ public static class LimitedTimeStore {
                             return;
                         }
                         VipFeatures.AddExp(itemValue[info.matrix.ID] * info.matrixDiscountedCount);
-                        info.recipe.RewardEcho(true);
+                        info.recipe.RewardThis(true);
                         info.exchanged = true;
                     },
                     null);
