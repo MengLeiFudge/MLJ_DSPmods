@@ -76,79 +76,102 @@ public abstract class BaseRecipe(
 
     /// <summary>
     /// 获取某次输出的执行结果。
-    /// 可能的情况有：损毁、无变化、产出主输出（在此基础上可能产出附加输出）
+    /// 可能的情况有：损毁、产出产物、无变化（直通）。
     /// </summary>
     /// <param name="seed">随机数种子</param>
-    /// <param name="pointsBonus">增产剂加成</param>
+    /// <param name="pointsBonus">增产剂加成（比例，例如0.25）</param>
     /// <param name="successRatioBonus">配方成功率加成</param>
     /// <param name="mainOutputCountBonus">主产物数目加成</param>
     /// <param name="appendOutputRatioBonus">副产物概率加成</param>
-    /// <param name="inputChange">原材料会变成几个</param>
-    /// <param name="outputs">损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</param>
+    /// <param name="fluidInputIncAvg">输入物品的平均增产等级</param>
+    /// <param name="fluidInputInc">该分馏塔当前的全部增产点数，将在该方法中被修改</param>
+    /// <param name="inputChange">原材料会变成几个（-1表示消耗，0表示保留）</param>
+    /// <param name="outputs">损毁返回null，直通返回空List，成功返回输出产物</param>
     public virtual void GetOutputs(ref uint seed, float pointsBonus,
         float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
-        out int inputChange, out List<ProductOutputInfo> outputs) {
-        //损毁
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
+        // 1. 损毁判定
         if (GetRandDouble(ref seed) < DestroyRatio) {
             inputChange = -1;
-            outputs = ProcessManager.emptyOutputs;
+            fluidInputInc -= fluidInputIncAvg;
+            outputs = null;
             return;
         }
-        //无变化
-        if (GetRandDouble(ref seed) >= SuccessRatio * (1 + pointsBonus) * (1 + successRatioBonus)) {
-            inputChange = 0;
-            outputs = ProcessManager.emptyOutputs;
-            return;
-        }
-        //成功产出
-        List<ProductOutputInfo> list = [];
-        //主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
-        double ratio = GetRandDouble(ref seed);
-        float ratioMain = 0.0f;//用于累计概率
-        foreach (var outputInfo in OutputMain) {
-            ratioMain += outputInfo.SuccessRatio;
-            if (ratio <= ratioMain) {
-                //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * (1 + mainOutputCountBonus);
-                int countReal = (int)countAvg;
-                countAvg -= countReal;
-                if (countAvg > 0.0001) {
-                    if (GetRandDouble(ref seed) < countAvg) {
+
+        // 2. 成功判定
+        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successRatioBonus)) {
+            List<ProductOutputInfo> list = [];
+            // 主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
+            double ratio = GetRandDouble(ref seed);
+            float ratioMain = 0.0f; // 用于累计概率
+            foreach (var outputInfo in OutputMain) {
+                ratioMain += outputInfo.SuccessRatio;
+                if (ratio <= ratioMain) {
+                    // 整数部分必定输出，小数部分根据概率判定确定是否输出
+                    float countAvg = outputInfo.OutputCount * (1 + mainOutputCountBonus);
+                    int countReal = (int)countAvg;
+                    countAvg -= countReal;
+                    if (countAvg > 0.0001 && GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
+
+                    // 产物翻倍判定
+                    if (GetRandDouble(ref seed) < DoubleOutputRatio) {
+                        countReal *= 2;
+                    }
+
+                    if (countReal > 0) {
+                        list.Add(new(true, outputInfo.OutputID, countReal));
+                        outputInfo.OutputTotalCount += countReal;
+                    }
+                    break;
                 }
-                list.Add(new(true, outputInfo.OutputID, countReal));
-                outputInfo.OutputTotalCount += countReal;
-                break;
             }
-        }
-        //附加输出判定，每一项依次判定，互不影响
-        foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio * (1 + appendOutputRatioBonus)) {
-                float countAvg = outputInfo.OutputCount;
-                int countReal = (int)countAvg;
-                countAvg -= countReal;
-                if (countAvg > 0.0001) {
-                    if (GetRandDouble(ref seed) < countAvg) {
+            // 附加输出判定，每一项依次判定，互不影响
+            foreach (var outputInfo in OutputAppend) {
+                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio * (1 + appendOutputRatioBonus)) {
+                    float countAvg = outputInfo.OutputCount;
+                    int countReal = (int)countAvg;
+                    countAvg -= countReal;
+                    if (countAvg > 0.0001 && GetRandDouble(ref seed) < countAvg) {
                         countReal++;
                     }
+                    if (countReal > 0) {
+                        list.Add(new(false, outputInfo.OutputID, countReal));
+                        outputInfo.OutputTotalCount += countReal;
+                    }
                 }
-                list.Add(new(false, outputInfo.OutputID, countReal));
-                outputInfo.OutputTotalCount += countReal;
-                //附加输出无经验
             }
-        }
-        //如果仍然没有产出（例如产物数目<1且小数判定未通过），由于原料已消耗，应该返回损毁而非空列表
-        if (list.Count == 0) {
+
+            if (list.Count > 0) {
+                // 原料不消耗判定
+                inputChange = (GetRandDouble(ref seed) < RemainInputRatio) ? 0 : -1;
+                if (inputChange < 0) {
+                    fluidInputInc -= fluidInputIncAvg;
+                }
+                outputs = list;
+                return;
+            }
+
+            // 如果判定成功但产出数为0（例如由于小数判定未通过），由于原料已尝试消耗但无产出，视同损毁
             inputChange = -1;
-            outputs = ProcessManager.emptyOutputs;
+            fluidInputInc -= fluidInputIncAvg;
+            outputs = null;
             return;
         }
+
+        // 3. 无变化 -> 直通输出
         inputChange = -1;
-        outputs = list;
+        fluidInputInc -= fluidInputIncAvg;
+        outputs = ProcessManager.emptyOutputs;
     }
 
     #endregion
+
+    /// <summary>
+    /// 获取产物的增产点数
+    /// </summary>
+    public virtual byte GetOutputInc(int itemId) => 0;
 
     #region 配方品质、等级
 

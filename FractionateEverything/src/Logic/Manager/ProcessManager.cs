@@ -156,8 +156,8 @@ public static class ProcessManager {
                     consumeRegister, ref __result, ERecipe.MineralCopy);
                 return false;
             case IFE点数聚集塔:
-                PointAggregateTower.InternalUpdate(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result);
+                InternalUpdate<PointAggregateRecipe>(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result, ERecipe.PointAggregate);
                 return false;
             case IFE转化塔:
                 InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
@@ -265,81 +265,67 @@ public static class ProcessManager {
                 LogWarning($"{building.name}进度超过100000！");
             }
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
-                //在原版方法中，处理一次是一个物品被处理，这里则是可能会涉及多个原料
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
                     : __instance.fluidInputInc / __instance.fluidInputCount;
                 if (!__instance.incUsed)
                     __instance.incUsed = fluidInputIncAvg > 0;
-                MoveDirectly:
-                if (moveDirectly) {
-                    //直接将输入搬运到输出，不进行任何处理
-                    __instance.fractionSuccess = false;
+
+                int inputChange;
+                List<ProductOutputInfo> outputs;
+
+                // 判断是否直通（永动且满了，或者无配方/配方锁定）
+                if (moveDirectly || (enableFracForever && products.Any(p => p.count >= productOutputMax))) {
+                    inputChange = -1;
+                    outputs = emptyOutputs;
+                } else {
+                    float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
+                    float buffBonus1 = 0; // todo
+                    float buffBonus2 = 0;
+                    float buffBonus3 = 0;
+                    recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3,
+                        fluidInputIncAvg, ref __instance.fluidInputInc, out inputChange, out outputs);
+                }
+
+                __instance.fractionSuccess = outputs != null && outputs.Count > 0;
+
+                // 统一结算输入变化
+                if (inputChange < 0) {
                     __instance.fluidInputCount--;
                     __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
-                    if (__instance.fluidInputCargoCount < 0f) {
-                        __instance.fluidInputCargoCount = 0f;
+                    if (__instance.fluidInputCargoCount < 0f) __instance.fluidInputCargoCount = 0f;
+                    // fluidInputInc 的扣除已由 GetOutputs 处理；如果是强制直通则在此扣除
+                    if (outputs == emptyOutputs) {
+                        __instance.fluidInputInc -= fluidInputIncAvg;
                     }
-                    __instance.fluidInputInc -= fluidInputIncAvg;
-                    __instance.fluidOutputCount++;
-                    __instance.fluidOutputInc += fluidInputIncAvg;
-                    continue;
                 }
-                //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
-                if (enableFracForever
-                    && products.Any(p => p.count >= productOutputMax)
-                    && __instance.fluidOutputCount < fluidOutputMax) {
-                    moveDirectly = true;
-                    goto MoveDirectly;
-                }
-                //正常处理，获取处理结果
-                float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
-                float buffBonus1 = 0;//todo
-                float buffBonus2 = 0;
-                float buffBonus3 = 0;
-                recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3,
-                    out int inputChange, out List<ProductOutputInfo> outputs);
-                __instance.fluidInputInc -= fluidInputIncAvg;
-                __instance.fractionSuccess = outputs != null && outputs.Count > 0;
-                if (GetRandDouble(ref __instance.seed) > recipe.RemainInputRatio) {
-                    __instance.fluidInputCount--;
-                }
-                __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
-                if (__instance.fluidInputCargoCount < 0f) {
-                    __instance.fluidInputCargoCount = 0f;
-                }
-                if (outputs != null) {
-                    if (outputs.Count == 0) {
-                        //无处理，直接流出
+
+                if (outputs == null) {
+                    // 损毁，原料消失
+                    lock (consumeRegister) { consumeRegister[fluidId]++; }
+                } else if (outputs.Count == 0) {
+                    // 直通（无变化）
+                    if (inputChange < 0) {
                         __instance.fluidOutputCount++;
                         __instance.fluidOutputTotal++;
                         __instance.fluidOutputInc += fluidInputIncAvg;
-                    } else {
-                        //处理为其他物品
-                        lock (consumeRegister) {
-                            consumeRegister[fluidId]++;
-                        }
-                        //todo: 现在分馏塔详情面板的输出统计是 成功转化/总数
-                        __instance.productOutputTotal++;
-                        bool doubleOutput = GetRandDouble(ref __instance.seed) > recipe.DoubleOutputRatio;
-                        foreach (ProductOutputInfo p in outputs) {
-                            int itemID = p.itemId;
-                            int itemCount = doubleOutput ? p.count * 2 : p.count;
-                            lock (productRegister) {
-                                productRegister[itemID] += itemCount;
-                            }
-                            if (itemID == product0Id) {
-                                product0.count += itemCount;
-                                __instance.productOutputCount = product0.count;
-                            } else {
-                                products.Find(product => product.itemId == itemID).count += itemCount;
-                            }
-                        }
                     }
                 } else {
-                    //损毁，原料消失
-                    lock (consumeRegister) {
-                        consumeRegister[fluidId]++;
+                    // 成功产出，产出到产物列表
+                    lock (consumeRegister) { consumeRegister[fluidId]++; }
+                    __instance.productOutputTotal++;
+                    foreach (var p in outputs) {
+                        int itemID = p.itemId;
+                        int itemCount = p.count;
+                        lock (productRegister) { productRegister[itemID] += itemCount; }
+                        if (itemID == product0Id) {
+                            product0.count += itemCount;
+                            __instance.productOutputCount = product0.count;
+                        } else {
+                            var target = products.Find(product => product.itemId == itemID);
+                            if (target != null) target.count += itemCount;
+                            else products.Add(new ProductOutputInfo(p.isMainOutput, itemID, itemCount));
+                        }
                     }
                 }
             }
@@ -358,6 +344,9 @@ public static class ProcessManager {
                         //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
                         //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
+                        if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4 && __instance.fluidOutputCount > 1) {
+                            fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                        }
                         if (!building.EnableFluidEnhancement()) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
@@ -432,6 +421,9 @@ public static class ProcessManager {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
+                        if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4 && __instance.fluidOutputCount > 1) {
+                            fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                        }
                         if (!building.EnableFluidEnhancement()) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
@@ -523,7 +515,7 @@ public static class ProcessManager {
                         if (product.count >= productStack) {
                             //产物达到最大堆叠数目，直接尝试输出
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)productStack,
-                                    0)) {
+                                    (byte)(productStack * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
                                 product.count -= productStack;
                                 if (product.itemId == product0Id) {
                                     __instance.productOutputCount = product.count;
@@ -532,7 +524,7 @@ public static class ProcessManager {
                         } else if (product.count > 0 && __instance.fluidInputCount == 0) {
                             //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)product.count,
-                                    0)) {
+                                    (byte)(product.count * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
                                 product.count = 0;
                                 if (product.itemId == product0Id) {
                                     __instance.productOutputCount = product.count;
