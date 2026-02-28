@@ -165,7 +165,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (recipe.Locked) {
-                recipe.RewardEcho(true);
+                recipe.RewardThis(true);
                 LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
@@ -173,21 +173,6 @@ public static class RecipeManager {
             "所有分馏配方已解锁。".Translate(),
             "确定".Translate(), UIMessageBox.INFO,
             null);
-    }
-
-    public static void AddQualityRecipes() {
-        foreach (byte quality in qualityList) {
-            if (quality == 0) {
-                continue;
-            }
-            foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-                ProtoRegistry.RegisterRecipe(GetQualityItemId(recipe.ID, quality),
-                    recipe.Type, recipe.TimeSpend,
-                    recipe.Items.Select(id => GetQualityItemId(id, quality)).ToArray(), recipe.ItemCounts,
-                    recipe.Results.Select(id => GetQualityItemId(id, quality)).ToArray(), recipe.ResultCounts,
-                    recipe.Description, recipe.preTech?.ID ?? 0, recipe.GridIndex, recipe.Name, recipe.IconPath);
-            }
-        }
     }
 
     #region 从存档读取配方数据

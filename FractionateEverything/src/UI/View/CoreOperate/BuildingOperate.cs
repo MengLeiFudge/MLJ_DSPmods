@@ -97,9 +97,9 @@ public static class BuildingOperate {
         StringBuilder cn = new();
         StringBuilder en = new();
         for (int i = 0; i <= MaxLevel; i++) {
-            cn.Append($"\n+{i}: 加成 +{ReinforcementBonusArr[i]:P1}，强化成功率 {ReinforcementSuccessRateArr[i]:P0}");
+            cn.Append($"\n+{i}: 加成 +{ReinforcementBonusArr[i]:P1}，强化成功率 {ReinforcementSuccessRatioArr[i]:P0}");
             en.Append(
-                $"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRate {ReinforcementSuccessRateArr[i]:P0}");
+                $"\n+{i}: Bonus +{ReinforcementBonusArr[i]:P1}, ReinforcementRatio {ReinforcementSuccessRatioArr[i]:P0}");
         }
         Register("强化等级说明",
             $"Reinforcement increases durability, power consumption, fractionation success rate, and product quantity. The relationship between reinforcement level and base reinforcement bonuses, as well as reinforcement success rate, is as follows:{en}",
@@ -115,9 +115,9 @@ public static class BuildingOperate {
         Register("当前强化加成：", "Current Enhancement Bonuses:");
         Register("耐久度", "Durability");
         Register("电力消耗", "Power consumption");
-        Register("分馏成功率", "Fractionation success rate");
+        Register("分馏成功率", "Fractionation success ratio");
         Register("主产物数目", "Main product count");
-        Register("副产物概率", "Append product rate");
+        Register("副产物概率", "Append product ratio");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -285,7 +285,7 @@ public static class BuildingOperate {
         //         $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
         //         $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
         //         $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
-        //         $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRate():P1}",
+        //         $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRatio():P1}",
         //         ""
         //     ];
         // }
@@ -300,6 +300,7 @@ public static class BuildingOperate {
             strs = [
                 "当前强化加成：".Translate(),//todo
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
+                $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
                 $"{"产物最大堆叠".Translate()} {SelectedBuilding.MaxProductOutputStack()}",
                 $"{"特质1".Translate()} {(SelectedBuilding.Level() >= 6 ? "启用" : "禁用").Translate()}",
@@ -510,7 +511,8 @@ public static class BuildingOperate {
                     if (!TakeItemWithTip(takeId, takeCount, out _)) {
                         return;
                     }
-                    if (GetRandDouble() < 0) {//todo
+                    if (GetRandDouble() < 0) {
+                        //todo
                         continue;
                     }
                     SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);

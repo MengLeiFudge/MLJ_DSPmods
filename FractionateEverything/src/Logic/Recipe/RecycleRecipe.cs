@@ -51,47 +51,47 @@ public class RecycleRecipe : BaseRecipe {
     /// 创建回收配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
-    /// <param name="baseSuccessRate">基础成功率</param>
+    /// <param name="baseSuccessRatio">基础成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
-    public RecycleRecipe(int inputID, float baseSuccessRate, List<OutputInfo> outputMain,
+    public RecycleRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRate, outputMain, outputAppend) { }
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
-    /// <summary>
-    /// 重写GetOutputs方法，添加品质提升逻辑
-    /// </summary>
-    public override List<ProductOutputInfo> GetOutputs(byte quality, ref uint seed, float pointsBonus,
-        float successRateBonus, float mainOutputCountBonus, float appendOutputRateBonus) {
-        // 调用基类方法获取基础输出
-        List<ProductOutputInfo> baseOutputs =
-            base.GetOutputs(quality, ref seed, pointsBonus, successRateBonus, mainOutputCountBonus, appendOutputRateBonus);
-        // 如果没有输出（损毁或无变化），直接返回
-        if (baseOutputs == null || baseOutputs.Count == 0) {
-            return baseOutputs;
-        }
-        // 处理品质提升逻辑
-        List<ProductOutputInfo> finalOutputs = [];
-        foreach (ProductOutputInfo output in baseOutputs) {
-            if (!output.isMainOutput) {
-                finalOutputs.Add(output);
-                continue;
-            }
-            int itemId = output.itemId;
-            int count = output.count;
-            int[] newItemIdArr = new int[11];
-            for (int i = 0; i < count; i++) {
-                int newItemId = DetermineQualityIncrease(ref seed, itemId);
-                newItemIdArr[GetQuality(newItemId)]++;
-            }
-            for (int i = 0; i < newItemIdArr.Length; i++) {
-                if (newItemIdArr[i] > 0) {
-                    finalOutputs.Add(new(output.isMainOutput, GetQualityItemId(itemId, (byte)i), count));
-                }
-            }
-        }
-        return finalOutputs;
-    }
+    // /// <summary>
+    // /// 重写GetOutputs方法，添加品质提升逻辑
+    // /// </summary>
+    // public override List<ProductOutputInfo> GetOutputs(ref uint seed, float pointsBonus,
+    //     float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus) {
+    //     // 调用基类方法获取基础输出
+    //     List<ProductOutputInfo> baseOutputs =
+    //         base.GetOutputs(ref seed, pointsBonus, successRatioBonus, mainOutputCountBonus, appendOutputRatioBonus);
+    //     // 如果没有输出（损毁或无变化），直接返回
+    //     if (baseOutputs == null || baseOutputs.Count == 0) {
+    //         return baseOutputs;
+    //     }
+    //     // 处理品质提升逻辑
+    //     List<ProductOutputInfo> finalOutputs = [];
+    //     foreach (ProductOutputInfo output in baseOutputs) {
+    //         if (!output.isMainOutput) {
+    //             finalOutputs.Add(output);
+    //             continue;
+    //         }
+    //         int itemId = output.itemId;
+    //         int count = output.count;
+    //         int[] newItemIdArr = new int[11];
+    //         for (int i = 0; i < count; i++) {
+    //             int newItemId = DetermineQualityIncrease(ref seed, itemId);
+    //             newItemIdArr[GetQuality(newItemId)]++;
+    //         }
+    //         for (int i = 0; i < newItemIdArr.Length; i++) {
+    //             if (newItemIdArr[i] > 0) {
+    //                 finalOutputs.Add(new(output.isMainOutput, GetQualityItemId(itemId, (byte)i), count));
+    //             }
+    //         }
+    //     }
+    //     return finalOutputs;
+    // }
 
     #region IModCanSave
 

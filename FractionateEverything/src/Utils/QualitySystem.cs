@@ -99,7 +99,7 @@ public static partial class Utils {
     /// <param name="seed">随机数种子</param>
     /// <param name="itemId">当前物品ID</param>
     /// <returns>品质提升后的物品ID</returns>
-    public static int DetermineQualityIncrease(ref uint seed, int itemId, double rate = 0.124) {
+    public static int DetermineQualityIncrease(ref uint seed, int itemId, double ratio = 0.124) {
         double rand = GetRandDouble(ref seed);
         byte currentQuality = GetQuality(itemId);
         int currentIndex = Array.IndexOf(qualityList, currentQuality);
@@ -107,17 +107,17 @@ public static partial class Utils {
             return itemId;
         }
         int increase;
-        if (rand < rate / 1000000) {
+        if (rand < ratio / 1000000) {
             increase = 6;
-        } else if (rand < rate / 100000) {
+        } else if (rand < ratio / 100000) {
             increase = 5;
-        } else if (rand < rate / 10000) {
+        } else if (rand < ratio / 10000) {
             increase = 4;
-        } else if (rand < rate / 1000) {
+        } else if (rand < ratio / 1000) {
             increase = 3;
-        } else if (rand < rate / 100) {
+        } else if (rand < ratio / 100) {
             increase = 2;
-        } else if (rand < rate / 10) {
+        } else if (rand < ratio / 10) {
             increase = 1;
         } else {
             increase = 0;

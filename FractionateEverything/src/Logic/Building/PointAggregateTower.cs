@@ -26,19 +26,11 @@ public static class PointAggregateTower {
         < 9 => 1,
         _ => 4,
     };
-    public static int MaxInc => Math.Min(Level + 4, 10);
-    public static float PlrRatio => Level switch {
-        < 1 => 1.0f,
-        < 4 => 1.1f,
-        < 7 => 1.3f,
-        < 10 => 1.6f,
-        _ => 2.0f,
-    };
     public static float EnergyRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 0.95f,
-        < 8 => 0.85f,
-        < 11 => 0.7f,
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
         _ => 0.5f,
     };
     public static long workEnergyPerTick {
@@ -49,6 +41,8 @@ public static class PointAggregateTower {
         get => model.prefabDesc.idleEnergyPerTick;
         set => model.prefabDesc.idleEnergyPerTick = value;
     }
+    public static float PlrRatio => 1.0f;
+    public static int MaxInc => Math.Min(Level + 4, 10);
 
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");
@@ -161,8 +155,8 @@ public static class PointAggregateTower {
                     goto MoveDirectly;
                 }
                 //正常处理，获取处理结果
-                float rate = __instance.fluidInputInc >= MaxInc ? (Level / 20.0f) : 0;
-                __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < rate;
+                float ratio = __instance.fluidInputInc >= MaxInc ? (Level / 20.0f) : 0;
+                __instance.fractionSuccess = GetRandDouble(ref __instance.seed) < ratio;
                 if (__instance.fractionSuccess) {
                     __instance.fluidInputInc -= MaxInc;
                     __instance.productOutputCount++;

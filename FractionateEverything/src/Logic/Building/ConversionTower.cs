@@ -17,14 +17,6 @@ public static class ConversionTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     public static Color color = new(0.7f, 0.6f, 0.8f);
-    public static long workEnergyPerTick {
-        get => model.prefabDesc.workEnergyPerTick;
-        set => model.prefabDesc.workEnergyPerTick = value;
-    }
-    public static long idleEnergyPerTick {
-        get => model.prefabDesc.idleEnergyPerTick;
-        set => model.prefabDesc.idleEnergyPerTick = value;
-    }
     
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= 3;
@@ -39,6 +31,14 @@ public static class ConversionTower {
         < 10 => 0.7f,
         _ => 0.5f,
     };
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
     public static float PlrRatio => Level switch {
         < 2 => 1.0f,
         < 5 => 1.1f,

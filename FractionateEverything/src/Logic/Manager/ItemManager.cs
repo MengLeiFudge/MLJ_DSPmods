@@ -308,19 +308,6 @@ public static class ItemManager {
         item.IconTag = "zcjh";
     }
 
-    public static void AddQualityItems() {
-        foreach (byte quality in qualityList) {
-            if (quality == 0) {
-                continue;
-            }
-            foreach (ItemProto item in LDB.items.dataArray) {
-                ProtoRegistry.RegisterItem(GetQualityItemId(item.ID, quality),
-                    $"{item.name}-{GetQualityName(quality)}", item.Description,
-                    item.IconPath, item.GridIndex, item.StackSize, item.Type);
-            }
-        }
-    }
-
     #endregion
 
     #region 计算物品价值，以及交互塔可接受物品范围

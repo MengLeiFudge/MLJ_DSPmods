@@ -135,15 +135,9 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>((ERecipe)packet.eRecipe, packet.inputId);
         switch (packet.packetType) {
             case 1:
-                recipe.RewardEcho();
+                recipe.RewardThis();
                 break;
             case 2:
-                recipe.ChangeEchoTo(packet.intVal);
-                break;
-            case 3:
-                recipe.RewardExp(packet.floatVal);
-                break;
-            case 4:
                 recipe.ChangeLevelTo(packet.intVal);
                 break;
         }
