@@ -17,21 +17,35 @@ public static class ConversionTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     public static Color color = new(0.7f, 0.6f, 0.8f);
-
-    public static bool EnableFluidOutputStack = false;
-    public static int MaxProductOutputStack = 1;
-    public static bool EnableFracForever = false;
-    public static int ReinforcementLevel = 0;
-    private static readonly float propertyRatio = 1.0f;
-    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
-    public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
-    public static float ReinforcementBonusEnergy => ReinforcementBonus;
-    public static float ReinforcementBonusFracSuccess => 0;
-    public static float ReinforcementBonusMainOutputCount => ReinforcementBonus * 0.5f;
-    public static float ReinforcementBonusAppendOutputRate => ReinforcementBonus;
-    public static long workEnergyPerTick => model.prefabDesc.workEnergyPerTick;
-    public static long idleEnergyPerTick => model.prefabDesc.idleEnergyPerTick;
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
+    
+    public static int Level = 0;
+    public static bool EnableFluidEnhancement => Level >= 3;
+    public static int MaxProductOutputStack => Level switch {
+        < 9 => 1,
+        _ => 4,
+    };
+    public static float EnergyRatio => Level switch {
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
+        _ => 0.5f,
+    };
+    public static float PlrRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 1.1f,
+        < 8 => 1.3f,
+        < 11 => 1.6f,
+        _ => 2.0f,
+    };
 
     public static void AddTranslations() {
         Register("转化塔", "Conversion Tower");
@@ -77,46 +91,35 @@ public static class ConversionTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
-        model.HpMax = (int)(fractionatorModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
-        double energyRatio = propertyRatio * (1 + ReinforcementBonusEnergy);
-        model.prefabDesc.workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * energyRatio);
-        model.prefabDesc.idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * energyRatio);
+        workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * EnergyRatio);
+        idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
     }
 
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        EnableFluidOutputStack = r.ReadBoolean();
-        MaxProductOutputStack = r.ReadInt32();
-        if (MaxProductOutputStack < 0) {
-            MaxProductOutputStack = 0;
-        } else if (MaxProductOutputStack > 4) {
-            MaxProductOutputStack = 4;
+        if (version < 2) {
+            r.ReadBoolean();
+            r.ReadInt32();
+            r.ReadBoolean();
         }
-        EnableFracForever = r.ReadBoolean();
-        ReinforcementLevel = r.ReadInt32();
-        if (ReinforcementLevel < 0) {
-            ReinforcementLevel = 0;
-        } else if (ReinforcementLevel > MaxReinforcementLevel) {
-            ReinforcementLevel = MaxReinforcementLevel;
+        Level = r.ReadInt32();
+        if (Level < 0) {
+            Level = 0;
+        } else if (Level > MaxLevel) {
+            Level = MaxLevel;
         }
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(EnableFluidOutputStack);
-        w.Write(MaxProductOutputStack);
-        w.Write(EnableFracForever);
-        w.Write(ReinforcementLevel);
+        w.Write(2);
+        w.Write(Level);
     }
 
     public static void IntoOtherSave() {
-        EnableFluidOutputStack = false;
-        MaxProductOutputStack = 1;
-        EnableFracForever = false;
-        ReinforcementLevel = 0;
+        Level = 0;
         UpdateHpAndEnergy();
     }
 

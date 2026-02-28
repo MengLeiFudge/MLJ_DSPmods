@@ -176,33 +176,64 @@ public static class BuildingManager {
 
     #endregion
 
-    public static bool EnableFluidOutputStack(this ItemProto building) {
+    public static int Level(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.EnableFluidOutputStack,
-            IFE矿物复制塔 => MineralReplicationTower.EnableFluidOutputStack,
-            IFE点数聚集塔 => PointAggregateTower.EnableFluidOutputStack,
-            IFE转化塔 => ConversionTower.EnableFluidOutputStack,
-            _ => false
+            IFE交互塔 => InteractionTower.Level,
+            IFE矿物复制塔 => MineralReplicationTower.Level,
+            IFE点数聚集塔 => PointAggregateTower.Level,
+            IFE转化塔 => ConversionTower.Level,
+            IFE回收塔 => RecycleTower.Level,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.Level,
+            IFE星际物流交互站 => InterstellarInteractionStation.Level,
+            _ => 0
         };
     }
 
-    public static void EnableFluidOutputStack(this ItemProto building, bool enable) {
+    public static void Level(this ItemProto building, int level, bool manual = false) {
         switch (building.ID) {
             case IFE交互塔:
-                InteractionTower.EnableFluidOutputStack = enable;
+                InteractionTower.Level = level;
+                InteractionTower.UpdateHpAndEnergy();
                 break;
             case IFE矿物复制塔:
-                MineralReplicationTower.EnableFluidOutputStack = enable;
+                MineralReplicationTower.Level = level;
+                MineralReplicationTower.UpdateHpAndEnergy();
                 break;
             case IFE点数聚集塔:
-                PointAggregateTower.EnableFluidOutputStack = enable;
+                PointAggregateTower.Level = level;
+                PointAggregateTower.UpdateHpAndEnergy();
                 break;
             case IFE转化塔:
-                ConversionTower.EnableFluidOutputStack = enable;
+                ConversionTower.Level = level;
+                ConversionTower.UpdateHpAndEnergy();
+                break;
+            case IFE回收塔:
+                RecycleTower.Level = level;
+                RecycleTower.UpdateHpAndEnergy();
+                break;
+            case IFE行星内物流交互站:
+            case IFE星际物流交互站:
+                PlanetaryInteractionStation.Level = level;
+                PlanetaryInteractionStation.UpdateHpAndEnergy();
+                InterstellarInteractionStation.UpdateHpAndEnergy();
                 break;
             default:
                 return;
         }
+        if (NebulaModAPI.IsMultiplayerActive && manual) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(building.ID, 1, level));
+        }
+    }
+
+    public static bool EnableFluidEnhancement(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.EnableFluidEnhancement,
+            IFE矿物复制塔 => MineralReplicationTower.EnableFluidEnhancement,
+            IFE点数聚集塔 => PointAggregateTower.EnableFluidEnhancement,
+            IFE转化塔 => ConversionTower.EnableFluidEnhancement,
+            IFE回收塔 => RecycleTower.EnableFluidEnhancement,
+            _ => false
+        };
     }
 
     public static int MaxProductOutputStack(this ItemProto building) {
@@ -211,60 +242,11 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.MaxProductOutputStack,
             IFE点数聚集塔 => PointAggregateTower.MaxProductOutputStack,
             IFE转化塔 => ConversionTower.MaxProductOutputStack,
+            IFE回收塔 => RecycleTower.MaxProductOutputStack,
             IFE行星内物流交互站 => PlanetaryInteractionStation.MaxProductOutputStack,
+            IFE星际物流交互站 => InterstellarInteractionStation.MaxProductOutputStack,
             _ => 1
         };
-    }
-
-    public static void MaxProductOutputStack(this ItemProto building, int stack) {
-        switch (building.ID) {
-            case IFE交互塔:
-                InteractionTower.MaxProductOutputStack = stack;
-                break;
-            case IFE矿物复制塔:
-                MineralReplicationTower.MaxProductOutputStack = stack;
-                break;
-            case IFE点数聚集塔:
-                PointAggregateTower.MaxProductOutputStack = stack;
-                break;
-            case IFE转化塔:
-                ConversionTower.MaxProductOutputStack = stack;
-                break;
-            case IFE行星内物流交互站:
-                PlanetaryInteractionStation.MaxProductOutputStack = stack;
-                break;
-            default:
-                return;
-        }
-    }
-
-    public static bool EnableFracForever(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.EnableFracForever,
-            IFE矿物复制塔 => MineralReplicationTower.EnableFracForever,
-            IFE点数聚集塔 => PointAggregateTower.EnableFracForever,
-            IFE转化塔 => ConversionTower.EnableFracForever,
-            _ => false
-        };
-    }
-
-    public static void EnableFracForever(this ItemProto building, bool enable) {
-        switch (building.ID) {
-            case IFE交互塔:
-                InteractionTower.EnableFracForever = enable;
-                break;
-            case IFE矿物复制塔:
-                MineralReplicationTower.EnableFracForever = enable;
-                break;
-            case IFE点数聚集塔:
-                PointAggregateTower.EnableFracForever = enable;
-                break;
-            case IFE转化塔:
-                ConversionTower.EnableFracForever = enable;
-                break;
-            default:
-                return;
-        }
     }
 
     public static long workEnergyPerTick(this ItemProto building) {
@@ -273,6 +255,9 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.workEnergyPerTick,
             IFE点数聚集塔 => PointAggregateTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
+            IFE回收塔 => RecycleTower.workEnergyPerTick,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.workEnergyPerTick,
+            IFE星际物流交互站 => InterstellarInteractionStation.workEnergyPerTick,
             _ => LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick
         };
     }
@@ -287,127 +272,35 @@ public static class BuildingManager {
                 return PointAggregateTower.idleEnergyPerTick;
             case IFE转化塔:
                 return ConversionTower.idleEnergyPerTick;
+            case IFE回收塔:
+                return RecycleTower.idleEnergyPerTick;
+            case IFE行星内物流交互站:
+                return PlanetaryInteractionStation.idleEnergyPerTick;
+            case IFE星际物流交互站:
+                return InterstellarInteractionStation.idleEnergyPerTick;
             default:
                 return LDB.models.Select(M分馏塔).prefabDesc.idleEnergyPerTick;
         }
     }
 
-    public static int ReinforcementLevel(this ItemProto building) {
+    public static float EnergyRatio(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementLevel,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementLevel,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementLevel,
-            IFE转化塔 => ConversionTower.ReinforcementLevel,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementLevel,
-            _ => 0
+            IFE交互塔 => InteractionTower.EnergyRatio,
+            IFE矿物复制塔 => MineralReplicationTower.EnergyRatio,
+            IFE点数聚集塔 => PointAggregateTower.EnergyRatio,
+            IFE转化塔 => ConversionTower.EnergyRatio,
+            IFE回收塔 => RecycleTower.EnergyRatio,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.EnergyRatio,
+            IFE星际物流交互站 => InterstellarInteractionStation.EnergyRatio,
+            _ => 1.0f
         };
     }
 
-    public static void ReinforcementLevel(this ItemProto building, int level, bool manual = false) {
-        switch (building.ID) {
-            case IFE交互塔:
-                InteractionTower.ReinforcementLevel = level;
-                InteractionTower.UpdateHpAndEnergy();
-                break;
-            case IFE矿物复制塔:
-                MineralReplicationTower.ReinforcementLevel = level;
-                MineralReplicationTower.UpdateHpAndEnergy();
-                break;
-            case IFE点数聚集塔:
-                PointAggregateTower.ReinforcementLevel = level;
-                PointAggregateTower.UpdateHpAndEnergy();
-                break;
-            case IFE转化塔:
-                ConversionTower.ReinforcementLevel = level;
-                ConversionTower.UpdateHpAndEnergy();
-                break;
-            case IFE行星内物流交互站:
-                PlanetaryInteractionStation.ReinforcementLevel = level;
-                PlanetaryInteractionStation.UpdateHpAndEnergy();
-                break;
-            default:
-                return;
-        }
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new BuildingChangePacket(building.ID, 5, level));
-        }
-    }
-
-    public static float ReinforcementSuccessRate(this ItemProto building) {
+    public static float InteractEnergyRatio(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementSuccessRate,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementSuccessRate,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementSuccessRate,
-            IFE转化塔 => ConversionTower.ReinforcementSuccessRate,
-            IFE回收塔 => RecycleTower.ReinforcementSuccessRate,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementSuccessRate,
-            _ => 0
-        };
-    }
-
-    public static float ReinforcementBonusDurability(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonusDurability,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusDurability,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusDurability,
-            IFE转化塔 => ConversionTower.ReinforcementBonusDurability,
-            IFE回收塔 => RecycleTower.ReinforcementBonusDurability,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusDurability,
-            _ => 0
-        };
-    }
-
-    public static float ReinforcementBonusEnergy(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonusEnergy,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusEnergy,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusEnergy,
-            IFE转化塔 => ConversionTower.ReinforcementBonusEnergy,
-            IFE回收塔 => RecycleTower.ReinforcementBonusEnergy,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.ReinforcementBonusEnergy,
-            _ => 0
-        };
-    }
-
-    /// <summary>
-    /// 强化对配方的基础成功率加成，与其他增幅累乘
-    /// </summary>
-    public static float ReinforcementBonusFracSuccess(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonusFracSuccess,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusFracSuccess,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusFracSuccess,
-            IFE转化塔 => ConversionTower.ReinforcementBonusFracSuccess,
-            IFE回收塔 => RecycleTower.ReinforcementBonusFracSuccess,
-            _ => 0
-        };
-    }
-
-    /// <summary>
-    /// 强化对配方的主产物数目的加成，与其他增幅累加
-    /// </summary>
-    public static float ReinforcementBonusMainOutputCount(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonusMainOutputCount,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusMainOutputCount,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusMainOutputCount,
-            IFE转化塔 => ConversionTower.ReinforcementBonusMainOutputCount,
-            IFE回收塔 => RecycleTower.ReinforcementBonusMainOutputCount,
-            _ => 0
-        };
-    }
-
-    /// <summary>
-    /// 强化对配方的副产物概率的加成，与其他增幅累乘
-    /// </summary>
-    public static float ReinforcementBonusAppendOutputRate(this ItemProto building) {
-        return building.ID switch {
-            IFE交互塔 => InteractionTower.ReinforcementBonusAppendOutputRate,
-            IFE矿物复制塔 => MineralReplicationTower.ReinforcementBonusAppendOutputRate,
-            IFE点数聚集塔 => PointAggregateTower.ReinforcementBonusAppendOutputRate,
-            IFE转化塔 => ConversionTower.ReinforcementBonusAppendOutputRate,
-            IFE回收塔 => RecycleTower.ReinforcementBonusAppendOutputRate,
-            _ => 0
+            IFE行星内物流交互站 => PlanetaryInteractionStation.InteractEnergyRatio,
+            IFE星际物流交互站 => InterstellarInteractionStation.InteractEnergyRatio,
+            _ => 1.0f
         };
     }
 

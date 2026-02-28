@@ -2,7 +2,6 @@
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
-using FE.Logic.Manager;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Manager.ProcessManager;
@@ -19,13 +18,35 @@ public static class PlanetaryInteractionStation {
     private static ModelProto model;
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
-    public static int MaxProductOutputStack = 1;
-    public static int ReinforcementLevel = 0;
-    public static readonly float propertyRatio = 1.0f;
-    private static float ReinforcementBonus => ReinforcementBonusArr[ReinforcementLevel];
-    public static float ReinforcementSuccessRate => ReinforcementSuccessRateArr[ReinforcementLevel];
-    public static float ReinforcementBonusDurability => ReinforcementBonus * 4;
-    public static float ReinforcementBonusEnergy => 1 / (1 + ReinforcementBonus * 9);
+    public static int Level = 0;
+    public static int MaxProductOutputStack => Level switch {
+        < 6 => 1,
+        < 9 => 4,
+        < 12 => 8,
+        _ => 12,
+    };
+    public static float EnergyRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 0.95f,
+        < 8 => 0.85f,
+        < 11 => 0.7f,
+        _ => 0.5f,
+    };
+    public static float InteractEnergyRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 0.95f,
+        < 8 => 0.85f,
+        < 11 => 0.7f,
+        _ => 0.5f,
+    };
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
 
     public static void AddTranslations() {
         Register("物流交互站", "Interaction Station");
@@ -75,39 +96,33 @@ public static class PlanetaryInteractionStation {
             return;
         }
         ModelProto stationModel = LDB.models.Select(M行星内物流运输站);
-        model.HpMax = (int)(stationModel.HpMax * propertyRatio * (1 + ReinforcementBonusDurability));
-        model.prefabDesc.workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
-        model.prefabDesc.idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
+        workEnergyPerTick = (long)(stationModel.prefabDesc.workEnergyPerTick * EnergyRatio);
+        idleEnergyPerTick = (long)(stationModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
     }
 
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
-        MaxProductOutputStack = r.ReadInt32();
-        if (MaxProductOutputStack < 0) {
-            MaxProductOutputStack = 0;
-        } else if (MaxProductOutputStack > 4) {
-            MaxProductOutputStack = 4;
+        if (version < 2) {
+            r.ReadInt32();
         }
-        ReinforcementLevel = r.ReadInt32();
-        if (ReinforcementLevel < 0) {
-            ReinforcementLevel = 0;
-        } else if (ReinforcementLevel > MaxReinforcementLevel) {
-            ReinforcementLevel = MaxReinforcementLevel;
+        Level = r.ReadInt32();
+        if (Level < 0) {
+            Level = 0;
+        } else if (Level > MaxLevel) {
+            Level = MaxLevel;
         }
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(MaxProductOutputStack);
-        w.Write(ReinforcementLevel);
+        w.Write(2);
+        w.Write(Level);
     }
 
     public static void IntoOtherSave() {
-        MaxProductOutputStack = 1;
-        ReinforcementLevel = 0;
+        Level = 0;
         UpdateHpAndEnergy();
     }
 

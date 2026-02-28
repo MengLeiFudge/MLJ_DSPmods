@@ -1,9 +1,11 @@
-﻿using BuildBarTool;
+﻿using System.IO;
+using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;
+using static FE.Logic.Manager.ProcessManager;
 
 namespace FE.Logic.Building;
 
@@ -15,6 +17,32 @@ public static class InterstellarInteractionStation {
     private static RecipeProto recipe;
     private static ModelProto model;
     public static Color color = new(0.8f, 0.3f, 0.6f);
+
+    public static int Level = 0;
+    public static bool EnableFluidEnhancement => Level >= 3;
+    public static int MaxProductOutputStack => Level;
+    public static float EnergyRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 0.95f,
+        < 8 => 0.85f,
+        < 11 => 0.7f,
+        _ => 0.5f,
+    };
+    public static float InteractEnergyRatio => Level switch {
+        < 2 => 1.0f,
+        < 5 => 0.95f,
+        < 8 => 0.85f,
+        < 11 => 0.7f,
+        _ => 0.5f,
+    };
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
 
     public static void AddTranslations() {
         Register("星际物流交互站", "Interstellar Interaction Station");
@@ -59,12 +87,11 @@ public static class InterstellarInteractionStation {
     }
 
     public static void UpdateHpAndEnergy() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
-        // 强化与小塔共用1个
-        model.HpMax = (int)(stationModel.HpMax
-                            * PlanetaryInteractionStation.propertyRatio
-                            * (1 + PlanetaryInteractionStation.ReinforcementBonusDurability));
-        model.prefabDesc.workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
-        model.prefabDesc.idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
+        workEnergyPerTick = (long)(stationModel.prefabDesc.workEnergyPerTick * EnergyRatio);
+        idleEnergyPerTick = (long)(stationModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
     }
 }
