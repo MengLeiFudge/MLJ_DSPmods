@@ -84,19 +84,19 @@ public abstract class BaseRecipe(
     /// <param name="quality">输入物品的品质，0到5</param>
     /// <param name="seed">随机数种子</param>
     /// <param name="pointsBonus">增产剂加成</param>
-    /// <param name="buffBonus1">强化对配方成功率加成</param>
-    /// <param name="buffBonus2">强化对主产物数目加成</param>
-    /// <param name="buffBonus3">强化对副产物概率加成</param>
+    /// <param name="successRateBonus">配方成功率加成</param>
+    /// <param name="mainOutputCountBonus">主产物数目加成</param>
+    /// <param name="appendOutputRateBonus">副产物概率加成</param>
     /// <returns>损毁返回null，无变化反馈空List，成功返回输出产物(是否为主输出，物品ID，物品数目)</returns>
     public virtual List<ProductOutputInfo> GetOutputs(byte quality, ref uint seed, float pointsBonus,
-        float buffBonus1, float buffBonus2, float buffBonus3) {
+        float successRateBonus, float mainOutputCountBonus, float appendOutputRateBonus) {
         //损毁
         if (GetRandDouble(ref seed) < DestroyRate) {
             RewardExp(1);
             return null;
         }
         //无变化
-        if (GetRandDouble(ref seed) >= SuccessRate * (1 + pointsBonus) * (1 + buffBonus1)) {
+        if (GetRandDouble(ref seed) >= SuccessRate * (1 + pointsBonus) * (1 + successRateBonus)) {
             return ProcessManager.emptyOutputs;
         }
         //成功产出
@@ -109,7 +109,7 @@ public abstract class BaseRecipe(
             ratioMain += outputInfo.SuccessRate;
             if (ratio <= ratioMain) {
                 //整数部分必定输出，小数部分根据概率判定确定是否输出
-                float countAvg = outputInfo.OutputCount * (1 + MainOutputCountInc) * (1 + buffBonus2);
+                float countAvg = outputInfo.OutputCount * (1 + MainOutputCountInc) * (1 + mainOutputCountBonus);
                 int countReal = (int)countAvg;
                 countAvg -= countReal;
                 if (countAvg > 0.0001) {
@@ -125,7 +125,8 @@ public abstract class BaseRecipe(
         }
         //附加输出判定，每一项依次判定，互不影响
         foreach (var outputInfo in OutputAppend) {
-            if (GetRandDouble(ref seed) <= outputInfo.SuccessRate * (1 + AppendOutputRatioInc) * (1 + buffBonus3)) {
+            if (GetRandDouble(ref seed)
+                <= outputInfo.SuccessRate * (1 + AppendOutputRatioInc) * (1 + appendOutputRateBonus)) {
                 float countAvg = outputInfo.OutputCount;
                 int countReal = (int)countAvg;
                 countAvg -= countReal;

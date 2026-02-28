@@ -780,13 +780,13 @@ public class GetDspData : BaseUnityPlugin {
             ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
             //↓测试环境调整↓
             // recipe.SandBoxMaxUpDowngrade(true);
-            building.ReinforcementLevel(20);
+            building.Level(20);
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-            float buffBonus1 = building.ReinforcementBonusFracSuccess();
-            float buffBonus2 = building.ReinforcementBonusMainOutputCount();
-            float buffBonus3 = building.ReinforcementBonusAppendOutputRate();
+            float buffBonus1 = 0;//todo
+            float buffBonus2 = 0;
+            float buffBonus3 = 0;
             //成功率
             float successRate = recipe.SuccessRate * (1 + pointsBonus) * (1 + buffBonus1);
             //损毁率

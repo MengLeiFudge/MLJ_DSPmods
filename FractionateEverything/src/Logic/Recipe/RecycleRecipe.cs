@@ -62,10 +62,10 @@ public class RecycleRecipe : BaseRecipe {
     /// 重写GetOutputs方法，添加品质提升逻辑
     /// </summary>
     public override List<ProductOutputInfo> GetOutputs(byte quality, ref uint seed, float pointsBonus,
-        float buffBonus1, float buffBonus2, float buffBonus3) {
+        float successRateBonus, float mainOutputCountBonus, float appendOutputRateBonus) {
         // 调用基类方法获取基础输出
         List<ProductOutputInfo> baseOutputs =
-            base.GetOutputs(quality, ref seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3);
+            base.GetOutputs(quality, ref seed, pointsBonus, successRateBonus, mainOutputCountBonus, appendOutputRateBonus);
         // 如果没有输出（损毁或无变化），直接返回
         if (baseOutputs == null || baseOutputs.Count == 0) {
             return baseOutputs;
