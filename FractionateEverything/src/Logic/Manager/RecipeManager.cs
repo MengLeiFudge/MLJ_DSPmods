@@ -107,6 +107,9 @@ public static class RecipeManager {
     /// <typeparam name="T">BaseRecipe的子类</typeparam>
     /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
     public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
+        if (recipeType == ERecipe.PointAggregate) {
+            return new PointAggregateRecipe(inputId) as T;
+        }
         return RecipeTypeArr[(int)recipeType][inputId] as T;
     }
 
