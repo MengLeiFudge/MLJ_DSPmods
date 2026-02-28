@@ -9,7 +9,7 @@ public class PointAggregateRecipe : BaseRecipe {
     public override ERecipe RecipeType => ERecipe.PointAggregate;
 
     public PointAggregateRecipe(int inputID) 
-        : base(inputID, 1.0f, [], []) { }
+        : base(inputID, 1.0f, [new(1.0f, inputID, 1)], []) { }
 
     public override void GetOutputs(ref uint seed, float pointsBonus,
         float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,

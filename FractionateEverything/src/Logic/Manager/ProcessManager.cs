@@ -193,7 +193,7 @@ public static class ProcessManager {
                 signPool[__instance.entityId].iconType = 0U;
             }
         } else {
-            bool needResetProducts = __instance.productId != recipe.OutputMain[0].OutputID
+            bool needResetProducts = (recipe.OutputMain.Count > 0 && __instance.productId != recipe.OutputMain[0].OutputID)
                                      || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
             if (!needResetProducts) {
                 foreach (OutputInfo info in recipe.OutputMain) {
@@ -211,7 +211,7 @@ public static class ProcessManager {
             }
             if (needResetProducts) {
                 products.Clear();
-                __instance.productId = recipe.OutputMain[0].OutputID;
+                __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
                 __instance.productOutputCount = 0;
                 __instance.produceProb = 0.01f;
                 signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
@@ -400,7 +400,7 @@ public static class ProcessManager {
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
                         } else {
-                            __instance.productId = recipe.OutputMain[0].OutputID;
+                            __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
@@ -473,7 +473,7 @@ public static class ProcessManager {
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
                         } else {
-                            __instance.productId = recipe.OutputMain[0].OutputID;
+                            __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
