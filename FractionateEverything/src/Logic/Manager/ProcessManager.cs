@@ -292,11 +292,13 @@ public static class ProcessManager {
                 // 统一结算输入变化
                 if (inputChange < 0) {
                     __instance.fluidInputCount--;
+                    if (__instance.fluidInputCount < 0) __instance.fluidInputCount = 0;
                     __instance.fluidInputCargoCount -= 1.0f / fluidInputCountPerCargo;
                     if (__instance.fluidInputCargoCount < 0f) __instance.fluidInputCargoCount = 0f;
                     // fluidInputInc 的扣除已由 GetOutputs 处理；如果是强制直通则在此扣除
                     if (outputs == emptyOutputs) {
                         __instance.fluidInputInc -= fluidInputIncAvg;
+                        if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
                     }
                 }
 
@@ -340,15 +342,29 @@ public static class ProcessManager {
                 if (__instance.fluidOutputCount > 0) {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
                     if (cargoPath != null) {
-                        //原版传送带最大速率为30，如果每次尝试放1个物品到传送带上，需要每帧判定2次（30速*4堆叠/60帧）
-                        //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
-                        //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
+                        // 准备增产点数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4 && __instance.fluidOutputCount > 1) {
+                        if (buildingID == IFE点数聚集塔) {
+                            // 点数聚集塔核心原则：输出要么 0 点要么 4 点
                             fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
                         }
-                        if (!building.EnableFluidEnhancement()) {
-                            //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
+
+                        // 已研究流动输出集装科技
+                        if (building.EnableFluidEnhancement()) {
+                            // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
+                            // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
+                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 1, 20);
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                    __instance.fluidOutputCount -= countToOutput;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            // 未研究流动输出集装科技，根据传送带最大速率每帧判定多次，每次输出 1 个
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -358,33 +374,19 @@ public static class ProcessManager {
                                 __instance.fluidOutputCount--;
                                 __instance.fluidOutputInc -= fluidOutputIncAvg;
                             }
-                        } else {
-                            //已研究流动输出集装科技
-                            if (__instance.fluidOutputCount >= 4) {
-                                //超过4个，则输出4个
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        4, 4, (byte)(fluidOutputIncAvg * 4))) {
-                                    __instance.fluidOutputCount -= 4;
-                                    __instance.fluidOutputInc -= fluidOutputIncAvg * 4;
-                                }
-                            } else if (__instance.fluidInputCount == 0) {
-                                //未超过4个且输入为空，剩几个输出几个
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        4, (byte)__instance.fluidOutputCount,
-                                        (byte)__instance.fluidOutputInc)) {
-                                    __instance.fluidOutputCount = 0;
-                                    __instance.fluidOutputInc = 0;
-                                }
-                            }
                         }
                     }
                 }
             } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
-                    if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
-                        __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc;
-                        __instance.fluidInputCargoCount++;
+                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                        if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
+                            __instance.fluidInputCount += stack;
+                            __instance.fluidInputInc += inc;
+                            __instance.fluidInputCargoCount++;
+                        } else {
+                            break;
+                        }
                     }
                 } else {
                     int needId = cargoTraffic.TryPickItemAtRear(__instance.belt1, 0, null, out stack, out inc);
@@ -411,6 +413,16 @@ public static class ProcessManager {
                                 products.Add(new(false, info.OutputID, 0));
                             }
                         }
+                        // 初始拾取一个后，尝试继续拾取同类物品以快速填满
+                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                            if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc) > 0) {
+                                __instance.fluidInputCount += stack;
+                                __instance.fluidInputInc += inc;
+                                __instance.fluidInputCargoCount++;
+                            } else {
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -420,11 +432,29 @@ public static class ProcessManager {
                 if (__instance.fluidOutputCount > 0) {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
+                        // 准备增产点数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (buildingID == IFE点数聚集塔 && fluidOutputIncAvg < 4 && __instance.fluidOutputCount > 1) {
+                        if (buildingID == IFE点数聚集塔) {
+                            // 点数聚集塔核心原则：输出要么 0 点要么 4 点
                             fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
                         }
-                        if (!building.EnableFluidEnhancement()) {
+
+                        // 已研究流动输出集装科技
+                        if (building.EnableFluidEnhancement()) {
+                            // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
+                            // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
+                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 1, 20);
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                    __instance.fluidOutputCount -= countToOutput;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            // 未研究流动输出集装科技，根据传送带最大速率每帧判定多次，每次输出 1 个
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -434,30 +464,19 @@ public static class ProcessManager {
                                 __instance.fluidOutputCount--;
                                 __instance.fluidOutputInc -= fluidOutputIncAvg;
                             }
-                        } else {
-                            if (__instance.fluidOutputCount >= 4) {
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        4, 4, (byte)(fluidOutputIncAvg * 4))) {
-                                    __instance.fluidOutputCount -= 4;
-                                    __instance.fluidOutputInc -= fluidOutputIncAvg * 4;
-                                }
-                            } else if (__instance.fluidInputCount == 0) {
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        4, (byte)__instance.fluidOutputCount,
-                                        (byte)__instance.fluidOutputInc)) {
-                                    __instance.fluidOutputCount = 0;
-                                    __instance.fluidOutputInc = 0;
-                                }
-                            }
                         }
                     }
                 }
             } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputMax) {
                 if (fluidId > 0) {
-                    if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
-                        __instance.fluidInputCount += stack;
-                        __instance.fluidInputInc += inc;
-                        __instance.fluidInputCargoCount++;
+                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                        if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
+                            __instance.fluidInputCount += stack;
+                            __instance.fluidInputInc += inc;
+                            __instance.fluidInputCargoCount++;
+                        } else {
+                            break;
+                        }
                     }
                 } else {
                     int needId = cargoTraffic.TryPickItemAtRear(__instance.belt2, 0, null, out stack, out inc);
@@ -482,6 +501,16 @@ public static class ProcessManager {
                             }
                             foreach (OutputInfo info in recipe.OutputAppend) {
                                 products.Add(new(false, info.OutputID, 0));
+                            }
+                        }
+                        // 初始拾取一个后，尝试继续拾取同类物品以快速填满
+                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                            if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc) > 0) {
+                                __instance.fluidInputCount += stack;
+                                __instance.fluidInputInc += inc;
+                                __instance.fluidInputCargoCount++;
+                            } else {
+                                break;
                             }
                         }
                     }
