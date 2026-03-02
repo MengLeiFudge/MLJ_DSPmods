@@ -43,7 +43,6 @@ public class CheckPlugins : BaseUnityPlugin {
 
     private static bool _shown;
     private static string _missingModsList;
-    private static string _disabledModsList;
 
     /// <summary>
     /// 是否在游戏加载时禁用提示信息。
@@ -91,6 +90,11 @@ public class CheckPlugins : BaseUnityPlugin {
         Register("FE日志链接",
             "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/",
             "https://thunderstore.io/c/dyson-sphere-program/p/MengLei/FractionateEverything/changelog/");
+
+        Register("万物分馏BepInEx版本警告标题", "BepInEx Version Warning", "BepInEx版本警告");
+        Register("万物分馏BepInEx版本警告内容",
+            "Fractionate Everything is designed for BepInEx 5.4.17. You are using a different version, which may cause compatibility issues.",
+            "万物分馏是为BepInEx 5.4.17设计的。你当前使用的版本不同，可能会导致兼容性问题。");
     }
 
     public void Awake() {
@@ -131,17 +135,17 @@ public class CheckPlugins : BaseUnityPlugin {
             return;
         }
 
-        //禁用模组提示
-        // if (Chainloader.PluginInfos.ContainsKey(AutoSorter.GUID)) {
-        //     StringBuilder sb2 = new StringBuilder();
-        //     sb2.Append($"\nAutoSorter ({AutoSorter.GUID})");
-        //     _disabledModsList = sb2.ToString();
-        //     new Harmony(GUID).Patch(
-        //         AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
-        //         null,
-        //         new(typeof(CheckPlugins), nameof(ShowDisableModMessage)) { priority = Priority.Last }
-        //     );
-        // }
+        // BepInEx版本检查
+        var bepInExVersion = typeof(Chainloader).Assembly.GetName().Version;
+        if (bepInExVersion.Major != 5 || bepInExVersion.Minor != 4 || bepInExVersion.Build != 17) {
+            LogWarning($"BepInEx version mismatch! Expected: 5.4.17, Actual: {bepInExVersion}");
+            new Harmony(GUID + ".BepInExVersion").Patch(
+                AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
+                null,
+                new(typeof(CheckPlugins), nameof(ShowBepInExVersionWarning)) { priority = Priority.Last }
+            );
+        }
+
 
         AutoSorter.Compatible();
         BuildToolOpt.Compatible();
@@ -181,10 +185,10 @@ public class CheckPlugins : BaseUnityPlugin {
         );
     }
 
-    private static void ShowDisableModMessage() {
-        UIMessageBox.Show("万物分馏禁用模组标题".Translate(),
-            "万物分馏禁用模组内容".Translate() + _disabledModsList,
-            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.ERROR,
+    private static void ShowBepInExVersionWarning() {
+        UIMessageBox.Show("万物分馏BepInEx版本警告标题".Translate(),
+            "万物分馏BepInEx版本警告内容".Translate(),
+            "确定".Translate(), "FE日志".Translate(), "FE交流群".Translate(), UIMessageBox.WARNING,
             null,
             () => {
 #if DEBUG
