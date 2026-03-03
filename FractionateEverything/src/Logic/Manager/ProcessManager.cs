@@ -320,17 +320,20 @@ public static class ProcessManager {
                         if (InteractionTower.EnableFluidEnhancement) x++;
                         if (InteractionTower.EnableSacrificeTrait) x++;
                         if (InteractionTower.EnableDimensionalResonance) x++;
-                        double successAdd = Math.Sqrt(x / 120.0);
-                        double speedAdd = Math.Sqrt(x / 60.0);
+                        double successAdd = 1.0 + Math.Sqrt(x / 120.0);
+                        double speedAdd = 1.0 + Math.Sqrt(x / 60.0);
                         if (x == 3) {
-                            successAdd *= 2;
-                            speedAdd *= 2;
+                            successAdd *= 2.0;
+                            speedAdd *= 2.0;
                         }
                         // 存储成功加成到字典，速度加成每次重新计算
                         __instance.SetResonanceBoost(factory, (float)successAdd);
                         buffBonus1 = (float)successAdd;
                         buffBonus2 = (float)speedAdd;
                     }
+                    // 分馏献祭全局增幅
+                    buffBonus1 += BuildingManager.GetSacrificeBoost();
+                    buffBonus2 += BuildingManager.GetSacrificeSpeedBoost();
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
@@ -362,9 +365,21 @@ public static class ProcessManager {
                 }
 
                 if (outputs == null) {
-                    // 损毁，原料消失
-                    lock (consumeRegister) {
-                        consumeRegister[fluidId]++;
+                    // 因果溯源 - 转化塔在 Level >= 6 时，50%概率不消耗原料
+                    bool materialConsumed = true;
+                    if (buildingID == IFE转化塔 && ConversionTower.EnableCausalTracing) {
+                        if (Random.value < 0.5f) {
+                            materialConsumed = false;
+                            __instance.fluidInputCount++;
+                            __instance.fluidInputCargoCount += 1.0f / fluidInputCountPerCargo;
+                            __instance.fluidInputInc += fluidInputIncAvg;
+                        }
+                    }
+                    if (materialConsumed) {
+                        // 损毁，原料消失
+                        lock (consumeRegister) {
+                            consumeRegister[fluidId]++;
+                        }
                     }
                 } else if (outputs.Count == 0) {
                     // 直通（无变化）
@@ -925,15 +940,18 @@ public static class ProcessManager {
             if (InteractionTower.EnableFluidEnhancement) x++;
             if (InteractionTower.EnableSacrificeTrait) x++;
             if (InteractionTower.EnableDimensionalResonance) x++;
-            double successAdd = Math.Sqrt(x / 120.0);
-            double speedAdd = Math.Sqrt(x / 60.0);
+            double successAdd = 1.0 + Math.Sqrt(x / 120.0);
+            double speedAdd = 1.0 + Math.Sqrt(x / 60.0);
             if (x == 3) {
-                successAdd *= 2;
-                speedAdd *= 2;
+                successAdd *= 2.0;
+                speedAdd *= 2.0;
             }
             buffBonus1 = (float)successAdd;
             buffBonus2 = (float)speedAdd;
         }
+        // 分馏献祭全局增幅
+        buffBonus1 += BuildingManager.GetSacrificeBoost();
+        buffBonus2 += BuildingManager.GetSacrificeSpeedBoost();
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
