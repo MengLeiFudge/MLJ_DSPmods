@@ -22,7 +22,7 @@ public class PointAggregateRecipe : BaseRecipe {
             // 成功聚集：消耗 MaxInc 点数，产出一个原物品
             inputChange = -1;
             outputs = new List<ProductOutputInfo> { new(true, InputID, 1) };
-            fluidInputInc -= PointAggregateTower.MaxInc;
+			fluidInputInc -= PointAggregateTower.EnableDoublePoints ? PointAggregateTower.MaxInc / 2 : PointAggregateTower.MaxInc;
             return;
         }
 
