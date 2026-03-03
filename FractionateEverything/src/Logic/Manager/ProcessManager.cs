@@ -43,6 +43,8 @@ public static class ProcessManager {
     public static readonly int MaxLevel = 12;
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
+    private static int sacrificeTimer = 0;
+    private static long lastUpdateTick = 0;
 
     #endregion
 
@@ -278,6 +280,21 @@ public static class ProcessManager {
                     AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
                 }
             }
+            // C6: 质能裂变 - 矿物复制塔在 Level >= 6 时，使用池中点数补充平均点数至10
+            if (buildingID == IFE矿物复制塔
+                && MineralReplicationTower.EnableMassEnergyFission
+                && __instance.fluidInputCount > 0) {
+                int avgInc = __instance.fluidInputInc / __instance.fluidInputCount;
+                if (avgInc < 10) {
+                    int pool = __instance.GetFissionPointPool(factory);
+                    int needed = (10 - avgInc) * __instance.fluidInputCount;
+                    int toUse = Math.Min(pool, needed);
+                    if (toUse > 0) {
+                        __instance.fluidInputInc += toUse;
+                        __instance.SetFissionPointPool(factory, pool - toUse);
+                    }
+                }
+            }
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
@@ -294,9 +311,26 @@ public static class ProcessManager {
                     outputs = emptyOutputs;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
-                    float buffBonus1 = 0;// todo
+                    float buffBonus1 = 0;
                     float buffBonus2 = 0;
                     float buffBonus3 = 0;
+                    // 维度共鸣 - 交互塔在 Level >= 12 时提供成功率和速度加成
+                    if (buildingID == IFE交互塔 && InteractionTower.EnableDimensionalResonance) {
+                        int x = 0;
+                        if (InteractionTower.EnableFluidEnhancement) x++;
+                        if (InteractionTower.EnableSacrificeTrait) x++;
+                        if (InteractionTower.EnableDimensionalResonance) x++;
+                        double successAdd = Math.Sqrt(x / 120.0);
+                        double speedAdd = Math.Sqrt(x / 60.0);
+                        if (x == 3) {
+                            successAdd *= 2;
+                            speedAdd *= 2;
+                        }
+                        // 存储成功加成到字典，速度加成每次重新计算
+                        __instance.SetResonanceBoost(factory, (float)successAdd);
+                        buffBonus1 = (float)successAdd;
+                        buffBonus2 = (float)speedAdd;
+                    }
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
@@ -317,6 +351,13 @@ public static class ProcessManager {
                     if (outputs == emptyOutputs) {
                         __instance.fluidInputInc -= fluidInputIncAvg;
                         if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
+                    }
+                    // C6: 质能裂变 - 10%概率将原料转化为25点裂变点数
+                    if (buildingID == IFE矿物复制塔 && MineralReplicationTower.EnableMassEnergyFission) {
+                        if (Random.value < 0.1f) {
+                            int currentPool = __instance.GetFissionPointPool(factory);
+                            __instance.SetFissionPointPool(factory, currentPool + 25);
+                        }
                     }
                 }
 
@@ -357,6 +398,29 @@ public static class ProcessManager {
             }
         } else {
             __instance.fractionSuccess = false;
+        }
+        // C12: 零压循环 - 矿物复制塔在 Level >= 12 时，当无侧边输出传送带时，将流体输出回流到输入
+        if (buildingID == IFE矿物复制塔
+            && MineralReplicationTower.EnableZeroPressureCycle
+            && __instance.fluidOutputCount > 0
+            && __instance.fluidInputCount < fluidInputMax) {
+            bool hasSideOutputBelt = (__instance.isOutput1 && __instance.belt1 > 0) || (__instance.isOutput2 && __instance.belt2 > 0);
+            if (!hasSideOutputBelt) {
+                int moveCount = Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount);
+                if (moveCount > 0) {
+                    __instance.fluidInputCount += moveCount;
+                    __instance.fluidOutputCount -= moveCount;
+                    int fluidOutputIncAvg = __instance.fluidOutputCount > 0
+                        ? __instance.fluidOutputInc / __instance.fluidOutputCount
+                        : 0;
+                    int moveInc = fluidOutputIncAvg * moveCount;
+                    __instance.fluidInputInc += moveInc;
+                    __instance.fluidOutputInc -= moveInc;
+                    __instance.SetZeroPressureLoopState(factory, true);
+                }
+            } else {
+                __instance.SetZeroPressureLoopState(factory, false);
+            }
         }
         CargoTraffic cargoTraffic = factory.cargoTraffic;
         byte stack;
@@ -671,6 +735,17 @@ public static class ProcessManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
     public static void FactorySystem_GameTick_Postfix(ref FactorySystem __instance) {
+        // Update sacrifice trait timer once per game tick
+        if (GameMain.gameTick > lastUpdateTick) {
+            lastUpdateTick = GameMain.gameTick;
+            sacrificeTimer++;
+            if (sacrificeTimer >= 60) {
+                sacrificeTimer = 0;
+                int count = BuildingManager.CountInteractionTowers();
+                BuildingManager.UpdateSacrificeTrait(count);
+            }
+        }
+
         EntityData[] entityPool = __instance.factory.entityPool;
         PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
         for (int index = 1; index < __instance.fractionatorCursor; ++index) {
@@ -841,9 +916,24 @@ public static class ProcessManager {
         string s1;
         string s2;
         BaseRecipe recipe;
-        float buffBonus1 = 0;//todo
+        float buffBonus1 = 0;
         float buffBonus2 = 0;
         float buffBonus3 = 0;
+        // 维度共鸣 - 交互塔在 Level >= 12 时提供成功率和速度加成
+        if (buildingID == IFE交互塔 && InteractionTower.EnableDimensionalResonance) {
+            int x = 0;
+            if (InteractionTower.EnableFluidEnhancement) x++;
+            if (InteractionTower.EnableSacrificeTrait) x++;
+            if (InteractionTower.EnableDimensionalResonance) x++;
+            double successAdd = Math.Sqrt(x / 120.0);
+            double speedAdd = Math.Sqrt(x / 60.0);
+            if (x == 3) {
+                successAdd *= 2;
+                speedAdd *= 2;
+            }
+            buffBonus1 = (float)successAdd;
+            buffBonus2 = (float)speedAdd;
+        }
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
