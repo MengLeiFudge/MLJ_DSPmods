@@ -178,6 +178,7 @@ public static class ProcessManager {
     public static void InternalUpdate<T>(ref FractionatorComponent __instance,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint __result, ERecipe recipeType) where T : BaseRecipe {
+        int buildingID = factory.entityPool[__instance.entityId].protoId;
         //所有产物输出
         List<ProductOutputInfo> products = __instance.products(factory);
         int fluidId = __instance.fluidId;
@@ -222,6 +223,10 @@ public static class ProcessManager {
                 foreach (OutputInfo info in recipe.OutputAppend) {
                     products.Add(new(false, info.OutputID, 0));
                 }
+                // C8: 单路锁定 - 配方变化时清除锁定
+                if (buildingID == IFE转化塔) {
+                    __instance.SetLockedOutput(factory, 0);
+                }
             }
         }
         //第一个主输出，recipe有则必定有，recipe没有则必定没有
@@ -242,7 +247,6 @@ public static class ProcessManager {
             fluidInputCountPerCargo = __instance.fluidInputCargoCount > 0.0001
                 ? __instance.fluidInputCount / __instance.fluidInputCargoCount
                 : 4f;
-        int buildingID = factory.entityPool[__instance.entityId].protoId;
         ItemProto building = LDB.items.Select(buildingID);
         int fluidInputMax = building.FluidInputMax();
         int productOutputMax = building.ProductOutputMax();
@@ -292,6 +296,10 @@ public static class ProcessManager {
                     float buffBonus1 = 0; // todo
                     float buffBonus2 = 0;
                     float buffBonus3 = 0;
+                    // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
+                    if (buildingID == IFE转化塔) {
+                        ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
+                    }
                     recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3,
                         fluidInputIncAvg, ref __instance.fluidInputInc, out inputChange, out outputs);
                 }
@@ -602,6 +610,10 @@ public static class ProcessManager {
                 products.Clear();
                 signPool[__instance.entityId].iconId0 = 0;
                 signPool[__instance.entityId].iconType = 0U;
+                // C8: 单路锁定 - 缓存区清空时清除锁定
+                if (buildingID == IFE转化塔) {
+                    __instance.SetLockedOutput(factory, 0);
+                }
             }
             __instance.isWorking = __instance.fluidInputCount > 0
                                    && products.All(p => p.count < productOutputMax)
@@ -881,6 +893,19 @@ public static class ProcessManager {
                 flowRatio -= destroyRatio;
             }
             s1 = recipe.TypeNameWC + "\n" + sb1.ToString().Substring(0, sb1.Length - 1);
+            // C8: 单路锁定 - 在转化塔详情窗口显示锁定状态
+            if (buildingID == IFE转化塔 && ConversionTower.EnableSingleLock) {
+                int lockedId = fractionator.GetLockedOutput(__instance.factory);
+                string lockStatus;
+                if (lockedId == 0) {
+                    lockStatus = "\n[锁定: 无]";
+                } else {
+                    ItemProto lockedItem = LDB.items.Select(lockedId);
+                    string itemName = lockedItem != null ? lockedItem.name : lockedId.ToString();
+                    lockStatus = $"\n[锁定: {itemName}]";
+                }
+                s1 += lockStatus;
+            }
             s2 = $"{"流动".Translate()} ({flowRatio.FormatP()})";
             if (destroyRatio > 0) {
                 string destroy = $"{"损毁".Translate()} ({destroyRatio.FormatP()})";

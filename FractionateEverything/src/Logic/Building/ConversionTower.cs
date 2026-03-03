@@ -20,6 +20,7 @@ public static class ConversionTower {
     
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= 3;
+    public static bool EnableSingleLock => Level >= 12;
     public static int MaxProductOutputStack => Level switch {
         < 9 => 1,
         _ => 4,
