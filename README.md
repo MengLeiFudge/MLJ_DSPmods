@@ -150,13 +150,26 @@ wsl bash -ic "opencode --version"
 
 继续等待安装完成。
 
-### 5.修改oh-my-opencode配置
+### 5.登录ai账户或者输入api-key
 
-在安装的时候，它只问了六个。如果想用别的ai怎么办？
+注：有关opencode的指令，可以运行`opencode --help`来查看。
 
-注：不知道指令的话，就运行`opencode --help`来查找。
+```
+# 打开统一设置页面
+opencode auth login
+```
 
-查找后发现，模型指令是`opencode models [provider]`。那么：
+在这个页面中，可以直接搜索对应ai（最上面有search），也可以上下切换慢慢找。
+
+选中某一个ai之后，回车，之后有可能是登录账号（比如claude），有可能是输入api-key。
+
+一次只能录入一个ai的信息。当你有多个ai，就多执行几次`opencode auth login`，全配置好就行。
+
+### 6.修改oh-my-opencode配置
+
+在安装的时候，它只问了六个ai。如果想用别的ai怎么办？
+
+模型指令是`opencode models [provider]`。那么：
 
 ```
 # 查看所有支持的model字段
@@ -173,6 +186,8 @@ deepseek/deepseek-reasoner -> deepseek深度推理模式，按量付费
 zai/glm-5 -> glm5，按量付费
 zai-coding-plan/glm-5 -> glm5，按订阅付费
 ```
+
+注意：如果没有找到对应的ai字符串，很可能是你在第5步中没有配置好对应的ai。
 
 记下对应的字符串后，修改配置：
 
@@ -313,16 +328,3 @@ nano ~/.config/opencode/oh-my-opencode.json
   }
 }
 ```
-
-### 6.登录对应ai的账户或者输入api-key
-
-```
-# 打开统一设置页面
-opencode auth login
-```
-
-在这个页面中，可以直接搜索对应ai（最上面有search），也可以上下切换慢慢找。
-
-选中某一个ai之后，回车，之后有可能是登录账号（比如claude），有可能是输入api-key。
-
-一次只能录入一个ai的信息。当你有多个ai，就多执行几次`opencode auth login`，全配置好就行。
