@@ -270,11 +270,10 @@ public class ConversionRecipe : BaseRecipe {
     /// </summary>
     public static int CurrentLockedOutputId = 0;
 
-    public override void GetOutputs(ref uint seed, float pointsBonus,
-        float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
+    public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         // 调用基类获取原始结果
-        base.GetOutputs(ref seed, pointsBonus, successRatioBonus, mainOutputCountBonus, appendOutputRatioBonus,
+        base.GetOutputs(ref seed, pointsBonus, successBoost,
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
 
         // C8: 单路锁定 - 当启用且有锁定产物时，过滤输出
