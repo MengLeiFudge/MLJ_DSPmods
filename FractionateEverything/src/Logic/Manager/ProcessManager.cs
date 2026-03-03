@@ -194,8 +194,9 @@ public static class ProcessManager {
                 signPool[__instance.entityId].iconType = 0U;
             }
         } else {
-            bool needResetProducts = (recipe.OutputMain.Count > 0 && __instance.productId != recipe.OutputMain[0].OutputID)
-                                     || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
+            bool needResetProducts =
+                (recipe.OutputMain.Count > 0 && __instance.productId != recipe.OutputMain[0].OutputID)
+                || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
             if (!needResetProducts) {
                 foreach (OutputInfo info in recipe.OutputMain) {
                     if (products.All(p => p.itemId != info.OutputID)) {
@@ -292,8 +293,8 @@ public static class ProcessManager {
                     inputChange = -1;
                     outputs = emptyOutputs;
                 } else {
-                    float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg);
-                    float buffBonus1 = 0; // todo
+                    float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
+                    float buffBonus1 = 0;// todo
                     float buffBonus2 = 0;
                     float buffBonus3 = 0;
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
@@ -321,7 +322,9 @@ public static class ProcessManager {
 
                 if (outputs == null) {
                     // 损毁，原料消失
-                    lock (consumeRegister) { consumeRegister[fluidId]++; }
+                    lock (consumeRegister) {
+                        consumeRegister[fluidId]++;
+                    }
                 } else if (outputs.Count == 0) {
                     // 直通（无变化）
                     if (inputChange < 0) {
@@ -331,12 +334,16 @@ public static class ProcessManager {
                     }
                 } else {
                     // 成功产出，产出到产物列表
-                    lock (consumeRegister) { consumeRegister[fluidId]++; }
+                    lock (consumeRegister) {
+                        consumeRegister[fluidId]++;
+                    }
                     __instance.productOutputTotal++;
                     foreach (var p in outputs) {
                         int itemID = p.itemId;
                         int itemCount = p.count;
-                        lock (productRegister) { productRegister[itemID] += itemCount; }
+                        lock (productRegister) {
+                            productRegister[itemID] += itemCount;
+                        }
                         if (itemID == product0Id) {
                             product0.count += itemCount;
                             __instance.productOutputCount = product0.count;
@@ -373,7 +380,8 @@ public static class ProcessManager {
                             int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput,
+                                        (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
                                     __instance.fluidOutputCount -= countToOutput;
                                     __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
                                 } else {
@@ -419,7 +427,9 @@ public static class ProcessManager {
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
                         } else {
-                            __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
+                            __instance.productId = recipe.OutputMain.Count > 0
+                                ? recipe.OutputMain[0].OutputID
+                                : recipe.InputID;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
@@ -432,7 +442,8 @@ public static class ProcessManager {
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
                         for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
-                            if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc) > 0) {
+                            if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc)
+                                > 0) {
                                 __instance.fluidInputCount += stack;
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount++;
@@ -463,7 +474,8 @@ public static class ProcessManager {
                             int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput,
+                                        (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
                                     __instance.fluidOutputCount -= countToOutput;
                                     __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
                                 } else {
@@ -509,7 +521,9 @@ public static class ProcessManager {
                             signPool[__instance.entityId].iconId0 = 0;
                             signPool[__instance.entityId].iconType = 0U;
                         } else {
-                            __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
+                            __instance.productId = recipe.OutputMain.Count > 0
+                                ? recipe.OutputMain[0].OutputID
+                                : recipe.InputID;
                             __instance.produceProb = 0.01f;
                             signPool[__instance.entityId].iconId0 = (uint)__instance.fluidId;
                             signPool[__instance.entityId].iconType = 1U;
@@ -522,7 +536,8 @@ public static class ProcessManager {
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
                         for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
-                            if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc) > 0) {
+                            if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc)
+                                > 0) {
                                 __instance.fluidInputCount += stack;
                                 __instance.fluidInputInc += inc;
                                 __instance.fluidInputCargoCount++;
@@ -535,7 +550,6 @@ public static class ProcessManager {
             }
         }
         bool interactionMode = false;
-        int interactionItemId = 0;
         if (__instance.belt0 > 0) {
             if (__instance.isOutput0) {
                 if (products.Count > 0) {
@@ -585,7 +599,7 @@ public static class ProcessManager {
                        && products.All(p => p.count == 0)) {
                 //正面作为输入，数据传到数据中心。可接受未到最大价值，且GridIndex可见的物品。
                 interactionMode = true;
-                interactionItemId =
+                int interactionItemId =
                     cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out inc);
                 if (interactionItemId > 0) {
                     AddItemToModData(interactionItemId, stack, inc);
@@ -646,8 +660,7 @@ public static class ProcessManager {
             num2 = 0.0;
         double powerRatio = buildingID switch {
             IFE点数聚集塔 => 1.0,
-            // IFE量子复制塔 => 1.0 + (Cargo.powerTableRatio[fractionator.incLevel] - 1.0) / 3.9,
-            _ => Cargo.powerTableRatio[fractionator.incLevel]
+            _ => Cargo.powerTableRatio[fractionator.incLevel] * building.EnergyRatio()
         };
         pcPool[fractionator.pcId].workEnergyPerTick = building.workEnergyPerTick();
         pcPool[fractionator.pcId].idleEnergyPerTick = building.idleEnergyPerTick();
