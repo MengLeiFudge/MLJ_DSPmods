@@ -35,9 +35,9 @@ public class RecycleRecipe : BaseRecipe {
         //             int materialCount = mainRecipe.ItemCounts[i];
         //             outputs.Add(new(0.25f, materialId, materialCount));
         //         }
-        //         AddRecipe(new RecycleRecipe(item.ID, 1.0f, outputs, []));
+        //         AddRecipe(new RecycleRecipe(item.ID, 0.05f, outputs, []));
         //     } else {
-        //         AddRecipe(new RecycleRecipe(item.ID, 1.0f, [new(0.25f, item.ID, 1)], []));
+        //         AddRecipe(new RecycleRecipe(item.ID, 0.05f, [new(0.25f, item.ID, 1)], []));
         //     }
         // }
     }
