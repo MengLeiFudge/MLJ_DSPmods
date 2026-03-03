@@ -254,20 +254,20 @@ public static class StationManager {
         text.text = "  使用强化上限";
         // 修改集装输出的可选上限
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxStack = building.MaxStack();
         // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
+        __instance.minPilerSlider.maxValue = maxStack;
         int pilerCount = station.pilerCount;
         if (pilerCount == 0) {
             // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
+            __instance.minPilerSlider.value = maxStack;
+            __instance.minPilerValue.text = maxStack.ToString();
         } else {
             // 手动，设置为当前值
             __instance.minPilerSlider.value = pilerCount;
             __instance.minPilerValue.text = pilerCount.ToString();
         }
-        if (maxProductOutputStack > 1) {
+        if (maxStack > 1) {
             // 堆叠上限大于1，显示修改滑条
             __instance.minPilerGroup.gameObject.SetActive(true);
             __instance.pilerTechGroup.gameObject.SetActive(true);
@@ -282,8 +282,8 @@ public static class StationManager {
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.RefreshTrans))]
     public static void UIStationWindow_RefreshTrans_Postfix(UIStationWindow __instance, StationComponent station) {
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        if (maxProductOutputStack <= 1) {
+        int maxStack = building.MaxStack();
+        if (maxStack <= 1) {
             // 没解锁堆叠，不调整
             return;
         }
@@ -327,20 +327,20 @@ public static class StationManager {
         text.text = "  使用强化上限";
         // 修改集装输出的可选上限
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxStack = building.MaxStack();
         // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
+        __instance.minPilerSlider.maxValue = maxStack;
         int pilerCount = station.pilerCount;
         if (pilerCount == 0) {
             // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
+            __instance.minPilerSlider.value = maxStack;
+            __instance.minPilerValue.text = maxStack.ToString();
         } else {
             // 手动，设置为当前值
             __instance.minPilerSlider.value = pilerCount;
             __instance.minPilerValue.text = pilerCount.ToString();
         }
-        if (maxProductOutputStack > 1) {
+        if (maxStack > 1) {
             // 堆叠上限大于1，显示修改滑条
             __instance.minPilerGroup.gameObject.SetActive(true);
             __instance.pilerTechGroup.gameObject.SetActive(true);
@@ -369,11 +369,11 @@ public static class StationManager {
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
             ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
+            int maxStack = building.MaxStack();
             int newVal = Mathf.RoundToInt(value);
             // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
+            if (newVal > maxStack) {
+                newVal = maxStack;
             }
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
@@ -405,11 +405,11 @@ public static class StationManager {
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
             ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
+            int maxStack = building.MaxStack();
             int newVal = Mathf.RoundToInt(value);
             // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
+            if (newVal > maxStack) {
+                newVal = maxStack;
             }
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
@@ -438,11 +438,11 @@ public static class StationManager {
         }
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxStack = building.MaxStack();
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
-                : maxProductOutputStack;
+                : maxStack;
         __instance.OnStationIdChange();
         return false;
     }
@@ -469,11 +469,11 @@ public static class StationManager {
         }
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxStack = building.MaxStack();
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
-                : maxProductOutputStack;
+                : maxStack;
         __instance.OnStationIdChange();
         return false;
     }
@@ -553,7 +553,7 @@ public static class StationManager {
     private static int GetOutputStack(PlanetFactory factory, StationComponent station) {
         int buildingID = factory.entityPool[station.entityId].protoId;
         return buildingID is IFE行星内物流交互站 or IFE星际物流交互站
-            ? LDB.items.Select(buildingID).MaxProductOutputStack()
+            ? LDB.items.Select(buildingID).MaxStack()
             : GameMain.history.stationPilerLevel;
     }
 }

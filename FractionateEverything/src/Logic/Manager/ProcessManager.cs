@@ -105,11 +105,11 @@ public static class ProcessManager {
     //     //         maxStack++;
     //     //     }
     //     // }
-    //     // MaxProductOutputStack = maxStack;
+    //     // MaxStack = maxStack;
     //     // //从科技获取是否分馏永动
     //     // EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
     //     // EnableFluidEnhancement = false;
-    //     // MaxProductOutputStack = 1;
+    //     // MaxStack = 1;
     //     // EnableFracForever = true;
     // }
 
@@ -623,7 +623,7 @@ public static class ProcessManager {
             if (__instance.isOutput0) {
                 if (products.Count > 0) {
                     //获取分馏塔产物输出堆叠
-                    int productStack = building.MaxProductOutputStack();
+                    int productStack = building.MaxStack();
                     //查找数目最多的附加产物
                     ProductOutputInfo product = null;
                     foreach (var p in products) {

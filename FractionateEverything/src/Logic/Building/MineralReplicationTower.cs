@@ -22,9 +22,11 @@ public static class MineralReplicationTower {
     public static bool EnableFluidEnhancement => Level >= 3;
     public static bool EnableMassEnergyFission => Level >= 6;
     public static bool EnableZeroPressureCycle => Level >= 12;
-    public static int MaxProductOutputStack => Level switch {
-        < 9 => 1,
-        _ => 4,
+    public static int MaxStack => Level switch {
+        < 6 => 1,
+        < 9 => 4,
+        < 12 => 8,
+        _ => 12,
     };
     public static float EnergyRatio => Level switch {
         < 1 => 1.0f,
