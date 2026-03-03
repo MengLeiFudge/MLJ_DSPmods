@@ -8,6 +8,7 @@ using FE.Logic.Building;
 using FE.Logic.Recipe;
 using HarmonyLib;
 using NebulaAPI;
+using UnityEngine;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -114,11 +115,11 @@ public static class BuildingManager {
     /// </summary>
     public static int FluidOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
-            IFE交互塔 => BaseFracFluidOutputMax * InteractionTower.MaxStack,
-            IFE矿物复制塔 => BaseFracFluidOutputMax * MineralReplicationTower.MaxStack,
-            IFE点数聚集塔 => BaseFracFluidOutputMax * PointAggregateTower.MaxStack,
-            IFE转化塔 => BaseFracFluidOutputMax * ConversionTower.MaxStack,
-            IFE回收塔 => BaseFracFluidOutputMax * RecycleTower.MaxStack,
+            IFE交互塔 => BaseFracFluidOutputMax * Mathf.Min(1, InteractionTower.MaxStack / 4),
+            IFE矿物复制塔 => BaseFracFluidOutputMax * Mathf.Min(1, MineralReplicationTower.MaxStack / 4),
+            IFE点数聚集塔 => BaseFracFluidOutputMax * Mathf.Min(1, PointAggregateTower.MaxStack / 4),
+            IFE转化塔 => BaseFracFluidOutputMax * Mathf.Min(1, ConversionTower.MaxStack / 4),
+            IFE回收塔 => BaseFracFluidOutputMax * Mathf.Min(1, RecycleTower.MaxStack / 4),
             _ => BaseFracFluidOutputMax
         };
     }

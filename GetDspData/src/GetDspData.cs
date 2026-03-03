@@ -780,7 +780,8 @@ public class GetDspData : BaseUnityPlugin {
             ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
             //↓测试环境调整↓
             // recipe.SandBoxMaxUpDowngrade(true);
-            building.Level(20);
+            building.Level(12);
+            recipe.Level = 10;
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
