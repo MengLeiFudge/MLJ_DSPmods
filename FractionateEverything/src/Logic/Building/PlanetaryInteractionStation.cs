@@ -25,19 +25,16 @@ public static class PlanetaryInteractionStation {
         < 12 => 8,
         _ => 12,
     };
-    public static float EnergyRatio => Level switch {
-        < 1 => 1.0f,
-        < 4 => 0.95f,
-        < 7 => 0.85f,
-        < 10 => 0.7f,
-        _ => 0.5f,
-    };
     public static float InteractEnergyRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 0.68f,
-        < 8 => 0.44f,
-        < 11 => 0.28f,
-        _ => 0.2f,
+        < 1 => 1.00f,  // 100%
+        < 2 => 0.95f,  // 95% (1.05, x105%)
+        < 4 => 0.85f,  // 85% (1.18, x112%)
+        < 5 => 0.70f,  // 70% (1.43, x121%)
+        < 7 => 0.55f,  // 55% (1.82, x127%)
+        < 8 => 0.40f,  // 40% (2.50, x137%)
+        < 10 => 0.30f, // 30% (3.33, x133%)
+        < 11 => 0.25f, // 25% (4.00, x120%)
+        _ => 0.20f,    // 20% (5.00, x125%)
     };
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;
@@ -96,8 +93,8 @@ public static class PlanetaryInteractionStation {
             return;
         }
         ModelProto stationModel = LDB.models.Select(M行星内物流运输站);
-        workEnergyPerTick = (long)(stationModel.prefabDesc.workEnergyPerTick * EnergyRatio);
-        idleEnergyPerTick = (long)(stationModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
+        workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
+        idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
 
     #region IModCanSave
