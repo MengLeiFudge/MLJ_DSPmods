@@ -42,11 +42,13 @@ public abstract class BaseRecipe(
     /// </summary>
     public float SuccessRatio => baseSuccessRatio;
     /// <summary>
-    /// 配方损毁率，强制5%以使增产剂对分馏效果有明显提升
+    /// 配方损毁率，数值越大时，增产剂对分馏效果越有明显提升
     /// </summary>
     public float DestroyRatio => Level switch {
-        < 8 => 0.05f,
-        < 10 => 0.03f,
+        < 7 => 0.04f,
+        < 8 => 0.03f,
+        < 9 => 0.02f,
+        < 10 => 0.01f,
         _ => 0f,
     };
 
