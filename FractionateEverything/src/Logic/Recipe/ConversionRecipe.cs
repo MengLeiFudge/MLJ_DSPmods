@@ -2,6 +2,8 @@
 using System.IO;
 using System.Linq;
 using FE.Compatibility;
+using FE.Logic.Building;
+using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -262,6 +264,32 @@ public class ConversionRecipe : BaseRecipe {
     public ConversionRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
+
+    /// <summary>
+    /// 当前分馏塔锁定的输出物品ID（由 ProcessManager 在调用 GetOutputs 前设置）
+    /// </summary>
+    public static int CurrentLockedOutputId = 0;
+
+    public override void GetOutputs(ref uint seed, float pointsBonus,
+        float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
+        // 调用基类获取原始结果
+        base.GetOutputs(ref seed, pointsBonus, successRatioBonus, mainOutputCountBonus, appendOutputRatioBonus,
+            fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
+        
+        // C8: 单路锁定 - 当启用且有锁定产物时，过滤输出
+        if (ConversionTower.EnableSingleLock && CurrentLockedOutputId != 0 && outputs != null && outputs.Count > 0) {
+            // 检查锁定产物是否在输出中
+            bool lockedInOutput = outputs.Any(p => p.itemId == CurrentLockedOutputId);
+            if (lockedInOutput) {
+                // 只保留锁定产物
+                outputs = outputs.Where(p => p.itemId == CurrentLockedOutputId).ToList();
+            } else {
+                // 锁定产物不在输出中，视为失败（直通）
+                outputs = ProcessManager.emptyOutputs;
+            }
+        }
+    }
 
     #region IModCanSave
 

@@ -176,6 +176,56 @@ public static class BuildingManager {
 
     #endregion
 
+    #region 分馏塔单路锁定拓展
+
+    /// <summary>
+    /// 存储转化塔锁定的输出物品ID。结构：
+    /// (planetId, entityId) => lockedOutputItemId (0 = 未锁定)
+    /// </summary>
+    private static readonly ConcurrentDictionary<(int, int), int> lockedOutputDic = [];
+
+    public static void LockedOutputImport(BinaryReader r) {
+        lockedOutputDic.Clear();
+        int count = r.ReadInt32();
+        for (int i = 0; i < count; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            int itemId = r.ReadInt32();
+            lockedOutputDic.TryAdd((planetId, entityId), itemId);
+        }
+    }
+
+    public static void LockedOutputExport(BinaryWriter w) {
+        w.Write(lockedOutputDic.Count);
+        foreach (var p in lockedOutputDic) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            w.Write(p.Value);
+        }
+    }
+
+    public static void LockedOutputIntoOtherSave() {
+        lockedOutputDic.Clear();
+    }
+
+    public static int GetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        return lockedOutputDic.TryGetValue((planetId, entityId), out int itemId) ? itemId : 0;
+    }
+
+    public static void SetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        if (itemId == 0) {
+            lockedOutputDic.TryRemove((planetId, entityId), out _);
+        } else {
+            lockedOutputDic[(planetId, entityId)] = itemId;
+        }
+    }
+
+    #endregion
+
     public static int Level(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.Level,
@@ -326,10 +376,13 @@ public static class BuildingManager {
         ConversionTower.Import(r);
         PlanetaryInteractionStation.Import(r);
         RecycleTower.Import(r);
+        if (version >= 2) {
+            LockedOutputImport(r);
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
@@ -337,6 +390,8 @@ public static class BuildingManager {
         ConversionTower.Export(w);
         PlanetaryInteractionStation.Export(w);
         RecycleTower.Export(w);
+
+        LockedOutputExport(w);
     }
 
     public static void IntoOtherSave() {
@@ -347,8 +402,9 @@ public static class BuildingManager {
         ConversionTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();
         RecycleTower.IntoOtherSave();
-    }
 
+        LockedOutputIntoOtherSave();
+    }
     #endregion
 
     /// <summary>
