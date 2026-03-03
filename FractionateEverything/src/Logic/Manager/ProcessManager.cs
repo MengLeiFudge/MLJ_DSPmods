@@ -353,7 +353,7 @@ public static class ProcessManager {
                         if (building.EnableFluidEnhancement()) {
                             // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
                             // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
-                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 1, 20);
+                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
@@ -443,7 +443,7 @@ public static class ProcessManager {
                         if (building.EnableFluidEnhancement()) {
                             // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
                             // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
-                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 1, 20);
+                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
                                 if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput, (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {

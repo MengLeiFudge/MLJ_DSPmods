@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
+using FE.Logic.Building;
 
 namespace FE.Logic.Manager;
 
@@ -171,7 +172,9 @@ public static class StationManager {
             }
         }
         finally {
-            AddIncToItem(store.count, ref store.inc);
+            if (PlanetaryInteractionStation.Level >= 3) {
+                AddIncToItem(store.count, ref store.inc);
+            }
         }
     }
 
@@ -550,7 +553,7 @@ public static class StationManager {
     private static int GetOutputStack(PlanetFactory factory, StationComponent station) {
         int buildingID = factory.entityPool[station.entityId].protoId;
         return buildingID is IFE行星内物流交互站 or IFE星际物流交互站
-            ? LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
+            ? LDB.items.Select(buildingID).MaxProductOutputStack()
             : GameMain.history.stationPilerLevel;
     }
 }
