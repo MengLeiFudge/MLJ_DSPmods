@@ -241,8 +241,8 @@ public static class FracRecipeOperate {
     private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
         ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
         float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-        float buffBonus1 = 0;//todo
-        float buffBonus2 = 0;
+        float buffBonus1 = building.SuccessBoost();
+        float buffBonus2 = building.SpeedBoost();
         float buffBonus3 = 0;
         //成功率
         float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + buffBonus1);

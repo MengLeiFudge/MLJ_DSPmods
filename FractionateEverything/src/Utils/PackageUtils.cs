@@ -1043,6 +1043,15 @@ public static partial class Utils {
         return num4;
     }
 
+    /// <summary>
+    /// 当某个分馏塔在数据中心存储的数目超过1000时，取走10%
+    /// </summary>
+    public static int Take10PercentTower(int itemId) {
+        return centerItemCount[itemId] < 1000
+            ? 0
+            : TakeItemFromModData(itemId, (int)Math.Min(int.MaxValue, centerItemCount[itemId] / 10), out _);
+    }
+
     #endregion
 
     #region 背包排序
@@ -1066,7 +1075,7 @@ public static partial class Utils {
         }
         return sortUpload();
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StorageComponent), nameof(StorageComponent.Sort))]
     private static bool StorageComponent_Sort_Prefix(StorageComponent __instance) {
