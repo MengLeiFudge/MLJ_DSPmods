@@ -2,27 +2,56 @@
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using static FE.Utils.Utils;
+using static FE.Logic.Manager.RecipeManager;
 
 namespace FE.Logic.Recipe;
 
+/// <summary>
+/// 点数聚集配方
+/// </summary>
 public class PointAggregateRecipe : BaseRecipe {
+    /// <summary>
+    /// 添加所有点数聚集配方
+    /// </summary>
+    public static void CreateAll() {
+        foreach (ItemProto item in LDB.items.dataArray) {
+            PointAggregateRecipe recipe = new(item.ID, 1.0f, [new(1.0f, item.ID, 1)], []);
+            recipe.Level = 10;
+            LogInfo($"{recipe.Unlocked}");
+            AddRecipe(recipe);
+        }
+    }
+
+    /// <summary>
+    /// 配方类型
+    /// </summary>
     public override ERecipe RecipeType => ERecipe.PointAggregate;
 
-    public PointAggregateRecipe(int inputID) 
-        : base(inputID, 1.0f, [new(1.0f, inputID, 1)], []) { }
+    /// <summary>
+    /// 创建点数聚集配方实例
+    /// </summary>
+    /// <param name="inputID">输入物品ID</param>
+    /// <param name="baseSuccessRatio">最大成功率</param>
+    /// <param name="outputMain">主输出物品</param>
+    /// <param name="outputAppend">附加输出物品</param>
+    public PointAggregateRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
+        List<OutputInfo> outputAppend)
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
     public override void GetOutputs(ref uint seed, float pointsBonus,
         float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        
+
         // 点数聚集逻辑：如果平均增产等级足够，则有概率聚集成功
-        float ratio = fluidInputIncAvg >= PointAggregateTower.MaxInc ? (PointAggregateTower.Level / 20.0f) : 0;
-        
+        float ratio = fluidInputIncAvg / 10.0f;
+
         if (GetRandDouble(ref seed) < ratio) {
             // 成功聚集：消耗 MaxInc 点数，产出一个原物品
             inputChange = -1;
-            outputs = new List<ProductOutputInfo> { new(true, InputID, 1) };
-			fluidInputInc -= PointAggregateTower.EnableDoublePoints ? PointAggregateTower.MaxInc / 2 : PointAggregateTower.MaxInc;
+            outputs = [new(true, InputID, 1)];
+            fluidInputInc -= PointAggregateTower.EnableDoublePoints
+                ? PointAggregateTower.MaxInc / 2
+                : PointAggregateTower.MaxInc;
             return;
         }
 

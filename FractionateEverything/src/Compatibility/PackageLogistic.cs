@@ -3,27 +3,26 @@ using System.Reflection;
 using BepInEx.Bootstrap;
 using FE.UI.View.Setting;
 using HarmonyLib;
-using NGPT;
 using static FE.Utils.Utils;
 
 namespace FE.Compatibility;
 
 public static class PackageLogistic {
-     public const string GUID = "com.qlvlp.dsp.PackageLogistic";
-     public static bool Enable;
-     public static Assembly assembly;
+    public const string GUID = "com.qlvlp.dsp.PackageLogistic";
+    public static bool Enable;
+    public static Assembly assembly;
 
-     public static void Compatible() {
-         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
-         if (!Enable || pluginInfo == null) {
-             return;
-         }
-         assembly = pluginInfo.Instance.GetType().Assembly;
-         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.PackageLogistic");
-         harmony.PatchAll(typeof(PackageLogistic));
-         PatchMethods(harmony);
-         CheckPlugins.LogInfo("PackageLogistic Compat finish.");
-     }
+    public static void Compatible() {
+        Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
+        if (!Enable || pluginInfo == null) {
+            return;
+        }
+        assembly = pluginInfo.Instance.GetType().Assembly;
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.PackageLogistic");
+        harmony.PatchAll(typeof(PackageLogistic));
+        PatchMethods(harmony);
+        CheckPlugins.LogInfo("PackageLogistic Compat finish.");
+    }
 
     private static void PatchMethods(Harmony harmony) {
         Type type = assembly.GetType("PackageLogistic.PackageLogistic");

@@ -105,7 +105,7 @@ public abstract class BaseRecipe(
             List<ProductOutputInfo> list = [];
             // 主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
             double ratio = GetRandDouble(ref seed);
-            float ratioMain = 0.0f; // 用于累计概率
+            float ratioMain = 0.0f;// 用于累计概率
             foreach (var outputInfo in OutputMain) {
                 ratioMain += outputInfo.SuccessRatio;
                 if (ratio <= ratioMain) {

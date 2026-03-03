@@ -17,7 +17,7 @@ public static class ConversionTower {
     private static RecipeProto recipe;
     private static ModelProto model;
     public static Color color = new(0.7f, 0.6f, 0.8f);
-    
+
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= 3;
     public static bool EnableCausalTracing => Level >= 6;
