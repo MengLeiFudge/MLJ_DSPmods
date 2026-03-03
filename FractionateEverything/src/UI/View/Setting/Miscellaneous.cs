@@ -158,7 +158,8 @@ public static class Miscellaneous {
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
         if (AutoSorter.Enable) {
             y += 36f;
-            PackageAutoSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+            PackageAutoSortTwiceCheckBox =
+                wnd.AddCheckBox(x, y, tab, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
         }
         y += 36f;
         PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
