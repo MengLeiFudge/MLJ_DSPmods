@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System;
+using static FE.FractionateEverything;
 using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
@@ -176,7 +178,63 @@ public static class BuildingManager {
 
     #endregion
 
-    #region 分馏塔单路锁定拓展
+    #region 分馏献祭特质
+
+    /// <summary>
+    /// 分馏献祭特质全局数据
+    /// </summary>
+    private static int globalFractionatorCount = 0;
+    private static float globalSacrificeBoost = 0f;
+    private static float globalSacrificeSpeedBoost = 0f;
+    private static int sacrificeUpdateTimer = 0;
+    private static int cachedFractionatorCount = 0;
+
+    public static void SacrificeTraitImport(BinaryReader r) {
+        globalFractionatorCount = r.ReadInt32();
+        globalSacrificeBoost = r.ReadSingle();
+        globalSacrificeSpeedBoost = r.ReadSingle();
+        sacrificeUpdateTimer = r.ReadInt32();
+        cachedFractionatorCount = r.ReadInt32();
+    }
+
+    public static void SacrificeTraitExport(BinaryWriter w) {
+        w.Write(globalFractionatorCount);
+        w.Write(globalSacrificeBoost);
+        w.Write(globalSacrificeSpeedBoost);
+        w.Write(sacrificeUpdateTimer);
+        w.Write(cachedFractionatorCount);
+    }
+
+    public static void SacrificeTraitIntoOtherSave() {
+        globalFractionatorCount = 0;
+        globalSacrificeBoost = 0f;
+        globalSacrificeSpeedBoost = 0f;
+        sacrificeUpdateTimer = 0;
+        cachedFractionatorCount = 0;
+    }
+
+    public static float GetSacrificeBoost() => globalSacrificeBoost;
+    public static float GetSacrificeSpeedBoost() => globalSacrificeSpeedBoost;
+
+    public static void UpdateSacrificeTrait(int totalFractionatorCount) {
+        globalFractionatorCount = totalFractionatorCount;
+        sacrificeUpdateTimer++;
+        if (sacrificeUpdateTimer >= 60) {
+            sacrificeUpdateTimer = 0;
+            cachedFractionatorCount = globalFractionatorCount;
+            if (cachedFractionatorCount > 1000) {
+                float decomposeCount = (cachedFractionatorCount - 1000) * 0.1f;
+                globalSacrificeBoost = (float)Math.Sqrt(decomposeCount / 240.0);
+                globalSacrificeSpeedBoost = (float)Math.Sqrt(decomposeCount / 120.0);
+            } else {
+                globalSacrificeBoost = 0f;
+                globalSacrificeSpeedBoost = 0f;
+            }
+        }
+    }
+
+    #endregion
+
 
     /// <summary>
     /// 存储转化塔锁定的输出物品ID。结构：
@@ -221,6 +279,172 @@ public static class BuildingManager {
             lockedOutputDic.TryRemove((planetId, entityId), out _);
         } else {
             lockedOutputDic[(planetId, entityId)] = itemId;
+        }
+    }
+
+    public static int CountInteractionTowers() {
+        int count = 0;
+        if (GameMain.data == null || GameMain.data.factories == null) return 0;
+        for (int i = 0; i < GameMain.data.factories.Length; i++) {
+            PlanetFactory factory = GameMain.data.factories[i];
+            if (factory == null || factory.factorySystem == null) continue;
+            for (int j = 1; j < factory.factorySystem.fractionatorCursor; j++) {
+                if (factory.factorySystem.fractionatorPool[j].id == j) {
+                    int buildingID = factory.entityPool[factory.factorySystem.fractionatorPool[j].entityId].protoId;
+                    if (buildingID == IFE交互塔) count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    #endregion
+
+    #region 分馏塔维度共鸣拓展
+
+    /// <summary>
+    /// 存储交互塔维度共鸣加成。结构：
+    /// (planetId, entityId) => resonanceBoost
+    /// </summary>
+    private static readonly ConcurrentDictionary<(int, int), float> resonanceBoostDic = [];
+
+    public static void ResonanceImport(BinaryReader r) {
+        resonanceBoostDic.Clear();
+        int count = r.ReadInt32();
+        for (int i = 0; i < count; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            float boost = r.ReadSingle();
+            resonanceBoostDic.TryAdd((planetId, entityId), boost);
+        }
+    }
+
+    public static void ResonanceExport(BinaryWriter w) {
+        w.Write(resonanceBoostDic.Count);
+        foreach (var p in resonanceBoostDic) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            w.Write(p.Value);
+        }
+    }
+
+    public static void ResonanceIntoOtherSave() {
+        resonanceBoostDic.Clear();
+    }
+
+    public static float GetResonanceBoost(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        return resonanceBoostDic.TryGetValue((planetId, entityId), out float boost) ? boost : 0f;
+    }
+
+    public static void SetResonanceBoost(this FractionatorComponent fractionator, PlanetFactory factory, float boost) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        if (boost == 0f) {
+            resonanceBoostDic.TryRemove((planetId, entityId), out _);
+        } else {
+            resonanceBoostDic[(planetId, entityId)] = boost;
+        }
+    }
+
+    #endregion
+
+    #region 质能裂变点数池
+
+    /// <summary>
+    /// 存储矿物复制塔质能裂变点数池。结构：
+    /// (planetId, entityId) => fissionPointPool
+    /// </summary>
+    private static readonly ConcurrentDictionary<(int, int), int> fissionPointPoolDic = [];
+
+    public static void FissionPointPoolImport(BinaryReader r) {
+        fissionPointPoolDic.Clear();
+        int count = r.ReadInt32();
+        for (int i = 0; i < count; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            int points = r.ReadInt32();
+            fissionPointPoolDic.TryAdd((planetId, entityId), points);
+        }
+    }
+
+    public static void FissionPointPoolExport(BinaryWriter w) {
+        w.Write(fissionPointPoolDic.Count);
+        foreach (var p in fissionPointPoolDic) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            w.Write(p.Value);
+        }
+    }
+
+    public static void FissionPointPoolIntoOtherSave() {
+        fissionPointPoolDic.Clear();
+    }
+
+    public static int GetFissionPointPool(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        return fissionPointPoolDic.TryGetValue((planetId, entityId), out int points) ? points : 0;
+    }
+
+    public static void SetFissionPointPool(this FractionatorComponent fractionator, PlanetFactory factory, int points) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        if (points <= 0) {
+            fissionPointPoolDic.TryRemove((planetId, entityId), out _);
+        } else {
+            fissionPointPoolDic[(planetId, entityId)] = points;
+        }
+    }
+
+    #endregion
+
+    #region 零压循环拓展
+
+    /// <summary>
+    /// 存储矿物复制塔零压循环状态。结构：
+    /// (planetId, entityId) => bool (是否启用零压循环)
+    /// </summary>
+    private static readonly ConcurrentDictionary<(int, int), bool> zeroPressureLoopDic = [];
+
+    public static void ZeroPressureLoopImport(BinaryReader r) {
+        zeroPressureLoopDic.Clear();
+        int count = r.ReadInt32();
+        for (int i = 0; i < count; i++) {
+            int planetId = r.ReadInt32();
+            int entityId = r.ReadInt32();
+            bool state = r.ReadBoolean();
+            zeroPressureLoopDic.TryAdd((planetId, entityId), state);
+        }
+    }
+
+    public static void ZeroPressureLoopExport(BinaryWriter w) {
+        w.Write(zeroPressureLoopDic.Count);
+        foreach (var p in zeroPressureLoopDic) {
+            w.Write(p.Key.Item1);
+            w.Write(p.Key.Item2);
+            w.Write(p.Value);
+        }
+    }
+
+    public static void ZeroPressureLoopIntoOtherSave() {
+        zeroPressureLoopDic.Clear();
+    }
+
+    public static bool GetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        return zeroPressureLoopDic.TryGetValue((planetId, entityId), out bool state) && state;
+    }
+
+    public static void SetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory, bool state) {
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        if (state) {
+            zeroPressureLoopDic[(planetId, entityId)] = true;
+        } else {
+            zeroPressureLoopDic.TryRemove((planetId, entityId), out _);
         }
     }
 
@@ -377,10 +601,22 @@ public static class BuildingManager {
         if (version >= 2) {
             LockedOutputImport(r);
         }
+        if (version >= 3) {
+            ZeroPressureLoopImport(r);
+        }
+        if (version >= 4) {
+            FissionPointPoolImport(r);
+        }
+        if (version >= 5) {
+            ResonanceImport(r);
+        }
+        if (version >= 6) {
+            SacrificeTraitImport(r);
+        }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(6);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
@@ -390,6 +626,10 @@ public static class BuildingManager {
         RecycleTower.Export(w);
 
         LockedOutputExport(w);
+        ZeroPressureLoopExport(w);
+        FissionPointPoolExport(w);
+        ResonanceExport(w);
+        SacrificeTraitExport(w);
     }
 
     public static void IntoOtherSave() {
@@ -402,6 +642,10 @@ public static class BuildingManager {
         RecycleTower.IntoOtherSave();
 
         LockedOutputIntoOtherSave();
+        ZeroPressureLoopIntoOtherSave();
+        FissionPointPoolIntoOtherSave();
+        ResonanceIntoOtherSave();
+        SacrificeTraitIntoOtherSave();
     }
     #endregion
 
