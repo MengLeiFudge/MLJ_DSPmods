@@ -1,0 +1,4 @@
+225:                // C8: 单路锁定 - 配方变化时清除锁定
+227:                    __instance.SetLockedOutput(factory, 0);
+613:                // C8: 单路锁定 - 缓存区清空时清除锁定
+615:                    __instance.SetLockedOutput(factory, 0);

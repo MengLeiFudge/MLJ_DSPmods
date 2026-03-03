@@ -1,0 +1,2 @@
+379:        if (version >= 2) {
+385:        w.Write(2);

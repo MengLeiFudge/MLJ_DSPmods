@@ -1,0 +1,44 @@
+256:        int maxProductOutputStack = building.MaxProductOutputStack();
+258:        __instance.minPilerSlider.maxValue = maxProductOutputStack;
+262:            __instance.minPilerSlider.value = maxProductOutputStack;
+263:            __instance.minPilerValue.text = maxProductOutputStack.ToString();
+266:            __instance.minPilerSlider.value = pilerCount;
+269:        if (maxProductOutputStack > 1) {
+284:        int maxProductOutputStack = building.MaxProductOutputStack();
+285:        if (maxProductOutputStack <= 1) {
+329:        int maxProductOutputStack = building.MaxProductOutputStack();
+331:        __instance.minPilerSlider.maxValue = maxProductOutputStack;
+335:            __instance.minPilerSlider.value = maxProductOutputStack;
+336:            __instance.minPilerValue.text = maxProductOutputStack.ToString();
+339:            __instance.minPilerSlider.value = pilerCount;
+342:        if (maxProductOutputStack > 1) {
+371:            int maxProductOutputStack = building.MaxProductOutputStack();
+374:            if (newVal > maxProductOutputStack) {
+375:                newVal = maxProductOutputStack;
+407:            int maxProductOutputStack = building.MaxProductOutputStack();
+410:            if (newVal > maxProductOutputStack) {
+411:                newVal = maxProductOutputStack;
+440:        int maxProductOutputStack = building.MaxProductOutputStack();
+444:                : maxProductOutputStack;
+471:        int maxProductOutputStack = building.MaxProductOutputStack();
+475:                : maxProductOutputStack;
+555:            ? LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
+256:        int maxProductOutputStack = building.MaxProductOutputStack();
+284:        int maxProductOutputStack = building.MaxProductOutputStack();
+329:        int maxProductOutputStack = building.MaxProductOutputStack();
+371:            int maxProductOutputStack = building.MaxProductOutputStack();
+407:            int maxProductOutputStack = building.MaxProductOutputStack();
+440:        int maxProductOutputStack = building.MaxProductOutputStack();
+471:        int maxProductOutputStack = building.MaxProductOutputStack();
+503:        // 替换为 GetOutputStack
+509:                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+537:        // 替换为 GetOutputStack
+547:                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+552:    private static int GetOutputStack(PlanetFactory factory, StationComponent station) {
+555:            ? LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
+=== FIX APPLIED ===
+Fixed GetOutputStack method in StationManager.cs line 555:
+Changed from: LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
+Changed to:   LDB.items.Select(buildingID).MaxProductOutputStack()
+Issue: Method was always selecting IFE行星内物流交互站 (8031) even for IFE星际物流交互站 (8032) buildings
+Fix: Now correctly selects the building based on buildingID parameter

@@ -1,0 +1,6 @@
+286:                // 判断是否直通（永动且满了，或者无配方/配方锁定）
+295:                    // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
+888:            // C8: 单路锁定 - 在转化塔详情窗口显示锁定状态
+889:            if (buildingID == IFE转化塔 && ConversionTower.EnableSingleLock) {
+893:                    lockStatus = "\n[锁定: 无]";
+897:                    lockStatus = $"\n[锁定: {itemName}]";

@@ -1,0 +1,32 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/Statistic/FracStatistic.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/Statistic/FracStatistic.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/RecurringTask.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/RecurringTask.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/MainTask.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/MainTask.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/DevelopmentDiary.cs(286,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/DevelopmentDiary.cs(287,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/CoreOperate/FracRecipeOperate.cs(254,15): warning CS0219: The variable 'essenceCostAvg' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/Achievements.cs(10,34): warning CS0169: The field 'Achievements.window' is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/Achievements.cs(11,34): warning CS0169: The field 'Achievements.tab' is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+  FractionateEverything -> /mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/bin/Debug/net472/FractionateEverything.dll
+
+Build succeeded.
+
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/Statistic/FracStatistic.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/Statistic/FracStatistic.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/RecurringTask.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/RecurringTask.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/MainTask.cs(22,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/MainTask.cs(23,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/DevelopmentDiary.cs(286,15): warning CS0219: The variable 'x' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/DevelopmentDiary.cs(287,15): warning CS0219: The variable 'y' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/CoreOperate/FracRecipeOperate.cs(254,15): warning CS0219: The variable 'essenceCostAvg' is assigned but its value is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/Achievements.cs(10,34): warning CS0169: The field 'Achievements.window' is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/src/UI/View/ProgressSystem/Achievements.cs(11,34): warning CS0169: The field 'Achievements.tab' is never used [/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/FractionateEverything/FractionateEverything.csproj]
+    11 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.10
