@@ -29,6 +29,12 @@
     - +10：待机能耗、运行能耗降低（70% -> 50%）
     - +11：上传/下载时消耗的电力降低（28% -> 20%）
     - +12：产物输出集装+4
+- 补充说明：
+    - 增产剂效果提升，指的是消耗的电力（Cargo.powerTableRatio）和加速效果/增产效果（Cargo.accTableMilli/Cargo.incTableMilli）都会增加。
+      但是在代码中，计算加速/增产效果是在processmanager.cs的internalupdate，而计算电力是processmanager.cs的SetPCState，他们不在一起。
+      我们**不允许**修改Cargo类里面的东西，因为其他mod有可能修改；只能在实际运行时，计算真实的效果。
+    - 待机能耗、运行能耗，指的是workEnergyPerTick、idleEnergyPerTick。
+    - 上传/下载时消耗的电力，指的是StationManager.cs的stationComponent.energy
 
 ## 交互塔
 
