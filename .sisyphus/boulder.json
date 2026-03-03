@@ -2,8 +2,10 @@
   "active_plan": "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/.sisyphus/plans/building-enhancement.md",
   "started_at": "2026-03-02T23:51:03.026Z",
   "session_ids": [
-    "ses_351177ad9ffe6EmgaxEWOBbsTn"
+    "ses_351177ad9ffe6EmgaxEWOBbsTn",
+    "ses_34e3d049dffe00slqrzKhe0pSb"
   ],
   "plan_name": "building-enhancement",
-  "agent": "atlas"
+  "agent": "atlas",
+  "worktree_path": "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods"
 }
