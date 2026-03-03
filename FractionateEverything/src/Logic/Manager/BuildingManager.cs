@@ -116,6 +116,28 @@ public static class BuildingManager {
         return BaseFracFluidOutputMax;
     }
 
+    public static float SuccessBoost(this ItemProto fractionator) {
+        return fractionator.ID switch {
+            IFE交互塔 => InteractionTower.SuccessBoost,
+            IFE矿物复制塔 => MineralReplicationTower.SuccessBoost,
+            IFE点数聚集塔 => PointAggregateTower.SuccessBoost,
+            IFE转化塔 => ConversionTower.SuccessBoost,
+            IFE回收塔 => RecycleTower.SuccessBoost,
+            _ => 0
+        };
+    }
+
+    public static float SpeedBoost(this ItemProto fractionator) {
+        return fractionator.ID switch {
+            IFE交互塔 => InteractionTower.SpeedBoost,
+            IFE矿物复制塔 => MineralReplicationTower.SpeedBoost,
+            IFE点数聚集塔 => PointAggregateTower.SpeedBoost,
+            IFE转化塔 => ConversionTower.SpeedBoost,
+            IFE回收塔 => RecycleTower.SpeedBoost,
+            _ => 0
+        };
+    }
+
     #region 分馏塔产物输出拓展
 
     /// <summary>
@@ -174,63 +196,6 @@ public static class BuildingManager {
             outputDic.TryAdd((planetId, entityId), []);
         }
         return outputDic[(planetId, entityId)];
-    }
-
-    #endregion
-
-    #region 分馏献祭特质
-
-    /// <summary>
-    /// 分馏献祭特质全局数据
-    /// </summary>
-    private static int globalFractionatorCount = 0;
-    private static float globalSacrificeBoost = 0f;
-    private static float globalSacrificeSpeedBoost = 0f;
-    private static int sacrificeUpdateTimer = 0;
-    private static int cachedFractionatorCount = 0;
-
-    public static void SacrificeTraitImport(BinaryReader r) {
-        globalFractionatorCount = r.ReadInt32();
-        globalSacrificeBoost = r.ReadSingle();
-        globalSacrificeSpeedBoost = r.ReadSingle();
-        sacrificeUpdateTimer = r.ReadInt32();
-        cachedFractionatorCount = r.ReadInt32();
-    }
-
-    public static void SacrificeTraitExport(BinaryWriter w) {
-        w.Write(globalFractionatorCount);
-        w.Write(globalSacrificeBoost);
-        w.Write(globalSacrificeSpeedBoost);
-        w.Write(sacrificeUpdateTimer);
-        w.Write(cachedFractionatorCount);
-    }
-
-    public static void SacrificeTraitIntoOtherSave() {
-        globalFractionatorCount = 0;
-        globalSacrificeBoost = 0f;
-        globalSacrificeSpeedBoost = 0f;
-        sacrificeUpdateTimer = 0;
-        cachedFractionatorCount = 0;
-    }
-
-    public static float GetSacrificeBoost() => globalSacrificeBoost;
-    public static float GetSacrificeSpeedBoost() => globalSacrificeSpeedBoost;
-
-    public static void UpdateSacrificeTrait(int totalFractionatorCount) {
-        globalFractionatorCount = totalFractionatorCount;
-        sacrificeUpdateTimer++;
-        if (sacrificeUpdateTimer >= 60) {
-            sacrificeUpdateTimer = 0;
-            cachedFractionatorCount = globalFractionatorCount;
-            if (cachedFractionatorCount > 1000) {
-                float decomposeCount = (cachedFractionatorCount - 1000) * 0.1f;
-                globalSacrificeBoost = (float)Math.Sqrt(decomposeCount / 240.0);
-                globalSacrificeSpeedBoost = (float)Math.Sqrt(decomposeCount / 120.0);
-            } else {
-                globalSacrificeBoost = 0f;
-                globalSacrificeSpeedBoost = 0f;
-            }
-        }
     }
 
     #endregion
@@ -439,7 +404,8 @@ public static class BuildingManager {
         return zeroPressureLoopDic.TryGetValue((planetId, entityId), out bool state) && state;
     }
 
-    public static void SetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory, bool state) {
+    public static void SetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory,
+        bool state) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
         if (state) {
@@ -611,13 +577,17 @@ public static class BuildingManager {
         if (version >= 5) {
             ResonanceImport(r);
         }
-        if (version >= 6) {
-            SacrificeTraitImport(r);
+        if (version == 6) {
+            r.ReadInt32();
+            r.ReadSingle();
+            r.ReadSingle();
+            r.ReadInt32();
+            r.ReadInt32();
         }
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(6);
+        w.Write(7);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
@@ -630,7 +600,6 @@ public static class BuildingManager {
         ZeroPressureLoopExport(w);
         FissionPointPoolExport(w);
         ResonanceExport(w);
-        SacrificeTraitExport(w);
     }
 
     public static void IntoOtherSave() {
@@ -646,8 +615,8 @@ public static class BuildingManager {
         ZeroPressureLoopIntoOtherSave();
         FissionPointPoolIntoOtherSave();
         ResonanceIntoOtherSave();
-        SacrificeTraitIntoOtherSave();
     }
+
     #endregion
 
     /// <summary>

@@ -46,6 +46,8 @@ public static class RecycleTower {
         < 11 => 1.6f,
         _ => 2.0f,
     };
+    public static float SuccessBoost = 0;
+    public static float SpeedBoost = 0;
 
     public static void AddTranslations() {
         Register("回收塔", "Recycle Tower");

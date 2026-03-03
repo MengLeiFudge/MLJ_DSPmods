@@ -43,8 +43,6 @@ public static class ProcessManager {
     public static readonly int MaxLevel = 12;
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
-    private static int sacrificeTimer = 0;
-    private static long lastUpdateTick = 0;
 
     #endregion
 
@@ -272,13 +270,8 @@ public static class ProcessManager {
                 LogWarning($"{building.name}进度超过100000！");
             }
             // C5: 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
-            if (buildingID == IFE点数聚集塔
-                && PointAggregateTower.EnableVoidSpray
-                && __instance.fluidInputCount > 0) {
-                int avgInc = __instance.fluidInputInc / __instance.fluidInputCount;
-                if (avgInc < 4) {
-                    AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
-                }
+            if (buildingID == IFE点数聚集塔 && PointAggregateTower.EnableVoidSpray) {
+                AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
             }
             // C6: 质能裂变 - 矿物复制塔在 Level >= 6 时，使用池中点数补充平均点数至10
             if (buildingID == IFE矿物复制塔
@@ -311,29 +304,9 @@ public static class ProcessManager {
                     outputs = emptyOutputs;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
-                    float buffBonus1 = 0;
-                    float buffBonus2 = 0;
+                    float buffBonus1 = building.SuccessBoost();
+                    float buffBonus2 = building.SpeedBoost();
                     float buffBonus3 = 0;
-                    // 维度共鸣 - 交互塔在 Level >= 12 时提供成功率和速度加成
-                    if (buildingID == IFE交互塔 && InteractionTower.EnableDimensionalResonance) {
-                        int x = 0;
-                        if (InteractionTower.EnableFluidEnhancement) x++;
-                        if (InteractionTower.EnableSacrificeTrait) x++;
-                        if (InteractionTower.EnableDimensionalResonance) x++;
-                        double successAdd = 1.0 + Math.Sqrt(x / 120.0);
-                        double speedAdd = 1.0 + Math.Sqrt(x / 60.0);
-                        if (x == 3) {
-                            successAdd *= 2.0;
-                            speedAdd *= 2.0;
-                        }
-                        // 存储成功加成到字典，速度加成每次重新计算
-                        __instance.SetResonanceBoost(factory, (float)successAdd);
-                        buffBonus1 = (float)successAdd;
-                        buffBonus2 = (float)speedAdd;
-                    }
-                    // 分馏献祭全局增幅
-                    buffBonus1 += BuildingManager.GetSacrificeBoost();
-                    buffBonus2 += BuildingManager.GetSacrificeSpeedBoost();
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
@@ -419,7 +392,8 @@ public static class ProcessManager {
             && MineralReplicationTower.EnableZeroPressureCycle
             && __instance.fluidOutputCount > 0
             && __instance.fluidInputCount < fluidInputMax) {
-            bool hasSideOutputBelt = (__instance.isOutput1 && __instance.belt1 > 0) || (__instance.isOutput2 && __instance.belt2 > 0);
+            bool hasSideOutputBelt = (__instance.isOutput1 && __instance.belt1 > 0)
+                                     || (__instance.isOutput2 && __instance.belt2 > 0);
             if (!hasSideOutputBelt) {
                 int moveCount = Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount);
                 if (moveCount > 0) {
@@ -452,23 +426,31 @@ public static class ProcessManager {
                             fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
                         }
 
-                        // 已研究流动输出集装科技
                         if (building.EnableFluidEnhancement()) {
-                            // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
-                            // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
-                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput,
-                                        (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
-                                    __instance.fluidOutputCount -= countToOutput;
-                                    __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
-                                } else {
-                                    break;
+                            int inputStack = Mathf.CeilToInt(fluidInputCountPerCargo);
+                            if (inputStack > 1) {
+                                for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                    byte countToOutput = (byte)Mathf.Min(inputStack, __instance.fluidOutputCount);
+                                    if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, inputStack, countToOutput,
+                                            (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                        __instance.fluidOutputCount -= countToOutput;
+                                        __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                    if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                            Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                            (byte)fluidOutputIncAvg)) {
+                                        break;
+                                    }
+                                    __instance.fluidOutputCount--;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg;
                                 }
                             }
                         } else {
-                            // 未研究流动输出集装科技，根据传送带最大速率每帧判定多次，每次输出 1 个
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -546,23 +528,31 @@ public static class ProcessManager {
                             fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
                         }
 
-                        // 已研究流动输出集装科技
                         if (building.EnableFluidEnhancement()) {
-                            // 堆叠输出尝试：优先输出输入的平均堆叠，上限为 20。
-                            // 即使输入堆叠较小，每帧也会尝试输出多次（MaxOutputTimes）以防积压。
-                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                byte countToOutput = (byte)Mathf.Min(targetStack, __instance.fluidOutputCount);
-                                if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, targetStack, countToOutput,
-                                        (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
-                                    __instance.fluidOutputCount -= countToOutput;
-                                    __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
-                                } else {
-                                    break;
+                            int inputStack = Mathf.CeilToInt(fluidInputCountPerCargo);
+                            if (inputStack > 1) {
+                                for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                    byte countToOutput = (byte)Mathf.Min(inputStack, __instance.fluidOutputCount);
+                                    if (cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId, inputStack, countToOutput,
+                                            (byte)Math.Min(255, fluidOutputIncAvg * countToOutput))) {
+                                        __instance.fluidOutputCount -= countToOutput;
+                                        __instance.fluidOutputInc -= fluidOutputIncAvg * countToOutput;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
+                                    if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
+                                            Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                            (byte)fluidOutputIncAvg)) {
+                                        break;
+                                    }
+                                    __instance.fluidOutputCount--;
+                                    __instance.fluidOutputInc -= fluidOutputIncAvg;
                                 }
                             }
                         } else {
-                            // 未研究流动输出集装科技，根据传送带最大速率每帧判定多次，每次输出 1 个
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
                                         Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
@@ -750,17 +740,33 @@ public static class ProcessManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
     public static void FactorySystem_GameTick_Postfix(ref FactorySystem __instance) {
-        // Update sacrifice trait timer once per game tick
-        if (GameMain.gameTick > lastUpdateTick) {
-            lastUpdateTick = GameMain.gameTick;
-            sacrificeTimer++;
-            if (sacrificeTimer >= 60) {
-                sacrificeTimer = 0;
-                int count = BuildingManager.CountInteractionTowers();
-                BuildingManager.UpdateSacrificeTrait(count);
+        if (GameMain.gameTick % 60 == 3) {
+            if (InteractionTower.EnableSacrificeTrait) {
+                int count1 = Take10PercentTower(IFE交互塔);
+                int count2 = Take10PercentTower(IFE矿物复制塔);
+                int count3 = Take10PercentTower(IFE点数聚集塔);
+                int count4 = Take10PercentTower(IFE转化塔);
+                int count5 = Take10PercentTower(IFE回收塔);
+                bool allBuffsOk = InteractionTower.EnableDimensionalResonance
+                                  && count1 > 0
+                                  && count2 > 0
+                                  && count3 > 0
+                                  && count4 > 0
+                                  && count5 > 0;
+                double successBoostVal = allBuffsOk ? 240 : 120;
+                double speedBoostVal = allBuffsOk ? 120 : 60;
+                InteractionTower.SuccessBoost = (float)Math.Sqrt(count1 / successBoostVal);
+                InteractionTower.SpeedBoost = (float)Math.Sqrt(count1 / speedBoostVal);
+                MineralReplicationTower.SuccessBoost = (float)Math.Sqrt(count2 / successBoostVal);
+                MineralReplicationTower.SpeedBoost = (float)Math.Sqrt(count2 / speedBoostVal);
+                PointAggregateTower.SuccessBoost = (float)Math.Sqrt(count3 / successBoostVal);
+                PointAggregateTower.SpeedBoost = (float)Math.Sqrt(count3 / speedBoostVal);
+                ConversionTower.SuccessBoost = (float)Math.Sqrt(count4 / successBoostVal);
+                ConversionTower.SpeedBoost = (float)Math.Sqrt(count4 / speedBoostVal);
+                RecycleTower.SuccessBoost = (float)Math.Sqrt(count5 / successBoostVal);
+                RecycleTower.SpeedBoost = (float)Math.Sqrt(count5 / speedBoostVal);
             }
         }
-
         EntityData[] entityPool = __instance.factory.entityPool;
         PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
         for (int index = 1; index < __instance.fractionatorCursor; ++index) {
@@ -931,27 +937,9 @@ public static class ProcessManager {
         string s1;
         string s2;
         BaseRecipe recipe;
-        float buffBonus1 = 0;
-        float buffBonus2 = 0;
+        float buffBonus1 = building.SuccessBoost();
+        float buffBonus2 = building.SpeedBoost();
         float buffBonus3 = 0;
-        // 维度共鸣 - 交互塔在 Level >= 12 时提供成功率和速度加成
-        if (buildingID == IFE交互塔 && InteractionTower.EnableDimensionalResonance) {
-            int x = 0;
-            if (InteractionTower.EnableFluidEnhancement) x++;
-            if (InteractionTower.EnableSacrificeTrait) x++;
-            if (InteractionTower.EnableDimensionalResonance) x++;
-            double successAdd = 1.0 + Math.Sqrt(x / 120.0);
-            double speedAdd = 1.0 + Math.Sqrt(x / 60.0);
-            if (x == 3) {
-                successAdd *= 2.0;
-                speedAdd *= 2.0;
-            }
-            buffBonus1 = (float)successAdd;
-            buffBonus2 = (float)speedAdd;
-        }
-        // 分馏献祭全局增幅
-        buffBonus1 += BuildingManager.GetSacrificeBoost();
-        buffBonus2 += BuildingManager.GetSacrificeSpeedBoost();
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
