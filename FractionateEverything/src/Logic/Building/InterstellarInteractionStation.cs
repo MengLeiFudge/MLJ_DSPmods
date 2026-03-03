@@ -19,7 +19,7 @@ public static class InterstellarInteractionStation {
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static int Level => PlanetaryInteractionStation.Level;
-    public static int MaxProductOutputStack => Level switch {
+    public static int MaxStack => Level switch {
         < 6 => 1,
         < 9 => 4,
         < 12 => 8,

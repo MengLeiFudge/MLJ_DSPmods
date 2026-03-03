@@ -100,11 +100,11 @@ public static class BuildingManager {
     /// </summary>
     public static int ProductOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
-            IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxProductOutputStack,
-            IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxProductOutputStack,
-            IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxProductOutputStack,
-            IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxProductOutputStack,
-            IFE回收塔 => BaseFracProductOutputMax * RecycleTower.MaxProductOutputStack,
+            IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxStack,
+            IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
+            IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxStack,
+            IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
+            IFE回收塔 => BaseFracProductOutputMax * RecycleTower.MaxStack,
             _ => BaseFracProductOutputMax
         };
     }
@@ -113,7 +113,14 @@ public static class BuildingManager {
     /// 返回分馏塔流动输出缓存大小
     /// </summary>
     public static int FluidOutputMax(this ItemProto fractionator) {
-        return BaseFracFluidOutputMax;
+        return fractionator.ID switch {
+            IFE交互塔 => BaseFracFluidOutputMax * InteractionTower.MaxStack,
+            IFE矿物复制塔 => BaseFracFluidOutputMax * MineralReplicationTower.MaxStack,
+            IFE点数聚集塔 => BaseFracFluidOutputMax * PointAggregateTower.MaxStack,
+            IFE转化塔 => BaseFracFluidOutputMax * ConversionTower.MaxStack,
+            IFE回收塔 => BaseFracFluidOutputMax * RecycleTower.MaxStack,
+            _ => BaseFracFluidOutputMax
+        };
     }
 
     public static float SuccessBoost(this ItemProto fractionator) {
@@ -477,15 +484,15 @@ public static class BuildingManager {
         };
     }
 
-    public static int MaxProductOutputStack(this ItemProto building) {
+    public static int MaxStack(this ItemProto building) {
         return building.ID switch {
-            IFE交互塔 => InteractionTower.MaxProductOutputStack,
-            IFE矿物复制塔 => MineralReplicationTower.MaxProductOutputStack,
-            IFE点数聚集塔 => PointAggregateTower.MaxProductOutputStack,
-            IFE转化塔 => ConversionTower.MaxProductOutputStack,
-            IFE回收塔 => RecycleTower.MaxProductOutputStack,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.MaxProductOutputStack,
-            IFE星际物流交互站 => InterstellarInteractionStation.MaxProductOutputStack,
+            IFE交互塔 => InteractionTower.MaxStack,
+            IFE矿物复制塔 => MineralReplicationTower.MaxStack,
+            IFE点数聚集塔 => PointAggregateTower.MaxStack,
+            IFE转化塔 => ConversionTower.MaxStack,
+            IFE回收塔 => RecycleTower.MaxStack,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.MaxStack,
+            IFE星际物流交互站 => InterstellarInteractionStation.MaxStack,
             _ => 1
         };
     }
