@@ -82,15 +82,12 @@ public abstract class BaseRecipe(
     /// </summary>
     /// <param name="seed">随机数种子</param>
     /// <param name="pointsBonus">增产剂加成（比例，例如0.25）</param>
-    /// <param name="successRatioBonus">配方成功率加成</param>
-    /// <param name="mainOutputCountBonus">主产物数目加成</param>
-    /// <param name="appendOutputRatioBonus">副产物概率加成</param>
+    /// <param name="successBoost">配方成功率加成</param>
     /// <param name="fluidInputIncAvg">输入物品的平均增产等级</param>
     /// <param name="fluidInputInc">该分馏塔当前的全部增产点数，将在该方法中被修改</param>
     /// <param name="inputChange">原材料会变成几个（-1表示消耗，0表示保留）</param>
     /// <param name="outputs">损毁返回null，直通返回空List，成功返回输出产物</param>
-    public virtual void GetOutputs(ref uint seed, float pointsBonus,
-        float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
+    public virtual void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         // 1. 损毁判定
         if (GetRandDouble(ref seed) < DestroyRatio) {
@@ -101,7 +98,7 @@ public abstract class BaseRecipe(
         }
 
         // 2. 成功判定
-        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successRatioBonus)) {
+        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
             List<ProductOutputInfo> list = [];
             // 主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
             double ratio = GetRandDouble(ref seed);
@@ -110,7 +107,7 @@ public abstract class BaseRecipe(
                 ratioMain += outputInfo.SuccessRatio;
                 if (ratio <= ratioMain) {
                     // 整数部分必定输出，小数部分根据概率判定确定是否输出
-                    float countAvg = outputInfo.OutputCount * (1 + mainOutputCountBonus);
+                    float countAvg = outputInfo.OutputCount;
                     int countReal = (int)countAvg;
                     countAvg -= countReal;
                     if (countAvg > 0.0001 && GetRandDouble(ref seed) < countAvg) {
@@ -131,7 +128,7 @@ public abstract class BaseRecipe(
             }
             // 附加输出判定，每一项依次判定，互不影响
             foreach (var outputInfo in OutputAppend) {
-                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio * (1 + appendOutputRatioBonus)) {
+                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio) {
                     float countAvg = outputInfo.OutputCount;
                     int countReal = (int)countAvg;
                     countAvg -= countReal;

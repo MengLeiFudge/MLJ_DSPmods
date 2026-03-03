@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using static FE.Utils.Utils;
@@ -15,9 +16,9 @@ public class PointAggregateRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (ItemProto item in LDB.items.dataArray) {
-            PointAggregateRecipe recipe = new(item.ID, 1.0f, [new(1.0f, item.ID, 1)], []);
-            recipe.Level = 10;
-            LogInfo($"{recipe.Unlocked}");
+            PointAggregateRecipe recipe = new(item.ID, 0.1f, [new(1.0f, item.ID, 1)], []) {
+                Level = 10,
+            };
             AddRecipe(recipe);
         }
     }
@@ -38,12 +39,11 @@ public class PointAggregateRecipe : BaseRecipe {
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
-    public override void GetOutputs(ref uint seed, float pointsBonus,
-        float successRatioBonus, float mainOutputCountBonus, float appendOutputRatioBonus,
+    public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
 
         // 点数聚集逻辑：如果平均增产等级足够，则有概率聚集成功
-        float ratio = fluidInputIncAvg / 10.0f;
+        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
 
         if (GetRandDouble(ref seed) < ratio) {
             // 成功聚集：消耗 MaxInc 点数，产出一个原物品
@@ -62,4 +62,14 @@ public class PointAggregateRecipe : BaseRecipe {
     }
 
     public override byte GetOutputInc(int itemId) => (byte)PointAggregateTower.MaxInc;
+
+    public override void Import(BinaryReader r) {
+        base.Import(r);
+        Level = 10;
+    }
+
+    public override void IntoOtherSave() {
+        base.IntoOtherSave();
+        Level = 10;
+    }
 }

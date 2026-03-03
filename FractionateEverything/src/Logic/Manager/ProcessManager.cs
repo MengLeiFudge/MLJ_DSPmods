@@ -264,10 +264,11 @@ public static class ProcessManager {
                                              ? __instance.fluidInputCargoCount
                                              : MaxBeltSpeed)
                                          * fluidInputCountPerCargo
+                                         * building.SpeedBoost()
                                          + 0.75);
-            if (__instance.progress > 100000) {
-                __instance.progress = 100000;
-                LogWarning($"{building.name}进度超过100000！");
+            if (__instance.progress > 300000) {
+                __instance.progress = 300000;
+                LogWarning($"{building.name}进度超过300000！");
             }
             // C5: 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
             if (buildingID == IFE点数聚集塔 && PointAggregateTower.EnableVoidSpray) {
@@ -306,14 +307,12 @@ public static class ProcessManager {
                     outputs = emptyOutputs;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
-                    float buffBonus1 = building.SuccessBoost();
-                    float buffBonus2 = building.SpeedBoost();
-                    float buffBonus3 = 0;
+                    float successBoost = building.SuccessBoost();
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
                     }
-                    recipe.GetOutputs(ref __instance.seed, pointsBonus, buffBonus1, buffBonus2, buffBonus3,
+                    recipe.GetOutputs(ref __instance.seed, pointsBonus, successBoost,
                         fluidInputIncAvg, ref __instance.fluidInputInc, out inputChange, out outputs);
                 }
 
@@ -913,9 +912,8 @@ public static class ProcessManager {
         string s1;
         string s2;
         BaseRecipe recipe;
-        float buffBonus1 = building.SuccessBoost();
-        float buffBonus2 = building.SpeedBoost();
-        float buffBonus3 = 0;
+        float successBoost = building.SuccessBoost();
+        float speedBoost = building.SpeedBoost();
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
@@ -944,11 +942,11 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
-            float recipeSuccessRatio = recipe.SuccessRatio * (1 + buffBonus1) * (1 + pointsBonus);
+            float recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + speedBoost) * (1 + pointsBonus);
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
-                float count = output.OutputCount * (1 + buffBonus2);
+                float count = output.OutputCount;
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                 //ratio: 不考虑损毁的情况下，物品转换为此项的综合概率
                 float ratio = recipeSuccessRatio * output.SuccessRatio;
@@ -966,8 +964,7 @@ public static class ProcessManager {
                     float count = output.OutputCount;
                     string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                     float rate = recipeSuccessRatio
-                                 * output.SuccessRatio
-                                 * (1 + buffBonus3);
+                                 * output.SuccessRatio;
                     string ratioStr = output.ShowSuccessRatio || sandboxMode ? rate.FormatP() : "???";
                     sb1.Append($"{name} x {countStr} ({ratioStr})\n");
                 }

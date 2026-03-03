@@ -785,11 +785,10 @@ public class GetDspData : BaseUnityPlugin {
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-            float buffBonus1 = building.SuccessBoost();
-            float buffBonus2 = building.SpeedBoost();
-            float buffBonus3 = 0;
+            float successBoost = building.SuccessBoost();
+            float speedBoost = building.SpeedBoost();
             //成功率
-            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + buffBonus1);
+            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost) * (1 + speedBoost);
             //损毁率
             float destroyRatio = recipe.DestroyRatio;
             //最终产物转化率
@@ -800,7 +799,7 @@ public class GetDspData : BaseUnityPlugin {
                 int outputId = info.OutputID;
                 float outputCount = processRatio;
                 outputCount *= info.SuccessRatio;
-                outputCount *= info.OutputCount * (1 + buffBonus2);
+                outputCount *= info.OutputCount;
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
                 } else {
@@ -811,7 +810,7 @@ public class GetDspData : BaseUnityPlugin {
             foreach (var info in recipe.OutputAppend) {
                 int outputId = info.OutputID;
                 float outputCount = processRatio;
-                outputCount *= info.SuccessRatio * (1 + buffBonus3);
+                outputCount *= info.SuccessRatio;
                 outputCount *= info.OutputCount;
                 if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                     tuple.Item1 += outputCount;
