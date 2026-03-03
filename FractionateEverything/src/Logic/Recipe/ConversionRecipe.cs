@@ -242,7 +242,7 @@ public class ConversionRecipe : BaseRecipe {
                     float outputCount = allocatedValue / (successRatio * itemValue[outputID]);
                     outputMain.Add(new(successRatio, outputID, outputCount));
                 }
-                AddRecipe(new ConversionRecipe(inputID, 0.02f,
+                AddRecipe(new ConversionRecipe(inputID, 0.05f,
                     outputMain,
                     []));
             }
