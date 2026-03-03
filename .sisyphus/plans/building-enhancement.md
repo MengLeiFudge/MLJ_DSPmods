@@ -64,9 +64,9 @@
 - `ConversionTower.cs` + `BuildingManager.cs` 单路锁定存储 + `ConversionRecipe.cs` 过滤 + UI
 
 ### Definition of Done
-- [ ] `dotnet build FractionateEverything/FractionateEverything.csproj` 编译成功，0 error
-- [ ] 所有修改符合 TODO.md 设计值
-- [ ] C8 存档兼容：旧版存档（version 1）可正常加载
+- [x] `dotnet build FractionateEverything/FractionateEverything.csproj` 编译成功，0 error
+- [x] 所有修改符合 TODO.md 设计值
+- [x] C8 存档兼容：旧版存档（version 1）可正常加载
 
 ### Must Have
 - InterstellarInteractionStation.InteractEnergyRatio = {0.68, 0.44, 0.28, 0.20}
@@ -164,7 +164,7 @@ Max Concurrent: 4 (Wave 1)
 
 ## TODOs
 
-- [ ] 1. A1 - 星际物流交互站 InteractEnergyRatio 统一
+- [x] 1. A1 - 星际物流交互站 InteractEnergyRatio 统一
 
   **What to do**:
   - 修改 `InterstellarInteractionStation.cs:35-41` 的 `InteractEnergyRatio` switch 表达式
@@ -217,7 +217,7 @@ Max Concurrent: 4 (Wave 1)
   - Message: `fix(building): unify InteractEnergyRatio and fix fluid output minimum stack`
   - Files: `InterstellarInteractionStation.cs`
 
-- [ ] 2. A2 - ProcessManager 流动输出最小堆叠改为4
+- [x] 2. A2 - ProcessManager 流动输出最小堆叠改为4
 
   **What to do**:
   - 修改 `ProcessManager.cs` 中两处 `EnableFluidEnhancement` 分支内的 `Clamp` 调用
@@ -271,7 +271,7 @@ Max Concurrent: 4 (Wave 1)
   **Commit**: YES (groups with 1, 3)
   - Files: `ProcessManager.cs`
 
-- [ ] 3. B1 - StationManager 自动喷涂开关
+- [x] 3. B1 - StationManager 自动喷涂开关
 
   **What to do**:
   - 在 `StationManager.cs:174` 的 `AddIncToItem(store.count, ref store.inc)` 调用外加条件判断
@@ -325,7 +325,7 @@ Max Concurrent: 4 (Wave 1)
   **Commit**: YES (groups with 1, 2)
   - Files: `StationManager.cs`
 
-- [ ] 4. B2 - 验证集装可调层数已正确实现
+- [x] 4. B2 - 验证集装可调层数已正确实现
 
   **What to do**:
   - 验证性任务，确认以下已正确实现：
@@ -379,7 +379,7 @@ Max Concurrent: 4 (Wave 1)
 
   **Commit**: NO (验证性任务，无代码改动)
 
-- [ ] 5. C5 - 点数聚集塔 +6 虚空喷涂
+- [x] 5. C5 - 点数聚集塔 +6 虚空喷涂
 
   **What to do**:
   - 在 `PointAggregateTower.cs` 新增属性：`public static bool EnableVoidSpray => Level >= 6;`
@@ -458,7 +458,7 @@ Max Concurrent: 4 (Wave 1)
   - Message: `feat(point-aggregate): add void spray and double points traits`
   - Files: `PointAggregateTower.cs`, `ProcessManager.cs`
 
-- [ ] 6. C6 - 点数聚集塔 +12 双重点数
+- [x] 6. C6 - 点数聚集塔 +12 双重点数
 
   **What to do**:
   - 在 `PointAggregateTower.cs` 新增属性：`public static bool EnableDoublePoints => Level >= 12;`
@@ -522,7 +522,7 @@ Max Concurrent: 4 (Wave 1)
   **Commit**: YES (groups with 5)
   - Files: `PointAggregateTower.cs`, `PointAggregateRecipe.cs`
 
-- [ ] 7a. C8 存储层 - 单路锁定数据持久化
+- [x] 7a. C8 存储层 - 单路锁定数据持久化
 
   **What to do**:
   - 在 `BuildingManager.cs` 中新增：
@@ -592,7 +592,7 @@ Max Concurrent: 4 (Wave 1)
 
   **Commit**: NO (等 7b-7d 完成后一起提交)
 
-- [ ] 7b. C8 逻辑层 - ConversionRecipe 单路过滤
+- [x] 7b. C8 逻辑层 - ConversionRecipe 单路过滤
 
   **What to do**:
   - 在 `ConversionTower.cs` 新增属性：`public static bool EnableSingleLock => Level >= 12;`
@@ -664,7 +664,7 @@ Max Concurrent: 4 (Wave 1)
 
   **Commit**: NO (等 7c-7d 完成后一起提交)
 
-- [ ] 7c. C8 UI层 - 分馏塔详情窗口产物选择
+- [x] 7c. C8 UI层 - 分馏塔详情窗口产物选择
 
   **What to do**:
   - 在 `ProcessManager.cs` 的 `UIFractionatorWindow__OnUpdate_Postfix` 中：
@@ -720,7 +720,7 @@ Max Concurrent: 4 (Wave 1)
   - Message: `feat(conversion): add single-path lock trait with persistent storage`
   - Files: `ConversionTower.cs`, `BuildingManager.cs`, `ConversionRecipe.cs`, `ProcessManager.cs`
 
-- [ ] 7d. C8 清理 - 配方切换时清除锁定
+- [x] 7d. C8 清理 - 配方切换时清除锁定
 
   **What to do**:
   - 在 `ProcessManager.cs` 的 `InternalUpdate` 方法中，配方验证区域（`needResetProducts` 逻辑，lines 196-226）：
@@ -779,19 +779,19 @@ Max Concurrent: 4 (Wave 1)
 
 > 4 review agents run in PARALLEL. ALL must APPROVE. Rejection → fix → re-run.
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, grep). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
   Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run `dotnet build`. Review all changed files for: commented-out code, unused imports, inconsistent naming. Check AI slop: excessive comments, over-abstraction.
   Output: `Build [PASS/FAIL] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Build + Grep Verification** — `unspecified-high`
+- [x] F3. **Build + Grep Verification** — `unspecified-high`
   Execute full build. Verify with grep: A1 values correct, A2 Clamp correct, B1 guard present, C5/C6 conditions present, C8 storage/filter/UI present. Save grep outputs as evidence.
   Output: `Build [PASS/FAIL] | Grep [N/N pass] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   For each task: read "What to do", read actual diff (git diff). Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance. Flag unaccounted changes.
   Output: `Tasks [N/N compliant] | Unaccounted [CLEAN/N files] | VERDICT`
 
@@ -813,12 +813,12 @@ dotnet build FractionateEverything/FractionateEverything.csproj  # Expected: Bui
 ```
 
 ### Final Checklist
-- [ ] InterstellarInteractionStation.InteractEnergyRatio = {0.68, 0.44, 0.28, 0.20}
-- [ ] ProcessManager.cs 两处 Clamp(…, 4, 20) 且无 Clamp(…, 1, 20)
-- [ ] StationManager.cs AddIncToItem 受 Level >= 3 控制
-- [ ] 点数聚集塔 Level >= 6 时自动喷涂生效
-- [ ] 点数聚集塔 Level >= 12 时双重点数生效
-- [ ] 转化塔 Level >= 12 时单路锁定可用
-- [ ] BuildingManager 存档版本升为 2，兼容旧版（version 1）
-- [ ] 编译成功，0 error
-- [ ] 未触碰 C1-C4, C7, BaseRecipe.GetOutputs, buffBonus
+- [x] InterstellarInteractionStation.InteractEnergyRatio = {0.68, 0.44, 0.28, 0.20}
+- [x] ProcessManager.cs 两处 Clamp(…, 4, 20) 且无 Clamp(…, 1, 20)
+- [x] StationManager.cs AddIncToItem 受 Level >= 3 控制
+- [x] 点数聚集塔 Level >= 6 时自动喷涂生效
+- [x] 点数聚集塔 Level >= 12 时双重点数生效
+- [x] 转化塔 Level >= 12 时单路锁定可用
+- [x] BuildingManager 存档版本升为 2，兼容旧版（version 1）
+- [x] 编译成功，0 error
+- [x] 未触碰 C1-C4, C7, BaseRecipe.GetOutputs, buffBonus

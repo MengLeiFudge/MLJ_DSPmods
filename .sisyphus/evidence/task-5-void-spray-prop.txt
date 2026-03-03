@@ -1,0 +1,1 @@
+    public static bool EnableVoidSpray => Level >= 6;
