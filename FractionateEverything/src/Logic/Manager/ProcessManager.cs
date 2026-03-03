@@ -264,6 +264,15 @@ public static class ProcessManager {
                 __instance.progress = 100000;
                 LogWarning($"{building.name}进度超过100000！");
             }
+            // C5: 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
+            if (buildingID == IFE点数聚集塔
+                && PointAggregateTower.EnableVoidSpray
+                && __instance.fluidInputCount > 0) {
+                int avgInc = __instance.fluidInputInc / __instance.fluidInputCount;
+                if (avgInc < 4) {
+                    AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
+                }
+            }
             for (; __instance.progress >= 10000; __instance.progress -= 10000) {
                 int fluidInputIncAvg = __instance.fluidInputInc <= 0 || __instance.fluidInputCount <= 0
                     ? 0
