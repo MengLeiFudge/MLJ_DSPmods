@@ -357,7 +357,7 @@ public static class ProcessManager {
                     }
                     // C6: 质能裂变 - 10%概率将原料转化为25点裂变点数
                     if (buildingID == IFE矿物复制塔 && MineralReplicationTower.EnableMassEnergyFission) {
-                        if (Random.value < 0.1f) {
+                        if (GetRandDouble(ref __instance.seed) < 0.1f) {
                             int currentPool = __instance.GetFissionPointPool(factory);
                             __instance.SetFissionPointPool(factory, currentPool + 25);
                         }
@@ -368,7 +368,7 @@ public static class ProcessManager {
                     // 因果溯源 - 转化塔在 Level >= 6 时，50%概率不消耗原料
                     bool materialConsumed = true;
                     if (buildingID == IFE转化塔 && ConversionTower.EnableCausalTracing) {
-                        if (Random.value < 0.5f) {
+                        if (GetRandDouble(ref __instance.seed) < 0.5f) {
                             materialConsumed = false;
                             __instance.fluidInputCount++;
                             __instance.fluidInputCargoCount += 1.0f / fluidInputCountPerCargo;

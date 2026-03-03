@@ -235,6 +235,7 @@ public static class BuildingManager {
 
     #endregion
 
+    #region 转化塔锁定
 
     /// <summary>
     /// 存储转化塔锁定的输出物品ID。结构：

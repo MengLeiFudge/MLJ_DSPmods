@@ -708,7 +708,7 @@ Max Concurrent: 4 (Waves 1 & 2)
   - Files: `BuildingManager.cs`, `ProcessManager.cs`
   - Pre-commit: `dotnet build FractionateEverything/FractionateEverything.csproj`
 
-- [ ] 8a. 转化塔因果溯源实现
+- [x] 8a. 转化塔因果溯源实现
 
   **What to do**:
   - 在`ConversionRecipe.cs`的`GetOutputs`方法中添加逻辑：
@@ -775,7 +775,7 @@ Max Concurrent: 4 (Waves 1 & 2)
   - Files: `ConversionRecipe.cs`
   - Pre-commit: `dotnet build FractionateEverything/FractionateEverything.csproj`
 
-- [ ] 8b. 单路锁定存储修复
+- [x] 8b. 单路锁定存储修复
 
   **What to do**:
   - 检查现有`BuildingManager.lockedOutputDic`：确保使用`ConcurrentDictionary<(int, int), int>`存储每塔锁定状态
@@ -850,7 +850,7 @@ Max Concurrent: 4 (Waves 1 & 2)
   - Files: `BuildingManager.cs`, `ConversionTower.cs`, `ProcessManager.cs`
   - Pre-commit: `dotnet build FractionateEverything/FractionateEverything.csproj`
 
-- [ ] 8c. 单路锁定UI集成
+- [x] 8c. 单路锁定UI集成
 
   **What to do**:
   - 验证`ProcessManager.UIFractionatorWindow__OnUpdate_Postfix`中：
@@ -932,19 +932,19 @@ Max Concurrent: 4 (Waves 1 & 2)
 
 > 4 review agents run in PARALLEL. ALL must APPROVE. Rejection → fix → re-run.
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, grep, ast-grep). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
   Output: `Must Have [8/8] | Must NOT Have [6/6] | Tasks [11/11] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run `dotnet build`. Review all changed files for: `as any`/`@ts-ignore` (C# equivalent), empty catches, console.log in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic names (data/result/item/temp).
   Output: `Build [PASS/FAIL] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Build + Grep Verification** — `unspecified-high`
+- [x] F3. **Build + Grep Verification** — `unspecified-high`
   Execute full build. Verify with grep: All EnableXxx properties exist with correct level conditions, storage dictionaries exist, Import/Export version increased, logic injected in ProcessManager. Save grep outputs as evidence.
   Output: `Build [PASS/FAIL] | Grep [12/12 pass] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   For each task: read "What to do", read actual diff (git log/diff). Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance. Detect cross-task contamination: Task N touching Task M's files. Flag unaccounted changes.
   Output: `Tasks [11/11 compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
 

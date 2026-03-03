@@ -191,3 +191,48 @@ Unlike per-tower traits, the sacrifice trait provides global boosts based on tot
 ### Verification of UpdateSacrificeTrait Call
 - Confirmed that `UpdateSacrificeTrait` is called from `FactorySystem_GameTick_Postfix` with correct count of Interaction Towers.
 - Timer logic works as intended (once per second updates).
+
+
+## Causal Tracing (因果溯源) Implementation
+
+### Date: 2026-03-03
+
+### Trait Effect
+- Building: ConversionTower (IFE转化塔, ID 8024)
+- Condition: `ConversionTower.EnableCausalTracing` (Level >= 6)
+- Effect: When material is destroyed (`outputs == null`), 50% chance to NOT consume the material (restore it)
+
+### Implementation Location
+- Inside the processing loop in `InternalUpdate` method
+- Within the `if (outputs == null)` block (material destruction case)
+- Around line 367-384 in ProcessManager.cs
+
+### Logic Pattern
+```csharp
+if (outputs == null) {
+    bool materialConsumed = true;
+    if (buildingID == IFE转化塔 && ConversionTower.EnableCausalTracing) {
+        if (Random.value < 0.5f) {
+            materialConsumed = false;
+            __instance.fluidInputCount++;
+            __instance.fluidInputCargoCount += 1.0f / fluidInputCountPerCargo;
+            __instance.fluidInputInc += fluidInputIncAvg;
+        }
+    }
+    if (materialConsumed) {
+        // Original destruction logic
+        lock (consumeRegister) { consumeRegister[fluidId]++; }
+    }
+}
+```
+
+### Material Restoration
+When the 50% chance succeeds:
+1. Increment `fluidInputCount` (item count)
+2. Add to `fluidInputCargoCount` (cargo units: `1.0 / fluidInputCountPerCargo`)
+3. Add back `fluidInputIncAvg` (proliferator points)
+
+### Key Variables
+- `fluidInputIncAvg`: Average proliferator points per item (calculated before the loop)
+- `fluidInputCountPerCargo`: Items per cargo unit (from recipe or building config)
+- `buildingID`: Used to identify ConversionTower (`IFE转化塔 = 8024`)
