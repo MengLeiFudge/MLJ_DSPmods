@@ -2,13 +2,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using FE.Logic.Building;
 using FE.UI.View.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
-using FE.Logic.Building;
 
 namespace FE.Logic.Manager;
 

@@ -3,7 +3,6 @@ using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
-using FE.Logic.Manager;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Manager.ProcessManager;
@@ -23,7 +22,7 @@ public static class PointAggregateTower {
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= 3;
     public static bool EnableVoidSpray => Level >= 6;
-	public static bool EnableDoublePoints => Level >= 12;
+    public static bool EnableDoublePoints => Level >= 12;
     public static int MaxStack => Level switch {
         < 6 => 1,
         < 9 => 4,

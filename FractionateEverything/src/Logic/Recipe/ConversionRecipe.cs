@@ -276,7 +276,7 @@ public class ConversionRecipe : BaseRecipe {
         // 调用基类获取原始结果
         base.GetOutputs(ref seed, pointsBonus, successRatioBonus, mainOutputCountBonus, appendOutputRatioBonus,
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
-        
+
         // C8: 单路锁定 - 当启用且有锁定产物时，过滤输出
         if (ConversionTower.EnableSingleLock && CurrentLockedOutputId != 0 && outputs != null && outputs.Count > 0) {
             // 检查锁定产物是否在输出中

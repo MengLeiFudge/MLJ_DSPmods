@@ -535,7 +535,7 @@ public static class TutorialManager {
         var layoutFileName = proto.LayoutFileName;
         return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith("tutorial-fe-");
     }
-    
+
     const string preText =
         "{$Text|fontsize=16;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,30}\n";
     const string postText =

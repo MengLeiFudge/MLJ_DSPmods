@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using CommonAPI.Systems;
 using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -59,6 +57,7 @@ public static class RecipeManager {
 
         BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
+        PointAggregateRecipe.CreateAll();
         ConversionRecipe.CreateAll();
         RecycleRecipe.CreateAll();
 
@@ -107,9 +106,6 @@ public static class RecipeManager {
     /// <typeparam name="T">BaseRecipe的子类</typeparam>
     /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
     public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
-        if (recipeType == ERecipe.PointAggregate) {
-            return new PointAggregateRecipe(inputId) as T;
-        }
         return RecipeTypeArr[(int)recipeType][inputId] as T;
     }
 

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
