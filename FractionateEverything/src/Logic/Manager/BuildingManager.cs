@@ -340,8 +340,6 @@ public static class BuildingManager {
             IFE点数聚集塔 => PointAggregateTower.EnergyRatio,
             IFE转化塔 => ConversionTower.EnergyRatio,
             IFE回收塔 => RecycleTower.EnergyRatio,
-            IFE行星内物流交互站 => PlanetaryInteractionStation.EnergyRatio,
-            IFE星际物流交互站 => InterstellarInteractionStation.EnergyRatio,
             _ => 1.0f
         };
     }
