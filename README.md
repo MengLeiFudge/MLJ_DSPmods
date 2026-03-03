@@ -108,8 +108,8 @@ ping www.google.com
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" install -y \
     dotnet-sdk-8.0 \
-    nodejs npm \
-    unzip curl git build-essential ca-certificates
+    nodejs \
+    unzip curl git ca-certificates
 curl -fsSL https://opencode.ai/install | bash
 ```
 
@@ -184,7 +184,15 @@ nano ~/.config/opencode/oh-my-opencode.json
 
 只需在此处修改各个"model"的内容，oh-my-opencode就会在执行对应任务时自动调用相应ai。
 
-下面是我的一个例子：
+注意，nano没法全选删除，但是可以设置标记来剪切。
+- 移动到文件头：按下 Alt + \ (或者 Ctrl + Home)。
+- 设置标记起点：按下 Alt + A (此时下方会显示 Mark Set)。
+- 移动到文件尾：按下 Alt + / (或者 Ctrl + End)，此时所有文字会被高亮选中。
+- 删除/剪切选中内容：按下 Ctrl + K。
+
+或者也可以直接`rm ~/.config/opencode/oh-my-opencode.json`，然后再粘贴内容。
+
+烧钱版示例：
 
 ```
 {
@@ -221,7 +229,7 @@ nano ~/.config/opencode/oh-my-opencode.json
       "variant": "max"
     },
     "atlas": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
     }
   },
   "categories": {
@@ -236,13 +244,71 @@ nano ~/.config/opencode/oh-my-opencode.json
       "model": "anthropic/claude-haiku-4-5"
     },
     "unspecified-low": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
     },
     "unspecified-high": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
     },
     "writing": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
+    }
+  }
+}
+```
+
+省钱版示例：
+
+```
+{
+  "system_prompt": "You are a helpful assistant. Please always respond in Chinese.",
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/dev/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "sisyphus": {
+      "model": "deepseek/deepseek-chat" 
+    },
+    "oracle": {
+      "model": "deepseek/deepseek-reasoner"
+    },
+    "librarian": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "explore": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "multimodal-looker": {
+      "model": "zai-coding-plan/glm-4.6v"
+    },
+    "prometheus": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "metis": {
+      "model": "deepseek/deepseek-chat"
+    },
+    "momus": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "atlas": {
+      "model": "anthropic/claude-sonnet-4-6"
+    }
+  },
+  "categories": {
+    "visual-engineering": {
+      "model": "zai-coding-plan/glm-5"
+    },
+    "ultrabrain": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "quick": {
+      "model": "deepseek/deepseek-chat"
+    },
+    "unspecified-low": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "unspecified-high": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "writing": {
+      "model": "deepseek/deepseek-chat"
     }
   }
 }
