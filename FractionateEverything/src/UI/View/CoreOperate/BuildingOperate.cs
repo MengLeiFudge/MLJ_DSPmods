@@ -149,7 +149,7 @@ public static class BuildingOperate {
         // txtBuildingInfo2 = wnd.AddText2(x, y, tab, "动态刷新");
         // btnTip2 = wnd.AddTipsButton2(x + 250, y, tab, "产物输出集装", "产物输出集装说明");
         // btnBuildingInfo2 = wnd.AddButton(1, 2, y, tab, "+1 集装数目",
-        //     onClick: AddMaxProductOutputStack);
+        //     onClick: AddMaxStack);
         // y += 36f;
         // txtBuildingInfo3 = wnd.AddText2(x, y, tab, "动态刷新");
         // btnTip3 = wnd.AddTipsButton2(x + 250, y, tab, "分馏永动", "分馏永动说明");
@@ -208,12 +208,12 @@ public static class BuildingOperate {
         // }
 
         // string s = SelectedBuilding.ID != IFE行星内物流交互站
-        //     ? $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}"
-        //     : $"{"输出集装：".Translate()}{SelectedBuilding.MaxProductOutputStack()}";
-        // reinforcementPreCondition &= SelectedBuilding.MaxProductOutputStack() >= 4;
-        // txtBuildingInfo2.text = s.WithColor(SelectedBuilding.MaxProductOutputStack() * 2 - 1);
+        //     ? $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxStack()}"
+        //     : $"{"输出集装：".Translate()}{SelectedBuilding.MaxStack()}";
+        // reinforcementPreCondition &= SelectedBuilding.MaxStack() >= 4;
+        // txtBuildingInfo2.text = s.WithColor(SelectedBuilding.MaxStack() * 2 - 1);
         // btnTip2.gameObject.SetActive(true);
-        // btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxProductOutputStack() < 4);
+        // btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxStack() < 4);
         //
         // if (SelectedBuilding.ID != IFE行星内物流交互站) {
         //     reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
@@ -223,7 +223,7 @@ public static class BuildingOperate {
         //     btnTip3.gameObject.SetActive(true);
         //     btnBuildingInfo3.gameObject.SetActive(
         //         SelectedBuilding.EnableFluidEnhancement()
-        //         && SelectedBuilding.MaxProductOutputStack() >= 4
+        //         && SelectedBuilding.MaxStack() >= 4
         //         && !SelectedBuilding.EnableFracForever()
         //     );
         // } else {
@@ -294,7 +294,7 @@ public static class BuildingOperate {
                 "当前强化加成：".Translate(),//todo
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"上传/下载电力消耗".Translate()} x{SelectedBuilding.InteractEnergyRatio():P1}",
-                $"{"产物最大堆叠".Translate()} {SelectedBuilding.MaxProductOutputStack()}",
+                $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
             ];
         } else {
             strs = [
@@ -302,7 +302,7 @@ public static class BuildingOperate {
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
-                $"{"产物最大堆叠".Translate()} {SelectedBuilding.MaxProductOutputStack()}",
+                $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
                 $"{"特质1".Translate()} {(SelectedBuilding.Level() >= 6 ? "启用" : "禁用").Translate()}",
                 $"{"特质2".Translate()} {(SelectedBuilding.Level() >= 12 ? "启用" : "禁用").Translate()}",
             ];
@@ -351,18 +351,18 @@ public static class BuildingOperate {
     //     }
     // }
     //
-    // private static void AddMaxProductOutputStack() {
+    // private static void AddMaxStack() {
     //     if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
     //         return;
     //     }
     //     int takeId = IFE分馏塔增幅芯片;
     //     int takeCount = SelectedBuilding.ID == IFE行星内物流交互站 ? 6 : 1;
-    //     if (SelectedBuilding.MaxProductOutputStack() >= 4) {
+    //     if (SelectedBuilding.MaxStack() >= 4) {
     //         return;
     //     }
     //     ItemProto takeProto = LDB.items.Select(takeId);
     //     if (GameMain.sandboxToolsEnabled) {
-    //         SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
+    //         SelectedBuilding.MaxStack(SelectedBuilding.MaxStack() + 1);
     //         if (NebulaModAPI.IsMultiplayerActive) {
     //             NebulaModAPI.MultiplayerSession.Network.SendPacket(
     //                 new BuildingChangePacket(BuildingTypeEntry.Value, 2));
@@ -376,7 +376,7 @@ public static class BuildingOperate {
     //                 if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
     //                     return;
     //                 }
-    //                 SelectedBuilding.MaxProductOutputStack(SelectedBuilding.MaxProductOutputStack() + 1);
+    //                 SelectedBuilding.MaxStack(SelectedBuilding.MaxStack() + 1);
     //                 if (NebulaModAPI.IsMultiplayerActive) {
     //                     NebulaModAPI.MultiplayerSession.Network.SendPacket(
     //                         new BuildingChangePacket(BuildingTypeEntry.Value, 2));

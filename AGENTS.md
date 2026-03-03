@@ -69,7 +69,7 @@ FractionateEverything/
 ### Naming Conventions
 - **Classes**: `PascalCase` (e.g., `ProcessManager`, `ConversionRecipe`)
 - **Methods**: `PascalCase` (e.g., `GetOutputs`, `UpdateHpAndEnergy`)
-- **Properties**: `PascalCase` (e.g., `EnableVoidSpray`, `MaxProductOutputStack`)
+- **Properties**: `PascalCase` (e.g., `EnableVoidSpray`, `MaxStack`)
 - **Fields**: `camelCase` for private fields (e.g., `item`, `recipe`, `model`)
 - **Static fields**: `PascalCase` (e.g., `Level`, `color`)
 - **Constants**: `UPPER_SNAKE_CASE` (e.g., `IFE转化塔`, `RFE转化塔`)
@@ -124,7 +124,7 @@ public static class BuildingName {
     public static int Level = 0;
     public static bool EnableFeature => Level >= 3;
     
-    public static int MaxProductOutputStack => Level switch {
+    public static int MaxStack => Level switch {
         < 9 => 1,
         _ => 4,
     };
