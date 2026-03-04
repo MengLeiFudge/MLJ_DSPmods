@@ -285,7 +285,7 @@ public static class ProcessManager {
                 // 池量不足时批量消耗原料补满
                 if (pool < poolTarget) {
                     int pointsNeeded = poolTarget - pool;
-                    int itemsToConsume = (pointsNeeded + pointsPerItem - 1) / pointsPerItem; // 向上取整
+                    int itemsToConsume = (pointsNeeded + pointsPerItem - 1) / pointsPerItem;// 向上取整
                     int itemsAvail = __instance.fluidInputCount;
                     int itemsConsumed = Math.Min(itemsToConsume, itemsAvail);
                     if (itemsConsumed > 0) {
@@ -738,23 +738,24 @@ public static class ProcessManager {
     public static void FactorySystem_GameTick_Postfix(ref FactorySystem __instance) {
         if (GameMain.gameTick % 60 == 3) {
             if (InteractionTower.EnableSacrificeTrait) {
-                int count1 = Take10PercentTower(IFE交互塔);
-                int count2 = Take10PercentTower(IFE矿物复制塔);
-                int count3 = Take10PercentTower(IFE点数聚集塔);
-                int count4 = Take10PercentTower(IFE转化塔);
-                int count5 = Take10PercentTower(IFE回收塔);
-                bool allBuffsOk = InteractionTower.EnableDimensionalResonance
-                                  && count1 > 0
-                                  && count2 > 0
-                                  && count3 > 0
-                                  && count4 > 0
-                                  && count5 > 0;
-                double successBoostVal = allBuffsOk ? 240 : 120;
-                InteractionTower.SuccessBoost = (float)Math.Sqrt(count1 / successBoostVal);
-                MineralReplicationTower.SuccessBoost = (float)Math.Sqrt(count2 / successBoostVal);
-                PointAggregateTower.SuccessBoost = (float)Math.Sqrt(count3 / successBoostVal);
-                ConversionTower.SuccessBoost = (float)Math.Sqrt(count4 / successBoostVal);
-                RecycleTower.SuccessBoost = (float)Math.Sqrt(count5 / successBoostVal);
+                int buffCount = 0;
+                int[] takeCounts = new int[IFE回收塔 - IFE交互塔 + 1];
+                for (int i = 0; i < takeCounts.Length; i++) {
+                    takeCounts[i] = Take10PercentTower(IFE交互塔 + i);
+                    if (takeCounts[i] > 0) {
+                        buffCount++;
+                    }
+                }
+                if (InteractionTower.EnableDimensionalResonance) {
+                    for (int i = 0; i < takeCounts.Length; i++) {
+                        takeCounts[i] = (int)(takeCounts[i] * (1 + 0.1 * buffCount));
+                    }
+                }
+                InteractionTower.SuccessBoost = takeCounts[0] / 60.0f;
+                MineralReplicationTower.SuccessBoost = takeCounts[1] / 60.0f;
+                PointAggregateTower.SuccessBoost = takeCounts[2] / 60.0f;
+                ConversionTower.SuccessBoost = takeCounts[3] / 60.0f;
+                RecycleTower.SuccessBoost = takeCounts[4] / 60.0f;
             }
         }
         EntityData[] entityPool = __instance.factory.entityPool;
