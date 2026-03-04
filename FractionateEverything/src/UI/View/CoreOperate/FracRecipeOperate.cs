@@ -246,15 +246,21 @@ public static class FracRecipeOperate {
         float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         //损毁率
         float destroyRatio = recipe.DestroyRatio;
-        //最终产物转化率
+        //最终产物转化率（考虑"直通后继续处理"）
         float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
+        //原料不消耗会触发再次处理，采用几何级数期望系数：1 / (1 - processRatio * remainInputRatio)
+        float remainInputRatio = recipe.RemainInputRatio;
+        float processRepeatRatio = processRatio * remainInputRatio;
+        float repeatMultiplier = processRepeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - processRepeatRatio);
+        float mainOutputBonus = 1.0f + recipe.DoubleOutputRatio;
         Dictionary<int, (float, bool, bool)> outputDic = [];
-        float essenceCostAvg = 0.0f;
         foreach (var info in recipe.OutputMain) {
             int outputId = info.OutputID;
             float outputCount = processRatio;
             outputCount *= info.SuccessRatio;
             outputCount *= info.OutputCount;
+            outputCount *= mainOutputBonus;
+            outputCount *= repeatMultiplier;
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
@@ -267,6 +273,7 @@ public static class FracRecipeOperate {
             float outputCount = processRatio;
             outputCount *= info.SuccessRatio;
             outputCount *= info.OutputCount;
+            outputCount *= repeatMultiplier;
             if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
                 tuple.Item1 += outputCount;
             } else {
