@@ -19,6 +19,11 @@ public enum ERecipe {
     MineralCopy,
 
     /// <summary>
+    /// 点数聚集配方
+    /// </summary>
+    PointAggregate,
+
+    /// <summary>
     /// 转化配方
     /// </summary>
     Conversion,
@@ -27,11 +32,6 @@ public enum ERecipe {
     /// 回收配方
     /// </summary>
     Recycle,
-
-    /// <summary>
-    /// 点数聚集配方
-    /// </summary>
-    PointAggregate,
 }
 
 public static class ERecipeExtension {
@@ -50,7 +50,10 @@ public static class ERecipeExtension {
         Register("点数聚集配方", "Point Aggregate Recipe");
     }
 
-    public static readonly ERecipe[] RecipeTypes = (ERecipe[])Enum.GetValues(typeof(ERecipe));
+    public static readonly ERecipe[] RecipeTypes = Enum.GetValues(typeof(ERecipe))
+        .Cast<ERecipe>()
+        .Where(t => t != ERecipe.PointAggregate && t != ERecipe.Recycle)
+        .ToArray();
 
     public static string[] RecipeTypeShortNames => RecipeTypes.Select(t => t.GetShortName()).ToArray();
 

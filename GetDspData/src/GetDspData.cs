@@ -793,7 +793,6 @@ public class GetDspData : BaseUnityPlugin {
             //最终产物转化率
             float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
             Dictionary<int, (float, bool, bool)> outputDic = [];
-            float essenceCostAvg = 0.0f;
             foreach (var info in recipe.OutputMain) {
                 int outputId = info.OutputID;
                 float outputCount = processRatio;

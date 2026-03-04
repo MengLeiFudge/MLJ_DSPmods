@@ -191,7 +191,7 @@ public static class LimitedTimeStore {
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
-    public static void GameData_GameTick_Postfix() {
+    public static void GameData_FixedUpdate_Postfix() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
