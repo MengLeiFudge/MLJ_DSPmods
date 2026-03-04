@@ -85,36 +85,6 @@ public static class ProcessManager {
         }
     }
 
-    #region 分馏配方与科技状态检测
-
-    // /// <summary>
-    // /// 更新分馏塔处理需要的部分数值。
-    // /// </summary>
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(GameData), nameof(GameData.GameTick))]
-    // public static void GameData_GameTick_Postfix(long time) {
-    //     //使用3作为特殊值，每10逻辑帧更新一次
-    //     if (time % 10 != 3 || GameMain.history == null) {
-    //         return;
-    //     }
-    //     // //从科技获取流动输出最大堆叠数目、产物输出最大堆叠数目
-    //     // EnableFluidEnhancement = GameMain.history.TechUnlocked(TFE分馏流动输出集装);
-    //     // int maxStack = 1;
-    //     // for (int i = 0; i < 3; i++) {
-    //     //     if (GameMain.history.TechUnlocked(TFE分馏产物输出集装 + i)) {
-    //     //         maxStack++;
-    //     //     }
-    //     // }
-    //     // MaxStack = maxStack;
-    //     // //从科技获取是否分馏永动
-    //     // EnableFracForever = GameMain.history.TechUnlocked(TFE分馏永动);
-    //     // EnableFluidEnhancement = false;
-    //     // MaxStack = 1;
-    //     // EnableFracForever = true;
-    // }
-
-    #endregion
-
     #region 分馏塔处理逻辑
 
     /// <summary>
@@ -941,6 +911,9 @@ public static class ProcessManager {
                 break;
             case IFE转化塔:
                 recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
+                break;
+            case IFE回收塔:
+                recipe = GetRecipe<RecycleRecipe>(ERecipe.Recycle, fractionator.fluidId);
                 break;
             default:
                 return;
