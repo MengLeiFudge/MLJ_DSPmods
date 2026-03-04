@@ -16,7 +16,7 @@ public class PointAggregateRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (ItemProto item in LDB.items.dataArray) {
-            PointAggregateRecipe recipe = new(item.ID, 0.1f, [new(1.0f, item.ID, 1)], []) {
+            PointAggregateRecipe recipe = new(item.ID, 0.2f, [new(1.0f, item.ID, 1)], []) {
                 Level = 10,
             };
             AddRecipe(recipe);
