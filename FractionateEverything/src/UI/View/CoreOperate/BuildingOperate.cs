@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
@@ -39,6 +39,10 @@ public static class BuildingOperate {
     // private static UIButton btnBuildingInfo4;
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
+    private static Text txtTrait1;
+    private static UIButton btnTrait1Tip;
+    private static Text txtTrait2;
+    private static UIButton btnTrait2Tip;
     private static UIButton btnReinforcement;
     private static UIButton btnReinforcementMax;
     private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
@@ -115,6 +119,52 @@ public static class BuildingOperate {
         Register("分馏成功率", "Fractionation success ratio");
         Register("主产物数目", "Main product count");
         Register("副产物概率", "Append product ratio");
+
+        // 各塔特质标题和说明（+6 特质）
+        Register("分馏献祭", "Fractionation Sacrifice");
+        Register("分馏献祭说明",
+            "When the total number of fractionators in the data centre exceeds 1000, they are automatically decomposed at 10% per second. With n decomposed fractionators: Success Rate = 1 + sqrt(n/120), Processing Speed = 1 + sqrt(n/60).",
+            "当数据中心的分馏塔数目超过1000时，会以每秒10%的速率自动分解。若损毁n个分馏塔，将使成功率变为 1+sqrt(n/120)，处理速率变为 1+sqrt(n/60)。");
+
+        Register("质能裂变", "Mass-Energy Fission");
+        Register("质能裂变说明",
+            "Maintains an internal point pool (target: 100 x max stack). When the pool drops below the target, raw materials are consumed in bulk to replenish it (25 pts/item; 50 pts/item when Zero-Pressure Cycle is also active). When average proliferator points of inputs is below 10, points are drawn from the pool to bring them to 10.",
+            "塔内维持一个点数池（目标值：100×最大集装）。当池量低于目标值时，批量消耗原料补满（每个原料换25点，同时激活零压循环时换50点）。当输入原料平均增产点数不足10时，从池中取点补足至10。");
+
+        Register("虚空喷涂", "Void Spray");
+        Register("虚空喷涂说明",
+            "When the average proliferator points of inputs is below 4, the tower automatically uses proliferators from the fractionation data centre to spray the inputs.",
+            "当原料的平均增产点数不足4时，会自动使用分馏数据中心的增产剂对原料进行喷涂。");
+
+        Register("因果溯源", "Causal Tracing");
+        Register("因果溯源说明",
+            "When the fractionation result is 'raw material destroyed', there is a 50% chance that the raw material is not consumed.",
+            "当分馏判定为\"原料损毁\"时，有50%的概率不消耗原料。");
+
+        // 各塔特质标题和说明（+12 特质）
+        Register("维度共鸣", "Dimensional Resonance");
+        Register("维度共鸣说明",
+            "With n decomposed fractionators: Success Rate = 1 + sqrt(n/240), Processing Speed = 1 + sqrt(n/120). When all five fractionator types are simultaneously boosted by the Sacrifice Trait, the boost of each type is doubled.",
+            "损毁n个分馏塔时：成功率变为 1+sqrt(n/240)，处理速率变为 1+sqrt(n/120)。当所有种类的分馏塔同时拥有献祭增幅时，各塔的增幅效果翻倍。");
+
+        Register("零压循环", "Zero-Pressure Cycle");
+        Register("零压循环说明",
+            "Each consumed raw material replenishes the point pool by 50 points (overriding Mass-Energy Fission's 25 pts). When there is no output belt on either side, flow output is automatically returned to flow input; product output is also prioritised for return to flow input.",
+            "每个被消耗的原料向点数池补充50点（覆盖质能裂变的25点）。当侧面无输出传送带时，流动输出自动回填至流动输入；产物输出也优先回填至流动输入。");
+
+        Register("双重点数", "Double Points");
+        Register("双重点数说明",
+            "Each 1 proliferator point on the input is converted as 2 points during transfer.",
+            "原料的1点增产点数在转移时变为2点。");
+
+        Register("单路锁定", "Single-Path Lock");
+        Register("单路锁定说明",
+            "Allows the fractionator to output only a single conversion product. The locked output can be configured in the fractionator's control panel.",
+            "允许分馏塔只输出单一转化产物。可在分馏塔操作面板中设置锁定的输出产物。");
+
+        Register("特质1（+6）：", "Trait 1 (+6): ");
+        Register("特质2（+12）：", "Trait 2 (+12): ");
+        Register("特质未激活", "Not yet unlocked");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -160,6 +210,14 @@ public static class BuildingOperate {
         // y += 36f;
         txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
+        y += 36f;
+        // 特质1（+6）
+        txtTrait1 = wnd.AddText2(x, y, tab, "动态刷新");
+        btnTrait1Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质1（+6）：", "特质1（+6）：");
+        y += 36f;
+        // 特质2（+12）
+        txtTrait2 = wnd.AddText2(x, y, tab, "动态刷新");
+        btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
 
         if (!GameMain.sandboxToolsEnabled) {
             btnReinforcement = wnd.AddButton(1, 2, y, tab, "敲一下！",
@@ -180,6 +238,20 @@ public static class BuildingOperate {
             y += 36f;
             txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
         }
+    }
+
+    /// <summary>
+    /// 返回 (trait1Key, trait2Key) 的翻译 key，null 表示该塔没有对应特质（如物流站）。
+    /// </summary>
+    private static (string title1, string desc1, string title2, string desc2) GetTraitKeys(int buildingId) {
+        return buildingId switch {
+            IFE交互塔 => ("分馏献祭", "分馏献祭说明", "维度共鸣", "维度共鸣说明"),
+            IFE矿物复制塔 => ("质能裂变", "质能裂变说明", "零压循环", "零压循环说明"),
+            IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "双重点数", "双重点数说明"),
+            IFE转化塔 => ("因果溯源", "因果溯源说明", "单路锁定", "单路锁定说明"),
+            // 回收塔暂无特质说明
+            _ => (null, null, null, null),
+        };
     }
 
     public static void UpdateUI() {
@@ -244,6 +316,43 @@ public static class BuildingOperate {
         string s = $"{"强化等级：".Translate()}{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
         btnTip5.gameObject.SetActive(true);
+
+        // 特质行：按建筑类型动态填充
+        var (title1, desc1, title2, desc2) = GetTraitKeys(SelectedBuilding.ID);
+        bool hasTraits = title1 != null;
+        bool trait1Active = SelectedBuilding.Level() >= 6;
+        bool trait2Active = SelectedBuilding.Level() >= 12;
+
+        if (hasTraits) {
+            string trait1Name = title1.Translate();
+            string trait2Name = title2.Translate();
+            string activeSuffix = trait1Active
+                ? "".WithColor(Gold)
+                : $"（{"特质未激活".Translate()}）".WithColor(Red);
+            string activeSuffix2 = trait2Active
+                ? "".WithColor(Gold)
+                : $"（{"特质未激活".Translate()}）".WithColor(Red);
+            txtTrait1.text = ($"{"特质1（+6）：".Translate()}{trait1Name}{activeSuffix}").WithColor(trait1Active ? 4 : 2);
+            txtTrait2.text = ($"{"特质2（+12）：".Translate()}{trait2Name}{activeSuffix2}").WithColor(trait2Active ? 4 : 2);
+            btnTrait1Tip.tips.tipTitle = title1.Translate();
+            btnTrait1Tip.tips.tipText = desc1.Translate();
+            btnTrait1Tip.UpdateTip();
+            btnTrait2Tip.tips.tipTitle = title2.Translate();
+            btnTrait2Tip.tips.tipText = desc2.Translate();
+            btnTrait2Tip.UpdateTip();
+            btnTrait1Tip.gameObject.SetActive(true);
+            btnTrait2Tip.gameObject.SetActive(true);
+            txtTrait1.gameObject.SetActive(true);
+            txtTrait2.gameObject.SetActive(true);
+        } else {
+            txtTrait1.text = "";
+            txtTrait2.text = "";
+            btnTrait1Tip.gameObject.SetActive(false);
+            btnTrait2Tip.gameObject.SetActive(false);
+            txtTrait1.gameObject.SetActive(false);
+            txtTrait2.gameObject.SetActive(false);
+        }
+
         if (!GameMain.sandboxToolsEnabled) {
             bool showBtn = reinforcementPreCondition && SelectedBuilding.Level() < MaxLevel;
             btnReinforcement.gameObject.SetActive(showBtn);
@@ -300,8 +409,6 @@ public static class BuildingOperate {
                 $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
                 $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
-                $"{"特质1".Translate()} {(SelectedBuilding.Level() >= 6 ? "启用" : "禁用").Translate()}",
-                $"{"特质2".Translate()} {(SelectedBuilding.Level() >= 12 ? "启用" : "禁用").Translate()}",
             ];
         }
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
