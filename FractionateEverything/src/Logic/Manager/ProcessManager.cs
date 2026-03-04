@@ -973,10 +973,11 @@ public static class ProcessManager {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
             float recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + pointsBonus);
+            float mainOutputBonus = 1 + recipe.DoubleOutputRatio;
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";
-                float count = output.OutputCount;
+                float count = output.OutputCount * mainOutputBonus;
                 string countStr = output.ShowOutputCount || sandboxMode ? count.ToString("F3") : "???";
                 //ratio: 不考虑损毁的情况下，物品转换为此项的综合概率
                 float ratio = recipeSuccessRatio * output.SuccessRatio;
