@@ -264,7 +264,7 @@ public static class ProcessManager {
                                              ? __instance.fluidInputCargoCount
                                              : MaxBeltSpeed)
                                          * fluidInputCountPerCargo
-                                         * building.SpeedBoost()
+                                         * (1 + building.SpeedBoost())
                                          + 0.75);
             if (__instance.progress > 300000) {
                 __instance.progress = 300000;
