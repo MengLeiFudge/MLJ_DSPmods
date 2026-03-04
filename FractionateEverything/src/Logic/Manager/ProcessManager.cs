@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+using System.Reflection.Emit;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
 using HarmonyLib;
@@ -677,7 +679,45 @@ public static class ProcessManager {
 
     #region 分馏塔耗电调整
 
-    private static void SetPCState(this FractionatorComponent fractionator,
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
+    [HarmonyPatch(typeof(GameLogic), nameof(GameLogic._fractionator_parallel))]
+    public static IEnumerable<CodeInstruction> FactorySystem_SetPCState_Transpiler(
+        IEnumerable<CodeInstruction> instructions, MethodBase original) {
+        CodeMatcher matcher = new(instructions);
+        MethodInfo targetMethod =
+            AccessTools.Method(typeof(FractionatorComponent), nameof(FractionatorComponent.SetPCState));
+        MethodInfo replacementMethod = AccessTools.Method(typeof(ProcessManager), nameof(SetPCStateWithEntityPool));
+        FieldInfo factoryField = AccessTools.Field(typeof(FactorySystem), "factory");
+        FieldInfo entityPoolField = AccessTools.Field(typeof(PlanetFactory), "entityPool");
+
+        matcher.MatchForward(false, new CodeMatch(i => i.Calls(targetMethod)))
+            .Repeat(m => {
+                if (original.DeclaringType == typeof(FactorySystem)) {
+                    m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0));// FactorySystem
+                    m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, factoryField));// PlanetFactory
+                    m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, entityPoolField));// EntityData[]
+                } else {
+                    // GameLogic._fractionator_parallel: planetFactory 是局部变量，通过方法体局部变量列表定位
+                    var locals = original.GetMethodBody()!.LocalVariables;
+                    var planetFactoryLocal = locals.First(v => v.LocalType == typeof(PlanetFactory));
+                    m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_S,
+                        (byte)planetFactoryLocal.LocalIndex));// PlanetFactory (local var)
+                    m.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, entityPoolField));// EntityData[]
+                }
+                m.SetInstruction(new CodeInstruction(OpCodes.Call, replacementMethod));
+            });
+
+        return matcher.InstructionEnumeration();
+    }
+
+    public static void SetPCStateWithEntityPool(ref FractionatorComponent fractionator, PowerConsumerComponent[] pcPool,
+        EntityData[] entityPool) {
+        fractionator.SetPCState(pcPool);// 调用原版
+        fractionator.SetPCState(pcPool, entityPool);// 调用我们的逻辑
+    }
+
+    public static void SetPCState(this ref FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, EntityData[] entityPool) {
         int buildingID = entityPool[fractionator.entityId].protoId;
         if (buildingID < IFE交互塔 || buildingID > IFE回收塔) {
@@ -687,9 +727,9 @@ public static class ProcessManager {
         double num1 = fractionator.fluidInputCargoCount > 0.0001
             ? fractionator.fluidInputCount / (double)fractionator.fluidInputCargoCount
             : 4.0;
-        double num2 = ((double)fractionator.fluidInputCargoCount < MaxBeltSpeed
+        double num2 = (double)fractionator.fluidInputCargoCount < MaxBeltSpeed
             ? (double)fractionator.fluidInputCargoCount
-            : MaxBeltSpeed);
+            : MaxBeltSpeed;
         num2 = num2 * num1 - MaxBeltSpeed;
         if (num2 < 0.0)
             num2 = 0.0;
@@ -703,37 +743,39 @@ public static class ProcessManager {
         pcPool[fractionator.pcId].SetRequiredEnergy(fractionator.isWorking, permillage);
     }
 
+    /// <summary>
+    /// 交互塔特质
+    /// </summary>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
-    public static void FactorySystem_GameTick_Postfix(ref FactorySystem __instance) {
-        if (GameMain.gameTick % 60 == 3) {
-            if (InteractionTower.EnableSacrificeTrait) {
-                int buffCount = 0;
-                int[] takeCounts = new int[IFE回收塔 - IFE交互塔 + 1];
-                for (int i = 0; i < takeCounts.Length; i++) {
-                    takeCounts[i] = Take10PercentTower(IFE交互塔 + i);
-                    if (takeCounts[i] > 0) {
-                        buffCount++;
-                    }
-                }
-                if (InteractionTower.EnableDimensionalResonance) {
-                    for (int i = 0; i < takeCounts.Length; i++) {
-                        takeCounts[i] = (int)(takeCounts[i] * (1 + 0.1 * buffCount));
-                    }
-                }
-                InteractionTower.SuccessBoost = takeCounts[0] / 60.0f;
-                MineralReplicationTower.SuccessBoost = takeCounts[1] / 60.0f;
-                PointAggregateTower.SuccessBoost = takeCounts[2] / 60.0f;
-                ConversionTower.SuccessBoost = takeCounts[3] / 60.0f;
-                RecycleTower.SuccessBoost = takeCounts[4] / 60.0f;
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
+    public static void GameData_FixedUpdate_Postfix() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        if (GameMain.gameTick % 60 != 3) {
+            return;
+        }
+        if (!InteractionTower.EnableSacrificeTrait) {
+            return;
+        }
+        int buffCount = 0;
+        int[] takeCounts = new int[IFE回收塔 - IFE交互塔 + 1];
+        for (int i = 0; i < takeCounts.Length; i++) {
+            takeCounts[i] = Take10PercentTower(IFE交互塔 + i);
+            if (takeCounts[i] > 0) {
+                buffCount++;
             }
         }
-        EntityData[] entityPool = __instance.factory.entityPool;
-        PowerConsumerComponent[] consumerPool = __instance.factory.powerSystem.consumerPool;
-        for (int index = 1; index < __instance.fractionatorCursor; ++index) {
-            if (__instance.fractionatorPool[index].id == index)
-                __instance.fractionatorPool[index].SetPCState(consumerPool, entityPool);
+        if (InteractionTower.EnableDimensionalResonance) {
+            for (int i = 0; i < takeCounts.Length; i++) {
+                takeCounts[i] = (int)(takeCounts[i] * (1 + 0.1 * buffCount));
+            }
         }
+        InteractionTower.SuccessBoost = Mathf.Sqrt(takeCounts[0]) / 10.0f;
+        MineralReplicationTower.SuccessBoost = Mathf.Sqrt(takeCounts[1]) / 10.0f;
+        PointAggregateTower.SuccessBoost = Mathf.Sqrt(takeCounts[2]) / 10.0f;
+        ConversionTower.SuccessBoost = Mathf.Sqrt(takeCounts[3]) / 10.0f;
+        RecycleTower.SuccessBoost = Mathf.Sqrt(takeCounts[4]) / 10.0f;
     }
 
     #endregion
