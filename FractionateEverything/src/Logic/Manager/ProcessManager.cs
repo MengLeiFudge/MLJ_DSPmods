@@ -274,18 +274,46 @@ public static class ProcessManager {
             if (buildingID == IFE点数聚集塔 && PointAggregateTower.EnableVoidSpray) {
                 AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
             }
-            // C6: 质能裂变 - 矿物复制塔在 Level >= 6 时，使用池中点数补充平均点数至10
+            // C6: 质能裂变 - 矿物复制塔在 Level >= 6 时，维持池中点数在目标值以上；
+            // 当池量不足时，批量消耗原料填满点数池（每个原料+25点，零压循环激活时+50点）。
+            // 取用时：若平均增产点数不足10，从池中补足至10。
             if (buildingID == IFE矿物复制塔
                 && MineralReplicationTower.EnableMassEnergyFission
                 && __instance.fluidInputCount > 0) {
-                int avgInc = __instance.fluidInputInc / __instance.fluidInputCount;
-                if (avgInc < 10) {
-                    int pool = __instance.GetFissionPointPool(factory);
-                    int needed = (10 - avgInc) * __instance.fluidInputCount;
-                    int toUse = Math.Min(pool, needed);
-                    if (toUse > 0) {
-                        __instance.fluidInputInc += toUse;
-                        __instance.SetFissionPointPool(factory, pool - toUse);
+                int pointsPerItem = MineralReplicationTower.EnableZeroPressureCycle ? 50 : 25;
+                int poolTarget = 100 * MineralReplicationTower.MaxStack;
+                int pool = __instance.GetFissionPointPool(factory);
+                // 池量不足时批量消耗原料补满
+                if (pool < poolTarget) {
+                    int pointsNeeded = poolTarget - pool;
+                    int itemsToConsume = (pointsNeeded + pointsPerItem - 1) / pointsPerItem; // 向上取整
+                    int itemsAvail = __instance.fluidInputCount;
+                    int itemsConsumed = Math.Min(itemsToConsume, itemsAvail);
+                    if (itemsConsumed > 0) {
+                        int incAvgForConsume = __instance.fluidInputInc > 0 && __instance.fluidInputCount > 0
+                            ? __instance.fluidInputInc / __instance.fluidInputCount
+                            : 0;
+                        __instance.fluidInputCount -= itemsConsumed;
+                        if (__instance.fluidInputCount < 0) __instance.fluidInputCount = 0;
+                        __instance.fluidInputCargoCount -= (float)itemsConsumed / fluidInputCountPerCargo;
+                        if (__instance.fluidInputCargoCount < 0f) __instance.fluidInputCargoCount = 0f;
+                        __instance.fluidInputInc -= incAvgForConsume * itemsConsumed;
+                        if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
+                        pool += itemsConsumed * pointsPerItem;
+                        __instance.SetFissionPointPool(factory, pool);
+                    }
+                }
+                // 取用：若输入平均点数不足10，从池中补足
+                if (__instance.fluidInputCount > 0) {
+                    int avgInc = __instance.fluidInputInc / __instance.fluidInputCount;
+                    if (avgInc < 10) {
+                        pool = __instance.GetFissionPointPool(factory);
+                        int needed = (10 - avgInc) * __instance.fluidInputCount;
+                        int toUse = Math.Min(pool, needed);
+                        if (toUse > 0) {
+                            __instance.fluidInputInc += toUse;
+                            __instance.SetFissionPointPool(factory, pool - toUse);
+                        }
                     }
                 }
             }
@@ -329,13 +357,7 @@ public static class ProcessManager {
                         __instance.fluidInputInc -= fluidInputIncAvg;
                         if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
                     }
-                    // C6: 质能裂变 - 10%概率将原料转化为25点裂变点数
-                    if (buildingID == IFE矿物复制塔 && MineralReplicationTower.EnableMassEnergyFission) {
-                        if (GetRandDouble(ref __instance.seed) < 0.1f) {
-                            int currentPool = __instance.GetFissionPointPool(factory);
-                            __instance.SetFissionPointPool(factory, currentPool + 25);
-                        }
-                    }
+                    // C6: 质能裂变点数补充已移至循环外批量处理（池量不足时批量消耗原料，每个+25或+50点）
                 }
 
                 if (outputs == null) {

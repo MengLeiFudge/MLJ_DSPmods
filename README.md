@@ -218,37 +218,37 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "主要协调人。推荐Claude Opus → Kimi K2.5 → GLM 5"
     },
     "metis": {
-      "model": "deepseek/deepseek-reasoner",
+      "model": "anthropic/claude-sonnet-4-6",
       "description": "计划差距分析器。推荐Claude Opus → Kimi K2.5 → GPT-5.2 → Gemini 3 Pro"
     },
     "prometheus": {
-      "model": "deepseek/deepseek-reasoner",
+      "model": "openai/gpt-5.2",
       "description": "战略规划师。推荐Claude Opus → GPT-5.2 → Kimi K2.5 → Gemini 3 Pro"
     },
     "atlas": {
-      "model": "zai-coding-plan/glm-5",
+      "model": "openai/gpt-5.2",
       "description": "待办事项协调器。推荐Kimi K2.5 → Claude Sonnet → GPT-5.2"
     },
     "oracle": {
-      "model": "deepseek/deepseek-reasoner",
+      "model": "openai/gpt-5.2",
       "description": "架构顾问。推荐GPT-5.2 → Gemini 3 Pro → Claude Opus"
     },
     "momus": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "openai/gpt-5.2",
       "description": "无情评审员。推荐GPT-5.2 → Claude Opus → Gemini 3 Pro"
     },
     "explore": {
-      "model": "deepseek/deepseek-chat",
+      "model": "opencode/minimax-m2.5-free",
       "description": "快速代码库扫描。推荐Grok Code Fast → MiniMax → Haiku → GPT-5-Nano"
     },
     "librarian": {
-      "model": "zai-coding-plan/glm-5",
+      "model": "zai-coding-plan/glm-4.7-flashx",
       "description": "文档/代码搜索。推荐Gemini Flash → MiniMax → GLM"
     },
     "multimodal-looker": {
       "model": "zai-coding-plan/glm-4.6v",
       "description": "视觉/屏幕截图。推荐Kimi K2.5 → Gemini Flash → GPT-5.2 → GLM-4.6v"
-    },
+    }
   },
   "categories": {
     "visual-engineering": {
@@ -256,31 +256,31 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "前端、用户界面、CSS、设计。推荐Gemini 3 Pro → GLM 5 → Claude Opus"
     },
     "ultrabrain": {
-      "model": "deepseek/deepseek-reasoner",
+      "model": "openai/gpt-5.3-codex",
       "description": "需要最大限度的推理。推荐GPT-5.3 Codex → Gemini 3 Pro → Claude Opus"
     },
     "deep": {
-      "model": "deepseek/deepseek-reasoner",
+      "model": "openai/gpt-5.3-codex",
       "description": "深度编码，复杂逻辑。推荐GPT-5.3 Codex → Claude Opus → Gemini 3 Pro"
     },
     "artistry": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "openai/gpt-5.2",
       "description": "富有创意、新颖的方法。推荐Gemini 3 Pro → Claude Opus → GPT-5.2"
     },
     "quick": {
-      "model": "deepseek/deepseek-chat",
+      "model": "anthropic/claude-haiku-4-5",
       "description": "简单、快速的任务。推荐Claude Haiku → Gemini Flash → GPT-5-Nano"
     },
     "unspecified-high": {
-      "model": "zai-coding-plan/glm-5",
+      "model": "openai/gpt-5.2",
       "description": "一般复杂工作。推荐Claude Opus → GPT-5.2 → Gemini 3 Pro"
     },
     "unspecified-low": {
-      "model": "zai-coding-plan/glm-5",
+      "model": "openai/gpt-5.3-codex",
       "description": "一般标准工作。推荐Claude Sonnet → GPT-5.3 Codex → Gemini Flash"
     },
     "writing": {
-      "model": "zai-coding-plan/glm-5",
+      "model": "zai-coding-plan/glm-4.7-flashx",
       "description": "文本、文档、散文。推荐Gemini Flash → Claude Sonnet"
     }
   }
