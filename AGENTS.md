@@ -4,266 +4,235 @@ This document provides essential information for AI agents working on this Dyson
 
 ## Project Overview
 
-This repository contains multiple DSP mods:
-- **FractionateEverything** - Main mod with fractionation mechanics
-- **GetDspData** - Data export tool for mod developers
-- **AfterBuildEvent** - Build automation tool
+Multiple DSP mods in one solution:
+- **FractionateEverything** (`FE` namespace) — Main mod: fractionators, recipes, UI, data centre
+- **GetDspData** — Dev tool: exports item/recipe/model/tech data to files
+- **AfterBuildEvent** — Build automation: post-build packaging and DLL publicizing
 
-## Build System
+## Build Commands
 
-### Prerequisites
-- .NET SDK 8.0+
-- Dyson Sphere Program game libraries
-- BepInEx modding framework
-
-### Build Commands
 ```bash
-# Build specific project
+# Build main mod (primary verification target)
 dotnet build FractionateEverything/FractionateEverything.csproj
 
-# Build solution (all projects)
+# Build entire solution
 dotnet build MLJ_DSPmods.sln
 
-# Build Release configuration
+# Release build (creates zip package in FractionateEverything/package/)
 dotnet build -c Release FractionateEverything/FractionateEverything.csproj
 ```
 
-### Key Build Files
-- `MLJ_DSPmods.sln` - Main solution file
-- `FractionateEverything/FractionateEverything.csproj` - Main mod project
-- `GetDspData/GetDspData.csproj` - Data export tool
-- `AfterBuildEvent/AfterBuildEvent.csproj` - Build automation tool
-- `DefaultPath.props` - Path configuration for game libraries
+**No unit tests exist.** Build verification is the quality gate:
+- Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
+- Always run `dotnet build` after any code change before marking work complete.
 
-### Dependencies
-The project uses:
-- **BepInEx.Core** (5.4.17) - Modding framework
-- **UnityEngine.Modules** (2022.3.53) - Unity engine
-- **DysonSphereProgram.Modding.CommonAPI** - DSP modding API
-- **DysonSphereProgram.GameLibs** - Game libraries (publicized)
-- Custom DLLs in `lib/` directory
+## Key Files
 
-### Build Process Notes
-1. Target framework: `net472` (for Unity compatibility)
-2. `AllowUnsafeBlocks: true` is enabled
-3. Game libraries are publicized (methods made public) for modding access
-4. The `AfterBuildEvent` project handles post-build automation
+| File | Purpose |
+|---|---|
+| `MLJ_DSPmods.sln` | Solution entry point |
+| `FractionateEverything/FractionateEverything.csproj` | Main mod project (net472, LangVersion latest) |
+| `DefaultPath.props` / `DefaultPath.props.example` | Game library path config (copy example, fill paths) |
+| `lib/` | Custom DLLs (BuildBarTool, publicized mod DLLs) |
 
-## Code Style Guidelines
+**Build notes:**
+- Target framework: `net472` (Unity/.NET Framework compatibility)
+- `AllowUnsafeBlocks: true`, `LangVersion: latest` (C# 12 features available)
+- Game libraries are "publicized" (all members made public) for mod access
+- BepInEx NuGet feed: `https://nuget.bepinex.dev/v3/index.json`
 
-### Project Structure
+## Project Structure
+
 ```
-FractionateEverything/
-├── src/
-│   ├── Logic/           # Core game logic
-│   │   ├── Building/    # Building definitions
-│   │   ├── Manager/     # Game state managers
-│   │   ├── Recipe/      # Recipe implementations
-│   │   └── UI/          # User interface
-│   ├── Compatibility/   # Mod compatibility
-│   └── Utils/          # Utility classes
-├── Assets/             # Game assets
-└── Properties/         # Assembly info
+FractionateEverything/src/
+├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
+├── Logic/
+│   ├── Building/               # Static building definition classes
+│   ├── Manager/                # Static game-state managers (ProcessManager, BuildingManager, etc.)
+│   ├── Patches/                # Standalone Harmony transpiler patches
+│   └── Recipe/                 # Recipe classes (BaseRecipe + concrete types)
+├── Compatibility/              # Other mod detection and integration
+├── UI/                         # Unity UI components and views
+└── Utils/                      # Shared utilities (ProtoID.cs, logging, formatting, etc.)
 ```
 
-### Naming Conventions
-- **Classes**: `PascalCase` (e.g., `ProcessManager`, `ConversionRecipe`)
-- **Methods**: `PascalCase` (e.g., `GetOutputs`, `UpdateHpAndEnergy`)
-- **Properties**: `PascalCase` (e.g., `EnableVoidSpray`, `MaxStack`)
-- **Fields**: `camelCase` for private fields (e.g., `item`, `recipe`, `model`)
-- **Static fields**: `PascalCase` (e.g., `Level`, `color`)
-- **Constants**: `UPPER_SNAKE_CASE` (e.g., `IFE转化塔`, `RFE转化塔`)
-- **Local variables**: `camelCase` (e.g., `fluidInputCount`, `outputList`)
+## Naming Conventions
 
-### Import Organization
+| Element | Convention | Example |
+|---|---|---|
+| Classes, methods, properties | `PascalCase` | `ProcessManager`, `GetOutputs`, `EnableVoidSpray` |
+| Private/local fields | `camelCase` | `item`, `recipe`, `fluidInputCount` |
+| Public static fields | `PascalCase` | `Level`, `MaxStack` |
+| Constants (C# string names) | Chinese inline or `UPPER_SNAKE_CASE` | `IFE转化塔`, `RFE转化塔` |
+| Local variables | `camelCase` | `outputList`, `fluidInputInc` |
+| Proto ID constants | `I` prefix + Chinese item name | `I铁块`, `I电磁矩阵` |
+| Harmony patch methods | `ClassName_MethodName_Suffix` | `FractionatorComponent_Import_Postfix` |
+| Namespaces | `FE.*` (root `FE`) | `FE.Logic.Building`, `FE.Utils` |
+
+## Import Organization
+
 ```csharp
-// System namespaces first
+// 1. System namespaces
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-// Third-party libraries
+// 2. Third-party / game libraries (alphabetical within group)
+using BepInEx;
 using HarmonyLib;
-using NebulaAPI;
 using UnityEngine;
 
-// Internal namespaces (alphabetical)
+// 3. Internal FE namespaces (alphabetical)
 using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 
-// Static imports last
+// 4. Static imports last
 using static FE.FractionateEverything;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 ```
 
-### File Structure Pattern
-```csharp
-using System.IO;
-using BuildBarTool;
-using CommonAPI.Systems;
-using FE.Compatibility;
-using UnityEngine;
-using static FE.FractionateEverything;
-using static FE.Utils.Utils;
-using static FE.Logic.Manager.ProcessManager;
+## Code Style
 
+**Indentation:** 4 spaces (no tabs)  
+**Braces:** Same-line opening brace (K&R style): `public static class Foo {`  
+**Line endings:** CRLF (Windows) — maintained by `.gitattributes`  
+**File encoding:** UTF-8 with BOM (auto-generated by VS)  
+
+### Switch Expressions (preferred for level-based values)
+```csharp
+public static int MaxStack => Level switch {
+    < 6 => 1,
+    < 9 => 4,
+    < 12 => 8,
+    _ => 12,
+};
+```
+
+### Array Initializers (C# 12 collection expressions)
+```csharp
+[IFE分馏塔定向原胚], [2], [IFE转化塔], [5]   // preferred over new int[] { }
+public static readonly List<ProductOutputInfo> emptyOutputs = [];
+```
+
+### String Interpolation (preferred over concatenation)
+```csharp
+public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name} +{Level}";
+```
+
+### XML Documentation
+```csharp
+/// <summary>
+/// Brief description (Chinese or English acceptable).
+/// </summary>
+public static void SomeMethod() { ... }
+```
+
+## DSP/Unity-Specific Patterns
+
+### Static Building Class Template
+Every building in `Logic/Building/` follows this structure:
+```csharp
 namespace FE.Logic.Building;
 
-/// <summary>
-/// Building class summary
-/// </summary>
-public static class BuildingName {
+public static class ConversionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
     public static Color color = new(0.7f, 0.6f, 0.8f);
-    
+
     public static int Level = 0;
-    public static bool EnableFeature => Level >= 3;
-    
-    public static int MaxStack => Level switch {
-        < 9 => 1,
-        _ => 4,
-    };
-    
-    // ... rest of implementation
+    public static bool EnableFluidEnhancement => Level >= 3;
+    public static int MaxStack => Level switch { < 6 => 1, _ => 4 };
+
+    public static void AddTranslations() { ... }
+    public static void Create() { ... }        // Register item/recipe/model
+    public static void SetMaterial() { ... }   // Apply materials/colors
+    public static void UpdateHpAndEnergy() { ... }
 }
 ```
 
-### Formatting Rules
-- **Indentation**: 4 spaces (no tabs)
-- **Braces**: Allman style (braces on new line)
-- **Line length**: No strict limit, but keep readable
-- **Switch expressions**: Use when appropriate for property getters
-- **Array initializers**: Use `[]` syntax (C# 12)
-- **String interpolation**: Preferred over concatenation
-
-### Error Handling
-- Minimal try-catch usage (Unity/DSP handles most errors)
-- Use null checks: `if (LDB.items.Exist(outputId))`
-- Use early returns for validation failures
-- Log errors when appropriate (but avoid console spam)
-
-### Unity/DSP-Specific Patterns
-
-#### Harmony Patches
+### Harmony Patches
 ```csharp
+// Postfix (most common)
 [HarmonyPostfix]
 [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
-public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
-    // Postfix logic
+public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) { }
+
+// Transpiler (IL-level, use CodeMatcher)
+[HarmonyTranspiler]
+[HarmonyPatch(typeof(ModelProtoSet), nameof(ModelProtoSet.OnAfterDeserialize))]
+public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
+    IEnumerable<CodeInstruction> instructions) {
+    var matcher = new CodeMatcher(instructions);
+    // ... patch IL
+    return matcher.InstructionEnumeration();
 }
 ```
 
-#### Static Building Classes
-All building definitions are static classes with:
-- `Level` static property
-- `EnableXxx` boolean properties based on level
-- Switch expressions for level-based values
-- `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()` methods
+### Recipe System
+- Inherit from `BaseRecipe` (primary outputs go to `outputMain`, side products to `outputAppend`)
+- Override `RecipeType` property (returns `ERecipe` enum value)
+- Override `GetOutputs()` for custom distribution logic
+- Use `OutputInfo` and `ProductOutputInfo` for output descriptors
+- `fluidInputInc` carries proliferator points through the pipeline
 
-#### Extension Methods
-```csharp
-public static int GetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
-    // Extension method logic
-}
-```
+### Proto ID Constants (`Utils/ProtoID.cs`)
+- All game item/recipe/model IDs are `internal const int` in `partial class Utils`
+- Item IDs: `I` prefix + Chinese name (e.g., `I铁块 = 1101`)
+- Recipe IDs: `R` prefix + Chinese name
+- Model IDs: `M` prefix + Chinese name
+- Mod-added IDs: `IFE`, `RFE`, `MFE` prefixes for this mod's additions
 
-#### Recipe System
-- Inherit from `BaseRecipe`
-- Override `GetOutputs` method for custom logic
-- Use `OutputInfo` and `ProductOutputInfo` classes
-- Handle `fluidInputInc` for proliferation points
+## Error Handling
 
-### Documentation
-- Use XML documentation comments for public APIs
-- Chinese comments are acceptable (this is a Chinese mod)
-- Keep comments concise and relevant
-- Document complex algorithms or game mechanics
+- Minimal try-catch (Unity/BepInEx catches unhandled exceptions at the game level)
+- Prefer null checks: `if (LDB.items.Exist(outputId))` before accessing
+- Use early returns for validation failures (guard clauses)
+- Log with the shared logger utilities in `Utils/LogUtils.cs`; avoid console spam
 
-## Testing
+## Common Tasks
 
-### Current State
-- No unit test framework configured
-- Testing is manual through game play
-- Build verification is primary quality gate
+### Adding a New Building
+1. Create `Logic/Building/NewBuildingName.cs` following the static class template above
+2. Add `Level`, `EnableXxx`, switch-expression properties as needed
+3. Implement `AddTranslations()`, `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()`
+4. Register in `BuildingManager`: call new methods inside `AddTranslations()`, `AddFractionators()`, `SetFractionatorMaterial()`, `UpdateHpAndEnergy()`
+5. Add Proto IDs to `Utils/ProtoID.cs`
 
-### Verification Commands
-```bash
-# Build verification
-dotnet build FractionateEverything/FractionateEverything.csproj
+### Adding a New Recipe Type
+1. Create `Logic/Recipe/NewRecipe.cs` inheriting from `BaseRecipe`
+2. Override `RecipeType` (returns an `ERecipe` value)
+3. Override `GetOutputs()` with the distribution logic
+4. Add a static `CreateAll()` method and call it from `RecipeManager`
 
-# Check for compilation errors
-# Expected: "Build succeeded. 0 Warning(s). 0 Error(s)."
-```
+### Modifying Game Logic
+1. Check if an existing manager/patch covers the target method
+2. Prefer adding to existing Harmony patch classes in `Logic/Manager/` or `Logic/Patches/`
+3. Use `[HarmonyPostfix]` by default; use `[HarmonyTranspiler]` only when postfix is insufficient
+4. Place patches as static methods directly inside the relevant manager class when cohesive
 
-## Development Workflow
+## Git Practices
 
-### Mod Structure
-1. **Building Definitions**: Static classes in `Logic/Building/`
-2. **Recipe Logic**: Classes inheriting from `BaseRecipe` in `Logic/Recipe/`
-3. **Managers**: Static classes in `Logic/Manager/` for game state
-4. **UI Components**: In `Logic/UI/` for user interfaces
-5. **Compatibility**: In `Compatibility/` for other mod integration
-
-### Common Tasks
-
-#### Adding a New Building
-1. Create static class in `Logic/Building/`
-2. Follow existing pattern (Level, EnableXxx properties, Create, SetMaterial, UpdateHpAndEnergy)
-3. Register in `BuildingManager.AddFractionators()`
-4. Add translations in `BuildingManager.AddTranslations()`
-
-#### Adding a New Recipe Type
-1. Create class inheriting from `BaseRecipe` in `Logic/Recipe/`
-2. Override `GetOutputs` method
-3. Implement `RecipeType` property
-4. Register in appropriate manager
-
-#### Modifying Game Logic
-1. Use Harmony patches for game method interception
-2. Place patches in appropriate manager classes
-3. Follow postfix/prefix convention
-4. Test thoroughly in-game
-
-### Git Practices
-- Commit messages in English
-- Use conventional commit style: `feat:`, `fix:`, `refactor:`, etc.
-- Atomic commits focused on single changes
-- Reference issue numbers when applicable
+- Commit messages in **English**, conventional style: `feat:`, `fix:`, `refactor:`, `chore:`
+- Atomic commits (one logical change per commit)
+- Do **not** commit unless explicitly asked
 
 ## AI Agent Notes
 
-This repository uses **oh-my-opencode** framework for AI-assisted development:
-- `.sisyphus/` directory contains agent plans and learnings
-- Plans are in `.sisyphus/plans/` (e.g., `building-enhancement.md`)
-- Learnings are recorded in `.sisyphus/notepads/`
+- `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
+- `.sisyphus/notepads/` — learnings from previous sessions; read before starting
+- `.sisyphus/evidence/` — screenshots and supporting evidence
 
-### Agent Workflow
-1. Read existing plans in `.sisyphus/plans/`
-2. Follow the structured task breakdown
-3. Record learnings in appropriate notepad files
-4. Verify all changes compile successfully
-5. Update plan checkboxes when tasks complete
-
-### Common Pitfalls to Avoid
-1. **Don't modify `BaseRecipe.GetOutputs`** - it's shared by all recipe types
-2. **Don't touch `buffBonus1/2/3`** - they're reserved for future use
-3. **Don't add unnecessary Harmony patches** - use existing code paths when possible
-4. **Always verify build** - `dotnet build` must succeed with 0 errors
-5. **Follow existing patterns** - consistency is critical for maintainability
-
-## Resources
-
-- **DSP Modding Docs**: CommonAPI documentation
-- **BepInEx**: Modding framework documentation
-- **HarmonyX**: Patching library for .NET
-- **Unity**: Game engine documentation (2022.3 LTS)
+### Critical Pitfalls
+1. **Never modify `BaseRecipe.GetOutputs` directly** — it's shared; subclass instead
+2. **Never touch `buffBonus1/2/3`** — reserved for future use
+3. **Avoid new Harmony patches** when existing code paths suffice
+4. **Always verify build** — `dotnet build` must succeed with 0 errors after every change
+5. **LangVersion is `latest`** — use C# 12 features (collection expressions `[]`, primary constructors, etc.)
 
 ---
 
-*Last updated: March 2026*  
-*For AI agents working on MLJ_DSPmods repository*
+*Last updated: March 2026 | Target: net472 | C# latest | BepInEx 5.4.17*
