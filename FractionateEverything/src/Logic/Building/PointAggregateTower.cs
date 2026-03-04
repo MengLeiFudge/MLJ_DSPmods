@@ -47,7 +47,6 @@ public static class PointAggregateTower {
     public static float PlrRatio => 1.0f;
     public static int MaxInc => Math.Min(Level + 4, 10);
     public static float SuccessBoost = 0;
-    public static float SpeedBoost = 0;
 
     public static void AddTranslations() {
         Register("点数聚集塔", "Points Aggregate Tower");

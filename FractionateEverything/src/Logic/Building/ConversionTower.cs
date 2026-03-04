@@ -51,7 +51,6 @@ public static class ConversionTower {
         _ => 2.0f,
     };
     public static float SuccessBoost = 0;
-    public static float SpeedBoost = 0;
 
     public static void AddTranslations() {
         Register("转化塔", "Conversion Tower");
