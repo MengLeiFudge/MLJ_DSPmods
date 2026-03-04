@@ -242,9 +242,8 @@ public static class FracRecipeOperate {
         ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
         float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
         float successBoost = building.SuccessBoost();
-        float speedBoost = building.SpeedBoost();
         //成功率
-        float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost) * (1 + speedBoost);//todo
+        float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         //损毁率
         float destroyRatio = recipe.DestroyRatio;
         //最终产物转化率
