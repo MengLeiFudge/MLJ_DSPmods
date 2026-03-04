@@ -123,8 +123,8 @@ public static class BuildingOperate {
         // 各塔特质标题和说明（+6 特质）
         Register("分馏献祭", "Fractionation Sacrifice");
         Register("分馏献祭说明",
-            "When the total number of fractionators in the data centre exceeds 1000, they are automatically decomposed at 10% per second. With n decomposed fractionators: Success Rate = 1 + sqrt(n/120), Processing Speed = 1 + sqrt(n/60).",
-            "当数据中心的分馏塔数目超过1000时，会以每秒10%的速率自动分解。若损毁n个分馏塔，将使成功率变为 1+sqrt(n/120)，处理速率变为 1+sqrt(n/60)。");
+            "When the total number of fractionators in the data centre exceeds 1000, they are automatically decomposed at 10% per second. With n decomposed fractionators, fractionate recipes' success rate of the same type increased by 1+n/60 times.",
+            "当数据中心的分馏塔数目超过1000时，会以每秒10%的速率自动分解。损毁n个分馏塔时，同类型分馏配方成功率变为 1+n/60 倍。");
 
         Register("质能裂变", "Mass-Energy Fission");
         Register("质能裂变说明",
@@ -144,8 +144,8 @@ public static class BuildingOperate {
         // 各塔特质标题和说明（+12 特质）
         Register("维度共鸣", "Dimensional Resonance");
         Register("维度共鸣说明",
-            "With n decomposed fractionators: Success Rate = 1 + sqrt(n/240), Processing Speed = 1 + sqrt(n/120). When all five fractionator types are simultaneously boosted by the Sacrifice Trait, the boost of each type is doubled.",
-            "损毁n个分馏塔时：成功率变为 1+sqrt(n/240)，处理速率变为 1+sqrt(n/120)。当所有种类的分馏塔同时拥有献祭增幅时，各塔的增幅效果翻倍。");
+            "The number of damaged fractionators is calculated as n*(1 + 0.1*number of fractionator types with sacrifice bonuses).",
+            "损毁的分馏塔数目视为 n*(1+0.1*具有献祭加成的分馏塔种类数)。");
 
         Register("零压循环", "Zero-Pressure Cycle");
         Register("零压循环说明",
