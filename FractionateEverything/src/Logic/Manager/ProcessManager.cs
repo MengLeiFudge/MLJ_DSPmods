@@ -264,7 +264,6 @@ public static class ProcessManager {
                                              ? __instance.fluidInputCargoCount
                                              : MaxBeltSpeed)
                                          * fluidInputCountPerCargo
-                                         * (1 + building.SpeedBoost())
                                          + 0.75);
             if (__instance.progress > 300000) {
                 __instance.progress = 300000;
@@ -751,17 +750,11 @@ public static class ProcessManager {
                                   && count4 > 0
                                   && count5 > 0;
                 double successBoostVal = allBuffsOk ? 240 : 120;
-                double speedBoostVal = allBuffsOk ? 120 : 60;
                 InteractionTower.SuccessBoost = (float)Math.Sqrt(count1 / successBoostVal);
-                InteractionTower.SpeedBoost = (float)Math.Sqrt(count1 / speedBoostVal);
                 MineralReplicationTower.SuccessBoost = (float)Math.Sqrt(count2 / successBoostVal);
-                MineralReplicationTower.SpeedBoost = (float)Math.Sqrt(count2 / speedBoostVal);
                 PointAggregateTower.SuccessBoost = (float)Math.Sqrt(count3 / successBoostVal);
-                PointAggregateTower.SpeedBoost = (float)Math.Sqrt(count3 / speedBoostVal);
                 ConversionTower.SuccessBoost = (float)Math.Sqrt(count4 / successBoostVal);
-                ConversionTower.SpeedBoost = (float)Math.Sqrt(count4 / speedBoostVal);
                 RecycleTower.SuccessBoost = (float)Math.Sqrt(count5 / successBoostVal);
-                RecycleTower.SpeedBoost = (float)Math.Sqrt(count5 / speedBoostVal);
             }
         }
         EntityData[] entityPool = __instance.factory.entityPool;
@@ -935,7 +928,6 @@ public static class ProcessManager {
         string s2;
         BaseRecipe recipe;
         float successBoost = building.SuccessBoost();
-        float speedBoost = building.SpeedBoost();
         switch (buildingID) {
             case IFE交互塔:
                 recipe = GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fractionator.fluidId);
@@ -964,7 +956,7 @@ public static class ProcessManager {
         } else {
             StringBuilder sb1 = new StringBuilder();
             sb1.Append($"---------- {"主产物".Translate()} ----------\n");
-            float recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + speedBoost) * (1 + pointsBonus);
+            float recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + pointsBonus);
             foreach (var output in recipe.OutputMain) {
                 bool sandboxMode = GameMain.sandboxToolsEnabled;
                 string name = output.ShowOutputName || sandboxMode ? LDB.items.Select(output.OutputID).name : "???";

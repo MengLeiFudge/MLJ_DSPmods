@@ -133,16 +133,6 @@ public static class BuildingManager {
         };
     }
 
-    public static float SpeedBoost(this ItemProto fractionator) {
-        return fractionator.ID switch {
-            IFE交互塔 => InteractionTower.SpeedBoost,
-            IFE矿物复制塔 => MineralReplicationTower.SpeedBoost,
-            IFE点数聚集塔 => PointAggregateTower.SpeedBoost,
-            IFE转化塔 => ConversionTower.SpeedBoost,
-            IFE回收塔 => RecycleTower.SpeedBoost,
-            _ => 0
-        };
-    }
 
     #region 分馏塔产物输出拓展
 

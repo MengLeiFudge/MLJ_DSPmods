@@ -51,7 +51,6 @@ public static class MineralReplicationTower {
         _ => 2.0f,
     };
     public static float SuccessBoost = 0;
-    public static float SpeedBoost = 0;
 
     public static void AddTranslations() {
         Register("矿物复制塔", "Mineral Replication Tower");

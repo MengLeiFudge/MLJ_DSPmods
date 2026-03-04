@@ -786,9 +786,8 @@ public class GetDspData : BaseUnityPlugin {
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
             float successBoost = building.SuccessBoost();
-            float speedBoost = building.SpeedBoost();
             //成功率
-            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost) * (1 + speedBoost);
+            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
             //损毁率
             float destroyRatio = recipe.DestroyRatio;
             //最终产物转化率

@@ -51,7 +51,6 @@ public static class InteractionTower {
         _ => 2.0f,
     };
     public static float SuccessBoost = 0;
-    public static float SpeedBoost = 0;
 
     public static void AddTranslations() {
         Register("交互塔", "Interaction Tower");
