@@ -181,6 +181,15 @@ public static class RecipeManager {
         int recipeCount = r.ReadInt32();
         for (int i = 0; i < recipeCount; i++) {
             ERecipe recipeType = (ERecipe)r.ReadInt32();
+            if (version < 2) {
+                if (recipeType == ERecipe.PointAggregate) {
+                    recipeType = ERecipe.Conversion;
+                } else if (recipeType == ERecipe.Conversion) {
+                    recipeType = ERecipe.Recycle;
+                } else if (recipeType == ERecipe.Recycle) {
+                    recipeType = ERecipe.PointAggregate;
+                }
+            }
             int inputID = r.ReadInt32();
             // 读取单个配方的数据长度
             int recipeDataLength = r.ReadInt32();
@@ -215,7 +224,7 @@ public static class RecipeManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         w.Write(RecipeList.Count);
         foreach (var recipe in RecipeList) {
             w.Write((int)recipe.RecipeType);
