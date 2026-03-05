@@ -16,7 +16,8 @@ public abstract class BaseRecipe(
     float baseSuccessRatio,
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
-    public string TypeName => $"{RecipeType.GetName()}-{LDB.items.Select(InputID).name} +{Level}";
+    public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
+                              + (Level > 0 ? $"+ {Level}" : "");
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
 
     #region 配方类型、输入输出
