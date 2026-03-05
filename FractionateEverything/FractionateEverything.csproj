@@ -11,14 +11,10 @@
         <PackageId>FractionateEverything</PackageId>
         <RootNamespace>FE</RootNamespace>
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DebugType>full</DebugType>
-        <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <PlatformTarget>x64</PlatformTarget>
+        <DebugType>full</DebugType>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
@@ -34,6 +30,7 @@
         2.使用BepInEx.AssemblyPublicizer.Cli.exe，手动publicize戴森球目录的对应dll，再将处理过的dll覆盖nuget
         -->
         <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*"/>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
         <Reference Include="BuildBarTool">
             <HintPath>..\lib\BuildBarTool.dll</HintPath>
         </Reference>
@@ -43,9 +40,6 @@
         <Reference Include="ProjectGenesis">
             <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
         </Reference>
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
     </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
         <Exec Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md"/>
