@@ -220,7 +220,7 @@ wsl bash -ic "opencode --version"
 ```
 请按照此处的说明安装并配置oh-my-opencode：https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md。
 注意，我是Windows系统，并且已经通过wsl安装了opencode。
-运行wsl bash指令时，你必须使用 `wsl bash -ic` 而非 `wsl bash -lc`。如果提示异常，你可能考虑使用 `wsl.exe bash -ic`，以确保正确运行wsl。
+运行wsl bash指令时，你必须使用 `wsl.exe bash -ic` 而非 `wsl bash -lc`。同样的，curl也应该使用 `curl.exe -s xxx` 而非 `curl -s xxx`。
 需要通过apt安装内容时，由于我的代理开启了TUN模式，你必须强制指定使用指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
 ```
 
