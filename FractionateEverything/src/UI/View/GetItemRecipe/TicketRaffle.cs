@@ -51,6 +51,10 @@ public static class TicketRaffle {
     /// </summary>
     private static readonly float[] RecipeDrawWeights =
         [14.4f, 8.9f, 5.5f, 3.4f, 2.1f, 1.3f, 0.8f, 0.5f, 0.3f, 0.2f, 0.1f];
+    /// <summary>方案B：当前奖券对应奖池中所有配方的绝对命中概率之和（未上限）</summary>
+    private static float totalRecipeP1 = 0f;
+    /// <summary>方案B：各配方的累积命中概率数组（长度=recipes.Count，最后元素=totalRecipeP1）</summary>
+    private static float[] recipeProbCumulative1 = [];
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 1, RecipeCount + 1];
 
     private static ConfigEntry<int> TicketIdx2Entry;
@@ -80,11 +84,11 @@ public static class TicketRaffle {
 
     private static UIButton btnMaxRaffle5;
     private static ConfigEntry<bool> EnableAutoRaffle5Entry;
-    private static float[] _recipeValues;
     private static int TicketIdx1 => TicketIdx1Entry.Value;
     private static int SelectedTicketId1 => TicketIds[TicketIdx1];
     private static int SelectedMatrixId1 => MatrixIds[TicketIdx1];
     private static int MaxRaffleCount1 => (int)Math.Min(100, GetItemTotalCount(SelectedTicketId1));
+    private static float[] _recipeValues;
     public static float[] RecipeValues {
         get {
             if (_recipeValues == null && itemValue[IFE电磁奖券] > 0) {
@@ -465,32 +469,56 @@ public static class TicketRaffle {
     }
 
     /// <summary>
+    /// 根据当前 recipes 列表重新计算每个配方的权重（方案B），
+    /// 结果写入 totalRecipeP1（权重之和）和 recipeProbCumulative1（累积权重数组）。
+    /// 每次抽到配方（Level 变化）或配方被移除后均需调用。
+    /// </summary>
+    private static void RecalcRecipeProbs1() {
+        if (recipes == null || recipes.Count == 0) {
+            totalRecipeP1 = 0f;
+            recipeProbCumulative1 = [];
+            return;
+        }
+        int ticketTier = TicketIdx1;
+        float[] cum = new float[recipes.Count];
+        float total = 0f;
+        for (int i = 0; i < recipes.Count; i++) {
+            int recipeTier = Array.IndexOf(MatrixIds, recipes[i].MatrixID);
+            float tierMult = 1f + 0.5f * Math.Max(0, ticketTier - recipeTier);
+            float p = RecipeDrawWeights[Math.Min(10, recipes[i].Level + 1)] * tierMult;
+            total += p;
+            cum[i] = total;
+        }
+        totalRecipeP1 = total;
+        recipeProbCumulative1 = cum;
+    }
+
+    /// <summary>
     /// 刷新现有奖池的奖励内容。
     /// </summary>
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
-            //高等级奖券可以抽到低级配方：收集所有 <= 当前奖券等级的矩阵配方
-            List<BaseRecipe> allTierRecipes = [];
-            for (int i = 0; i <= TicketIdx1 && i < MatrixIds.Length; i++) {
-                allTierRecipes.AddRange(GetRecipesByMatrix(MatrixIds[i]));
+            //黑雾奖券只能抽黑雾层配方；其他奖券可抽所有 <= 当前层级的配方
+            if (TicketIdx1 == MatrixIds.Length - 1) {
+                recipes = GetRecipesByMatrix(MatrixIds[TicketIdx1]).Where(r => !r.IsMaxLevel).ToList();
+            } else {
+                List<BaseRecipe> allTierRecipes = [];
+                for (int i = 0; i <= TicketIdx1; i++) {
+                    allTierRecipes.AddRange(GetRecipesByMatrix(MatrixIds[i]));
+                }
+                recipes = allTierRecipes.Where(r => !r.IsMaxLevel).ToList();
             }
-            recipes = allTierRecipes.Where(r => !r.IsMaxLevel).ToList();
-            int[] specialItems = [IFE分馏配方核心, IFE原版配方核心, 0];//最后一个是分馏配方
-            float[] specialRatios = new float[3];
+            //计算各配方的独立命中概率（方案B）
+            RecalcRecipeProbs1();
+            //非配方奖池：仅保留原版配方核心 + 精华（移除分馏配方核心、移除旧配方槽）
+            int[] specialItems = [IFE原版配方核心];
+            float[] specialRatios = new float[1];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
-            specialRatios[0] = 0.5f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-            specialRatios[1] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
-            //配方的最终比例永远为 1/RecipeRaffleMaxCounts[TicketIdx1]
-            specialRatios[2] = recipes.Count == 0
-                ? 0
-                : (1.0f / RecipeRaffleMaxCounts[TicketIdx1])
-                  * RecipeValue
-                  / itemValue[SelectedTicketId1]
-                  / VipFeatures.TicketValueMulti;
+            specialRatios[0] = 0.1f / (float)Math.Sqrt(VipFeatures.TicketValueMulti);
             List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
                 item.ID >= IFE速度精华 && item.ID <= IFE增产精华
             ).ToList();
-            pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRatios, commonItems, RecipeValue);
+            pool1 = GeneratePool(SelectedTicketId1, specialItems, specialRatios, commonItems);
         } else if (poolId == 2) {
             int[] specialItems = [
                 IFE分馏塔增幅芯片,
@@ -574,44 +602,37 @@ public static class TicketRaffle {
         //开抽！
         Dictionary<int, int> rewardDic = [];
         StringBuilder sb = new($"{"获得了以下物品".Translate()}{"：".Translate()}\n");
-        StringBuilder sb2 = new();
         int oneLineCount = 0;
         while (raffleCount > 0) {
             raffleCount--;
-            double currRatio = 0;
-            double randDouble = GetRandDouble();
             bool nothing = true;
-            for (int i = 0; i < 12000; i++) {
-                currRatio += rates[i];
-                if (randDouble >= currRatio) {
-                    continue;
-                }
-                nothing = false;
-                if (i == 0) {
-                    //按照等级权重随机抽取配方，等级越高越难被抽到
-                    float totalRecipeWeight = 0f;
-                    foreach (BaseRecipe rw in recipes) {
-                        totalRecipeWeight += RecipeDrawWeights[Math.Min(10, rw.Level + 1)];
+
+            // --- 配方抽取（方案B）---
+            // 配方槽触发概率固定为 RecipeDrawWeights[0]/100，与池内配方数量无关；
+            // 触发后按各配方权重比例（recipeProbCumulative1）随机选取具体配方。
+            if (totalRecipeP1 > 0f && recipes.Count > 0) {
+                double r = GetRandDouble();
+                float slotProb = RecipeDrawWeights[0] / 100f;
+                if (r < slotProb) {
+                    // 在权重之和内再取一个随机数，选具体配方
+                    float target = (float)(GetRandDouble() * totalRecipeP1);
+                    int lo = 0, hi = recipeProbCumulative1.Length - 1;
+                    while (lo < hi) {
+                        int mid = (lo + hi) / 2;
+                        if (recipeProbCumulative1[mid] <= target) lo = mid + 1;
+                        else hi = mid;
                     }
-                    double recipeRand = GetRandDouble() * totalRecipeWeight;
-                    float cumRecipeWeight = 0f;
-                    BaseRecipe recipe = recipes[recipes.Count - 1];
-                    foreach (BaseRecipe rw in recipes) {
-                        cumRecipeWeight += RecipeDrawWeights[Math.Min(10, rw.Level + 1)];
-                        if (recipeRand < cumRecipeWeight) {
-                            recipe = rw;
-                            break;
-                        }
-                    }
+                    int recipeIdx = Math.Min(lo, recipes.Count - 1);
+                    BaseRecipe recipe = recipes[recipeIdx];
                     recipe.RewardThis(true);
                     if (recipe.IsMaxLevel) {
                         recipes.Remove(recipe);
                     }
-                    if (recipe.Level < 0) {
-                        sb2.AppendLine($"{recipe.TypeName} {"已解锁".Translate()}".WithColor(RecipeValue));
+                    if (recipes.Count == 0) {
+                        FreshPool(1); // 内部已调用 RecalcRecipeProbs1
+                        (rates, counts) = pool1;
                     } else {
-                        string tip = string.Format("已转为同名回响提示".Translate(), recipe.Level);
-                        sb2.AppendLine($"{recipe.TypeName} {tip}".WithColor(RecipeValue));
+                        RecalcRecipeProbs1(); // 等级变化后更新各配方命中概率
                     }
                     if (oneLineCount >= oneLineMaxCount) {
                         sb.Append("\n");
@@ -620,13 +641,20 @@ public static class TicketRaffle {
                         sb.Append("          ");
                     }
                     sb.Append($"{recipe.TypeName}".WithColor(RecipeValue));
-                    //更新可抽取的配方状态
-                    if (recipes.Count == 0) {
-                        FreshPool(1);
-                        (rates, counts) = pool1;
-                    }
                     oneLineCount++;
-                } else {
+                }
+            }
+
+            // --- 非配方奖池（配方未命中时检查）---
+            if (nothing) {
+                double r2 = GetRandDouble();
+                double currRatio = 0;
+                for (int i = 0; i < 12000; i++) {
+                    currRatio += rates[i];
+                    if (r2 >= currRatio) {
+                        continue;
+                    }
+                    nothing = false;
                     int count = counts[i];
                     if (rewardDic.ContainsKey(i)) {
                         rewardDic[i] += count;
@@ -641,9 +669,11 @@ public static class TicketRaffle {
                     }
                     sb.Append($"{LDB.items.Select(i).name} x {count}".WithColor(itemValue[i]));
                     oneLineCount++;
+                    break;
                 }
-                break;
             }
+
+            // --- 谢谢惠顾 ---
             if (nothing) {
                 if (oneLineCount >= oneLineMaxCount) {
                     sb.Append("\n");
@@ -658,8 +688,6 @@ public static class TicketRaffle {
         if (showMessage) {
             UIMessageBox.Show("抽奖结果".Translate(),
                 sb.ToString().TrimEnd('\n')
-                + "\n\n"
-                + sb2.ToString().TrimEnd('\n')
                 + $"\n\n{"所有奖励已存储至分馏数据中心。".Translate()}",
                 "确定".Translate(), UIMessageBox.INFO,
                 () => {
