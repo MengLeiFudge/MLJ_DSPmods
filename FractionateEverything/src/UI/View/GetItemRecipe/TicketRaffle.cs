@@ -608,11 +608,11 @@ public static class TicketRaffle {
             bool nothing = true;
 
             // --- 配方抽取（方案B）---
-            // 配方槽触发概率固定为 RecipeDrawWeights[0]/100，与池内配方数量无关；
+            // 配方槽触发概率 = min(池内所有配方权重之和 / 100, 14.4%)，池越小概率越低；
             // 触发后按各配方权重比例（recipeProbCumulative1）随机选取具体配方。
             if (totalRecipeP1 > 0f && recipes.Count > 0) {
                 double r = GetRandDouble();
-                float slotProb = RecipeDrawWeights[0] / 100f;
+                float slotProb = Math.Min(totalRecipeP1 / 100f, RecipeDrawWeights[0] / 100f);
                 if (r < slotProb) {
                     // 在权重之和内再取一个随机数，选具体配方
                     float target = (float)(GetRandDouble() * totalRecipeP1);
@@ -642,6 +642,7 @@ public static class TicketRaffle {
                     }
                     sb.Append($"{recipe.TypeName}".WithColor(RecipeValue));
                     oneLineCount++;
+                    nothing = false;
                 }
             }
 
