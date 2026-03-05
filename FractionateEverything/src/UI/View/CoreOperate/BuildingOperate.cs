@@ -32,7 +32,6 @@ public static class BuildingOperate {
     private static Text txtTrait2;
     private static UIButton btnTrait2Tip;
     private static UIButton btnReinforcement;
-    private static UIButton btnReinforcementMax;
     private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[10];
     private static int[] buildingReinforcementCost = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
@@ -265,7 +264,6 @@ public static class BuildingOperate {
         if (!GameMain.sandboxToolsEnabled) {
             bool showBtn = SelectedBuilding.Level() < MaxLevel;
             btnReinforcement.gameObject.SetActive(showBtn);
-            btnReinforcementMax.gameObject.SetActive(showBtn);
         } else {
             reinforcementSandboxBtn[0].gameObject.SetActive(true);
             reinforcementSandboxBtn[1].gameObject.SetActive(SelectedBuilding.Level() > 0);
