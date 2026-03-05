@@ -25,18 +25,6 @@ public static class BuildingOperate {
     ];
     private static Text txtChipCount;
 
-    // private static Text txtBuildingInfo1;
-    // private static UIButton btnTip1;
-    // private static UIButton btnBuildingInfo1;
-    // private static Text txtBuildingInfo2;
-    // private static UIButton btnTip2;
-    // private static UIButton btnBuildingInfo2;
-    // private static Text txtBuildingInfo3;
-    // private static UIButton btnBuildingInfo3;
-    // private static UIButton btnTip3;
-    // private static Text txtBuildingInfo4;
-    // private static UIButton btnTip4;
-    // private static UIButton btnBuildingInfo4;
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
     private static Text txtTrait1;
@@ -47,6 +35,7 @@ public static class BuildingOperate {
     private static UIButton btnReinforcementMax;
     private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[10];
+    private static int[] buildingReinforcementCost = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 
     public static void AddTranslations() {
         Register("建筑操作", "Building Operate");
@@ -109,10 +98,6 @@ public static class BuildingOperate {
         Register("一直敲！", "Keep knocking!");
         Register("强化此建筑", "Reinforce this building");
         Register("强化成功提示", "Great! The enhancement worked!", "耶，塔诺西！强化成功了！");
-        Register("强化失败提示", "Awful! The enhancement failed...", "呜，苦露西！强化失败了……");
-        Register("一键强化提示",
-            "Confirm that you wish to enhance this building using multiple Fractionator Increase Chips until it reaches Level 20?",
-            "确认使用数个分馏塔增幅芯片强化此建筑，直至达到20级吗？");
         Register("当前强化加成：", "Current Enhancement Bonuses:");
         Register("耐久度", "Durability");
         Register("电力消耗", "Power consumption");
@@ -175,7 +160,6 @@ public static class BuildingOperate {
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        //todo: 优化显示（把文字改成图片）
         window = trans;
         tab = wnd.AddTab(trans, "建筑操作");
         float x = 0f;
@@ -188,26 +172,6 @@ public static class BuildingOperate {
         y += 36f + 7f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         y += 36f;
-        // txtBuildingInfo1 = wnd.AddText2(x, y, tab, "动态刷新");
-        // btnTip1 = wnd.AddTipsButton2(x + 250, y, tab, "流动输出集装", "流动输出集装说明");
-        // btnBuildingInfo1 = wnd.AddButton(1, 2, y, tab, "启用",
-        //     onClick: SetFluidOutputStack);
-        // y += 36f;
-        // txtBuildingInfo2 = wnd.AddText2(x, y, tab, "动态刷新");
-        // btnTip2 = wnd.AddTipsButton2(x + 250, y, tab, "产物输出集装", "产物输出集装说明");
-        // btnBuildingInfo2 = wnd.AddButton(1, 2, y, tab, "+1 集装数目",
-        //     onClick: AddMaxStack);
-        // y += 36f;
-        // txtBuildingInfo3 = wnd.AddText2(x, y, tab, "动态刷新");
-        // btnTip3 = wnd.AddTipsButton2(x + 250, y, tab, "分馏永动", "分馏永动说明");
-        // btnBuildingInfo3 = wnd.AddButton(1, 2, y, tab, "启用",
-        //     onClick: SetFracForever);
-        // y += 36f;
-        // txtBuildingInfo4 = wnd.AddText2(x, y, tab, "动态刷新");
-        // btnTip4 = wnd.AddTipsButton2(x + 250, y, tab, "点数聚集效率层次", "点数聚集效率层次说明");
-        // btnBuildingInfo4 = wnd.AddButton(1, 2, y, tab, "+1 聚集层次",
-        //     onClick: AddPointAggregateLevel);
-        // y += 36f;
         txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
         y += 36f;
@@ -220,19 +184,17 @@ public static class BuildingOperate {
         btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
 
         if (!GameMain.sandboxToolsEnabled) {
-            btnReinforcement = wnd.AddButton(1, 2, y, tab, "敲一下！",
+            btnReinforcement = wnd.AddButton(1, 2, y, tab, "强化",
                 onClick: Reinforcement);
-            btnReinforcementMax = wnd.AddButton(1, 2, y + 36f, tab, "一直敲！",
-                onClick: ReinforcementMax);
         } else {
             reinforcementSandboxBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
-                onClick: Reset);
+                onClick: () => { ChangeLevelTo(0); });
             reinforcementSandboxBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
-                onClick: Downgrade);
+                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
             reinforcementSandboxBtn[2] = wnd.AddButton(1, 2, y + 36f * 2, tab, "升级",
-                onClick: Upgrade);
+                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
             reinforcementSandboxBtn[3] = wnd.AddButton(1, 2, y + 36f * 3, tab, "升满",
-                onClick: FullUpgrade);
+                onClick: () => { ChangeLevelTo(MaxLevel); });
         }
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
             y += 36f;
@@ -259,59 +221,6 @@ public static class BuildingOperate {
             return;
         }
         txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
-
-        bool reinforcementPreCondition = true;
-
-        // if (SelectedBuilding.ID != IFE行星内物流交互站) {
-        //     reinforcementPreCondition &= SelectedBuilding.EnableFluidEnhancement();
-        //     txtBuildingInfo1.text = SelectedBuilding.EnableFluidEnhancement()
-        //         ? "已启用流动输出集装".Translate().WithColor(Gold)
-        //         : "未启用流动输出集装".Translate().WithColor(Red);
-        //     //enabled -> 启用/禁用    gameObject.SetActive -> 显示/隐藏
-        //     btnTip1.gameObject.SetActive(true);
-        //     btnBuildingInfo1.gameObject.SetActive(!SelectedBuilding.EnableFluidEnhancement());
-        // } else {
-        //     txtBuildingInfo1.text = "";
-        //     btnTip1.gameObject.SetActive(false);
-        //     btnBuildingInfo1.gameObject.SetActive(false);
-        // }
-
-        // string s = SelectedBuilding.ID != IFE行星内物流交互站
-        //     ? $"{"产物输出集装：".Translate()}{SelectedBuilding.MaxStack()}"
-        //     : $"{"输出集装：".Translate()}{SelectedBuilding.MaxStack()}";
-        // reinforcementPreCondition &= SelectedBuilding.MaxStack() >= 4;
-        // txtBuildingInfo2.text = s.WithColor(SelectedBuilding.MaxStack() * 2 - 1);
-        // btnTip2.gameObject.SetActive(true);
-        // btnBuildingInfo2.gameObject.SetActive(SelectedBuilding.MaxStack() < 4);
-        //
-        // if (SelectedBuilding.ID != IFE行星内物流交互站) {
-        //     reinforcementPreCondition &= SelectedBuilding.EnableFracForever();
-        //     txtBuildingInfo3.text = SelectedBuilding.EnableFracForever()
-        //         ? "已启用分馏永动".Translate().WithColor(Gold)
-        //         : "未启用分馏永动".Translate().WithColor(Red);
-        //     btnTip3.gameObject.SetActive(true);
-        //     btnBuildingInfo3.gameObject.SetActive(
-        //         SelectedBuilding.EnableFluidEnhancement()
-        //         && SelectedBuilding.MaxStack() >= 4
-        //         && !SelectedBuilding.EnableFracForever()
-        //     );
-        // } else {
-        //     txtBuildingInfo3.text = "";
-        //     btnTip3.gameObject.SetActive(false);
-        //     btnBuildingInfo3.gameObject.SetActive(false);
-        // }
-        //
-        // if (SelectedBuilding.ID == IFE点数聚集塔) {
-        //     s = $"{"点数聚集效率层次：".Translate()}{PointAggregateTower.Level}";
-        //     reinforcementPreCondition &= PointAggregateTower.IsMaxLevel;
-        //     txtBuildingInfo4.text = s.WithColor(PointAggregateTower.Level);
-        //     btnTip4.gameObject.SetActive(true);
-        //     btnBuildingInfo4.gameObject.SetActive(!PointAggregateTower.IsMaxLevel);
-        // } else {
-        //     txtBuildingInfo4.text = "";
-        //     btnTip4.gameObject.SetActive(false);
-        //     btnBuildingInfo4.gameObject.SetActive(false);
-        // }
 
         string s = $"{"强化等级：".Translate()}{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
@@ -354,7 +263,7 @@ public static class BuildingOperate {
         }
 
         if (!GameMain.sandboxToolsEnabled) {
-            bool showBtn = reinforcementPreCondition && SelectedBuilding.Level() < MaxLevel;
+            bool showBtn = SelectedBuilding.Level() < MaxLevel;
             btnReinforcement.gameObject.SetActive(showBtn);
             btnReinforcementMax.gameObject.SetActive(showBtn);
         } else {
@@ -366,45 +275,16 @@ public static class BuildingOperate {
                 .SetActive(SelectedBuilding.Level() < MaxLevel);
         }
         string[] strs;
-        // if (SelectedBuilding.ID == IFE点数聚集塔) {
-        //     strs = [
-        //         "当前强化加成：".Translate(),
-        //         $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-        //         $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
-        //         $"{"分馏成功率".Translate()} +{SelectedBuilding.ReinforcementBonusFracSuccess():P1}",
-        //         "",
-        //         "",
-        //         ""
-        //     ];
-        // } else if (SelectedBuilding.ID == IFE行星内物流交互站) {
-        //     strs = [
-        //         "当前强化加成：".Translate(),
-        //         $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-        //         $"{"电力消耗".Translate()} -{1 - SelectedBuilding.ReinforcementBonusEnergy():P1}",
-        //         "",
-        //         "",
-        //         ""
-        //     ];
-        // } else {
-        //     strs = [
-        //         "当前强化加成：".Translate(),
-        //         $"{"耐久度".Translate()} +{SelectedBuilding.ReinforcementBonusDurability():P1}",
-        //         $"{"电力消耗".Translate()} +{SelectedBuilding.ReinforcementBonusEnergy():P1}",
-        //         $"{"主产物数目".Translate()} +{SelectedBuilding.ReinforcementBonusMainOutputCount():P1}",
-        //         $"{"副产物概率".Translate()} +{SelectedBuilding.ReinforcementBonusAppendOutputRatio():P1}",
-        //         ""
-        //     ];
-        // }
         if (SelectedBuilding.ID == IFE行星内物流交互站 || SelectedBuilding.ID == IFE星际物流交互站) {
             strs = [
-                "当前强化加成：".Translate(),//todo
+                "当前强化加成：".Translate(),
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"上传/下载电力消耗".Translate()} x{SelectedBuilding.InteractEnergyRatio():P1}",
                 $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
             ];
         } else {
             strs = [
-                "当前强化加成：".Translate(),//todo
+                "当前强化加成：".Translate(),
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
@@ -420,146 +300,6 @@ public static class BuildingOperate {
         }
     }
 
-    // private static void SetFluidOutputStack() {
-    //     if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-    //         return;
-    //     }
-    //     if (SelectedBuilding.EnableFluidEnhancement()) {
-    //         return;
-    //     }
-    //     int takeId = IFE分馏塔增幅芯片;
-    //     int takeCount = 3;
-    //     ItemProto takeProto = LDB.items.Select(takeId);
-    //     if (GameMain.sandboxToolsEnabled) {
-    //         SelectedBuilding.EnableFluidEnhancement(true);
-    //         if (NebulaModAPI.IsMultiplayerActive) {
-    //             NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                 new BuildingChangePacket(BuildingTypeEntry.Value, 1));
-    //         }
-    //     } else {
-    //         UIMessageBox.Show("提示".Translate(),
-    //             $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
-    //             + $"{"启用流动输出集装".Translate()}{"吗？".Translate()}",
-    //             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-    //             () => {
-    //                 if (!TakeItemWithTip(takeId, takeCount, out _)) {
-    //                     return;
-    //                 }
-    //                 SelectedBuilding.EnableFluidEnhancement(true);
-    //                 if (NebulaModAPI.IsMultiplayerActive) {
-    //                     NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                         new BuildingChangePacket(BuildingTypeEntry.Value, 1));
-    //                 }
-    //             },
-    //             null);
-    //     }
-    // }
-    //
-    // private static void AddMaxStack() {
-    //     if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-    //         return;
-    //     }
-    //     int takeId = IFE分馏塔增幅芯片;
-    //     int takeCount = SelectedBuilding.ID == IFE行星内物流交互站 ? 6 : 1;
-    //     if (SelectedBuilding.MaxStack() >= 4) {
-    //         return;
-    //     }
-    //     ItemProto takeProto = LDB.items.Select(takeId);
-    //     if (GameMain.sandboxToolsEnabled) {
-    //         SelectedBuilding.MaxStack(SelectedBuilding.MaxStack() + 1);
-    //         if (NebulaModAPI.IsMultiplayerActive) {
-    //             NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                 new BuildingChangePacket(BuildingTypeEntry.Value, 2));
-    //         }
-    //     } else {
-    //         UIMessageBox.Show("提示".Translate(),
-    //             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-    //             + $"{"+1 产物输出集装数目".Translate()}{"吗？".Translate()}",
-    //             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-    //             () => {
-    //                 if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-    //                     return;
-    //                 }
-    //                 SelectedBuilding.MaxStack(SelectedBuilding.MaxStack() + 1);
-    //                 if (NebulaModAPI.IsMultiplayerActive) {
-    //                     NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                         new BuildingChangePacket(BuildingTypeEntry.Value, 2));
-    //                 }
-    //             },
-    //             null);
-    //     }
-    // }
-    //
-    // private static void SetFracForever() {
-    //     if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-    //         return;
-    //     }
-    //     if (SelectedBuilding.EnableFracForever()) {
-    //         return;
-    //     }
-    //     int takeId = IFE分馏塔增幅芯片;
-    //     int takeCount = 2;
-    //     ItemProto takeProto = LDB.items.Select(takeId);
-    //     if (GameMain.sandboxToolsEnabled) {
-    //         SelectedBuilding.EnableFracForever(true);
-    //         if (NebulaModAPI.IsMultiplayerActive) {
-    //             NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                 new BuildingChangePacket(BuildingTypeEntry.Value, 3));
-    //         }
-    //     } else {
-    //         UIMessageBox.Show("提示".Translate(),
-    //             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-    //             + $"{"启用分馏永动".Translate()}{"吗？".Translate()}",
-    //             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-    //             () => {
-    //                 if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-    //                     return;
-    //                 }
-    //                 SelectedBuilding.EnableFracForever(true);
-    //                 if (NebulaModAPI.IsMultiplayerActive) {
-    //                     NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                         new BuildingChangePacket(BuildingTypeEntry.Value, 3));
-    //                 }
-    //             },
-    //             null);
-    //     }
-    // }
-    //
-    // private static void AddPointAggregateLevel() {
-    //     if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-    //         return;
-    //     }
-    //     int takeId = IFE分馏塔增幅芯片;
-    //     int takeCount = 1;
-    //     if (PointAggregateTower.Level >= 7) {
-    //         return;
-    //     }
-    //     ItemProto takeProto = LDB.items.Select(takeId);
-    //     if (GameMain.sandboxToolsEnabled) {
-    //         PointAggregateTower.Level++;
-    //         if (NebulaModAPI.IsMultiplayerActive) {
-    //             NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                 new BuildingChangePacket(BuildingTypeEntry.Value, 4));
-    //         }
-    //     } else {
-    //         UIMessageBox.Show("提示".Translate(),
-    //             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
-    //             + $"{"+1 点数聚集效率层次".Translate()}{"吗？".Translate()}",
-    //             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-    //             () => {
-    //                 if (!GameMain.sandboxToolsEnabled && !TakeItemWithTip(takeId, takeCount, out _)) {
-    //                     return;
-    //                 }
-    //                 PointAggregateTower.Level++;
-    //                 if (NebulaModAPI.IsMultiplayerActive) {
-    //                     NebulaModAPI.MultiplayerSession.Network.SendPacket(
-    //                         new BuildingChangePacket(BuildingTypeEntry.Value, 4));
-    //                 }
-    //             },
-    //             null);
-    //     }
-    // }
-
     private static void Reinforcement() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
@@ -568,7 +308,7 @@ public static class BuildingOperate {
             return;
         }
         int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 1;
+        int takeCount = buildingReinforcementCost[SelectedBuilding.Level()];
         ItemProto takeProto = LDB.items.Select(takeId);
         UIMessageBox.Show("提示".Translate(),
             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
@@ -576,14 +316,6 @@ public static class BuildingOperate {
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!TakeItemWithTip(takeId, takeCount, out _)) {
-                    return;
-                }
-                if (GetRandDouble() > 0) {
-                    //todo
-                    UIMessageBox.Show("提示".Translate(),
-                        "强化失败提示".Translate(),
-                        "确定".Translate(), UIMessageBox.ERROR,
-                        null);
                     return;
                 }
                 SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);
@@ -595,62 +327,11 @@ public static class BuildingOperate {
             null);
     }
 
-    private static void ReinforcementMax() {
+    private static void ChangeLevelTo(int target) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        if (SelectedBuilding.Level() >= MaxLevel) {
-            return;
-        }
-        int takeId = IFE分馏塔增幅芯片;
-        int takeCount = 1;
-        UIMessageBox.Show("提示".Translate(),
-            "一键强化提示".Translate(),
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                while (true) {
-                    if (SelectedBuilding.Level() >= MaxLevel) {
-                        return;
-                    }
-                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
-                        return;
-                    }
-                    if (GetRandDouble() < 0) {
-                        //todo
-                        continue;
-                    }
-                    SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);
-                }
-            },
-            null);
-    }
-
-    private static void Upgrade() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);
-    }
-
-    private static void Downgrade() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        SelectedBuilding.Level(SelectedBuilding.Level() - 1, true);
-    }
-
-    private static void FullUpgrade() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        SelectedBuilding.Level(MaxLevel, true);
-    }
-
-    private static void Reset() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        SelectedBuilding.Level(0, true);
+        SelectedBuilding.Level(target, true);
     }
 
     #region IModCanSave

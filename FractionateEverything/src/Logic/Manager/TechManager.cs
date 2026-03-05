@@ -461,7 +461,7 @@ public static class TechManager {
         tech物品转化.IconTag = "twpzh";
 
         var tech物品回收 = ProtoRegistry.RegisterTech(
-            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品分解",//todo
+            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品分解",
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE回收塔],
