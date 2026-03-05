@@ -46,6 +46,11 @@ public static class TicketRaffle {
     private static UIButton btnMaxRaffle1;
     private static ConfigEntry<bool> EnableAutoRaffle1Entry;
     private static readonly float[] RecipeRaffleMaxCounts = [33.614f, 48.02f, 68.6f, 98, 140, 200, 100];
+    /// <summary>
+    /// 各等级配方的抽取权重，索引 = Level + 1（Level -1 对应索引 0，即从未抽过权重最高）
+    /// </summary>
+    private static readonly float[] RecipeDrawWeights =
+        [14.4f, 8.9f, 5.5f, 3.4f, 2.1f, 1.3f, 0.8f, 0.5f, 0.3f, 0.2f, 0.1f];
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 1, RecipeCount + 1];
 
     private static ConfigEntry<int> TicketIdx2Entry;
@@ -115,10 +120,10 @@ public static class TicketRaffle {
         Register("配方奖池", "Recipe pool");
         Register("配方奖池说明",
             "Various fractionate recipes and Fractionate Recipe Core can be drawn.\n"
-            + "Each type of lottery ticket can only yield recipes for items of the same technological tier.\n"
+            + "Higher tier tickets can also yield recipes for lower technological tiers.\n"
             + "The Quantum Replication recipes can only be drawn after all the other recipes are full of echoes.",
             "可以抽取各种分馏配方，以及分馏配方核心。\n"
-            + "每种奖券只能抽到相同科技层次物品的相关配方。\n"
+            + "高等级奖券也可以抽到低层次科技的相关配方。\n"
             + "其他配方全部满回响后，才能抽取到量子复制配方。");
 
         Register("当前奖券", "Current ticket");
@@ -464,7 +469,12 @@ public static class TicketRaffle {
     /// </summary>
     public static void FreshPool(int poolId) {
         if (poolId == 1) {
-            recipes = GetRecipesByMatrix(SelectedMatrixId1).Where(r => !r.IsMaxLevel).ToList();
+            //高等级奖券可以抽到低级配方：收集所有 <= 当前奖券等级的矩阵配方
+            List<BaseRecipe> allTierRecipes = [];
+            for (int i = 0; i <= TicketIdx1 && i < MatrixIds.Length; i++) {
+                allTierRecipes.AddRange(GetRecipesByMatrix(MatrixIds[i]));
+            }
+            recipes = allTierRecipes.Where(r => !r.IsMaxLevel).ToList();
             int[] specialItems = [IFE分馏配方核心, IFE原版配方核心, 0];//最后一个是分馏配方
             float[] specialRatios = new float[3];
             //非常珍贵的物品，价值占比会随VIP提升，但是提升效果开根号
@@ -578,10 +588,21 @@ public static class TicketRaffle {
                 }
                 nothing = false;
                 if (i == 0) {
-                    //优先抽取非量子复制配方
-                    List<BaseRecipe> recipesOptimize = [..recipes];
-                    //按照当前配方奖池随机抽取
-                    BaseRecipe recipe = recipesOptimize[GetRandInt(0, recipesOptimize.Count)];
+                    //按照等级权重随机抽取配方，等级越高越难被抽到
+                    float totalRecipeWeight = 0f;
+                    foreach (BaseRecipe rw in recipes) {
+                        totalRecipeWeight += RecipeDrawWeights[Math.Min(10, rw.Level + 1)];
+                    }
+                    double recipeRand = GetRandDouble() * totalRecipeWeight;
+                    float cumRecipeWeight = 0f;
+                    BaseRecipe recipe = recipes[recipes.Count - 1];
+                    foreach (BaseRecipe rw in recipes) {
+                        cumRecipeWeight += RecipeDrawWeights[Math.Min(10, rw.Level + 1)];
+                        if (recipeRand < cumRecipeWeight) {
+                            recipe = rw;
+                            break;
+                        }
+                    }
                     recipe.RewardThis(true);
                     if (recipe.IsMaxLevel) {
                         recipes.Remove(recipe);
