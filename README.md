@@ -50,7 +50,92 @@ mod manager.
 ## oh-my-opencode 相关
 
 项目目前使用[oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode)辅助开发。
-这是一个开源ai智能体框架，可以统筹各种ai。下面是 Windows系统 下的安装说明。
+这是一个开源ai智能体框架，可以统筹各种ai，完美完成任务。
+
+### AI调用说明
+
+现在的AI付费模式大致分为以下几种：
+
+- 订阅付费：按月/按季/按年付费，可能有每5小时、每周额度。
+- 按量付费：用多少付多少。
+- 中转站：顾名思义，就是自己不是AI，但是可以调用其他AI的接口。
+
+由于最终要在opencode上面使用，所以一定要先确认相关登录方式！（最下面有说）
+
+典型的例子是“Googol AI订阅付费”，这个只能在网页用！如果要用Gemini，应该选择“Googol AI Studio按量付费”。
+
+### AI选购说明
+
+如果只用ulw处理一些不需要太大逻辑的东西，我感觉只有Claude就够用了。（那还要oh-my-opencode干嘛？）
+
+如果用plan-builder和plan-executor处理复杂的东西，就涉及到多AI协作了。
+这个时候，我的推荐是Claude+GPT+Googol AI Studio。注意最后一个，Google One AI订阅没用！只能是Googol AI Studio的按量计费！
+
+当然你也可以看完最后的配置文件，自行决定用哪些。
+
+我的意见就是，Claude好用，还快。别的AI真的比不上。就是太贵了= =
+
+调整配置文件，尽量少用Claude之后（下面有说怎么改），感觉是完全够用的。
+
+以下只说一部分，具体哪些AI怎么登录，安装完opencode后输入 `oencode auth login` 查看。下面有说。
+
+- OpenCode Zen（推荐）：中转站，20刀额度收取1.23刀手续费用于维护OpenCode。
+    - opencode如何登录
+        - 登录账号，OpenCode账号可以通过github或者googol登录。
+    - 可选方式
+        - 订阅或按量付费：[opencode.ai](https://opencode.ai/)
+    - 购买相关
+        - 虽然有手续费但是很方便！不像是其他的订阅用国内的visa卡都付不了，这个可以直接用link去付。
+        - 这个就是纯中转，唯一的溢价已经在充值的时候扣除了。
+
+- Anthropic（Claude Pro/Max 或者 API Key）
+    - opencode如何登录
+        - 浏览器登录Pro/Max订阅的账号
+        - 生成API Key并输入
+        - 手动输入API Key
+    - 可选方式
+        - 订阅：[claude.ai](https://claude.ai/)
+        - 按量付费：[platform.claude.com](https://platform.claude.com/)
+    - 购买相关
+        - 我是淘宝买Claude Pro成品号，130-150/月。淘宝有很多“中转站”，应该是没法在opencode用的吧？
+
+- OpenAI（ChatGPT Plus/Pro 或者 API Key）
+    - opencode如何登录
+        - 浏览器登录Pro/Plus订阅的账号
+        - 无头登录Pro/Plus订阅的账号
+        - 手动输入API Key
+    - 可选登录方式
+        - 订阅：[chatgpt.com](https://chatgpt.com)
+    - 购买相关
+        - 我是看的[这个文章](https://yingtu.ai/zh/blog/chatgpt-plus-ios-recharge)，这里提到了用自己的ios订阅。
+        - 不过最后还是选了[星际放映厅](https://www.naifeistation.com/)买的Chat GPT Plus成品号，426.8/3月。
+
+- Google（Gemini API Key）
+    - opencode如何登录
+        - 手动输入API Key（注意，这个只能用Googol AI Studio的按量付费，Google One AI订阅没用）
+    - 可选登录方式
+        - 订阅：[aistudio.google.com](https://aistudio.google.com/)
+    - 购买相关
+        - [星际放映厅](https://www.naifeistation.com/)只能是充值，买Pro号没用。但是200块20刀也太离谱了，为何不用OpenCode
+          Zen？
+
+- DeepSeek（DeepSeek API Key）
+    - opencode如何登录
+        - 手动输入API Key
+    - 可选登录方式
+        - 按量付费：[platform.deepseek.com](https://platform.deepseek.com/)
+    - 购买相关
+        - 国产的，直接买。但是缺点就是深度思考比较久，而且思考的方向可能还不对。等新版本再观望一下。
+
+- Z.AI / Z.AI Coding Plan（GLM API Key）
+    - opencode如何登录
+        - 手动输入API Key
+    - 可选登录方式
+        - Z.AI按量付费，Z.AI Coding Plan订阅：[z.ai](https://z.ai/)
+    - 购买相关
+        - 支持银联卡付款，直接买。GLM主要用于视觉、界面设计。
+
+下面是 Windows系统 下的安装说明。
 
 ### 1.安装[wsl](https://learn.microsoft.com/zh-cn/windows/wsl/install)
 
@@ -101,13 +186,13 @@ ping www.google.com
 
 ### 3.安装oh-my-opencode前置工具（下面都是在wsl里面了）
 
-通过apt-get安装dotnet-sdk-8.0、npm、npx、LSP、unzip、OmniSharp、opencode等等
+通过apt-get安装dotnet-sdk-10.0、npm、npx、LSP、unzip、OmniSharp、opencode等等
 
 ```
 # 更新并安装基础工具
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" install -y \
-    dotnet-sdk-8.0 \
+    dotnet-sdk-10.0 \
     nodejs \
     unzip curl git ca-certificates
 curl -fsSL https://opencode.ai/install | bash
@@ -130,27 +215,21 @@ wsl bash -ic "opencode --version"
 
 ### 4.让ai自动安装oh-my-opencode
 
-打开ai智能体，粘贴以下内容：
+打开ai智能体，粘贴以下内容（如果没开TUN就不用复制最后一行了）：
 
 ```
 请按照此处的说明安装并配置oh-my-opencode：https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md。
 注意，我是Windows系统，并且已经通过wsl安装了opencode。
-运行wsl bash指令时，你必须使用 `wsl bash -ic` 而非 `wsl bash -lc`。
-需要通过apt-get安装内容时，由于我的代理开启了TUN模式，你必须强制指定使用指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
+运行wsl bash指令时，你必须使用 `wsl bash -ic` 而非 `wsl bash -lc`。如果提示异常，你可能考虑使用 `wsl.exe bash -ic`，以确保正确运行wsl。
+需要通过apt安装内容时，由于我的代理开启了TUN模式，你必须强制指定使用指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
 ```
 
-等待一会，根据实际情况回复，例如我是Claude Pro账号+Z.ai Pro订阅+DeepSeek，此时先忽略DeepSeek。
-
-1.有 Claude Pro
-2.没有 OpenAI/ChatGPT Plus
-3.不集成 Gemini
-4.没有 GitHub Copilot
-5.没有 OpenCode Zen 访问权限
-6.有 Z.ai Coding Plan 订阅
+等待一会，当其询问“你有哪些订阅”的时候，根据实际情况回复即可。
+不要说多余的话！不要说多余的话！不要说多余的话！后面我们会自行调整配置文件的。
 
 继续等待安装完成。
 
-### 5.登录ai账户或者输入api-key
+### 5.登录ai账户或者输入API Key
 
 注：有关opencode的指令，可以运行`opencode --help`来查看。
 
@@ -161,7 +240,7 @@ opencode auth login
 
 在这个页面中，可以直接搜索对应ai（最上面有search），也可以上下切换慢慢找。
 
-选中某一个ai之后，回车，之后有可能是登录账号（比如claude），有可能是输入api-key。
+选中某一个ai之后，回车，之后有可能是登录账号（比如claude），有可能是输入API Key。
 
 一次只能录入一个ai的信息。当你有多个ai，就多执行几次`opencode auth login`，全配置好就行。
 
@@ -200,6 +279,7 @@ nano ~/.config/opencode/oh-my-opencode.json
 只需在此处修改各个"model"的内容，oh-my-opencode就会在执行对应任务时自动调用相应ai。
 
 注意，nano没法全选删除，但是可以设置标记来剪切。
+
 - 移动到文件头：按下 Alt + \ (或者 Ctrl + Home)。
 - 设置标记起点：按下 Alt + A (此时下方会显示 Mark Set)。
 - 移动到文件尾：按下 Alt + / (或者 Ctrl + End)，此时所有文字会被高亮选中。
