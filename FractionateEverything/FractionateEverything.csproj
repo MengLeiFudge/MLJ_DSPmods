@@ -1,28 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net472</TargetFramework>
         <RootNamespace>FE</RootNamespace>
         <AssemblyName>FractionateEverything</AssemblyName>
         <PackageId>FractionateEverything</PackageId>
         <Version>2.3.0</Version>
         <Description>DSP MOD - FractionateEverything</Description>
-        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    </PropertyGroup>
-    <PropertyGroup>
-        <LangVersion>latest</LangVersion>
-        <PlatformTarget>x64</PlatformTarget>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
-        <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DebugType>full</DebugType>
-    </PropertyGroup>
-    <PropertyGroup>
-        <!-- 如果是 Linux/WSL 环境，将中间产物放在不同的文件夹 -->
-        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">obj/wsl/</BaseIntermediateOutputPath>
-        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">obj/win/</BaseIntermediateOutputPath>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
@@ -49,7 +33,4 @@
             <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
         </Reference>
     </ItemGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
-        <Exec Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md"/>
-    </Target>
 </Project>

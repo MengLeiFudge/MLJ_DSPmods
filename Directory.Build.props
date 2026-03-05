@@ -1,0 +1,30 @@
+<Project>
+    <PropertyGroup>
+        <!-- 固定使用4.7.2版本 -->
+        <TargetFramework>net472</TargetFramework>
+        <!-- bepinex包源 -->
+        <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
+        <!-- 在项目加载前就根据 OS 分配不同的中间路径 -->
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">obj/wsl/</BaseIntermediateOutputPath>
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">obj/win/</BaseIntermediateOutputPath>
+        <!-- 隔离输出路径，防止二进制文件冲突 -->
+        <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">bin/wsl/</BaseOutputPath>
+        <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">bin/win/</BaseOutputPath>
+        <!-- 禁止在输出路径后追加框架名称 (如 net472) -->
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <!-- 禁止追加运行时标识符 (如 win-x64)，让路径更短 -->
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <!-- 统一调试符号格式，确保跨平台一致性 -->
+        <DebugType>portable</DebugType>
+        <!-- 使用最新语言特性 -->
+        <LangVersion>latest</LangVersion>
+        <!-- 使用x64平台 -->
+        <PlatformTarget>x64</PlatformTarget>
+        <!-- 允许不安全代码，配合publize的dll使用 -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <!-- 用于生成实时调试需要的mdb文件 -->
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+</Project>
