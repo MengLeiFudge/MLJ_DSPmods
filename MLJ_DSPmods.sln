@@ -1,16 +1,9 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FractionateEverything", "FractionateEverything\FractionateEverything.csproj", "{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDspData", "GetDspData\GetDspData.csproj", "{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AfterBuildEvent", "AfterBuildEvent\AfterBuildEvent.csproj", "{5B245DA6-BAB7-432A-95BD-FE3875F77B76}"
-	ProjectSection(ProjectDependencies) = postProject
-		{CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9} = {CFAE5E67-D1E2-4BA7-8656-5ED2A7015BA9}
-		{3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974} = {3204CF73-A6E8-4C3B-A91D-E4BAF6FCA974}
-		{F5EBBCC1-478A-4F61-9702-BF91BFF50013} = {F5EBBCC1-478A-4F61-9702-BF91BFF50013}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
