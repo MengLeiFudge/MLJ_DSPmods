@@ -1,22 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <OutputType>Exe</OutputType>
         <RootNamespace>AfterBuildEvent</RootNamespace>
         <AssemblyName>AfterBuildEvent</AssemblyName>
+        <OutputType>Exe</OutputType>
         <Version>1.0.0</Version>
         <Description>DSP MOD - AfterBuildEvent</Description>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <DebugType>full</DebugType>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PropertyGroup>
+        <!-- 如果是 Linux/WSL 环境，将中间产物放在不同的文件夹 -->
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">obj/wsl/</BaseIntermediateOutputPath>
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">obj/win/</BaseIntermediateOutputPath>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="SharpZipLib" Version="*"/>

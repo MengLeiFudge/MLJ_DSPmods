@@ -1,20 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
-        <Description>DSP MOD - FractionateEverything</Description>
-        <Version>2.3.0</Version>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>latest</LangVersion>
-        <PackageId>FractionateEverything</PackageId>
         <RootNamespace>FE</RootNamespace>
-        <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
+        <AssemblyName>FractionateEverything</AssemblyName>
+        <PackageId>FractionateEverything</PackageId>
+        <Version>2.3.0</Version>
+        <Description>DSP MOD - FractionateEverything</Description>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
+        <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DebugType>full</DebugType>
+    </PropertyGroup>
+    <PropertyGroup>
+        <!-- 如果是 Linux/WSL 环境，将中间产物放在不同的文件夹 -->
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">obj/wsl/</BaseIntermediateOutputPath>
+        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">obj/win/</BaseIntermediateOutputPath>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
