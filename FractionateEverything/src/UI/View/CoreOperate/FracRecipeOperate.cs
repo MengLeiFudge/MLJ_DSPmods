@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Compatibility;
+using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
@@ -42,10 +43,17 @@ public static class FracRecipeOperate {
     private static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
     private static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
     private static Text txtCoreCount;
-    private static Text[] txtRecipeInfo = new Text[30];
-    private static float txtRecipeInfoBaseY = 0;
+
+    private const int InfoLineCount = 35;
+    private static Text[] txtRecipeInfo = new Text[InfoLineCount];
+    private static MyImageButton[] btnRecipeInfoIcons = new MyImageButton[InfoLineCount];
+    private static float txtRecipeInfoBaseY;
     private static MySlider incSlider;
     private static ConfigEntry<int> selectedInc;
+
+    private const float IconSize = 24f;
+    private const float TextOffsetWithIcon = 28f;
+    private const float LineHeight = 24f;
 
     public static void AddTranslations() {
         Register("分馏配方", "Fractionate Recipe");
@@ -85,6 +93,25 @@ public static class FracRecipeOperate {
         Register("配方经验已达上限！", "Recipe experience has reached the limit!");
         Register("配方已升至当前品质最高等级！", "Recipe has been upgraded to the highest level currently available!");
         Register("配方回响数目不足！", "Insufficient number of recipe echoes!");
+
+        Register("建筑强化加成", "Building Enhancement Bonuses");
+        Register("等级", "Level");
+        Register("堆叠", "Stack");
+        Register("能耗比", "Energy Ratio");
+        Register("增产效率", "Proliferator Efficiency");
+        Register("流体增强", "Fluid Enhancement");
+        Register("成功率加成", "Success Boost");
+        Register("已启用", "Enabled");
+        Register("未启用", "Disabled");
+        Register("牺牲特性", "Sacrifice Trait");
+        Register("维度共鸣", "Dimensional Resonance");
+        Register("质能裂变", "Mass-Energy Fission");
+        Register("零压循环", "Zero Pressure Cycle");
+        Register("因果追踪", "Causal Tracing");
+        Register("单锁", "Single Lock");
+        Register("虚空喷射", "Void Spray");
+        Register("双倍点数", "Double Points");
+        Register("最大增产等级", "Max Inc Level");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -141,8 +168,14 @@ public static class FracRecipeOperate {
 
         y += 36f;
         txtRecipeInfoBaseY = y;
-        for (int i = 0; i < txtRecipeInfo.Length; i++) {
+        for (int i = 0; i < InfoLineCount; i++) {
             txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "动态刷新");
+        }
+        for (int i = 0; i < InfoLineCount; i++) {
+            var btn = MyImageButton.CreateImageButton(0, 0, tab, null);
+            btn.WithSize(IconSize, IconSize);
+            btn.gameObject.SetActive(false);
+            btnRecipeInfoIcons[i] = btn;
         }
     }
 
@@ -154,94 +187,149 @@ public static class FracRecipeOperate {
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         txtCoreCount.text = $"x {GetItemTotalCount(IFE分馏配方核心)}";
+        ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
 
         int line = 0;
         incSlider.gameObject.SetActive(false);
+
         if (recipe == null) {
-            txtRecipeInfo[line].text = "配方不存在！".Translate().WithColor(Red);
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowTextLine(line++, "配方不存在！".Translate().WithColor(Red));
         } else if (recipe.Locked) {
-            txtRecipeInfo[line].text = $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowTextLine(line++, $"{recipe.TypeNameWC} {"分馏配方未解锁".Translate().WithColor(Red)}");
         } else {
-            txtRecipeInfo[line].text = $"{recipe.TypeNameWC}";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowTextLine(line++, $"{recipe.TypeNameWC}");
+            ShowTextLine(line++, "");
 
-            txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowIconLine(line++, LDB.items.Select(recipe.InputID),
+                $"x 1   {"成功率".Translate()} {recipe.SuccessRatio:P3}".WithColor(Orange)
+                + "      "
+                + $"{"损毁率".Translate()} {recipe.DestroyRatio:P3}".WithColor(Red));
 
-            txtRecipeInfo[line].text = $"{"费用".Translate()} 1 {SelectedItem.name}";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
-            txtRecipeInfo[line].text = $"{"成功率".Translate()} {recipe.SuccessRatio:P3}".WithColor(Orange)
-                                       + "      "
-                                       + $"{"损毁率".Translate()} {recipe.DestroyRatio:P3}".WithColor(Red);
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
             bool isFirst = true;
             foreach (OutputInfo info in recipe.OutputMain) {
-                txtRecipeInfo[line].text = $"{(isFirst ? "产出".Translate() : "    ")} {info}";
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-                line++;
-                if (isFirst) {
-                    isFirst = false;
-                }
+                ShowIconLine(line++, LDB.items.Select(info.OutputID),
+                    $"{(isFirst ? "产出".Translate() : "    ")} {info}");
+                isFirst = false;
             }
+
             isFirst = true;
             foreach (OutputInfo info in recipe.OutputAppend) {
-                txtRecipeInfo[line].text = $"{(isFirst ? "其他".Translate() : "    ")} {info}";
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-                line++;
-                if (isFirst) {
-                    isFirst = false;
-                }
+                ShowIconLine(line++, LDB.items.Select(info.OutputID),
+                    $"{(isFirst ? "其他".Translate() : "    ")} {info}");
+                isFirst = false;
             }
 
-            txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowTextLine(line++, "");
 
-            txtRecipeInfo[line].text = $"{LDB.items.Select(recipe.InputID).name} x 1 {"完全处理后的输出如下：".Translate()}";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowIconLine(line++, LDB.items.Select(recipe.InputID),
+                $"x 1 {"完全处理后的输出如下：".Translate()}");
 
+            HideIconOnLine(line);
             txtRecipeInfo[line].text = $"{"增产点数".Translate()}";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-
-            incSlider.SetPosition(120, txtRecipeInfoBaseY + 24f * line);
+            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + LineHeight * line);
+            incSlider.SetPosition(120, txtRecipeInfoBaseY + LineHeight * line);
             incSlider.gameObject.SetActive(true);
             line++;
 
-            string sameRecipeStr = GetSameRecipeStr(recipe, selectedInc.Value);
+            string sameRecipeStr = GetSameRecipeStr(recipe, selectedInc.Value, building);
             string[] strs = sameRecipeStr.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
             foreach (string str in strs) {
-                txtRecipeInfo[line].text = str;
-                txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-                line++;
+                ShowTextLine(line++, str);
             }
 
-            txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + 24f * line);
-            line++;
+            ShowTextLine(line++, "");
 
-            //todo: 展示配方特殊加成（配方特殊加成/分馏塔对配方加成）
-            // txtRecipeInfo[line].text = "特殊突破加成：无";
-            // line++;
+            if (building != null) {
+                ShowIconLine(line++, building,
+                    $"{"建筑强化加成".Translate()} {building.name}  {"等级".Translate()} +{building.Level()}");
+
+                ShowTextLine(line++,
+                    $"{"堆叠".Translate()} x{building.MaxStack()}  " +
+                    $"{"能耗比".Translate()} {building.EnergyRatio():P0}  " +
+                    $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
+
+                float successBoost = building.SuccessBoost();
+                ShowTextLine(line++,
+                    $"{"成功率加成".Translate()} +{successBoost:P1}"
+                        .WithColor(successBoost > 0 ? Orange : Gray));
+
+                bool fluidEnh = building.EnableFluidEnhancement();
+                ShowTextLine(line++,
+                    $"{"流体增强".Translate()}：" +
+                    (fluidEnh
+                        ? "已启用".Translate().WithColor(Green)
+                        : "未启用".Translate().WithColor(Gray)));
+
+                line = ShowBuildingFeatures(line, building);
+            }
         }
-        for (; line < txtRecipeInfo.Length; line++) {
-            txtRecipeInfo[line].text = "";
-            txtRecipeInfo[line].SetPosition(0, 0);
+
+        for (; line < InfoLineCount; line++) {
+            HideAllLine(line);
         }
     }
 
-    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg) {
-        ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
-        float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-        float successBoost = building.SuccessBoost();
+    private static int ShowBuildingFeatures(int line, ItemProto building) {
+        switch (building.ID) {
+            case IFE交互塔:
+                ShowTextLine(line++,
+                    $"{"牺牲特性".Translate()}：{FeatureStatus(InteractionTower.EnableSacrificeTrait)}  " +
+                    $"{"维度共鸣".Translate()}：{FeatureStatus(InteractionTower.EnableDimensionalResonance)}");
+                break;
+            case IFE矿物复制塔:
+                ShowTextLine(line++,
+                    $"{"质能裂变".Translate()}：{FeatureStatus(MineralReplicationTower.EnableMassEnergyFission)}  " +
+                    $"{"零压循环".Translate()}：{FeatureStatus(MineralReplicationTower.EnableZeroPressureCycle)}");
+                break;
+            case IFE转化塔:
+                ShowTextLine(line++,
+                    $"{"因果追踪".Translate()}：{FeatureStatus(ConversionTower.EnableCausalTracing)}  " +
+                    $"{"单锁".Translate()}：{FeatureStatus(ConversionTower.EnableSingleLock)}");
+                break;
+            case IFE点数聚集塔:
+                ShowTextLine(line++,
+                    $"{"虚空喷射".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidSpray)}  " +
+                    $"{"双倍点数".Translate()}：{FeatureStatus(PointAggregateTower.EnableDoublePoints)}  " +
+                    $"{"最大增产等级".Translate()} {PointAggregateTower.MaxInc}");
+                break;
+        }
+        return line;
+    }
+
+    private static void ShowIconLine(int line, ItemProto itemProto, string text) {
+        float lineY = txtRecipeInfoBaseY + LineHeight * line;
+        btnRecipeInfoIcons[line].gameObject.SetActive(true);
+        btnRecipeInfoIcons[line].Proto = itemProto;
+        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], 0, lineY);
+        txtRecipeInfo[line].text = text;
+        txtRecipeInfo[line].SetPosition(TextOffsetWithIcon, lineY);
+    }
+
+    private static void ShowTextLine(int line, string text) {
+        float lineY = txtRecipeInfoBaseY + LineHeight * line;
+        HideIconOnLine(line);
+        txtRecipeInfo[line].text = text;
+        txtRecipeInfo[line].SetPosition(0, lineY);
+    }
+
+    private static void HideIconOnLine(int line) {
+        btnRecipeInfoIcons[line].gameObject.SetActive(false);
+    }
+
+    private static void HideAllLine(int line) {
+        btnRecipeInfoIcons[line].gameObject.SetActive(false);
+        txtRecipeInfo[line].text = "";
+        txtRecipeInfo[line].SetPosition(0, 0);
+    }
+
+    private static string FeatureStatus(bool enabled) =>
+        enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
+
+    private static string GetSameRecipeStr(BaseRecipe recipe, int fluidInputIncAvg, ItemProto building) {
+        // 同时应用建筑的增产效率加成（PlrRatio），与实际游戏逻辑一致
+        float plrRatio = building?.PlrRatio() ?? 1.0f;
+        float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg) * plrRatio;
+        float successBoost = building?.SuccessBoost() ?? 0f;
         //成功率
         float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         //损毁率
