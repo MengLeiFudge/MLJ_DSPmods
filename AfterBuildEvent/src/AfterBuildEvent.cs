@@ -51,8 +51,7 @@ static class AfterBuildEvent {
                 continue;
             }
             string projectName = xmlDocument.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText;
-            string targetFramework = xmlDocument.SelectSingleNode("/Project/PropertyGroup/TargetFramework")?.InnerText;
-            if (projectName == null || targetFramework == null) {
+            if (projectName == null) {
                 continue;
             }
             //要打包的所有文件，也是要复制到R2_BepInEx的文件
@@ -61,13 +60,13 @@ static class AfterBuildEvent {
             string projectDir = dirInfo.FullName;
             //mod.dll
 #if DEBUG
-            string projectModFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.dll";
-            string projectModPdbFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.pdb";
-            string projectModMdbFile = $@"{projectDir}\bin\debug\{targetFramework}\{projectName}.dll.mdb";
+            string projectModFile = $@"{projectDir}\bin\win\debug\{projectName}.dll";
+            string projectModPdbFile = $@"{projectDir}\bin\win\debug\{projectName}.pdb";
+            string projectModMdbFile = $@"{projectDir}\bin\win\debug\{projectName}.dll.mdb";
 #else
-            string projectModFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.dll";
-            string projectModPdbFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.pdb";
-            string projectModMdbFile = $@"{projectDir}\bin\release\{targetFramework}\{projectName}.dll.mdb";
+            string projectModFile = $@"{projectDir}\bin\win\release\{projectName}.dll";
+            string projectModPdbFile = $@"{projectDir}\bin\win\release\{projectName}.pdb";
+            string projectModMdbFile = $@"{projectDir}\bin\win\release\{projectName}.dll.mdb";
 #endif
             if (!File.Exists(projectModFile)) {
                 continue;
