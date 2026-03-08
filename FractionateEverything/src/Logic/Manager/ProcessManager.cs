@@ -239,23 +239,22 @@ public static class ProcessManager {
                                          + 0.75);
             if (__instance.progress > 300000) {
                 __instance.progress = 300000;
-                LogWarning($"{building.name}进度超过300000！");
             }
-            // C5: 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
+            // 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
             if (buildingID == IFE点数聚集塔 && PointAggregateTower.EnableVoidSpray) {
                 AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
             }
-            // C6: 质能裂变 - 矿物复制塔在 Level >= 6 时，维持池中点数在目标值以上；
+            // 质能裂变 - 矿物复制塔在 Level >= 6 时，维持池中点数在目标值以上；
             // 当池量不足时，批量消耗原料填满点数池（每个原料+25点，零压循环激活时+50点）。
             // 取用时：若平均增产点数不足10，从池中补足至10。
             if (buildingID == IFE矿物复制塔
                 && MineralReplicationTower.EnableMassEnergyFission
                 && __instance.fluidInputCount > 0) {
                 int pointsPerItem = MineralReplicationTower.EnableZeroPressureCycle ? 50 : 25;
-                int poolTarget = 100 * MineralReplicationTower.MaxStack;
+                int poolTarget = __instance.fluidInputCount * 15;
                 int pool = __instance.GetFissionPointPool(factory);
                 // 池量不足时批量消耗原料补满
-                if (pool < poolTarget) {
+                if (pool <= 0) {
                     int pointsNeeded = poolTarget - pool;
                     int itemsToConsume = (pointsNeeded + pointsPerItem - 1) / pointsPerItem;// 向上取整
                     int itemsAvail = __instance.fluidInputCount;
@@ -328,7 +327,6 @@ public static class ProcessManager {
                         __instance.fluidInputInc -= fluidInputIncAvg;
                         if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
                     }
-                    // C6: 质能裂变点数补充已移至循环外批量处理（池量不足时批量消耗原料，每个+25或+50点）
                 }
 
                 if (outputs == null) {
@@ -381,30 +379,21 @@ public static class ProcessManager {
         } else {
             __instance.fractionSuccess = false;
         }
-        // C12: 零压循环 - 矿物复制塔在 Level >= 12 时，当无侧边输出传送带时，将流体输出回流到输入
+        // 零压循环 - 矿物复制塔在 Level >= 12 时，将流动输出回流到输入
         if (buildingID == IFE矿物复制塔
-            && MineralReplicationTower.EnableZeroPressureCycle
-            && __instance.fluidOutputCount > 0
-            && __instance.fluidInputCount < fluidInputMax) {
-            bool hasSideOutputBelt = (__instance.isOutput1 && __instance.belt1 > 0)
-                                     || (__instance.isOutput2 && __instance.belt2 > 0);
-            if (!hasSideOutputBelt) {
-                int moveCount = Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount);
-                if (moveCount > 0) {
-                    __instance.fluidInputCount += moveCount;
-                    __instance.fluidOutputCount -= moveCount;
-                    int fluidOutputIncAvg = __instance.fluidOutputCount > 0
-                        ? __instance.fluidOutputInc / __instance.fluidOutputCount
-                        : 0;
-                    int moveInc = fluidOutputIncAvg * moveCount;
-                    __instance.fluidInputInc += moveInc;
-                    __instance.fluidOutputInc -= moveInc;
-                    __instance.SetZeroPressureLoopState(factory, true);
-                }
-            } else {
-                __instance.SetZeroPressureLoopState(factory, false);
+            && MineralReplicationTower.EnableZeroPressureCycle) {
+            int moveCount = Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount);
+            if (moveCount > 0) {
+                __instance.fluidInputCount += moveCount;
+                __instance.fluidOutputCount -= moveCount;
+                int fluidOutputIncAvg = __instance.fluidOutputCount > 0
+                    ? __instance.fluidOutputInc / __instance.fluidOutputCount
+                    : 0;
+                int moveInc = fluidOutputIncAvg * moveCount;
+                __instance.fluidInputInc += moveInc;
+                __instance.fluidOutputInc -= moveInc;
             }
-        }
+        } 
         CargoTraffic cargoTraffic = factory.cargoTraffic;
         byte stack;
         byte inc;
@@ -431,15 +420,17 @@ public static class ProcessManager {
                         CargoPath cargoPath =
                             cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
                         if (cargoPath != null) {
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                if (buildingID == IFE点数聚集塔) fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                            int outputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= outputStack; i++) {
+                                if (buildingID == IFE点数聚集塔)
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
-                                        (byte)fluidOutputIncAvg)) {
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)), (byte)outputStack,
+                                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
                                     break;
                                 }
-                                __instance.fluidOutputCount--;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg;
+                                __instance.fluidOutputCount -= outputStack;
+                                __instance.fluidOutputInc -= fluidOutputIncAvg * outputStack;
                             }
                         }
                     }
@@ -520,15 +511,17 @@ public static class ProcessManager {
                         CargoPath cargoPath =
                             cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                         if (cargoPath != null) {
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
-                                if (buildingID == IFE点数聚集塔) fluidOutputIncAvg = __instance.fluidOutputInc >= 4 ? 4 : 0;
+                            int outputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
+                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= outputStack; i++) {
+                                if (buildingID == IFE点数聚集塔)
+                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
-                                        (byte)fluidOutputIncAvg)) {
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)), (byte)outputStack,
+                                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
                                     break;
                                 }
-                                __instance.fluidOutputCount--;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg;
+                                __instance.fluidOutputCount -= outputStack;
+                                __instance.fluidOutputInc -= fluidOutputIncAvg * outputStack;
                             }
                         }
                     }
