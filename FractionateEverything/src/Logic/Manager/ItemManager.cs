@@ -721,6 +721,27 @@ public static class ItemManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
+        if (version >= 10) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                if (tag == "CenterItems") {
+                    int size = br.ReadInt32();
+                    for (int i = 0; i < size; i++) {
+                        int itemId = br.ReadInt32();
+                        long count = br.ReadInt64();
+                        long inc = br.ReadInt64();
+                        if (itemId >= 0 && itemId < centerItemCount.Length) {
+                            centerItemCount[itemId] = Math.Max(0, count);
+                            centerItemInc[itemId] = Math.Max(0, Math.Min(inc, centerItemCount[itemId] * 10));
+                        }
+                    }
+                } else if (tag == "LeftInc") {
+                    leftInc = br.ReadInt32();
+                }
+            });
+            return;
+        }
+
         int itemDataDicSize = r.ReadInt32();
         for (int i = 0; i < itemDataDicSize; i++) {
             int itemId = r.ReadInt32();
@@ -748,20 +769,23 @@ public static class ItemManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(3);
-        List<int> centerItemId = [];
-        for (int i = 0; i < centerItemCount.Length; i++) {
-            if (centerItemCount[i] > 0) {
-                centerItemId.Add(i);
+        w.Write(10);
+        w.Write(2);
+        w.WriteBlock("CenterItems", (bw) => {
+            List<int> centerItemId = [];
+            for (int i = 0; i < centerItemCount.Length; i++) {
+                if (centerItemCount[i] > 0) {
+                    centerItemId.Add(i);
+                }
             }
-        }
-        w.Write(centerItemId.Count);
-        foreach (int itemId in centerItemId) {
-            w.Write(itemId);
-            w.Write(centerItemCount[itemId]);
-            w.Write(centerItemInc[itemId]);
-        }
-        w.Write(leftInc);
+            bw.Write(centerItemId.Count);
+            foreach (int itemId in centerItemId) {
+                bw.Write(itemId);
+                bw.Write(centerItemCount[itemId]);
+                bw.Write(centerItemInc[itemId]);
+            }
+        });
+        w.WriteBlock("LeftInc", (bw) => bw.Write(leftInc));
     }
 
     public static void IntoOtherSave() {

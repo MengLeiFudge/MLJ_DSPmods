@@ -237,25 +237,49 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         BaseIntoOtherSave();
         int version = r.ReadInt32();
-        RecipeManager.Import(r);
-        BuildingManager.Import(r);
-        ItemManager.Import(r);
-        if (version >= 2) {
-            RuneManager.Import(r);
+        if (version >= 10) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                switch (tag) {
+                    case "Recipe":
+                        RecipeManager.Import(br);
+                        break;
+                    case "Building":
+                        BuildingManager.Import(br);
+                        break;
+                    case "Item":
+                        ItemManager.Import(br);
+                        break;
+                    case "Rune":
+                        RuneManager.Import(br);
+                        break;
+                    case "UI":
+                        MainWindow.Import(br);
+                        break;
+                }
+            });
+        } else {
+            RecipeManager.Import(r);
+            BuildingManager.Import(r);
+            ItemManager.Import(r);
+            if (version >= 2) {
+                RuneManager.Import(r);
+            }
+            MainWindow.Import(r);
         }
-        MainWindow.Import(r);
     }
 
     /// <summary>
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(2);
-        RecipeManager.Export(w);
-        BuildingManager.Export(w);
-        ItemManager.Export(w);
-        RuneManager.Export(w);
-        MainWindow.Export(w);
+        w.Write(10);
+        w.Write(5);
+        w.WriteBlock("Recipe", RecipeManager.Export);
+        w.WriteBlock("Building", BuildingManager.Export);
+        w.WriteBlock("Item", ItemManager.Export);
+        w.WriteBlock("Rune", RuneManager.Export);
+        w.WriteBlock("UI", MainWindow.Export);
     }
 
     /// <summary>

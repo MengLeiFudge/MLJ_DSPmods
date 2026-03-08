@@ -503,6 +503,45 @@ public static class BuildingManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
+        if (version >= 10) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                switch (tag) {
+                    case "OutputExtend":
+                        OutputExtendImport(br);
+                        break;
+                    case "InteractionTower":
+                        InteractionTower.Import(br);
+                        break;
+                    case "MineralReplicationTower":
+                        MineralReplicationTower.Import(br);
+                        break;
+                    case "PointAggregateTower":
+                        PointAggregateTower.Import(br);
+                        break;
+                    case "ConversionTower":
+                        ConversionTower.Import(br);
+                        break;
+                    case "PlanetaryInteractionStation":
+                        PlanetaryInteractionStation.Import(br);
+                        break;
+                    case "RecycleTower":
+                        RecycleTower.Import(br);
+                        break;
+                    case "LockedOutput":
+                        LockedOutputImport(br);
+                        break;
+                    case "FissionPointPool":
+                        FissionPointPoolImport(br);
+                        break;
+                    case "Resonance":
+                        ResonanceImport(br);
+                        break;
+                }
+            });
+            return;
+        }
+
         OutputExtendImport(r);
         InteractionTower.Import(r);
         MineralReplicationTower.Import(r);
@@ -537,18 +576,18 @@ public static class BuildingManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(8);
-        OutputExtendExport(w);
-        InteractionTower.Export(w);
-        MineralReplicationTower.Export(w);
-        PointAggregateTower.Export(w);
-        ConversionTower.Export(w);
-        PlanetaryInteractionStation.Export(w);
-        RecycleTower.Export(w);
-
-        LockedOutputExport(w);
-        FissionPointPoolExport(w);
-        ResonanceExport(w);
+        w.Write(10);
+        w.Write(10);
+        w.WriteBlock("OutputExtend", OutputExtendExport);
+        w.WriteBlock("InteractionTower", InteractionTower.Export);
+        w.WriteBlock("MineralReplicationTower", MineralReplicationTower.Export);
+        w.WriteBlock("PointAggregateTower", PointAggregateTower.Export);
+        w.WriteBlock("ConversionTower", ConversionTower.Export);
+        w.WriteBlock("PlanetaryInteractionStation", PlanetaryInteractionStation.Export);
+        w.WriteBlock("RecycleTower", RecycleTower.Export);
+        w.WriteBlock("LockedOutput", LockedOutputExport);
+        w.WriteBlock("FissionPointPool", FissionPointPoolExport);
+        w.WriteBlock("Resonance", ResonanceExport);
     }
 
     public static void IntoOtherSave() {
