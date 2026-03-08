@@ -261,25 +261,20 @@ public static class StationManager {
             Button transferBtn;
             Text transferText;
             if (tTrans == null) {
-                GameObject go = new GameObject(tName);
-                go.transform.SetParent(__instance.localSdButton.transform.parent, false);
-                var rt = go.AddComponent<RectTransform>();
+                // 克隆原版 localSdButton（保留原始样式：image + text）
+                GameObject template = __instance.localSdButton.gameObject;
+                GameObject go = GameObject.Instantiate(template, __instance.localSdButton.transform.parent, false);
+                go.name = tName;
+                var rt = go.GetComponent<RectTransform>();
                 rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
                 rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, BtnYOffset);
-                var img = go.AddComponent<Image>();
-                img.raycastTarget = true;
-                transferBtn = go.AddComponent<Button>();
-                transferBtn.targetGraphic = img;
-                var txtObj = new GameObject("label");
-                txtObj.transform.SetParent(go.transform, false);
-                var txtRt = txtObj.AddComponent<RectTransform>();
-                txtRt.anchorMin = new Vector2(0f, 0f); txtRt.anchorMax = new Vector2(1f, 1f); txtRt.offsetMin = Vector2.zero; txtRt.offsetMax = Vector2.zero;
-                transferText = txtObj.AddComponent<Text>();
-                transferText.alignment = TextAnchor.MiddleCenter;
-                transferText.font = GUI.skin.font;
-                transferText.fontSize = 14;
+                transferBtn = go.GetComponent<Button>();
+                // remove original listeners and bind our popup
+                try { transferBtn.onClick.RemoveAllListeners(); } catch { }
                 transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+                // find text child (original localSd uses an Image + Text structure)
+                transferText = go.GetComponentInChildren<Text>();
             } else {
                 transferBtn = tTrans.GetComponent<Button>();
                 transferText = tTrans.GetComponentInChildren<Text>();
@@ -295,18 +290,18 @@ public static class StationManager {
             Button capBtn;
             Text capText;
             if (cTrans == null) {
-                GameObject go = new GameObject(cName);
-                go.transform.SetParent(__instance.localSdButton.transform.parent, false);
-                var rt = go.AddComponent<RectTransform>();
+                // 克隆原版 localSdButton 作为样式模板
+                GameObject template = __instance.localSdButton.gameObject;
+                GameObject go = GameObject.Instantiate(template, __instance.localSdButton.transform.parent, false);
+                go.name = cName;
+                var rt = go.GetComponent<RectTransform>();
                 rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
                 rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, -BtnYOffset);
-                var img = go.AddComponent<Image>(); img.raycastTarget = true;
-                capBtn = go.AddComponent<Button>(); capBtn.targetGraphic = img;
-                var txtObj = new GameObject("label"); txtObj.transform.SetParent(go.transform, false);
-                var txtRt = txtObj.AddComponent<RectTransform>(); txtRt.anchorMin = new Vector2(0f, 0f); txtRt.anchorMax = new Vector2(1f, 1f); txtRt.offsetMin = Vector2.zero; txtRt.offsetMax = Vector2.zero;
-                capText = txtObj.AddComponent<Text>(); capText.alignment = TextAnchor.MiddleCenter; capText.font = GUI.skin.font; capText.fontSize = 14;
+                capBtn = go.GetComponent<Button>();
+                try { capBtn.onClick.RemoveAllListeners(); } catch { }
                 capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+                capText = go.GetComponentInChildren<Text>();
             } else {
                 capBtn = cTrans.GetComponent<Button>();
                 capText = cTrans.GetComponentInChildren<Text>();
