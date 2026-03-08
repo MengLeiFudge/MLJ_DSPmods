@@ -164,7 +164,9 @@ public static class RuneManager {
             refund += GetUpgradeCost(i, rune.star);
         }
         refund = (long)(refund * 0.8f) + 10 * rune.star;
-        ItemManager.centerItemCount[essenceId] += refund;
+        if (essenceId > 0 && essenceId < 12000) {
+            ItemManager.centerItemCount[essenceId] += refund;
+        }
         allRunes.Remove(rune);
         for (int i = 0; i < equippedRuneIds.Length; i++) {
             if (equippedRuneIds[i] == rune.id) {
@@ -289,10 +291,10 @@ public static class RuneManager {
     public static void Export(BinaryWriter w) {
         w.Write(10);
         w.Write(3);
-        w.WriteBlock("AllRunes", (bw) => {
+        w.WriteBlock("AllRunes", bw => {
             bw.Write(allRunes.Count);
             foreach (Rune rune in allRunes) {
-                bw.WriteBlock(rune.id.ToString(), (rbw) => {
+                bw.WriteBlock(rune.id.ToString(), rbw => {
                     rbw.Write(rune.id);
                     rbw.Write(rune.star);
                     rbw.Write(rune.level);
@@ -305,12 +307,12 @@ public static class RuneManager {
                 });
             }
         });
-        w.WriteBlock("EquippedRunes", (bw) => {
+        w.WriteBlock("EquippedRunes", bw => {
             for (int i = 0; i < 5; i++) {
                 bw.Write(equippedRuneIds[i]);
             }
         });
-        w.WriteBlock("SlotCount", (bw) => bw.Write(slotCount));
+        w.WriteBlock("SlotCount", bw => bw.Write(slotCount));
     }
 
     public static void IntoOtherSave() {
