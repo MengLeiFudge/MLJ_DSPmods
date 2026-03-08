@@ -362,57 +362,6 @@ public static class BuildingManager {
 
     #endregion
 
-    #region 零压循环拓展
-
-    /// <summary>
-    /// 存储矿物复制塔零压循环状态。结构：
-    /// (planetId, entityId) => bool (是否启用零压循环)
-    /// </summary>
-    private static readonly ConcurrentDictionary<(int, int), bool> zeroPressureLoopDic = [];
-
-    public static void ZeroPressureLoopImport(BinaryReader r) {
-        zeroPressureLoopDic.Clear();
-        int count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int planetId = r.ReadInt32();
-            int entityId = r.ReadInt32();
-            bool state = r.ReadBoolean();
-            zeroPressureLoopDic.TryAdd((planetId, entityId), state);
-        }
-    }
-
-    public static void ZeroPressureLoopExport(BinaryWriter w) {
-        w.Write(zeroPressureLoopDic.Count);
-        foreach (var p in zeroPressureLoopDic) {
-            w.Write(p.Key.Item1);
-            w.Write(p.Key.Item2);
-            w.Write(p.Value);
-        }
-    }
-
-    public static void ZeroPressureLoopIntoOtherSave() {
-        zeroPressureLoopDic.Clear();
-    }
-
-    public static bool GetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory) {
-        int planetId = factory.planetId;
-        int entityId = fractionator.entityId;
-        return zeroPressureLoopDic.TryGetValue((planetId, entityId), out bool state) && state;
-    }
-
-    public static void SetZeroPressureLoopState(this FractionatorComponent fractionator, PlanetFactory factory,
-        bool state) {
-        int planetId = factory.planetId;
-        int entityId = fractionator.entityId;
-        if (state) {
-            zeroPressureLoopDic[(planetId, entityId)] = true;
-        } else {
-            zeroPressureLoopDic.TryRemove((planetId, entityId), out _);
-        }
-    }
-
-    #endregion
-
     public static int Level(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.Level,
@@ -564,8 +513,13 @@ public static class BuildingManager {
         if (version >= 2) {
             LockedOutputImport(r);
         }
-        if (version >= 3) {
-            ZeroPressureLoopImport(r);
+        if (version >= 3 && version < 8) {
+            int count = r.ReadInt32();
+            for (int i = 0; i < count; i++) {
+                r.ReadInt32();
+                r.ReadInt32();
+                r.ReadBoolean();
+            }
         }
         if (version >= 4) {
             FissionPointPoolImport(r);
@@ -583,7 +537,7 @@ public static class BuildingManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(7);
+        w.Write(8);
         OutputExtendExport(w);
         InteractionTower.Export(w);
         MineralReplicationTower.Export(w);
@@ -593,7 +547,6 @@ public static class BuildingManager {
         RecycleTower.Export(w);
 
         LockedOutputExport(w);
-        ZeroPressureLoopExport(w);
         FissionPointPoolExport(w);
         ResonanceExport(w);
     }
@@ -608,7 +561,6 @@ public static class BuildingManager {
         RecycleTower.IntoOtherSave();
 
         LockedOutputIntoOtherSave();
-        ZeroPressureLoopIntoOtherSave();
         FissionPointPoolIntoOtherSave();
         ResonanceIntoOtherSave();
     }
