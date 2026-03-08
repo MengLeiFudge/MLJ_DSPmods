@@ -178,6 +178,35 @@ public static class RecipeManager {
 
     public static void Import(BinaryReader r) {
         int version = r.ReadInt32();
+        if (version >= 10) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                if (tag == "MainRecipes") {
+                    int recipeCount = br.ReadInt32();
+                    for (int i = 0; i < recipeCount; i++) {
+                        ERecipe recipeType = (ERecipe)br.ReadInt32();
+                        int inputID = br.ReadInt32();
+                        int dataLength = br.ReadInt32();
+                        byte[] data = br.ReadBytes(dataLength);
+                        BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, inputID);
+                        if (recipe != null) {
+                            using var ms = new MemoryStream(data);
+                            using var tempReader = new BinaryReader(ms);
+                            recipe.Import(tempReader);
+                        }
+                    }
+                } else if (tag == "VanillaRecipes") {
+                    int count = br.ReadInt32();
+                    br.ReadBlocks(count, (vTag, vBr) => {
+                        if (int.TryParse(vTag, out int recipeID)) {
+                            GetVanillaRecipe(recipeID)?.Import(vBr);
+                        }
+                    });
+                }
+            });
+            return;
+        }
+
         int recipeCount = r.ReadInt32();
         for (int i = 0; i < recipeCount; i++) {
             ERecipe recipeType = (ERecipe)r.ReadInt32();
@@ -219,30 +248,50 @@ public static class RecipeManager {
         int vanillaRecipeCount = r.ReadInt32();
         for (int i = 0; i < vanillaRecipeCount; i++) {
             int recipeID = r.ReadInt32();
-            GetVanillaRecipe(recipeID)?.Import(r);
+            var vanillaRecipe = GetVanillaRecipe(recipeID);
+            if (vanillaRecipe != null) {
+                vanillaRecipe.Import(r);
+            } else {
+                // 读取版本号，目前原版配方版本为 1
+                int v = r.ReadInt32();
+                if (v == 1) {
+                    // 读取输入升级的个数
+                    int count = r.ReadInt32();
+                    for (int j = 0; j < count; j++) {
+                        r.ReadInt32(); // itemID
+                        r.ReadInt32(); // upgrade
+                    }
+                    // 读取时间升级的次数
+                    r.ReadInt32(); // timeSpendUpgrade
+                }
+            }
         }
     }
 
     public static void Export(BinaryWriter w) {
+        w.Write(10);
         w.Write(2);
-        w.Write(RecipeList.Count);
-        foreach (var recipe in RecipeList) {
-            w.Write((int)recipe.RecipeType);
-            w.Write(recipe.InputID);
-            // 使用内存流计算数据长度
-            using var memoryStream = new MemoryStream();
-            using var tempWriter = new BinaryWriter(memoryStream);
-            recipe.Export(tempWriter);
-            byte[] recipeData = memoryStream.ToArray();
-            // 写入数据长度和实际数据
-            w.Write(recipeData.Length);
-            w.Write(recipeData);
-        }
-        w.Write(VanillaRecipeList.Count);
-        foreach (var vanillaRecipe in VanillaRecipeList) {
-            w.Write(vanillaRecipe.recipe.ID);
-            vanillaRecipe.Export(w);
-        }
+        w.WriteBlock("MainRecipes", (bw) => {
+            bw.Write(RecipeList.Count);
+            foreach (var recipe in RecipeList) {
+                bw.Write((int)recipe.RecipeType);
+                bw.Write(recipe.InputID);
+                // 使用内存流计算数据长度
+                using var memoryStream = new MemoryStream();
+                using var tempWriter = new BinaryWriter(memoryStream);
+                recipe.Export(tempWriter);
+                byte[] recipeData = memoryStream.ToArray();
+                // 写入数据长度和实际数据
+                bw.Write(recipeData.Length);
+                bw.Write(recipeData);
+            }
+        });
+        w.WriteBlock("VanillaRecipes", (bw) => {
+            bw.Write(VanillaRecipeList.Count);
+            foreach (var vanillaRecipe in VanillaRecipeList) {
+                bw.WriteBlock(vanillaRecipe.recipe.ID.ToString(), vanillaRecipe.Export);
+            }
+        });
     }
 
     public static void IntoOtherSave() {
