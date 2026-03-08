@@ -30,6 +30,34 @@ public static class StationManager {
 
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
+    // UI extension state for per-slot mode buttons and popups
+    private enum ETransferMode { Sync = 0, Supply = 1, Demand = 2 }
+    private enum ECapacityMode { Limited = 0, Infinite = 1 }
+    private enum EPopupType { None = 0, Transfer = 1, Capacity = 2 }
+
+    private struct PopupInfo {
+        public EPopupType Type;
+        public ETransferMode[] TransferOptions; // for Transfer popup: options presented
+        public ECapacityMode[] CapacityOptions; // for Capacity popup
+    }
+
+    private static readonly ConcurrentDictionary<long, ETransferMode> slotTransferMode = new();
+    private static readonly ConcurrentDictionary<long, ECapacityMode> slotCapacityMode = new();
+    private static readonly ConcurrentDictionary<long, PopupInfo> slotPopupInfo = new();
+
+    // store base positions to avoid repeatedly adding spacing
+    private static readonly ConcurrentDictionary<UIStationWindow, float> windowBaseWidth = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, Vector2> popupBasePos = new();
+
+    private const float ExtraSpacing = 12f;
+    private const float BtnHeight = 26f;
+    private const float BtnYOffset = 14f;
+
+    private static long GetSlotKey(UIStationStorage s) {
+        if (s?.station == null) return 0L;
+        return ((long)s.station.id << 32) | (uint)s.index;
+    }
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
@@ -205,6 +233,109 @@ public static class StationManager {
         // 原版逻辑会先禁用这个按钮，所以在切换成供应或需求的时候不需要手动禁用
         // 启用keepModeButton
         __instance.keepModeButton.gameObject.SetActive(true);
+
+        // --- 新增两个模式按钮（Transfer / Capacity） ---
+        try {
+            // spacing based on reference button width
+            var refRect = __instance.localSdButton.GetComponent<RectTransform>();
+            float btnWidth = refRect.sizeDelta.x;
+            float spacingX = btnWidth + ExtraSpacing;
+
+            // ensure window base width saved once
+            if (__instance.stationWindow != null && !windowBaseWidth.ContainsKey(__instance.stationWindow)) {
+                windowBaseWidth[__instance.stationWindow] = __instance.stationWindow.windowTrans.sizeDelta.x;
+            }
+            // set window width = base + spacingX
+            if (__instance.stationWindow != null && windowBaseWidth.TryGetValue(__instance.stationWindow, out float baseW)) {
+                __instance.stationWindow.windowTrans.sizeDelta = new Vector2(baseW + spacingX, __instance.stationWindow.windowTrans.sizeDelta.y);
+            }
+
+            // popup base pos store
+            if (!popupBasePos.ContainsKey(__instance)) {
+                popupBasePos[__instance] = __instance.popupBoxRect.anchoredPosition;
+            }
+
+            // create or find Transfer button
+            string tName = "FE_transferModeButton_" + __instance.index;
+            Transform tTrans = __instance.transform.Find(tName);
+            Button transferBtn;
+            Text transferText;
+            if (tTrans == null) {
+                GameObject go = new GameObject(tName);
+                go.transform.SetParent(__instance.localSdButton.transform.parent, false);
+                var rt = go.AddComponent<RectTransform>();
+                rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
+                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
+                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, BtnYOffset);
+                var img = go.AddComponent<Image>();
+                img.raycastTarget = true;
+                transferBtn = go.AddComponent<Button>();
+                transferBtn.targetGraphic = img;
+                var txtObj = new GameObject("label");
+                txtObj.transform.SetParent(go.transform, false);
+                var txtRt = txtObj.AddComponent<RectTransform>();
+                txtRt.anchorMin = new Vector2(0f, 0f); txtRt.anchorMax = new Vector2(1f, 1f); txtRt.offsetMin = Vector2.zero; txtRt.offsetMax = Vector2.zero;
+                transferText = txtObj.AddComponent<Text>();
+                transferText.alignment = TextAnchor.MiddleCenter;
+                transferText.font = GUI.skin.font;
+                transferText.fontSize = 14;
+                transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+            } else {
+                transferBtn = tTrans.GetComponent<Button>();
+                transferText = tTrans.GetComponentInChildren<Text>();
+                // update position in case ref moved
+                var rt = transferBtn.GetComponent<RectTransform>();
+                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, BtnYOffset);
+                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
+            }
+
+            // create or find Capacity button
+            string cName = "FE_capacityModeButton_" + __instance.index;
+            Transform cTrans = __instance.transform.Find(cName);
+            Button capBtn;
+            Text capText;
+            if (cTrans == null) {
+                GameObject go = new GameObject(cName);
+                go.transform.SetParent(__instance.localSdButton.transform.parent, false);
+                var rt = go.AddComponent<RectTransform>();
+                rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
+                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
+                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, -BtnYOffset);
+                var img = go.AddComponent<Image>(); img.raycastTarget = true;
+                capBtn = go.AddComponent<Button>(); capBtn.targetGraphic = img;
+                var txtObj = new GameObject("label"); txtObj.transform.SetParent(go.transform, false);
+                var txtRt = txtObj.AddComponent<RectTransform>(); txtRt.anchorMin = new Vector2(0f, 0f); txtRt.anchorMax = new Vector2(1f, 1f); txtRt.offsetMin = Vector2.zero; txtRt.offsetMax = Vector2.zero;
+                capText = txtObj.AddComponent<Text>(); capText.alignment = TextAnchor.MiddleCenter; capText.font = GUI.skin.font; capText.fontSize = 14;
+                capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+            } else {
+                capBtn = cTrans.GetComponent<Button>();
+                capText = cTrans.GetComponentInChildren<Text>();
+                var rt = capBtn.GetComponent<RectTransform>();
+                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, -BtnYOffset);
+                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
+            }
+
+            // display/hide follow original localSdButton visible state
+            transferBtn.gameObject.SetActive(__instance.localSdButton.gameObject.activeSelf);
+            capBtn.gameObject.SetActive(__instance.localSdButton.gameObject.activeSelf);
+
+            // ensure default modes exist
+            long key = GetSlotKey(__instance);
+            slotTransferMode.TryAdd(key, ETransferMode.Sync);
+            slotCapacityMode.TryAdd(key, ECapacityMode.Limited);
+
+            // update texts based on current mode
+            if (transferText != null && slotTransferMode.TryGetValue(key, out var tm)) {
+                transferText.text = tm switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" };
+            }
+            if (capText != null && slotCapacityMode.TryGetValue(key, out var cm)) {
+                capText.text = cm == ECapacityMode.Infinite ? "无限" : "有限";
+            }
+        }
+        catch (Exception ex) {
+            // swallow to avoid breaking UI; log for debug
+            LogError($"FE StationManager: create mode buttons failed: {ex}");
+        }
     }
 
     /// <summary>
@@ -295,6 +426,110 @@ public static class StationManager {
             __instance.windowTrans.sizeDelta = new Vector2(600f, (float)(300 + 76 * station.storage.Length + 36));
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 126f);
+        }
+    }
+
+    // Show transfer-mode popup shifted to the right
+    private static void ShowTransferPopup(UIStationStorage __instance) {
+        try {
+            long key = GetSlotKey(__instance);
+            // current mode
+            slotTransferMode.TryGetValue(key, out var current);
+            // compute remaining two options
+            var all = new[] { ETransferMode.Sync, ETransferMode.Supply, ETransferMode.Demand };
+            var opts = new List<ETransferMode>();
+            foreach (var m in all) if (m != current) opts.Add(m);
+
+            var info = new PopupInfo { Type = EPopupType.Transfer, TransferOptions = opts.ToArray() };
+            slotPopupInfo[key] = info;
+
+            // set popup texts and buttons
+            __instance.optionButton2.gameObject.SetActive(false);
+            if (opts.Count > 0) { __instance.optionText0.text = opts[0] switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" }; __instance.optionButton0.gameObject.SetActive(true); }
+            if (opts.Count > 1) { __instance.optionText1.text = opts[1] switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" }; __instance.optionButton1.gameObject.SetActive(true); }
+
+            // shift popup X
+            if (popupBasePos.TryGetValue(__instance, out var basePos)) {
+                var refRect = __instance.localSdButton.GetComponent<RectTransform>();
+                float spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                __instance.popupBoxRect.anchoredPosition = new Vector2(basePos.x + spacingX, basePos.y);
+                __instance.collectionPopupRect.anchoredPosition = new Vector2(basePos.x + spacingX, __instance.collectionPopupRect.anchoredPosition.y);
+            }
+            __instance.popupBoxRect.gameObject.SetActive(true);
+        }
+        catch (Exception ex) { LogError($"FE ShowTransferPopup error: {ex}"); }
+    }
+
+    // Show capacity-mode popup shifted to the right
+    private static void ShowCapacityPopup(UIStationStorage __instance) {
+        try {
+            long key = GetSlotKey(__instance);
+            var opts = new[] { ECapacityMode.Infinite, ECapacityMode.Limited };
+            var info = new PopupInfo { Type = EPopupType.Capacity, CapacityOptions = opts };
+            slotPopupInfo[key] = info;
+
+            __instance.optionButton2.gameObject.SetActive(false);
+            __instance.optionText0.text = "无限";
+            __instance.optionButton0.gameObject.SetActive(true);
+            __instance.optionText1.text = "有限";
+            __instance.optionButton1.gameObject.SetActive(true);
+
+            if (popupBasePos.TryGetValue(__instance, out var basePos)) {
+                var refRect = __instance.localSdButton.GetComponent<RectTransform>();
+                float spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                __instance.popupBoxRect.anchoredPosition = new Vector2(basePos.x + spacingX, basePos.y);
+                __instance.collectionPopupRect.anchoredPosition = new Vector2(basePos.x + spacingX, __instance.collectionPopupRect.anchoredPosition.y);
+            }
+            __instance.popupBoxRect.gameObject.SetActive(true);
+        }
+        catch (Exception ex) { LogError($"FE ShowCapacityPopup error: {ex}"); }
+    }
+
+    // Intercept option clicks when our popup is active
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnOptionButton0Click))]
+    public static bool UIStationStorage_OnOptionButton0Click_Prefix(UIStationStorage __instance) {
+        return HandleOptionClick(__instance, 0);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnOptionButton1Click))]
+    public static bool UIStationStorage_OnOptionButton1Click_Prefix(UIStationStorage __instance) {
+        return HandleOptionClick(__instance, 1);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnOptionButton2Click))]
+    public static bool UIStationStorage_OnOptionButton2Click_Prefix(UIStationStorage __instance) {
+        return HandleOptionClick(__instance, 2);
+    }
+
+    private static bool HandleOptionClick(UIStationStorage __instance, int idx) {
+        try {
+            long key = GetSlotKey(__instance);
+            if (!slotPopupInfo.TryRemove(key, out var info)) {
+                // not our popup, let original handler run
+                return true;
+            }
+            // apply selection according to popup type
+            if (info.Type == EPopupType.Transfer && info.TransferOptions != null) {
+                if (idx >= 0 && idx < info.TransferOptions.Length) {
+                    slotTransferMode[key] = info.TransferOptions[idx];
+                }
+            }
+            else if (info.Type == EPopupType.Capacity && info.CapacityOptions != null) {
+                if (idx >= 0 && idx < info.CapacityOptions.Length) {
+                    slotCapacityMode[key] = info.CapacityOptions[idx];
+                }
+            }
+            // hide popup
+            __instance.popupBoxRect.gameObject.SetActive(false);
+            __instance.collectionPopupRect.gameObject.SetActive(false);
+            return false; // prevent original OnOptionButton* handlers
+        }
+        catch (Exception ex) {
+            LogError($"FE HandleOptionClick error: {ex}");
+            return true;
         }
     }
 
