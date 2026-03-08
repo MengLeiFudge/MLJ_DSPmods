@@ -229,6 +229,40 @@ public static class RuneManager {
     public static void Import(BinaryReader r) {
         IntoOtherSave();
         int version = r.ReadInt32();
+        if (version >= 10) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                if (tag == "AllRunes") {
+                    int runeCount = br.ReadInt32();
+                    for (int i = 0; i < runeCount; i++) {
+                        br.ReadAndHandleBlock((rTag, rBr) => {
+                            var rune = new Rune {
+                                id = rBr.ReadInt64(),
+                                star = rBr.ReadInt32(),
+                                level = rBr.ReadInt32(),
+                                mainStat = (ERuneStatType)rBr.ReadInt32(),
+                            };
+                            rune.star = Math.Max(0, Math.Min(5, rune.star));
+                            rune.level = Math.Max(0, Math.Min(rune.MaxLevel, rune.level));
+                            int subCount = rBr.ReadInt32();
+                            for (int j = 0; j < subCount; j++) {
+                                rune.subStats.Add((ERuneStatType)rBr.ReadInt32());
+                                rune.subStatRolls.Add(rBr.ReadSingle());
+                            }
+                            allRunes.Add(rune);
+                        });
+                    }
+                } else if (tag == "EquippedRunes") {
+                    for (int i = 0; i < 5; i++) {
+                        equippedRuneIds[i] = br.ReadInt64();
+                    }
+                } else if (tag == "SlotCount") {
+                    slotCount = br.ReadInt32();
+                }
+            });
+            return;
+        }
+
         int runeCount = r.ReadInt32();
         for (int i = 0; i < runeCount; i++) {
             var rune = new Rune {
@@ -253,23 +287,30 @@ public static class RuneManager {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);// version
-        w.Write(allRunes.Count);
-        foreach (Rune rune in allRunes) {
-            w.Write(rune.id);
-            w.Write(rune.star);
-            w.Write(rune.level);
-            w.Write((int)rune.mainStat);
-            w.Write(rune.subStats.Count);
-            for (int i = 0; i < rune.subStats.Count; i++) {
-                w.Write((int)rune.subStats[i]);
-                w.Write(rune.subStatRolls[i]);
+        w.Write(10);
+        w.Write(3);
+        w.WriteBlock("AllRunes", (bw) => {
+            bw.Write(allRunes.Count);
+            foreach (Rune rune in allRunes) {
+                bw.WriteBlock(rune.id.ToString(), (rbw) => {
+                    rbw.Write(rune.id);
+                    rbw.Write(rune.star);
+                    rbw.Write(rune.level);
+                    rbw.Write((int)rune.mainStat);
+                    rbw.Write(rune.subStats.Count);
+                    for (int i = 0; i < rune.subStats.Count; i++) {
+                        rbw.Write((int)rune.subStats[i]);
+                        rbw.Write(rune.subStatRolls[i]);
+                    }
+                });
             }
-        }
-        for (int i = 0; i < 5; i++) {
-            w.Write(equippedRuneIds[i]);
-        }
-        w.Write(slotCount);
+        });
+        w.WriteBlock("EquippedRunes", (bw) => {
+            for (int i = 0; i < 5; i++) {
+                bw.Write(equippedRuneIds[i]);
+            }
+        });
+        w.WriteBlock("SlotCount", (bw) => bw.Write(slotCount));
     }
 
     public static void IntoOtherSave() {
