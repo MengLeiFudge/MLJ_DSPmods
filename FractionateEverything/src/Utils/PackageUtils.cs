@@ -122,7 +122,7 @@ public static partial class Utils {
         if (!TechItemInteractionUnlocked) {
             return true;
         }
-        if (itemValue[itemId] >= maxValue) {
+        if (itemId <= 0 || itemId >= 12000 || itemValue[itemId] >= maxValue) {
             return true;
         }
         AddItemToModData(itemId, count, inc, true);
@@ -138,7 +138,8 @@ public static partial class Utils {
         if (!TechItemInteractionUnlocked) {
             return true;
         }
-        if (itemValue[__instance.inhandItemId] >= maxValue) {
+        int itemId = __instance.inhandItemId;
+        if (itemId <= 0 || itemId >= 12000 || itemValue[itemId] >= maxValue) {
             return true;
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
@@ -156,6 +157,9 @@ public static partial class Utils {
     public static void AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount += count;
+            return;
+        }
+        if (itemId <= 0 || itemId >= 12000) {
             return;
         }
         lock (centerItemCount) {
@@ -424,6 +428,9 @@ public static partial class Utils {
                 return long.MaxValue;
             }
             return GameMain.mainPlayer.sandCount;
+        }
+        if (itemId <= 0 || itemId >= 12000) {
+            return 0;
         }
         inc = centerItemInc[itemId];
         return centerItemCount[itemId];
@@ -762,6 +769,9 @@ public static partial class Utils {
     /// </summary>
     private static int TryTakeItem(StorageComponent storage, int itemId, int count, out int inc) {
         inc = 0;
+        if (itemId <= 0 || itemId >= 12000) {
+            return 0;
+        }
         count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
         testPackageUsedCounts[itemId] += count;
         return count;
@@ -842,6 +852,10 @@ public static partial class Utils {
     private static void TryTakeTailItems(StorageComponent storage, ref int itemId, ref int count, out int inc,
         bool useBan = false) {
         inc = 0;
+        if (itemId <= 0 || itemId >= 12000) {
+            count = 0;
+            return;
+        }
         count = (int)Math.Min(count, GetItemTotalCount(itemId) - testPackageUsedCounts[itemId]);
         testPackageUsedCounts[itemId] += count;
         if (count == 0) {
@@ -885,6 +899,10 @@ public static partial class Utils {
     private static void TakeTailItemsWithIncTable(StorageComponent storage, int itemId, ref int count, out int inc,
         ref int[] incTable, bool useBan = false) {
         inc = 0;
+        if (itemId <= 0 || itemId >= 12000) {
+            count = 0;
+            return;
+        }
         if (incTable == null || incTable.Length <= 10) {
             incTable = new int[11];
         } else {
@@ -939,6 +957,10 @@ public static partial class Utils {
                 GameMain.mainPlayer.sandCount = 0;
                 return count;
             }
+        }
+        if (itemId <= 0 || itemId >= 12000) {
+            inc = 0;
+            return 0;
         }
         lock (centerItemCount) {
             count = (int)Math.Min(count, centerItemCount[itemId]);
@@ -1047,6 +1069,9 @@ public static partial class Utils {
     /// 当某个分馏塔在数据中心存储的数目超过1000时，取走10%
     /// </summary>
     public static int Take10PercentTower(int itemId) {
+        if (itemId <= 0 || itemId >= 12000) {
+            return 0;
+        }
         return centerItemCount[itemId] < 1000
             ? 0
             : TakeItemFromModData(itemId, (int)Math.Min(int.MaxValue, centerItemCount[itemId] / 10), out _);
@@ -1125,10 +1150,11 @@ public static partial class Utils {
                 if (package.grids[index].filter != 0) {
                     continue;
                 }
-                if (itemValue[package.grids[index].itemId] >= maxValue) {
+                int itemId = package.grids[index].itemId;
+                if (itemId <= 0 || itemId >= 12000 || itemValue[itemId] >= maxValue) {
                     continue;
                 }
-                AddItemToModData(package.grids[index].itemId, package.grids[index].count, package.grids[index].inc,
+                AddItemToModData(itemId, package.grids[index].count, package.grids[index].inc,
                     true);
                 package.grids[index].itemId = 0;
                 package.grids[index].count = 0;

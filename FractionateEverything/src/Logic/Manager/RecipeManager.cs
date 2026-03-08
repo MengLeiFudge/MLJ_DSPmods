@@ -70,6 +70,10 @@ public static class RecipeManager {
     public static void AddRecipe<T>(T recipe) where T : BaseRecipe {
         ERecipe recipeType = recipe.RecipeType;
         int inputID = recipe.InputID;
+        if (inputID <= 0 || inputID >= 12000) {
+            LogError($"{recipeType.GetName()} input item {inputID} is out of range.");
+            return;
+        }
         if (RecipeTypeArr[(int)recipeType][inputID] != null) {
             LogError($"{recipeType.GetName()} already exists input item {inputID}({LDB.items.Select(inputID)}).");
             return;
@@ -106,6 +110,9 @@ public static class RecipeManager {
     /// <typeparam name="T">BaseRecipe的子类</typeparam>
     /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
     public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
+        if (inputId <= 0 || inputId >= 12000) {
+            return null;
+        }
         return RecipeTypeArr[(int)recipeType][inputId] as T;
     }
 
@@ -271,7 +278,7 @@ public static class RecipeManager {
     public static void Export(BinaryWriter w) {
         w.Write(10);
         w.Write(2);
-        w.WriteBlock("MainRecipes", (bw) => {
+        w.WriteBlock("MainRecipes", bw => {
             bw.Write(RecipeList.Count);
             foreach (var recipe in RecipeList) {
                 bw.Write((int)recipe.RecipeType);
@@ -286,7 +293,7 @@ public static class RecipeManager {
                 bw.Write(recipeData);
             }
         });
-        w.WriteBlock("VanillaRecipes", (bw) => {
+        w.WriteBlock("VanillaRecipes", bw => {
             bw.Write(VanillaRecipeList.Count);
             foreach (var vanillaRecipe in VanillaRecipeList) {
                 bw.WriteBlock(vanillaRecipe.recipe.ID.ToString(), vanillaRecipe.Export);

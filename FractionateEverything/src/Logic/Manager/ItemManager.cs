@@ -771,7 +771,7 @@ public static class ItemManager {
     public static void Export(BinaryWriter w) {
         w.Write(10);
         w.Write(2);
-        w.WriteBlock("CenterItems", (bw) => {
+        w.WriteBlock("CenterItems", bw => {
             List<int> centerItemId = [];
             for (int i = 0; i < centerItemCount.Length; i++) {
                 if (centerItemCount[i] > 0) {
@@ -785,7 +785,7 @@ public static class ItemManager {
                 bw.Write(centerItemInc[itemId]);
             }
         });
-        w.WriteBlock("LeftInc", (bw) => bw.Write(leftInc));
+        w.WriteBlock("LeftInc", bw => bw.Write(leftInc));
     }
 
     public static void IntoOtherSave() {
