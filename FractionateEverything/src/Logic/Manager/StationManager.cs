@@ -255,6 +255,29 @@ public static class StationManager {
                 popupBasePos[__instance] = __instance.popupBoxRect.anchoredPosition;
             }
 
+            // compute vertical positions depending on tower type
+            var localImgRT = __instance.localSdImage?.rectTransform;
+            var remoteImgRT = __instance.remoteSdImage?.rectTransform;
+            float topY, bottomY;
+            if (__instance.station != null && __instance.station.isStellar && localImgRT != null && remoteImgRT != null) {
+                // stellar: use the same Y as small images (14 / -14)
+                topY = localImgRT.anchoredPosition.y;
+                bottomY = remoteImgRT.anchoredPosition.y;
+            }
+            else if (localImgRT != null) {
+                // planetary: center within the larger image
+                float centerY = localImgRT.anchoredPosition.y;
+                // 默认把按钮垂直居中于大图像区域
+                float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f;
+                // 行星塔中间额外增加 2f 的空隙（上下各 +1f）
+                const float PlanetExtraGap = 4f;
+                halfGap += PlanetExtraGap / 2f;
+                topY = centerY + halfGap;
+                bottomY = centerY - halfGap;
+            } else {
+                topY = BtnYOffset; bottomY = -BtnYOffset;
+            }
+
             // create or find Transfer button
             string tName = "FE_transferModeButton_" + __instance.index;
             Transform tTrans = __instance.transform.Find(tName);
@@ -268,7 +291,7 @@ public static class StationManager {
                 var rt = go.GetComponent<RectTransform>();
                 rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, BtnYOffset);
+                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
                 transferBtn = go.GetComponent<Button>();
                 // remove original listeners and bind our popup
                 try { transferBtn.onClick.RemoveAllListeners(); } catch { }
@@ -280,7 +303,7 @@ public static class StationManager {
                 transferText = tTrans.GetComponentInChildren<Text>();
                 // update position in case ref moved
                 var rt = transferBtn.GetComponent<RectTransform>();
-                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, BtnYOffset);
+                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
             }
 
@@ -297,7 +320,7 @@ public static class StationManager {
                 var rt = go.GetComponent<RectTransform>();
                 rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, -BtnYOffset);
+                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
                 capBtn = go.GetComponent<Button>();
                 try { capBtn.onClick.RemoveAllListeners(); } catch { }
                 capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
@@ -306,7 +329,7 @@ public static class StationManager {
                 capBtn = cTrans.GetComponent<Button>();
                 capText = cTrans.GetComponentInChildren<Text>();
                 var rt = capBtn.GetComponent<RectTransform>();
-                rt.anchoredPosition = refRect.anchoredPosition + new Vector2(spacingX, -BtnYOffset);
+                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
                 rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
             }
 
