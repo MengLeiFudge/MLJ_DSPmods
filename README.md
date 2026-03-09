@@ -309,7 +309,7 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "战略规划师。推荐Claude Opus → GPT-5.2 → Kimi K2.5 → Gemini 3 Pro"
     },
     "atlas": {
-      "model": "opencode/kimi-k2.5",
+      "model": "openai/gpt-5.2",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "待办事项协调器。推荐Kimi K2.5 → Claude Sonnet → GPT-5.2"
     },
@@ -332,24 +332,24 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "无情评审员。推荐GPT-5.2 → Claude Opus → Gemini 3 Pro"
     },
     "explore": {
-      "model": "opencode/minimax-m2.5-free",
+      "model": "opencode/minimax-m2.5",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "快速代码库扫描。推荐Grok Code Fast → MiniMax → Haiku → GPT-5-Nano"
     },
     "librarian": {
-      "model": "zai-coding-plan/glm-4.7-flashx",
+      "model": "opencode/gemini-3-flash",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "文档/代码搜索。推荐Gemini Flash → MiniMax → GLM"
     },
     "multimodal-looker": {
-      "model": "google/gemini-3-flash-preview",
+      "model": "opencode/kimi-k2.5",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "视觉/屏幕截图。推荐Kimi K2.5 → Gemini Flash → GPT-5.2 → GLM-4.6v"
     }
   },
   "categories": {
     "visual-engineering": {
-      "model": "google/gemini-3.1-pro-preview",
+      "model": "opencode/gemini-3.1-pro",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "前端、用户界面、CSS、设计。推荐Gemini 3 Pro → GLM 5 → Claude Opus"
@@ -367,13 +367,13 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "深度编码，复杂逻辑。推荐GPT-5.3 Codex → Claude Opus → Gemini 3 Pro"
     },
     "artistry": {
-      "model": "google/gemini-3.1-pro-preview",
+      "model": "opencode/gemini-3-pro",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "富有创意、新颖的方法。推荐Gemini 3 Pro → Claude Opus → GPT-5.2"
     },
     "quick": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "openai/gpt-5.1-codex-mini",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "简单、快速的任务。推荐Claude Haiku → Gemini Flash → GPT-5-Nano"
     },
@@ -390,7 +390,7 @@ nano ~/.config/opencode/oh-my-opencode.json
       "description": "一般复杂工作。推荐Claude Opus → GPT-5.2 → Gemini 3 Pro"
     },
     "writing": {
-      "model": "google/gemini-3-flash-preview",
+      "model": "opencode/gemini-3-flash",
       "prompt_append": "Always respond in Simplified Chinese.",
       "description": "文本、文档、散文。推荐Gemini Flash → Claude Sonnet"
     }

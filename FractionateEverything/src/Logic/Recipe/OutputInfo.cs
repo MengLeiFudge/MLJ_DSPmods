@@ -11,7 +11,7 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public class OutputInfo(float successRatio, int outputID, float outputCount) {
     public static void AddTranslations() {
-        Register("总计", "Total");
+        // "总计" translation removed - no longer displayed in product list
     }
 
     /// <summary>
@@ -44,6 +44,6 @@ public class OutputInfo(float successRatio, int outputID, float outputCount) {
         string s1 = forceShow || ShowOutputCount ? OutputCount.ToString("F3") : "???";
         string s2 = forceShow || ShowOutputName ? item.name : "???";
         string s3 = forceShow || ShowSuccessRatio ? SuccessRatio.ToString("P3") : "???";
-        return $"{s1} {s2} ~ {s3} ({"总计".Translate()} {OutputTotalCount})";
+        return $"{s1} × {s2}  {s3}";
     }
 }
