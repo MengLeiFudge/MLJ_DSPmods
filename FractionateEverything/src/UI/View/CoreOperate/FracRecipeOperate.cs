@@ -42,30 +42,30 @@ public static class FracRecipeOperate {
 
     // ==================== 布局常量 ====================
 
-    private const int InfoLineCount = 30;          // 左列文本行数
-    private const int LevelLineCount = 13;         // 右列: 标题 + +0 到 +10 + 空行
-    private const float RightColX = 380f;          // 右列X起始位置
+    private const int InfoLineCount = 30;// 左列文本行数
+    private const int LevelLineCount = 13;// 右列: 标题 + +0 到 +10 + 空行
+    private const float RightColX = 380f;// 右列X起始位置
     private const float IconSize = 24f;
-    private const float TextOffsetWithIcon = 28f;  // 图标宽度 + 间距
+    private const float TextOffsetWithIcon = 28f;// 图标宽度 + 间距
     private const float LineHeight = 24f;
 
     // 产物行布局（格式：概率 | 图标 | 名称×数目）
-    private const float ProductRatioX = 0f;     // 左侧概率文本X
-    private const float ProductIconX = 72f;     // 物品图标X（概率文本右侧）
-    private const float ProductTextX = 100f;    // 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
+    private const float ProductRatioX = 0f;// 左侧概率文本X
+    private const float ProductIconX = 72f;// 物品图标X（概率文本右侧）
+    private const float ProductTextX = 100f;// 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
 
     // ==================== UI 元素 ====================
 
     private static Text[] txtRecipeInfo = new Text[InfoLineCount];
-    private static Text[] txtProductLeft = new Text[InfoLineCount];   // 产物行左侧文本（概率/等效数量）
+    private static Text[] txtProductLeft = new Text[InfoLineCount];// 产物行左侧文本（概率/等效数量）
     private static MyImageButton[] btnRecipeInfoIcons = new MyImageButton[InfoLineCount];
     private static float txtRecipeInfoBaseY;
     private static MySlider incSlider;
     private static ConfigEntry<int> selectedInc;
 
     // 产物分节标签（动态定位）
-    private static Text txtMainLabel;    // "产出" 标签
-    private static Text txtAppendLabel;  // "其他" 标签
+    private static Text txtMainLabel;// "产出" 标签
+    private static Text txtAppendLabel;// "其他" 标签
 
     // 右列：配方强化等级信息
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
@@ -92,6 +92,7 @@ public static class FracRecipeOperate {
         //Register("其他", "Others"); // 原版已翻译
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
+        Register("每个原料平均产出：", "Average output per raw material:");
 
         Register("建筑强化加成", "Building Enhancement Bonuses");
         Register("等级", "Level");
@@ -206,11 +207,8 @@ public static class FracRecipeOperate {
 
         // 右列：配方强化等级信息（用较长的初始文本来撑开窗口宽度）
         for (int i = 0; i < LevelLineCount; i++) {
-            string placeholder = i == 0
-                ? "当前配方强化等级 +10"
-                : i <= 11
-                    ? "不消耗原料80%  翻倍产出50%  损毁0%"
-                    : "";
+            string placeholder = i == 0 ? "当前配方强化等级 +10" :
+                i <= 11 ? "不消耗原料80%  翻倍产出50%  损毁0%" : "";
             txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, placeholder, 14);
         }
     }
@@ -245,25 +243,26 @@ public static class FracRecipeOperate {
             // 第1行：配方类型-原料名称（剥离强化等级）
             string headerName = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
             ShowTextLine(line++, headerName.WithColor(recipe.MatrixID - I电磁矩阵));
-            ShowTextLine(line++, ""); // 空行
+            ShowTextLine(line++, "");// 空行
 
             // 成功率（格式：原始×献祭增幅=实际）
             float successBoost = building?.SuccessBoost() ?? 0f;
             float actualSuccessRatio = recipe.SuccessRatio * (1f + successBoost);
             ShowTextLine(line++,
-                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + successBoost):F2} = {actualSuccessRatio:P3}".WithColor(Orange));
+                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + successBoost):F2} = {actualSuccessRatio:P3}"
+                    .WithColor(Orange));
 
             // 损毁率
             ShowTextLine(line++,
                 $"{"损毁率".Translate()} {recipe.DestroyRatio:P3}".WithColor(Red));
-            ShowTextLine(line++, ""); // 空行
+            ShowTextLine(line++, "");// 空行
 
             // 主产物：标签独占一行，下方竖向列表
             if (recipe.OutputMain.Count > 0) {
                 float labelY = txtRecipeInfoBaseY + LineHeight * line;
                 NormalizeRectWithMidLeft(txtMainLabel, 0, labelY);
                 txtMainLabel.gameObject.SetActive(true);
-                line++; // 标签独占一行
+                line++;// 标签独占一行
             }
             foreach (OutputInfo info in recipe.OutputMain) {
                 ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
@@ -274,18 +273,18 @@ public static class FracRecipeOperate {
                 float labelY = txtRecipeInfoBaseY + LineHeight * line;
                 NormalizeRectWithMidLeft(txtAppendLabel, 0, labelY);
                 txtAppendLabel.gameObject.SetActive(true);
-                line++; // 标签独占一行
+                line++;// 标签独占一行
             }
             foreach (OutputInfo info in recipe.OutputAppend) {
                 ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
             }
 
-            ShowTextLine(line++, ""); // 空行
+            ShowTextLine(line++, "");// 空行
 
             // 等效处理：增产点数滑条 + 竖向输出列表
             line = ShowEqProcessingSection(line, recipe, building);
 
-            ShowTextLine(line++, ""); // 空行
+            ShowTextLine(line++, "");// 空行
 
             // 建筑强化效果
             if (building != null) {
@@ -293,9 +292,9 @@ public static class FracRecipeOperate {
                     $"{"建筑强化加成".Translate()} {building.name}  {"等级".Translate()} +{building.Level()}");
 
                 ShowTextLine(line++,
-                    $"{"堆叠".Translate()} x{building.MaxStack()}  " +
-                    $"{"能耗比".Translate()} {building.EnergyRatio():P0}  " +
-                    $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
+                    $"{"堆叠".Translate()} x{building.MaxStack()}  "
+                    + $"{"能耗比".Translate()} {building.EnergyRatio():P0}  "
+                    + $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
 
                 float sBoost = building.SuccessBoost();
                 ShowTextLine(line++,
@@ -304,8 +303,8 @@ public static class FracRecipeOperate {
 
                 bool fluidEnh = building.EnableFluidEnhancement();
                 ShowTextLine(line++,
-                    $"{"流体增强".Translate()}：" +
-                    (fluidEnh
+                    $"{"流体增强".Translate()}："
+                    + (fluidEnh
                         ? "已启用".Translate().WithColor(Green)
                         : "未启用".Translate().WithColor(Gray)));
 
@@ -325,12 +324,16 @@ public static class FracRecipeOperate {
     // ==================== 右列：强化等级表 ====================
 
     private static void UpdateLevelColumn(BaseRecipe recipe) {
-        int currentLevel = recipe?.Level ?? -2; // -2=null, -1=locked, >=0=有效等级
+        int currentLevel = recipe?.Level ?? -2;// -2=null, -1=locked, >=0=有效等级
 
         // 标题行（放在 txtRecipeInfoBaseY）
         string headerText;
         if (recipe == null) {
-            headerText = "配方不存在！".Translate();
+            headerText = "";
+            foreach (Text text in txtLevelInfo) {
+                text.text = "";
+            }
+            return;
         } else if (recipe.Locked) {
             headerText = "配方未解锁".Translate();
         } else {
@@ -346,13 +349,13 @@ public static class FracRecipeOperate {
 
             string coloredText;
             if (currentLevel < 0) {
-                coloredText = lvlText.WithColor(Gray); // 未解锁：全灰
+                coloredText = lvlText.WithColor(Gray);// 未解锁：全灰
             } else if (lvl == currentLevel) {
-                coloredText = lvlText.WithColor(Orange); // 当前等级：橙色高亮
+                coloredText = lvlText.WithColor(Orange);// 当前等级：橙色高亮
             } else if (lvl < currentLevel) {
-                coloredText = lvlText.WithColor(Green); // 已达到：绿色
+                coloredText = lvlText.WithColor(Green);// 已达到：绿色
             } else {
-                coloredText = lvlText; // 未达到：默认白色
+                coloredText = lvlText;// 未达到：默认白色
             }
 
             txtLevelInfo[lineIdx].text = coloredText;
@@ -415,7 +418,6 @@ public static class FracRecipeOperate {
     // ==================== 等效处理（滑条 + 竖向输出列表） ====================
 
     private static int ShowEqProcessingSection(int line, BaseRecipe recipe, ItemProto building) {
-        // 增产点数滑条行
         HideIconOnLine(line);
         txtProductLeft[line].gameObject.SetActive(false);
         txtRecipeInfo[line].text = "增产点数".Translate();
@@ -424,25 +426,25 @@ public static class FracRecipeOperate {
         incSlider.gameObject.SetActive(true);
         line++;
 
-        // 计算等效输出
+        ShowTextLine(line++, "每个原料平均产出：".Translate());
+
+        // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
         float plrRatio = building?.PlrRatio() ?? 1.0f;
         float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
         float successBoost = building?.SuccessBoost() ?? 0f;
         float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        float destroyRatio = recipe.DestroyRatio;
-        float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
+        float fracRatio = (1 - recipe.DestroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
-        float processRepeatRatio = processRatio * remainInputRatio;
-        float repeatMultiplier = processRepeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - processRepeatRatio);
+        float repeatRatio = fracRatio * remainInputRatio;
+        float repeatMultiplier = repeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - repeatRatio);
         float mainOutputBonus = 1.0f + recipe.DoubleOutputRatio;
 
-        // 合并主产物 + 副产物到输出列表（值：等效产出量、显示控制标志）
         List<(int id, float cnt, bool showName, bool showCount)> outputs = [];
         Dictionary<int, int> outputIndex = [];
 
         foreach (var info in recipe.OutputMain) {
             int id = info.OutputID;
-            float cnt = processRatio * info.SuccessRatio * info.OutputCount * mainOutputBonus * repeatMultiplier;
+            float cnt = fracRatio * info.SuccessRatio * info.OutputCount * mainOutputBonus * repeatMultiplier;
             if (outputIndex.TryGetValue(id, out int idx)) {
                 var (eid, ec, en, ecu) = outputs[idx];
                 outputs[idx] = (eid, ec + cnt, en, ecu);
@@ -453,7 +455,7 @@ public static class FracRecipeOperate {
         }
         foreach (var info in recipe.OutputAppend) {
             int id = info.OutputID;
-            float cnt = processRatio * info.SuccessRatio * info.OutputCount * repeatMultiplier;
+            float cnt = fracRatio * info.SuccessRatio * info.OutputCount * repeatMultiplier;
             if (outputIndex.TryGetValue(id, out int idx)) {
                 var (eid, ec, en, ecu) = outputs[idx];
                 outputs[idx] = (eid, ec + cnt, en, ecu);
@@ -465,25 +467,19 @@ public static class FracRecipeOperate {
 
         bool showDetails = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
 
-        // 竖向显示每个输出项（格式：等效数量 | 图标 | 名称×1）
         foreach (var (id, cnt, showName, showCount) in outputs) {
             float lineY = txtRecipeInfoBaseY + LineHeight * line;
             ItemProto outItem = LDB.items.Select(id);
             string outName = showDetails || showName ? outItem?.name ?? "???" : "???";
             string outCount = showDetails || showCount ? cnt.ToString("F3") : "???";
 
-            // 左侧：等效数量（即每输入1个的期望产出数）
-            txtProductLeft[line].text = outCount;
-            txtProductLeft[line].SetPosition(ProductRatioX, lineY);
-            txtProductLeft[line].gameObject.SetActive(true);
+            txtProductLeft[line].gameObject.SetActive(false);
 
-            // 中间：物品图标
             btnRecipeInfoIcons[line].gameObject.SetActive(true);
             btnRecipeInfoIcons[line].Proto = outItem;
             NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
 
-            // 右侧：名称×1（等效处理以1为输入单位）
-            txtRecipeInfo[line].text = $"{outName}×1";
+            txtRecipeInfo[line].text = $"{outName}×{outCount}";
             txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
 
             line++;
@@ -498,24 +494,24 @@ public static class FracRecipeOperate {
         switch (building.ID) {
             case IFE交互塔:
                 ShowTextLine(line++,
-                    $"{"牺牲特性".Translate()}：{FeatureStatus(InteractionTower.EnableSacrificeTrait)}  " +
-                    $"{"维度共鸣".Translate()}：{FeatureStatus(InteractionTower.EnableDimensionalResonance)}");
+                    $"{"牺牲特性".Translate()}：{FeatureStatus(InteractionTower.EnableSacrificeTrait)}  "
+                    + $"{"维度共鸣".Translate()}：{FeatureStatus(InteractionTower.EnableDimensionalResonance)}");
                 break;
             case IFE矿物复制塔:
                 ShowTextLine(line++,
-                    $"{"质能裂变".Translate()}：{FeatureStatus(MineralReplicationTower.EnableMassEnergyFission)}  " +
-                    $"{"零压循环".Translate()}：{FeatureStatus(MineralReplicationTower.EnableZeroPressureCycle)}");
+                    $"{"质能裂变".Translate()}：{FeatureStatus(MineralReplicationTower.EnableMassEnergyFission)}  "
+                    + $"{"零压循环".Translate()}：{FeatureStatus(MineralReplicationTower.EnableZeroPressureCycle)}");
                 break;
             case IFE转化塔:
                 ShowTextLine(line++,
-                    $"{"因果追踪".Translate()}：{FeatureStatus(ConversionTower.EnableCausalTracing)}  " +
-                    $"{"单锁".Translate()}：{FeatureStatus(ConversionTower.EnableSingleLock)}");
+                    $"{"因果追踪".Translate()}：{FeatureStatus(ConversionTower.EnableCausalTracing)}  "
+                    + $"{"单锁".Translate()}：{FeatureStatus(ConversionTower.EnableSingleLock)}");
                 break;
             case IFE点数聚集塔:
                 ShowTextLine(line++,
-                    $"{"虚空喷射".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidSpray)}  " +
-                    $"{"双倍点数".Translate()}：{FeatureStatus(PointAggregateTower.EnableDoublePoints)}  " +
-                    $"{"最大增产等级".Translate()} {PointAggregateTower.MaxInc}");
+                    $"{"虚空喷射".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidSpray)}  "
+                    + $"{"双倍点数".Translate()}：{FeatureStatus(PointAggregateTower.EnableDoublePoints)}  "
+                    + $"{"最大增产等级".Translate()} {PointAggregateTower.MaxInc}");
                 break;
         }
         return line;
