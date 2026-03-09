@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
@@ -35,6 +36,12 @@ public static class BuildingOperate {
     private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[10];
     private static int[] buildingReinforcementCost = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+
+    private const int LevelLineCount = 15;
+    private const float RightColX = 380f;
+    private const float LineHeight = 24f;
+    private static float buildingInfoBaseY;
+    private static Text[] txtLevelInfo = new Text[LevelLineCount];
 
     public static void AddTranslations() {
         Register("建筑操作", "Building Operate");
@@ -149,6 +156,12 @@ public static class BuildingOperate {
         Register("特质1（+6）：", "Trait 1 (+6): ");
         Register("特质2（+12）：", "Trait 2 (+12): ");
         Register("特质未激活", "Not yet unlocked");
+
+        Register("当前建筑强化等级", "Current Building Enhancement Level");
+        Register("能耗", "Enrg");
+        Register("增产", "Prolif");
+        Register("最大增产点数", "Max Inc Pts");
+        Register("交互电力", "Interact Enrg");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -170,6 +183,12 @@ public static class BuildingOperate {
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
+        buildingInfoBaseY = y;
+        for (int i = 0; i < LevelLineCount; i++) {
+            string placeholder = i == 0 ? "当前建筑强化等级 +12" :
+                i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
+            txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, placeholder, 14);
+        }
         y += 36f;
         txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
@@ -296,7 +315,57 @@ public static class BuildingOperate {
                 txtReinforcementBonus[i].text = "";
             }
         }
+
+        UpdateLevelColumn();
     }
+
+    private static void UpdateLevelColumn() {
+        int currentLevel = SelectedBuilding.Level();
+        int buildingId = SelectedBuilding.ID;
+
+        txtLevelInfo[0].text = $"{"当前建筑强化等级".Translate()} +{currentLevel}".WithColor(Orange);
+        NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, buildingInfoBaseY);
+
+        for (int lvl = 0; lvl <= MaxLevel; lvl++) {
+            string desc = GetLevelDescription(buildingId, lvl);
+            string colored = lvl == currentLevel ? desc.WithColor(Orange) :
+                lvl < currentLevel ? desc.WithColor(Green) : desc;
+            txtLevelInfo[lvl + 1].text = colored;
+            NormalizeRectWithMidLeft(txtLevelInfo[lvl + 1], RightColX, buildingInfoBaseY + LineHeight * (lvl + 1));
+        }
+
+        txtLevelInfo[MaxLevel + 2].text = "";
+    }
+
+    private static string GetLevelDescription(int buildingId, int level) {
+        int stack = LevelToMaxStack(level);
+        if (buildingId is IFE行星内物流交互站 or IFE星际物流交互站) {
+            return $"+{level}  ×{stack}  {"交互电力".Translate()}{LevelToInteractEnergyRatio(level):P0}";
+        }
+        float energy = LevelToEnergyRatio(level);
+        if (buildingId == IFE点数聚集塔) {
+            int maxInc = Math.Min(level + 4, 10);
+            return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"最大增产点数".Translate()}{maxInc}";
+        }
+        return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"增产".Translate()}×{LevelToPlrRatio(level):F1}";
+    }
+
+    private static int LevelToMaxStack(int level) => level switch {
+        < 6 => 1, < 9 => 4, < 12 => 8, _ => 12,
+    };
+
+    private static float LevelToEnergyRatio(int level) => level switch {
+        < 1 => 1.0f, < 4 => 0.95f, < 7 => 0.85f, < 10 => 0.7f, _ => 0.5f,
+    };
+
+    private static float LevelToPlrRatio(int level) => level switch {
+        < 2 => 1.0f, < 5 => 1.1f, < 8 => 1.3f, < 11 => 1.6f, _ => 2.0f,
+    };
+
+    private static float LevelToInteractEnergyRatio(int level) => level switch {
+        < 1 => 1.00f, < 2 => 0.95f, < 4 => 0.85f, < 5 => 0.70f,
+        < 7 => 0.55f, < 8 => 0.40f, < 10 => 0.30f, < 11 => 0.25f, _ => 0.20f,
+    };
 
     private static void Reinforcement() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
