@@ -31,32 +31,42 @@ public static class StationManager {
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
     // UI extension state for per-slot mode buttons and popups
-    private enum ETransferMode { Sync = 0, Supply = 1, Demand = 2 }
-    private enum ECapacityMode { Limited = 0, Infinite = 1 }
-    private enum EPopupType { None = 0, Transfer = 1, Capacity = 2 }
-
-    private struct PopupInfo {
-        public EPopupType Type;
-        public ETransferMode[] TransferOptions; // for Transfer popup: options presented
-        public ECapacityMode[] CapacityOptions; // for Capacity popup
+    private enum ETransferMode {
+        Sync = 0,
+        Upload = 1,
+        Download = 2
     }
 
-    private static readonly ConcurrentDictionary<long, ETransferMode> slotTransferMode = new();
+    private enum ECapacityMode {
+        Limited = 0,
+        Infinite = 1
+    }
+
+    // private enum EPopupType {
+    //     None = 0,
+    //     Transfer = 1,
+    //     Capacity = 2
+    // }
+    //
+    // private struct PopupInfo {
+    //     public EPopupType Type;
+    //     public ETransferMode[] TransferOptions; // for Transfer popup: options presented
+    //     public ECapacityMode[] CapacityOptions; // for Capacity popup
+    // }
+
+    private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>> slotTransferMode = new();
     private static readonly ConcurrentDictionary<long, ECapacityMode> slotCapacityMode = new();
-    private static readonly ConcurrentDictionary<long, PopupInfo> slotPopupInfo = new();
 
     // store base positions to avoid repeatedly adding spacing
-    private static readonly ConcurrentDictionary<UIStationWindow, float> windowBaseWidth = new();
-    private static readonly ConcurrentDictionary<UIStationStorage, Vector2> popupBasePos = new();
+    private static readonly ConcurrentDictionary<UIStationWindow, bool> windowWidth = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
+    // private static readonly ConcurrentDictionary<UIStationStorage, Vector2> popupBasePos = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
 
     private const float ExtraSpacing = 12f;
     private const float BtnHeight = 26f;
     private const float BtnYOffset = 14f;
-
-    private static long GetSlotKey(UIStationStorage s) {
-        if (s?.station == null) return 0L;
-        return ((long)s.station.id << 32) | (uint)s.index;
-    }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
@@ -65,11 +75,13 @@ public static class StationManager {
         if (time % updateTick != 3L) {
             return;
         }
+
         try {
             // 避免同一帧内多次处理
             if (lastTickDic.TryGetValue(__instance.stationPool, out long lastTick) && lastTick == time) {
                 return;
             }
+
             lastTickDic[__instance.stationPool] = time;
             // 获取所有的交互站后，执行随机排序，让每个塔都有机会拿到物品
             List<StationComponent> stations = [];
@@ -78,16 +90,19 @@ public static class StationManager {
                 if (stationComponent == null || stationComponent.id != index) {
                     continue;
                 }
+
                 int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
                 if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
                     stations.Add(stationComponent);
                 }
             }
+
             // 使用 Fisher-Yates 洗牌算法进行真正的随机排序
             for (int i = stations.Count - 1; i > 0; i--) {
                 int j = GetRandInt(0, i + 1);
                 (stations[i], stations[j]) = (stations[j], stations[i]);
             }
+
             // 循环所有的交互站
             float downloadThreshold = Miscellaneous.DownloadThreshold;
             float uploadThreshold = Miscellaneous.UploadThreshold;
@@ -102,6 +117,7 @@ public static class StationManager {
                     if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
                         continue;
                     }
+
                     bool storeLocked = !GameMain.sandboxToolsEnabled && store.keepMode > 0;
                     bool station2Mod;
                     bool mod2Station;
@@ -116,6 +132,7 @@ public static class StationManager {
                         mod2Station = store.remoteLogic == ELogisticStorage.Supply
                                       || store.localLogic == ELogisticStorage.Supply;
                     }
+
                     if (mod2Station) {
                         // 产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
                         if (store.totalSupplyCount < store.max * downloadThreshold) {
@@ -124,6 +141,7 @@ public static class StationManager {
                                 maxSlotEnergy);
                         }
                     }
+
                     if (station2Mod) {
                         // 其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
                         if (store.count > store.max * uploadThreshold
@@ -137,6 +155,7 @@ public static class StationManager {
                             }
                         }
                     }
+
                     if (store.localLogic == ELogisticStorage.None) {
                         if (storeLocked) {
                             // 仓储锁定：维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
@@ -152,8 +171,7 @@ public static class StationManager {
                     }
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             LogError(ex);
         }
     }
@@ -165,6 +183,7 @@ public static class StationManager {
             if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
                 return;
             }
+
             ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
             // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
             float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
@@ -177,8 +196,10 @@ public static class StationManager {
                     if (cost > maxSlotEnergy) {
                         return;
                     }
+
                     count = Mathf.FloorToInt(maxSlotEnergy / cost);
                 }
+
                 count = TakeItemFromModData(store.itemId, count, out int inc);
                 store.count += count;
                 store.inc += inc;
@@ -192,190 +213,256 @@ public static class StationManager {
                     if (cost > maxSlotEnergy) {
                         return;
                     }
+
                     count = Mathf.FloorToInt(maxSlotEnergy / cost);
                 }
+
                 int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
                 AddItemToModData(store.itemId, count, inc);
                 stationComponent.energy -= Mathf.CeilToInt(cost * count);
             }
-        }
-        finally {
+        } finally {
             if (PlanetaryInteractionStation.Level >= 3) {
                 AddIncToItem(store.count, ref store.inc);
             }
         }
     }
 
-    /// <summary>
-    /// 在物流交互站中启用沙盒模式的keepModeButton
-    /// </summary>
+
+    /**
+     * 给所有的塔新增两个按钮
+     */
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnCreate))]
+    public static void UIStationWindow_OnCreate_Postfix(UIStationWindow __instance) {
+        for (int index = 0; index < 6; ++index) {
+            UIStationStorage stationStorage = __instance.storageUIs[index];
+            // --- 新增两个模式按钮（Transfer / Capacity） ---
+            try {
+                // 创建交互模式按钮
+                string tName = "FE_transferModeButton_" + index;
+                Transform tTrans = stationStorage.transform.Find(tName);
+                if (tTrans == null) {
+                    GameObject go =
+                        GameObject.Instantiate(stationStorage.localSdButton.gameObject, stationStorage.localSdButton.transform.parent, false);
+                    go.name = tName;
+                    transferGameObjects.TryAdd(stationStorage, go);
+                }
+
+                // 创建容量按钮
+                string cName = "FE_capacityModeButton_" + index;
+                Transform cTrans = stationStorage.transform.Find(cName);
+                if (cTrans == null) {
+                    GameObject go =
+                        GameObject.Instantiate(stationStorage.localSdButton.gameObject, stationStorage.localSdButton.transform.parent, false);
+                    go.name = cName;
+                    capacityGameObjects.TryAdd(stationStorage, go);
+                }
+            } catch (Exception ex) {
+                LogError($"FE StationManager: create mode buttons failed: {ex}");
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnDestroy))]
+    public static void UIStationWindow__OnDestroy_Prefix(UIStationWindow __instance) {
+        windowWidth.Clear();
+        storageWidth.Clear();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnOpen))]
+    public static void UIStationStorage__OnOpen_Postfix(UIStationStorage __instance) {
+        string tName = "FE_transferModeButton_" + __instance.index;
+        Transform tTrans = __instance.transform.Find(tName);
+        if (tTrans != null) {
+            Button transferBtn = tTrans.GetComponent<Button>();
+            transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+        }
+
+        string cName = "FE_capacityModeButton_" + __instance.index;
+        Transform cTrans = __instance.transform.Find(cName);
+        if (cTrans != null) {
+            Button capBtn = cTrans.GetComponent<Button>();
+            capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnClose))]
+    public static void UIStationStorage__OnClose_Postfix(UIStationStorage __instance) {
+        string tName = "FE_transferModeButton_" + __instance.index;
+        Transform tTrans = __instance.transform.Find(tName);
+        if (tTrans != null) {
+            Button transferBtn = tTrans.GetComponent<Button>();
+            transferBtn.onClick.RemoveAllListeners();
+        }
+
+        string cName = "FE_capacityModeButton_" + __instance.index;
+        Transform cTrans = __instance.transform.Find(cName);
+        if (cTrans != null) {
+            Button capBtn = cTrans.GetComponent<Button>();
+            capBtn.onClick.RemoveAllListeners();
+        }
+    }
+    
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.RefreshValues))]
     public static void UIStationStorage_RefreshValues_Postfix(UIStationStorage __instance) {
-        // 如果是沙盒，不用处理，会自动启用按钮
-        if (GameMain.sandboxToolsEnabled) {
-            return;
-        }
-        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
-        // 如果不是自定义的塔，不处理
+        // 重命名
+        UIStationStorage stationStorage = __instance;
+        UIStationWindow stationWindow = __instance.stationWindow;
+        // 获取塔对应的物品ID
+        int buildingID = stationStorage.stationWindow.factory.entityPool[stationStorage.station.entityId].protoId;
+        // 原版本地物流模式的按钮
+        RectTransform refRect = stationStorage.localSdButton.GetComponent<RectTransform>();
+        // 原版按钮的宽度
+        float btnWidth = refRect.sizeDelta.x;
+        // 按钮的宽度+间隔=外面盒子需要增加的宽度
+        float spacingX = btnWidth + ExtraSpacing;
+        
+        // 栏位本身
+        RectTransform rectTransform = stationStorage.transform.GetComponent<RectTransform>();
+        // 如果不是自定义的塔
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+            // 还原窗口宽度
+            if (stationWindow != null && windowWidth.ContainsKey(stationWindow)) {
+                windowWidth.TryRemove(stationWindow, out _);
+                stationWindow.windowTrans.sizeDelta =
+                    new Vector2(stationWindow.windowTrans.sizeDelta.x - spacingX, stationWindow.windowTrans.sizeDelta.y);
+            }
+            // 还原栏位宽度
+            if (rectTransform != null && storageWidth.ContainsKey(stationStorage)) {
+                storageWidth.TryRemove(stationStorage, out _);
+                rectTransform.sizeDelta =
+                    new Vector2(rectTransform.sizeDelta.x - spacingX, rectTransform.sizeDelta.y);
+            }
+            // 隐藏两个新增的按钮
+            if (transferGameObjects.TryGetValue(stationStorage, out GameObject transferGO)) {
+                transferGO.SetActive(false);
+            }
+            if (capacityGameObjects.TryGetValue(stationStorage, out GameObject capacityGO)) {
+                capacityGO.SetActive(false);
+            }
             return;
         }
-        StationStore stationStore = new();
-        if (__instance.station != null && __instance.index < __instance.station.storage.Length)
-            stationStore = __instance.station.storage[__instance.index];
-        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
-        ItemProto itemProto2 = LDB.items.Select(buildingID);
-        // 如果物品或者塔不是游戏中存在的物品，不处理
-        if (itemProto1 == null || itemProto2 == null) {
-            return;
+
+        // 增加窗口宽度
+        if (stationWindow != null && !windowWidth.ContainsKey(stationWindow)) {
+            windowWidth.TryAdd(stationWindow, true);
+            stationWindow.windowTrans.sizeDelta =
+                new Vector2(stationWindow.windowTrans.sizeDelta.x + spacingX, stationWindow.windowTrans.sizeDelta.y);
         }
-        // 原版逻辑会先禁用这个按钮，所以在切换成供应或需求的时候不需要手动禁用
-        // 启用keepModeButton
-        __instance.keepModeButton.gameObject.SetActive(true);
 
-        // --- 新增两个模式按钮（Transfer / Capacity） ---
-        try {
-            // spacing based on reference button width
-            var refRect = __instance.localSdButton.GetComponent<RectTransform>();
-            float btnWidth = refRect.sizeDelta.x;
-            float spacingX = btnWidth + ExtraSpacing;
-
-            // ensure window base width saved once
-            if (__instance.stationWindow != null && !windowBaseWidth.ContainsKey(__instance.stationWindow)) {
-                windowBaseWidth[__instance.stationWindow] = __instance.stationWindow.windowTrans.sizeDelta.x;
-            }
-            // set window width = base + spacingX
-            if (__instance.stationWindow != null && windowBaseWidth.TryGetValue(__instance.stationWindow, out float baseW)) {
-                __instance.stationWindow.windowTrans.sizeDelta = new Vector2(baseW + spacingX, __instance.stationWindow.windowTrans.sizeDelta.y);
-            }
-
-            // popup base pos store
-            if (!popupBasePos.ContainsKey(__instance)) {
-                popupBasePos[__instance] = __instance.popupBoxRect.anchoredPosition;
-            }
-
-            // compute vertical positions depending on tower type
-            var localImgRT = __instance.localSdImage?.rectTransform;
-            var remoteImgRT = __instance.remoteSdImage?.rectTransform;
-            float topY, bottomY;
-            if (__instance.station != null && __instance.station.isStellar && localImgRT != null && remoteImgRT != null) {
-                // stellar: use the same Y as small images (14 / -14)
-                topY = localImgRT.anchoredPosition.y;
-                bottomY = remoteImgRT.anchoredPosition.y;
-            }
-            else if (localImgRT != null) {
-                // planetary: center within the larger image
-                float centerY = localImgRT.anchoredPosition.y;
-                // 默认把按钮垂直居中于大图像区域
-                float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f;
-                // 行星塔中间额外增加 2f 的空隙（上下各 +1f）
-                const float PlanetExtraGap = 4f;
-                halfGap += PlanetExtraGap / 2f;
-                topY = centerY + halfGap;
-                bottomY = centerY - halfGap;
-            } else {
-                topY = BtnYOffset; bottomY = -BtnYOffset;
-            }
-
-            // create or find Transfer button
-            string tName = "FE_transferModeButton_" + __instance.index;
-            Transform tTrans = __instance.transform.Find(tName);
-            Button transferBtn;
-            Text transferText;
-            if (tTrans == null) {
-                // 克隆原版 localSdButton（保留原始样式：image + text）
-                GameObject template = __instance.localSdButton.gameObject;
-                GameObject go = GameObject.Instantiate(template, __instance.localSdButton.transform.parent, false);
-                go.name = tName;
-                var rt = go.GetComponent<RectTransform>();
-                rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
-                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
-                transferBtn = go.GetComponent<Button>();
-                // remove original listeners and bind our popup
-                try { transferBtn.onClick.RemoveAllListeners(); } catch { }
-                transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
-                // find text child (original localSd uses an Image + Text structure)
-                transferText = go.GetComponentInChildren<Text>();
-            } else {
-                transferBtn = tTrans.GetComponent<Button>();
-                transferText = tTrans.GetComponentInChildren<Text>();
-                // update position in case ref moved
-                var rt = transferBtn.GetComponent<RectTransform>();
-                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
-                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-            }
-
-            // create or find Capacity button
-            string cName = "FE_capacityModeButton_" + __instance.index;
-            Transform cTrans = __instance.transform.Find(cName);
-            Button capBtn;
-            Text capText;
-            if (cTrans == null) {
-                // 克隆原版 localSdButton 作为样式模板
-                GameObject template = __instance.localSdButton.gameObject;
-                GameObject go = GameObject.Instantiate(template, __instance.localSdButton.transform.parent, false);
-                go.name = cName;
-                var rt = go.GetComponent<RectTransform>();
-                rt.anchorMin = refRect.anchorMin; rt.anchorMax = refRect.anchorMax; rt.pivot = refRect.pivot;
-                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
-                capBtn = go.GetComponent<Button>();
-                try { capBtn.onClick.RemoveAllListeners(); } catch { }
-                capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
-                capText = go.GetComponentInChildren<Text>();
-            } else {
-                capBtn = cTrans.GetComponent<Button>();
-                capText = cTrans.GetComponentInChildren<Text>();
-                var rt = capBtn.GetComponent<RectTransform>();
-                rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
-                rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
-            }
-
-            // display/hide follow original localSdButton visible state
-            transferBtn.gameObject.SetActive(__instance.localSdButton.gameObject.activeSelf);
-            capBtn.gameObject.SetActive(__instance.localSdButton.gameObject.activeSelf);
-
-            // ensure default modes exist
-            long key = GetSlotKey(__instance);
-            slotTransferMode.TryAdd(key, ETransferMode.Sync);
-            slotCapacityMode.TryAdd(key, ECapacityMode.Limited);
-
-            // update texts based on current mode
-            if (transferText != null && slotTransferMode.TryGetValue(key, out var tm)) {
-                transferText.text = tm switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" };
-            }
-            if (capText != null && slotCapacityMode.TryGetValue(key, out var cm)) {
-                capText.text = cm == ECapacityMode.Infinite ? "无限" : "有限";
-            }
+        // 增加栏位宽度
+        if (rectTransform != null && !storageWidth.ContainsKey(stationStorage)) {
+            storageWidth.TryAdd(stationStorage, true);
+            rectTransform.sizeDelta =
+                new Vector2(rectTransform.sizeDelta.x + spacingX, rectTransform.sizeDelta.y);
         }
-        catch (Exception ex) {
-            // swallow to avoid breaking UI; log for debug
-            LogError($"FE StationManager: create mode buttons failed: {ex}");
+
+        // 向前移动两个原版的按钮
+        // PS:这两个按钮每次都会自动回去，所有每次都需要移动
+        if (storageWidth.ContainsKey(stationStorage)) {
+            RectTransform localComponent = stationStorage.localSdButton.GetComponent<RectTransform>();
+            localComponent.anchoredPosition = new Vector2(localComponent.anchoredPosition.x - spacingX, localComponent.anchoredPosition.y);
+            RectTransform remoteComponent = stationStorage.remoteSdButton.GetComponent<RectTransform>();
+            remoteComponent.anchoredPosition = new Vector2(remoteComponent.anchoredPosition.x - spacingX, remoteComponent.anchoredPosition.y);
+        }
+        
+        // 根据塔类型计算垂直位置
+        var localImgRT = stationStorage.localSdImage?.rectTransform;
+        var remoteImgRT = stationStorage.remoteSdImage?.rectTransform;
+        float topY, bottomY;
+        if (stationStorage.station != null && stationStorage.station.isStellar && localImgRT != null &&
+            remoteImgRT != null) {
+            // 大塔：使用与官方按钮相同的 Y (14 / -14)
+            topY = localImgRT.anchoredPosition.y;
+            bottomY = remoteImgRT.anchoredPosition.y;
+        } else if (localImgRT != null) {
+            // 小塔：位于官方按钮的中心
+            float centerY = localImgRT.anchoredPosition.y;
+            float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f;
+            // 中间增加 4f 的空隙（上下各 +2f）
+            const float PlanetExtraGap = 4f;
+            halfGap += PlanetExtraGap / 2f;
+            topY = centerY + halfGap;
+            bottomY = centerY - halfGap;
+        } else {
+            topY = BtnYOffset;
+            bottomY = -BtnYOffset;
+        }
+
+        // 通过实体ID拿到整个塔的同步模式
+        ConcurrentDictionary<int, ETransferMode> transferDictionary = slotTransferMode.GetOrAdd(stationStorage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+
+        // 通过栏位索引，拿到对应栏位的同步模式
+        ETransferMode eTransferMode = transferDictionary.GetOrAdd(stationStorage.index, ETransferMode.Sync);
+
+        string tName = "FE_transferModeButton_" + stationStorage.index;
+        Transform tTrans = stationStorage.transform.Find(tName);
+        if (tTrans != null) {
+            Button transferBtn = tTrans.GetComponent<Button>();
+            if (transferGameObjects.TryGetValue(stationStorage, out GameObject transferGO)) {
+                transferGO.SetActive(stationStorage.localSdButton.gameObject.activeSelf);
+            }
+            Text transferText = tTrans.GetComponentInChildren<Text>();
+            // 根据当前模式更新文本
+            if (transferText != null) {
+                transferText.text = eTransferMode switch {
+                    ETransferMode.Sync => "双向同步".Translate(), ETransferMode.Upload => "仅上传".Translate(),
+                    ETransferMode.Download => "仅下载".Translate(),
+                    _ => "双向同步".Translate()
+                };
+            }
+
+            // 更新位置
+            var rt = transferBtn.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
+            rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
+        }
+
+        string cName = "FE_capacityModeButton_" + stationStorage.index;
+        Transform cTrans = stationStorage.transform.Find(cName);
+        if (cTrans != null) {
+            Button capBtn = cTrans.GetComponent<Button>();
+            if (capacityGameObjects.TryGetValue(stationStorage, out GameObject capacityGO)) {
+                capacityGO.SetActive(stationStorage.localSdButton.gameObject.activeSelf);
+            }
+            Text capText = cTrans.GetComponentInChildren<Text>();
+            if (capText != null && slotCapacityMode.TryGetValue(stationStorage.index, out ECapacityMode cm)) {
+                capText.text = cm == ECapacityMode.Infinite ? "无限上传".Translate() : "有限上传".Translate();
+            }
+
+            var rt = capBtn.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
+            rt.sizeDelta = new Vector2(btnWidth, BtnHeight);
         }
     }
 
-    /// <summary>
-    /// 点击keepModeButton按钮
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
-    public static bool UIStationStorage_OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
-        // 沙盒使用默认逻辑
-        if (GameMain.sandboxToolsEnabled) {
-            return true;
-        }
-        // 只处理物流交互站
-        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
-        }
-        // 原版有4个keepMode，需要点4下，用不上，这里只处理0和1
-        __instance.station.storage[__instance.index].keepMode =
-            __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
-        return false;
-    }
+    // /// <summary>
+    // /// 点击keepModeButton按钮
+    // /// </summary>
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
+    // public static bool UIStationStorage_OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
+    //     // 沙盒使用默认逻辑
+    //     if (GameMain.sandboxToolsEnabled) {
+    //         return true;
+    //     }
+    //
+    //     // 只处理物流交互站
+    //     int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
+    //     if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+    //         return true;
+    //     }
+    //
+    //     // 原版有4个keepMode，需要点4下，用不上，这里只处理0和1
+    //     __instance.station.storage[__instance.index].keepMode =
+    //         __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
+    //     return false;
+    // }
 
     /// <summary>
     /// 修改物流交互站的面板
@@ -389,6 +476,7 @@ public static class StationManager {
             __instance.event_lock = false;
             return;
         }
+
         // 修改集装输出的描述
         Component label = __instance.techPilerButton.transform.Find("label");
         Text text = label.GetComponent<Text>();
@@ -400,6 +488,7 @@ public static class StationManager {
             __instance.event_lock = false;
             return;
         }
+
         text.text = "  使用强化上限";
         // 修改集装输出的可选上限
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
@@ -416,11 +505,13 @@ public static class StationManager {
             __instance.minPilerSlider.value = pilerCount;
             __instance.minPilerValue.text = pilerCount.ToString();
         }
+
         if (maxStack > 1) {
             // 堆叠上限大于1，显示修改滑条
             __instance.minPilerGroup.gameObject.SetActive(true);
             __instance.pilerTechGroup.gameObject.SetActive(true);
         }
+
         __instance.event_lock = false;
     }
 
@@ -430,18 +521,25 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.RefreshTrans))]
     public static void UIStationWindow_RefreshTrans_Postfix(UIStationWindow __instance, StationComponent station) {
+        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
+        // 如果不是自定义的塔
+        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+            return;
+        }
+        
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxStack = building.MaxStack();
         if (maxStack <= 1) {
             // 没解锁堆叠，不调整
             return;
         }
+
         if (station.isStellar) {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float)(360 + 76 * station.storage.Length + 36));
+            __instance.windowTrans.sizeDelta = new Vector2(__instance.windowTrans.sizeDelta.x, 360f + 76f * station.storage.Length + 36f);
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 186f);
         } else {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float)(300 + 76 * station.storage.Length + 36));
+            __instance.windowTrans.sizeDelta = new Vector2(__instance.windowTrans.sizeDelta.x, 300f + 76f * station.storage.Length + 36f);
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 126f);
         }
@@ -449,58 +547,10 @@ public static class StationManager {
 
     // Show transfer-mode popup shifted to the right
     private static void ShowTransferPopup(UIStationStorage __instance) {
-        try {
-            long key = GetSlotKey(__instance);
-            // current mode
-            slotTransferMode.TryGetValue(key, out var current);
-            // compute remaining two options
-            var all = new[] { ETransferMode.Sync, ETransferMode.Supply, ETransferMode.Demand };
-            var opts = new List<ETransferMode>();
-            foreach (var m in all) if (m != current) opts.Add(m);
-
-            var info = new PopupInfo { Type = EPopupType.Transfer, TransferOptions = opts.ToArray() };
-            slotPopupInfo[key] = info;
-
-            // set popup texts and buttons
-            __instance.optionButton2.gameObject.SetActive(false);
-            if (opts.Count > 0) { __instance.optionText0.text = opts[0] switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" }; __instance.optionButton0.gameObject.SetActive(true); }
-            if (opts.Count > 1) { __instance.optionText1.text = opts[1] switch { ETransferMode.Sync => "双向同步", ETransferMode.Supply => "供应", ETransferMode.Demand => "需求", _ => "双向同步" }; __instance.optionButton1.gameObject.SetActive(true); }
-
-            // shift popup X
-            if (popupBasePos.TryGetValue(__instance, out var basePos)) {
-                var refRect = __instance.localSdButton.GetComponent<RectTransform>();
-                float spacingX = refRect.sizeDelta.x + ExtraSpacing;
-                __instance.popupBoxRect.anchoredPosition = new Vector2(basePos.x + spacingX, basePos.y);
-                __instance.collectionPopupRect.anchoredPosition = new Vector2(basePos.x + spacingX, __instance.collectionPopupRect.anchoredPosition.y);
-            }
-            __instance.popupBoxRect.gameObject.SetActive(true);
-        }
-        catch (Exception ex) { LogError($"FE ShowTransferPopup error: {ex}"); }
     }
 
     // Show capacity-mode popup shifted to the right
     private static void ShowCapacityPopup(UIStationStorage __instance) {
-        try {
-            long key = GetSlotKey(__instance);
-            var opts = new[] { ECapacityMode.Infinite, ECapacityMode.Limited };
-            var info = new PopupInfo { Type = EPopupType.Capacity, CapacityOptions = opts };
-            slotPopupInfo[key] = info;
-
-            __instance.optionButton2.gameObject.SetActive(false);
-            __instance.optionText0.text = "无限";
-            __instance.optionButton0.gameObject.SetActive(true);
-            __instance.optionText1.text = "有限";
-            __instance.optionButton1.gameObject.SetActive(true);
-
-            if (popupBasePos.TryGetValue(__instance, out var basePos)) {
-                var refRect = __instance.localSdButton.GetComponent<RectTransform>();
-                float spacingX = refRect.sizeDelta.x + ExtraSpacing;
-                __instance.popupBoxRect.anchoredPosition = new Vector2(basePos.x + spacingX, basePos.y);
-                __instance.collectionPopupRect.anchoredPosition = new Vector2(basePos.x + spacingX, __instance.collectionPopupRect.anchoredPosition.y);
-            }
-            __instance.popupBoxRect.gameObject.SetActive(true);
-        }
-        catch (Exception ex) { LogError($"FE ShowCapacityPopup error: {ex}"); }
     }
 
     // Intercept option clicks when our popup is active
@@ -523,32 +573,32 @@ public static class StationManager {
     }
 
     private static bool HandleOptionClick(UIStationStorage __instance, int idx) {
-        try {
-            long key = GetSlotKey(__instance);
-            if (!slotPopupInfo.TryRemove(key, out var info)) {
-                // not our popup, let original handler run
-                return true;
-            }
-            // apply selection according to popup type
-            if (info.Type == EPopupType.Transfer && info.TransferOptions != null) {
-                if (idx >= 0 && idx < info.TransferOptions.Length) {
-                    slotTransferMode[key] = info.TransferOptions[idx];
-                }
-            }
-            else if (info.Type == EPopupType.Capacity && info.CapacityOptions != null) {
-                if (idx >= 0 && idx < info.CapacityOptions.Length) {
-                    slotCapacityMode[key] = info.CapacityOptions[idx];
-                }
-            }
-            // hide popup
-            __instance.popupBoxRect.gameObject.SetActive(false);
-            __instance.collectionPopupRect.gameObject.SetActive(false);
-            return false; // prevent original OnOptionButton* handlers
-        }
-        catch (Exception ex) {
-            LogError($"FE HandleOptionClick error: {ex}");
-            return true;
-        }
+        // try {
+        //     long key = GetSlotKey(__instance);
+        //     if (!slotPopupInfo.TryRemove(key, out var info)) {
+        //         // not our popup, let original handler run
+        //         return true;
+        //     }
+        //
+        //     // apply selection according to popup type
+        //     if (info.Type == EPopupType.Transfer && info.TransferOptions != null) {
+        //         if (idx >= 0 && idx < info.TransferOptions.Length) {
+        //             slotTransferMode[key] = info.TransferOptions[idx];
+        //         }
+        //     } else if (info.Type == EPopupType.Capacity && info.CapacityOptions != null) {
+        //         if (idx >= 0 && idx < info.CapacityOptions.Length) {
+        //             slotCapacityMode[key] = info.CapacityOptions[idx];
+        //         }
+        //     }
+        //
+        //     // hide popup
+        //     __instance.popupBoxRect.gameObject.SetActive(false);
+        //     __instance.collectionPopupRect.gameObject.SetActive(false);
+        return false; // prevent original OnOptionButton* handlers
+        // } catch (Exception ex) {
+        //     LogError($"FE HandleOptionClick error: {ex}");
+        // return true;
+        // }
     }
 
     /// <summary>
@@ -566,6 +616,7 @@ public static class StationManager {
             __instance.event_lock = false;
             return;
         }
+
         // 修改集装输出的描述
         Component label = __instance.techPilerButton.transform.Find("label");
         Text text = label.GetComponent<Text>();
@@ -577,6 +628,7 @@ public static class StationManager {
             __instance.event_lock = false;
             return;
         }
+
         text.text = "  使用强化上限";
         // 修改集装输出的可选上限
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
@@ -593,11 +645,13 @@ public static class StationManager {
             __instance.minPilerSlider.value = pilerCount;
             __instance.minPilerValue.text = pilerCount.ToString();
         }
+
         if (maxStack > 1) {
             // 堆叠上限大于1，显示修改滑条
             __instance.minPilerGroup.gameObject.SetActive(true);
             __instance.pilerTechGroup.gameObject.SetActive(true);
         }
+
         __instance.event_lock = false;
     }
 
@@ -610,15 +664,18 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
+
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
+
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
+
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
             ItemProto building = LDB.items.Select(IFE行星内物流交互站);
@@ -628,9 +685,11 @@ public static class StationManager {
             if (newVal > maxStack) {
                 newVal = maxStack;
             }
+
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
         }
+
         __instance.OnStationIdChange();
         return false;
     }
@@ -646,15 +705,18 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
+
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
+
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
+
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
             ItemProto building = LDB.items.Select(IFE行星内物流交互站);
@@ -664,9 +726,11 @@ public static class StationManager {
             if (newVal > maxStack) {
                 newVal = maxStack;
             }
+
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
         }
+
         __instance.OnStationIdChange();
         return false;
     }
@@ -680,15 +744,18 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
+
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
+
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
+
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxStack = building.MaxStack();
@@ -711,15 +778,18 @@ public static class StationManager {
         if (__instance.event_lock || __instance.stationId == 0 || __instance.factory == null) {
             return false;
         }
+
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
             return false;
         }
+
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             return true;
         }
+
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxStack = building.MaxStack();
@@ -741,10 +811,10 @@ public static class StationManager {
         var matcher = new CodeMatcher(instructions);
         // 查找 UpdateOutputSlots 调用的模式
         matcher.MatchForward(false,
-            new CodeMatch(OpCodes.Ldloc_S),// cargoTraffic
-            new CodeMatch(OpCodes.Ldloc_S),// entitySignPool
-            new CodeMatch(OpCodes.Ldloc_S),// stationPilerLevel
-            new CodeMatch(OpCodes.Ldloc_S),// active
+            new CodeMatch(OpCodes.Ldloc_S), // cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_S), // entitySignPool
+            new CodeMatch(OpCodes.Ldloc_S), // stationPilerLevel
+            new CodeMatch(OpCodes.Ldloc_S), // active
             new CodeMatch(OpCodes.Callvirt,
                 AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
         );
@@ -752,15 +822,16 @@ public static class StationManager {
             LogError("Failed to find UpdateOutputSlots call pattern in GameLogic._station_output_parallel");
             return instructions;
         }
+
         // 移动到 stationPilerLevel 参数加载的位置
         matcher.Advance(2);
         // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7))// 加载 factory
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7)) // 加载 factory
             .Insert(
-                new CodeInstruction(OpCodes.Ldloc_S, (byte)19),// 加载 &local2
-                new CodeInstruction(OpCodes.Ldind_Ref),// 解引用得到 StationComponent
+                new CodeInstruction(OpCodes.Ldloc_S, (byte)19), // 加载 &local2
+                new CodeInstruction(OpCodes.Ldind_Ref), // 解引用得到 StationComponent
                 new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))) // 调用方法
             );
         return matcher.InstructionEnumeration();
     }
@@ -775,10 +846,10 @@ public static class StationManager {
         var matcher = new CodeMatcher(instructions);
         // 查找 UpdateOutputSlots 调用的模式
         matcher.MatchForward(false,
-            new CodeMatch(OpCodes.Ldloc_0),// cargoTraffic
-            new CodeMatch(OpCodes.Ldloc_1),// entitySignPool
-            new CodeMatch(OpCodes.Ldarg_1),// maxPilerCount
-            new CodeMatch(OpCodes.Ldloc_2),// active
+            new CodeMatch(OpCodes.Ldloc_0), // cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_1), // entitySignPool
+            new CodeMatch(OpCodes.Ldarg_1), // maxPilerCount
+            new CodeMatch(OpCodes.Ldloc_2), // active
             new CodeMatch(OpCodes.Callvirt,
                 AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
         );
@@ -786,19 +857,20 @@ public static class StationManager {
             LogError("Failed to find UpdateOutputSlots call pattern in PlanetTransport.GameTick_OutputToBelt");
             return instructions;
         }
+
         // 移动到 maxPilerCount 参数加载的位置
         matcher.Advance(2);
         // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// this (PlanetTransport)
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0)) // this (PlanetTransport)
             .Insert(
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")),// factory
-                new CodeInstruction(OpCodes.Ldarg_0),// this (PlanetTransport) 再次加载
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")), // factory
+                new CodeInstruction(OpCodes.Ldarg_0), // this (PlanetTransport) 再次加载
                 new CodeInstruction(OpCodes.Ldfld,
-                    AccessTools.Field(typeof(PlanetTransport), "stationPool")),// stationPool
-                new CodeInstruction(OpCodes.Ldloc_3),// index
-                new CodeInstruction(OpCodes.Ldelem_Ref),// stationPool[index]
+                    AccessTools.Field(typeof(PlanetTransport), "stationPool")), // stationPool
+                new CodeInstruction(OpCodes.Ldloc_3), // index
+                new CodeInstruction(OpCodes.Ldelem_Ref), // stationPool[index]
                 new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))) // 调用方法
             );
         return matcher.InstructionEnumeration();
     }
