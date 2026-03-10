@@ -10,6 +10,8 @@
         <!-- 隔离输出路径，防止二进制文件冲突 -->
         <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">bin/wsl/</BaseOutputPath>
         <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">bin/win/</BaseOutputPath>
+        <!-- 无论在哪个平台，始终排除 obj 和 bin 目录，防止冲突 -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>
         <!-- 禁止在输出路径后追加框架名称 (如 net472) -->
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <!-- 禁止追加运行时标识符 (如 win-x64)，让路径更短 -->
