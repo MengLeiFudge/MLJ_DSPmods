@@ -108,11 +108,11 @@ public class GetDspData : BaseUnityPlugin {
     public void Awake() {
         logger = Logger;
 
-        string GetDspDataPath = $@"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData";
-        if (!Directory.Exists(GetDspDataPath)) {
+        string solutionDir = @"D:\project\csharp\DSP MOD\MLJ_DSPmods";
+        if (!Directory.Exists(solutionDir)) {
             return;
         }
-        dir = $@"{GetDspDataPath}\gamedata";
+        dir = $@"{solutionDir}\gamedata";
         if (!Directory.Exists(dir)) {
             Directory.CreateDirectory(dir);
         }
