@@ -37,7 +37,7 @@ public static class ProcessManager {
     private static float oriProductProbTextBaseY;
     public static int MaxOutputTimes = 2;
     public static int MaxBeltSpeed = 30;
-    public static int BaseFracFluidInputMax = 40;
+    public static int BaseFracFluidInputCargoMax = 40;
     public static int BaseFracProductOutputMax = 20;
     public static int BaseFracFluidOutputMax = 20;
     private static readonly double[] incTableFixedRatio = new double[Cargo.incTableMilli.Length];
@@ -77,9 +77,9 @@ public static class ProcessManager {
         MaxOutputTimes = (int)Math.Ceiling(MaxBeltSpeed / 15.0);
         float ratio = MaxBeltSpeed / 30.0f;
         PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
-        BaseFracFluidInputMax = (int)(desc.fracFluidInputMax * ratio);
-        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
-        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
+        BaseFracFluidInputCargoMax = (int)(desc.fracFluidInputMax * ratio);
+        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio * 12 / 4);//todo: 最大堆叠12改为全局
+        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio * 12 / 4);
 
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
@@ -221,7 +221,7 @@ public static class ProcessManager {
                 ? __instance.fluidInputCount / __instance.fluidInputCargoCount
                 : 4f;
         ItemProto building = LDB.items.Select(buildingID);
-        int fluidInputMax = building.FluidInputMax();
+        int fluidInputCargoMax = building.FluidInputCargoMax();
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFluidEnhancement();
@@ -382,8 +382,11 @@ public static class ProcessManager {
         // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
+            // 计算输入最多承载多少
+            int fluidInputMax = fluidInputCargoMax * MineralReplicationTower.MaxStack;
             // 1. 先回填流动输出
-            int fluidMoveCount = __instance.belt1 > 0 && __instance.isOutput1 || __instance.belt2 > 0 && __instance.isOutput2
+            int fluidMoveCount = __instance.belt1 > 0 && __instance.isOutput1
+                                 || __instance.belt2 > 0 && __instance.isOutput2
                 // 如果有输出传送带，则只回填部分物品
                 ? Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount)
                 // 如果没有输出传送带，回填全部物品
@@ -458,9 +461,9 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputMax) {
+            } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
-                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
                         if (cargoTraffic.TryPickItemAtRear(__instance.belt1, fluidId, null, out stack, out inc) > 0) {
                             __instance.fluidInputCount += stack;
                             __instance.fluidInputInc += inc;
@@ -497,7 +500,7 @@ public static class ProcessManager {
                             }
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
                             if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc)
                                 > 0) {
                                 __instance.fluidInputCount += stack;
@@ -550,9 +553,9 @@ public static class ProcessManager {
                         }
                     }
                 }
-            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputMax) {
+            } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
-                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                    for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
                         if (cargoTraffic.TryPickItemAtRear(__instance.belt2, fluidId, null, out stack, out inc) > 0) {
                             __instance.fluidInputCount += stack;
                             __instance.fluidInputInc += inc;
@@ -589,7 +592,7 @@ public static class ProcessManager {
                             }
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputMax; i++) {
+                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
                             if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc)
                                 > 0) {
                                 __instance.fluidInputCount += stack;

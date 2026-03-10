@@ -69,9 +69,9 @@ public static class BuildingManager {
     public static void SetFractionatorCacheSize() {
         foreach (ModelProto modelProto in LDB.models.dataArray) {
             if (modelProto.prefabDesc.isFractionator) {
-                modelProto.prefabDesc.fracFluidInputMax = BaseFracFluidInputMax;
-                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax;
-                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax;
+                modelProto.prefabDesc.fracFluidInputMax = BaseFracFluidInputCargoMax;
+                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax * 12 / 4;//todo: 改为全局
+                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax * 12 / 4;//todo: 改为全局
             }
         }
     }
@@ -82,20 +82,20 @@ public static class BuildingManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
     public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
-        __instance.fluidInputMax = BaseFracFluidInputMax;
-        __instance.productOutputMax = BaseFracProductOutputMax;
-        __instance.fluidOutputMax = BaseFracFluidOutputMax;
+        __instance.fluidInputMax = BaseFracFluidInputCargoMax;
+        __instance.productOutputMax = BaseFracProductOutputMax * 12 / 4;//todo: 改为全局
+        __instance.fluidOutputMax = BaseFracFluidOutputMax * 12 / 4;//todo: 改为全局
     }
 
     /// <summary>
-    /// 返回分馏塔流动输入缓存大小
+    /// 返回分馏塔流动输入缓存最大组数，固定为40
     /// </summary>
-    public static int FluidInputMax(this ItemProto fractionator) {
-        return BaseFracFluidInputMax;
+    public static int FluidInputCargoMax(this ItemProto fractionator) {
+        return BaseFracFluidInputCargoMax;
     }
 
     /// <summary>
-    /// 返回分馏塔产物输出缓存大小
+    /// 返回分馏塔产物输出缓存最大数目，由于输入的物品堆叠数可能超过塔的MaxStack，所以直接按照最高的来
     /// </summary>
     public static int ProductOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
@@ -104,12 +104,12 @@ public static class BuildingManager {
             IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
             IFE回收塔 => BaseFracProductOutputMax * RecycleTower.MaxStack,
-            _ => BaseFracProductOutputMax
+            _ => BaseFracProductOutputMax * 12 / 4//todo: 改为全局
         };
     }
 
     /// <summary>
-    /// 返回分馏塔流动输出缓存大小
+    /// 返回分馏塔流动输出缓存最大数目，由于输出仅由塔的MaxStack决定，所以根据当前MaxStack动态变化
     /// </summary>
     public static int FluidOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
@@ -118,7 +118,7 @@ public static class BuildingManager {
             IFE点数聚集塔 => BaseFracFluidOutputMax * Mathf.Max(1, PointAggregateTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
             IFE回收塔 => BaseFracFluidOutputMax * Mathf.Max(1, RecycleTower.MaxStack / 4),
-            _ => BaseFracFluidOutputMax
+            _ => BaseFracFluidOutputMax * 12 / 4//todo: 改为全局
         };
     }
 
