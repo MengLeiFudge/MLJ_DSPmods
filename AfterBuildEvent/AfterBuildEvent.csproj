@@ -16,9 +16,4 @@
             <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
         </Reference>
     </ItemGroup>
-    <!-- 使用 MSBuild 任务在编译 AfterBuildEvent 之前运行其他项目的编译 -->
-    <Target Name="BuildOtherProjects" BeforeTargets="BeforeBuild">
-        <MSBuild Projects="..\FractionateEverything\FractionateEverything.csproj" Targets="Build" />
-        <MSBuild Projects="..\GetDspData\GetDspData.csproj" Targets="Build" />
-    </Target>
 </Project>
