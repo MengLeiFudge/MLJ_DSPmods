@@ -24,6 +24,7 @@ public static class SandboxMode {
         Register("沙盒模式", "Sandbox Mode");
 
         Register("解锁所有分馏配方", "Unlock all fractionation recipes");
+        Register("锁定所有分馏配方", "Lock all fractionation recipes");
         Register("经验获取倍率", "Experience gain multiplier");
         Register("经验获取倍率说明",
             "Adjust the speed at which recipe experience is gained by processing items.",
@@ -39,8 +40,12 @@ public static class SandboxMode {
         tab = wnd.AddTab(trans, "沙盒模式");
         float x = 0f;
         float y = 18f;
-        wnd.AddButton(0, 2, y, tab, "解锁所有分馏配方", 16, "button-unlock-all-recipes",
-            RecipeManager.UnlockAllFracRecipes);
+        wnd.AddButton(0, 3, y, tab, "锁定所有分馏配方", 16, "button-lock-all-recipes",
+            RecipeManager.LockAllFracRecipes);
+        wnd.AddButton(1, 3, y, tab, "获得所有分馏配方", 16, "button-reward-all-recipes",
+            RecipeManager.RewardAllFracRecipes);
+        wnd.AddButton(2, 3, y, tab, "满级所有分馏配方", 16, "button-max-all-recipes",
+            RecipeManager.MaxAllFracRecipes);
         y += 36f;
         var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-ratio");
         wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
