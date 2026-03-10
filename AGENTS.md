@@ -226,6 +226,27 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
 
+### Game Source Reference: DecompiledSource
+
+`GetDspData/gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` (publicized version, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
+
+**How it's generated** — Run `AfterBuildEvent` → select option `2`:
+1. Publicizes `Assembly-CSharp.dll` from the game install into the nuget package dir
+2. Decompiles the publicized DLL via `ilspycmd -p --nested-directories` into `DecompiledSource/`
+3. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
+
+**When to use it:**
+- Verifying whether a Harmony patch target (`typeof(X)`, `nameof(X.Y)`) actually exists
+- Understanding the original method logic before writing a patch
+- Looking up field/property names, struct layouts, or enum values in game types
+- Any question of the form "does `GameMain.FixedUpdate` exist / what does it do?"
+
+**How to search it** — Use `Grep` or `mcp_grep` on the directory:
+```
+path: GetDspData/gamedata/DecompiledSource
+pattern: class GameMain|void FixedUpdate
+```
+
 ### Critical Pitfalls
 1. **Never modify `BaseRecipe.GetOutputs` directly** — it's shared; subclass instead
 2. **Never touch `buffBonus1/2/3`** — reserved for future use
