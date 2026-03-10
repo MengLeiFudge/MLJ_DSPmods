@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FE.Logic.Recipe;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
+using static FE.Logic.Recipe.ERecipeExtension;
 
 namespace FE.Logic.Manager;
 
@@ -170,7 +172,7 @@ public static class RecipeManager {
             return;
         }
         foreach (var recipe in RecipeList) {
-            if (recipe.Locked) {
+            if (RecipeTypes.Contains(recipe.RecipeType)) {
                 recipe.Level = -1;
             }
         }
@@ -188,7 +190,7 @@ public static class RecipeManager {
             return;
         }
         foreach (var recipe in RecipeList) {
-            if (recipe.Locked) {
+            if (RecipeTypes.Contains(recipe.RecipeType)) {
                 recipe.RewardThis(true);
             }
         }
@@ -206,7 +208,7 @@ public static class RecipeManager {
             return;
         }
         foreach (var recipe in RecipeList) {
-            if (recipe.Locked) {
+            if (RecipeTypes.Contains(recipe.RecipeType)) {
                 recipe.Level = 10;
             }
         }
