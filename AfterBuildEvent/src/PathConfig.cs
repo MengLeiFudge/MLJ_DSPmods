@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace AfterBuildEvent;
@@ -11,10 +12,10 @@ public static class PathConfig {
         $@"{UserDir}\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
     public static string R2ProfileDir => _r2ProfileDir;
     //将BepInEX.cfg的DumpAssemblies设为true，以生成此DLL
-    public static readonly string R2ACDll =
-        $@"{R2ProfileDir}\BepInEx\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
+    // public static readonly string R2ACDll =
+    //     $@"{R2ProfileDir}\BepInEx\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
     public static readonly string R2VDDll =
-        $@"{R2ProfileDir}\BepInEx\plugins\\ckcz123-TheyComeFromVoid\DSP_Battle.dll";
+        $@"{R2ProfileDir}\BepInEx\plugins\ckcz123-TheyComeFromVoid\DSP_Battle.dll";
     public static readonly string R2GBDll =
         $@"{R2ProfileDir}\BepInEx\plugins\HiddenCirno-GenesisBook\ProjectGenesis.dll";
     public static readonly string R2ORDll =
@@ -26,7 +27,7 @@ public static class PathConfig {
     public static readonly string DSPUIDll = $@"{DSPGameDir}\DSPGAME_Data\Managed\UnityEngine.UI.dll";
 
     private static string _nugetGameLibDir = $@"{UserDir}\.nuget\packages\dysonsphereprogram.gamelibs";
-    public static string NugetGameLibNet45Dir => _nugetGameLibDir;
+    public static string NugetGameLibNet45Dir ;
 
     public static string SolutionDir => @"..\..\..\..";
     public static FileInfo PublicizerExe => new($@"{SolutionDir}\lib\BepInEx.AssemblyPublicizer.Cli.exe");
@@ -47,16 +48,14 @@ public static class PathConfig {
                 _dspGameDir = xmlDocument.SelectSingleNode("/Project/PropertyGroup/DSPGameDir")?.InnerText;
                 _nugetGameLibDir = xmlDocument.SelectSingleNode("/Project/PropertyGroup/NugetGameLibDir")?.InnerText;
             }
-            string feCsprojFile = $@"{SolutionDir}\FractionateEverything\FractionateEverything.csproj";
-            if (File.Exists(feCsprojFile)) {
-                xmlDocument = new();
-                xmlDocument.Load(feCsprojFile);
-                XmlAttributeCollection xmlAttributeCollection = xmlDocument
-                    .SelectSingleNode("/Project/ItemGroup/PackageReference[@Include='DysonSphereProgram.GameLibs']")
-                    ?.Attributes;
-                if (xmlAttributeCollection != null) {
-                    string version = xmlAttributeCollection["Version"]?.Value;
-                    _nugetGameLibDir += $@"\{version}\lib\net45";
+            // 扫描 nuget 包目录，自动找最新已安装版本（兼容 Version="*-*" 通配符写法）
+            var nugetBaseDir = new DirectoryInfo(_nugetGameLibDir);
+            if (nugetBaseDir.Exists) {
+                DirectoryInfo latestDir = nugetBaseDir.GetDirectories()
+                    .OrderByDescending(d => d.LastWriteTime)
+                    .FirstOrDefault();
+                if (latestDir != null) {
+                    NugetGameLibNet45Dir = $@"{latestDir.FullName}\lib\net45";
                 }
             }
         }
