@@ -96,6 +96,7 @@ public static class MineralReplicationTower {
             return;
         }
         ModelProto fractionatorModel = LDB.models.Select(M分馏塔);
+        model.HpMax = fractionatorModel.HpMax;
         workEnergyPerTick = (long)(fractionatorModel.prefabDesc.workEnergyPerTick * EnergyRatio);
         idleEnergyPerTick = (long)(fractionatorModel.prefabDesc.idleEnergyPerTick * EnergyRatio);
     }
