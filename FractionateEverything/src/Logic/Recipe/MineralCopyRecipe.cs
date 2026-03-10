@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using FE.Compatibility;
+using FE.Logic.Building;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -105,6 +106,12 @@ public class MineralCopyRecipe : BaseRecipe {
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.MineralCopy;
+
+    /// <summary>
+    /// 产物增产点数。质能裂变启用时为10点（整体喷涂），否则为0。
+    /// </summary>
+    public override byte GetOutputInc(int itemId) =>
+        MineralReplicationTower.EnableMassEnergyFission ? (byte)10 : (byte)0;
 
     /// <summary>
     /// 创建矿物复制塔配方实例

@@ -379,21 +379,43 @@ public static class ProcessManager {
         } else {
             __instance.fractionSuccess = false;
         }
-        // 零压循环 - 矿物复制塔在 Level >= 12 时，将流动输出回流到输入
+        // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
-            int moveCount = Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount);
-            if (moveCount > 0) {
-                __instance.fluidInputCount += moveCount;
-                __instance.fluidOutputCount -= moveCount;
+            // 1. 先回填流动输出
+            int fluidMoveCount = __instance.belt1 > 0 && __instance.isOutput1 || __instance.belt2 > 0 && __instance.isOutput2
+                // 如果有输出传送带，则只回填部分物品
+                ? Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount)
+                // 如果没有输出传送带，回填全部物品
+                : __instance.fluidOutputCount;
+            if (fluidMoveCount > 0) {
+                __instance.fluidInputCount += fluidMoveCount;
+                __instance.fluidOutputCount -= fluidMoveCount;
                 int fluidOutputIncAvg = __instance.fluidOutputCount > 0
                     ? __instance.fluidOutputInc / __instance.fluidOutputCount
                     : 0;
-                int moveInc = fluidOutputIncAvg * moveCount;
+                int moveInc = fluidOutputIncAvg * fluidMoveCount;
                 __instance.fluidInputInc += moveInc;
                 __instance.fluidOutputInc -= moveInc;
             }
-        } 
+            // 2. 再回填产物：将与输入物品相同的主产物回填至流动输入（填到fluidInputMax）
+            //    使用 GetOutputInc 分割增产点数（质能裂变启用时产物已整体喷涂到10点）
+            if (recipe != null) {
+                ProductOutputInfo mainProduct = products.Find(p => p.itemId == fluidId && p.isMainOutput);
+                if (mainProduct != null && mainProduct.count > 0) {
+                    int productMoveCount = Math.Min(mainProduct.count, fluidInputMax - __instance.fluidInputCount);
+                    if (productMoveCount > 0) {
+                        int productIncPerItem = recipe.GetOutputInc(fluidId);
+                        __instance.fluidInputCount += productMoveCount;
+                        __instance.fluidInputInc += productIncPerItem * productMoveCount;
+                        mainProduct.count -= productMoveCount;
+                        if (mainProduct.itemId == product0Id) {
+                            __instance.productOutputCount = mainProduct.count;
+                        }
+                    }
+                }
+            }
+        }
         CargoTraffic cargoTraffic = factory.cargoTraffic;
         byte stack;
         byte inc;
@@ -425,7 +447,8 @@ public static class ProcessManager {
                                 if (buildingID == IFE点数聚集塔)
                                     fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)), (byte)outputStack,
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
+                                        (byte)outputStack,
                                         (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
                                     break;
                                 }
@@ -516,7 +539,8 @@ public static class ProcessManager {
                                 if (buildingID == IFE点数聚集塔)
                                     fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)), (byte)outputStack,
+                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
+                                        (byte)outputStack,
                                         (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
                                     break;
                                 }
