@@ -384,15 +384,16 @@ public static class ProcessManager {
             && MineralReplicationTower.EnableZeroPressureCycle) {
             // 计算输入最多承载多少
             int fluidInputMax = fluidInputCargoMax * MineralReplicationTower.MaxStack;
-            // 1. 先回填流动输出
-            int fluidMoveCount = __instance.belt1 > 0 && __instance.isOutput1
-                                 || __instance.belt2 > 0 && __instance.isOutput2
-                // 如果有输出传送带，则只回填部分物品
-                ? Math.Min(__instance.fluidOutputCount, fluidInputMax - __instance.fluidInputCount)
-                // 如果没有输出传送带，回填全部物品
+            bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
+                                      || __instance.belt2 > 0 && __instance.isOutput2;
+            // 1. 先回填流动输出（有输出传送带时不回填，由传送带负责输出）
+            int fluidMoveCount = hasFluidOutputBelt
+                ? 0
                 : __instance.fluidOutputCount;
             if (fluidMoveCount > 0) {
                 __instance.fluidInputCount += fluidMoveCount;
+                __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                    __instance.fluidInputCargoCount + fluidMoveCount / fluidInputCountPerCargo);
                 __instance.fluidOutputCount -= fluidMoveCount;
                 int fluidOutputIncAvg = __instance.fluidOutputCount > 0
                     ? __instance.fluidOutputInc / __instance.fluidOutputCount
@@ -406,10 +407,13 @@ public static class ProcessManager {
             if (recipe != null) {
                 ProductOutputInfo mainProduct = products.Find(p => p.itemId == fluidId && p.isMainOutput);
                 if (mainProduct != null && mainProduct.count > 0) {
-                    int productMoveCount = Math.Min(mainProduct.count, fluidInputMax - __instance.fluidInputCount);
+                    int productMoveCount = Math.Min(mainProduct.count,
+                        Math.Max(0, fluidInputMax - __instance.fluidInputCount - __instance.fluidOutputCount));
                     if (productMoveCount > 0) {
                         int productIncPerItem = recipe.GetOutputInc(fluidId);
                         __instance.fluidInputCount += productMoveCount;
+                        __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                            __instance.fluidInputCargoCount + productMoveCount / fluidInputCountPerCargo);
                         __instance.fluidInputInc += productIncPerItem * productMoveCount;
                         mainProduct.count -= productMoveCount;
                         if (mainProduct.itemId == product0Id) {
