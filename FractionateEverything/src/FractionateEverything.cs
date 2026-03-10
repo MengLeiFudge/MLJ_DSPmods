@@ -83,6 +83,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
             ProcessManager.AddTranslations();
+            StationManager.AddTranslations();
             TechManager.AddTranslations();
             TutorialManager.AddTranslations();
             MainWindow.AddTranslations();
