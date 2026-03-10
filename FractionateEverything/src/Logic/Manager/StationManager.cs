@@ -15,6 +15,16 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class StationManager {
+    public static void AddTranslations() {
+        // 传输模式按钮文本
+        Register("双向同步", "Sync", "双向同步");
+        Register("仅上传", "Upload Only", "仅上传");
+        Register("仅下载", "Download Only", "仅下载");
+        // 容量模式按钮文本
+        Register("有限上传", "Limited Upload", "有限上传");
+        Register("无限上传", "Infinite Upload", "无限上传");
+    }
+
     private static int updateTick = 30;
     private static readonly int[] itemModSaveCount = new int[12000];
 
