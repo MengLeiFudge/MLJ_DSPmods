@@ -364,7 +364,7 @@ public static class TicketRaffle {
         int[,] totalCountArr = new int[MatrixCount, RecipeCount + 1];
         int matrixID = SelectedMatrixId1;
         for (int j = 0; j < RecipeCount; j++) {
-            ERecipe type = (ERecipe)(j + 1);
+            ERecipe type = RecipeTypes[j];
             List<BaseRecipe> recipes = GetRecipesByType(type)
                 .Where(r => r.MatrixID == matrixID).ToList();
             totalCountArr[0, j] = recipes.Count;
