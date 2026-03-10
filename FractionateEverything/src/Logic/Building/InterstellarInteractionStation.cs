@@ -47,8 +47,8 @@ public static class InterstellarInteractionStation {
     public static void AddTranslations() {
         Register("星际物流交互站", "Interstellar Interaction Station");
         Register("I星际物流交互站",
-            "Interstellar logistics station capable of interacting with the fractionation data centre regarding goods.\nWhen supply is unlocked or demand is locked, items may be downloaded from the data centre; When supply is locked or demand is unlocked, items may be uploaded to the data centre; When storage is unlocked, the item count remains at half; When storage is locked, the item count remains consistent with the data centre.",
-            "可以与分馏数据中心进行物品交互的星际物流运输站。\n供应无锁或需求锁定时，可从数据中心下载物品；供应锁定或需求无锁时，可上传物品至数据中心；仓储无锁时，物品数目维持在一半；仓储锁定时，物品数目与数据中心保持一致。");
+            "Interstellar logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count; Infinite - unlimited upload.",
+            "可以与分馏数据中心进行物品交互的星际物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制；无限上传-不限制上传数量。");
     }
 
     public static void Create() {
