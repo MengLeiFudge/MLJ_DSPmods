@@ -252,7 +252,7 @@ static class AfterBuildEvent {
 
     private static void DecompileAcDll(CmdProcess cmd) {
         string dllPath = $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll";
-        string outputDir = Path.GetFullPath($@"{SolutionDir}\GetDspData\gamedata\DecompiledSource");
+        string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource");
         string csprojPath = Path.Combine(outputDir, "Assembly-CSharp.csproj");
         if (!File.Exists(dllPath)) {
             Console.WriteLine($"未找到{dllPath}，跳过反编译");
@@ -476,7 +476,7 @@ static class AfterBuildEvent {
         jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc
             ? $@"D:\project\js\dsp-calc\data\{jsonFileName}.json"
-            : $@"..\..\..\..\GetDspData\gamedata\calc json\{jsonFileName}.json";
+            : $@"..\..\..\..\gamedata\calc json\{jsonFileName}.json";
     }
 
     #endregion

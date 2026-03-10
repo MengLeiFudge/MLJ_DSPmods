@@ -38,7 +38,7 @@ public static class RecipeManager {
     private static readonly List<VanillaRecipe> VanillaRecipeList = [];
 
 #if DEBUG
-    private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\GetDspData\gamedata";
+    private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\gamedata";
     private const string SPRITE_CSV_PATH = $@"{SPRITE_CSV_DIR}\fracIconPath.csv";
 #endif
 
