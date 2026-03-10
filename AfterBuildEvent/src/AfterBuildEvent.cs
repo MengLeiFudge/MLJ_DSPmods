@@ -81,14 +81,13 @@ static class AfterBuildEvent {
                 if (File.Exists(projectModMdbFile)) {
                     File.Delete(projectModMdbFile);
                 }
-                cmd.Exec($"cd \"{Pdb2mdbExe.Directory}\"");//引号防止路径包含空格
-                cmd.Exec($".\\pdb2mdb \"{new FileInfo(projectModFile).FullName}\"");//引号防止路径包含空格，必须绝对路径
-                Console.WriteLine("注：如果卡在这里，说明需要调整项目设置，勾选debug symbols并且修改debug type为full");
-                while (!File.Exists(projectModMdbFile)) {
-                    Thread.Sleep(100);
+                cmd.Run(Pdb2mdbExe.FullName, $"\"{new FileInfo(projectModFile).FullName}\"", Pdb2mdbExe.DirectoryName);
+                if (!File.Exists(projectModMdbFile)) {
+                    Console.Error.WriteLine($"生成mdb失败，说明需要调整项目设置，勾选debug symbols并且修改debug type为full");
+                } else {
+                    Console.WriteLine($"已生成{projectName}的mdb文件");
                 }
                 //注：mdb文件不加到fileList里面，因为它不需要打包。最后会单独处理它。
-                Console.WriteLine($"已生成{projectName}的mdb文件");
             }
             //README.md
             string projectReadme = $@"{projectDir}\README.md";
@@ -238,52 +237,111 @@ static class AfterBuildEvent {
 
     private static void UpdateLibDll() {
         using CmdProcess cmd = new();
-        Console.WriteLine("输入要使用哪个Assembly-CSharp.dll（直接回车表示1）：");
-        Console.WriteLine($"1表示使用{DSPACDll}");
-        Console.WriteLine($"2表示使用{R2ACDll}");
-        string str = Console.ReadLine();
-        string ACDll;
-        if (str == "1" || str == "") {
-            ACDll = DSPACDll;
-        } else if (str == "2") {
-            ACDll = R2ACDll;
+        if (NugetGameLibNet45Dir != null) {
+            PublizeDll(cmd, DSPACDll, $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll");
+            DecompileAcDll(cmd);
+            PublizeDll(cmd, DSPUIDll, $@"{NugetGameLibNet45Dir}\UnityEngine.UI.dll");
         } else {
-            Console.WriteLine("输入有误！");
-            return;
+            Console.WriteLine("NugetGameLibNet45Dir为空，跳过Publize游戏dll");
         }
-        PublizeDll(cmd, ACDll, $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll");
-        PublizeDll(cmd, DSPUIDll, $@"{NugetGameLibNet45Dir}\UnityEngine.UI.dll");
+        // 下面三个mod dll，r2禁用时会自动加.old后缀，由PublizeDll内部逻辑自动识别并处理
         PublizeDll(cmd, R2VDDll, $@"{SolutionDir}\lib\DSP_Battle-publicized.dll");
         PublizeDll(cmd, R2GBDll, $@"{SolutionDir}\lib\ProjectGenesis-publicized.dll");
         PublizeDll(cmd, R2ORDll, $@"{SolutionDir}\lib\ProjectOrbitalRing-publicized.dll");
     }
 
-    private static void PublizeDll(CmdProcess cmd, string dllPath, string targetPath) {
+    private static void DecompileAcDll(CmdProcess cmd) {
+        string dllPath = $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll";
+        string outputDir = Path.GetFullPath($@"{SolutionDir}\GetDspData\gamedata\DecompiledSource");
+        string csprojPath = Path.Combine(outputDir, "Assembly-CSharp.csproj");
         if (!File.Exists(dllPath)) {
-            Console.WriteLine($"未找到{dllPath}！");
+            Console.WriteLine($"未找到{dllPath}，跳过反编译");
             return;
         }
-        if (!dllPath.EndsWith(".dll")) {
-            Console.WriteLine($"{dllPath}不是dll！");
+        if (Directory.Exists(outputDir)) {
+            try {
+                Directory.Delete(outputDir, true);
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"无法删除旧目录: {ex.Message}");
+            }
+        }
+        Directory.CreateDirectory(outputDir);
+        Console.WriteLine($"开始反编译 Assembly-CSharp.dll -> {outputDir}");
+        Console.WriteLine("注意：此过程可能耗时数分钟，请耐心等待...");
+
+        try {
+            int exitCode = cmd.Run("ilspycmd", $"-p --nested-directories -o \"{outputDir}\" \"{dllPath}\"");
+            if (exitCode != 0) {
+                Console.Error.WriteLine($"ilspycmd 退出，错误码: {exitCode}");
+            }
+        }
+        catch (Exception ex) {
+            Console.Error.WriteLine($"执行 ilspycmd 失败: {ex.Message}");
+            Console.WriteLine("请确保已安装 ilspycmd: dotnet tool install -g ilspycmd");
+        }
+
+        if (File.Exists(csprojPath)) {
+            Console.WriteLine($"反编译完成：{outputDir}");
+        } else {
+            Console.Error.WriteLine($"反编译失败，未生成 {csprojPath}");
+        }
+    }
+
+    private static void PublizeDll(CmdProcess cmd, string dllPath, string targetPath) {
+        string actualSourcePath = dllPath;
+        if (!File.Exists(actualSourcePath)) {
+            if (File.Exists(dllPath + ".old")) {
+                actualSourcePath = dllPath + ".old";
+            } else {
+                Console.WriteLine($"未找到 {dllPath} (且无 .old 备份)！");
+                return;
+            }
+        }
+
+        // 为了 publicize 能够产出预期的 -publicized.dll 名字，如果输入文件后缀不是 .dll，我们临时创建一个
+        string workingDllPath = actualSourcePath;
+        bool isTemporary = false;
+        if (!actualSourcePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+            workingDllPath = Path.Combine(Path.GetDirectoryName(actualSourcePath),
+                Path.GetFileNameWithoutExtension(actualSourcePath));
+            if (!workingDllPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+                workingDllPath += ".dll";
+            }
+
+            try {
+                File.Copy(actualSourcePath, workingDllPath, true);
+                isTemporary = true;
+            }
+            catch (Exception ex) {
+                Console.Error.WriteLine($"无法创建临时 DLL 文件: {ex.Message}");
+                return;
+            }
+        }
+
+        Console.WriteLine($"开始publicize {workingDllPath}");
+        cmd.Run(PublicizerExe.FullName, $"\"{workingDllPath}\"", PublicizerExe.DirectoryName);
+        string publicizedPath = workingDllPath.Replace(".dll", "-publicized.dll");
+        if (!File.Exists(publicizedPath)) {
+            Console.Error.WriteLine($"publicize 失败，未找到：{publicizedPath}");
+            if (isTemporary) File.Delete(workingDllPath);
             return;
         }
-        Console.WriteLine($"开始publicize {dllPath}");
-        cmd.Exec($"cd \"{PublicizerExe.Directory}\"");//引号防止路径包含空格
-        cmd.Exec($".\\{PublicizerExe.Name} \"{dllPath}\"");//引号防止路径包含空格
-        string publicizedPath = dllPath.Replace(".dll", "-publicized.dll");
-        while (!File.Exists(publicizedPath)) {
-            Thread.Sleep(100);
-        }
+
         while (true) {
             try {
                 File.Copy(publicizedPath, targetPath, true);
                 Console.WriteLine($"复制 {publicizedPath} -> {targetPath}");
                 break;
             }
-            catch { }
+            catch {
+                Thread.Sleep(100);
+            }
         }
+
         try {
             File.Delete(publicizedPath);
+            if (isTemporary) File.Delete(workingDllPath);
         }
         catch { }
     }
