@@ -93,6 +93,7 @@ public static class PlanetaryInteractionStation {
             return;
         }
         ModelProto stationModel = LDB.models.Select(M行星内物流运输站);
+        model.HpMax = stationModel.HpMax;
         workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
