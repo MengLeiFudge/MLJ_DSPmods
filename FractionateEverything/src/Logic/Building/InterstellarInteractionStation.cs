@@ -1,4 +1,5 @@
-﻿using BuildBarTool;
+﻿using System.IO;
+using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
 using UnityEngine;
@@ -90,7 +91,25 @@ public static class InterstellarInteractionStation {
             return;
         }
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
+        model.HpMax = stationModel.HpMax;
         workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        int version = r.ReadInt32();
+        UpdateHpAndEnergy();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(1);
+    }
+
+    public static void IntoOtherSave() {
+        UpdateHpAndEnergy();
+    }
+
+    #endregion
 }
