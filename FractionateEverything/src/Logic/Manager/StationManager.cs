@@ -50,8 +50,9 @@ public static class StationManager {
     private static ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode =
         new();
 
-    // store base positions to avoid repeatedly adding spacing
-    private static readonly ConcurrentDictionary<UIStationWindow, bool> windowWidth = new();
+    private static readonly Dictionary<RectTransform, float> windowOriginalWidth = [];
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalSize = [];
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
 
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
@@ -66,6 +67,88 @@ public static class StationManager {
     private static float spacingX;
     private static bool isMyPopup;
     private static bool isTransfer;
+
+    private static Vector2 GetOrCacheOriginal(Dictionary<RectTransform, Vector2> cache, RectTransform rect,
+        Func<RectTransform, Vector2> getter) {
+        if (cache.TryGetValue(rect, out Vector2 value)) {
+            return value;
+        }
+
+        value = getter(rect);
+        cache[rect] = value;
+        return value;
+    }
+
+    private static float GetOrCacheOriginal(Dictionary<RectTransform, float> cache, RectTransform rect,
+        Func<RectTransform, float> getter) {
+        if (cache.TryGetValue(rect, out float value)) {
+            return value;
+        }
+
+        value = getter(rect);
+        cache[rect] = value;
+        return value;
+    }
+
+    private static void AdjustSliders(UIStationWindow window, bool shouldWiden) {
+        if (window == null) {
+            return;
+        }
+
+        float delta = shouldWiden ? spacingX : 0f;
+
+        (Slider slider, Component valueText)[] controls = [
+            (window.maxChargePowerSlider, window.maxChargePowerValue),
+            (window.maxTripDroneSlider, window.maxTripDroneValue),
+            (window.maxTripVesselSlider, window.maxTripVesselValue),
+            (window.warperDistanceSlider, window.warperDistanceValue),
+            (window.minDeliverDroneSlider, window.minDeliverDroneValue),
+            (window.minDeliverVesselSlider, window.minDeliverVesselValue),
+            (window.maxMiningSpeedSlider, window.maxMiningSpeedValue),
+            (window.minPilerSlider, window.minPilerValue)
+        ];
+        foreach ((Slider slider, Component valueText) in controls) {
+            if (slider == null) {
+                continue;
+            }
+
+            RectTransform sliderRect = slider.GetComponent<RectTransform>();
+            if (sliderRect == null) {
+                continue;
+            }
+
+            Vector2 originalSize = GetOrCacheOriginal(sliderOriginalSize, sliderRect, x => x.sizeDelta);
+            Vector2 originalPosition = GetOrCacheOriginal(sliderOriginalPosition, sliderRect, x => x.anchoredPosition);
+
+            sliderRect.sizeDelta = new Vector2(originalSize.x + delta, originalSize.y);
+            sliderRect.anchoredPosition = new Vector2(originalPosition.x + delta, originalPosition.y);
+
+            RectTransform valueRect = valueText?.GetComponent<RectTransform>();
+            if (valueRect != null) {
+                Vector2 originalValuePosition =
+                    GetOrCacheOriginal(sliderOriginalPosition, valueRect, x => x.anchoredPosition);
+                valueRect.anchoredPosition =
+                    new Vector2(originalValuePosition.x + delta, originalValuePosition.y);
+            }
+        }
+    }
+
+    private static bool IsModStation(UIStationWindow window, StationComponent station) {
+        if (window?.factory == null || station == null || station.entityId <= 0) {
+            return false;
+        }
+
+        int buildingID = window.factory.entityPool[station.entityId].protoId;
+        return buildingID is IFE行星内物流交互站 or IFE星际物流交互站;
+    }
+
+    private static void SetWindowWidenState(UIStationWindow window, bool shouldWiden) {
+        if (window?.windowTrans == null) {
+            return;
+        }
+
+        AdjustSliders(window, shouldWiden);
+    }
 
     public static void Clear() {
         slotTransferMode.Clear();
@@ -239,6 +322,10 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnCreate))]
     public static void UIStationWindow_OnCreate_Postfix(UIStationWindow __instance) {
+        if (__instance?.windowTrans != null) {
+            GetOrCacheOriginal(windowOriginalWidth, __instance.windowTrans, x => x.sizeDelta.x);
+        }
+
         for (int index = 0; index < 6; ++index) {
             UIStationStorage storage = __instance.storageUIs[index];
             // --- 新增两个模式按钮（Transfer / Capacity） ---
@@ -281,8 +368,11 @@ public static class StationManager {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnDestroy))]
     public static void UIStationWindow__OnDestroy_Prefix(UIStationWindow __instance) {
-        windowWidth.Clear();
+        windowOriginalWidth.Clear();
+        sliderOriginalSize.Clear();
+        sliderOriginalPosition.Clear();
         storageWidth.Clear();
+        storagePopup.Clear();
     }
 
     [HarmonyPostfix]
@@ -326,7 +416,6 @@ public static class StationManager {
     public static void UIStationStorage_RefreshValues_Postfix(UIStationStorage __instance) {
         // 重命名
         UIStationStorage storage = __instance;
-        UIStationWindow stationWindow = __instance.stationWindow;
         // 获取塔对应的物品ID
         int buildingID = storage.stationWindow.factory.entityPool[storage.station.entityId].protoId;
 
@@ -334,14 +423,6 @@ public static class StationManager {
         RectTransform rectTransform = storage.transform.GetComponent<RectTransform>();
         // 如果不是自定义的塔
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            // 还原窗口宽度
-            if (stationWindow != null && windowWidth.ContainsKey(stationWindow)) {
-                windowWidth.TryRemove(stationWindow, out _);
-                stationWindow.windowTrans.sizeDelta =
-                    new Vector2(stationWindow.windowTrans.sizeDelta.x - spacingX,
-                        stationWindow.windowTrans.sizeDelta.y);
-            }
-
             // 还原栏位宽度、沙盒锁位置
             if (rectTransform != null && storageWidth.ContainsKey(storage)) {
                 storageWidth.TryRemove(storage, out _);
@@ -362,13 +443,6 @@ public static class StationManager {
             }
 
             return;
-        }
-
-        // 增加窗口宽度
-        if (stationWindow != null && !windowWidth.ContainsKey(stationWindow)) {
-            windowWidth.TryAdd(stationWindow, true);
-            stationWindow.windowTrans.sizeDelta =
-                new Vector2(stationWindow.windowTrans.sizeDelta.x + spacingX, stationWindow.windowTrans.sizeDelta.y);
         }
 
         // 增加栏位宽度、向前移动沙盒锁位置
@@ -521,6 +595,8 @@ public static class StationManager {
     public static void UIStationWindow_OnStationIdChange_Postfix(UIStationWindow __instance) {
         __instance.event_lock = true;
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
+        bool isModStation = IsModStation(__instance, station);
+        SetWindowWidenState(__instance, isModStation);
         if (station == null || station.id != __instance.stationId) {
             __instance.event_lock = false;
             return;
@@ -530,8 +606,7 @@ public static class StationManager {
         Component label = __instance.techPilerButton.transform.Find("label");
         Text text = label.GetComponent<Text>();
         // 只处理物流交互站
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+        if (!isModStation) {
             // 还原，避免不关窗口直接切换的时候显示错误
             text.text = "  使用科技上限";
             __instance.event_lock = false;
@@ -570,9 +645,22 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.RefreshTrans))]
     public static void UIStationWindow_RefreshTrans_Postfix(UIStationWindow __instance, StationComponent station) {
-        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
-        // 如果不是自定义的塔
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+        if (__instance?.factory == null || station == null || station.entityId <= 0) {
+            return;
+        }
+
+        bool isModStation = IsModStation(__instance, station);
+        AdjustSliders(__instance, isModStation);
+        RectTransform windowTrans = __instance.windowTrans;
+        if (windowTrans == null) {
+            return;
+        }
+
+        float originalWidth = GetOrCacheOriginal(windowOriginalWidth, windowTrans, x => x.sizeDelta.x);
+        float targetWidth = originalWidth + (isModStation ? spacingX : 0f);
+        windowTrans.sizeDelta = new Vector2(targetWidth, windowTrans.sizeDelta.y);
+
+        if (!isModStation) {
             return;
         }
 
@@ -584,12 +672,12 @@ public static class StationManager {
         }
 
         if (station.isStellar) {
-            __instance.windowTrans.sizeDelta = new Vector2(__instance.windowTrans.sizeDelta.x,
+            __instance.windowTrans.sizeDelta = new Vector2(targetWidth,
                 360f + 76f * station.storage.Length + 36f);
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 186f);
         } else {
-            __instance.windowTrans.sizeDelta = new Vector2(__instance.windowTrans.sizeDelta.x,
+            __instance.windowTrans.sizeDelta = new Vector2(targetWidth,
                 300f + 76f * station.storage.Length + 36f);
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 126f);
