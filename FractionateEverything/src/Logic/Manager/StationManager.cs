@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection.Emit;
 using FE.Logic.Building;
 using FE.UI.View.Setting;
 using HarmonyLib;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -42,28 +44,17 @@ public static class StationManager {
         Infinite = 1
     }
 
-    // private enum EPopupType {
-    //     None = 0,
-    //     Transfer = 1,
-    //     Capacity = 2
-    // }
-    //
-    // private struct PopupInfo {
-    //     public EPopupType Type;
-    //     public ETransferMode[] TransferOptions; // for Transfer popup: options presented
-    //     public ECapacityMode[] CapacityOptions; // for Capacity popup
-    // }
-
-    private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>> slotTransferMode =
+    private static ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>> slotTransferMode =
         new();
 
-    private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode =
+    private static ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode =
         new();
 
     // store base positions to avoid repeatedly adding spacing
     private static readonly ConcurrentDictionary<UIStationWindow, bool> windowWidth = new();
 
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
 
     // private static readonly ConcurrentDictionary<UIStationStorage, Vector2> popupBasePos = new();
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
@@ -76,6 +67,11 @@ public static class StationManager {
     private static bool isMyPopup;
     private static bool isTransfer;
 
+    public static void Clear() {
+        slotTransferMode.Clear();
+        slotCapacityMode.Clear();
+    }
+    
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
@@ -642,11 +638,12 @@ public static class StationManager {
             _ => "仅上传".Translate()
         };
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
-        if (transferGameObjects.TryGetValue(storage, out GameObject tTrans)) {
+        if (!storagePopup.ContainsKey(storage)) {
             // 原版本地物流模式的按钮
             storage.popupBoxRect.anchoredPosition =
-                new Vector2(storage.stationWindow.windowTrans.sizeDelta.x - spacingX + ExtraSpacing,
+                new Vector2(storage.popupBoxRect.anchoredPosition.x + spacingX,
                     storage.popupBoxRect.anchoredPosition.y);
+            storagePopup.TryAdd(storage, true);
         }
     }
 
@@ -670,11 +667,11 @@ public static class StationManager {
         storage.optionText0.text = "无限上传".Translate();
         storage.optionText1.text = "有限上传".Translate();
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
-        if (transferGameObjects.TryGetValue(storage, out GameObject tTrans)) {
-            // 原版本地物流模式的按钮
+        if (!storagePopup.ContainsKey(storage)) {
             storage.popupBoxRect.anchoredPosition =
-                new Vector2(storage.stationWindow.windowTrans.sizeDelta.x - spacingX + ExtraSpacing,
+                new Vector2(storage.popupBoxRect.anchoredPosition.x + spacingX,
                     storage.popupBoxRect.anchoredPosition.y);
+            storagePopup.TryAdd(storage, true);
         }
     }
 
@@ -684,9 +681,12 @@ public static class StationManager {
     public static void UIStationStorage_OnSdButtonClick_Prefix(UIStationStorage __instance) {
         UIStationStorage storage = __instance;
         isMyPopup = false;
-        storage.popupBoxRect.anchoredPosition =
-            new Vector2(storage.stationWindow.windowTrans.sizeDelta.x - spacingX * 2 + ExtraSpacing,
-                storage.popupBoxRect.anchoredPosition.y);
+        if (storagePopup.ContainsKey(storage)) {
+            storage.popupBoxRect.anchoredPosition =
+                new Vector2(storage.popupBoxRect.anchoredPosition.x - spacingX,
+                    storage.popupBoxRect.anchoredPosition.y);
+            storagePopup.TryRemove(storage, out _);
+        }
     }
 
     // Intercept option clicks when our popup is active
@@ -1034,5 +1034,31 @@ public static class StationManager {
         return buildingID is IFE行星内物流交互站 or IFE星际物流交互站
             ? LDB.items.Select(buildingID).MaxStack()
             : GameMain.history.stationPilerLevel;
+    }
+    
+    /**
+     * 读档
+     */
+    public static void Import(BinaryReader r) {
+        string json = r.ReadString();
+        Dictionary<string, string> map = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+        if (map.TryGetValue("slotTransferMode", out string slotTransferModeJson)) {
+            slotTransferMode = JsonConvert.DeserializeObject<ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>>>(slotTransferModeJson);
+        }
+        if (map.TryGetValue("slotCapacityMode", out string slotCapacityModeJson)) {
+            slotCapacityMode = JsonConvert.DeserializeObject<ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>>>(slotCapacityModeJson);
+        }
+    }
+    
+    /**
+     * 存档
+     */
+    public static void Export(BinaryWriter w) {
+        Dictionary<string, string> map = new() {
+            { "slotTransferMode", JsonConvert.SerializeObject(slotTransferMode) },
+            { "slotCapacityMode", JsonConvert.SerializeObject(slotCapacityMode) }
+        };
+        string json = JsonConvert.SerializeObject(map);
+        w.Write(json);
     }
 }
