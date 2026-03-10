@@ -256,6 +256,9 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                     case "UI":
                         MainWindow.Import(br);
                         break;
+                    case "Station":
+                        StationManager.Import(br);
+                        break;
                 }
             });
         } else {
@@ -274,12 +277,13 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// </summary>
     public void Export(BinaryWriter w) {
         w.Write(10);
-        w.Write(5);
+        w.Write(6);
         w.WriteBlock("Recipe", RecipeManager.Export);
         w.WriteBlock("Building", BuildingManager.Export);
         w.WriteBlock("Item", ItemManager.Export);
         w.WriteBlock("Rune", RuneManager.Export);
         w.WriteBlock("UI", MainWindow.Export);
+        w.WriteBlock("Station", StationManager.Export);
     }
 
     /// <summary>
@@ -303,6 +307,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RuneManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         TechManager.ResetTechUnlockFlags();
+        StationManager.Clear();
     }
 
     public string Version => PluginInfo.PLUGIN_VERSION;
