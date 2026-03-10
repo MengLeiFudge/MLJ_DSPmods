@@ -46,14 +46,27 @@ dotnet build -c Release FractionateEverything/FractionateEverything.csproj
 ```
 FractionateEverything/src/
 ├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
-├── Logic/
-│   ├── Building/               # Static building definition classes
-│   ├── Manager/                # Static game-state managers (ProcessManager, BuildingManager, etc.)
-│   ├── Patches/                # Standalone Harmony transpiler patches
-│   └── Recipe/                 # Recipe classes (BaseRecipe + concrete types)
-├── Compatibility/              # Other mod detection and integration
-├── UI/                         # Unity UI components and views
-└── Utils/                      # Shared utilities (ProtoID.cs, logging, formatting, etc.)
+├── Logic/                      # → Logic/AGENTS.md
+│   ├── Building/               # Static building definition classes → Building/AGENTS.md
+│   ├── Manager/                # Static game-state managers → Manager/AGENTS.md
+│   ├── Patches/                # Standalone Harmony transpiler patches (IL-level only)
+│   └── Recipe/                 # BaseRecipe hierarchy → Recipe/AGENTS.md
+├── Compatibility/              # Per-mod detection + integration → Compatibility/AGENTS.md
+├── UI/                         # → UI/AGENTS.md
+│   ├── Components/             # Reusable widgets (MyWindow, MyImageButton, …) → Components/AGENTS.md
+│   ├── Patches/                # UI-specific Harmony patches
+│   └── View/                   # Feature panels → View/AGENTS.md
+│       ├── MainWindow.cs       # Central lifecycle hub for all Views
+│       ├── CoreOperate/        # Recipe/building operate panels
+│       ├── GetItemRecipe/      # Raffle + LimitedTimeStore
+│       ├── ProgressSystem/     # Quests, achievements, dev diary
+│       ├── RuneSystem/         # Rune (精华) menu
+│       ├── Setting/            # VIP, sandbox, misc config
+│       ├── Statistic/          # Stats + recipe gallery
+│       └── ModPackage/         # DataCentre item interaction
+└── Utils/                      # `partial class Utils` split across 12 files → Utils/AGENTS.md
+    ├── ProtoID.cs              # ALL proto ID constants (I/R/M/T prefix + IFE/RFE/MFE/TFE for mod)
+    └── PackageUtils.cs         # Inventory/belt ops, TakeItemWithTip, AddItemToModData
 ```
 
 ## Naming Conventions
@@ -225,6 +238,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
+- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
 
 ### Game Source Reference: DecompiledSource
 
