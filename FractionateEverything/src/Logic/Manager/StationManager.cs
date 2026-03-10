@@ -193,10 +193,17 @@ public static class StationManager {
             // 循环所有的交互站
             float downloadThreshold = Miscellaneous.DownloadThreshold;
             float uploadThreshold = Miscellaneous.UploadThreshold;
-            float uploadThreshold2 = 1 - uploadThreshold;
             foreach (StationComponent stationComponent in stations) {
                 // 单个槽位可用最大电量
                 long maxSlotEnergy = stationComponent.energy / stationComponent.storage.Length;
+                long entityId = stationComponent.entityId;
+
+                // 获取该交互站的槽位模式字典
+                ConcurrentDictionary<int, ETransferMode> transferDictionary =
+                    slotTransferMode.GetOrAdd(entityId, new ConcurrentDictionary<int, ETransferMode>());
+                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                    slotCapacityMode.GetOrAdd(entityId, new ConcurrentDictionary<int, ECapacityMode>());
+
                 // 循环交互站的所有的栏位
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
                     // StationStore为struct，必须使用引用修改内容
@@ -205,55 +212,81 @@ public static class StationManager {
                         continue;
                     }
 
-                    bool storeLocked = !GameMain.sandboxToolsEnabled && store.keepMode > 0;
-                    bool station2Mod;
-                    bool mod2Station;
-                    if (storeLocked) {
-                        station2Mod = store.remoteLogic == ELogisticStorage.Supply
-                                      || store.localLogic == ELogisticStorage.Supply;
-                        mod2Station = store.remoteLogic == ELogisticStorage.Demand
-                                      || store.localLogic == ELogisticStorage.Demand;
-                    } else {
-                        station2Mod = store.remoteLogic == ELogisticStorage.Demand
-                                      || store.localLogic == ELogisticStorage.Demand;
-                        mod2Station = store.remoteLogic == ELogisticStorage.Supply
-                                      || store.localLogic == ELogisticStorage.Supply;
-                    }
+                    // 获取该槽位的传输模式和容量模式
+                    ETransferMode transferMode = transferDictionary.GetOrAdd(i, ETransferMode.Sync);
+                    ECapacityMode capacityMode = capacityDictionary.GetOrAdd(i, ECapacityMode.Limited);
 
-                    if (mod2Station) {
-                        // 产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
-                        if (store.totalSupplyCount < store.max * downloadThreshold) {
-                            stationComponent.SetTargetCount(i,
-                                Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)),
-                                maxSlotEnergy);
-                        }
-                    }
+                    // 根据传输模式决定行为
+                    switch (transferMode) {
+                        case ETransferMode.Upload: {
+                            // 仅上传模式：交互站 -> 数据中心
+                            // 当交互站数量超过上传阈值时，将超出部分上传到数据中心
+                            if (store.count > store.max * uploadThreshold) {
+                                int modTargetCount = itemModSaveCount[store.itemId];
+                                long modCurrCount = GetModDataItemCount(store.itemId);
 
-                    if (station2Mod) {
-                        // 其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
-                        if (store.count > store.max * uploadThreshold
-                            && store.totalSupplyCount > store.max * uploadThreshold2) {
-                            int modTargetCount = itemModSaveCount[store.itemId];
-                            long modCurrCount = GetModDataItemCount(store.itemId);
-                            if (modCurrCount < modTargetCount) {
-                                int transferCount = Math.Min(store.count - (int)(store.max * uploadThreshold),
-                                    modTargetCount - (int)modCurrCount);
-                                stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                // 计算超出阈值部分的物品数量
+                                int transferCount = store.count - (int)(store.max * uploadThreshold);
+                                // 有限上传模式下，受数据中心目标数量限制
+                                if (capacityMode == ECapacityMode.Limited && modCurrCount < modTargetCount) {
+                                    transferCount = Math.Min(transferCount, modTargetCount - (int)modCurrCount);
+                                } else if (capacityMode == ECapacityMode.Limited && modCurrCount >= modTargetCount) {
+                                    // 有限上传且数据中心已达目标数量，停止上传
+                                    break;
+                                }
+
+                                if (transferCount > 0) {
+                                    stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                }
                             }
+                            break;
                         }
-                    }
-
-                    if (store.localLogic == ELogisticStorage.None) {
-                        if (storeLocked) {
-                            // 仓储锁定：维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
-                            int totalCount = (int)Math.Min(int.MaxValue,
-                                store.count + GetModDataItemCount(store.itemId));
-                            // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
-                            int avgCount = totalCount / 2;
-                            stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount), maxSlotEnergy);
-                        } else {
-                            // 仓储解锁：维持数目为上限的一半，可以无限投入/取出
-                            stationComponent.SetTargetCount(i, store.max / 2, maxSlotEnergy);
+                        case ETransferMode.Download: {
+                            // 仅下载模式：数据中心 -> 交互站
+                            // 当总供应量低于下载阈值时，从数据中心下载至阈值数量
+                            if (store.totalSupplyCount < store.max * downloadThreshold) {
+                                // 使用四舍五入避免浮点精度问题（如10000*0.2=1999.999...->2000）
+                                int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
+                                // 目标数量不能低于当前数量
+                                if (targetCount < store.count) {
+                                    targetCount = store.count;
+                                }
+                                stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
+                            }
+                            break;
+                        }
+                        case ETransferMode.Sync:
+                        default: {
+                            // 双向同步模式
+                            // 优先处理上传，再处理下载
+                            if (store.count > store.max * uploadThreshold) {
+                                // 数量高于上传阈值，上传超出部分，尊重容量模式
+                                int transferCount = store.count - (int)(store.max * uploadThreshold);
+                                if (capacityMode == ECapacityMode.Limited) {
+                                    // 有限上传：受数据中心目标数量限制
+                                    int modTargetCount = itemModSaveCount[store.itemId];
+                                    long modCurrCount = GetModDataItemCount(store.itemId);
+                                    if (modCurrCount < modTargetCount) {
+                                        transferCount = Math.Min(transferCount, modTargetCount - (int)modCurrCount);
+                                    } else {
+                                        // 数据中心已达目标数量，不执行上传
+                                        transferCount = 0;
+                                    }
+                                }
+                                // 无限上传时不限制数量
+                                if (transferCount > 0) {
+                                    stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                }
+                            } else if (store.totalSupplyCount < store.max * downloadThreshold) {
+                                // 数量低于下载阈值，下载数量至阈值
+                                // 使用四舍五入避免浮点精度问题
+                                int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
+                                if (targetCount < store.count) {
+                                    targetCount = store.count;
+                                }
+                                stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
+                            }
+                            break;
                         }
                     }
                 }
