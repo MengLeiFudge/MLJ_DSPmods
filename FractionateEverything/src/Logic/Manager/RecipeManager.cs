@@ -163,20 +163,55 @@ public static class RecipeManager {
     #endregion
 
     /// <summary>
-    /// 解锁全部配方
+    /// 全部配方等级=-1
     /// </summary>
-    public static void UnlockAllFracRecipes() {
+    public static void LockAllFracRecipes() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        foreach (var recipe in RecipeList) {
+            if (recipe.Locked) {
+                recipe.Level = -1;
+            }
+        }
+        UIMessageBox.Show("提示".Translate(),
+            "所有分馏配方已锁定。".Translate(),
+            "确定".Translate(), UIMessageBox.INFO,
+            null);
+    }
+
+    /// <summary>
+    /// 全部配方等级++
+    /// </summary>
+    public static void RewardAllFracRecipes() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
         foreach (var recipe in RecipeList) {
             if (recipe.Locked) {
                 recipe.RewardThis(true);
-                LogInfo($"Unlocked {recipe.RecipeType} recipe - {LDB.items.Select(recipe.InputID).Name}");
             }
         }
         UIMessageBox.Show("提示".Translate(),
-            "所有分馏配方已解锁。".Translate(),
+            "所有分馏配方已等级+1。".Translate(),
+            "确定".Translate(), UIMessageBox.INFO,
+            null);
+    }
+
+    /// <summary>
+    /// 全部配方等级=10
+    /// </summary>
+    public static void MaxAllFracRecipes() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        foreach (var recipe in RecipeList) {
+            if (recipe.Locked) {
+                recipe.Level = 10;
+            }
+        }
+        UIMessageBox.Show("提示".Translate(),
+            "所有分馏配方已满级。".Translate(),
             "确定".Translate(), UIMessageBox.INFO,
             null);
     }
@@ -265,11 +300,11 @@ public static class RecipeManager {
                     // 读取输入升级的个数
                     int count = r.ReadInt32();
                     for (int j = 0; j < count; j++) {
-                        r.ReadInt32(); // itemID
-                        r.ReadInt32(); // upgrade
+                        r.ReadInt32();// itemID
+                        r.ReadInt32();// upgrade
                     }
                     // 读取时间升级的次数
-                    r.ReadInt32(); // timeSpendUpgrade
+                    r.ReadInt32();// timeSpendUpgrade
                 }
             }
         }
