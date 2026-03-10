@@ -8,10 +8,6 @@
         <Description>DSP MOD - AfterBuildEvent</Description>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj" />
-        <ProjectReference Include="..\GetDspData\GetDspData.csproj" />
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="SharpZipLib" Version="*"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
     </ItemGroup>
