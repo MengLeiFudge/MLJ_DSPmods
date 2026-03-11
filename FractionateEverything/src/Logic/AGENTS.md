@@ -34,11 +34,24 @@ StationManager / RuneManager / TutorialManager ...
 ## IModCanSave Pattern (all classes implement)
 
 ```csharp
-public static void Import(BinaryReader r) { int version = r.ReadInt32(); ... }
-public static void Export(BinaryWriter w) { w.Write(3); ... }
+// Export — no manual version/count; WriteBlocks handles block framing
+public static void Export(BinaryWriter w) {
+    w.WriteBlocks(
+        ("FieldName", bw => bw.Write(Field))
+    );
+}
+// Import — no version check; ReadBlocks dispatches by tag; unknown tags skipped
+public static void Import(BinaryReader r) {
+    r.ReadBlocks(
+        ("FieldName", br => Field = br.ReadInt32())
+    );
+}
 public static void IntoOtherSave() { /* reset to defaults */ }
 ```
 
+Top-level exception: `FractionateEverything.Import` reads a version `int` first;
+if `< 10` → skips save, shows warning, compensates with 1000 universe vouchers; otherwise
+delegates to all Managers via `ReadBlocks`.
 ## Patches Folder Note
 
 Only 2 files (`LDBToolPatch.cs`, `ModelLoadingPatch.cs`). Both use `CodeMatcher` transpilers.

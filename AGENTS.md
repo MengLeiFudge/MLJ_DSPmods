@@ -242,7 +242,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ### Game Source Reference: DecompiledSource
 
-`GetDspData/gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` (publicized version, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
+`gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` (publicized version, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
 1. Publicizes `Assembly-CSharp.dll` from the game install into the nuget package dir
@@ -257,7 +257,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 **How to search it** — Use `Grep` or `mcp_grep` on the directory:
 ```
-path: GetDspData/gamedata/DecompiledSource
+path: gamedata/DecompiledSource
 pattern: class GameMain|void FixedUpdate
 ```
 

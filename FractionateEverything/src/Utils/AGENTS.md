@@ -15,7 +15,7 @@ Import with `using static FE.Utils.Utils;` — then call helpers directly withou
 | `RichTextUtils.cs` | 74 | Rich text color/size helpers |
 | `FormatUtils.cs` | 66 | `FormatP(percent)`, `FormatName(item)` |
 | `PatchImpl.cs` | 56 | Harmony patch infrastructure helpers |
-| `SaveUtils.cs` | 53 | `w.WriteBlock` / `r.ReadBlock` versioned save helpers |
+| `SaveUtils.cs` | 77 | `w.WriteBlocks(...)` / `r.ReadBlocks(...)` — tag-dispatch save API |
 | `LogUtils.cs` | 52 | `LogDebug/Info/Warning/Error` (wraps BepInEx logger) |
 | `RandomUtils.cs` | 27 | `GetRandDouble()`, `GetRandInt(min, max)` |
 | `GridIndexUtils.cs` | 27 | Grid index ↔ coordinate conversion |
@@ -34,17 +34,28 @@ TFE分馏数据中心 = ?   // mod tech:  TFE + name
 
 When adding new mod items, append to `ProtoID.cs` in the appropriate `IFE/RFE/MFE/TFE` block.
 
-## Save Block Pattern (SaveUtils.cs)
+## Save API (SaveUtils.cs)
+
+Only two **public** extension methods. `WriteBlock` / `ReadBlock` / `ReadAndHandleBlock` are **private** — never call them directly.
 
 ```csharp
-// Export
-w.WriteBlock("BuildingManager", () => { w.Write(Level); });
+// Export — WriteBlocks auto-writes block count; no manual version number needed
+w.WriteBlocks(
+    ("Tag1", bw => { bw.Write(field1); }),
+    ("Tag2", bw => { bw.Write(field2); })
+);
 
-// Import  
-r.ReadBlock("BuildingManager", () => { Level = r.ReadInt32(); });
-// ReadBlock is safe to skip if block tag not found (forward-compat)
+// Import — ReadBlocks auto-reads block count; dispatches by tag (dictionary lookup);
+// unknown tags are skipped with a warning (forward-compatible by design)
+r.ReadBlocks(
+    ("Tag1", br => { field1 = br.ReadInt32(); }),
+    ("Tag2", br => { field2 = br.ReadSingle(); })
+);
 ```
 
+**Top-level exception**: `FractionateEverything.Import` reads one `int version` first.
+If `version < 10` → seeks to end, shows UIMessageBox warning, and returns (no data read).
+Otherwise delegates to managers via `ReadBlocks`.
 ## Key Utility: TakeItemWithTip
 
 ```csharp

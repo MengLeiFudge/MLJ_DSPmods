@@ -33,8 +33,8 @@ public abstract class BaseRecipe {
 
     public virtual void GetOutputs(ref int inputCount, float fluidInputInc,
         out List<ProductOutputInfo> outputs, out int outputInc);
-    public virtual void Import(BinaryReader r);
-    public virtual void Export(BinaryWriter w);
+    public virtual void Import(BinaryReader r);  // block format: ("OutputMain", "OutputAppend", "Meta")
+    public virtual void Export(BinaryWriter w);  // block format: same tags; subclasses may add extra blocks
 }
 ```
 
