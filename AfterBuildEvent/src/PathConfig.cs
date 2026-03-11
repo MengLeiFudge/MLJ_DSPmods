@@ -27,7 +27,7 @@ public static class PathConfig {
     public static readonly string DSPUIDll = $@"{DSPGameDir}\DSPGAME_Data\Managed\UnityEngine.UI.dll";
 
     private static string _nugetGameLibDir = $@"{UserDir}\.nuget\packages\dysonsphereprogram.gamelibs";
-    public static string NugetGameLibNet45Dir ;
+    public static string NugetGameLibNet45Dir;
 
     public static string SolutionDir => @"..\..\..\..";
     public static FileInfo PublicizerExe => new($@"{SolutionDir}\lib\BepInEx.AssemblyPublicizer.Cli.exe");

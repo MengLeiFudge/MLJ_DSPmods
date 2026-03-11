@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using static FE.Utils.Utils;
 
 namespace FE.Utils;
 

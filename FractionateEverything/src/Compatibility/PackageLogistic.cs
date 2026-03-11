@@ -59,7 +59,7 @@ public static class PackageLogistic {
         if (itemId is I氢 or I精炼油) {
             AddItemToModData(itemId, count, inc);
             __result = [count, inc];
-        }else if (modDataItemCount < 10000) {
+        } else if (modDataItemCount < 10000) {
             int min = (int)Math.Min(count, 10000 - modDataItemCount);
             if (min != count) {
                 int splitInc = split_inc(ref count, ref inc, min);

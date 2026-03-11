@@ -29,9 +29,6 @@
         <Reference Include="DSP_Battle">
             <HintPath>..\lib\DSP_Battle-publicized.dll</HintPath>
         </Reference>
-        <Reference Include="Newtonsoft.Json">
-          <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
-        </Reference>
         <Reference Include="ProjectGenesis">
             <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
         </Reference>

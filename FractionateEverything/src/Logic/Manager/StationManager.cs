@@ -6,7 +6,6 @@ using System.Reflection.Emit;
 using FE.Logic.Building;
 using FE.UI.View.Setting;
 using HarmonyLib;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -164,7 +163,7 @@ public static class StationManager {
         slotTransferMode.Clear();
         slotCapacityMode.Clear();
     }
-    
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
@@ -301,7 +300,8 @@ public static class StationManager {
                     }
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LogError(ex);
         }
     }
@@ -351,7 +351,8 @@ public static class StationManager {
                 AddItemToModData(store.itemId, count, inc);
                 stationComponent.energy -= Mathf.CeilToInt(cost * count);
             }
-        } finally {
+        }
+        finally {
             if (PlanetaryInteractionStation.Level >= 3) {
                 AddIncToItem(store.count, ref store.inc);
             }
@@ -402,7 +403,8 @@ public static class StationManager {
                 }
 
                 storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 LogError($"FE StationManager: create mode buttons failed: {ex}");
             }
         }
@@ -513,8 +515,7 @@ public static class StationManager {
         var localImgRT = storage.localSdImage?.rectTransform;
         var remoteImgRT = storage.remoteSdImage?.rectTransform;
         float topY, bottomY;
-        if (storage.station != null && storage.station.isStellar && localImgRT != null &&
-            remoteImgRT != null) {
+        if (storage.station != null && storage.station.isStellar && localImgRT != null && remoteImgRT != null) {
             // 大塔：使用与官方按钮相同的 Y (14 / -14)
             topY = localImgRT.anchoredPosition.y;
             bottomY = remoteImgRT.anchoredPosition.y;
@@ -576,8 +577,8 @@ public static class StationManager {
 
             // 通过栏位索引，拿到对应栏位的同步模式
             ECapacityMode eCapacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
-            cTrans.SetActive(storage.localSdButton.gameObject.activeSelf &&
-                             eTransferMode is ETransferMode.Sync or ETransferMode.Upload);
+            cTrans.SetActive(storage.localSdButton.gameObject.activeSelf
+                             && eTransferMode is ETransferMode.Sync or ETransferMode.Upload);
             Text capText = cTrans.GetComponentInChildren<Text>();
             if (capText != null) {
                 capText.text = eCapacityMode switch {
@@ -879,8 +880,9 @@ public static class StationManager {
             }
 
             storage.popupBoxRect.gameObject.SetActive(false);
-            return false; // prevent original OnOptionButton* handlers
-        } catch (Exception ex) {
+            return false;// prevent original OnOptionButton* handlers
+        }
+        catch (Exception ex) {
             LogError($"FE HandleOptionClick error: {ex}");
             return true;
         }
@@ -1096,10 +1098,10 @@ public static class StationManager {
         var matcher = new CodeMatcher(instructions);
         // 查找 UpdateOutputSlots 调用的模式
         matcher.MatchForward(false,
-            new CodeMatch(OpCodes.Ldloc_S), // cargoTraffic
-            new CodeMatch(OpCodes.Ldloc_S), // entitySignPool
-            new CodeMatch(OpCodes.Ldloc_S), // stationPilerLevel
-            new CodeMatch(OpCodes.Ldloc_S), // active
+            new CodeMatch(OpCodes.Ldloc_S),// cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_S),// entitySignPool
+            new CodeMatch(OpCodes.Ldloc_S),// stationPilerLevel
+            new CodeMatch(OpCodes.Ldloc_S),// active
             new CodeMatch(OpCodes.Callvirt,
                 AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
         );
@@ -1111,12 +1113,12 @@ public static class StationManager {
         // 移动到 stationPilerLevel 参数加载的位置
         matcher.Advance(2);
         // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7)) // 加载 factory
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_S, (byte)7))// 加载 factory
             .Insert(
-                new CodeInstruction(OpCodes.Ldloc_S, (byte)19), // 加载 &local2
-                new CodeInstruction(OpCodes.Ldind_Ref), // 解引用得到 StationComponent
+                new CodeInstruction(OpCodes.Ldloc_S, (byte)19),// 加载 &local2
+                new CodeInstruction(OpCodes.Ldind_Ref),// 解引用得到 StationComponent
                 new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))) // 调用方法
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
             );
         return matcher.InstructionEnumeration();
     }
@@ -1131,10 +1133,10 @@ public static class StationManager {
         var matcher = new CodeMatcher(instructions);
         // 查找 UpdateOutputSlots 调用的模式
         matcher.MatchForward(false,
-            new CodeMatch(OpCodes.Ldloc_0), // cargoTraffic
-            new CodeMatch(OpCodes.Ldloc_1), // entitySignPool
-            new CodeMatch(OpCodes.Ldarg_1), // maxPilerCount
-            new CodeMatch(OpCodes.Ldloc_2), // active
+            new CodeMatch(OpCodes.Ldloc_0),// cargoTraffic
+            new CodeMatch(OpCodes.Ldloc_1),// entitySignPool
+            new CodeMatch(OpCodes.Ldarg_1),// maxPilerCount
+            new CodeMatch(OpCodes.Ldloc_2),// active
             new CodeMatch(OpCodes.Callvirt,
                 AccessTools.Method(typeof(StationComponent), nameof(StationComponent.UpdateOutputSlots)))
         );
@@ -1146,16 +1148,16 @@ public static class StationManager {
         // 移动到 maxPilerCount 参数加载的位置
         matcher.Advance(2);
         // 替换为 GetOutputStack
-        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0)) // this (PlanetTransport)
+        matcher.SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))// this (PlanetTransport)
             .Insert(
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")), // factory
-                new CodeInstruction(OpCodes.Ldarg_0), // this (PlanetTransport) 再次加载
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlanetTransport), "factory")),// factory
+                new CodeInstruction(OpCodes.Ldarg_0),// this (PlanetTransport) 再次加载
                 new CodeInstruction(OpCodes.Ldfld,
-                    AccessTools.Field(typeof(PlanetTransport), "stationPool")), // stationPool
-                new CodeInstruction(OpCodes.Ldloc_3), // index
-                new CodeInstruction(OpCodes.Ldelem_Ref), // stationPool[index]
+                    AccessTools.Field(typeof(PlanetTransport), "stationPool")),// stationPool
+                new CodeInstruction(OpCodes.Ldloc_3),// index
+                new CodeInstruction(OpCodes.Ldelem_Ref),// stationPool[index]
                 new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack))) // 调用方法
+                    AccessTools.Method(typeof(StationManager), nameof(GetOutputStack)))// 调用方法
             );
         return matcher.InstructionEnumeration();
     }
@@ -1166,30 +1168,73 @@ public static class StationManager {
             ? LDB.items.Select(buildingID).MaxStack()
             : GameMain.history.stationPilerLevel;
     }
-    
-    /**
-     * 读档
-     */
+
+    #region IModCanSave
+
     public static void Import(BinaryReader r) {
-        string json = r.ReadString();
-        Dictionary<string, string> map = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-        if (map.TryGetValue("slotTransferMode", out string slotTransferModeJson)) {
-            slotTransferMode = JsonConvert.DeserializeObject<ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>>>(slotTransferModeJson);
-        }
-        if (map.TryGetValue("slotCapacityMode", out string slotCapacityModeJson)) {
-            slotCapacityMode = JsonConvert.DeserializeObject<ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>>>(slotCapacityModeJson);
+        int version = r.ReadInt32();
+        if (version >= 1) {
+            int blockCount = r.ReadInt32();
+            r.ReadBlocks(blockCount, (tag, br) => {
+                if (tag == "SlotTransferMode") {
+                    int entityCount = br.ReadInt32();
+                    for (int i = 0; i < entityCount; i++) {
+                        long entityId = br.ReadInt64();
+                        int slotCount = br.ReadInt32();
+                        var dict = new ConcurrentDictionary<int, ETransferMode>();
+                        for (int j = 0; j < slotCount; j++) {
+                            int slotIndex = br.ReadInt32();
+                            dict[slotIndex] = (ETransferMode)br.ReadInt32();
+                        }
+                        slotTransferMode[entityId] = dict;
+                    }
+                } else if (tag == "SlotCapacityMode") {
+                    int entityCount = br.ReadInt32();
+                    for (int i = 0; i < entityCount; i++) {
+                        long entityId = br.ReadInt64();
+                        int slotCount = br.ReadInt32();
+                        var dict = new ConcurrentDictionary<int, ECapacityMode>();
+                        for (int j = 0; j < slotCount; j++) {
+                            int slotIndex = br.ReadInt32();
+                            dict[slotIndex] = (ECapacityMode)br.ReadInt32();
+                        }
+                        slotCapacityMode[entityId] = dict;
+                    }
+                }
+            });
         }
     }
-    
-    /**
-     * 存档
-     */
+
     public static void Export(BinaryWriter w) {
-        Dictionary<string, string> map = new() {
-            { "slotTransferMode", JsonConvert.SerializeObject(slotTransferMode) },
-            { "slotCapacityMode", JsonConvert.SerializeObject(slotCapacityMode) }
-        };
-        string json = JsonConvert.SerializeObject(map);
-        w.Write(json);
+        w.Write(1);
+        w.Write(2);
+        w.WriteBlock("SlotTransferMode", bw => {
+            bw.Write(slotTransferMode.Count);
+            foreach (var kvp in slotTransferMode) {
+                bw.Write(kvp.Key);
+                bw.Write(kvp.Value.Count);
+                foreach (var slot in kvp.Value) {
+                    bw.Write(slot.Key);
+                    bw.Write((int)slot.Value);
+                }
+            }
+        });
+        w.WriteBlock("SlotCapacityMode", bw => {
+            bw.Write(slotCapacityMode.Count);
+            foreach (var kvp in slotCapacityMode) {
+                bw.Write(kvp.Key);
+                bw.Write(kvp.Value.Count);
+                foreach (var slot in kvp.Value) {
+                    bw.Write(slot.Key);
+                    bw.Write((int)slot.Value);
+                }
+            }
+        });
     }
+
+    public static void IntoOtherSave() {
+        Clear();
+    }
+
+    #endregion
 }
