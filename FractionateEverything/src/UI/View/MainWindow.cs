@@ -188,117 +188,47 @@ public static class MainWindow {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        if (version >= 10) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                switch (tag) {
-                    case "FracRecipeOperate":
-                        FracRecipeOperate.Import(br);
-                        break;
-                    case "VanillaRecipeOperate":
-                        VanillaRecipeOperate.Import(br);
-                        break;
-                    case "BuildingOperate":
-                        BuildingOperate.Import(br);
-                        break;
-                    case "ItemInteraction":
-                        ItemInteraction.Import(br);
-                        break;
-                    case "ImportantItem":
-                        ImportantItem.Import(br);
-                        break;
-                    case "RuneMenu":
-                        RuneMenu.Import(br);
-                        break;
-                    case "TicketRaffle":
-                        TicketRaffle.Import(br);
-                        break;
-                    case "LimitedTimeStore":
-                        LimitedTimeStore.Import(br);
-                        break;
-                    case "MainTask":
-                        MainTask.Import(br);
-                        break;
-                    case "RecurringTask":
-                        RecurringTask.Import(br);
-                        break;
-                    case "Achievements":
-                        Achievements.Import(br);
-                        break;
-                    case "DevelopmentDiary":
-                        DevelopmentDiary.Import(br);
-                        break;
-                    case "RecipeGallery":
-                        RecipeGallery.Import(br);
-                        break;
-                    case "FracStatistic":
-                        FracStatistic.Import(br);
-                        break;
-                    case "VipFeatures":
-                        VipFeatures.Import(br);
-                        break;
-                    case "Miscellaneous":
-                        Miscellaneous.Import(br);
-                        break;
-                    case "SandboxMode":
-                        SandboxMode.Import(br);
-                        break;
-                }
-            });
-            return;
-        }
-
-        FracRecipeOperate.Import(r);
-        VanillaRecipeOperate.Import(r);
-        BuildingOperate.Import(r);
-
-        ItemInteraction.Import(r);
-        ImportantItem.Import(r);
-        RuneMenu.Import(r);
-
-        TicketRaffle.Import(r);
-        LimitedTimeStore.Import(r);
-
-        MainTask.Import(r);
-        RecurringTask.Import(r);
-        Achievements.Import(r);
-        DevelopmentDiary.Import(r);
-
-        RecipeGallery.Import(r);
-        FracStatistic.Import(r);
-
-        VipFeatures.Import(r);
-        Miscellaneous.Import(r);
-        SandboxMode.Import(r);
+        r.ReadBlocks(
+            ("FracRecipeOperate", FracRecipeOperate.Import),
+            ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
+            ("BuildingOperate", BuildingOperate.Import),
+            ("ItemInteraction", ItemInteraction.Import),
+            ("ImportantItem", ImportantItem.Import),
+            ("RuneMenu", RuneMenu.Import),
+            ("TicketRaffle", TicketRaffle.Import),
+            ("LimitedTimeStore", LimitedTimeStore.Import),
+            ("MainTask", MainTask.Import),
+            ("RecurringTask", RecurringTask.Import),
+            ("Achievements", Achievements.Import),
+            ("DevelopmentDiary", DevelopmentDiary.Import),
+            ("RecipeGallery", RecipeGallery.Import),
+            ("FracStatistic", FracStatistic.Import),
+            ("VipFeatures", VipFeatures.Import),
+            ("Miscellaneous", Miscellaneous.Import),
+            ("SandboxMode", SandboxMode.Import)
+        );
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(10);
-        w.Write(17);
-
-        w.WriteBlock("FracRecipeOperate", FracRecipeOperate.Export);
-        w.WriteBlock("VanillaRecipeOperate", VanillaRecipeOperate.Export);
-        w.WriteBlock("BuildingOperate", BuildingOperate.Export);
-
-        w.WriteBlock("ItemInteraction", ItemInteraction.Export);
-        w.WriteBlock("ImportantItem", ImportantItem.Export);
-        w.WriteBlock("RuneMenu", RuneMenu.Export);
-
-        w.WriteBlock("TicketRaffle", TicketRaffle.Export);
-        w.WriteBlock("LimitedTimeStore", LimitedTimeStore.Export);
-
-        w.WriteBlock("MainTask", MainTask.Export);
-        w.WriteBlock("RecurringTask", RecurringTask.Export);
-        w.WriteBlock("Achievements", Achievements.Export);
-        w.WriteBlock("DevelopmentDiary", DevelopmentDiary.Export);
-
-        w.WriteBlock("RecipeGallery", RecipeGallery.Export);
-        w.WriteBlock("FracStatistic", FracStatistic.Export);
-
-        w.WriteBlock("VipFeatures", VipFeatures.Export);
-        w.WriteBlock("Miscellaneous", Miscellaneous.Export);
-        w.WriteBlock("SandboxMode", SandboxMode.Export);
+        w.WriteBlocks(
+            ("FracRecipeOperate", FracRecipeOperate.Export),
+            ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
+            ("BuildingOperate", BuildingOperate.Export),
+            ("ItemInteraction", ItemInteraction.Export),
+            ("ImportantItem", ImportantItem.Export),
+            ("RuneMenu", RuneMenu.Export),
+            ("TicketRaffle", TicketRaffle.Export),
+            ("LimitedTimeStore", LimitedTimeStore.Export),
+            ("MainTask", MainTask.Export),
+            ("RecurringTask", RecurringTask.Export),
+            ("Achievements", Achievements.Export),
+            ("DevelopmentDiary", DevelopmentDiary.Export),
+            ("RecipeGallery", RecipeGallery.Export),
+            ("FracStatistic", FracStatistic.Export),
+            ("VipFeatures", VipFeatures.Export),
+            ("Miscellaneous", Miscellaneous.Export),
+            ("SandboxMode", SandboxMode.Export)
+        );
     }
 
     public static void IntoOtherSave() {

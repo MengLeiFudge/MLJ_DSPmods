@@ -719,80 +719,48 @@ public static class ItemManager {
 
     #region IModCanSave
 
-    public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        if (version >= 10) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                if (tag == "CenterItems") {
-                    int size = br.ReadInt32();
-                    for (int i = 0; i < size; i++) {
-                        int itemId = br.ReadInt32();
-                        long count = br.ReadInt64();
-                        long inc = br.ReadInt64();
-                        if (itemId >= 0 && itemId < centerItemCount.Length) {
-                            centerItemCount[itemId] = Math.Max(0, count);
-                            centerItemInc[itemId] = Math.Max(0, Math.Min(inc, centerItemCount[itemId] * 10));
-                        }
-                    }
-                } else if (tag == "LeftInc") {
-                    leftInc = br.ReadInt32();
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("CenterItems", bw => {
+                // 找出所有有库存的物品 ID
+                List<int> activeIds = [];
+                for (int i = 0; i < centerItemCount.Length; i++) {
+                    if (centerItemCount[i] > 0) activeIds.Add(i);
                 }
-            });
-            return;
-        }
-
-        int itemDataDicSize = r.ReadInt32();
-        for (int i = 0; i < itemDataDicSize; i++) {
-            int itemId = r.ReadInt32();
-            long count = r.ReadInt64();
-            long inc = r.ReadInt64();
-            if (count < 0) {
-                count = 0;
-            }
-            if (inc < 0) {
-                inc = 0;
-            } else if (inc > count * 10) {
-                inc = count * 10;
-            }
-            if (itemId >= 0 && itemId < centerItemCount.Length) {
-                centerItemCount[itemId] = count;
-                centerItemInc[itemId] = inc;
-            }
-        }
-        if (version == 2) {
-            leftInc = r.ReadInt32() + r.ReadInt32() + r.ReadInt32();
-        }
-        if (version >= 3) {
-            leftInc = r.ReadInt32();
-        }
+                bw.Write(activeIds.Count);
+                foreach (int itemId in activeIds) {
+                    bw.Write(itemId);
+                    bw.Write(centerItemCount[itemId]);
+                    bw.Write(centerItemInc[itemId]);
+                }
+            }),
+            ("LeftInc", bw => bw.Write(leftInc))
+        );
     }
 
-    public static void Export(BinaryWriter w) {
-        w.Write(10);
-        w.Write(2);
-        w.WriteBlock("CenterItems", bw => {
-            List<int> centerItemId = [];
-            for (int i = 0; i < centerItemCount.Length; i++) {
-                if (centerItemCount[i] > 0) {
-                    centerItemId.Add(i);
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(
+            ("CenterItems", br => {
+                int size = br.ReadInt32();
+                for (int i = 0; i < size; i++) {
+                    int itemId = br.ReadInt32();
+                    long count = br.ReadInt64();
+                    long inc = br.ReadInt64();
+                    // 边界检查
+                    if (itemId >= 0 && itemId < centerItemCount.Length) {
+                        centerItemCount[itemId] = Math.Max(0, count);
+                        // 增产点数不应超过 数量*10
+                        centerItemInc[itemId] = Math.Max(0, Math.Min(inc, centerItemCount[itemId] * 10));
+                    }
                 }
-            }
-            bw.Write(centerItemId.Count);
-            foreach (int itemId in centerItemId) {
-                bw.Write(itemId);
-                bw.Write(centerItemCount[itemId]);
-                bw.Write(centerItemInc[itemId]);
-            }
-        });
-        w.WriteBlock("LeftInc", bw => bw.Write(leftInc));
+            }),
+            ("LeftInc", br => leftInc = br.ReadInt32())
+        );
     }
 
     public static void IntoOtherSave() {
-        for (int i = 0; i < centerItemCount.Length; i++) {
-            centerItemCount[i] = 0;
-            centerItemInc[i] = 0;
-        }
+        Array.Clear(centerItemCount, 0, centerItemCount.Length);
+        Array.Clear(centerItemInc, 0, centerItemInc.Length);
         leftInc = 0;
     }
 

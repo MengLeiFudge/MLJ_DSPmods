@@ -229,53 +229,50 @@ public abstract class BaseRecipe(
     #region IModCanSave
 
     public virtual void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        int outputMainCount = r.ReadInt32();
-        for (int i = 0; i < outputMainCount; i++) {
-            int outputID = r.ReadInt32();
-            int outputTotalCount = r.ReadInt32();
-            var outputInfo = OutputMain.Find(info => info.OutputID == outputID);
-            if (outputInfo != null) {
-                outputInfo.OutputTotalCount = outputTotalCount;
-            } else {
-                LogWarning($"Output {outputID} not found in {TypeName} main outputs");
-            }
-        }
-        int outputAppendCount = r.ReadInt32();
-        for (int i = 0; i < outputAppendCount; i++) {
-            int outputID = r.ReadInt32();
-            int outputTotalCount = r.ReadInt32();
-            var outputInfo = OutputAppend.Find(info => info.OutputID == outputID);
-            if (outputInfo != null) {
-                outputInfo.OutputTotalCount = outputTotalCount;
-            } else {
-                LogWarning($"Output {outputID} not found in {TypeName} append outputs");
-            }
-        }
-        if (version < 2) {
-            r.ReadInt32();
-        }
-        Level = Math.Max(-1, Math.Min(10, r.ReadInt32()));
-        if (version < 2) {
-            r.ReadSingle();
-        }
-        // 子类特定数据由重写的方法处理
+        r.ReadBlocks(
+            ("OutputMain", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++) {
+                    int id = br.ReadInt32();
+                    int total = br.ReadInt32();
+                    var info = OutputMain.Find(x => x.OutputID == id);
+                    if (info != null) info.OutputTotalCount = total;
+                    else LogWarning($"Output {id} not found in {TypeName} main outputs");
+                }
+            }),
+            ("OutputAppend", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++) {
+                    int id = br.ReadInt32();
+                    int total = br.ReadInt32();
+                    var info = OutputAppend.Find(x => x.OutputID == id);
+                    if (info != null) info.OutputTotalCount = total;
+                    else LogWarning($"Output {id} not found in {TypeName} append outputs");
+                }
+            }),
+            ("Meta", br => { Level = Math.Max(-1, Math.Min(10, br.ReadInt32())); })
+        );
     }
 
     public virtual void Export(BinaryWriter w) {
-        w.Write(2);
-        w.Write(OutputMain.Count);
-        foreach (OutputInfo info in OutputMain) {
-            w.Write(info.OutputID);
-            w.Write(info.OutputTotalCount);
-        }
-        w.Write(OutputAppend.Count);
-        foreach (OutputInfo info in OutputAppend) {
-            w.Write(info.OutputID);
-            w.Write(info.OutputTotalCount);
-        }
-        w.Write(Level);
-        // 子类特定数据由重写的方法处理
+        w.WriteBlocks(
+            ("OutputMain", bw => {
+                bw.Write(OutputMain.Count);
+                foreach (var info in OutputMain) {
+                    bw.Write(info.OutputID);
+                    bw.Write(info.OutputTotalCount);
+                }
+            }),
+            ("OutputAppend", bw => {
+                bw.Write(OutputAppend.Count);
+                foreach (var info in OutputAppend) {
+                    bw.Write(info.OutputID);
+                    bw.Write(info.OutputTotalCount);
+                }
+            }),
+            ("Meta", bw => { bw.Write(Level); })
+        );
+        // 子类特定数据由重写的方法在 Export 之后或通过额外的 Block 处理
     }
 
     public virtual void IntoOtherSave() {

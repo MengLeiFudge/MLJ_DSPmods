@@ -64,24 +64,30 @@ public class ExchangeInfo {
     #region IModCanSave
 
     public void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        item = LDB.items.Select(r.ReadInt32());
-        itemCount = r.ReadInt32();
-        recipe = GetRecipe<BaseRecipe>((ERecipe)r.ReadInt32(), r.ReadInt32());
-        matrix = LDB.items.Select(r.ReadInt32());
-        matrixCount = r.ReadSingle();
-        exchanged = r.ReadBoolean();
+        r.ReadBlocks(
+            ("Data", br => {
+                item = LDB.items.Select(br.ReadInt32());
+                itemCount = br.ReadInt32();
+                recipe = GetRecipe<BaseRecipe>((ERecipe)br.ReadInt32(), br.ReadInt32());
+                matrix = LDB.items.Select(br.ReadInt32());
+                matrixCount = br.ReadSingle();
+                exchanged = br.ReadBoolean();
+            })
+        );
     }
 
     public void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(item != null ? item.ID : 0);
-        w.Write(itemCount);
-        w.Write(recipe != null ? (int)recipe.RecipeType : 0);
-        w.Write(recipe != null ? recipe.InputID : 0);
-        w.Write(matrix != null ? matrix.ID : 0);
-        w.Write(matrixCount);
-        w.Write(exchanged);
+        w.WriteBlocks(
+            ("Data", bw => {
+                bw.Write(item != null ? item.ID : 0);
+                bw.Write(itemCount);
+                bw.Write(recipe != null ? (int)recipe.RecipeType : 0);
+                bw.Write(recipe != null ? recipe.InputID : 0);
+                bw.Write(matrix != null ? matrix.ID : 0);
+                bw.Write(matrixCount);
+                bw.Write(exchanged);
+            })
+        );
     }
 
     #endregion
@@ -462,40 +468,40 @@ public static class LimitedTimeStore {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        nextFreshTick = version >= 2 ? r.ReadInt64() : baseFreshTs;
-        if (version >= 3) {
-            int count = r.ReadInt32();
-            int i = 0;
-            while (count > 0 && i < exchangeInfoMaxCount) {
-                ExchangeInfo info = new();
-                info.Import(r);
-                exchangeInfos[i] = info;
-                count--;
-                i++;
-            }
-            while (i < exchangeInfoMaxCount) {
-                exchangeInfos[i] = new();
-                i++;
-            }
-            while (count > 0) {
-                new ExchangeInfo().Import(r);
-                count--;
-            }
-        } else {
-            for (int i = 0; i < exchangeInfoMaxCount; i++) {
-                exchangeInfos[i] = new();
-            }
-        }
+        r.ReadBlocks(
+            ("NextFreshTick", br => nextFreshTick = br.ReadInt64()),
+            ("ExchangeInfos", br => {
+                int count = br.ReadInt32();
+                int i = 0;
+                while (count > 0 && i < exchangeInfoMaxCount) {
+                    ExchangeInfo info = new();
+                    info.Import(br);
+                    exchangeInfos[i] = info;
+                    count--;
+                    i++;
+                }
+                while (i < exchangeInfoMaxCount) {
+                    exchangeInfos[i] = new();
+                    i++;
+                }
+                while (count > 0) {
+                    new ExchangeInfo().Import(br);
+                    count--;
+                }
+            })
+        );
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(3);
-        w.Write(nextFreshTick);
-        w.Write(exchangeInfos.Length);
-        foreach (ExchangeInfo info in exchangeInfos) {
-            info.Export(w);
-        }
+        w.WriteBlocks(
+            ("NextFreshTick", bw => bw.Write(nextFreshTick)),
+            ("ExchangeInfos", bw => {
+                bw.Write(exchangeInfos.Length);
+                foreach (ExchangeInfo info in exchangeInfos) {
+                    info.Export(bw);
+                }
+            })
+        );
     }
 
     public static void IntoOtherSave() {

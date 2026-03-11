@@ -552,16 +552,16 @@ public static class FracRecipeOperate {
     private static string FeatureStatus(bool enabled) =>
         enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
 
-    // ==================== 存档 ====================
-
     #region IModCanSave
 
+    // ==================== 存档 ====================
+
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
+        r.ReadBlocks();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.WriteBlocks();
     }
 
     public static void IntoOtherSave() { }
