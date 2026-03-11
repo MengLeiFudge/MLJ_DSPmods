@@ -38,14 +38,25 @@ Inline Harmony patches inside ProcessManager:
 - `GameMain.FixedUpdate` postfix — Interaction Tower trait logic (every 60 ticks)
 - `FractionatorComponent.*` patches — belt I/O overrides
 
-## Serialization (Block Format v10+)
+## Serialization
+
+All Managers use `WriteBlocks`/`ReadBlocks` directly — no manual version or count writing.
+Block tags are stable strings (e.g. `"Level"`, `"Recipe"`, `"Building"`);
+unknown tags are skipped automatically (forward-compatible).
 
 ```csharp
-w.WriteBlock("BuildingManager", () => { ... });
-r.ReadBlock("BuildingManager", () => { ... });
-```
-Older saves fall back to sequential reads. Always bump version on schema change.
+// Export
+w.WriteBlocks(("Tag", bw => { bw.Write(field); }));
 
+// Import
+r.ReadBlocks(("Tag", br => { field = br.ReadInt32(); }));
+```
+
+No legacy fallback code in any Manager.
+Top-level version guard (`version < 10` → skip) lives in `FractionateEverything.Import` only.
+
+Special case in `BuildingManager`: `OutputExtendExport`/`OutputExtendImport` no longer
+write/read their own version number — they are wrapped inside a parent `WriteBlocks`/`ReadBlocks` block.
 ## Anti-Patterns
 
 - `ProcessManager` already >1000 lines — do not add new unrelated features; extract to a new manager

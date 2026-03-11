@@ -22,9 +22,17 @@ public static class XxxTower {
     public static void UpdateHpAndEnergy(){ ... }   // scale HP/energy by Level
 
     #region IModCanSave
-    public static void Import(BinaryReader r) { int version = r.ReadInt32(); Level = r.ReadInt32(); }
-    public static void Export(BinaryWriter w) { w.Write(1); w.Write(Level); }
-    public static void IntoOtherSave()        { Level = 0; }
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(("Level", br => {
+            int lvl = br.ReadInt32();
+            Level = lvl < 0 ? 0 : lvl > MaxLevel ? MaxLevel : lvl;
+        }));
+        UpdateHpAndEnergy();
+    }
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(("Level", bw => bw.Write(Level)));
+    }
+    public static void IntoOtherSave() { Level = 0; UpdateHpAndEnergy(); }
     #endregion
 }
 ```
