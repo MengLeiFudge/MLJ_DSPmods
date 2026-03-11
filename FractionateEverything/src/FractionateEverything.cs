@@ -307,8 +307,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         ItemManager.IntoOtherSave();
         RuneManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
+        StationManager.IntoOtherSave();
         TechManager.ResetTechUnlockFlags();
-        StationManager.Clear();
     }
 
     public string Version => PluginInfo.PLUGIN_VERSION;
