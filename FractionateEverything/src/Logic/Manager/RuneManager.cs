@@ -228,98 +228,72 @@ public static class RuneManager {
 
     #region IModCanSave
 
-    public static void Import(BinaryReader r) {
-        IntoOtherSave();
-        int version = r.ReadInt32();
-        if (version >= 10) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                if (tag == "AllRunes") {
-                    int runeCount = br.ReadInt32();
-                    for (int i = 0; i < runeCount; i++) {
-                        br.ReadAndHandleBlock((rTag, rBr) => {
-                            var rune = new Rune {
-                                id = rBr.ReadInt64(),
-                                star = rBr.ReadInt32(),
-                                level = rBr.ReadInt32(),
-                                mainStat = (ERuneStatType)rBr.ReadInt32(),
-                            };
-                            rune.star = Math.Max(0, Math.Min(5, rune.star));
-                            rune.level = Math.Max(0, Math.Min(rune.MaxLevel, rune.level));
-                            int subCount = rBr.ReadInt32();
-                            for (int j = 0; j < subCount; j++) {
-                                rune.subStats.Add((ERuneStatType)rBr.ReadInt32());
-                                rune.subStatRolls.Add(rBr.ReadSingle());
-                            }
-                            allRunes.Add(rune);
-                        });
-                    }
-                } else if (tag == "EquippedRunes") {
-                    for (int i = 0; i < 5; i++) {
-                        equippedRuneIds[i] = br.ReadInt64();
-                    }
-                } else if (tag == "SlotCount") {
-                    slotCount = br.ReadInt32();
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("AllRunes", bw => {
+                bw.Write(allRunes.Count);
+                foreach (Rune rune in allRunes) {
+                    // 固定 Tag 为 "RuneData"，方便嵌套读取
+                    bw.WriteBlocks(("RuneData", rbw => {
+                        rbw.Write(rune.id);
+                        rbw.Write(rune.star);
+                        rbw.Write(rune.level);
+                        rbw.Write((int)rune.mainStat);
+                        rbw.Write(rune.subStats.Count);
+                        for (int i = 0; i < rune.subStats.Count; i++) {
+                            rbw.Write((int)rune.subStats[i]);
+                            rbw.Write(rune.subStatRolls[i]);
+                        }
+                    }));
                 }
-            });
-            return;
-        }
-
-        int runeCount = r.ReadInt32();
-        for (int i = 0; i < runeCount; i++) {
-            var rune = new Rune {
-                id = r.ReadInt64(),
-                star = r.ReadInt32(),
-                level = r.ReadInt32(),
-                mainStat = (ERuneStatType)r.ReadInt32(),
-            };
-            rune.star = Math.Max(0, Math.Min(5, rune.star));
-            rune.level = Math.Max(0, Math.Min(rune.MaxLevel, rune.level));
-            int subCount = r.ReadInt32();
-            for (int j = 0; j < subCount; j++) {
-                rune.subStats.Add((ERuneStatType)r.ReadInt32());
-                rune.subStatRolls.Add(r.ReadSingle());
-            }
-            allRunes.Add(rune);
-        }
-        for (int i = 0; i < 5; i++) {
-            equippedRuneIds[i] = r.ReadInt64();
-        }
-        slotCount = r.ReadInt32();
+            }),
+            ("EquippedRunes", bw => {
+                for (int i = 0; i < 5; i++) {
+                    bw.Write(equippedRuneIds[i]);
+                }
+            }),
+            ("SlotCount", bw => bw.Write(slotCount))
+        );
     }
 
-    public static void Export(BinaryWriter w) {
-        w.Write(10);
-        w.Write(3);
-        w.WriteBlock("AllRunes", bw => {
-            bw.Write(allRunes.Count);
-            foreach (Rune rune in allRunes) {
-                bw.WriteBlock(rune.id.ToString(), rbw => {
-                    rbw.Write(rune.id);
-                    rbw.Write(rune.star);
-                    rbw.Write(rune.level);
-                    rbw.Write((int)rune.mainStat);
-                    rbw.Write(rune.subStats.Count);
-                    for (int i = 0; i < rune.subStats.Count; i++) {
-                        rbw.Write((int)rune.subStats[i]);
-                        rbw.Write(rune.subStatRolls[i]);
-                    }
-                });
-            }
-        });
-        w.WriteBlock("EquippedRunes", bw => {
-            for (int i = 0; i < 5; i++) {
-                bw.Write(equippedRuneIds[i]);
-            }
-        });
-        w.WriteBlock("SlotCount", bw => bw.Write(slotCount));
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(
+            ("AllRunes", br => {
+                int runeCount = br.ReadInt32();
+                for (int i = 0; i < runeCount; i++) {
+                    // 嵌套 ReadBlocks 匹配固定 Tag "RuneData"
+                    br.ReadBlocks(("RuneData", rBr => {
+                        var rune = new Rune {
+                            id = rBr.ReadInt64(),
+                            star = rBr.ReadInt32(),
+                            level = rBr.ReadInt32(),
+                            mainStat = (ERuneStatType)rBr.ReadInt32(),
+                        };
+                        // 数据纠错
+                        rune.star = Math.Max(0, Math.Min(5, rune.star));
+                        rune.level = Math.Max(0, Math.Min(rune.MaxLevel, rune.level));
+
+                        int subCount = rBr.ReadInt32();
+                        for (int j = 0; j < subCount; j++) {
+                            rune.subStats.Add((ERuneStatType)rBr.ReadInt32());
+                            rune.subStatRolls.Add(rBr.ReadSingle());
+                        }
+                        allRunes.Add(rune);
+                    }));
+                }
+            }),
+            ("EquippedRunes", br => {
+                for (int i = 0; i < 5; i++) {
+                    equippedRuneIds[i] = br.ReadInt64();
+                }
+            }),
+            ("SlotCount", br => slotCount = br.ReadInt32())
+        );
     }
 
     public static void IntoOtherSave() {
         allRunes.Clear();
-        for (int i = 0; i < equippedRuneIds.Length; i++) {
-            equippedRuneIds[i] = 0;
-        }
+        Array.Clear(equippedRuneIds, 0, equippedRuneIds.Length);
         slotCount = 0;
     }
 

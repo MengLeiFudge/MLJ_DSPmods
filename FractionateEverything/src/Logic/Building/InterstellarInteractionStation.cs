@@ -99,12 +99,18 @@ public static class InterstellarInteractionStation {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
+        r.ReadBlocks(
+            //Level与小塔共用一个
+            //("Level", br => { Level = Mathf.Max(0, Mathf.Min(MaxLevel, br.ReadInt32())); })
+        );
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.WriteBlocks(
+            //Level与小塔共用一个
+            //("Level", bw => bw.Write(Level))
+        );
     }
 
     public static void IntoOtherSave() {

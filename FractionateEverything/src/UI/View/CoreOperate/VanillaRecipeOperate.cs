@@ -280,11 +280,11 @@ public static class VanillaRecipeOperate {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
+        r.ReadBlocks();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
+        w.WriteBlocks();
     }
 
     public static void IntoOtherSave() { }

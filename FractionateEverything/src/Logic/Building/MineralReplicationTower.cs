@@ -104,24 +104,16 @@ public static class MineralReplicationTower {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        if (version < 2) {
-            r.ReadBoolean();
-            r.ReadInt32();
-            r.ReadBoolean();
-        }
-        Level = r.ReadInt32();
-        if (Level < 0) {
-            Level = 0;
-        } else if (Level > MaxLevel) {
-            Level = MaxLevel;
-        }
+        r.ReadBlocks(
+            ("Level", br => { Level = Mathf.Max(0, Mathf.Min(MaxLevel, br.ReadInt32())); })
+        );
         UpdateHpAndEnergy();
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
-        w.Write(Level);
+        w.WriteBlocks(
+            ("Level", bw => bw.Write(Level))
+        );
     }
 
     public static void IntoOtherSave() {
