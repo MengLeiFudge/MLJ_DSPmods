@@ -1,7 +1,6 @@
 ﻿using System;
 using FE.UI.View.Setting;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 

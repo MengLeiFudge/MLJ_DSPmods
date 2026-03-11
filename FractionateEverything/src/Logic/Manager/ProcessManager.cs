@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
 using HarmonyLib;
@@ -383,8 +383,8 @@ public static class ProcessManager {
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
             // 稳定运转目标：fluidInput ≈ 360（MaxBeltSpeed×MaxStack），fluidOutput ≈ 24（2×MaxStack）
-            int fluidInputTarget = MaxBeltSpeed * MineralReplicationTower.MaxStack;   // 360
-            int fluidOutputTarget = 2 * MineralReplicationTower.MaxStack;             // 24
+            int fluidInputTarget = MaxBeltSpeed * MineralReplicationTower.MaxStack;// 360
+            int fluidOutputTarget = 2 * MineralReplicationTower.MaxStack;// 24
             bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
                                       || __instance.belt2 > 0 && __instance.isOutput2;
 
@@ -393,7 +393,8 @@ public static class ProcessManager {
                 int fluidMoveCount = Math.Max(0, __instance.fluidOutputCount - fluidOutputTarget);
                 if (fluidMoveCount > 0) {
                     int fluidOutputIncAvg = __instance.fluidOutputCount > 0
-                        ? __instance.fluidOutputInc / __instance.fluidOutputCount : 0;
+                        ? __instance.fluidOutputInc / __instance.fluidOutputCount
+                        : 0;
                     int moveInc = fluidOutputIncAvg * fluidMoveCount;
                     __instance.fluidInputCount += fluidMoveCount;
                     __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
@@ -521,7 +522,9 @@ public static class ProcessManager {
                             }
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
+                        for (int i = 1;
+                             i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax;
+                             i++) {
                             if (cargoTraffic.TryPickItemAtRear(__instance.belt1, needId, null, out stack, out inc)
                                 > 0) {
                                 __instance.fluidInputCount += stack;
@@ -613,7 +616,9 @@ public static class ProcessManager {
                             }
                         }
                         // 初始拾取一个后，尝试继续拾取同类物品以快速填满
-                        for (int i = 1; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
+                        for (int i = 1;
+                             i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax;
+                             i++) {
                             if (cargoTraffic.TryPickItemAtRear(__instance.belt2, needId, null, out stack, out inc)
                                 > 0) {
                                 __instance.fluidInputCount += stack;
