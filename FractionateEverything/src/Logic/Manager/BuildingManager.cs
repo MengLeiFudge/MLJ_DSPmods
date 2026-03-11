@@ -143,7 +143,6 @@ public static class BuildingManager {
     private static readonly ConcurrentDictionary<(int, int), List<ProductOutputInfo>> outputDic = [];
 
     public static void OutputExtendImport(BinaryReader r) {
-        int version = r.ReadInt32();
         outputDic.Clear();
         int fractionatorNum = r.ReadInt32();
         for (int i = 0; i < fractionatorNum; i++) {
@@ -165,7 +164,6 @@ public static class BuildingManager {
     }
 
     public static void OutputExtendExport(BinaryWriter w) {
-        w.Write(1);
         w.Write(outputDic.Count);
         foreach (var p in outputDic) {
             w.Write(p.Key.Item1);
@@ -502,96 +500,35 @@ public static class BuildingManager {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        if (version >= 10) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                switch (tag) {
-                    case "InteractionTower":
-                        InteractionTower.Import(br);
-                        break;
-                    case "MineralReplicationTower":
-                        MineralReplicationTower.Import(br);
-                        break;
-                    case "PointAggregateTower":
-                        PointAggregateTower.Import(br);
-                        break;
-                    case "ConversionTower":
-                        ConversionTower.Import(br);
-                        break;
-                    case "RecycleTower":
-                        RecycleTower.Import(br);
-                        break;
-                    case "PlanetaryInteractionStation":
-                        PlanetaryInteractionStation.Import(br);
-                        break;
-                    case "InterstellarInteractionStation":
-                        InterstellarInteractionStation.Import(br);
-                        break;
-                    case "OutputExtend":
-                        OutputExtendImport(br);
-                        break;
-                    case "LockedOutput":
-                        LockedOutputImport(br);
-                        break;
-                    case "FissionPointPool":
-                        FissionPointPoolImport(br);
-                        break;
-                    case "Resonance":
-                        ResonanceImport(br);
-                        break;
-                }
-            });
-            return;
-        }
-
-        OutputExtendImport(r);
-        InteractionTower.Import(r);
-        MineralReplicationTower.Import(r);
-        PointAggregateTower.Import(r);
-        ConversionTower.Import(r);
-        PlanetaryInteractionStation.Import(r);
-        RecycleTower.Import(r);
-        if (version >= 2) {
-            LockedOutputImport(r);
-        }
-        if (version >= 3 && version < 8) {
-            int count = r.ReadInt32();
-            for (int i = 0; i < count; i++) {
-                r.ReadInt32();
-                r.ReadInt32();
-                r.ReadBoolean();
-            }
-        }
-        if (version >= 4) {
-            FissionPointPoolImport(r);
-        }
-        if (version >= 5) {
-            ResonanceImport(r);
-        }
-        if (version == 6) {
-            r.ReadInt32();
-            r.ReadSingle();
-            r.ReadSingle();
-            r.ReadInt32();
-            r.ReadInt32();
-        }
+        r.ReadBlocks(
+            ("InteractionTower", InteractionTower.Import),
+            ("MineralReplicationTower", MineralReplicationTower.Import),
+            ("PointAggregateTower", PointAggregateTower.Import),
+            ("ConversionTower", ConversionTower.Import),
+            ("RecycleTower", RecycleTower.Import),
+            ("PlanetaryInteractionStation", PlanetaryInteractionStation.Import),
+            ("InterstellarInteractionStation", InterstellarInteractionStation.Import),
+            ("OutputExtend", OutputExtendImport),
+            ("LockedOutput", LockedOutputImport),
+            ("FissionPointPool", FissionPointPoolImport),
+            ("Resonance", ResonanceImport)
+        );
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(10);
-        w.Write(11);
-        w.WriteBlock("InteractionTower", InteractionTower.Export);
-        w.WriteBlock("MineralReplicationTower", MineralReplicationTower.Export);
-        w.WriteBlock("PointAggregateTower", PointAggregateTower.Export);
-        w.WriteBlock("ConversionTower", ConversionTower.Export);
-        w.WriteBlock("RecycleTower", RecycleTower.Export);
-        w.WriteBlock("PlanetaryInteractionStation", PlanetaryInteractionStation.Export);
-        w.WriteBlock("InterstellarInteractionStation", InterstellarInteractionStation.Export);
-        w.WriteBlock("OutputExtend", OutputExtendExport);
-        w.WriteBlock("LockedOutput", LockedOutputExport);
-        w.WriteBlock("FissionPointPool", FissionPointPoolExport);
-        w.WriteBlock("Resonance", ResonanceExport);
+        w.WriteBlocks(
+            ("InteractionTower", InteractionTower.Export),
+            ("MineralReplicationTower", MineralReplicationTower.Export),
+            ("PointAggregateTower", PointAggregateTower.Export),
+            ("ConversionTower", ConversionTower.Export),
+            ("RecycleTower", RecycleTower.Export),
+            ("PlanetaryInteractionStation", PlanetaryInteractionStation.Export),
+            ("InterstellarInteractionStation", InterstellarInteractionStation.Export),
+            ("OutputExtend", OutputExtendExport),
+            ("LockedOutput", LockedOutputExport),
+            ("FissionPointPool", FissionPointPoolExport),
+            ("Resonance", ResonanceExport)
+        );
     }
 
     public static void IntoOtherSave() {

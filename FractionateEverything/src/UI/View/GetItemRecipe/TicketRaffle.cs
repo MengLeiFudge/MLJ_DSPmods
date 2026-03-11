@@ -1204,51 +1204,40 @@ public static class TicketRaffle {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        TicketIdx1Entry.Value = r.ReadInt32();
-        if (TicketIdx1Entry.Value < 0 || TicketIdx1Entry.Value >= TicketIds.Length) {
-            TicketIdx1Entry.Value = 0;
-        }
-        EnableAutoRaffle1Entry.Value = r.ReadBoolean();
-        TicketIdx2Entry.Value = r.ReadInt32();
-        if (TicketIdx2Entry.Value < 0 || TicketIdx2Entry.Value >= TicketIds.Length) {
-            TicketIdx2Entry.Value = 0;
-        }
-        EnableAutoRaffle2Entry.Value = r.ReadBoolean();
-        TicketIdx3Entry.Value = r.ReadInt32();
-        if (TicketIdx3Entry.Value < 0 || TicketIdx3Entry.Value >= TicketIds.Length) {
-            TicketIdx3Entry.Value = 0;
-        }
-        EnableAutoRaffle3Entry.Value = r.ReadBoolean();
-        TicketIdx4Entry.Value = r.ReadInt32();
-        if (TicketIdx4Entry.Value < 0 || TicketIdx4Entry.Value >= TicketIds.Length) {
-            TicketIdx4Entry.Value = 0;
-        }
-        EnableAutoRaffle4Entry.Value = r.ReadBoolean();
-        if (version >= 2) {
-            TicketIdx5Entry.Value = r.ReadInt32();
-            if (TicketIdx5Entry.Value < 0 || TicketIdx5Entry.Value >= TicketIds.Length - 1) {
-                TicketIdx5Entry.Value = 0;
-            }
-            EnableAutoRaffle5Entry.Value = r.ReadBoolean();
-        }
+        r.ReadBlocks(
+            ("TicketIdx1", br => TicketIdx1Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length)),
+            ("AutoRaffle1", br => EnableAutoRaffle1Entry.Value = br.ReadBoolean()),
+            ("TicketIdx2", br => TicketIdx2Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length)),
+            ("AutoRaffle2", br => EnableAutoRaffle2Entry.Value = br.ReadBoolean()),
+            ("TicketIdx3", br => TicketIdx3Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length)),
+            ("AutoRaffle3", br => EnableAutoRaffle3Entry.Value = br.ReadBoolean()),
+            ("TicketIdx4", br => TicketIdx4Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length)),
+            ("AutoRaffle4", br => EnableAutoRaffle4Entry.Value = br.ReadBoolean()),
+            ("TicketIdx5", br => TicketIdx5Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length - 1)),
+            ("AutoRaffle5", br => EnableAutoRaffle5Entry.Value = br.ReadBoolean())
+        );
         for (int i = 1; i <= 5; i++) {
             FreshPool(i);
         }
     }
 
+    private static int ValidateIndex(int value, int max) {
+        return (value < 0 || value >= max) ? 0 : value;
+    }
+
     public static void Export(BinaryWriter w) {
-        w.Write(2);
-        w.Write(TicketIdx1Entry.Value);
-        w.Write(EnableAutoRaffle1Entry.Value);
-        w.Write(TicketIdx2Entry.Value);
-        w.Write(EnableAutoRaffle2Entry.Value);
-        w.Write(TicketIdx3Entry.Value);
-        w.Write(EnableAutoRaffle3Entry.Value);
-        w.Write(TicketIdx4Entry.Value);
-        w.Write(EnableAutoRaffle4Entry.Value);
-        w.Write(TicketIdx5Entry.Value);
-        w.Write(EnableAutoRaffle5Entry.Value);
+        w.WriteBlocks(
+            ("TicketIdx1", bw => bw.Write(TicketIdx1Entry.Value)),
+            ("AutoRaffle1", bw => bw.Write(EnableAutoRaffle1Entry.Value)),
+            ("TicketIdx2", bw => bw.Write(TicketIdx2Entry.Value)),
+            ("AutoRaffle2", bw => bw.Write(EnableAutoRaffle2Entry.Value)),
+            ("TicketIdx3", bw => bw.Write(TicketIdx3Entry.Value)),
+            ("AutoRaffle3", bw => bw.Write(EnableAutoRaffle3Entry.Value)),
+            ("TicketIdx4", bw => bw.Write(TicketIdx4Entry.Value)),
+            ("AutoRaffle4", bw => bw.Write(EnableAutoRaffle4Entry.Value)),
+            ("TicketIdx5", bw => bw.Write(TicketIdx5Entry.Value)),
+            ("AutoRaffle5", bw => bw.Write(EnableAutoRaffle5Entry.Value))
+        );
     }
 
     public static void IntoOtherSave() {

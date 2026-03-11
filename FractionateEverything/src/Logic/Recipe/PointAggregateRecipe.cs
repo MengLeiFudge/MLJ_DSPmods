@@ -63,13 +63,23 @@ public class PointAggregateRecipe : BaseRecipe {
 
     public override byte GetOutputInc(int itemId) => (byte)PointAggregateTower.MaxInc;
 
+    #region IModCanSave
+
     public override void Import(BinaryReader r) {
         base.Import(r);
+        r.ReadBlocks();
         Level = 10;
+    }
+
+    public override void Export(BinaryWriter w) {
+        base.Export(w);
+        w.WriteBlocks();
     }
 
     public override void IntoOtherSave() {
         base.IntoOtherSave();
         Level = 10;
     }
+
+    #endregion
 }

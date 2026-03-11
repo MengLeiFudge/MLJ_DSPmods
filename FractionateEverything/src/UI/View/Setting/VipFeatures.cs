@@ -112,14 +112,16 @@ public static class VipFeatures {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        Exp = r.ReadSingle();
-        AddExp(0);
+        r.ReadBlocks(
+            ("Exp", br => {
+                Exp = br.ReadSingle();
+                AddExp(0);
+            })
+        );
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(Exp);
+        w.WriteBlocks(("Exp", bw => bw.Write(Exp)));
     }
 
     public static void IntoOtherSave() {

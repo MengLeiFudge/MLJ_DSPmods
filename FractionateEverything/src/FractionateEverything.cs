@@ -238,53 +238,42 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public void Import(BinaryReader r) {
         BaseIntoOtherSave();
         int version = r.ReadInt32();
-        if (version >= 10) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                switch (tag) {
-                    case "Recipe":
-                        RecipeManager.Import(br);
-                        break;
-                    case "Building":
-                        BuildingManager.Import(br);
-                        break;
-                    case "Item":
-                        ItemManager.Import(br);
-                        break;
-                    case "Rune":
-                        RuneManager.Import(br);
-                        break;
-                    case "UI":
-                        MainWindow.Import(br);
-                        break;
-                    case "Station":
-                        StationManager.Import(br);
-                        break;
-                }
-            });
-        } else {
-            RecipeManager.Import(r);
-            BuildingManager.Import(r);
-            ItemManager.Import(r);
-            if (version >= 2) {
-                RuneManager.Import(r);
+        if (version < 10) {
+            // 旧版存档不兼容，读取流中剩余所有字节
+            if (r.BaseStream.CanSeek) {
+                r.BaseStream.Seek(0, SeekOrigin.End);
             }
-            MainWindow.Import(r);
+            UIMessageBox.Show(
+                "FE存档版本不兼容标题".Translate(),
+                "FE存档版本不兼容内容".Translate(),
+                "确定".Translate(),
+                UIMessageBox.WARNING,
+                () => AddItemToModData(IFE宇宙奖券, 1000));
+            return;
         }
+        r.ReadBlocks(
+            ("Recipe", RecipeManager.Import),
+            ("Building", BuildingManager.Import),
+            ("Item", ItemManager.Import),
+            ("Rune", RuneManager.Import),
+            ("UI", MainWindow.Import),
+            ("Station", StationManager.Import)
+        );
     }
 
     /// <summary>
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(10);
-        w.Write(6);
-        w.WriteBlock("Recipe", RecipeManager.Export);
-        w.WriteBlock("Building", BuildingManager.Export);
-        w.WriteBlock("Item", ItemManager.Export);
-        w.WriteBlock("Rune", RuneManager.Export);
-        w.WriteBlock("UI", MainWindow.Export);
-        w.WriteBlock("Station", StationManager.Export);
+        w.Write(10);// version，固定为10
+        w.WriteBlocks(
+            ("Recipe", RecipeManager.Export),
+            ("Building", BuildingManager.Export),
+            ("Item", ItemManager.Export),
+            ("Rune", RuneManager.Export),
+            ("UI", MainWindow.Export),
+            ("Station", StationManager.Export)
+        );
     }
 
     /// <summary>
@@ -308,6 +297,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RuneManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
+
         TechManager.ResetTechUnlockFlags();
     }
 

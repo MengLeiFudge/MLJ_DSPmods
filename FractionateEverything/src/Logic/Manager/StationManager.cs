@@ -1172,64 +1172,61 @@ public static class StationManager {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        if (version >= 1) {
-            int blockCount = r.ReadInt32();
-            r.ReadBlocks(blockCount, (tag, br) => {
-                if (tag == "SlotTransferMode") {
-                    int entityCount = br.ReadInt32();
-                    for (int i = 0; i < entityCount; i++) {
-                        long entityId = br.ReadInt64();
-                        int slotCount = br.ReadInt32();
-                        var dict = new ConcurrentDictionary<int, ETransferMode>();
-                        for (int j = 0; j < slotCount; j++) {
-                            int slotIndex = br.ReadInt32();
-                            dict[slotIndex] = (ETransferMode)br.ReadInt32();
-                        }
-                        slotTransferMode[entityId] = dict;
+        r.ReadBlocks(
+            ("SlotTransferMode", br => {
+                int entityCount = br.ReadInt32();
+                for (int i = 0; i < entityCount; i++) {
+                    long entityId = br.ReadInt64();
+                    int slotCount = br.ReadInt32();
+                    var dict = new ConcurrentDictionary<int, ETransferMode>();
+                    for (int j = 0; j < slotCount; j++) {
+                        int slotIndex = br.ReadInt32();
+                        dict[slotIndex] = (ETransferMode)br.ReadInt32();
                     }
-                } else if (tag == "SlotCapacityMode") {
-                    int entityCount = br.ReadInt32();
-                    for (int i = 0; i < entityCount; i++) {
-                        long entityId = br.ReadInt64();
-                        int slotCount = br.ReadInt32();
-                        var dict = new ConcurrentDictionary<int, ECapacityMode>();
-                        for (int j = 0; j < slotCount; j++) {
-                            int slotIndex = br.ReadInt32();
-                            dict[slotIndex] = (ECapacityMode)br.ReadInt32();
-                        }
-                        slotCapacityMode[entityId] = dict;
-                    }
+                    slotTransferMode[entityId] = dict;
                 }
-            });
-        }
+            }),
+            ("SlotCapacityMode", br => {
+                int entityCount = br.ReadInt32();
+                for (int i = 0; i < entityCount; i++) {
+                    long entityId = br.ReadInt64();
+                    int slotCount = br.ReadInt32();
+                    var dict = new ConcurrentDictionary<int, ECapacityMode>();
+                    for (int j = 0; j < slotCount; j++) {
+                        int slotIndex = br.ReadInt32();
+                        dict[slotIndex] = (ECapacityMode)br.ReadInt32();
+                    }
+                    slotCapacityMode[entityId] = dict;
+                }
+            })
+        );
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(2);
-        w.WriteBlock("SlotTransferMode", bw => {
-            bw.Write(slotTransferMode.Count);
-            foreach (var kvp in slotTransferMode) {
-                bw.Write(kvp.Key);
-                bw.Write(kvp.Value.Count);
-                foreach (var slot in kvp.Value) {
-                    bw.Write(slot.Key);
-                    bw.Write((int)slot.Value);
+        w.WriteBlocks(
+            ("SlotTransferMode", bw => {
+                bw.Write(slotTransferMode.Count);
+                foreach (var kvp in slotTransferMode) {
+                    bw.Write(kvp.Key);
+                    bw.Write(kvp.Value.Count);
+                    foreach (var slot in kvp.Value) {
+                        bw.Write(slot.Key);
+                        bw.Write((int)slot.Value);
+                    }
                 }
-            }
-        });
-        w.WriteBlock("SlotCapacityMode", bw => {
-            bw.Write(slotCapacityMode.Count);
-            foreach (var kvp in slotCapacityMode) {
-                bw.Write(kvp.Key);
-                bw.Write(kvp.Value.Count);
-                foreach (var slot in kvp.Value) {
-                    bw.Write(slot.Key);
-                    bw.Write((int)slot.Value);
+            }),
+            ("SlotCapacityMode", bw => {
+                bw.Write(slotCapacityMode.Count);
+                foreach (var kvp in slotCapacityMode) {
+                    bw.Write(kvp.Key);
+                    bw.Write(kvp.Value.Count);
+                    foreach (var slot in kvp.Value) {
+                        bw.Write(slot.Key);
+                        bw.Write((int)slot.Value);
+                    }
                 }
-            }
-        });
+            })
+        );
     }
 
     public static void IntoOtherSave() {

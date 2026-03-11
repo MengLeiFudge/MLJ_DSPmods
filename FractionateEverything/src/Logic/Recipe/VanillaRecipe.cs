@@ -159,34 +159,43 @@ public class VanillaRecipe {
     #region IModCanSave
 
     public virtual void Import(BinaryReader r) {
-        int version = r.ReadInt32();
-        int count = r.ReadInt32();
-        for (int i = 0; i < count; i++) {
-            int itemID = r.ReadInt32();
-            int upgrade = r.ReadInt32();
-            for (int j = 0; j < upgrade; j++) {
-                UpgradeInput(itemID);
-            }
-        }
-        int upgrade2 = r.ReadInt32();
-        for (int i = 0; i < upgrade2; i++) {
-            UpgradeTime();
-        }
+        r.ReadBlocks(
+            ("InputUpgrades", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++) {
+                    int itemID = br.ReadInt32();
+                    int upgradeCount = br.ReadInt32();
+                    for (int j = 0; j < upgradeCount; j++) {
+                        UpgradeInput(itemID);
+                    }
+                }
+            }),
+            ("TimeUpgrades", br => {
+                int upgradeCount = br.ReadInt32();
+                for (int i = 0; i < upgradeCount; i++) {
+                    UpgradeTime();
+                }
+            })
+        );
+        // 读取完成后初始化
         RecipeProto.InitRecipeItems();
     }
 
     public virtual void Export(BinaryWriter w) {
-        w.Write(1);
-        w.Write(inputUpgrades.Count);
-        foreach (var p in inputUpgrades) {
-            w.Write(p.Key);
-            w.Write(p.Value);
-        }
-        w.Write(timeSpendUpgrade);
+        w.WriteBlocks(
+            ("InputUpgrades", bw => {
+                bw.Write(inputUpgrades.Count);
+                foreach (var p in inputUpgrades) {
+                    bw.Write(p.Key);
+                    bw.Write(p.Value);
+                }
+            }),
+            ("TimeUpgrades", bw => { bw.Write(timeSpendUpgrade); })
+        );
     }
 
     public virtual void IntoOtherSave() {
-        //还原配方
+        // 还原配方
         for (int i = 0; i < recipe.Items.Length; i++) {
             inputCounts.TryGetValue(recipe.Items[i], out int count);
             if (count > 0) {
@@ -194,9 +203,10 @@ public class VanillaRecipe {
             }
         }
         recipe.TimeSpend = timeSpend;
-        //清空缓存
+        // 清空缓存
         inputUpgrades.Clear();
         timeSpendUpgrade = 0;
+        // 重新初始化
         RecipeProto.InitRecipeItems();
     }
 

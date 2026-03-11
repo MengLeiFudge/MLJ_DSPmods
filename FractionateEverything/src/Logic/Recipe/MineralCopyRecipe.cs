@@ -128,12 +128,12 @@ public class MineralCopyRecipe : BaseRecipe {
 
     public override void Import(BinaryReader r) {
         base.Import(r);
-        int version = r.ReadInt32();
+        r.ReadBlocks();
     }
 
     public override void Export(BinaryWriter w) {
         base.Export(w);
-        w.Write(1);
+        w.WriteBlocks();
     }
 
     public override void IntoOtherSave() {

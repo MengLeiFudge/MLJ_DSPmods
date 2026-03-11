@@ -37,6 +37,10 @@ public static partial class Utils {
         Register("已兑换", "Exchanged");
         Register("无法兑换", "Can not exchange");
         Register("配方经验", "recipe experience");
+        Register("FE存档版本不兼容标题", "Save Incompatible", "存档版本不兼容");
+        Register("FE存档版本不兼容内容",
+            "Due to a major mod update, this save is incompatible with the previous version. Some data has been cleared. As compensation, 1000 Universe Matrix Vouchers have been added to your data centre.",
+            "由于游戏版本更新，本次更新不兼容以前的存档，部分数据已被清除。作为补偿，1000宇宙矩阵奖券已添加至数据中心。");
     }
 
     /// <summary>
