@@ -382,42 +382,59 @@ public static class ProcessManager {
         // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
-            // 计算输入最多承载多少
-            int fluidInputMax = fluidInputCargoMax * MineralReplicationTower.MaxStack;
+            // 稳定运转目标：fluidInput ≈ 360（MaxBeltSpeed×MaxStack），fluidOutput ≈ 24（2×MaxStack）
+            int fluidInputTarget = MaxBeltSpeed * MineralReplicationTower.MaxStack;   // 360
+            int fluidOutputTarget = 2 * MineralReplicationTower.MaxStack;             // 24
             bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
                                       || __instance.belt2 > 0 && __instance.isOutput2;
-            // 1. 先回填流动输出（有输出传送带时不回填，由传送带负责输出）
-            int fluidMoveCount = hasFluidOutputBelt
-                ? 0
-                : __instance.fluidOutputCount;
-            if (fluidMoveCount > 0) {
-                __instance.fluidInputCount += fluidMoveCount;
-                __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
-                    __instance.fluidInputCargoCount + fluidMoveCount / fluidInputCountPerCargo);
-                __instance.fluidOutputCount -= fluidMoveCount;
-                int fluidOutputIncAvg = __instance.fluidOutputCount > 0
-                    ? __instance.fluidOutputInc / __instance.fluidOutputCount
-                    : 0;
-                int moveInc = fluidOutputIncAvg * fluidMoveCount;
-                __instance.fluidInputInc += moveInc;
-                __instance.fluidOutputInc -= moveInc;
+
+            // 步骤1：无传送带时，把 fluidOutput 超过 fluidOutputTarget 的部分回填到 fluidInput
+            if (!hasFluidOutputBelt) {
+                int fluidMoveCount = Math.Max(0, __instance.fluidOutputCount - fluidOutputTarget);
+                if (fluidMoveCount > 0) {
+                    int fluidOutputIncAvg = __instance.fluidOutputCount > 0
+                        ? __instance.fluidOutputInc / __instance.fluidOutputCount : 0;
+                    int moveInc = fluidOutputIncAvg * fluidMoveCount;
+                    __instance.fluidInputCount += fluidMoveCount;
+                    __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                        __instance.fluidInputCargoCount + (float)fluidMoveCount / fluidInputCountPerCargo);
+                    __instance.fluidInputInc += moveInc;
+                    __instance.fluidOutputCount -= fluidMoveCount;
+                    __instance.fluidOutputInc -= moveInc;
+                }
             }
-            // 2. 再回填产物：将与输入物品相同的主产物回填至流动输入（填到fluidInputMax）
-            //    使用 GetOutputInc 分割增产点数（质能裂变启用时产物已整体喷涂到10点）
+
+            // 步骤2 & 3：从产物补 fluidOutput 到 fluidOutputTarget，再补 fluidInput 到 fluidInputTarget
             if (recipe != null) {
                 ProductOutputInfo mainProduct = products.Find(p => p.itemId == fluidId && p.isMainOutput);
                 if (mainProduct != null && mainProduct.count > 0) {
-                    int productMoveCount = Math.Min(mainProduct.count,
-                        Math.Max(0, fluidInputMax - __instance.fluidInputCount - __instance.fluidOutputCount));
-                    if (productMoveCount > 0) {
-                        int productIncPerItem = recipe.GetOutputInc(fluidId);
-                        __instance.fluidInputCount += productMoveCount;
-                        __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
-                            __instance.fluidInputCargoCount + productMoveCount / fluidInputCountPerCargo);
-                        __instance.fluidInputInc += productIncPerItem * productMoveCount;
-                        mainProduct.count -= productMoveCount;
+                    int productIncPerItem = recipe.GetOutputInc(fluidId);
+
+                    // 步骤2：补 fluidOutput 到 fluidOutputTarget（无论有无传送带，始终确保24）
+                    int needForOutput = Math.Max(0, fluidOutputTarget - __instance.fluidOutputCount);
+                    int moveToOutput = Math.Min(mainProduct.count, needForOutput);
+                    if (moveToOutput > 0) {
+                        __instance.fluidOutputCount += moveToOutput;
+                        __instance.fluidOutputInc += productIncPerItem * moveToOutput;
+                        mainProduct.count -= moveToOutput;
                         if (mainProduct.itemId == product0Id) {
                             __instance.productOutputCount = mainProduct.count;
+                        }
+                    }
+
+                    // 步骤3：补 fluidInput 到 fluidInputTarget
+                    if (mainProduct.count > 0) {
+                        int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
+                        int moveToInput = Math.Min(mainProduct.count, needForInput);
+                        if (moveToInput > 0) {
+                            __instance.fluidInputCount += moveToInput;
+                            __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                                __instance.fluidInputCargoCount + (float)moveToInput / fluidInputCountPerCargo);
+                            __instance.fluidInputInc += productIncPerItem * moveToInput;
+                            mainProduct.count -= moveToInput;
+                            if (mainProduct.itemId == product0Id) {
+                                __instance.productOutputCount = mainProduct.count;
+                            }
                         }
                     }
                 }
