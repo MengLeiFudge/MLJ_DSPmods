@@ -23,7 +23,7 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~820 lines
 
 ```
 PublizeDll(DSPACDll → NugetGameLibNet45Dir\Assembly-CSharp.dll)
-    → DecompileAcDll(ilspycmd -p --nested-directories → GetDspData/gamedata/DecompiledSource/)
+    → DecompileAcDll(ilspycmd -p --nested-directories → gamedata/DecompiledSource/)
 PublizeDll(DSPUIDll → NugetGameLibNet45Dir\UnityEngine.UI.dll)
 PublizeDll(R2VDDll  → lib\DSP_Battle-publicized.dll)
 PublizeDll(R2GBDll  → lib\ProjectGenesis-publicized.dll)
