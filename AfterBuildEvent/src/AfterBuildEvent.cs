@@ -239,8 +239,9 @@ static class AfterBuildEvent {
         using CmdProcess cmd = new();
         if (NugetGameLibNet45Dir != null) {
             PublizeDll(cmd, DSPACDll, $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll");
-            DecompileAcDll(cmd);
+            DecompileDll(cmd, "Assembly-CSharp.dll");
             PublizeDll(cmd, DSPUIDll, $@"{NugetGameLibNet45Dir}\UnityEngine.UI.dll");
+            DecompileDll(cmd, "UnityEngine.UI.dll");
         } else {
             Console.WriteLine("NugetGameLibNet45Dir为空，跳过Publize游戏dll");
         }
@@ -250,10 +251,11 @@ static class AfterBuildEvent {
         PublizeDll(cmd, R2ORDll, $@"{SolutionDir}\lib\ProjectOrbitalRing-publicized.dll");
     }
 
-    private static void DecompileAcDll(CmdProcess cmd) {
-        string dllPath = $@"{NugetGameLibNet45Dir}\Assembly-CSharp.dll";
-        string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource");
-        string csprojPath = Path.Combine(outputDir, "Assembly-CSharp.csproj");
+    private static void DecompileDll(CmdProcess cmd, string dllName) {
+        string dllPath = $@"{NugetGameLibNet45Dir}\{dllName}";
+        string dllNameNoExt = Path.GetFileNameWithoutExtension(dllName);
+        string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource\{dllNameNoExt}");
+        string csprojPath = Path.Combine(outputDir, $"{dllNameNoExt}.csproj");
         if (!File.Exists(dllPath)) {
             Console.WriteLine($"未找到{dllPath}，跳过反编译");
             return;
@@ -267,7 +269,7 @@ static class AfterBuildEvent {
             }
         }
         Directory.CreateDirectory(outputDir);
-        Console.WriteLine($"开始反编译 Assembly-CSharp.dll -> {outputDir}");
+        Console.WriteLine($"开始反编译 {dllName} -> {outputDir}");
         Console.WriteLine("注意：此过程可能耗时数分钟，请耐心等待...");
 
         try {

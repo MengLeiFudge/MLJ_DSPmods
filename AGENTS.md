@@ -242,11 +242,14 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ### Game Source Reference: DecompiledSource
 
-`gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` (publicized version, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
+`gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` and `UnityEngine.UI.dll` (publicized versions, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
+
+- `Assembly-CSharp/` — Main game logic
+- `UnityEngine.UI/` — UI components
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
-1. Publicizes `Assembly-CSharp.dll` from the game install into the nuget package dir
-2. Decompiles the publicized DLL via `ilspycmd -p --nested-directories` into `DecompiledSource/`
+1. Publicizes the game DLLs from the game install into the nuget package dir
+2. Decompiles each publicized DLL via `ilspycmd -p --nested-directories` into `DecompiledSource/{DllName}/`
 3. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
 
 **When to use it:**
@@ -257,7 +260,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 **How to search it** — Use `Grep` or `mcp_grep` on the directory:
 ```
-path: gamedata/DecompiledSource
+path: gamedata/DecompiledSource/{DllName}
 pattern: class GameMain|void FixedUpdate
 ```
 
