@@ -47,95 +47,84 @@ You can view all the mods I've released at [thunderstore](https://thunderstore.i
 It is recommended to install them using the [r2modman](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/)
 mod manager.
 
-## oh-my-opencode 相关
+## oh-my-openagent 相关
 
-项目目前使用[oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode)辅助开发。
-这是一个开源ai智能体框架，可以统筹各种ai，完美完成任务。
+项目目前使用[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)辅助开发。
+开源AI智能体框架，根据各个AI擅长的方向定向发布任务。
 
-### AI调用说明
+### AI简介
 
 现在的AI付费模式大致分为以下几种：
 
-- 订阅付费：按月/按季/按年付费，可能有每5小时、每周额度。
+- 订阅付费：按月/按季/按年付费。通常会有每5小时额度、以及每周额度/每月额度。
 - 按量付费：用多少付多少。
-- 中转站：顾名思义，就是自己不是AI，但是可以调用其他AI的接口。
+- 中转站：可调用其他多家AI的接口。
 
-由于最终要在opencode上面使用，所以一定要先确认相关登录方式！（最下面有说）
+下面是部分AI的介绍：
 
-典型的例子是“Googol AI订阅付费”，这个只能在网页用！如果要用Gemini，应该选择“Googol AI Studio按量付费”。
+- OpenCode（大杂烩）
+    - 订阅：[OpenCode Go](https://opencode.ai/zh/go)
+        - 登录使用（大概，我没买，反正肯定能用，毕竟是自家的东西）
+    - 按量：[OpenCode Zen](https://opencode.ai/zh/zen)
+        - 生成API-Key后使用，大概Key只走按量
+    - 支付可用国内卡或link，20刀额度收取1.23刀手续费用于维护OpenCode
 
-### AI选购说明
+- Anthropic（Claude）
+    - 订阅：[claude.ai](https://claude.ai/)
+        - 登录使用（Claude账号直接登录，不需要API-Key；配置Key后可以在超出限制的情况下临时使用按量计费）
+    - 按量：[platform.claude.com](https://platform.claude.com/)
+        - 生成API-Key后使用，Key只走按量
+    - 支付没有太好的方式，直接买成品号。Claude消耗用量比较快，我的pro订阅只用sonnet都不够日常开发。建议至少买max 5x（太贵了）。
 
-如果只用ulw处理一些不需要太大逻辑的东西，我感觉只有Claude就够用了。（那还要oh-my-opencode干嘛？）
+- OpenAI（ChatGPT）
+    - 订阅：[chatgpt.com](https://chatgpt.com)，用量在[Codex](https://chatgpt.com/codex/settings/usage)里面看
+        - 登录使用
+    - 按量：[platform.openai.com](https://platform.openai.com/usage)
+        - 生成API-Key后使用，Key只走按量
+    - 支付可以[用自己的ios订阅](https://yingtu.ai/zh/blog/chatgpt-plus-ios-recharge)
+      ，也可以在[星际放映厅](https://www.naifeistation.com/)买成品号。
 
-如果用plan-builder和plan-executor处理复杂的东西，就涉及到多AI协作了。
-这个时候，我的推荐是Claude+GPT+Googol AI Studio。注意最后一个，Google One AI订阅没用！只能是Googol AI Studio的按量计费！
+- Google（Gemini）
+    - 订阅：[Google One AI订阅](https://one.google.com/)
+      虽然只能在网页用，但是可以用[opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth)
+      实现使用以及多账号使用
+    - 按量：[aistudio.google.com](https://aistudio.google.com/)
+        - 生成API-Key后使用，Key只走按量
+    - 支付我是没看到合适的，不过[星际放映厅](https://www.naifeistation.com/)也有卖成品号，可以考虑。
 
-当然你也可以看完最后的配置文件，自行决定用哪些。
+- DeepSeek（DeepSeek）
+    - 订阅：无
+    - 按量：[platform.deepseek.com](https://platform.deepseek.com/)
+        - 生成API-Key后使用，Key只走按量，尽管便宜但是也不能滥用，毕竟只要是走Key的，就比订阅的要贵的多
+    - 支付没啥说的，国产模型随便付。
 
-我的意见就是，Claude好用，还快。别的AI真的比不上。就是太贵了= =
+- Kimi（Kimi）
+    - 订阅：[Kimi Code](https://www.kimi.com/code)
+        - 生成API-Key后使用
+    - 按量：[Kimi Code Console](https://www.kimi.com/code/console)
+        - 生成API-Key后使用，Key先走订阅再走按量
+    - 支付没啥说的，国产模型随便付。
 
-调整配置文件，尽量少用Claude之后（下面有说怎么改），感觉是完全够用的。
+- Z.AI / Z.AI Coding Plan（GLM）
+    - 订阅（Z.AI Coding Plan）：[国内站](https://bigmodel.cn/glm-coding)便宜，[国际站](https://z.ai/subscribe)贵
+        - 生成API-Key后使用
+    - 按量（Z.AI）：一样的网址
+        - 生成API-Key后使用，Key先走订阅再走按量
+    - 支付可以用国内的卡（无论是国内站还是国际站都行），毕竟也是国产模型。
 
-以下只说一部分，具体哪些AI怎么登录，安装完opencode后输入 `oencode auth login` 查看。下面有说。
+claude比较贵。而kimi/glm负责流程，gpt负责代码编写的情况下，据说已经超过sonnet了。所以合理选择模型，deepseek也未尝不可。
 
-- OpenCode Zen（推荐）：中转站，20刀额度收取1.23刀手续费用于维护OpenCode。
-    - opencode如何登录
-        - 登录账号，OpenCode账号可以通过github或者googol登录。
-    - 可选方式
-        - 订阅或按量付费：[opencode.ai](https://opencode.ai/)
-    - 购买相关
-        - 虽然有手续费但是很方便！不像是其他的订阅用国内的visa卡都付不了，这个可以直接用link去付。
-        - 这个就是纯中转，唯一的溢价已经在充值的时候扣除了。
+### 使用说明
 
-- Anthropic（Claude Pro/Max 或者 API Key）
-    - opencode如何登录
-        - 浏览器登录Pro/Max订阅的账号
-        - 生成API Key并输入
-        - 手动输入API Key
-    - 可选方式
-        - 订阅：[claude.ai](https://claude.ai/)
-        - 按量付费：[platform.claude.com](https://platform.claude.com/)
-    - 购买相关
-        - 我是淘宝买Claude Pro成品号，130-150/月。淘宝有很多“中转站”，应该是没法在opencode用的吧？
+先执行 /init-deep 来生成一些 Agents.md，这样后续AI协作更好。
 
-- OpenAI（ChatGPT Plus/Pro 或者 API Key）
-    - opencode如何登录
-        - 浏览器登录Pro/Plus订阅的账号
-        - 无头登录Pro/Plus订阅的账号
-        - 手动输入API Key
-    - 可选登录方式
-        - 订阅：[chatgpt.com](https://chatgpt.com)
-    - 购买相关
-        - 我是看的[这个文章](https://yingtu.ai/zh/blog/chatgpt-plus-ios-recharge)，这里提到了用自己的ios订阅。
-        - 不过最后还是选了[星际放映厅](https://www.naifeistation.com/)买的Chat GPT Plus成品号，426.8/3月。
+ulw：当你比较懒的时候就用这个
+plan-builder：任务比较复杂就先用这个，只生成计划不执行
+plan-executor：执行builder的任务
 
-- Google（Gemini API Key）
-    - opencode如何登录
-        - 手动输入API Key（注意，这个只能用Googol AI Studio的按量付费，Google One AI订阅没用）
-    - 可选登录方式
-        - 订阅：[aistudio.google.com](https://aistudio.google.com/)
-    - 购买相关
-        - [星际放映厅](https://www.naifeistation.com/)只能是充值，买Pro号没用。但是200块20刀也太离谱了，为何不用OpenCode
-          Zen？
+### omo安装说明
 
-- DeepSeek（DeepSeek API Key）
-    - opencode如何登录
-        - 手动输入API Key
-    - 可选登录方式
-        - 按量付费：[platform.deepseek.com](https://platform.deepseek.com/)
-    - 购买相关
-        - 国产的，直接买。但是缺点就是深度思考比较久，而且思考的方向可能还不对。等新版本再观望一下。
-
-- Z.AI / Z.AI Coding Plan（GLM API Key）
-    - opencode如何登录
-        - 手动输入API Key
-    - 可选登录方式
-        - Z.AI按量付费，Z.AI Coding Plan订阅：[z.ai](https://z.ai/)
-    - 购买相关
-        - 支持银联卡付款，直接买。GLM主要用于视觉、界面设计。
-
-下面是 Windows系统 下的安装说明。
+下面是 Windows系统 下的omo安装说明。
 
 ### 1.安装[wsl](https://learn.microsoft.com/zh-cn/windows/wsl/install)
 
@@ -184,15 +173,23 @@ ping www.google.com
 
 或者也可以考虑关闭TUN模式（我没尝试过）。
 
-### 3.安装oh-my-opencode前置工具（下面都是在wsl里面了）
+### 3.安装oh-my-openagent前置工具（下面都是在wsl里面了）
 
-通过apt-get安装dotnet-sdk-10.0、npm、npx、LSP、unzip、OmniSharp、opencode等等
+通过apt-get安装dotnet-sdk-8.0、dotnet-sdk-10.0、npm、npx、LSP、unzip、OmniSharp、opencode等等
 
 ```
-# 更新并安装基础工具
+# 更新并安装基础工具（不需要Proxy）
+sudo apt-get update
+sudo apt-get install -y \
+    dotnet-sdk-8.0 dotnet-sdk-10.0 \
+    nodejs \
+    unzip curl git ca-certificates
+curl -fsSL https://opencode.ai/install | bash
+
+# 更新并安装基础工具（需要Proxy）
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" install -y \
-    dotnet-sdk-10.0 \
+    dotnet-sdk-8.0 dotnet-sdk-10.0 \
     nodejs \
     unzip curl git ca-certificates
 curl -fsSL https://opencode.ai/install | bash
@@ -289,110 +286,153 @@ nano ~/.config/opencode/oh-my-opencode.json
 
 下面是我使用的示例，综合考虑了各ai的额度与能力：
 
+这个文件是jsonc格式，也就是可以加注释，不受末尾逗号影响。
+
+里面的信息可能过时，可参考[configuration.md](https://github.com/code-yeongyu/oh-my-openagent/blob/dev/docs/reference/configuration.md)
+进行调整。
+
 ```
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/dev/assets/oh-my-opencode.schema.json",
   "agents": {
     "sisyphus": {
-      "model": "anthropic/claude-sonnet-4-6",
+      // 主要协调人 claude-opus-4-6 → glm-5 → big-pickle
+      "model": "zai-coding-plan/glm-5",
+      // 基本只有sisyphus需要fallback吧，万一额度不够了就依次换模型
+      "fallback_models": ["anthropic/claude-sonnet-4-6"],
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "主要协调人。推荐Claude Opus → Kimi K2.5 → GLM 5"
-    },
-    "metis": {
-      "model": "anthropic/claude-sonnet-4-6",
-      "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "计划差距分析器。推荐Claude Opus → Kimi K2.5 → GPT-5.2 → Gemini 3 Pro"
-    },
-    "prometheus": {
-      "model": "openai/gpt-5.2",
-      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. Always respond in Simplified Chinese.",
-      "description": "战略规划师。推荐Claude Opus → GPT-5.2 → Kimi K2.5 → Gemini 3 Pro"
-    },
-    "atlas": {
-      "model": "openai/gpt-5.2",
-      "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "待办事项协调器。推荐Kimi K2.5 → Claude Sonnet → GPT-5.2"
+      // 启用 Sisyphus Tasks 系统，实现跨会话任务跟踪
+      "tasks": {
+        "enabled": true,
+        "storage_path": ".sisyphus/tasks",
+        "claude_code_compat": false
+      },
     },
     "hephaestus": {
+      // 自主深度工作者。gpt-5.3-codex → gpt-5.4
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "自主深度工作者。只能是GPT-5.3 Codex"
     },
     "oracle": {
-      "model": "openai/gpt-5.2",
+      // 架构顾问 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
+      "model": "openai/gpt-5.4",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "架构顾问。推荐GPT-5.2 → Gemini 3 Pro → Claude Opus"
-    },
-    "momus": {
-      "model": "openai/gpt-5.2",
-      "variant": "medium",
-      "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "无情评审员。推荐GPT-5.2 → Claude Opus → Gemini 3 Pro"
-    },
-    "explore": {
-      "model": "opencode/minimax-m2.5",
-      "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "快速代码库扫描。推荐Grok Code Fast → MiniMax → Haiku → GPT-5-Nano"
     },
     "librarian": {
-      "model": "opencode/gemini-3-flash",
+      // 文档/代码搜索 gemini-3-flash → minimax-m2.5-free → big-pickle
+      "model": "opencode/minimax-m2.5-free",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "文档/代码搜索。推荐Gemini Flash → MiniMax → GLM"
+    },
+    "explore": {
+      // 快速代码库扫描 grok-code-fast-1 → minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano
+      "model": "opencode/minimax-m2.5-free",
+      "prompt_append": "Always respond in Simplified Chinese.",
     },
     "multimodal-looker": {
-      "model": "opencode/kimi-k2.5",
+      // 视觉/屏幕截图 gpt-5.3-codex → k2p5 → gemini-3-flash → glm-4.6v → gpt-5-nano
+      "model": "openai/gpt-5.3-codex",
+      "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "视觉/屏幕截图。推荐Kimi K2.5 → Gemini Flash → GPT-5.2 → GLM-4.6v"
-    }
+    },
+    "prometheus": {
+      // 战略规划师 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
+      "model": "openai/gpt-5.4",
+      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. Always respond in Simplified Chinese.",
+    },
+    "metis": {
+      // 计划差距分析器 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
+      "model": "openai/gpt-5.4",
+      "prompt_append": "Always respond in Simplified Chinese.",
+    },
+    "momus": {
+      // 无情评审员 gpt-5.4 → claude-opus-4-6 → gemini-3.1-pro
+      "model": "openai/gpt-5.4",
+      "variant": "medium",
+      "prompt_append": "Always respond in Simplified Chinese.",
+    },
+    "atlas": {
+      // 待办事项协调器 claude-sonnet-4-6 → gpt-5.4
+      "model": "openai/gpt-5.4",
+      "prompt_append": "Always respond in Simplified Chinese.",
+    },
   },
   "categories": {
     "visual-engineering": {
+      // 前端、用户界面、CSS、设计 gemini-3.1-pro → glm-5 → claude-opus-4-6
       "model": "opencode/gemini-3.1-pro",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "前端、用户界面、CSS、设计。推荐Gemini 3 Pro → GLM 5 → Claude Opus"
     },
     "ultrabrain": {
-      "model": "openai/gpt-5.3-codex",
+      // 需要最大限度的推理 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
+      "model": "openai/gpt-5.4",
       "variant": "xhigh",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "需要最大限度的推理。推荐GPT-5.3 Codex → Gemini 3 Pro → Claude Opus"
     },
     "deep": {
+      // 深度编码，复杂逻辑 gpt-5.3-codex → claude-opus-4-6 → gemini-3.1-pro
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "深度编码，复杂逻辑。推荐GPT-5.3 Codex → Claude Opus → Gemini 3 Pro"
     },
     "artistry": {
-      "model": "opencode/gemini-3-pro",
+      // 富有创意、新颖的方法 gemini-3.1-pro → claude-opus-4-6 → gpt-5.4
+      "model": "opencode/gemini-3.1-pro",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "富有创意、新颖的方法。推荐Gemini 3 Pro → Claude Opus → GPT-5.2"
     },
     "quick": {
-      "model": "openai/gpt-5.1-codex-mini",
+      // 简单、快速的任务 claude-haiku-4-5 → gemini-3-flash → gpt-5-nano
+      "model": "openai/codex-mini-latest",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "简单、快速的任务。推荐Claude Haiku → Gemini Flash → GPT-5-Nano"
     },
     "unspecified-low": {
+      // 一般标准工作 claude-sonnet-4-6 → gpt-5.3-codex → gemini-3-flash
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "一般标准工作。推荐Claude Sonnet → GPT-5.3 Codex → Gemini Flash"
     },
     "unspecified-high": {
-      "model": "openai/gpt-5.2",
+      // 一般复杂工作 claude-opus-4-6 → gpt-5.4 (high) → glm-5 → k2p5 → kimi-k2.5
+      "model": "openai/gpt-5.4",
       "variant": "high",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "一般复杂工作。推荐Claude Opus → GPT-5.2 → Gemini 3 Pro"
     },
     "writing": {
+      // 文本、文档、散文 gemini-3-flash → claude-sonnet-4-6
       "model": "opencode/gemini-3-flash",
       "prompt_append": "Always respond in Simplified Chinese.",
-      "description": "文本、文档、散文。推荐Gemini Flash → Claude Sonnet"
+    },
+  },
+  // 允许 API 出错时自动切换到备用模型
+  "runtime_fallback": true,
+  // 一些实验性功能
+  "experimental": {
+    "truncate_all_tool_outputs": false,
+    "aggressive_truncation": false,
+    "auto_resume": true, // 思考中断恢复后自动恢复
+    "disable_omo_env": true, // 禁用自动注入的<omo-env>数据块，提高缓存命中率
+    "task_system": true, // 启用西西弗斯任务系统
+    "dynamic_context_pruning": {
+      "enabled": true, // 自动清理旧工具输出以管理上下文窗口
+      "notification": "detailed",
+      "turn_protection": { "enabled": true, "turns": 3 },
+      "protected_tools": [
+        "task",
+        "todowrite",
+        "todoread",
+        "lsp_rename",
+        "session_read",
+        "session_write",
+        "session_search"
+      ],
+      "strategies": {
+        "deduplication": { "enabled": true },
+        "supersede_writes": { "enabled": true, "aggressive": false },
+        "purge_errors": { "enabled": true, "turns": 5 }
+      }
     }
   }
 }
