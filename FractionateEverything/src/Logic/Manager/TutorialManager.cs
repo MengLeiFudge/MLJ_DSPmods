@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
 using System.Reflection.Emit;
+using FE.Compatibility;
 using HarmonyLib;
 using UnityEngine.UI;
 using xiaoye97;
@@ -8,6 +11,10 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class TutorialManager {
+    static MethodInfo genesisBookIsLayoutMethod;
+    static MethodInfo genesisBookGetLayoutMethod;
+    static bool genesisBookLayoutMethodsInitialized;
+
     public static void AddTranslations() {
         Register("万物分馏简介标题", "Fractionate Everything", "万物分馏简介");
         Register("万物分馏简介前字",
@@ -483,9 +490,17 @@ public static class TutorialManager {
 
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
     [HarmonyTranspiler]
+    [HarmonyPriority(Priority.First)]
+    [HarmonyBefore(GenesisBook.GUID)]
     public static IEnumerable<CodeInstruction> UITutorialWindow_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator ilGenerator) {
-        var matcher = new CodeMatcher(instructions, ilGenerator);
+        var instructionList = instructions as List<CodeInstruction> ?? [.. instructions];
+        var useCustomLayoutParserMethod = AccessTools.Method(typeof(TutorialManager), nameof(UseCustomLayoutParser));
+        if (instructionList.Any(i => i.opcode == OpCodes.Call && Equals(i.operand, useCustomLayoutParserMethod))) {
+            return instructionList;
+        }
+
+        var matcher = new CodeMatcher(instructionList, ilGenerator);
 
         /*
             string layoutStr = UILayoutParserManager.GetLayoutStr(UITutorialWindow.textFolder, this.tutorialProto.LayoutFileName);
@@ -510,11 +525,19 @@ public static class TutorialManager {
          */
 
         matcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_0));
+        if (matcher.IsInvalid) {
+            LogError("TutorialManager.UITutorialWindow_Transpiler failed: cannot find stloc.0 anchor.");
+            return instructionList;
+        }
         matcher.CreateLabelAt(matcher.Pos, out var endLabel);
 
         matcher.MatchBack(false,
             new CodeMatch(OpCodes.Ldsfld,
                 AccessTools.Field(typeof(UITutorialWindow), nameof(UITutorialWindow.textFolder))));
+        if (matcher.IsInvalid) {
+            LogError("TutorialManager.UITutorialWindow_Transpiler failed: cannot find textFolder anchor.");
+            return instructionList;
+        }
         matcher.CreateLabelAt(matcher.Pos, out var originalLogicLabel);
 
         // 插入预加载和判断
@@ -523,7 +546,7 @@ public static class TutorialManager {
             new CodeInstruction(OpCodes.Ldfld,
                 AccessTools.Field(typeof(UITutorialWindow), nameof(UITutorialWindow.tutorialProto))),
             new CodeInstruction(OpCodes.Call,
-                AccessTools.Method(typeof(TutorialManager), nameof(IsFELayout))),
+                AccessTools.Method(typeof(TutorialManager), nameof(UseCustomLayoutParser))),
             new CodeInstruction(OpCodes.Brfalse_S, originalLogicLabel)
         );
 
@@ -544,17 +567,58 @@ public static class TutorialManager {
         return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith("tutorial-fe-");
     }
     
+    public static bool UseCustomLayoutParser(TutorialProto proto) {
+        return IsFELayout(proto) || IsGenesisBookLayout(proto);
+    }
+    
     const string preText =
         "{$Text|fontsize=16;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,30}\n";
     const string postText =
         "{$Text|fontsize=14;linespacing=1.1;textalignment=0,1;color=#FFFFFF52;material=UI/Materials/widget-text-alpha-5x-thick;margins=20,20,20,20}\n";
 
     public static string GetLayoutStr(TutorialProto proto) {
+        if (IsGenesisBookLayout(proto)) {
+            return GetGenesisBookLayoutStr(proto);
+        }
+
         string protoName = proto.Name;
         if (!protoName.EndsWith("标题")) {
             return string.Empty;
         }
         var text = protoName.Replace("标题", "前字");
         return $"{preText}{protoName.Translate()}{postText}{text.Translate()}";
+    }
+
+    static bool IsGenesisBookLayout(TutorialProto proto) {
+        if (!GenesisBook.Enable || !TryInitGenesisBookLayoutMethods()) {
+            return false;
+        }
+
+        return genesisBookIsLayoutMethod.Invoke(null, [proto]) is bool isGenesisBookLayout && isGenesisBookLayout;
+    }
+
+    static string GetGenesisBookLayoutStr(TutorialProto proto) {
+        if (!GenesisBook.Enable || !TryInitGenesisBookLayoutMethods()) {
+            return string.Empty;
+        }
+
+        return genesisBookGetLayoutMethod.Invoke(null, [proto]) as string ?? string.Empty;
+    }
+
+    static bool TryInitGenesisBookLayoutMethods() {
+        if (genesisBookLayoutMethodsInitialized) {
+            return genesisBookIsLayoutMethod != null && genesisBookGetLayoutMethod != null;
+        }
+
+        genesisBookLayoutMethodsInitialized = true;
+        var tutorialPatchType = AccessTools.TypeByName("ProjectGenesis.Patches.UITutorialWindowPatches");
+        if (tutorialPatchType == null) {
+            return false;
+        }
+
+        genesisBookIsLayoutMethod = AccessTools.Method(tutorialPatchType, "IsGenesisBookLayout", [typeof(TutorialProto)]);
+        genesisBookGetLayoutMethod =
+            AccessTools.Method(tutorialPatchType, "GetGenesisBookLayoutStr", [typeof(TutorialProto)]);
+        return genesisBookIsLayoutMethod != null && genesisBookGetLayoutMethod != null;
     }
 }
