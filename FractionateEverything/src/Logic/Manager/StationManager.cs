@@ -63,19 +63,37 @@ public static class StationManager {
     private static readonly Dictionary<RectTransform, Vector2> sliderOriginalSize = [];
     private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
 
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalPowerWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalMasterWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalTopGroupWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalBgWidth = [];
+    private static readonly Dictionary<RectTransform, float> filterOriginalStateGroupPosition = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalRightGroupWidth = [];
+    private static bool inspectorRightGroupMissingLogged;
+
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
 
-    // private static readonly ConcurrentDictionary<UIStationStorage, Vector2> popupBasePos = new();
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
+
+    private static readonly Dictionary<RectTransform, float> controlPanelSdButtonOriginalPosition = [];
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, bool> controlPanelStoragePopup = new();
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject> controlPanelTransferGameObjects =
+        new();
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject> controlPanelCapacityGameObjects =
+        new();
 
     private const float ExtraSpacing = 12f;
     private const float BtnHeight = 26f;
     private const float BtnYOffset = 14f;
     private static float spacingX;
-    private static bool isMyPopup;
-    private static bool isTransfer;
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsMyPopup = new();
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsTransfer = new();
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), RectTransform> slotPopupBoxRect =
+        new();
+
+    private const string ControlPanelLogPrefix = "[FE][ControlPanelStationInspector]";
 
     private static Vector2 GetOrCacheOriginal(Dictionary<RectTransform, Vector2> cache, RectTransform rect,
         Func<RectTransform, Vector2> getter) {
@@ -142,6 +160,33 @@ public static class StationManager {
         }
     }
 
+    private static Transform FindControlPanelModeButtonTransform(UIControlPanelStationStorage storage, string buttonName) {
+        if (storage == null) {
+            return null;
+        }
+
+        Transform byStorage = storage.transform.Find(buttonName);
+        if (byStorage != null) {
+            return byStorage;
+        }
+
+        Transform parent = storage.localSdButton?.transform?.parent;
+        return parent?.Find(buttonName);
+    }
+
+    private static float EnsureControlPanelSpacing(UIControlPanelStationInspector inspector) {
+        if (spacingX > 0f) {
+            return spacingX;
+        }
+
+        RectTransform rectTransform = inspector?.storageUIPrefab?.localSdButton?.GetComponent<RectTransform>();
+        if (rectTransform != null) {
+            spacingX = rectTransform.sizeDelta.x + ExtraSpacing;
+        }
+
+        return spacingX;
+    }
+
     private static bool IsModStation(UIStationWindow window, StationComponent station) {
         if (window?.factory == null || station == null || station.entityId <= 0) {
             return false;
@@ -159,9 +204,41 @@ public static class StationManager {
         AdjustSliders(window, shouldWiden);
     }
 
+    private static (long stationEntityId, int slotIndex) GetPopupStateKey(UIStationStorage storage) {
+        if (storage == null) {
+            return (0L, -1);
+        }
+
+        long stationEntityId = storage.station != null ? storage.station.entityId : 0L;
+        return (stationEntityId, storage.index);
+    }
+
+    private static (long stationEntityId, int slotIndex) GetPopupStateKey(UIControlPanelStationStorage storage) {
+        if (storage == null) {
+            return (0L, -1);
+        }
+
+        long stationEntityId = storage.station != null ? storage.station.entityId : 0L;
+        return (stationEntityId, storage.index);
+    }
+
+    private static bool GetPopupFlag(ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> stateDictionary,
+        (long stationEntityId, int slotIndex) key) {
+        return stateDictionary.TryGetValue(key, out bool value) && value;
+    }
+
+    private static void ClearPopupState((long stationEntityId, int slotIndex) key) {
+        slotIsMyPopup.TryRemove(key, out _);
+        slotIsTransfer.TryRemove(key, out _);
+        slotPopupBoxRect.TryRemove(key, out _);
+    }
+
     public static void Clear() {
         slotTransferMode.Clear();
         slotCapacityMode.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
     }
 
     [HarmonyPostfix]
@@ -418,6 +495,306 @@ public static class StationManager {
         sliderOriginalPosition.Clear();
         storageWidth.Clear();
         storagePopup.Clear();
+        transferGameObjects.Clear();
+        capacityGameObjects.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector._OnCreate))]
+    public static void UIControlPanelStationInspector_OnCreate_Postfix(UIControlPanelStationInspector __instance) {
+        if (__instance?.storageUIs == null) {
+            Debug.Log($"{ControlPanelLogPrefix} _OnCreate skipped: storageUIs is null");
+            return;
+        }
+
+        for (int index = 0; index < __instance.storageUIs.Length; ++index) {
+            UIControlPanelStationStorage storage = __instance.storageUIs[index];
+            if (storage?.localSdButton == null) {
+                Debug.Log($"{ControlPanelLogPrefix} slot {index} invalid: storage={storage}, localSdButton={storage?.localSdButton}");
+                continue;
+            }
+
+            try {
+                RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
+                if (refRect != null) {
+                    spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                } else {
+                    Debug.Log($"{ControlPanelLogPrefix} slot {index} localSdButton rectTransform is null");
+                }
+
+                string transferName = "FE_cp_transferModeButton_" + index;
+                Transform transferTrans = FindControlPanelModeButtonTransform(storage, transferName);
+                if (transferTrans == null) {
+                    Transform parent = storage.localSdButton.transform.parent ?? storage.transform;
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject, parent, false);
+                    go.name = transferName;
+                    Button transferBtn = go.GetComponent<Button>();
+                    transferBtn?.onClick.RemoveAllListeners();
+                    go.SetActive(true);
+                    controlPanelTransferGameObjects[storage] = go;
+                } else {
+                    controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
+                    Debug.Log($"{ControlPanelLogPrefix} slot {index} transfer button found, parent={transferTrans.parent?.name}");
+                }
+
+                string capacityName = "FE_cp_capacityModeButton_" + index;
+                Transform capacityTrans = FindControlPanelModeButtonTransform(storage, capacityName);
+                if (capacityTrans == null) {
+                    Transform parent = storage.localSdButton.transform.parent ?? storage.transform;
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject, parent, false);
+                    go.name = capacityName;
+                    Button capacityBtn = go.GetComponent<Button>();
+                    capacityBtn?.onClick.RemoveAllListeners();
+                    go.SetActive(true);
+                    controlPanelCapacityGameObjects[storage] = go;
+                } else {
+                    controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
+                    Debug.Log($"{ControlPanelLogPrefix} slot {index} capacity button found, parent={capacityTrans.parent?.name}");
+                }
+
+                if (storage.popupBoxRect != null) {
+                    storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
+                } else {
+                    Debug.Log($"{ControlPanelLogPrefix} slot {index} popupBoxRect is null");
+                }
+            }
+            catch (Exception ex) {
+                LogError($"FE StationManager: create control panel mode buttons failed: {ex}");
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector._OnDestroy))]
+    public static void UIControlPanelStationInspector_OnDestroy_Prefix(UIControlPanelStationInspector __instance) {
+        controlPanelSdButtonOriginalPosition.Clear();
+        inspectorOriginalTopGroupWidth.Clear();
+        inspectorOriginalBgWidth.Clear();
+        controlPanelStoragePopup.Clear();
+        controlPanelTransferGameObjects.Clear();
+        controlPanelCapacityGameObjects.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnOpen))]
+    public static void UIControlPanelStationStorage_OnOpen_Postfix(UIControlPanelStationStorage __instance) {
+        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
+            if (transferTrans != null) {
+                Button transferBtn = transferTrans.GetComponent<Button>();
+                transferBtn?.onClick.RemoveAllListeners();
+                transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+                transferTrans.gameObject.SetActive(true);
+                controlPanelTransferGameObjects[__instance] = transferTrans.gameObject;
+            } else {
+                Debug.Log($"{ControlPanelLogPrefix} _OnOpen slot {__instance.index} transfer button not found");
+            }
+
+        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
+            if (capacityTrans != null) {
+                Button capBtn = capacityTrans.GetComponent<Button>();
+                capBtn?.onClick.RemoveAllListeners();
+                capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+                capacityTrans.gameObject.SetActive(true);
+                controlPanelCapacityGameObjects[__instance] = capacityTrans.gameObject;
+            } else {
+                Debug.Log($"{ControlPanelLogPrefix} _OnOpen slot {__instance.index} capacity button not found");
+            }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnClose))]
+    public static void UIControlPanelStationStorage_OnClose_Postfix(UIControlPanelStationStorage __instance) {
+        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
+        if (transferTrans != null) {
+            Button transferBtn = transferTrans.GetComponent<Button>();
+            transferBtn.onClick.RemoveAllListeners();
+        }
+
+        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
+        if (capacityTrans != null) {
+            Button capBtn = capacityTrans.GetComponent<Button>();
+            capBtn.onClick.RemoveAllListeners();
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.RefreshValues))]
+    public static void UIControlPanelStationStorage_RefreshValues_Postfix(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        if (storage?.station == null || storage.factory == null || storage.masterInspector == null) {
+            return;
+        }
+
+        int buildingID = storage.factory.entityPool[storage.station.entityId].protoId;
+        bool isModStation = buildingID is IFE行星内物流交互站 or IFE星际物流交互站;
+        bool isInfoTab = storage.masterInspector.currentTabPanel == EUIControlPanelStationPanel.Info;
+        if (!isModStation || !isInfoTab) {
+            RestoreControlPanelStorageSlot(storage);
+            return;
+        }
+
+        RectTransform localRect = storage.localSdButton?.GetComponent<RectTransform>();
+        RectTransform remoteRect = storage.remoteSdButton?.GetComponent<RectTransform>();
+        if (localRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(localRect)) {
+                controlPanelSdButtonOriginalPosition[localRect] = localRect.anchoredPosition.x;
+            }
+
+            float localOriginal = controlPanelSdButtonOriginalPosition[localRect];
+            localRect.anchoredPosition = new Vector2(localOriginal - spacingX, localRect.anchoredPosition.y);
+        }
+
+        if (remoteRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(remoteRect)) {
+                controlPanelSdButtonOriginalPosition[remoteRect] = remoteRect.anchoredPosition.x;
+            }
+
+            float remoteOriginal = controlPanelSdButtonOriginalPosition[remoteRect];
+            remoteRect.anchoredPosition = new Vector2(remoteOriginal - spacingX, remoteRect.anchoredPosition.y);
+        }
+
+        RectTransform keepModeRect = storage.keepModeButton?.GetComponent<RectTransform>();
+        if (keepModeRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(keepModeRect)) {
+                controlPanelSdButtonOriginalPosition[keepModeRect] = keepModeRect.anchoredPosition.x;
+            }
+
+            float keepModeOriginal = controlPanelSdButtonOriginalPosition[keepModeRect];
+            keepModeRect.anchoredPosition = new Vector2(keepModeOriginal - spacingX, keepModeRect.anchoredPosition.y);
+        }
+
+        var localImgRT = storage.localSdImage?.rectTransform;
+        var remoteImgRT = storage.remoteSdImage?.rectTransform;
+        float topY;
+        float bottomY;
+        if (storage.station.isStellar && localImgRT != null && remoteImgRT != null) {
+            topY = localImgRT.anchoredPosition.y;
+            bottomY = remoteImgRT.anchoredPosition.y;
+        } else if (localImgRT != null) {
+            float centerY = localImgRT.anchoredPosition.y;
+            float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f + 2f;
+            topY = centerY + halfGap;
+            bottomY = centerY - halfGap;
+        } else {
+            topY = BtnYOffset;
+            bottomY = -BtnYOffset;
+        }
+
+        if (localRect == null) {
+            return;
+        }
+
+        if (!controlPanelTransferGameObjects.TryGetValue(storage, out _)) {
+            Transform transferTrans = FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton_" + storage.index);
+            if (transferTrans != null) {
+                controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
+                Debug.Log($"{ControlPanelLogPrefix} slot {storage.index} transfer button recovered in RefreshValues");
+            }
+        }
+
+        if (!controlPanelCapacityGameObjects.TryGetValue(storage, out _)) {
+            Transform capacityTrans = FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton_" + storage.index);
+            if (capacityTrans != null) {
+                controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
+                Debug.Log($"{ControlPanelLogPrefix} slot {storage.index} capacity button recovered in RefreshValues");
+            }
+        }
+
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        if (controlPanelTransferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
+            transferGO.SetActive(storage.localSdButton.gameObject.activeSelf);
+            Text transferText = transferGO.GetComponentInChildren<Text>();
+            if (transferText != null) {
+                transferText.text = transferMode switch {
+                    ETransferMode.Sync => "双向同步".Translate(),
+                    ETransferMode.Upload => "仅上传".Translate(),
+                    ETransferMode.Download => "仅下载".Translate(),
+                    _ => "双向同步".Translate()
+                };
+            }
+
+            Image transferImage = transferGO.GetComponent<Image>();
+            if (transferImage != null) {
+                transferImage.color = transferMode switch {
+                    ETransferMode.Sync => storage.masterInspector.storageNoneSpColor,
+                    ETransferMode.Upload => storage.masterInspector.storageDemandColor,
+                    ETransferMode.Download => storage.masterInspector.storageSupplyColor,
+                    _ => storage.masterInspector.storageNoneSpColor
+                };
+            }
+
+            RectTransform transferRt = transferGO.GetComponent<RectTransform>();
+            transferRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, topY);
+            transferRt.sizeDelta = new Vector2(transferRt.sizeDelta.x, BtnHeight);
+        }
+
+        if (controlPanelCapacityGameObjects.TryGetValue(storage, out GameObject capacityGO)) {
+            ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                slotCapacityMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+            ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+            capacityGO.SetActive(storage.localSdButton.gameObject.activeSelf
+                                 && transferMode is ETransferMode.Sync or ETransferMode.Upload);
+
+            Text capText = capacityGO.GetComponentInChildren<Text>();
+            if (capText != null) {
+                capText.text = capacityMode switch {
+                    ECapacityMode.Limited => "有限上传".Translate(),
+                    ECapacityMode.Infinite => "无限上传".Translate(),
+                    _ => "有限上传".Translate()
+                };
+            }
+
+            Image capImage = capacityGO.GetComponent<Image>();
+            if (capImage != null) {
+                capImage.color = capacityMode switch {
+                    ECapacityMode.Limited => storage.masterInspector.storageSupplyColor,
+                    ECapacityMode.Infinite => storage.masterInspector.storageDemandColor,
+                    _ => storage.masterInspector.storageSupplyColor
+                };
+            }
+
+            RectTransform capRt = capacityGO.GetComponent<RectTransform>();
+            capRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, bottomY);
+            capRt.sizeDelta = new Vector2(capRt.sizeDelta.x, BtnHeight);
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnLocalSdButtonClick))]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnRemoteSdButtonClick))]
+    public static void UIControlPanelStationStorage_OnSdButtonClick_Prefix(UIControlPanelStationStorage __instance) {
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(__instance);
+        ClearPopupState(popupStateKey);
+        if (controlPanelStoragePopup.ContainsKey(__instance)) {
+            __instance.popupBoxRect.anchoredPosition =
+                new Vector2(__instance.popupBoxRect.anchoredPosition.x - spacingX,
+                    __instance.popupBoxRect.anchoredPosition.y);
+            controlPanelStoragePopup.TryRemove(__instance, out _);
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton0Click))]
+    public static bool UIControlPanelStationStorage_OnOptionButton0Click_Prefix(UIControlPanelStationStorage __instance) {
+        return HandleOptionClick(__instance, 0);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton1Click))]
+    public static bool UIControlPanelStationStorage_OnOptionButton1Click_Prefix(UIControlPanelStationStorage __instance) {
+        return HandleOptionClick(__instance, 1);
     }
 
     [HarmonyPostfix]
@@ -747,8 +1124,7 @@ public static class StationManager {
 
         // 通过栏位索引，拿到对应栏位的同步模式
         ETransferMode eTransferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
-        isMyPopup = true;
-        isTransfer = true;
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
         storage.optionImage0.color = eTransferMode switch {
             ETransferMode.Sync => storage.demandColor,
             ETransferMode.Upload => storage.supplyColor,
@@ -770,6 +1146,10 @@ public static class StationManager {
             _ => "仅上传".Translate()
         };
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = true;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
         if (!storagePopup.ContainsKey(storage)) {
             // 原版本地物流模式的按钮
             storage.popupBoxRect.anchoredPosition =
@@ -792,13 +1172,16 @@ public static class StationManager {
         if (itemProto1 == null || itemProto2 == null)
             return;
 
-        isMyPopup = true;
-        isTransfer = false;
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
         storage.optionImage0.color = storage.demandColor;
         storage.optionImage1.color = storage.supplyColor;
         storage.optionText0.text = "无限上传".Translate();
         storage.optionText1.text = "有限上传".Translate();
         storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = false;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
         if (!storagePopup.ContainsKey(storage)) {
             storage.popupBoxRect.anchoredPosition =
                 new Vector2(storage.popupBoxRect.anchoredPosition.x + spacingX,
@@ -807,12 +1190,112 @@ public static class StationManager {
         }
     }
 
+    private static void ShowTransferPopup(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        StationComponent station = storage.station;
+        StationStore stationStore = new StationStore();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 = station != null && storage.factory != null
+            ? LDB.items.Select(storage.factory.entityPool[storage.station.entityId].protoId)
+            : null;
+        if (itemProto1 == null || itemProto2 == null) {
+            Debug.Log($"{ControlPanelLogPrefix} ShowTransferPopup aborted: itemProto1={itemProto1}, itemProto2={itemProto2}");
+            return;
+        }
+
+        if (storage.popupBoxRect == null) {
+            Debug.Log($"{ControlPanelLogPrefix} ShowTransferPopup aborted: popupBoxRect is null");
+            return;
+        }
+
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = transferMode switch {
+            ETransferMode.Sync => storage.masterInspector.storageDemandColor,
+            ETransferMode.Upload => storage.masterInspector.storageSupplyColor,
+            _ => storage.masterInspector.storageNoneSpColor
+        };
+        storage.optionImage1.color = transferMode switch {
+            ETransferMode.Sync => storage.masterInspector.storageSupplyColor,
+            ETransferMode.Upload => storage.masterInspector.storageNoneSpColor,
+            _ => storage.masterInspector.storageDemandColor
+        };
+        storage.optionText0.text = transferMode switch {
+            ETransferMode.Sync => "仅上传".Translate(),
+            ETransferMode.Upload => "仅下载".Translate(),
+            _ => "双向同步".Translate()
+        };
+        storage.optionText1.text = transferMode switch {
+            ETransferMode.Sync => "仅下载".Translate(),
+            ETransferMode.Upload => "双向同步".Translate(),
+            _ => "仅上传".Translate()
+        };
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = true;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        if (!controlPanelStoragePopup.ContainsKey(storage)) {
+            storage.popupBoxRect.anchoredPosition =
+                new Vector2(storage.popupBoxRect.anchoredPosition.x + spacingX,
+                    storage.popupBoxRect.anchoredPosition.y);
+            controlPanelStoragePopup.TryAdd(storage, true);
+        }
+    }
+
+    private static void ShowCapacityPopup(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        StationComponent station = storage.station;
+        StationStore stationStore = new StationStore();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 = station != null && storage.factory != null
+            ? LDB.items.Select(storage.factory.entityPool[storage.station.entityId].protoId)
+            : null;
+        if (itemProto1 == null || itemProto2 == null) {
+            Debug.Log($"{ControlPanelLogPrefix} ShowCapacityPopup aborted: itemProto1={itemProto1}, itemProto2={itemProto2}");
+            return;
+        }
+
+        if (storage.popupBoxRect == null) {
+            Debug.Log($"{ControlPanelLogPrefix} ShowCapacityPopup aborted: popupBoxRect is null");
+            return;
+        }
+
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = storage.masterInspector.storageDemandColor;
+        storage.optionImage1.color = storage.masterInspector.storageSupplyColor;
+        storage.optionText0.text = "无限上传".Translate();
+        storage.optionText1.text = "有限上传".Translate();
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = false;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        if (!controlPanelStoragePopup.ContainsKey(storage)) {
+            storage.popupBoxRect.anchoredPosition =
+                new Vector2(storage.popupBoxRect.anchoredPosition.x + spacingX,
+                    storage.popupBoxRect.anchoredPosition.y);
+            controlPanelStoragePopup.TryAdd(storage, true);
+        }
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnLocalSdButtonClick))]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnRemoteSdButtonClick))]
     public static void UIStationStorage_OnSdButtonClick_Prefix(UIStationStorage __instance) {
         UIStationStorage storage = __instance;
-        isMyPopup = false;
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        ClearPopupState(popupStateKey);
         if (storagePopup.ContainsKey(storage)) {
             storage.popupBoxRect.anchoredPosition =
                 new Vector2(storage.popupBoxRect.anchoredPosition.x - spacingX,
@@ -836,13 +1319,20 @@ public static class StationManager {
 
     private static bool HandleOptionClick(UIStationStorage __instance, int idx) {
         try {
-            if (!isMyPopup) {
+            UIStationStorage storage = __instance;
+            (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+            if (!GetPopupFlag(slotIsMyPopup, popupStateKey)) {
                 return true;
             }
 
-            UIStationStorage storage = __instance;
             StationComponent station = __instance.station;
             UIStationWindow stationWindow = __instance.stationWindow;
+            if (storage.popupBoxRect == null
+                || !slotPopupBoxRect.TryGetValue(popupStateKey, out RectTransform popupRect)
+                || popupRect != storage.popupBoxRect
+                || !storage.popupBoxRect.gameObject.activeSelf) {
+                return true;
+            }
 
             StationStore stationStore = new StationStore();
             if (station != null && storage.index < station.storage.Length)
@@ -851,7 +1341,7 @@ public static class StationManager {
             ItemProto itemProto2 = LDB.items.Select((int)stationWindow.factory.entityPool[station.entityId].protoId);
             if (itemProto1 == null || itemProto2 == null)
                 return false;
-            if (isTransfer) {
+            if (GetPopupFlag(slotIsTransfer, popupStateKey)) {
                 ConcurrentDictionary<int, ETransferMode> transferDictionary =
                     slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
                 ETransferMode eTransferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
@@ -880,10 +1370,78 @@ public static class StationManager {
             }
 
             storage.popupBoxRect.gameObject.SetActive(false);
+            slotIsMyPopup[popupStateKey] = false;
             return false;// prevent original OnOptionButton* handlers
         }
         catch (Exception ex) {
             LogError($"FE HandleOptionClick error: {ex}");
+            return true;
+        }
+    }
+
+    private static bool HandleOptionClick(UIControlPanelStationStorage __instance, int idx) {
+        try {
+            UIControlPanelStationStorage storage = __instance;
+            (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+            if (!GetPopupFlag(slotIsMyPopup, popupStateKey)) {
+                return true;
+            }
+
+            StationComponent station = __instance.station;
+            if (storage.popupBoxRect == null
+                || !slotPopupBoxRect.TryGetValue(popupStateKey, out RectTransform popupRect)
+                || popupRect != storage.popupBoxRect
+                || !storage.popupBoxRect.gameObject.activeSelf) {
+                return true;
+            }
+
+            StationStore stationStore = new StationStore();
+            if (station != null && storage.index < station.storage.Length) {
+                stationStore = station.storage[storage.index];
+            }
+
+            ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+            ItemProto itemProto2 = station != null && storage.factory != null
+                ? LDB.items.Select(storage.factory.entityPool[station.entityId].protoId)
+                : null;
+            if (itemProto1 == null || itemProto2 == null) {
+                return false;
+            }
+
+            if (GetPopupFlag(slotIsTransfer, popupStateKey)) {
+                ConcurrentDictionary<int, ETransferMode> transferDictionary =
+                    slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+                ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+                if (idx == 0) {
+                    transferDictionary.TryUpdate(storage.index, transferMode switch {
+                        ETransferMode.Sync => ETransferMode.Upload,
+                        ETransferMode.Upload => ETransferMode.Download,
+                        _ => ETransferMode.Sync
+                    }, transferMode);
+                } else if (idx == 1) {
+                    transferDictionary.TryUpdate(storage.index, transferMode switch {
+                        ETransferMode.Sync => ETransferMode.Download,
+                        ETransferMode.Upload => ETransferMode.Sync,
+                        _ => ETransferMode.Upload
+                    }, transferMode);
+                }
+            } else {
+                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                    slotCapacityMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+                ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+                if (idx == 0) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Infinite, capacityMode);
+                } else if (idx == 1) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Limited, capacityMode);
+                }
+            }
+
+            storage.popupBoxRect.gameObject.SetActive(false);
+            slotIsMyPopup[popupStateKey] = false;
+            return false;
+        }
+        catch (Exception ex) {
+            LogError($"FE HandleOptionClick(UIControlPanelStationStorage) error: {ex}");
             return true;
         }
     }
@@ -940,6 +1498,277 @@ public static class StationManager {
         }
 
         __instance.event_lock = false;
+    }
+
+    private static RectTransform FindInspectorRightGroupRect(UIControlPanelStationInspector inspector) {
+        if (inspector == null) {
+            return null;
+        }
+
+        RectTransform inspectorRect = inspector.rectTransform;
+        Transform rightGroupTransform = inspectorRect?.parent?.Find("right-group");
+        if (rightGroupTransform == null && inspector.masterWindow != null) {
+            rightGroupTransform = inspector.masterWindow.transform.Find("right-group");
+        }
+
+        if (rightGroupTransform == null && inspectorRect != null && inspectorRect.name == "right-group") {
+            return inspectorRect;
+        }
+
+        if (rightGroupTransform == null && inspector.masterWindow != null) {
+            RectTransform[] children = inspector.masterWindow.GetComponentsInChildren<RectTransform>(true);
+            foreach (RectTransform child in children) {
+                if (child != null && child.name == "right-group") {
+                    rightGroupTransform = child;
+                    break;
+                }
+            }
+        }
+
+        RectTransform rightGroupRect = rightGroupTransform as RectTransform;
+        if (rightGroupRect == null && !inspectorRightGroupMissingLogged) {
+            string path = inspector.masterWindow != null
+                ? inspector.masterWindow.name
+                : inspector.gameObject.name;
+            Debug.Log($"[FractionateEverything] right-group not found or path: {path}");
+            inspectorRightGroupMissingLogged = true;
+        }
+
+        return rightGroupRect;
+    }
+
+    private static void RestoreInspectorRightGroup(RectTransform rightGroupRect) {
+        if (rightGroupRect == null) {
+            return;
+        }
+
+        if (inspectorOriginalRightGroupWidth.TryGetValue(rightGroupRect, out float originalWidth)) {
+            rightGroupRect.sizeDelta = new Vector2(originalWidth, rightGroupRect.sizeDelta.y);
+        }
+    }
+
+    private static void RestoreControlPanelStorageSlot(UIControlPanelStationStorage storage) {
+        if (storage == null) {
+            return;
+        }
+
+        RectTransform localRect = storage.localSdButton?.GetComponent<RectTransform>();
+        if (localRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(localRect, out float localOriginal)) {
+            localRect.anchoredPosition = new Vector2(localOriginal, localRect.anchoredPosition.y);
+        }
+
+        RectTransform remoteRect = storage.remoteSdButton?.GetComponent<RectTransform>();
+        if (remoteRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(remoteRect, out float remoteOriginal)) {
+            remoteRect.anchoredPosition = new Vector2(remoteOriginal, remoteRect.anchoredPosition.y);
+        }
+
+        RectTransform keepModeRect = storage.keepModeButton?.GetComponent<RectTransform>();
+        if (keepModeRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(keepModeRect, out float keepModeOriginal)) {
+            keepModeRect.anchoredPosition = new Vector2(keepModeOriginal, keepModeRect.anchoredPosition.y);
+        }
+
+        if (controlPanelStoragePopup.ContainsKey(storage) && storage.popupBoxRect != null) {
+            storage.popupBoxRect.anchoredPosition =
+                new Vector2(storage.popupBoxRect.anchoredPosition.x, storage.popupBoxRect.anchoredPosition.y);
+            controlPanelStoragePopup.TryRemove(storage, out _);
+        }
+
+        ClearPopupState(GetPopupStateKey(storage));
+
+        if (controlPanelTransferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
+            transferGO.SetActive(false);
+        }
+
+        if (controlPanelCapacityGameObjects.TryGetValue(storage, out GameObject capacityGO)) {
+            capacityGO.SetActive(false);
+        }
+    }
+
+    private static void RestoreInspectorStorageWidths(UIControlPanelStationInspector inspector) {
+        if (inspector?.storageUIs == null) {
+            return;
+        }
+
+        for (int i = 0; i < inspector.storageUIs.Length; i++) {
+            UIControlPanelStationStorage storage = inspector.storageUIs[i];
+            if (storage == null) {
+                continue;
+            }
+
+            RectTransform topGroup = storage.transform.Find("top-group") as RectTransform;
+            if (topGroup != null
+                && inspectorOriginalTopGroupWidth.TryGetValue(topGroup, out float originalTopGroupWidth)) {
+                topGroup.sizeDelta = new Vector2(originalTopGroupWidth, topGroup.sizeDelta.y);
+            }
+
+            RectTransform bg = storage.transform.Find("bg") as RectTransform;
+            if (bg != null && inspectorOriginalBgWidth.TryGetValue(bg, out float originalBgWidth)) {
+                bg.sizeDelta = new Vector2(originalBgWidth, bg.sizeDelta.y);
+            }
+        }
+    }
+
+    private static void WidenInspectorStorageWidths(UIControlPanelStationInspector inspector) {
+        if (inspector?.storageUIs == null) {
+            return;
+        }
+
+        for (int i = 0; i < inspector.storageUIs.Length; i++) {
+            UIControlPanelStationStorage storage = inspector.storageUIs[i];
+            if (storage == null) {
+                continue;
+            }
+
+            RectTransform topGroup = storage.transform.Find("top-group") as RectTransform;
+            if (topGroup != null) {
+                float originalTopGroupWidth = GetOrCacheOriginal(inspectorOriginalTopGroupWidth, topGroup,
+                    x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
+                topGroup.sizeDelta = new Vector2(originalTopGroupWidth + spacingX, topGroup.sizeDelta.y);
+            }
+
+            RectTransform bg = storage.transform.Find("bg") as RectTransform;
+            if (bg != null) {
+                float originalBgWidth = GetOrCacheOriginal(inspectorOriginalBgWidth, bg,
+                    x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
+                bg.sizeDelta = new Vector2(originalBgWidth + spacingX, bg.sizeDelta.y);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 加宽总控面板物流站信息页签（能量条和数值位置）
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector._OnUpdate))]
+    public static void UIControlPanelStationInspector_OnUpdate_Postfix(UIControlPanelStationInspector __instance) {
+        // 只处理物流交互站
+        if (__instance.stationId == 0 || __instance.factory == null) {
+            return;
+        }
+
+        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
+        if (station == null || station.id != __instance.stationId) {
+            return;
+        }
+
+        EnsureControlPanelSpacing(__instance);
+
+        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
+        RectTransform rightGroupRect = FindInspectorRightGroupRect(__instance);
+        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
+            if (__instance.storageUIs != null) {
+                foreach (UIControlPanelStationStorage storage in __instance.storageUIs) {
+                    RestoreControlPanelStorageSlot(storage);
+                }
+            }
+
+            RestoreInspectorStorageWidths(__instance);
+
+            RectTransform stateGroupTransRestore = __instance.masterWindow?.filterPanel?.stateFilterGroupTrans;
+            if (stateGroupTransRestore != null
+                && filterOriginalStateGroupPosition.TryGetValue(stateGroupTransRestore, out float stateGroupX)) {
+                stateGroupTransRestore.anchoredPosition =
+                    new Vector2(stateGroupX, stateGroupTransRestore.anchoredPosition.y);
+            }
+
+            RectTransform masterRectRestore = __instance.masterWindow != null
+                ? __instance.masterWindow.transform as RectTransform
+                : null;
+            if (masterRectRestore != null
+                && inspectorOriginalMasterWidth.TryGetValue(masterRectRestore, out float masterWidth)) {
+                masterRectRestore.sizeDelta = new Vector2(masterWidth, masterRectRestore.sizeDelta.y);
+            }
+
+            RestoreInspectorRightGroup(rightGroupRect);
+
+            return;
+        }
+
+        // 只在信息页签生效
+        if (__instance.currentTabPanel != EUIControlPanelStationPanel.Info) {
+            if (__instance.storageUIs != null) {
+                foreach (UIControlPanelStationStorage storage in __instance.storageUIs) {
+                    RestoreControlPanelStorageSlot(storage);
+                }
+            }
+
+            RestoreInspectorStorageWidths(__instance);
+
+            RectTransform stateGroupTransRestore = __instance.masterWindow?.filterPanel?.stateFilterGroupTrans;
+            if (stateGroupTransRestore != null
+                && filterOriginalStateGroupPosition.TryGetValue(stateGroupTransRestore, out float stateGroupX)) {
+                stateGroupTransRestore.anchoredPosition =
+                    new Vector2(stateGroupX, stateGroupTransRestore.anchoredPosition.y);
+            }
+
+            RectTransform masterRectRestore = __instance.masterWindow != null
+                ? __instance.masterWindow.transform as RectTransform
+                : null;
+            if (masterRectRestore != null
+                && inspectorOriginalMasterWidth.TryGetValue(masterRectRestore, out float masterWidth)) {
+                masterRectRestore.sizeDelta = new Vector2(masterWidth, masterRectRestore.sizeDelta.y);
+            }
+
+            RestoreInspectorRightGroup(rightGroupRect);
+
+            return;
+        }
+
+        WidenInspectorStorageWidths(__instance);
+
+        // 是否解锁曲速
+        bool logisticShipWarpDrive = GameMain.history.logisticShipWarpDrive;
+
+        RectTransform powerRect = __instance.powerGroupRect;
+
+        float basePowerWidth = station.isStellar
+            ? (logisticShipWarpDrive ? 320f : 380f)
+            : 440f;
+        powerRect.sizeDelta = new Vector2(basePowerWidth + spacingX, 40f);
+
+        // 调整能量数值的位置（基于原始长度+spacingX）
+        float num2 = (float)station.energy / (float)station.energyMax;
+        float num4 = (station.isStellar ? (logisticShipWarpDrive ? 180f : 240f) : 300f) + spacingX;
+
+        if (num2 > 0.7f) {
+            __instance.energyText.rectTransform.anchoredPosition =
+                new Vector2(Mathf.Round(num4 * num2 - 30f), 0f);
+        } else {
+            __instance.energyText.rectTransform.anchoredPosition =
+                new Vector2(Mathf.Round(num4 * num2 + 30f), 0f);
+        }
+
+        RectTransform masterRect = __instance.masterWindow != null
+            ? __instance.masterWindow.transform as RectTransform
+            : null;
+        if (masterRect != null) {
+            if (!inspectorOriginalMasterWidth.ContainsKey(masterRect)) {
+                inspectorOriginalMasterWidth[masterRect] = masterRect.sizeDelta.x;
+            }
+            masterRect.sizeDelta = new Vector2(inspectorOriginalMasterWidth[masterRect] + spacingX, masterRect.sizeDelta.y);
+        }
+
+        RectTransform stateGroupTrans = __instance.masterWindow?.filterPanel?.stateFilterGroupTrans;
+        if (stateGroupTrans != null) {
+            if (!filterOriginalStateGroupPosition.ContainsKey(stateGroupTrans)) {
+                filterOriginalStateGroupPosition[stateGroupTrans] = stateGroupTrans.anchoredPosition.x;
+            }
+
+            stateGroupTrans.anchoredPosition =
+                new Vector2(filterOriginalStateGroupPosition[stateGroupTrans] + spacingX, stateGroupTrans.anchoredPosition.y);
+        }
+
+        if (rightGroupRect != null) {
+            if (!inspectorOriginalRightGroupWidth.ContainsKey(rightGroupRect)) {
+                inspectorOriginalRightGroupWidth[rightGroupRect] = rightGroupRect.sizeDelta.x;
+            }
+
+            rightGroupRect.sizeDelta = new Vector2(
+                inspectorOriginalRightGroupWidth[rightGroupRect] + spacingX, rightGroupRect.sizeDelta.y);
+        }
     }
 
     /// <summary>
