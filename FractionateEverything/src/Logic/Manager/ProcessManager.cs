@@ -29,6 +29,7 @@ public static class ProcessManager {
         Register("流动", "Flow");
         Register("损毁", "Destroy");
         Register("流体输出", "Fluid output");
+        Register("配方强化", "Recipe enhancement");
     }
     #region Field
 
