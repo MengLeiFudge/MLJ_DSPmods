@@ -1,15 +1,12 @@
-using FE.Logic.Manager;
 using HarmonyLib;
-using UnityEngine;
 using static FE.Logic.Manager.ProcessManager;
-using static FE.Utils.Utils;
 
 namespace FE.UI.Patches;
 
 /// <summary>
 /// 分馏塔简洁提示信息窗口的UI修改。
 /// </summary>
-public static class UIFractionatorEntityBriefInfoPatch {
+public static class FractionatorBriefInfoPatch {
     /// <summary>
     /// 修改分馏塔简洁提示信息窗口中的速率。
     /// </summary>
