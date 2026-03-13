@@ -33,6 +33,8 @@ public static class FEFractionatorWindow {
 
     // ===== 模组窗口组件引用 =====
     private static UIFractionatorWindow modWindow;
+    private static UIFractionatorWindow sourceWindow;
+    private static bool slotClickBound;
 
     // 自定义UI元素
     private static readonly ProductSlot[] mainSlots = new ProductSlot[MaxMainSlots];
@@ -59,6 +61,24 @@ public static class FEFractionatorWindow {
         public Text countText;
         public Text probText;
         public Image[] incArrows;
+    }
+
+    private static void BindSlotClickHandlers() {
+        if (slotClickBound) return;
+        foreach (var slot in mainSlots)
+            if (slot?.button != null) slot.button.onClick += OnSlotClick;
+        foreach (var slot in sideSlots)
+            if (slot?.button != null) slot.button.onClick += OnSlotClick;
+        slotClickBound = true;
+    }
+
+    private static void UnbindSlotClickHandlers() {
+        if (!slotClickBound) return;
+        foreach (var slot in mainSlots)
+            if (slot?.button != null) slot.button.onClick -= OnSlotClick;
+        foreach (var slot in sideSlots)
+            if (slot?.button != null) slot.button.onClick -= OnSlotClick;
+        slotClickBound = false;
     }
 
     /// <summary>判断是否为模组分馏塔建筑</summary>
@@ -258,9 +278,16 @@ public static class FEFractionatorWindow {
         // factory 由原版 _OnOpen 设置
         PlanetFactory factory = __instance.factory;
         if (!IsModFractionator(__instance.fractionatorId, factory)) {
-            // 原版建筑：确保 modWindow 隐藏
-            if (modWindowGo != null && modWindowGo.activeSelf)
+            UnbindSlotClickHandlers();
+            if (modWindowGo != null && modWindowGo.activeSelf) {
                 modWindowGo.SetActive(false);
+            }
+            if (modWindow != null) modWindow.active = false;
+            __instance.unsafeGameObjectState = false;
+            if (!__instance.gameObject.activeSelf) {
+                __instance.gameObject.SetActive(true);
+            }
+            sourceWindow = null;
             return;
         }
 
@@ -268,15 +295,14 @@ public static class FEFractionatorWindow {
         // 1. 隐藏 originalWindow 但保持 active=true，让游戏继续驱动其 _Update
         __instance.gameObject.SetActive(false);
         __instance.unsafeGameObjectState = true;
+        sourceWindow = __instance;
 
         // 2. 显示 modWindow
         modWindowGo.SetActive(true);
+        modWindow.active = true;
 
         // 3. 注册自定义槽位事件
-        foreach (var slot in mainSlots)
-            if (slot?.button != null) slot.button.onClick += OnSlotClick;
-        foreach (var slot in sideSlots)
-            if (slot?.button != null) slot.button.onClick += OnSlotClick;
+        BindSlotClickHandlers();
     }
 
     private static void OnSlotClick(int itemId) {
@@ -292,20 +318,28 @@ public static class FEFractionatorWindow {
         // modWindow 不应通过 _Close() 关闭（只用 SetActive 管理），
         // 但如果发生了也要避免 player NPE
         if (__instance == modWindow) {
-            modWindowGo.SetActive(false);
+            UnbindSlotClickHandlers();
+            if (modWindowGo != null && modWindowGo.activeSelf) {
+                modWindowGo.SetActive(false);
+            }
+            modWindow.active = false;
+
+            UIFractionatorWindow src = sourceWindow;
+            sourceWindow = null;
+            if (src != null && src.active) {
+                src._Close();
+            }
             return false;
         }
 
         // 原版窗口关闭时，同步清理 modWindow
+        UnbindSlotClickHandlers();
         if (modWindowGo != null && modWindowGo.activeSelf) {
-            foreach (var slot in mainSlots)
-                if (slot?.button != null) slot.button.onClick -= OnSlotClick;
-            foreach (var slot in sideSlots)
-                if (slot?.button != null) slot.button.onClick -= OnSlotClick;
-
             modWindowGo.SetActive(false);
-            __instance.unsafeGameObjectState = false;
         }
+        if (modWindow != null) modWindow.active = false;
+        __instance.unsafeGameObjectState = false;
+        if (sourceWindow == __instance) sourceWindow = null;
 
         return true; // 让原版 _OnClose 正常执行，清理 factory/player/button 等
     }
@@ -322,6 +356,7 @@ public static class FEFractionatorWindow {
         if (__instance == modWindow) return false; // 防御：modWindow 不被游戏驱动
 
         if (modWindowGo == null || !modWindowGo.activeSelf) return true; // 没有打开 modWindow
+        if (sourceWindow != null && __instance != sourceWindow) return true;
 
         // modWindow 打开中：执行 modWindow 更新，跳过原版显示逻辑
         DoModWindowUpdate(__instance);
@@ -330,13 +365,13 @@ public static class FEFractionatorWindow {
 
     private static void DoModWindowUpdate(UIFractionatorWindow src) {
         if (src.fractionatorId == 0 || src.factory == null) {
-            if (modWindowGo.activeSelf) modWindowGo.SetActive(false);
+            if (src.active) src._Close();
             return;
         }
 
         FractionatorComponent fractionator = src.factorySystem.fractionatorPool[src.fractionatorId];
         if (fractionator.id != src.fractionatorId || fractionator.fluidId == 0) {
-            if (modWindowGo.activeSelf) modWindowGo.SetActive(false);
+            if (src.active) src._Close();
             return;
         }
 
