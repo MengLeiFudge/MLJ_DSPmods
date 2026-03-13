@@ -247,13 +247,18 @@ static class AfterBuildEvent {
         }
         // 下面三个mod dll，r2禁用时会自动加.old后缀，由PublizeDll内部逻辑自动识别并处理
         PublizeDll(cmd, R2VDDll, $@"{SolutionDir}\lib\DSP_Battle-publicized.dll");
+        DecompileDll(cmd, "DSP_Battle-publicized.dll", $@"{SolutionDir}\lib");
         PublizeDll(cmd, R2GBDll, $@"{SolutionDir}\lib\ProjectGenesis-publicized.dll");
+        DecompileDll(cmd, "ProjectGenesis-publicized.dll", $@"{SolutionDir}\lib");
         PublizeDll(cmd, R2ORDll, $@"{SolutionDir}\lib\ProjectOrbitalRing-publicized.dll");
+        DecompileDll(cmd, "ProjectOrbitalRing-publicized.dll", $@"{SolutionDir}\lib");
     }
 
-    private static void DecompileDll(CmdProcess cmd, string dllName) {
-        string dllPath = $@"{NugetGameLibNet45Dir}\{dllName}";
-        string dllNameNoExt = Path.GetFileNameWithoutExtension(dllName);
+    private static void DecompileDll(CmdProcess cmd, string dllName, string sourceDir = null) {
+        string dllPath = sourceDir != null
+            ? $@"{sourceDir}\{dllName}"
+            : $@"{NugetGameLibNet45Dir}\{dllName}";
+        string dllNameNoExt = Path.GetFileNameWithoutExtension(dllName).Replace("-publicized", "");
         string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource\{dllNameNoExt}");
         string csprojPath = Path.Combine(outputDir, $"{dllNameNoExt}.csproj");
         if (!File.Exists(dllPath)) {
