@@ -1,12 +1,12 @@
 # AfterBuildEvent/src — Build Automation Tool
 
-Console app. Run from IDE as post-build event or standalone. 4 files, ~820 lines.
+Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines.
 
 ## Files
 
 | File | Lines | Role |
 |---|---|---|
-| `AfterBuildEvent.cs` | 483 | `Main` entry, 3 feature implementations |
+| `AfterBuildEvent.cs` | 490 | `Main` entry, 3 feature implementations |
 | `Utils.cs` | 195 | Mod management helpers (combination math, r2 enable/disable) |
 | `CmdProcess.cs` | 75 | Persistent cmd.exe process wrapper |
 | `PathConfig.cs` | 66 | All path constants, auto-detects latest nuget version |
@@ -16,19 +16,25 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~820 lines
 | Option | Method | What it does |
 |---|---|---|
 | `1` | `UpdateModsThenStart()` | Kill DSP → copy DLLs to R2 → zip packages → launch game |
-| `2` | `UpdateLibDll()` | Publicize game DLLs → decompile DLLs → publicize mod DLLs |
+| `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → publicize + decompile mod DLLs |
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
 
 ## Option 2 — UpdateLibDll Detail
 
 ```
+# Game DLLs (from game install → nuget → decompile)
 PublizeDll(DSPACDll → NugetGameLibNet45Dir\Assembly-CSharp.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/Assembly-CSharp/)
 PublizeDll(DSPUIDll → NugetGameLibNet45Dir\UnityEngine.UI.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/UnityEngine.UI/)
+
+# Mod DLLs (from R2 plugins → lib → decompile)
 PublizeDll(R2VDDll  → lib\DSP_Battle-publicized.dll)
+    → DecompileDll(ilspycmd → gamedata/DecompiledSource/DSP_Battle-publicized/)
 PublizeDll(R2GBDll  → lib\ProjectGenesis-publicized.dll)
+    → DecompileDll(ilspycmd → gamedata/DecompiledSource/ProjectGenesis-publicized/)
 PublizeDll(R2ORDll  → lib\ProjectOrbitalRing-publicized.dll)
+    → DecompileDll(ilspycmd → gamedata/DecompiledSource/ProjectOrbitalRing-publicized/)
 ```
 
 Requires `ilspycmd` globally installed: `dotnet tool install -g ilspycmd`

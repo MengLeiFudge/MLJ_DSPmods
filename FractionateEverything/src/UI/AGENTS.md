@@ -60,6 +60,8 @@ public static void UpdateUI() {
 
 ## Patches Folder
 
+- `FEFractionatorWindow.cs` — mod fractionator window (copies vanilla window, modifies layout once on create)
+- `FractionatorBriefInfoPatch.cs` — fractionator brief info display
 - `IconSetPatch.cs` — injects mod item icons into DSP's icon atlas
 - `UIRecipeEntryPatch.cs` / `UIComboBoxPatch.cs` / `UIButtonPatch.cs` — minor UI compatibility fixes
 

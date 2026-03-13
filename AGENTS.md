@@ -242,15 +242,22 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ### Game Source Reference: DecompiledSource
 
-`gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's `Assembly-CSharp.dll` and `UnityEngine.UI.dll` (publicized versions, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals.**
+`gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's game DLLs and mod DLLs (publicized versions, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals and mod APIs.**
 
+**Game DLLs:**
 - `Assembly-CSharp/` — Main game logic
 - `UnityEngine.UI/` — UI components
 
+**Mod DLLs:**
+- `DSP_Battle-publicized/` — 深空来敌 (They Come From Void)
+- `ProjectGenesis-publicized/` — 创世之书 (Genesis Book)
+- `ProjectOrbitalRing-publicized/` — 星环 (Orbital Ring)
+
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
-1. Publicizes the game DLLs from the game install into the nuget package dir
-2. Decompiles each publicized DLL via `ilspycmd -p --nested-directories` into `DecompiledSource/{DllName}/`
-3. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
+1. Publicizes game DLLs from game install → nuget package dir → decompiles
+2. Publicizes mod DLLs from R2 plugins → `lib/` → decompiles
+3. Decompiles each via `ilspycmd -p --nested-directories` into `DecompiledSource/{DllName}/`
+4. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
 
 **When to use it:**
 - Verifying whether a Harmony patch target (`typeof(X)`, `nameof(X.Y)`) actually exists
