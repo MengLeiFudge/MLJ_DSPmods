@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -43,6 +44,31 @@ public static class ProcessManager {
     public static readonly int MaxLevel = 12;
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
+    public const byte OutputFlagMain = 1 << 0;
+    public const byte OutputFlagSide = 1 << 1;
+    public const byte OutputFlagFluid = 1 << 2;
+
+    private static readonly ConcurrentDictionary<(int, int), byte> outputFlagDic = [];
+
+    public static byte GetCurrentOutputFlags(this FractionatorComponent fractionator,
+        PlanetFactory factory) {
+
+        if (factory == null) return 0;
+        int planetId = factory.planetId;
+        int entityId = fractionator.entityId;
+        return outputFlagDic.TryGetValue((planetId, entityId), out byte flags) ? flags : (byte)0;
+    }
+
+    private static void SetCurrentOutputFlags(PlanetFactory factory, int entityId,
+        bool main, bool side, bool fluid) {
+
+        if (factory == null) return;
+        byte flags = 0;
+        if (main) flags |= OutputFlagMain;
+        if (side) flags |= OutputFlagSide;
+        if (fluid) flags |= OutputFlagFluid;
+        outputFlagDic[(factory.planetId, entityId)] = flags;
+    }
 
     #endregion
 
@@ -224,6 +250,9 @@ public static class ProcessManager {
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFluidEnhancement();
         bool moveDirectly = recipe == null || recipe.Locked;
+        bool producedMainThisTick = false;
+        bool producedSideThisTick = false;
+        bool producedFluidThisTick = false;
         if (__instance.fluidInputCount > 0
             && (products.All(p => p.count < productOutputMax) || enableFracForever)
             && __instance.fluidOutputCount < fluidOutputMax) {
@@ -350,6 +379,7 @@ public static class ProcessManager {
                         __instance.fluidOutputCount++;
                         __instance.fluidOutputTotal++;
                         __instance.fluidOutputInc += fluidInputIncAvg;
+                        producedFluidThisTick = true;
                     }
                 } else {
                     // 成功产出，产出到产物列表
@@ -360,6 +390,8 @@ public static class ProcessManager {
                     foreach (var p in outputs) {
                         int itemID = p.itemId;
                         int itemCount = p.count;
+                        if (p.isMainOutput) producedMainThisTick = true;
+                        else producedSideThisTick = true;
                         lock (productRegister) {
                             productRegister[itemID] += itemCount;
                         }
@@ -377,6 +409,10 @@ public static class ProcessManager {
         } else {
             __instance.fractionSuccess = false;
         }
+
+        SetCurrentOutputFlags(factory, __instance.entityId,
+            producedMainThisTick, producedSideThisTick, producedFluidThisTick);
+
         // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
