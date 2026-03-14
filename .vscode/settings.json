@@ -1,0 +1,6 @@
+{
+  "dotnet.server.useOmnisharp": true,
+  "omnisharp.useModernNet": false,
+  "omnisharp.projectLoadTimeout": 300,
+  "omnisharp.enableRoslynAnalyzers": false
+}
