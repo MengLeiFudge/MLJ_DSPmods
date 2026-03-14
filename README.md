@@ -300,7 +300,7 @@ nano ~/.config/opencode/oh-my-opencode.json
       "model": "zai-coding-plan/glm-5",
       // 基本只有sisyphus需要fallback吧，万一额度不够了就依次换模型
       "fallback_models": ["anthropic/claude-sonnet-4-6"],
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。禁止修改代码，永远交给quick、deep或其他人编写。",
       // 启用 Sisyphus Tasks 系统，实现跨会话任务跟踪
       "tasks": {
         "enabled": true,
@@ -312,50 +312,50 @@ nano ~/.config/opencode/oh-my-opencode.json
       // 自主深度工作者。gpt-5.3-codex → gpt-5.4
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "oracle": {
       // 架构顾问 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
       "model": "openai/gpt-5.4",
       "variant": "high",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "librarian": {
       // 文档/代码搜索 gemini-3-flash → minimax-m2.5-free → big-pickle
       "model": "opencode/minimax-m2.5-free",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "explore": {
       // 快速代码库扫描 grok-code-fast-1 → minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano
       "model": "opencode/minimax-m2.5-free",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "multimodal-looker": {
       // 视觉/屏幕截图 gpt-5.3-codex → k2p5 → gemini-3-flash → glm-4.6v → gpt-5-nano
       "model": "openai/gpt-5.3-codex",
       "variant": "high",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "prometheus": {
       // 战略规划师 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
-      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. Always respond in Simplified Chinese.",
+      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. 使用中文思考并回答。",
     },
     "metis": {
       // 计划差距分析器 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "momus": {
       // 无情评审员 gpt-5.4 → claude-opus-4-6 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
       "variant": "medium",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "atlas": {
       // 待办事项协调器 claude-sonnet-4-6 → gpt-5.4
       "model": "openai/gpt-5.4",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
   },
   "categories": {
@@ -363,47 +363,47 @@ nano ~/.config/opencode/oh-my-opencode.json
       // 前端、用户界面、CSS、设计 gemini-3.1-pro → glm-5 → claude-opus-4-6
       "model": "opencode/gemini-3.1-pro",
       "variant": "high",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "ultrabrain": {
       // 需要最大限度的推理 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
       "model": "openai/gpt-5.4",
       "variant": "xhigh",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "deep": {
       // 深度编码，复杂逻辑 gpt-5.3-codex → claude-opus-4-6 → gemini-3.1-pro
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "artistry": {
       // 富有创意、新颖的方法 gemini-3.1-pro → claude-opus-4-6 → gpt-5.4
       "model": "opencode/gemini-3.1-pro",
       "variant": "high",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "quick": {
       // 简单、快速的任务 claude-haiku-4-5 → gemini-3-flash → gpt-5-nano
-      "model": "openai/codex-mini-latest",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "model": "openai/gpt-5.1-codex-mini",
+      "prompt_append": "使用中文思考并回答。",
     },
     "unspecified-low": {
       // 一般标准工作 claude-sonnet-4-6 → gpt-5.3-codex → gemini-3-flash
       "model": "openai/gpt-5.3-codex",
       "variant": "medium",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "unspecified-high": {
       // 一般复杂工作 claude-opus-4-6 → gpt-5.4 (high) → glm-5 → k2p5 → kimi-k2.5
       "model": "openai/gpt-5.4",
       "variant": "high",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
     "writing": {
       // 文本、文档、散文 gemini-3-flash → claude-sonnet-4-6
       "model": "opencode/gemini-3-flash",
-      "prompt_append": "Always respond in Simplified Chinese.",
+      "prompt_append": "使用中文思考并回答。",
     },
   },
   // 允许 API 出错时自动切换到备用模型
