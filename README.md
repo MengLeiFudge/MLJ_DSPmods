@@ -298,15 +298,8 @@ nano ~/.config/opencode/oh-my-opencode.json
     "sisyphus": {
       // 主要协调人 claude-opus-4-6 → glm-5 → big-pickle
       "model": "zai-coding-plan/glm-5",
-      // 基本只有sisyphus需要fallback吧，万一额度不够了就依次换模型
-      "fallback_models": ["anthropic/claude-sonnet-4-6"],
+      "fallback_models": ["anthropic/claude-sonnet-4-6", "opencode/claude-sonnet-4-6"],
       "prompt_append": "使用中文思考并回答。禁止修改代码，永远交给quick、deep或其他人编写。",
-      // 启用 Sisyphus Tasks 系统，实现跨会话任务跟踪
-      "tasks": {
-        "enabled": true,
-        "storage_path": ".sisyphus/tasks",
-        "claude_code_compat": false
-      },
     },
     "hephaestus": {
       // 自主深度工作者。gpt-5.3-codex → gpt-5.4
@@ -361,8 +354,9 @@ nano ~/.config/opencode/oh-my-opencode.json
   "categories": {
     "visual-engineering": {
       // 前端、用户界面、CSS、设计 gemini-3.1-pro → glm-5 → claude-opus-4-6
-      "model": "opencode/gemini-3.1-pro",
+      "model": "google/antigravity-gemini-3.1-pro",
       "variant": "high",
+      "fallback_models": ["opencode/gemini-3.1-pro", "zai-coding-plan/glm-5"],
       "prompt_append": "使用中文思考并回答。",
     },
     "ultrabrain": {
@@ -379,8 +373,9 @@ nano ~/.config/opencode/oh-my-opencode.json
     },
     "artistry": {
       // 富有创意、新颖的方法 gemini-3.1-pro → claude-opus-4-6 → gpt-5.4
-      "model": "opencode/gemini-3.1-pro",
+      "model": "google/antigravity-gemini-3.1-pro",
       "variant": "high",
+      "fallback_models": ["opencode/gemini-3.1-pro", "openai/gpt-5.4"],
       "prompt_append": "使用中文思考并回答。",
     },
     "quick": {
@@ -402,8 +397,16 @@ nano ~/.config/opencode/oh-my-opencode.json
     },
     "writing": {
       // 文本、文档、散文 gemini-3-flash → claude-sonnet-4-6
-      "model": "opencode/gemini-3-flash",
+      "model": "google/antigravity-gemini-3-flash",
+      "fallback_models": ["opencode/gemini-3-flash"],
       "prompt_append": "使用中文思考并回答。",
+    },
+  },
+  // 启用 Sisyphus Tasks 系统，实现跨会话任务跟踪
+  "sisyphus": {
+    "tasks": {
+      "storage_path": ".sisyphus/tasks",
+      "claude_code_compat": false
     },
   },
   // 允许 API 出错时自动切换到备用模型
