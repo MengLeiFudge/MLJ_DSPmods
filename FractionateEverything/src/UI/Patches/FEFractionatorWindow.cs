@@ -38,6 +38,12 @@ public static class FEFractionatorWindow {
     private static UIFractionatorWindow modWindow;
     private static UIFractionatorWindow sourceWindow;
     private static bool slotClickBound;
+    private static RectTransform modRootRect;
+    private static RectTransform[] resizableRects;
+    private static Vector2[] resizableRectBaseSizes;
+    private static Vector2 rootBaseSize;
+    private static float currentAddWidth = -1f;
+    private static readonly Dictionary<int, float> widthByFractionatorId = [];
 
     // ===== 中间区域UI组件 =====
 
@@ -45,16 +51,19 @@ public static class FEFractionatorWindow {
     private const float MainY = -80;
     private static Text _mainArrowText;
     private static Image[] _mainArrows;
+    private static GameObject _mainArrowParent;
     private static readonly ProductSlot[] mainSlots = new ProductSlot[MaxMainSlots];
     // 副产物
     private const float SideY = -160;
     private static Text _sideArrowText;
     private static Image[] _sideArrows;
+    private static GameObject _sideArrowParent;
     private static readonly ProductSlot[] sideSlots = new ProductSlot[MaxSideSlots];
     // 流动输出
     private const float FluidY = -240;
     private static Text _fluidArrowText;
     private static Image[] _fluidArrows;
+    private static GameObject _fluidArrowParent;
     private static ProductSlot fluidSlot;
     private static Text fluidRightText;
 
@@ -65,7 +74,6 @@ public static class FEFractionatorWindow {
     private static Vector3 _speedArrowParentLocalPos;
     private static float _areaHeight;
     private static float _layoutOffsetX;
-    private static float _layoutOffsetY;
 
     private static string GetRelativePath(Transform root, Transform target) {
         if (root == null || target == null) return null;
@@ -140,7 +148,7 @@ public static class FEFractionatorWindow {
     }
 
     private static void UnbindSlotClickHandlers() {
-        if (slotClickBound) {
+        if (!slotClickBound) {
             return;
         }
         foreach (var slot in mainSlots) {
@@ -177,6 +185,7 @@ public static class FEFractionatorWindow {
 
         // 复制前记录原版 localPosition
         _itemBoxLocalPos = __instance.productBox.transform.localPosition;
+        _oriBoxLocalPos = __instance.oriProductBox.transform.localPosition;
         _speedArrowParentLocalPos = __instance.speedArrows[0].transform.parent.localPosition;
 
         // 复制窗口
@@ -192,7 +201,8 @@ public static class FEFractionatorWindow {
     }
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
-        ResizeWindow(window);
+        InitializeWindowResizeContext(window);
+        ApplyWindowSizeKeepingTopLeft(AddWidth);
 
         // 隐藏原版中间区域的全部内容，新的中间区域全使用复制的UI
         // 隐藏概率文字
@@ -216,26 +226,26 @@ public static class FEFractionatorWindow {
         // 复制箭头、箭头上方文字，1、2、3区域各一份
         GameObject vanillaArrowParent = vanillaWindow.speedArrows[0].transform.parent.gameObject;
 
-        GameObject mainArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
-        mainArrowParent.name = "produce-main";
-        mainArrowParent.transform.localPosition = new Vector3(
+        _mainArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
+        _mainArrowParent.name = "produce-main";
+        _mainArrowParent.transform.localPosition = new Vector3(
             _speedArrowParentLocalPos.x + _layoutOffsetX, MainY - 8, _speedArrowParentLocalPos.z);
-        _mainArrows = CloneArrowImagesOrdered(vanillaArrowParent, mainArrowParent, vanillaWindow);
-        _mainArrowText = CloneArrowText(vanillaArrowParent, mainArrowParent, vanillaWindow);
+        _mainArrows = CloneArrowImagesOrdered(vanillaArrowParent, _mainArrowParent, vanillaWindow);
+        _mainArrowText = CloneArrowText(vanillaArrowParent, _mainArrowParent, vanillaWindow);
 
-        GameObject sideArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
-        sideArrowParent.name = "produce-side";
-        sideArrowParent.transform.localPosition = new Vector3(
+        _sideArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
+        _sideArrowParent.name = "produce-side";
+        _sideArrowParent.transform.localPosition = new Vector3(
             _speedArrowParentLocalPos.x + _layoutOffsetX, SideY - 8, _speedArrowParentLocalPos.z);
-        _sideArrows = CloneArrowImagesOrdered(vanillaArrowParent, sideArrowParent, vanillaWindow);
-        _sideArrowText = CloneArrowText(vanillaArrowParent, sideArrowParent, vanillaWindow);
+        _sideArrows = CloneArrowImagesOrdered(vanillaArrowParent, _sideArrowParent, vanillaWindow);
+        _sideArrowText = CloneArrowText(vanillaArrowParent, _sideArrowParent, vanillaWindow);
 
-        GameObject fluidArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
-        fluidArrowParent.name = "produce-fluid";
-        fluidArrowParent.transform.localPosition = new Vector3(
+        _fluidArrowParent = Object.Instantiate(vanillaArrowParent, window.transform);
+        _fluidArrowParent.name = "produce-fluid";
+        _fluidArrowParent.transform.localPosition = new Vector3(
             _speedArrowParentLocalPos.x + _layoutOffsetX, FluidY - 8, _speedArrowParentLocalPos.z);
-        _fluidArrows = CloneArrowImagesOrdered(vanillaArrowParent, fluidArrowParent, vanillaWindow);
-        _fluidArrowText = CloneArrowText(vanillaArrowParent, fluidArrowParent, vanillaWindow);
+        _fluidArrows = CloneArrowImagesOrdered(vanillaArrowParent, _fluidArrowParent, vanillaWindow);
+        _fluidArrowText = CloneArrowText(vanillaArrowParent, _fluidArrowParent, vanillaWindow);
 
         // 复制主产物槽、副产物槽、流动输出槽
         for (int i = 0; i < MaxMainSlots; i++) {
@@ -268,7 +278,7 @@ public static class FEFractionatorWindow {
         if (window.oriProductProbText != null) {
             GameObject frGo = Object.Instantiate(window.oriProductProbText.gameObject, window.transform);
             frGo.name = "fluid-right-info";
-            frGo.transform.localPosition = new Vector3(_oriBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _oriBoxLocalPos.z);
+            frGo.transform.localPosition = new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
             fluidRightText = frGo.GetComponent<Text>();
             fluidRightText.alignment = TextAnchor.UpperLeft;
             fluidRightText.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -278,24 +288,120 @@ public static class FEFractionatorWindow {
         }
     }
 
-    private static void ResizeWindow(UIFractionatorWindow window) {
-        RectTransform rootRect = window.GetComponent<RectTransform>();
-        if (rootRect == null) return;
+    private static void InitializeWindowResizeContext(UIFractionatorWindow window) {
+        modRootRect = window.GetComponent<RectTransform>();
+        if (modRootRect == null) {
+            return;
+        }
 
-        Vector2 rootSize = rootRect.sizeDelta;
-        _layoutOffsetX = -AddWidth * 0.5f;
-        _layoutOffsetY = -AddHeight * 0.5f;
-
-        rootRect.sizeDelta = new Vector2(rootSize.x + AddWidth, rootSize.y + AddHeight);
+        rootBaseSize = modRootRect.sizeDelta;
+        List<RectTransform> resizable = [];
+        List<Vector2> baseSizes = [];
 
         RectTransform[] rects = window.GetComponentsInChildren<RectTransform>(true);
         for (int i = 0; i < rects.Length; i++) {
             RectTransform rect = rects[i];
-            if (rect == null || rect == rootRect) continue;
-            Vector2 size = rect.sizeDelta;
-            if (Mathf.Abs(size.x - rootSize.x) < 0.01f && Mathf.Abs(size.y - rootSize.y) < 0.01f) {
-                rect.sizeDelta = new Vector2(size.x + AddWidth, size.y + AddHeight);
+            if (rect == null || rect == modRootRect) {
+                continue;
             }
+
+            Vector2 size = rect.sizeDelta;
+            if (Mathf.Abs(size.x - rootBaseSize.x) < 0.01f && Mathf.Abs(size.y - rootBaseSize.y) < 0.01f) {
+                resizable.Add(rect);
+                baseSizes.Add(size);
+            }
+        }
+
+        resizableRects = resizable.ToArray();
+        resizableRectBaseSizes = baseSizes.ToArray();
+    }
+
+    private static Vector3 GetTopLeftWorld(RectTransform rect) {
+        Vector3[] corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        return corners[1];
+    }
+
+    private static void AlignTopLeft(RectTransform target, RectTransform reference) {
+        if (target == null || reference == null) {
+            return;
+        }
+
+        Vector3 refTopLeft = GetTopLeftWorld(reference);
+        Vector3 targetTopLeft = GetTopLeftWorld(target);
+        Vector3 delta = refTopLeft - targetTopLeft;
+        target.position += delta;
+    }
+
+    private static void ApplyWindowSizeKeepingTopLeft(float addWidth) {
+        if (modRootRect == null) {
+            return;
+        }
+
+        if (Mathf.Abs(currentAddWidth - addWidth) < 0.01f) {
+            return;
+        }
+
+        Vector3 oldTopLeft = GetTopLeftWorld(modRootRect);
+
+        Vector2 targetRootSize = new(rootBaseSize.x + addWidth, rootBaseSize.y + AddHeight);
+        modRootRect.sizeDelta = targetRootSize;
+
+        if (resizableRects != null && resizableRectBaseSizes != null) {
+            int count = Math.Min(resizableRects.Length, resizableRectBaseSizes.Length);
+            for (int i = 0; i < count; i++) {
+                RectTransform rect = resizableRects[i];
+                if (rect == null) {
+                    continue;
+                }
+                Vector2 baseSize = resizableRectBaseSizes[i];
+                rect.sizeDelta = new Vector2(baseSize.x + addWidth, baseSize.y + AddHeight);
+            }
+        }
+
+        Vector3 newTopLeft = GetTopLeftWorld(modRootRect);
+        Vector3 delta = oldTopLeft - newTopLeft;
+        modRootRect.position += delta;
+
+        _layoutOffsetX = -addWidth * 0.5f;
+        currentAddWidth = addWidth;
+
+        RefreshLayoutX();
+    }
+
+    private static void RefreshLayoutX() {
+        if (_mainArrowParent != null) {
+            _mainArrowParent.transform.localPosition = new Vector3(
+                _speedArrowParentLocalPos.x + _layoutOffsetX, MainY - 8, _speedArrowParentLocalPos.z);
+        }
+        if (_sideArrowParent != null) {
+            _sideArrowParent.transform.localPosition = new Vector3(
+                _speedArrowParentLocalPos.x + _layoutOffsetX, SideY - 8, _speedArrowParentLocalPos.z);
+        }
+        if (_fluidArrowParent != null) {
+            _fluidArrowParent.transform.localPosition = new Vector3(
+                _speedArrowParentLocalPos.x + _layoutOffsetX, FluidY - 8, _speedArrowParentLocalPos.z);
+        }
+
+        for (int i = 0; i < MaxMainSlots; i++) {
+            if (mainSlots[i]?.go != null) {
+                mainSlots[i].go.transform.localPosition = new Vector3(
+                    _itemBoxLocalPos.x + _layoutOffsetX + i * SlotSpacing, MainY, _itemBoxLocalPos.z);
+            }
+        }
+        for (int i = 0; i < MaxSideSlots; i++) {
+            if (sideSlots[i]?.go != null) {
+                sideSlots[i].go.transform.localPosition = new Vector3(
+                    _itemBoxLocalPos.x + _layoutOffsetX + i * SlotSpacing, SideY, _itemBoxLocalPos.z);
+            }
+        }
+        if (fluidSlot?.go != null) {
+            fluidSlot.go.transform.localPosition = new Vector3(
+                _itemBoxLocalPos.x + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
+        }
+        if (fluidRightText != null) {
+            fluidRightText.transform.localPosition = new Vector3(
+                _itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
         }
     }
 
@@ -378,9 +484,15 @@ public static class FEFractionatorWindow {
     public static void OnWindowOpen(UIFractionatorWindow __instance) {
         if (__instance == modWindow) return;// modWindow 自己不处理
 
+        RectTransform sourceRect = __instance.GetComponent<RectTransform>();
+
         // factory 由原版 _OnOpen 设置
         PlanetFactory factory = __instance.factory;
         if (!IsModFractionator(__instance.fractionatorId, factory)) {
+            if (modWindowGo != null && modWindowGo.activeSelf && sourceRect != null && modRootRect != null) {
+                AlignTopLeft(sourceRect, modRootRect);
+            }
+
             UnbindSlotClickHandlers();
             if (modWindowGo != null && modWindowGo.activeSelf) {
                 modWindowGo.SetActive(false);
@@ -395,6 +507,10 @@ public static class FEFractionatorWindow {
         }
 
         // 模组建筑：
+        if (sourceRect != null && modRootRect != null) {
+            AlignTopLeft(modRootRect, sourceRect);
+        }
+
         // 1. 隐藏 originalWindow 但保持 active=true，让游戏继续驱动其 _Update
         __instance.gameObject.SetActive(false);
         __instance.unsafeGameObjectState = true;
@@ -471,8 +587,18 @@ public static class FEFractionatorWindow {
 
         if (modWindowGo == null) return true;
 
+        RectTransform sourceRect = __instance.GetComponent<RectTransform>();
+
         bool isModBuilding = IsModFractionator(__instance.fractionatorId, __instance.factory);
         if (isModBuilding) {
+            bool enteringModView = !modWindowGo.activeSelf;
+            if (sourceRect != null && modRootRect != null) {
+                if (enteringModView) {
+                    AlignTopLeft(modRootRect, sourceRect);
+                } else {
+                    AlignTopLeft(sourceRect, modRootRect);
+                }
+            }
             sourceWindow = __instance;
             __instance.unsafeGameObjectState = true;
             if (__instance.gameObject.activeSelf) {
@@ -488,6 +614,9 @@ public static class FEFractionatorWindow {
         }
 
         if (modWindowGo.activeSelf) {
+            if (sourceRect != null && modRootRect != null) {
+                AlignTopLeft(sourceRect, modRootRect);
+            }
             modWindowGo.SetActive(false);
         }
         if (modWindow != null) modWindow.active = false;
@@ -695,7 +824,11 @@ public static class FEFractionatorWindow {
                 slot.go.SetActive(false);
         if (fluidSlot != null) fluidSlot.go.SetActive(false);
 
+        int fractionatorId = src.fractionatorId;
+        bool hasCachedWidth = widthByFractionatorId.TryGetValue(fractionatorId, out float cachedWidth);
+
         if (!hasFluid) {
+            ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f);
             if (_mainArrowText != null) _mainArrowText.gameObject.SetActive(false);
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
             if (_fluidArrowText != null) _fluidArrowText.gameObject.SetActive(false);
@@ -734,6 +867,15 @@ public static class FEFractionatorWindow {
                 sideCount++;
             }
         }
+
+        int visibleSlotCount = Mathf.Max(mainCount, sideCount);
+        float targetAddWidth = Mathf.Max(0, visibleSlotCount - 1) * SlotSpacing;
+        if (visibleSlotCount > 0) {
+            widthByFractionatorId[fractionatorId] = targetAddWidth;
+        } else if (hasCachedWidth) {
+            targetAddWidth = cachedWidth;
+        }
+        ApplyWindowSizeKeepingTopLeft(targetAddWidth);
 
         if (_mainArrowText != null) {
             _mainArrowText.gameObject.SetActive(mainCount > 0);
