@@ -1,0 +1,22 @@
+{
+  "msbuild": {
+    "loadProjectsOnDemand": true,
+    "enablePackageAutoRestore": false
+  },
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/bin/**/*",
+      "**/obj/**/*",
+      "**/.vs/**/*",
+      "**/packages/**/*",
+      "**/Temp/**/*",
+      "**/gamedata/**/*"
+    ]
+  },
+  "RoslynExtensionsOptions": {
+    "EnableAnalyzersSupport": false,
+    "EnableImportCompletion": false,
+    "EnableDecompilationSupport": false,
+    "DiagnosticWorkersThreadCount": 1
+  }
+}
