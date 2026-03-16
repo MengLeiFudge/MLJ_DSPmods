@@ -224,7 +224,7 @@ public static class FEFractionatorWindow {
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
         InitializeWindowResizeContext(window);
-        ApplyWindowSizeKeepingTopLeft(AddWidth);
+        ApplyWindowSizeKeepingTopLeft(AddWidth, AddHeight);
 
         // 隐藏原版中间区域的全部内容，新的中间区域全使用复制的UI
         // 隐藏概率文字
@@ -296,7 +296,7 @@ public static class FEFractionatorWindow {
         //     (SideY + FluidY) / 2,
         //     window.sepLine1.transform.localPosition.z);
         
-        // 流动输出右侧的提示文字，包括配方强化等级、成功损毁率
+        // 流动输出右侧的提示文字，包括配方强化等级、损毁率
         if (window.oriProductProbText != null) {
             GameObject frGo = Object.Instantiate(window.oriProductProbText.gameObject, window.transform);
             frGo.name = "fluid-right-info";
@@ -306,6 +306,7 @@ public static class FEFractionatorWindow {
             fluidRightText.horizontalOverflow = HorizontalWrapMode.Overflow;
             fluidRightText.verticalOverflow = VerticalWrapMode.Overflow;
             fluidRightText.supportRichText = true;
+            fluidRightText.fontSize = 14;
             frGo.SetActive(false);
         }
     }
@@ -355,18 +356,20 @@ public static class FEFractionatorWindow {
         target.position += delta;
     }
 
-    private static void ApplyWindowSizeKeepingTopLeft(float addWidth) {
+    private static float currentAddHeight = -1f;
+
+    private static void ApplyWindowSizeKeepingTopLeft(float addWidth, float addHeight) {
         if (modRootRect == null) {
             return;
         }
 
-        if (Mathf.Abs(currentAddWidth - addWidth) < 0.01f) {
+        if (Mathf.Abs(currentAddWidth - addWidth) < 0.01f && Mathf.Abs(currentAddHeight - addHeight) < 0.01f) {
             return;
         }
 
         Vector3 oldTopLeft = GetTopLeftWorld(modRootRect);
 
-        Vector2 targetRootSize = new(rootBaseSize.x + addWidth, rootBaseSize.y + AddHeight);
+        Vector2 targetRootSize = new(rootBaseSize.x + addWidth, rootBaseSize.y + addHeight);
         modRootRect.sizeDelta = targetRootSize;
 
         if (resizableRects != null && resizableRectBaseSizes != null) {
@@ -377,7 +380,7 @@ public static class FEFractionatorWindow {
                     continue;
                 }
                 Vector2 baseSize = resizableRectBaseSizes[i];
-                rect.sizeDelta = new Vector2(baseSize.x + addWidth, baseSize.y + AddHeight);
+                rect.sizeDelta = new Vector2(baseSize.x + addWidth, baseSize.y + addHeight);
             }
         }
 
@@ -387,11 +390,14 @@ public static class FEFractionatorWindow {
 
         _layoutOffsetX = -addWidth * 0.5f;
         currentAddWidth = addWidth;
-
-        RefreshLayoutX();
+        currentAddHeight = addHeight;
     }
 
     private static void RefreshLayoutX() {
+        RefreshLayoutX(FluidY);
+    }
+
+    private static void RefreshLayoutX(float fluidY) {
         if (_mainArrowParent != null) {
             _mainArrowParent.transform.localPosition = new Vector3(
                 _speedArrowParentLocalPos.x + _layoutOffsetX, MainY - 8, _speedArrowParentLocalPos.z);
@@ -402,7 +408,7 @@ public static class FEFractionatorWindow {
         }
         if (_fluidArrowParent != null) {
             _fluidArrowParent.transform.localPosition = new Vector3(
-                _speedArrowParentLocalPos.x + _layoutOffsetX, FluidY - 8, _speedArrowParentLocalPos.z);
+                _speedArrowParentLocalPos.x + _layoutOffsetX, fluidY - 8, _speedArrowParentLocalPos.z);
         }
 
         for (int i = 0; i < MaxMainSlots; i++) {
@@ -419,11 +425,11 @@ public static class FEFractionatorWindow {
         }
         if (fluidSlot?.go != null) {
             fluidSlot.go.transform.localPosition = new Vector3(
-                _itemBoxLocalPos.x + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
+                    _itemBoxLocalPos.x + _layoutOffsetX, fluidY, _itemBoxLocalPos.z);
         }
         if (fluidRightText != null) {
             fluidRightText.transform.localPosition = new Vector3(
-                _itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
+                _itemBoxLocalPos.x + 80f + _layoutOffsetX, fluidY, _itemBoxLocalPos.z);
         }
     }
 
@@ -882,7 +888,7 @@ public static class FEFractionatorWindow {
         bool hasCachedWidth = widthByFractionatorId.TryGetValue(fractionatorId, out float cachedWidth);
 
         if (!hasFluid) {
-            ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f);
+            ApplyWindowSizeKeepingTopLeft(hasCachedWidth ? cachedWidth : 0f, AddHeight);
             if (_mainArrowText != null) _mainArrowText.gameObject.SetActive(false);
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
             if (_fluidArrowText != null) _fluidArrowText.gameObject.SetActive(false);
@@ -922,15 +928,6 @@ public static class FEFractionatorWindow {
             }
         }
 
-        int visibleSlotCount = Mathf.Max(mainCount, sideCount);
-        float targetAddWidth = Mathf.Max(0, visibleSlotCount - 1) * SlotSpacing;
-        if (visibleSlotCount > 0) {
-            widthByFractionatorId[fractionatorId] = targetAddWidth;
-        } else if (hasCachedWidth) {
-            targetAddWidth = cachedWidth;
-        }
-        ApplyWindowSizeKeepingTopLeft(targetAddWidth);
-
         if (_mainArrowText != null) {
             _mainArrowText.gameObject.SetActive(mainCount > 0);
             _mainArrowText.text = "主产物".Translate();
@@ -951,17 +948,36 @@ public static class FEFractionatorWindow {
         // 流体输出右侧信息
         if (fluidRightText != null) {
             fluidRightText.gameObject.SetActive(true);
-            int recipeLevel = recipe?.Level ?? 0;
-            string flowStr = recipe != null && !recipe.Locked
-                ? (1f - recipeSuccessRatio - destroyRatio).FormatP()
-                : "---";
-            string destroyStr = recipe != null && !recipe.Locked
-                ? destroyRatio.FormatP()
-                : "---";
-            fluidRightText.text =
-                $"{"配方强化".Translate()} {(recipeLevel > 0 ? $"+{recipeLevel}" : "0")}\n"
-                + $"{flowStr}  <color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>";
+            if (recipe == null) {
+                fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方不存在".Translate()}</color>";
+            } else if (recipe.Locked) {
+                fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
+            } else {
+                int recipeLevel = recipe.Level;
+                bool hasDestroy = destroyRatio > 0f;
+                string destroyStr = hasDestroy ? destroyRatio.FormatP() : "";
+                fluidRightText.text = recipeLevel > 0
+                    ? $"{"配方强化".Translate()} +{recipeLevel}\n<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>"
+                    : (hasDestroy ? $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>" : "");
+            }
         }
+
+        // 动态布局： 无副产物时流动输出上移， 窗口高度缩小
+        bool hasSideProducts = sideCount > 0;
+        float fluidY = hasSideProducts ? FluidY : SideY;
+        float actualAddHeight = hasSideProducts ? AddHeight : AddHeight - 60f;
+
+        int visibleSlotCount = Mathf.Max(mainCount, sideCount);
+        float targetAddWidth = Mathf.Max(0, visibleSlotCount - 1) * SlotSpacing;
+
+        if (visibleSlotCount > 0) {
+            widthByFractionatorId[fractionatorId] = targetAddWidth;
+        } else if (hasCachedWidth) {
+            targetAddWidth = cachedWidth;
+        }
+
+        ApplyWindowSizeKeepingTopLeft(targetAddWidth, actualAddHeight);
+        RefreshLayoutX(fluidY);
 
         if (fractionator.fluidId > 0) {
             float fluidRatio = Mathf.Clamp01(1f - mainSuccessSum);
