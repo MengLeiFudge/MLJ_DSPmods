@@ -46,6 +46,10 @@ public static class FEFractionatorWindow {
     private static float currentAddWidth = -1f;
     private static readonly Dictionary<int, float> widthByFractionatorId = [];
 
+    // 通过路径查找缓存的模组窗口共享组件（比依赖 Instantiate 自动映射更可靠）
+    private static Text _modPowerText;
+    private static Image _modPowerIcon;
+
     // ===== 中间区域UI组件 =====
 
     // 主产物
@@ -117,6 +121,15 @@ public static class FEFractionatorWindow {
         }
         Text[] texts = cloneParent.GetComponentsInChildren<Text>(true);
         return texts.FirstOrDefault();
+    }
+
+    private static T FindClonedComponent<T>(Transform cloneRoot, Component original, Transform originalRoot)
+        where T : Component {
+        if (original == null) return null;
+        string path = GetRelativePath(originalRoot, original.transform);
+        if (path == null) return null;
+        Transform found = path.Length == 0 ? cloneRoot : cloneRoot.Find(path);
+        return found != null ? found.GetComponent<T>() : null;
     }
 
     private class ProductSlot {
@@ -197,8 +210,16 @@ public static class FEFractionatorWindow {
         // 一次性修改布局
         ApplyModLayoutOnce(modWindow, __instance);
 
+        // 缓存共享组件引用（通过路径查找，比 Instantiate 自动映射更可靠)
+        CacheSharedComponents(__instance);
+
         // 确保初始隐藏
         modWindowGo.SetActive(false);
+    }
+
+    private static void CacheSharedComponents(UIFractionatorWindow vanillaWindow) {
+        _modPowerText = FindClonedComponent<Text>(modWindowGo.transform, vanillaWindow.powerText, vanillaWindow.transform);
+        _modPowerIcon = FindClonedComponent<Image>(modWindowGo.transform, vanillaWindow.powerIcon, vanillaWindow.transform);
     }
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
@@ -802,28 +823,32 @@ public static class FEFractionatorWindow {
 
     private static void UpdatePowerDisplay(UIFractionatorWindow src,
         PowerConsumerComponent powerConsumer, float consumerRatio) {
-        if (modWindow.powerText == null || modWindow.powerIcon == null) {
-            return;
-        }
-
         src.powerServedSB ??= new StringBuilder("         W     %", 20);
 
-        long powerPerMin = (long)((double)(powerConsumer.requiredEnergy * 60) * consumerRatio + 0.5);
+        long powerPerMin = (long)((double)(powerConsumer.requiredEnergy * 60) * (double)consumerRatio + 0.5);
         StringBuilderUtility.WriteKMG(src.powerServedSB, 8, powerPerMin);
         StringBuilderUtility.WriteUInt(src.powerServedSB, 12, 3, (uint)(consumerRatio * 100f));
 
         if (consumerRatio == 1f) {
-            modWindow.powerText.text = src.powerServedSB.ToString();
-            modWindow.powerIcon.color = modWindow.powerNormalIconColor;
-            modWindow.powerText.color = modWindow.powerNormalColor;
+            src.powerText.text = src.powerServedSB.ToString();
+            src.powerIcon.color = src.powerNormalIconColor;
+            src.powerText.color = src.powerNormalColor;
         } else if (consumerRatio > 0.1f) {
-            modWindow.powerText.text = src.powerServedSB.ToString();
-            modWindow.powerIcon.color = modWindow.powerLowIconColor;
-            modWindow.powerText.color = modWindow.powerLowColor;
+            src.powerText.text = src.powerServedSB.ToString();
+            src.powerIcon.color = src.powerLowIconColor;
+            src.powerText.color = src.powerLowColor;
         } else {
-            modWindow.powerText.text = "未供电".Translate();
-            modWindow.powerIcon.color = Color.clear;
-            modWindow.powerText.color = modWindow.powerOffColor;
+            src.powerText.text = "未供电".Translate();
+            src.powerIcon.color = Color.clear;
+            src.powerText.color = src.powerOffColor;
+        }
+
+        if (_modPowerText != null) {
+            _modPowerText.text = src.powerText.text;
+            _modPowerText.color = src.powerText.color;
+        }
+        if (_modPowerIcon != null) {
+            _modPowerIcon.color = src.powerIcon.color;
         }
     }
 
