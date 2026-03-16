@@ -1,1 +1,0 @@
-25:			fluidInputInc -= PointAggregateTower.EnableDoublePoints ? PointAggregateTower.MaxInc / 2 : PointAggregateTower.MaxInc;
