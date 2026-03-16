@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using HarmonyLib;
@@ -656,6 +657,7 @@ public static class FEFractionatorWindow {
         int networkId = powerConsumer.networkId;
         PowerNetwork powerNetwork = src.powerSystem.netPool[networkId];
         float consumerRatio = powerNetwork != null && networkId > 0 ? (float)powerNetwork.consumerRatio : 0f;
+        UpdatePowerDisplay(src, powerConsumer, consumerRatio);
 
         // 输入侧
         if (hasFluid) {
@@ -795,6 +797,33 @@ public static class FEFractionatorWindow {
                 modWindow.stateText.text = "搬运模式".Translate();
                 modWindow.stateText.color = modWindow.workStoppedColor;
             }
+        }
+    }
+
+    private static void UpdatePowerDisplay(UIFractionatorWindow src,
+        PowerConsumerComponent powerConsumer, float consumerRatio) {
+        if (modWindow.powerText == null || modWindow.powerIcon == null) {
+            return;
+        }
+
+        src.powerServedSB ??= new StringBuilder("         W     %", 20);
+
+        long powerPerMin = (long)((double)(powerConsumer.requiredEnergy * 60) * consumerRatio + 0.5);
+        StringBuilderUtility.WriteKMG(src.powerServedSB, 8, powerPerMin);
+        StringBuilderUtility.WriteUInt(src.powerServedSB, 12, 3, (uint)(consumerRatio * 100f));
+
+        if (consumerRatio == 1f) {
+            modWindow.powerText.text = src.powerServedSB.ToString();
+            modWindow.powerIcon.color = modWindow.powerNormalIconColor;
+            modWindow.powerText.color = modWindow.powerNormalColor;
+        } else if (consumerRatio > 0.1f) {
+            modWindow.powerText.text = src.powerServedSB.ToString();
+            modWindow.powerIcon.color = modWindow.powerLowIconColor;
+            modWindow.powerText.color = modWindow.powerLowColor;
+        } else {
+            modWindow.powerText.text = "未供电".Translate();
+            modWindow.powerIcon.color = Color.clear;
+            modWindow.powerText.color = modWindow.powerOffColor;
         }
     }
 
