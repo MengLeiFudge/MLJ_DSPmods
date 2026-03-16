@@ -23,7 +23,6 @@
 新增/调整以下文件：
 
 - `omnisharp.json`
-- `.vscode/settings.json`
 
 #### `omnisharp.json`（当前生效版本）
 
@@ -53,17 +52,6 @@
 ```
 
 > 注：本项目额外排除了 `gamedata/` 目录（包含大量反编译源码），以减少索引开销。
-
-#### `.vscode/settings.json`（当前生效版本）
-
-```json
-{
-  "dotnet.server.useOmnisharp": true,
-  "omnisharp.useModernNet": false,
-  "omnisharp.projectLoadTimeout": 300,
-  "omnisharp.enableRoslynAnalyzers": false
-}
-```
 
 ### 3.2 启动器修复（环境级）
 
@@ -105,7 +93,6 @@
 确认以下文件存在且为有效 JSON：
 
 - `omnisharp.json`
-- `.vscode/settings.json`
 
 判定标准：
 

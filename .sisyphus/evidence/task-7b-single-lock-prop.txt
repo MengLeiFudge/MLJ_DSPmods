@@ -1,1 +1,0 @@
-    public static bool EnableSingleLock => Level >= 12;

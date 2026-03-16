@@ -1,2 +1,0 @@
-356:                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);
-446:                            int targetStack = Mathf.Clamp(Mathf.CeilToInt(fluidInputCountPerCargo), 4, 20);

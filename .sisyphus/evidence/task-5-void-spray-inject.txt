@@ -1,2 +1,0 @@
-267:            // C5: 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
-269:                && PointAggregateTower.EnableVoidSpray

@@ -85,9 +85,9 @@ mod manager.
       ，也可以在[星际放映厅](https://www.naifeistation.com/)买成品号。
 
 - Google（Gemini）
-    - 订阅：[Google One AI订阅](https://one.google.com/)
+    - 订阅：~~[Google One AI订阅](https://one.google.com/)
       虽然只能在网页用，但是可以用[opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth)
-      实现使用以及多账号使用
+      实现使用以及多账号使用~~经测试发现还是不好用，不推荐
     - 按量：[aistudio.google.com](https://aistudio.google.com/)
         - 生成API-Key后使用，Key只走按量
     - 支付我是没看到合适的，不过[星际放映厅](https://www.naifeistation.com/)也有卖成品号，可以考虑。
@@ -113,14 +113,6 @@ mod manager.
     - 支付可以用国内的卡（无论是国内站还是国际站都行），毕竟也是国产模型。
 
 claude比较贵。而kimi/glm负责流程，gpt负责代码编写的情况下，据说已经超过sonnet了。所以合理选择模型，deepseek也未尝不可。
-
-### 使用说明
-
-先执行 /init-deep 来生成一些 Agents.md，这样后续AI协作更好。
-
-ulw：当你比较懒的时候就用这个
-plan-builder：任务比较复杂就先用这个，只生成计划不执行
-plan-executor：执行builder的任务
 
 ### omo安装说明
 
@@ -210,28 +202,12 @@ wsl bash -ic "opencode --version"
 # 此时应该显示opencode版本号
 ```
 
-### 4.让ai自动安装oh-my-opencode
-
-打开ai智能体，粘贴以下内容（如果没开TUN就不用复制最后一行了）：
-
-```
-请按照此处的说明安装并配置oh-my-opencode：https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/docs/guide/installation.md。
-注意，我是Windows系统，并且已经通过wsl安装了opencode。
-运行wsl bash指令时，你必须使用 `wsl.exe bash -ic` 而非 `wsl bash -lc`。同样的，curl也应该使用 `curl.exe -s xxx` 而非 `curl -s xxx`。
-需要通过apt安装内容时，由于我的代理开启了TUN模式，你必须强制指定使用指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
-```
-
-等待一会，当其询问“你有哪些订阅”的时候，根据实际情况回复即可。
-不要说多余的话！不要说多余的话！不要说多余的话！后面我们会自行调整配置文件的。
-
-继续等待安装完成。
-
-### 5.登录ai账户或者输入API Key
+### 4.登录ai账户或者输入API Key
 
 注：有关opencode的指令，可以运行`opencode --help`来查看。
 
 ```
-# 打开统一设置页面
+# 打开opencode统一设置页面
 opencode auth login
 ```
 
@@ -241,9 +217,32 @@ opencode auth login
 
 一次只能录入一个ai的信息。当你有多个ai，就多执行几次`opencode auth login`，全配置好就行。
 
-### 6.修改oh-my-opencode配置
+### 5.打开opencode，让AI安装oh-my-openagent
 
-在安装的时候，它只问了六个ai。如果想用别的ai怎么办？
+```
+# 打开opencode
+opencode
+```
+
+此时应该显示为build模式，模型建议使用Claude Sonnet。然后发如下消息：
+
+```
+# 安装omo（不需要Proxy）
+Install and configure oh-my-opencode by following the instructions here:
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
+
+# 安装omo（需要Proxy）
+Install and configure oh-my-opencode by following the instructions here:
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
+使用apt相关指令时，必须显式指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
+```
+
+等待一会，当其询问“你有哪些订阅”的时候，根据实际情况回复即可。
+不要说多余的话，后面可以自行调整配置文件。
+
+继续等待安装完成。完成后，ctrl+z退出opencode。重新再进就是omo了，但是在这之前可以先确认一下配置文件。
+
+### 6.修改oh-my-openagent配置
 
 模型指令是`opencode models [provider]`。那么：
 
@@ -265,31 +264,23 @@ zai-coding-plan/glm-5 -> glm5，按订阅付费
 
 注意：如果没有找到对应的ai字符串，很可能是你在第5步中没有配置好对应的ai。
 
-记下对应的字符串后，修改配置：
+记下模型对应的字符串后，就可以调整omo配置了。
+
+上一步已经生成了omo的配置文件，位于`~/.config/opencode/oh-my-opencode.json`。
+
+文件内未配置的部分（例如模型选择），将由omo自行智能选择；如果修改配置、手动指定，omo将会强制按照设定的配置来运行。
 
 ```
-# 打开oh-my-opencode.json
-nano ~/.config/opencode/oh-my-opencode.json
-# ctrl+s保存，ctrl+x退出
+# 直接在win系统打开oh-my-opencode.json
+# 例如 \\wsl.localhost\Ubuntu\home\mlj\.config\opencode\oh-my-opencode.json
 ```
 
-只需在此处修改各个"model"的内容，oh-my-opencode就会在执行对应任务时自动调用相应ai。
-
-注意，nano没法全选删除，但是可以设置标记来剪切。
-
-- 移动到文件头：按下 Alt + \ (或者 Ctrl + Home)。
-- 设置标记起点：按下 Alt + A (此时下方会显示 Mark Set)。
-- 移动到文件尾：按下 Alt + / (或者 Ctrl + End)，此时所有文字会被高亮选中。
-- 删除/剪切选中内容：按下 Ctrl + K。
-
-或者也可以直接`rm ~/.config/opencode/oh-my-opencode.json`，然后再粘贴内容。
-
-下面是我使用的示例，综合考虑了各ai的额度与能力：
-
-这个文件是jsonc格式，也就是可以加注释，不受末尾逗号影响。
+这个文件是jsonc格式，可以加注释，不受末尾逗号影响。
 
 里面的信息可能过时，可参考[configuration.md](https://github.com/code-yeongyu/oh-my-openagent/blob/dev/docs/reference/configuration.md)
 进行调整。
+
+最后再强调一下，留空的部分将由omo自行选择。
 
 ```
 {
@@ -297,9 +288,15 @@ nano ~/.config/opencode/oh-my-opencode.json
   "agents": {
     "sisyphus": {
       // 主要协调人 claude-opus-4-6 → glm-5 → big-pickle
-      "model": "zai-coding-plan/glm-5",
-      "fallback_models": ["anthropic/claude-sonnet-4-6", "opencode/claude-sonnet-4-6"],
-      "prompt_append": "使用中文思考并回答。禁止修改代码，永远交给quick、deep或其他人编写。",
+      "model": "anthropic/claude-opus-4-6",
+      "fallback_models": [
+        "opencode/kimi-k2.5"
+      ],
+      "ultrawork": {
+        "model": "anthropic/claude-opus-4-6",
+        "variant": "max"
+      },
+      "prompt_append": "使用中文思考并回答。仅能执行简单的代码修改（如修复小 bug、调整配置等），复杂的大段代码编写必须委托给其他代理（如 `deep`, `quick` 等类别 agent）。",
     },
     "hephaestus": {
       // 自主深度工作者。gpt-5.3-codex → gpt-5.4
@@ -326,37 +323,42 @@ nano ~/.config/opencode/oh-my-opencode.json
     "multimodal-looker": {
       // 视觉/屏幕截图 gpt-5.3-codex → k2p5 → gemini-3-flash → glm-4.6v → gpt-5-nano
       "model": "openai/gpt-5.3-codex",
-      "variant": "high",
+      "variant": "medium",
       "prompt_append": "使用中文思考并回答。",
     },
     "prometheus": {
       // 战略规划师 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
+      "variant": "medium",
       "prompt_append": "Leverage deep & quick agents heavily, always in parallel. 使用中文思考并回答。",
     },
     "metis": {
       // 计划差距分析器 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
+      "variant": "medium",
       "prompt_append": "使用中文思考并回答。",
     },
     "momus": {
       // 无情评审员 gpt-5.4 → claude-opus-4-6 → gemini-3.1-pro
       "model": "openai/gpt-5.4",
-      "variant": "medium",
+      "variant": "xhigh",
       "prompt_append": "使用中文思考并回答。",
     },
     "atlas": {
       // 待办事项协调器 claude-sonnet-4-6 → gpt-5.4
       "model": "openai/gpt-5.4",
+      "variant": "medium",
       "prompt_append": "使用中文思考并回答。",
     },
   },
   "categories": {
     "visual-engineering": {
       // 前端、用户界面、CSS、设计 gemini-3.1-pro → glm-5 → claude-opus-4-6
-      "model": "google/antigravity-gemini-3.1-pro",
+      "model": "zai-coding-plan/glm-5",
       "variant": "high",
-      "fallback_models": ["opencode/gemini-3.1-pro", "zai-coding-plan/glm-5"],
+      "fallback_models": [
+        "opencode/gemini-3.1-pro"
+      ],
       "prompt_append": "使用中文思考并回答。",
     },
     "ultrabrain": {
@@ -373,9 +375,11 @@ nano ~/.config/opencode/oh-my-opencode.json
     },
     "artistry": {
       // 富有创意、新颖的方法 gemini-3.1-pro → claude-opus-4-6 → gpt-5.4
-      "model": "google/antigravity-gemini-3.1-pro",
+      "model": "openai/gpt-5.4",
       "variant": "high",
-      "fallback_models": ["opencode/gemini-3.1-pro", "openai/gpt-5.4"],
+      "fallback_models": [
+        "opencode/gemini-3.1-pro"
+      ],
       "prompt_append": "使用中文思考并回答。",
     },
     "quick": {
@@ -397,8 +401,7 @@ nano ~/.config/opencode/oh-my-opencode.json
     },
     "writing": {
       // 文本、文档、散文 gemini-3-flash → claude-sonnet-4-6
-      "model": "google/antigravity-gemini-3-flash",
-      "fallback_models": ["opencode/gemini-3-flash"],
+      "model": "opencode/gemini-3-flash",
       "prompt_append": "使用中文思考并回答。",
     },
   },
@@ -421,7 +424,10 @@ nano ~/.config/opencode/oh-my-opencode.json
     "dynamic_context_pruning": {
       "enabled": true, // 自动清理旧工具输出以管理上下文窗口
       "notification": "detailed",
-      "turn_protection": { "enabled": true, "turns": 3 },
+      "turn_protection": {
+        "enabled": true,
+        "turns": 3
+      },
       "protected_tools": [
         "task",
         "todowrite",
@@ -432,11 +438,27 @@ nano ~/.config/opencode/oh-my-opencode.json
         "session_search"
       ],
       "strategies": {
-        "deduplication": { "enabled": true },
-        "supersede_writes": { "enabled": true, "aggressive": false },
-        "purge_errors": { "enabled": true, "turns": 5 }
+        "deduplication": {
+          "enabled": true
+        },
+        "supersede_writes": {
+          "enabled": true,
+          "aggressive": false
+        },
+        "purge_errors": {
+          "enabled": true,
+          "turns": 5
+        }
       }
     }
   }
 }
 ```
+
+### 使用说明
+
+先执行 /init-deep 来生成一些 Agents.md，这样后续AI协作更好。
+
+ulw：当你比较懒的时候就用这个
+plan-builder：任务比较复杂就先用这个，只生成计划不执行
+plan-executor：执行builder的任务
