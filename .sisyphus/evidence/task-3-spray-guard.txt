@@ -1,3 +1,0 @@
-176:                AddIncToItem(store.count, ref store.inc);
-177-            }
-178-    }

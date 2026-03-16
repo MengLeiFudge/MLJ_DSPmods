@@ -1,5 +1,0 @@
-271:    public static int CurrentLockedOutputId = 0;
-273:    public override void GetOutputs(ref uint seed, float pointsBonus,
-281:        if (ConversionTower.EnableSingleLock && CurrentLockedOutputId != 0 && outputs != null && outputs.Count > 0) {
-283:            bool lockedInOutput = outputs.Any(p => p.itemId == CurrentLockedOutputId);
-286:                outputs = outputs.Where(p => p.itemId == CurrentLockedOutputId).ToList();
