@@ -851,7 +851,7 @@ public static class FEFractionatorWindow {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
-                float ratio = recipeSuccessRatio * output.SuccessRatio * mainOutputBonus;
+                float ratio = recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
                     output.ShowSuccessRatio || sandboxMode);
