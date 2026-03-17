@@ -19,6 +19,10 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
+    /// <summary>
+    /// 累计抽奖次数（用于任务系统）
+    /// </summary>
+    public static long totalDraws;
     //行数：配方类型+矩阵1种    列数：配方3种+总计
     private const int MatrixCount = 1;
     private const int RecipeCount = 3;
@@ -592,9 +596,11 @@ public static class TicketRaffle {
         if (raffleCount == -1) {
             raffleCount = MaxRaffleCount1;
         }
+        int actualDrawCount = raffleCount;
         if (!TakeItemWithTip(SelectedTicketId1, raffleCount, out _, showMessage)) {
             return;
         }
+        totalDraws += actualDrawCount;
         float ticketValue = itemValue[SelectedTicketId1];
         VipFeatures.AddExp(ticketValue * raffleCount);
         // 刷新配方列表，确保包含最新解锁和等级状态
@@ -728,9 +734,11 @@ public static class TicketRaffle {
         if (raffleCount == -1) {
             raffleCount = MaxRaffleCount2;
         }
+        int actualDrawCount = raffleCount;
         if (!TakeItemWithTip(SelectedTicketId2, raffleCount, out _, showMessage)) {
             return;
         }
+        totalDraws += actualDrawCount;
         VipFeatures.AddExp(itemValue[SelectedTicketId2] * raffleCount);
         //构建奖池
         (float[] rates, int[] counts) = pool2;
@@ -806,9 +814,11 @@ public static class TicketRaffle {
         if (raffleCount == -1) {
             raffleCount = MaxRaffleCount3;
         }
+        int actualDrawCount = raffleCount;
         if (!TakeItemWithTip(SelectedTicketId3, raffleCount, out _, showMessage)) {
             return;
         }
+        totalDraws += actualDrawCount;
         VipFeatures.AddExp(itemValue[SelectedTicketId3] * raffleCount);
         //构建奖池
         List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
@@ -897,9 +907,11 @@ public static class TicketRaffle {
         if (raffleCount == -1) {
             raffleCount = MaxRaffleCount4;
         }
+        int actualDrawCount = raffleCount;
         if (!TakeItemWithTip(SelectedTicketId4, raffleCount, out _, showMessage)) {
             return;
         }
+        totalDraws += actualDrawCount;
         VipFeatures.AddExp(itemValue[SelectedTicketId4] * raffleCount);
         //构建奖池
         List<ItemProto> commonItems = LDB.items.dataArray.Where(item =>
@@ -983,9 +995,11 @@ public static class TicketRaffle {
         if (raffleCount == -1) {
             raffleCount = MaxRaffleCount5;
         }
+        int actualDrawCount = raffleCount;
         if (!TakeItemWithTip(SelectedTicketId5, raffleCount, out _, showMessage)) {
             return;
         }
+        totalDraws += actualDrawCount;
         VipFeatures.AddExp(itemValue[SelectedTicketId5] * raffleCount);
         //构建奖池
         (float[] rates, int[] counts) = pool5;
@@ -1214,7 +1228,8 @@ public static class TicketRaffle {
             ("TicketIdx4", br => TicketIdx4Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length)),
             ("AutoRaffle4", br => EnableAutoRaffle4Entry.Value = br.ReadBoolean()),
             ("TicketIdx5", br => TicketIdx5Entry.Value = ValidateIndex(br.ReadInt32(), TicketIds.Length - 1)),
-            ("AutoRaffle5", br => EnableAutoRaffle5Entry.Value = br.ReadBoolean())
+            ("AutoRaffle5", br => EnableAutoRaffle5Entry.Value = br.ReadBoolean()),
+            ("TotalDraws", br => totalDraws = br.ReadInt64())
         );
         for (int i = 1; i <= 5; i++) {
             FreshPool(i);
@@ -1236,12 +1251,14 @@ public static class TicketRaffle {
             ("TicketIdx4", bw => bw.Write(TicketIdx4Entry.Value)),
             ("AutoRaffle4", bw => bw.Write(EnableAutoRaffle4Entry.Value)),
             ("TicketIdx5", bw => bw.Write(TicketIdx5Entry.Value)),
-            ("AutoRaffle5", bw => bw.Write(EnableAutoRaffle5Entry.Value))
+            ("AutoRaffle5", bw => bw.Write(EnableAutoRaffle5Entry.Value)),
+            ("TotalDraws", bw => bw.Write(totalDraws))
         );
     }
 
     public static void IntoOtherSave() {
         lastAutoRaffleTick = 0;
+        totalDraws = 0;
         TicketIdx1Entry.Value = 0;
         EnableAutoRaffle1Entry.Value = false;
         TicketIdx2Entry.Value = 0;
