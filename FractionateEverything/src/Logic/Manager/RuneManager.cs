@@ -94,6 +94,10 @@ public static class RuneManager {
     public static List<Rune> allRunes = [];
     public static long[] equippedRuneIds = new long[5];
     public static int slotCount = 0;
+    /// <summary>
+    /// 累计符文升级次数（用于任务系统）
+    /// </summary>
+    public static long totalRuneUpgrades;
 
     public static Rune GenerateRune(int star, int? subCountOverride = null) {
         Rune rune = CreateRuneData(star, subCountOverride);
@@ -134,6 +138,7 @@ public static class RuneManager {
             return false;
         }
         rune.level++;
+        totalRuneUpgrades++;
         if (rune.level % 4 == 0) {
             RollSubStat(rune);
         }
@@ -252,7 +257,8 @@ public static class RuneManager {
                     bw.Write(equippedRuneIds[i]);
                 }
             }),
-            ("SlotCount", bw => bw.Write(slotCount))
+            ("SlotCount", bw => bw.Write(slotCount)),
+            ("TotalRuneUpgrades", bw => bw.Write(totalRuneUpgrades))
         );
     }
 
@@ -287,7 +293,8 @@ public static class RuneManager {
                     equippedRuneIds[i] = br.ReadInt64();
                 }
             }),
-            ("SlotCount", br => slotCount = br.ReadInt32())
+            ("SlotCount", br => slotCount = br.ReadInt32()),
+            ("TotalRuneUpgrades", br => totalRuneUpgrades = br.ReadInt64())
         );
     }
 
@@ -295,6 +302,7 @@ public static class RuneManager {
         allRunes.Clear();
         Array.Clear(equippedRuneIds, 0, equippedRuneIds.Length);
         slotCount = 0;
+        totalRuneUpgrades = 0;
     }
 
     #endregion

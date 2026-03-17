@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -47,6 +48,10 @@ public static class ProcessManager {
     public const byte OutputFlagMain = 1 << 0;
     public const byte OutputFlagSide = 1 << 1;
     public const byte OutputFlagFluid = 1 << 2;
+    /// <summary>
+    /// 累计分馏成功次数（用于任务系统）
+    /// </summary>
+    public static long totalFractionSuccesses;
 
     private static readonly ConcurrentDictionary<(int, int), byte> outputFlagDic = [];
 
@@ -383,6 +388,7 @@ public static class ProcessManager {
                     }
                 } else {
                     // 成功产出，产出到产物列表
+                    totalFractionSuccesses++;
                     lock (consumeRegister) {
                         consumeRegister[fluidId]++;
                     }
@@ -856,6 +862,26 @@ public static class ProcessManager {
         PointAggregateTower.SuccessBoost = Mathf.Sqrt(takeCounts[2]) / 10.0f;
         ConversionTower.SuccessBoost = Mathf.Sqrt(takeCounts[3]) / 10.0f;
         RecycleTower.SuccessBoost = Mathf.Sqrt(takeCounts[4]) / 10.0f;
+    }
+
+    #endregion
+
+    #region IModCanSave
+
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses))
+        );
+    }
+
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(
+            ("TotalFractionSuccesses", br => totalFractionSuccesses = br.ReadInt64())
+        );
+    }
+
+    public static void IntoOtherSave() {
+        totalFractionSuccesses = 0;
     }
 
     #endregion
