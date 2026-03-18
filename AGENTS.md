@@ -229,7 +229,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ## Git Practices
 
-- Commit messages MUST be in **Chinese**. (Commit 必须使用中文)
+- Commit messages in **Chinese**, conventional style: `功能：`, `修复：`, `重构：`, `杂项：`
 - Atomic commits (one logical change per commit)
 - Do **not** commit unless explicitly asked
 
