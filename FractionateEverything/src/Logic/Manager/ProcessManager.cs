@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
+using FE.UI.View.ProgressSystem;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
@@ -337,7 +338,7 @@ public static class ProcessManager {
                     outputs = emptyOutputs;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
-                    float successBoost = building.SuccessBoost();
+                    float successBoost = building.SuccessBoost() + Achievements.GetSuccessRateBonus();
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
