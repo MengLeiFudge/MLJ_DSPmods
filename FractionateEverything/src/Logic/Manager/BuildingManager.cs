@@ -18,7 +18,7 @@ public static class BuildingManager {
         MineralReplicationTower.AddTranslations();
         PointAggregateTower.AddTranslations();
         ConversionTower.AddTranslations();
-        RecycleTower.AddTranslations();
+        RectificationTower.AddTranslations();
 
         PlanetaryInteractionStation.AddTranslations();
         InterstellarInteractionStation.AddTranslations();
@@ -35,7 +35,7 @@ public static class BuildingManager {
         MineralReplicationTower.Create();
         PointAggregateTower.Create();
         ConversionTower.Create();
-        RecycleTower.Create();
+        RectificationTower.Create();
 
         PlanetaryInteractionStation.Create();
         InterstellarInteractionStation.Create();
@@ -46,7 +46,7 @@ public static class BuildingManager {
         MineralReplicationTower.SetMaterial();
         PointAggregateTower.SetMaterial();
         ConversionTower.SetMaterial();
-        RecycleTower.SetMaterial();
+        RectificationTower.SetMaterial();
 
         PlanetaryInteractionStation.SetMaterial();
         InterstellarInteractionStation.SetMaterial();
@@ -57,7 +57,7 @@ public static class BuildingManager {
         MineralReplicationTower.UpdateHpAndEnergy();
         PointAggregateTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
-        RecycleTower.UpdateHpAndEnergy();
+        RectificationTower.UpdateHpAndEnergy();
 
         PlanetaryInteractionStation.UpdateHpAndEnergy();
         InterstellarInteractionStation.UpdateHpAndEnergy();
@@ -103,7 +103,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
             IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
-            IFE回收塔 => BaseFracProductOutputMax * RecycleTower.MaxStack,
+            IFE精馏塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
             _ => BaseFracProductOutputMax * 12 / 4//todo: 改为全局
         };
     }
@@ -117,7 +117,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => BaseFracFluidOutputMax * Mathf.Max(1, MineralReplicationTower.MaxStack / 4),
             IFE点数聚集塔 => BaseFracFluidOutputMax * Mathf.Max(1, PointAggregateTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
-            IFE回收塔 => BaseFracFluidOutputMax * Mathf.Max(1, RecycleTower.MaxStack / 4),
+            IFE精馏塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
             _ => BaseFracFluidOutputMax * 12 / 4//todo: 改为全局
         };
     }
@@ -128,7 +128,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.SuccessBoost,
             IFE点数聚集塔 => PointAggregateTower.SuccessBoost,
             IFE转化塔 => ConversionTower.SuccessBoost,
-            IFE回收塔 => RecycleTower.SuccessBoost,
+            IFE精馏塔 => RectificationTower.SuccessBoost,
             _ => 0
         };
     }
@@ -366,7 +366,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.Level,
             IFE点数聚集塔 => PointAggregateTower.Level,
             IFE转化塔 => ConversionTower.Level,
-            IFE回收塔 => RecycleTower.Level,
+            IFE精馏塔 => RectificationTower.Level,
             IFE行星内物流交互站 => PlanetaryInteractionStation.Level,
             IFE星际物流交互站 => InterstellarInteractionStation.Level,
             _ => 0
@@ -391,9 +391,9 @@ public static class BuildingManager {
                 ConversionTower.Level = level;
                 ConversionTower.UpdateHpAndEnergy();
                 break;
-            case IFE回收塔:
-                RecycleTower.Level = level;
-                RecycleTower.UpdateHpAndEnergy();
+            case IFE精馏塔:
+                RectificationTower.Level = level;
+                RectificationTower.UpdateHpAndEnergy();
                 break;
             case IFE行星内物流交互站:
             case IFE星际物流交互站:
@@ -415,7 +415,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.EnableFluidEnhancement,
             IFE点数聚集塔 => PointAggregateTower.EnableFluidEnhancement,
             IFE转化塔 => ConversionTower.EnableFluidEnhancement,
-            IFE回收塔 => RecycleTower.EnableFluidEnhancement,
+            IFE精馏塔 => RectificationTower.EnableFluidEnhancement,
             _ => false
         };
     }
@@ -426,7 +426,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.MaxStack,
             IFE点数聚集塔 => PointAggregateTower.MaxStack,
             IFE转化塔 => ConversionTower.MaxStack,
-            IFE回收塔 => RecycleTower.MaxStack,
+            IFE精馏塔 => RectificationTower.MaxStack,
             IFE行星内物流交互站 => PlanetaryInteractionStation.MaxStack,
             IFE星际物流交互站 => InterstellarInteractionStation.MaxStack,
             _ => 1
@@ -439,7 +439,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.workEnergyPerTick,
             IFE点数聚集塔 => PointAggregateTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
-            IFE回收塔 => RecycleTower.workEnergyPerTick,
+            IFE精馏塔 => RectificationTower.workEnergyPerTick,
             IFE行星内物流交互站 => PlanetaryInteractionStation.workEnergyPerTick,
             IFE星际物流交互站 => InterstellarInteractionStation.workEnergyPerTick,
             _ => LDB.models.Select(M分馏塔).prefabDesc.workEnergyPerTick
@@ -456,8 +456,8 @@ public static class BuildingManager {
                 return PointAggregateTower.idleEnergyPerTick;
             case IFE转化塔:
                 return ConversionTower.idleEnergyPerTick;
-            case IFE回收塔:
-                return RecycleTower.idleEnergyPerTick;
+            case IFE精馏塔:
+                return RectificationTower.idleEnergyPerTick;
             case IFE行星内物流交互站:
                 return PlanetaryInteractionStation.idleEnergyPerTick;
             case IFE星际物流交互站:
@@ -473,7 +473,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.EnergyRatio,
             IFE点数聚集塔 => PointAggregateTower.EnergyRatio,
             IFE转化塔 => ConversionTower.EnergyRatio,
-            IFE回收塔 => RecycleTower.EnergyRatio,
+            IFE精馏塔 => RectificationTower.EnergyRatio,
             _ => 1.0f
         };
     }
@@ -492,7 +492,7 @@ public static class BuildingManager {
             IFE矿物复制塔 => MineralReplicationTower.PlrRatio,
             IFE点数聚集塔 => PointAggregateTower.PlrRatio,
             IFE转化塔 => ConversionTower.PlrRatio,
-            IFE回收塔 => RecycleTower.PlrRatio,
+            IFE精馏塔 => RectificationTower.PlrRatio,
             _ => 1.0f
         };
     }
@@ -505,7 +505,7 @@ public static class BuildingManager {
             ("MineralReplicationTower", MineralReplicationTower.Import),
             ("PointAggregateTower", PointAggregateTower.Import),
             ("ConversionTower", ConversionTower.Import),
-            ("RecycleTower", RecycleTower.Import),
+            ("RectificationTower", RectificationTower.Import),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Import),
             ("InterstellarInteractionStation", InterstellarInteractionStation.Import),
             ("OutputExtend", OutputExtendImport),
@@ -521,7 +521,7 @@ public static class BuildingManager {
             ("MineralReplicationTower", MineralReplicationTower.Export),
             ("PointAggregateTower", PointAggregateTower.Export),
             ("ConversionTower", ConversionTower.Export),
-            ("RecycleTower", RecycleTower.Export),
+            ("RectificationTower", RectificationTower.Export),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Export),
             ("InterstellarInteractionStation", InterstellarInteractionStation.Export),
             ("OutputExtend", OutputExtendExport),
@@ -536,7 +536,7 @@ public static class BuildingManager {
         MineralReplicationTower.IntoOtherSave();
         PointAggregateTower.IntoOtherSave();
         ConversionTower.IntoOtherSave();
-        RecycleTower.IntoOtherSave();
+        RectificationTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();
         InterstellarInteractionStation.IntoOtherSave();
         OutputExtendIntoOtherSave();
@@ -554,8 +554,8 @@ public static class BuildingManager {
     [HarmonyPatch(typeof(EntityData), nameof(EntityData.Import))]
     public static void EntityData_Import_Postfix(ref EntityData __instance) {
         if (__instance.modelIndex == 606) {
-            __instance.protoId = IFE回收塔;
-            __instance.modelIndex = MFE回收塔;
+            __instance.protoId = IFE精馏塔;
+            __instance.modelIndex = MFE精馏塔;
         }
         if (__instance.modelIndex == 607) {
             __instance.protoId = IFE转化塔;

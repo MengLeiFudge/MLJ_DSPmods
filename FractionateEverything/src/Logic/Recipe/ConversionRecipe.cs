@@ -182,8 +182,8 @@ public class ConversionRecipe : BaseRecipe {
         //分馏页面
         CreateChain([[IFE电磁奖券], [IFE能量奖券], [IFE结构奖券], [IFE信息奖券], [IFE引力奖券]]);
         // 屏蔽原胚、分馏塔的转化，以提升定向原胚价值
-        // CreateChain([[IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE回收塔原胚]]);
-        // CreateChain([[IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔]]);
+        // CreateChain([[IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE精馏塔原胚]]);
+        // CreateChain([[IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔]]);
         CreateChain([[IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华]]);
     }
 

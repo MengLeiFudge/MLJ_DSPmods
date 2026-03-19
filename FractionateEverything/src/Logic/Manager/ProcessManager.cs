@@ -165,9 +165,9 @@ public static class ProcessManager {
                 InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
                     consumeRegister, ref __result, ERecipe.Conversion);
                 return false;
-            case IFE回收塔:
-                InternalUpdate<RecycleRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Recycle);
+            case IFE精馏塔:
+                InternalUpdate<RectificationRecipe>(ref __instance, factory, power, signPool, productRegister,
+                    consumeRegister, ref __result, ERecipe.Rectification);
                 return false;
         }
         //原版分馏塔不做处理
@@ -810,7 +810,7 @@ public static class ProcessManager {
     public static void SetPCState(this ref FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, EntityData[] entityPool) {
         int buildingID = entityPool[fractionator.entityId].protoId;
-        if (buildingID < IFE交互塔 || buildingID > IFE回收塔) {
+        if (buildingID < IFE交互塔 || buildingID > IFE精馏塔) {
             return;
         }
         ItemProto building = LDB.items.Select(buildingID);
@@ -849,7 +849,7 @@ public static class ProcessManager {
             return;
         }
         int buffCount = 0;
-        int[] takeCounts = new int[IFE回收塔 - IFE交互塔 + 1];
+        int[] takeCounts = new int[IFE精馏塔 - IFE交互塔 + 1];
         for (int i = 0; i < takeCounts.Length; i++) {
             takeCounts[i] = Take10PercentTower(IFE交互塔 + i);
             if (takeCounts[i] > 0) {
@@ -865,7 +865,7 @@ public static class ProcessManager {
         MineralReplicationTower.SuccessBoost = Mathf.Sqrt(takeCounts[1]) / 10.0f;
         PointAggregateTower.SuccessBoost = Mathf.Sqrt(takeCounts[2]) / 10.0f;
         ConversionTower.SuccessBoost = Mathf.Sqrt(takeCounts[3]) / 10.0f;
-        RecycleTower.SuccessBoost = Mathf.Sqrt(takeCounts[4]) / 10.0f;
+        RectificationTower.SuccessBoost = Mathf.Sqrt(takeCounts[4]) / 10.0f;
     }
 
     #endregion

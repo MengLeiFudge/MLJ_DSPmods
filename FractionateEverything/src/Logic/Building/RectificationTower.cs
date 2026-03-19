@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility;
@@ -10,13 +10,13 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Building;
 
 /// <summary>
-/// 回收塔
+/// 精馏塔
 /// </summary>
-public static class RecycleTower {
+public static class RectificationTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.6f, 0.8f, 0.3f);
+    public static Color color = new(0.3f, 0.6f, 0.9f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= 3;
@@ -51,24 +51,24 @@ public static class RecycleTower {
     public static float SuccessBoost = 0;
 
     public static void AddTranslations() {
-        Register("回收塔", "Recycle Tower");
-        Register("I回收塔",
-            "Recycle items and reshape them into various lottery tickets. Operates without requiring distillation recipes.",
-            "将物品回收，并重塑为各种奖券。无需分馏配方即可运行。");
+        Register("精馏塔", "Rectification Tower");
+        Register("I精馏塔",
+            "Rectify items into system resources such as tickets and essences. Higher recipe levels yield better outputs.",
+            "将物品精馏为奖券、精华等系统资源。配方等级越高，精馏产出越好。");
     }
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE回收塔, "回收塔", "I回收塔",
+        item = ProtoRegistry.RegisterItem(IFE精馏塔, "精馏塔", "I精馏塔",
             "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
-        recipe = ProtoRegistry.RegisterRecipe(RFE回收塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE回收塔], [5],
-            "I回收塔", TFE物品回收, item.GridIndex, item.Name, item.IconPath);
+        recipe = ProtoRegistry.RegisterRecipe(RFE精馏塔,
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE精馏塔], [5],
+            "I精馏塔", TFE物品精馏, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
-        item.IconTag = "hst";
-        recipe.IconTag = "hst";
-        model = ProtoRegistry.RegisterModel(MFE回收塔, item,
+        item.IconTag = "jlt";
+        recipe.IconTag = "jlt";
+        model = ProtoRegistry.RegisterModel(MFE精馏塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

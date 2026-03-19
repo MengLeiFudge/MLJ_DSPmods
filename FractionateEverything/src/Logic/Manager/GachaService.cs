@@ -54,7 +54,7 @@ public static class GachaService {
         pool.PoolC.Add(IFE矿物复制塔原胚);
         pool.PoolB.Add(IFE点数聚集塔原胚);
         pool.PoolB.Add(IFE转化塔原胚);
-        pool.PoolA.Add(IFE回收塔原胚);
+        pool.PoolA.Add(IFE精馏塔原胚);
         pool.PoolS.Add(IFE分馏塔定向原胚);
 
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);

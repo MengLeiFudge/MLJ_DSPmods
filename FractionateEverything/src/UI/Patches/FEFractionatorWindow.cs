@@ -185,7 +185,7 @@ public static class FEFractionatorWindow {
         FractionatorComponent frac = factory.factorySystem.fractionatorPool[fractionatorId];
         if (frac.id != fractionatorId) return false;
         int buildingId = factory.entityPool[frac.entityId].protoId;
-        return buildingId >= IFE交互塔 && buildingId <= IFE回收塔;
+        return buildingId >= IFE交互塔 && buildingId <= IFE精馏塔;
     }
 
     // ===== 初始化：复制窗口并一次性修改布局 =====
@@ -862,7 +862,7 @@ public static class FEFractionatorWindow {
             IFE矿物复制塔 => GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fluidId),
             IFE点数聚集塔 => GetRecipe<PointAggregateRecipe>(ERecipe.PointAggregate, fluidId),
             IFE转化塔 => GetRecipe<ConversionRecipe>(ERecipe.Conversion, fluidId),
-            IFE回收塔 => GetRecipe<RecycleRecipe>(ERecipe.Recycle, fluidId),
+            IFE精馏塔 => GetRecipe<RectificationRecipe>(ERecipe.Rectification, fluidId),
             _ => null
         };
     }
@@ -1026,7 +1026,7 @@ public static class FEFractionatorWindow {
         FractionatorComponent fractionator = __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
         if (fractionator.id != __instance.fractionatorId) return;
         int buildingId = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingId < IFE交互塔 || buildingId > IFE回收塔) return;
+        if (buildingId < IFE交互塔 || buildingId > IFE精馏塔) return;
         if (itemId == fractionator.productId || itemId == fractionator.fluidId) return;
 
         List<ProductOutputInfo> products = fractionator.products(__instance.factory);

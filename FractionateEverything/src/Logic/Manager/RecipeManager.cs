@@ -61,7 +61,7 @@ public static class RecipeManager {
         MineralCopyRecipe.CreateAll();
         PointAggregateRecipe.CreateAll();
         ConversionRecipe.CreateAll();
-        RecycleRecipe.CreateAll();
+        RectificationRecipe.CreateAll();
 
         LogInfo($"Added {RecipeList.Count} fractionate recipes.");
     }
