@@ -17,11 +17,22 @@ namespace FE.UI.Components;
 public class MyWindow : ManualBehaviour {
     private float _maxX;
     protected float MaxY;
+    
+    // 固定窗口尺寸常量
+    protected const float WindowWidth = 1366f;
+    protected const float WindowHeight = 768f;
+    
+    // 布局常量
     protected const float TitleHeight = 48f;
     protected const float TabWidth = 130f;
     protected const float TabHeight = 27f;
     protected const float Margin = 30f;
     protected const float Spacing = 10f;
+    protected const float LeftNavWidth = 130f;
+    protected const float OuterMargin = 24f;
+    protected const float SectionGap = 16f;
+    protected const float RowGap = 8f;
+    
     public event Action OnFree;
     private static GameObject _baseObject;
 
@@ -61,7 +72,7 @@ public class MyWindow : ManualBehaviour {
     }
 
     public override void _OnOpen() {
-        AutoFitWindowSize();
+        ApplyFixedWindowSize();
     }
 
     public override void _OnFree() {
@@ -89,6 +100,11 @@ public class MyWindow : ManualBehaviour {
         if (txt) {
             txt.text = title.Translate();
         }
+    }
+
+    public void ApplyFixedWindowSize() {
+        var trans = GetComponent<RectTransform>();
+        trans.sizeDelta = new(WindowWidth, WindowHeight);
     }
 
     public void AutoFitWindowSize() {

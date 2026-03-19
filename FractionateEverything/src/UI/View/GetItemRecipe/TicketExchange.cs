@@ -9,11 +9,9 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketExchange {
-    private static RectTransform window;
     private static RectTransform tab;
+    private static Text fragmentCountText;
     
-    // 兑换比例表：(矩阵ID, 普通券比例, 精选券比例)
-    // 0表示不可兑换
     private static readonly (int matrixId, int normalRate, int premiumRate)[] ExchangeRates = [
         (I电磁矩阵, 20, 0),
         (I能量矩阵, 10, 0),
@@ -23,10 +21,9 @@ public static class TicketExchange {
         (I宇宙矩阵, 0, 2),
     ];
     
-    // 残片兑换比例：(残片数量, 奖券ID)
     private static readonly (int fragmentCost, int ticketId)[] FragmentRates = [
-        (10, IFE普通抽卡券),   // 10残片=普通券×1（电磁层）
-        (50, IFE普通抽卡券),   // 50残片=普通券×1（能量层）
+        (10, IFE普通抽卡券),
+        (50, IFE精选抽卡券),
     ];
     
     public static void AddTranslations() {
@@ -39,10 +36,8 @@ public static class TicketExchange {
     public static void LoadConfig(ConfigFile configFile) { }
     
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = wnd.rectTrans;
-        tab = trans;
+        tab = wnd.AddTab(trans, "奖券兑换");
         
-        // 矩阵兑换区
         wnd.AddText2(20, 20, tab, "矩阵兑换".Translate());
         
         int y = 60;
@@ -57,18 +52,19 @@ public static class TicketExchange {
             }
         }
         
-        // 残片兑换区
         y += 20;
         wnd.AddText2(20, y, tab, "残片兑换".Translate());
         y += 40;
         
         wnd.AddImageButton(20, y, tab, LDB.items.Select(IFE残片));
-        wnd.AddText2(60, y, tab, () => GameMain.mainPlayer?.package.GetItemCount(IFE残片).ToString() ?? "0");
+        fragmentCountText = wnd.AddText2(60, y, tab, "0");
         
         int x = 120;
         foreach (var rate in FragmentRates) {
-            wnd.AddButton(x, y, tab, $"{rate.fragmentCost} -> 1", 100, 30, () => ExchangeFragment(rate.fragmentCost, rate.ticketId));
-            x += 110;
+            ItemProto ticket = LDB.items.Select(rate.ticketId);
+            string buttonText = $"{rate.fragmentCost} -> 1 {ticket?.name ?? "奖券"}";
+            wnd.AddButton(x, y, 180f, tab, buttonText, 14, "btn", () => ExchangeFragment(rate.fragmentCost, rate.ticketId));
+            x += 190;
         }
     }
     
@@ -79,12 +75,15 @@ public static class TicketExchange {
         wnd.AddImageButton(190, y, tab, LDB.items.Select(ticketId));
         wnd.AddText2(230, y, tab, $"{rate} : 1");
         
-        wnd.AddButton(300, y, tab, "兑换".Translate() + " 1", 80, 30, () => ExchangeMatrix(matrixId, ticketId, rate, 1));
-        wnd.AddButton(390, y, tab, "兑换".Translate() + " 10", 80, 30, () => ExchangeMatrix(matrixId, ticketId, rate * 10, 10));
+        wnd.AddButton(300, y, 80f, tab, "兑换".Translate() + " 1", 16, "btn", () => ExchangeMatrix(matrixId, ticketId, rate, 1));
+        wnd.AddButton(390, y, 80f, tab, "兑换".Translate() + " 10", 16, "btn", () => ExchangeMatrix(matrixId, ticketId, rate * 10, 10));
     }
     
     public static void UpdateUI() {
         if (!tab.gameObject.activeSelf) return;
+        if (fragmentCountText != null) {
+            fragmentCountText.text = GameMain.mainPlayer?.package.GetItemCount(IFE残片).ToString() ?? "0";
+        }
     }
     
     private static void ExchangeMatrix(int matrixId, int ticketId, int matrixCount, int ticketCount) {
@@ -97,7 +96,6 @@ public static class TicketExchange {
         AddItemToModData(ticketId, 1, 0, true);
     }
     
-    // IModCanSave
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
     public static void Export(BinaryWriter w) { w.WriteBlocks(); }
     public static void IntoOtherSave() { }
