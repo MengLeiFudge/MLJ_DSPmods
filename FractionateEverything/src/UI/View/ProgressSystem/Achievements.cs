@@ -385,9 +385,9 @@ public static class Achievements {
 
     private static void RefreshAchievementRow(int index) {
         if (!unlocked[index]) {
-            txtAchievementNames[index].text = "隐藏成就提示".Translate().WithColor(new Color(0.65f, 0.65f, 0.65f, 1f));
-            txtAchievementDescs[index].text = "隐藏成就描述".Translate().WithColor(new Color(0.65f, 0.65f, 0.65f, 1f));
-            txtAchievementStates[index].text = "未解锁".Translate().WithColor(new Color(0.65f, 0.65f, 0.65f, 1f));
+            txtAchievementNames[index].text = "隐藏成就提示".Translate().WithColor(Gray);
+            txtAchievementDescs[index].text = "隐藏成就描述".Translate().WithColor(Gray);
+            txtAchievementStates[index].text = "未解锁".Translate().WithColor(Gray);
             btnClaims[index].button.interactable = false;
             btnClaims[index].SetText("隐藏成就提示");
             return;
@@ -436,11 +436,11 @@ public static class Achievements {
 
     private static Color GetTierColor(ETier tier) {
         return tier switch {
-            ETier.Bronze => new Color(0.80f, 0.50f, 0.20f),
-            ETier.Silver => new Color(0.75f, 0.75f, 0.80f),
-            ETier.Gold => new Color(1.00f, 0.84f, 0.00f),
-            ETier.Platinum => new Color(0.90f, 0.90f, 1.00f),
-            _ => Color.white,
+            ETier.Bronze => Orange,
+            ETier.Silver => White,
+            ETier.Gold => Gold,
+            ETier.Platinum => Blue,
+            _ => White,
         };
     }
 
