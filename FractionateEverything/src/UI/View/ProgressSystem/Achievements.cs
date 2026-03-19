@@ -53,6 +53,19 @@ public static class Achievements {
     private static Text[] txtAchievementStates;
     private static UIButton[] btnClaims;
 
+    private const int RowsPerPage = 10;
+    private const float AchievementRowSpacing = 43f;
+    private static int currentPage;
+    private static UIButton btnPrevPage;
+    private static UIButton btnNextPage;
+    private static Text txtPageIndicator;
+    private static float listStartY;
+    private static float listNameX;
+    private static float listDescX;
+    private static float listStateX;
+    private static float listActionX;
+    private static float listActionW;
+
     private static readonly AchievementInfo[] achievements = [
         new("成就-初次分馏", "成就描述-初次分馏", "成就奖励-电磁奖券10", ETier.Bronze,
             () => totalFractionSuccesses >= 1,
@@ -167,13 +180,15 @@ public static class Achievements {
 
         Register("已解锁成就", "Unlocked: {0}/{1}", "已解锁：{0}/{1}");
         Register("隐藏未解锁", "Hidden locked: {0}", "隐藏未解锁：{0}");
-        Register("成就加成格式", "Achievement bonus: +{0}%", "成就加成：+{0}%");
+        Register("成就加成格式", "Fractionation success rate bonus: +{0}%", "分馏成功率加成：+{0}%");
 
         Register("已解锁", "Unlocked");
         Register("未解锁", "Locked");
         Register("领取", "Claim");
         Register("已领取", "Claimed");
         Register("未领取", "Unclaimed");
+        Register("上一页", "Prev page");
+        Register("下一页", "Next page");
         Register("隐藏成就提示", "???", "???");
         Register("隐藏成就描述", "Hidden achievement", "未解锁");
 
@@ -308,7 +323,6 @@ public static class Achievements {
         txtUnlockedSummary = wnd.AddText2(x + 235f, y, tab, "动态刷新", 14, "txtAchievementUnlockedSummary");
         txtUnlockedSummary.supportRichText = true;
 
-        float achievementRowSpacing = 21f;
         y += 26f;
         txtHiddenSummary = wnd.AddText2(x, y, tab, "动态刷新", 14, "txtAchievementHiddenSummary");
         txtHiddenSummary.supportRichText = true;
@@ -318,10 +332,15 @@ public static class Achievements {
 
         y += 30f;
 
-        (float nameX, float nameW) = GetPosition(0, 4);
-        (float descX, float descW) = GetPosition(1, 4);
-        (float stateX, float stateW) = GetPosition(2, 4);
+        (float nameX, _) = GetPosition(0, 4);
+        (float descX, _) = GetPosition(1, 4);
+        (float stateX, _) = GetPosition(2, 4);
         (float actionX, float actionW) = GetPosition(3, 4);
+        listNameX = nameX;
+        listDescX = descX;
+        listStateX = stateX;
+        listActionX = actionX;
+        listActionW = actionW;
 
         wnd.AddText2(nameX, y, tab, "成就", 14, "txtAchievementHeaderName");
         wnd.AddText2(descX, y, tab, "描述", 14, "txtAchievementHeaderDesc");
@@ -329,6 +348,7 @@ public static class Achievements {
         wnd.AddText2(actionX, y, tab, "操作", 14, "txtAchievementHeaderAction");
 
         y += 26f;
+        listStartY = y;
 
         for (int i = 0; i < achievements.Length; i++) {
             int j = i;
@@ -345,8 +365,15 @@ public static class Achievements {
             btnClaims[j] = wnd.AddButton(actionX + x, y, actionW, tab, "领取", 13, $"btnAchievementClaim{j}",
                 () => ClaimAchievementReward(j));
 
-            y += achievementRowSpacing;
+            y += AchievementRowSpacing;
         }
+
+        float paginationY = listStartY + AchievementRowSpacing * RowsPerPage + 8f;
+        btnPrevPage = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, tab, "上一页", onClick: PrevPage);
+        txtPageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, tab, "");
+        txtPageIndicator.alignment = TextAnchor.MiddleCenter;
+        txtPageIndicator.rectTransform.sizeDelta = new(200f, txtPageIndicator.rectTransform.sizeDelta.y);
+        btnNextPage = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, tab, "下一页", onClick: NextPage);
     }
 
     public static void UpdateUI() {
@@ -368,9 +395,62 @@ public static class Achievements {
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
         txtBonusSummary.text = string.Format("成就加成格式".Translate(), successRateBonusPct.ToString("0.##")).WithColor(Green);
 
+        int totalPages = Math.Max(1, (achievements.Length + RowsPerPage - 1) / RowsPerPage);
+        if (currentPage >= totalPages) {
+            currentPage = totalPages - 1;
+        }
+
         for (int i = 0; i < achievements.Length; i++) {
+            txtAchievementNames[i].gameObject.SetActive(false);
+            txtAchievementDescs[i].gameObject.SetActive(false);
+            txtAchievementStates[i].gameObject.SetActive(false);
+            btnClaims[i].gameObject.SetActive(false);
+        }
+
+        int start = currentPage * RowsPerPage;
+        int end = Math.Min(start + RowsPerPage, achievements.Length);
+        for (int i = start; i < end; i++) {
+            int slot = i - start;
+            float rowY = listStartY + slot * AchievementRowSpacing;
+
+            txtAchievementNames[i].SetPosition(listNameX, rowY);
+            txtAchievementDescs[i].SetPosition(listDescX, rowY);
+            txtAchievementStates[i].SetPosition(listStateX, rowY);
+            NormalizeRectWithMidLeft(btnClaims[i], listActionX, rowY);
+            btnClaims[i].GetComponent<RectTransform>().sizeDelta = new(listActionW, btnClaims[i].GetComponent<RectTransform>().sizeDelta.y);
+
+            txtAchievementNames[i].gameObject.SetActive(true);
+            txtAchievementDescs[i].gameObject.SetActive(true);
+            txtAchievementStates[i].gameObject.SetActive(true);
+            btnClaims[i].gameObject.SetActive(true);
+
             RefreshAchievementRow(i);
         }
+
+        UpdatePagination(totalPages);
+    }
+
+    private static void PrevPage() {
+        if (currentPage <= 0) {
+            return;
+        }
+        currentPage--;
+        UpdateUI();
+    }
+
+    private static void NextPage() {
+        int totalPages = Math.Max(1, (achievements.Length + RowsPerPage - 1) / RowsPerPage);
+        if (currentPage >= totalPages - 1) {
+            return;
+        }
+        currentPage++;
+        UpdateUI();
+    }
+
+    private static void UpdatePagination(int totalPages) {
+        txtPageIndicator.text = $"{(currentPage + 1)}/{totalPages}";
+        btnPrevPage.button.interactable = currentPage > 0;
+        btnNextPage.button.interactable = currentPage < totalPages - 1;
     }
 
     public static float GetSuccessRateBonus() {
