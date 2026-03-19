@@ -411,6 +411,9 @@ public static class ProcessManager {
                             else products.Add(new ProductOutputInfo(p.isMainOutput, itemID, itemCount));
                         }
                     }
+                    if (GetRandDouble(ref __instance.seed) < 0.02) {
+                        AddItemToModData(IFE残片, 1, 0, false);
+                    }
                 }
             }
         } else {
