@@ -36,9 +36,7 @@ public static class VipFeatures {
         Exp += exp / itemValue[IFE宇宙奖券] * 50;
         while (Exp >= ExpLevelUp) {
             Level++;
-            for (int i = 0; i < 4; i++) {
-                TicketRaffle.FreshPool(i);
-            }
+            FE.Logic.Manager.GachaService.InitPools();
         }
     }
 

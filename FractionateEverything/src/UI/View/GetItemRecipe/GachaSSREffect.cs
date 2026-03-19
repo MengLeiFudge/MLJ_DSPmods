@@ -16,8 +16,7 @@ public class GachaSSREffect : MonoBehaviour {
     private bool _skipped = false;
     
     public System.Action OnComplete;
-    
-    // 工厂方法：在指定Canvas下创建
+
     public static GachaSSREffect Create(Transform canvasParent) {
         var go = new GameObject("GachaSSREffect");
         go.transform.SetParent(canvasParent, false);
@@ -92,8 +91,8 @@ public class GachaSSREffect : MonoBehaviour {
         _skipButton.onClick.AddListener(() => _skipped = true);
     }
     
-    // 播放演出
-    public void Play(GachaResult result) {
+    public void Play(GachaResult result, System.Action onComplete = null) {
+        if (onComplete != null) OnComplete = onComplete;
         gameObject.SetActive(true);
         _skipped = false;
         StartCoroutine(PlayCoroutine(result));

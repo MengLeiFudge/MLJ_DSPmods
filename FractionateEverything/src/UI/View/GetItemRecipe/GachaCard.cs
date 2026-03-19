@@ -78,16 +78,22 @@ public class GachaCard : MonoBehaviour {
         return card;
     }
     
-    // 设置卡片数据（抽卡结果），重置为背面朝上
     public void SetResult(GachaResult result) {
         Result = result;
         IsRevealed = false;
         _button.interactable = true;
-        
         _backImage.gameObject.SetActive(true);
         _frontImage.gameObject.SetActive(false);
         _glowImage.gameObject.SetActive(false);
-        
+        transform.localScale = Vector3.one;
+    }
+
+    public void ResetToBack() {
+        IsRevealed = false;
+        _button.interactable = false;
+        _backImage.gameObject.SetActive(true);
+        _frontImage.gameObject.SetActive(false);
+        _glowImage.gameObject.SetActive(false);
         transform.localScale = Vector3.one;
     }
     
