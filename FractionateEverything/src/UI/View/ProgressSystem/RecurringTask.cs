@@ -126,7 +126,7 @@ public static class RecurringTask {
         txtTaskNames[index].text = $"[{taskCategoryKeys[index].Translate()}] {taskNameKeys[index].Translate()}"
             .WithColor(completed ? Green : Orange);
         txtProgress[index].text = $"{progress}/{targets[index]}";
-        txtProgress[index].color = completed ? new Color(0.45f, 1f, 0.45f, 1f) : new Color(1f, 1f, 1f, 0.9f);
+        txtProgress[index].color = completed ? Green : White;
 
         txtRewards[index].text = GetRewardText(index).WithColor(Blue);
 

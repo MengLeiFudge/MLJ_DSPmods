@@ -34,6 +34,8 @@ public static void UpdateUI() { ... }
 - `TicketRaffle` — ticket-based random draw, managed by `TicketRaffle.GameMain_FixedUpdate_Postfix`
 - `LimitedTimeStore` — timed shop refresh, managed by `LimitedTimeStore.GameData_FixedUpdate_Postfix`
 
+**Text color rule (mandatory)** — In `UI/View/*`, do not hardcode colors with `new Color(...)` or raw hex rich-text color tags. Always use color constants from `Utils/RichTextUtils.cs` (`Gray/White/Green/Blue/Purple/Red/Orange/Gold`) and format via `WithColor(...)` (or assign those constants directly to `Text.color`).
+
 ## Large File Warning
 
 `TicketRaffle.cs` (1262 lines) — do not add more features; extract to a helper class if needed.
