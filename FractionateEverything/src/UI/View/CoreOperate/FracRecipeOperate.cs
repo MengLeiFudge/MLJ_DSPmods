@@ -236,7 +236,8 @@ public static class FracRecipeOperate {
             ShowTextLine(line++, "配方不存在！".Translate().WithColor(Red));
         } else if (recipe.Locked) {
             string headerLocked = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
-            ShowTextLine(line++, headerLocked + " " + "分馏配方未解锁".Translate().WithColor(Red));
+            int recipeColor = recipe.MatrixID - I电磁矩阵;
+            ShowTextLine(line++, $"{headerLocked.WithColor(recipeColor)} {"分馏配方未解锁".Translate().WithColor(Gray)}");
         } else {
             // ---- 左列内容 ----
 
@@ -324,7 +325,7 @@ public static class FracRecipeOperate {
     // ==================== 右列：强化等级表 ====================
 
     private static void UpdateLevelColumn(BaseRecipe recipe) {
-        int currentLevel = recipe?.Level ?? -2;// -2=null, -1=locked, >=0=有效等级
+        int currentLevel = recipe == null ? -2 : recipe.Locked ? -1 : recipe.Level;// -2=null, -1=locked, >=0=有效等级
 
         // 标题行（放在 txtRecipeInfoBaseY）
         string headerText;
@@ -339,7 +340,7 @@ public static class FracRecipeOperate {
         } else {
             headerText = $"{"当前配方强化等级".Translate()} +{currentLevel}";
         }
-        txtLevelInfo[0].text = headerText.WithColor(currentLevel >= 0 ? Orange : Red);
+        txtLevelInfo[0].text = headerText.WithColor(currentLevel >= 0 ? Orange : Gray);
         NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, txtRecipeInfoBaseY);
 
         // 每个等级（+0 到 +10），从标题下一行开始（避免与标题行重叠）
