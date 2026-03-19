@@ -260,7 +260,7 @@ public static class DevelopmentDiary {
             + "Advertisement: If you want to quantify the production, we recommend using the web calculator [https://dsp-calc.pro/]\n\n"
             + "Version 1.5.0 is still in the works, and it's more of a pain in the ass than I expected.\n"
             + "The design part is basically finished at the moment, and I'm in the code-writing stage, though the UI aspect might be a challenge.\n"
-            + "In new version, a fractionator similar to Trash Recycle Fractionator will be added for unlocking fractionation recipes, and providing currency to the store.\n"
+            + "In new version, a fractionator similar to Trash Rectification Fractionator will be added for unlocking fractionation recipes, and providing currency to the store.\n"
             + "Recipes have 'star' and 'rarity' attribute, which indicate the efficiency and rarity of the recipe, respectively.\n"
             + "In addition to fixed fractionation recipes, an optional fractionate recipe can be customized for output, allowing items to be reorganized in the early stages!\n"
             + $"The above is all that's included in this update. As always, thank you for your support! {"Have fun with fractionation!".WithColor(Orange)}",

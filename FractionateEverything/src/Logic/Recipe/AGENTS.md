@@ -10,7 +10,7 @@ BaseRecipe (abstract)
 ├── MineralCopyRecipe     — 1A → 2A (矿物复制)
 ├── PointAggregateRecipe  — 增产点数聚集 (overrides GetOutputs)
 ├── ConversionRecipe      — 1A → X·B + Y·C (转化，单路锁定)
-└── RecycleRecipe         — 回收 (CreateAll 几乎全部注释，WIP)
+└── RectificationRecipe  — 精馏 (物品→奖券/精华/核心，Level越高副产物概率越高)
 
 VanillaRecipe             — NOT a BaseRecipe subclass; wraps vanilla recipe upgrades
 ERecipe (enum)            — recipe type enum + extension methods
@@ -52,4 +52,4 @@ public abstract class BaseRecipe {
 - `fluidInputInc` must be passed through to `outputInc` (proliferator point flow)
 - `OutputMain` vs `OutputAppend`: primary product → `OutputMain`, byproduct → `OutputAppend`
 - `ConversionRecipe.CurrentLockedOutputId` is static (not thread-safe); don't parallelize recipe ticks
-- `RecycleRecipe` is incomplete — `CreateAll()` body is commented out; do not rely on it
+- `RectificationRecipe` overrides `GetOutputs()` to add level-dependent essence/core byproducts
