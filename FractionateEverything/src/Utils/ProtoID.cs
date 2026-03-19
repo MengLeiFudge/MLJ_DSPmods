@@ -472,6 +472,9 @@ public static partial class Utils {
     internal const int IFE符文原胚史诗 = 8055;
     internal const int IFE符文原胚传说 = 8056;
     internal const int IFE符文原胚神话 = 8057;
+    internal const int IFE普通抽卡券 = 8058;
+    internal const int IFE精选抽卡券 = 8059;
+    internal const int IFE残片 = 8060;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;
