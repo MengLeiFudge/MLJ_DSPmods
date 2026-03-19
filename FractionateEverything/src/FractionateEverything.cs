@@ -151,6 +151,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     private void Start() {
         MyWindowManager.InitBaseObjects();
         MyWindowManager.Enable(true);
+        GachaService.InitPools();
     }
 
     private void OnDestroy() {
@@ -256,6 +257,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Building", BuildingManager.Import),
             ("Item", ItemManager.Import),
             ("Rune", RuneManager.Import),
+            ("Gacha", GachaManager.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
@@ -271,6 +273,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Building", BuildingManager.Export),
             ("Item", ItemManager.Export),
             ("Rune", RuneManager.Export),
+            ("Gacha", GachaManager.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -295,6 +298,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         RuneManager.IntoOtherSave();
+        GachaManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 
