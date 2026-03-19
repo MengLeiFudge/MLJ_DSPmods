@@ -240,12 +240,12 @@ public static class ItemManager {
         recipe.IconTag = "hwjq";
 
         item = ProtoRegistry.RegisterItem(IFE普通抽卡券, "普通抽卡券", "I普通抽卡券",
-            "Assets/fe/standard-draw-ticket", tab分馏 * 1000 + 108, 100, EItemType.Product,
+            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 108, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
         item.IconTag = "pycjq";
 
         item = ProtoRegistry.RegisterItem(IFE精选抽卡券, "精选抽卡券", "I精选抽卡券",
-            "Assets/fe/premium-draw-ticket", tab分馏 * 1000 + 109, 100, EItemType.Product,
+            "Assets/fe/universe-ticket", tab分馏 * 1000 + 109, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.IconTag = "jxcjq";
 

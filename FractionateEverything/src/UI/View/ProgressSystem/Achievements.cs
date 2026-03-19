@@ -308,6 +308,7 @@ public static class Achievements {
         txtUnlockedSummary = wnd.AddText2(x + 235f, y, tab, "动态刷新", 14, "txtAchievementUnlockedSummary");
         txtUnlockedSummary.supportRichText = true;
 
+        float achievementRowSpacing = 21f;
         y += 26f;
         txtHiddenSummary = wnd.AddText2(x, y, tab, "动态刷新", 14, "txtAchievementHiddenSummary");
         txtHiddenSummary.supportRichText = true;
@@ -344,7 +345,7 @@ public static class Achievements {
             btnClaims[j] = wnd.AddButton(actionX + x, y, actionW, tab, "领取", 13, $"btnAchievementClaim{j}",
                 () => ClaimAchievementReward(j));
 
-            y += 26f;
+            y += achievementRowSpacing;
         }
     }
 
