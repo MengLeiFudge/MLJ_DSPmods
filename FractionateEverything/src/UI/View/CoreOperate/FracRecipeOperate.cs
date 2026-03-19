@@ -237,7 +237,7 @@ public static class FracRecipeOperate {
         } else if (recipe.Locked) {
             string headerLocked = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
             int recipeColor = recipe.MatrixID - I电磁矩阵;
-            ShowTextLine(line++, $"{headerLocked.WithColor(recipeColor)} {"分馏配方未解锁".Translate().WithColor(Gray)}");
+            ShowTextLine(line++, $"{headerLocked.WithColor(recipeColor)} {"分馏配方未解锁".Translate().WithColor(Red)}");
         } else {
             // ---- 左列内容 ----
 
