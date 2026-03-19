@@ -105,7 +105,7 @@ public static partial class Utils {
         NormalizeRectWithMidLeft(slider, x, y);
     }
 
-    public static (float, float) GetPosition(int index, int count, float totalPx = 1212f) {
+    public static (float, float) GetPosition(int index, int count, float totalPx = 1196f) {
         float targetLen = (totalPx - (count - 1) * 20) / count;
         float targetPx = index * (targetLen + 20);
         return (targetPx, targetLen);
