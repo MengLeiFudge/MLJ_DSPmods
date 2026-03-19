@@ -32,8 +32,10 @@ public static class MainWindow {
         ImportantItem.AddTranslations();
         RuneMenu.AddTranslations();
         Register("资源获取", "Resource Collection");
+        GachaWindow.AddTranslations();
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
+        TicketExchange.AddTranslations();
         Register("进度系统", "Progress System");
         MainTask.AddTranslations();
         RecurringTask.AddTranslations();
@@ -59,6 +61,7 @@ public static class MainWindow {
 
         TicketRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
+        TicketExchange.LoadConfig(configFile);
 
         MainTask.LoadConfig(configFile);
         RecurringTask.LoadConfig(configFile);
@@ -98,8 +101,10 @@ public static class MainWindow {
         ImportantItem.CreateUI(wnd, trans);
         RuneMenu.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "资源获取");
+        GachaWindow.CreateInstance();
         TicketRaffle.CreateUI(wnd, trans);
         LimitedTimeStore.CreateUI(wnd, trans);
+        TicketExchange.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "进度系统");
         MainTask.CreateUI(wnd, trans);
         RecurringTask.CreateUI(wnd, trans);
@@ -127,6 +132,7 @@ public static class MainWindow {
 
         TicketRaffle.UpdateUI();
         LimitedTimeStore.UpdateUI();
+        TicketExchange.UpdateUI();
 
         MainTask.UpdateUI();
         RecurringTask.UpdateUI();
@@ -197,6 +203,7 @@ public static class MainWindow {
             ("RuneMenu", RuneMenu.Import),
             ("TicketRaffle", TicketRaffle.Import),
             ("LimitedTimeStore", LimitedTimeStore.Import),
+            ("TicketExchange", TicketExchange.Import),
             ("MainTask", MainTask.Import),
             ("RecurringTask", RecurringTask.Import),
             ("Achievements", Achievements.Import),
@@ -219,6 +226,7 @@ public static class MainWindow {
             ("RuneMenu", RuneMenu.Export),
             ("TicketRaffle", TicketRaffle.Export),
             ("LimitedTimeStore", LimitedTimeStore.Export),
+            ("TicketExchange", TicketExchange.Export),
             ("MainTask", MainTask.Export),
             ("RecurringTask", RecurringTask.Export),
             ("Achievements", Achievements.Export),
@@ -242,6 +250,7 @@ public static class MainWindow {
 
         TicketRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();
+        TicketExchange.IntoOtherSave();
 
         MainTask.IntoOtherSave();
         RecurringTask.IntoOtherSave();
