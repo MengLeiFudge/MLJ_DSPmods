@@ -243,7 +243,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 **职责要求：** 主代理下发任务时，必须在 prompt 中明确说明本轮的 commit 策略，不能让"代码已改完但暂不提交"成为默认结束状态。
 
-**并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。
+**并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。**git 操作本身也不能并行**——git 使用单一仓库锁（`.git/index.lock`），并发执行 `git add`/`git commit` 即使针对不同文件也会导致锁冲突，只有一个能成功。所有 git 操作必须串行执行。
 
 **commit 要求：**
 - 构建无错误（`0 Error(s)`）后方可 commit；Warning 不作硬性要求（如未使用变量等无害 warning 可忽略）
