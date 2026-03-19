@@ -118,6 +118,8 @@ public static class RecipeManager {
         return RecipeTypeArr[(int)recipeType][inputId] as T;
     }
 
+    public static IReadOnlyList<BaseRecipe> AllRecipes => RecipeList;
+
     public static List<BaseRecipe> GetRecipesByType(ERecipe recipeType) {
         return RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
     }

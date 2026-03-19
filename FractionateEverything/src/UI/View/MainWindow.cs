@@ -101,7 +101,6 @@ public static class MainWindow {
         ImportantItem.CreateUI(wnd, trans);
         RuneMenu.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "资源获取");
-        GachaWindow.CreateInstance();
         TicketRaffle.CreateUI(wnd, trans);
         LimitedTimeStore.CreateUI(wnd, trans);
         TicketExchange.CreateUI(wnd, trans);
