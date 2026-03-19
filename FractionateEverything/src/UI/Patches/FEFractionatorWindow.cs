@@ -75,9 +75,7 @@ public static class FEFractionatorWindow {
     // 一次性记录的原版元素 localPosition
     private static Vector3 _itemBoxLocalPos;
     private static Vector3 _oriBoxLocalPos;
-    private static Vector3 _productProbLocalPos;
     private static Vector3 _speedArrowParentLocalPos;
-    private static float _areaHeight;
     private static float _layoutOffsetX;
 
     private static string GetRelativePath(Transform root, Transform target) {
