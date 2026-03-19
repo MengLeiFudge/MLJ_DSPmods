@@ -166,7 +166,8 @@ public static class FracRecipeOperate {
                 onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) - 1); });
             wnd.AddButton(2, 4, y, tab, "等级+1",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) + 1); });
-            wnd.AddButton(3, 4, y, tab, "等级升满",
+            (float maxLevelX, float maxLevelWidth) = GetPosition(3, 4);
+            wnd.AddButton(maxLevelX, y, maxLevelWidth - 6f, tab, "等级升满",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo(10); });
             y += 36f;
         }
