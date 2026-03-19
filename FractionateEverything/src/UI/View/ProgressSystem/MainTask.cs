@@ -207,9 +207,16 @@ public static class MainTask {
 
         btnClaim.gameObject.SetActive(true);
         bool canClaim = completed && !rewardClaimed;
+        bool alreadyClaimed = completed && rewardClaimed;
         btnClaim.enabled = canClaim;
         btnClaim.button.interactable = canClaim;
-        btnClaim.SetText(canClaim ? "领取奖励".Translate() : "已领取".Translate());
+        if (canClaim) {
+            btnClaim.SetText("领取奖励".Translate());
+        } else if (alreadyClaimed) {
+            btnClaim.SetText("已领取".Translate());
+        } else {
+            btnClaim.SetText("进行中".Translate());
+        }
     }
 
     private static void ClaimCurrentReward() {
