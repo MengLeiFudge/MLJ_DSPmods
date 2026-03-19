@@ -51,6 +51,18 @@ public static class ItemManager {
         Register("I黑雾奖券",
             "A high-tech ticket with a lot of dark fog matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
             "一张高科技奖券，内部封装了大量黑雾矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
+        Register("普通抽卡券", "Standard Draw Ticket");
+        Register("I普通抽卡券",
+            "A standard ticket for drawing from the permanent and UP pools in the fractionation data centre.",
+            "可在分馏数据中心常驻池和UP池中使用的标准抽卡券。");
+        Register("精选抽卡券", "Premium Draw Ticket");
+        Register("I精选抽卡券",
+            "A premium ticket for drawing from the UP and limited pools in the fractionation data centre.",
+            "可在分馏数据中心UP池和限定池中使用的精选抽卡券。");
+        Register("残片", "Fragment");
+        Register("I残片",
+            "Fragments produced as a byproduct of fractionation. Can be exchanged for draw tickets.",
+            "分馏过程中产生的副产物残片，可兑换为抽卡券。");
 
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
@@ -227,6 +239,20 @@ public static class ItemManager {
         item.IconTag = "hwjq";
         recipe.IconTag = "hwjq";
 
+        item = ProtoRegistry.RegisterItem(IFE普通抽卡券, "普通抽卡券", "I普通抽卡券",
+            "Assets/fe/standard-draw-ticket", tab分馏 * 1000 + 108, 100, EItemType.Product,
+            ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
+        item.IconTag = "pycjq";
+
+        item = ProtoRegistry.RegisterItem(IFE精选抽卡券, "精选抽卡券", "I精选抽卡券",
+            "Assets/fe/premium-draw-ticket", tab分馏 * 1000 + 109, 100, EItemType.Product,
+            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
+        item.IconTag = "jxcjq";
+
+        item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
+            "Assets/fe/fragment", tab分馏 * 1000 + 110, 100, EItemType.Material,
+            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
+        item.IconTag = "cpfragment";
 
         item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
@@ -398,6 +424,10 @@ public static class ItemManager {
         itemValue[IFE产能精华] = 200.0f;
         itemValue[IFE节能精华] = 200.0f;
         itemValue[IFE增产精华] = 200.0f;
+        //设置抽卡券价值
+        itemValue[IFE普通抽卡券] = itemValue[I能量矩阵];
+        itemValue[IFE精选抽卡券] = itemValue[I引力矩阵];
+        itemValue[IFE残片] = 1.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
