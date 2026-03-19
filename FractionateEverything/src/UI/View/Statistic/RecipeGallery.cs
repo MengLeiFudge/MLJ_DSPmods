@@ -21,6 +21,10 @@ public static class RecipeGallery {
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 2, RecipeCount + 2];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
+    public static float GallerySuccessBonus { get; private set; } = 0f;
+    public static float GalleryDestroyReduction { get; private set; } = 0f;
+    public static float GalleryDoubleBonus { get; private set; } = 0f;
+
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
 
@@ -60,7 +64,38 @@ public static class RecipeGallery {
         recipeUnlockInfoText[MatrixCount + 1, 0].text = "总计".Translate();
     }
 
+    public static void UpdateGalleryBonuses() {
+        int total = 0;
+        int unlocked = 0;
+
+        foreach (var recipeType in RecipeTypes) {
+            var recipes = GetRecipesByType(recipeType);
+            total += recipes.Count;
+            unlocked += recipes.Count(r => r.Unlocked);
+        }
+
+        if (total == 0) {
+            GallerySuccessBonus = 0f;
+            GalleryDestroyReduction = 0f;
+            GalleryDoubleBonus = 0f;
+            return;
+        }
+
+        float ratio = (float)unlocked / total;
+
+        float sb = 0f;
+        if (ratio >= 0.25f) sb += 0.02f;
+        if (ratio >= 0.50f) sb += 0.05f;
+        float dr = ratio >= 0.75f ? 0.01f : 0f;
+        float db = ratio >= 1.00f ? 0.03f : 0f;
+
+        GallerySuccessBonus = sb;
+        GalleryDestroyReduction = dr;
+        GalleryDoubleBonus = db;
+    }
+
     public static void UpdateUI() {
+        UpdateGalleryBonuses();
         if (!tab.gameObject.activeSelf) {
             return;
         }
