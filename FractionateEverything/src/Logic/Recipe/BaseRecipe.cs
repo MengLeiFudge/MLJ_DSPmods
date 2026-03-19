@@ -193,6 +193,28 @@ public abstract class BaseRecipe(
     public bool IsMaxLevel => Level >= 10;
 
     /// <summary>
+    /// 回响等级，每次退火+1，永久保留
+    /// </summary>
+    public int EchoLevel { get; private set; } = 0;
+
+    /// <summary>
+    /// 回响加成（每点EchoLevel提供+2%成功率）
+    /// </summary>
+    public float EchoBonus => EchoLevel * 0.02f;
+
+    /// <summary>
+    /// 退火：重置Level为0，EchoLevel+1。需要配方已满级。
+    /// </summary>
+    public bool Anneal() {
+        if (!IsMaxLevel) return false;
+        lock (this) {
+            Level = 0;
+            EchoLevel++;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// 通过抽奖获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则等级+1，并检查是否可突破。
     /// </summary>
@@ -250,7 +272,8 @@ public abstract class BaseRecipe(
                     else LogWarning($"Output {id} not found in {TypeName} append outputs");
                 }
             }),
-            ("Meta", br => { Level = Math.Max(-1, Math.Min(10, br.ReadInt32())); })
+            ("Meta", br => { Level = Math.Max(-1, Math.Min(10, br.ReadInt32())); }),
+            ("EchoLevel", br => { EchoLevel = br.ReadInt32(); })
         );
     }
 
@@ -270,7 +293,8 @@ public abstract class BaseRecipe(
                     bw.Write(info.OutputTotalCount);
                 }
             }),
-            ("Meta", bw => { bw.Write(Level); })
+            ("Meta", bw => { bw.Write(Level); }),
+            ("EchoLevel", bw => { bw.Write(EchoLevel); })
         );
         // 子类特定数据由重写的方法在 Export 之后或通过额外的 Block 处理
     }
