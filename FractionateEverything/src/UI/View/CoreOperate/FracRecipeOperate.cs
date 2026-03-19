@@ -42,12 +42,12 @@ public static class FracRecipeOperate {
 
     // ==================== 布局常量 ====================
 
-    private const int InfoLineCount = 30;// 左列文本行数
+    private const int InfoLineCount = 28;// 左列文本行数
     private const int LevelLineCount = 13;// 右列: 标题 + +0 到 +10 + 空行
-    private const float RightColX = 380f;// 右列X起始位置
+    private const float RightColX = 620f;// 右列X起始位置
     private const float IconSize = 24f;
     private const float TextOffsetWithIcon = 28f;// 图标宽度 + 间距
-    private const float LineHeight = 24f;
+    private const float LineHeight = 22f;
 
     // 产物行布局（格式：概率 | 图标 | 名称×数目）
     private const float ProductRatioX = 0f;// 左侧概率文本X

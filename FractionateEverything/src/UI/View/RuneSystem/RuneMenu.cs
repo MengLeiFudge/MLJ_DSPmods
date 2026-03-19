@@ -235,56 +235,49 @@ public static class RuneMenu {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         tab = wnd.AddTab(trans, "符文系统");
 
-        float x = 0f;
-        float y = 18f;
+        float leftX = 0f;
+        float rightX = 660f;
 
-        // Total Stats
-        totalStatsText = wnd.AddText2(x, y, tab, "总加成：");
+        totalStatsText = wnd.AddText2(rightX, 18f, tab, "总加成：");
         totalStatsText.fontSize = 16;
-        y += 60f;
 
-        // Equipped Runes
-        wnd.AddText2(x, y, tab, "已装备符文").fontSize = 16;
-        y += 35f;
+        wnd.AddText2(leftX, 18f, tab, "已装备符文").fontSize = 16;
+        float slotY = 53f;
         for (int i = 0; i < 5; i++) {
             int index = i;
             (float px, float width) = GetPosition(i, 5);
-            slotButtons[i] = wnd.AddButton(px, y, width - 10f, tab, "空槽位", 14, "slot-" + i, () => OnSlotClick(index));
-            slotTexts[i] = wnd.AddText2(px, y + 30f, tab, "", 12);
+            slotButtons[i] = wnd.AddButton(px, slotY, width - 10f, tab, "空槽位", 14, "slot-" + i, () => OnSlotClick(index));
+            slotTexts[i] = wnd.AddText2(px, slotY + 30f, tab, "", 12);
             slotTexts[i].alignment = TextAnchor.MiddleCenter;
             slotTexts[i].rectTransform.sizeDelta = new Vector2(width - 10f, 20f);
         }
-        y += 85f;
 
-        // Filter and Sort Controls
-        runeCountText = wnd.AddText2(x, y, tab, "持有符文");
+        float filterTitleY = 120f;
+        runeCountText = wnd.AddText2(leftX, filterTitleY, tab, "持有符文");
         runeCountText.fontSize = 16;
-        y += 35f;
-
-        float filterY = y;
-        filterStarButton = wnd.AddButton(x, filterY, 140f, tab, "筛选星级: 全部", 12, "filter-star", OnFilterStarClick);
-        filterMainStatButton = wnd.AddButton(x + 150f, filterY, 140f, tab, "筛选主词条: 全部", 12, "filter-main",
+        float filterRow1Y = 155f;
+        filterStarButton = wnd.AddButton(leftX, filterRow1Y, 140f, tab, "筛选星级: 全部", 12, "filter-star", OnFilterStarClick);
+        filterMainStatButton = wnd.AddButton(leftX + 150f, filterRow1Y, 140f, tab, "筛选主词条: 全部", 12, "filter-main",
             OnFilterMainStatClick);
         filterSubStatButton =
-            wnd.AddButton(x + 300f, filterY, 140f, tab, "筛选副词条: 全部", 12, "filter-sub", OnFilterSubStatClick);
-        sortButton = wnd.AddButton(x + 450f, filterY, 120f, tab, "排序: 无排序", 12, "sort-btn", OnSortClick);
-        y += 40f;
+            wnd.AddButton(leftX + 300f, filterRow1Y, 140f, tab, "筛选副词条: 全部", 12, "filter-sub", OnFilterSubStatClick);
+        sortButton = wnd.AddButton(leftX + 450f, filterRow1Y, 120f, tab, "排序: 无排序", 12, "sort-btn", OnSortClick);
 
-        resetFilterButton = wnd.AddButton(x, y, 100f, tab, "重置筛选", 12, "reset-filter", OnResetFilterClick);
-        selectAllButton = wnd.AddButton(x + 110f, y, 100f, tab, "全选", 12, "select-all", OnSelectAllClick);
+        float filterRow2Y = 195f;
+        resetFilterButton = wnd.AddButton(leftX, filterRow2Y, 100f, tab, "重置筛选", 12, "reset-filter", OnResetFilterClick);
+        selectAllButton = wnd.AddButton(leftX + 110f, filterRow2Y, 100f, tab, "全选", 12, "select-all", OnSelectAllClick);
         batchDisassembleButton =
-            wnd.AddButton(x + 220f, y, 100f, tab, "批量分解", 12, "batch-disassemble", OnBatchDisassembleClick);
-        y += 45f;
+            wnd.AddButton(leftX + 220f, filterRow2Y, 100f, tab, "批量分解", 12, "batch-disassemble", OnBatchDisassembleClick);
 
-        // Rune Buttons Grid
-        float buttonSize = 60f;
-        float buttonSpacing = 20f;
+        float gridY = 225f;
+        float buttonSize = 55f;
+        float buttonSpacing = 15f;
 
         for (int i = 0; i < RuneButtonCount; i++) {
             int row = i / RuneButtonColumns;
             int col = i % RuneButtonColumns;
-            float px = x + col * (buttonSize + buttonSpacing);
-            float py = y + row * (buttonSize + buttonSpacing);
+            float px = leftX + col * (buttonSize + buttonSpacing);
+            float py = gridY + row * (buttonSize + buttonSpacing);
 
             // Create image button with essence icon (initially null)
             runeButtons[i] = wnd.AddImageButton(px, py, tab, null, "rune-btn-" + i)
@@ -320,21 +313,15 @@ public static class RuneMenu {
             runeLevelTexts[i].rectTransform.sizeDelta = new(buttonSize, 20f);
         }
 
-        y += RuneButtonRows * (buttonSize + buttonSpacing) + 10f;
-
-        // Details Area
-        wnd.AddText2(x, y, tab, "符文详情").fontSize = 16;
-        y += 35f;
-        runeDetailText = wnd.AddText2(x, y, tab, "请选择一个符文查看详情", 14);
-        runeDetailText.rectTransform.sizeDelta = new Vector2(400, 180);
+        wnd.AddText2(rightX, 80f, tab, "符文详情").fontSize = 16;
+        runeDetailText = wnd.AddText2(rightX, 115f, tab, "请选择一个符文查看详情", 14);
+        runeDetailText.rectTransform.sizeDelta = new Vector2(420, 200);
         runeDetailText.alignment = TextAnchor.UpperLeft;
 
-        float bx = 420f;
-        upgradeButton = wnd.AddButton(bx, y, 160f, tab, "强化", 16, "upgrade-btn", OnUpgradeClick);
-        y += 45f;
-        equipButton = wnd.AddButton(bx, y, 160f, tab, "装备", 16, "equip-btn", OnEquipClick);
-        y += 45f;
-        disassembleButton = wnd.AddButton(bx, y, 160f, tab, "分解", 16, "disassemble-btn", OnDisassembleClick);
+        float actionButtonY = 330f;
+        upgradeButton = wnd.AddButton(rightX, actionButtonY, 160f, tab, "强化", 16, "upgrade-btn", OnUpgradeClick);
+        equipButton = wnd.AddButton(rightX, actionButtonY + 45f, 160f, tab, "装备", 16, "equip-btn", OnEquipClick);
+        disassembleButton = wnd.AddButton(rightX, actionButtonY + 90f, 160f, tab, "分解", 16, "disassemble-btn", OnDisassembleClick);
 
         UpdateFilterButtonTexts();
         UpdateDetailUI();

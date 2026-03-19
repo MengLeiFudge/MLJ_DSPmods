@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
+using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
@@ -10,6 +11,12 @@ namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
     public static long totalDraws;
+    private static RectTransform tab;
+    private static int selectedPoolId = GachaPool.PoolIdPermanentRecipe;
+    private static Text txtCurrentPool;
+    private static Text txtPoolDesc;
+    private static Text txtNormalTicketCount;
+    private static Text txtPremiumTicketCount;
 
     public static float[] RecipeValues => [
         (float)System.Math.Sqrt(itemValue[IFE电磁奖券] * 33.614f),
@@ -36,6 +43,7 @@ public static class TicketRaffle {
         Register("当前奖券", "Current ticket");
         Register("奖券数目", "Ticket count");
         Register("：", ": ");
+        Register("打开抽奖页面", "Open Gacha Window");
 
         Register("抽奖", "Draw");
         Register("自动百连", "Auto hundred draws");
@@ -84,11 +92,83 @@ public static class TicketRaffle {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) { }
+    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        tab = wnd.AddTab(trans, "奖券抽奖");
 
-    public static void UpdateUI() { }
+        float y = 20f;
+        txtCurrentPool = wnd.AddText2(0f, y, tab, "配方奖池", 16);
+        y += 40f;
 
-    public static void FreshPool(int poolId) { }
+        wnd.AddButton(0, 4, y, tab, "配方奖池", onClick: () => FreshPool(GachaPool.PoolIdPermanentRecipe));
+        wnd.AddButton(1, 4, y, tab, "原胚奖池", onClick: () => FreshPool(GachaPool.PoolIdPermanentBuilding));
+        wnd.AddButton(2, 4, y, tab, "UP池", onClick: () => FreshPool(GachaPool.PoolIdUp));
+        wnd.AddButton(3, 4, y, tab, "限定池", onClick: () => FreshPool(GachaPool.PoolIdLimited));
+        y += 42f;
+
+        txtPoolDesc = wnd.AddText2(0f, y, tab, "配方奖池说明", 14);
+        txtPoolDesc.rectTransform.sizeDelta = new(1150f, 88f);
+        y += 96f;
+
+        wnd.AddImageButton(0f, y, tab, LDB.items.Select(IFE普通抽卡券));
+        txtNormalTicketCount = wnd.AddText2(45f, y, tab, "普通抽卡券：0", 14);
+
+        wnd.AddImageButton(360f, y, tab, LDB.items.Select(IFE精选抽卡券));
+        txtPremiumTicketCount = wnd.AddText2(405f, y, tab, "精选抽卡券：0", 14);
+        y += 50f;
+
+        wnd.AddButton(0f, y, 220f, tab, "打开抽奖页面", 16, onClick: () => {
+            GachaWindow.OpenForPool(selectedPoolId);
+        });
+        wnd.AddButton(240f, y, 220f, tab, "抽奖", 16, onClick: () => {
+            GachaWindow.OpenForPool(selectedPoolId);
+        });
+
+        FreshPool(selectedPoolId);
+    }
+
+    public static void UpdateUI() {
+        if (tab == null || !tab.gameObject.activeSelf) {
+            return;
+        }
+
+        ItemProto normalTicket = LDB.items.Select(IFE普通抽卡券);
+        ItemProto premiumTicket = LDB.items.Select(IFE精选抽卡券);
+        int normalCount = GameMain.mainPlayer?.package.GetItemCount(IFE普通抽卡券) ?? 0;
+        int premiumCount = GameMain.mainPlayer?.package.GetItemCount(IFE精选抽卡券) ?? 0;
+
+        if (txtNormalTicketCount != null) {
+            txtNormalTicketCount.text = $"{normalTicket?.name ?? "普通抽卡券"}：{normalCount}";
+        }
+        if (txtPremiumTicketCount != null) {
+            txtPremiumTicketCount.text = $"{premiumTicket?.name ?? "精选抽卡券"}：{premiumCount}";
+        }
+    }
+
+    public static void FreshPool(int poolId) {
+        selectedPoolId = poolId;
+        string poolName = poolId switch {
+            GachaPool.PoolIdPermanentRecipe => "配方奖池".Translate(),
+            GachaPool.PoolIdPermanentBuilding => "原胚奖池".Translate(),
+            GachaPool.PoolIdUp => "UP池".Translate(),
+            GachaPool.PoolIdLimited => "限定池".Translate(),
+            _ => "配方奖池".Translate(),
+        };
+
+        string poolDescKey = poolId switch {
+            GachaPool.PoolIdPermanentRecipe => "配方奖池说明",
+            GachaPool.PoolIdPermanentBuilding => "原胚奖池说明",
+            GachaPool.PoolIdUp => "配方奖池说明",
+            GachaPool.PoolIdLimited => "符文奖池说明",
+            _ => "配方奖池说明",
+        };
+
+        if (txtCurrentPool != null) {
+            txtCurrentPool.text = poolName;
+        }
+        if (txtPoolDesc != null) {
+            txtPoolDesc.text = poolDescKey.Translate();
+        }
+    }
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks();

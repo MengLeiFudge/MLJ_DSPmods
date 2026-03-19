@@ -38,8 +38,8 @@ public static class BuildingOperate {
     private static int[] buildingReinforcementCost = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 
     private const int LevelLineCount = 15;
-    private const float RightColX = 380f;
-    private const float LineHeight = 24f;
+    private const float RightColX = 620f;
+    private const float LineHeight = 22f;
     private static float buildingInfoBaseY;
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
 
