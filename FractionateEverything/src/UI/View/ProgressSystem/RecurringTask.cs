@@ -44,6 +44,7 @@ public static class RecurringTask {
         Register("领取", "Claim");
         Register("已完成", "Completed");
         Register("已领取", "Claimed");
+        Register("进行中", "In Progress");
 
         Register("生产", "Production");
         Register("抽卡", "Draw");
@@ -137,9 +138,12 @@ public static class RecurringTask {
             return;
         }
 
+        string progressStatus = targets[index] > 0
+            ? $"{progress}/{targets[index]}"
+            : "进行中".Translate();
         txtStatus[index].text = claimedInThisCycle
             ? "已领取".Translate().WithColor(Green)
-            : "进度".Translate().WithColor(Orange);
+            : progressStatus.WithColor(Orange);
         btnClaims[index].button.interactable = false;
         btnClaims[index].SetText(claimedInThisCycle ? "已领取" : "领取");
     }
