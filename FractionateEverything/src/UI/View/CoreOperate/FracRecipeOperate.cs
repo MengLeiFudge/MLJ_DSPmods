@@ -340,7 +340,7 @@ public static class FracRecipeOperate {
         } else {
             headerText = $"{"当前配方强化等级".Translate()} +{currentLevel}";
         }
-        txtLevelInfo[0].text = headerText.WithColor(currentLevel >= 0 ? Orange : Gray);
+        txtLevelInfo[0].text = headerText.WithColor(currentLevel >= 0 ? Orange : Red);
         NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, txtRecipeInfoBaseY);
 
         // 每个等级（+0 到 +10），从标题下一行开始（避免与标题行重叠）
