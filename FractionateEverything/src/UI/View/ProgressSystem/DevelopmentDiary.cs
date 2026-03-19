@@ -8,9 +8,6 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ProgressSystem;
 
 public static class DevelopmentDiary {
-    private static RectTransform window;
-    private static RectTransform tab;
-
     private static Dictionary<string, int> programmingEvents;
 
     public static void AddTranslations() {

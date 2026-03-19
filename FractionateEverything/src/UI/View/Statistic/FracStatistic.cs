@@ -7,9 +7,6 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.Statistic;
 
 public static class FracStatistic {
-    private static RectTransform window;
-    private static RectTransform tab;
-
     public static void AddTranslations() {
         Register("分馏统计", "Frac Statistic");
     }
