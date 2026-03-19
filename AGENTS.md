@@ -231,7 +231,24 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 - Commit messages in **Chinese**, conventional style: `功能：`, `修复：`, `重构：`, `杂项：`
 - Atomic commits (one logical change per commit)
-- Do **not** commit unless explicitly asked
+- Do **not** push unless explicitly approved by the user
+
+### Commit Policy for Agents
+
+**核心原则：严禁积压未提交改动。** 任何代码改动必须被记录在 Git 历史中，不允许以"改了一堆文件但零 commit"的状态结束任务。即使用户没有明确要求，也应在构建通过后自动按逻辑单元 commit。
+
+**提交流程：** 主代理根据任务复杂度和风险决定提交方式：
+- 改动独立且风险较低 → 可由子代理直接 commit，主代理审查后如有问题再提交修复性 commit
+- 改动跨多个模块或风险较高 → 子代理完成后不 commit，由主代理审查通过后统一 commit
+
+**职责要求：** 主代理下发任务时，必须在 prompt 中明确说明本轮的 commit 策略，不能让"代码已改完但暂不提交"成为默认结束状态。
+
+**并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。
+
+**commit 要求：**
+- 构建无错误（`0 Error(s)`）后方可 commit；Warning 不作硬性要求（如未使用变量等无害 warning 可忽略）
+- 每个逻辑单元一个 commit，不批量堆积
+- **严禁 push**，除非用户明确批准
 
 ## AI Agent Notes
 
