@@ -80,10 +80,10 @@ public static class ItemManager {
         Register("I转化塔原胚",
             "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
             "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
-        Register("回收塔原胚", "Recycle Tower Proto");
-        Register("I回收塔原胚",
-            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Recycle Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到回收塔，也有较低几率得到分馏塔定向原胚。");
+        Register("精馏塔原胚", "Rectification Tower Proto");
+        Register("I精馏塔原胚",
+            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Rectification Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
+            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到精馏塔，也有较低几率得到分馏塔定向原胚。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
         Register("I分馏塔定向原胚",
             "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
@@ -278,9 +278,9 @@ public static class ItemManager {
         item.UnlockKey = -1;
         item.IconTag = "zhtyp";
 
-        item = ProtoRegistry.RegisterItem(IFE回收塔原胚, "回收塔原胚", "I回收塔原胚",
+        item = ProtoRegistry.RegisterItem(IFE精馏塔原胚, "精馏塔原胚", "I精馏塔原胚",
             "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(RecycleTower.color, Color.gray));
+            ProtoRegistry.GetDefaultIconDesc(RectificationTower.color, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = "hstyp";
 
@@ -412,13 +412,13 @@ public static class ItemManager {
         itemValue[IFE交互塔] = modFractionatorValue;
         itemValue[IFE转化塔] = modFractionatorValue;
         itemValue[IFE点数聚集塔] = modFractionatorValue;
-        itemValue[IFE回收塔] = modFractionatorValue;
+        itemValue[IFE精馏塔] = modFractionatorValue;
         itemValue[IFE分馏塔定向原胚] = directionalFracProtoValue;
         itemValue[IFE交互塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE矿物复制塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE点数聚集塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE回收塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
+        itemValue[IFE精馏塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         //设置精华价值
         itemValue[IFE速度精华] = 200.0f;
         itemValue[IFE产能精华] = 200.0f;

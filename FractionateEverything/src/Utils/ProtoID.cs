@@ -447,7 +447,7 @@ public static partial class Utils {
     internal const int IFE矿物复制塔原胚 = 8012;
     internal const int IFE点数聚集塔原胚 = 8013;
     internal const int IFE转化塔原胚 = 8014;
-    internal const int IFE回收塔原胚 = 8015;
+    internal const int IFE精馏塔原胚 = 8015;
     internal const int IFE分馏塔定向原胚 = 8016;
     internal const int IFE分馏配方核心 = 8017;
     internal const int IFE分馏塔增幅芯片 = 8018;
@@ -456,7 +456,7 @@ public static partial class Utils {
     internal const int IFE矿物复制塔 = 8022;
     internal const int IFE点数聚集塔 = 8023;
     internal const int IFE转化塔 = 8024;
-    internal const int IFE回收塔 = 8025;
+    internal const int IFE精馏塔 = 8025;
     internal const int IFE行星内物流交互站 = 8031;
     internal const int IFE星际物流交互站 = 8032;
     internal const int IFE速度精华 = 8041;
@@ -626,7 +626,7 @@ public static partial class Utils {
     internal const int MFE矿物复制塔 = 602;
     internal const int MFE点数聚集塔 = 603;
     internal const int MFE转化塔 = 604;
-    internal const int MFE回收塔 = 605;
+    internal const int MFE精馏塔 = 605;
     internal const int MFE行星内物流交互站 = 611;
     internal const int MFE星际物流交互站 = 612;
     internal const int MBC插件效果分享塔 = 621;
@@ -998,7 +998,7 @@ public static partial class Utils {
     internal const int RFE矿物复制塔 = 922;
     internal const int RFE点数聚集塔 = 923;
     internal const int RFE转化塔 = 924;
-    internal const int RFE回收塔 = 925;
+    internal const int RFE精馏塔 = 925;
     internal const int RFE行星内物流交互站 = 931;
     internal const int RFE星际物流交互站 = 932;
     internal const int RFE符文原胚普通 = 951;
@@ -1058,7 +1058,7 @@ public static partial class Utils {
     internal const int TFE矿物复制 = 1254;
     internal const int TFE增产点数聚集 = 1255;
     internal const int TFE物品转化 = 1256;
-    internal const int TFE物品回收 = 1257;
+    internal const int TFE物品精馏 = 1257;
     internal const int TFE行星内物流交互 = 1261;
     internal const int TFE星际物流交互 = 1262;
     internal const int TFE电磁奖券 = 1271;

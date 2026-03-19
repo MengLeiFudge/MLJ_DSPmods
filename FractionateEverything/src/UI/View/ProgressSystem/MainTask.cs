@@ -281,7 +281,7 @@ public static class MainTask {
 
     private static bool HasBuildingLevel6() {
         return InteractionTower.Level >= 6 || MineralReplicationTower.Level >= 6 || PointAggregateTower.Level >= 6
-            || ConversionTower.Level >= 6 || RecycleTower.Level >= 6;
+            || ConversionTower.Level >= 6 || RectificationTower.Level >= 6;
     }
 
     private static string GetBuildingProgressText() {
@@ -290,7 +290,7 @@ public static class MainTask {
             MineralReplicationTower.Level,
             PointAggregateTower.Level,
             ConversionTower.Level,
-            RecycleTower.Level,
+            RectificationTower.Level,
         ];
         int maxLevel = levels.Max();
         return string.Format("建筑等级进度".Translate(), maxLevel, 6);

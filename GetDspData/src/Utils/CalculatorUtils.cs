@@ -152,7 +152,7 @@ public static partial class Utils {
                 or IGB物质分解设施 or IGB苍穹粒子加速器 or IGB大气采集站 => 50f,
             I原油精炼厂 => 18f,
             I射线接收站 or IMS射线重构站 => 54.82f,
-            I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE转化塔 or IFE回收塔 => 12.96f,
+            I分馏塔 or IGB聚束液体汲取设施 or IFE交互塔 or IFE矿物复制塔 or IFE点数聚集塔 or IFE转化塔 or IFE精馏塔 => 12.96f,
             I微型粒子对撞机 => 45.12f,
             I能量枢纽 => 64f,
             I蓄电器 or I蓄电器满 or IGB同位素温差发电机 => 4f,

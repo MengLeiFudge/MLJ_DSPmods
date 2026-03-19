@@ -18,11 +18,11 @@ public static class BuildingOperate {
     private static ConfigEntry<int> BuildingTypeEntry;
     private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
     private static readonly int[] BuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE回收塔, IFE行星内物流交互站
+        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔, IFE行星内物流交互站
     ];
     private static readonly string[] BuildingTypeNames = [
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(), "转化塔".Translate(),
-        "回收塔".Translate(), "物流交互站".Translate()
+        "精馏塔".Translate(), "物流交互站".Translate()
     ];
     private static Text txtChipCount;
 
@@ -229,7 +229,7 @@ public static class BuildingOperate {
             IFE矿物复制塔 => ("质能裂变", "质能裂变说明", "零压循环", "零压循环说明"),
             IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "双重点数", "双重点数说明"),
             IFE转化塔 => ("因果溯源", "因果溯源说明", "单路锁定", "单路锁定说明"),
-            // 回收塔暂无特质说明
+            // 精馏塔暂无特质说明
             _ => (null, null, null, null),
         };
     }

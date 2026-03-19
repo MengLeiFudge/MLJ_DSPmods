@@ -29,9 +29,9 @@ public enum ERecipe {
     Conversion,
 
     /// <summary>
-    /// 回收配方
+    /// 精馏配方
     /// </summary>
-    Recycle,
+    Rectification,
 }
 
 public static class ERecipeExtension {
@@ -40,19 +40,19 @@ public static class ERecipeExtension {
         Register("建筑培养", "Building Train");
         Register("矿物复制", "Mineral Replication");
         Register("转化", "Conversion");
-        Register("回收", "Recycle");
+        Register("精馏", "Rectification");
         Register("点数聚集", "Point Aggregate");
         Register("未知配方", "Unknown Recipe");
         Register("建筑培养配方", "Building Train Recipe");
         Register("矿物复制配方", "Mineral Replication Recipe");
         Register("转化配方", "Conversion Recipe");
-        Register("回收配方", "Recycle Recipe");
+        Register("精馏配方", "Rectification Recipe");
         Register("点数聚集配方", "Point Aggregate Recipe");
     }
 
     public static readonly ERecipe[] RecipeTypes = Enum.GetValues(typeof(ERecipe))
         .Cast<ERecipe>()
-        .Where(t => t != ERecipe.PointAggregate && t != ERecipe.Recycle)
+        .Where(t => t != ERecipe.PointAggregate && t != ERecipe.Rectification)
         .ToArray();
 
     public static string[] RecipeTypeShortNames => RecipeTypes.Select(t => t.GetShortName()).ToArray();
@@ -65,7 +65,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => "建筑培养".Translate(),
             ERecipe.MineralCopy => "矿物复制".Translate(),
             ERecipe.Conversion => "转化".Translate(),
-            ERecipe.Recycle => "回收".Translate(),
+            ERecipe.Rectification => "精馏".Translate(),
             ERecipe.PointAggregate => "点数聚集".Translate(),
             _ => "未知".Translate()
         };
@@ -76,7 +76,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => "建筑培养配方".Translate(),
             ERecipe.MineralCopy => "矿物复制配方".Translate(),
             ERecipe.Conversion => "转化配方".Translate(),
-            ERecipe.Recycle => "回收配方".Translate(),
+            ERecipe.Rectification => "精馏配方".Translate(),
             ERecipe.PointAggregate => "点数聚集配方".Translate(),
             _ => "未知配方".Translate()
         };
@@ -87,7 +87,7 @@ public static class ERecipeExtension {
             ERecipe.BuildingTrain => IFE交互塔,
             ERecipe.MineralCopy => IFE矿物复制塔,
             ERecipe.Conversion => IFE转化塔,
-            ERecipe.Recycle => IFE回收塔,
+            ERecipe.Rectification => IFE精馏塔,
             ERecipe.PointAggregate => IFE点数聚集塔,
             _ => 0,
         };

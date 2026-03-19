@@ -183,13 +183,13 @@ public static class TechManager {
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
 
-        Register("T物品回收", "Item Deconstruction", "物品回收");
-        Register("物品回收描述",
+        Register("T物品精馏", "Item Deconstruction", "物品精馏");
+        Register("物品精馏描述",
             $"Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"物品回收科技可以将物品回收成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
-        Register("物品回收结果",
+            $"物品精馏科技可以将物品精馏成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+        Register("物品精馏结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了物品回收技术，可以将物品回收成制作它的原料了。");
+            "你已经掌握了物品精馏技术，可以将物品精馏成制作它的原料了。");
 
 
         Register("T行星内物流交互", "Item Deconstruction", "行星内物流交互");
@@ -460,17 +460,17 @@ public static class TechManager {
         tech物品转化.PropertyItemCounts = [200];
         tech物品转化.IconTag = "twpzh";
 
-        var tech物品回收 = ProtoRegistry.RegisterTech(
-            TFE物品回收, "T物品回收", "物品回收描述", "物品回收结果", "Assets/fe/tech物品分解",
+        var tech物品精馏 = ProtoRegistry.RegisterTech(
+            TFE物品精馏, "T物品精馏", "物品精馏描述", "物品精馏结果", "Assets/fe/tech物品分解",
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE回收塔],
+            [RFE精馏塔],
             GetTechPos(2, 6)
         );
-        tech物品回收.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品回收.PropertyOverrideItems = [I电磁矩阵];
-        tech物品回收.PropertyItemCounts = [200];
-        tech物品回收.IconTag = "twphs";
+        tech物品精馏.PreTechsImplicit = [TFE分馏塔原胚];
+        tech物品精馏.PropertyOverrideItems = [I电磁矩阵];
+        tech物品精馏.PropertyItemCounts = [200];
+        tech物品精馏.IconTag = "twpjl";
 
         var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
         var tech行星内物流交互 = ProtoRegistry.RegisterTech(
@@ -523,7 +523,7 @@ public static class TechManager {
     /// 当分馏塔上传至数据中心时，将解锁标记置为true。
     /// </summary>
     public static void CheckTechUnlockCondition(int itemId) {
-        if (itemId >= IFE交互塔 && itemId <= IFE回收塔) {
+        if (itemId >= IFE交互塔 && itemId <= IFE精馏塔) {
             techUnlockFlags[itemId - IFE交互塔] = true;
         }
     }
