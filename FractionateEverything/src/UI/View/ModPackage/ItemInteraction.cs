@@ -58,8 +58,7 @@ public static class ItemInteraction {
         float y = 18f;
         wnd.AddCheckBox(x, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
         float popupY = y + 36f / 2;
-        (float searchBtnX, float searchBtnWidth) = GetPosition(3, 4);
-        wnd.AddButton(searchBtnX, y, searchBtnWidth - 6f, tab, "查找指定物品",
+        wnd.AddButton(3, 4, y, tab, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
         y += 36f;
         Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
