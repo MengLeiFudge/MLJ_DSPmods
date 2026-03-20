@@ -45,13 +45,20 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率，数值越大时，增产剂对分馏效果越有明显提升
     /// </summary>
-    public float DestroyRatio => Level switch {
+    public float DestroyRatio {
+        get {
+            float raw = Level switch {
         < 7 => 0.04f,
         < 8 => 0.03f,
         < 9 => 0.02f,
         < 10 => 0.01f,
         _ => 0f,
-    };
+            };
+            float reduce = GachaGalleryBonusManager.GetDestroyReduction(RecipeType);
+            float result = raw - reduce;
+            return result > 0f ? result : 0f;
+        }
+    }
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。
@@ -75,7 +82,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 产物翻倍概率
     /// </summary>
-    public float DoubleOutputRatio => Level * 0.05f;
+    public float DoubleOutputRatio => Level * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(RecipeType);
 
     /// <summary>
     /// 获取某次输出的执行结果。

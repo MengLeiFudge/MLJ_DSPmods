@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
@@ -21,9 +22,7 @@ public static class RecipeGallery {
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 2, RecipeCount + 2];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
-    public static float GallerySuccessBonus { get; private set; } = 0f;
-    public static float GalleryDestroyReduction { get; private set; } = 0f;
-    public static float GalleryDoubleBonus { get; private set; } = 0f;
+    private static Text _bonusInfoText;
 
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
@@ -31,6 +30,9 @@ public static class RecipeGallery {
         Register("配方解锁情况",
             $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}):",
             $"配方解锁情况如下（{"完全升级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)}）：");
+        Register("图鉴加成",
+            "Gallery bonus: >=25% success +2%, >=50% success +5%, >=75% destroy -1%, >=100% double +3%",
+            "图鉴加成：>=25% 成功+2%，>=50% 成功+5%，>=75% 损毁-1%，>=100% 翻倍+3%");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -41,6 +43,9 @@ public static class RecipeGallery {
         float x = 0f;
         float y = 18f;
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
+        y += 36f;
+        _bonusInfoText = wnd.AddText2(x, y, tab, "图鉴加成", 14);
+        _bonusInfoText.supportRichText = true;
         y += 36f;
         for (int i = 0; i < MatrixCount + 2; i++) {
             for (int j = 0; j < RecipeCount + 2; j++) {
@@ -64,40 +69,21 @@ public static class RecipeGallery {
         recipeUnlockInfoText[MatrixCount + 1, 0].text = "总计".Translate();
     }
 
-    public static void UpdateGalleryBonuses() {
-        int total = 0;
-        int unlocked = 0;
-
-        foreach (var recipeType in RecipeTypes) {
-            var recipes = GetRecipesByType(recipeType);
-            total += recipes.Count;
-            unlocked += recipes.Count(r => r.Unlocked);
-        }
-
-        if (total == 0) {
-            GallerySuccessBonus = 0f;
-            GalleryDestroyReduction = 0f;
-            GalleryDoubleBonus = 0f;
-            return;
-        }
-
-        float ratio = (float)unlocked / total;
-
-        float sb = 0f;
-        if (ratio >= 0.25f) sb += 0.02f;
-        if (ratio >= 0.50f) sb += 0.05f;
-        float dr = ratio >= 0.75f ? 0.01f : 0f;
-        float db = ratio >= 1.00f ? 0.03f : 0f;
-
-        GallerySuccessBonus = sb;
-        GalleryDestroyReduction = dr;
-        GalleryDoubleBonus = db;
-    }
-
     public static void UpdateUI() {
-        UpdateGalleryBonuses();
+        GachaGalleryBonusManager.Refresh();
         if (!tab.gameObject.activeSelf) {
             return;
+        }
+        if (_bonusInfoText != null) {
+            float maxSuccess = 0f;
+            float maxDestroy = 0f;
+            float maxDouble = 0f;
+            foreach (var recipeType in RecipeTypes) {
+                maxSuccess = Mathf.Max(maxSuccess, GachaGalleryBonusManager.GetSuccessBonus(recipeType));
+                maxDestroy = Mathf.Max(maxDestroy, GachaGalleryBonusManager.GetDestroyReduction(recipeType));
+                maxDouble = Mathf.Max(maxDouble, GachaGalleryBonusManager.GetDoubleBonus(recipeType));
+            }
+            _bonusInfoText.text = $"{"图鉴加成".Translate()}：成功+{(maxSuccess * 100):F0}% / 损毁-{(maxDestroy * 100):F0}% / 翻倍+{(maxDouble * 100):F0}%";
         }
         int[,] fullUpgradeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] unlockCountArr = new int[MatrixCount + 1, RecipeCount + 1];
