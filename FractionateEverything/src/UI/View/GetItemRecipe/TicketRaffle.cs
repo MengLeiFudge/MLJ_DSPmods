@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
 using FE.UI.Components;
 using HarmonyLib;
 using UnityEngine;
@@ -12,40 +11,38 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
+    private sealed class RaffleTabUi {
+        public int PoolId;
+        public RectTransform Tab;
+        public Text TxtPoolName;
+        public Text TxtPoolDesc;
+        public Text TxtPityProgress;
+        public Text TxtUpRotationTime;
+        public Text TxtNormalTicket;
+        public Text TxtPremiumTicket;
+        public Text TxtResultTitle;
+        public readonly Text[] TxtResultLines = new Text[10];
+        public UIButton BtnClearResult;
+        public UIButton BtnDraw1Normal;
+        public UIButton BtnDraw10Normal;
+        public UIButton BtnDraw1Premium;
+        public UIButton BtnDraw10Premium;
+    }
+
     public static long totalDraws;
-    private static RectTransform tab;
+    private static readonly List<RaffleTabUi> Uis = [];
 
-    private static UIButton[] _poolButtons = new UIButton[4];
-    private static int _selectedPoolId = GachaPool.PoolIdPermanentRecipe;
-
-    private static Text _txtPoolName;
-    private static Text _txtPoolDesc;
-    private static Text _txtPityProgress;
-    private static Text _txtUpRotationTime;
-    private static Text _txtNormalTicket;
-    private static Text _txtPremiumTicket;
-
-    private static List<GachaResult> _pendingResults = [];
-    private static Text _txtResultTitle;
-    private static Text[] _txtResultLines = new Text[10];
-
-    private static UIButton _btnClearResult;
-    private static UIButton _btnDraw1Normal;
-    private static UIButton _btnDraw10Normal;
-    private static UIButton _btnDraw1Premium;
-    private static UIButton _btnDraw10Premium;
-
-
-    private const float LeftW = 185f;
-    private const float RightX = 195f;
-    private const float ResultAreaY = 130f;
+    private const float ResultAreaY = 120f;
 
     public static void AddTranslations() {
-        Register("奖券抽奖", "Ticket Raffle");
+        Register("配方抽奖", "Recipe Raffle");
+        Register("原胚抽奖", "Proto Raffle");
+        Register("UP抽奖", "UP Raffle");
+        Register("限定抽奖", "Limited Raffle");
         Register("配方奖池", "Recipe Pool");
         Register("配方奖池说明",
-            "Draw fractionate recipes and Recipe Cores.\nHigher tier tickets can yield lower tier recipes.",
-            "可以抽取各种分馏配方，以及分馏配方核心。\n高等级奖券也可以抽到低层次科技的相关配方。");
+            "Draw fractionate recipes and Recipe Cores. Higher tier tickets can yield lower tier recipes.",
+            "可以抽取各种分馏配方，以及分馏配方核心。高等级奖券也可以抽到低层次科技的相关配方。");
         Register("原胚奖池", "Proto Pool");
         Register("原胚奖池说明",
             "Draw fractionator prototypes and Amplifier Chips.",
@@ -65,149 +62,108 @@ public static class TicketRaffle {
         Register("抽10次(普通)", "Draw x10 (Normal)");
         Register("抽1次(精选)", "Draw x1 (Featured)");
         Register("抽10次(精选)", "Draw x10 (Featured)");
-        Register("消耗", "Consume");
-        Register("抽奖结果", "Raffle results");
-        Register("获得了以下物品", "Obtained the following items");
-        Register("谢谢惠顾喵", "Thank you meow");
-        Register("已解锁", "unlocked");
-        Register("已转为同名回响提示",
-            "has been converted to a homonym echo (currently holding {0} homonym echoes)",
-            "已转为同名回响（当前持有 {0} 同名回响）");
-        Register("所有奖励已存储至分馏数据中心。", "All rewards have been stored in the fractionation data centre.");
+        Register("抽奖结果", "Raffle Results");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "奖券抽奖");
-        BuildLeftPanel(wnd);
-        BuildRightTop();
-        BuildResultArea();
-        BuildActionButtons(wnd);
-        RefreshPoolButtonTexts();
-        SelectPool(GachaPool.PoolIdPermanentRecipe);
+        Uis.Clear();
+        Uis.Add(CreateTab(wnd, trans, "配方抽奖", GachaPool.PoolIdPermanentRecipe));
+        Uis.Add(CreateTab(wnd, trans, "原胚抽奖", GachaPool.PoolIdPermanentBuilding));
+        Uis.Add(CreateTab(wnd, trans, "UP抽奖", GachaPool.PoolIdUp));
+        Uis.Add(CreateTab(wnd, trans, "限定抽奖", GachaPool.PoolIdLimited));
     }
 
-    private static void RefreshPoolButtonTexts() {
-        if (_poolButtons[0] != null) _poolButtons[0].SetText("配方奖池".Translate());
-        if (_poolButtons[1] != null) _poolButtons[1].SetText("原胚奖池".Translate());
-        if (_poolButtons[2] != null) _poolButtons[2].SetText("UP池".Translate());
-        string limitedText = GachaService.LimitedPoolUnlocked ? "限定池".Translate() : $"{"限定池".Translate()} 🔒";
-        if (_poolButtons[3] != null) _poolButtons[3].SetText(limitedText);
-    }
+    private static RaffleTabUi CreateTab(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
+        var ui = new RaffleTabUi {
+            PoolId = poolId,
+            Tab = wnd.AddTab(trans, tabName)
+        };
 
-    private static void BuildLeftPanel(MyConfigWindow wnd) {
-        MyWindow.AddText(5f, 8f, tab, "卡池", 13);
-        string[] poolNames = ["配方奖池", "原胚奖池", "UP池", "限定池"];
-        int[] poolIds = [
-            GachaPool.PoolIdPermanentRecipe,
-            GachaPool.PoolIdPermanentBuilding,
-            GachaPool.PoolIdUp,
-            GachaPool.PoolIdLimited
-        ];
-        for (int i = 0; i < 4; i++) {
-            int pid = poolIds[i];
-            float btnY = 30f + i * 46f;
-            _poolButtons[i] = wnd.AddButton(5f, btnY, LeftW - 10f, tab, poolNames[i].Translate(), 14,
-                onClick: () => SelectPool(pid));
+        ui.TxtPoolName = MyWindow.AddText(5f, 8f, ui.Tab, GetPoolName(poolId), 18);
+        ui.TxtPityProgress = MyWindow.AddText(720f, 8f, ui.Tab, "", 13);
+        ui.TxtUpRotationTime = MyWindow.AddText(720f, 28f, ui.Tab, "", 11);
+        ui.TxtPoolDesc = MyWindow.AddText(5f, 38f, ui.Tab, GetPoolDesc(poolId), 13);
+        if (ui.TxtPoolDesc != null) {
+            ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 64f);
         }
-        MyWindow.AddText(5f, 225f, tab, "──────────", 10);
-        _txtNormalTicket = MyWindow.AddText(5f, 245f, tab, "普通券: 0", 12);
-        _txtPremiumTicket = MyWindow.AddText(5f, 268f, tab, "精选券: 0", 12);
-    }
 
-    private static void BuildRightTop() {
-        _txtPoolName = MyWindow.AddText(RightX, 8f, tab, "配方奖池", 18);
-        _txtPityProgress = MyWindow.AddText(RightX + 700f, 8f, tab, "保底: 0/90", 13);
-        _txtUpRotationTime = MyWindow.AddText(RightX + 700f, 28f, tab, "", 11);
-        _txtPoolDesc = MyWindow.AddText(RightX, 38f, tab, "配方奖池说明", 13);
-        if (_txtPoolDesc != null) {
-            _txtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 80f);
-        }
-    }
+        ui.TxtNormalTicket = MyWindow.AddText(5f, 86f, ui.Tab, "", 12);
+        ui.TxtPremiumTicket = MyWindow.AddText(220f, 86f, ui.Tab, "", 12);
 
-    private static void BuildResultArea() {
-        _txtResultTitle = MyWindow.AddText(RightX, ResultAreaY, tab, "抽奖结果".Translate(), 14);
+        ui.TxtResultTitle = MyWindow.AddText(5f, ResultAreaY, ui.Tab, "抽奖结果".Translate(), 14);
         float y = ResultAreaY + 30f;
-        for (int i = 0; i < _txtResultLines.Length; i++) {
-            _txtResultLines[i] = MyWindow.AddText(RightX, y, tab, "", 13);
+        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+            ui.TxtResultLines[i] = MyWindow.AddText(5f, y, ui.Tab, "", 13);
             y += 24f;
         }
-    }
 
-    private static void BuildActionButtons(MyConfigWindow wnd) {
         float btnY = ResultAreaY + 300f;
-        _btnClearResult = wnd.AddButton(RightX, btnY, 130f, tab, "清空结果".Translate(), 14, onClick: ClearResults);
-        _btnDraw1Normal = wnd.AddButton(RightX + 140f, btnY, 150f, tab, "抽1次(普通)".Translate(), 14,
-            onClick: () => StartDraw(IFE普通抽卡券, 1));
-        _btnDraw10Normal = wnd.AddButton(RightX + 300f, btnY, 150f, tab, "抽10次(普通)".Translate(), 14,
-            onClick: () => StartDraw(IFE普通抽卡券, 10));
-        _btnDraw1Premium = wnd.AddButton(RightX + 460f, btnY, 150f, tab, "抽1次(精选)".Translate(), 14,
-            onClick: () => StartDraw(IFE精选抽卡券, 1));
-        _btnDraw10Premium = wnd.AddButton(RightX + 620f, btnY, 150f, tab, "抽10次(精选)".Translate(), 14,
-            onClick: () => StartDraw(IFE精选抽卡券, 10));
+        ui.BtnClearResult = wnd.AddButton(5f, btnY, 130f, ui.Tab, "清空结果".Translate(), 14,
+            onClick: () => ClearResults(ui));
+        ui.BtnDraw1Normal = wnd.AddButton(145f, btnY, 150f, ui.Tab, "抽1次(普通)".Translate(), 14,
+            onClick: () => StartDraw(ui, IFE普通抽卡券, 1));
+        ui.BtnDraw10Normal = wnd.AddButton(305f, btnY, 150f, ui.Tab, "抽10次(普通)".Translate(), 14,
+            onClick: () => StartDraw(ui, IFE普通抽卡券, 10));
+        ui.BtnDraw1Premium = wnd.AddButton(465f, btnY, 150f, ui.Tab, "抽1次(精选)".Translate(), 14,
+            onClick: () => StartDraw(ui, IFE精选抽卡券, 1));
+        ui.BtnDraw10Premium = wnd.AddButton(625f, btnY, 150f, ui.Tab, "抽10次(精选)".Translate(), 14,
+            onClick: () => StartDraw(ui, IFE精选抽卡券, 10));
+
+        RefreshTabState(ui);
+        return ui;
     }
 
-    private static void SelectPool(int poolId) {
-        if (poolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked) {
-            UIRealtimeTip.Popup("限定池未解锁".Translate(), true, 2);
-            return;
-        }
-        _selectedPoolId = poolId;
-        for (int i = 0; i < _poolButtons.Length; i++) {
-            if (_poolButtons[i] != null)
-                _poolButtons[i].highlighted = (i == poolId);
-        }
-        string poolName = poolId switch {
+    private static string GetPoolName(int poolId) {
+        return poolId switch {
             GachaPool.PoolIdPermanentRecipe => "配方奖池".Translate(),
             GachaPool.PoolIdPermanentBuilding => "原胚奖池".Translate(),
             GachaPool.PoolIdUp => "UP池".Translate(),
             GachaPool.PoolIdLimited => "限定池".Translate(),
             _ => "配方奖池".Translate(),
         };
-        string poolDescKey = poolId switch {
+    }
+
+    private static string GetPoolDesc(int poolId) {
+        string key = poolId switch {
             GachaPool.PoolIdPermanentRecipe => "配方奖池说明",
             GachaPool.PoolIdPermanentBuilding => "原胚奖池说明",
             GachaPool.PoolIdUp => "UP池说明",
             GachaPool.PoolIdLimited => "限定池说明",
             _ => "配方奖池说明",
         };
-        if (_txtPoolName != null) _txtPoolName.text = poolName;
-        if (_txtPoolDesc != null) _txtPoolDesc.text = poolDescKey.Translate();
-        RefreshPityText();
-        ClearResults();
+        return key.Translate();
     }
 
-    private static void RefreshPityText() {
-        if (_txtPityProgress == null) return;
-        int pity = GachaManager.PityCount[_selectedPoolId];
-        _txtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold}";
-    }
+    private static void StartDraw(RaffleTabUi ui, int ticketId, int count) {
+        if (ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked) {
+            UIRealtimeTip.Popup("限定池未解锁".Translate(), true, 2);
+            return;
+        }
 
-    private static void StartDraw(int ticketId, int count) {
-        var results = GachaService.Draw(_selectedPoolId, ticketId, count);
+        var results = GachaService.Draw(ui.PoolId, ticketId, count);
         if (results == null || results.Count == 0) return;
-        _pendingResults = results;
+
         totalDraws += results.Count;
-        RenderResults(results);
-        RefreshPityText();
+        RenderResults(ui, results);
+        RefreshPityText(ui);
     }
 
-    private static void ClearResults() {
-        if (_txtResultTitle != null) {
-            _txtResultTitle.text = "抽奖结果".Translate();
+    private static void ClearResults(RaffleTabUi ui) {
+        if (ui.TxtResultTitle != null) {
+            ui.TxtResultTitle.text = "抽奖结果".Translate();
         }
-        for (int i = 0; i < _txtResultLines.Length; i++) {
-            if (_txtResultLines[i] != null) _txtResultLines[i].text = "";
+        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+            if (ui.TxtResultLines[i] != null) ui.TxtResultLines[i].text = "";
         }
-        _pendingResults = [];
     }
 
-    private static void RenderResults(List<GachaResult> results) {
-        if (_txtResultTitle != null) {
-            _txtResultTitle.text = $"{"抽奖结果".Translate()} ({results.Count})";
+    private static void RenderResults(RaffleTabUi ui, List<GachaResult> results) {
+        if (ui.TxtResultTitle != null) {
+            ui.TxtResultTitle.text = $"{"抽奖结果".Translate()} ({results.Count})";
         }
-        int shown = System.Math.Min(results.Count, _txtResultLines.Length);
+        int shown = System.Math.Min(results.Count, ui.TxtResultLines.Length);
         for (int i = 0; i < shown; i++) {
             var item = LDB.items.Select(results[i].ItemId);
             string itemName = item != null ? item.name : results[i].ItemId.ToString();
@@ -217,43 +173,72 @@ public static class TicketRaffle {
                 GachaRarity.B => "B",
                 _ => "C",
             };
-            if (_txtResultLines[i] != null) {
-                _txtResultLines[i].text = $"[{rarity}] {itemName} x1";
+            if (ui.TxtResultLines[i] != null) {
+                ui.TxtResultLines[i].text = $"[{rarity}] {itemName} x1";
             }
         }
-        for (int i = shown; i < _txtResultLines.Length; i++) {
-            if (_txtResultLines[i] != null) _txtResultLines[i].text = "";
+        for (int i = shown; i < ui.TxtResultLines.Length; i++) {
+            if (ui.TxtResultLines[i] != null) ui.TxtResultLines[i].text = "";
         }
     }
 
-    public static void UpdateUI() {
-        if (tab == null || !tab.gameObject.activeSelf) return;
-        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
-        RefreshPoolButtonTexts();
-        int normalCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE普通抽卡券));
-        int premiumCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE精选抽卡券));
-        if (_txtNormalTicket != null) _txtNormalTicket.text = $"普通券: {normalCount}";
-        if (_txtPremiumTicket != null) _txtPremiumTicket.text = $"精选券: {premiumCount}";
-        RefreshPityText();
-        RefreshUpRotationText();
+    private static void RefreshPityText(RaffleTabUi ui) {
+        if (ui.TxtPityProgress == null) return;
+        int pity = GachaManager.PityCount[ui.PoolId];
+        ui.TxtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold}";
     }
 
-    private static void RefreshUpRotationText() {
-        if (_txtUpRotationTime == null) return;
-        if (_selectedPoolId != GachaPool.PoolIdUp) {
-            _txtUpRotationTime.text = "";
+    private static void RefreshUpRotationText(RaffleTabUi ui) {
+        if (ui.TxtUpRotationTime == null) return;
+        if (ui.PoolId != GachaPool.PoolIdUp) {
+            ui.TxtUpRotationTime.text = "";
             return;
         }
         long remaining = GachaManager.UpRotationNextTick - GameMain.gameTick;
         if (remaining <= 0) {
-            _txtUpRotationTime.text = "";
+            ui.TxtUpRotationTime.text = "";
             return;
         }
         long totalSec = remaining / 60;
         long h = totalSec / 3600;
         long m = totalSec % 3600 / 60;
         long s = totalSec % 60;
-        _txtUpRotationTime.text = $"UP轮换: {h:D2}:{m:D2}:{s:D2}";
+        ui.TxtUpRotationTime.text = $"UP轮换: {h:D2}:{m:D2}:{s:D2}";
+    }
+
+    private static void RefreshTabState(RaffleTabUi ui) {
+        if (ui.TxtPoolName != null) ui.TxtPoolName.text = GetPoolName(ui.PoolId);
+        if (ui.TxtPoolDesc != null) ui.TxtPoolDesc.text = GetPoolDesc(ui.PoolId);
+
+        int normalCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE普通抽卡券));
+        int premiumCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE精选抽卡券));
+        if (ui.TxtNormalTicket != null) ui.TxtNormalTicket.text = $"普通券: {normalCount}";
+        if (ui.TxtPremiumTicket != null) ui.TxtPremiumTicket.text = $"精选券: {premiumCount}";
+
+        bool limitedLocked = ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked;
+        if (limitedLocked && ui.TxtPoolDesc != null) {
+            ui.TxtPoolDesc.text = "限定池未解锁".Translate();
+        }
+
+        SetDrawButtonsInteractable(ui, !limitedLocked);
+        RefreshPityText(ui);
+        RefreshUpRotationText(ui);
+    }
+
+    private static void SetDrawButtonsInteractable(RaffleTabUi ui, bool on) {
+        if (ui.BtnDraw1Normal?.button != null) ui.BtnDraw1Normal.button.interactable = on;
+        if (ui.BtnDraw10Normal?.button != null) ui.BtnDraw10Normal.button.interactable = on;
+        if (ui.BtnDraw1Premium?.button != null) ui.BtnDraw1Premium.button.interactable = on;
+        if (ui.BtnDraw10Premium?.button != null) ui.BtnDraw10Premium.button.interactable = on;
+    }
+
+    public static void UpdateUI() {
+        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
+        for (int i = 0; i < Uis.Count; i++) {
+            var ui = Uis[i];
+            if (ui?.Tab == null || !ui.Tab.gameObject.activeSelf) continue;
+            RefreshTabState(ui);
+        }
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
