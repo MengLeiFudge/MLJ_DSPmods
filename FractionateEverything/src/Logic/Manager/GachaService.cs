@@ -6,7 +6,6 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class GachaService {
-    public static List<int> CurrentUpItems = [];
     public static string CurrentUpPoolNameKey = "UP池";
     public static bool LimitedPoolUnlocked = false;
 
@@ -88,6 +87,7 @@ public static class GachaService {
         var results = new List<GachaResult>(count);
         GachaPool pool = GetPool(poolId);
         if (pool == null) return results;
+        if (poolId == GachaPool.PoolIdLimited && !LimitedPoolUnlocked) return results;
         if (pool.RequiresPremiumTicket && ticketId != IFE精选抽卡券) return results;
         if (!TakeItemWithTip(ticketId, count, out int taken)) return results;
         if (taken < count) return results;
