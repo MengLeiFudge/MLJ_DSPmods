@@ -202,7 +202,7 @@ public static class FracRecipeOperate {
 
         // 左列：动态文本行（主文本）
         for (int i = 0; i < InfoLineCount; i++) {
-            txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "动态刷新");
+            txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "");
         }
         // 左列：图标按钮
         for (int i = 0; i < InfoLineCount; i++) {
@@ -225,9 +225,7 @@ public static class FracRecipeOperate {
 
         // 右列：配方强化等级信息（用较长的初始文本来撑开窗口宽度）
         for (int i = 0; i < LevelLineCount; i++) {
-            string placeholder = i == 0 ? "当前配方强化等级 +10" :
-                i <= 11 ? "不消耗原料80%  翻倍产出50%  损毁0%" : "";
-            txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, placeholder, 14);
+            txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, "", 14);
         }
     }
 
