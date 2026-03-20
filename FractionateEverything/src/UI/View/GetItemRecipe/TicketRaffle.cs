@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -21,6 +22,7 @@ public static class TicketRaffle {
     private static Text _txtPoolName;
     private static Text _txtPoolDesc;
     private static Text _txtPityProgress;
+    private static Text _txtUpRotationTime;
     private static Text _txtNormalTicket;
     private static Text _txtPremiumTicket;
 
@@ -140,6 +142,7 @@ public static class TicketRaffle {
     private static void BuildRightTop() {
         _txtPoolName = MyWindow.AddText(RightX, 8f, tab, "配方奖池", 18);
         _txtPityProgress = MyWindow.AddText(RightX + 700f, 8f, tab, "保底: 0/90", 13);
+        _txtUpRotationTime = MyWindow.AddText(RightX + 700f, 28f, tab, "", 11);
         _txtPoolDesc = MyWindow.AddText(RightX, 38f, tab, "配方奖池说明", 13);
         if (_txtPoolDesc != null) {
             _txtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 80f);
@@ -364,9 +367,35 @@ public static class TicketRaffle {
         if (_txtNormalTicket != null) _txtNormalTicket.text = $"普通券: {normalCount}";
         if (_txtPremiumTicket != null) _txtPremiumTicket.text = $"精选券: {premiumCount}";
         RefreshPityText();
+        RefreshUpRotationText();
+    }
+
+    private static void RefreshUpRotationText() {
+        if (_txtUpRotationTime == null) return;
+        if (_selectedPoolId != GachaPool.PoolIdUp) {
+            _txtUpRotationTime.text = "";
+            return;
+        }
+        long remaining = GachaManager.UpRotationNextTick - GameMain.gameTick;
+        if (remaining <= 0) {
+            _txtUpRotationTime.text = "";
+            return;
+        }
+        long totalSec = remaining / 60;
+        long h = totalSec / 3600;
+        long m = totalSec % 3600 / 60;
+        long s = totalSec % 60;
+        _txtUpRotationTime.text = $"UP轮换: {h:D2}:{m:D2}:{s:D2}";
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
     public static void Export(BinaryWriter w) { w.WriteBlocks(); }
     public static void IntoOtherSave() { totalDraws = 0; }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
+    public static void GameMain_FixedUpdate_Postfix() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
+        GachaManager.TickRotationIfNeeded();
+    }
 }
