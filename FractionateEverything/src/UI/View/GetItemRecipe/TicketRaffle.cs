@@ -7,7 +7,6 @@ using FE.UI.Components;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.GetItemRecipe;
@@ -54,16 +53,6 @@ public static class TicketRaffle {
     private const float CardGapY = 10f;
     private const float CardAreaY = 130f;
 
-    public static float[] RecipeValues => [
-        (float)System.Math.Sqrt(itemValue[IFE电磁奖券] * 33.614f),
-        (float)System.Math.Sqrt(itemValue[IFE能量奖券] * 48.02f),
-        (float)System.Math.Sqrt(itemValue[IFE结构奖券] * 68.6f),
-        (float)System.Math.Sqrt(itemValue[IFE信息奖券] * 98f),
-        (float)System.Math.Sqrt(itemValue[IFE引力奖券] * 140f),
-        (float)System.Math.Sqrt(itemValue[IFE宇宙奖券] * 200f),
-        (float)System.Math.Sqrt(itemValue[IFE黑雾奖券] * 100f),
-    ];
-
     public static void AddTranslations() {
         Register("奖券抽奖", "Ticket Raffle");
         Register("配方奖池", "Recipe Pool");
@@ -82,6 +71,7 @@ public static class TicketRaffle {
         Register("限定池说明",
             "Draw high-star Runes and special recipes. Requires Featured Ticket.",
             "可以抽取高星符文和特殊配方。需要精选抽卡券。");
+        Register("限定池未解锁", "Limited pool is locked.", "限定池暂未解锁。需要先解锁宇宙矩阵。");
         Register("保底进度", "Pity");
         Register("全部翻开", "Reveal All");
         Register("抽1次(普通)", "Draw x1 (Normal)");
@@ -116,7 +106,16 @@ public static class TicketRaffle {
         BuildActionButtons(wnd);
         BuildAnnealSection(wnd);
         BuildSSREffect(wnd);
+        RefreshPoolButtonTexts();
         SelectPool(GachaPool.PoolIdPermanentRecipe);
+    }
+
+    private static void RefreshPoolButtonTexts() {
+        if (_poolButtons[0] != null) _poolButtons[0].SetText("配方奖池".Translate());
+        if (_poolButtons[1] != null) _poolButtons[1].SetText("原胚奖池".Translate());
+        if (_poolButtons[2] != null) _poolButtons[2].SetText("UP池".Translate());
+        string limitedText = GachaService.LimitedPoolUnlocked ? "限定池".Translate() : $"{"限定池".Translate()} 🔒";
+        if (_poolButtons[3] != null) _poolButtons[3].SetText(limitedText);
     }
 
     private static void BuildLeftPanel(MyConfigWindow wnd) {
@@ -200,6 +199,10 @@ public static class TicketRaffle {
     }
 
     private static void SelectPool(int poolId) {
+        if (poolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked) {
+            UIRealtimeTip.Popup("限定池未解锁".Translate(), true, 2);
+            return;
+        }
         _selectedPoolId = poolId;
         for (int i = 0; i < _poolButtons.Length; i++) {
             if (_poolButtons[i] != null)
@@ -362,6 +365,8 @@ public static class TicketRaffle {
 
     public static void UpdateUI() {
         if (tab == null || !tab.gameObject.activeSelf) return;
+        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
+        RefreshPoolButtonTexts();
         int normalCount = GameMain.mainPlayer?.package.GetItemCount(IFE普通抽卡券) ?? 0;
         int premiumCount = GameMain.mainPlayer?.package.GetItemCount(IFE精选抽卡券) ?? 0;
         if (_txtNormalTicket != null) _txtNormalTicket.text = $"普通券: {normalCount}";
@@ -396,6 +401,7 @@ public static class TicketRaffle {
     [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
     public static void GameMain_FixedUpdate_Postfix() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
+        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
         GachaManager.TickRotationIfNeeded();
     }
 }
