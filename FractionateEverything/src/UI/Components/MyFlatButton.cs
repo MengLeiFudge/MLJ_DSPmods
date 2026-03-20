@@ -51,6 +51,9 @@ public class MyFlatButton : MonoBehaviour {
         cb.uiButton = go.GetComponent<UIButton>();
 
         cb.labelText = go.transform.Find("Text")?.GetComponent<Text>();
+        if (cb.labelText != null) {
+            cb.labelText.fontSize = Math.Max(15, fontSize);
+        }
         cb.uiButton.onClick += onClick;
         return cb;
     }
