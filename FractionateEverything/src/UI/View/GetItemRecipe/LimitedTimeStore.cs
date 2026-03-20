@@ -19,26 +19,17 @@ public static class LimitedTimeStore {
         public UIButton ExchangeButton;
     }
 
-    private static RectTransform tab;
-    private static RectTransform normalPage;
-    private static RectTransform featuredPage;
-
-    private static UIButton navGroupBtn;
-    private static UIButton navNormalBtn;
-    private static UIButton navFeaturedBtn;
-    private static bool navExpanded = true;
-    private static bool showingNormal = true;
+    private static RectTransform normalTab;
+    private static RectTransform featuredTab;
 
     private static readonly List<ExchangeRowUi> normalRows = [];
     private static readonly List<ExchangeRowUi> featuredRows = [];
 
-    private static Text txtShardCount;
-    private static Text txtNormalCount;
-    private static Text txtFeaturedCount;
-    private static Text txtPageTitle;
+    private static Text txtNormalTabShardCount;
+    private static Text txtNormalTabTicketCount;
+    private static Text txtFeaturedTabShardCount;
+    private static Text txtFeaturedTabTicketCount;
 
-    private const float LeftW = 185f;
-    private const float RightX = 195f;
     private const float RowH = 46f;
 
     public static void AddTranslations() {
@@ -55,52 +46,31 @@ public static class LimitedTimeStore {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "奖券兑换");
+        normalRows.Clear();
+        featuredRows.Clear();
 
-        BuildLeftNav(wnd);
-        BuildTopInfo();
-        BuildPages(wnd);
-        SwitchPage(true);
+        normalTab = wnd.AddTab(trans, "普通奖券兑换");
+        featuredTab = wnd.AddTab(trans, "精选奖券兑换");
+
+        BuildTabTopInfo(normalTab, true);
+        BuildTabTopInfo(featuredTab, false);
+        BuildTicketRows(wnd, normalTab, normalRows, IFE普通抽卡券, 42f);
+        BuildTicketRows(wnd, featuredTab, featuredRows, IFE精选抽卡券, 42f);
     }
 
-    private static void BuildLeftNav(MyConfigWindow wnd) {
-        MyWindow.AddText(5f, 8f, tab, "兑换分类".Translate(), 13);
-        navGroupBtn = wnd.AddButton(5f, 32f, LeftW - 10f, tab, "", 13, onClick: ToggleNavGroup);
-        navNormalBtn = wnd.AddButton(15f, 70f, LeftW - 20f, tab, "普通奖券兑换".Translate(), 13,
-            onClick: () => SwitchPage(true));
-        navFeaturedBtn = wnd.AddButton(15f, 108f, LeftW - 20f, tab, "精选奖券兑换".Translate(), 13,
-            onClick: () => SwitchPage(false));
-        RefreshNavButtons();
+    private static void BuildTabTopInfo(RectTransform tab, bool isNormalTab) {
+        if (isNormalTab) {
+            txtNormalTabShardCount = MyWindow.AddText(5f, 8f, tab, "", 13);
+            txtNormalTabTicketCount = MyWindow.AddText(330f, 8f, tab, "", 13);
+            return;
+        }
+        txtFeaturedTabShardCount = MyWindow.AddText(5f, 8f, tab, "", 13);
+        txtFeaturedTabTicketCount = MyWindow.AddText(330f, 8f, tab, "", 13);
     }
 
-    private static void BuildTopInfo() {
-        txtPageTitle = MyWindow.AddText(RightX, 8f, tab, "", 18);
-        txtShardCount = MyWindow.AddText(RightX + 330f, 8f, tab, "", 13);
-        txtNormalCount = MyWindow.AddText(RightX + 520f, 8f, tab, "", 13);
-        txtFeaturedCount = MyWindow.AddText(RightX + 710f, 8f, tab, "", 13);
-    }
-
-    private static void BuildPages(MyConfigWindow wnd) {
-        normalPage = CreatePage("normal-ticket-page");
-        featuredPage = CreatePage("featured-ticket-page");
-        BuildTicketRows(wnd, normalPage, normalRows, IFE普通抽卡券);
-        BuildTicketRows(wnd, featuredPage, featuredRows, IFE精选抽卡券);
-    }
-
-    private static RectTransform CreatePage(string name) {
-        var go = new GameObject(name);
-        var rect = go.AddComponent<RectTransform>();
-        rect.SetParent(tab, false);
-        rect.anchorMin = new Vector2(0, 1);
-        rect.anchorMax = new Vector2(0, 1);
-        rect.pivot = new Vector2(0, 1);
-        rect.anchoredPosition = new Vector2(RightX, -42f);
-        rect.sizeDelta = new Vector2(960f, 620f);
-        return rect;
-    }
-
-    private static void BuildTicketRows(MyConfigWindow wnd, RectTransform page, List<ExchangeRowUi> rows, int ticketId) {
-        float y = 10f;
+    private static void BuildTicketRows(MyConfigWindow wnd, RectTransform page, List<ExchangeRowUi> rows, int ticketId,
+        float startY) {
+        float y = startY;
         BuildSectionTitle(page, y, ticketId == IFE普通抽卡券 ? "矩阵兑换普通抽卡券" : "矩阵兑换精选抽卡券");
         y += 34f;
 
@@ -149,36 +119,6 @@ public static class LimitedTimeStore {
         return row;
     }
 
-    private static void ToggleNavGroup() {
-        navExpanded = !navExpanded;
-        RefreshNavButtons();
-    }
-
-    private static void SwitchPage(bool toNormal) {
-        showingNormal = toNormal;
-        if (normalPage != null) normalPage.gameObject.SetActive(toNormal);
-        if (featuredPage != null) featuredPage.gameObject.SetActive(!toNormal);
-        RefreshNavButtons();
-    }
-
-    private static void RefreshNavButtons() {
-        if (navGroupBtn != null) {
-            string arrow = navExpanded ? "▼" : "▶";
-            navGroupBtn.SetText($"{arrow} {"奖券兑换导航".Translate()}");
-        }
-        if (navNormalBtn != null) {
-            navNormalBtn.gameObject.SetActive(navExpanded);
-            navNormalBtn.highlighted = showingNormal;
-        }
-        if (navFeaturedBtn != null) {
-            navFeaturedBtn.gameObject.SetActive(navExpanded);
-            navFeaturedBtn.highlighted = !showingNormal;
-        }
-        if (txtPageTitle != null) {
-            txtPageTitle.text = showingNormal ? "普通奖券兑换".Translate() : "精选奖券兑换".Translate();
-        }
-    }
-
     private static int GetItemCount(int itemId) {
         long count = GetItemTotalCount(itemId);
         return count > int.MaxValue ? int.MaxValue : (int)count;
@@ -215,19 +155,27 @@ public static class LimitedTimeStore {
     }
 
     public static void UpdateUI() {
-        if (tab == null || !tab.gameObject.activeSelf) return;
+        if (normalTab == null || featuredTab == null) return;
 
         int shardCount = GetItemCount(IFE残片);
         int normalCount = GetItemCount(IFE普通抽卡券);
         int featuredCount = GetItemCount(IFE精选抽卡券);
 
-        if (txtShardCount != null) txtShardCount.text = $"{"持有".Translate()} 残片: {shardCount}";
-        if (txtNormalCount != null) txtNormalCount.text = $"{"持有".Translate()} 普通券: {normalCount}";
-        if (txtFeaturedCount != null) txtFeaturedCount.text = $"{"持有".Translate()} 精选券: {featuredCount}";
-
-        var rows = showingNormal ? normalRows : featuredRows;
-        for (int i = 0; i < rows.Count; i++) {
-            RefreshRow(rows[i]);
+        if (normalTab.gameObject.activeSelf) {
+            if (txtNormalTabShardCount != null) txtNormalTabShardCount.text = $"{"持有".Translate()} 残片: {shardCount}";
+            if (txtNormalTabTicketCount != null) txtNormalTabTicketCount.text = $"{"持有".Translate()} 普通券: {normalCount}";
+            for (int i = 0; i < normalRows.Count; i++) {
+                RefreshRow(normalRows[i]);
+            }
+        }
+        if (featuredTab.gameObject.activeSelf) {
+            if (txtFeaturedTabShardCount != null)
+                txtFeaturedTabShardCount.text = $"{"持有".Translate()} 残片: {shardCount}";
+            if (txtFeaturedTabTicketCount != null)
+                txtFeaturedTabTicketCount.text = $"{"持有".Translate()} 精选券: {featuredCount}";
+            for (int i = 0; i < featuredRows.Count; i++) {
+                RefreshRow(featuredRows[i]);
+            }
         }
     }
 
