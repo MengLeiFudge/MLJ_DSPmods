@@ -10,6 +10,7 @@ namespace FE.UI.Components;
 /// 带图片的按钮，默认大小为80x80
 /// </summary>
 public class MyImageButton : MonoBehaviour {
+    private const float ProtoTipDelay = 0.3f;
     private static GameObject _baseObject;
     public RectTransform rectTrans;
     public UIButton uiButton;
@@ -57,6 +58,7 @@ public class MyImageButton : MonoBehaviour {
                 _proto = null;
                 spriteImage.sprite = null;
             }
+            ApplyProtoTip();
         }
     }
     public int ProtoID => _proto?.ID ?? 0;
@@ -147,10 +149,17 @@ public class MyImageButton : MonoBehaviour {
         ibtn.Proto = proto;
 
         //添加按钮悬浮提示
-        ibtn.uiButton.tips.topLevel = true;
-        ibtn.uiButton.tips.tipTitle = tipTitle;
-        ibtn.uiButton.tips.tipText = tipContent;
-        ibtn.uiButton.UpdateTip();
+        bool isItemOrRecipeProto = proto is ItemProto or RecipeProto;
+        if (!isItemOrRecipeProto && (!string.IsNullOrEmpty(tipTitle) || !string.IsNullOrEmpty(tipContent))) {
+            ibtn.uiButton.tips.type = UIButton.ItemTipType.Other;
+            ibtn.uiButton.tips.itemId = 0;
+            ibtn.uiButton.tips.topLevel = true;
+            ibtn.uiButton.tips.delay = 1f;
+            ibtn.uiButton.tips.corner = 2;
+            ibtn.uiButton.tips.tipTitle = tipTitle;
+            ibtn.uiButton.tips.tipText = tipContent;
+            ibtn.uiButton.UpdateTip();
+        }
 
         return ibtn;
     }
@@ -182,6 +191,46 @@ public class MyImageButton : MonoBehaviour {
         uiButton.tips.corner = 2;
         uiButton.UpdateTip();
         return this;
+    }
+
+    private void ApplyProtoTip() {
+        if (uiButton == null) {
+            return;
+        }
+
+        if (_proto is ItemProto itemProto) {
+            uiButton.tips.type = UIButton.ItemTipType.Item;
+            uiButton.tips.itemId = itemProto.ID;
+            uiButton.tips.itemCount = 0;
+            uiButton.tips.itemInc = 0;
+            uiButton.tips.topLevel = true;
+            uiButton.tips.delay = ProtoTipDelay;
+            uiButton.tips.corner = 2;
+            uiButton.tips.tipTitle = null;
+            uiButton.tips.tipText = null;
+            uiButton.UpdateTip();
+            return;
+        }
+
+        if (_proto is RecipeProto recipeProto) {
+            uiButton.tips.type = UIButton.ItemTipType.Recipe;
+            uiButton.tips.itemId = -recipeProto.ID;
+            uiButton.tips.itemCount = 0;
+            uiButton.tips.itemInc = 0;
+            uiButton.tips.topLevel = true;
+            uiButton.tips.delay = ProtoTipDelay;
+            uiButton.tips.corner = 2;
+            uiButton.tips.tipTitle = null;
+            uiButton.tips.tipText = null;
+            uiButton.UpdateTip();
+            return;
+        }
+
+        uiButton.tips.type = UIButton.ItemTipType.None;
+        uiButton.tips.itemId = 0;
+        uiButton.tips.tipTitle = null;
+        uiButton.tips.tipText = null;
+        uiButton.UpdateTip();
     }
 
     public MyImageButton WithSelected(bool selected) {
