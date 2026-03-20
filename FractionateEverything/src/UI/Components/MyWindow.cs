@@ -540,7 +540,7 @@ public class MyWindowWithTabs : MyWindow {
             Label = label,
             StartTabIndex = _tabs.Count,
             HeaderButton = header,
-            Collapsed = false
+            Collapsed = true
         });
         _tabY += 28f;
         RefreshTabLayout();
