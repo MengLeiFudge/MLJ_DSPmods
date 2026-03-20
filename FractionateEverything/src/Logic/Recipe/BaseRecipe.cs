@@ -221,6 +221,30 @@ public abstract class BaseRecipe(
         return true;
     }
 
+    public (int itemId, int count) GetAnnealCost() {
+        int annealIndex = EchoLevel + 1;
+        return annealIndex switch {
+            1 => (I电磁矩阵, 200),
+            2 => (I能量矩阵, 400),
+            3 => (I结构矩阵, 600),
+            4 => (I信息矩阵, 800),
+            5 => (I引力矩阵, 1000),
+            6 => (I宇宙矩阵, 1000),
+            _ => (I宇宙矩阵, GetUniverseMatrixCost(annealIndex)),
+        };
+    }
+
+    private static int GetUniverseMatrixCost(int annealIndex) {
+        long count = 1000;
+        for (int i = 0; i < annealIndex - 6; i++) {
+            count *= 2;
+            if (count >= int.MaxValue) {
+                return int.MaxValue;
+            }
+        }
+        return (int)count;
+    }
+
     /// <summary>
     /// 通过抽奖获取到该配方。
     /// 如果配方未解锁，则解锁此配方；如果已解锁，则等级+1，并检查是否可突破。
