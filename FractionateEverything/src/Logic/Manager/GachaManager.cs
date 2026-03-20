@@ -1,4 +1,5 @@
 using System.IO;
+using FE.Logic.Recipe;
 using FE.Utils;
 
 namespace FE.Logic.Manager;
@@ -14,6 +15,11 @@ public static class GachaManager {
     // 软保底阈值、硬保底阈值
     public const int SoftPityThreshold = 70;
     public const int HardPityThreshold = 90;
+
+    // UP轮换：72h = 72×60×60×60 ticks
+    public const long UpRotationInterval = 15_552_000L;
+    public static long UpRotationNextTick = UpRotationInterval;
+    public static ERecipe CurrentUpTheme = ERecipe.Conversion;
 
     /// <summary>
     /// 计算当前抽卡的A+触发概率加成（软保底）
@@ -57,6 +63,25 @@ public static class GachaManager {
         }
     }
 
+    public static void TickRotationIfNeeded() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
+        if (GameMain.gameTick < UpRotationNextTick) return;
+        long diff = GameMain.gameTick - UpRotationNextTick;
+        long skip = diff / UpRotationInterval + 1;
+        UpRotationNextTick += skip * UpRotationInterval;
+        AdvanceUpTheme();
+        GachaService.RefreshUpPool();
+    }
+
+    private static void AdvanceUpTheme() {
+        CurrentUpTheme = CurrentUpTheme switch {
+            ERecipe.Conversion => ERecipe.MineralCopy,
+            ERecipe.MineralCopy => ERecipe.BuildingTrain,
+            ERecipe.BuildingTrain => ERecipe.Conversion,
+            _ => ERecipe.Conversion,
+        };
+    }
+
     #region IModCanSave
 
     public static void Export(BinaryWriter w) {
@@ -66,7 +91,11 @@ public static class GachaManager {
                     bw.Write(PityCount[i]);
                 }
             }),
-            ("UpGuarantee", bw => bw.Write(UpGuaranteeCount))
+            ("UpGuarantee", bw => bw.Write(UpGuaranteeCount)),
+            ("UpRotation", bw => {
+                bw.Write(UpRotationNextTick);
+                bw.Write((int)CurrentUpTheme);
+            })
         );
     }
 
@@ -77,13 +106,19 @@ public static class GachaManager {
                     PityCount[i] = br.ReadInt32();
                 }
             }),
-            ("UpGuarantee", br => UpGuaranteeCount = br.ReadInt32())
+            ("UpGuarantee", br => UpGuaranteeCount = br.ReadInt32()),
+            ("UpRotation", br => {
+                UpRotationNextTick = br.ReadInt64();
+                CurrentUpTheme = (ERecipe)br.ReadInt32();
+            })
         );
     }
 
     public static void IntoOtherSave() {
         System.Array.Clear(PityCount, 0, PityCount.Length);
         UpGuaranteeCount = 0;
+        UpRotationNextTick = UpRotationInterval;
+        CurrentUpTheme = ERecipe.Conversion;
     }
 
     #endregion

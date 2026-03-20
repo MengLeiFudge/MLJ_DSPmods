@@ -25,13 +25,28 @@ public static class GachaService {
         _pools.Add(permanentBuilding);
 
         var up = new GachaPool(GachaPool.PoolIdUp, CurrentUpPoolNameKey, false);
-        FillRecipePool(up);
-        up.UpItems.AddRange(CurrentUpItems);
+        FillUpPool(up);
         _pools.Add(up);
 
         var limited = new GachaPool(GachaPool.PoolIdLimited, "限定池", true);
         FillLimitedPool(limited);
         _pools.Add(limited);
+    }
+
+    public static void RefreshUpPool() {
+        var up = GetPool(GachaPool.PoolIdUp);
+        if (up == null) return;
+        up.PoolC.Clear(); up.PoolB.Clear(); up.PoolA.Clear(); up.PoolS.Clear(); up.UpItems.Clear();
+        FillUpPool(up);
+    }
+
+    private static void FillUpPool(GachaPool pool) {
+        FillRecipePool(pool);
+        var upRecipes = RecipeManager.GetRecipesByType(GachaManager.CurrentUpTheme);
+        foreach (var r in upRecipes) {
+            if (!pool.UpItems.Contains(r.InputID)) pool.UpItems.Add(r.InputID);
+        }
+        CurrentUpPoolNameKey = GachaManager.CurrentUpTheme.GetName() + "UP池";
     }
 
     private static void FillRecipePool(GachaPool pool) {
