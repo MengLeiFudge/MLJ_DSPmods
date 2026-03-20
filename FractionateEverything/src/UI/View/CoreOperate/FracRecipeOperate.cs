@@ -7,6 +7,7 @@ using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using FE.UI.View.ProgressSystem;
 using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -264,12 +265,21 @@ public static class FracRecipeOperate {
             ShowTextLine(line++, headerName.WithColor(recipe.MatrixID - I电磁矩阵));
             ShowTextLine(line++, "");// 空行
 
-            // 成功率（格式：原始×献祭增幅=实际）
-            float successBoost = building?.SuccessBoost() ?? 0f;
-            float actualSuccessRatio = recipe.SuccessRatio * (1f + successBoost);
+            float sacrificeBoost = building?.SuccessBoost() ?? 0f;
+            float achievementBoost = Achievements.GetSuccessRateBonus();
+            float echoBoost = recipe.EchoBonus;
+            float galleryBoost = GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
+            float actualSuccessRatio = recipe.SuccessRatio
+                                     * (1f + sacrificeBoost)
+                                     * (1f + achievementBoost)
+                                     * (1f + echoBoost)
+                                     * (1f + galleryBoost);
             ShowTextLine(line++,
-                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + successBoost):F2} = {actualSuccessRatio:P3}"
+                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + achievementBoost):F3} × {(1f + echoBoost):F3} × {(1f + galleryBoost):F3} = {actualSuccessRatio:P3}"
                     .WithColor(Orange));
+            ShowTextLine(line++,
+                $"(献祭 +{sacrificeBoost:P2} / 成就 +{achievementBoost:P2} / 回响 +{echoBoost:P2} / 图鉴 +{galleryBoost:P2})"
+                    .WithColor(Gray));
 
             // 损毁率
             ShowTextLine(line++,
@@ -450,7 +460,10 @@ public static class FracRecipeOperate {
         // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
         float plrRatio = building?.PlrRatio() ?? 1.0f;
         float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
-        float successBoost = building?.SuccessBoost() ?? 0f;
+        float successBoost = (building?.SuccessBoost() ?? 0f)
+                             + Achievements.GetSuccessRateBonus()
+                             + recipe.EchoBonus
+                             + GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
         float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         float fracRatio = (1 - recipe.DestroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
@@ -578,8 +591,14 @@ public static class FracRecipeOperate {
                 : $"{"回响等级".Translate()}: {recipe.EchoLevel}";
         }
         if (txtAnnealCost != null) {
+            string costText = "";
+            if (recipe != null) {
+                var (itemId, itemCount) = recipe.GetAnnealCost();
+                string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
+                costText = $"{"消耗".Translate()} {itemName} x{itemCount}";
+            }
             txtAnnealCost.text = recipe != null && recipe.IsMaxLevel
-                ? $"{"消耗".Translate()} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1"
+                ? costText
                 : "退火需配方满级".Translate();
         }
         if (btnAnneal != null && btnAnneal.button != null) {
@@ -590,15 +609,17 @@ public static class FracRecipeOperate {
     private static void OnAnnealClick() {
         BaseRecipe recipe = SelectedRecipe;
         if (recipe == null || !recipe.IsMaxLevel) return;
+        var (costItemId, costItemCount) = recipe.GetAnnealCost();
+        string costItemName = LDB.items.Select(costItemId)?.name ?? costItemId.ToString();
         string consumeLabel = "消耗".Translate();
         string onLabel = "对".Translate();
         string annealQuestion = "进行退火？".Translate();
         string annealTip = "退火后配方等级重置为0，获得永久回响加成。".Translate();
         UIMessageBox.Show("退火确认".Translate(),
-            $"{consumeLabel} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1 {onLabel} {recipe.TypeName} {annealQuestion}\n{annealTip}",
+            $"{consumeLabel} {costItemName} x{costItemCount} {onLabel} {recipe.TypeName} {annealQuestion}\n{annealTip}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItemWithTip(I宇宙矩阵, 1, out _)) return;
+                if (!TakeItemWithTip(costItemId, costItemCount, out _)) return;
                 recipe.Anneal();
                 RefreshAnnealUI(recipe);
             }, null);
