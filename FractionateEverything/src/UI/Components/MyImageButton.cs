@@ -10,7 +10,9 @@ namespace FE.UI.Components;
 /// 带图片的按钮，默认大小为80x80
 /// </summary>
 public class MyImageButton : MonoBehaviour {
-    private const float ProtoTipDelay = 0.3f;
+    private const float ProtoTipDelay = 0.4f;
+    private const int ProtoTipAnchor = 7;
+    private static readonly Vector2 ProtoTipOffset = new(15f, -50f);
     private static GameObject _baseObject;
     public RectTransform rectTrans;
     public UIButton uiButton;
@@ -205,7 +207,8 @@ public class MyImageButton : MonoBehaviour {
             uiButton.tips.itemInc = 0;
             uiButton.tips.topLevel = true;
             uiButton.tips.delay = ProtoTipDelay;
-            uiButton.tips.corner = 2;
+            uiButton.tips.corner = ProtoTipAnchor;
+            uiButton.tips.offset = ProtoTipOffset;
             uiButton.tips.tipTitle = null;
             uiButton.tips.tipText = null;
             uiButton.UpdateTip();
@@ -219,7 +222,8 @@ public class MyImageButton : MonoBehaviour {
             uiButton.tips.itemInc = 0;
             uiButton.tips.topLevel = true;
             uiButton.tips.delay = ProtoTipDelay;
-            uiButton.tips.corner = 2;
+            uiButton.tips.corner = ProtoTipAnchor;
+            uiButton.tips.offset = ProtoTipOffset;
             uiButton.tips.tipTitle = null;
             uiButton.tips.tipText = null;
             uiButton.UpdateTip();
@@ -228,6 +232,7 @@ public class MyImageButton : MonoBehaviour {
 
         uiButton.tips.type = UIButton.ItemTipType.None;
         uiButton.tips.itemId = 0;
+        uiButton.tips.offset = Vector2.zero;
         uiButton.tips.tipTitle = null;
         uiButton.tips.tipText = null;
         uiButton.UpdateTip();
