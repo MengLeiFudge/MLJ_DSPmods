@@ -15,6 +15,7 @@ namespace FE.UI.Components;
 // 大部分UI来源为UXAssist，感谢@soarqin的源码以供参考！
 
 public class MyWindow : ManualBehaviour {
+    private const int MinFontSize = 15;
     private float _maxX;
     protected float MaxY;
     
@@ -112,7 +113,7 @@ public class MyWindow : ManualBehaviour {
         trans.sizeDelta = new(_maxX + Margin + TabWidth + Spacing + Margin, MaxY + TitleHeight + Margin);
     }
 
-    public static Text AddText(float x, float y, RectTransform parent, string label, int fontSize = 14,
+    public static Text AddText(float x, float y, RectTransform parent, string label, int fontSize = 15,
         string objName = "label") {
         var src = UIRoot.instance.uiGame.assemblerWindow.stateText;
         var txt = Instantiate(src);
@@ -120,7 +121,7 @@ public class MyWindow : ManualBehaviour {
         txt.text = label.Translate();
         txt.color = new(1f, 1f, 1f, 0.4f);
         txt.alignment = TextAnchor.MiddleLeft;
-        txt.fontSize = fontSize;
+        txt.fontSize = Math.Max(MinFontSize, fontSize);
         txt.supportRichText = true;
         txt.rectTransform.sizeDelta = new(txt.preferredWidth + 8f, txt.preferredHeight + 8f);
         NormalizeRectWithMidLeft(txt.rectTransform, x, y, parent);
@@ -191,7 +192,7 @@ public class MyWindow : ManualBehaviour {
             t.text = text.Translate();
         }
 
-        t.fontSize = fontSize;
+        t.fontSize = Math.Max(MinFontSize, fontSize);
         btn.tip = null;
         btn.tips = new();
         btn.button.onClick.RemoveAllListeners();
@@ -212,9 +213,9 @@ public class MyWindow : ManualBehaviour {
         return btn;
     }
 
-    public MyFlatButton AddFlatButton(float x, float y, RectTransform parent, string text = "", int fontSize = 12,
+    public MyFlatButton AddFlatButton(float x, float y, RectTransform parent, string text = "", int fontSize = 15,
         string objName = "button", UnityAction onClick = null) {
-        var btn = MyFlatButton.CreateFlatButton(x, y, parent, text, fontSize, _ => onClick());
+        var btn = MyFlatButton.CreateFlatButton(x, y, parent, text, Math.Max(MinFontSize, fontSize), _ => onClick());
         btn.gameObject.name = objName;
 
         _maxX = Math.Max(_maxX, x + btn.Width);
@@ -224,7 +225,7 @@ public class MyWindow : ManualBehaviour {
 
     public MyCheckBox AddCheckBox(float x, float y, RectTransform parent, ConfigEntry<bool> config, string label = "",
         int fontSize = 15) {
-        var cb = MyCheckBox.CreateCheckBox(x, y, parent, config, label, fontSize);
+        var cb = MyCheckBox.CreateCheckBox(x, y, parent, config, label, Math.Max(MinFontSize, fontSize));
         _maxX = Math.Max(_maxX, x + cb.Width);
         MaxY = Math.Max(MaxY, y + cb.Height);
         return cb;
@@ -239,14 +240,14 @@ public class MyWindow : ManualBehaviour {
     // }
 
     public MyComboBox AddComboBox(float x, float y, RectTransform parent, int fontSize = 15) {
-        var comboBox = MyComboBox.CreateComboBox(x, y, parent).WithFontSize(fontSize);
+        var comboBox = MyComboBox.CreateComboBox(x, y, parent).WithFontSize(Math.Max(MinFontSize, fontSize));
         _maxX = Math.Max(_maxX, x + comboBox.Width);
         MaxY = Math.Max(MaxY, y + comboBox.Height);
         return comboBox;
     }
 
     public MyCornerComboBox AddCornerComboBox(float x, float y, RectTransform parent, int fontSize = 15) {
-        var comboBox = MyCornerComboBox.CreateComboBox(x, y, parent).WithFontSize(fontSize);
+        var comboBox = MyCornerComboBox.CreateComboBox(x, y, parent).WithFontSize(Math.Max(MinFontSize, fontSize));
         _maxX = Math.Max(_maxX, x + comboBox.Width);
         MaxY = Math.Max(MaxY, y + comboBox.Height);
         return comboBox;
