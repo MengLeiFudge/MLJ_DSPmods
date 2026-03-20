@@ -38,12 +38,6 @@ public static class TicketRaffle {
     private static UIButton _btnDraw1Premium;
     private static UIButton _btnDraw10Premium;
 
-    private static MyComboBox _annealComboBox;
-    private static Text _txtEchoLevel;
-    private static Text _txtAnnealCost;
-    private static UIButton _btnAnneal;
-    private static readonly List<BaseRecipe> _annealRecipes = [];
-    private static BaseRecipe _selectedAnnealRecipe;
 
     private const float LeftW = 185f;
     private const float RightX = 195f;
@@ -78,14 +72,7 @@ public static class TicketRaffle {
         Register("抽10次(普通)", "Draw x10 (Normal)");
         Register("抽1次(精选)", "Draw x1 (Featured)");
         Register("抽10次(精选)", "Draw x10 (Featured)");
-        Register("退火", "Anneal");
-        Register("回响等级", "Echo Lv");
-        Register("退火确认", "Anneal Confirmation");
-        Register("退火后配方等级重置为0，获得永久回响加成。", "Recipe level resets to 0 and grants permanent echo bonus.");
         Register("消耗", "Consume");
-        Register("对", "on");
-        Register("进行退火？", "to anneal?");
-        Register("无满级配方", "No Max-Level Recipes");
         Register("抽奖结果", "Raffle results");
         Register("获得了以下物品", "Obtained the following items");
         Register("谢谢惠顾喵", "Thank you meow");
@@ -104,7 +91,6 @@ public static class TicketRaffle {
         BuildRightTop();
         BuildCardArea();
         BuildActionButtons(wnd);
-        BuildAnnealSection(wnd);
         BuildSSREffect(wnd);
         RefreshPoolButtonTexts();
         SelectPool(GachaPool.PoolIdPermanentRecipe);
@@ -178,20 +164,6 @@ public static class TicketRaffle {
             onClick: () => StartDraw(IFE精选抽卡券, 1));
         _btnDraw10Premium = wnd.AddButton(RightX + 620f, btnY, 150f, tab, "抽10次(精选)".Translate(), 14,
             onClick: () => StartDraw(IFE精选抽卡券, 10));
-    }
-
-    private static void BuildAnnealSection(MyConfigWindow wnd) {
-        float ay = CardAreaY + CardH * 2 + CardGapY + 70f;
-        MyWindow.AddText(RightX, ay, tab, "退火".Translate(), 14);
-        _annealComboBox = wnd.AddComboBox(RightX + 60f, ay, tab)
-            .WithSize(340f, 0f)
-            .WithOnSelChanged(idx => {
-                _selectedAnnealRecipe = idx >= 0 && idx < _annealRecipes.Count ? _annealRecipes[idx] : null;
-                RefreshAnnealInfo();
-            });
-        _txtEchoLevel = MyWindow.AddText(RightX + 415f, ay, tab, "", 13);
-        _txtAnnealCost = MyWindow.AddText(RightX, ay + 36f, tab, "", 13);
-        _btnAnneal = wnd.AddButton(RightX + 700f, ay, 100f, tab, "退火".Translate(), 14, onClick: OnAnnealClick);
     }
 
     private static void BuildSSREffect(MyConfigWindow wnd) {
@@ -307,60 +279,6 @@ public static class TicketRaffle {
         if (_btnDraw10Normal != null) _btnDraw10Normal.button.interactable = on;
         if (_btnDraw1Premium != null) _btnDraw1Premium.button.interactable = on;
         if (_btnDraw10Premium != null) _btnDraw10Premium.button.interactable = on;
-    }
-
-    private static void RefreshAnnealInfo() {
-        if (_selectedAnnealRecipe == null) {
-            if (_txtEchoLevel != null) _txtEchoLevel.text = "";
-            if (_txtAnnealCost != null) _txtAnnealCost.text = "";
-            if (_btnAnneal != null) _btnAnneal.button.interactable = false;
-            return;
-        }
-        if (_txtEchoLevel != null)
-            _txtEchoLevel.text = $"{"回响等级".Translate()}: {_selectedAnnealRecipe.EchoLevel}";
-        bool canAnneal = _selectedAnnealRecipe.IsMaxLevel;
-        if (_txtAnnealCost != null)
-            _txtAnnealCost.text = canAnneal
-                ? $"{"消耗".Translate()} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1"
-                : "";
-        if (_btnAnneal != null) _btnAnneal.button.interactable = canAnneal;
-    }
-
-    private static void RefreshAnnealDropdown() {
-        _annealRecipes.Clear();
-        foreach (var r in RecipeManager.AllRecipes) {
-            if (r.IsMaxLevel) _annealRecipes.Add(r);
-        }
-        if (_annealComboBox == null) return;
-        if (_annealRecipes.Count == 0) {
-            _annealComboBox.SetItems("无满级配方".Translate());
-            _annealComboBox.SetIndex(0);
-            _selectedAnnealRecipe = null;
-        } else {
-            string[] names = new string[_annealRecipes.Count];
-            for (int i = 0; i < _annealRecipes.Count; i++)
-                names[i] = _annealRecipes[i].TypeName;
-            _annealComboBox.SetItems(names);
-            _annealComboBox.SetIndex(0);
-            _selectedAnnealRecipe = _annealRecipes[0];
-        }
-        RefreshAnnealInfo();
-    }
-
-    private static void OnAnnealClick() {
-        if (_selectedAnnealRecipe == null || !_selectedAnnealRecipe.IsMaxLevel) return;
-        string consumeLabel = "消耗".Translate();
-        string onLabel = "对".Translate();
-        string annealQuestion = "进行退火？".Translate();
-        string annealTip = "退火后配方等级重置为0，获得永久回响加成。".Translate();
-        UIMessageBox.Show("退火确认".Translate(),
-            $"{consumeLabel} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1 {onLabel} {_selectedAnnealRecipe.TypeName} {annealQuestion}\n{annealTip}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!TakeItemWithTip(I宇宙矩阵, 1, out _)) return;
-                _selectedAnnealRecipe.Anneal();
-                RefreshAnnealDropdown();
-            }, null);
     }
 
     public static void UpdateUI() {

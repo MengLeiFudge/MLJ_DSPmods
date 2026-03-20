@@ -69,6 +69,9 @@ public static class FracRecipeOperate {
 
     // 右列：配方强化等级信息
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
+    private static Text txtAnnealEcho;
+    private static Text txtAnnealCost;
+    private static UIButton btnAnneal;
 
     // ==================== 翻译注册 ====================
 
@@ -120,6 +123,13 @@ public static class FracRecipeOperate {
         Register("不消耗原料", "No Consume");
         Register("翻倍产出", "Double Output");
         Register("损毁", "Destroy");
+        Register("退火", "Anneal");
+        Register("回响等级", "Echo Lv");
+        Register("退火确认", "Anneal Confirmation");
+        Register("退火后配方等级重置为0，获得永久回响加成。", "Recipe level resets to 0 and grants permanent echo bonus.");
+        Register("对", "on");
+        Register("进行退火？", "to anneal?");
+        Register("退火需配方满级", "Anneal requires max-level recipe", "退火需配方满级（+10）");
     }
 
     // ==================== 配置加载 ====================
@@ -155,6 +165,13 @@ public static class FracRecipeOperate {
         var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
         wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
             .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
+
+        y += 36f + 7f;
+
+        txtAnnealEcho = wnd.AddText2(0f, y, tab, "", 14);
+        txtAnnealCost = wnd.AddText2(320f, y, tab, "", 14);
+        btnAnneal = wnd.AddButton(620f, y, 160f, tab, "退火".Translate(), 14,
+            onClick: OnAnnealClick);
 
         y += 36f + 7f;
 
@@ -224,6 +241,7 @@ public static class FracRecipeOperate {
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
+        RefreshAnnealUI(recipe);
 
         int line = 0;
         incSlider.gameObject.SetActive(false);
@@ -552,6 +570,39 @@ public static class FracRecipeOperate {
 
     private static string FeatureStatus(bool enabled) =>
         enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
+
+    private static void RefreshAnnealUI(BaseRecipe recipe) {
+        if (txtAnnealEcho != null) {
+            txtAnnealEcho.text = recipe == null
+                ? ""
+                : $"{"回响等级".Translate()}: {recipe.EchoLevel}";
+        }
+        if (txtAnnealCost != null) {
+            txtAnnealCost.text = recipe != null && recipe.IsMaxLevel
+                ? $"{"消耗".Translate()} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1"
+                : "退火需配方满级".Translate();
+        }
+        if (btnAnneal != null && btnAnneal.button != null) {
+            btnAnneal.button.interactable = recipe != null && recipe.IsMaxLevel;
+        }
+    }
+
+    private static void OnAnnealClick() {
+        BaseRecipe recipe = SelectedRecipe;
+        if (recipe == null || !recipe.IsMaxLevel) return;
+        string consumeLabel = "消耗".Translate();
+        string onLabel = "对".Translate();
+        string annealQuestion = "进行退火？".Translate();
+        string annealTip = "退火后配方等级重置为0，获得永久回响加成。".Translate();
+        UIMessageBox.Show("退火确认".Translate(),
+            $"{consumeLabel} {LDB.items.Select(I宇宙矩阵)?.name ?? "宇宙矩阵"} x1 {onLabel} {recipe.TypeName} {annealQuestion}\n{annealTip}",
+            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => {
+                if (!TakeItemWithTip(I宇宙矩阵, 1, out _)) return;
+                recipe.Anneal();
+                RefreshAnnealUI(recipe);
+            }, null);
+    }
 
     #region IModCanSave
 
