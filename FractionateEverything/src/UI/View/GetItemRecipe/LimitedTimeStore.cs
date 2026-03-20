@@ -52,20 +52,24 @@ public static class LimitedTimeStore {
         normalTab = wnd.AddTab(trans, "普通奖券兑换");
         featuredTab = wnd.AddTab(trans, "精选奖券兑换");
 
-        BuildTabTopInfo(normalTab, true);
-        BuildTabTopInfo(featuredTab, false);
+        BuildTabTopInfo(wnd, normalTab, true);
+        BuildTabTopInfo(wnd, featuredTab, false);
         BuildTicketRows(wnd, normalTab, normalRows, IFE普通抽卡券, 42f);
         BuildTicketRows(wnd, featuredTab, featuredRows, IFE精选抽卡券, 42f);
     }
 
-    private static void BuildTabTopInfo(RectTransform tab, bool isNormalTab) {
+    private static void BuildTabTopInfo(MyConfigWindow wnd, RectTransform tab, bool isNormalTab) {
         if (isNormalTab) {
-            txtNormalTabShardCount = MyWindow.AddText(5f, 8f, tab, "", 13);
-            txtNormalTabTicketCount = MyWindow.AddText(330f, 8f, tab, "", 13);
+            wnd.AddImageButton(5f, 8f, tab, LDB.items.Select(IFE残片));
+            txtNormalTabShardCount = MyWindow.AddText(48f, 8f, tab, "x 0", 13);
+            wnd.AddImageButton(220f, 8f, tab, LDB.items.Select(IFE普通抽卡券));
+            txtNormalTabTicketCount = MyWindow.AddText(263f, 8f, tab, "x 0", 13);
             return;
         }
-        txtFeaturedTabShardCount = MyWindow.AddText(5f, 8f, tab, "", 13);
-        txtFeaturedTabTicketCount = MyWindow.AddText(330f, 8f, tab, "", 13);
+        wnd.AddImageButton(5f, 8f, tab, LDB.items.Select(IFE残片));
+        txtFeaturedTabShardCount = MyWindow.AddText(48f, 8f, tab, "x 0", 13);
+        wnd.AddImageButton(220f, 8f, tab, LDB.items.Select(IFE精选抽卡券));
+        txtFeaturedTabTicketCount = MyWindow.AddText(263f, 8f, tab, "x 0", 13);
     }
 
     private static void BuildTicketRows(MyConfigWindow wnd, RectTransform page, List<ExchangeRowUi> rows, int ticketId,
@@ -162,17 +166,15 @@ public static class LimitedTimeStore {
         int featuredCount = GetItemCount(IFE精选抽卡券);
 
         if (normalTab.gameObject.activeSelf) {
-            if (txtNormalTabShardCount != null) txtNormalTabShardCount.text = $"{"持有".Translate()} 残片: {shardCount}";
-            if (txtNormalTabTicketCount != null) txtNormalTabTicketCount.text = $"{"持有".Translate()} 普通券: {normalCount}";
+            if (txtNormalTabShardCount != null) txtNormalTabShardCount.text = $"x {shardCount}";
+            if (txtNormalTabTicketCount != null) txtNormalTabTicketCount.text = $"x {normalCount}";
             for (int i = 0; i < normalRows.Count; i++) {
                 RefreshRow(normalRows[i]);
             }
         }
         if (featuredTab.gameObject.activeSelf) {
-            if (txtFeaturedTabShardCount != null)
-                txtFeaturedTabShardCount.text = $"{"持有".Translate()} 残片: {shardCount}";
-            if (txtFeaturedTabTicketCount != null)
-                txtFeaturedTabTicketCount.text = $"{"持有".Translate()} 精选券: {featuredCount}";
+            if (txtFeaturedTabShardCount != null) txtFeaturedTabShardCount.text = $"x {shardCount}";
+            if (txtFeaturedTabTicketCount != null) txtFeaturedTabTicketCount.text = $"x {featuredCount}";
             for (int i = 0; i < featuredRows.Count; i++) {
                 RefreshRow(featuredRows[i]);
             }
