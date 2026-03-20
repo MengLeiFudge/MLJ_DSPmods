@@ -458,7 +458,16 @@ public class MyWindow : ManualBehaviour {
 }
 
 public class MyWindowWithTabs : MyWindow {
+    private sealed class TabGroupState {
+        public string Label;
+        public int StartTabIndex;
+        public UIButton HeaderButton;
+        public bool Collapsed;
+    }
+
     private readonly List<Tuple<RectTransform, UIButton>> _tabs = [];
+    private readonly List<TabGroupState> _tabGroups = [];
+    private RectTransform _tabParent;
     private float _tabY = 66f;
 
     public override void TryClose() {
@@ -504,8 +513,12 @@ public class MyWindowWithTabs : MyWindow {
     }
 
     public RectTransform AddTab(RectTransform parent, string label) {
+        _tabParent = parent;
         var result = AddTabInternal(_tabY, _tabs.Count, parent, label);
         _tabY += 28f;
+        if (_tabGroups.Count > 0) {
+            RefreshTabLayout();
+        }
         return result;
     }
 
@@ -519,8 +532,57 @@ public class MyWindowWithTabs : MyWindow {
     }
 
     public void AddTabGroup(RectTransform parent, string label, string objName = "tabl-group-label") {
-        AddText(28, _tabY + 2, parent, label, 16, objName);
+        _tabParent = parent;
+        int groupIndex = _tabGroups.Count;
+        var header = AddButton(28f, _tabY, 107f, parent, "", 14, objName,
+            () => ToggleTabGroup(groupIndex));
+        _tabGroups.Add(new() {
+            Label = label,
+            StartTabIndex = _tabs.Count,
+            HeaderButton = header,
+            Collapsed = false
+        });
         _tabY += 28f;
+        RefreshTabLayout();
+    }
+
+    private int GetGroupEndTabIndex(int groupIndex) {
+        if (groupIndex < 0 || groupIndex >= _tabGroups.Count) return -1;
+        int nextStart = groupIndex + 1 < _tabGroups.Count
+            ? _tabGroups[groupIndex + 1].StartTabIndex
+            : _tabs.Count;
+        return nextStart - 1;
+    }
+
+    private void ToggleTabGroup(int groupIndex) {
+        if (groupIndex < 0 || groupIndex >= _tabGroups.Count) return;
+        _tabGroups[groupIndex].Collapsed = !_tabGroups[groupIndex].Collapsed;
+        RefreshTabLayout();
+    }
+
+    private void RefreshTabLayout() {
+        if (_tabParent == null || _tabGroups.Count == 0) return;
+        float y = 66f;
+        for (int g = 0; g < _tabGroups.Count; g++) {
+            TabGroupState group = _tabGroups[g];
+            if (group.HeaderButton != null) {
+                NormalizeRectWithMidLeft(group.HeaderButton, 28f, y, _tabParent);
+                string arrow = group.Collapsed ? "▶" : "▼";
+                group.HeaderButton.SetText($"{arrow} {group.Label.Translate()}");
+            }
+            y += 28f;
+
+            int end = GetGroupEndTabIndex(g);
+            for (int i = group.StartTabIndex; i <= end; i++) {
+                var (_, btn) = _tabs[i];
+                bool visible = !group.Collapsed;
+                btn.gameObject.SetActive(visible);
+                if (!visible) continue;
+                NormalizeRectWithMidLeft(btn, Margin, y, _tabParent);
+                y += 28f;
+            }
+        }
+        _tabY = y;
     }
 
     protected void SetCurrentTab(int index) => OnTabButtonClick(index);

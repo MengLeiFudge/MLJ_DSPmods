@@ -367,8 +367,8 @@ public static class TicketRaffle {
         if (tab == null || !tab.gameObject.activeSelf) return;
         GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
         RefreshPoolButtonTexts();
-        int normalCount = GameMain.mainPlayer?.package.GetItemCount(IFE普通抽卡券) ?? 0;
-        int premiumCount = GameMain.mainPlayer?.package.GetItemCount(IFE精选抽卡券) ?? 0;
+        int normalCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE普通抽卡券));
+        int premiumCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE精选抽卡券));
         if (_txtNormalTicket != null) _txtNormalTicket.text = $"普通券: {normalCount}";
         if (_txtPremiumTicket != null) _txtPremiumTicket.text = $"精选券: {premiumCount}";
         RefreshPityText();

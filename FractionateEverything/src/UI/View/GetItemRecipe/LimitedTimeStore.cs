@@ -180,7 +180,8 @@ public static class LimitedTimeStore {
     }
 
     private static int GetItemCount(int itemId) {
-        return GameMain.mainPlayer?.package.GetItemCount(itemId) ?? 0;
+        long count = GetItemTotalCount(itemId);
+        return count > int.MaxValue ? int.MaxValue : (int)count;
     }
 
     private static void RefreshRow(ExchangeRowUi row) {
