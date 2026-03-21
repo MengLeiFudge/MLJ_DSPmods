@@ -8,6 +8,13 @@ namespace FE.Logic.Manager;
 public static class GachaService {
     public static string CurrentUpPoolNameKey = "UP池";
     public static bool LimitedPoolUnlocked = false;
+    public static int UpGroupCount => UpItemGroups.Length;
+
+    private static readonly int[][] UpItemGroups = [
+        [IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚],
+        [IFE转化塔原胚, IFE精馏塔原胚, IFE分馏塔定向原胚],
+        [IFE分馏塔增幅芯片, IFE分馏配方核心, IFE残片],
+    ];
 
     private static readonly Random _rng = new();
     private static readonly List<GachaPool> _pools = [];
@@ -40,27 +47,60 @@ public static class GachaService {
     }
 
     private static void FillUpPool(GachaPool pool) {
-        FillRecipePool(pool);
-        var upRecipes = RecipeManager.GetRecipesByType(GachaManager.CurrentUpTheme);
-        foreach (var r in upRecipes) {
-            if (!pool.UpItems.Contains(r.InputID)) pool.UpItems.Add(r.InputID);
+        pool.PoolC.Add(IFE残片);
+        pool.PoolC.Add(IFE残片);
+        pool.PoolC.Add(IFE交互塔原胚);
+        pool.PoolC.Add(IFE矿物复制塔原胚);
+
+        pool.PoolB.Add(IFE残片);
+        pool.PoolB.Add(IFE点数聚集塔原胚);
+        pool.PoolB.Add(IFE转化塔原胚);
+
+        pool.PoolA.Add(IFE精馏塔原胚);
+        pool.PoolA.Add(IFE分馏塔增幅芯片);
+
+        pool.PoolS.Add(IFE分馏塔定向原胚);
+        pool.PoolS.Add(IFE分馏配方核心);
+
+        int groupIndex = GachaManager.CurrentUpGroupIndex;
+        if (groupIndex < 0 || groupIndex >= UpItemGroups.Length) {
+            groupIndex = 0;
+            GachaManager.CurrentUpGroupIndex = 0;
         }
-        CurrentUpPoolNameKey = GachaManager.CurrentUpTheme.GetName() + "UP池";
+        foreach (int itemId in UpItemGroups[groupIndex]) {
+            if (!pool.UpItems.Contains(itemId)) pool.UpItems.Add(itemId);
+        }
+        CurrentUpPoolNameKey = $"UP池-{groupIndex + 1}";
     }
 
     private static void FillRecipePool(GachaPool pool) {
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I电磁矩阵)) pool.PoolC.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I能量矩阵)) pool.PoolC.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I结构矩阵)) pool.PoolB.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I信息矩阵)) pool.PoolA.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I引力矩阵)) pool.PoolA.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I宇宙矩阵)) pool.PoolS.Add(r.InputID);
-        pool.PoolS.Add(IFE原版配方核心);
+        var lowRecipes = new List<int>();
+        var midRecipes = new List<int>();
+        var highRecipes = new List<int>();
 
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE原版配方核心);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I电磁矩阵)) lowRecipes.Add(r.InputID);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I能量矩阵)) lowRecipes.Add(r.InputID);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I结构矩阵)) midRecipes.Add(r.InputID);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I信息矩阵)) midRecipes.Add(r.InputID);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I引力矩阵)) highRecipes.Add(r.InputID);
+        foreach (var r in RecipeManager.GetRecipesByMatrix(I宇宙矩阵)) highRecipes.Add(r.InputID);
+
+        AddWeighted(pool.PoolC, IFE残片, 140);
+        AddWeighted(pool.PoolB, IFE残片, 80);
+        AddWeighted(pool.PoolA, IFE残片, 40);
+
+        for (int i = 0; i < lowRecipes.Count; i++) pool.PoolC.Add(lowRecipes[i]);
+        for (int i = 0; i < lowRecipes.Count; i++) pool.PoolB.Add(lowRecipes[i]);
+        for (int i = 0; i < midRecipes.Count; i++) pool.PoolB.Add(midRecipes[i]);
+        for (int i = 0; i < midRecipes.Count; i++) pool.PoolA.Add(midRecipes[i]);
+        for (int i = 0; i < highRecipes.Count; i++) pool.PoolA.Add(highRecipes[i]);
+        for (int i = 0; i < highRecipes.Count; i++) pool.PoolS.Add(highRecipes[i]);
+        AddWeighted(pool.PoolS, IFE原版配方核心, 30);
+
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE残片);
         if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
+        if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE原版配方核心);
     }
 
     private static void FillBuildingPool(GachaPool pool) {
@@ -76,13 +116,18 @@ public static class GachaService {
     }
 
     private static void FillLimitedPool(GachaPool pool) {
-        pool.PoolS.Add(IFE残片);
-        pool.PoolS.Add(IFE分馏配方核心);
-        pool.PoolS.Add(IFE分馏塔增幅芯片);
-        if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE原版配方核心);
-        pool.PoolA.AddRange(pool.PoolS);
-        pool.PoolB.AddRange(pool.PoolS);
-        pool.PoolC.AddRange(pool.PoolS);
+        AddWeighted(pool.PoolC, IFE残片, 50);
+        pool.PoolB.Add(IFE残片);
+        pool.PoolB.Add(IFE残片);
+        pool.PoolB.Add(IFE分馏塔增幅芯片);
+        pool.PoolA.Add(IFE分馏配方核心);
+        pool.PoolA.Add(IFE分馏塔增幅芯片);
+        pool.PoolS.Add(IFE分馏塔定向原胚);
+
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE残片);
+        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
+        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
+        if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE分馏塔定向原胚);
     }
 
     public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
@@ -91,11 +136,19 @@ public static class GachaService {
         if (pool == null) return results;
         if (poolId == GachaPool.PoolIdLimited && !LimitedPoolUnlocked) return results;
         if (pool.RequiresPremiumTicket && ticketId != IFE精选抽卡券) return results;
-        if (!TakeItemWithTip(ticketId, count, out int taken)) return results;
-        if (taken < count) return results;
+        if (!TakeItemWithTip(ticketId, count, out _)) return results;
 
         for (int i = 0; i < count; i++) {
             bool hardPity = GachaManager.IsHardPity(poolId);
+            if (hardPity) {
+                int pityItemId = GetHardPityItem(poolId, pool);
+                bool pityIsUp = poolId == GachaPool.PoolIdUp && pool.UpItems.Contains(pityItemId);
+                bool pityIsRecipe = RewardItem(poolId, pityItemId);
+                GachaManager.RecordDraw(poolId, true);
+                results.Add(new GachaResult(pityItemId, GachaRarity.S, pityIsUp, pityIsRecipe));
+                continue;
+            }
+
             float softBonus = GachaManager.GetSoftPityBonus(poolId);
             GachaRarity rarity = RollRarity(pool, softBonus, hardPity);
             bool isUp = false;
@@ -113,17 +166,41 @@ public static class GachaService {
             bool isRecipe;
             if (isUp && pool.UpItems.Count > 0) {
                 itemId = pool.UpItems[_rng.Next(pool.UpItems.Count)];
-                isRecipe = TryReward(itemId);
+                isRecipe = RewardItem(poolId, itemId);
             } else {
                 itemId = pool.PickRandom(rarity, _rng);
-                isRecipe = TryReward(itemId);
+                isRecipe = RewardItem(poolId, itemId);
             }
 
-            GachaManager.RecordDraw(poolId, rarity >= GachaRarity.A);
+            GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
             results.Add(new GachaResult(itemId, rarity, isUp, isRecipe));
         }
 
         return results;
+    }
+
+    private static int GetHardPityItem(int poolId, GachaPool pool) {
+        return poolId switch {
+            GachaPool.PoolIdPermanentRecipe => IFE原版配方核心,
+            GachaPool.PoolIdPermanentBuilding => IFE分馏塔增幅芯片,
+            GachaPool.PoolIdUp => pool.UpItems.Count > 0 ? pool.UpItems[_rng.Next(pool.UpItems.Count)] : IFE分馏塔定向原胚,
+            GachaPool.PoolIdLimited => IFE分馏塔定向原胚,
+            _ => IFE原版配方核心,
+        };
+    }
+
+    private static bool RewardItem(int poolId, int itemId) {
+        if (poolId == GachaPool.PoolIdPermanentRecipe) {
+            return TryReward(itemId);
+        }
+        AddItemToModData(itemId, 1, 0, false);
+        return false;
+    }
+
+    private static void AddWeighted(List<int> pool, int itemId, int weight) {
+        for (int i = 0; i < weight; i++) {
+            pool.Add(itemId);
+        }
     }
 
     private static bool TryReward(int inputId) {
@@ -139,10 +216,9 @@ public static class GachaService {
         return false;
     }
 
-    private static GachaRarity RollRarity(GachaPool pool, float softPityBonus, bool forceAPlus) {
-        if (forceAPlus) {
-            float totalAS = pool.RateA + pool.RateS;
-            return _rng.NextDouble() < pool.RateS / totalAS ? GachaRarity.S : GachaRarity.A;
+    private static GachaRarity RollRarity(GachaPool pool, float softPityBonus, bool forceS) {
+        if (forceS) {
+            return GachaRarity.S;
         }
         double rand = _rng.NextDouble();
         float boostedS = pool.RateS + softPityBonus;

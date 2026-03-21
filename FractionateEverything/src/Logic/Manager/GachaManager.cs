@@ -1,5 +1,4 @@
 using System.IO;
-using FE.Logic.Recipe;
 using FE.Utils;
 
 namespace FE.Logic.Manager;
@@ -17,13 +16,13 @@ public static class GachaManager {
     public const int HardPityThreshold = 90;
 
     // UP轮换：72h = 72×60×60×60 ticks
-    public const long UpRotationInterval = 15_552_000L;
+    public const long UpRotationInterval = 216_000L;
     public static long UpRotationNextTick = UpRotationInterval;
-    public static ERecipe CurrentUpTheme = ERecipe.Conversion;
+    public static int CurrentUpGroupIndex = 0;
 
     /// <summary>
-    /// 计算当前抽卡的A+触发概率加成（软保底）
-    /// count > SoftPityThreshold 时，每超出1抽额外+3%概率，上限+30%
+    /// 计算当前抽卡的S触发概率加成（软保底）
+    /// count > SoftPityThreshold 时，每超出1抽额外+0.2%概率，上限+8%
     /// </summary>
     public static float GetSoftPityBonus(int poolId) {
         int count = PityCount[poolId];
@@ -31,8 +30,8 @@ public static class GachaManager {
             return 0f;
         }
         int excess = count - SoftPityThreshold;
-        float bonus = excess * 0.03f;
-        return bonus > 0.3f ? 0.3f : bonus;
+        float bonus = excess * 0.002f;
+        return bonus > 0.08f ? 0.08f : bonus;
     }
 
     /// <summary>
@@ -45,10 +44,10 @@ public static class GachaManager {
     /// <summary>
     /// 记录一次抽卡（更新计数器）
     /// </summary>
-    public static void RecordDraw(int poolId, bool isAPlus) {
+    public static void RecordDraw(int poolId, bool isS) {
         if (poolId >= 0 && poolId < PityCount.Length) {
             PityCount[poolId]++;
-            if (isAPlus) {
+            if (isS) {
                 ResetPity(poolId);
             }
         }
@@ -69,17 +68,15 @@ public static class GachaManager {
         long diff = GameMain.gameTick - UpRotationNextTick;
         long skip = diff / UpRotationInterval + 1;
         UpRotationNextTick += skip * UpRotationInterval;
-        AdvanceUpTheme();
+        AdvanceUpGroup();
         GachaService.RefreshUpPool();
     }
 
-    private static void AdvanceUpTheme() {
-        CurrentUpTheme = CurrentUpTheme switch {
-            ERecipe.Conversion => ERecipe.MineralCopy,
-            ERecipe.MineralCopy => ERecipe.BuildingTrain,
-            ERecipe.BuildingTrain => ERecipe.Conversion,
-            _ => ERecipe.Conversion,
-        };
+    private static void AdvanceUpGroup() {
+        CurrentUpGroupIndex++;
+        if (CurrentUpGroupIndex >= GachaService.UpGroupCount) {
+            CurrentUpGroupIndex = 0;
+        }
     }
 
     #region IModCanSave
@@ -94,7 +91,7 @@ public static class GachaManager {
             ("UpGuarantee", bw => bw.Write(UpGuaranteeCount)),
             ("UpRotation", bw => {
                 bw.Write(UpRotationNextTick);
-                bw.Write((int)CurrentUpTheme);
+                bw.Write(CurrentUpGroupIndex);
             })
         );
     }
@@ -109,7 +106,10 @@ public static class GachaManager {
             ("UpGuarantee", br => UpGuaranteeCount = br.ReadInt32()),
             ("UpRotation", br => {
                 UpRotationNextTick = br.ReadInt64();
-                CurrentUpTheme = (ERecipe)br.ReadInt32();
+                CurrentUpGroupIndex = br.ReadInt32();
+                if (CurrentUpGroupIndex < 0 || CurrentUpGroupIndex >= GachaService.UpGroupCount) {
+                    CurrentUpGroupIndex = 0;
+                }
             })
         );
     }
@@ -118,7 +118,7 @@ public static class GachaManager {
         System.Array.Clear(PityCount, 0, PityCount.Length);
         UpGuaranteeCount = 0;
         UpRotationNextTick = UpRotationInterval;
-        CurrentUpTheme = ERecipe.Conversion;
+        CurrentUpGroupIndex = 0;
     }
 
     #endregion
