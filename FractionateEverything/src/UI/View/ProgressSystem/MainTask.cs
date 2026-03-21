@@ -52,9 +52,9 @@ public static class MainTask {
     private static readonly TaskInfo[] Tasks = [
         new("分馏启示", "主线描述-分馏启示", "主线奖励-无", () => IsTechUnlocked(TFE分馏数据中心),
             () => GetTechProgressText(TFE分馏数据中心), () => { }, true),
-        new("万物之始", "主线描述-万物之始", "主线奖励-电磁奖券50", () => totalFractionSuccesses >= 50,
+        new("万物之始", "主线描述-万物之始", "主线奖励-残片500", () => totalFractionSuccesses >= 50,
             () => string.Format("分馏次数进度".Translate(), totalFractionSuccesses, 50),
-            () => GrantItems((IFE电磁奖券, 50))),
+            () => GrantItems((IFE残片, 500))),
         new("抽卡之乐", "主线描述-抽卡之乐", "主线奖励-配方核心1", () => TicketRaffle.totalDraws >= 10,
             () => string.Format("抽奖次数进度".Translate(), TicketRaffle.totalDraws, 10),
             () => GrantItems((IFE分馏配方核心, 1))),
@@ -62,8 +62,8 @@ public static class MainTask {
             () => GetTechProgressText(TFE矿物复制), () => GrantItems((IFE矿物复制塔原胚, 10))),
         new("物品转化", "主线描述-物品转化", "主线奖励-转化塔原胚10", () => IsTechUnlocked(TFE物品转化),
             () => GetTechProgressText(TFE物品转化), () => GrantItems((IFE转化塔原胚, 10))),
-        new("符文初识", "主线描述-符文初识", "主线奖励-速度产能精华", HasAnyEquippedRune,
-            GetRuneProgressText, () => GrantItems((IFE速度精华, 500), (IFE产能精华, 500))),
+        new("符文初识", "主线描述-符文初识", "主线奖励-残片1000", HasAnyEquippedRune,
+            GetRuneProgressText, () => GrantItems((IFE残片, 1000))),
         new("产线优化", "主线描述-产线优化", "主线奖励-增幅芯片5", HasBuildingLevel6,
             GetBuildingProgressText, () => GrantItems((IFE分馏塔增幅芯片, 5))),
         new("配方精通", "主线描述-配方精通", "主线奖励-配方核心3", () => GetUnlockedRecipeCount() >= 30,
@@ -71,9 +71,9 @@ public static class MainTask {
             () => GrantItems((IFE分馏配方核心, 3))),
         new("星际互联", "主线描述-星际互联", "主线奖励-星际物流交互站2", () => IsTechUnlocked(TFE星际物流交互),
             () => GetTechProgressText(TFE星际物流交互), () => GrantItems((IFE星际物流交互站, 2))),
-        new("万物归一", "主线描述-万物归一", "主线奖励-宇宙奖券100", () => GetUnlockedRecipeCount() >= 100,
+        new("万物归一", "主线描述-万物归一", "主线奖励-残片2000", () => GetUnlockedRecipeCount() >= 100,
             () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 100),
-            () => GrantItems((IFE宇宙奖券, 100))),
+            () => GrantItems((IFE残片, 2000))),
     ];
 
     public static void AddTranslations() {
@@ -102,15 +102,15 @@ public static class MainTask {
         Register("主线描述-万物归一", "Unlock 100 fractionation recipes", "累计解锁 100 个分馏配方");
 
         Register("主线奖励-无", "No extra reward (auto completed)", "无额外奖励（自动完成）");
-        Register("主线奖励-电磁奖券50", "Electromagnetic Tickets x50", "电磁奖券 x50");
+        Register("主线奖励-残片500", "Fragments x500", "残片 x500");
         Register("主线奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
         Register("主线奖励-矿物复制塔原胚10", "Mineral Replication Proto x10", "矿物复制塔原胚 x10");
         Register("主线奖励-转化塔原胚10", "Conversion Tower Proto x10", "转化塔原胚 x10");
-        Register("主线奖励-速度产能精华", "Speed Essence x500 + Capacity Essence x500", "速度精华 x500 + 产能精华 x500");
+        Register("主线奖励-残片1000", "Fragments x1000", "残片 x1000");
         Register("主线奖励-增幅芯片5", "Fractionator Amplify Chip x5", "分馏塔增幅芯片 x5");
         Register("主线奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
         Register("主线奖励-星际物流交互站2", "Interstellar Interaction Station x2", "星际物流交互站 x2");
-        Register("主线奖励-宇宙奖券100", "Universe Tickets x100", "宇宙奖券 x100");
+        Register("主线奖励-残片2000", "Fragments x2000", "残片 x2000");
 
         Register("当前任务", "Current Task");
         Register("任务完成", "Task Complete");
