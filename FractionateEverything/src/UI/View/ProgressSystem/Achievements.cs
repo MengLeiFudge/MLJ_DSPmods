@@ -67,28 +67,19 @@ public static class Achievements {
     private static float listActionW;
 
     private static readonly AchievementInfo[] achievements = [
-        new("成就-初次分馏", "成就描述-初次分馏", "成就奖励-电磁奖券10", ETier.Bronze,
-            () => totalFractionSuccesses >= 1,
-            () => GrantItems((IFE电磁奖券, 10))),
-        new("成就-分馏百次", "成就描述-分馏百次", "成就奖励-电磁奖券30", ETier.Bronze,
-            () => totalFractionSuccesses >= 100,
-            () => GrantItems((IFE电磁奖券, 30))),
         new("成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-能量奖券20", ETier.Silver,
             () => totalFractionSuccesses >= 1000,
-            () => GrantItems((IFE能量奖券, 20)), 0.005f),
+            () => GrantItems((IFE残片, 200)), 0.005f),
         new("成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-结构奖券30", ETier.Gold,
             () => totalFractionSuccesses >= 10000,
-            () => GrantItems((IFE结构奖券, 30)), 0.01f),
+            () => GrantItems((IFE残片, 300)), 0.01f),
         new("成就-分馏之王", "成就描述-分馏之王", "成就奖励-宇宙奖券50", ETier.Platinum,
             () => totalFractionSuccesses >= 100000,
-            () => GrantItems((IFE宇宙奖券, 50)), 0.02f),
+            () => GrantItems((IFE残片, 500)), 0.02f),
         new("成就-永不停歇", "成就描述-永不停歇", "成就奖励-宇宙奖券200", ETier.Platinum,
             () => totalFractionSuccesses >= 1000000,
-            () => GrantItems((IFE宇宙奖券, 200)), 0.03f),
+            () => GrantItems((IFE残片, 2000)), 0.03f),
 
-        new("成就-初次抽奖", "成就描述-初次抽奖", "成就奖励-电磁奖券5", ETier.Bronze,
-            () => TicketRaffle.totalDraws >= 1,
-            () => GrantItems((IFE电磁奖券, 5))),
         new("成就-幸运星", "成就描述-幸运星", "成就奖励-配方核心1", ETier.Bronze,
             () => TicketRaffle.totalDraws >= 100,
             () => GrantItems((IFE分馏配方核心, 1))),
@@ -97,10 +88,10 @@ public static class Achievements {
             () => GrantItems((IFE分馏配方核心, 3)), 0.005f),
         new("成就-欧皇降临", "成就描述-欧皇降临", "成就奖励-宇宙奖券30", ETier.Gold,
             () => TicketRaffle.totalDraws >= 2000,
-            () => GrantItems((IFE宇宙奖券, 30)), 0.01f),
+            () => GrantItems((IFE残片, 300)), 0.01f),
         new("成就-氪金大佬", "成就描述-氪金大佬", "成就奖励-宇宙奖券100", ETier.Platinum,
             () => TicketRaffle.totalDraws >= 10000,
-            () => GrantItems((IFE宇宙奖券, 100)), 0.02f),
+            () => GrantItems((IFE残片, 1000)), 0.02f),
 
         new("成就-初级工程师", "成就描述-初级工程师", "成就奖励-增幅芯片2", ETier.Bronze,
             () => GetMaxBuildingLevel() >= 3,
@@ -116,7 +107,7 @@ public static class Achievements {
             () => GrantItems((IFE分馏塔增幅芯片, 20)), 0.01f),
         new("成就-完美工匠", "成就描述-完美工匠", "成就奖励-宇宙奖券50", ETier.Platinum,
             () => HasLevel12BuildingWithTrait(),
-            () => GrantItems((IFE宇宙奖券, 50)), 0.02f),
+            () => GrantItems((IFE残片, 500)), 0.02f),
 
         new("成就-配方入门", "成就描述-配方入门", "成就奖励-配方核心1", ETier.Bronze,
             () => GetUnlockedRecipeCount() >= 5,
@@ -129,7 +120,7 @@ public static class Achievements {
             () => GrantItems((IFE分馏配方核心, 5)), 0.01f),
         new("成就-万物百科", "成就描述-万物百科", "成就奖励-宇宙奖券80", ETier.Platinum,
             () => GetUnlockedRecipeCount() >= 150,
-            () => GrantItems((IFE宇宙奖券, 80)), 0.02f),
+            () => GrantItems((IFE残片, 800)), 0.02f),
         new("成就-满级配方", "成就描述-满级配方", "成就奖励-增幅芯片10", ETier.Gold,
             HasMaxLevelRecipe,
             () => GrantItems((IFE分馏塔增幅芯片, 10)), 0.01f),
@@ -145,10 +136,10 @@ public static class Achievements {
             () => GrantRandomEssence(500), 0.005f),
         new("成就-符文满槽", "成就描述-符文满槽", "成就奖励-宇宙奖券20", ETier.Gold,
             () => RuneManager.equippedRuneIds.All(id => id != 0),
-            () => GrantItems((IFE宇宙奖券, 20)), 0.01f),
+            () => GrantItems((IFE残片, 200)), 0.01f),
         new("成就-符文满级", "成就描述-符文满级", "成就奖励-宇宙奖券50", ETier.Platinum,
             () => RuneManager.allRunes.Any(rune => rune.level >= 20),
-            () => GrantItems((IFE宇宙奖券, 50)), 0.02f),
+            () => GrantItems((IFE残片, 500)), 0.02f),
 
         new("成就-全面发展", "成就描述-全面发展", "成就奖励-宇宙奖券30", ETier.Gold,
             () => totalFractionSuccesses >= 1000
@@ -156,14 +147,14 @@ public static class Achievements {
                   && RuneManager.allRunes.Count >= 3
                   && GetUnlockedRecipeCount() >= 20
                   && GetMaxBuildingLevel() >= 3,
-            () => GrantItems((IFE宇宙奖券, 30)), 0.01f),
+            () => GrantItems((IFE残片, 300)), 0.01f),
         new("成就-万物归一", "成就描述-万物归一", "成就奖励-宇宙奖券200", ETier.Platinum,
             () => totalFractionSuccesses >= 50000
                   && GetUnlockedRecipeCount() >= 100
                   && GetMaxBuildingLevel() >= 10
                   && RuneManager.allRunes.Count >= 20
                   && TicketRaffle.totalDraws >= 1000,
-            () => GrantItems((IFE宇宙奖券, 200)), 0.03f),
+            () => GrantItems((IFE残片, 2000)), 0.03f),
     ];
 
     private static bool[] unlocked = new bool[achievements.Length];
@@ -197,14 +188,6 @@ public static class Achievements {
         Register("成就品阶-黄金", "Gold", "黄金");
         Register("成就品阶-白金", "Platinum", "白金");
 
-        Register("成就-初次分馏", "First Fractionation");
-        Register("成就描述-初次分馏", "Complete 1 successful fractionation", "累计完成 1 次分馏成功");
-        Register("成就奖励-电磁奖券10", "Electromagnetic Tickets x10", "电磁奖券 x10");
-
-        Register("成就-分馏百次", "Hundred Distillations");
-        Register("成就描述-分馏百次", "Complete 100 successful fractionations", "累计完成 100 次分馏成功");
-        Register("成就奖励-电磁奖券30", "Electromagnetic Tickets x30", "电磁奖券 x30");
-
         Register("成就-千锤百炼", "Tempered Through Trials");
         Register("成就描述-千锤百炼", "Complete 1000 successful fractionations", "累计完成 1000 次分馏成功");
         Register("成就奖励-能量奖券20", "Energy Tickets x20", "能量奖券 x20");
@@ -220,10 +203,6 @@ public static class Achievements {
         Register("成就-永不停歇", "Never Stop");
         Register("成就描述-永不停歇", "Complete 1000000 successful fractionations", "累计完成 1000000 次分馏成功");
         Register("成就奖励-宇宙奖券200", "Universe Tickets x200", "宇宙奖券 x200");
-
-        Register("成就-初次抽奖", "First Draw");
-        Register("成就描述-初次抽奖", "Perform 1 raffle draw", "累计完成 1 次奖券抽奖");
-        Register("成就奖励-电磁奖券5", "Electromagnetic Tickets x5", "电磁奖券 x5");
 
         Register("成就-幸运星", "Lucky Star");
         Register("成就描述-幸运星", "Perform 100 raffle draws", "累计完成 100 次奖券抽奖");
@@ -538,8 +517,7 @@ public static class Achievements {
     }
 
     private static int GetRandomEssenceId() {
-        int[] essenceIds = [IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华];
-        return essenceIds[GetRandInt(0, essenceIds.Length)];
+        return IFE残片;
     }
 
     private static int GetUnlockedRecipeCount() {

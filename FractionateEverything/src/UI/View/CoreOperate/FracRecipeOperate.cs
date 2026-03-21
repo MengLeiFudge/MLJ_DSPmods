@@ -267,11 +267,11 @@ public static class FracRecipeOperate {
             float achievementBoost = Achievements.GetSuccessRateBonus();
             float echoBoost = recipe.EchoBonus;
             float galleryBoost = GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
-            float actualSuccessRatio = recipe.SuccessRatio
+            float actualSuccessRatio = Mathf.Clamp01(recipe.SuccessRatio
                                      * (1f + sacrificeBoost)
                                      * (1f + achievementBoost)
                                      * (1f + echoBoost)
-                                     * (1f + galleryBoost);
+                                     * (1f + galleryBoost));
             ShowTextLine(line++,
                 $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + achievementBoost):F3} × {(1f + echoBoost):F3} × {(1f + galleryBoost):F3} = {actualSuccessRatio:P3}"
                     .WithColor(Orange));
@@ -280,8 +280,13 @@ public static class FracRecipeOperate {
                     .WithColor(Gray));
 
             // 损毁率
-            ShowTextLine(line++,
-                $"{"损毁率".Translate()} {recipe.DestroyRatio:P3}".WithColor(Red));
+            float baseDestroyRatio = GetBaseDestroyRatio(recipe.Level);
+            float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+            string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
+            if (destroyReduction > 0f) {
+                destroyText += $"（图鉴 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
+            }
+            ShowTextLine(line++, destroyText.WithColor(Red));
             ShowTextLine(line++, "");// 空行
 
             // 主产物：标签独占一行，下方竖向列表
@@ -400,19 +405,21 @@ public static class FracRecipeOperate {
     private static string GetLevelDescription(int level) {
         int remainPct = level * 8;
         int doublePct = level * 5;
-        string destroyStr = level switch {
-            < 7 => "4%",
-            7 => "3%",
-            8 => "2%",
-            9 => "1%",
-            _ => "0%"
-        };
+        string destroyStr = GetBaseDestroyRatio(level).ToString("P0");
         if (level == 0) {
             return $"+0  {"无通用加成".Translate()}  {"损毁".Translate()}{destroyStr}";
         }
         string specialNote = level >= 7 ? $"  {"损毁".Translate()}{destroyStr}" : "";
         return $"+{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{specialNote}";
     }
+
+    private static float GetBaseDestroyRatio(int level) => level switch {
+        < 7 => 0.04f,
+        7 => 0.03f,
+        8 => 0.02f,
+        9 => 0.01f,
+        _ => 0f,
+    };
 
     // ==================== 产物显示（格式：概率 | 图标 | 数量） ====================
 
@@ -461,7 +468,7 @@ public static class FracRecipeOperate {
                              + Achievements.GetSuccessRateBonus()
                              + recipe.EchoBonus
                              + GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
-        float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        float successRatio = Mathf.Clamp01(recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
         float fracRatio = (1 - recipe.DestroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
         float repeatRatio = fracRatio * remainInputRatio;

@@ -23,34 +23,6 @@ public static class ItemManager {
             "Use the Interactive Tower to fractionate various raw materials, yielding corresponding fractionation towers. Input the fractionation towers into the front interface of the Interactive Tower to unlock the corresponding technology.",
             "使用交互塔分馏各种原胚，即可得到对应分馏塔；将分馏塔从交互塔正面接口输入，即可解锁对应科技。");
 
-        Register("电磁奖券", "Electromagnetic Ticket");
-        Register("I电磁奖券",
-            "A high-tech ticket with a lot of electromagnetic matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量电磁矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("能量奖券", "Energy Ticket");
-        Register("I能量奖券",
-            "A high-tech ticket with a lot of energy matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量能量矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("结构奖券", "Structure Ticket");
-        Register("I结构奖券",
-            "A high-tech ticket with a lot of structure matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量结构矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("信息奖券", "Information Ticket");
-        Register("I信息奖券",
-            "A high-tech ticket with a lot of information matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量信息矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("引力奖券", "Gravity Ticket");
-        Register("I引力奖券",
-            "A high-tech ticket with a lot of gravity matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量引力矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("宇宙奖券", "Universe Ticket");
-        Register("I宇宙奖券",
-            "A high-tech ticket with a lot of universe matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量宇宙矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
-        Register("黑雾奖券", "Dark Fog Ticket");
-        Register("I黑雾奖券",
-            "A high-tech ticket with a lot of dark fog matrices encapsulated inside. Can be used in any prize pool in the fractionation data centre raffle draw",
-            "一张高科技奖券，内部封装了大量黑雾矩阵。可以在分馏数据中心奖券抽奖的任何奖池中使用。");
         Register("普通抽卡券", "Standard Draw Ticket");
         Register("I普通抽卡券",
             "A standard ticket for drawing from the permanent and UP pools in the fractionation data centre.",
@@ -101,22 +73,6 @@ public static class ItemManager {
             "Modify origin recipe input counts and time spend.",
             "可以修改原版配方的原料数目、制作时间。");
 
-        Register("速度精华", "Replication Essence");
-        Register("I速度精华",
-            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
-            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
-        Register("产能精华", "Alchemy Essence");
-        Register("I产能精华",
-            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
-            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
-        Register("节能精华", "Deconstruction Essence");
-        Register("I节能精华",
-            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
-            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
-        Register("增产精华", "Conversion Essence");
-        Register("I增产精华",
-            "One of the Fractionation Essences, obtained through Rune Draw or Rune Decomposition. Used to enhance the level of runes.",
-            "分馏精华之一，通过符文抽奖或分解符文得到。可用来提升符文的等级。");
     }
 
     #region 添加新物品
@@ -153,104 +109,19 @@ public static class ItemManager {
             Tech1134IconPath, 0, 100, EItemType.Decoration);
 
         ItemProto item;
-        RecipeProto recipe;
-
-        item = ProtoRegistry.RegisterItem(IFE电磁奖券, "电磁奖券", "I电磁奖券",
-            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 101, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE电磁奖券,
-            ERecipeType.Assemble, 120, [I电磁矩阵], [10], [IFE电磁奖券], [1],
-            "I电磁奖券", TFE电磁奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "dcjq";
-        recipe.IconTag = "dcjq";
-
-        item = ProtoRegistry.RegisterItem(IFE能量奖券, "能量奖券", "I能量奖券",
-            "Assets/fe/energy-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE能量奖券,
-            ERecipeType.Assemble, 150, [I能量矩阵], [10], [IFE能量奖券], [1],
-            "I能量奖券", TFE能量奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "nljq";
-        recipe.IconTag = "nljq";
-
-        item = ProtoRegistry.RegisterItem(IFE结构奖券, "结构奖券", "I结构奖券",
-            "Assets/fe/structure-ticket", tab分馏 * 1000 + 103, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE结构奖券,
-            ERecipeType.Assemble, 180, [I结构矩阵], [10], [IFE结构奖券], [1],
-            "I结构奖券", TFE结构奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "jgjq";
-        recipe.IconTag = "jgjq";
-
-        item = ProtoRegistry.RegisterItem(IFE信息奖券, "信息奖券", "I信息奖券",
-            "Assets/fe/information-ticket", tab分馏 * 1000 + 104, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE信息奖券,
-            ERecipeType.Assemble, 210, [I信息矩阵], [10], [IFE信息奖券], [1],
-            "I信息奖券", TFE信息奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "xxjq";
-        recipe.IconTag = "xxjq";
-
-        item = ProtoRegistry.RegisterItem(IFE引力奖券, "引力奖券", "I引力奖券",
-            "Assets/fe/gravity-ticket", tab分馏 * 1000 + 105, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE引力奖券,
-            ERecipeType.Assemble, 240, [I引力矩阵], [10], [IFE引力奖券], [1],
-            "I引力奖券", TFE引力奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "yljq";
-        recipe.IconTag = "yljq";
-
-        item = ProtoRegistry.RegisterItem(IFE宇宙奖券, "宇宙奖券", "I宇宙奖券",
-            "Assets/fe/universe-ticket", tab分馏 * 1000 + 106, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.white, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE宇宙奖券,
-            ERecipeType.Assemble, 300, [I宇宙矩阵], [10], [IFE宇宙奖券], [1],
-            "I宇宙奖券", TFE宇宙奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "yzjq";
-        recipe.IconTag = "yzjq";
-
-        item = ProtoRegistry.RegisterItem(IFE黑雾奖券, "黑雾奖券", "I黑雾奖券",
-            "Assets/fe/dark-fog-ticket", tab分馏 * 1000 + 107, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.gray));
-        recipe = ProtoRegistry.RegisterRecipe(RFE黑雾奖券,
-            ERecipeType.Assemble, 600, [I黑雾矩阵], [200], [IFE黑雾奖券], [1],
-            "I黑雾奖券", TFE黑雾奖券, item.GridIndex, item.Name, item.IconPath);
-        recipe.IconPath = "";
-        recipe.Handcraft = false;
-        recipe.NonProductive = true;
-        item.IconTag = "hwjq";
-        recipe.IconTag = "hwjq";
 
         item = ProtoRegistry.RegisterItem(IFE普通抽卡券, "普通抽卡券", "I普通抽卡券",
-            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 108, 100, EItemType.Product,
+            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 101, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
         item.IconTag = "pycjq";
 
         item = ProtoRegistry.RegisterItem(IFE精选抽卡券, "精选抽卡券", "I精选抽卡券",
-            "Assets/fe/universe-ticket", tab分馏 * 1000 + 109, 100, EItemType.Product,
+            "Assets/fe/universe-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
             ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
         item.IconTag = "jxcjq";
 
         item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
-            "Assets/fe/fragment", tab分馏 * 1000 + 110, 100, EItemType.Material,
+            "Assets/fe/copy-essence", tab分馏 * 1000 + 103, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
         item.IconTag = "cpfragment";
 
@@ -309,29 +180,6 @@ public static class ItemManager {
         item.IconTag = "ybpfhx";
 
 
-        item = ProtoRegistry.RegisterItem(IFE速度精华, "速度精华", "I速度精华",
-            "Assets/fe/copy-essence", tab分馏 * 1000 + 501, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "sdjh";
-
-        item = ProtoRegistry.RegisterItem(IFE产能精华, "产能精华", "I产能精华",
-            "Assets/fe/alchemy-essence", tab分馏 * 1000 + 502, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "cnjh";
-
-        item = ProtoRegistry.RegisterItem(IFE节能精华, "节能精华", "I节能精华",
-            "Assets/fe/deconstruction-essence", tab分馏 * 1000 + 503, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.green, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "jnjh";
-
-        item = ProtoRegistry.RegisterItem(IFE增产精华, "增产精华", "I增产精华",
-            "Assets/fe/conversion-essence", tab分馏 * 1000 + 504, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "zcjh";
     }
 
     #endregion
@@ -419,11 +267,6 @@ public static class ItemManager {
         itemValue[IFE点数聚集塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE精馏塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        //设置精华价值
-        itemValue[IFE速度精华] = 200.0f;
-        itemValue[IFE产能精华] = 200.0f;
-        itemValue[IFE节能精华] = 200.0f;
-        itemValue[IFE增产精华] = 200.0f;
         //设置抽卡券价值
         itemValue[IFE普通抽卡券] = itemValue[I能量矩阵];
         itemValue[IFE精选抽卡券] = itemValue[I引力矩阵];
@@ -605,9 +448,9 @@ public static class ItemManager {
         }
 
         //设置核心、芯片价值
-        itemValue[IFE分馏配方核心] = itemValue[IFE宇宙奖券] / 0.01f;
-        itemValue[IFE分馏塔增幅芯片] = itemValue[IFE宇宙奖券] / 0.03f;
-        itemValue[IFE原版配方核心] = itemValue[IFE宇宙奖券] / 0.05f;
+        itemValue[IFE分馏配方核心] = itemValue[IFE精选抽卡券] / 0.01f;
+        itemValue[IFE分馏塔增幅芯片] = itemValue[IFE精选抽卡券] / 0.03f;
+        itemValue[IFE原版配方核心] = itemValue[IFE精选抽卡券] / 0.05f;
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1

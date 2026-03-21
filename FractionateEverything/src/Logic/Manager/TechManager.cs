@@ -237,7 +237,7 @@ public static class TechManager {
             GetTechPos(0, 1)
         );
         tech超值礼包1.PreTechsImplicit = [TFE物品交互];
-        tech超值礼包1.AddItems = [IFE电磁奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包1.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包1.AddItemCounts = [200, 3, 6];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
@@ -251,7 +251,7 @@ public static class TechManager {
             GetTechPos(0, 2)
         );
         tech超值礼包2.PreTechsImplicit = [T能量矩阵];
-        tech超值礼包2.AddItems = [IFE能量奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包2.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包2.AddItemCounts = [200, 3, 6];
         tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
         tech超值礼包2.PropertyItemCounts = [100];
@@ -265,7 +265,7 @@ public static class TechManager {
             GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE结构奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包3.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包3.AddItemCounts = [200, 3, 6];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
@@ -279,7 +279,7 @@ public static class TechManager {
             GetTechPos(0, 4)
         );
         tech超值礼包4.PreTechsImplicit = [T信息矩阵];
-        tech超值礼包4.AddItems = [IFE信息奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包4.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包4.AddItemCounts = [200, 3, 6];
         tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
         tech超值礼包4.PropertyItemCounts = [100];
@@ -293,7 +293,7 @@ public static class TechManager {
             GetTechPos(0, 5)
         );
         tech超值礼包5.PreTechsImplicit = [T引力矩阵];
-        tech超值礼包5.AddItems = [IFE引力奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包5.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包5.AddItemCounts = [200, 3, 6];
         tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
         tech超值礼包5.PropertyItemCounts = [100];
@@ -307,97 +307,11 @@ public static class TechManager {
             GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE宇宙奖券, IFE分馏配方核心, IFE分馏塔增幅芯片];
+        tech超值礼包6.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
         tech超值礼包6.AddItemCounts = [200, 3, 6];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
         tech超值礼包6.IconTag = "tczlb6";
-
-
-        var tech电磁奖券 = ProtoRegistry.RegisterTech(
-            TFE电磁奖券, "T电磁奖券", "电磁奖券描述", "电磁奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE分馏数据中心],
-            [I电磁矩阵], [40], 18000,
-            [RFE电磁奖券],
-            GetTechPos(1, 1)
-        );
-        tech电磁奖券.PreTechsImplicit = [TFE物品交互];
-        tech电磁奖券.PropertyOverrideItems = [I电磁矩阵];
-        tech电磁奖券.PropertyItemCounts = [200];
-        tech电磁奖券.IconTag = "tdcjq";
-
-        var tech能量奖券 = ProtoRegistry.RegisterTech(
-            TFE能量奖券, "T能量奖券", "能量奖券描述", "能量奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE电磁奖券],
-            [I能量矩阵], [40], 36000,
-            [RFE能量奖券],
-            GetTechPos(1, 2)
-        );
-        tech能量奖券.PreTechsImplicit = [T能量矩阵];
-        tech能量奖券.PropertyOverrideItems = [I能量矩阵];
-        tech能量奖券.PropertyItemCounts = [400];
-        tech能量奖券.IconTag = "tnljq";
-
-        var tech结构奖券 = ProtoRegistry.RegisterTech(
-            TFE结构奖券, "T结构奖券", "结构奖券描述", "结构奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE能量奖券],
-            [I结构矩阵], [40], 54000,
-            [RFE结构奖券],
-            GetTechPos(1, 3)
-        );
-        tech结构奖券.PreTechsImplicit = [T结构矩阵];
-        tech结构奖券.PropertyOverrideItems = [I结构矩阵];
-        tech结构奖券.PropertyItemCounts = [600];
-        tech结构奖券.IconTag = "tjgjq";
-
-        var tech信息奖券 = ProtoRegistry.RegisterTech(
-            TFE信息奖券, "T信息奖券", "信息奖券描述", "信息奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE结构奖券],
-            [I信息矩阵], [40], 72000,
-            [RFE信息奖券],
-            GetTechPos(1, 4)
-        );
-        tech信息奖券.PreTechsImplicit = [T信息矩阵];
-        tech信息奖券.PropertyOverrideItems = [I信息矩阵];
-        tech信息奖券.PropertyItemCounts = [800];
-        tech信息奖券.IconTag = "txxjq";
-
-        var tech引力奖券 = ProtoRegistry.RegisterTech(
-            TFE引力奖券, "T引力奖券", "引力奖券描述", "引力奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE信息奖券],
-            [I引力矩阵], [40], 90000,
-            [RFE引力奖券],
-            GetTechPos(1, 5)
-        );
-        tech引力奖券.PreTechsImplicit = [T引力矩阵];
-        tech引力奖券.PropertyOverrideItems = [I引力矩阵];
-        tech引力奖券.PropertyItemCounts = [1000];
-        tech引力奖券.IconTag = "tyljq";
-
-        var tech宇宙奖券 = ProtoRegistry.RegisterTech(
-            TFE宇宙奖券, "T宇宙奖券", "宇宙奖券描述", "宇宙奖券结果", "Assets/fe/tech分馏奖券",
-            [TFE引力奖券],
-            [I宇宙矩阵], [40], 108000,
-            [RFE宇宙奖券],
-            GetTechPos(1, 6)
-        );
-        tech宇宙奖券.PreTechsImplicit = [T宇宙矩阵];
-        tech宇宙奖券.PropertyOverrideItems = [I宇宙矩阵];
-        tech宇宙奖券.PropertyItemCounts = [1200];
-        tech宇宙奖券.IconTag = "tyzjq";
-
-        var tech黑雾奖券 = ProtoRegistry.RegisterTech(
-            TFE黑雾奖券, "T黑雾奖券", "黑雾奖券描述", "黑雾奖券结果", "Assets/fe/tech分馏奖券",
-            [],
-            [I黑雾矩阵], [800], 9000,
-            [RFE黑雾奖券],
-            GetTechPos(1, 7)
-        );
-        tech黑雾奖券.IsHiddenTech = true;
-        tech黑雾奖券.PreItem = [I黑雾矩阵];
-        tech黑雾奖券.PreTechsImplicit = [TFE分馏塔原胚];
-        tech黑雾奖券.IconTag = "thwjq";
-
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",

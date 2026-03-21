@@ -76,7 +76,9 @@ public static class GachaService {
     }
 
     private static void FillLimitedPool(GachaPool pool) {
-        for (int id = IFE速度精华; id <= IFE增产精华; id++) pool.PoolS.Add(id);
+        pool.PoolS.Add(IFE残片);
+        pool.PoolS.Add(IFE分馏配方核心);
+        pool.PoolS.Add(IFE分馏塔增幅芯片);
         if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE原版配方核心);
         pool.PoolA.AddRange(pool.PoolS);
         pool.PoolB.AddRange(pool.PoolS);

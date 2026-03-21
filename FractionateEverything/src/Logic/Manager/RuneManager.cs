@@ -25,10 +25,10 @@ public class Rune {
 
     public int GetEssenceId() {
         return mainStat switch {
-            ERuneStatType.Speed => IFE速度精华,
-            ERuneStatType.Productivity => IFE产能精华,
-            ERuneStatType.EnergySaving => IFE节能精华,
-            ERuneStatType.Proliferator => IFE增产精华,
+            ERuneStatType.Speed => IFE残片,
+            ERuneStatType.Productivity => IFE残片,
+            ERuneStatType.EnergySaving => IFE残片,
+            ERuneStatType.Proliferator => IFE残片,
             _ => 0
         };
     }

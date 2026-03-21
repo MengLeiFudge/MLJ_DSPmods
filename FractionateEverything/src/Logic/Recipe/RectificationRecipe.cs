@@ -14,13 +14,7 @@ public class RectificationRecipe : BaseRecipe {
             int matrixID = itemToMatrix[item.ID];
             if (matrixID <= 0) continue;
             int ticketID = matrixID switch {
-                var m when m == I电磁矩阵 => IFE电磁奖券,
-                var m when m == I能量矩阵 => IFE能量奖券,
-                var m when m == I结构矩阵 => IFE结构奖券,
-                var m when m == I信息矩阵 => IFE信息奖券,
-                var m when m == I引力矩阵 => IFE引力奖券,
-                var m when m == I宇宙矩阵 => IFE宇宙奖券,
-                var m when m == I黑雾矩阵 => IFE黑雾奖券,
+                var m when m == I黑雾矩阵 => IFE残片,
                 _ => 0
             };
             if (ticketID == 0) continue;
@@ -44,17 +38,6 @@ public class RectificationRecipe : BaseRecipe {
         if (outputs == null || outputs.Count == 0) return;
 
         int lvl = Level < 0 ? 0 : Level;
-
-        float essenceChance = 0.05f + lvl * 0.01f;
-        if (GetRandDouble(ref seed) < essenceChance) {
-            int essenceID = (int)(GetRandDouble(ref seed) * 4) switch {
-                0 => IFE速度精华,
-                1 => IFE产能精华,
-                2 => IFE节能精华,
-                _ => IFE增产精华
-            };
-            outputs.Add(new(false, essenceID, 1));
-        }
 
         if (lvl >= 7) {
             float coreChance = 0.005f + (lvl - 7) * 0.005f;
