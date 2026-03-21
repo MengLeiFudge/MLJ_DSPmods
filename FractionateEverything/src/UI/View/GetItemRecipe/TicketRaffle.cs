@@ -41,20 +41,20 @@ public static class TicketRaffle {
         Register("限定抽奖", "Limited Raffle");
         Register("配方奖池", "Recipe Pool");
         Register("配方奖池说明",
-            "Draw fractionate recipes and Recipe Cores. Higher tier tickets can yield lower tier recipes.",
-            "可以抽取各种分馏配方，以及分馏配方核心。高等级奖券也可以抽到低层次科技的相关配方。");
+            "Mostly Fragments, with small chance for recipes. Hard pity grants 1 Vanilla Recipe Core.",
+            "大部分产出为残片，少量概率产出配方。90抽保底获得1个原版配方核心。");
         Register("原胚奖池", "Proto Pool");
         Register("原胚奖池说明",
-            "Draw fractionator prototypes and Amplifier Chips.",
-            "可以抽取各种分馏塔原胚，以及分馏塔增幅芯片。");
+            "Only prototype items. Hard pity grants 1 Amplifier Chip.",
+            "仅产出各种原胚物品。90抽保底获得1个分馏塔增幅芯片。");
         Register("UP池", "UP Pool");
         Register("UP池说明",
-            "Current UP items have doubled drop rate. Big pity: guaranteed UP after 2 consecutive non-UP S draws.",
-            "当期UP物品概率翻倍。大保底：连续2次S未出UP，第3次必出UP。");
+            "Only item rewards. UP group rotates every 1 hour.",
+            "仅产出物品奖励。UP组每1小时轮换一次。");
         Register("限定池", "Limited Pool");
         Register("限定池说明",
-            "Draw Fragments, Fractionation Recipe Cores, and Amplify Chips. Requires Featured Ticket.",
-            "可以抽取残片、分馏配方核心和分馏塔增幅芯片。需要精选抽卡券。");
+            "Item-only pool. Hard pity grants 1 Targeted Prototype. Requires Featured Ticket.",
+            "仅产出物品。90抽保底获得1个分馏塔定向原胚。需要精选抽卡券。");
         Register("限定池未解锁", "Limited pool is locked.", "限定池暂未解锁。需要先解锁宇宙矩阵。");
         Register("保底进度", "Pity");
         Register("清空结果", "Clear Results");
@@ -86,16 +86,23 @@ public static class TicketRaffle {
         ui.TxtUpRotationTime = MyWindow.AddText(720f, 28f, ui.Tab, "", 11);
         ui.TxtPoolDesc = MyWindow.AddText(5f, 38f, ui.Tab, GetPoolDesc(poolId), 13);
         if (ui.TxtPoolDesc != null) {
-            ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 64f);
+            ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 96f);
         }
 
         ui.TxtNormalTicket = MyWindow.AddText(5f, 86f, ui.Tab, "", 12);
         ui.TxtPremiumTicket = MyWindow.AddText(220f, 86f, ui.Tab, "", 12);
 
         ui.TxtResultTitle = MyWindow.AddText(5f, ResultAreaY, ui.Tab, "抽奖结果".Translate(), 14);
+        if (ui.TxtResultTitle != null) {
+            ui.TxtResultTitle.rectTransform.sizeDelta = new Vector2(420f, 24f);
+        }
         float y = ResultAreaY + 30f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-            ui.TxtResultLines[i] = MyWindow.AddText(5f, y, ui.Tab, "", 13);
+            ui.TxtResultLines[i] = MyWindow.AddText(5f, y, ui.Tab, "动态刷新", 13);
+            if (ui.TxtResultLines[i] != null) {
+                ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(900f, 22f);
+                ui.TxtResultLines[i].text = "";
+            }
             y += 24f;
         }
 
@@ -126,6 +133,18 @@ public static class TicketRaffle {
     }
 
     private static string GetPoolDesc(int poolId) {
+        if (poolId == GachaPool.PoolIdUp) {
+            var upPool = GachaService.GetPool(GachaPool.PoolIdUp);
+            if (upPool != null && upPool.UpItems.Count > 0) {
+                int take = System.Math.Min(8, upPool.UpItems.Count);
+                string[] names = new string[take];
+                for (int i = 0; i < take; i++) {
+                    int id = upPool.UpItems[i];
+                    names[i] = LDB.items.Select(id)?.name ?? id.ToString();
+                }
+                return $"{"UP池说明".Translate()}\n当前UP：{string.Join("、", names)}";
+            }
+        }
         string key = poolId switch {
             GachaPool.PoolIdPermanentRecipe => "配方奖池说明",
             GachaPool.PoolIdPermanentBuilding => "原胚奖池说明",
@@ -173,8 +192,12 @@ public static class TicketRaffle {
                 GachaRarity.B => "B",
                 _ => "C",
             };
+            string kind = results[i].IsRecipe
+                ? "配方"
+                : (itemName.Contains("原胚") ? "建筑" : "物品");
+            string upTag = results[i].IsUp ? "[UP] " : "";
             if (ui.TxtResultLines[i] != null) {
-                ui.TxtResultLines[i].text = $"[{rarity}] {itemName} x1";
+                ui.TxtResultLines[i].text = $"[{rarity}] {upTag}[{kind}] {itemName} x1";
             }
         }
         for (int i = shown; i < ui.TxtResultLines.Length; i++) {
