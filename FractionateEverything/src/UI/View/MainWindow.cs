@@ -16,9 +16,13 @@ namespace FE.UI.View;
 
 public static class MainWindow {
     private static PressKeyBind _toggleKey;
-    private static bool _configWinInitialized;
-    private static MyConfigWindow _configWin;
+    private static bool _legacyConfigWinInitialized;
+    private static MyConfigWindow _legacyConfigWin;
     private static bool sandboxMode = false;
+
+    public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
+    public static FEMainPanelType OpenedMainPanelType { get; private set; } = FEMainPanelType.None;
+    public static IFEMainPanelSharedState SharedPanelState { get; private set; } = EmptyMainPanelSharedState.Instance;
 
     public static void AddTranslations() {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
@@ -145,50 +149,137 @@ public static class MainWindow {
     }
 
     public static void OnInputUpdate() {
+        RefreshOpenedMainPanelState();
+
         if (GameMain.isPaused
             || !GameMain.isRunning
             || GameMain.isFullscreenPaused
             || GameMain.mainPlayer == null) {
-            CloseConfigWindow();
+            CloseAllMainPanels();
             return;
         }
         if (VFInput.inputing) {
             return;
         }
         if (_toggleKey.keyValue && GameMain.history.TechUnlocked(TFE分馏数据中心)) {
-            ToggleConfigWindow();
+            ToggleSelectedMainPanel();
         }
     }
 
-    private static void ToggleConfigWindow() {
-        if (!_configWinInitialized) {
-            _configWinInitialized = true;
-            sandboxMode = GameMain.sandboxToolsEnabled;
-            _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
-        }
-        if (_configWin.active) {
-            _configWin._Close();
-        } else {
-            if (sandboxMode != GameMain.sandboxToolsEnabled) {
-                sandboxMode = GameMain.sandboxToolsEnabled;
-                _configWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
-            }
-            _configWin.Open();
+    public static void BindSharedPanelState(IFEMainPanelSharedState sharedState) {
+        SharedPanelState = sharedState ?? EmptyMainPanelSharedState.Instance;
+    }
+
+    public static void SelectMainPanel(FEMainPanelType panelType) {
+        if (panelType is FEMainPanelType.Legacy or FEMainPanelType.Analysis) {
+            SelectedMainPanelType = panelType;
         }
     }
 
-    private static void CloseConfigWindow() {
-        if (!_configWinInitialized) {
+    public static void OpenSelectedMainPanel() {
+        OpenMainPanel(SelectedMainPanelType);
+    }
+
+    public static void ToggleSelectedMainPanel() {
+        if (OpenedMainPanelType == SelectedMainPanelType) {
+            CloseAllMainPanels();
             return;
         }
-        if (_configWin.active) {
-            _configWin._Close();
+        OpenSelectedMainPanel();
+    }
+
+    public static void SwitchSelectedMainPanelAndOpen() {
+        SelectedMainPanelType = SelectedMainPanelType == FEMainPanelType.Legacy
+            ? FEMainPanelType.Analysis
+            : FEMainPanelType.Legacy;
+        OpenSelectedMainPanel();
+    }
+
+    private static void OpenMainPanel(FEMainPanelType panelType) {
+        if (!IsMainPanelImplemented(panelType)) {
+            return;
         }
+
+        CloseAllMainPanels();
+        switch (panelType) {
+            case FEMainPanelType.Legacy:
+                OpenLegacyMainPanel();
+                OpenedMainPanelType = FEMainPanelType.Legacy;
+                break;
+            case FEMainPanelType.Analysis:
+                OpenAnalysisMainPanel();
+                OpenedMainPanelType = FEMainPanelType.Analysis;
+                break;
+        }
+    }
+
+    private static bool IsMainPanelImplemented(FEMainPanelType panelType) {
+        return panelType == FEMainPanelType.Legacy;
+    }
+
+    private static void OpenLegacyMainPanel() {
+        if (!_legacyConfigWinInitialized) {
+            _legacyConfigWinInitialized = true;
+            sandboxMode = GameMain.sandboxToolsEnabled;
+            _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+        }
+
+        if (sandboxMode != GameMain.sandboxToolsEnabled) {
+            sandboxMode = GameMain.sandboxToolsEnabled;
+            _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+        }
+
+        _legacyConfigWin?.Open();
+    }
+
+    private static void OpenAnalysisMainPanel() {
+    }
+
+    private static void CloseAllMainPanels() {
+        CloseLegacyMainPanel();
+        CloseAnalysisMainPanel();
+        OpenedMainPanelType = FEMainPanelType.None;
+    }
+
+    private static void CloseLegacyMainPanel() {
+        if (!_legacyConfigWinInitialized) {
+            return;
+        }
+
+        if (_legacyConfigWin != null && _legacyConfigWin.active) {
+            _legacyConfigWin._Close();
+        }
+    }
+
+    private static void CloseAnalysisMainPanel() {
+    }
+
+    private static void RefreshOpenedMainPanelState() {
+        if (_legacyConfigWinInitialized && _legacyConfigWin != null && _legacyConfigWin.active) {
+            OpenedMainPanelType = FEMainPanelType.Legacy;
+            return;
+        }
+
+        OpenedMainPanelType = FEMainPanelType.None;
+    }
+
+    private static void ImportMainPanelSelection(BinaryReader r) {
+        _ = r;
+    }
+
+    private static void ExportMainPanelSelection(BinaryWriter w) {
+        _ = w;
+    }
+
+    private static void IntoOtherSaveMainPanelSelection() {
+        SelectedMainPanelType = FEMainPanelType.Legacy;
+        OpenedMainPanelType = FEMainPanelType.None;
     }
 
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
+        ImportMainPanelSelection(r);
         r.ReadBlocks(
             ("FracRecipeOperate", FracRecipeOperate.Import),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
@@ -211,6 +302,7 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
+        ExportMainPanelSelection(w);
         w.WriteBlocks(
             ("FracRecipeOperate", FracRecipeOperate.Export),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
@@ -233,6 +325,7 @@ public static class MainWindow {
     }
 
     public static void IntoOtherSave() {
+        IntoOtherSaveMainPanelSelection();
         FracRecipeOperate.IntoOtherSave();
         VanillaRecipeOperate.IntoOtherSave();
         BuildingOperate.IntoOtherSave();
