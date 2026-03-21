@@ -50,7 +50,7 @@ public static class FracRecipeOperate {
     private const float TextOffsetWithIcon = 28f;// 图标宽度 + 间距
     private const float LineHeight = 22f;
 
-    // 产物行布局（格式：概率 | 图标 | 名称×数目）
+    // 产物行布局（格式：概率 | 图标 | 数量）
     private const float ProductRatioX = 0f;// 左侧概率文本X
     private const float ProductIconX = 72f;// 物品图标X（概率文本右侧）
     private const float ProductTextX = 100f;// 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
@@ -414,17 +414,16 @@ public static class FracRecipeOperate {
         return $"+{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{specialNote}";
     }
 
-    // ==================== 产物显示（格式：概率 | 图标 | 名称×数目） ====================
+    // ==================== 产物显示（格式：概率 | 图标 | 数量） ====================
 
     /// <summary>
-    /// 显示单个产物行：左侧概率文本，中间物品图标，右侧名称×数目。
+    /// 显示单个产物行：左侧概率文本，中间物品图标，右侧数量。
     /// </summary>
     private static void ShowProductLine(int line, ItemProto itemProto, OutputInfo info) {
         float lineY = txtRecipeInfoBaseY + LineHeight * line;
 
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         string count = forceShow || info.ShowOutputCount ? info.OutputCount.ToString("F3") : "???";
-        string name = forceShow || info.ShowOutputName ? itemProto?.name ?? "???" : "???";
         string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
 
         // 左侧：概率文本
@@ -437,8 +436,8 @@ public static class FracRecipeOperate {
         btnRecipeInfoIcons[line].Proto = itemProto;
         NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
 
-        // 右侧：名称×数目
-        txtRecipeInfo[line].text = $"{name}×{count}";
+        // 右侧：数量
+        txtRecipeInfo[line].text = $"×{count}";
         txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
     }
 
@@ -469,38 +468,37 @@ public static class FracRecipeOperate {
         float repeatMultiplier = repeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - repeatRatio);
         float mainOutputBonus = 1.0f + recipe.DoubleOutputRatio;
 
-        List<(int id, float cnt, bool showName, bool showCount)> outputs = [];
+        List<(int id, float cnt, bool showCount)> outputs = [];
         Dictionary<int, int> outputIndex = [];
 
         foreach (var info in recipe.OutputMain) {
             int id = info.OutputID;
             float cnt = fracRatio * info.SuccessRatio * info.OutputCount * mainOutputBonus * repeatMultiplier;
             if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, en, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, en, ecu);
+                var (eid, ec, ecu) = outputs[idx];
+                outputs[idx] = (eid, ec + cnt, ecu);
             } else {
                 outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, info.ShowOutputName, info.ShowSuccessRatio));
+                outputs.Add((id, cnt, info.ShowSuccessRatio));
             }
         }
         foreach (var info in recipe.OutputAppend) {
             int id = info.OutputID;
             float cnt = fracRatio * info.SuccessRatio * info.OutputCount * repeatMultiplier;
             if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, en, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, en, ecu);
+                var (eid, ec, ecu) = outputs[idx];
+                outputs[idx] = (eid, ec + cnt, ecu);
             } else {
                 outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, info.ShowOutputName, info.ShowSuccessRatio));
+                outputs.Add((id, cnt, info.ShowSuccessRatio));
             }
         }
 
         bool showDetails = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
 
-        foreach (var (id, cnt, showName, showCount) in outputs) {
+        foreach (var (id, cnt, showCount) in outputs) {
             float lineY = txtRecipeInfoBaseY + LineHeight * line;
             ItemProto outItem = LDB.items.Select(id);
-            string outName = showDetails || showName ? outItem?.name ?? "???" : "???";
             string outCount = showDetails || showCount ? cnt.ToString("F3") : "???";
 
             txtProductLeft[line].gameObject.SetActive(false);
@@ -509,7 +507,7 @@ public static class FracRecipeOperate {
             btnRecipeInfoIcons[line].Proto = outItem;
             NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
 
-            txtRecipeInfo[line].text = $"{outName}×{outCount}";
+            txtRecipeInfo[line].text = $"×{outCount}";
             txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
 
             line++;

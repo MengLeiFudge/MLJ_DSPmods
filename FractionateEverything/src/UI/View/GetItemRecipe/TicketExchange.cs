@@ -61,8 +61,7 @@ public static class TicketExchange {
         
         int x = 120;
         foreach (var rate in FragmentRates) {
-            ItemProto ticket = LDB.items.Select(rate.ticketId);
-            string buttonText = $"{rate.fragmentCost} -> 1 {ticket?.name ?? "奖券"}";
+            string buttonText = $"{rate.fragmentCost} -> 1";
             wnd.AddButton(x, y, 180f, tab, buttonText, 14, "btn", () => ExchangeFragment(rate.fragmentCost, rate.ticketId));
             x += 190;
         }
@@ -70,10 +69,9 @@ public static class TicketExchange {
     
     private static void CreateExchangeRow(MyConfigWindow wnd, RectTransform tab, int y, int matrixId, int rate, int ticketId) {
         wnd.AddImageButton(20, y, tab, LDB.items.Select(matrixId));
-        wnd.AddText2(60, y, tab, LDB.items.Select(matrixId).name);
-        wnd.AddText2(160, y, tab, "→");
-        wnd.AddImageButton(190, y, tab, LDB.items.Select(ticketId));
-        wnd.AddText2(230, y, tab, $"{rate} : 1");
+        wnd.AddText2(80, y, tab, "→");
+        wnd.AddImageButton(110, y, tab, LDB.items.Select(ticketId));
+        wnd.AddText2(150, y, tab, $"{rate} : 1");
         
         wnd.AddButton(300, y, 80f, tab, "兑换".Translate() + " 1", 16, "btn", () => ExchangeMatrix(matrixId, ticketId, rate, 1));
         wnd.AddButton(390, y, 80f, tab, "兑换".Translate() + " 10", 16, "btn", () => ExchangeMatrix(matrixId, ticketId, rate * 10, 10));
