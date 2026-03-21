@@ -53,8 +53,8 @@ public static class TicketRaffle {
             "当期UP物品概率翻倍。大保底：连续2次S未出UP，第3次必出UP。");
         Register("限定池", "Limited Pool");
         Register("限定池说明",
-            "Draw high-star Runes and special recipes. Requires Featured Ticket.",
-            "可以抽取高星符文和特殊配方。需要精选抽卡券。");
+            "Draw Fragments, Fractionation Recipe Cores, and Amplify Chips. Requires Featured Ticket.",
+            "可以抽取残片、分馏配方核心和分馏塔增幅芯片。需要精选抽卡券。");
         Register("限定池未解锁", "Limited pool is locked.", "限定池暂未解锁。需要先解锁宇宙矩阵。");
         Register("保底进度", "Pity");
         Register("清空结果", "Clear Results");

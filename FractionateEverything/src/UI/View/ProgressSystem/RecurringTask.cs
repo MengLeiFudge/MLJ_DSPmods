@@ -168,7 +168,7 @@ public static class RecurringTask {
             2 => (IFE分馏配方核心, 1),
             3 => (GetRandomEssenceId(), 200),
             4 => (IFE分馏塔增幅芯片, 2),
-            _ => (IFE电磁奖券, 0)
+            _ => (IFE残片, 0)
         };
     }
 
@@ -184,25 +184,11 @@ public static class RecurringTask {
     }
 
     private static int GetHighestTicketId() {
-        int[] ticketIds = [IFE宇宙奖券, IFE引力奖券, IFE信息奖券, IFE结构奖券, IFE能量奖券, IFE电磁奖券];
-        int[] matrixIds = [I宇宙矩阵, I引力矩阵, I信息矩阵, I结构矩阵, I能量矩阵, I电磁矩阵];
-
-        if (GameMain.history == null) {
-            return IFE电磁奖券;
-        }
-
-        for (int i = 0; i < ticketIds.Length; i++) {
-            if (GameMain.history.ItemUnlocked(matrixIds[i])) {
-                return ticketIds[i];
-            }
-        }
-
-        return IFE电磁奖券;
+        return IFE残片;
     }
 
     private static int GetRandomEssenceId() {
-        int[] essenceIds = [IFE速度精华, IFE产能精华, IFE节能精华, IFE增产精华];
-        return essenceIds[GetRandInt(0, essenceIds.Length)];
+        return IFE残片;
     }
 
     private static long GetCurrentValue(int index) {
