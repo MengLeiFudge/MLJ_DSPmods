@@ -36,6 +36,7 @@ public static class RecipeManager {
     /// 游戏配方
     /// </summary>
     private static readonly List<VanillaRecipe> VanillaRecipeList = [];
+    private static readonly Dictionary<int, VanillaRecipe> VanillaRecipeDic = [];
 
 #if DEBUG
     private const string SPRITE_CSV_DIR = @"D:\project\csharp\DSP MOD\MLJ_DSPmods\gamedata";
@@ -151,8 +152,12 @@ public static class RecipeManager {
     /// </summary>
     public static void AddVanillaRecipes() {
         LogInfo("Add vanilla recipes...");
+        VanillaRecipeList.Clear();
+        VanillaRecipeDic.Clear();
         foreach (var recipe in LDB.recipes.dataArray) {
-            VanillaRecipeList.Add(new(recipe));
+            var vanillaRecipe = new VanillaRecipe(recipe);
+            VanillaRecipeList.Add(vanillaRecipe);
+            VanillaRecipeDic[recipe.ID] = vanillaRecipe;
         }
         LogInfo($"Added {VanillaRecipeList.Count} vanilla recipes.");
     }
@@ -161,7 +166,7 @@ public static class RecipeManager {
     /// 获取指定配方ID对应的原版配方
     /// </summary>
     public static VanillaRecipe GetVanillaRecipe(int recipeId) {
-        return VanillaRecipeList.Find(vr => vr.recipe.ID == recipeId);
+        return VanillaRecipeDic.TryGetValue(recipeId, out var recipe) ? recipe : null;
     }
 
     #endregion
