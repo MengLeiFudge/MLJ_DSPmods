@@ -6,6 +6,7 @@ using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using FE.UI.View;
 using FE.UI.View.GetItemRecipe;
 using UnityEngine;
 using UnityEngine.UI;
@@ -65,6 +66,16 @@ public static class Achievements {
     private static float listStateX;
     private static float listActionX;
     private static float listActionW;
+
+    private static void SyncCurrentPageFromSharedState() {
+        currentPage = Math.Max(0, MainWindow.SharedPanelState?.AchievementsCurrentPage ?? 0);
+    }
+
+    private static void SyncCurrentPageToSharedState() {
+        if (MainWindow.SharedPanelState != null) {
+            MainWindow.SharedPanelState.AchievementsCurrentPage = currentPage;
+        }
+    }
 
     private static readonly AchievementInfo[] achievements = [
         new("成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-能量奖券20", ETier.Silver,
@@ -285,6 +296,7 @@ public static class Achievements {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        SyncCurrentPageFromSharedState();
         window = trans;
         tab = wnd.AddTab(trans, "成就详情");
 
@@ -377,6 +389,7 @@ public static class Achievements {
         int totalPages = Math.Max(1, (achievements.Length + RowsPerPage - 1) / RowsPerPage);
         if (currentPage >= totalPages) {
             currentPage = totalPages - 1;
+            SyncCurrentPageToSharedState();
         }
 
         for (int i = 0; i < achievements.Length; i++) {
@@ -414,6 +427,7 @@ public static class Achievements {
             return;
         }
         currentPage--;
+        SyncCurrentPageToSharedState();
         UpdateUI();
     }
 
@@ -423,6 +437,7 @@ public static class Achievements {
             return;
         }
         currentPage++;
+        SyncCurrentPageToSharedState();
         UpdateUI();
     }
 
@@ -554,6 +569,7 @@ public static class Achievements {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
+        SyncCurrentPageFromSharedState();
         Array.Clear(unlocked, 0, unlocked.Length);
         Array.Clear(claimed, 0, claimed.Length);
 
@@ -603,6 +619,8 @@ public static class Achievements {
     }
 
     public static void IntoOtherSave() {
+        currentPage = 0;
+        SyncCurrentPageToSharedState();
         Array.Clear(unlocked, 0, unlocked.Length);
         Array.Clear(claimed, 0, claimed.Length);
     }

@@ -20,11 +20,12 @@ public static class MainWindow {
     private static MyConfigWindow _legacyConfigWin;
     private static bool _analysisMainWindowInitialized;
     private static MyAnalysisWindow _analysisMainWindow;
+    private static readonly IFEMainPanelSharedState defaultSharedPanelState = new FEMainPanelSharedState();
     private static bool sandboxMode = false;
 
     public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
     public static FEMainPanelType OpenedMainPanelType { get; private set; } = FEMainPanelType.None;
-    public static IFEMainPanelSharedState SharedPanelState { get; private set; } = EmptyMainPanelSharedState.Instance;
+    public static IFEMainPanelSharedState SharedPanelState { get; private set; } = defaultSharedPanelState;
 
     public static void AddTranslations() {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
@@ -169,7 +170,7 @@ public static class MainWindow {
     }
 
     public static void BindSharedPanelState(IFEMainPanelSharedState sharedState) {
-        SharedPanelState = sharedState ?? EmptyMainPanelSharedState.Instance;
+        SharedPanelState = sharedState ?? defaultSharedPanelState;
     }
 
     public static void SelectMainPanel(FEMainPanelType panelType) {
