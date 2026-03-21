@@ -3,6 +3,7 @@ using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
+using FE.UI.View;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,6 +34,16 @@ public static class TicketRaffle {
     private static readonly List<RaffleTabUi> Uis = [];
 
     private const float ResultAreaY = 120f;
+
+    private static void SyncTotalDrawsFromSharedState() {
+        totalDraws = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? 0;
+    }
+
+    private static void SyncTotalDrawsToSharedState() {
+        if (MainWindow.SharedPanelState != null) {
+            MainWindow.SharedPanelState.TicketRaffleTotalDraws = totalDraws;
+        }
+    }
 
     public static void AddTranslations() {
         Register("配方抽奖", "Recipe Raffle");
@@ -68,6 +79,7 @@ public static class TicketRaffle {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        SyncTotalDrawsFromSharedState();
         Uis.Clear();
         Uis.Add(CreateTab(wnd, trans, "配方抽奖", GachaPool.PoolIdPermanentRecipe));
         Uis.Add(CreateTab(wnd, trans, "原胚抽奖", GachaPool.PoolIdPermanentBuilding));
@@ -165,6 +177,7 @@ public static class TicketRaffle {
         if (results == null || results.Count == 0) return;
 
         totalDraws += results.Count;
+        SyncTotalDrawsToSharedState();
         RenderResults(ui, results);
         RefreshPityText(ui);
     }
@@ -264,9 +277,15 @@ public static class TicketRaffle {
         }
     }
 
-    public static void Import(BinaryReader r) { r.ReadBlocks(); }
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks();
+        SyncTotalDrawsFromSharedState();
+    }
     public static void Export(BinaryWriter w) { w.WriteBlocks(); }
-    public static void IntoOtherSave() { totalDraws = 0; }
+    public static void IntoOtherSave() {
+        totalDraws = 0;
+        SyncTotalDrawsToSharedState();
+    }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
