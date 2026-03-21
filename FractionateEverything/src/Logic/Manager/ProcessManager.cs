@@ -46,12 +46,9 @@ public static class ProcessManager {
     public static readonly int MaxLevel = 12;
     private const int SacrificeTowerTypeCount = IFE精馏塔 - IFE交互塔 + 1;
     private const float SacrificeBoostStep = 0.05f;
-    private const int SacrificeRiseMaxStepsPerSecond = 3;
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
     private static readonly int[] sacrificeStepIndex = new int[SacrificeTowerTypeCount];
-    private static readonly float[] sacrificeRiseRemainder = new float[SacrificeTowerTypeCount];
-    private static readonly float[] sacrificeFallRemainder = new float[SacrificeTowerTypeCount];
     public const byte OutputFlagMain = 1 << 0;
     public const byte OutputFlagSide = 1 << 1;
     public const byte OutputFlagFluid = 1 << 2;
@@ -875,36 +872,7 @@ public static class ProcessManager {
     private static void UpdateSacrificeBoost(int[] takeCounts) {
         for (int i = 0; i < SacrificeTowerTypeCount; i++) {
             float rawBoost = Mathf.Sqrt(takeCounts[i]) / 10.0f;
-            int currentStepIndex = sacrificeStepIndex[i];
-            float currentBoost = currentStepIndex * SacrificeBoostStep;
-            if (rawBoost >= currentBoost) {
-                sacrificeFallRemainder[i] = 0f;
-                sacrificeRiseRemainder[i] += rawBoost - currentBoost;
-                int pendingRise = Mathf.FloorToInt(sacrificeRiseRemainder[i] / SacrificeBoostStep);
-                if (pendingRise > 0) {
-                    int appliedRise = Math.Min(pendingRise, SacrificeRiseMaxStepsPerSecond);
-                    currentStepIndex += appliedRise;
-                    sacrificeRiseRemainder[i] -= appliedRise * SacrificeBoostStep;
-                }
-            } else {
-                sacrificeRiseRemainder[i] = 0f;
-                float lowerBoundary = Math.Max(0f, (currentStepIndex - 1) * SacrificeBoostStep);
-                if (rawBoost < lowerBoundary) {
-                    sacrificeFallRemainder[i] += lowerBoundary - rawBoost;
-                    int pendingFall = Mathf.FloorToInt(sacrificeFallRemainder[i] / SacrificeBoostStep);
-                    if (pendingFall > 0) {
-                        int maxFall = Math.Max(1, Mathf.CeilToInt(currentStepIndex / 10.0f));
-                        int appliedFall = Math.Min(pendingFall, maxFall);
-                        appliedFall = Math.Min(appliedFall, currentStepIndex);
-                        currentStepIndex -= appliedFall;
-                        sacrificeFallRemainder[i] -= appliedFall * SacrificeBoostStep;
-                    }
-                } else {
-                    sacrificeFallRemainder[i] = 0f;
-                }
-            }
-
-            sacrificeStepIndex[i] = currentStepIndex;
+            sacrificeStepIndex[i] = Math.Max(0, Mathf.FloorToInt(rawBoost / SacrificeBoostStep));
         }
 
         InteractionTower.SuccessBoost = sacrificeStepIndex[0] * SacrificeBoostStep;
@@ -916,8 +884,6 @@ public static class ProcessManager {
 
     private static void ResetSacrificeBoostState() {
         Array.Clear(sacrificeStepIndex, 0, sacrificeStepIndex.Length);
-        Array.Clear(sacrificeRiseRemainder, 0, sacrificeRiseRemainder.Length);
-        Array.Clear(sacrificeFallRemainder, 0, sacrificeFallRemainder.Length);
         InteractionTower.SuccessBoost = 0f;
         MineralReplicationTower.SuccessBoost = 0f;
         PointAggregateTower.SuccessBoost = 0f;
