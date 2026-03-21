@@ -18,6 +18,8 @@ public static class MainWindow {
     private static PressKeyBind _toggleKey;
     private static bool _legacyConfigWinInitialized;
     private static MyConfigWindow _legacyConfigWin;
+    private static bool _analysisMainWindowInitialized;
+    private static MyAnalysisWindow _analysisMainWindow;
     private static bool sandboxMode = false;
 
     public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
@@ -214,7 +216,7 @@ public static class MainWindow {
     }
 
     private static bool IsMainPanelImplemented(FEMainPanelType panelType) {
-        return panelType == FEMainPanelType.Legacy;
+        return panelType is FEMainPanelType.Legacy or FEMainPanelType.Analysis;
     }
 
     private static void OpenLegacyMainPanel() {
@@ -233,6 +235,12 @@ public static class MainWindow {
     }
 
     private static void OpenAnalysisMainPanel() {
+        if (!_analysisMainWindowInitialized) {
+            _analysisMainWindowInitialized = true;
+            _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
+        }
+
+        _analysisMainWindow?.OpenWindow();
     }
 
     private static void CloseAllMainPanels() {
@@ -252,11 +260,23 @@ public static class MainWindow {
     }
 
     private static void CloseAnalysisMainPanel() {
+        if (!_analysisMainWindowInitialized) {
+            return;
+        }
+
+        if (_analysisMainWindow != null && _analysisMainWindow.active) {
+            _analysisMainWindow.CloseWindow();
+        }
     }
 
     private static void RefreshOpenedMainPanelState() {
         if (_legacyConfigWinInitialized && _legacyConfigWin != null && _legacyConfigWin.active) {
             OpenedMainPanelType = FEMainPanelType.Legacy;
+            return;
+        }
+
+        if (_analysisMainWindowInitialized && _analysisMainWindow != null && _analysisMainWindow.active) {
+            OpenedMainPanelType = FEMainPanelType.Analysis;
             return;
         }
 
