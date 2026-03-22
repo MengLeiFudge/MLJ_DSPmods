@@ -63,6 +63,7 @@ public class MyAnalysisWindow : MyWindow {
     private UIButton switchMainPanelButton;
     private readonly List<UIButton> topCategoryButtons = [];
     private readonly List<UIButton> leftSubpageButtons = [];
+    private readonly Dictionary<UIButton, Action<int>> uiButtonClickHandlers = [];
     private Vector2 analysisWindowSize;
 
     private int selectedTopCategoryIndex = -1;
@@ -174,6 +175,9 @@ public class MyAnalysisWindow : MyWindow {
         nativeVerticalButtonPoses.Clear();
         nativeLeftSubpageButtonPoses.Clear();
 
+        // 注意：horizontal/vertical 两组都属于左侧标签体系（左上到左下），
+        // 区别仅在按钮模板文本排布方向：horizontal 偏横排、vertical 偏竖排。
+        // 不要把这两组误解为“上方导航 vs 左侧导航”的关系。
         AddButtonSlot(nativeHorizontalButtonSlots, stat.horMilUIBtn);
         AddButtonSlot(nativeHorizontalButtonSlots, stat.horDashUIBtn);
         AddButtonSlot(nativeHorizontalButtonSlots, stat.horProUIBtn);
@@ -407,6 +411,12 @@ public class MyAnalysisWindow : MyWindow {
     public override void _OnDestroy() {
         topCategoryButtons.Clear();
         leftSubpageButtons.Clear();
+        foreach (var pair in uiButtonClickHandlers) {
+            if (pair.Key != null) {
+                pair.Key.onClick -= pair.Value;
+            }
+        }
+        uiButtonClickHandlers.Clear();
         nativeHorizontalButtonSlots.Clear();
         nativeVerticalButtonSlots.Clear();
         nativeLeftSubpageButtonSlots.Clear();
@@ -467,6 +477,10 @@ public class MyAnalysisWindow : MyWindow {
             UIButton button = topCategoryButtons[i];
             SetButtonVisible(button, true);
             ApplyTopCategoryTemplateStyle(button);
+            if (button.button != null) {
+                button.button.enabled = true;
+                button.button.interactable = true;
+            }
             BindButtonClick(button, () => OnTopCategoryClick(index));
             SetButtonLabelKeepStyle(button, categories[i].CategoryName);
             RestoreTopCategoryButtonPose(button, i);
@@ -513,21 +527,26 @@ public class MyAnalysisWindow : MyWindow {
     }
 
     private void OnTopCategoryClick(int index) {
-        if (selectedTopCategoryIndex == index) {
-            UpdateTopCategoryHighlights();
+        var categories = MainWindow.AnalysisPageCategories;
+        if (index < 0 || index >= categories.Count) {
             return;
         }
 
+        bool changed = selectedTopCategoryIndex != index;
         selectedTopCategoryIndex = index;
-        selectedSubpageIndex = -1;
+        if (changed) {
+            selectedSubpageIndex = -1;
+        }
 
-        UpdateTopCategoryHighlights();
         RefreshLeftSubpages();
+        UpdateTopCategoryHighlights();
     }
 
     private void RefreshLeftSubpages() {
         leftSubpageButtons.Clear();
 
+        // 当前实现约定：左侧子页显示使用 horizontal-tab 这组（横排模板）槽位。
+        // vertical-tab 在此流程中整体关闭，防止出现双层标签重叠。
         if (nativeHorizontalTab != null) {
             nativeHorizontalTab.gameObject.SetActive(true);
         }
@@ -936,10 +955,19 @@ public class MyAnalysisWindow : MyWindow {
         return false;
     }
 
-    private static void BindButtonClick(UIButton button, Action onClick) {
+    private void BindButtonClick(UIButton button, Action onClick) {
         if (button == null) {
             return;
         }
+
+        if (uiButtonClickHandlers.TryGetValue(button, out Action<int> oldHandler)) {
+            button.onClick -= oldHandler;
+            uiButtonClickHandlers.Remove(button);
+        }
+
+        Action<int> newHandler = _ => onClick?.Invoke();
+        button.onClick += newHandler;
+        uiButtonClickHandlers[button] = newHandler;
 
         if (button.button != null) {
             button.button.onClick.RemoveAllListeners();
@@ -1021,7 +1049,13 @@ public class MyAnalysisWindow : MyWindow {
                 continue;
             }
 
+            // 关键说明：这里禁止使用 highlighted=true。
+            // 该按钮模板在 highlighted=true 时会出现“文本不可见”问题。
+            // 所以选中态改为“模拟 hover 态”：isPointerEnter=true。
             button.highlighted = false;
+            button.isPointerDown = false;
+            button.isPointerEnter = i == selectedTopCategoryIndex;
+            button.RefreshTransitionsImmediately();
         }
     }
 
