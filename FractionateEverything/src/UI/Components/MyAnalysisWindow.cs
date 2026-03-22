@@ -398,6 +398,7 @@ public class MyAnalysisWindow : MyWindow {
 
     public override void _OnUpdate() {
         base._OnUpdate();
+        UpdateTopCategoryHighlights();
         RefreshSwitchMainPanelButtonLabel();
         if (currentPageDef != null && currentPageContent != null && currentPageContent.gameObject.activeSelf) {
             currentPageDef.UpdateUI();
