@@ -444,8 +444,16 @@ public static class RuneMenu {
             }, null);
     }
 
+    private static bool IsPageVisible() {
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
+            return tab != null && tab.gameObject.activeInHierarchy;
+        }
+        return tab != null && tab.gameObject.activeSelf;
+    }
+
     public static void UpdateUI() {
-        if (tab == null || !tab.gameObject.activeSelf) return;
+        if (!IsPageVisible()) return;
 
         GetTotalStats(out float speed, out float power, out float productivity, out float yield);
         totalStatsText.text = $"{"总加成".Translate()}： "

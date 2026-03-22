@@ -6,6 +6,7 @@ using FE.Compatibility;
 using FE.UI.Components;
 using FE.UI.View;
 using UnityEngine;
+using UnityEngine.UI;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
@@ -129,46 +130,56 @@ public static class Miscellaneous {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "杂项设置");
+        CreateUIInternal(wnd, tab, FEMainPanelType.Legacy);
+    }
+
+    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+        window = trans;
+        tab = trans;
+        CreateUIInternal(wnd, trans, FEMainPanelType.Analysis);
+    }
+
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent, FEMainPanelType panelType) {
         float x = 0f;
         float y = 18f;
-        var txt = wnd.AddText2(x, y, tab, "左键单击时提取几组物品");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
+        var txt = wnd.AddText2(x, y, parent, "左键单击时提取几组物品");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, tab, "右键单击时提取几组物品");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
+        txt = wnd.AddText2(x, y, parent, "右键单击时提取几组物品");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, tab, "物品消耗顺序");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
+        txt = wnd.AddText2(x, y, parent, "物品消耗顺序");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, tab, "物流交互站下载阈值");
-        DownloadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
+        txt = wnd.AddText2(x, y, parent, "物流交互站下载阈值");
+        DownloadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
             DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
+        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
             "物流交互站下载阈值", "物流交互站阈值修改说明");
         y += 36f;
-        txt = wnd.AddText2(x, y, tab, "物流交互站上传阈值");
-        UploadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
+        txt = wnd.AddText2(x, y, parent, "物流交互站上传阈值");
+        UploadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
             UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
+        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
             "物流交互站上传阈值", "物流交互站阈值修改说明");
         y += 36f;
-        var cb = wnd.AddCheckBox(x, y, tab, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
-        wnd.AddTipsButton2(x + cb.Width + 5, y, tab,
+        var cb = wnd.AddCheckBox(x, y, parent, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
+        wnd.AddTipsButton2(x + cb.Width + 5, y, parent,
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
         if (AutoSorter.Enable) {
             y += 36f;
             PackageAutoSortTwiceCheckBox =
-                wnd.AddCheckBox(x, y, tab, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+                wnd.AddCheckBox(x, y, parent, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
         }
         y += 36f;
-        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
+        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, parent, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
         y += 36f;
-        SwitchMainPanelButton = wnd.AddButton(x, y, 220f, tab,
-            MainWindow.GetSwitchMainPanelButtonLabel(FEMainPanelType.Legacy), 14,
-            onClick: () => MainWindow.SwitchMainPanelFrom(FEMainPanelType.Legacy));
+        SwitchMainPanelButton = wnd.AddButton(x, y, 220f, parent,
+            MainWindow.GetSwitchMainPanelButtonLabel(panelType), 14,
+            onClick: () => MainWindow.SwitchMainPanelFrom(GetCurrentPanelType(panelType)));
     }
 
     public static void UpdateUI() {
@@ -183,6 +194,32 @@ public static class Miscellaneous {
         PackageSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
         if (AutoSorter.Enable) {
             PackageAutoSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+        }
+
+        RefreshSwitchMainPanelButtonLabel();
+    }
+
+    private static FEMainPanelType GetCurrentPanelType(FEMainPanelType defaultPanelType) {
+        FEMainPanelType currentPanelType = MainWindow.GetCurrentMainPanelType();
+        return currentPanelType == FEMainPanelType.None ? defaultPanelType : currentPanelType;
+    }
+
+    private static void RefreshSwitchMainPanelButtonLabel() {
+        if (SwitchMainPanelButton == null) {
+            return;
+        }
+
+        string label = MainWindow.GetSwitchMainPanelButtonLabel(GetCurrentPanelType(MainWindow.SelectedMainPanelType));
+        Transform buttonText = SwitchMainPanelButton.transform.Find("button-text");
+        var localizer = buttonText?.GetComponent<Localizer>();
+        if (localizer != null) {
+            localizer.stringKey = label;
+            localizer.translation = label.Translate();
+        }
+
+        var text = buttonText?.GetComponent<Text>();
+        if (text != null) {
+            text.text = label.Translate();
         }
     }
 

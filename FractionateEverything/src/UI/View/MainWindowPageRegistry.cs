@@ -35,7 +35,7 @@ public static class MainWindowPageRegistry {
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
 
         new(ItemManageCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-        new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI),
+        new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
         new(ItemManageCategoryName, "符文系统", RuneMenu.CreateUI, RuneMenu.UpdateUI),
 
         new(ResourceAcquireCategoryName, "配方抽奖/原胚抽奖/UP抽奖/限定抽奖", TicketRaffle.CreateUI, TicketRaffle.UpdateUI),
@@ -49,9 +49,9 @@ public static class MainWindowPageRegistry {
         new(StatisticCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
         new(StatisticCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
 
-        new(SystemSettingCategoryName, "VIP特权", VipFeatures.CreateUI, VipFeatures.UpdateUI),
-        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI),
-        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true),
+        new(SystemSettingCategoryName, "VIP特权", VipFeatures.CreateUI, VipFeatures.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: VipFeatures.CreateUIInAnalysis),
+        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: Miscellaneous.CreateUIInAnalysis),
+        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),
     ];
 
     public static IReadOnlyList<string> CategoryOrder => categoryOrder;
@@ -90,11 +90,12 @@ public sealed class MainWindowCategoryDefinition(string categoryName, IReadOnlyL
 
 public sealed class MainWindowPageDefinition(string categoryName, string subpageName,
     Action<MyConfigWindow, RectTransform> createUI, Action updateUI, bool enabledInAnalysis = false,
-    bool sandboxOnly = false) {
+    bool sandboxOnly = false, Action<MyAnalysisWindow, RectTransform> createUIInAnalysis = null) {
     public string CategoryName { get; } = categoryName;
     public string SubpageName { get; } = subpageName;
     public Action<MyConfigWindow, RectTransform> CreateUI { get; } = createUI;
     public Action UpdateUI { get; } = updateUI;
+    public Action<MyAnalysisWindow, RectTransform> CreateUIInAnalysis { get; } = createUIInAnalysis;
     public bool EnabledInAnalysis { get; } = enabledInAnalysis;
     public bool SandboxOnly { get; } = sandboxOnly;
 

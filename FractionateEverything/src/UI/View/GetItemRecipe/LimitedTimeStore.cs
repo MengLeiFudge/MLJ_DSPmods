@@ -32,6 +32,8 @@ public static class LimitedTimeStore {
 
     private const float RowH = 46f;
 
+    private static RectTransform pageRoot;
+
     public static void AddTranslations() {
         Register("奖券兑换", "Ticket Exchange");
         Register("普通奖券兑换", "Normal Ticket Exchange");
@@ -46,6 +48,7 @@ public static class LimitedTimeStore {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        pageRoot = trans;
         normalRows.Clear();
         featuredRows.Clear();
 
@@ -158,21 +161,29 @@ public static class LimitedTimeStore {
         RefreshRow(row);
     }
 
+    private static bool IsPageVisible() {
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
+            return pageRoot != null && pageRoot.gameObject.activeInHierarchy;
+        }
+        return true;
+    }
+
     public static void UpdateUI() {
-        if (normalTab == null || featuredTab == null) return;
+        if (!IsPageVisible()) return;
 
         int shardCount = GetItemCount(IFE残片);
         int normalCount = GetItemCount(IFE普通抽卡券);
         int featuredCount = GetItemCount(IFE精选抽卡券);
 
-        if (normalTab.gameObject.activeSelf) {
+        if (normalTab != null && normalTab.gameObject.activeSelf) {
             if (txtNormalTabShardCount != null) txtNormalTabShardCount.text = $"x {shardCount}";
             if (txtNormalTabTicketCount != null) txtNormalTabTicketCount.text = $"x {normalCount}";
             for (int i = 0; i < normalRows.Count; i++) {
                 RefreshRow(normalRows[i]);
             }
         }
-        if (featuredTab.gameObject.activeSelf) {
+        if (featuredTab != null && featuredTab.gameObject.activeSelf) {
             if (txtFeaturedTabShardCount != null) txtFeaturedTabShardCount.text = $"x {shardCount}";
             if (txtFeaturedTabTicketCount != null) txtFeaturedTabTicketCount.text = $"x {featuredCount}";
             for (int i = 0; i < featuredRows.Count; i++) {

@@ -586,7 +586,7 @@ public class MyWindowWithTabs : MyWindow {
         _tabY = y;
     }
 
-    protected void SetCurrentTab(int index) => OnTabButtonClick(index);
+    public void SetCurrentTab(int index) => OnTabButtonClick(index);
 
     private void OnTabButtonClick(int index) {
         foreach (var (rectTransform, btn) in _tabs) {
