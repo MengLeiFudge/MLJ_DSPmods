@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using FE.UI.View;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace FE.UI.Components;
 
@@ -39,6 +39,25 @@ public class MyAnalysisWindow : MyWindow {
         }
     }
 
+    private sealed class DragWindowForwarder : MonoBehaviour, IDragHandler {
+        private RectTransform windowRect;
+        private Canvas rootCanvas;
+
+        public void Init(RectTransform window) {
+            windowRect = window;
+            rootCanvas = window?.GetComponentInParent<Canvas>();
+        }
+
+        public void OnDrag(PointerEventData eventData) {
+            if (windowRect == null) {
+                return;
+            }
+
+            float scale = rootCanvas != null && rootCanvas.scaleFactor > 0f ? rootCanvas.scaleFactor : 1f;
+            windowRect.anchoredPosition += eventData.delta / scale;
+        }
+    }
+
     private RectTransform windowTrans;
     private RectTransform contentRootContainer;
     private UIButton switchMainPanelButton;
@@ -64,9 +83,13 @@ public class MyAnalysisWindow : MyWindow {
     private UIButton nativeTopCategoryTemplateButton;
     private ButtonPose nativeTopCategoryTemplatePose;
     private bool hasNativeTopCategoryTemplatePose;
-    private float topCategoryStepX = 80f;
-    private const float TopCategoryBaseX = -358f;
+    private float topCategoryStepX = TopCategoryButtonWidth;
+    private const float TopCategoryBaseX = 10f;
     private const float TopCategoryBaseY = 0f;
+    /// <summary>
+    /// 上方主导航按钮的宽度
+    /// </summary>
+    private const float TopCategoryButtonWidth = 150f;
 
     public static MyAnalysisWindow CreateInstance(string name, string title = "") {
         UIStatisticsWindow src = UIRoot.instance?.uiGame?.statWindow;
@@ -192,11 +215,10 @@ public class MyAnalysisWindow : MyWindow {
         if (templateRect != null) {
             nativeTopCategoryTemplatePose = new ButtonPose(templateRect);
             hasNativeTopCategoryTemplatePose = true;
-            float width = templateRect.rect.width;
-            topCategoryStepX = width > 1f ? width : 80f;
+            topCategoryStepX = TopCategoryButtonWidth;
         } else {
             hasNativeTopCategoryTemplatePose = false;
-            topCategoryStepX = 80f;
+            topCategoryStepX = TopCategoryButtonWidth;
         }
     }
 
@@ -391,7 +413,7 @@ public class MyAnalysisWindow : MyWindow {
         nativeLeftSubpageButtonPoses.Clear();
         nativeTopCategoryTemplateButton = null;
         hasNativeTopCategoryTemplatePose = false;
-        topCategoryStepX = 80f;
+        topCategoryStepX = TopCategoryButtonWidth;
         contentRootContainer = null;
         switchMainPanelButton = null;
         windowTrans = null;
@@ -446,6 +468,7 @@ public class MyAnalysisWindow : MyWindow {
             BindButtonClick(button, () => OnTopCategoryClick(index));
             SetButtonLabelKeepStyle(button, categories[i].CategoryName);
             RestoreTopCategoryButtonPose(button, i);
+            AttachDragForwarding(button);
         }
 
         for (int i = visibleCount; i < topCategoryButtons.Count; i++) {
@@ -667,10 +690,23 @@ public class MyAnalysisWindow : MyWindow {
         rect.anchorMin = new Vector2(0f, 1f);
         rect.anchorMax = new Vector2(0f, 1f);
         rect.pivot = new Vector2(0f, 1f);
-        rect.sizeDelta = nativeTopCategoryTemplatePose.SizeDelta;
+        rect.sizeDelta = new Vector2(TopCategoryButtonWidth, nativeTopCategoryTemplatePose.SizeDelta.y);
         rect.localScale = nativeTopCategoryTemplatePose.LocalScale;
         rect.localRotation = nativeTopCategoryTemplatePose.LocalRotation;
-        rect.anchoredPosition = new Vector2(TopCategoryBaseX + topCategoryStepX * (index + 2), TopCategoryBaseY);
+        rect.anchoredPosition = new Vector2(TopCategoryBaseX + topCategoryStepX * index, TopCategoryBaseY);
+    }
+
+    private void AttachDragForwarding(UIButton button) {
+        if (button == null || windowTrans == null) {
+            return;
+        }
+
+        DragWindowForwarder forwarder = button.GetComponent<DragWindowForwarder>();
+        if (forwarder == null) {
+            forwarder = button.gameObject.AddComponent<DragWindowForwarder>();
+        }
+
+        forwarder.Init(windowTrans);
     }
 
     private void ApplyTopCategoryTemplateStyle(UIButton targetButton) {
