@@ -4,6 +4,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Compatibility;
 using FE.UI.Components;
+using FE.UI.View;
 using UnityEngine;
 using static FE.Utils.Utils;
 
@@ -48,6 +49,7 @@ public static class Miscellaneous {
 
     private static MyCheckBox PackageSortTwiceCheckBox;
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
+    private static UIButton SwitchMainPanelButton;
     private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageLogisticEntry;
@@ -163,6 +165,10 @@ public static class Miscellaneous {
         }
         y += 36f;
         PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, tab, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
+        y += 36f;
+        SwitchMainPanelButton = wnd.AddButton(x, y, 220f, tab,
+            MainWindow.GetSwitchMainPanelButtonLabel(FEMainPanelType.Legacy), 14,
+            onClick: () => MainWindow.SwitchMainPanelFrom(FEMainPanelType.Legacy));
     }
 
     public static void UpdateUI() {

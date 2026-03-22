@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.UI.Components;
@@ -23,6 +24,7 @@ public static class MainWindow {
     private static MyAnalysisWindow _analysisMainWindow;
     private static readonly IFEMainPanelSharedState defaultSharedPanelState = new FEMainPanelSharedState();
     private static bool sandboxMode = false;
+    public static IReadOnlyList<MainWindowCategoryDefinition> AnalysisPageCategories { get; private set; } = [];
 
     public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
     public static FEMainPanelType OpenedMainPanelType { get; private set; } = FEMainPanelType.None;
@@ -31,6 +33,8 @@ public static class MainWindow {
     public static void AddTranslations() {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
         Register("分馏数据中心", "Fractionation Data Centre");
+        Register("切换到分析主面板", "Switch to analysis main panel");
+        Register("切换到旧版主面板", "Switch to legacy main panel");
         Register("核心操作", "Core Operation");
         FracRecipeOperate.AddTranslations();
         VanillaRecipeOperate.AddTranslations();
@@ -98,57 +102,21 @@ public static class MainWindow {
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        wnd.AddTabGroup(trans, "核心操作");
-        FracRecipeOperate.CreateUI(wnd, trans);
-        VanillaRecipeOperate.CreateUI(wnd, trans);
-        BuildingOperate.CreateUI(wnd, trans);
-        wnd.AddTabGroup(trans, "物品管理");
-        ItemInteraction.CreateUI(wnd, trans);
-        ImportantItem.CreateUI(wnd, trans);
-        RuneMenu.CreateUI(wnd, trans);
-        wnd.AddTabGroup(trans, "资源获取");
-        TicketRaffle.CreateUI(wnd, trans);
-        LimitedTimeStore.CreateUI(wnd, trans);
-        wnd.AddTabGroup(trans, "进度系统");
-        MainTask.CreateUI(wnd, trans);
-        RecurringTask.CreateUI(wnd, trans);
-        Achievements.CreateUI(wnd, trans);
-        DevelopmentDiary.CreateUI(wnd, trans);
-        wnd.AddTabGroup(trans, "统计相关");
-        RecipeGallery.CreateUI(wnd, trans);
-        FracStatistic.CreateUI(wnd, trans);
-        wnd.AddTabGroup(trans, "系统设置");
-        VipFeatures.CreateUI(wnd, trans);
-        Miscellaneous.CreateUI(wnd, trans);
-        if (sandboxMode) {
-            SandboxMode.CreateUI(wnd, trans);
+        foreach (MainWindowCategoryDefinition category in MainWindowPageRegistry.GetCategories(
+                     FEMainPanelType.Legacy, sandboxMode)) {
+            wnd.AddTabGroup(trans, category.CategoryName);
+            foreach (MainWindowPageDefinition page in category.Pages) {
+                page.CreateUI(wnd, trans);
+            }
         }
     }
 
     private static void UpdateUI() {
-        FracRecipeOperate.UpdateUI();
-        VanillaRecipeOperate.UpdateUI();
-        BuildingOperate.UpdateUI();
-
-        ItemInteraction.UpdateUI();
-        ImportantItem.UpdateUI();
-        RuneMenu.UpdateUI();
-
-        TicketRaffle.UpdateUI();
-        LimitedTimeStore.UpdateUI();
-
-        MainTask.UpdateUI();
-        RecurringTask.UpdateUI();
-        Achievements.UpdateUI();
-        DevelopmentDiary.UpdateUI();
-
-        RecipeGallery.UpdateUI();
-        FracStatistic.UpdateUI();
-
-        VipFeatures.UpdateUI();
-        Miscellaneous.UpdateUI();
-        if (sandboxMode) {
-            SandboxMode.UpdateUI();
+        foreach (MainWindowCategoryDefinition category in MainWindowPageRegistry.GetCategories(
+                     FEMainPanelType.Legacy, sandboxMode)) {
+            foreach (MainWindowPageDefinition page in category.Pages) {
+                page.UpdateUI();
+            }
         }
     }
 
@@ -178,6 +146,17 @@ public static class MainWindow {
         if (panelType is FEMainPanelType.Legacy or FEMainPanelType.Analysis) {
             SelectedMainPanelType = panelType;
         }
+    }
+
+    public static string GetSwitchMainPanelButtonLabel(FEMainPanelType currentPanelType) {
+        return currentPanelType == FEMainPanelType.Analysis
+            ? "切换到旧版主面板"
+            : "切换到分析主面板";
+    }
+
+    public static void SwitchMainPanelFrom(FEMainPanelType currentPanelType) {
+        SelectMainPanel(currentPanelType);
+        SwitchSelectedMainPanelAndOpen();
     }
 
     private static FEMainPanelType NormalizeMainPanelSelection(FEMainPanelType panelType) {
@@ -228,14 +207,12 @@ public static class MainWindow {
     }
 
     private static void OpenLegacyMainPanel() {
+        bool sandboxModeChanged = sandboxMode != GameMain.sandboxToolsEnabled;
+        sandboxMode = GameMain.sandboxToolsEnabled;
         if (!_legacyConfigWinInitialized) {
             _legacyConfigWinInitialized = true;
-            sandboxMode = GameMain.sandboxToolsEnabled;
             _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
-        }
-
-        if (sandboxMode != GameMain.sandboxToolsEnabled) {
-            sandboxMode = GameMain.sandboxToolsEnabled;
+        } else if (sandboxModeChanged) {
             _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
         }
 
@@ -243,6 +220,8 @@ public static class MainWindow {
     }
 
     private static void OpenAnalysisMainPanel() {
+        sandboxMode = GameMain.sandboxToolsEnabled;
+        RefreshAnalysisPageCategories();
         if (!_analysisMainWindowInitialized) {
             _analysisMainWindowInitialized = true;
             _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
@@ -302,6 +281,10 @@ public static class MainWindow {
     private static void IntoOtherSaveMainPanelSelection() {
         SelectedMainPanelType = FEMainPanelType.Legacy;
         OpenedMainPanelType = FEMainPanelType.None;
+    }
+
+    private static void RefreshAnalysisPageCategories() {
+        AnalysisPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Analysis, sandboxMode, true);
     }
 
     #region IModCanSave
