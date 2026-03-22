@@ -287,8 +287,8 @@ public class MyAnalysisWindow : MyWindow {
             if (c)
                 c.SetActive(false);
 
-        if (stat.horizontalTab != null) stat.horizontalTab.SetActive(false);
-        if (stat.verticalTab != null) stat.verticalTab.SetActive(true);
+        if (stat.horizontalTab != null) stat.horizontalTab.SetActive(true);
+        if (stat.verticalTab != null) stat.verticalTab.SetActive(false);
 
     }
 
@@ -526,11 +526,16 @@ public class MyAnalysisWindow : MyWindow {
     private void RefreshLeftSubpages() {
         leftSubpageButtons.Clear();
 
-        foreach (UIButton slot in nativeVerticalButtonSlots) {
-            if (slot != null) {
-                slot.gameObject.SetActive(false);
-            }
+        if (nativeHorizontalTab != null) {
+            nativeHorizontalTab.gameObject.SetActive(true);
         }
+
+        if (nativeVerticalTab != null) {
+            nativeVerticalTab.gameObject.SetActive(false);
+        }
+
+        HideButtons(nativeVerticalButtonSlots);
+        HideButtons(nativeLeftSubpageButtonSlots);
 
         var categories = MainWindow.AnalysisPageCategories;
         if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) return;
@@ -538,9 +543,9 @@ public class MyAnalysisWindow : MyWindow {
         var pages = categories[selectedTopCategoryIndex].Pages;
         EnsureNavigationButtonCapacity(
             leftSubpageButtons,
-            nativeVerticalButtonSlots,
+            nativeLeftSubpageButtonSlots,
             pages.Count,
-            nativeVerticalTab,
+            nativeHorizontalTab,
             "analysis-left-subpage-clone");
 
         int visibleCount = Math.Min(pages.Count, leftSubpageButtons.Count);
@@ -549,6 +554,10 @@ public class MyAnalysisWindow : MyWindow {
             int index = i;
             UIButton button = leftSubpageButtons[i];
             SetButtonVisible(button, true);
+            if (button.button != null) {
+                button.button.interactable = true;
+            }
+            EnsureButtonRaycast(button);
             BindButtonClick(button, () => OnSubpageClick(index));
             SetButtonLabelKeepStyle(button, pages[i].SubpageName);
             RestoreLeftSubpageButtonPose(button, i);
@@ -760,11 +769,32 @@ public class MyAnalysisWindow : MyWindow {
 
         RectTransform rect = button.GetComponent<RectTransform>();
         if (rect != null) {
-            if (index < nativeVerticalButtonPoses.Count) {
-                nativeVerticalButtonPoses[index].ApplyTo(rect);
+            if (index < nativeLeftSubpageButtonPoses.Count) {
+                nativeLeftSubpageButtonPoses[index].ApplyTo(rect);
             } else {
-                ApplyExtrapolatedPose(rect, index, nativeVerticalButtonPoses, new Vector2(0f, -36f));
+                ApplyExtrapolatedPose(rect, index, nativeLeftSubpageButtonPoses, new Vector2(0f, -36f));
             }
+        }
+
+        LayoutElement staleLayout = button.GetComponent<LayoutElement>();
+        if (staleLayout != null) {
+            Destroy(staleLayout);
+        }
+    }
+
+    private static void EnsureButtonRaycast(UIButton button) {
+        if (button == null) {
+            return;
+        }
+
+        if (button.button != null) {
+            button.button.interactable = true;
+            button.button.enabled = true;
+        }
+
+        Image image = button.GetComponent<Image>();
+        if (image != null) {
+            image.raycastTarget = true;
         }
     }
 
@@ -914,6 +944,15 @@ public class MyAnalysisWindow : MyWindow {
     private static void SetButtonVisible(UIButton button, bool visible) {
         if (button != null) {
             button.gameObject.SetActive(visible);
+        }
+    }
+
+    private static void HideButtons(List<UIButton> buttons) {
+        for (int i = 0; i < buttons.Count; i++) {
+            UIButton button = buttons[i];
+            if (button != null) {
+                button.gameObject.SetActive(false);
+            }
         }
     }
 
