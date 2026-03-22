@@ -15,6 +15,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.View;
 
 public static class MainWindow {
+    private const string MainPanelSelectionBlockTag = "MainPanelSelection";
     private static PressKeyBind _toggleKey;
     private static bool _legacyConfigWinInitialized;
     private static MyConfigWindow _legacyConfigWin;
@@ -179,6 +180,12 @@ public static class MainWindow {
         }
     }
 
+    private static FEMainPanelType NormalizeMainPanelSelection(FEMainPanelType panelType) {
+        return panelType is FEMainPanelType.Legacy or FEMainPanelType.Analysis
+            ? panelType
+            : FEMainPanelType.Legacy;
+    }
+
     public static void OpenSelectedMainPanel() {
         OpenMainPanel(SelectedMainPanelType);
     }
@@ -285,11 +292,11 @@ public static class MainWindow {
     }
 
     private static void ImportMainPanelSelection(BinaryReader r) {
-        _ = r;
+        SelectedMainPanelType = NormalizeMainPanelSelection((FEMainPanelType)r.ReadInt32());
     }
 
     private static void ExportMainPanelSelection(BinaryWriter w) {
-        _ = w;
+        w.Write((int)NormalizeMainPanelSelection(SelectedMainPanelType));
     }
 
     private static void IntoOtherSaveMainPanelSelection() {
@@ -300,8 +307,8 @@ public static class MainWindow {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        ImportMainPanelSelection(r);
         r.ReadBlocks(
+            (MainPanelSelectionBlockTag, ImportMainPanelSelection),
             ("FracRecipeOperate", FracRecipeOperate.Import),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
             ("BuildingOperate", BuildingOperate.Import),
@@ -323,8 +330,8 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
-        ExportMainPanelSelection(w);
         w.WriteBlocks(
+            (MainPanelSelectionBlockTag, ExportMainPanelSelection),
             ("FracRecipeOperate", FracRecipeOperate.Export),
             ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
             ("BuildingOperate", BuildingOperate.Export),
