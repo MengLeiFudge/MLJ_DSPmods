@@ -36,6 +36,14 @@ public static partial class Utils {
         return rect;
     }
 
+    /// <summary>
+    /// 以组件左侧中点为参考设置位置（可选重设父节点与高度基准）。
+    /// </summary>
+    /// <param name="cmp">目标组件</param>
+    /// <param name="left">距父节点左上角向右偏移</param>
+    /// <param name="top">距父节点左上角向下偏移</param>
+    /// <param name="parent">可选父节点，非空时会重新挂载</param>
+    /// <param name="height">用于计算中点的高度，留空时使用组件当前高度</param>
     public static RectTransform NormalizeRectWithMidLeft(Component cmp, float left, float top,
         Transform parent = null, float? height = null) {
         RectTransform rect = NormalizeRectWithTopLeft(cmp, left, top, parent);
@@ -105,6 +113,13 @@ public static partial class Utils {
         NormalizeRectWithMidLeft(slider, x, y);
     }
 
+    /// <summary>
+    /// 计算等宽分栏布局中的起始 X 与单栏宽度。
+    /// </summary>
+    /// <param name="index">当前栏位索引（从 0 开始）</param>
+    /// <param name="count">总栏位数</param>
+    /// <param name="totalPx">可用总宽度（像素）</param>
+    /// <returns>(起始X, 栏位宽度)</returns>
     public static (float, float) GetPosition(int index, int count, float totalPx = 1160f) {
         float targetLen = (totalPx - (count - 1) * 20) / count;
         float targetPx = index * (targetLen + 20);
