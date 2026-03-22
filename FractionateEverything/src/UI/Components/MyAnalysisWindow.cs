@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using FE.UI.View;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,6 +31,7 @@ public class MyAnalysisWindow : MyWindow {
     private RectTransform topCategoryContainer;
     private RectTransform leftSubpageContainer;
     private RectTransform contentRootContainer;
+    private UIButton miscellaneousSwitchButton;
     private readonly List<UIButton> topCategoryButtons = [];
     private Vector2 analysisWindowSize;
 
@@ -84,6 +86,7 @@ public class MyAnalysisWindow : MyWindow {
         topCategoryContainer = null;
         leftSubpageContainer = null;
         contentRootContainer = null;
+        miscellaneousSwitchButton = null;
         windowTrans = null;
         analysisWindowSize = default;
         base._OnDestroy();
@@ -118,6 +121,21 @@ public class MyAnalysisWindow : MyWindow {
             new(-ContainerPadding, -ContainerPadding),
             new(0f, 0f),
             new(1f, 1f));
+
+        CreateMiscellaneousHost();
+    }
+
+    private void CreateMiscellaneousHost() {
+        if (leftSubpageContainer == null || contentRootContainer == null) {
+            return;
+        }
+
+        AddText(0f, 18f, leftSubpageContainer, "杂项设置", 15, "analysis-miscellaneous-subpage-label");
+        AddText(0f, 18f, contentRootContainer, "杂项设置", 16, "analysis-miscellaneous-content-title");
+        miscellaneousSwitchButton = AddButton(0f, 60f, 220f, contentRootContainer,
+            MainWindow.GetSwitchMainPanelButtonLabel(FEMainPanelType.Analysis), 14,
+            "analysis-switch-main-panel-button",
+            () => MainWindow.SwitchMainPanelFrom(FEMainPanelType.Analysis));
     }
 
     private void CreateTopCategoryButtons() {
