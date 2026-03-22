@@ -54,88 +54,133 @@ mod manager.
 
 ### AI简介
 
-现在的AI付费模式大致分为以下几种：
+现在的AI付费模式就两种，即订阅付费或者按量付费。
 
 - 订阅付费：按月/按季/按年付费。通常会有每5小时额度、以及每周额度/每月额度。
-- 按量付费：用多少付多少。
-- 中转站：可调用其他多家AI的接口。
+  便宜中转站的话可能只有每天额度，甚至还能当天没用完的结转到第二天。
+- 按量付费：用多少付多少，通常比订阅要贵——正常来讲确实是这样，但是某些中转站可以1块钱5刀……
 
 下面是部分AI的介绍：
 
 - OpenCode（大杂烩）
     - 订阅：[OpenCode Go](https://opencode.ai/zh/go)
-        - 登录使用（大概，我没买，反正肯定能用，毕竟是自家的东西）
+        - 10刀/月，我没用过
     - 按量：[OpenCode Zen](https://opencode.ai/zh/zen)
-        - 生成API-Key后使用，大概Key只走按量
-    - 支付可用国内卡或link，20刀额度收取1.23刀手续费用于维护OpenCode
+        - 生成API-Key后使用（可以生成一个key然后无限用免费的Minimax-M2.5-Free）
+    - 支付：可用国内卡或link，20刀额度收取1.23刀手续费用于维护OpenCode
+    - 说明：能用国内卡支付，而且与别的AI供应商有合作，要真说从正版考虑的话这个确实是最优解
 
-- Anthropic（Claude）
+- ~~Anthropic（Claude）~~
     - 订阅：[claude.ai](https://claude.ai/)
         - 登录使用（Claude账号直接登录，不需要API-Key；配置Key后可以在超出限制的情况下临时使用按量计费）
     - 按量：[platform.claude.com](https://platform.claude.com/)
         - 生成API-Key后使用，Key只走按量
-    - 支付没有太好的方式，直接买成品号。Claude消耗用量比较快，我的pro订阅只用sonnet都不够日常开发。建议至少买max 5x（太贵了）。
+    - 支付：没有太好的方式，直接买成品号。Claude消耗用量比较快，我的pro订阅只用sonnet都不够日常开发。建议至少买max 5x（太贵了）。
+    - 说明：极度不推荐，近期有史无前例的大风控，根据使用时间和语言会自动检测封号。
 
 - OpenAI（ChatGPT）
     - 订阅：[chatgpt.com](https://chatgpt.com)，用量在[Codex](https://chatgpt.com/codex/settings/usage)里面看
         - 登录使用
     - 按量：[platform.openai.com](https://platform.openai.com/usage)
         - 生成API-Key后使用，Key只走按量
-    - 支付可以[用自己的ios订阅](https://yingtu.ai/zh/blog/chatgpt-plus-ios-recharge)
+    - 支付：可以[用自己的ios订阅](https://yingtu.ai/zh/blog/chatgpt-plus-ios-recharge)
       ，也可以在[星际放映厅](https://www.naifeistation.com/)买成品号。
+    - 说明：GPT改代码很强，但是成本考虑的话建议走白嫖的free号池（下面有说），就算有需求也去linux.do看看各种拼车team席位啥的。
 
-- Google（Gemini）
+- ~~Google（Gemini）~~
     - 订阅：~~[Google One AI订阅](https://one.google.com/)
       虽然只能在网页用，但是可以用[opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth)
       实现使用以及多账号使用~~经测试发现还是不好用，不推荐
     - 按量：[aistudio.google.com](https://aistudio.google.com/)
         - 生成API-Key后使用，Key只走按量
-    - 支付我是没看到合适的，不过[星际放映厅](https://www.naifeistation.com/)也有卖成品号，可以考虑。
+    - 支付：没看到合适的。
+    - 说明：极度不推荐买任何官方的，谷歌对于账号地区、IP地址非常敏感，很容易触发封号。建议直接找个中转站。
 
-- DeepSeek（DeepSeek）
+- ~~DeepSeek（DeepSeek）~~
     - 订阅：无
     - 按量：[platform.deepseek.com](https://platform.deepseek.com/)
-        - 生成API-Key后使用，Key只走按量，尽管便宜但是也不能滥用，毕竟只要是走Key的，就比订阅的要贵的多
-    - 支付没啥说的，国产模型随便付。
+        - 生成API-Key后使用，Key只走按量
+    - 支付：没啥说的，国产模型随便付。
+    - 说明：价格虽然说确实低，但是一方面有点笨，另一方面价格不如中转站。没有选择的理由= =
 
 - Kimi（Kimi）
     - 订阅：[Kimi Code](https://www.kimi.com/code)
         - 生成API-Key后使用
     - 按量：[Kimi Code Console](https://www.kimi.com/code/console)
         - 生成API-Key后使用，Key先走订阅再走按量
-    - 支付没啥说的，国产模型随便付。
+    - 支付：没啥说的，国产模型随便付。
+    - 说明：支持国产的话，买就完事了。用它替代Claude的角色。目前没看到有中转站搞Kimi中转的。
 
 - Z.AI / Z.AI Coding Plan（GLM）
     - 订阅（Z.AI Coding Plan）：[国内站](https://bigmodel.cn/glm-coding)便宜，[国际站](https://z.ai/subscribe)贵
         - 生成API-Key后使用
     - 按量（Z.AI）：一样的网址
         - 生成API-Key后使用，Key先走订阅再走按量
-    - 支付可以用国内的卡（无论是国内站还是国际站都行），毕竟也是国产模型。
+    - 支付：可以用国内的卡（无论是国内站还是国际站都行），毕竟也是国产模型。
+    - 说明：支持国产的话，买就完事了。用它替代Claude的角色。目前有一部分中转站有提供GLM中转的。
+      有一点必须说明：GLM5改代码真的不行！！！如果他不能一次改好，他就会删除各种东西，甚至把文件里面内容都删了！
 
-claude比较贵。而kimi/glm负责流程，gpt负责代码编写的情况下，据说已经超过sonnet了。所以合理选择模型，deepseek也未尝不可。
+实测说明：
+
+- Claude Sonnet综合能力高，理解需求很准确。缺点就是贵，而且会各种封号。
+  可以考虑用中转站，然后再搞个Kimi备用（这个不是必须的，全用GPT效果也很棒）
+- Chat GPT改代码顶尖，非常好用。
+  而且现在还有很多公益站，可以白嫖GPT或者低价使用GPT。
+- Gemini视觉设计最好。UI方面，可以使用Gemini Pro + ui-ux-pro-max（一个视觉方面的skill），非常强。
+  这个只推荐中转站。
+
+下面是部分推荐的，可以在opencode使用的中转站：
+
+- [QuicklyAPI](https://sub.jlypx.de/)
+    - 免费GPT号池。真是救命了！YYDS！
+
+- [RightCode](https://right.codes/)
+    - 有Claude、GPT、Gemini。非常便宜，1块=5刀。
+
+- [PackyCode](https://www.packyapi.com/)
+    - 有Claude、GPT、Gemini、Kimi、GLM、豆包、千问等等很多模型。便宜，1块=1刀。
+      他们也卖GPT，好像一个月30-90R，反正GPT能从QuicklyAPI白嫖，就不管了。
 
 ### omo安装说明
 
-下面是 Windows系统 下的omo安装说明。
+下面是**Windows系统**安装oh-my-openagent（简称omo）的说明。
 
-### 1.安装[wsl](https://learn.microsoft.com/zh-cn/windows/wsl/install)
+omo是opencode的一个插件。opencode主打的是可用多家AI，而omo则是在一次会话中，自动调用不同家的AI，扬长避短。
+
+根据opencode官网的说明，opencode最好装在Linux系统下。
+所以当我们是Windows系统的时候，需要先装wsl，再在wsl中安装一个Linux系统（下面以在wsl中安装Ubuntu为例）。
+
+### 1.安装WSL并配置一些与其相关的内容
+
+#### 1.1 安装[wsl](https://learn.microsoft.com/zh-cn/windows/wsl/install)
 
 wsl相当于Linux框架，可以模拟Linux环境，方便在Windows上运行Linux命令和软件。
 
 ```
 # 安装wsl
 wsl --install
-# 重启电脑以使wsl生效
-# 通过wsl安装Ubuntu
+# 安装完成后，重启电脑以使wsl生效
+# 通过wsl安装Ubuntu（你也可以换成别的Linux系统）
 wsl.exe --install Ubuntu
+
+# 进入Ubuntu系统，有两种方式：
+# 方式1：先打开PowerShell（下面简称PS），然后输入wsl即可进入
+# 方式2：打开PowerShell，可与看到+的右边还有一个v，点一下这个v，选择Ubuntu即可
 ```
 
-安装完成后，在命令行输入`wsl`即可进入安装好的Linux系统。现在先不着急进去。
+#### 1.2 解决wsl中使用apt会卡住的问题
 
-### 2.解决wsl无法通过代理访问的问题
+先测试一下连通性：进入Ubuntu系统，看一下百度和谷歌能不能ping通。
+
+```
+# 注意要在wsl里面测，不要在ps里面测
+ping www.baidu.com
+ping www.google.com
+```
+
+如果连不了（我假设你开代理了），那么这样：
 
 按下 Win + R，输入 %UserProfile% 并回车。在该目录下寻找或新建一个名为 .wslconfig 的文件。
-
 用记事本打开，添加以下配置：
 
 ```
@@ -145,49 +190,109 @@ networkingMode=mirrored
 
 保存文件后，在 PowerShell 中执行 `wsl --shutdown` 重启 WSL。
 
-接下来验证网络是否正常：
+现在应该能ping通了（如果还是不行就自己研究吧！），接下来处理apt的问题。
+
+即使能ping通谷歌，apt也有可能卡住——尤其是开启了TUN的情况下，wsl并不一定会走win的TUN代理，这就导致apt卡住。
+
+测试以下指令：
 
 ```
-# 进入wsl
-wsl
-# 等待一会...
-# 测试连接，ctrl+c终止
-ping www.baidu.com
-ping www.google.com
-```
-
-注意，即使能正常ping通，apt相关指令也可能卡住。
-尤其是在开了clash的TUN模式的情况下，必须让apt强制走代理。例子：
-
-❌️`sudo apt-get update`
-
-✅️`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`
-
-或者也可以考虑关闭TUN模式（我没尝试过）。
-
-### 3.安装oh-my-openagent前置工具（下面都是在wsl里面了）
-
-通过apt-get安装dotnet-sdk-8.0、dotnet-sdk-10.0、npm、npx、LSP、unzip、OmniSharp、opencode等等
-
-```
-# 更新并安装基础工具（不需要Proxy）
+# 测试不带任何配置的apt指令
 sudo apt-get update
+
+# 如果第一个访问的时候就卡住了，按ctrl+c终止，然后试试这个（假设你的代理是7890端口，记得开启“允许局域网”）
+sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
+```
+
+如果第二个指令能正常运行，但是第一个不行，说明wsl没有走TUN代理。
+这个问题不太好解决，但是可以用一些方式调整。
+
+先说一下为什么要解决这个问题。因为如果AI遇到了“需要用apt安装某个东西”的场景的时候，一般会遇到两个问题：
+
+- 因为是用sudo，需要root账户密码，但是AI不知道密码
+- 因为apt必须显式指定代理，AI不知道这个事情
+
+这个东西每次提醒，也不方便，所以做一些调整：
+
+- 新开终端不需要输入sudo（这个视情况决定要不要，毕竟这相当于给AI最高级权限了，而且用到sudo的场景可能没那么多）
+
+```
+# 使用visudo打开sudoers编辑器（visudo会在保存前检查语法错误，防止把自己锁在系统外）
+sudo visudo
+# 滚动到文件结尾，添加。mlj是用户名
+mlj ALL=(ALL) NOPASSWD: ALL
+# 按 Ctrl + O 然后回车保存，再按 Ctrl + X 退出
+# 新开终端，验证效果
+sudo ls
+```
+
+- apt避免每次设置proxy
+
+```
+# 获取 WSL2 的宿主机 IP 地址
+HOST_IP=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')
+# 写入配置文件（假设代理端口是7890，记得开启“允许局域网”）
+sudo tee /etc/apt/apt.conf.d/99proxy <<EOF
+Acquire::http::Proxy "http://$HOST_IP:7890";
+Acquire::https::Proxy "http://$HOST_IP:7890";
+EOF
+# 自动刷新HOST_IP，加到~/.bashrc末尾
+HOST_IP=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')
+sudo sed -i "s/[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$HOST_IP/g" /etc/apt/apt.conf.d/99proxy 2>/dev/null
+# 让~/.bashrc立即生效
+source ~/.bashrc
+```
+
+### 2.安装opencode、oh-my-openagent（下面简称omo）
+
+**重点：下面的内容都是在wsl里面执行的！！！**
+
+#### 2.1 安装一些前置工具
+
+先安装nvm，通过nvm安装最新版Nodejs和npm。
+
+```
+# 回到用户目录
+# 这一点非常关键，如果不回，比如你在/mnt/c/xxx的这种位置，就可能直接安到Windows里面而不是linux，后面就各种MCP连不上啥的
+cd ~
+# 安装nvm
+curl -o- https://raw.githubusercontent.com | bash
+# curl 用不了的话，也可以使用 wget 安装nvm
+# wget -qO- https://raw.githubusercontent.com | bash
+# 安装好之后刷新使命令生效
+source ~/.bashrc
+# 安装最新LTS版Nodejs和npm
+nvm install --lts
+# 查阅版本
+node -v
+npm -v
+# 查阅路径
+# 这一步一定要做，确认目录是在/home/mlj/.nvm/versions/node/v24.14.0/bin/node这样的位置，而不是在/mnt/c/xxx的这种位置
+which node
+which npm
+```
+
+安装一些小工具，dotnet-sdk包（不要问为什么8.0和10.0都要装，照做就是了），然后再安装opencode。
+
+```
+# 更新包列表
+sudo apt-get update
+# 安装一堆东西
 sudo apt-get install -y \
     dotnet-sdk-8.0 dotnet-sdk-10.0 \
-    nodejs \
     unzip curl git ca-certificates
-curl -fsSL https://opencode.ai/install | bash
+```
 
-# 更新并安装基础工具（需要Proxy）
-sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
-sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" install -y \
-    dotnet-sdk-8.0 dotnet-sdk-10.0 \
-    nodejs \
-    unzip curl git ca-certificates
+#### 2.2 手动安装opencode
+
+安装opencode。
+
+```
+# 安装opencode
 curl -fsSL https://opencode.ai/install | bash
 ```
 
-将opencode加入PATH中：
+将opencode加入PATH中，方便后续调用。
 
 ```
 # 确认路径：
@@ -202,55 +307,603 @@ wsl bash -ic "opencode --version"
 # 此时应该显示opencode版本号
 ```
 
-### 4.登录ai账户或者输入API Key
-
-注：有关opencode的指令，可以运行`opencode --help`来查看。
-
-```
-# 打开opencode统一设置页面
-opencode auth login
-```
-
-在这个页面中，可以直接搜索对应ai（最上面有search），也可以上下切换慢慢找。
-
-选中某一个ai之后，回车，之后有可能是登录账号（比如claude），有可能是输入API Key。
-
-一次只能录入一个ai的信息。当你有多个ai，就多执行几次`opencode auth login`，全配置好就行。
-
-### 5.打开opencode，让AI安装oh-my-openagent
+#### 2.3 打开opencode，让AI安装oh-my-openagent
 
 ```
 # 打开opencode
 opencode
 ```
 
-此时应该显示为build模式，模型建议使用Claude Sonnet。然后发如下消息：
+此时应该显示为build模式，模型可以用免费的Minimax-M2.5-Free（opencode自带）。
+然后发如下消息，让AI帮忙安装omo：
 
 ```
-# 安装omo（不需要Proxy）
 Install and configure oh-my-opencode by following the instructions here:
 https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
-
-# 安装omo（需要Proxy）
-Install and configure oh-my-opencode by following the instructions here:
-https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
-使用apt相关指令时，必须显式指定代理，例如`sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update`。
+使用中文回答。
 ```
 
 等待一会，当其询问“你有哪些订阅”的时候，根据实际情况回复即可。
 不要说多余的话，后面可以自行调整配置文件。
 
-继续等待安装完成。完成后，ctrl+z退出opencode。重新再进就是omo了，但是在这之前可以先确认一下配置文件。
+继续等待安装完成。完成后，ctrl+z退出opencode。
 
-### 6.修改oh-my-openagent配置
+此时重新再打开opencode，就是omo的界面了。但是在这之前，应该先编辑配置文件。
 
-模型指令是`opencode models [provider]`。那么：
+### 3.修改opencode配置文件，配好所有模型
+
+#### 3.1 配置opencode已经提供好的厂商
+
+如果你是在各个官网订阅的AI，那么就通过这个方式配置。这种方式**不需要修改配置文件**。
 
 ```
-# 查看所有支持的model字段
+# 打开opencode的内置统一配置登录大部分官方AI的页面
+opencode auth login
+```
+
+在这个页面中，可以直接搜索对应AI厂商的名字（最上面有search），也可以上下切换慢慢找。
+
+选中某一个AI之后，回车之后可能要登录账号（比如Claude），也可能要输入API Key。
+
+一次只能录入一个AI的信息。当你有多个官方的AI，就多执行几次`opencode auth login`，全配置好就可以了。
+
+#### 3.2 打开opencode配置文件
+
+默认会在这里生成一个配置文件：`~/.config/opencode/opencode.json`
+
+可以在Linux系统里面编辑，但是我更推荐直接从Windows的资源管理器打开，然后用记事本之类的工具编辑。
+
+```
+# 打开Ubuntu系统的位置
+# 先打开Windows资源管理器，然后在地址栏输入以下内容并回车：
+\\wsl.localhost\Ubuntu
+```
+
+根据配置文件的路径，很容易就找到它在Windows系统下的路径：`\\wsl.localhost\Ubuntu\home\用户名\.config\opencode\opencode.json`
+
+这个文件可以配置：
+
+- Skill，也就是AI所能使用的技能，相当于一些简短的提示词
+- MCP，上下文协议，相当于教会AI如何使用Skill
+- 第三方的一些中转站的接口和他们的模型
+
+#### 3.3 配置一些第三方中转站、Skill、MCP
+
+涉及到这些内容的配置，建议使用**手动修改配置文件**的方式。目前的一些opencode配置工具我感觉都不好用。
+
+如果你是用了一些中转站，它们会给你以下内容，有了这些就可以配置了：
+
+- url
+- 模型类型（anthropic/google/opanai/openai-comtiable）
+- 具体可用模型的名称
+
+当然也有一些中转站会直接给你配置文件，复制粘贴就行了。
+
+下面是一个样例，格式自己研究，添加新的第三方也是一样的道理：
+
+``` opencode.json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "context7": {
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "enabled": true,
+      "type": "local"
+    },
+    "memory": {
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "enabled": true,
+      "type": "local"
+    },
+    "sequential-thinking": {
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true,
+      "type": "local"
+    }
+  },
+  "plugin": [
+    "oh-my-opencode@latest"
+  ],
+  "provider": {
+    "packycodegoogle": {
+      "models": {
+        "gemini-3-flash-preview": {
+          "name": "Gemini 3 Flash Preview"
+        },
+        "gemini-3.1-pro-preview": {
+          "name": "Gemini 3.1 Pro Preview"
+        }
+      },
+      "name": "PackyCode",
+      "npm": "@ai-sdk/google",
+      "options": {
+        "apiKey": "此处填写API-Key",
+        "baseURL": "https://www.packyapi.com/v1"
+      }
+    },
+    "quicklyapiopenai": {
+      "models": {
+        "gpt-5.3-codex": {
+          "limit": {
+            "context": 400000,
+            "output": 128000
+          },
+          "name": "GPT-5.3 Codex",
+          "options": {
+            "store": false
+          },
+          "variants": {
+            "high": {},
+            "low": {},
+            "medium": {},
+            "xhigh": {}
+          }
+        },
+        "gpt-5.4": {
+          "limit": {
+            "context": 1050000,
+            "output": 128000
+          },
+          "name": "GPT-5.4",
+          "options": {
+            "store": false
+          },
+          "variants": {
+            "high": {},
+            "low": {},
+            "medium": {},
+            "xhigh": {}
+          }
+        },
+        "gpt-5.4-mini": {
+          "limit": {
+            "context": 200000,
+            "output": 100000
+          },
+          "name": "GPT-5.4 Mini",
+          "options": {
+            "store": false
+          },
+          "variants": {
+            "high": {},
+            "low": {},
+            "medium": {}
+          }
+        }
+      },
+      "name": "QuicklyAPI_OpenAI",
+      "npm": "@ai-sdk/openai",
+      "options": {
+        "apiKey": "此处填写API-Key",
+        "baseURL": "https://sub.jlypx.de/v1"
+      }
+    },
+    "rightcodeanthropic": {
+      "models": {
+        "claude-haiku-4-5": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.1,
+            "cache_write": 1.25,
+            "input": 1,
+            "output": 5
+          },
+          "id": "claude-haiku-4-5",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Claude Haiku 4.5",
+          "options": {
+            "thinking": {
+              "budgetTokens": 32000,
+              "type": "enabled"
+            }
+          },
+          "reasoning": true,
+          "release_date": "2025-10-15",
+          "temperature": true,
+          "tool_call": true
+        },
+        "claude-opus-4-6": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.5,
+            "cache_write": 6.25,
+            "input": 5,
+            "output": 25
+          },
+          "id": "claude-opus-4-6",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Claude Opus 4.6",
+          "options": {
+            "thinking": {
+              "budgetTokens": 32000,
+              "type": "enabled"
+            }
+          },
+          "reasoning": true,
+          "release_date": "2025-11-24",
+          "temperature": true,
+          "tool_call": true
+        },
+        "claude-sonnet-4-6": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.3,
+            "cache_write": 3.75,
+            "input": 3,
+            "output": 15
+          },
+          "id": "claude-sonnet-4-6",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Claude Sonnet 4.6",
+          "options": {
+            "thinking": {
+              "budgetTokens": 32000,
+              "type": "enabled"
+            }
+          },
+          "reasoning": true,
+          "release_date": "2025-09-29",
+          "temperature": true,
+          "tool_call": true
+        }
+      },
+      "name": "RCode_ClaudeCode",
+      "npm": "@ai-sdk/anthropic",
+      "options": {
+        "apiKey": "此处填写API-Key",
+        "baseURL": "https://right.codes/claude-aws/v1"
+      }
+    },
+    "rightcodegoogle": {
+      "models": {
+        "gemini-3-flash-preview": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.05,
+            "context_over_200k": {
+              "cache_read": 0.05,
+              "input": 0.5,
+              "output": 3
+            },
+            "input": 0.5,
+            "output": 3
+          },
+          "family": "gemini-flash",
+          "id": "gemini-3-flash-preview",
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Gemini 3 Flash Preview",
+          "reasoning": true,
+          "release_date": "2025-12-17",
+          "temperature": true,
+          "tool_call": true
+        },
+        "gemini-3-pro-preview": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.2,
+            "context_over_200k": {
+              "cache_read": 0.4,
+              "input": 4,
+              "output": 18
+            },
+            "input": 2,
+            "output": 12
+          },
+          "family": "gemini-pro",
+          "id": "gemini-3-pro-preview",
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Gemini 3 Pro Preview",
+          "reasoning": true,
+          "release_date": "2025-11-18",
+          "temperature": true,
+          "tool_call": true
+        },
+        "gemini-3.1-pro-preview": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.2,
+            "context_over_200k": {
+              "cache_read": 0.4,
+              "input": 4,
+              "output": 18
+            },
+            "input": 2,
+            "output": 12
+          },
+          "family": "gemini-pro",
+          "id": "gemini-3.1-pro-preview",
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "name": "Gemini 3.1 Pro Preview",
+          "reasoning": true,
+          "release_date": "2025-11-18",
+          "temperature": true,
+          "tool_call": true
+        }
+      },
+      "name": "RCode_Google",
+      "npm": "@ai-sdk/google",
+      "options": {
+        "apiKey": "此处填写API-Key",
+        "baseURL": "https://right.codes/gemini/v1"
+      }
+    },
+    "rightcodeopenai": {
+      "models": {
+        "gpt-5.3-codex": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.175,
+            "input": 1.75,
+            "output": 14
+          },
+          "headers": {
+            "conversation_id": "opencode-stable-user",
+            "session_id": "opencode-stable-user",
+            "x-session-id": "opencode-stable-user"
+          },
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "name": "GPT-5.3 Codex",
+          "options": {
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "promptCacheKey": "opencode-stable-user",
+            "reasoningEffort": "high",
+            "reasoningSummary": "auto",
+            "store": false,
+            "textVerbosity": "medium"
+          },
+          "reasoning": true,
+          "temperature": false,
+          "tool_call": true,
+          "variants": {
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.4": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.175,
+            "input": 1.75,
+            "output": 14
+          },
+          "headers": {
+            "conversation_id": "opencode-stable-user",
+            "session_id": "opencode-stable-user",
+            "x-session-id": "opencode-stable-user"
+          },
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "name": "GPT-5.4",
+          "options": {
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "promptCacheKey": "opencode-stable-user",
+            "reasoningEffort": "high",
+            "reasoningSummary": "auto",
+            "store": false,
+            "textVerbosity": "medium"
+          },
+          "reasoning": true,
+          "temperature": false,
+          "tool_call": true,
+          "variants": {
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.4-mini": {
+          "attachment": true,
+          "cost": {
+            "cache_read": 0.175,
+            "input": 1.75,
+            "output": 14
+          },
+          "headers": {
+            "conversation_id": "opencode-stable-user",
+            "session_id": "opencode-stable-user",
+            "x-session-id": "opencode-stable-user"
+          },
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "name": "GPT-5.4 Mini",
+          "options": {
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "promptCacheKey": "opencode-stable-user",
+            "reasoningEffort": "high",
+            "reasoningSummary": "auto",
+            "store": false,
+            "textVerbosity": "medium"
+          },
+          "reasoning": true,
+          "temperature": false,
+          "tool_call": true,
+          "variants": {
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            }
+          }
+        }
+      },
+      "name": "RCode_OpenAI",
+      "npm": "@ai-sdk/openai",
+      "options": {
+        "apiKey": "此处填写API-Key",
+        "baseURL": "https://right.codes/codex/v1",
+        "setCacheKey": true
+      }
+    }
+  }
+}
+```
+
+### 4.修改oh-my-openagent配置文件
+
+#### 4.1 查看所有能用的模型
+
+先看看现在你能用什么模型：
+
+```
+# 查看当前能使用的所有model
 opencode models
-# 或者只查看某一家厂商支持的model字段
-opencode models 厂商名字
 ```
 
 此时会显示格式为“厂商/模型名”的“model字符串”，我们就知道模型对应的字符串是什么了。例如：
@@ -262,172 +915,176 @@ zai/glm-5 -> glm5，按量付费
 zai-coding-plan/glm-5 -> glm5，按订阅付费
 ```
 
-注意：如果没有找到对应的ai字符串，很可能是你在第5步中没有配置好对应的ai。
+注意：如果没有找到对应的ai字符串，说明你在第5步中没有配置好。只有配好的才会在这里显示。
 
-记下模型对应的字符串后，就可以调整omo配置了。
+记下来这些字符串，这就是接下来我们给omo配置时会用到的东西。
 
-上一步已经生成了omo的配置文件，位于`~/.config/opencode/oh-my-opencode.json`。
+#### 4.2 打开并修改omo配置文件
 
-文件内未配置的部分（例如模型选择），将由omo自行智能选择；如果修改配置、手动指定，omo将会强制按照设定的配置来运行。
+默认会在这里生成一个配置文件：`~/.config/opencode/oh-my-opencode.json`
 
-```
-# 直接在win系统打开oh-my-opencode.json
-# 例如 \\wsl.localhost\Ubuntu\home\mlj\.config\opencode\oh-my-opencode.json
-```
+根据配置文件的路径，很容易就找到它在Windows系统下的路径：`\\wsl.localhost\Ubuntu\home\用户名\.config\opencode\oh-my-opencode.json`
 
-这个文件是jsonc格式，可以加注释，不受末尾逗号影响。
+这个文件可以配置：
 
-里面的信息可能过时，可参考[configuration.md](https://github.com/code-yeongyu/oh-my-openagent/blob/dev/docs/reference/configuration.md)
-进行调整。
+- 每个角色应该使用什么模型
+- 当模型不可用时，根据回退链的配置依次调用其他模型
+- 一些omo的实验性功能开关
 
-最后再强调一下，留空的部分将由omo自行选择。
+注意，这个文件允许使用jsonc格式。根据omo的文档，`.jsonc`文件后缀优于`.json`文件后缀。
+所以，可以**直接将这个文件后缀名修改为`.jsonc`**。
 
-```
+jsonc格式允许添加注释，并且结尾可以使用逗号。
+
+对于每个角色所使用的模型如何选择，以及实验性功能有哪些，可以参考[configuration.md](https://github.com/code-yeongyu/oh-my-openagent/blob/dev/docs/reference/configuration.md)
+
+下面是一个样例：
+
+``` oh-my-opencode.jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/dev/assets/oh-my-opencode.schema.json",
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
   "agents": {
-    "sisyphus": {
-      // 主要协调人 claude-opus-4-6 → glm-5 → big-pickle
-      "model": "anthropic/claude-opus-4-6",
+    "atlas": {
       "fallback_models": [
-        "opencode/kimi-k2.5"
+        "rightcodeopenai/gpt-5.4"
       ],
-      "ultrawork": {
-        "model": "anthropic/claude-opus-4-6",
-        "variant": "max"
-      },
-      "prompt_append": "使用中文思考并回答。仅能执行简单的代码修改（如修复小 bug、调整配置等），复杂的大段代码编写必须委托给其他代理（如 `deep`, `quick` 等类别 agent）。",
-    },
-    "hephaestus": {
-      // 自主深度工作者。gpt-5.3-codex → gpt-5.4
-      "model": "openai/gpt-5.3-codex",
-      "variant": "medium",
+      "model": "quicklyapiopenai/gpt-5.4",
       "prompt_append": "使用中文思考并回答。",
-    },
-    "oracle": {
-      // 架构顾问 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
-      "model": "openai/gpt-5.4",
-      "variant": "high",
-      "prompt_append": "使用中文思考并回答。",
-    },
-    "librarian": {
-      // 文档/代码搜索 gemini-3-flash → minimax-m2.5-free → big-pickle
-      "model": "opencode/minimax-m2.5-free",
-      "prompt_append": "使用中文思考并回答。",
+      "variant": "xhigh"
     },
     "explore": {
-      // 快速代码库扫描 grok-code-fast-1 → minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano
       "model": "opencode/minimax-m2.5-free",
-      "prompt_append": "使用中文思考并回答。",
+      "prompt_append": "使用中文思考并回答。"
     },
-    "multimodal-looker": {
-      // 视觉/屏幕截图 gpt-5.3-codex → k2p5 → gemini-3-flash → glm-4.6v → gpt-5-nano
-      "model": "openai/gpt-5.3-codex",
-      "variant": "medium",
+    "hephaestus": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.3-codex"
+      ],
+      "model": "quicklyapiopenai/gpt-5.3-codex",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
     },
-    "prometheus": {
-      // 战略规划师 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
-      "model": "openai/gpt-5.4",
-      "variant": "medium",
-      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. 使用中文思考并回答。",
+    "librarian": {
+      "model": "opencode/minimax-m2.5-free",
+      "prompt_append": "使用中文思考并回答。"
     },
     "metis": {
-      // 计划差距分析器 claude-opus-4-6 → gpt-5.4 → gemini-3.1-pro
-      "model": "openai/gpt-5.4",
-      "variant": "medium",
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
     },
     "momus": {
-      // 无情评审员 gpt-5.4 → claude-opus-4-6 → gemini-3.1-pro
-      "model": "openai/gpt-5.4",
-      "variant": "xhigh",
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "xhigh"
     },
-    "atlas": {
-      // 待办事项协调器 claude-sonnet-4-6 → gpt-5.4
-      "model": "openai/gpt-5.4",
-      "variant": "medium",
+    "multimodal-looker": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.3-codex"
+      ],
+      "model": "quicklyapiopenai/gpt-5.3-codex",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
     },
+    "oracle": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
+      "prompt_append": "使用中文思考并回答。",
+      "variant": "high"
+    },
+    "prometheus": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
+      "prompt_append": "Leverage deep & quick agents heavily, always in parallel. 使用中文思考并回答。",
+      "variant": "xhigh"
+    },
+    "sisyphus": {
+      "model": "rightcodeanthropic/claude-sonnet-4-6",
+      "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
+    }
   },
   "categories": {
-    "visual-engineering": {
-      // 前端、用户界面、CSS、设计 gemini-3.1-pro → glm-5 → claude-opus-4-6
-      "model": "zai-coding-plan/glm-5",
-      "variant": "high",
+    "artistry": {
       "fallback_models": [
-        "opencode/gemini-3.1-pro"
+        "rightcodegoogle/gemini-3.1-pro-preview",
+        "packycodegoogle/gemini-3.1-pro-preview"
       ],
-      "prompt_append": "使用中文思考并回答。",
-    },
-    "ultrabrain": {
-      // 需要最大限度的推理 gpt-5.4 → gemini-3.1-pro → claude-opus-4-6
-      "model": "openai/gpt-5.4",
-      "variant": "xhigh",
-      "prompt_append": "使用中文思考并回答。",
+      "model": "rightcodegoogle/gemini-3-pro-preview",
+      "prompt_append": "使用中文思考并回答。"
     },
     "deep": {
-      // 深度编码，复杂逻辑 gpt-5.3-codex → claude-opus-4-6 → gemini-3.1-pro
-      "model": "openai/gpt-5.3-codex",
-      "variant": "medium",
-      "prompt_append": "使用中文思考并回答。",
-    },
-    "artistry": {
-      // 富有创意、新颖的方法 gemini-3.1-pro → claude-opus-4-6 → gpt-5.4
-      "model": "openai/gpt-5.4",
-      "variant": "high",
       "fallback_models": [
-        "opencode/gemini-3.1-pro"
+        "rightcodeopenai/gpt-5.3-codex"
       ],
+      "model": "quicklyapiopenai/gpt-5.3-codex",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
     },
     "quick": {
-      // 简单、快速的任务 claude-haiku-4-5 → gemini-3-flash → gpt-5-nano
-      "model": "openai/gpt-5.1-codex-mini",
-      "prompt_append": "使用中文思考并回答。",
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4-mini"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4-mini",
+      "prompt_append": "使用中文思考并回答。"
     },
-    "unspecified-low": {
-      // 一般标准工作 claude-sonnet-4-6 → gpt-5.3-codex → gemini-3-flash
-      "model": "openai/gpt-5.3-codex",
-      "variant": "medium",
+    "ultrabrain": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "xhigh"
     },
     "unspecified-high": {
-      // 一般复杂工作 claude-opus-4-6 → gpt-5.4 (high) → glm-5 → k2p5 → kimi-k2.5
-      "model": "openai/gpt-5.4",
-      "variant": "high",
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.4"
+      ],
+      "model": "quicklyapiopenai/gpt-5.4",
       "prompt_append": "使用中文思考并回答。",
+      "variant": "high"
+    },
+    "unspecified-low": {
+      "fallback_models": [
+        "rightcodeopenai/gpt-5.3-codex"
+      ],
+      "model": "quicklyapiopenai/gpt-5.3-codex",
+      "prompt_append": "使用中文思考并回答。",
+      "variant": "medium"
+    },
+    "visual-engineering": {
+      "fallback_models": [
+        "rightcodegoogle/gemini-3.1-pro-preview",
+        "packycodegoogle/gemini-3.1-pro-preview"
+      ],
+      "model": "rightcodegoogle/gemini-3-pro-preview",
+      "prompt_append": "使用中文思考并回答。"
     },
     "writing": {
-      // 文本、文档、散文 gemini-3-flash → claude-sonnet-4-6
-      "model": "opencode/gemini-3-flash",
-      "prompt_append": "使用中文思考并回答。",
-    },
+      "fallback_models": [
+        "packycodegoogle/gemini-3-flash-preview"
+      ],
+      "model": "rightcodegoogle/gemini-3-flash-preview",
+      "prompt_append": "使用中文思考并回答。"
+    }
   },
-  // 启用 Sisyphus Tasks 系统，实现跨会话任务跟踪
-  "sisyphus": {
-    "tasks": {
-      "storage_path": ".sisyphus/tasks",
-      "claude_code_compat": false
-    },
-  },
-  // 允许 API 出错时自动切换到备用模型
-  "runtime_fallback": true,
-  // 一些实验性功能
   "experimental": {
-    "truncate_all_tool_outputs": false,
-    "aggressive_truncation": false,
-    "auto_resume": true, // 思考中断恢复后自动恢复
-    "disable_omo_env": true, // 禁用自动注入的<omo-env>数据块，提高缓存命中率
-    "task_system": true, // 启用西西弗斯任务系统
+    "aggressive_truncation": true,
+    "auto_resume": true,
+    "disable_omo_env": true,
     "dynamic_context_pruning": {
-      "enabled": true, // 自动清理旧工具输出以管理上下文窗口
+      "enabled": true,
       "notification": "detailed",
-      "turn_protection": {
-        "enabled": true,
-        "turns": 3
-      },
       "protected_tools": [
         "task",
         "todowrite",
@@ -441,24 +1098,102 @@ zai-coding-plan/glm-5 -> glm5，按订阅付费
         "deduplication": {
           "enabled": true
         },
-        "supersede_writes": {
-          "enabled": true,
-          "aggressive": false
-        },
         "purge_errors": {
           "enabled": true,
           "turns": 5
+        },
+        "supersede_writes": {
+          "aggressive": false,
+          "enabled": true
         }
+      },
+      "turn_protection": {
+        "enabled": true,
+        "turns": 3
       }
+    },
+    "task_system": true,
+    "truncate_all_tool_outputs": false
+  },
+  "google_auth": false,
+  "runtime_fallback": true,
+  "sisyphus": {
+    "tasks": {
+      "claude_code_compat": false,
+      "storage_path": ".sisyphus/tasks"
     }
   }
 }
 ```
 
-### 使用说明
+### omo使用说明
+
+#### 如何使用web界面开发
+
+opencode支持很多终端，例如命令行（感觉还可以）、Web端（非常好用，推荐）、用户端（跟Web一样但是功能好像有点少，不推荐）。
+
+```
+# 使用命令行
+opencode
+
+# 使用Web端（前台）
+opencode web
+
+# 使用Web端（后台）
+nohup opencode web > /dev/null 2>&1 &
+# 查找后台运行的opencode的PID
+pgrep -a opencode
+# 终止后台运行的opencode
+kill -9 <PID>
+```
+
+除此之外，opencode还支持远程连接（只要你有自己的服务器）。配置好之后，就可以在手机上打开opencode的Web端界面了。
+
+```
+# 在你的 WSL Linux 环境里启动 OpenCode 的 Web 服务
+opencode web --hostname 0.0.0.0 --port 4096
+# --hostname 0.0.0.0：让服务监听所有网络接口。这很重要，因为 Windows 宿主机需要通过虚拟网卡访问 WSL 里的这个服务。
+# --port 4096：服务运行在本地的 4096 端口。
+
+# 在PowerShell中执行以下指令，从而完成核心的“穿透”步骤，达到远程转发的目的
+ssh -R 4096:127.0.0.1:4096 root@你的服务器的ip
+# 4096 (第一个)：告诉公网服务器（你的服务器的ip）监听它自己的 4096 端口。
+# 127.0.0.1:4096：告诉 SSH，一旦公网服务器的 4096 端口收到流量，就把它发回到你本地电脑的 127.0.0.1:4096。
+# root@你的服务器的ip：登录到你的云服务器。
+# 服务器别忘了开放4096端口的限制，别拦截了
+```
+
+#### 如何用omo处理一个项目
 
 先执行 /init-deep 来生成一些 Agents.md，这样后续AI协作更好。
 
-ulw：当你比较懒的时候就用这个
-plan-builder：任务比较复杂就先用这个，只生成计划不执行
-plan-executor：执行builder的任务
+.sisyphus文件夹建议加入到.gitignore中。
+
+- 如果你比较懒，不知道一个东西是什么样子，那么可以用 ulw 模式。
+    - 切换到 Sisyphus，在输入的内容中添加 ulw 这三个字母（必须显式添加），即可触发ulw进行全自动编排。
+    - 例子：向 Sisyphus 发送“ulw 帮我设计一个成就系统”
+    - 如果不添加ulw，那就是正常处理，但是这样的话建议用GPT，也就是 Hephaestus。
+- 日常使用就是 Hephaestus，这个角色只允许使用GPT——刚好GPT可以白嫖。
+- 如果遇到了很复杂的内容，而且你想先规划一下，确认各种细节再执行，那么：
+    - 切换到 Prometheus，这个角色只会指定计划，不会执行。
+    - 等到计划执行好了，切换到 Atlas，这个角色只能执行 Prometheus 定好的计划。
+    - 特别注意：同一时间只能运行一个计划！！！并且计划的执行步骤比较繁琐，需要耗时很久。
+
+#### 额外附加内容1：wsl安装中文字体
+```
+# 默认下载的是没中文字体的，中文都是方块
+sudo -E apt-get install -y fonts-noto-cjk fonts-wqy-microhei
+# 安装完之后在Powershell里面执行重启命令
+wsl --shutdown
+```
+
+#### git push不需要登录账户，直接使用Windows的git登录状态
+```
+# 没配置之前，AI只能本地Commit；跟远程仓库交互的时候总是需要验证身份，很麻烦
+# 配置之后，AI就能跟远程仓库交互了
+# 假设你安装了Git（不是GithubDesktop），位置是C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+# 那么在wsl里面执行：
+git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"
+# 原理是Git身份认证直接使用Windows的Git的身份认证，所以只要Windows的Git登陆了，wsl里面就可以直接用了
+# 这个时候让AI测试一下，应该就不需要密码了
+```
