@@ -17,7 +17,9 @@ namespace FE.UI.View;
 
 public static class MainWindow {
     private const string MainPanelSelectionBlockTag = "MainPanelSelection";
+    private const float ToggleKeySingleClickDelay = 0.3f;
     private static PressKeyBind _toggleKey;
+    private static float _pendingToggleKeyExecuteAt = -1f;
     private static bool _legacyConfigWinInitialized;
     private static MyConfigWindow _legacyConfigWin;
     private static bool _analysisMainWindowInitialized;
@@ -127,15 +129,43 @@ public static class MainWindow {
             || !GameMain.isRunning
             || GameMain.isFullscreenPaused
             || GameMain.mainPlayer == null) {
+            ClearPendingToggleKey();
             CloseAllMainPanels();
             return;
         }
         if (VFInput.inputing) {
+            ClearPendingToggleKey();
             return;
         }
-        if (_toggleKey.keyValue && GameMain.history.TechUnlocked(TFE分馏数据中心)) {
-            ToggleSelectedMainPanel();
+
+        if (!GameMain.history.TechUnlocked(TFE分馏数据中心)) {
+            ClearPendingToggleKey();
+            return;
         }
+
+        float currentTime = Time.realtimeSinceStartup;
+        if (_pendingToggleKeyExecuteAt > 0f && currentTime >= _pendingToggleKeyExecuteAt) {
+            ClearPendingToggleKey();
+            ToggleSelectedMainPanel();
+            return;
+        }
+
+        if (_toggleKey.keyValue) {
+            if (_pendingToggleKeyExecuteAt > 0f) {
+                ClearPendingToggleKey();
+                SwitchMainPanelFrom(GetCurrentMainPanelType());
+                return;
+            }
+
+            _pendingToggleKeyExecuteAt = currentTime + ToggleKeySingleClickDelay;
+            return;
+        }
+    }
+
+    public static FEMainPanelType GetCurrentMainPanelType() {
+        return OpenedMainPanelType != FEMainPanelType.None
+            ? OpenedMainPanelType
+            : NormalizeMainPanelSelection(SelectedMainPanelType);
     }
 
     public static void BindSharedPanelState(IFEMainPanelSharedState sharedState) {
@@ -149,13 +179,17 @@ public static class MainWindow {
     }
 
     public static string GetSwitchMainPanelButtonLabel(FEMainPanelType currentPanelType) {
-        return currentPanelType == FEMainPanelType.Analysis
+        return NormalizeMainPanelSelection(currentPanelType) == FEMainPanelType.Analysis
             ? "切换到旧版主面板"
             : "切换到分析主面板";
     }
 
+    public static string GetSwitchMainPanelButtonLabel() {
+        return GetSwitchMainPanelButtonLabel(GetCurrentMainPanelType());
+    }
+
     public static void SwitchMainPanelFrom(FEMainPanelType currentPanelType) {
-        SelectMainPanel(currentPanelType);
+        SelectMainPanel(NormalizeMainPanelSelection(currentPanelType));
         SwitchSelectedMainPanelAndOpen();
     }
 
@@ -268,6 +302,10 @@ public static class MainWindow {
         }
 
         OpenedMainPanelType = FEMainPanelType.None;
+    }
+
+    private static void ClearPendingToggleKey() {
+        _pendingToggleKeyExecuteAt = -1f;
     }
 
     private static void ImportMainPanelSelection(BinaryReader r) {
