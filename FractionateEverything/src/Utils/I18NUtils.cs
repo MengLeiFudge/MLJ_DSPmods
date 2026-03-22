@@ -9,6 +9,9 @@ public static partial class Utils {
     /// <summary>
     /// 添加翻译，仅在Awake结束前可用。
     /// </summary>
+    /// <param name="key">翻译键</param>
+    /// <param name="enTrans">英文翻译</param>
+    /// <param name="cnTrans">中文翻译，留空时回退到 key</param>
     public static void Register(string key, string enTrans, string cnTrans = null) {
         // LocalizationModule.RegisterTranslation(key, enTrans, cnTrans ?? key, enTrans);
         // 对于当前CommonAPI版本（1.6.7），RegisterTranslation(key, dic)不会检测trans为null或空字符串的情况
@@ -22,6 +25,9 @@ public static partial class Utils {
     /// <summary>
     /// 修改翻译，仅在Awake结束前可用。
     /// </summary>
+    /// <param name="key">翻译键</param>
+    /// <param name="enTrans">英文翻译</param>
+    /// <param name="cnTrans">中文翻译，留空时回退到 key</param>
     public static void Edit(string key, string enTrans, string cnTrans = null) {
         // LocalizationModule.EditTranslation(key, enTrans, cnTrans ?? key, enTrans);
         // 对于当前CommonAPI版本（1.6.7），EditTranslation(key, dic)不会检测trans为null或空字符串的情况
@@ -44,6 +50,9 @@ public static partial class Utils {
     /// 添加或修改翻译，仅在Awake结束后可用。
     /// 翻译将会暂存到modStringList中，只有在调用LoadLanguagePostfixAfterCommonApi后才生效。
     /// </summary>
+    /// <param name="key">翻译键</param>
+    /// <param name="enTrans">英文翻译</param>
+    /// <param name="cnTrans">中文翻译，留空时回退到 key</param>
     public static void RegisterOrEditAsync(string key, string enTrans, string cnTrans = null) {
         ModStr modStr = new() { key = key, enTrans = enTrans, cnTrans = cnTrans ?? key };
         foreach (ModStr m in modStringList) {
@@ -55,6 +64,12 @@ public static partial class Utils {
         modStringList.Add(modStr);
     }
 
+    /// <summary>
+    /// 立即添加或修改翻译，并立刻刷新本地语言表。
+    /// </summary>
+    /// <param name="key">翻译键</param>
+    /// <param name="enTrans">英文翻译</param>
+    /// <param name="cnTrans">中文翻译，留空时回退到 key</param>
     public static void RegisterOrEditImmediately(string key, string enTrans, string cnTrans = null) {
         RegisterOrEditAsync(key, enTrans, cnTrans);
         LoadLanguagePostfixAfterCommonApi();

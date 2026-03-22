@@ -47,6 +47,8 @@ public static partial class Utils {
     /// 从ModData背包取出指定物品，再将其放入玩家背包/物流背包/手上。
     /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
     /// </summary>
+    /// <param name="itemId">要转移的物品ID</param>
+    /// <param name="leftClick">是否为左键；左键和右键对应不同倍率</param>
     public static void ClickToMoveModDataItem(int itemId, bool leftClick) {
         ItemProto item = LDB.items.Select(itemId);
         if (item == null) {
@@ -82,6 +84,9 @@ public static partial class Utils {
     ///     从Mod数据中拿取每种精华各n个。
     ///     如果数目不足，则不拿取；否则扣除对应物品。
     /// </summary>
+    /// <param name="n">每种精华要扣除的数量</param>
+    /// <param name="consumeRegister">消耗登记表，会在对应精华索引上累加本次消耗</param>
+    /// <returns>扣除成功返回 true；库存不足返回 false</returns>
     public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
         if (centerItemCount[IFE残片] < n) {
             return false;
@@ -147,6 +152,10 @@ public static partial class Utils {
     /// <summary>
     /// 将指定物品添加到ModData背包
     /// </summary>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="count">新增数量</param>
+    /// <param name="inc">新增增产点数总量</param>
+    /// <param name="manual">是否为手动操作（多人模式下会触发同步包）</param>
     public static void AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
         if (itemId == I沙土) {
             GameMain.mainPlayer.sandCount += count;
@@ -171,6 +180,9 @@ public static partial class Utils {
     /// 将指定物品添加到背包，并在左侧显示物品变动。
     /// 放入物品顺序为：背包 -> 物流背包 -> 手上/Mod背包
     /// </summary>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="count">数量</param>
+    /// <param name="inc">增产点数总量</param>
     /// <param name="throwTrash">背包已满的情况下，true表示将物品放入Mod背包，false表示将手中的物品放入Mod背包，将物品拿到手中</param>
     public static void AddItemToPackage(int itemId, int count, int inc = 0, bool throwTrash = true) {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -936,6 +948,10 @@ public static partial class Utils {
     /// 如果数目不足，则取出全部物品；否则取出指定数目的物品。
     /// 注意，通过此方法取出的物品数目应该远小于int.MaxValue，以避免增产点数超过int。
     /// </summary>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="count">期望取出数量</param>
+    /// <param name="inc">返回实际取出物品携带的增产点数总量</param>
+    /// <param name="manual">是否为手动操作（多人模式下会触发同步包）</param>
     /// <returns>实际拿到的数目</returns>
     public static int TakeItemFromModData(int itemId, int count, out int inc, bool manual = false) {
         //如果是沙土，直接拿取
@@ -988,6 +1004,10 @@ public static partial class Utils {
     /// 拿取指定物品。
     /// 如果数目不足，则不拿取，弹窗提示失败；否则仅拿取，不弹窗。
     /// </summary>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="count">期望拿取数量</param>
+    /// <param name="inc">返回实际扣除物品携带的增产点数总量</param>
+    /// <param name="showTakeFailMessage">数量不足时是否弹出提示</param>
     /// <returns>是否拿取成功</returns>
     public static bool TakeItemWithTip(int itemId, int count, out int inc, bool showTakeFailMessage = true) {
         inc = 0;
@@ -1061,6 +1081,8 @@ public static partial class Utils {
     /// <summary>
     /// 当某个分馏塔在数据中心存储的数目超过1000时，取走10%
     /// </summary>
+    /// <param name="itemId">分馏塔物品ID</param>
+    /// <returns>实际取出数量</returns>
     public static int Take10PercentTower(int itemId) {
         if (itemId <= 0 || itemId >= 12000) {
             return 0;
