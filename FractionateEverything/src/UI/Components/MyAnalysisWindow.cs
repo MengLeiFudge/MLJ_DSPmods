@@ -57,8 +57,14 @@ public class MyAnalysisWindow : MyWindow {
     private RectTransform contentPanelHost;
     private readonly List<UIButton> nativeHorizontalButtonSlots = [];
     private readonly List<UIButton> nativeVerticalButtonSlots = [];
+    private readonly List<UIButton> nativeLeftSubpageButtonSlots = [];
     private readonly List<ButtonPose> nativeHorizontalButtonPoses = [];
     private readonly List<ButtonPose> nativeVerticalButtonPoses = [];
+    private readonly List<ButtonPose> nativeLeftSubpageButtonPoses = [];
+    private UIButton nativeTopCategoryTemplateButton;
+    private ButtonPose nativeTopCategoryTemplatePose;
+    private bool hasNativeTopCategoryTemplatePose;
+    private float topCategoryStepX = 96f;
 
     public static MyAnalysisWindow CreateInstance(string name, string title = "") {
         UIStatisticsWindow src = UIRoot.instance?.uiGame?.statWindow;
@@ -111,11 +117,9 @@ public class MyAnalysisWindow : MyWindow {
             CaptureNativeNavigationButtons(stat);
             if (stat.verticalTab != null) {
                 nativeVerticalTab = stat.verticalTab.GetComponent<RectTransform>();
-                nativeVerticalTab.SetParent(transform, true);
             }
             if (stat.horizontalTab != null) {
                 nativeHorizontalTab = stat.horizontalTab.GetComponent<RectTransform>();
-                nativeHorizontalTab.SetParent(transform, true);
             }
 
             HideNativeElements(stat);
@@ -136,8 +140,10 @@ public class MyAnalysisWindow : MyWindow {
     private void CaptureNativeNavigationButtons(UIStatisticsWindow stat) {
         nativeHorizontalButtonSlots.Clear();
         nativeVerticalButtonSlots.Clear();
+        nativeLeftSubpageButtonSlots.Clear();
         nativeHorizontalButtonPoses.Clear();
         nativeVerticalButtonPoses.Clear();
+        nativeLeftSubpageButtonPoses.Clear();
 
         AddButtonSlot(nativeHorizontalButtonSlots, stat.horMilUIBtn);
         AddButtonSlot(nativeHorizontalButtonSlots, stat.horDashUIBtn);
@@ -159,8 +165,36 @@ public class MyAnalysisWindow : MyWindow {
         AddButtonSlot(nativeVerticalButtonSlots, stat.verPrpUIBtn);
         AddButtonSlot(nativeVerticalButtonSlots, stat.verPrfUIBtn);
 
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horMilUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horProUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horPowUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horResUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horDysUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horKilUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horPrfUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horAchUIBtn);
+        AddButtonSlot(nativeLeftSubpageButtonSlots, stat.horPrpUIBtn);
+
         CacheButtonPoses(nativeHorizontalButtonSlots, nativeHorizontalButtonPoses);
         CacheButtonPoses(nativeVerticalButtonSlots, nativeVerticalButtonPoses);
+        CacheButtonPoses(nativeLeftSubpageButtonSlots, nativeLeftSubpageButtonPoses);
+
+        nativeTopCategoryTemplateButton = stat.horDashUIBtn;
+        if (nativeTopCategoryTemplateButton == null && nativeHorizontalButtonSlots.Count > 0) {
+            nativeTopCategoryTemplateButton = nativeHorizontalButtonSlots[0];
+        }
+
+        RectTransform templateRect = nativeTopCategoryTemplateButton?.GetComponent<RectTransform>();
+        if (templateRect != null) {
+            nativeTopCategoryTemplatePose = new ButtonPose(templateRect);
+            hasNativeTopCategoryTemplatePose = true;
+            float width = templateRect.rect.width;
+            topCategoryStepX = width > 1f ? width + 6f : 96f;
+        } else {
+            hasNativeTopCategoryTemplatePose = false;
+            topCategoryStepX = 96f;
+        }
+
     }
 
     private static void AddButtonSlot(List<UIButton> slots, UIButton button) {
@@ -228,6 +262,7 @@ public class MyAnalysisWindow : MyWindow {
 
         if (stat.horizontalTab != null) stat.horizontalTab.SetActive(true);
         if (stat.verticalTab != null) stat.verticalTab.SetActive(true);
+
     }
 
     private bool IsUsingProductPanelHost(UIStatisticsWindow stat) {
@@ -345,8 +380,13 @@ public class MyAnalysisWindow : MyWindow {
         leftSubpageButtons.Clear();
         nativeHorizontalButtonSlots.Clear();
         nativeVerticalButtonSlots.Clear();
+        nativeLeftSubpageButtonSlots.Clear();
         nativeHorizontalButtonPoses.Clear();
         nativeVerticalButtonPoses.Clear();
+        nativeLeftSubpageButtonPoses.Clear();
+        nativeTopCategoryTemplateButton = null;
+        hasNativeTopCategoryTemplatePose = false;
+        topCategoryStepX = 96f;
         contentRootContainer = null;
         switchMainPanelButton = null;
         windowTrans = null;
@@ -379,12 +419,7 @@ public class MyAnalysisWindow : MyWindow {
         var categories = MainWindow.AnalysisPageCategories;
         if (categories.Count == 0) return;
 
-        EnsureNavigationButtonCapacity(
-            topCategoryButtons,
-            nativeHorizontalButtonSlots,
-            categories.Count,
-            headerCategoryHost != null ? headerCategoryHost : nativeHorizontalTab,
-            "analysis-top-category-clone");
+        EnsureTopCategoryButtonCapacity(categories.Count);
 
         if (topCategoryButtons.Count == 0) {
             return;
@@ -396,8 +431,9 @@ public class MyAnalysisWindow : MyWindow {
             int index = i;
             UIButton button = topCategoryButtons[i];
             SetButtonVisible(button, true);
+            ApplyTopCategoryTemplateStyle(button);
             BindButtonClick(button, () => OnTopCategoryClick(index));
-            SetButtonLabel(button, categories[i].CategoryName, 16);
+            SetButtonLabelKeepStyle(button, categories[i].CategoryName);
             RestoreTopCategoryButtonPose(button, i);
         }
 
@@ -410,6 +446,34 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         UpdateTopCategoryHighlights();
+    }
+
+    private void EnsureTopCategoryButtonCapacity(int requiredCount) {
+        UIButton template = nativeTopCategoryTemplateButton;
+        if (template == null || headerCategoryHost == null) {
+            return;
+        }
+
+        for (int i = 0; i < requiredCount; i++) {
+            UIButton button;
+            if (i == 0) {
+                button = template;
+                if (button.transform.parent != headerCategoryHost) {
+                    button.transform.SetParent(headerCategoryHost, false);
+                }
+            } else {
+                button = Instantiate(template, headerCategoryHost);
+                button.name = $"analysis-top-category-clone-{i}";
+            }
+
+            topCategoryButtons.Add(button);
+        }
+
+        foreach (UIButton slot in nativeHorizontalButtonSlots) {
+            if (slot != null && !topCategoryButtons.Contains(slot)) {
+                slot.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void OnTopCategoryClick(int index) {
@@ -446,7 +510,7 @@ public class MyAnalysisWindow : MyWindow {
             UIButton button = leftSubpageButtons[i];
             SetButtonVisible(button, true);
             BindButtonClick(button, () => OnSubpageClick(index));
-            SetButtonLabel(button, pages[i].SubpageName, 14);
+            SetButtonLabelKeepStyle(button, pages[i].SubpageName);
             RestoreLeftSubpageButtonPose(button, i);
         }
 
@@ -474,7 +538,24 @@ public class MyAnalysisWindow : MyWindow {
         if (selectedSubpageIndex < 0 || selectedSubpageIndex >= pages.Count) return;
 
         UpdateLeftSubpageHighlights();
-        ShowPageContent(pages[selectedSubpageIndex]);
+        HideAllPageContent();
+    }
+
+    private void HideAllPageContent() {
+        if (contentRootContainer == null) {
+            return;
+        }
+
+        for (int i = 0; i < contentRootContainer.childCount; i++) {
+            Transform child = contentRootContainer.GetChild(i);
+            if (child != null) {
+                child.gameObject.SetActive(false);
+            }
+        }
+
+        if (currentPageContent != null) {
+            currentPageContent.gameObject.SetActive(false);
+        }
     }
 
     private void ShowPageContent(MainWindowPageDefinition pageDef) {
@@ -560,12 +641,58 @@ public class MyAnalysisWindow : MyWindow {
             return;
         }
 
-        if (index < nativeHorizontalButtonPoses.Count) {
-            nativeHorizontalButtonPoses[index].ApplyTo(rect);
+        if (!hasNativeTopCategoryTemplatePose) {
             return;
         }
 
-        ApplyExtrapolatedPose(rect, index, nativeHorizontalButtonPoses, new Vector2(96f, 0f));
+        nativeTopCategoryTemplatePose.ApplyTo(rect);
+        rect.anchoredPosition = new Vector2(
+            nativeTopCategoryTemplatePose.AnchoredPosition.x + topCategoryStepX * index,
+            nativeTopCategoryTemplatePose.AnchoredPosition.y);
+    }
+
+    private void ApplyTopCategoryTemplateStyle(UIButton targetButton) {
+        UIButton templateButton = nativeTopCategoryTemplateButton;
+        if (templateButton == null || targetButton == null || targetButton == templateButton) {
+            return;
+        }
+
+        if (templateButton.button != null && targetButton.button != null) {
+            targetButton.button.transition = templateButton.button.transition;
+            targetButton.button.colors = templateButton.button.colors;
+            targetButton.button.spriteState = templateButton.button.spriteState;
+            targetButton.button.navigation = templateButton.button.navigation;
+        }
+
+        Image targetImage = targetButton.GetComponent<Image>();
+        Image templateImage = templateButton.GetComponent<Image>();
+        if (targetImage != null && templateImage != null) {
+            targetImage.sprite = templateImage.sprite;
+            targetImage.type = templateImage.type;
+            targetImage.material = templateImage.material;
+            targetImage.color = templateImage.color;
+        }
+
+        Transform templateTextNode = templateButton.transform.Find("button-text")
+            ?? templateButton.transform.Find("Text")
+            ?? templateButton.GetComponentInChildren<Text>(true)?.transform;
+        Transform targetTextNode = targetButton.transform.Find("button-text")
+            ?? targetButton.transform.Find("Text")
+            ?? targetButton.GetComponentInChildren<Text>(true)?.transform;
+
+        Text templateText = templateTextNode?.GetComponent<Text>();
+        Text targetText = targetTextNode?.GetComponent<Text>();
+        if (templateText != null && targetText != null) {
+            targetText.font = templateText.font;
+            targetText.fontSize = templateText.fontSize;
+            targetText.fontStyle = templateText.fontStyle;
+            targetText.alignment = templateText.alignment;
+            targetText.resizeTextForBestFit = templateText.resizeTextForBestFit;
+            targetText.horizontalOverflow = templateText.horizontalOverflow;
+            targetText.verticalOverflow = templateText.verticalOverflow;
+            targetText.lineSpacing = templateText.lineSpacing;
+            targetText.color = templateText.color;
+        }
     }
 
     private void RestoreLeftSubpageButtonPose(UIButton button, int index) {
@@ -580,12 +707,6 @@ public class MyAnalysisWindow : MyWindow {
             } else {
                 ApplyExtrapolatedPose(rect, index, nativeVerticalButtonPoses, new Vector2(0f, -36f));
             }
-        }
-
-        Text text = button.GetComponentInChildren<Text>(true);
-        if (text != null) {
-            text.resizeTextForBestFit = false;
-            text.fontSize = Mathf.Max(13, text.fontSize);
         }
     }
 
@@ -630,8 +751,42 @@ public class MyAnalysisWindow : MyWindow {
                 child.gameObject.SetActive(false);
             }
 
+            UIButton uiButton = child.GetComponent<UIButton>();
+            if (uiButton != null && ShouldHideNestedNavigationButton(uiButton)) {
+                child.gameObject.SetActive(false);
+            }
+
             HideNestedNavigationInContentRecursive(child);
         }
+    }
+
+    private static bool ShouldHideNestedNavigationButton(UIButton button) {
+        Transform textNode = button.transform.Find("button-text")
+            ?? button.transform.Find("Text")
+            ?? button.GetComponentInChildren<Text>(true)?.transform;
+        if (textNode == null) {
+            return false;
+        }
+
+        Text text = textNode.GetComponent<Text>();
+        if (text == null || string.IsNullOrWhiteSpace(text.text)) {
+            return false;
+        }
+
+        string normalized = text.text.Trim();
+        foreach (MainWindowPageDefinition page in MainWindowPageRegistry.AllPages) {
+            if (normalized == page.SubpageName.Translate()) {
+                return true;
+            }
+        }
+
+        foreach (string category in MainWindowPageRegistry.CategoryOrder) {
+            if (normalized == category.Translate()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void BindButtonClick(UIButton button, Action onClick) {
@@ -669,6 +824,31 @@ public class MyAnalysisWindow : MyWindow {
         if (text != null) {
             text.text = label.Translate();
             text.fontSize = fontSize;
+        }
+    }
+
+    private static void SetButtonLabelKeepStyle(UIButton button, string label) {
+        if (button == null) {
+            return;
+        }
+
+        Transform buttonText = button.transform.Find("button-text")
+            ?? button.transform.Find("Text")
+            ?? button.GetComponentInChildren<Text>(true)?.transform;
+        if (buttonText == null) {
+            return;
+        }
+
+        string translated = label.Translate();
+        Localizer localizer = buttonText.GetComponent<Localizer>();
+        if (localizer != null) {
+            localizer.stringKey = label;
+            localizer.translation = translated;
+        }
+
+        Text text = buttonText.GetComponent<Text>();
+        if (text != null) {
+            text.text = translated;
         }
     }
 
