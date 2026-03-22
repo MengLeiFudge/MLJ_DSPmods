@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using FE.UI.View;
@@ -64,7 +64,9 @@ public class MyAnalysisWindow : MyWindow {
     private UIButton nativeTopCategoryTemplateButton;
     private ButtonPose nativeTopCategoryTemplatePose;
     private bool hasNativeTopCategoryTemplatePose;
-    private float topCategoryStepX = 96f;
+    private float topCategoryStepX = 80f;
+    private const float TopCategoryBaseX = -358f;
+    private const float TopCategoryBaseY = 0f;
 
     public static MyAnalysisWindow CreateInstance(string name, string title = "") {
         UIStatisticsWindow src = UIRoot.instance?.uiGame?.statWindow;
@@ -72,7 +74,7 @@ public class MyAnalysisWindow : MyWindow {
             return MyWindowManager.CreateWindow<MyAnalysisWindow>(name, title);
         }
 
-        GameObject go = Object.Instantiate(src.gameObject, src.transform.parent);
+        GameObject go = Instantiate(src.gameObject, src.transform.parent);
         go.name = name;
         go.SetActive(false);
 
@@ -82,12 +84,14 @@ public class MyAnalysisWindow : MyWindow {
         win._Create();
 
         try {
-            var windowsField = typeof(MyWindowManager).GetField("Windows", BindingFlags.Static | BindingFlags.NonPublic);
+            var windowsField =
+                typeof(MyWindowManager).GetField("Windows", BindingFlags.Static | BindingFlags.NonPublic);
             if (windowsField != null) {
                 var windowsList = (List<ManualBehaviour>)windowsField.GetValue(null);
                 windowsList.Add(win);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Debug.LogError($"Failed to register MyAnalysisWindow to MyWindowManager: {e}");
         }
 
@@ -189,12 +193,11 @@ public class MyAnalysisWindow : MyWindow {
             nativeTopCategoryTemplatePose = new ButtonPose(templateRect);
             hasNativeTopCategoryTemplatePose = true;
             float width = templateRect.rect.width;
-            topCategoryStepX = width > 1f ? width + 6f : 96f;
+            topCategoryStepX = width > 1f ? width : 80f;
         } else {
             hasNativeTopCategoryTemplatePose = false;
-            topCategoryStepX = 96f;
+            topCategoryStepX = 80f;
         }
-
     }
 
     private static void AddButtonSlot(List<UIButton> slots, UIButton button) {
@@ -223,7 +226,7 @@ public class MyAnalysisWindow : MyWindow {
                 if (t != null) t.gameObject.SetActive(false);
             }
 
-            headerCategoryHost = nativeHorizontalTab;
+            headerCategoryHost = transform as RectTransform;
             contentPanelHost = ResolveContentPanelHost(stat, panelBg as RectTransform);
         }
 
@@ -258,9 +261,11 @@ public class MyAnalysisWindow : MyWindow {
             stat.favoriteFilter6?.gameObject, stat.killFavoriteFilter1?.gameObject,
             stat.killFavoriteFilter2?.gameObject, stat.killFavoriteFilter3?.gameObject
         };
-        foreach (var c in controls) if (c) c.SetActive(false);
+        foreach (var c in controls)
+            if (c)
+                c.SetActive(false);
 
-        if (stat.horizontalTab != null) stat.horizontalTab.SetActive(true);
+        if (stat.horizontalTab != null) stat.horizontalTab.SetActive(false);
         if (stat.verticalTab != null) stat.verticalTab.SetActive(true);
 
     }
@@ -386,7 +391,7 @@ public class MyAnalysisWindow : MyWindow {
         nativeLeftSubpageButtonPoses.Clear();
         nativeTopCategoryTemplateButton = null;
         hasNativeTopCategoryTemplatePose = false;
-        topCategoryStepX = 96f;
+        topCategoryStepX = 80f;
         contentRootContainer = null;
         switchMainPanelButton = null;
         windowTrans = null;
@@ -418,6 +423,12 @@ public class MyAnalysisWindow : MyWindow {
         topCategoryButtons.Clear();
         var categories = MainWindow.AnalysisPageCategories;
         if (categories.Count == 0) return;
+
+        foreach (UIButton slot in nativeHorizontalButtonSlots) {
+            if (slot != null) {
+                slot.gameObject.SetActive(false);
+            }
+        }
 
         EnsureTopCategoryButtonCapacity(categories.Count);
 
@@ -454,17 +465,17 @@ public class MyAnalysisWindow : MyWindow {
             return;
         }
 
-        for (int i = 0; i < requiredCount; i++) {
-            UIButton button;
-            if (i == 0) {
-                button = template;
-                if (button.transform.parent != headerCategoryHost) {
-                    button.transform.SetParent(headerCategoryHost, false);
-                }
-            } else {
-                button = Instantiate(template, headerCategoryHost);
-                button.name = $"analysis-top-category-clone-{i}";
+        Transform[] allTransforms = transform.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < allTransforms.Length; i++) {
+            Transform child = allTransforms[i];
+            if (child != null && child.name.StartsWith("analysis-top-category-clone-", StringComparison.Ordinal)) {
+                Destroy(child.gameObject);
             }
+        }
+
+        for (int i = 0; i < requiredCount; i++) {
+            UIButton button = Instantiate(template, headerCategoryHost);
+            button.name = $"analysis-top-category-clone-{i}";
 
             topCategoryButtons.Add(button);
         }
@@ -491,6 +502,12 @@ public class MyAnalysisWindow : MyWindow {
 
     private void RefreshLeftSubpages() {
         leftSubpageButtons.Clear();
+
+        foreach (UIButton slot in nativeVerticalButtonSlots) {
+            if (slot != null) {
+                slot.gameObject.SetActive(false);
+            }
+        }
 
         var categories = MainWindow.AnalysisPageCategories;
         if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) return;
@@ -530,10 +547,10 @@ public class MyAnalysisWindow : MyWindow {
 
     private void OnSubpageClick(int index) {
         selectedSubpageIndex = index;
-        
+
         var categories = MainWindow.AnalysisPageCategories;
         if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) return;
-        
+
         var pages = categories[selectedTopCategoryIndex].Pages;
         if (selectedSubpageIndex < 0 || selectedSubpageIndex >= pages.Count) return;
 
@@ -569,15 +586,16 @@ public class MyAnalysisWindow : MyWindow {
         string contentName = $"analysis-content-{pageDef.CategoryName}-{pageDef.SubpageName}";
         Transform existing = contentRootContainer.Find(contentName);
         if (existing == null) {
-            currentPageContent = CreateContainerRect(contentName, contentRootContainer, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.one);
-            
+            currentPageContent = CreateContainerRect(contentName, contentRootContainer, Vector2.zero, Vector2.zero,
+                Vector2.zero, Vector2.one);
+
             if (pageDef.CreateUIInAnalysis != null) {
                 pageDef.CreateUIInAnalysis(this, currentPageContent);
             } else {
                 GameObject proxyGo = new GameObject($"{contentName}-proxy", typeof(MyConfigWindow));
                 proxyGo.transform.SetParent(currentPageContent, false);
                 MyConfigWindow configWindowProxy = proxyGo.GetComponent<MyConfigWindow>();
-                
+
                 pageDef.CreateUI(configWindowProxy, currentPageContent);
                 configWindowProxy.SetCurrentTab(0);
             }
@@ -606,7 +624,8 @@ public class MyAnalysisWindow : MyWindow {
         ConfigureTopCategoryButtons();
     }
 
-    private void EnsureNavigationButtonCapacity(List<UIButton> activeButtons, List<UIButton> buttonSlots, int requiredCount,
+    private void EnsureNavigationButtonCapacity(List<UIButton> activeButtons, List<UIButton> buttonSlots,
+        int requiredCount,
         RectTransform slotParent, string clonePrefix) {
         activeButtons.Clear();
         foreach (var slot in buttonSlots) {
@@ -645,10 +664,13 @@ public class MyAnalysisWindow : MyWindow {
             return;
         }
 
-        nativeTopCategoryTemplatePose.ApplyTo(rect);
-        rect.anchoredPosition = new Vector2(
-            nativeTopCategoryTemplatePose.AnchoredPosition.x + topCategoryStepX * index,
-            nativeTopCategoryTemplatePose.AnchoredPosition.y);
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.sizeDelta = nativeTopCategoryTemplatePose.SizeDelta;
+        rect.localScale = nativeTopCategoryTemplatePose.LocalScale;
+        rect.localRotation = nativeTopCategoryTemplatePose.LocalRotation;
+        rect.anchoredPosition = new Vector2(TopCategoryBaseX + topCategoryStepX * (index + 2), TopCategoryBaseY);
     }
 
     private void ApplyTopCategoryTemplateStyle(UIButton targetButton) {
@@ -674,11 +696,11 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         Transform templateTextNode = templateButton.transform.Find("button-text")
-            ?? templateButton.transform.Find("Text")
-            ?? templateButton.GetComponentInChildren<Text>(true)?.transform;
+                                     ?? templateButton.transform.Find("Text")
+                                     ?? templateButton.GetComponentInChildren<Text>(true)?.transform;
         Transform targetTextNode = targetButton.transform.Find("button-text")
-            ?? targetButton.transform.Find("Text")
-            ?? targetButton.GetComponentInChildren<Text>(true)?.transform;
+                                   ?? targetButton.transform.Find("Text")
+                                   ?? targetButton.GetComponentInChildren<Text>(true)?.transform;
 
         Text templateText = templateTextNode?.GetComponent<Text>();
         Text targetText = targetTextNode?.GetComponent<Text>();
@@ -710,7 +732,8 @@ public class MyAnalysisWindow : MyWindow {
         }
     }
 
-    private static void ApplyExtrapolatedPose(RectTransform rect, int index, List<ButtonPose> poses, Vector2 fallbackStep) {
+    private static void ApplyExtrapolatedPose(RectTransform rect, int index, List<ButtonPose> poses,
+        Vector2 fallbackStep) {
         if (rect == null || poses.Count == 0) {
             return;
         }
@@ -762,8 +785,8 @@ public class MyAnalysisWindow : MyWindow {
 
     private static bool ShouldHideNestedNavigationButton(UIButton button) {
         Transform textNode = button.transform.Find("button-text")
-            ?? button.transform.Find("Text")
-            ?? button.GetComponentInChildren<Text>(true)?.transform;
+                             ?? button.transform.Find("Text")
+                             ?? button.GetComponentInChildren<Text>(true)?.transform;
         if (textNode == null) {
             return false;
         }
@@ -808,8 +831,8 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         Transform buttonText = button.transform.Find("button-text")
-            ?? button.transform.Find("Text")
-            ?? button.GetComponentInChildren<Text>(true)?.transform;
+                               ?? button.transform.Find("Text")
+                               ?? button.GetComponentInChildren<Text>(true)?.transform;
         if (buttonText == null) {
             return;
         }
@@ -833,8 +856,8 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         Transform buttonText = button.transform.Find("button-text")
-            ?? button.transform.Find("Text")
-            ?? button.GetComponentInChildren<Text>(true)?.transform;
+                               ?? button.transform.Find("Text")
+                               ?? button.GetComponentInChildren<Text>(true)?.transform;
         if (buttonText == null) {
             return;
         }
@@ -865,7 +888,7 @@ public class MyAnalysisWindow : MyWindow {
                 continue;
             }
 
-            button.highlighted = i == selectedTopCategoryIndex;
+            button.highlighted = false;
         }
     }
 
