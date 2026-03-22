@@ -80,15 +80,25 @@ public static class VipFeatures {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "VIP特权");
+        CreateUIInternal(wnd, tab);
+    }
+
+    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+        window = trans;
+        tab = trans;
+        CreateUIInternal(wnd, trans);
+    }
+
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         float x = 0f;
         float y = 18f;
-        txtVipInfo = wnd.AddText2(x, y, tab, "动态刷新");
+        txtVipInfo = wnd.AddText2(x, y, parent, "动态刷新");
         txtVipInfo.supportRichText = true;
         y += 36f;
-        wnd.AddText2(x, y, tab, "VIP加成如下：");
+        wnd.AddText2(x, y, parent, "VIP加成如下：");
         for (int i = 0; i < 3; i++) {
             y += 36f;
-            txtVipBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
+            txtVipBonus[i] = wnd.AddText2(x, y, parent, "动态刷新");
             txtVipBonus[i].supportRichText = true;
         }
     }

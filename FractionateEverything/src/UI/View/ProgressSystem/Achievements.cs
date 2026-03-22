@@ -367,8 +367,16 @@ public static class Achievements {
         btnNextPage = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, tab, "下一页", onClick: NextPage);
     }
 
+    private static bool IsPageVisible() {
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
+            return tab != null && tab.gameObject.activeInHierarchy;
+        }
+        return tab != null && tab.gameObject.activeSelf;
+    }
+
     public static void UpdateUI() {
-        if (tab == null || !tab.gameObject.activeSelf) {
+        if (!IsPageVisible()) {
             return;
         }
 

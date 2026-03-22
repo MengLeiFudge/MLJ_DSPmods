@@ -32,10 +32,20 @@ public static class ImportantItem {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "重要物品");
+        CreateUIInternal(wnd, tab);
+    }
+
+    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+        window = trans;
+        tab = trans;
+        CreateUIInternal(wnd, trans);
+    }
+
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         float x = 0f;
         float y = 18f;
-        Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "提取物品", "提取物品说明");
+        Text txt = wnd.AddText2(x, y, parent, "以下物品在分馏数据中心的存储量为：");
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, parent, "提取物品", "提取物品说明");
         y += 36f + 7f;
         int index = 0;
         for (int i = 0; i < itemIdOriArr.Length; i++) {
@@ -48,8 +58,8 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButton(position.Item1, y, tab, LDB.items.Select(itemId)).WithTakeItemClickEvent();
-                itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, tab, "动态刷新");
+                wnd.AddImageButton(position.Item1, y, parent, LDB.items.Select(itemId)).WithTakeItemClickEvent();
+                itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, parent, "动态刷新");
                 index++;
             }
             y += 36f + 7f;

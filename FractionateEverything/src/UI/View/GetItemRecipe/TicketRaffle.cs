@@ -32,6 +32,7 @@ public static class TicketRaffle {
 
     public static long totalDraws;
     private static readonly List<RaffleTabUi> Uis = [];
+    private static RectTransform pageRoot;
 
     private const float ResultAreaY = 120f;
 
@@ -79,6 +80,7 @@ public static class TicketRaffle {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+        pageRoot = trans;
         SyncTotalDrawsFromSharedState();
         Uis.Clear();
         Uis.Add(CreateTab(wnd, trans, "配方抽奖", GachaPool.PoolIdPermanentRecipe));
@@ -268,7 +270,16 @@ public static class TicketRaffle {
         if (ui.BtnDraw10Premium?.button != null) ui.BtnDraw10Premium.button.interactable = on;
     }
 
+    private static bool IsPageVisible() {
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
+            return pageRoot != null && pageRoot.gameObject.activeInHierarchy;
+        }
+        return true;
+    }
+
     public static void UpdateUI() {
+        if (!IsPageVisible()) return;
         GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
         for (int i = 0; i < Uis.Count; i++) {
             var ui = Uis[i];

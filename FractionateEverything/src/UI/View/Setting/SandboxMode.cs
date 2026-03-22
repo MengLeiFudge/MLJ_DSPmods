@@ -38,19 +38,29 @@ public static class SandboxMode {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "沙盒模式");
+        CreateUIInternal(wnd, tab);
+    }
+
+    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+        window = trans;
+        tab = trans;
+        CreateUIInternal(wnd, trans);
+    }
+
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         float x = 0f;
         float y = 18f;
-        wnd.AddButton(0, 3, y, tab, "锁定所有分馏配方", 16, "button-lock-all-recipes",
+        wnd.AddButton(0, 3, y, parent, "锁定所有分馏配方", 16, "button-lock-all-recipes",
             RecipeManager.LockAllFracRecipes);
-        wnd.AddButton(1, 3, y, tab, "获得所有分馏配方", 16, "button-reward-all-recipes",
+        wnd.AddButton(1, 3, y, parent, "获得所有分馏配方", 16, "button-reward-all-recipes",
             RecipeManager.RewardAllFracRecipes);
-        wnd.AddButton(2, 3, y, tab, "满级所有分馏配方", 16, "button-max-all-recipes",
+        wnd.AddButton(2, 3, y, parent, "满级所有分馏配方", 16, "button-max-all-recipes",
             RecipeManager.MaxAllFracRecipes);
         y += 36f;
-        var txt = wnd.AddText2(x, y, tab, "经验获取倍率", 15, "text-exp-multi-ratio");
-        wnd.AddSlider(x + 5 + txt.preferredWidth, y, tab,
+        var txt = wnd.AddText2(x, y, parent, "经验获取倍率", 15, "text-exp-multi-ratio");
+        wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
             ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, tab,
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
             "经验获取倍率", "经验获取倍率说明");
     }
 

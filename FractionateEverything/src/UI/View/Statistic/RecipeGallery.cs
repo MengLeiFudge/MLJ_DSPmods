@@ -69,11 +69,19 @@ public static class RecipeGallery {
         recipeUnlockInfoText[MatrixCount + 1, 0].text = "总计".Translate();
     }
 
+    private static bool IsPageVisible() {
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
+            return tab != null && tab.gameObject.activeInHierarchy;
+        }
+        return tab != null && tab.gameObject.activeSelf;
+    }
+
     public static void UpdateUI() {
-        GachaGalleryBonusManager.Refresh();
-        if (!tab.gameObject.activeSelf) {
+        if (!IsPageVisible()) {
             return;
         }
+        GachaGalleryBonusManager.Refresh();
         if (_bonusInfoText != null) {
             float maxSuccess = 0f;
             float maxDestroy = 0f;
