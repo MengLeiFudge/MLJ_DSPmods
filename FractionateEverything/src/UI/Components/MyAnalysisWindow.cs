@@ -90,6 +90,7 @@ public class MyAnalysisWindow : MyWindow {
     /// 上方主导航按钮的宽度
     /// </summary>
     private const float TopCategoryButtonWidth = 150f;
+    private float nativeHorizontalTabOriginalHeight;
 
     public static MyAnalysisWindow CreateInstance(string name, string title = "") {
         UIStatisticsWindow src = UIRoot.instance?.uiGame?.statWindow;
@@ -147,6 +148,7 @@ public class MyAnalysisWindow : MyWindow {
             }
             if (stat.horizontalTab != null) {
                 nativeHorizontalTab = stat.horizontalTab.GetComponent<RectTransform>();
+                nativeHorizontalTabOriginalHeight = nativeHorizontalTab != null ? nativeHorizontalTab.rect.height : 0f;
             }
 
             HideNativeElements(stat);
@@ -574,7 +576,63 @@ public class MyAnalysisWindow : MyWindow {
             OnSubpageClick(selectedSubpageIndex);
         }
 
+        AdjustHorizontalTabHeightByVisibleButtons(visibleCount);
+
         UpdateLeftSubpageHighlights();
+    }
+
+    private void AdjustHorizontalTabHeightByVisibleButtons(int visibleCount) {
+        if (nativeHorizontalTab == null) {
+            return;
+        }
+
+        if (visibleCount <= 0 || leftSubpageButtons.Count == 0) {
+            if (nativeHorizontalTabOriginalHeight > 0f) {
+                nativeHorizontalTab.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, nativeHorizontalTabOriginalHeight);
+            }
+            return;
+        }
+
+        bool hasBound = false;
+        float top = 0f;
+        float bottom = 0f;
+
+        for (int i = 0; i < visibleCount && i < leftSubpageButtons.Count; i++) {
+            UIButton button = leftSubpageButtons[i];
+            if (button == null || !button.gameObject.activeSelf) {
+                continue;
+            }
+
+            RectTransform rect = button.GetComponent<RectTransform>();
+            if (rect == null) {
+                continue;
+            }
+
+            float h = rect.rect.height;
+            float t = rect.anchoredPosition.y + (1f - rect.pivot.y) * h;
+            float b = rect.anchoredPosition.y - rect.pivot.y * h;
+
+            if (!hasBound) {
+                top = t;
+                bottom = b;
+                hasBound = true;
+            } else {
+                if (t > top) {
+                    top = t;
+                }
+
+                if (b < bottom) {
+                    bottom = b;
+                }
+            }
+        }
+
+        if (!hasBound) {
+            return;
+        }
+
+        float targetHeight = Mathf.Max(1f, top - bottom);
+        nativeHorizontalTab.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetHeight);
     }
 
     private void OnSubpageClick(int index) {
