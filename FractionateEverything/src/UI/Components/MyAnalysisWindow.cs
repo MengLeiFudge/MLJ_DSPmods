@@ -9,6 +9,17 @@ using UnityEngine.UI;
 namespace FE.UI.Components;
 
 public class MyAnalysisWindow : MyWindow {
+    // Analysis 面板内容区标准：黑色底板固定为 1102x787。
+    // 所有页面统一保留四边 10px gap，设计基准区为 1082x767，左上角基点为 (10,10)。
+    private const float AnalysisBlackAreaWidth = 1102f;
+    private const float AnalysisBlackAreaHeight = 787f;
+    private const float AnalysisContentGap = 10f;
+    private const float AnalysisDesignWidth = AnalysisBlackAreaWidth - AnalysisContentGap * 2f;
+    private const float AnalysisDesignHeight = AnalysisBlackAreaHeight - AnalysisContentGap * 2f;
+
+    private const float LegacyProxyContentWidth = AnalysisDesignWidth;
+    private const float LegacyProxyContentHeight = AnalysisDesignHeight;
+
     private readonly struct ButtonPose {
         public readonly Vector2 AnchorMin;
         public readonly Vector2 AnchorMax;
@@ -480,6 +491,13 @@ public class MyAnalysisWindow : MyWindow {
             new Vector2(0f, 0f),
             new Vector2(1f, 1f));
 
+        // 统一中间黑色区标准尺寸，后续页面都基于这个区域计算布局。
+        contentRootContainer.anchorMin = new Vector2(0f, 1f);
+        contentRootContainer.anchorMax = new Vector2(0f, 1f);
+        contentRootContainer.pivot = new Vector2(0f, 1f);
+        contentRootContainer.sizeDelta = new Vector2(AnalysisBlackAreaWidth, AnalysisBlackAreaHeight);
+        contentRootContainer.anchoredPosition = Vector2.zero;
+
         contentRootContainer.SetAsLastSibling();
     }
 
@@ -625,6 +643,9 @@ public class MyAnalysisWindow : MyWindow {
                 selectedSubpageIndex = 0;
             }
             OnSubpageClick(selectedSubpageIndex);
+        } else {
+            currentPageDef = null;
+            HideAllPageContent();
         }
 
         AdjustHorizontalTabHeightByVisibleButtons(visibleCount);
@@ -696,7 +717,7 @@ public class MyAnalysisWindow : MyWindow {
         if (selectedSubpageIndex < 0 || selectedSubpageIndex >= pages.Count) return;
 
         UpdateLeftSubpageHighlights();
-        HideAllPageContent();
+        ShowPageContent(pages[selectedSubpageIndex]);
     }
 
     private void HideAllPageContent() {
@@ -731,13 +752,16 @@ public class MyAnalysisWindow : MyWindow {
                 Vector2.zero, Vector2.one);
 
             if (pageDef.CreateUIInAnalysis != null) {
-                pageDef.CreateUIInAnalysis(this, currentPageContent);
+                RectTransform designRoot = GetOrCreateDesignRoot(currentPageContent);
+                pageDef.CreateUIInAnalysis(this, designRoot);
             } else {
                 GameObject proxyGo = new GameObject($"{contentName}-proxy", typeof(MyConfigWindow));
                 proxyGo.transform.SetParent(currentPageContent, false);
                 MyConfigWindow configWindowProxy = proxyGo.GetComponent<MyConfigWindow>();
 
-                pageDef.CreateUI(configWindowProxy, currentPageContent);
+                RectTransform designRoot = GetOrCreateDesignRoot(currentPageContent);
+                RectTransform legacyProxyHost = CreateLegacyProxyHost(designRoot);
+                pageDef.CreateUI(configWindowProxy, legacyProxyHost);
                 configWindowProxy.SetCurrentTab(0);
             }
 
@@ -750,6 +774,44 @@ public class MyAnalysisWindow : MyWindow {
             HideNestedNavigationInContent(currentPageContent);
             currentPageContent.gameObject.SetActive(true);
         }
+    }
+
+    private static RectTransform CreateLegacyProxyHost(RectTransform parent) {
+        float legacyLeftNavSpan = Margin + TabWidth + Spacing;
+        float legacyTotalWidth = LegacyProxyContentWidth + legacyLeftNavSpan;
+        float legacyTotalHeight = LegacyProxyContentHeight + TitleHeight;
+
+        RectTransform host = CreateContainerRect(
+            "analysis-legacy-proxy-host",
+            parent,
+            Vector2.zero,
+            Vector2.zero,
+            new Vector2(0f, 1f),
+            new Vector2(0f, 1f));
+
+        host.pivot = new Vector2(0f, 1f);
+        host.sizeDelta = new Vector2(legacyTotalWidth, legacyTotalHeight);
+        host.anchoredPosition = new Vector2(-legacyLeftNavSpan, TitleHeight);
+        return host;
+    }
+
+    private static RectTransform GetOrCreateDesignRoot(RectTransform pageRoot) {
+        if (pageRoot == null) {
+            return null;
+        }
+
+        Transform existing = pageRoot.Find("analysis-design-root");
+        if (existing is RectTransform existingRect) {
+            return existingRect;
+        }
+
+        return CreateContainerRect(
+            "analysis-design-root",
+            pageRoot,
+            new Vector2(AnalysisContentGap, AnalysisContentGap),
+            new Vector2(-AnalysisContentGap, -AnalysisContentGap),
+            Vector2.zero,
+            Vector2.one);
     }
 
     private void ApplyStatWindowSize() {
