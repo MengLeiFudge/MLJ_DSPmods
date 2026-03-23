@@ -17,9 +17,8 @@ namespace FE.UI.View;
 
 public static class MainWindow {
     private const string MainPanelSelectionBlockTag = "MainPanelSelection";
-    private const float ToggleKeySingleClickDelay = 0.3f;
     private static PressKeyBind _toggleKey;
-    private static float _pendingToggleKeyExecuteAt = -1f;
+    private static PressKeyBind _switchStyleKey;
     private static bool _legacyConfigWinInitialized;
     private static MyConfigWindow _legacyConfigWin;
     private static bool _analysisMainWindowInitialized;
@@ -34,6 +33,8 @@ public static class MainWindow {
 
     public static void AddTranslations() {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
+        Register("KEYSwitchFracCentreStyle", "[FE] Switch Fractionation Data Centre Style",
+            "[FE] 切换分馏数据中心界面风格");
         Register("分馏数据中心", "Fractionation Data Centre");
         Register("切换到分析主面板", "Switch to analysis main panel");
         Register("切换到旧版主面板", "Switch to legacy main panel");
@@ -101,6 +102,18 @@ public static class MainWindow {
             name = "OpenFracCentre",
             canOverride = true
         });
+
+        _switchStyleKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
+            key = new((int)KeyCode.F, (byte)(CombineKey.CTRL_COMB | CombineKey.SHIFT_COMB), ECombineKeyAction.OnceClick,
+                false),
+            conflictGroup = KeyBindConflict.MOVEMENT
+                            | KeyBindConflict.FLYING
+                            | KeyBindConflict.SAILING
+                            | KeyBindConflict.BUILD_MODE_1
+                            | KeyBindConflict.KEYBOARD_KEYBIND,
+            name = "SwitchFracCentreStyle",
+            canOverride = true
+        });
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -129,36 +142,28 @@ public static class MainWindow {
             || !GameMain.isRunning
             || GameMain.isFullscreenPaused
             || GameMain.mainPlayer == null) {
-            ClearPendingToggleKey();
             CloseAllMainPanels();
             return;
         }
         if (VFInput.inputing) {
-            ClearPendingToggleKey();
             return;
         }
 
         if (!GameMain.history.TechUnlocked(TFE分馏数据中心)) {
-            ClearPendingToggleKey();
-            return;
-        }
-
-        float currentTime = Time.realtimeSinceStartup;
-        if (_pendingToggleKeyExecuteAt > 0f && currentTime >= _pendingToggleKeyExecuteAt) {
-            ClearPendingToggleKey();
-            ToggleSelectedMainPanel();
             return;
         }
 
         if (_toggleKey.keyValue) {
-            if (_pendingToggleKeyExecuteAt > 0f) {
-                ClearPendingToggleKey();
-                SwitchMainPanelFrom(GetCurrentMainPanelType());
-                return;
+            if (OpenedMainPanelType == FEMainPanelType.None) {
+                OpenSelectedMainPanel();
+            } else {
+                CloseAllMainPanels();
             }
-
-            _pendingToggleKeyExecuteAt = currentTime + ToggleKeySingleClickDelay;
             return;
+        }
+
+        if (_switchStyleKey.keyValue && OpenedMainPanelType != FEMainPanelType.None) {
+            SwitchMainPanelFrom(OpenedMainPanelType);
         }
     }
 
@@ -302,10 +307,6 @@ public static class MainWindow {
         }
 
         OpenedMainPanelType = FEMainPanelType.None;
-    }
-
-    private static void ClearPendingToggleKey() {
-        _pendingToggleKeyExecuteAt = -1f;
     }
 
     private static void ImportMainPanelSelection(BinaryReader r) {
