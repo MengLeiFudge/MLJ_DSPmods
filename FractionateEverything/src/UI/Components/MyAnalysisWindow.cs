@@ -445,7 +445,10 @@ public class MyAnalysisWindow : MyWindow {
     public override bool _OnInit() {
         if (!base._OnInit()) return false;
         if (windowTrans != null) {
-            windowTrans.anchoredPosition = new(0f, 0f);
+            windowTrans.anchorMin = new Vector2(0.5f, 0.5f);
+            windowTrans.anchorMax = new Vector2(0.5f, 0.5f);
+            windowTrans.pivot = new Vector2(0.5f, 0.5f);
+            windowTrans.anchoredPosition = new Vector2(0f, 0f);
         }
         return true;
     }
