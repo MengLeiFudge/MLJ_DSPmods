@@ -302,9 +302,28 @@ public class MyAnalysisWindow : MyWindow {
             if (c)
                 c.SetActive(false);
 
+        if (panelBg != null) {
+            Transform productBg = panelBg.Find("product-bg");
+            if (productBg != null) {
+                DisableAllChildrenGameObjects(productBg);
+            }
+        }
+
         if (stat.horizontalTab != null) stat.horizontalTab.SetActive(true);
         if (stat.verticalTab != null) stat.verticalTab.SetActive(false);
 
+    }
+
+    private static void DisableAllChildrenGameObjects(Transform parent) {
+        if (parent == null) {
+            return;
+        }
+
+        for (int i = 0; i < parent.childCount; i++) {
+            Transform child = parent.GetChild(i);
+            DisableAllChildrenGameObjects(child);
+            child.gameObject.SetActive(false);
+        }
     }
 
     private bool IsUsingProductPanelHost(UIStatisticsWindow stat) {
