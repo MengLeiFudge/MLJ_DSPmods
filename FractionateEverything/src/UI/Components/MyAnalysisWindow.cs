@@ -82,6 +82,7 @@ public class MyAnalysisWindow : MyWindow {
     private readonly List<ButtonPose> nativeVerticalButtonPoses = [];
     private readonly List<ButtonPose> nativeLeftSubpageButtonPoses = [];
     private UIButton nativeTopCategoryTemplateButton;
+    private UIButton nativeTopCategoryHighlightStyleTemplateButton;
     private ButtonPose nativeTopCategoryTemplatePose;
     private bool hasNativeTopCategoryTemplatePose;
     private float topCategoryStepX = TopCategoryButtonWidth;
@@ -215,6 +216,14 @@ public class MyAnalysisWindow : MyWindow {
         nativeTopCategoryTemplateButton = stat.horDashUIBtn;
         if (nativeTopCategoryTemplateButton == null && nativeHorizontalButtonSlots.Count > 0) {
             nativeTopCategoryTemplateButton = nativeHorizontalButtonSlots[0];
+        }
+
+        // 顶部按钮“颜色状态机”模板：沿用左侧子页按钮可正常高亮的样式配置。
+        // 这里只用于 normal / hover / pressed / highlighted 的颜色与缩放逻辑，
+        // 不用于顶部按钮的位置与尺寸。
+        nativeTopCategoryHighlightStyleTemplateButton = stat.horMilUIBtn;
+        if (nativeTopCategoryHighlightStyleTemplateButton == null && nativeLeftSubpageButtonSlots.Count > 0) {
+            nativeTopCategoryHighlightStyleTemplateButton = nativeLeftSubpageButtonSlots[0];
         }
 
         RectTransform templateRect = nativeTopCategoryTemplateButton?.GetComponent<RectTransform>();
@@ -425,6 +434,7 @@ public class MyAnalysisWindow : MyWindow {
         nativeVerticalButtonPoses.Clear();
         nativeLeftSubpageButtonPoses.Clear();
         nativeTopCategoryTemplateButton = null;
+        nativeTopCategoryHighlightStyleTemplateButton = null;
         hasNativeTopCategoryTemplatePose = false;
         topCategoryStepX = TopCategoryButtonWidth;
         contentRootContainer = null;
@@ -477,7 +487,9 @@ public class MyAnalysisWindow : MyWindow {
             int index = i;
             UIButton button = topCategoryButtons[i];
             SetButtonVisible(button, true);
+            RestoreImageTransitionTargets(button);
             ApplyTopCategoryTemplateStyle(button);
+            NormalizeTopCategoryTextTransitions(button);
             if (button.button != null) {
                 button.button.enabled = true;
                 button.button.interactable = true;
@@ -809,6 +821,8 @@ public class MyAnalysisWindow : MyWindow {
             targetButton.button.navigation = templateButton.button.navigation;
         }
 
+        ApplyTopCategoryBackgroundTransitionStyle(targetButton);
+
         Image targetImage = targetButton.GetComponent<Image>();
         Image templateImage = templateButton.GetComponent<Image>();
         if (targetImage != null && templateImage != null) {
@@ -818,25 +832,119 @@ public class MyAnalysisWindow : MyWindow {
             targetImage.color = templateImage.color;
         }
 
-        Transform templateTextNode = templateButton.transform.Find("button-text")
-                                     ?? templateButton.transform.Find("Text")
-                                     ?? templateButton.GetComponentInChildren<Text>(true)?.transform;
-        Transform targetTextNode = targetButton.transform.Find("button-text")
-                                   ?? targetButton.transform.Find("Text")
-                                   ?? targetButton.GetComponentInChildren<Text>(true)?.transform;
+    }
 
-        Text templateText = templateTextNode?.GetComponent<Text>();
-        Text targetText = targetTextNode?.GetComponent<Text>();
-        if (templateText != null && targetText != null) {
-            targetText.font = templateText.font;
-            targetText.fontSize = templateText.fontSize;
-            targetText.fontStyle = templateText.fontStyle;
-            targetText.alignment = templateText.alignment;
-            targetText.resizeTextForBestFit = templateText.resizeTextForBestFit;
-            targetText.horizontalOverflow = templateText.horizontalOverflow;
-            targetText.verticalOverflow = templateText.verticalOverflow;
-            targetText.lineSpacing = templateText.lineSpacing;
-            targetText.color = templateText.color;
+    private static UIButton.Transition FindFirstImageTransition(UIButton button) {
+        if (button?.transitions == null) {
+            return null;
+        }
+
+        for (int i = 0; i < button.transitions.Length; i++) {
+            UIButton.Transition transition = button.transitions[i];
+            if (transition?.target is Image) {
+                return transition;
+            }
+        }
+
+        return null;
+    }
+
+    private static void CopyTransitionParams(UIButton.Transition source, UIButton.Transition target) {
+        if (source == null || target == null) {
+            return;
+        }
+
+        target.damp = source.damp;
+        target.mouseoverSize = source.mouseoverSize;
+        target.pressedSize = source.pressedSize;
+        target.normalColor = source.normalColor;
+        target.mouseoverColor = source.mouseoverColor;
+        target.pressedColor = source.pressedColor;
+        target.disabledColor = source.disabledColor;
+        target.alphaOnly = source.alphaOnly;
+        target.highlightSizeMultiplier = source.highlightSizeMultiplier;
+        target.highlightColorMultiplier = source.highlightColorMultiplier;
+        target.highlightAlphaMultiplier = source.highlightAlphaMultiplier;
+        target.highlightColorOverride = source.highlightColorOverride;
+    }
+
+    private static void NormalizeTopCategoryTextTransitions(UIButton button) {
+        if (button?.transitions == null) {
+            return;
+        }
+
+        for (int i = 0; i < button.transitions.Length; i++) {
+            UIButton.Transition transition = button.transitions[i];
+            if (transition?.target is Text) {
+                transition.highlightSizeMultiplier = 1f;
+                transition.highlightColorMultiplier = 1f;
+                transition.highlightAlphaMultiplier = 1f;
+                transition.highlightColorOverride = transition.mouseoverColor;
+            }
+        }
+    }
+
+    private void ApplyTopCategoryBackgroundTransitionStyle(UIButton targetButton) {
+        UIButton sourceButton = nativeTopCategoryHighlightStyleTemplateButton;
+        if (sourceButton == null || targetButton == null) {
+            return;
+        }
+
+        UIButton.Transition sourceBackgroundTransition = FindFirstImageTransition(sourceButton);
+        if (sourceBackgroundTransition == null) {
+            return;
+        }
+
+        UIButton.Transition[] targetTransitions = targetButton.transitions ?? Array.Empty<UIButton.Transition>();
+        bool copied = false;
+        for (int i = 0; i < targetTransitions.Length; i++) {
+            UIButton.Transition transition = targetTransitions[i];
+            if (transition?.target is Image) {
+                CopyTransitionParams(sourceBackgroundTransition, transition);
+                copied = true;
+            }
+        }
+
+        if (copied) {
+            return;
+        }
+
+        Image targetImage = targetButton.GetComponent<Image>() ?? targetButton.GetComponentInChildren<Image>(true);
+        if (targetImage == null) {
+            return;
+        }
+
+        UIButton.Transition newTransition = new UIButton.Transition {
+            target = targetImage,
+        };
+        CopyTransitionParams(sourceBackgroundTransition, newTransition);
+
+        UIButton.Transition[] expanded = new UIButton.Transition[targetTransitions.Length + 1];
+        Array.Copy(targetTransitions, expanded, targetTransitions.Length);
+        expanded[expanded.Length - 1] = newTransition;
+        targetButton.transitions = expanded;
+    }
+
+    private static void RestoreImageTransitionTargets(UIButton button) {
+        if (button?.transitions == null) {
+            return;
+        }
+
+        Image localImage = button.GetComponent<Image>() ?? button.GetComponentInChildren<Image>(true);
+        if (localImage == null) {
+            return;
+        }
+
+        for (int i = 0; i < button.transitions.Length; i++) {
+            UIButton.Transition transition = button.transitions[i];
+            if (transition?.target == null || transition.target is not Image) {
+                continue;
+            }
+
+            Transform targetTransform = transition.target.transform;
+            if (targetTransform != button.transform && !targetTransform.IsChildOf(button.transform)) {
+                transition.target = localImage;
+            }
         }
     }
 
@@ -1050,13 +1158,9 @@ public class MyAnalysisWindow : MyWindow {
                 continue;
             }
 
-            // 关键说明：这里禁止使用 highlighted=true。
-            // 该按钮模板在 highlighted=true 时会出现“文本不可见”问题。
-            // 所以选中态改为“模拟 hover 态”：isPointerEnter=true。
-            button.highlighted = false;
-            button.isPointerDown = false;
-            button.isPointerEnter = i == selectedTopCategoryIndex;
-            button.RefreshTransitionsImmediately();
+            // 顶部按钮选中态对齐左侧按钮逻辑：选中使用 highlighted=true。
+            // 这里仅迁移“颜色状态机”逻辑，不涉及顶部尺寸与位置。
+            button.highlighted = i == selectedTopCategoryIndex;
         }
     }
 
