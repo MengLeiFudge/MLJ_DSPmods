@@ -257,6 +257,21 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/evidence/` — screenshots and supporting evidence
 - Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
 
+## Analysis UI Layout Baseline (Mandatory)
+
+When rendering pages inside `FEAnalysisMainWindow` middle black area:
+
+- Black area size is fixed to **1102 x 787**
+- Keep **10px gap** on all four sides
+- Unified design origin is **(10, 10)** from black area's top-left
+- Unified design canvas size is **1082 x 767**
+
+This baseline applies to both:
+- Analysis-specific pages (`CreateUIInAnalysis`)
+- Legacy proxied pages (`CreateUI` routed through analysis)
+
+For multi-column layout helper `GetPosition`, default total width is aligned to this baseline (1082).
+
 ### Game Source Reference: DecompiledSource
 
 `gamedata/DecompiledSource/` contains the full decompiled C# source of DSP's game DLLs and mod DLLs (publicized versions, one `.cs` file per type, namespace-nested directories). **This is the authoritative reference for DSP game internals and mod APIs.**

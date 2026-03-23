@@ -118,9 +118,9 @@ public static partial class Utils {
     /// </summary>
     /// <param name="index">当前栏位索引（从 0 开始）</param>
     /// <param name="count">总栏位数</param>
-    /// <param name="totalPx">可用总宽度（像素）</param>
+    /// <param name="totalPx">可用总宽度（像素）。Analysis 统一设计区默认宽度为 1082。</param>
     /// <returns>(起始X, 栏位宽度)</returns>
-    public static (float, float) GetPosition(int index, int count, float totalPx = 1160f) {
+    public static (float, float) GetPosition(int index, int count, float totalPx = 1082f) {
         float targetLen = (totalPx - (count - 1) * 20) / count;
         float targetPx = index * (targetLen + 20);
         return (targetPx, targetLen);
