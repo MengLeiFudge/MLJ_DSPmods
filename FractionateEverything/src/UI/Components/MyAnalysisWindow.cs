@@ -50,18 +50,44 @@ public class MyAnalysisWindow : MyWindow {
         }
     }
 
-    private sealed class DragWindowForwarder : MonoBehaviour, IDragHandler {
+    private sealed class DragWindowForwarder : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
+        private const float DragThresholdPixels = 5f;
+
         private RectTransform windowRect;
         private Canvas rootCanvas;
+        private MyAnalysisWindow owner;
+        private bool pointerDown;
+        private bool dragTriggered;
 
-        public void Init(RectTransform window) {
+        public void Init(RectTransform window, MyAnalysisWindow host) {
             windowRect = window;
             rootCanvas = window?.GetComponentInParent<Canvas>();
+            owner = host;
+            pointerDown = false;
+            dragTriggered = false;
+        }
+
+        public void OnPointerDown(PointerEventData eventData) {
+            pointerDown = true;
+            dragTriggered = false;
+        }
+
+        public void OnPointerUp(PointerEventData eventData) {
+            pointerDown = false;
+            dragTriggered = false;
         }
 
         public void OnDrag(PointerEventData eventData) {
             if (windowRect == null) {
                 return;
+            }
+
+            if (pointerDown && !dragTriggered) {
+                float sqrDist = (eventData.position - eventData.pressPosition).sqrMagnitude;
+                if (sqrDist >= DragThresholdPixels * DragThresholdPixels) {
+                    dragTriggered = true;
+                    owner?.MarkTopCategoryDragTriggered();
+                }
             }
 
             float scale = rootCanvas != null && rootCanvas.scaleFactor > 0f ? rootCanvas.scaleFactor : 1f;
@@ -104,6 +130,7 @@ public class MyAnalysisWindow : MyWindow {
     /// </summary>
     private const float TopCategoryButtonWidth = 150f;
     private float nativeHorizontalTabOriginalHeight;
+    private bool suppressTopCategoryClickOnce;
 
     public static MyAnalysisWindow CreateInstance(string name, string title = "") {
         UIStatisticsWindow src = UIRoot.instance?.uiGame?.statWindow;
@@ -577,6 +604,11 @@ public class MyAnalysisWindow : MyWindow {
     }
 
     private void OnTopCategoryClick(int index) {
+        if (suppressTopCategoryClickOnce) {
+            suppressTopCategoryClickOnce = false;
+            return;
+        }
+
         var categories = MainWindow.AnalysisPageCategories;
         if (index < 0 || index >= categories.Count) {
             return;
@@ -886,7 +918,11 @@ public class MyAnalysisWindow : MyWindow {
             forwarder = button.gameObject.AddComponent<DragWindowForwarder>();
         }
 
-        forwarder.Init(windowTrans);
+        forwarder.Init(windowTrans, this);
+    }
+
+    private void MarkTopCategoryDragTriggered() {
+        suppressTopCategoryClickOnce = true;
     }
 
     private void ApplyTopCategoryTemplateStyle(UIButton targetButton) {
