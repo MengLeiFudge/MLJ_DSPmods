@@ -41,7 +41,7 @@ public static class MainWindowPageRegistry {
         new(ItemManageCategoryName, "符文系统", RuneMenu.CreateUI, RuneMenu.UpdateUI),
 
         new(GachaCategoryName, "配方抽奖/原胚抽奖/UP抽奖/限定抽奖", TicketRaffle.CreateUI, TicketRaffle.UpdateUI),
-        new(StoreCategoryName, "普通奖券兑换/精选奖券兑换", LimitedTimeStore.CreateUI, LimitedTimeStore.UpdateUI),
+        new(StoreCategoryName, "普通积分商店/精选积分商店", LimitedTimeStore.CreateUI, LimitedTimeStore.UpdateUI),
 
         new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
         new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
