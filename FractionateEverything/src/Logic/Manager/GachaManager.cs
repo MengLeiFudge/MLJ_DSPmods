@@ -7,8 +7,10 @@ public static class GachaManager {
     // 每个卡池的保底计数器（poolId → 自上次出S后的连续抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
 
-    // UP池大保底标记（连续几次S未出UP）
-    public static int UpGuaranteeCount = 0;
+    public static int UpMainItemId = 0;
+    public static readonly int[] UpSubItemIds = new int[3];
+
+    public static bool GuaranteeMainOnNextSRoll = false;
 
     // 软保底阈值、硬保底阈值
     public const int SoftPityThreshold = 75;
@@ -16,7 +18,6 @@ public static class GachaManager {
     public const float SoftPityBonusPerDraw = 0.001f;
     public const float SoftPityBonusCap = 0.015f;
 
-    // UP轮换：72h = 72×60×60×60 ticks
     public const long UpRotationInterval = 216_000L;
     public static long UpRotationNextTick = UpRotationInterval;
     public static int CurrentUpGroupIndex = 0;
@@ -79,22 +80,23 @@ public static class GachaManager {
         PityCount[poolId] = 0;
     }
 
-    /// <summary>
-    /// UP池S抽的UP判定语义：连续2次S未UP后，下次S必UP；否则50%概率UP。
-    /// </summary>
     public static bool ShouldGuaranteeUpOnSRoll(double random01) {
-        return UpGuaranteeCount >= 2 || random01 < 0.5;
+        return GuaranteeMainOnNextSRoll || random01 < 0.4;
     }
 
-    /// <summary>
-    /// 记录UP池S抽结果：命中UP则重置，未命中则累加。
-    /// </summary>
-    public static void RecordUpSResult(bool isUp) {
-        if (isUp) {
-            UpGuaranteeCount = 0;
+    public static void RecordUpSResult(bool hitMainTarget) {
+        if (hitMainTarget) {
+            GuaranteeMainOnNextSRoll = false;
             return;
         }
-        UpGuaranteeCount++;
+        GuaranteeMainOnNextSRoll = true;
+    }
+
+    public static void SetCurrentUpTargets(int mainItemId, int sub1ItemId, int sub2ItemId, int sub3ItemId) {
+        UpMainItemId = mainItemId;
+        UpSubItemIds[0] = sub1ItemId;
+        UpSubItemIds[1] = sub2ItemId;
+        UpSubItemIds[2] = sub3ItemId;
     }
 
     public static void TickRotationIfNeeded() {
@@ -103,15 +105,19 @@ public static class GachaManager {
         long diff = GameMain.gameTick - UpRotationNextTick;
         long skip = diff / UpRotationInterval + 1;
         UpRotationNextTick += skip * UpRotationInterval;
-        AdvanceUpGroup();
+        AdvanceUpGroup(skip);
         GachaService.RefreshUpPool();
     }
 
-    private static void AdvanceUpGroup() {
-        CurrentUpGroupIndex++;
-        if (CurrentUpGroupIndex >= GachaService.UpGroupCount) {
+    private static void AdvanceUpGroup(long step) {
+        int groupCount = GachaService.UpGroupCount;
+        if (groupCount <= 0) {
             CurrentUpGroupIndex = 0;
+            return;
         }
+
+        long normalizedStep = step % groupCount;
+        CurrentUpGroupIndex = (int)((CurrentUpGroupIndex + normalizedStep) % groupCount);
     }
 
     #region IModCanSave
@@ -123,10 +129,16 @@ public static class GachaManager {
                     bw.Write(PityCount[i]);
                 }
             }),
-            ("UpGuarantee", bw => bw.Write(UpGuaranteeCount)),
+            ("UpGuarantee", bw => bw.Write(GuaranteeMainOnNextSRoll)),
             ("UpRotation", bw => {
                 bw.Write(UpRotationNextTick);
                 bw.Write(CurrentUpGroupIndex);
+            }),
+            ("UpTargets", bw => {
+                bw.Write(UpMainItemId);
+                bw.Write(UpSubItemIds[0]);
+                bw.Write(UpSubItemIds[1]);
+                bw.Write(UpSubItemIds[2]);
             })
         );
     }
@@ -138,20 +150,34 @@ public static class GachaManager {
                     PityCount[i] = br.ReadInt32();
                 }
             }),
-            ("UpGuarantee", br => UpGuaranteeCount = br.ReadInt32()),
+            ("UpGuarantee", br => {
+                if (br.BaseStream.Length - br.BaseStream.Position >= sizeof(bool)) {
+                    GuaranteeMainOnNextSRoll = br.ReadBoolean();
+                }
+            }),
             ("UpRotation", br => {
                 UpRotationNextTick = br.ReadInt64();
                 CurrentUpGroupIndex = br.ReadInt32();
                 if (CurrentUpGroupIndex < 0 || CurrentUpGroupIndex >= GachaService.UpGroupCount) {
                     CurrentUpGroupIndex = 0;
                 }
+            }),
+            ("UpTargets", br => {
+                UpMainItemId = br.ReadInt32();
+                UpSubItemIds[0] = br.ReadInt32();
+                UpSubItemIds[1] = br.ReadInt32();
+                UpSubItemIds[2] = br.ReadInt32();
             })
         );
     }
 
     public static void IntoOtherSave() {
         System.Array.Clear(PityCount, 0, PityCount.Length);
-        UpGuaranteeCount = 0;
+        UpMainItemId = 0;
+        UpSubItemIds[0] = 0;
+        UpSubItemIds[1] = 0;
+        UpSubItemIds[2] = 0;
+        GuaranteeMainOnNextSRoll = false;
         UpRotationNextTick = UpRotationInterval;
         CurrentUpGroupIndex = 0;
     }

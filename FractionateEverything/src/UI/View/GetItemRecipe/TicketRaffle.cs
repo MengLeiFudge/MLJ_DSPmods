@@ -61,8 +61,8 @@ public static class TicketRaffle {
             "仅产出各种原胚物品。90抽保底获得1个分馏塔增幅芯片。");
         Register("UP池", "UP Pool");
         Register("UP池说明",
-            "Only item rewards. UP group rotates every 1 hour.",
-            "仅产出物品奖励。UP组每1小时轮换一次。");
+            "UP-exclusive item rewards. 1 Main + 3 Side targets (40%/20%/20%/20%). If Main misses this S roll, next S roll guarantees Main. UP group rotates every 1 hour.",
+            "仅产出UP专属物品奖励。1主+3副（40%/20%/20%/20%）；若本轮S未中主目标，则下一轮S保主。UP组每1小时轮换一次。");
         Register("限定池", "Limited Pool");
         Register("限定池说明",
             "Item-only pool. Hard pity grants 1 Targeted Prototype. Requires Featured Ticket.",
@@ -148,16 +148,11 @@ public static class TicketRaffle {
 
     private static string GetPoolDesc(int poolId) {
         if (poolId == GachaPool.PoolIdUp) {
-            var upPool = GachaService.GetPool(GachaPool.PoolIdUp);
-            if (upPool != null && upPool.UpItems.Count > 0) {
-                int take = System.Math.Min(8, upPool.UpItems.Count);
-                string[] names = new string[take];
-                for (int i = 0; i < take; i++) {
-                    int id = upPool.UpItems[i];
-                    names[i] = LDB.items.Select(id)?.name ?? id.ToString();
-                }
-                return $"{"UP池说明".Translate()}\n当前UP：{string.Join("、", names)}";
-            }
+            string mainName = GetItemName(GachaManager.UpMainItemId);
+            string sub1Name = GetItemName(GachaManager.UpSubItemIds[0]);
+            string sub2Name = GetItemName(GachaManager.UpSubItemIds[1]);
+            string sub3Name = GetItemName(GachaManager.UpSubItemIds[2]);
+            return $"{"UP池说明".Translate()}\n主目标(40%)：{mainName}\n副目标(20%)：{sub1Name}、{sub2Name}、{sub3Name}";
         }
         string key = poolId switch {
             GachaPool.PoolIdPermanentRecipe => "配方奖池说明",
@@ -167,6 +162,13 @@ public static class TicketRaffle {
             _ => "配方奖池说明",
         };
         return key.Translate();
+    }
+
+    private static string GetItemName(int itemId) {
+        if (itemId <= 0) {
+            return "-";
+        }
+        return LDB.items.Select(itemId)?.name ?? itemId.ToString();
     }
 
     private static void StartDraw(RaffleTabUi ui, int ticketId, int count) {

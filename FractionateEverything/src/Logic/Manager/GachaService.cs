@@ -11,7 +11,7 @@ public static class GachaService {
     public static int UpGroupCount => UpItemGroups.Length;
 
     private static readonly int[][] UpItemGroups = [
-        [IFE分馏塔增幅芯片],
+        [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔],
     ];
 
     private enum RecipeCategory {
@@ -69,21 +69,24 @@ public static class GachaService {
     }
 
     private static void FillUpPool(GachaPool pool) {
-        pool.PoolC.Add(IFE分馏塔增幅芯片);
-        pool.PoolB.Add(IFE分馏塔增幅芯片);
-        pool.PoolA.Add(IFE分馏塔增幅芯片);
-        pool.PoolS.Add(IFE分馏塔增幅芯片);
-
         int groupIndex = GachaManager.CurrentUpGroupIndex;
         if (groupIndex < 0 || groupIndex >= UpItemGroups.Length) {
             groupIndex = 0;
             GachaManager.CurrentUpGroupIndex = 0;
         }
-        foreach (int itemId in UpItemGroups[groupIndex]) {
-            if (!pool.UpItems.Contains(itemId)) pool.UpItems.Add(itemId);
-        }
+        ResolveUpTargets(groupIndex, out int upMain, out int upSub1, out int upSub2, out int upSub3);
+        pool.UpItems.Add(upMain);
+        pool.UpItems.Add(upSub1);
+        pool.UpItems.Add(upSub2);
+        pool.UpItems.Add(upSub3);
 
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE分馏塔增幅芯片);
+        pool.PoolC.AddRange(pool.UpItems);
+        pool.PoolB.AddRange(pool.UpItems);
+        pool.PoolA.AddRange(pool.UpItems);
+        pool.PoolS.AddRange(pool.UpItems);
+        GachaManager.SetCurrentUpTargets(upMain, upSub1, upSub2, upSub3);
+
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE交互塔);
         if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
         if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
@@ -168,8 +171,15 @@ public static class GachaService {
         for (int i = 0; i < count; i++) {
             bool hardPity = GachaManager.IsHardPity(poolId);
             if (hardPity) {
-                int pityItemId = GetHardPityItem(poolId, pool);
-                bool pityIsUp = GachaPool.IsUpPool(poolId) && pool.UpItems.Contains(pityItemId);
+                int pityItemId;
+                bool pityIsUp = false;
+                if (GachaPool.IsUpPool(poolId)) {
+                    pityItemId = RollUpTargetItem(pool, out bool hitMainTarget);
+                    GachaManager.RecordUpSResult(hitMainTarget);
+                    pityIsUp = true;
+                } else {
+                    pityItemId = GetHardPityItem(poolId, pool);
+                }
                 bool pityIsRecipe = RewardItem(poolId, pityItemId);
                 GachaManager.RecordDraw(poolId, true);
                 results.Add(new GachaResult(pityItemId, GachaRarity.S, pityIsUp, pityIsRecipe));
@@ -178,17 +188,14 @@ public static class GachaService {
 
             float softBonus = GachaManager.GetSoftPityBonus(poolId);
             GachaRarity rarity = RollRarity(pool, softBonus, hardPity);
-            bool isUp = false;
-
-            if (GachaPool.IsUpPool(poolId) && rarity == GachaRarity.S) {
-                isUp = GachaManager.ShouldGuaranteeUpOnSRoll(_rng.NextDouble());
-                GachaManager.RecordUpSResult(isUp);
-            }
 
             int itemId;
             bool isRecipe;
-            if (isUp && pool.UpItems.Count > 0) {
-                itemId = pool.UpItems[_rng.Next(pool.UpItems.Count)];
+            bool isUp = false;
+            if (GachaPool.IsUpPool(poolId) && rarity == GachaRarity.S) {
+                itemId = RollUpTargetItem(pool, out bool hitMainTarget);
+                GachaManager.RecordUpSResult(hitMainTarget);
+                isUp = true;
                 isRecipe = RewardItem(poolId, itemId);
             } else {
                 itemId = pool.PickRandom(rarity, _rng);
@@ -206,9 +213,71 @@ public static class GachaService {
         return poolId switch {
             GachaPool.PoolIdPermanentRecipe => PickHardPityFromPool(pool, IFE残片),
             GachaPool.PoolIdPermanentBuilding => PickHardPityFromPool(pool, IFE分馏塔定向原胚),
-            GachaPool.PoolIdUp => pool.UpItems.Count > 0 ? pool.UpItems[_rng.Next(pool.UpItems.Count)] : IFE分馏塔增幅芯片,
+            GachaPool.PoolIdUp => IFE交互塔,
             GachaPool.PoolIdLimited => IFE原版配方核心,
             _ => IFE原版配方核心,
+        };
+    }
+
+    private static int RollUpTargetItem(GachaPool pool, out bool hitMainTarget) {
+        int mainItemId = GachaManager.UpMainItemId;
+        int sub1ItemId = GachaManager.UpSubItemIds[0];
+        int sub2ItemId = GachaManager.UpSubItemIds[1];
+        int sub3ItemId = GachaManager.UpSubItemIds[2];
+
+        if (mainItemId <= 0) {
+            ResolveUpTargets(GachaManager.CurrentUpGroupIndex, out mainItemId, out sub1ItemId, out sub2ItemId, out sub3ItemId);
+            GachaManager.SetCurrentUpTargets(mainItemId, sub1ItemId, sub2ItemId, sub3ItemId);
+        }
+
+        hitMainTarget = GachaManager.ShouldGuaranteeUpOnSRoll(_rng.NextDouble());
+        if (hitMainTarget) {
+            return mainItemId;
+        }
+
+        double sideRoll = _rng.NextDouble();
+        if (sideRoll < 1.0 / 3.0) return sub1ItemId;
+        if (sideRoll < 2.0 / 3.0) return sub2ItemId;
+        return sub3ItemId;
+    }
+
+    private static void ResolveUpTargets(int groupIndex, out int mainItemId, out int sub1ItemId, out int sub2ItemId, out int sub3ItemId) {
+        int[] group = groupIndex >= 0 && groupIndex < UpItemGroups.Length ? UpItemGroups[groupIndex] : UpItemGroups[0];
+        int fallback = IFE交互塔;
+
+        var uniqueTargets = new List<int>(4);
+        for (int i = 0; i < group.Length; i++) {
+            int id = group[i];
+            if (id <= 0 || uniqueTargets.Contains(id)) {
+                continue;
+            }
+            uniqueTargets.Add(id);
+        }
+
+        if (uniqueTargets.Count == 0) {
+            uniqueTargets.Add(fallback);
+        }
+
+        mainItemId = uniqueTargets[0];
+
+        var sideCandidates = new List<int>(3);
+        for (int i = 0; i < uniqueTargets.Count; i++) {
+            int id = uniqueTargets[i];
+            if (id != mainItemId) {
+                sideCandidates.Add(id);
+            }
+        }
+
+        if (sideCandidates.Count == 0) {
+            sideCandidates.Add(mainItemId);
+        }
+
+        sub1ItemId = sideCandidates[0];
+        sub2ItemId = sideCandidates.Count > 1 ? sideCandidates[1] : sideCandidates[0];
+        sub3ItemId = sideCandidates.Count switch {
+            > 2 => sideCandidates[2],
+            2 => sideCandidates[0],
+            _ => sideCandidates[0],
         };
     }
 
