@@ -1,5 +1,6 @@
 using System.IO;
 using FE.Utils;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 
@@ -11,6 +12,9 @@ public static class GachaManager {
     public static readonly int[] UpSubItemIds = new int[3];
 
     public static bool GuaranteeMainOnNextSRoll = false;
+
+    public static int NormalPoolPoints = 0;
+    public static int FeaturedPoolPoints = 0;
 
     // 软保底阈值、硬保底阈值
     public const int SoftPityThreshold = 75;
@@ -99,6 +103,52 @@ public static class GachaManager {
         UpSubItemIds[2] = sub3ItemId;
     }
 
+    public static int GetPoolPointsByTicket(int ticketId) {
+        return ticketId switch {
+            IFE普通抽卡券 => NormalPoolPoints,
+            IFE精选抽卡券 => FeaturedPoolPoints,
+            _ => 0,
+        };
+    }
+
+    public static void AddPoolPointsByTicket(int ticketId, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+
+        switch (ticketId) {
+            case IFE普通抽卡券:
+                NormalPoolPoints += amount;
+                break;
+            case IFE精选抽卡券:
+                FeaturedPoolPoints += amount;
+                break;
+        }
+    }
+
+    public static bool TryConsumePoolPointsByTicket(int ticketId, int amount) {
+        if (amount <= 0) {
+            return false;
+        }
+
+        switch (ticketId) {
+            case IFE普通抽卡券:
+                if (NormalPoolPoints < amount) {
+                    return false;
+                }
+                NormalPoolPoints -= amount;
+                return true;
+            case IFE精选抽卡券:
+                if (FeaturedPoolPoints < amount) {
+                    return false;
+                }
+                FeaturedPoolPoints -= amount;
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static void TickRotationIfNeeded() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
         if (GameMain.gameTick < UpRotationNextTick) return;
@@ -139,6 +189,10 @@ public static class GachaManager {
                 bw.Write(UpSubItemIds[0]);
                 bw.Write(UpSubItemIds[1]);
                 bw.Write(UpSubItemIds[2]);
+            }),
+            ("TicketPoolPoints", bw => {
+                bw.Write(NormalPoolPoints);
+                bw.Write(FeaturedPoolPoints);
             })
         );
     }
@@ -167,6 +221,10 @@ public static class GachaManager {
                 UpSubItemIds[0] = br.ReadInt32();
                 UpSubItemIds[1] = br.ReadInt32();
                 UpSubItemIds[2] = br.ReadInt32();
+            }),
+            ("TicketPoolPoints", br => {
+                NormalPoolPoints = br.ReadInt32();
+                FeaturedPoolPoints = br.ReadInt32();
             })
         );
     }
@@ -178,6 +236,8 @@ public static class GachaManager {
         UpSubItemIds[1] = 0;
         UpSubItemIds[2] = 0;
         GuaranteeMainOnNextSRoll = false;
+        NormalPoolPoints = 0;
+        FeaturedPoolPoints = 0;
         UpRotationNextTick = UpRotationInterval;
         CurrentUpGroupIndex = 0;
     }

@@ -76,6 +76,8 @@ public static class TicketRaffle {
         Register("抽1次(精选)", "Draw x1 (Featured)");
         Register("抽10次(精选)", "Draw x10 (Featured)");
         Register("抽奖结果", "Raffle Results");
+        Register("普通积分", "Normal Points");
+        Register("精选积分", "Featured Points");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -268,8 +270,10 @@ public static class TicketRaffle {
 
         int normalCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE普通抽卡券));
         int premiumCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE精选抽卡券));
-        if (ui.TxtNormalTicket != null) ui.TxtNormalTicket.text = $"普通券: {normalCount}";
-        if (ui.TxtPremiumTicket != null) ui.TxtPremiumTicket.text = $"精选券: {premiumCount}";
+        int normalPoints = GachaManager.GetPoolPointsByTicket(IFE普通抽卡券);
+        int featuredPoints = GachaManager.GetPoolPointsByTicket(IFE精选抽卡券);
+        if (ui.TxtNormalTicket != null) ui.TxtNormalTicket.text = $"普通券: {normalCount}    {"普通积分".Translate()}: {normalPoints}";
+        if (ui.TxtPremiumTicket != null) ui.TxtPremiumTicket.text = $"精选券: {premiumCount}    {"精选积分".Translate()}: {featuredPoints}";
 
         bool limitedLocked = ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked;
         if (limitedLocked && ui.TxtPoolDesc != null) {
