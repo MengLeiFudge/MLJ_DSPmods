@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FE.Utils;
 using static FE.Utils.Utils;
@@ -25,6 +26,86 @@ public static class GachaManager {
     public const long UpRotationInterval = 216_000L;
     public static long UpRotationNextTick = UpRotationInterval;
     public static int CurrentUpGroupIndex = 0;
+
+    private static int ClampPityCount(int value) {
+        if (value < 0) {
+            return 0;
+        }
+        return value > HardPityThreshold ? HardPityThreshold : value;
+    }
+
+    private static int ClampNonNegative(int value) {
+        return value < 0 ? 0 : value;
+    }
+
+    private static long NormalizeUpRotationNextTick(long value) {
+        return value <= 0 ? UpRotationInterval : value;
+    }
+
+    private static int NormalizeUpGroupIndex(int value) {
+        int groupCount = GachaService.UpGroupCount;
+        if (groupCount <= 0) {
+            return 0;
+        }
+        return value < 0 || value >= groupCount ? 0 : value;
+    }
+
+    private static bool HasBytesRemaining(BinaryReader reader, int size) {
+        if (!reader.BaseStream.CanSeek) {
+            return true;
+        }
+        return reader.BaseStream.Length - reader.BaseStream.Position >= size;
+    }
+
+    private static int ReadInt32OrDefault(BinaryReader reader, int defaultValue) {
+        if (!HasBytesRemaining(reader, sizeof(int))) {
+            return defaultValue;
+        }
+        try {
+            return reader.ReadInt32();
+        } catch (EndOfStreamException) {
+            return defaultValue;
+        }
+    }
+
+    private static long ReadInt64OrDefault(BinaryReader reader, long defaultValue) {
+        if (!HasBytesRemaining(reader, sizeof(long))) {
+            return defaultValue;
+        }
+        try {
+            return reader.ReadInt64();
+        } catch (EndOfStreamException) {
+            return defaultValue;
+        }
+    }
+
+    private static bool ReadBooleanOrDefault(BinaryReader reader, bool defaultValue) {
+        if (!HasBytesRemaining(reader, sizeof(bool))) {
+            return defaultValue;
+        }
+        try {
+            return reader.ReadBoolean();
+        } catch (EndOfStreamException) {
+            return defaultValue;
+        }
+    }
+
+    private static void NormalizeImportedState() {
+        for (int i = 0; i < PityCount.Length; i++) {
+            PityCount[i] = ClampPityCount(PityCount[i]);
+        }
+
+        UpMainItemId = ClampNonNegative(UpMainItemId);
+        UpSubItemIds[0] = ClampNonNegative(UpSubItemIds[0]);
+        UpSubItemIds[1] = ClampNonNegative(UpSubItemIds[1]);
+        UpSubItemIds[2] = ClampNonNegative(UpSubItemIds[2]);
+
+        NormalPoolPoints = ClampNonNegative(NormalPoolPoints);
+        FeaturedPoolPoints = ClampNonNegative(FeaturedPoolPoints);
+
+        UpRotationNextTick = NormalizeUpRotationNextTick(UpRotationNextTick);
+        CurrentUpGroupIndex = NormalizeUpGroupIndex(CurrentUpGroupIndex);
+    }
 
     /// <summary>
     /// 计算当前抽卡的S触发概率加成（软保底）
@@ -201,32 +282,29 @@ public static class GachaManager {
         r.ReadBlocks(
             ("PityCount", br => {
                 for (int i = 0; i < PityCount.Length; i++) {
-                    PityCount[i] = br.ReadInt32();
+                    PityCount[i] = ClampPityCount(ReadInt32OrDefault(br, 0));
                 }
             }),
             ("UpGuarantee", br => {
-                if (br.BaseStream.Length - br.BaseStream.Position >= sizeof(bool)) {
-                    GuaranteeMainOnNextSRoll = br.ReadBoolean();
-                }
+                GuaranteeMainOnNextSRoll = ReadBooleanOrDefault(br, GuaranteeMainOnNextSRoll);
             }),
             ("UpRotation", br => {
-                UpRotationNextTick = br.ReadInt64();
-                CurrentUpGroupIndex = br.ReadInt32();
-                if (CurrentUpGroupIndex < 0 || CurrentUpGroupIndex >= GachaService.UpGroupCount) {
-                    CurrentUpGroupIndex = 0;
-                }
+                UpRotationNextTick = NormalizeUpRotationNextTick(ReadInt64OrDefault(br, UpRotationInterval));
+                CurrentUpGroupIndex = NormalizeUpGroupIndex(ReadInt32OrDefault(br, 0));
             }),
             ("UpTargets", br => {
-                UpMainItemId = br.ReadInt32();
-                UpSubItemIds[0] = br.ReadInt32();
-                UpSubItemIds[1] = br.ReadInt32();
-                UpSubItemIds[2] = br.ReadInt32();
+                UpMainItemId = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                UpSubItemIds[0] = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                UpSubItemIds[1] = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                UpSubItemIds[2] = ClampNonNegative(ReadInt32OrDefault(br, 0));
             }),
             ("TicketPoolPoints", br => {
-                NormalPoolPoints = br.ReadInt32();
-                FeaturedPoolPoints = br.ReadInt32();
+                NormalPoolPoints = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                FeaturedPoolPoints = ClampNonNegative(ReadInt32OrDefault(br, 0));
             })
         );
+
+        NormalizeImportedState();
     }
 
     public static void IntoOtherSave() {
