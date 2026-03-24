@@ -28,6 +28,7 @@ public static class TicketRaffle {
         public UIButton BtnDraw10Normal;
         public UIButton BtnDraw1Premium;
         public UIButton BtnDraw10Premium;
+        public UIButton BtnGoToStore;
     }
 
     public static long totalDraws;
@@ -105,6 +106,12 @@ public static class TicketRaffle {
 
         ui.TxtNormalTicket = MyWindow.AddText(5f, 86f, ui.Tab, "", 12);
         ui.TxtPremiumTicket = MyWindow.AddText(220f, 86f, ui.Tab, "", 12);
+
+        ui.BtnGoToStore = wnd.AddButton(860f, 8f, 100f, ui.Tab, "前往商店".Translate(), 13,
+            onClick: () => {
+                int targetTab = (poolId == GachaPool.PoolIdUp || poolId == GachaPool.PoolIdLimited) ? 1 : 0;
+                MainWindow.NavigateToPage(MainWindowPageRegistry.StoreCategoryName, targetTab);
+            });
 
         ui.TxtResultTitle = MyWindow.AddText(5f, ResultAreaY, ui.Tab, "抽奖结果".Translate(), 14);
         if (ui.TxtResultTitle != null) {

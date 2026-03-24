@@ -588,6 +588,20 @@ public class MyWindowWithTabs : MyWindow {
 
     public void SetCurrentTab(int index) => OnTabButtonClick(index);
 
+    public void JumpToGroup(string label, int internalTabIndex = 0) {
+        for (int i = 0; i < _tabGroups.Count; i++) {
+            if (_tabGroups[i].Label == label) {
+                _tabGroups[i].Collapsed = false;
+                RefreshTabLayout();
+                int targetIndex = _tabGroups[i].StartTabIndex + internalTabIndex;
+                if (targetIndex >= 0 && targetIndex < _tabs.Count) {
+                    SetCurrentTab(targetIndex);
+                }
+                return;
+            }
+        }
+    }
+
     private void OnTabButtonClick(int index) {
         foreach (var (rectTransform, btn) in _tabs) {
             if (btn.data != index) {

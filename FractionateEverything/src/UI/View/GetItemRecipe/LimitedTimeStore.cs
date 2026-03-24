@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
+using FE.UI.View;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
@@ -62,6 +63,12 @@ public static class LimitedTimeStore {
     }
 
     private static void BuildTabTopInfo(MyConfigWindow wnd, RectTransform tab, bool isNormalTab) {
+        wnd.AddButton(860f, 8f, 100f, tab, "前往抽奖".Translate(), 13,
+            onClick: () => {
+                int targetTab = isNormalTab ? 0 : 2;
+                MainWindow.NavigateToPage(MainWindowPageRegistry.GachaCategoryName, targetTab);
+            });
+
         if (isNormalTab) {
             wnd.AddImageButton(5f, 8f, tab, LDB.items.Select(IFE残片));
             txtNormalTabShardCount = MyWindow.AddText(48f, 8f, tab, "x 0", 13);

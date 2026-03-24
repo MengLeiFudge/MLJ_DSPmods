@@ -755,6 +755,22 @@ public class MyAnalysisWindow : MyWindow {
         ShowPageContent(pages[selectedSubpageIndex]);
     }
 
+    public void JumpToCategory(string categoryName, int internalTabIndex = 0) {
+        var categories = MainWindow.AnalysisPageCategories;
+        for (int i = 0; i < categories.Count; i++) {
+            if (categories[i].CategoryName == categoryName) {
+                OnTopCategoryClick(i);
+                if (currentPageContent != null) {
+                    var proxy = currentPageContent.GetComponentInChildren<MyConfigWindow>(true);
+                    if (proxy != null) {
+                        proxy.SetCurrentTab(internalTabIndex);
+                    }
+                }
+                return;
+            }
+        }
+    }
+
     private void HideAllPageContent() {
         if (contentRootContainer == null) {
             return;
