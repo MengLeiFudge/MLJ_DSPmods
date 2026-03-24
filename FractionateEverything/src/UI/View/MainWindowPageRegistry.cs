@@ -15,7 +15,8 @@ namespace FE.UI.View;
 public static class MainWindowPageRegistry {
     public const string CoreOperateCategoryName = "核心操作";
     public const string ItemManageCategoryName = "物品管理";
-    public const string ResourceAcquireCategoryName = "资源获取";
+    public const string GachaCategoryName = "抽奖";
+    public const string StoreCategoryName = "商店";
     public const string ProgressSystemCategoryName = "进度系统";
     public const string StatisticCategoryName = "统计相关";
     public const string SystemSettingCategoryName = "系统设置";
@@ -23,7 +24,8 @@ public static class MainWindowPageRegistry {
     private static readonly string[] categoryOrder = [
         CoreOperateCategoryName,
         ItemManageCategoryName,
-        ResourceAcquireCategoryName,
+        GachaCategoryName,
+        StoreCategoryName,
         ProgressSystemCategoryName,
         StatisticCategoryName,
         SystemSettingCategoryName,
@@ -38,8 +40,8 @@ public static class MainWindowPageRegistry {
         new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
         new(ItemManageCategoryName, "符文系统", RuneMenu.CreateUI, RuneMenu.UpdateUI),
 
-        new(ResourceAcquireCategoryName, "配方抽奖/原胚抽奖/UP抽奖/限定抽奖", TicketRaffle.CreateUI, TicketRaffle.UpdateUI),
-        new(ResourceAcquireCategoryName, "普通奖券兑换/精选奖券兑换", LimitedTimeStore.CreateUI, LimitedTimeStore.UpdateUI),
+        new(GachaCategoryName, "配方抽奖/原胚抽奖/UP抽奖/限定抽奖", TicketRaffle.CreateUI, TicketRaffle.UpdateUI),
+        new(StoreCategoryName, "普通奖券兑换/精选奖券兑换", LimitedTimeStore.CreateUI, LimitedTimeStore.UpdateUI),
 
         new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
         new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),

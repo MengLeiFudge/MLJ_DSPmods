@@ -46,7 +46,8 @@ public static class MainWindow {
         ItemInteraction.AddTranslations();
         ImportantItem.AddTranslations();
         RuneMenu.AddTranslations();
-        Register("资源获取", "Resource Collection");
+        Register("抽奖", "Raffle");
+        Register("商店", "Store");
         GachaWindow.AddTranslations();
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
