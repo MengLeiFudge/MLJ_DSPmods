@@ -11,9 +11,31 @@ public static class GachaService {
     public static int UpGroupCount => UpItemGroups.Length;
 
     private static readonly int[][] UpItemGroups = [
-        [IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚],
-        [IFE转化塔原胚, IFE精馏塔原胚, IFE分馏塔定向原胚],
-        [IFE分馏塔增幅芯片, IFE分馏配方核心, IFE残片],
+        [IFE分馏塔增幅芯片],
+    ];
+
+    private enum RecipeCategory {
+        Basic,
+        Mid,
+        High,
+    }
+
+    private static readonly (int matrixId, RecipeCategory category)[] RecipeCategoryMap = [
+        (I电磁矩阵, RecipeCategory.Basic),
+        (I能量矩阵, RecipeCategory.Basic),
+        (I结构矩阵, RecipeCategory.Mid),
+        (I信息矩阵, RecipeCategory.Mid),
+        (I引力矩阵, RecipeCategory.High),
+        (I宇宙矩阵, RecipeCategory.High),
+    ];
+
+    private static readonly int[] ProtoEmbryos = [
+        IFE交互塔原胚,
+        IFE矿物复制塔原胚,
+        IFE点数聚集塔原胚,
+        IFE转化塔原胚,
+        IFE精馏塔原胚,
+        IFE分馏塔定向原胚,
     ];
 
     private static readonly Random _rng = new();
@@ -47,20 +69,10 @@ public static class GachaService {
     }
 
     private static void FillUpPool(GachaPool pool) {
-        pool.PoolC.Add(IFE残片);
-        pool.PoolC.Add(IFE残片);
-        pool.PoolC.Add(IFE交互塔原胚);
-        pool.PoolC.Add(IFE矿物复制塔原胚);
-
-        pool.PoolB.Add(IFE残片);
-        pool.PoolB.Add(IFE点数聚集塔原胚);
-        pool.PoolB.Add(IFE转化塔原胚);
-
-        pool.PoolA.Add(IFE精馏塔原胚);
+        pool.PoolC.Add(IFE分馏塔增幅芯片);
+        pool.PoolB.Add(IFE分馏塔增幅芯片);
         pool.PoolA.Add(IFE分馏塔增幅芯片);
-
-        pool.PoolS.Add(IFE分馏塔定向原胚);
-        pool.PoolS.Add(IFE分馏配方核心);
+        pool.PoolS.Add(IFE分馏塔增幅芯片);
 
         int groupIndex = GachaManager.CurrentUpGroupIndex;
         if (groupIndex < 0 || groupIndex >= UpItemGroups.Length) {
@@ -70,64 +82,78 @@ public static class GachaService {
         foreach (int itemId in UpItemGroups[groupIndex]) {
             if (!pool.UpItems.Contains(itemId)) pool.UpItems.Add(itemId);
         }
+
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE分馏塔增幅芯片);
+        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
+        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
+        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
         CurrentUpPoolNameKey = $"UP池-{groupIndex + 1}";
     }
 
     private static void FillRecipePool(GachaPool pool) {
-        var lowRecipes = new List<int>();
-        var midRecipes = new List<int>();
-        var highRecipes = new List<int>();
+        var recipeBuckets = BuildRecipeBuckets();
+        List<int> basicRecipes = recipeBuckets[RecipeCategory.Basic];
+        List<int> midRecipes = recipeBuckets[RecipeCategory.Mid];
+        List<int> highRecipes = recipeBuckets[RecipeCategory.High];
 
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I电磁矩阵)) lowRecipes.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I能量矩阵)) lowRecipes.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I结构矩阵)) midRecipes.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I信息矩阵)) midRecipes.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I引力矩阵)) highRecipes.Add(r.InputID);
-        foreach (var r in RecipeManager.GetRecipesByMatrix(I宇宙矩阵)) highRecipes.Add(r.InputID);
+        pool.PoolC.AddRange(basicRecipes);
 
-        AddWeighted(pool.PoolC, IFE残片, 140);
-        AddWeighted(pool.PoolB, IFE残片, 80);
-        AddWeighted(pool.PoolA, IFE残片, 40);
+        pool.PoolB.AddRange(basicRecipes);
+        pool.PoolB.AddRange(midRecipes);
 
-        for (int i = 0; i < lowRecipes.Count; i++) pool.PoolC.Add(lowRecipes[i]);
-        for (int i = 0; i < lowRecipes.Count; i++) pool.PoolB.Add(lowRecipes[i]);
-        for (int i = 0; i < midRecipes.Count; i++) pool.PoolB.Add(midRecipes[i]);
-        for (int i = 0; i < midRecipes.Count; i++) pool.PoolA.Add(midRecipes[i]);
-        for (int i = 0; i < highRecipes.Count; i++) pool.PoolA.Add(highRecipes[i]);
-        for (int i = 0; i < highRecipes.Count; i++) pool.PoolS.Add(highRecipes[i]);
-        AddWeighted(pool.PoolS, IFE原版配方核心, 30);
+        pool.PoolA.AddRange(midRecipes);
+        pool.PoolA.AddRange(highRecipes);
+
+        pool.PoolS.AddRange(highRecipes);
 
         if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE残片);
         if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE原版配方核心);
+        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA.Count > 0 ? pool.PoolA : pool.PoolB);
     }
 
     private static void FillBuildingPool(GachaPool pool) {
-        pool.PoolC.Add(IFE交互塔原胚);
-        pool.PoolC.Add(IFE矿物复制塔原胚);
-        pool.PoolB.Add(IFE点数聚集塔原胚);
-        pool.PoolB.Add(IFE转化塔原胚);
-        pool.PoolA.Add(IFE精馏塔原胚);
-        pool.PoolS.Add(IFE分馏塔定向原胚);
+        pool.PoolC.AddRange(ProtoEmbryos);
+        pool.PoolB.AddRange(ProtoEmbryos);
+        pool.PoolA.AddRange(ProtoEmbryos);
+        pool.PoolS.AddRange(ProtoEmbryos);
 
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE分馏塔定向原胚);
+        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
         if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
     }
 
     private static void FillLimitedPool(GachaPool pool) {
-        AddWeighted(pool.PoolC, IFE残片, 50);
-        pool.PoolB.Add(IFE残片);
-        pool.PoolB.Add(IFE残片);
-        pool.PoolB.Add(IFE分馏塔增幅芯片);
-        pool.PoolA.Add(IFE分馏配方核心);
-        pool.PoolA.Add(IFE分馏塔增幅芯片);
-        pool.PoolS.Add(IFE分馏塔定向原胚);
+        pool.PoolC.Add(IFE原版配方核心);
+        pool.PoolB.Add(IFE原版配方核心);
+        pool.PoolA.Add(IFE原版配方核心);
+        pool.PoolS.Add(IFE原版配方核心);
 
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE残片);
+        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE原版配方核心);
         if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
         if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.Add(IFE分馏塔定向原胚);
+        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
+    }
+
+    private static Dictionary<RecipeCategory, List<int>> BuildRecipeBuckets() {
+        var buckets = new Dictionary<RecipeCategory, List<int>> {
+            [RecipeCategory.Basic] = [],
+            [RecipeCategory.Mid] = [],
+            [RecipeCategory.High] = [],
+        };
+
+        var dedupe = new HashSet<int>();
+        foreach ((int matrixId, RecipeCategory category) in RecipeCategoryMap) {
+            foreach (var recipe in RecipeManager.GetRecipesByMatrix(matrixId)) {
+                if (recipe == null || recipe.InputID <= 0) continue;
+                if (dedupe.Add(recipe.InputID)) {
+                    buckets[category].Add(recipe.InputID);
+                }
+            }
+        }
+
+        return buckets;
     }
 
     public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
@@ -178,12 +204,20 @@ public static class GachaService {
 
     private static int GetHardPityItem(int poolId, GachaPool pool) {
         return poolId switch {
-            GachaPool.PoolIdPermanentRecipe => IFE原版配方核心,
-            GachaPool.PoolIdPermanentBuilding => IFE分馏塔增幅芯片,
-            GachaPool.PoolIdUp => pool.UpItems.Count > 0 ? pool.UpItems[_rng.Next(pool.UpItems.Count)] : IFE分馏塔定向原胚,
-            GachaPool.PoolIdLimited => IFE分馏塔定向原胚,
+            GachaPool.PoolIdPermanentRecipe => PickHardPityFromPool(pool, IFE残片),
+            GachaPool.PoolIdPermanentBuilding => PickHardPityFromPool(pool, IFE分馏塔定向原胚),
+            GachaPool.PoolIdUp => pool.UpItems.Count > 0 ? pool.UpItems[_rng.Next(pool.UpItems.Count)] : IFE分馏塔增幅芯片,
+            GachaPool.PoolIdLimited => IFE原版配方核心,
             _ => IFE原版配方核心,
         };
+    }
+
+    private static int PickHardPityFromPool(GachaPool pool, int fallbackItemId) {
+        if (pool.PoolS.Count > 0) return pool.PoolS[_rng.Next(pool.PoolS.Count)];
+        if (pool.PoolA.Count > 0) return pool.PoolA[_rng.Next(pool.PoolA.Count)];
+        if (pool.PoolB.Count > 0) return pool.PoolB[_rng.Next(pool.PoolB.Count)];
+        if (pool.PoolC.Count > 0) return pool.PoolC[_rng.Next(pool.PoolC.Count)];
+        return fallbackItemId;
     }
 
     private static bool RewardItem(int poolId, int itemId) {
@@ -192,12 +226,6 @@ public static class GachaService {
         }
         AddItemToModData(itemId, 1, 0, false);
         return false;
-    }
-
-    private static void AddWeighted(List<int> pool, int itemId, int weight) {
-        for (int i = 0; i < weight; i++) {
-            pool.Add(itemId);
-        }
     }
 
     private static bool TryReward(int inputId) {
