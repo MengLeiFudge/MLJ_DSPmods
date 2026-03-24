@@ -179,6 +179,7 @@ public static class TicketRaffle {
     }
 
     private static void StartDraw(RaffleTabUi ui, int ticketId, int count) {
+        SyncLimitedPoolUnlockedState();
         if (ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked) {
             UIRealtimeTip.Popup("限定池未解锁".Translate(), true, 2);
             return;
@@ -190,7 +191,11 @@ public static class TicketRaffle {
         totalDraws += results.Count;
         SyncTotalDrawsToSharedState();
         RenderResults(ui, results);
-        RefreshPityText(ui);
+        RefreshTabState(ui);
+    }
+
+    private static void SyncLimitedPoolUnlockedState() {
+        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
     }
 
     private static void ClearResults(RaffleTabUi ui) {
@@ -293,7 +298,6 @@ public static class TicketRaffle {
 
     public static void UpdateUI() {
         if (!IsPageVisible()) return;
-        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
         for (int i = 0; i < Uis.Count; i++) {
             var ui = Uis[i];
             if (ui?.Tab == null || !ui.Tab.gameObject.activeSelf) continue;
@@ -315,7 +319,7 @@ public static class TicketRaffle {
     [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
     public static void GameMain_FixedUpdate_Postfix() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
-        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
+        SyncLimitedPoolUnlockedState();
         GachaManager.TickRotationIfNeeded();
     }
 }
