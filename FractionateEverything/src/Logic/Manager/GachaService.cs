@@ -132,9 +132,10 @@ public static class GachaService {
 
     public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
         var results = new List<GachaResult>(count);
+        if (!GachaPool.IsValidPoolId(poolId)) return results;
         GachaPool pool = GetPool(poolId);
         if (pool == null) return results;
-        if (poolId == GachaPool.PoolIdLimited && !LimitedPoolUnlocked) return results;
+        if (GachaPool.IsLimitedPool(poolId) && !LimitedPoolUnlocked) return results;
         if (pool.RequiresPremiumTicket && ticketId != IFE精选抽卡券) return results;
         if (!TakeItemWithTip(ticketId, count, out _)) return results;
 
@@ -142,7 +143,7 @@ public static class GachaService {
             bool hardPity = GachaManager.IsHardPity(poolId);
             if (hardPity) {
                 int pityItemId = GetHardPityItem(poolId, pool);
-                bool pityIsUp = poolId == GachaPool.PoolIdUp && pool.UpItems.Contains(pityItemId);
+                bool pityIsUp = GachaPool.IsUpPool(poolId) && pool.UpItems.Contains(pityItemId);
                 bool pityIsRecipe = RewardItem(poolId, pityItemId);
                 GachaManager.RecordDraw(poolId, true);
                 results.Add(new GachaResult(pityItemId, GachaRarity.S, pityIsUp, pityIsRecipe));
@@ -153,13 +154,9 @@ public static class GachaService {
             GachaRarity rarity = RollRarity(pool, softBonus, hardPity);
             bool isUp = false;
 
-            if (poolId == GachaPool.PoolIdUp && rarity == GachaRarity.S) {
-                if (GachaManager.UpGuaranteeCount >= 2 || _rng.NextDouble() < 0.5) {
-                    isUp = true;
-                    GachaManager.UpGuaranteeCount = 0;
-                } else {
-                    GachaManager.UpGuaranteeCount++;
-                }
+            if (GachaPool.IsUpPool(poolId) && rarity == GachaRarity.S) {
+                isUp = GachaManager.ShouldGuaranteeUpOnSRoll(_rng.NextDouble());
+                GachaManager.RecordUpSResult(isUp);
             }
 
             int itemId;
@@ -190,7 +187,7 @@ public static class GachaService {
     }
 
     private static bool RewardItem(int poolId, int itemId) {
-        if (poolId == GachaPool.PoolIdPermanentRecipe) {
+        if (GachaPool.IsRecipePool(poolId)) {
             return TryReward(itemId);
         }
         AddItemToModData(itemId, 1, 0, false);

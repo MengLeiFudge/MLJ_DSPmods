@@ -23,10 +23,18 @@ public readonly struct GachaResult {
 
 /// <summary>卡池定义</summary>
 public class GachaPool {
+    /// <summary>
+    /// 卡池ID语义合同：
+    /// 0=常驻配方池（抽到配方时走配方奖励逻辑）
+    /// 1=常驻建筑池（抽到物品时入数据中心）
+    /// 2=UP池（仅该池存在UP语义）
+    /// 3=限定池（需要精选券且受解锁状态限制）
+    /// </summary>
     public const int PoolIdPermanentRecipe = 0;
     public const int PoolIdPermanentBuilding = 1;
     public const int PoolIdUp = 2;
     public const int PoolIdLimited = 3;
+    public const int PoolCount = 4;
 
     public readonly int PoolId;
     public readonly string NameKey;    // 翻译key
@@ -51,6 +59,26 @@ public class GachaPool {
         PoolId = poolId;
         NameKey = nameKey;
         RequiresPremiumTicket = requiresPremium;
+    }
+
+    /// <summary>统一的poolId有效性判断入口。</summary>
+    public static bool IsValidPoolId(int poolId) {
+        return poolId >= 0 && poolId < PoolCount;
+    }
+
+    /// <summary>仅常驻配方池在发奖时走配方奖励逻辑。</summary>
+    public static bool IsRecipePool(int poolId) {
+        return poolId == PoolIdPermanentRecipe;
+    }
+
+    /// <summary>仅UP池有UP命中与UP大保底语义。</summary>
+    public static bool IsUpPool(int poolId) {
+        return poolId == PoolIdUp;
+    }
+
+    /// <summary>限定池需要解锁且需精选券。</summary>
+    public static bool IsLimitedPool(int poolId) {
+        return poolId == PoolIdLimited;
     }
 
     /// <summary>从对应稀有度池随机选一个物品</summary>

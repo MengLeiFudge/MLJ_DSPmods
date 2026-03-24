@@ -4,9 +4,8 @@ using FE.Utils;
 namespace FE.Logic.Manager;
 
 public static class GachaManager {
-    // 每个卡池的保底计数器（poolId → 抽卡次数）
-    // 池ID定义：0=常驻配方池, 1=常驻建筑池, 2=UP池, 3=限定池
-    public static readonly int[] PityCount = new int[4];
+    // 每个卡池的保底计数器（poolId → 自上次出S后的连续抽数）
+    public static readonly int[] PityCount = new int[GachaPool.PoolCount];
 
     // UP池大保底标记（连续几次S未出UP）
     public static int UpGuaranteeCount = 0;
@@ -25,6 +24,9 @@ public static class GachaManager {
     /// count > SoftPityThreshold 时，每超出1抽额外+0.2%概率，上限+8%
     /// </summary>
     public static float GetSoftPityBonus(int poolId) {
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return 0f;
+        }
         int count = PityCount[poolId];
         if (count <= SoftPityThreshold) {
             return 0f;
@@ -38,18 +40,30 @@ public static class GachaManager {
     /// 判断是否触发硬保底
     /// </summary>
     public static bool IsHardPity(int poolId) {
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return false;
+        }
         return PityCount[poolId] >= HardPityThreshold;
+    }
+
+    /// <summary>
+    /// 保底重置语义：仅当本次抽卡产出S时重置计数。
+    /// </summary>
+    public static bool ShouldResetPityOnDraw(bool isS) {
+        return isS;
     }
 
     /// <summary>
     /// 记录一次抽卡（更新计数器）
     /// </summary>
     public static void RecordDraw(int poolId, bool isS) {
-        if (poolId >= 0 && poolId < PityCount.Length) {
-            PityCount[poolId]++;
-            if (isS) {
-                ResetPity(poolId);
-            }
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return;
+        }
+
+        PityCount[poolId]++;
+        if (ShouldResetPityOnDraw(isS)) {
+            ResetPity(poolId);
         }
     }
 
@@ -57,9 +71,28 @@ public static class GachaManager {
     /// 重置保底计数
     /// </summary>
     public static void ResetPity(int poolId) {
-        if (poolId >= 0 && poolId < PityCount.Length) {
-            PityCount[poolId] = 0;
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return;
         }
+        PityCount[poolId] = 0;
+    }
+
+    /// <summary>
+    /// UP池S抽的UP判定语义：连续2次S未UP后，下次S必UP；否则50%概率UP。
+    /// </summary>
+    public static bool ShouldGuaranteeUpOnSRoll(double random01) {
+        return UpGuaranteeCount >= 2 || random01 < 0.5;
+    }
+
+    /// <summary>
+    /// 记录UP池S抽结果：命中UP则重置，未命中则累加。
+    /// </summary>
+    public static void RecordUpSResult(bool isUp) {
+        if (isUp) {
+            UpGuaranteeCount = 0;
+            return;
+        }
+        UpGuaranteeCount++;
     }
 
     public static void TickRotationIfNeeded() {
