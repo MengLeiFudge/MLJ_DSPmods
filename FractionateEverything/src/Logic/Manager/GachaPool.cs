@@ -41,9 +41,9 @@ public class GachaPool {
     public readonly bool RequiresPremiumTicket; // 是否需要精选券
 
     // 各稀有度基础概率（0~1）
-    public float RateC = 0.80f;
+    public float RateC = 0.81f;
     public float RateB = 0.15f;
-    public float RateA = 0.045f;
+    public float RateA = 0.035f;
     public float RateS = 0.005f;
 
     // 各稀有度物品池（itemId列表）

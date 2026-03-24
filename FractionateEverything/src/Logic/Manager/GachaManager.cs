@@ -11,8 +11,10 @@ public static class GachaManager {
     public static int UpGuaranteeCount = 0;
 
     // 软保底阈值、硬保底阈值
-    public const int SoftPityThreshold = 70;
+    public const int SoftPityThreshold = 75;
     public const int HardPityThreshold = 90;
+    public const float SoftPityBonusPerDraw = 0.001f;
+    public const float SoftPityBonusCap = 0.015f;
 
     // UP轮换：72h = 72×60×60×60 ticks
     public const long UpRotationInterval = 216_000L;
@@ -21,7 +23,7 @@ public static class GachaManager {
 
     /// <summary>
     /// 计算当前抽卡的S触发概率加成（软保底）
-    /// count > SoftPityThreshold 时，每超出1抽额外+0.2%概率，上限+8%
+    /// count > SoftPityThreshold 时，每超出1抽额外+0.1%概率，上限+1.5%
     /// </summary>
     public static float GetSoftPityBonus(int poolId) {
         if (!GachaPool.IsValidPoolId(poolId)) {
@@ -32,8 +34,8 @@ public static class GachaManager {
             return 0f;
         }
         int excess = count - SoftPityThreshold;
-        float bonus = excess * 0.002f;
-        return bonus > 0.08f ? 0.08f : bonus;
+        float bonus = excess * SoftPityBonusPerDraw;
+        return bonus > SoftPityBonusCap ? SoftPityBonusCap : bonus;
     }
 
     /// <summary>
