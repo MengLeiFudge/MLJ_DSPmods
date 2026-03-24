@@ -48,6 +48,8 @@ public static class MainWindow {
         RuneMenu.AddTranslations();
         Register("抽奖", "Raffle");
         Register("商店", "Store");
+        Register("前往商店", "Go to Store");
+        Register("前往抽奖", "Go to Raffle");
         GachaWindow.AddTranslations();
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
@@ -197,6 +199,14 @@ public static class MainWindow {
     public static void SwitchMainPanelFrom(FEMainPanelType currentPanelType) {
         SelectMainPanel(NormalizeMainPanelSelection(currentPanelType));
         SwitchSelectedMainPanelAndOpen();
+    }
+
+    public static void NavigateToPage(string categoryName, int internalTabIndex = 0) {
+        if (OpenedMainPanelType == FEMainPanelType.Legacy && _legacyConfigWin != null) {
+            _legacyConfigWin.JumpToGroup(categoryName, internalTabIndex);
+        } else if (OpenedMainPanelType == FEMainPanelType.Analysis && _analysisMainWindow != null) {
+            _analysisMainWindow.JumpToCategory(categoryName, internalTabIndex);
+        }
     }
 
     private static FEMainPanelType NormalizeMainPanelSelection(FEMainPanelType panelType) {
