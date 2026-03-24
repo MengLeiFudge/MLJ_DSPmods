@@ -201,20 +201,24 @@ public static class TicketRaffle {
         }
         int shown = System.Math.Min(results.Count, ui.TxtResultLines.Length);
         for (int i = 0; i < shown; i++) {
-            var item = LDB.items.Select(results[i].ItemId);
-            string itemName = item != null ? item.name : results[i].ItemId.ToString();
-            string rarity = results[i].Rarity switch {
-                GachaRarity.S => "S",
-                GachaRarity.A => "A",
-                GachaRarity.B => "B",
-                _ => "C",
+            var res = results[i];
+            var item = LDB.items.Select(res.ItemId);
+            string itemName = item != null ? item.name : res.ItemId.ToString();
+            
+            string rarityStr = res.Rarity switch {
+                GachaRarity.S => "S".WithColor(Gold),
+                GachaRarity.A => "A".WithColor(Purple),
+                GachaRarity.B => "B".WithColor(Blue),
+                _ => "C".WithColor(White),
             };
-            string kind = results[i].IsRecipe
-                ? "配方"
-                : (itemName.Contains("原胚") ? "建筑" : "物品");
-            string upTag = results[i].IsUp ? "[UP] " : "";
+            
+            string upTag = res.IsUp ? "[UP] ".WithColor(Orange) : "";
+            
+            string kind = res.IsRecipe ? "配方" : (item != null && item.CanBuild ? "建筑" : "物品");
+            string kindStr = $"[{kind}]".WithColor(Gray);
+            
             if (ui.TxtResultLines[i] != null) {
-                ui.TxtResultLines[i].text = $"[{rarity}] {upTag}[{kind}] {itemName} x1";
+                ui.TxtResultLines[i].text = $"[{rarityStr}] {upTag}{kindStr} {itemName} x1";
             }
         }
         for (int i = shown; i < ui.TxtResultLines.Length; i++) {
