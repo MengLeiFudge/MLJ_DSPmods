@@ -32,8 +32,7 @@ public static class TicketRaffle {
     }
 
     public static long totalDraws;
-    private static readonly List<RaffleTabUi> Uis = [];
-    private static RectTransform pageRoot;
+    private static readonly List<RaffleTabUi> ActiveUis = [];
 
     private const float ResultAreaY = 120f;
 
@@ -71,25 +70,27 @@ public static class TicketRaffle {
         Register("限定池未解锁", "Limited pool is locked.", "限定池暂未解锁。需要先解锁宇宙矩阵。");
         Register("保底进度", "Pity");
         Register("清空结果", "Clear Results");
+        Register("抽1次", "Draw x1");
+        Register("抽10次", "Draw x10");
         Register("抽1次(普通)", "Draw x1 (Normal)");
         Register("抽10次(普通)", "Draw x10 (Normal)");
         Register("抽1次(精选)", "Draw x1 (Featured)");
         Register("抽10次(精选)", "Draw x10 (Featured)");
         Register("抽奖结果", "Raffle Results");
-        Register("普通积分", "Normal Points");
-        Register("精选积分", "Featured Points");
+        Register("当前池积分", "Current Pool Points");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        pageRoot = trans;
+    public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "配方抽奖", GachaPool.PoolIdPermanentRecipe);
+    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "原胚抽奖", GachaPool.PoolIdPermanentBuilding);
+    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "UP抽奖", GachaPool.PoolIdUp);
+    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "限定抽奖", GachaPool.PoolIdLimited);
+
+    private static void CreatePoolUI(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
         SyncTotalDrawsFromSharedState();
-        Uis.Clear();
-        Uis.Add(CreateTab(wnd, trans, "配方抽奖", GachaPool.PoolIdPermanentRecipe));
-        Uis.Add(CreateTab(wnd, trans, "原胚抽奖", GachaPool.PoolIdPermanentBuilding));
-        Uis.Add(CreateTab(wnd, trans, "UP抽奖", GachaPool.PoolIdUp));
-        Uis.Add(CreateTab(wnd, trans, "限定抽奖", GachaPool.PoolIdLimited));
+        var ui = CreateTab(wnd, trans, tabName, poolId);
+        ActiveUis.Add(ui);
     }
 
     private static RaffleTabUi CreateTab(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
@@ -111,8 +112,7 @@ public static class TicketRaffle {
 
         ui.BtnGoToStore = wnd.AddButton(860f, 8f, 100f, ui.Tab, "前往商店".Translate(), 13,
             onClick: () => {
-                int targetTab = (poolId == GachaPool.PoolIdUp || poolId == GachaPool.PoolIdLimited) ? 1 : 0;
-                MainWindow.NavigateToPage(MainWindowPageRegistry.StoreCategoryName, targetTab);
+                MainWindow.NavigateToPage(MainWindowPageRegistry.StoreCategoryName, poolId);
             });
 
         ui.TxtResultTitle = MyWindow.AddText(5f, ResultAreaY, ui.Tab, "抽奖结果".Translate(), 14);
@@ -132,6 +132,7 @@ public static class TicketRaffle {
         float btnY = ResultAreaY + 300f;
         ui.BtnClearResult = wnd.AddButton(5f, btnY, 130f, ui.Tab, "清空结果".Translate(), 14,
             onClick: () => ClearResults(ui));
+
         ui.BtnDraw1Normal = wnd.AddButton(145f, btnY, 150f, ui.Tab, "抽1次(普通)".Translate(), 14,
             onClick: () => StartDraw(ui, IFE普通抽卡券, 1));
         ui.BtnDraw10Normal = wnd.AddButton(305f, btnY, 150f, ui.Tab, "抽10次(普通)".Translate(), 14,
@@ -268,14 +269,19 @@ public static class TicketRaffle {
         if (ui.TxtPoolName != null) ui.TxtPoolName.text = GetPoolName(ui.PoolId);
         if (ui.TxtPoolDesc != null) ui.TxtPoolDesc.text = GetPoolDesc(ui.PoolId);
 
+        bool isLimited = ui.PoolId == GachaPool.PoolIdLimited;
         int normalCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE普通抽卡券));
         int premiumCount = (int)System.Math.Min(int.MaxValue, GetItemTotalCount(IFE精选抽卡券));
-        int normalPoints = GachaManager.GetPoolPointsByTicket(IFE普通抽卡券);
-        int featuredPoints = GachaManager.GetPoolPointsByTicket(IFE精选抽卡券);
-        if (ui.TxtNormalTicket != null) ui.TxtNormalTicket.text = $"普通券: {normalCount}    {"普通积分".Translate()}: {normalPoints}";
-        if (ui.TxtPremiumTicket != null) ui.TxtPremiumTicket.text = $"精选券: {premiumCount}    {"精选积分".Translate()}: {featuredPoints}";
+        int poolPoints = GachaManager.GetPoolPoints(ui.PoolId);
 
-        bool limitedLocked = ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked;
+        if (ui.TxtNormalTicket != null) {
+            ui.TxtNormalTicket.text = $"普通券: {normalCount}";
+        }
+        if (ui.TxtPremiumTicket != null) {
+            ui.TxtPremiumTicket.text = $"精选券: {premiumCount}    {"当前池积分".Translate()}: {poolPoints}";
+        }
+
+        bool limitedLocked = isLimited && !GachaService.LimitedPoolUnlocked;
         if (limitedLocked && ui.TxtPoolDesc != null) {
             ui.TxtPoolDesc.text = "限定池未解锁".Translate();
         }
@@ -292,19 +298,16 @@ public static class TicketRaffle {
         if (ui.BtnDraw10Premium?.button != null) ui.BtnDraw10Premium.button.interactable = on;
     }
 
-    private static bool IsPageVisible() {
-        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return false;
-        if (MainWindow.OpenedMainPanelType == FEMainPanelType.Analysis) {
-            return pageRoot != null && pageRoot.gameObject.activeInHierarchy;
-        }
-        return true;
-    }
-
     public static void UpdateUI() {
-        if (!IsPageVisible()) return;
-        for (int i = 0; i < Uis.Count; i++) {
-            var ui = Uis[i];
-            if (ui?.Tab == null || !ui.Tab.gameObject.activeSelf) continue;
+        if (MainWindow.OpenedMainPanelType == FEMainPanelType.None) return;
+        
+        for (int i = ActiveUis.Count - 1; i >= 0; i--) {
+            var ui = ActiveUis[i];
+            if (ui?.Tab == null) {
+                ActiveUis.RemoveAt(i);
+                continue;
+            }
+            if (!ui.Tab.gameObject.activeInHierarchy) continue;
             RefreshTabState(ui);
         }
     }

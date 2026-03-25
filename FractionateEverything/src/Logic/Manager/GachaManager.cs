@@ -8,14 +8,12 @@ namespace FE.Logic.Manager;
 public static class GachaManager {
     // 每个卡池的保底计数器（poolId → 自上次出S后的连续抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
+    public static readonly int[] PoolPoints = new int[GachaPool.PoolCount];
 
     public static int UpMainItemId = 0;
     public static readonly int[] UpSubItemIds = new int[3];
 
     public static bool GuaranteeMainOnNextSRoll = false;
-
-    public static int NormalPoolPoints = 0;
-    public static int FeaturedPoolPoints = 0;
 
     // 软保底阈值、硬保底阈值
     public const int SoftPityThreshold = 75;
@@ -90,18 +88,32 @@ public static class GachaManager {
         }
     }
 
+    private static void ReadLegacyTicketPoolPointsBlock(BinaryReader reader) {
+        _ = ClampNonNegative(ReadInt32OrDefault(reader, 0));
+        _ = ClampNonNegative(ReadInt32OrDefault(reader, 0));
+    }
+
+    private static void ApplyLegacyPointsMigrationRule(bool hasLegacyTicketPoolPoints, bool hasPoolPointsByPoolId) {
+        if (!hasLegacyTicketPoolPoints || hasPoolPointsByPoolId) {
+            return;
+        }
+
+        System.Array.Clear(PoolPoints, 0, PoolPoints.Length);
+    }
+
     private static void NormalizeImportedState() {
         for (int i = 0; i < PityCount.Length; i++) {
             PityCount[i] = ClampPityCount(PityCount[i]);
+        }
+
+        for (int i = 0; i < PoolPoints.Length; i++) {
+            PoolPoints[i] = ClampNonNegative(PoolPoints[i]);
         }
 
         UpMainItemId = ClampNonNegative(UpMainItemId);
         UpSubItemIds[0] = ClampNonNegative(UpSubItemIds[0]);
         UpSubItemIds[1] = ClampNonNegative(UpSubItemIds[1]);
         UpSubItemIds[2] = ClampNonNegative(UpSubItemIds[2]);
-
-        NormalPoolPoints = ClampNonNegative(NormalPoolPoints);
-        FeaturedPoolPoints = ClampNonNegative(FeaturedPoolPoints);
 
         UpRotationNextTick = NormalizeUpRotationNextTick(UpRotationNextTick);
         CurrentUpGroupIndex = NormalizeUpGroupIndex(CurrentUpGroupIndex);
@@ -184,50 +196,36 @@ public static class GachaManager {
         UpSubItemIds[2] = sub3ItemId;
     }
 
-    public static int GetPoolPointsByTicket(int ticketId) {
-        return ticketId switch {
-            IFE普通抽卡券 => NormalPoolPoints,
-            IFE精选抽卡券 => FeaturedPoolPoints,
-            _ => 0,
-        };
+    public static int GetPoolPoints(int poolId) {
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return 0;
+        }
+        return PoolPoints[poolId];
     }
 
-    public static void AddPoolPointsByTicket(int ticketId, int amount) {
+    public static void AddPoolPoints(int poolId, int amount) {
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return;
+        }
         if (amount <= 0) {
             return;
         }
-
-        switch (ticketId) {
-            case IFE普通抽卡券:
-                NormalPoolPoints += amount;
-                break;
-            case IFE精选抽卡券:
-                FeaturedPoolPoints += amount;
-                break;
-        }
+        PoolPoints[poolId] += amount;
     }
 
-    public static bool TryConsumePoolPointsByTicket(int ticketId, int amount) {
+    public static bool TryConsumePoolPoints(int poolId, int amount) {
+        if (!GachaPool.IsValidPoolId(poolId)) {
+            return false;
+        }
         if (amount <= 0) {
             return false;
         }
 
-        switch (ticketId) {
-            case IFE普通抽卡券:
-                if (NormalPoolPoints < amount) {
-                    return false;
-                }
-                NormalPoolPoints -= amount;
-                return true;
-            case IFE精选抽卡券:
-                if (FeaturedPoolPoints < amount) {
-                    return false;
-                }
-                FeaturedPoolPoints -= amount;
-                return true;
-            default:
-                return false;
+        if (PoolPoints[poolId] < amount) {
+            return false;
         }
+        PoolPoints[poolId] -= amount;
+        return true;
     }
 
     public static void TickRotationIfNeeded() {
@@ -272,13 +270,21 @@ public static class GachaManager {
                 bw.Write(UpSubItemIds[2]);
             }),
             ("TicketPoolPoints", bw => {
-                bw.Write(NormalPoolPoints);
-                bw.Write(FeaturedPoolPoints);
+                bw.Write(GetPoolPoints(GachaPool.PoolIdPermanentRecipe));
+                bw.Write(GetPoolPoints(GachaPool.PoolIdUp));
+            }),
+            ("PoolPointsByPoolId", bw => {
+                for (int i = 0; i < PoolPoints.Length; i++) {
+                    bw.Write(PoolPoints[i]);
+                }
             })
         );
     }
 
     public static void Import(BinaryReader r) {
+        bool hasLegacyTicketPoolPoints = false;
+        bool hasPoolPointsByPoolId = false;
+
         r.ReadBlocks(
             ("PityCount", br => {
                 for (int i = 0; i < PityCount.Length; i++) {
@@ -299,10 +305,18 @@ public static class GachaManager {
                 UpSubItemIds[2] = ClampNonNegative(ReadInt32OrDefault(br, 0));
             }),
             ("TicketPoolPoints", br => {
-                NormalPoolPoints = ClampNonNegative(ReadInt32OrDefault(br, 0));
-                FeaturedPoolPoints = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                hasLegacyTicketPoolPoints = true;
+                ReadLegacyTicketPoolPointsBlock(br);
+            }),
+            ("PoolPointsByPoolId", br => {
+                hasPoolPointsByPoolId = true;
+                for (int i = 0; i < PoolPoints.Length; i++) {
+                    PoolPoints[i] = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                }
             })
         );
+
+        ApplyLegacyPointsMigrationRule(hasLegacyTicketPoolPoints, hasPoolPointsByPoolId);
 
         NormalizeImportedState();
     }
@@ -314,8 +328,7 @@ public static class GachaManager {
         UpSubItemIds[1] = 0;
         UpSubItemIds[2] = 0;
         GuaranteeMainOnNextSRoll = false;
-        NormalPoolPoints = 0;
-        FeaturedPoolPoints = 0;
+        System.Array.Clear(PoolPoints, 0, PoolPoints.Length);
         UpRotationNextTick = UpRotationInterval;
         CurrentUpGroupIndex = 0;
     }

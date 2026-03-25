@@ -12,7 +12,7 @@ namespace FE.UI.View.GetItemRecipe;
 
 public static class LimitedTimeStore {
     private sealed class ExchangeRowUi {
-        public int TicketId;
+        public int PoolId;
         public int PointCost;
         public int OutputId;
         public int OutputCount;
@@ -21,95 +21,121 @@ public static class LimitedTimeStore {
         public UIButton ExchangeButton;
     }
 
-    private static RectTransform normalTab;
-    private static RectTransform featuredTab;
+    private sealed class StorePageUi {
+        public string PageName;
+        public int PoolId;
+        public RectTransform Tab;
+        public readonly List<ExchangeRowUi> Rows = [];
+        public Text TxtShardCount;
+        public Text TxtTicketCount;
+        public Text TxtPointCount;
+    }
 
-    private static readonly List<ExchangeRowUi> normalRows = [];
-    private static readonly List<ExchangeRowUi> featuredRows = [];
-
-    private static Text txtNormalTabShardCount;
-    private static Text txtNormalTabTicketCount;
-    private static Text txtNormalTabPointCount;
-    private static Text txtFeaturedTabShardCount;
-    private static Text txtFeaturedTabTicketCount;
-    private static Text txtFeaturedTabPointCount;
-
+    private static readonly Dictionary<string, StorePageUi> PageUis = [];
     private const float RowH = 46f;
-
     private static RectTransform pageRoot;
 
-    private static readonly (int ticketId, int pointCost, int outputId, int outputCount)[] PointRates = [
-        (IFE普通抽卡券, 1, I电磁矩阵, 1),
-        (IFE普通抽卡券, 10, I能量矩阵, 1),
-        (IFE普通抽卡券, 60, I结构矩阵, 1),
-        (IFE精选抽卡券, 1, I能量矩阵, 1),
-        (IFE精选抽卡券, 8, I结构矩阵, 1),
-        (IFE精选抽卡券, 30, I信息矩阵, 1),
-    ];
+    private static void BuildTabTopInfo(MyConfigWindow wnd, StorePageUi ui) {
+        bool isNormal = ui.PoolId == GachaPool.PoolIdPermanentRecipe || ui.PoolId == GachaPool.PoolIdPermanentBuilding;
+        wnd.AddButton(860f, 8f, 100f, ui.Tab, "前往抽奖".Translate(), 13,
+            onClick: () => {
+                MainWindow.NavigateToPage(MainWindowPageRegistry.GachaCategoryName, ui.PoolId);
+            });
+
+        wnd.AddImageButton(5f, 8f, ui.Tab, LDB.items.Select(IFE残片));
+        ui.TxtShardCount = MyWindow.AddText(48f, 8f, ui.Tab, "x 0", 13);
+        
+        int ticketId = isNormal ? IFE普通抽卡券 : IFE精选抽卡券;
+        wnd.AddImageButton(220f, 8f, ui.Tab, LDB.items.Select(ticketId));
+        ui.TxtTicketCount = MyWindow.AddText(263f, 8f, ui.Tab, "x 0", 13);
+        
+        ui.TxtPointCount = MyWindow.AddText(420f, 8f, ui.Tab, $"{"池积分".Translate()}: 0", 13);
+    }
+
+    private static void BuildPointRows(MyConfigWindow wnd, StorePageUi ui, float startY) {
+        float y = startY;
+        BuildSectionTitle(ui.Tab, y, "积分兑换");
+        y += 34f;
+
+        bool isNormal = ui.PoolId == GachaPool.PoolIdPermanentRecipe || ui.PoolId == GachaPool.PoolIdPermanentBuilding;
+        int ticketId = isNormal ? IFE普通抽卡券 : IFE精选抽卡券;
+
+        var rates = GetPoolExchangeRates(ui.PoolId);
+        foreach (var (pointCost, outputId, outputCount) in rates) {
+            ui.Rows.Add(CreateRow(wnd, ui.Tab, y, ui.PoolId, ticketId, pointCost, outputId, outputCount));
+            y += RowH;
+        }
+    }
+
+    private static List<(int pointCost, int outputId, int outputCount)> GetPoolExchangeRates(int poolId) {
+        return poolId switch {
+            GachaPool.PoolIdPermanentRecipe => [
+                (1, IFE残片, 10),
+                (10, I电磁矩阵, 1),
+                (50, I能量矩阵, 1)
+            ],
+            GachaPool.PoolIdPermanentBuilding => [
+                (1, IFE残片, 10),
+                (20, IFE交互塔原胚, 1),
+                (20, IFE矿物复制塔原胚, 1)
+            ],
+            GachaPool.PoolIdUp => [
+                (1, IFE残片, 20),
+                (30, I结构矩阵, 1),
+                (100, I信息矩阵, 1)
+            ],
+            GachaPool.PoolIdLimited => [
+                (1, IFE残片, 20),
+                (50, I引力矩阵, 1),
+                (200, I宇宙矩阵, 1)
+            ],
+            _ => []
+        };
+    }
 
     public static void AddTranslations() {
+
         Register("积分商店", "Point Store");
-        Register("普通积分商店", "Normal Point Store");
-        Register("精选积分商店", "Featured Point Store");
+        Register("配方商店", "Recipe Store");
+        Register("原胚商店", "Proto Store");
+        Register("UP商店", "UP Store");
+        Register("限定商店", "Limited Store");
         Register("兑换分类", "Exchange Categories");
         Register("积分商店导航", "Point Store Navigation");
         Register("持有", "Held");
         Register("最多", "Max");
         Register("兑换", "Exchange");
-        Register("普通积分", "Normal Points");
-        Register("精选积分", "Featured Points");
         Register("积分兑换", "Points Exchange");
+        Register("池积分", "Pool Points");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
+    public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreateStoreUI(wnd, trans, "配方商店", GachaPool.PoolIdPermanentRecipe);
+    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreateStoreUI(wnd, trans, "原胚商店", GachaPool.PoolIdPermanentBuilding);
+    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreateStoreUI(wnd, trans, "UP商店", GachaPool.PoolIdUp);
+    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreateStoreUI(wnd, trans, "限定商店", GachaPool.PoolIdLimited);
+
+    private static void CreateStoreUI(MyConfigWindow wnd, RectTransform trans, string pageName, int poolId) {
+        pageRoot = trans;
+        var ui = new StorePageUi {
+            PageName = pageName,
+            PoolId = poolId,
+            Tab = wnd.AddTab(trans, pageName)
+        };
+        PageUis[pageName] = ui;
+
+        BuildTabTopInfo(wnd, ui);
+        BuildPointRows(wnd, ui, 42f);
+    }
+
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         pageRoot = trans;
-        normalRows.Clear();
-        featuredRows.Clear();
-
-        normalTab = wnd.AddTab(trans, "普通积分商店");
-        featuredTab = wnd.AddTab(trans, "精选积分商店");
-
-        BuildTabTopInfo(wnd, normalTab, true);
-        BuildTabTopInfo(wnd, featuredTab, false);
-        BuildPointRows(wnd, normalTab, normalRows, IFE普通抽卡券, 42f);
-        BuildPointRows(wnd, featuredTab, featuredRows, IFE精选抽卡券, 42f);
-    }
-
-    private static void BuildTabTopInfo(MyConfigWindow wnd, RectTransform tab, bool isNormalTab) {
-        wnd.AddButton(860f, 8f, 100f, tab, "前往抽奖".Translate(), 13,
-            onClick: () => {
-                int targetTab = isNormalTab ? 0 : 2;
-                MainWindow.NavigateToPage(MainWindowPageRegistry.GachaCategoryName, targetTab);
-            });
-
-        if (isNormalTab) {
-            wnd.AddImageButton(5f, 8f, tab, LDB.items.Select(IFE残片));
-            txtNormalTabShardCount = MyWindow.AddText(48f, 8f, tab, "x 0", 13);
-            wnd.AddImageButton(220f, 8f, tab, LDB.items.Select(IFE普通抽卡券));
-            txtNormalTabTicketCount = MyWindow.AddText(263f, 8f, tab, "x 0", 13);
-            txtNormalTabPointCount = MyWindow.AddText(420f, 8f, tab, $"{"普通积分".Translate()}: 0", 13);
-            return;
-        }
-        wnd.AddImageButton(5f, 8f, tab, LDB.items.Select(IFE残片));
-        txtFeaturedTabShardCount = MyWindow.AddText(48f, 8f, tab, "x 0", 13);
-        wnd.AddImageButton(220f, 8f, tab, LDB.items.Select(IFE精选抽卡券));
-        txtFeaturedTabTicketCount = MyWindow.AddText(263f, 8f, tab, "x 0", 13);
-        txtFeaturedTabPointCount = MyWindow.AddText(420f, 8f, tab, $"{"精选积分".Translate()}: 0", 13);
-    }
-
-    private static void BuildPointRows(MyConfigWindow wnd, RectTransform page, List<ExchangeRowUi> rows, int ticketId,
-        float startY) {
-        float y = startY;
-        BuildSectionTitle(page, y, "积分兑换");
-        y += 34f;
-
-        foreach (var (rateTicketId, pointCost, outputId, outputCount) in PointRates) {
-            if (rateTicketId != ticketId) continue;
-            rows.Add(CreateRow(wnd, page, y, rateTicketId, pointCost, outputId, outputCount));
-            y += RowH;
-        }
+        PageUis.Clear();
+        CreateRecipeUI(wnd, trans);
+        CreateProtoUI(wnd, trans);
+        CreateUpUI(wnd, trans);
+        CreateLimitedUI(wnd, trans);
     }
 
     private static void BuildSectionTitle(RectTransform page, float y, string textKey) {
@@ -117,9 +143,9 @@ public static class LimitedTimeStore {
     }
 
     private static ExchangeRowUi CreateRow(MyConfigWindow wnd, RectTransform page, float y,
-        int ticketId, int pointCost, int outputId, int outputCount) {
+        int poolId, int ticketId, int pointCost, int outputId, int outputCount) {
         var row = new ExchangeRowUi {
-            TicketId = ticketId,
+            PoolId = poolId,
             PointCost = pointCost,
             OutputId = outputId,
             OutputCount = outputCount
@@ -146,7 +172,7 @@ public static class LimitedTimeStore {
     }
 
     private static void RefreshRow(ExchangeRowUi row) {
-        int points = GachaManager.GetPoolPointsByTicket(row.TicketId);
+        int points = GachaManager.GetPoolPoints(row.PoolId);
         int maxExchange = row.PointCost > 0 ? points / row.PointCost : 0;
         row.Slider.WithMinMaxValue(0f, maxExchange);
         int selected = Mathf.RoundToInt(row.Slider.Value);
@@ -170,7 +196,7 @@ public static class LimitedTimeStore {
         if (selected <= 0) return;
         int pointNeed = row.PointCost * selected;
         int outputCount = row.OutputCount * selected;
-        if (!GachaManager.TryConsumePoolPointsByTicket(row.TicketId, pointNeed)) return;
+        if (!GachaManager.TryConsumePoolPoints(row.PoolId, pointNeed)) return;
         AddItemToModData(row.OutputId, outputCount, 0, true);
         RefreshRow(row);
     }
@@ -189,23 +215,20 @@ public static class LimitedTimeStore {
         int shardCount = GetItemCount(IFE残片);
         int normalCount = GetItemCount(IFE普通抽卡券);
         int featuredCount = GetItemCount(IFE精选抽卡券);
-        int normalPoints = GachaManager.GetPoolPointsByTicket(IFE普通抽卡券);
-        int featuredPoints = GachaManager.GetPoolPointsByTicket(IFE精选抽卡券);
+        foreach (var ui in PageUis.Values) {
+            if (ui?.Tab == null || !ui.Tab.gameObject.activeSelf) continue;
 
-        if (normalTab != null && normalTab.gameObject.activeSelf) {
-            if (txtNormalTabShardCount != null) txtNormalTabShardCount.text = $"x {shardCount}";
-            if (txtNormalTabTicketCount != null) txtNormalTabTicketCount.text = $"x {normalCount}";
-            if (txtNormalTabPointCount != null) txtNormalTabPointCount.text = $"{"普通积分".Translate()}: {normalPoints}";
-            for (int i = 0; i < normalRows.Count; i++) {
-                RefreshRow(normalRows[i]);
-            }
-        }
-        if (featuredTab != null && featuredTab.gameObject.activeSelf) {
-            if (txtFeaturedTabShardCount != null) txtFeaturedTabShardCount.text = $"x {shardCount}";
-            if (txtFeaturedTabTicketCount != null) txtFeaturedTabTicketCount.text = $"x {featuredCount}";
-            if (txtFeaturedTabPointCount != null) txtFeaturedTabPointCount.text = $"{"精选积分".Translate()}: {featuredPoints}";
-            for (int i = 0; i < featuredRows.Count; i++) {
-                RefreshRow(featuredRows[i]);
+            if (ui.TxtShardCount != null) ui.TxtShardCount.text = $"x {shardCount}";
+            
+            bool isNormal = ui.PoolId == GachaPool.PoolIdPermanentRecipe || ui.PoolId == GachaPool.PoolIdPermanentBuilding;
+            int ticketCount = isNormal ? normalCount : featuredCount;
+            if (ui.TxtTicketCount != null) ui.TxtTicketCount.text = $"x {ticketCount}";
+            
+            int points = GachaManager.GetPoolPoints(ui.PoolId);
+            if (ui.TxtPointCount != null) ui.TxtPointCount.text = $"{"池积分".Translate()}: {points}";
+
+            for (int i = 0; i < ui.Rows.Count; i++) {
+                RefreshRow(ui.Rows[i]);
             }
         }
     }
