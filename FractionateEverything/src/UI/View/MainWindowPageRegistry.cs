@@ -40,8 +40,15 @@ public static class MainWindowPageRegistry {
         new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
         new(ItemManageCategoryName, "符文系统", RuneMenu.CreateUI, RuneMenu.UpdateUI),
 
-        new(GachaCategoryName, "配方抽奖/原胚抽奖/UP抽奖/限定抽奖", TicketRaffle.CreateUI, TicketRaffle.UpdateUI),
-        new(StoreCategoryName, "普通积分商店/精选积分商店", LimitedTimeStore.CreateUI, LimitedTimeStore.UpdateUI),
+        new(GachaCategoryName, "配方抽奖", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(GachaCategoryName, "原胚抽奖", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(GachaCategoryName, "UP抽奖", TicketRaffle.CreateUpUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(GachaCategoryName, "限定抽奖", TicketRaffle.CreateLimitedUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+
+        new(StoreCategoryName, "配方商店", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "原胚商店", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "UP商店", LimitedTimeStore.CreateUpUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "限定商店", LimitedTimeStore.CreateLimitedUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
 
         new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
         new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),

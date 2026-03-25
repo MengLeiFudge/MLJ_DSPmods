@@ -182,7 +182,7 @@ public static class GachaService {
                 }
                 bool pityIsRecipe = RewardItem(poolId, pityItemId);
                 GachaManager.RecordDraw(poolId, true);
-                GachaManager.AddPoolPointsByTicket(ticketId, 1);
+                GachaManager.AddPoolPoints(poolId, 1);
                 results.Add(new GachaResult(pityItemId, GachaRarity.S, pityIsUp, pityIsRecipe));
                 continue;
             }
@@ -204,7 +204,7 @@ public static class GachaService {
             }
 
             GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
-            GachaManager.AddPoolPointsByTicket(ticketId, 1);
+            GachaManager.AddPoolPoints(poolId, 1);
             results.Add(new GachaResult(itemId, rarity, isUp, isRecipe));
         }
 
