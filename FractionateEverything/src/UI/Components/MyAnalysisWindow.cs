@@ -968,6 +968,14 @@ public class MyAnalysisWindow : MyWindow {
             targetImage.color = templateImage.color;
         }
 
+        // 顶部分类按钮是从原生统计面板的特殊模板克隆出来的，
+        // 视觉状态会被重建，但默认不会补齐 UIButton 的音频配置。
+        // 这里显式复制一份，让顶部分类切换与左侧分页保持相同的点击音效。
+        UIButton audioTemplate = nativeTopCategoryHighlightStyleTemplateButton ?? templateButton;
+        if (audioTemplate != null) {
+            targetButton.audios = audioTemplate.audios;
+        }
+
     }
 
     private static UIButton.Transition FindFirstImageTransition(UIButton button) {
