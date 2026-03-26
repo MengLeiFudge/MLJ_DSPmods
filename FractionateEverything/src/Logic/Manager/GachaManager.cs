@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class GachaManager {
-    // 每个卡池的保底计数器（poolId → 自上次出S后的连续抽数）
+    // 每个卡池的保底计数器（poolId → 自上次出S后的连续未出S抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
     public static readonly int[] PoolPoints = new int[GachaPool.PoolCount];
 
@@ -15,11 +15,10 @@ public static class GachaManager {
 
     public static bool GuaranteeMainOnNextSRoll = false;
 
-    // 软保底阈值、硬保底阈值
-    public const int SoftPityThreshold = 75;
+    // 原神风格：1-73 抽 0.6%，74-89 抽每抽额外 +6%，第 90 抽必出
+    public const int SoftPityStartDraw = 74;
     public const int HardPityThreshold = 90;
-    public const float SoftPityBonusPerDraw = 0.001f;
-    public const float SoftPityBonusCap = 0.015f;
+    public const float SoftPityBonusPerDraw = 0.06f;
 
     public const long UpRotationInterval = 216_000L;
     public static long UpRotationNextTick = UpRotationInterval;
@@ -29,7 +28,8 @@ public static class GachaManager {
         if (value < 0) {
             return 0;
         }
-        return value > HardPityThreshold ? HardPityThreshold : value;
+        int maxPityCount = HardPityThreshold - 1;
+        return value > maxPityCount ? maxPityCount : value;
     }
 
     private static int ClampNonNegative(int value) {
@@ -88,19 +88,6 @@ public static class GachaManager {
         }
     }
 
-    private static void ReadLegacyTicketPoolPointsBlock(BinaryReader reader) {
-        _ = ClampNonNegative(ReadInt32OrDefault(reader, 0));
-        _ = ClampNonNegative(ReadInt32OrDefault(reader, 0));
-    }
-
-    private static void ApplyLegacyPointsMigrationRule(bool hasLegacyTicketPoolPoints, bool hasPoolPointsByPoolId) {
-        if (!hasLegacyTicketPoolPoints || hasPoolPointsByPoolId) {
-            return;
-        }
-
-        System.Array.Clear(PoolPoints, 0, PoolPoints.Length);
-    }
-
     private static void NormalizeImportedState() {
         for (int i = 0; i < PityCount.Length; i++) {
             PityCount[i] = ClampPityCount(PityCount[i]);
@@ -120,20 +107,26 @@ public static class GachaManager {
     }
 
     /// <summary>
-    /// 计算当前抽卡的S触发概率加成（软保底）
-    /// count > SoftPityThreshold 时，每超出1抽额外+0.1%概率，上限+1.5%
+    /// 计算当前这一抽的 S 概率。
+    /// 1-73 抽固定基础概率；74-89 抽每抽额外 +6%；90 抽硬保底。
     /// </summary>
-    public static float GetSoftPityBonus(int poolId) {
+    public static float GetCurrentSRate(int poolId, float baseRateS) {
         if (!GachaPool.IsValidPoolId(poolId)) {
             return 0f;
         }
-        int count = PityCount[poolId];
-        if (count <= SoftPityThreshold) {
-            return 0f;
+
+        int nextDraw = PityCount[poolId] + 1;
+        if (nextDraw >= HardPityThreshold) {
+            return 1f;
         }
-        int excess = count - SoftPityThreshold;
-        float bonus = excess * SoftPityBonusPerDraw;
-        return bonus > SoftPityBonusCap ? SoftPityBonusCap : bonus;
+
+        if (nextDraw < SoftPityStartDraw) {
+            return baseRateS;
+        }
+
+        int boostedDrawCount = nextDraw - SoftPityStartDraw + 1;
+        float rate = baseRateS + boostedDrawCount * SoftPityBonusPerDraw;
+        return rate > 1f ? 1f : rate;
     }
 
     /// <summary>
@@ -143,14 +136,7 @@ public static class GachaManager {
         if (!GachaPool.IsValidPoolId(poolId)) {
             return false;
         }
-        return PityCount[poolId] >= HardPityThreshold;
-    }
-
-    /// <summary>
-    /// 保底重置语义：仅当本次抽卡产出S时重置计数。
-    /// </summary>
-    public static bool ShouldResetPityOnDraw(bool isS) {
-        return isS;
+        return PityCount[poolId] >= HardPityThreshold - 1;
     }
 
     /// <summary>
@@ -161,10 +147,14 @@ public static class GachaManager {
             return;
         }
 
-        PityCount[poolId]++;
-        if (ShouldResetPityOnDraw(isS)) {
+        if (isS) {
             ResetPity(poolId);
+            return;
         }
+
+        int nextCount = PityCount[poolId] + 1;
+        int maxPityCount = HardPityThreshold - 1;
+        PityCount[poolId] = nextCount > maxPityCount ? maxPityCount : nextCount;
     }
 
     /// <summary>
@@ -269,10 +259,6 @@ public static class GachaManager {
                 bw.Write(UpSubItemIds[1]);
                 bw.Write(UpSubItemIds[2]);
             }),
-            ("TicketPoolPoints", bw => {
-                bw.Write(GetPoolPoints(GachaPool.PoolIdPermanentRecipe));
-                bw.Write(GetPoolPoints(GachaPool.PoolIdUp));
-            }),
             ("PoolPointsByPoolId", bw => {
                 for (int i = 0; i < PoolPoints.Length; i++) {
                     bw.Write(PoolPoints[i]);
@@ -282,9 +268,6 @@ public static class GachaManager {
     }
 
     public static void Import(BinaryReader r) {
-        bool hasLegacyTicketPoolPoints = false;
-        bool hasPoolPointsByPoolId = false;
-
         r.ReadBlocks(
             ("PityCount", br => {
                 for (int i = 0; i < PityCount.Length; i++) {
@@ -304,19 +287,12 @@ public static class GachaManager {
                 UpSubItemIds[1] = ClampNonNegative(ReadInt32OrDefault(br, 0));
                 UpSubItemIds[2] = ClampNonNegative(ReadInt32OrDefault(br, 0));
             }),
-            ("TicketPoolPoints", br => {
-                hasLegacyTicketPoolPoints = true;
-                ReadLegacyTicketPoolPointsBlock(br);
-            }),
             ("PoolPointsByPoolId", br => {
-                hasPoolPointsByPoolId = true;
                 for (int i = 0; i < PoolPoints.Length; i++) {
                     PoolPoints[i] = ClampNonNegative(ReadInt32OrDefault(br, 0));
                 }
             })
         );
-
-        ApplyLegacyPointsMigrationRule(hasLegacyTicketPoolPoints, hasPoolPointsByPoolId);
 
         NormalizeImportedState();
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 
@@ -38,13 +39,12 @@ public class GachaPool {
 
     public readonly int PoolId;
     public readonly string NameKey;    // 翻译key
-    public readonly bool RequiresPremiumTicket; // 是否需要精选券
 
     // 各稀有度基础概率（0~1）
-    public float RateC = 0.81f;
+    public float RateC = 0.809f;
     public float RateB = 0.15f;
     public float RateA = 0.035f;
-    public float RateS = 0.005f;
+    public float RateS = 0.006f;
 
     // 各稀有度物品池（itemId列表）
     public List<int> PoolC = [];
@@ -55,10 +55,9 @@ public class GachaPool {
     // UP物品（仅UP池使用）
     public List<int> UpItems = [];
 
-    public GachaPool(int poolId, string nameKey, bool requiresPremium) {
+    public GachaPool(int poolId, string nameKey) {
         PoolId = poolId;
         NameKey = nameKey;
-        RequiresPremiumTicket = requiresPremium;
     }
 
     /// <summary>统一的poolId有效性判断入口。</summary>
@@ -79,6 +78,20 @@ public class GachaPool {
     /// <summary>限定池需要解锁且需精选券。</summary>
     public static bool IsLimitedPool(int poolId) {
         return poolId == PoolIdLimited;
+    }
+
+    /// <summary>统一的卡池用券合同。</summary>
+    public static bool CanUseTicket(int poolId, int ticketId) {
+        if (!IsValidPoolId(poolId)) {
+            return false;
+        }
+
+        return poolId switch {
+            PoolIdPermanentRecipe or PoolIdPermanentBuilding => ticketId == IFE普通抽卡券,
+            PoolIdUp => ticketId == IFE普通抽卡券 || ticketId == IFE精选抽卡券,
+            PoolIdLimited => ticketId == IFE精选抽卡券,
+            _ => false,
+        };
     }
 
     /// <summary>从对应稀有度池随机选一个物品</summary>

@@ -53,6 +53,7 @@ public static class MainWindow {
         GachaWindow.AddTranslations();
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
+        TicketExchange.AddTranslations();
         Register("进度系统", "Progress System");
         MainTask.AddTranslations();
         RecurringTask.AddTranslations();
@@ -78,6 +79,7 @@ public static class MainWindow {
 
         TicketRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
+        TicketExchange.LoadConfig(configFile);
 
         MainTask.LoadConfig(configFile);
         RecurringTask.LoadConfig(configFile);
@@ -350,6 +352,7 @@ public static class MainWindow {
             ("RuneMenu", RuneMenu.Import),
             ("TicketRaffle", TicketRaffle.Import),
             ("LimitedTimeStore", LimitedTimeStore.Import),
+            ("TicketExchange", TicketExchange.Import),
             ("MainTask", MainTask.Import),
             ("RecurringTask", RecurringTask.Import),
             ("Achievements", Achievements.Import),
@@ -373,6 +376,7 @@ public static class MainWindow {
             ("RuneMenu", RuneMenu.Export),
             ("TicketRaffle", TicketRaffle.Export),
             ("LimitedTimeStore", LimitedTimeStore.Export),
+            ("TicketExchange", TicketExchange.Export),
             ("MainTask", MainTask.Export),
             ("RecurringTask", RecurringTask.Export),
             ("Achievements", Achievements.Export),
@@ -397,6 +401,7 @@ public static class MainWindow {
 
         TicketRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();
+        TicketExchange.IntoOtherSave();
 
         MainTask.IntoOtherSave();
         RecurringTask.IntoOtherSave();
