@@ -1,68 +1,64 @@
 # UI — Unity UI Layer
 
-34 files, ~8000 lines. All Views are **static classes** managed centrally by `MainWindow`.
+34 files, ~8k lines。View 仍是静态类架构，但主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
 
 ## Structure
 
 ```
 UI/
-├── Components/   # Reusable widgets (MyWindow, MyImageButton, MySlider, …)
-├── Patches/      # UI-specific Harmony patches (icon injection, combo box, etc.)
-└── View/         # Feature panels — one subdir per feature domain
-    ├── MainWindow.cs               # Central hub: routes lifecycle to all Views
-    ├── CoreOperate/                # Recipe/building operate panels
-    ├── GetItemRecipe/              # Raffle + LimitedTimeStore
-    ├── ProgressSystem/             # Quests, achievements, dev diary
-    ├── RuneSystem/                 # Rune menu (精华)
-    ├── Setting/                    # VIP, sandbox mode, miscellaneous config
-    ├── Statistic/                  # Recipe gallery, fractionation stats
-    └── ModPackage/                 # Important items, item interaction
+├── Components/   # 通用组件；含 MyAnalysisWindow
+├── Patches/      # UI Harmony 补丁（图标、控件兼容）
+└── View/
+    ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
+    ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
+    └── GetItemRecipe/         # 抽奖/商店重构区（TicketRaffle + LimitedTimeStore）
 ```
 
-## View Lifecycle (MainWindow delegates to each View)
+## 双主面板契约（必须遵守）
+
+- 枚举：`FEMainPanelType = None/Legacy/Analysis`
+- 选中态：`SelectedMainPanelType`
+- 打开态：`OpenedMainPanelType`
+- 切换入口：`SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`
+- 跨页跳转统一走：`MainWindow.NavigateToPage(category, tabIndex)`
+- 面板共享态统一走：`MainWindow.SharedPanelState`
+
+## 页面注册规则
+
+在 `MainWindowPageRegistry.allPages` 注册页面：
 
 ```csharp
-// Every static View class must implement:
-static void AddTranslations()          // register i18n strings
-static void LoadConfig(ConfigFile cfg) // bind ConfigEntry<T>
-static void CreateUI(MyConfigWindow wnd, RectTransform tab)
-static void UpdateUI()                 // called each frame when tab visible
-// + IModCanSave: Import / Export / IntoOtherSave
+new(category, subpage,
+    createUI, updateUI,
+    enabledInAnalysis: bool,
+    sandboxOnly: bool,
+    createUIInAnalysis: optional)
 ```
 
-## Adding a New View Tab
+- Legacy 默认可见
+- Analysis 仅 `enabledInAnalysis=true` 才可见
+- Analysis 可选专用渲染：`createUIInAnalysis`
 
-1. Create `UI/View/MyFeature/MyFeatureView.cs` as a `public static class`
-2. Implement all 4 lifecycle methods + IModCanSave
-3. In `MainWindow`: add calls in `AddTranslations`, `LoadConfig`, `CreateUI`, `UpdateUI`
-4. Translations registered here, not in Logic
+## View 最小接口（静态类）
 
-## Unity UI Patterns Used
-
-**Positioning** — always `NormalizeRectUtils`:
 ```csharp
-wnd.AddImageButton(x, y, tab, itemProto);   // x/y relative to tab origin
-wnd.AddText2(x + 40, y, tab, "text");
+AddTranslations();
+LoadConfig(ConfigFile);
+CreateUI(MyConfigWindow, RectTransform);
+UpdateUI();
+Import/Export/IntoOtherSave();
 ```
 
-**Proto binding** — image buttons bind directly to game protos:
-```csharp
-exchangeImages[i].Proto = LDB.items.Select(itemId);  // auto-sets sprite
-```
+## 关键约束
 
-**Frame update guard** — always gate UpdateUI on tab visibility:
-```csharp
-public static void UpdateUI() {
-    if (!tab.gameObject.activeSelf) return;
-    ...
-}
-```
+- `UpdateUI()` 必须先做可见性/面板态判断（避免离屏刷新）
+- 文本颜色在 `UI/View/*` 禁止硬编码，统一走 `RichTextUtils` 常量 + `WithColor`
+- 新页面优先接入 `MainWindowPageRegistry`，不要再在 `MainWindow` 手写大段分类分发逻辑
 
 ## Patches Folder
 
-- `FEFractionatorWindow.cs` — mod fractionator window (copies vanilla window, modifies layout once on create)
-- `FractionatorBriefInfoPatch.cs` — fractionator brief info display
-- `IconSetPatch.cs` — injects mod item icons into DSP's icon atlas
-- `UIRecipeEntryPatch.cs` / `UIComboBoxPatch.cs` / `UIButtonPatch.cs` — minor UI compatibility fixes
+- `FEFractionatorWindow.cs`：分馏塔窗口布局复制与改造
+- `IconSetPatch.cs`：mod 图标注入
+- `UIRecipeEntryPatch.cs` / `UIComboBoxPatch.cs` / `UIButtonPatch.cs`：控件兼容
 
-These patches are **UI-only**. Game-logic patches belong in `Logic/Manager/`.
+UI 补丁只处理界面层；游戏状态逻辑放 `Logic/Manager/`。

@@ -1,41 +1,38 @@
-# UI/View — Feature Panels
+# UI/View — 功能面板层
 
-18 files across 7 feature subdirs + `MainWindow.cs`. Each subdir = one self-contained feature.
+当前 28 个 `.cs` 文件：根层 `MainWindow`/`MainWindowPageRegistry` + 7 个业务子域。核心变化：**双主面板架构**与**抽奖/商店重构拆分**已落地。
 
-## MainWindow.cs — Central Hub
+## 入口与路由
 
-Routes all lifecycle calls to every View. When adding a new View, register it here only:
-```csharp
-public static void AddTranslations() { FracRecipeOperate.AddTranslations(); MyNewView.AddTranslations(); ... }
-public static void LoadConfig(ConfigFile cfg) { ... }
-public static void CreateUI(MyConfigWindow wnd) { ... }
-public static void UpdateUI() { ... }
-```
+- `MainWindow.cs`：
+  - 面板状态机（`SelectedMainPanelType` / `OpenedMainPanelType`）
+  - Legacy 与 Analysis 的打开/关闭/切换
+  - 保存块 `MainPanelSelection`
+  - 跨页导航 `NavigateToPage(category, index)`
+- `MainWindowPageRegistry.cs`：
+  - 分类顺序 `categoryOrder`
+  - 页面注册 `allPages`
+  - 面板过滤 `IsEnabledFor(panelType, sandboxMode)`
 
-## Subdirectory Reference
+## 子目录索引（仅列变化敏感域）
 
-| Dir | Files | Key classes | Purpose |
-|---|---|---|---|
-| `CoreOperate/` | 3 | `FracRecipeOperate` (570L), `BuildingOperate` (417L), `VanillaRecipeOperate` | Recipe/building upgrade panels |
-| `GetItemRecipe/` | 2 | `TicketRaffle` (1262L), `LimitedTimeStore` (509L) | Raffle + timed shop |
-| `RuneSystem/` | 1 | `RuneMenu` (645L) | Rune (精华) management |
-| `ProgressSystem/` | 4 | `DevelopmentDiary`, `Achievements`, `MainTask`, `RecurringTask` | Quest + diary |
-| `Setting/` | 3 | `VipFeatures`, `SandboxMode`, `Miscellaneous` | Config/cheat options |
-| `Statistic/` | 2 | `FracStatistic`, `RecipeGallery` | Stats + recipe browser |
-| `ModPackage/` | 2 | `ItemInteraction`, `ImportantItem` | DataCentre item ops |
+| Dir | 文件数 | 关注点 |
+|---|---:|---|
+| `GetItemRecipe/` | 9 | 抽奖 + 商店 + 动画/兑换子组件；本轮重构核心 |
+| `CoreOperate/` | 3 | 配方/建筑操作主面板 |
+| `ProgressSystem/` | 4 | 任务/成就/开发日志 |
+| `Setting/` | 3 | 面板风格切换按钮与沙盒开关 |
 
-## Conventions Unique to View
+## 新约定（必须）
 
-**Harmony patches inside Views** — `TicketRaffle` and `LimitedTimeStore` both patch `GameMain.FixedUpdate` as postfix for background tick logic. If the feature needs a per-tick callback, add the patch inline in the View class (not in `Logic/Manager/`).
+1. 页面可见性由 `MainWindowPageRegistry` 控制，避免在 `MainWindow` 分散 if/else。
+2. 跨“抽奖↔商店”跳转统一使用 `MainWindow.NavigateToPage`。
+3. 需要跨面板共享的数据（如抽卡总次数）统一进 `MainWindow.SharedPanelState`。
+4. `UpdateUI` 必须先判断页面可见性 + 当前主面板类型。
+5. `UI/View/*` 颜色文本禁止硬编码，统一 `RichTextUtils`。
 
-**ExchangeInfo pattern** — `LimitedTimeStore` uses `ExchangeInfo` data class with `Import/Export` for per-slot save data. Follow this pattern for any new per-slot state.
+## 反模式
 
-**Raffle vs LimitedTimeStore** — Both in `GetItemRecipe/` but fully independent:
-- `TicketRaffle` — ticket-based random draw, managed by `TicketRaffle.GameMain_FixedUpdate_Postfix`
-- `LimitedTimeStore` — timed shop refresh, managed by `LimitedTimeStore.GameData_FixedUpdate_Postfix`
-
-**Text color rule (mandatory)** — In `UI/View/*`, do not hardcode colors with `new Color(...)` or raw hex rich-text color tags. Always use color constants from `Utils/RichTextUtils.cs` (`Gray/White/Green/Blue/Purple/Red/Orange/Gold`) and format via `WithColor(...)` (or assign those constants directly to `Text.color`).
-
-## Large File Warning
-
-`TicketRaffle.cs` (1262 lines) — do not add more features; extract to a helper class if needed.
+- 继续把新页面写成 `MainWindow` 内硬编码注册（应放 `MainWindowPageRegistry`）
+- 在子页面直接访问另一窗口实例（应通过 `MainWindow` 导航/状态接口）
+- 在离屏页面持续刷新 UI（性能浪费 + 状态错乱）
