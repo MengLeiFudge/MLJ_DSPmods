@@ -7,7 +7,6 @@ namespace FE.Logic.Manager;
 
 public static class GachaService {
     public static string CurrentUpPoolNameKey = "UP池";
-    public static bool LimitedPoolUnlocked = false;
     public static int UpGroupCount => UpItemGroups.Length;
 
     private static readonly int[][] UpItemGroups = [
@@ -44,21 +43,28 @@ public static class GachaService {
     public static void InitPools() {
         _pools.Clear();
 
-        var permanentRecipe = new GachaPool(GachaPool.PoolIdPermanentRecipe, "常驻配方池", false);
+        var permanentRecipe = new GachaPool(GachaPool.PoolIdPermanentRecipe, "常驻配方池");
         FillRecipePool(permanentRecipe);
         _pools.Add(permanentRecipe);
 
-        var permanentBuilding = new GachaPool(GachaPool.PoolIdPermanentBuilding, "常驻建筑池", false);
+        var permanentBuilding = new GachaPool(GachaPool.PoolIdPermanentBuilding, "常驻建筑池");
         FillBuildingPool(permanentBuilding);
         _pools.Add(permanentBuilding);
 
-        var up = new GachaPool(GachaPool.PoolIdUp, CurrentUpPoolNameKey, false);
+        var up = new GachaPool(GachaPool.PoolIdUp, CurrentUpPoolNameKey);
         FillUpPool(up);
         _pools.Add(up);
 
-        var limited = new GachaPool(GachaPool.PoolIdLimited, "限定池", true);
+        var limited = new GachaPool(GachaPool.PoolIdLimited, "限定池");
         FillLimitedPool(limited);
         _pools.Add(limited);
+    }
+
+    public static bool IsLimitedPoolUnlocked() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return false;
+        }
+        return GameMain.history.ItemUnlocked(I宇宙矩阵);
     }
 
     public static void RefreshUpPool() {
@@ -160,12 +166,16 @@ public static class GachaService {
     }
 
     public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
+        if (count <= 0) {
+            return [];
+        }
+
         var results = new List<GachaResult>(count);
         if (!GachaPool.IsValidPoolId(poolId)) return results;
         GachaPool pool = GetPool(poolId);
         if (pool == null) return results;
-        if (GachaPool.IsLimitedPool(poolId) && !LimitedPoolUnlocked) return results;
-        if (pool.RequiresPremiumTicket && ticketId != IFE精选抽卡券) return results;
+        if (GachaPool.IsLimitedPool(poolId) && !IsLimitedPoolUnlocked()) return results;
+        if (!GachaPool.CanUseTicket(poolId, ticketId)) return results;
         if (!TakeItemWithTip(ticketId, count, out _)) return results;
 
         for (int i = 0; i < count; i++) {
@@ -187,8 +197,8 @@ public static class GachaService {
                 continue;
             }
 
-            float softBonus = GachaManager.GetSoftPityBonus(poolId);
-            GachaRarity rarity = RollRarity(pool, softBonus, hardPity);
+            float currentSRate = GachaManager.GetCurrentSRate(poolId, pool.RateS);
+            GachaRarity rarity = RollRarity(pool, currentSRate, hardPity);
 
             int itemId;
             bool isRecipe;
@@ -312,14 +322,13 @@ public static class GachaService {
         return false;
     }
 
-    private static GachaRarity RollRarity(GachaPool pool, float softPityBonus, bool forceS) {
+    private static GachaRarity RollRarity(GachaPool pool, float currentSRate, bool forceS) {
         if (forceS) {
             return GachaRarity.S;
         }
         double rand = _rng.NextDouble();
-        float boostedS = pool.RateS + softPityBonus;
-        if (rand < boostedS) return GachaRarity.S;
-        rand -= boostedS;
+        if (rand < currentSRate) return GachaRarity.S;
+        rand -= currentSRate;
         if (rand < pool.RateA) return GachaRarity.A;
         rand -= pool.RateA;
         if (rand < pool.RateB) return GachaRarity.B;

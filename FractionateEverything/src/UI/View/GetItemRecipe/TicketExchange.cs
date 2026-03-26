@@ -78,7 +78,7 @@ public static class TicketExchange {
     }
     
     public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) return;
+        if (tab == null || !tab.gameObject.activeSelf) return;
         if (fragmentCountText != null) {
             fragmentCountText.text = GameMain.mainPlayer?.package.GetItemCount(IFE残片).ToString() ?? "0";
         }

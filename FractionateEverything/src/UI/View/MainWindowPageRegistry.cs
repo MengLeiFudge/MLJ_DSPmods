@@ -49,6 +49,7 @@ public static class MainWindowPageRegistry {
         new(StoreCategoryName, "原胚商店", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
         new(StoreCategoryName, "UP商店", LimitedTimeStore.CreateUpUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
         new(StoreCategoryName, "限定商店", LimitedTimeStore.CreateLimitedUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "奖券兑换", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
         new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
         new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),

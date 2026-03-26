@@ -182,8 +182,7 @@ public static class TicketRaffle {
     }
 
     private static void StartDraw(RaffleTabUi ui, int ticketId, int count) {
-        SyncLimitedPoolUnlockedState();
-        if (ui.PoolId == GachaPool.PoolIdLimited && !GachaService.LimitedPoolUnlocked) {
+        if (ui.PoolId == GachaPool.PoolIdLimited && !GachaService.IsLimitedPoolUnlocked()) {
             UIRealtimeTip.Popup("限定池未解锁".Translate(), true, 2);
             return;
         }
@@ -195,10 +194,6 @@ public static class TicketRaffle {
         SyncTotalDrawsToSharedState();
         RenderResults(ui, results);
         RefreshTabState(ui);
-    }
-
-    private static void SyncLimitedPoolUnlockedState() {
-        GachaService.LimitedPoolUnlocked = GachaLimitedUnlocks.IsLimitedPoolUnlocked();
     }
 
     private static void ClearResults(RaffleTabUi ui) {
@@ -281,7 +276,7 @@ public static class TicketRaffle {
             ui.TxtPremiumTicket.text = $"精选券: {premiumCount}    {"当前池积分".Translate()}: {poolPoints}";
         }
 
-        bool limitedLocked = isLimited && !GachaService.LimitedPoolUnlocked;
+        bool limitedLocked = isLimited && !GachaService.IsLimitedPoolUnlocked();
         if (limitedLocked && ui.TxtPoolDesc != null) {
             ui.TxtPoolDesc.text = "限定池未解锁".Translate();
         }
@@ -292,10 +287,10 @@ public static class TicketRaffle {
     }
 
     private static void SetDrawButtonsInteractable(RaffleTabUi ui, bool on) {
-        if (ui.BtnDraw1Normal?.button != null) ui.BtnDraw1Normal.button.interactable = on;
-        if (ui.BtnDraw10Normal?.button != null) ui.BtnDraw10Normal.button.interactable = on;
-        if (ui.BtnDraw1Premium?.button != null) ui.BtnDraw1Premium.button.interactable = on;
-        if (ui.BtnDraw10Premium?.button != null) ui.BtnDraw10Premium.button.interactable = on;
+        if (ui.BtnDraw1Normal?.button != null) ui.BtnDraw1Normal.button.interactable = on && GachaPool.CanUseTicket(ui.PoolId, IFE普通抽卡券);
+        if (ui.BtnDraw10Normal?.button != null) ui.BtnDraw10Normal.button.interactable = on && GachaPool.CanUseTicket(ui.PoolId, IFE普通抽卡券);
+        if (ui.BtnDraw1Premium?.button != null) ui.BtnDraw1Premium.button.interactable = on && GachaPool.CanUseTicket(ui.PoolId, IFE精选抽卡券);
+        if (ui.BtnDraw10Premium?.button != null) ui.BtnDraw10Premium.button.interactable = on && GachaPool.CanUseTicket(ui.PoolId, IFE精选抽卡券);
     }
 
     public static void UpdateUI() {
@@ -313,10 +308,17 @@ public static class TicketRaffle {
     }
 
     public static void Import(BinaryReader r) {
-        r.ReadBlocks();
-        SyncTotalDrawsFromSharedState();
+        totalDraws = 0;
+        r.ReadBlocks(
+            ("TotalDraws", br => totalDraws = br.ReadInt64())
+        );
+        SyncTotalDrawsToSharedState();
     }
-    public static void Export(BinaryWriter w) { w.WriteBlocks(); }
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("TotalDraws", bw => bw.Write(totalDraws))
+        );
+    }
     public static void IntoOtherSave() {
         totalDraws = 0;
         SyncTotalDrawsToSharedState();
@@ -326,7 +328,6 @@ public static class TicketRaffle {
     [HarmonyPatch(typeof(GameMain), nameof(GameMain.FixedUpdate))]
     public static void GameMain_FixedUpdate_Postfix() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) return;
-        SyncLimitedPoolUnlockedState();
         GachaManager.TickRotationIfNeeded();
     }
 }
