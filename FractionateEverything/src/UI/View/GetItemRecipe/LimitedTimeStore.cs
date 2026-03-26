@@ -12,6 +12,7 @@ namespace FE.UI.View.GetItemRecipe;
 
 public static class LimitedTimeStore {
     private sealed class ExchangeRowUi {
+        public StorePageUi Page;
         public int PoolId;
         public int PointCost;
         public int OutputId;
@@ -29,6 +30,7 @@ public static class LimitedTimeStore {
         public Text TxtShardCount;
         public Text TxtTicketCount;
         public Text TxtPointCount;
+        public Text TxtLastExchange;
     }
 
     private static readonly Dictionary<string, StorePageUi> PageUis = [];
@@ -50,6 +52,10 @@ public static class LimitedTimeStore {
         ui.TxtTicketCount = MyWindow.AddText(263f, 8f, ui.Tab, "x 0", 13);
         
         ui.TxtPointCount = MyWindow.AddText(420f, 8f, ui.Tab, $"{"池积分".Translate()}: 0", 13);
+        ui.TxtLastExchange = MyWindow.AddText(5f, 30f, ui.Tab, "", 12);
+        if (ui.TxtLastExchange != null) {
+            ui.TxtLastExchange.rectTransform.sizeDelta = new Vector2(840f, 22f);
+        }
     }
 
     private static void BuildPointRows(MyConfigWindow wnd, StorePageUi ui, float startY) {
@@ -62,7 +68,7 @@ public static class LimitedTimeStore {
 
         var rates = GetPoolExchangeRates(ui.PoolId);
         foreach (var (pointCost, outputId, outputCount) in rates) {
-            ui.Rows.Add(CreateRow(wnd, ui.Tab, y, ui.PoolId, ticketId, pointCost, outputId, outputCount));
+            ui.Rows.Add(CreateRow(wnd, ui, y, ui.PoolId, ticketId, pointCost, outputId, outputCount));
             y += RowH;
         }
     }
@@ -107,6 +113,7 @@ public static class LimitedTimeStore {
         Register("兑换", "Exchange");
         Register("积分兑换", "Points Exchange");
         Register("池积分", "Pool Points");
+        Register("最近兑换", "Recent Exchange");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -126,7 +133,7 @@ public static class LimitedTimeStore {
         PageUis[pageName] = ui;
 
         BuildTabTopInfo(wnd, ui);
-        BuildPointRows(wnd, ui, 42f);
+        BuildPointRows(wnd, ui, 64f);
     }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
@@ -142,24 +149,25 @@ public static class LimitedTimeStore {
         MyWindow.AddText(0f, y, page, textKey.Translate(), 14);
     }
 
-    private static ExchangeRowUi CreateRow(MyConfigWindow wnd, RectTransform page, float y,
+    private static ExchangeRowUi CreateRow(MyConfigWindow wnd, StorePageUi page, float y,
         int poolId, int ticketId, int pointCost, int outputId, int outputCount) {
         var row = new ExchangeRowUi {
+            Page = page,
             PoolId = poolId,
             PointCost = pointCost,
             OutputId = outputId,
             OutputCount = outputCount
         };
 
-        wnd.AddImageButton(0f, y, page, LDB.items.Select(ticketId));
-        MyWindow.AddText(43f, y + 8f, page, $"积分x{pointCost} ->", 13);
-        wnd.AddImageButton(108f, y, page, LDB.items.Select(outputId));
-        MyWindow.AddText(151f, y + 8f, page, $"x{outputCount}", 13);
+        wnd.AddImageButton(0f, y, page.Tab, LDB.items.Select(ticketId));
+        MyWindow.AddText(43f, y + 8f, page.Tab, $"积分x{pointCost} ->", 13);
+        wnd.AddImageButton(108f, y, page.Tab, LDB.items.Select(outputId));
+        MyWindow.AddText(151f, y + 8f, page.Tab, $"x{outputCount}", 13);
 
-        row.Slider = wnd.AddSlider(220f, y + 8f, page, 0f, 0f, 1f, "F0", 280f);
+        row.Slider = wnd.AddSlider(220f, y + 8f, page.Tab, 0f, 0f, 1f, "F0", 280f);
         row.Slider.WithSmallerHandle(6f, 0f);
-        row.MaxText = MyWindow.AddText(510f, y + 8f, page, "", 13);
-        row.ExchangeButton = wnd.AddButton(620f, y, 120f, page, "", 13, onClick: () => ExchangeRow(row));
+        row.MaxText = MyWindow.AddText(510f, y + 8f, page.Tab, "", 13);
+        row.ExchangeButton = wnd.AddButton(620f, y, 120f, page.Tab, "", 13, onClick: () => ExchangeRow(row));
         row.Slider.OnValueChanged += () => RefreshRow(row);
 
         RefreshRow(row);
@@ -198,6 +206,12 @@ public static class LimitedTimeStore {
         int outputCount = row.OutputCount * selected;
         if (!GachaManager.TryConsumePoolPoints(row.PoolId, pointNeed)) return;
         AddItemToModData(row.OutputId, outputCount, 0, true);
+        row.Slider.Value = 0f;
+        string itemName = LDB.items.Select(row.OutputId)?.name ?? row.OutputId.ToString();
+        if (row.Page?.TxtLastExchange != null) {
+            row.Page.TxtLastExchange.text = $"{ "最近兑换".Translate() }: {itemName} x{outputCount}".WithColor(Green);
+        }
+        UIRealtimeTip.Popup($"获得 {itemName} x{outputCount}");
         RefreshRow(row);
     }
 

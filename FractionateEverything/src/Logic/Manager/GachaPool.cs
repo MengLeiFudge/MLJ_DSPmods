@@ -13,12 +13,16 @@ public readonly struct GachaResult {
     public readonly GachaRarity Rarity;
     public readonly bool IsUp;         // 是否为UP物品
     public readonly bool IsRecipe;     // 是否为配方（true=配方，false=物品）
+    public readonly bool WasHardPity;  // 是否由硬保底直接产出
+    public readonly bool HitUpMainTarget; // 是否命中主UP目标
 
-    public GachaResult(int itemId, GachaRarity rarity, bool isUp, bool isRecipe) {
+    public GachaResult(int itemId, GachaRarity rarity, bool isUp, bool isRecipe, bool wasHardPity = false, bool hitUpMainTarget = false) {
         ItemId = itemId;
         Rarity = rarity;
         IsUp = isUp;
         IsRecipe = isRecipe;
+        WasHardPity = wasHardPity;
+        HitUpMainTarget = hitUpMainTarget;
     }
 }
 
