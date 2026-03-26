@@ -1,64 +1,39 @@
-# Logic/Manager — Game-State Managers
+# Logic/Manager — 状态管理层
 
-8 static manager classes, 4300+ lines total. Most embed Harmony patches inline.
+12 个管理文件，约 7100 行。重点变化：抽奖系统已从 UI 内联逻辑抽离为 `GachaManager + GachaService + GachaPool (+ GalleryBonus)`。
 
-## Files & Responsibilities
+## 文件职责（当前）
 
-| File | Lines | Domain |
-|---|---|---|
-| `ProcessManager.cs` | 1070 | Fractionator tick logic, power, belt I/O, inline Harmony patches |
-| `ItemManager.cs` | 800 | Item value table (`itemValue[]`), inventory ops, DataCentre bag |
-| `BuildingManager.cs` | 632 | Building registration, upgrades, level persistence, output stacking |
-| `TechManager.cs` | 600 | Tech registration, unlock checks, level-up triggers |
-| `StationManager.cs` | 559 | Interaction station tick logic, item transfer to DataCentre |
-| `TutorialManager.cs` | 552 | Quest / tutorial system |
-| `RuneManager.cs` | 327 | Rune (精华) system: slots, upgrade, decompose |
-| `RecipeManager.cs` | 316 | Recipe registry (`RecipeTypeArr`), lookup, level persistence |
+| File | Lines | Responsibility |
+|---|---:|---|
+| `StationManager.cs` | 2397 | 物流交互站主循环与物品流转 |
+| `ProcessManager.cs` | 917 | 分馏器热路径更新/补丁 |
+| `ItemManager.cs` | 641 | 物品价值与数据中心物品操作 |
+| `TutorialManager.cs` | 616 | 任务/教程推进 |
+| `BuildingManager.cs` | 573 | 建筑注册与等级数据 |
+| `TechManager.cs` | 514 | 科技注册与解锁联动 |
+| `GachaManager.cs` | 337 | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
+| `GachaService.cs` | 336 | 卡池构建、抽卡结算、奖励发放 |
+| `RuneManager.cs` | 309 | 精华系统 |
+| `RecipeManager.cs` | 294 | 配方索引/查找 |
+| `GachaPool.cs` | 97 | 卡池与稀有度模型定义 |
+| `GachaGalleryBonusManager.cs` | 71 | 图鉴完成度加成缓存刷新 |
 
-## Key Data Structures
+## 抽奖域边界（重构后）
 
-```csharp
-// RecipeManager
-static BaseRecipe[][] RecipeTypeArr;   // [ERecipe][inputItemId] → recipe
+- `GachaPool`：池 ID 合同 + 概率池 + `PickRandom`
+- `GachaManager`：状态机（保底、积分、UP 组轮换）+ Import/Export
+- `GachaService`：纯业务流程（构池、Draw、奖励）
+- UI 层（`TicketRaffle`/`LimitedTimeStore`）只负责展示与交互，不承载核心概率/保底规则
 
-// ItemManager
-static float[] itemValue;             // [itemId] → value in electromagnetic matrix units
-static ConcurrentDictionary<int, int> modDataBag;  // DataCentre inventory
+## 序列化约束
 
-// BuildingManager
-static int[] outputDic;               // fractionator output slot state
-```
+- 统一 `WriteBlocks/ReadBlocks` 标签化存档
+- `GachaManager` 对导入值有显式归一化（非负、范围、组索引合法化）
+- 兼容老档的迁移规则集中在 `GachaManager`，不要分散到 UI
 
-## ProcessManager — Fractionator Core
+## 反模式
 
-`InternalUpdate<T>(ref T fractionator, ...)` is the hot path called 60×/sec per fractionator.
-Steps: lookup recipe → `recipe.GetOutputs()` → write belt output → update power.
-
-Inline Harmony patches inside ProcessManager:
-- `GameMain.FixedUpdate` postfix — Interaction Tower trait logic (every 60 ticks)
-- `FractionatorComponent.*` patches — belt I/O overrides
-
-## Serialization
-
-All Managers use `WriteBlocks`/`ReadBlocks` directly — no manual version or count writing.
-Block tags are stable strings (e.g. `"Level"`, `"Recipe"`, `"Building"`);
-unknown tags are skipped automatically (forward-compatible).
-
-```csharp
-// Export
-w.WriteBlocks(("Tag", bw => { bw.Write(field); }));
-
-// Import
-r.ReadBlocks(("Tag", br => { field = br.ReadInt32(); }));
-```
-
-No legacy fallback code in any Manager.
-Top-level version guard (`version < 10` → skip) lives in `FractionateEverything.Import` only.
-
-Special case in `BuildingManager`: `OutputExtendExport`/`OutputExtendImport` no longer
-write/read their own version number — they are wrapped inside a parent `WriteBlocks`/`ReadBlocks` block.
-## Anti-Patterns
-
-- `ProcessManager` already >1000 lines — do not add new unrelated features; extract to a new manager
-- Never access `BuildingManager.outputDic` from outside `ProcessManager`
-- Never call `LDB.items.Select()` on the hot path; cache in `ItemManager` at startup
+- 在 `TicketRaffle` 里重写概率/保底逻辑（应进 `GachaService/GachaManager`）
+- 跳过 `GachaPool.IsValidPoolId` 直接访问数组
+- 在热路径里重复做高开销查询（遵循缓存/预构建思路）

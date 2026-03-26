@@ -56,9 +56,10 @@ FractionateEverything/src/
 │   ├── Components/             # Reusable widgets (MyWindow, MyImageButton, …) → Components/AGENTS.md
 │   ├── Patches/                # UI-specific Harmony patches
 │   └── View/                   # Feature panels → View/AGENTS.md
-│       ├── MainWindow.cs       # Central lifecycle hub for all Views
+│       ├── MainWindow.cs       # Dual-panel lifecycle hub (Legacy + Analysis)
+│       ├── MainWindowPageRegistry.cs # Page registry + category filtering + Analysis availability
 │       ├── CoreOperate/        # Recipe/building operate panels
-│       ├── GetItemRecipe/      # Raffle + LimitedTimeStore
+│       ├── GetItemRecipe/      # Raffle + Store (refactored; UI delegates gacha logic to Logic/Manager)
 │       ├── ProgressSystem/     # Quests, achievements, dev diary
 │       ├── RuneSystem/         # Rune (精华) menu
 │       ├── Setting/            # VIP, sandbox, misc config
@@ -255,7 +256,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
-- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
+- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `UI/View/GetItemRecipe/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
 
 ## Analysis UI Layout Baseline (Mandatory)
 
