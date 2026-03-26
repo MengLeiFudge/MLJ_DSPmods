@@ -17,10 +17,6 @@ public static class GachaExchangeRate {
 
     public static readonly (int shardCost, int ticketId, int ticketCount)[] ShardRates = [
         (10, IFE普通抽卡券, 1),
-        (50, IFE普通抽卡券, 1),
-        (200, IFE普通抽卡券, 1),
-        (500, IFE精选抽卡券, 1),
-        (1000, IFE精选抽卡券, 1),
-        (2000, IFE精选抽卡券, 1),
+        (50, IFE精选抽卡券, 1),
     ];
 }

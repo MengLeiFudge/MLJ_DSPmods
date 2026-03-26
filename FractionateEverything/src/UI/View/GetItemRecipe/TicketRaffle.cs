@@ -22,6 +22,7 @@ public static class TicketRaffle {
         public Text TxtNormalTicket;
         public Text TxtPremiumTicket;
         public Text TxtResultTitle;
+        public Text TxtResultSummary;
         public readonly Text[] TxtResultLines = new Text[10];
         public UIButton BtnClearResult;
         public UIButton BtnDraw1Normal;
@@ -34,7 +35,7 @@ public static class TicketRaffle {
     public static long totalDraws;
     private static readonly List<RaffleTabUi> ActiveUis = [];
 
-    private const float ResultAreaY = 120f;
+    private const float ResultAreaY = 140f;
 
     private static void SyncTotalDrawsFromSharedState() {
         totalDraws = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? 0;
@@ -53,20 +54,20 @@ public static class TicketRaffle {
         Register("限定抽奖", "Limited Raffle");
         Register("配方奖池", "Recipe Pool");
         Register("配方奖池说明",
-            "Mostly Fragments, with small chance for recipes. Hard pity grants 1 random high-quality reward.",
-            "大部分产出为残片，少量概率产出配方。90抽保底获得随机高品质奖励。");
+            "C mainly gives fragments; B gives basic/mid recipes; A adds high recipes and FE cores; S gives high recipes or FE cores.",
+            "C级主要产出残片；B级产出基础/中阶配方；A级追加高阶配方与分馏配方核心；S级产出高阶配方或分馏配方核心。");
         Register("原胚奖池", "Proto Pool");
         Register("原胚奖池说明",
-            "Only prototype items. Hard pity grants 1 random prototype.",
-            "仅产出各种原胚物品。90抽保底获得随机原胚奖励。");
+            "Prototype-only pool. Each rarity maps to a distinct embryo tier and S grants the directional embryo.",
+            "仅产出原胚。C/B/A/S 分别对应原胚品质层级，S级固定为分馏塔定向原胚。");
         Register("UP池", "UP Pool");
         Register("UP池说明",
-            "UP-exclusive item rewards. 1 Main + 3 Side targets (40%/20%/20%/20%). If Main misses this S roll, next S roll guarantees Main. UP group rotates every 1 hour.",
-            "仅产出UP专属物品奖励。1主+3副（40%/20%/20%/20%）；若本轮S未中主目标，则下一轮S保主。UP组每1小时轮换一次。");
+            "C gives side-UP prototypes, B gives the main-UP prototype, A gives side-UP buildings, and S uses 1 Main + 3 Side targets (40%/20%/20%/20%). If Main misses this S roll, next S roll guarantees Main.",
+            "C级产出副UP原胚；B级产出主UP原胚；A级产出副UP成品；S级按 1主+3副（40%/20%/20%/20%）结算。若本轮S未中主目标，则下一轮S保主。");
         Register("限定池", "Limited Pool");
         Register("限定池说明",
-            "Item-only pool. Hard pity grants 1 Vanilla Recipe Core. Requires Featured Ticket.",
-            "仅产出物品。90抽保底获得1个原版配方核心。需要精选抽卡券。");
+            "High-tier item pool. C starts with boost chips, B mixes chips and FE recipe cores, A mixes FE and Vanilla recipe cores, and S grants Vanilla Recipe Cores. Requires Featured Ticket.",
+            "高阶物资池。C级从增幅芯片起步，B级混入分馏配方核心，A级混入原版配方核心，S级固定原版配方核心。需要精选抽卡券。");
         Register("限定池未解锁", "Limited pool is locked.", "限定池暂未解锁。需要先解锁宇宙矩阵。");
         Register("保底进度", "Pity");
         Register("清空结果", "Clear Results");
@@ -78,6 +79,11 @@ public static class TicketRaffle {
         Register("抽10次(精选)", "Draw x10 (Featured)");
         Register("抽奖结果", "Raffle Results");
         Register("当前池积分", "Current Pool Points");
+        Register("结果摘要", "Summary");
+        Register("UP轮换已停用", "Single UP group active.", "当前仅有 1 组 UP 目标");
+        Register("UP轮换说明", "UP targets rotate every 1 hour.", "UP组每1小时轮换一次。");
+        Register("触发硬保底", "Hard Pity");
+        Register("命中主UP", "Main UP");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -104,11 +110,11 @@ public static class TicketRaffle {
         ui.TxtUpRotationTime = MyWindow.AddText(720f, 28f, ui.Tab, "", 11);
         ui.TxtPoolDesc = MyWindow.AddText(5f, 38f, ui.Tab, GetPoolDesc(poolId), 13);
         if (ui.TxtPoolDesc != null) {
-            ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 96f);
+            ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 84f);
         }
 
-        ui.TxtNormalTicket = MyWindow.AddText(5f, 86f, ui.Tab, "", 12);
-        ui.TxtPremiumTicket = MyWindow.AddText(220f, 86f, ui.Tab, "", 12);
+        ui.TxtNormalTicket = MyWindow.AddText(5f, 110f, ui.Tab, "", 12);
+        ui.TxtPremiumTicket = MyWindow.AddText(220f, 110f, ui.Tab, "", 12);
 
         ui.BtnGoToStore = wnd.AddButton(860f, 8f, 100f, ui.Tab, "前往商店".Translate(), 13,
             onClick: () => {
@@ -119,7 +125,11 @@ public static class TicketRaffle {
         if (ui.TxtResultTitle != null) {
             ui.TxtResultTitle.rectTransform.sizeDelta = new Vector2(420f, 24f);
         }
-        float y = ResultAreaY + 30f;
+        ui.TxtResultSummary = MyWindow.AddText(5f, ResultAreaY + 24f, ui.Tab, "", 12);
+        if (ui.TxtResultSummary != null) {
+            ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(960f, 24f);
+        }
+        float y = ResultAreaY + 50f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
             ui.TxtResultLines[i] = MyWindow.AddText(5f, y, ui.Tab, "动态刷新", 13);
             if (ui.TxtResultLines[i] != null) {
@@ -162,7 +172,10 @@ public static class TicketRaffle {
             string sub1Name = GetItemName(GachaManager.UpSubItemIds[0]);
             string sub2Name = GetItemName(GachaManager.UpSubItemIds[1]);
             string sub3Name = GetItemName(GachaManager.UpSubItemIds[2]);
-            return $"{"UP池说明".Translate()}\n主目标(40%)：{mainName}\n副目标(20%)：{sub1Name}、{sub2Name}、{sub3Name}";
+            return $"C：{GetPoolItemNames(poolId, GachaRarity.C)}  B：{GetPoolItemNames(poolId, GachaRarity.B)}\nA：{sub1Name}、{sub2Name}、{sub3Name}\nS主目标(40%)：{mainName}\nS副目标(20%)：{sub1Name}、{sub2Name}、{sub3Name}";
+        }
+        if (poolId == GachaPool.PoolIdPermanentBuilding || poolId == GachaPool.PoolIdLimited) {
+            return $"C：{GetPoolItemNames(poolId, GachaRarity.C)}\nB：{GetPoolItemNames(poolId, GachaRarity.B)}\nA：{GetPoolItemNames(poolId, GachaRarity.A)}\nS：{GetPoolItemNames(poolId, GachaRarity.S)}";
         }
         string key = poolId switch {
             GachaPool.PoolIdPermanentRecipe => "配方奖池说明",
@@ -172,6 +185,31 @@ public static class TicketRaffle {
             _ => "配方奖池说明",
         };
         return key.Translate();
+    }
+
+    private static string GetPoolItemNames(int poolId, GachaRarity rarity) {
+        GachaPool pool = GachaService.GetPool(poolId);
+        if (pool == null) {
+            return "-";
+        }
+
+        List<int> itemIds = rarity switch {
+            GachaRarity.C => pool.PoolC,
+            GachaRarity.B => pool.PoolB,
+            GachaRarity.A => pool.PoolA,
+            GachaRarity.S => pool.PoolS,
+            _ => pool.PoolC,
+        };
+
+        var names = new List<string>(itemIds.Count);
+        for (int i = 0; i < itemIds.Count; i++) {
+            string itemName = GetItemName(itemIds[i]);
+            if (!names.Contains(itemName)) {
+                names.Add(itemName);
+            }
+        }
+
+        return names.Count == 0 ? "-" : string.Join("、", names);
     }
 
     private static string GetItemName(int itemId) {
@@ -187,12 +225,14 @@ public static class TicketRaffle {
             return;
         }
 
+        int pityBefore = GachaManager.PityCount[ui.PoolId];
+        int pointsBefore = GachaManager.GetPoolPoints(ui.PoolId);
         var results = GachaService.Draw(ui.PoolId, ticketId, count);
         if (results == null || results.Count == 0) return;
 
         totalDraws += results.Count;
         SyncTotalDrawsToSharedState();
-        RenderResults(ui, results);
+        RenderResults(ui, results, pityBefore, pointsBefore);
         RefreshTabState(ui);
     }
 
@@ -200,15 +240,62 @@ public static class TicketRaffle {
         if (ui.TxtResultTitle != null) {
             ui.TxtResultTitle.text = "抽奖结果".Translate();
         }
+        if (ui.TxtResultSummary != null) {
+            ui.TxtResultSummary.text = "";
+        }
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
             if (ui.TxtResultLines[i] != null) ui.TxtResultLines[i].text = "";
         }
     }
 
-    private static void RenderResults(RaffleTabUi ui, List<GachaResult> results) {
+    private static void RenderResults(RaffleTabUi ui, List<GachaResult> results, int pityBefore, int pointsBefore) {
         if (ui.TxtResultTitle != null) {
             ui.TxtResultTitle.text = $"{"抽奖结果".Translate()} ({results.Count})";
         }
+
+        int sCount = 0;
+        int aCount = 0;
+        int bCount = 0;
+        int cCount = 0;
+        int mainUpHitCount = 0;
+        bool hasHardPity = false;
+        for (int i = 0; i < results.Count; i++) {
+            var result = results[i];
+            switch (result.Rarity) {
+                case GachaRarity.S:
+                    sCount++;
+                    break;
+                case GachaRarity.A:
+                    aCount++;
+                    break;
+                case GachaRarity.B:
+                    bCount++;
+                    break;
+                default:
+                    cCount++;
+                    break;
+            }
+
+            if (result.HitUpMainTarget) {
+                mainUpHitCount++;
+            }
+            hasHardPity |= result.WasHardPity;
+        }
+
+        if (ui.TxtResultSummary != null) {
+            int pityAfter = GachaManager.PityCount[ui.PoolId];
+            int pointsAfter = GachaManager.GetPoolPoints(ui.PoolId);
+            string raritySummary =
+                $"{($"S×{sCount}").WithColor(Gold)} / {($"A×{aCount}").WithColor(Purple)} / {($"B×{bCount}").WithColor(Blue)} / {($"C×{cCount}").WithColor(White)}";
+            string mainUpSummary = mainUpHitCount > 0 ? $"    主UP命中 x{mainUpHitCount}".WithColor(Orange) : "";
+            ui.TxtResultSummary.text =
+                $"{"结果摘要".Translate()}：{raritySummary}"
+                + $"    积分 +{pointsAfter - pointsBefore}".WithColor(Green)
+                + $"    保底 {pityBefore}->{pityAfter}".WithColor(Gray)
+                + (hasHardPity ? $"    {"触发硬保底".Translate()}".WithColor(Gold) : "")
+                + mainUpSummary;
+        }
+
         int shown = System.Math.Min(results.Count, ui.TxtResultLines.Length);
         for (int i = 0; i < shown; i++) {
             var res = results[i];
@@ -222,13 +309,15 @@ public static class TicketRaffle {
                 _ => "C".WithColor(White),
             };
             
+            string pityTag = res.WasHardPity ? "[保底] ".WithColor(Gold) : "";
+            string mainUpTag = res.HitUpMainTarget ? "[主UP] ".WithColor(Orange) : "";
             string upTag = res.IsUp ? "[UP] ".WithColor(Orange) : "";
             
             string kind = res.IsRecipe ? "配方" : (item != null && item.CanBuild ? "建筑" : "物品");
             string kindStr = $"[{kind}]".WithColor(Gray);
             
             if (ui.TxtResultLines[i] != null) {
-                ui.TxtResultLines[i].text = $"[{rarityStr}] {upTag}{kindStr} {itemName} x1";
+                ui.TxtResultLines[i].text = $"[{rarityStr}] {pityTag}{mainUpTag}{upTag}{kindStr} {itemName} x1";
             }
         }
         for (int i = shown; i < ui.TxtResultLines.Length; i++) {
@@ -239,12 +328,14 @@ public static class TicketRaffle {
     private static void RefreshPityText(RaffleTabUi ui) {
         if (ui.TxtPityProgress == null) return;
         int pity = GachaManager.PityCount[ui.PoolId];
-        ui.TxtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold}";
+        GachaPool pool = GachaService.GetPool(ui.PoolId);
+        float nextSRate = pool == null ? 0f : GachaManager.GetCurrentSRate(ui.PoolId, pool.RateS);
+        ui.TxtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold - 1}  下一抽S率: {nextSRate * 100f:F1}%";
     }
 
     private static void RefreshUpRotationText(RaffleTabUi ui) {
         if (ui.TxtUpRotationTime == null) return;
-        if (ui.PoolId != GachaPool.PoolIdUp) {
+        if (ui.PoolId != GachaPool.PoolIdUp || GachaService.UpGroupCount <= 1) {
             ui.TxtUpRotationTime.text = "";
             return;
         }
