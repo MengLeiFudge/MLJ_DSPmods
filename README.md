@@ -164,57 +164,38 @@ wsl --install
 wsl.exe --install Ubuntu
 
 # 进入Ubuntu系统，有两种方式：
-# 方式1：先打开PowerShell（下面简称PS），然后输入wsl即可进入
+# 方式1：先打开PowerShell，然后输入wsl即可进入
 # 方式2：打开PowerShell，可与看到+的右边还有一个v，点一下这个v，选择Ubuntu即可
 ```
 
 #### 1.2 解决wsl中使用apt会卡住的问题
 
-先测试一下连通性：进入Ubuntu系统，看一下百度和谷歌能不能ping通。
+先测试一下网络连通性。
 
 ```
-# 注意要在wsl里面测，不要在ps里面测
+# 注意要在wsl里面测，不要在PowerShell里面测
+# 依次执行，按ctrl+c终止
+# 先看看网络连接是否正常，这两个ping一般不会出问题
 ping www.baidu.com
 ping www.google.com
-```
-
-如果连不了（我假设你开代理了），那么这样：
-
-按下 Win + R，输入 %UserProfile% 并回车。在该目录下寻找或新建一个名为 .wslconfig 的文件。
-用记事本打开，添加以下配置：
-
-```
-[wsl2]
-networkingMode=mirrored
-```
-
-保存文件后，在 PowerShell 中执行 `wsl --shutdown` 重启 WSL。
-
-现在应该能ping通了（如果还是不行就自己研究吧！），接下来处理apt的问题。
-
-即使能ping通谷歌，apt也有可能卡住——尤其是开启了TUN的情况下，wsl并不一定会走win的TUN代理，这就导致apt卡住。
-
-测试以下指令：
-
-```
-# 测试不带任何配置的apt指令
-sudo apt-get update
-
-# 如果第一个访问的时候就卡住了，按ctrl+c终止，然后试试这个（假设你的代理是7890端口，记得开启“允许局域网”）
+# 再看一下apt是否可用
+sudo apt update
+# 如果卡死在第一个网址，试一下这个
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 ```
 
-如果第二个指令能正常运行，但是第一个不行，说明wsl没有走TUN代理。
-这个问题不太好解决，但是可以用一些方式调整。
+假如用apt的时候必须要显式设置Proxy（就是上面的最后一行指令，添加-o参数），大概率是wsl没有走代理的TUN通道。
 
-先说一下为什么要解决这个问题。因为如果AI遇到了“需要用apt安装某个东西”的场景的时候，一般会遇到两个问题：
+我们先不说怎么解决，先讲清楚为什么要解决。
 
-- 因为是用sudo，需要root账户密码，但是AI不知道密码
-- 因为apt必须显式指定代理，AI不知道这个事情
+试想一下，如果AI遇到了“需要用apt安装某个东西”的场景，它会遇到两个问题：
 
-这个东西每次提醒，也不方便，所以做一些调整：
+- sudo需要root账户密码，但是AI不知道密码是什么，它只能告诉你“我没有权限，你来执行xxx指令”
+- apt必须显式指定代理，但是AI不知道需要显式指定，它只会认为你的网络有问题
 
-- 新开终端不需要输入sudo（这个视情况决定要不要，毕竟这相当于给AI最高级权限了，而且用到sudo的场景可能没那么多）
+这两个问题都是可以解决的。
+
+- 新开终端不需要输入sudo（这个视情况决定要不要，毕竟给AI最高级权限很危险，而且用到sudo的场景没那么多）
 
 ```
 # 使用visudo打开sudoers编辑器（visudo会在保存前检查语法错误，防止把自己锁在系统外）
@@ -226,22 +207,48 @@ mlj ALL=(ALL) NOPASSWD: ALL
 sudo ls
 ```
 
-- apt避免每次设置proxy
+- apt无需显式指定代理
+
+这个步骤比较多，一步步来。
+
+第一步：将wsl设置为镜像模式
+
+在镜像模式下，WSL 和 Windows 共享网络栈，直接用 127.0.0.1 就能访问宿主机的代理。
+
+按下 Win + R，输入 %UserProfile% 并回车。在该目录下寻找或新建一个名为 .wslconfig 的文件。
+用记事本打开，添加以下配置：
 
 ```
-# 获取 WSL2 的宿主机 IP 地址
-HOST_IP=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')
-# 写入配置文件（假设代理端口是7890，记得开启“允许局域网”）
-sudo tee /etc/apt/apt.conf.d/99proxy <<EOF
-Acquire::http::Proxy "http://$HOST_IP:7890";
-Acquire::https::Proxy "http://$HOST_IP:7890";
-EOF
-# 自动刷新HOST_IP，加到~/.bashrc末尾
-HOST_IP=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}')
-sudo sed -i "s/[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$HOST_IP/g" /etc/apt/apt.conf.d/99proxy 2>/dev/null
-# 让~/.bashrc立即生效
-source ~/.bashrc
+[wsl2]
+networkingMode=mirrored
 ```
+
+文件保存好之后，打开PowerShell，重启wsl终端。
+
+```
+# 在PowerShell中执行此操作
+wsl --shutdown
+```
+
+第二步：确认代理状态
+
+代理要开启“允许局域网”，不然wsl访问不到。
+下面的教程中，端口用7890，你可以在代理中确认你用的端口（clash的第一行就是端口的设置）。
+
+第三步：在wsl中设置apt使用的Proxy
+
+```
+# 在wsl中执行此操作
+sudo tee /etc/apt/apt.conf.d/99proxy <<EOF
+Acquire::http::Proxy "http://127.0.0.1:7890";
+Acquire::https::Proxy "http://127.0.0.1:7890";
+EOF
+
+# 测试不显式指定代理的情况下，apt能不能用
+sudo apt update
+```
+
+此时应该可以不附加任何参数使用apt了。
 
 ### 2.安装opencode、oh-my-openagent（下面简称omo）
 
@@ -923,7 +930,8 @@ zai-coding-plan/glm-5 -> glm5，按订阅付费
 
 默认会在这里生成一个配置文件：`~/.config/opencode/oh-my-opencode.json`
 
-根据配置文件的路径，很容易就找到它在Windows系统下的路径：`\\wsl.localhost\Ubuntu\home\用户名\.config\opencode\oh-my-opencode.json`
+根据配置文件的路径，很容易就找到它在Windows系统下的路径：
+`\\wsl.localhost\Ubuntu\home\用户名\.config\opencode\oh-my-opencode.json`
 
 这个文件可以配置：
 
@@ -1180,14 +1188,16 @@ ssh -R 4096:127.0.0.1:4096 root@你的服务器的ip
     - 特别注意：同一时间只能运行一个计划！！！并且计划的执行步骤比较繁琐，需要耗时很久。
 
 #### 额外附加内容1：wsl安装中文字体
+
 ```
 # 默认下载的是没中文字体的，中文都是方块
-sudo -E apt-get install -y fonts-noto-cjk fonts-wqy-microhei
+sudo apt-get install -y fonts-noto-cjk fonts-wqy-microhei
 # 安装完之后在Powershell里面执行重启命令
 wsl --shutdown
 ```
 
 #### git push不需要登录账户，直接使用Windows的git登录状态
+
 ```
 # 没配置之前，AI只能本地Commit；跟远程仓库交互的时候总是需要验证身份，很麻烦
 # 配置之后，AI就能跟远程仓库交互了
