@@ -76,22 +76,22 @@ public static class LimitedTimeStore {
     private static List<(int pointCost, int outputId, int outputCount)> GetPoolExchangeRates(int poolId) {
         return poolId switch {
             GachaPool.PoolIdPermanentRecipe => [
-                (1, IFE残片, 10),
+                (5, IFE残片, 10),
                 (10, I电磁矩阵, 1),
                 (50, I能量矩阵, 1)
             ],
             GachaPool.PoolIdPermanentBuilding => [
-                (1, IFE残片, 10),
+                (5, IFE残片, 10),
                 (20, IFE交互塔原胚, 1),
                 (20, IFE矿物复制塔原胚, 1)
             ],
             GachaPool.PoolIdUp => [
-                (1, IFE残片, 20),
+                (5, IFE残片, 20),
                 (30, I结构矩阵, 1),
                 (100, I信息矩阵, 1)
             ],
             GachaPool.PoolIdLimited => [
-                (1, IFE残片, 20),
+                (5, IFE残片, 20),
                 (50, I引力矩阵, 1),
                 (200, I宇宙矩阵, 1)
             ],

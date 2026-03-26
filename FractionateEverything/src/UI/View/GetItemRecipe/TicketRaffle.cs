@@ -12,6 +12,21 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketRaffle {
+    private sealed class RaffleHistoryEntry {
+        public int PoolId;
+        public int DrawCount;
+        public int CountS;
+        public int CountA;
+        public int CountB;
+        public int CountC;
+        public int PointsGained;
+        public int PityBefore;
+        public int PityAfter;
+        public int MainUpHitCount;
+        public bool HadHardPity;
+        public long TotalDrawsAfter;
+    }
+
     private sealed class RaffleTabUi {
         public int PoolId;
         public RectTransform Tab;
@@ -34,8 +49,11 @@ public static class TicketRaffle {
 
     public static long totalDraws;
     private static readonly List<RaffleTabUi> ActiveUis = [];
+    private static readonly List<RaffleHistoryEntry> RecentHistory = [];
 
     private const float ResultAreaY = 140f;
+    private const int CurrentResultLineCount = 5;
+    private const int MaxHistoryEntries = 16;
 
     private static void SyncTotalDrawsFromSharedState() {
         totalDraws = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? 0;
@@ -84,6 +102,14 @@ public static class TicketRaffle {
         Register("UP轮换说明", "UP targets rotate every 1 hour.", "UP组每1小时轮换一次。");
         Register("触发硬保底", "Hard Pity");
         Register("命中主UP", "Main UP");
+        Register("最近历史", "Recent History");
+        Register("当前S率", "Current S Rate");
+        Register("距硬保底", "To Hard Pity");
+        Register("主UP大保底", "Main UP Guarantee");
+        Register("已激活", "Active");
+        Register("未激活", "Inactive");
+        Register("更多结果已折叠", "More results folded into summary.", "其余结果已折叠到摘要");
+        Register("暂无历史", "No history yet.", "暂无历史");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -153,6 +179,7 @@ public static class TicketRaffle {
             onClick: () => StartDraw(ui, IFE精选抽卡券, 10));
 
         RefreshTabState(ui);
+        RenderHistoryOnly(ui);
         return ui;
     }
 
@@ -232,7 +259,9 @@ public static class TicketRaffle {
 
         totalDraws += results.Count;
         SyncTotalDrawsToSharedState();
-        RenderResults(ui, results, pityBefore, pointsBefore);
+        var historyEntry = BuildHistoryEntry(ui.PoolId, results, pityBefore, pointsBefore);
+        AddHistoryEntry(historyEntry);
+        RenderResults(ui, results, pityBefore, pointsBefore, historyEntry);
         RefreshTabState(ui);
     }
 
@@ -243,12 +272,10 @@ public static class TicketRaffle {
         if (ui.TxtResultSummary != null) {
             ui.TxtResultSummary.text = "";
         }
-        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-            if (ui.TxtResultLines[i] != null) ui.TxtResultLines[i].text = "";
-        }
+        RenderHistoryOnly(ui);
     }
 
-    private static void RenderResults(RaffleTabUi ui, List<GachaResult> results, int pityBefore, int pointsBefore) {
+    private static void RenderResults(RaffleTabUi ui, List<GachaResult> results, int pityBefore, int pointsBefore, RaffleHistoryEntry currentEntry) {
         if (ui.TxtResultTitle != null) {
             ui.TxtResultTitle.text = $"{"抽奖结果".Translate()} ({results.Count})";
         }
@@ -296,9 +323,10 @@ public static class TicketRaffle {
                 + mainUpSummary;
         }
 
-        int shown = System.Math.Min(results.Count, ui.TxtResultLines.Length);
-        for (int i = 0; i < shown; i++) {
-            var res = results[i];
+        var displayIndices = BuildPriorityResultIndices(results, CurrentResultLineCount - 1);
+        int lineIndex = 0;
+        for (int i = 0; i < displayIndices.Count && lineIndex < CurrentResultLineCount; i++, lineIndex++) {
+            var res = results[displayIndices[i]];
             var item = LDB.items.Select(res.ItemId);
             string itemName = item != null ? item.name : res.ItemId.ToString();
             
@@ -316,39 +344,169 @@ public static class TicketRaffle {
             string kind = res.IsRecipe ? "配方" : (item != null && item.CanBuild ? "建筑" : "物品");
             string kindStr = $"[{kind}]".WithColor(Gray);
             
-            if (ui.TxtResultLines[i] != null) {
-                ui.TxtResultLines[i].text = $"[{rarityStr}] {pityTag}{mainUpTag}{upTag}{kindStr} {itemName} x1";
+            if (ui.TxtResultLines[lineIndex] != null) {
+                ui.TxtResultLines[lineIndex].text = $"[{rarityStr}] {pityTag}{mainUpTag}{upTag}{kindStr} {itemName} x1";
             }
         }
-        for (int i = shown; i < ui.TxtResultLines.Length; i++) {
-            if (ui.TxtResultLines[i] != null) ui.TxtResultLines[i].text = "";
+
+        int foldedCount = results.Count - displayIndices.Count;
+        if (foldedCount > 0 && lineIndex < CurrentResultLineCount) {
+            ui.TxtResultLines[lineIndex].text = $"... {foldedCount} {"更多结果已折叠".Translate()}".WithColor(Gray);
+            lineIndex++;
+        }
+
+        for (; lineIndex < CurrentResultLineCount; lineIndex++) {
+            if (ui.TxtResultLines[lineIndex] != null) {
+                ui.TxtResultLines[lineIndex].text = "";
+            }
+        }
+
+        RenderRecentHistory(ui, currentEntry);
+    }
+
+    private static RaffleHistoryEntry BuildHistoryEntry(int poolId, List<GachaResult> results, int pityBefore, int pointsBefore) {
+        var entry = new RaffleHistoryEntry {
+            PoolId = poolId,
+            DrawCount = results.Count,
+            PityBefore = pityBefore,
+            PityAfter = GachaManager.PityCount[poolId],
+            PointsGained = GachaManager.GetPoolPoints(poolId) - pointsBefore,
+            TotalDrawsAfter = totalDraws,
+        };
+
+        for (int i = 0; i < results.Count; i++) {
+            switch (results[i].Rarity) {
+                case GachaRarity.S:
+                    entry.CountS++;
+                    break;
+                case GachaRarity.A:
+                    entry.CountA++;
+                    break;
+                case GachaRarity.B:
+                    entry.CountB++;
+                    break;
+                default:
+                    entry.CountC++;
+                    break;
+            }
+
+            if (results[i].HitUpMainTarget) {
+                entry.MainUpHitCount++;
+            }
+            entry.HadHardPity |= results[i].WasHardPity;
+        }
+
+        return entry;
+    }
+
+    private static void AddHistoryEntry(RaffleHistoryEntry entry) {
+        RecentHistory.Insert(0, entry);
+        if (RecentHistory.Count > MaxHistoryEntries) {
+            RecentHistory.RemoveRange(MaxHistoryEntries, RecentHistory.Count - MaxHistoryEntries);
+        }
+    }
+
+    private static void RenderHistoryOnly(RaffleTabUi ui) {
+        for (int i = 0; i < CurrentResultLineCount && i < ui.TxtResultLines.Length; i++) {
+            if (ui.TxtResultLines[i] != null) {
+                ui.TxtResultLines[i].text = "";
+            }
+        }
+        RenderRecentHistory(ui, null);
+    }
+
+    private static List<int> BuildPriorityResultIndices(List<GachaResult> results, int maxCount) {
+        var indices = new List<int>(maxCount);
+        AddPriorityIndices(results, indices, maxCount, result => result.WasHardPity || result.HitUpMainTarget || result.Rarity == GachaRarity.S);
+        AddPriorityIndices(results, indices, maxCount, result => result.Rarity == GachaRarity.A || result.IsUp);
+        AddPriorityIndices(results, indices, maxCount, _ => true);
+        return indices;
+    }
+
+    private static void AddPriorityIndices(List<GachaResult> results, List<int> indices, int maxCount, System.Predicate<GachaResult> predicate) {
+        for (int i = 0; i < results.Count && indices.Count < maxCount; i++) {
+            if (indices.Contains(i)) {
+                continue;
+            }
+            if (predicate(results[i])) {
+                indices.Add(i);
+            }
+        }
+    }
+
+    private static void RenderRecentHistory(RaffleTabUi ui, RaffleHistoryEntry currentEntry) {
+        int lineIndex = CurrentResultLineCount;
+        int historyOrdinal = 1;
+        for (int i = 0; i < RecentHistory.Count && lineIndex < ui.TxtResultLines.Length; i++) {
+            RaffleHistoryEntry entry = RecentHistory[i];
+            if (ReferenceEquals(entry, currentEntry) || entry.PoolId != ui.PoolId) {
+                continue;
+            }
+
+            string hardPityTag = entry.HadHardPity ? $" {"触发硬保底".Translate()}".WithColor(Gold) : "";
+            string mainUpTag = entry.MainUpHitCount > 0 ? $" 主UP×{entry.MainUpHitCount}".WithColor(Orange) : "";
+            ui.TxtResultLines[lineIndex].text =
+                $"{"最近历史".Translate()} {historyOrdinal}: x{entry.DrawCount}  "
+                + $"S{entry.CountS}/A{entry.CountA}/B{entry.CountB}/C{entry.CountC}  "
+                + $"+{entry.PointsGained}pts  {entry.PityBefore}->{entry.PityAfter}"
+                + hardPityTag
+                + mainUpTag;
+            lineIndex++;
+            historyOrdinal++;
+        }
+
+        if (historyOrdinal == 1 && lineIndex < ui.TxtResultLines.Length) {
+            ui.TxtResultLines[lineIndex].text = $"{"最近历史".Translate()}: {"暂无历史".Translate()}".WithColor(Gray);
+            lineIndex++;
+        }
+
+        for (; lineIndex < ui.TxtResultLines.Length; lineIndex++) {
+            if (ui.TxtResultLines[lineIndex] != null) {
+                ui.TxtResultLines[lineIndex].text = "";
+            }
         }
     }
 
     private static void RefreshPityText(RaffleTabUi ui) {
         if (ui.TxtPityProgress == null) return;
         int pity = GachaManager.PityCount[ui.PoolId];
-        GachaPool pool = GachaService.GetPool(ui.PoolId);
-        float nextSRate = pool == null ? 0f : GachaManager.GetCurrentSRate(ui.PoolId, pool.RateS);
-        ui.TxtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold - 1}  下一抽S率: {nextSRate * 100f:F1}%";
+        ui.TxtPityProgress.text = $"{"保底进度".Translate()}: {pity}/{GachaManager.HardPityThreshold - 1}";
     }
 
     private static void RefreshUpRotationText(RaffleTabUi ui) {
         if (ui.TxtUpRotationTime == null) return;
-        if (ui.PoolId != GachaPool.PoolIdUp || GachaService.UpGroupCount <= 1) {
+        GachaPool pool = GachaService.GetPool(ui.PoolId);
+        if (pool == null) {
             ui.TxtUpRotationTime.text = "";
             return;
         }
-        long remaining = GachaManager.UpRotationNextTick - GameMain.gameTick;
-        if (remaining <= 0) {
-            ui.TxtUpRotationTime.text = "";
-            return;
+
+        int pity = GachaManager.PityCount[ui.PoolId];
+        int remainingToHardPity = GachaManager.HardPityThreshold - pity;
+        float currentSRate = GachaManager.GetCurrentSRate(ui.PoolId, pool.RateS);
+        string text =
+            $"{ "当前S率".Translate() }: {currentSRate * 100f:F1}%"
+            + $"    { "距硬保底".Translate() }: {remainingToHardPity}";
+
+        if (ui.PoolId == GachaPool.PoolIdUp) {
+            string guaranteeState = GachaManager.IsCurrentUpGuaranteeActive()
+                ? "已激活".Translate().WithColor(Orange)
+                : "未激活".Translate().WithColor(Gray);
+            text += $"    { "主UP大保底".Translate() }: {guaranteeState}";
+
+            if (GachaService.UpGroupCount > 1) {
+                long remaining = GachaManager.UpRotationNextTick - GameMain.gameTick;
+                if (remaining > 0) {
+                    long totalSec = remaining / 60;
+                    long h = totalSec / 3600;
+                    long m = totalSec % 3600 / 60;
+                    long s = totalSec % 60;
+                    text += $"    UP轮换: {h:D2}:{m:D2}:{s:D2}";
+                }
+            }
         }
-        long totalSec = remaining / 60;
-        long h = totalSec / 3600;
-        long m = totalSec % 3600 / 60;
-        long s = totalSec % 60;
-        ui.TxtUpRotationTime.text = $"UP轮换: {h:D2}:{m:D2}:{s:D2}";
+
+        ui.TxtUpRotationTime.text = text;
     }
 
     private static void RefreshTabState(RaffleTabUi ui) {
@@ -400,18 +558,58 @@ public static class TicketRaffle {
 
     public static void Import(BinaryReader r) {
         totalDraws = 0;
+        RecentHistory.Clear();
         r.ReadBlocks(
-            ("TotalDraws", br => totalDraws = br.ReadInt64())
+            ("TotalDraws", br => totalDraws = br.ReadInt64()),
+            ("RecentHistory", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++) {
+                    RecentHistory.Add(new RaffleHistoryEntry {
+                        PoolId = br.ReadInt32(),
+                        DrawCount = br.ReadInt32(),
+                        CountS = br.ReadInt32(),
+                        CountA = br.ReadInt32(),
+                        CountB = br.ReadInt32(),
+                        CountC = br.ReadInt32(),
+                        PointsGained = br.ReadInt32(),
+                        PityBefore = br.ReadInt32(),
+                        PityAfter = br.ReadInt32(),
+                        MainUpHitCount = br.ReadInt32(),
+                        HadHardPity = br.ReadBoolean(),
+                        TotalDrawsAfter = br.ReadInt64(),
+                    });
+                }
+            })
         );
         SyncTotalDrawsToSharedState();
     }
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("TotalDraws", bw => bw.Write(totalDraws))
+            ("TotalDraws", bw => bw.Write(totalDraws)),
+            ("RecentHistory", bw => {
+                int count = System.Math.Min(RecentHistory.Count, MaxHistoryEntries);
+                bw.Write(count);
+                for (int i = 0; i < count; i++) {
+                    RaffleHistoryEntry entry = RecentHistory[i];
+                    bw.Write(entry.PoolId);
+                    bw.Write(entry.DrawCount);
+                    bw.Write(entry.CountS);
+                    bw.Write(entry.CountA);
+                    bw.Write(entry.CountB);
+                    bw.Write(entry.CountC);
+                    bw.Write(entry.PointsGained);
+                    bw.Write(entry.PityBefore);
+                    bw.Write(entry.PityAfter);
+                    bw.Write(entry.MainUpHitCount);
+                    bw.Write(entry.HadHardPity);
+                    bw.Write(entry.TotalDrawsAfter);
+                }
+            })
         );
     }
     public static void IntoOtherSave() {
         totalDraws = 0;
+        RecentHistory.Clear();
         SyncTotalDrawsToSharedState();
     }
 
