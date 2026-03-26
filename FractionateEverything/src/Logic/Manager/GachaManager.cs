@@ -13,7 +13,7 @@ public static class GachaManager {
     public static int UpMainItemId = 0;
     public static readonly int[] UpSubItemIds = new int[3];
 
-    public static bool GuaranteeMainOnNextSRoll = false;
+    private static bool[] upGuaranteeByGroup = [false];
 
     // 原神风格：1-73 抽 0.6%，74-89 抽每抽额外 +6%，第 90 抽必出
     public const int SoftPityStartDraw = 74;
@@ -46,6 +46,24 @@ public static class GachaManager {
             return 0;
         }
         return value < 0 || value >= groupCount ? 0 : value;
+    }
+
+    private static void EnsureUpGuaranteeGroupState() {
+        int groupCount = GachaService.UpGroupCount;
+        if (groupCount <= 0) {
+            groupCount = 1;
+        }
+
+        if (upGuaranteeByGroup.Length == groupCount) {
+            return;
+        }
+
+        var resized = new bool[groupCount];
+        int copyCount = Math.Min(upGuaranteeByGroup.Length, resized.Length);
+        if (copyCount > 0) {
+            Array.Copy(upGuaranteeByGroup, resized, copyCount);
+        }
+        upGuaranteeByGroup = resized;
     }
 
     private static bool HasBytesRemaining(BinaryReader reader, int size) {
@@ -89,6 +107,8 @@ public static class GachaManager {
     }
 
     private static void NormalizeImportedState() {
+        EnsureUpGuaranteeGroupState();
+
         for (int i = 0; i < PityCount.Length; i++) {
             PityCount[i] = ClampPityCount(PityCount[i]);
         }
@@ -168,15 +188,23 @@ public static class GachaManager {
     }
 
     public static bool ShouldGuaranteeUpOnSRoll(double random01) {
-        return GuaranteeMainOnNextSRoll || random01 < 0.4;
+        return IsCurrentUpGuaranteeActive() || random01 < 0.4;
     }
 
     public static void RecordUpSResult(bool hitMainTarget) {
+        EnsureUpGuaranteeGroupState();
+        int groupIndex = NormalizeUpGroupIndex(CurrentUpGroupIndex);
         if (hitMainTarget) {
-            GuaranteeMainOnNextSRoll = false;
+            upGuaranteeByGroup[groupIndex] = false;
             return;
         }
-        GuaranteeMainOnNextSRoll = true;
+        upGuaranteeByGroup[groupIndex] = true;
+    }
+
+    public static bool IsCurrentUpGuaranteeActive() {
+        EnsureUpGuaranteeGroupState();
+        int groupIndex = NormalizeUpGroupIndex(CurrentUpGroupIndex);
+        return upGuaranteeByGroup[groupIndex];
     }
 
     public static void SetCurrentUpTargets(int mainItemId, int sub1ItemId, int sub2ItemId, int sub3ItemId) {
@@ -248,7 +276,13 @@ public static class GachaManager {
                     bw.Write(PityCount[i]);
                 }
             }),
-            ("UpGuarantee", bw => bw.Write(GuaranteeMainOnNextSRoll)),
+            ("UpGuaranteeByGroup", bw => {
+                EnsureUpGuaranteeGroupState();
+                bw.Write(upGuaranteeByGroup.Length);
+                for (int i = 0; i < upGuaranteeByGroup.Length; i++) {
+                    bw.Write(upGuaranteeByGroup[i]);
+                }
+            }),
             ("UpRotation", bw => {
                 bw.Write(UpRotationNextTick);
                 bw.Write(CurrentUpGroupIndex);
@@ -268,6 +302,10 @@ public static class GachaManager {
     }
 
     public static void Import(BinaryReader r) {
+        bool hasLegacyUpGuarantee = false;
+        bool legacyUpGuaranteeValue = false;
+        bool[] importedUpGuarantees = null;
+
         r.ReadBlocks(
             ("PityCount", br => {
                 for (int i = 0; i < PityCount.Length; i++) {
@@ -275,7 +313,15 @@ public static class GachaManager {
                 }
             }),
             ("UpGuarantee", br => {
-                GuaranteeMainOnNextSRoll = ReadBooleanOrDefault(br, GuaranteeMainOnNextSRoll);
+                hasLegacyUpGuarantee = true;
+                legacyUpGuaranteeValue = ReadBooleanOrDefault(br, false);
+            }),
+            ("UpGuaranteeByGroup", br => {
+                int count = ClampNonNegative(ReadInt32OrDefault(br, 0));
+                importedUpGuarantees = new bool[count];
+                for (int i = 0; i < count; i++) {
+                    importedUpGuarantees[i] = ReadBooleanOrDefault(br, false);
+                }
             }),
             ("UpRotation", br => {
                 UpRotationNextTick = NormalizeUpRotationNextTick(ReadInt64OrDefault(br, UpRotationInterval));
@@ -295,6 +341,14 @@ public static class GachaManager {
         );
 
         NormalizeImportedState();
+
+        Array.Clear(upGuaranteeByGroup, 0, upGuaranteeByGroup.Length);
+        if (importedUpGuarantees != null) {
+            int copyCount = Math.Min(importedUpGuarantees.Length, upGuaranteeByGroup.Length);
+            Array.Copy(importedUpGuarantees, upGuaranteeByGroup, copyCount);
+        } else if (hasLegacyUpGuarantee) {
+            upGuaranteeByGroup[NormalizeUpGroupIndex(CurrentUpGroupIndex)] = legacyUpGuaranteeValue;
+        }
     }
 
     public static void IntoOtherSave() {
@@ -303,7 +357,8 @@ public static class GachaManager {
         UpSubItemIds[0] = 0;
         UpSubItemIds[1] = 0;
         UpSubItemIds[2] = 0;
-        GuaranteeMainOnNextSRoll = false;
+        EnsureUpGuaranteeGroupState();
+        Array.Clear(upGuaranteeByGroup, 0, upGuaranteeByGroup.Length);
         System.Array.Clear(PoolPoints, 0, PoolPoints.Length);
         UpRotationNextTick = UpRotationInterval;
         CurrentUpGroupIndex = 0;
