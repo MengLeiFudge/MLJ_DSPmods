@@ -17,6 +17,7 @@ public static class TicketRaffle {
         public Text TxtPoolName;
         public Text TxtPoolDesc;
         public Text TxtResource;
+        public Text TxtMode;
         public Text TxtPity;
         public Text TxtPoints;
         public Text TxtFocus;
@@ -46,11 +47,17 @@ public static class TicketRaffle {
         Register("原胚抽取", "Proto Draw");
         Register("成长说明", "Growth Info");
         Register("聚焦说明", "Focus Info");
+        Register("常规模式", "Normal Mode");
+        Register("速通模式", "Speedrun Mode");
 
         Register("开线池", "Opening Pool");
         Register("原胚闭环池", "Proto Loop Pool");
         Register("成长池", "Growth Pool");
         Register("流派聚焦", "Focus Layer");
+        Register("阶段箱池", "Stage Box Pool");
+        Register("简化原胚池", "Simplified Proto Pool");
+        Register("简化成长池", "Simplified Growth Pool");
+        Register("速通聚焦层", "Speedrun Focus Layer");
 
         Register("开线池说明",
             "Spend the current stage Matrix to draw Mineral Replication / Conversion recipes. Focus raises matching directions.",
@@ -64,8 +71,21 @@ public static class TicketRaffle {
         Register("流派聚焦说明",
             "Focus is not a standalone draw pool. Select a focus on the Focus page to bias opening/proto rewards.",
             "流派聚焦不是独立抽卡池。请前往聚焦页选择方向，以偏置开线池和原胚闭环池的奖励分布。");
+        Register("阶段箱池说明",
+            "Speedrun mode only. Each draw directly yields a current-stage opening target, greatly accelerating line unlock speed.",
+            "仅速通模式使用。每次抽取都直接给当前阶段的开线目标，显著提升开线速度。");
+        Register("简化原胚池说明",
+            "Speedrun mode only. Proto growth is more aggressive and directional protos appear faster.",
+            "仅速通模式使用。原胚成长节奏更激进，定向原胚成型更快。");
+        Register("简化成长池说明",
+            "Speedrun mode only. Only key补差 and rapid breakthroughs remain, with lower resource pressure.",
+            "仅速通模式使用。只保留关键补差与快速突破，资源压力更低。");
+        Register("速通聚焦层说明",
+            "Speedrun mode only. Focus switching is free, and selected themes become much stronger while other themes weaken.",
+            "仅速通模式使用。聚焦切换免费，选中的主题会显著变强，其他主题则被明显弱化。");
 
         Register("当前资源", "Resource");
+        Register("当前模式", "Mode");
         Register("当前阶段矩阵", "Current Stage Matrix");
         Register("残片余额", "Fragments");
         Register("保底进度", "Pity");
@@ -119,6 +139,8 @@ public static class TicketRaffle {
         y += 72f;
         ui.TxtResource = MyWindow.AddText(0f, y, ui.Tab, "", 13);
         y += 24f;
+        ui.TxtMode = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        y += 24f;
         ui.TxtPity = MyWindow.AddText(0f, y, ui.Tab, "", 13);
         y += 24f;
         ui.TxtPoints = MyWindow.AddText(0f, y, ui.Tab, "", 13);
@@ -150,23 +172,11 @@ public static class TicketRaffle {
     }
 
     private static string GetPoolName(int poolId) {
-        return poolId switch {
-            GachaPool.PoolIdOpeningLine => "开线池".Translate(),
-            GachaPool.PoolIdProtoLoop => "原胚闭环池".Translate(),
-            GachaPool.PoolIdGrowth => "成长池".Translate(),
-            GachaPool.PoolIdFocus => "流派聚焦".Translate(),
-            _ => "开线池".Translate(),
-        };
+        return GachaService.GetPoolNameKey(poolId).Translate();
     }
 
     private static string GetPoolDesc(int poolId) {
-        return poolId switch {
-            GachaPool.PoolIdOpeningLine => "开线池说明".Translate(),
-            GachaPool.PoolIdProtoLoop => "原胚闭环池说明".Translate(),
-            GachaPool.PoolIdGrowth => "成长池说明".Translate(),
-            GachaPool.PoolIdFocus => "流派聚焦说明".Translate(),
-            _ => string.Empty,
-        };
+        return GachaService.GetPoolDescKey(poolId).Translate();
     }
 
     private static void StartDraw(RaffleTabUi ui, int count) {
@@ -244,6 +254,13 @@ public static class TicketRaffle {
     }
 
     private static void RefreshTabState(RaffleTabUi ui) {
+        if (ui.TxtPoolName != null) {
+            ui.TxtPoolName.text = GetPoolName(ui.PoolId);
+        }
+        if (ui.TxtPoolDesc != null) {
+            ui.TxtPoolDesc.text = GetPoolDesc(ui.PoolId);
+        }
+
         int matrixId = GachaService.GetCurrentDrawMatrixId();
         string matrixName = GetItemName(matrixId);
         long matrixCount = GetItemTotalCount(matrixId);
@@ -253,6 +270,9 @@ public static class TicketRaffle {
         ui.TxtResource.text =
             $"{"当前资源".Translate()}：{"当前阶段矩阵".Translate()} {matrixName} x{matrixCount}"
             + $"    {"残片余额".Translate()} x{GetItemTotalCount(IFE残片)}";
+        if (ui.TxtMode != null) {
+            ui.TxtMode.text = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}";
+        }
         ui.TxtPity.text = GachaPool.IsDrawPool(ui.PoolId)
             ? $"{"保底进度".Translate()}：{GachaManager.PityCount[ui.PoolId] + 1}/90"
             : $"{"保底进度".Translate()}：-";

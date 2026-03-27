@@ -27,6 +27,7 @@ public class PointAggregateRecipe : BaseRecipe {
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.PointAggregate;
+    public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
 
     /// <summary>
     /// 创建点数聚集配方实例

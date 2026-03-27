@@ -683,6 +683,7 @@ public static class StationManager {
                 store.count += count;
                 store.inc += inc;
                 stationComponent.energy -= Mathf.CeilToInt(cost * count);
+                BuildingManager.AddBuildingExp(IFE行星内物流交互站, count);
             } else {
                 // 将交互站的物品上传到数据中心
                 int count = store.count - targetCount;
@@ -699,6 +700,7 @@ public static class StationManager {
                 int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
                 AddItemToModData(store.itemId, count, inc);
                 stationComponent.energy -= Mathf.CeilToInt(cost * count);
+                BuildingManager.AddBuildingExp(IFE行星内物流交互站, count);
             }
         }
         finally {

@@ -31,6 +31,7 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     public override ERecipe RecipeType => ERecipe.Rectification;
+    public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
 
     public RectificationRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)

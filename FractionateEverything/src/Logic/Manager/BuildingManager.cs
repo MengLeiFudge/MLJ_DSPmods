@@ -13,6 +13,16 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class BuildingManager {
+    private static readonly int[] growthBuildingIds = [
+        IFE交互塔,
+        IFE矿物复制塔,
+        IFE点数聚集塔,
+        IFE转化塔,
+        IFE精馏塔,
+        IFE行星内物流交互站,
+    ];
+    private static readonly long[] buildingExp = new long[growthBuildingIds.Length];
+
     public static void AddTranslations() {
         InteractionTower.AddTranslations();
         MineralReplicationTower.AddTranslations();
@@ -373,6 +383,88 @@ public static class BuildingManager {
         };
     }
 
+    private static int GetGrowthIndex(int buildingId) {
+        return buildingId switch {
+            IFE交互塔 => 0,
+            IFE矿物复制塔 => 1,
+            IFE点数聚集塔 => 2,
+            IFE转化塔 => 3,
+            IFE精馏塔 => 4,
+            IFE行星内物流交互站 => 5,
+            IFE星际物流交互站 => 5,
+            _ => -1,
+        };
+    }
+
+    public static long GetBuildingExp(int buildingId) {
+        int index = GetGrowthIndex(buildingId);
+        return index >= 0 ? buildingExp[index] : 0L;
+    }
+
+    public static bool NeedsBreakthrough(int buildingId) {
+        return GetRequiredExpForNextLevelInternal(GetCurrentLevel(buildingId)) <= 0
+               && GetCurrentLevel(buildingId) < MaxLevel;
+    }
+
+    public static long GetRequiredExpForNextLevel(int buildingId) {
+        return GetRequiredExpForNextLevelInternal(GetCurrentLevel(buildingId));
+    }
+
+    public static void AddBuildingExp(int buildingId, long amount) {
+        int index = GetGrowthIndex(buildingId);
+        if (index < 0 || amount <= 0) {
+            return;
+        }
+
+        buildingExp[index] += amount;
+        TryAutoLevelUp(buildingId);
+    }
+
+    private static int GetCurrentLevel(int buildingId) {
+        return LDB.items.Select(buildingId)?.Level() ?? 0;
+    }
+
+    private static void TryAutoLevelUp(int buildingId) {
+        int index = GetGrowthIndex(buildingId);
+        if (index < 0) {
+            return;
+        }
+
+        ItemProto building = LDB.items.Select(buildingId);
+        if (building == null) {
+            return;
+        }
+
+        while (building.Level() < MaxLevel) {
+            long requiredExp = GetRequiredExpForNextLevel(buildingId);
+            if (requiredExp <= 0 || buildingExp[index] < requiredExp) {
+                return;
+            }
+
+            buildingExp[index] -= requiredExp;
+            building.Level(building.Level() + 1);
+        }
+    }
+
+    private static long GetRequiredExpForNextLevelInternal(int currentLevel) {
+        return currentLevel switch {
+            < 0 => 0,
+            0 => 200,
+            1 => 500,
+            2 => 0,
+            3 => 1000,
+            4 => 2200,
+            5 => 0,
+            6 => 5000,
+            7 => 9000,
+            8 => 0,
+            9 => 16000,
+            10 => 28000,
+            11 => 0,
+            _ => 0,
+        };
+    }
+
     public static void Level(this ItemProto building, int level, bool manual = false) {
         switch (building.ID) {
             case IFE交互塔:
@@ -511,7 +603,16 @@ public static class BuildingManager {
             ("OutputExtend", OutputExtendImport),
             ("LockedOutput", LockedOutputImport),
             ("FissionPointPool", FissionPointPoolImport),
-            ("Resonance", ResonanceImport)
+            ("Resonance", ResonanceImport),
+            ("BuildingExp", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < System.Math.Min(count, buildingExp.Length); i++) {
+                    buildingExp[i] = br.ReadInt64();
+                }
+                for (int i = buildingExp.Length; i < count; i++) {
+                    br.ReadInt64();
+                }
+            })
         );
     }
 
@@ -527,7 +628,13 @@ public static class BuildingManager {
             ("OutputExtend", OutputExtendExport),
             ("LockedOutput", LockedOutputExport),
             ("FissionPointPool", FissionPointPoolExport),
-            ("Resonance", ResonanceExport)
+            ("Resonance", ResonanceExport),
+            ("BuildingExp", bw => {
+                bw.Write(buildingExp.Length);
+                for (int i = 0; i < buildingExp.Length; i++) {
+                    bw.Write(buildingExp[i]);
+                }
+            })
         );
     }
 
@@ -543,6 +650,7 @@ public static class BuildingManager {
         LockedOutputIntoOtherSave();
         FissionPointPoolIntoOtherSave();
         ResonanceIntoOtherSave();
+        System.Array.Clear(buildingExp, 0, buildingExp.Length);
     }
 
     #endregion

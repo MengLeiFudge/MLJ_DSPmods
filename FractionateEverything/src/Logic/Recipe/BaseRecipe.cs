@@ -8,6 +8,12 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
 
+public enum ERecipeGrowthRole {
+    Production = 0,
+    ToolUnlock = 1,
+    SpecialGrowth = 2,
+}
+
 /// <summary>
 /// 分馏配方基类
 /// </summary>
@@ -26,6 +32,11 @@ public abstract class BaseRecipe(
     /// 类型
     /// </summary>
     public abstract ERecipe RecipeType { get; }
+
+    /// <summary>
+    /// 配方成长语义。用于区分生产型、工具/解锁型、特殊成长型。
+    /// </summary>
+    public virtual ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.Production;
 
     /// <summary>
     /// 输入物品的ID
