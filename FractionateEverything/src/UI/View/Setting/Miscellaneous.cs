@@ -20,6 +20,8 @@ public static class Miscellaneous {
     private static string[] ClickTakeCountsStr = ClickTakeCounts.Select(count => count.ToString()).ToArray();
     private static ConfigEntry<int> LeftClickTakeCountEntry;
     private static ConfigEntry<int> RightClickTakeCountEntry;
+    private static readonly string[] ExtractTargetStrs = ["提取到手上", "提取到背包"];
+    private static ConfigEntry<int> ExtractTargetEntry;
 
     private static readonly string[] TakeItemPriorityStrs = [
         $"{"背包".Translate()} -> {"物流背包".Translate()} -> {"分馏数据中心".Translate()}",
@@ -58,6 +60,7 @@ public static class Miscellaneous {
     private static ConfigEntry<bool> EnablePackageLogisticEntry;
     public static int LeftClickTakeCount => ClickTakeCounts[LeftClickTakeCountEntry.Value];
     public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
+    public static bool ExtractToHand => ExtractTargetEntry.Value == 0;
     public static int[] TakeItemPriority => TakeItemPriorityArr[TakeItemPriorityEntry.Value];
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
     public static float UploadThreshold => UploadThresholdEntry.Value;
@@ -71,6 +74,9 @@ public static class Miscellaneous {
 
         Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
+        Register("物品提取目标", "Extraction target", "物品提取目标");
+        Register("提取到手上", "To cursor", "提取到手上");
+        Register("提取到背包", "To package", "提取到背包");
 
         Register("物品消耗顺序", "Order of consumption of items");
         Register("背包", "Package");
@@ -105,6 +111,10 @@ public static class Miscellaneous {
         RightClickTakeCountEntry = configFile.Bind("Miscellaneous", "RightClickTakeCount", 3, "右键单击时提取几组物品");
         if (RightClickTakeCountEntry.Value < 0 || RightClickTakeCountEntry.Value >= ClickTakeCounts.Length) {
             RightClickTakeCountEntry.Value = 3;
+        }
+        ExtractTargetEntry = configFile.Bind("Miscellaneous", "ExtractTarget", 0, "物品提取目标");
+        if (ExtractTargetEntry.Value < 0 || ExtractTargetEntry.Value >= ExtractTargetStrs.Length) {
+            ExtractTargetEntry.Value = 0;
         }
 
         TakeItemPriorityEntry = configFile.Bind("Miscellaneous", "TakeItemPriority", 1, "物品消耗顺序");
@@ -154,6 +164,10 @@ public static class Miscellaneous {
         txt = wnd.AddText2(x, y, parent, "右键单击时提取几组物品");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
+        y += 36f;
+        txt = wnd.AddText2(x, y, parent, "物品提取目标");
+        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+            .WithItems(ExtractTargetStrs).WithSize(200, 0).WithConfigEntry(ExtractTargetEntry);
         y += 36f;
         txt = wnd.AddText2(x, y, parent, "物品消耗顺序");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)

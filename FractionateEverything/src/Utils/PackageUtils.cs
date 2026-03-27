@@ -68,7 +68,7 @@ public static partial class Utils {
             GameMain.mainPlayer.inhandItemId = I沙土;
             GameMain.mainPlayer.inhandItemCount += count;
         } else {
-            AddItemToPackage(itemId, count, inc, false);
+            AddItemToPackage(itemId, count, inc, !Miscellaneous.ExtractToHand);
         }
     }
 
