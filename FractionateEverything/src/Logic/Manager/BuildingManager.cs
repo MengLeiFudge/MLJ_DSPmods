@@ -13,6 +13,13 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class BuildingManager {
+    public const int LevelThresholdFluidEnhancement = 3;
+    public const int LevelThresholdTrait1 = 6;
+    public const int LevelThresholdTrait2 = 12;
+    public const int DefaultMaxStackTier1UpperExclusive = 6;
+    public const int DefaultMaxStackTier2UpperExclusive = 9;
+    public const int DefaultMaxStackTier3UpperExclusive = 12;
+
     private static readonly int[] growthBuildingIds = [
         IFE交互塔,
         IFE矿物复制塔,
@@ -382,6 +389,41 @@ public static class BuildingManager {
             _ => 0
         };
     }
+
+    public static int GetDefaultMaxStackByLevel(int level) => level switch {
+        < DefaultMaxStackTier1UpperExclusive => 1,
+        < DefaultMaxStackTier2UpperExclusive => 4,
+        < DefaultMaxStackTier3UpperExclusive => 8,
+        _ => 12,
+    };
+
+    public static float GetDefaultEnergyRatioByLevel(int level) => level switch {
+        < 1 => 1.0f,
+        < 4 => 0.95f,
+        < 7 => 0.85f,
+        < 10 => 0.7f,
+        _ => 0.5f,
+    };
+
+    public static float GetDefaultPlrRatioByLevel(int level) => level switch {
+        < 2 => 1.0f,
+        < 5 => 1.1f,
+        < 8 => 1.3f,
+        < 11 => 1.6f,
+        _ => 2.0f,
+    };
+
+    public static float GetStationInteractEnergyRatioByLevel(int level) => level switch {
+        < 1 => 1.00f,
+        < 2 => 0.95f,
+        < 4 => 0.85f,
+        < 5 => 0.70f,
+        < 7 => 0.55f,
+        < 8 => 0.40f,
+        < 10 => 0.30f,
+        < 11 => 0.25f,
+        _ => 0.20f,
+    };
 
     private static int GetGrowthIndex(int buildingId) {
         return buildingId switch {

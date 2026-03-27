@@ -5,6 +5,7 @@ using CommonAPI.Systems;
 using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
+using static FE.Logic.Manager.BuildingManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -20,22 +21,11 @@ public static class PointAggregateTower {
     public static Color color = new(0.2509f, 0.8392f, 1.0f);
 
     public static int Level = 0;
-    public static bool EnableFluidEnhancement => Level >= 3;
-    public static bool EnableVoidSpray => Level >= 6;
-    public static bool EnableDoublePoints => Level >= 12;
-    public static int MaxStack => Level switch {
-        < 6 => 1,
-        < 9 => 4,
-        < 12 => 8,
-        _ => 12,
-    };
-    public static float EnergyRatio => Level switch {
-        < 1 => 1.0f,
-        < 4 => 0.95f,
-        < 7 => 0.85f,
-        < 10 => 0.7f,
-        _ => 0.5f,
-    };
+    public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
+    public static bool EnableVoidSpray => Level >= LevelThresholdTrait1;
+    public static bool EnableDoublePoints => Level >= LevelThresholdTrait2;
+    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;
         set => model.prefabDesc.workEnergyPerTick = value;

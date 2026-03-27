@@ -20,6 +20,18 @@ namespace FE.Logic.Manager;
 /// 修改所有分馏塔的处理逻辑，以及对应的显示。
 /// </summary>
 public static class ProcessManager {
+    private delegate void FractionatorUpdateHandler(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result);
+
+    private static readonly FractionatorUpdateHandler[] updateHandlersByBuildingOffset = [
+        UpdateInteractionTower,
+        UpdateMineralReplicationTower,
+        UpdatePointAggregateTower,
+        UpdateConversionTower,
+        UpdateRectificationTower,
+    ];
+
     public static void AddTranslations() {
         Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
@@ -151,30 +163,49 @@ public static class ProcessManager {
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint __result) {
         int buildingID = factory.entityPool[__instance.entityId].protoId;
-        switch (buildingID) {
-            case IFE交互塔:
-                InternalUpdate<BuildingTrainRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.BuildingTrain);
-                return false;
-            case IFE矿物复制塔:
-                InternalUpdate<MineralCopyRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.MineralCopy);
-                return false;
-            case IFE点数聚集塔:
-                InternalUpdate<PointAggregateRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.PointAggregate);
-                return false;
-            case IFE转化塔:
-                InternalUpdate<ConversionRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Conversion);
-                return false;
-            case IFE精馏塔:
-                InternalUpdate<RectificationRecipe>(ref __instance, factory, power, signPool, productRegister,
-                    consumeRegister, ref __result, ERecipe.Rectification);
-                return false;
+        int handlerIndex = buildingID - IFE交互塔;
+        if (handlerIndex >= 0 && handlerIndex < updateHandlersByBuildingOffset.Length) {
+            updateHandlersByBuildingOffset[handlerIndex](ref __instance, factory, power, signPool, productRegister,
+                consumeRegister, ref __result);
+            return false;
         }
         //原版分馏塔不做处理
         return true;
+    }
+
+    private static void UpdateInteractionTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<BuildingTrainRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.BuildingTrain);
+    }
+
+    private static void UpdateMineralReplicationTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<MineralCopyRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.MineralCopy);
+    }
+
+    private static void UpdatePointAggregateTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<PointAggregateRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.PointAggregate);
+    }
+
+    private static void UpdateConversionTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<ConversionRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.Conversion);
+    }
+
+    private static void UpdateRectificationTower(ref FractionatorComponent fractionator,
+        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
+        ref uint result) {
+        InternalUpdate<RectificationRecipe>(ref fractionator, factory, power, signPool, productRegister,
+            consumeRegister, ref result, ERecipe.Rectification);
     }
 
     /// <summary>

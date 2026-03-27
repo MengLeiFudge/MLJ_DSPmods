@@ -4,6 +4,7 @@ using CommonAPI.Systems;
 using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
+using static FE.Logic.Manager.BuildingManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -19,20 +20,9 @@ public static class RectificationTower {
     public static Color color = new(0.3f, 0.6f, 0.9f);
 
     public static int Level = 0;
-    public static bool EnableFluidEnhancement => Level >= 3;
-    public static int MaxStack => Level switch {
-        < 6 => 1,
-        < 9 => 4,
-        < 12 => 8,
-        _ => 12,
-    };
-    public static float EnergyRatio => Level switch {
-        < 1 => 1.0f,
-        < 4 => 0.95f,
-        < 7 => 0.85f,
-        < 10 => 0.7f,
-        _ => 0.5f,
-    };
+    public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
+    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;
         set => model.prefabDesc.workEnergyPerTick = value;
@@ -41,13 +31,7 @@ public static class RectificationTower {
         get => model.prefabDesc.idleEnergyPerTick;
         set => model.prefabDesc.idleEnergyPerTick = value;
     }
-    public static float PlrRatio => Level switch {
-        < 2 => 1.0f,
-        < 5 => 1.1f,
-        < 8 => 1.3f,
-        < 11 => 1.6f,
-        _ => 2.0f,
-    };
+    public static float PlrRatio => GetDefaultPlrRatioByLevel(Level);
     public static float SuccessBoost = 0;
 
     public static void AddTranslations() {

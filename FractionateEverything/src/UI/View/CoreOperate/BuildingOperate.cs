@@ -370,22 +370,13 @@ public static class BuildingOperate {
         return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"增产".Translate()}×{LevelToPlrRatio(level):F1}";
     }
 
-    private static int LevelToMaxStack(int level) => level switch {
-        < 6 => 1, < 9 => 4, < 12 => 8, _ => 12,
-    };
+    private static int LevelToMaxStack(int level) => BuildingManager.GetDefaultMaxStackByLevel(level);
 
-    private static float LevelToEnergyRatio(int level) => level switch {
-        < 1 => 1.0f, < 4 => 0.95f, < 7 => 0.85f, < 10 => 0.7f, _ => 0.5f,
-    };
+    private static float LevelToEnergyRatio(int level) => BuildingManager.GetDefaultEnergyRatioByLevel(level);
 
-    private static float LevelToPlrRatio(int level) => level switch {
-        < 2 => 1.0f, < 5 => 1.1f, < 8 => 1.3f, < 11 => 1.6f, _ => 2.0f,
-    };
+    private static float LevelToPlrRatio(int level) => BuildingManager.GetDefaultPlrRatioByLevel(level);
 
-    private static float LevelToInteractEnergyRatio(int level) => level switch {
-        < 1 => 1.00f, < 2 => 0.95f, < 4 => 0.85f, < 5 => 0.70f,
-        < 7 => 0.55f, < 8 => 0.40f, < 10 => 0.30f, < 11 => 0.25f, _ => 0.20f,
-    };
+    private static float LevelToInteractEnergyRatio(int level) => BuildingManager.GetStationInteractEnergyRatioByLevel(level);
 
     private static void Reinforcement() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
