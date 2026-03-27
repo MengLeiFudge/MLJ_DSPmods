@@ -2,31 +2,34 @@
 using System.Collections.Generic;
 using FE.UI.Components;
 using FE.UI.View.CoreOperate;
-using FE.UI.View.GetItemRecipe;
-using FE.UI.View.ModPackage;
-using FE.UI.View.ProgressSystem;
+using FE.UI.View.DrawGrowth;
+using FE.UI.View.ResourceInteraction;
+using FE.UI.View.ProgressTask;
 using FE.UI.View.Setting;
-using FE.UI.View.Statistic;
+using FE.UI.View.Archive;
 using UnityEngine;
 
 namespace FE.UI.View;
 
 public static class MainWindowPageRegistry {
     public const string CoreOperateCategoryName = "核心操作";
-    public const string ItemManageCategoryName = "物品管理";
-    public const string GachaCategoryName = "抽奖";
-    public const string StoreCategoryName = "商店";
-    public const string ProgressSystemCategoryName = "进度系统";
-    public const string StatisticCategoryName = "统计相关";
+    public const string ResourceInteractionCategoryName = "物资交互";
+    public const string DrawGrowthCategoryName = "抽取成长";
+    public const string ProgressTaskCategoryName = "进度任务";
+    public const string ArchiveCategoryName = "资料档案";
     public const string SystemSettingCategoryName = "系统设置";
+    public const string ItemManageCategoryName = ResourceInteractionCategoryName;
+    public const string GachaCategoryName = DrawGrowthCategoryName;
+    public const string StoreCategoryName = DrawGrowthCategoryName;
+    public const string ProgressSystemCategoryName = ProgressTaskCategoryName;
+    public const string StatisticCategoryName = ArchiveCategoryName;
 
     private static readonly string[] categoryOrder = [
         CoreOperateCategoryName,
-        ItemManageCategoryName,
-        GachaCategoryName,
-        StoreCategoryName,
-        ProgressSystemCategoryName,
-        StatisticCategoryName,
+        ResourceInteractionCategoryName,
+        DrawGrowthCategoryName,
+        ProgressTaskCategoryName,
+        ArchiveCategoryName,
         SystemSettingCategoryName,
     ];
 
@@ -35,23 +38,22 @@ public static class MainWindowPageRegistry {
         new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
 
-        new(ItemManageCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-        new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
+        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
+        new(ResourceInteractionCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
 
-        new(GachaCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(GachaCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "资源统筹", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
-        new(StoreCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "流派聚焦页", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "资源统筹", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
+        new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
+        new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
+        new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI),
 
-        new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
-        new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
-        new(ProgressSystemCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI),
-        new(ProgressSystemCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
-
-        new(StatisticCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
-        new(StatisticCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
+        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
+        new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
+        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
 
         new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: Miscellaneous.CreateUIInAnalysis),
         new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),

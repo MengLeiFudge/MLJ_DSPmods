@@ -1,4 +1,4 @@
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public readonly struct GachaExchangeRow(
     int inputItemId,

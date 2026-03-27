@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public static class TicketRaffle {
     private sealed class RaffleTabUi {
@@ -124,8 +124,8 @@ public static class TicketRaffle {
 
     public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "开线抽取", GachaPool.PoolIdOpeningLine);
     public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "原胚抽取", GachaPool.PoolIdProtoLoop);
-    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "成长说明", GachaPool.PoolIdGrowth);
-    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "聚焦说明", GachaPool.PoolIdFocus);
+    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "成长规划", GachaPool.PoolIdGrowth);
+    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "流派聚焦", GachaPool.PoolIdFocus);
 
     private static void CreatePoolUI(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
         SyncTotalDrawsFromSharedState();
@@ -163,9 +163,9 @@ public static class TicketRaffle {
         ui.BtnDraw10 = wnd.AddButton(150f, y, 140f, ui.Tab, "抽10次".Translate(), 14,
             onClick: () => StartDraw(ui, 10));
         ui.BtnGoGrowth = wnd.AddButton(620f, y, 140f, ui.Tab, "前往成长池".Translate(), 14,
-            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.StoreCategoryName, 0));
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
         ui.BtnGoFocus = wnd.AddButton(770f, y, 140f, ui.Tab, "前往聚焦页".Translate(), 14,
-            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.StoreCategoryName, 1));
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3));
 
         y += 48f;
         ui.TxtResultSummary = MyWindow.AddText(0f, y, ui.Tab, "暂无抽取结果".Translate(), 13);

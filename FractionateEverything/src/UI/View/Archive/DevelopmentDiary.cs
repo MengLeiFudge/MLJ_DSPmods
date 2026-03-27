@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.ProgressSystem;
+namespace FE.UI.View.Archive;
 
 public static class DevelopmentDiary {
     private readonly struct DiaryEntry(string label, string titleKey, string contentKey) {

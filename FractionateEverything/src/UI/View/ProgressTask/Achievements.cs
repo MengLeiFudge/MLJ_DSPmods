@@ -7,14 +7,14 @@ using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View;
-using FE.UI.View.GetItemRecipe;
+using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.ProgressSystem;
+namespace FE.UI.View.ProgressTask;
 
 public static class Achievements {
     private static RectTransform window;
