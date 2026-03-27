@@ -3,7 +3,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
-using FE.UI.View.GetItemRecipe;
+using FE.UI.View.DrawGrowth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.Statistic;
+namespace FE.UI.View.Archive;
 
 public static class FracStatistic {
     private static RectTransform window;

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public static class LimitedTimeStore {
     private const int GrowthRowCount = 8;
@@ -48,7 +48,7 @@ public static class LimitedTimeStore {
 
     public static void AddTranslations() {
         Register("成长规划", "Growth Planning");
-        Register("流派聚焦页", "Focus Control");
+        Register("流派聚焦", "Focus Control");
         Register("资源统筹", "Resource Overview");
         Register("前往抽取", "Go Draw");
         Register("兑换", "Exchange");
@@ -62,9 +62,9 @@ public static class LimitedTimeStore {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans, "成长规划");
-    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦页");
+    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦");
     public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans, "成长规划");
-    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦页");
+    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦");
 
     private static void CreateGrowthUI(MyConfigWindow wnd, RectTransform trans, string pageName) {
         pageRoot = trans;
@@ -84,7 +84,7 @@ public static class LimitedTimeStore {
         y += 36f;
 
         wnd.AddButton(780f, 8f, 140f, growthPage.Tab, "前往抽取".Translate(), 13,
-            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.GachaCategoryName, 0));
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
 
         for (int i = 0; i < GrowthRowCount; i++) {
             var row = new GrowthRowUi {
@@ -116,7 +116,7 @@ public static class LimitedTimeStore {
         y += 40f;
 
         wnd.AddButton(780f, 8f, 140f, focusPage.Tab, "前往抽取".Translate(), 13,
-            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.GachaCategoryName, 0));
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
 
         foreach (var focus in GachaService.FocusDefinitions) {
             float currentY = y;
@@ -244,7 +244,7 @@ public static class LimitedTimeStore {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         pageRoot = trans;
         CreateGrowthUI(wnd, trans, "成长规划");
-        CreateFocusUI(wnd, trans, "流派聚焦页");
+        CreateFocusUI(wnd, trans, "流派聚焦");
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }

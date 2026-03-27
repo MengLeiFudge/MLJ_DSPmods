@@ -1,5 +1,5 @@
 using FE.Logic.Recipe;
-using FE.UI.View.ProgressSystem;
+using FE.UI.View.ProgressTask;
 
 namespace FE.Logic.Manager;
 

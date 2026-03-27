@@ -3,7 +3,7 @@ using FE.Logic.Manager;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public class GachaCard : MonoBehaviour {
     // 卡背面Image（默认显示）

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.ModPackage;
+namespace FE.UI.View.ResourceInteraction;
 
 public static class ImportantItem {
     private static RectTransform window;

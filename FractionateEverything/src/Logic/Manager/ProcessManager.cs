@@ -8,7 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
-using FE.UI.View.ProgressSystem;
+using FE.UI.View.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;

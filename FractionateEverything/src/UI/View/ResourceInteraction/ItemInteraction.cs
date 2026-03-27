@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.ModPackage;
+namespace FE.UI.View.ResourceInteraction;
 
 public static class ItemInteraction {
     private const int RowCount = 12;

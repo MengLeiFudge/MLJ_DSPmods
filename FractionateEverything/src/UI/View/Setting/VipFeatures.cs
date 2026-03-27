@@ -2,7 +2,7 @@
 using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
-using FE.UI.View.GetItemRecipe;
+using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;

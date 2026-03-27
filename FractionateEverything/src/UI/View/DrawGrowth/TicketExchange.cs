@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public static class TicketExchange {
     private static RectTransform tab;

@@ -7,7 +7,7 @@ using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
-using FE.UI.View.ProgressSystem;
+using FE.UI.View.ProgressTask;
 using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;

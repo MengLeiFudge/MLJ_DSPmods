@@ -3,7 +3,7 @@ using FE.Logic.Manager;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FE.UI.View.GetItemRecipe;
+namespace FE.UI.View.DrawGrowth;
 
 public class GachaSSREffect : MonoBehaviour {
     private Image _overlay;        // 半透明黑色蒙层

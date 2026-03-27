@@ -11,7 +11,7 @@ using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
 
-namespace FE.UI.View.Statistic;
+namespace FE.UI.View.Archive;
 
 public static class RecipeGallery {
     // 行数：配方类型+矩阵7种+总计    列数：矩阵类型+配方3种+总计
