@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Recipe;
@@ -9,50 +11,46 @@ namespace FE.Logic.Recipe;
 /// 原版配方升级信息
 /// </summary>
 public class VanillaRecipe {
-    private static readonly int[] UpgradeLimitTechIds = [T电磁矩阵, T能量矩阵, T结构矩阵, T信息矩阵, T引力矩阵];
     private readonly Dictionary<int, int> inputCounts = [];
     public readonly RecipeProto recipe;
     private readonly int timeSpend;
     private readonly Dictionary<int, int> inputUpgrades = [];
     private int timeSpendUpgrade = 0;
+    public int MatrixId { get; }
 
     public VanillaRecipe(RecipeProto recipe) {
         this.recipe = recipe;
+        MatrixId = ResolveMatrixId(recipe);
         for (int i = 0; i < recipe.Items.Length; i++) {
             inputCounts.Add(recipe.Items[i], recipe.ItemCounts[i]);
         }
         timeSpend = recipe.TimeSpend;
     }
 
-    public bool LimitedByMatrix => !CanUpgradeMore();
+    public bool LimitedByMatrix => !TechManager.IsVanillaEnhancementUnlockedForMatrix(MatrixId);
 
-    private static int GetUpgradeLimit() {
-        if (GameMain.history == null) {
-            return 0;
-        }
-        if (GameMain.history.TechUnlocked(T宇宙矩阵)) {
-            return int.MaxValue;
-        }
-        int count = 0;
-        for (int i = 0; i < UpgradeLimitTechIds.Length; i++) {
-            if (GameMain.history.TechUnlocked(UpgradeLimitTechIds[i])) {
-                count++;
+    private static int ResolveMatrixId(RecipeProto recipeProto) {
+        if (recipeProto?.Results != null) {
+            foreach (int resultId in recipeProto.Results) {
+                if (resultId > 0 && resultId < itemToMatrix.Length && itemToMatrix[resultId] > 0) {
+                    return itemToMatrix[resultId];
+                }
             }
         }
-        return count;
-    }
 
-    private int GetTotalUpgradeCount() {
-        int count = timeSpendUpgrade;
-        foreach (int upgrade in inputUpgrades.Values) {
-            count += upgrade;
+        if (recipeProto?.Items != null) {
+            foreach (int itemId in recipeProto.Items) {
+                if (itemId > 0 && itemId < itemToMatrix.Length && itemToMatrix[itemId] > 0) {
+                    return itemToMatrix[itemId];
+                }
+            }
         }
-        return count;
+
+        return I电磁矩阵;
     }
 
     private bool CanUpgradeMore() {
-        int limit = GetUpgradeLimit();
-        return limit == int.MaxValue || GetTotalUpgradeCount() < limit;
+        return !LimitedByMatrix;
     }
 
     /// <summary>

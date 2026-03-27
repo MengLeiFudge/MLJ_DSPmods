@@ -25,16 +25,16 @@ public static class ItemManager {
 
         Register("普通抽卡券", "Standard Draw Ticket");
         Register("I普通抽卡券",
-            "A standard ticket for drawing from the permanent and UP pools in the fractionation data centre.",
-            "可在分馏数据中心常驻池和UP池中使用的标准抽卡券。");
+            "Legacy ticket item kept only for archival compatibility. Version 2.3 no longer consumes physical tickets for draws.",
+            "旧版抽卡凭证，仅作归档保留。2.3版本起抽取不再消耗实体奖券。");
         Register("精选抽卡券", "Premium Draw Ticket");
         Register("I精选抽卡券",
-            "A premium ticket for drawing from the UP and limited pools in the fractionation data centre.",
-            "可在分馏数据中心UP池和限定池中使用的精选抽卡券。");
+            "Legacy ticket item kept only for archival compatibility. Version 2.3 no longer consumes physical tickets for draws.",
+            "旧版抽卡凭证，仅作归档保留。2.3版本起抽取不再消耗实体奖券。");
         Register("残片", "Fragment");
         Register("I残片",
-            "Fragments produced as a byproduct of fractionation. Can be exchanged for draw tickets.",
-            "分馏过程中产生的副产物残片，可兑换为抽卡券。");
+            "Stable side resource produced by fractionation. Used for growth, deterministic补差 and focus switching.",
+            "分馏体系产出的稳定副资源，可用于成长、定向补差和流派聚焦。");
 
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
@@ -66,12 +66,12 @@ public static class ItemManager {
             "含有奇特能量的立方体。有极小概率在配方奖池中抽取得到，限时商店也会刷新。在配方操作界面，可以用它解锁任何配方，或是兑换对应的回响。");
         Register("分馏塔增幅芯片", "Fractionator Increase Chip");
         Register("I分馏塔增幅芯片",
-            "Highly integrated electronic chip. There is a very small chance of getting it by drawing it from the Original Embryo Pool, and it will also be refreshed in the Limited Time Store. It can be used to enhance the effects of the fractionator and logistics interaction station in the building operations interface.",
-            "高度集成的电子芯片。有极小概率在原胚奖池中抽取得到，限时商店也会刷新。在建筑操作界面，可以用它提升分馏塔和物流交互站的效果。");
+            "Legacy growth material kept only for archival compatibility. Version 2.3 uses Fragments + current stage Matrix instead.",
+            "旧版建筑成长材料，仅作归档保留。2.3版本起建筑成长改为消耗残片与当前阶段矩阵。");
         Register("原版配方核心", "Origin Recipe Core");
         Register("I原版配方核心",
-            "Modify origin recipe input counts and time spend.",
-            "可以修改原版配方的原料数目、制作时间。");
+            "Legacy vanilla recipe upgrade material kept only for archival compatibility. Version 2.3 uses Fragments + current stage Matrix instead.",
+            "旧版原版配方增强材料，仅作归档保留。2.3版本起原版配方增强改为消耗残片与当前阶段矩阵。");
 
     }
 
@@ -602,7 +602,7 @@ public static class ItemManager {
                 topMatrixID = I黑雾矩阵;
             } else if (item.preTech != null) {
                 //大部分物品归到前置科技所属的矩阵层级。如果找不到前置科技所属的矩阵层级，归到电磁矩阵
-                int id = GetTopMatrixID(item.preTech);
+                int id = GetTechTopMatrixID(item.preTech);
                 topMatrixID = id > 0 ? id : I电磁矩阵;
             } else if (!item.missingTech) {
                 //黑雾特有材料或资源
@@ -618,7 +618,7 @@ public static class ItemManager {
                     topMatrixID = int.MaxValue;
                     foreach (RecipeProto recipe in recipes) {
                         if (recipe.preTech != null) {
-                            int id = GetTopMatrixID(recipe.preTech);
+                            int id = GetTechTopMatrixID(recipe.preTech);
                             if (id > 0 && id < topMatrixID) {
                                 topMatrixID = id;
                             }
@@ -634,7 +634,7 @@ public static class ItemManager {
         }
     }
 
-    private static int GetTopMatrixID(TechProto tech) {
+    public static int GetTechTopMatrixID(TechProto tech) {
         if (tech.IsHiddenTech || tech.Items.Contains(I黑雾矩阵)) {
             return I黑雾矩阵;
         }

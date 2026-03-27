@@ -53,8 +53,8 @@ public static class RectificationTower {
     public static void AddTranslations() {
         Register("精馏塔", "Rectification Tower");
         Register("I精馏塔",
-            "Rectify items into system resources such as tickets and essences. Higher recipe levels yield better outputs.",
-            "将物品精馏为奖券、精华等系统资源。配方等级越高，精馏产出越好。");
+            "Compress matrices into Fragments. Higher tower levels improve throughput, power efficiency and fragment conversion.",
+            "将矩阵稳定压缩为残片。精馏塔等级越高，吞吐、能耗与残片转化效率越好。");
     }
 
     public static void Create() {

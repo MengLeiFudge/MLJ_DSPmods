@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.Statistic;
 
 public static class RecipeGallery {
-    //行数：配方类型+矩阵7种+总计    列数：矩阵类型+配方3种+总计
+    // 行数：配方类型+矩阵7种+总计    列数：矩阵类型+配方3种+总计
     private const int MatrixCount = 7;
     private const int RecipeCount = 3;
     private static RectTransform window;
@@ -22,17 +22,11 @@ public static class RecipeGallery {
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 2, RecipeCount + 2];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
-    private static Text _bonusInfoText;
-
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
-
         Register("配方解锁情况",
             $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}):",
             $"配方解锁情况如下（{"完全升级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)}）：");
-        Register("图鉴加成",
-            "Gallery bonus: >=25% success +2%, >=50% success +5%, >=75% destroy -1%, >=100% double +3%",
-            "图鉴加成：>=25% 成功+2%，>=50% 成功+5%，>=75% 损毁-1%，>=100% 翻倍+3%");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -44,9 +38,6 @@ public static class RecipeGallery {
         float y = 18f;
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
         y += 36f;
-        _bonusInfoText = wnd.AddText2(x, y, tab, "图鉴加成", 14);
-        _bonusInfoText.supportRichText = true;
-        y += 36f;
         for (int i = 0; i < MatrixCount + 2; i++) {
             for (int j = 0; j < RecipeCount + 2; j++) {
                 (float, float) position = GetPosition(j, RecipeCount + 2);
@@ -55,14 +46,11 @@ public static class RecipeGallery {
             }
             y += 36f;
         }
-        //左上角
         recipeUnlockInfoText[0, 0].text = "";
-        //第一行，配方类型
         for (int j = 1; j <= RecipeCount; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];
         }
         recipeUnlockInfoText[0, RecipeCount + 1].text = "总计".Translate();
-        //第一列，矩阵类型
         for (int i = 1; i <= MatrixCount; i++) {
             recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name.Replace(" Matrix", "");
         }
@@ -81,18 +69,7 @@ public static class RecipeGallery {
         if (!IsPageVisible()) {
             return;
         }
-        GachaGalleryBonusManager.Refresh();
-        if (_bonusInfoText != null) {
-            float maxSuccess = 0f;
-            float maxDestroy = 0f;
-            float maxDouble = 0f;
-            foreach (var recipeType in RecipeTypes) {
-                maxSuccess = Mathf.Max(maxSuccess, GachaGalleryBonusManager.GetSuccessBonus(recipeType));
-                maxDestroy = Mathf.Max(maxDestroy, GachaGalleryBonusManager.GetDestroyReduction(recipeType));
-                maxDouble = Mathf.Max(maxDouble, GachaGalleryBonusManager.GetDoubleBonus(recipeType));
-            }
-            _bonusInfoText.text = $"{"图鉴加成".Translate()}：成功+{(maxSuccess * 100):F0}% / 损毁-{(maxDestroy * 100):F0}% / 翻倍+{(maxDouble * 100):F0}%";
-        }
+
         int[,] fullUpgradeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] unlockCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] totalCountArr = new int[MatrixCount + 1, RecipeCount + 1];
@@ -118,6 +95,7 @@ public static class RecipeGallery {
                 fullUpgradeCountArr[MatrixCount, RecipeCount] += recipes.Count;
             }
         }
+
         for (int i = 0; i < MatrixCount + 1; i++) {
             for (int j = 0; j < RecipeCount + 1; j++) {
                 recipeUnlockInfoText[i + 1, j + 1].text =

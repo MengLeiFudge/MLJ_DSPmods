@@ -131,6 +131,7 @@ public static class FracRecipeOperate {
         Register("对", "on");
         Register("进行退火？", "to anneal?");
         Register("退火需配方满级", "Anneal requires max-level recipe", "退火需配方满级（+10）");
+        Register("退火已冻结", "Anneal is frozen in 2.3", "退火机制已冻结，2.3版本暂不启用");
     }
 
     // ==================== 配置加载 ====================
@@ -594,38 +595,15 @@ public static class FracRecipeOperate {
                 : $"{"回响等级".Translate()}: {recipe.EchoLevel}";
         }
         if (txtAnnealCost != null) {
-            string costText = "";
-            if (recipe != null) {
-                var (itemId, itemCount) = recipe.GetAnnealCost();
-                string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
-                costText = $"{"消耗".Translate()} {itemName} x{itemCount}";
-            }
-            txtAnnealCost.text = recipe != null && recipe.IsMaxLevel
-                ? costText
-                : "退火需配方满级".Translate();
+            txtAnnealCost.text = "退火已冻结".Translate();
         }
         if (btnAnneal != null && btnAnneal.button != null) {
-            btnAnneal.button.interactable = recipe != null && recipe.IsMaxLevel;
+            btnAnneal.button.interactable = false;
         }
     }
 
     private static void OnAnnealClick() {
-        BaseRecipe recipe = SelectedRecipe;
-        if (recipe == null || !recipe.IsMaxLevel) return;
-        var (costItemId, costItemCount) = recipe.GetAnnealCost();
-        string costItemName = LDB.items.Select(costItemId)?.name ?? costItemId.ToString();
-        string consumeLabel = "消耗".Translate();
-        string onLabel = "对".Translate();
-        string annealQuestion = "进行退火？".Translate();
-        string annealTip = "退火后配方等级重置为0，获得永久回响加成。".Translate();
-        UIMessageBox.Show("退火确认".Translate(),
-            $"{consumeLabel} {costItemName} x{costItemCount} {onLabel} {recipe.TypeName} {annealQuestion}\n{annealTip}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
-            () => {
-                if (!TakeItemWithTip(costItemId, costItemCount, out _)) return;
-                recipe.Anneal();
-                RefreshAnnealUI(recipe);
-            }, null);
+        UIRealtimeTip.Popup("退火已冻结".Translate(), true, 2);
     }
 
     #region IModCanSave

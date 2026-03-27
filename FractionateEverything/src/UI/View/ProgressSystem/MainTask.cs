@@ -50,65 +50,66 @@ public static class MainTask {
     private static UIButton btnClaim;
 
     private static readonly TaskInfo[] Tasks = [
-        new("分馏启示", "主线描述-分馏启示", "主线奖励-无", () => IsTechUnlocked(TFE分馏数据中心),
-            () => GetTechProgressText(TFE分馏数据中心), () => { }, true),
+        new("分馏启示", "主线描述-分馏启示", "主线奖励-残片200", () => IsTechUnlocked(TFE分馏数据中心),
+            () => GetTechProgressText(TFE分馏数据中心), () => GrantItems((IFE残片, 200)), true),
         new("万物之始", "主线描述-万物之始", "主线奖励-残片500", () => totalFractionSuccesses >= 50,
             () => string.Format("分馏次数进度".Translate(), totalFractionSuccesses, 50),
             () => GrantItems((IFE残片, 500))),
-        new("抽卡之乐", "主线描述-抽卡之乐", "主线奖励-配方核心1", () => TicketRaffle.totalDraws >= 10,
-            () => string.Format("抽奖次数进度".Translate(), TicketRaffle.totalDraws, 10),
+        new("开线之门", "主线描述-开线之门", "主线奖励-配方核心1", () => TicketRaffle.totalDraws >= 20,
+            () => string.Format("抽取次数进度".Translate(), TicketRaffle.totalDraws, 20),
             () => GrantItems((IFE分馏配方核心, 1))),
         new("矿物新生", "主线描述-矿物新生", "主线奖励-矿物复制塔原胚10", () => IsTechUnlocked(TFE矿物复制),
             () => GetTechProgressText(TFE矿物复制), () => GrantItems((IFE矿物复制塔原胚, 10))),
+        new("原胚萌发", "主线描述-原胚萌发", "主线奖励-交互塔原胚10", () => IsTechUnlocked(TFE分馏塔原胚),
+            () => GetTechProgressText(TFE分馏塔原胚), () => GrantItems((IFE交互塔原胚, 10))),
         new("物品转化", "主线描述-物品转化", "主线奖励-转化塔原胚10", () => IsTechUnlocked(TFE物品转化),
             () => GetTechProgressText(TFE物品转化), () => GrantItems((IFE转化塔原胚, 10))),
-        new("符文初识", "主线描述-符文初识", "主线奖励-残片1000", HasAnyEquippedRune,
-            GetRuneProgressText, () => GrantItems((IFE残片, 1000))),
-        new("产线优化", "主线描述-产线优化", "主线奖励-增幅芯片5", HasBuildingLevel6,
-            GetBuildingProgressText, () => GrantItems((IFE分馏塔增幅芯片, 5))),
-        new("配方精通", "主线描述-配方精通", "主线奖励-配方核心3", () => GetUnlockedRecipeCount() >= 30,
-            () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 30),
-            () => GrantItems((IFE分馏配方核心, 3))),
+        new("工艺优化", "主线描述-工艺优化", "主线奖励-残片1000", () => GetMaxBuildingLevel() >= 6,
+            () => string.Format("建筑等级进度".Translate(), GetMaxBuildingLevel(), 6),
+            () => GrantItems((IFE残片, 1000))),
+        new("精馏经济", "主线描述-精馏经济", "主线奖励-精馏塔原胚5", () => IsTechUnlocked(TFE物品精馏),
+            () => GetTechProgressText(TFE物品精馏), () => GrantItems((IFE精馏塔原胚, 5))),
         new("星际互联", "主线描述-星际互联", "主线奖励-星际物流交互站2", () => IsTechUnlocked(TFE星际物流交互),
             () => GetTechProgressText(TFE星际物流交互), () => GrantItems((IFE星际物流交互站, 2))),
-        new("万物归一", "主线描述-万物归一", "主线奖励-残片2000", () => GetUnlockedRecipeCount() >= 100,
+        new("万物归一", "主线描述-万物归一", "主线奖励-残片2000",
+            () => GetUnlockedRecipeCount() >= 100 && totalFractionSuccesses >= 5000,
             () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 100),
             () => GrantItems((IFE残片, 2000))),
     ];
 
     public static void AddTranslations() {
         Register("主线任务", "Main Task");
-
         Register("分馏启示", "Fractionation Revelation");
         Register("万物之始", "Start of All Things");
-        Register("抽卡之乐", "Joy of Draws");
+        Register("开线之门", "Opening Line");
         Register("矿物新生", "Mineral Rebirth");
+        Register("原胚萌发", "Proto Germination");
         Register("物品转化", "Item Conversion");
-        Register("符文初识", "First Rune");
-        Register("产线优化", "Production Optimization");
-        Register("配方精通", "Recipe Mastery");
+        Register("工艺优化", "Craft Optimization");
+        Register("精馏经济", "Rectification Economy");
         Register("星际互联", "Interstellar Connectivity");
         Register("万物归一", "All Into One");
 
         Register("主线描述-分馏启示", "Unlock Fractionation Data Centre tech", "解锁分馏数据中心科技");
         Register("主线描述-万物之始", "Reach 50 successful fractionations", "累计完成 50 次分馏成功");
-        Register("主线描述-抽卡之乐", "Complete 10 ticket draws", "累计完成 10 次奖券抽奖");
+        Register("主线描述-开线之门", "Complete 20 opening-line draws", "累计完成 20 次开线抽取");
         Register("主线描述-矿物新生", "Unlock Mineral Replication tech", "解锁矿物复制科技");
+        Register("主线描述-原胚萌发", "Unlock the tower proto chain", "解锁分馏塔原胚科技");
         Register("主线描述-物品转化", "Unlock Item Conversion tech", "解锁物品转化科技");
-        Register("主线描述-符文初识", "Equip any rune", "任意槽位装备一个符文");
-        Register("主线描述-产线优化", "Upgrade any FE building to level 6", "任意万物分馏建筑等级达到 6");
-        Register("主线描述-配方精通", "Unlock 30 fractionation recipes", "累计解锁 30 个分馏配方");
+        Register("主线描述-工艺优化", "Raise any FE building to level 6", "任意万物分馏建筑等级达到 6");
+        Register("主线描述-精馏经济", "Unlock Item Deconstruction tech", "解锁物品精馏科技");
         Register("主线描述-星际互联", "Unlock Interstellar Interaction tech", "解锁星际物流交互科技");
-        Register("主线描述-万物归一", "Unlock 100 fractionation recipes", "累计解锁 100 个分馏配方");
+        Register("主线描述-万物归一", "Unlock 100 fractionation recipes and 5000 successful fractionations", "累计解锁 100 个分馏配方并完成 5000 次分馏成功");
 
         Register("主线奖励-无", "No extra reward (auto completed)", "无额外奖励（自动完成）");
+        Register("主线奖励-残片200", "Fragments x200", "残片 x200");
         Register("主线奖励-残片500", "Fragments x500", "残片 x500");
         Register("主线奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
         Register("主线奖励-矿物复制塔原胚10", "Mineral Replication Proto x10", "矿物复制塔原胚 x10");
+        Register("主线奖励-交互塔原胚10", "Interaction Tower Proto x10", "交互塔原胚 x10");
         Register("主线奖励-转化塔原胚10", "Conversion Tower Proto x10", "转化塔原胚 x10");
         Register("主线奖励-残片1000", "Fragments x1000", "残片 x1000");
-        Register("主线奖励-增幅芯片5", "Fractionator Amplify Chip x5", "分馏塔增幅芯片 x5");
-        Register("主线奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
+        Register("主线奖励-精馏塔原胚5", "Rectification Tower Proto x5", "精馏塔原胚 x5");
         Register("主线奖励-星际物流交互站2", "Interstellar Interaction Station x2", "星际物流交互站 x2");
         Register("主线奖励-残片2000", "Fragments x2000", "残片 x2000");
 
@@ -122,8 +123,7 @@ public static class MainTask {
         Register("奖励", "Reward");
         Register("科技解锁进度", "Tech unlocked: {0}", "科技解锁：{0}");
         Register("分馏次数进度", "Fraction successes: {0}/{1}", "分馏次数：{0}/{1}");
-        Register("抽奖次数进度", "Draw count: {0}/{1}", "抽奖次数：{0}/{1}");
-        Register("符文装备进度", "Rune equipped: {0}", "符文装备：{0}");
+        Register("抽取次数进度", "Draw count: {0}/{1}", "抽取次数：{0}/{1}");
         Register("建筑等级进度", "Max building level: {0}/{1}", "建筑最高等级：{0}/{1}");
         Register("解锁配方进度", "Unlocked recipes: {0}/{1}", "解锁配方：{0}/{1}");
         Register("主线总进度", "Main progress: {0}/{1}", "主线进度：{0}/{1}");
@@ -278,29 +278,9 @@ public static class MainTask {
             .Count(recipe => recipe.Unlocked);
     }
 
-    private static bool HasAnyEquippedRune() {
-        return RuneManager.equippedRuneIds != null && RuneManager.equippedRuneIds.Any(id => id != 0);
-    }
-
-    private static string GetRuneProgressText() {
-        return string.Format("符文装备进度".Translate(), HasAnyEquippedRune() ? "是".Translate() : "否".Translate());
-    }
-
-    private static bool HasBuildingLevel6() {
-        return InteractionTower.Level >= 6 || MineralReplicationTower.Level >= 6 || PointAggregateTower.Level >= 6
-            || ConversionTower.Level >= 6 || RectificationTower.Level >= 6;
-    }
-
-    private static string GetBuildingProgressText() {
-        List<int> levels = [
-            InteractionTower.Level,
-            MineralReplicationTower.Level,
-            PointAggregateTower.Level,
-            ConversionTower.Level,
-            RectificationTower.Level,
-        ];
-        int maxLevel = levels.Max();
-        return string.Format("建筑等级进度".Translate(), maxLevel, 6);
+    private static int GetMaxBuildingLevel() {
+        return Math.Max(InteractionTower.Level, Math.Max(MineralReplicationTower.Level,
+            Math.Max(PointAggregateTower.Level, Math.Max(ConversionTower.Level, RectificationTower.Level))));
     }
 
     private static string GetTechProgressText(int techId) {

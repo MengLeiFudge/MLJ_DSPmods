@@ -1,10 +1,12 @@
 ﻿using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -57,10 +59,11 @@ public static class VanillaRecipeOperate {
         Register("当前数量", "Current Count");
         Register("升级次数", "Upgrade Times");
         Register("升级", "Upgrade");
-        Register("科技层次不足", "Higher matrix tier required", "科技层次不足");
+        Register("科技层次不足", "Next-tier tech completion required", "需完成下一层科技");
         Register("已达上限", "Max upgrade reached", "已达上限");
         Register("制作时间", "Crafting Time");
         Register("当前时间", "Current Time");
+        Register("原版增强资源", "Enhance Resource", "增强资源");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -80,7 +83,7 @@ public static class VanillaRecipeOperate {
             () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
             "提示", "原版配方提示按钮说明1");
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE原版配方核心));
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
         txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
 
         y += 36f + 7f;
@@ -125,7 +128,9 @@ public static class VanillaRecipeOperate {
             return;
         }
         btnSelectedRecipe.Proto = SelectedRecipe;
-        txtCoreCount.text = $"x {GetItemTotalCount(IFE原版配方核心)}";
+        int currentMatrixId = GetCurrentProgressMatrixId();
+        string matrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
+        txtCoreCount.text = $"{"原版增强资源".Translate()}：残片 x{GetItemTotalCount(IFE残片)} / {matrixName} x{GetItemTotalCount(currentMatrixId)}";
 
         if (SelectedRecipe == null) {
             return;
@@ -169,7 +174,7 @@ public static class VanillaRecipeOperate {
                 // 如果已达上限，修改按钮文本
                 if (!canUpgrade) {
                     if (limitedByMatrix) {
-                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "科技层次不足".Translate();
+                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
                     } else {
                         btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "已达上限".Translate();
                     }
@@ -198,7 +203,7 @@ public static class VanillaRecipeOperate {
 
         if (!canUpgradeTime) {
             if (limitedByMatrix) {
-                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "科技层次不足".Translate();
+                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
             } else {
                 btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "已达上限".Translate();
             }
@@ -228,15 +233,15 @@ public static class VanillaRecipeOperate {
         if (GameMain.sandboxToolsEnabled) {
             vanillaRecipe.UpgradeInput(items[itemIdx]);
         } else {
-            int takeId = IFE原版配方核心;
-            int takeCount = 1;
-            ItemProto takeProto = LDB.items.Select(takeId);
+            (int matrixId, int matrixCount, int fragmentCount) = GetInputUpgradeCost(vanillaRecipe, itemID);
+            string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
             UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+                $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} "
                 + $"{"来修改此项".Translate()}{"吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
-                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                    if (!TakeItemWithTip(matrixId, matrixCount, out _)
+                        || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                         return;
                     }
                     vanillaRecipe.UpgradeInput(items[itemIdx]);
@@ -260,15 +265,15 @@ public static class VanillaRecipeOperate {
         if (GameMain.sandboxToolsEnabled) {
             vanillaRecipe.UpgradeTime();
         } else {
-            int takeId = IFE原版配方核心;
-            int takeCount = 1;
-            ItemProto takeProto = LDB.items.Select(takeId);
+            (int matrixId, int matrixCount, int fragmentCount) = GetTimeUpgradeCost(vanillaRecipe);
+            string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
             UIMessageBox.Show("提示".Translate(),
-                $"{"要花费".Translate()} {takeProto.name} x {takeCount} "
+                $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} "
                 + $"{"来修改此项".Translate()}{"吗？".Translate()}",
                 "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
-                    if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                    if (!TakeItemWithTip(matrixId, matrixCount, out _)
+                        || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                         return;
                     }
                     vanillaRecipe.UpgradeTime();
@@ -290,4 +295,22 @@ public static class VanillaRecipeOperate {
     public static void IntoOtherSave() { }
 
     #endregion
+
+    private static (int matrixId, int matrixCount, int fragmentCount) GetInputUpgradeCost(VanillaRecipe recipe, int itemId) {
+        int currentUpgrade = recipe.GetInputUpgradeCount(itemId);
+        return (GetCurrentProgressMatrixId(), 1 + currentUpgrade / 2, 20 + currentUpgrade * 10);
+    }
+
+    private static (int matrixId, int matrixCount, int fragmentCount) GetTimeUpgradeCost(VanillaRecipe recipe) {
+        int currentUpgrade = recipe.GetTimeUpgradeCount();
+        return (GetCurrentProgressMatrixId(), 1 + currentUpgrade / 2, 30 + currentUpgrade * 15);
+    }
+
+    private static string GetMatrixRequirementText(VanillaRecipe recipe) {
+        int stageIndex = GetMatrixStageIndex(recipe.MatrixId);
+        int requiredIndex = Mathf.Min(stageIndex + 1, MainProgressMatrixIds.Length - 1);
+        string nextMatrixName = LDB.items.Select(MainProgressMatrixIds[requiredIndex])?.name
+                                ?? MainProgressMatrixIds[requiredIndex].ToString();
+        return $"{nextMatrixName}全清";
+    }
 }
