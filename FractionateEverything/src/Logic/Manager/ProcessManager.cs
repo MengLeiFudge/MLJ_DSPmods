@@ -394,6 +394,7 @@ public static class ProcessManager {
                 } else {
                     // 成功产出，产出到产物列表
                     totalFractionSuccesses++;
+                    BuildingManager.AddBuildingExp(buildingID, 1);
                     lock (consumeRegister) {
                         consumeRegister[fluidId]++;
                     }

@@ -14,11 +14,18 @@ public enum GachaFocusType {
     RectificationEconomy = 6,
 }
 
+public enum GachaMode {
+    Normal = 0,
+    Speedrun = 1,
+}
+
 public static class GachaManager {
     // 每个抽卡池的保底计数器（poolId → 自上次出S后的连续未出S抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
     public static readonly int[] PoolPoints = new int[GachaPool.PoolCount];
+    public static readonly int[] FocusAffinity = new int[Enum.GetValues(typeof(GachaFocusType)).Length];
 
+    public static GachaMode CurrentMode = GachaMode.Normal;
     public static GachaFocusType CurrentFocus = GachaFocusType.Balanced;
 
     // 原神风格：1-73 抽 0.6%，74-89 抽每抽额外 +6%，第 90 抽必出
@@ -43,6 +50,12 @@ public static class GachaManager {
         return Enum.IsDefined(typeof(GachaFocusType), value)
             ? (GachaFocusType)value
             : GachaFocusType.Balanced;
+    }
+
+    private static GachaMode NormalizeMode(int value) {
+        return Enum.IsDefined(typeof(GachaMode), value)
+            ? (GachaMode)value
+            : GachaMode.Normal;
     }
 
     /// <summary>
@@ -112,9 +125,33 @@ public static class GachaManager {
         return true;
     }
 
+    public static bool IsSpeedrunMode => CurrentMode == GachaMode.Speedrun;
+
+    public static void SetMode(GachaMode mode) {
+        CurrentMode = mode;
+        if (!IsSpeedrunMode) {
+            Array.Clear(FocusAffinity, 0, FocusAffinity.Length);
+        }
+        GachaService.InitPools();
+    }
+
     public static void SetFocus(GachaFocusType focus) {
         CurrentFocus = focus;
+        if (IsSpeedrunMode) {
+            for (int i = 0; i < FocusAffinity.Length; i++) {
+                if (i == (int)focus) {
+                    FocusAffinity[i] = Math.Min(FocusAffinity[i] + 2, 6);
+                } else {
+                    FocusAffinity[i] = Math.Max(FocusAffinity[i] - 1, -2);
+                }
+            }
+        }
         GachaService.InitPools();
+    }
+
+    public static int GetFocusAffinity(GachaFocusType focus) {
+        int index = (int)focus;
+        return index >= 0 && index < FocusAffinity.Length ? FocusAffinity[index] : 0;
     }
 
     public static void Export(BinaryWriter w) {
@@ -129,7 +166,14 @@ public static class GachaManager {
                     bw.Write(PoolPoints[i]);
                 }
             }),
-            ("Focus", bw => bw.Write((int)CurrentFocus))
+            ("Mode", bw => bw.Write((int)CurrentMode)),
+            ("Focus", bw => bw.Write((int)CurrentFocus)),
+            ("FocusAffinity", bw => {
+                bw.Write(FocusAffinity.Length);
+                for (int i = 0; i < FocusAffinity.Length; i++) {
+                    bw.Write(FocusAffinity[i]);
+                }
+            })
         );
     }
 
@@ -145,13 +189,25 @@ public static class GachaManager {
                     PoolPoints[i] = ClampNonNegative(br.ReadInt32());
                 }
             }),
-            ("Focus", br => CurrentFocus = NormalizeFocus(br.ReadInt32()))
+            ("Mode", br => CurrentMode = NormalizeMode(br.ReadInt32())),
+            ("Focus", br => CurrentFocus = NormalizeFocus(br.ReadInt32())),
+            ("FocusAffinity", br => {
+                int count = ClampNonNegative(br.ReadInt32());
+                for (int i = 0; i < Math.Min(count, FocusAffinity.Length); i++) {
+                    FocusAffinity[i] = br.ReadInt32();
+                }
+                for (int i = FocusAffinity.Length; i < count; i++) {
+                    br.ReadInt32();
+                }
+            })
         );
     }
 
     public static void IntoOtherSave() {
         Array.Clear(PityCount, 0, PityCount.Length);
         Array.Clear(PoolPoints, 0, PoolPoints.Length);
+        Array.Clear(FocusAffinity, 0, FocusAffinity.Length);
+        CurrentMode = GachaMode.Normal;
         CurrentFocus = GachaFocusType.Balanced;
     }
 }

@@ -30,6 +30,7 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.BuildingTrain;
+    public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.ToolUnlock;
 
     /// <summary>
     /// 创建建筑培养配方实例

@@ -7,7 +7,6 @@ using FE.UI.View.CoreOperate;
 using FE.UI.View.GetItemRecipe;
 using FE.UI.View.ModPackage;
 using FE.UI.View.ProgressSystem;
-using FE.UI.View.RuneSystem;
 using FE.UI.View.Setting;
 using FE.UI.View.Statistic;
 using UnityEngine;
@@ -45,7 +44,6 @@ public static class MainWindow {
         Register("物品管理", "Item Management");
         ItemInteraction.AddTranslations();
         ImportantItem.AddTranslations();
-        RuneMenu.AddTranslations();
         Register("抽奖", "Raffle");
         Register("商店", "Store");
         Register("前往商店", "Go to Store");
@@ -63,7 +61,6 @@ public static class MainWindow {
         RecipeGallery.AddTranslations();
         FracStatistic.AddTranslations();
         Register("系统设置", "System Setting");
-        VipFeatures.AddTranslations();
         Miscellaneous.AddTranslations();
         SandboxMode.AddTranslations();
     }
@@ -75,7 +72,6 @@ public static class MainWindow {
 
         ItemInteraction.LoadConfig(configFile);
         ImportantItem.LoadConfig(configFile);
-        RuneMenu.LoadConfig(configFile);
 
         TicketRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
@@ -89,7 +85,6 @@ public static class MainWindow {
         RecipeGallery.LoadConfig(configFile);
         FracStatistic.LoadConfig(configFile);
 
-        VipFeatures.LoadConfig(configFile);
         Miscellaneous.LoadConfig(configFile);
         SandboxMode.LoadConfig(configFile);
     }
@@ -349,7 +344,6 @@ public static class MainWindow {
             ("BuildingOperate", BuildingOperate.Import),
             ("ItemInteraction", ItemInteraction.Import),
             ("ImportantItem", ImportantItem.Import),
-            ("RuneMenu", RuneMenu.Import),
             ("TicketRaffle", TicketRaffle.Import),
             ("LimitedTimeStore", LimitedTimeStore.Import),
             ("TicketExchange", TicketExchange.Import),
@@ -359,7 +353,6 @@ public static class MainWindow {
             ("DevelopmentDiary", DevelopmentDiary.Import),
             ("RecipeGallery", RecipeGallery.Import),
             ("FracStatistic", FracStatistic.Import),
-            ("VipFeatures", VipFeatures.Import),
             ("Miscellaneous", Miscellaneous.Import),
             ("SandboxMode", SandboxMode.Import)
         );
@@ -373,7 +366,6 @@ public static class MainWindow {
             ("BuildingOperate", BuildingOperate.Export),
             ("ItemInteraction", ItemInteraction.Export),
             ("ImportantItem", ImportantItem.Export),
-            ("RuneMenu", RuneMenu.Export),
             ("TicketRaffle", TicketRaffle.Export),
             ("LimitedTimeStore", LimitedTimeStore.Export),
             ("TicketExchange", TicketExchange.Export),
@@ -383,7 +375,6 @@ public static class MainWindow {
             ("DevelopmentDiary", DevelopmentDiary.Export),
             ("RecipeGallery", RecipeGallery.Export),
             ("FracStatistic", FracStatistic.Export),
-            ("VipFeatures", VipFeatures.Export),
             ("Miscellaneous", Miscellaneous.Export),
             ("SandboxMode", SandboxMode.Export)
         );
@@ -397,7 +388,6 @@ public static class MainWindow {
 
         ItemInteraction.IntoOtherSave();
         ImportantItem.IntoOtherSave();
-        RuneMenu.IntoOtherSave();
 
         TicketRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();
@@ -411,7 +401,6 @@ public static class MainWindow {
         RecipeGallery.IntoOtherSave();
         FracStatistic.IntoOtherSave();
 
-        VipFeatures.IntoOtherSave();
         Miscellaneous.IntoOtherSave();
         SandboxMode.IntoOtherSave();
     }

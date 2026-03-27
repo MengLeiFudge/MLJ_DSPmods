@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Compatibility;
+using FE.Logic.Manager;
 using FE.UI.Components;
 using FE.UI.View;
 using UnityEngine;
@@ -51,6 +52,7 @@ public static class Miscellaneous {
     private static MyCheckBox PackageSortTwiceCheckBox;
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static UIButton SwitchMainPanelButton;
+    private static MyComboBox GachaModeComboBox;
     private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageLogisticEntry;
@@ -82,6 +84,9 @@ public static class Miscellaneous {
             "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
 
         Register("显示分馏配方详细信息", "Show fractionate recipe details");
+        Register("抽卡模式", "Gacha Mode", "抽卡模式");
+        Register("常规模式", "Normal Mode", "常规模式");
+        Register("速通模式", "Speedrun Mode", "速通模式");
         Register("显示分馏配方详细信息说明",
             "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
             "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
@@ -154,6 +159,13 @@ public static class Miscellaneous {
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
         y += 36f;
+        txt = wnd.AddText2(x, y, parent, "抽卡模式");
+        GachaModeComboBox = wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+            .WithItems("常规模式", "速通模式")
+            .WithSize(200, 0)
+            .WithIndex((int)GachaManager.CurrentMode)
+            .WithOnSelChanged(index => GachaManager.SetMode((GachaMode)index));
+        y += 36f;
         txt = wnd.AddText2(x, y, parent, "物流交互站下载阈值");
         DownloadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
             DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
@@ -194,6 +206,9 @@ public static class Miscellaneous {
         PackageSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
         if (AutoSorter.Enable) {
             PackageAutoSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+        }
+        if (GachaModeComboBox != null) {
+            GachaModeComboBox.SetIndex((int)GachaManager.CurrentMode);
         }
 
         RefreshSwitchMainPanelButtonLabel();

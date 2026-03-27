@@ -21,12 +21,16 @@ public readonly struct GachaGrowthOffer(
     int fragmentCost,
     int outputId,
     int outputCount,
-    GachaFocusType focusType = GachaFocusType.Balanced) {
+    GachaFocusType focusType = GachaFocusType.Balanced,
+    int extraCostItemId = 0,
+    int extraCostCount = 0) {
     public int PointCost { get; } = pointCost;
     public int FragmentCost { get; } = fragmentCost;
     public int OutputId { get; } = outputId;
     public int OutputCount { get; } = outputCount;
     public GachaFocusType FocusType { get; } = focusType;
+    public int ExtraCostItemId { get; } = extraCostItemId;
+    public int ExtraCostCount { get; } = extraCostCount;
 }
 
 public static class GachaService {
@@ -35,6 +39,7 @@ public static class GachaService {
 
     private static int cachedMatrixId;
     private static GachaFocusType cachedFocus = GachaFocusType.Balanced;
+    private static GachaMode cachedMode = GachaMode.Normal;
 
     private static readonly GachaFocusDefinition[] focusDefinitions = [
         new(GachaFocusType.Balanced, "聚焦-平衡发展", "聚焦描述-平衡发展"),
@@ -47,26 +52,28 @@ public static class GachaService {
     ];
 
     public static IReadOnlyList<GachaFocusDefinition> FocusDefinitions => focusDefinitions;
+    public static bool IsSpeedrunMode => GachaManager.IsSpeedrunMode;
 
     public static void InitPools() {
         cachedMatrixId = GetCurrentProgressMatrixId();
         cachedFocus = GachaManager.CurrentFocus;
+        cachedMode = GachaManager.CurrentMode;
 
         pools.Clear();
 
-        var openingPool = new GachaPool(GachaPool.PoolIdOpeningLine, "开线池");
+        var openingPool = new GachaPool(GachaPool.PoolIdOpeningLine, GetPoolNameKey(GachaPool.PoolIdOpeningLine));
         FillOpeningLinePool(openingPool);
         pools.Add(openingPool);
 
-        var protoPool = new GachaPool(GachaPool.PoolIdProtoLoop, "原胚闭环池");
+        var protoPool = new GachaPool(GachaPool.PoolIdProtoLoop, GetPoolNameKey(GachaPool.PoolIdProtoLoop));
         FillProtoLoopPool(protoPool);
         pools.Add(protoPool);
 
-        var growthPool = new GachaPool(GachaPool.PoolIdGrowth, "成长池");
+        var growthPool = new GachaPool(GachaPool.PoolIdGrowth, GetPoolNameKey(GachaPool.PoolIdGrowth));
         FillGrowthPool(growthPool);
         pools.Add(growthPool);
 
-        var focusPool = new GachaPool(GachaPool.PoolIdFocus, "流派聚焦");
+        var focusPool = new GachaPool(GachaPool.PoolIdFocus, GetPoolNameKey(GachaPool.PoolIdFocus));
         FillFocusPool(focusPool);
         pools.Add(focusPool);
     }
@@ -74,9 +81,11 @@ public static class GachaService {
     private static void EnsurePoolsFresh() {
         int currentMatrixId = GetCurrentProgressMatrixId();
         GachaFocusType currentFocus = GachaManager.CurrentFocus;
+        GachaMode currentMode = GachaManager.CurrentMode;
         if (pools.Count == GachaPool.PoolCount
             && cachedMatrixId == currentMatrixId
-            && cachedFocus == currentFocus) {
+            && cachedFocus == currentFocus
+            && cachedMode == currentMode) {
             return;
         }
 
@@ -94,13 +103,16 @@ public static class GachaService {
 
         int singleCost = poolId switch {
             GachaPool.PoolIdOpeningLine => 1,
-            GachaPool.PoolIdProtoLoop => 1,
+            GachaPool.PoolIdProtoLoop => IsSpeedrunMode ? 1 : 1,
             _ => 0,
         };
         return singleCost * drawCount;
     }
 
     public static int GetFocusSwitchFragmentCost(GachaFocusType targetFocus) {
+        if (IsSpeedrunMode) {
+            return 0;
+        }
         return targetFocus == GachaManager.CurrentFocus ? 0 : 120;
     }
 
@@ -115,13 +127,54 @@ public static class GachaService {
     }
 
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
+        if (IsSpeedrunMode) {
+            return BuildSpeedrunGrowthOffers();
+        }
+
+        return BuildNormalGrowthOffers();
+    }
+
+    private static IReadOnlyList<GachaGrowthOffer> BuildNormalGrowthOffers() {
         var offers = new List<GachaGrowthOffer> {
             new(5, 0, IFE残片, 50),
             new(10, 10, GetCurrentDrawMatrixId(), 4),
             new(20, 15, GetFocusedEmbryoReward(), 1, GachaManager.CurrentFocus),
             new(36, 30, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
         };
+
+        AppendBlackFogOffers(offers);
         return offers;
+    }
+
+    private static IReadOnlyList<GachaGrowthOffer> BuildSpeedrunGrowthOffers() {
+        var offers = new List<GachaGrowthOffer> {
+            new(4, 0, GetCurrentDrawMatrixId(), 6),
+            new(8, 6, GetFocusedEmbryoReward(), 1, GachaManager.CurrentFocus),
+            new(15, 10, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
+        };
+
+        AppendBlackFogOffers(offers, pointBaseOffset: -4, fragmentBaseOffset: -4);
+        return offers;
+    }
+
+    private static void AppendBlackFogOffers(List<GachaGrowthOffer> offers, int pointBaseOffset = 0, int fragmentBaseOffset = 0) {
+        int stageIndex = GetCurrentProgressStageIndex();
+        if (stageIndex >= 3) {
+            offers.Add(new(18 + pointBaseOffset, 12 + fragmentBaseOffset, I能量碎片, 20,
+                GachaFocusType.RectificationEconomy, I黑雾矩阵, 1));
+        }
+        if (stageIndex >= 4) {
+            offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I物质重组器, 5,
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 2));
+            offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I硅基神经元, 4,
+                GachaFocusType.ProcessOptimization, I黑雾矩阵, 2));
+        }
+        if (stageIndex >= 5) {
+            offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵奇点, 2,
+                GachaFocusType.RectificationEconomy, I黑雾矩阵, 3));
+            offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I核心素, 1,
+                GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
+        }
     }
 
     private static void FillOpeningLinePool(GachaPool pool) {
@@ -147,6 +200,19 @@ public static class GachaService {
                     AddWeighted(lockedCurrentStageRecipes, itemId, weight + 1);
                 }
             }
+        }
+
+        if (IsSpeedrunMode) {
+            List<int> targetRecipes = currentStageRecipes.Count > 0 ? currentStageRecipes :
+                previousStageRecipes.Count > 0 ? previousStageRecipes : lockedCurrentStageRecipes;
+            if (targetRecipes.Count == 0) {
+                targetRecipes = [IFE残片];
+            }
+            pool.PoolC.AddRange(targetRecipes);
+            pool.PoolB.AddRange(targetRecipes);
+            pool.PoolA.AddRange(targetRecipes);
+            pool.PoolS.AddRange(lockedCurrentStageRecipes.Count > 0 ? lockedCurrentStageRecipes : targetRecipes);
+            return;
         }
 
         pool.PoolC.Add(IFE残片);
@@ -177,6 +243,17 @@ public static class GachaService {
     }
 
     private static void FillProtoLoopPool(GachaPool pool) {
+        if (IsSpeedrunMode) {
+            int focusedEmbryo = GetFocusedEmbryoReward();
+            AddWeighted(pool.PoolC, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 2);
+            AddWeighted(pool.PoolB, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 3);
+            AddWeighted(pool.PoolA, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 4);
+            AddWeighted(pool.PoolA, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚));
+            AddWeighted(pool.PoolS, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚) + 3);
+            AddWeighted(pool.PoolS, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 4);
+            return;
+        }
+
         AddWeighted(pool.PoolC, IFE交互塔原胚, GetEmbryoWeight(IFE交互塔原胚));
         AddWeighted(pool.PoolC, IFE矿物复制塔原胚, GetEmbryoWeight(IFE矿物复制塔原胚));
 
@@ -225,17 +302,23 @@ public static class GachaService {
 
     private static int GetRecipeWeight(BaseRecipe recipe, int currentStageIndex) {
         int weight = 1;
-        if (recipe.RecipeType == ERecipe.MineralCopy && GachaManager.CurrentFocus == GachaFocusType.MineralExpansion) {
-            weight += 2;
+        GachaFocusType recipeFocus = recipe.RecipeType switch {
+            ERecipe.MineralCopy => GachaFocusType.MineralExpansion,
+            ERecipe.Conversion => GachaFocusType.ConversionLeap,
+            _ => GachaFocusType.Balanced,
+        };
+
+        if (recipeFocus == GachaManager.CurrentFocus) {
+            weight += IsSpeedrunMode ? 4 + GachaManager.GetFocusAffinity(recipeFocus) : 2;
+        } else if (IsSpeedrunMode && GachaManager.CurrentFocus != GachaFocusType.Balanced) {
+            weight = Math.Max(1, weight - 1);
         }
-        if (recipe.RecipeType == ERecipe.Conversion && GachaManager.CurrentFocus == GachaFocusType.ConversionLeap) {
-            weight += 2;
-        }
+
         if (GachaManager.CurrentFocus == GachaFocusType.ProcessOptimization
             && GetMatrixStageIndex(recipe.MatrixID) == currentStageIndex) {
-            weight += 1;
+            weight += IsSpeedrunMode ? 3 : 1;
         }
-        return weight;
+        return Math.Max(1, weight);
     }
 
     private static int GetEmbryoWeight(int itemId) {
@@ -260,7 +343,14 @@ public static class GachaService {
                 weight += 2;
                 break;
         }
-        return weight;
+        if (IsSpeedrunMode) {
+            if (itemId == GetFocusedEmbryoReward()) {
+                weight += 4 + GachaManager.GetFocusAffinity(GachaManager.CurrentFocus);
+            } else if (GachaManager.CurrentFocus != GachaFocusType.Balanced) {
+                weight = Math.Max(1, weight - 1);
+            }
+        }
+        return Math.Max(1, weight);
     }
 
     private static int GetFocusedEmbryoReward() {
@@ -355,8 +445,57 @@ public static class GachaService {
             return false;
         }
 
+        if (recipe.IsMaxLevel) {
+            AddItemToModData(IFE残片, IsSpeedrunMode ? 25 : 15, 0, true);
+            return true;
+        }
+
         recipe.RewardThis(true);
         return true;
+    }
+
+    public static string GetModeNameKey() {
+        return IsSpeedrunMode ? "速通模式" : "常规模式";
+    }
+
+    public static string GetPoolNameKey(int poolId) {
+        if (IsSpeedrunMode) {
+            return poolId switch {
+                GachaPool.PoolIdOpeningLine => "阶段箱池",
+                GachaPool.PoolIdProtoLoop => "简化原胚池",
+                GachaPool.PoolIdGrowth => "简化成长池",
+                GachaPool.PoolIdFocus => "速通聚焦层",
+                _ => "阶段箱池",
+            };
+        }
+
+        return poolId switch {
+            GachaPool.PoolIdOpeningLine => "开线池",
+            GachaPool.PoolIdProtoLoop => "原胚闭环池",
+            GachaPool.PoolIdGrowth => "成长池",
+            GachaPool.PoolIdFocus => "流派聚焦",
+            _ => "开线池",
+        };
+    }
+
+    public static string GetPoolDescKey(int poolId) {
+        if (IsSpeedrunMode) {
+            return poolId switch {
+                GachaPool.PoolIdOpeningLine => "阶段箱池说明",
+                GachaPool.PoolIdProtoLoop => "简化原胚池说明",
+                GachaPool.PoolIdGrowth => "简化成长池说明",
+                GachaPool.PoolIdFocus => "速通聚焦层说明",
+                _ => "阶段箱池说明",
+            };
+        }
+
+        return poolId switch {
+            GachaPool.PoolIdOpeningLine => "开线池说明",
+            GachaPool.PoolIdProtoLoop => "原胚闭环池说明",
+            GachaPool.PoolIdGrowth => "成长池说明",
+            GachaPool.PoolIdFocus => "流派聚焦说明",
+            _ => "开线池说明",
+        };
     }
 
     private static GachaRarity RollRarity(GachaPool pool, float currentSRate, bool forceS) {

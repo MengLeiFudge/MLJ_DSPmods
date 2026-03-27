@@ -36,7 +36,6 @@ public static class BuildingOperate {
     private static UIButton btnReinforcement;
     private static UIButton[] reinforcementSandboxBtn = new UIButton[4];
     private static Text[] txtReinforcementBonus = new Text[10];
-    private static int[] buildingReinforcementCost = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 
     private const int LevelLineCount = 15;
     private const float RightColX = 620f;
@@ -159,6 +158,11 @@ public static class BuildingOperate {
         Register("特质未激活", "Not yet unlocked");
 
         Register("当前建筑强化等级", "Current Building Enhancement Level");
+        Register("成长经验", "Growth EXP");
+        Register("下一等级经验", "Next Level EXP");
+        Register("关键节点突破", "Breakthrough");
+        Register("已满级", "Maxed");
+        Register("当前等级需要靠经验自动成长", "This level advances automatically via EXP", "当前等级需要靠经验自动成长");
         Register("能耗", "Enrg");
         Register("增产", "Prolif");
         Register("最大增产点数", "Max Inc Pts");
@@ -203,7 +207,7 @@ public static class BuildingOperate {
         btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
 
         if (!GameMain.sandboxToolsEnabled) {
-            btnReinforcement = wnd.AddButton(1, 2, y, tab, "强化",
+            btnReinforcement = wnd.AddButton(1, 2, y, tab, "关键节点突破",
                 onClick: Reinforcement);
         } else {
             reinforcementSandboxBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
@@ -243,7 +247,7 @@ public static class BuildingOperate {
         string matrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
         txtChipCount.text = $"残片 x{GetItemTotalCount(IFE残片)} / {matrixName} x{GetItemTotalCount(currentMatrixId)}";
 
-        string s = $"{"强化等级：".Translate()}{SelectedBuilding.Level()}";
+        string s = $"{"当前建筑强化等级".Translate()} +{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
         btnTip5.gameObject.SetActive(true);
 
@@ -284,8 +288,11 @@ public static class BuildingOperate {
         }
 
         if (!GameMain.sandboxToolsEnabled) {
-            bool showBtn = SelectedBuilding.Level() < MaxLevel;
+            bool showBtn = SelectedBuilding.Level() < MaxLevel && BuildingManager.NeedsBreakthrough(SelectedBuilding.ID);
             btnReinforcement.gameObject.SetActive(showBtn);
+            if (showBtn) {
+                btnReinforcement.SetText("关键节点突破".Translate());
+            }
         } else {
             reinforcementSandboxBtn[0].gameObject.SetActive(true);
             reinforcementSandboxBtn[1].gameObject.SetActive(SelectedBuilding.Level() > 0);
@@ -295,16 +302,26 @@ public static class BuildingOperate {
                 .SetActive(SelectedBuilding.Level() < MaxLevel);
         }
         string[] strs;
+        long currentExp = BuildingManager.GetBuildingExp(SelectedBuilding.ID);
+        long nextExp = BuildingManager.GetRequiredExpForNextLevel(SelectedBuilding.ID);
         if (SelectedBuilding.ID == IFE行星内物流交互站 || SelectedBuilding.ID == IFE星际物流交互站) {
             strs = [
-                "当前强化加成：".Translate(),
+                nextExp > 0
+                    ? $"{"成长经验".Translate()} {currentExp}/{nextExp}"
+                    : SelectedBuilding.Level() >= MaxLevel
+                        ? "已满级".Translate()
+                        : $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"上传/下载电力消耗".Translate()} x{SelectedBuilding.InteractEnergyRatio():P1}",
                 $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
             ];
         } else {
             strs = [
-                "当前强化加成：".Translate(),
+                nextExp > 0
+                    ? $"{"成长经验".Translate()} {currentExp}/{nextExp}"
+                    : SelectedBuilding.Level() >= MaxLevel
+                        ? "已满级".Translate()
+                        : $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
@@ -377,11 +394,15 @@ public static class BuildingOperate {
         if (SelectedBuilding.Level() >= MaxLevel) {
             return;
         }
+        if (!BuildingManager.NeedsBreakthrough(SelectedBuilding.ID)) {
+            UIRealtimeTip.Popup("当前等级需要靠经验自动成长".Translate(), true, 2);
+            return;
+        }
         (int matrixId, int matrixCount, int fragmentCount) = GetReinforcementCost(SelectedBuilding.Level());
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         UIMessageBox.Show("提示".Translate(),
             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
-            + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
+            + $"{"关键节点突破".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!TakeItemWithTip(matrixId, matrixCount, out _)
@@ -390,7 +411,7 @@ public static class BuildingOperate {
                 }
                 SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);
                 UIMessageBox.Show("提示".Translate(),
-                    "强化成功提示".Translate(),
+                    "关键节点突破".Translate(),
                     "确定".Translate(), UIMessageBox.INFO,
                     null);
             },
@@ -420,8 +441,26 @@ public static class BuildingOperate {
 
     private static (int matrixId, int matrixCount, int fragmentCount) GetReinforcementCost(int currentLevel) {
         int stageMatrixId = GetCurrentProgressMatrixId();
-        int fragmentCost = buildingReinforcementCost[currentLevel] * 12;
-        int matrixCost = 1 + currentLevel / 3;
+        int fragmentCost = currentLevel switch {
+            2 => 36,
+            5 => 120,
+            8 => 360,
+            11 => 960,
+            _ => 0,
+        };
+        int matrixCost = currentLevel switch {
+            2 => 1,
+            5 => 2,
+            8 => 4,
+            11 => 8,
+            _ => 0,
+        };
         return (stageMatrixId, matrixCost, fragmentCost);
+    }
+
+    private static string GetBreakthroughCostText(int currentLevel) {
+        (int matrixId, int matrixCount, int fragmentCount) = GetReinforcementCost(currentLevel);
+        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
+        return $"{matrixName} x{matrixCount} + 残片 x{fragmentCount}";
     }
 }
