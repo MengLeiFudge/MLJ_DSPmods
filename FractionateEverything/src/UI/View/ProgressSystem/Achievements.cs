@@ -130,6 +130,10 @@ public static class Achievements {
             () => GetMaxBuildingLevel() >= 12,
             () => GrantItems((IFE残片, 1000)), energyReductionBonus: 0.10f),
 
+        new("成就分类-成长", "成就-任务自动化", "成就描述-任务自动化", "成就奖励-循环任务自动领取", ETier.Gold,
+            () => RecurringTask.TotalClaimedCount >= 100,
+            RecurringTask.UnlockAutoClaim, logisticsBonus: 0.02f),
+
         new("成就分类-原胚", "成就-原胚循环", "成就描述-原胚循环", "成就奖励-定向原胚1", ETier.Silver,
             () => GetProtoInventoryCount() >= 20,
             () => GrantItems((IFE分馏塔定向原胚, 1)), logisticsBonus: 0.02f),
@@ -231,6 +235,10 @@ public static class Achievements {
         Register("成就-工艺大师", "Craft Master");
         Register("成就描述-工艺大师", "Reach level 12 on any FE building", "任意万物分馏建筑等级达到 12");
         Register("成就奖励-残片1000", "Fragments x1000", "残片 x1000");
+
+        Register("成就-任务自动化", "Task Automation");
+        Register("成就描述-任务自动化", "Complete 100 recurring tasks", "累计完成 100 次循环任务");
+        Register("成就奖励-循环任务自动领取", "Future recurring tasks auto-claim", "后续循环任务自动领取");
 
         Register("成就-原胚循环", "Proto Cycle");
         Register("成就描述-原胚循环", "Hold 20 tower protos in storage", "仓储中持有 20 个分馏塔原胚");
