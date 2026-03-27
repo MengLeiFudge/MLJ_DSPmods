@@ -70,10 +70,6 @@ public static class FracRecipeOperate {
 
     // 右列：配方强化等级信息
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
-    private static Text txtAnnealEcho;
-    private static Text txtAnnealCost;
-    private static UIButton btnAnneal;
-
     // ==================== 翻译注册 ====================
 
     public static void AddTranslations() {
@@ -170,13 +166,6 @@ public static class FracRecipeOperate {
 
         y += 36f + 7f;
 
-        txtAnnealEcho = wnd.AddText2(0f, y, tab, "", 14);
-        txtAnnealCost = wnd.AddText2(320f, y, tab, "", 14);
-        btnAnneal = wnd.AddButton(620f, y, 160f, tab, "退火".Translate(), 14,
-            onClick: OnAnnealClick);
-
-        y += 36f + 7f;
-
         // 沙盒模式调试按钮
         if (GameMain.sandboxToolsEnabled) {
             wnd.AddButton(0, 4, y, tab, "重置等级",
@@ -241,8 +230,6 @@ public static class FracRecipeOperate {
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
         ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
-        RefreshAnnealUI(recipe);
-
         int line = 0;
         incSlider.gameObject.SetActive(false);
 
@@ -587,24 +574,6 @@ public static class FracRecipeOperate {
 
     private static string FeatureStatus(bool enabled) =>
         enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
-
-    private static void RefreshAnnealUI(BaseRecipe recipe) {
-        if (txtAnnealEcho != null) {
-            txtAnnealEcho.text = recipe == null
-                ? ""
-                : $"{"回响等级".Translate()}: {recipe.EchoLevel}";
-        }
-        if (txtAnnealCost != null) {
-            txtAnnealCost.text = "退火已冻结".Translate();
-        }
-        if (btnAnneal != null && btnAnneal.button != null) {
-            btnAnneal.button.interactable = false;
-        }
-    }
-
-    private static void OnAnnealClick() {
-        UIRealtimeTip.Popup("退火已冻结".Translate(), true, 2);
-    }
 
     #region IModCanSave
 
