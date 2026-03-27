@@ -25,6 +25,8 @@ public static class MainTask {
         string nameKey,
         string descKey,
         string rewardKey,
+        int rewardItemId,
+        int rewardCount,
         Func<bool> isCompleted,
         Func<string> progressText,
         Action grantReward,
@@ -32,6 +34,8 @@ public static class MainTask {
         public readonly string NameKey = nameKey;
         public readonly string DescKey = descKey;
         public readonly string RewardKey = rewardKey;
+        public readonly int RewardItemId = rewardItemId;
+        public readonly int RewardCount = rewardCount;
         public readonly Func<bool> IsCompleted = isCompleted;
         public readonly Func<string> ProgressText = progressText;
         public readonly Action GrantReward = grantReward;
@@ -46,32 +50,34 @@ public static class MainTask {
     private static Text txtTaskStatus;
     private static Text txtTaskCondition;
     private static Text txtTaskReward;
+    private static MyImageButton btnTaskRewardIcon;
+    private static Text txtTaskRewardCount;
     private static Text txtTotalProgress;
     private static UIButton btnClaim;
 
     private static readonly TaskInfo[] Tasks = [
-        new("分馏启示", "主线描述-分馏启示", "主线奖励-残片200", () => IsTechUnlocked(TFE分馏数据中心),
+        new("分馏启示", "主线描述-分馏启示", "主线奖励-残片200", IFE残片, 200, () => IsTechUnlocked(TFE分馏数据中心),
             () => GetTechProgressText(TFE分馏数据中心), () => GrantItems((IFE残片, 200)), true),
-        new("万物之始", "主线描述-万物之始", "主线奖励-残片500", () => totalFractionSuccesses >= 50,
+        new("万物之始", "主线描述-万物之始", "主线奖励-残片500", IFE残片, 500, () => totalFractionSuccesses >= 50,
             () => string.Format("分馏次数进度".Translate(), totalFractionSuccesses, 50),
             () => GrantItems((IFE残片, 500))),
-        new("开线之门", "主线描述-开线之门", "主线奖励-配方核心1", () => TicketRaffle.totalDraws >= 20,
+        new("开线之门", "主线描述-开线之门", "主线奖励-配方核心1", IFE分馏配方核心, 1, () => TicketRaffle.totalDraws >= 20,
             () => string.Format("抽取次数进度".Translate(), TicketRaffle.totalDraws, 20),
             () => GrantItems((IFE分馏配方核心, 1))),
-        new("矿物新生", "主线描述-矿物新生", "主线奖励-矿物复制塔原胚10", () => IsTechUnlocked(TFE矿物复制),
+        new("矿物新生", "主线描述-矿物新生", "主线奖励-矿物复制塔原胚10", IFE矿物复制塔原胚, 10, () => IsTechUnlocked(TFE矿物复制),
             () => GetTechProgressText(TFE矿物复制), () => GrantItems((IFE矿物复制塔原胚, 10))),
-        new("原胚萌发", "主线描述-原胚萌发", "主线奖励-交互塔原胚10", () => IsTechUnlocked(TFE分馏塔原胚),
+        new("原胚萌发", "主线描述-原胚萌发", "主线奖励-交互塔原胚10", IFE交互塔原胚, 10, () => IsTechUnlocked(TFE分馏塔原胚),
             () => GetTechProgressText(TFE分馏塔原胚), () => GrantItems((IFE交互塔原胚, 10))),
-        new("物品转化", "主线描述-物品转化", "主线奖励-转化塔原胚10", () => IsTechUnlocked(TFE物品转化),
+        new("物品转化", "主线描述-物品转化", "主线奖励-转化塔原胚10", IFE转化塔原胚, 10, () => IsTechUnlocked(TFE物品转化),
             () => GetTechProgressText(TFE物品转化), () => GrantItems((IFE转化塔原胚, 10))),
-        new("工艺优化", "主线描述-工艺优化", "主线奖励-残片1000", () => GetMaxBuildingLevel() >= 6,
+        new("工艺优化", "主线描述-工艺优化", "主线奖励-残片1000", IFE残片, 1000, () => GetMaxBuildingLevel() >= 6,
             () => string.Format("建筑等级进度".Translate(), GetMaxBuildingLevel(), 6),
             () => GrantItems((IFE残片, 1000))),
-        new("精馏经济", "主线描述-精馏经济", "主线奖励-精馏塔原胚5", () => IsTechUnlocked(TFE物品精馏),
+        new("精馏经济", "主线描述-精馏经济", "主线奖励-精馏塔原胚5", IFE精馏塔原胚, 5, () => IsTechUnlocked(TFE物品精馏),
             () => GetTechProgressText(TFE物品精馏), () => GrantItems((IFE精馏塔原胚, 5))),
-        new("星际互联", "主线描述-星际互联", "主线奖励-星际物流交互站2", () => IsTechUnlocked(TFE星际物流交互),
+        new("星际互联", "主线描述-星际互联", "主线奖励-星际物流交互站2", IFE星际物流交互站, 2, () => IsTechUnlocked(TFE星际物流交互),
             () => GetTechProgressText(TFE星际物流交互), () => GrantItems((IFE星际物流交互站, 2))),
-        new("万物归一", "主线描述-万物归一", "主线奖励-残片2000",
+        new("万物归一", "主线描述-万物归一", "主线奖励-残片2000", IFE残片, 2000,
             () => GetUnlockedRecipeCount() >= 100 && totalFractionSuccesses >= 5000,
             () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 100),
             () => GrantItems((IFE残片, 2000))),
@@ -157,8 +163,10 @@ public static class MainTask {
         txtTaskCondition.supportRichText = true;
 
         y += 36f + 7f;
-        txtTaskReward = wnd.AddText2(x, y, tab, "动态刷新");
+        btnTaskRewardIcon = wnd.AddImageButton(x, y, tab, null).WithSize(24f, 24f);
+        txtTaskReward = wnd.AddText2(x + 32f, y, tab, "动态刷新");
         txtTaskReward.supportRichText = true;
+        txtTaskRewardCount = wnd.AddText2(x + 260f, y, tab, "");
 
         y += 36f + 7f;
         btnClaim = wnd.AddButton(1, 3, y, tab, "领取奖励", 16, "btn-main-task-claim", ClaimCurrentReward);
@@ -181,6 +189,8 @@ public static class MainTask {
             txtTaskStatus.text = "任务完成".Translate().WithColor(Orange);
             txtTaskCondition.text = $"{"条件".Translate()}：-";
             txtTaskReward.text = $"{"奖励".Translate()}：-";
+            btnTaskRewardIcon.gameObject.SetActive(false);
+            txtTaskRewardCount.text = "";
             txtTotalProgress.text = string.Format("主线总进度".Translate(), Tasks.Length, Tasks.Length).WithColor(Orange);
             btnClaim.enabled = false;
             btnClaim.gameObject.SetActive(false);
@@ -196,7 +206,10 @@ public static class MainTask {
         txtTaskDesc.text = task.DescKey.Translate();
         txtTaskStatus.text = status;
         txtTaskCondition.text = $"{"条件".Translate()}：{task.ProgressText()}";
-        txtTaskReward.text = $"{"奖励".Translate()}：{task.RewardKey.Translate()}";
+        txtTaskReward.text = $"{"奖励".Translate()}：";
+        btnTaskRewardIcon.gameObject.SetActive(task.RewardItemId > 0);
+        btnTaskRewardIcon.Proto = task.RewardItemId > 0 ? LDB.items.Select(task.RewardItemId) : null;
+        txtTaskRewardCount.text = task.RewardItemId > 0 ? $"x {task.RewardCount}" : task.RewardKey.Translate();
         txtTotalProgress.text = string.Format("主线总进度".Translate(), currentStage, Tasks.Length);
 
         if (task.AutoClaim) {

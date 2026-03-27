@@ -64,6 +64,7 @@ public static class Achievements {
     private static Text[] txtAchievementNames;
     private static Text[] txtAchievementDescs;
     private static Text[] txtAchievementStates;
+    private static MyImageButton[] rewardIcons;
     private static UIButton[] btnClaims;
 
     private const int RowsPerPage = 10;
@@ -267,6 +268,7 @@ public static class Achievements {
         txtAchievementNames = new Text[achievements.Length];
         txtAchievementDescs = new Text[achievements.Length];
         txtAchievementStates = new Text[achievements.Length];
+        rewardIcons = new MyImageButton[achievements.Length];
         btnClaims = new UIButton[achievements.Length];
 
         float x = 0f;
@@ -311,7 +313,8 @@ public static class Achievements {
             txtAchievementNames[j] = wnd.AddText2(nameX + x, y, tab, "动态刷新", 13, $"txtAchievementName{j}");
             txtAchievementNames[j].supportRichText = true;
 
-            txtAchievementDescs[j] = wnd.AddText2(descX + x, y, tab, "动态刷新", 13, $"txtAchievementDesc{j}");
+            rewardIcons[j] = wnd.AddImageButton(descX + x, y, tab, null).WithSize(24f, 24f);
+            txtAchievementDescs[j] = wnd.AddText2(descX + x + 32f, y, tab, "动态刷新", 13, $"txtAchievementDesc{j}");
             txtAchievementDescs[j].supportRichText = true;
 
             txtAchievementStates[j] = wnd.AddText2(stateX + x, y, tab, "动态刷新", 13, $"txtAchievementState{j}");
@@ -373,6 +376,7 @@ public static class Achievements {
             txtAchievementNames[i].gameObject.SetActive(false);
             txtAchievementDescs[i].gameObject.SetActive(false);
             txtAchievementStates[i].gameObject.SetActive(false);
+            rewardIcons[i].gameObject.SetActive(false);
             btnClaims[i].gameObject.SetActive(false);
         }
 
@@ -391,6 +395,7 @@ public static class Achievements {
             txtAchievementNames[i].gameObject.SetActive(true);
             txtAchievementDescs[i].gameObject.SetActive(true);
             txtAchievementStates[i].gameObject.SetActive(true);
+            rewardIcons[i].gameObject.SetActive(true);
             btnClaims[i].gameObject.SetActive(true);
 
             RefreshAchievementRow(i);
@@ -497,7 +502,12 @@ public static class Achievements {
         AchievementInfo info = achievements[index];
         string tierTag = GetTierTag(info.Tier);
         Color tierColor = GetTierColor(info.Tier);
-        string rewardText = info.RewardKey.Translate().WithColor(Blue);
+        bool hasRewardIcon = TryGetRewardIconInfo(info.RewardKey, out int rewardItemId, out int rewardCount);
+        rewardIcons[index].gameObject.SetActive(hasRewardIcon);
+        rewardIcons[index].Proto = hasRewardIcon ? LDB.items.Select(rewardItemId) : null;
+        string rewardText = hasRewardIcon
+            ? $"x{rewardCount}".WithColor(Blue)
+            : info.RewardKey.Translate().WithColor(Blue);
 
         txtAchievementNames[index].text = $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
         txtAchievementDescs[index].text = $"{info.DescKey.Translate()}  |  {"奖励".Translate()}：{rewardText}";
@@ -543,6 +553,75 @@ public static class Achievements {
             ETier.Platinum => Blue,
             _ => White,
         };
+    }
+
+    private static bool TryGetRewardIconInfo(string rewardKey, out int itemId, out int count) {
+        switch (rewardKey) {
+            case "成就奖励-残片200":
+                itemId = IFE残片;
+                count = 200;
+                return true;
+            case "成就奖励-残片300":
+                itemId = IFE残片;
+                count = 300;
+                return true;
+            case "成就奖励-残片500":
+                itemId = IFE残片;
+                count = 500;
+                return true;
+            case "成就奖励-残片2000":
+                itemId = IFE残片;
+                count = 2000;
+                return true;
+            case "成就奖励-当前阶段矩阵2":
+                itemId = GetCurrentStageMatrixId();
+                count = 2;
+                return true;
+            case "成就奖励-当前阶段矩阵4":
+                itemId = GetCurrentStageMatrixId();
+                count = 4;
+                return true;
+            case "成就奖励-配方核心1":
+                itemId = IFE分馏配方核心;
+                count = 1;
+                return true;
+            case "成就奖励-配方核心3":
+                itemId = IFE分馏配方核心;
+                count = 3;
+                return true;
+            case "成就奖励-当前阶段矩阵8":
+                itemId = GetCurrentStageMatrixId();
+                count = 8;
+                return true;
+            case "成就奖励-残片800":
+                itemId = IFE残片;
+                count = 800;
+                return true;
+            case "成就奖励-残片1000":
+                itemId = IFE残片;
+                count = 1000;
+                return true;
+            case "成就奖励-定向原胚1":
+                itemId = IFE分馏塔定向原胚;
+                count = 1;
+                return true;
+            case "成就奖励-星际物流交互站1":
+                itemId = IFE星际物流交互站;
+                count = 1;
+                return true;
+            case "成就奖励-精馏塔原胚3":
+                itemId = IFE精馏塔原胚;
+                count = 3;
+                return true;
+            case "成就奖励-当前阶段矩阵16":
+                itemId = GetCurrentStageMatrixId();
+                count = 16;
+                return true;
+            default:
+                itemId = 0;
+                count = 0;
+                return false;
+        }
     }
 
     private static void GrantItems(params (int itemId, int count)[] rewards) {
