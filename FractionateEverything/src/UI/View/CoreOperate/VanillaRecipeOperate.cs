@@ -20,7 +20,10 @@ public static class VanillaRecipeOperate {
     private static Text txtCurrRecipe;
     private static MyImageButton btnSelectedRecipe;
 
-    private static Text txtCoreCount;
+    private static MyImageButton btnFragmentIcon;
+    private static Text txtFragmentCount;
+    private static MyImageButton btnMatrixIcon;
+    private static Text txtMatrixCount;
     private static MyImageButton[] inputImages = new MyImageButton[MaxInputCount];
     private static Text[] txtInputNames = new Text[MaxInputCount];
     private static Text[] txtInputCounts = new Text[MaxInputCount];
@@ -83,8 +86,10 @@ public static class VanillaRecipeOperate {
             () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
             "提示", "原版配方提示按钮说明1");
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
-        txtCoreCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
+        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null);
+        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 120f + 40 + 5, y, tab, "动态刷新");
 
         y += 36f + 7f;
 
@@ -129,8 +134,9 @@ public static class VanillaRecipeOperate {
         }
         btnSelectedRecipe.Proto = SelectedRecipe;
         int currentMatrixId = GetCurrentProgressMatrixId();
-        string matrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
-        txtCoreCount.text = $"{"原版增强资源".Translate()}：残片 x{GetItemTotalCount(IFE残片)} / {matrixName} x{GetItemTotalCount(currentMatrixId)}";
+        btnMatrixIcon.Proto = LDB.items.Select(currentMatrixId);
+        txtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
+        txtMatrixCount.text = $"x {GetItemTotalCount(currentMatrixId)}";
 
         if (SelectedRecipe == null) {
             return;

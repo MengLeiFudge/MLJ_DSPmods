@@ -17,12 +17,17 @@ public static class TicketRaffle {
         public Text TxtPoolName;
         public Text TxtPoolDesc;
         public Text TxtResource;
+        public MyImageButton BtnMatrixIcon;
+        public Text TxtMatrixCount;
+        public MyImageButton BtnFragmentIcon;
+        public Text TxtFragmentCount;
         public Text TxtMode;
         public Text TxtPity;
         public Text TxtPoints;
         public Text TxtFocus;
         public Text TxtResultSummary;
         public readonly Text[] TxtResultLines = new Text[8];
+        public readonly MyImageButton[] BtnResultIcons = new MyImageButton[8];
         public UIButton BtnDraw1;
         public UIButton BtnDraw10;
         public UIButton BtnGoGrowth;
@@ -137,7 +142,12 @@ public static class TicketRaffle {
         ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 56f);
 
         y += 72f;
-        ui.TxtResource = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        ui.TxtResource = MyWindow.AddText(0f, y, ui.Tab, "当前资源".Translate(), 13);
+        y += 24f;
+        ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, ui.Tab, null).WithSize(24f, 24f);
+        ui.TxtMatrixCount = MyWindow.AddText(32f, y, ui.Tab, "", 13);
+        ui.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, ui.Tab, LDB.items.Select(IFE残片)).WithSize(24f, 24f);
+        ui.TxtFragmentCount = MyWindow.AddText(212f, y, ui.Tab, "", 13);
         y += 24f;
         ui.TxtMode = MyWindow.AddText(0f, y, ui.Tab, "", 13);
         y += 24f;
@@ -163,8 +173,10 @@ public static class TicketRaffle {
 
         y += 28f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-            ui.TxtResultLines[i] = MyWindow.AddText(0f, y, ui.Tab, "", 13);
-            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(960f, 22f);
+            ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(0f, y, ui.Tab, null).WithSize(24f, 24f);
+            ui.BtnResultIcons[i].gameObject.SetActive(false);
+            ui.TxtResultLines[i] = MyWindow.AddText(32f, y, ui.Tab, "", 13);
+            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(928f, 22f);
             y += 24f;
         }
 
@@ -231,8 +243,9 @@ public static class TicketRaffle {
         int lineCount = Mathf.Min(ui.TxtResultLines.Length, results.Count);
         for (int i = 0; i < lineCount; i++) {
             GachaResult result = results[i];
-            string itemName = GetItemName(result.ItemId);
-            string line = $"[{result.Rarity}] {itemName}";
+            ui.BtnResultIcons[i].gameObject.SetActive(true);
+            ui.BtnResultIcons[i].Proto = LDB.items.Select(result.ItemId);
+            string line = $"[{result.Rarity}] x1";
             if (result.IsRecipe) {
                 line += "  配方".WithColor(Orange);
             }
@@ -243,14 +256,11 @@ public static class TicketRaffle {
         }
 
         for (int i = lineCount; i < ui.TxtResultLines.Length; i++) {
+            ui.BtnResultIcons[i].gameObject.SetActive(false);
             ui.TxtResultLines[i].text = i == lineCount && results.Count > ui.TxtResultLines.Length
                 ? "更多结果已折叠".Translate().WithColor(Orange)
                 : "";
         }
-    }
-
-    private static string GetItemName(int itemId) {
-        return itemId > 0 ? (LDB.items.Select(itemId)?.name ?? itemId.ToString()) : "-";
     }
 
     private static void RefreshTabState(RaffleTabUi ui) {
@@ -262,14 +272,13 @@ public static class TicketRaffle {
         }
 
         int matrixId = GachaService.GetCurrentDrawMatrixId();
-        string matrixName = GetItemName(matrixId);
         long matrixCount = GetItemTotalCount(matrixId);
         int draw1Cost = GachaService.GetDrawMatrixCost(ui.PoolId, 1);
         int draw10Cost = GachaService.GetDrawMatrixCost(ui.PoolId, 10);
 
-        ui.TxtResource.text =
-            $"{"当前资源".Translate()}：{"当前阶段矩阵".Translate()} {matrixName} x{matrixCount}"
-            + $"    {"残片余额".Translate()} x{GetItemTotalCount(IFE残片)}";
+        ui.BtnMatrixIcon.Proto = LDB.items.Select(matrixId);
+        ui.TxtMatrixCount.text = $"x {matrixCount}";
+        ui.TxtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
         if (ui.TxtMode != null) {
             ui.TxtMode.text = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}";
         }

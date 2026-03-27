@@ -15,6 +15,12 @@ public static class TicketExchange {
     private static Text txtCostOpening;
     private static Text txtCostProto;
     private static Text txtCostFocus;
+    private static MyImageButton btnCurrentMatrix;
+    private static Text txtCurrentMatrixCount;
+    private static MyImageButton btnFragment;
+    private static Text txtFragmentCount;
+    private static MyImageButton btnDarkFogMatrix;
+    private static Text txtDarkFogMatrixCount;
 
     public static void AddTranslations() {
         Register("资源统筹", "Resource Overview");
@@ -37,6 +43,13 @@ public static class TicketExchange {
         txtOverview.rectTransform.sizeDelta = new Vector2(960f, 48f);
 
         y += 64f;
+        btnCurrentMatrix = MyImageButton.CreateImageButton(0f, y, tab, null).WithSize(24f, 24f);
+        txtCurrentMatrixCount = wnd.AddText2(32f, y, tab, "", 14);
+        btnFragment = MyImageButton.CreateImageButton(170f, y, tab, LDB.items.Select(IFE残片)).WithSize(24f, 24f);
+        txtFragmentCount = wnd.AddText2(202f, y, tab, "", 14);
+        btnDarkFogMatrix = MyImageButton.CreateImageButton(340f, y, tab, LDB.items.Select(I黑雾矩阵)).WithSize(24f, 24f);
+        txtDarkFogMatrixCount = wnd.AddText2(372f, y, tab, "", 14);
+        y += 30f;
         txtMode = wnd.AddText2(0f, y, tab, "", 14);
         y += 30f;
         txtCostOpening = wnd.AddText2(0f, y, tab, "", 14);
@@ -52,15 +65,16 @@ public static class TicketExchange {
         }
 
         int matrixId = GachaService.GetCurrentDrawMatrixId();
-        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-        txtOverview.text =
-            $"{ "资源统筹说明".Translate() }\n"
-            + $"当前阶段矩阵：{matrixName} x{GetItemTotalCount(matrixId)}    残片 x{GetItemTotalCount(IFE残片)}";
-        txtMode.text = $"当前模式：{GachaService.GetModeNameKey().Translate()}    黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}";
+        btnCurrentMatrix.Proto = LDB.items.Select(matrixId);
+        txtCurrentMatrixCount.text = $"x {GetItemTotalCount(matrixId)}";
+        txtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
+        txtDarkFogMatrixCount.text = $"x {GetItemTotalCount(I黑雾矩阵)}";
+        txtOverview.text = $"{ "资源统筹说明".Translate() }";
+        txtMode.text = $"当前模式：{GachaService.GetModeNameKey().Translate()}";
         txtCostOpening.text =
-            $"{ "开线池成本".Translate() }：{matrixName} x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
+            $"{ "开线池成本".Translate() }：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
         txtCostProto.text =
-            $"{ "原胚池成本".Translate() }：{matrixName} x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
+            $"{ "原胚池成本".Translate() }：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
         txtCostFocus.text =
             $"{ "聚焦切换成本".Translate() }：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    黑雾支线通过成长池中的黑雾矩阵报价接入";
     }

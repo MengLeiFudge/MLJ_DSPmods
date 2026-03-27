@@ -16,7 +16,11 @@ public static class LimitedTimeStore {
     private sealed class GrowthRowUi {
         public bool HasOffer;
         public GachaGrowthOffer Offer;
+        public MyImageButton BtnFragmentCostIcon;
         public Text TxtCost;
+        public MyImageButton BtnExtraCostIcon;
+        public Text TxtExtraCost;
+        public MyImageButton BtnRewardIcon;
         public Text TxtReward;
         public UIButton BtnExchange;
     }
@@ -24,6 +28,10 @@ public static class LimitedTimeStore {
     private sealed class GrowthPageUi {
         public RectTransform Tab;
         public Text TxtResource;
+        public MyImageButton BtnMatrixIcon;
+        public Text TxtMatrixCount;
+        public MyImageButton BtnFragmentIcon;
+        public Text TxtFragmentCount;
         public Text TxtFocus;
         public readonly List<GrowthRowUi> Rows = [];
     }
@@ -65,7 +73,12 @@ public static class LimitedTimeStore {
         };
 
         float y = 8f;
-        growthPage.TxtResource = MyWindow.AddText(0f, y, growthPage.Tab, "", 13);
+        growthPage.TxtResource = MyWindow.AddText(0f, y, growthPage.Tab, "当前资源".Translate(), 13);
+        y += 24f;
+        growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, growthPage.Tab, null).WithSize(24f, 24f);
+        growthPage.TxtMatrixCount = MyWindow.AddText(32f, y, growthPage.Tab, "", 13);
+        growthPage.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, growthPage.Tab, LDB.items.Select(IFE残片)).WithSize(24f, 24f);
+        growthPage.TxtFragmentCount = MyWindow.AddText(212f, y, growthPage.Tab, "", 13);
         y += 24f;
         growthPage.TxtFocus = MyWindow.AddText(0f, y, growthPage.Tab, "", 13);
         y += 36f;
@@ -75,13 +88,18 @@ public static class LimitedTimeStore {
 
         for (int i = 0; i < GrowthRowCount; i++) {
             var row = new GrowthRowUi {
+                BtnFragmentCostIcon = MyImageButton.CreateImageButton(110f, y, growthPage.Tab, LDB.items.Select(IFE残片)).WithSize(24f, 24f),
                 TxtCost = MyWindow.AddText(0f, y, growthPage.Tab, "", 13),
-                TxtReward = MyWindow.AddText(330f, y, growthPage.Tab, "", 13),
+                BtnExtraCostIcon = MyImageButton.CreateImageButton(220f, y, growthPage.Tab, null).WithSize(24f, 24f),
+                TxtExtraCost = MyWindow.AddText(252f, y, growthPage.Tab, "", 13),
+                BtnRewardIcon = MyImageButton.CreateImageButton(420f, y, growthPage.Tab, null).WithSize(24f, 24f),
+                TxtReward = MyWindow.AddText(452f, y, growthPage.Tab, "", 13),
             };
             row.BtnExchange = wnd.AddButton(760f, y - 4f, 120f, growthPage.Tab, "兑换".Translate(), 13,
                 onClick: () => ExchangeOffer(row));
-            row.TxtCost.rectTransform.sizeDelta = new Vector2(320f, 24f);
-            row.TxtReward.rectTransform.sizeDelta = new Vector2(420f, 24f);
+            row.TxtCost.rectTransform.sizeDelta = new Vector2(100f, 24f);
+            row.TxtExtraCost.rectTransform.sizeDelta = new Vector2(150f, 24f);
+            row.TxtReward.rectTransform.sizeDelta = new Vector2(280f, 24f);
             growthPage.Rows.Add(row);
             y += 30f;
         }
@@ -140,7 +158,8 @@ public static class LimitedTimeStore {
         }
 
         AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
-        UIRealtimeTip.Popup($"获得 {GetItemName(offer.OutputId)} x{offer.OutputCount}");
+        string itemName = LDB.items.Select(offer.OutputId)?.name ?? offer.OutputId.ToString();
+        UIRealtimeTip.Popup($"获得 {itemName} x{offer.OutputCount}");
         UpdateUI();
     }
 
@@ -152,26 +171,26 @@ public static class LimitedTimeStore {
         UpdateUI();
     }
 
-    private static string GetItemName(int itemId) {
-        return itemId > 0 ? (LDB.items.Select(itemId)?.name ?? itemId.ToString()) : "-";
-    }
-
     public static void UpdateUI() {
         int matrixId = GachaService.GetCurrentDrawMatrixId();
-        string resourceText =
-            $"{"当前资源".Translate()}：{GetItemName(matrixId)} x{GetItemTotalCount(matrixId)}    "
-            + $"残片 x{GetItemTotalCount(IFE残片)}    "
-            + $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
+        string resourceText = $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
         string focusText = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}    {"当前聚焦".Translate()}：{GetCurrentFocusName()}";
 
         if (growthPage?.Tab != null && growthPage.Tab.gameObject.activeSelf) {
             growthPage.TxtResource.text = resourceText;
+            growthPage.BtnMatrixIcon.Proto = LDB.items.Select(matrixId);
+            growthPage.TxtMatrixCount.text = $"x {GetItemTotalCount(matrixId)}";
+            growthPage.TxtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
             growthPage.TxtFocus.text = focusText;
             IReadOnlyList<GachaGrowthOffer> offers = GachaService.GetGrowthOffers();
             for (int i = 0; i < growthPage.Rows.Count; i++) {
                 bool visible = i < offers.Count;
                 growthPage.Rows[i].HasOffer = visible;
+                growthPage.Rows[i].BtnFragmentCostIcon.gameObject.SetActive(visible);
                 growthPage.Rows[i].TxtCost.gameObject.SetActive(visible);
+                growthPage.Rows[i].BtnExtraCostIcon.gameObject.SetActive(visible);
+                growthPage.Rows[i].TxtExtraCost.gameObject.SetActive(visible);
+                growthPage.Rows[i].BtnRewardIcon.gameObject.SetActive(visible);
                 growthPage.Rows[i].TxtReward.gameObject.SetActive(visible);
                 growthPage.Rows[i].BtnExchange.gameObject.SetActive(visible);
                 if (!visible) {
@@ -180,12 +199,17 @@ public static class LimitedTimeStore {
 
                 GachaGrowthOffer offer = offers[i];
                 growthPage.Rows[i].Offer = offer;
-                string costText = $"积分 {offer.PointCost} + 残片 {offer.FragmentCost}";
+                growthPage.Rows[i].TxtCost.text = $"积分 {offer.PointCost}  x{offer.FragmentCost}";
                 if (offer.ExtraCostItemId > 0) {
-                    costText += $" + {GetItemName(offer.ExtraCostItemId)} {offer.ExtraCostCount}";
+                    growthPage.Rows[i].BtnExtraCostIcon.Proto = LDB.items.Select(offer.ExtraCostItemId);
+                    growthPage.Rows[i].BtnExtraCostIcon.gameObject.SetActive(true);
+                    growthPage.Rows[i].TxtExtraCost.text = $"x {offer.ExtraCostCount}";
+                } else {
+                    growthPage.Rows[i].BtnExtraCostIcon.gameObject.SetActive(false);
+                    growthPage.Rows[i].TxtExtraCost.text = "";
                 }
-                growthPage.Rows[i].TxtCost.text = costText;
-                growthPage.Rows[i].TxtReward.text = $"{GetItemName(offer.OutputId)} x{offer.OutputCount}";
+                growthPage.Rows[i].BtnRewardIcon.Proto = LDB.items.Select(offer.OutputId);
+                growthPage.Rows[i].TxtReward.text = $"x {offer.OutputCount}";
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost
                               && (offer.ExtraCostItemId <= 0 || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount);
