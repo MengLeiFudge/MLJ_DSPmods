@@ -333,6 +333,14 @@ public static class RecurringTask {
         UIRealtimeTip.Popup("循环任务自动领取已启用".Translate(), true, 2);
     }
 
+    public static void TickAutoClaim() {
+        if (!autoClaimUnlocked && Achievements.IsAchievementClaimed("成就-任务自动化")) {
+            autoClaimUnlocked = true;
+        }
+
+        TryAutoClaimCompletedTasks();
+    }
+
     #region IModCanSave
 
     public static void Import(BinaryReader r) {

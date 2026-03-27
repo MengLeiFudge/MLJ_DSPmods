@@ -152,6 +152,8 @@ public static class MainWindow {
             return;
         }
 
+        RecurringTask.TickAutoClaim();
+
         if (_toggleKey.keyValue) {
             if (OpenedMainPanelType == FEMainPanelType.None) {
                 OpenSelectedMainPanel();
