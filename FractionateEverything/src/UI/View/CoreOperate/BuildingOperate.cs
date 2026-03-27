@@ -212,18 +212,19 @@ public static class BuildingOperate {
         btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
 
         if (!GameMain.sandboxToolsEnabled) {
-            btnReinforcement = wnd.AddButton(1, 2, y, tab, "关键节点突破",
+            btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
                 onClick: Reinforcement);
         } else {
-            reinforcementSandboxBtn[0] = wnd.AddButton(1, 2, y, tab, "重置",
+            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置",
                 onClick: () => { ChangeLevelTo(0); });
-            reinforcementSandboxBtn[1] = wnd.AddButton(1, 2, y + 36f, tab, "降级",
+            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "降级",
                 onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-            reinforcementSandboxBtn[2] = wnd.AddButton(1, 2, y + 36f * 2, tab, "升级",
+            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "升级",
                 onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-            reinforcementSandboxBtn[3] = wnd.AddButton(1, 2, y + 36f * 3, tab, "升满",
+            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "升满",
                 onClick: () => { ChangeLevelTo(MaxLevel); });
         }
+        y += 36f;
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
             y += 36f;
             txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
