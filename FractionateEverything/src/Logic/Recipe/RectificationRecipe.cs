@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Building;
 using FE.Logic.Manager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
@@ -8,19 +9,24 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Recipe;
 
 public class RectificationRecipe : BaseRecipe {
+    private static readonly int[] MatrixInputs = [
+        I电磁矩阵,
+        I能量矩阵,
+        I结构矩阵,
+        I信息矩阵,
+        I引力矩阵,
+        I宇宙矩阵,
+        I黑雾矩阵,
+    ];
+
     public static void CreateAll() {
-        foreach (ItemProto item in LDB.items.dataArray) {
-            if (item.ID <= 0 || item.ID >= 12000) continue;
-            int matrixID = itemToMatrix[item.ID];
-            if (matrixID <= 0) continue;
-            int ticketID = matrixID switch {
-                var m when m == I黑雾矩阵 => IFE残片,
-                _ => 0
-            };
-            if (ticketID == 0) continue;
-            AddRecipe(new RectificationRecipe(item.ID, 0.05f,
-                [new(1.0f, ticketID, 1)],
-                []));
+        foreach (int matrixId in MatrixInputs) {
+            int fragmentCount = GetRectificationBaseFragmentYield(matrixId);
+            var recipe = new RectificationRecipe(matrixId, 1.0f,
+                [new(1.0f, IFE残片, fragmentCount)],
+                []);
+            recipe.Level = 0;
+            AddRecipe(recipe);
         }
     }
 
@@ -32,19 +38,14 @@ public class RectificationRecipe : BaseRecipe {
 
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        base.GetOutputs(ref seed, pointsBonus, successBoost,
-            fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
-
-        if (outputs == null || outputs.Count == 0) return;
-
-        int lvl = Level < 0 ? 0 : Level;
-
-        if (lvl >= 7) {
-            float coreChance = 0.005f + (lvl - 7) * 0.005f;
-            if (GetRandDouble(ref seed) < coreChance) {
-                outputs.Add(new(false, IFE分馏配方核心, 1));
-            }
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
         }
+
+        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
+        outputs = [new(true, IFE残片, fragmentCount)];
     }
 
     #region IModCanSave

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -30,15 +31,15 @@ public readonly struct GachaResult {
 public class GachaPool {
     /// <summary>
     /// 卡池ID语义合同：
-    /// 0=常驻配方池（抽到配方时走配方奖励逻辑）
-    /// 1=常驻建筑池（抽到物品时入数据中心）
-    /// 2=UP池（仅该池存在UP语义）
-    /// 3=限定池（需要精选券且受解锁状态限制）
+    /// 0=开线池（抽到配方时走配方奖励逻辑）
+    /// 1=原胚闭环池（抽到物品时入数据中心）
+    /// 2=成长池（非随机，主要承载积分/定向补差）
+    /// 3=流派聚焦层（不直接抽卡，只负责方向加权）
     /// </summary>
-    public const int PoolIdPermanentRecipe = 0;
-    public const int PoolIdPermanentBuilding = 1;
-    public const int PoolIdUp = 2;
-    public const int PoolIdLimited = 3;
+    public const int PoolIdOpeningLine = 0;
+    public const int PoolIdProtoLoop = 1;
+    public const int PoolIdGrowth = 2;
+    public const int PoolIdFocus = 3;
     public const int PoolCount = 4;
 
     public readonly int PoolId;
@@ -56,9 +57,6 @@ public class GachaPool {
     public List<int> PoolA = [];
     public List<int> PoolS = [];
 
-    // UP物品（仅UP池使用）
-    public List<int> UpItems = [];
-
     public GachaPool(int poolId, string nameKey) {
         PoolId = poolId;
         NameKey = nameKey;
@@ -69,33 +67,38 @@ public class GachaPool {
         return poolId >= 0 && poolId < PoolCount;
     }
 
-    /// <summary>仅常驻配方池在发奖时走配方奖励逻辑。</summary>
+    /// <summary>仅开线池在发奖时走配方奖励逻辑。</summary>
     public static bool IsRecipePool(int poolId) {
-        return poolId == PoolIdPermanentRecipe;
+        return poolId == PoolIdOpeningLine;
     }
 
-    /// <summary>仅UP池有UP命中与UP大保底语义。</summary>
-    public static bool IsUpPool(int poolId) {
-        return poolId == PoolIdUp;
+    public static bool IsOpeningLinePool(int poolId) {
+        return poolId == PoolIdOpeningLine;
     }
 
-    /// <summary>限定池需要解锁且需精选券。</summary>
-    public static bool IsLimitedPool(int poolId) {
-        return poolId == PoolIdLimited;
+    public static bool IsProtoLoopPool(int poolId) {
+        return poolId == PoolIdProtoLoop;
     }
 
-    /// <summary>统一的卡池用券合同。</summary>
+    public static bool IsGrowthPool(int poolId) {
+        return poolId == PoolIdGrowth;
+    }
+
+    public static bool IsFocusPool(int poolId) {
+        return poolId == PoolIdFocus;
+    }
+
+    public static bool IsDrawPool(int poolId) {
+        return poolId == PoolIdOpeningLine || poolId == PoolIdProtoLoop;
+    }
+
+    /// <summary>2.3 起抽卡只直耗当前阶段矩阵。</summary>
     public static bool CanUseTicket(int poolId, int ticketId) {
-        if (!IsValidPoolId(poolId)) {
+        if (!IsDrawPool(poolId)) {
             return false;
         }
 
-        return poolId switch {
-            PoolIdPermanentRecipe or PoolIdPermanentBuilding => ticketId == IFE普通抽卡券,
-            PoolIdUp => ticketId == IFE普通抽卡券 || ticketId == IFE精选抽卡券,
-            PoolIdLimited => ticketId == IFE精选抽卡券,
-            _ => false,
-        };
+        return ticketId == GetCurrentProgressMatrixId();
     }
 
     /// <summary>从对应稀有度池随机选一个物品</summary>

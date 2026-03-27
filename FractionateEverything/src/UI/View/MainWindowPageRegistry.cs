@@ -5,7 +5,6 @@ using FE.UI.View.CoreOperate;
 using FE.UI.View.GetItemRecipe;
 using FE.UI.View.ModPackage;
 using FE.UI.View.ProgressSystem;
-using FE.UI.View.RuneSystem;
 using FE.UI.View.Setting;
 using FE.UI.View.Statistic;
 using UnityEngine;
@@ -38,18 +37,13 @@ public static class MainWindowPageRegistry {
 
         new(ItemManageCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
         new(ItemManageCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
-        new(ItemManageCategoryName, "符文系统", RuneMenu.CreateUI, RuneMenu.UpdateUI),
 
-        new(GachaCategoryName, "配方抽奖", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(GachaCategoryName, "原胚抽奖", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(GachaCategoryName, "UP抽奖", TicketRaffle.CreateUpUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(GachaCategoryName, "限定抽奖", TicketRaffle.CreateLimitedUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(GachaCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(GachaCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
 
-        new(StoreCategoryName, "配方商店", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "原胚商店", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "UP商店", LimitedTimeStore.CreateUpUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "限定商店", LimitedTimeStore.CreateLimitedUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(StoreCategoryName, "奖券兑换", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "流派聚焦页", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(StoreCategoryName, "资源统筹", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
         new(ProgressSystemCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
         new(ProgressSystemCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
@@ -59,7 +53,6 @@ public static class MainWindowPageRegistry {
         new(StatisticCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
         new(StatisticCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
 
-        new(SystemSettingCategoryName, "VIP特权", VipFeatures.CreateUI, VipFeatures.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: VipFeatures.CreateUIInAnalysis),
         new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: Miscellaneous.CreateUIInAnalysis),
         new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),
     ];

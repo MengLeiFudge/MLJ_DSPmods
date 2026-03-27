@@ -1,195 +1,289 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FE.Logic.Recipe;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
 
+public readonly struct GachaFocusDefinition(
+    GachaFocusType focusType,
+    string nameKey,
+    string descKey) {
+    public GachaFocusType FocusType { get; } = focusType;
+    public string NameKey { get; } = nameKey;
+    public string DescKey { get; } = descKey;
+}
+
+public readonly struct GachaGrowthOffer(
+    int pointCost,
+    int fragmentCost,
+    int outputId,
+    int outputCount,
+    GachaFocusType focusType = GachaFocusType.Balanced) {
+    public int PointCost { get; } = pointCost;
+    public int FragmentCost { get; } = fragmentCost;
+    public int OutputId { get; } = outputId;
+    public int OutputCount { get; } = outputCount;
+    public GachaFocusType FocusType { get; } = focusType;
+}
+
 public static class GachaService {
-    public static string CurrentUpPoolNameKey = "UP池";
-    public static int UpGroupCount => UpItemGroups.Length;
+    private static readonly Random rng = new();
+    private static readonly List<GachaPool> pools = [];
 
-    private static readonly int[][] UpItemGroups = [
-        [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔],
+    private static int cachedMatrixId;
+    private static GachaFocusType cachedFocus = GachaFocusType.Balanced;
+
+    private static readonly GachaFocusDefinition[] focusDefinitions = [
+        new(GachaFocusType.Balanced, "聚焦-平衡发展", "聚焦描述-平衡发展"),
+        new(GachaFocusType.MineralExpansion, "聚焦-复制扩张", "聚焦描述-复制扩张"),
+        new(GachaFocusType.ConversionLeap, "聚焦-转化跃迁", "聚焦描述-转化跃迁"),
+        new(GachaFocusType.LogisticsInteraction, "聚焦-交互物流", "聚焦描述-交互物流"),
+        new(GachaFocusType.EmbryoCycle, "聚焦-原胚循环", "聚焦描述-原胚循环"),
+        new(GachaFocusType.ProcessOptimization, "聚焦-工艺优化", "聚焦描述-工艺优化"),
+        new(GachaFocusType.RectificationEconomy, "聚焦-精馏经济", "聚焦描述-精馏经济"),
     ];
 
-    private enum RecipeCategory {
-        Basic,
-        Mid,
-        High,
-    }
-
-    private static readonly (int matrixId, RecipeCategory category)[] RecipeCategoryMap = [
-        (I电磁矩阵, RecipeCategory.Basic),
-        (I能量矩阵, RecipeCategory.Basic),
-        (I结构矩阵, RecipeCategory.Mid),
-        (I信息矩阵, RecipeCategory.Mid),
-        (I引力矩阵, RecipeCategory.High),
-        (I宇宙矩阵, RecipeCategory.High),
-    ];
-
-    private static readonly Random _rng = new();
-    private static readonly List<GachaPool> _pools = [];
+    public static IReadOnlyList<GachaFocusDefinition> FocusDefinitions => focusDefinitions;
 
     public static void InitPools() {
-        _pools.Clear();
+        cachedMatrixId = GetCurrentProgressMatrixId();
+        cachedFocus = GachaManager.CurrentFocus;
 
-        var permanentRecipe = new GachaPool(GachaPool.PoolIdPermanentRecipe, "常驻配方池");
-        FillRecipePool(permanentRecipe);
-        _pools.Add(permanentRecipe);
+        pools.Clear();
 
-        var permanentBuilding = new GachaPool(GachaPool.PoolIdPermanentBuilding, "常驻建筑池");
-        FillBuildingPool(permanentBuilding);
-        _pools.Add(permanentBuilding);
+        var openingPool = new GachaPool(GachaPool.PoolIdOpeningLine, "开线池");
+        FillOpeningLinePool(openingPool);
+        pools.Add(openingPool);
 
-        var up = new GachaPool(GachaPool.PoolIdUp, CurrentUpPoolNameKey);
-        FillUpPool(up);
-        _pools.Add(up);
+        var protoPool = new GachaPool(GachaPool.PoolIdProtoLoop, "原胚闭环池");
+        FillProtoLoopPool(protoPool);
+        pools.Add(protoPool);
 
-        var limited = new GachaPool(GachaPool.PoolIdLimited, "限定池");
-        FillLimitedPool(limited);
-        _pools.Add(limited);
+        var growthPool = new GachaPool(GachaPool.PoolIdGrowth, "成长池");
+        FillGrowthPool(growthPool);
+        pools.Add(growthPool);
+
+        var focusPool = new GachaPool(GachaPool.PoolIdFocus, "流派聚焦");
+        FillFocusPool(focusPool);
+        pools.Add(focusPool);
     }
 
-    public static bool IsLimitedPoolUnlocked() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+    private static void EnsurePoolsFresh() {
+        int currentMatrixId = GetCurrentProgressMatrixId();
+        GachaFocusType currentFocus = GachaManager.CurrentFocus;
+        if (pools.Count == GachaPool.PoolCount
+            && cachedMatrixId == currentMatrixId
+            && cachedFocus == currentFocus) {
+            return;
+        }
+
+        InitPools();
+    }
+
+    public static int GetCurrentDrawMatrixId() {
+        return GetCurrentProgressMatrixId();
+    }
+
+    public static int GetDrawMatrixCost(int poolId, int drawCount) {
+        if (!GachaPool.IsDrawPool(poolId) || drawCount <= 0) {
+            return 0;
+        }
+
+        int singleCost = poolId switch {
+            GachaPool.PoolIdOpeningLine => 1,
+            GachaPool.PoolIdProtoLoop => 1,
+            _ => 0,
+        };
+        return singleCost * drawCount;
+    }
+
+    public static int GetFocusSwitchFragmentCost(GachaFocusType targetFocus) {
+        return targetFocus == GachaManager.CurrentFocus ? 0 : 120;
+    }
+
+    public static bool TryChangeFocus(GachaFocusType targetFocus) {
+        int fragmentCost = GetFocusSwitchFragmentCost(targetFocus);
+        if (fragmentCost > 0 && !TakeItemWithTip(IFE残片, fragmentCost, out _)) {
             return false;
         }
-        return GameMain.history.ItemUnlocked(I宇宙矩阵);
+
+        GachaManager.SetFocus(targetFocus);
+        return true;
     }
 
-    public static void RefreshUpPool() {
-        var up = GetPool(GachaPool.PoolIdUp);
-        if (up == null) return;
-        up.PoolC.Clear(); up.PoolB.Clear(); up.PoolA.Clear(); up.PoolS.Clear(); up.UpItems.Clear();
-        FillUpPool(up);
-    }
-
-    private static void FillUpPool(GachaPool pool) {
-        int groupIndex = GachaManager.CurrentUpGroupIndex;
-        if (groupIndex < 0 || groupIndex >= UpItemGroups.Length) {
-            groupIndex = 0;
-            GachaManager.CurrentUpGroupIndex = 0;
-        }
-        ResolveUpTargets(groupIndex, out int upMain, out int upSub1, out int upSub2, out int upSub3);
-        pool.UpItems.Add(upMain);
-        pool.UpItems.Add(upSub1);
-        pool.UpItems.Add(upSub2);
-        pool.UpItems.Add(upSub3);
-
-        // 低稀有度先掉当前副UP原胚，中稀有度开始聚焦主UP原胚，
-        // A级进入副UP成品，S级再保留完整主副UP分布与大保底语义。
-        AddUnique(pool.PoolC, GetEmbryoItemId(upSub1), GetEmbryoItemId(upSub2), GetEmbryoItemId(upSub3));
-        AddUnique(pool.PoolB, GetEmbryoItemId(upMain));
-        AddUnique(pool.PoolA, upSub1, upSub2, upSub3);
-        pool.PoolS.AddRange(pool.UpItems);
-        GachaManager.SetCurrentUpTargets(upMain, upSub1, upSub2, upSub3);
-
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE交互塔原胚);
-        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
-        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
-        CurrentUpPoolNameKey = UpGroupCount <= 1 ? "UP池" : $"UP池-{groupIndex + 1}";
-    }
-
-    private static void FillRecipePool(GachaPool pool) {
-        var recipeBuckets = BuildRecipeBuckets();
-        List<int> basicRecipes = recipeBuckets[RecipeCategory.Basic];
-        List<int> midRecipes = recipeBuckets[RecipeCategory.Mid];
-        List<int> highRecipes = recipeBuckets[RecipeCategory.High];
-
-        pool.PoolC.Add(IFE残片);
-
-        pool.PoolB.AddRange(basicRecipes);
-        pool.PoolB.AddRange(midRecipes);
-
-        pool.PoolA.AddRange(midRecipes);
-        pool.PoolA.AddRange(highRecipes);
-        pool.PoolA.Add(IFE分馏配方核心);
-
-        pool.PoolS.AddRange(highRecipes);
-        pool.PoolS.Add(IFE分馏配方核心);
-
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE残片);
-        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
-        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA.Count > 0 ? pool.PoolA : pool.PoolB);
-    }
-
-    private static void FillBuildingPool(GachaPool pool) {
-        pool.PoolC.AddRange([
-            IFE交互塔原胚,
-            IFE矿物复制塔原胚,
-        ]);
-        pool.PoolB.Add(IFE点数聚集塔原胚);
-        pool.PoolA.AddRange([
-            IFE转化塔原胚,
-            IFE精馏塔原胚,
-        ]);
-        pool.PoolS.Add(IFE分馏塔定向原胚);
-
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE分馏塔定向原胚);
-        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
-        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
-    }
-
-    private static void FillLimitedPool(GachaPool pool) {
-        pool.PoolC.Add(IFE分馏塔增幅芯片);
-        pool.PoolB.AddRange([
-            IFE分馏塔增幅芯片,
-            IFE分馏配方核心,
-        ]);
-        pool.PoolA.AddRange([
-            IFE分馏配方核心,
-            IFE原版配方核心,
-        ]);
-        pool.PoolS.Add(IFE原版配方核心);
-
-        if (pool.PoolC.Count == 0) pool.PoolC.Add(IFE分馏塔增幅芯片);
-        if (pool.PoolB.Count == 0) pool.PoolB.AddRange(pool.PoolC);
-        if (pool.PoolA.Count == 0) pool.PoolA.AddRange(pool.PoolB);
-        if (pool.PoolS.Count == 0) pool.PoolS.AddRange(pool.PoolA);
-    }
-
-    private static int GetEmbryoItemId(int buildingItemId) {
-        return buildingItemId switch {
-            IFE交互塔 => IFE交互塔原胚,
-            IFE矿物复制塔 => IFE矿物复制塔原胚,
-            IFE点数聚集塔 => IFE点数聚集塔原胚,
-            IFE转化塔 => IFE转化塔原胚,
-            IFE精馏塔 => IFE精馏塔原胚,
-            _ => IFE分馏塔定向原胚,
+    public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
+        var offers = new List<GachaGrowthOffer> {
+            new(5, 0, IFE残片, 50),
+            new(10, 10, GetCurrentDrawMatrixId(), 4),
+            new(20, 15, GetFocusedEmbryoReward(), 1, GachaManager.CurrentFocus),
+            new(36, 30, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
         };
+        return offers;
     }
 
-    private static void AddUnique(List<int> target, params int[] itemIds) {
-        for (int i = 0; i < itemIds.Length; i++) {
-            int itemId = itemIds[i];
-            if (itemId > 0 && !target.Contains(itemId)) {
-                target.Add(itemId);
+    private static void FillOpeningLinePool(GachaPool pool) {
+        var allRecipes = GetOpeningRecipes();
+        int currentStageIndex = GetCurrentProgressStageIndex();
+
+        var previousStageRecipes = new List<int>();
+        var currentStageRecipes = new List<int>();
+        var lockedCurrentStageRecipes = new List<int>();
+
+        foreach (BaseRecipe recipe in allRecipes) {
+            int stageIndex = GetMatrixStageIndex(recipe.MatrixID);
+            int itemId = recipe.InputID;
+            if (stageIndex < currentStageIndex) {
+                AddWeighted(previousStageRecipes, itemId, GetRecipeWeight(recipe, currentStageIndex));
+                continue;
             }
-        }
-    }
 
-    private static Dictionary<RecipeCategory, List<int>> BuildRecipeBuckets() {
-        var buckets = new Dictionary<RecipeCategory, List<int>> {
-            [RecipeCategory.Basic] = [],
-            [RecipeCategory.Mid] = [],
-            [RecipeCategory.High] = [],
-        };
-
-        var dedupe = new HashSet<int>();
-        foreach ((int matrixId, RecipeCategory category) in RecipeCategoryMap) {
-            foreach (var recipe in RecipeManager.GetRecipesByMatrix(matrixId)) {
-                if (recipe == null || recipe.InputID <= 0) continue;
-                if (dedupe.Add(recipe.InputID)) {
-                    buckets[category].Add(recipe.InputID);
+            if (stageIndex == currentStageIndex) {
+                int weight = GetRecipeWeight(recipe, currentStageIndex);
+                AddWeighted(currentStageRecipes, itemId, weight);
+                if (!recipe.Unlocked) {
+                    AddWeighted(lockedCurrentStageRecipes, itemId, weight + 1);
                 }
             }
         }
 
-        return buckets;
+        pool.PoolC.Add(IFE残片);
+
+        if (previousStageRecipes.Count > 0) {
+            pool.PoolB.AddRange(previousStageRecipes);
+        } else {
+            pool.PoolB.AddRange(currentStageRecipes);
+        }
+        if (pool.PoolB.Count == 0) {
+            pool.PoolB.Add(IFE残片);
+        }
+
+        if (currentStageRecipes.Count > 0) {
+            pool.PoolA.AddRange(currentStageRecipes);
+        }
+        if (pool.PoolA.Count == 0) {
+            pool.PoolA.AddRange(pool.PoolB);
+        }
+
+        if (lockedCurrentStageRecipes.Count > 0) {
+            pool.PoolS.AddRange(lockedCurrentStageRecipes);
+        } else if (currentStageRecipes.Count > 0) {
+            pool.PoolS.AddRange(currentStageRecipes);
+        } else {
+            pool.PoolS.AddRange(pool.PoolA);
+        }
+    }
+
+    private static void FillProtoLoopPool(GachaPool pool) {
+        AddWeighted(pool.PoolC, IFE交互塔原胚, GetEmbryoWeight(IFE交互塔原胚));
+        AddWeighted(pool.PoolC, IFE矿物复制塔原胚, GetEmbryoWeight(IFE矿物复制塔原胚));
+
+        AddWeighted(pool.PoolB, IFE点数聚集塔原胚, GetEmbryoWeight(IFE点数聚集塔原胚));
+        AddWeighted(pool.PoolB, IFE交互塔原胚, GetEmbryoWeight(IFE交互塔原胚));
+
+        AddWeighted(pool.PoolA, IFE转化塔原胚, GetEmbryoWeight(IFE转化塔原胚));
+        AddWeighted(pool.PoolA, IFE精馏塔原胚, GetEmbryoWeight(IFE精馏塔原胚));
+
+        AddWeighted(pool.PoolS, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚) + 1);
+        AddWeighted(pool.PoolS, GetFocusedEmbryoReward(), GetEmbryoWeight(GetFocusedEmbryoReward()));
+
+        if (pool.PoolB.Count == 0) {
+            pool.PoolB.AddRange(pool.PoolC);
+        }
+        if (pool.PoolA.Count == 0) {
+            pool.PoolA.AddRange(pool.PoolB);
+        }
+        if (pool.PoolS.Count == 0) {
+            pool.PoolS.AddRange(pool.PoolA);
+        }
+    }
+
+    private static void FillGrowthPool(GachaPool pool) {
+        pool.PoolC.Add(IFE残片);
+        pool.PoolB.Add(GetCurrentDrawMatrixId());
+        pool.PoolA.Add(GetFocusedEmbryoReward());
+        pool.PoolS.Add(IFE分馏塔定向原胚);
+    }
+
+    private static void FillFocusPool(GachaPool pool) {
+        foreach (var focus in focusDefinitions) {
+            pool.PoolC.Add((int)focus.FocusType);
+        }
+    }
+
+    private static List<BaseRecipe> GetOpeningRecipes() {
+        var recipes = new List<BaseRecipe>();
+        recipes.AddRange(RecipeManager.GetRecipesByType(ERecipe.MineralCopy));
+        recipes.AddRange(RecipeManager.GetRecipesByType(ERecipe.Conversion));
+        return recipes
+            .Where(recipe => recipe != null && recipe.InputID > 0 && recipe.MatrixID != I黑雾矩阵)
+            .Where(recipe => GetMatrixStageIndex(recipe.MatrixID) <= GetCurrentProgressStageIndex())
+            .ToList();
+    }
+
+    private static int GetRecipeWeight(BaseRecipe recipe, int currentStageIndex) {
+        int weight = 1;
+        if (recipe.RecipeType == ERecipe.MineralCopy && GachaManager.CurrentFocus == GachaFocusType.MineralExpansion) {
+            weight += 2;
+        }
+        if (recipe.RecipeType == ERecipe.Conversion && GachaManager.CurrentFocus == GachaFocusType.ConversionLeap) {
+            weight += 2;
+        }
+        if (GachaManager.CurrentFocus == GachaFocusType.ProcessOptimization
+            && GetMatrixStageIndex(recipe.MatrixID) == currentStageIndex) {
+            weight += 1;
+        }
+        return weight;
+    }
+
+    private static int GetEmbryoWeight(int itemId) {
+        int weight = 1;
+        switch (GachaManager.CurrentFocus) {
+            case GachaFocusType.MineralExpansion when itemId == IFE矿物复制塔原胚:
+                weight += 2;
+                break;
+            case GachaFocusType.ConversionLeap when itemId == IFE转化塔原胚:
+                weight += 2;
+                break;
+            case GachaFocusType.LogisticsInteraction when itemId == IFE交互塔原胚:
+                weight += 2;
+                break;
+            case GachaFocusType.EmbryoCycle when itemId == IFE分馏塔定向原胚:
+                weight += 3;
+                break;
+            case GachaFocusType.ProcessOptimization when itemId == IFE点数聚集塔原胚:
+                weight += 2;
+                break;
+            case GachaFocusType.RectificationEconomy when itemId == IFE精馏塔原胚:
+                weight += 2;
+                break;
+        }
+        return weight;
+    }
+
+    private static int GetFocusedEmbryoReward() {
+        return GachaManager.CurrentFocus switch {
+            GachaFocusType.MineralExpansion => IFE矿物复制塔原胚,
+            GachaFocusType.ConversionLeap => IFE转化塔原胚,
+            GachaFocusType.LogisticsInteraction => IFE交互塔原胚,
+            GachaFocusType.EmbryoCycle => IFE分馏塔定向原胚,
+            GachaFocusType.ProcessOptimization => IFE点数聚集塔原胚,
+            GachaFocusType.RectificationEconomy => IFE精馏塔原胚,
+            _ => IFE交互塔原胚,
+        };
+    }
+
+    private static void AddWeighted(List<int> target, int itemId, int weight) {
+        if (itemId <= 0) {
+            return;
+        }
+
+        int count = Math.Max(1, weight);
+        for (int i = 0; i < count; i++) {
+            target.Add(itemId);
+        }
     }
 
     public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
@@ -197,178 +291,104 @@ public static class GachaService {
             return [];
         }
 
+        EnsurePoolsFresh();
+
         var results = new List<GachaResult>(count);
-        if (!GachaPool.IsValidPoolId(poolId)) return results;
+        if (!GachaPool.IsDrawPool(poolId)) {
+            return results;
+        }
+
         GachaPool pool = GetPool(poolId);
-        if (pool == null) return results;
-        if (GachaPool.IsLimitedPool(poolId) && !IsLimitedPoolUnlocked()) return results;
-        if (!GachaPool.CanUseTicket(poolId, ticketId)) return results;
-        if (!TakeItemWithTip(ticketId, count, out _)) return results;
+        if (pool == null || !GachaPool.CanUseTicket(poolId, ticketId)) {
+            return results;
+        }
+
+        int totalCost = GetDrawMatrixCost(poolId, count);
+        if (!TakeItemWithTip(ticketId, totalCost, out _)) {
+            return results;
+        }
 
         for (int i = 0; i < count; i++) {
             bool hardPity = GachaManager.IsHardPity(poolId);
-            if (hardPity) {
-                int pityItemId;
-                bool pityIsUp = false;
-                bool hitMainTarget = false;
-                if (GachaPool.IsUpPool(poolId)) {
-                    pityItemId = RollUpTargetItem(pool, out hitMainTarget);
-                    GachaManager.RecordUpSResult(hitMainTarget);
-                    pityIsUp = true;
-                } else {
-                    pityItemId = GetHardPityItem(poolId, pool);
-                }
-                bool pityIsRecipe = RewardItem(poolId, pityItemId);
-                GachaManager.RecordDraw(poolId, true);
-                GachaManager.AddPoolPoints(poolId, 1);
-                results.Add(new GachaResult(pityItemId, GachaRarity.S, pityIsUp, pityIsRecipe, wasHardPity: true, hitUpMainTarget: hitMainTarget));
-                continue;
-            }
-
-            float currentSRate = GachaManager.GetCurrentSRate(poolId, pool.RateS);
-            GachaRarity rarity = RollRarity(pool, currentSRate, hardPity);
-
-            int itemId;
-            bool isRecipe;
-            bool isUp = false;
-            bool hitUpMainTarget = false;
-            if (GachaPool.IsUpPool(poolId) && rarity == GachaRarity.S) {
-                itemId = RollUpTargetItem(pool, out hitUpMainTarget);
-                GachaManager.RecordUpSResult(hitUpMainTarget);
-                isUp = true;
-                isRecipe = RewardItem(poolId, itemId);
-            } else {
-                itemId = pool.PickRandom(rarity, _rng);
-                isRecipe = RewardItem(poolId, itemId);
-            }
+            GachaRarity rarity = RollRarity(pool, GachaManager.GetCurrentSRate(poolId, pool.RateS), hardPity);
+            int itemId = hardPity ? GetHardPityItem(poolId, pool) : pool.PickRandom(rarity, rng);
+            bool isRecipe = RewardItem(poolId, itemId);
 
             GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
             GachaManager.AddPoolPoints(poolId, 1);
-            results.Add(new GachaResult(itemId, rarity, isUp, isRecipe, hitUpMainTarget: hitUpMainTarget));
+            results.Add(new GachaResult(itemId, rarity, false, isRecipe, wasHardPity: hardPity));
         }
 
         return results;
     }
 
     private static int GetHardPityItem(int poolId, GachaPool pool) {
+        if (pool.PoolS.Count > 0) {
+            return pool.PoolS[rng.Next(pool.PoolS.Count)];
+        }
+
         return poolId switch {
-            GachaPool.PoolIdPermanentRecipe => PickHardPityFromPool(pool, IFE残片),
-            GachaPool.PoolIdPermanentBuilding => PickHardPityFromPool(pool, IFE分馏塔定向原胚),
-            GachaPool.PoolIdUp => IFE交互塔,
-            GachaPool.PoolIdLimited => IFE原版配方核心,
-            _ => IFE原版配方核心,
+            GachaPool.PoolIdOpeningLine => IFE残片,
+            GachaPool.PoolIdProtoLoop => IFE分馏塔定向原胚,
+            _ => IFE残片,
         };
-    }
-
-    private static int RollUpTargetItem(GachaPool pool, out bool hitMainTarget) {
-        int mainItemId = GachaManager.UpMainItemId;
-        int sub1ItemId = GachaManager.UpSubItemIds[0];
-        int sub2ItemId = GachaManager.UpSubItemIds[1];
-        int sub3ItemId = GachaManager.UpSubItemIds[2];
-
-        if (mainItemId <= 0) {
-            ResolveUpTargets(GachaManager.CurrentUpGroupIndex, out mainItemId, out sub1ItemId, out sub2ItemId, out sub3ItemId);
-            GachaManager.SetCurrentUpTargets(mainItemId, sub1ItemId, sub2ItemId, sub3ItemId);
-        }
-
-        hitMainTarget = GachaManager.ShouldGuaranteeUpOnSRoll(_rng.NextDouble());
-        if (hitMainTarget) {
-            return mainItemId;
-        }
-
-        double sideRoll = _rng.NextDouble();
-        if (sideRoll < 1.0 / 3.0) return sub1ItemId;
-        if (sideRoll < 2.0 / 3.0) return sub2ItemId;
-        return sub3ItemId;
-    }
-
-    private static void ResolveUpTargets(int groupIndex, out int mainItemId, out int sub1ItemId, out int sub2ItemId, out int sub3ItemId) {
-        int[] group = groupIndex >= 0 && groupIndex < UpItemGroups.Length ? UpItemGroups[groupIndex] : UpItemGroups[0];
-        int fallback = IFE交互塔;
-
-        var uniqueTargets = new List<int>(4);
-        for (int i = 0; i < group.Length; i++) {
-            int id = group[i];
-            if (id <= 0 || uniqueTargets.Contains(id)) {
-                continue;
-            }
-            uniqueTargets.Add(id);
-        }
-
-        if (uniqueTargets.Count == 0) {
-            uniqueTargets.Add(fallback);
-        }
-
-        mainItemId = uniqueTargets[0];
-
-        var sideCandidates = new List<int>(3);
-        for (int i = 0; i < uniqueTargets.Count; i++) {
-            int id = uniqueTargets[i];
-            if (id != mainItemId) {
-                sideCandidates.Add(id);
-            }
-        }
-
-        if (sideCandidates.Count == 0) {
-            sideCandidates.Add(mainItemId);
-        }
-
-        sub1ItemId = sideCandidates[0];
-        sub2ItemId = sideCandidates.Count > 1 ? sideCandidates[1] : sideCandidates[0];
-        sub3ItemId = sideCandidates.Count switch {
-            > 2 => sideCandidates[2],
-            2 => sideCandidates[0],
-            _ => sideCandidates[0],
-        };
-    }
-
-    private static int PickHardPityFromPool(GachaPool pool, int fallbackItemId) {
-        if (pool.PoolS.Count > 0) return pool.PoolS[_rng.Next(pool.PoolS.Count)];
-        if (pool.PoolA.Count > 0) return pool.PoolA[_rng.Next(pool.PoolA.Count)];
-        if (pool.PoolB.Count > 0) return pool.PoolB[_rng.Next(pool.PoolB.Count)];
-        if (pool.PoolC.Count > 0) return pool.PoolC[_rng.Next(pool.PoolC.Count)];
-        return fallbackItemId;
     }
 
     private static bool RewardItem(int poolId, int itemId) {
         if (GachaPool.IsRecipePool(poolId)) {
-            return TryReward(itemId);
+            return TryRewardRecipe(itemId);
         }
+
         AddItemToModData(itemId, 1, 0, false);
         return false;
     }
 
-    private static bool TryReward(int inputId) {
-        if (inputId <= 0) return false;
-        foreach (ERecipe recipeType in System.Enum.GetValues(typeof(ERecipe))) {
-            var recipe = RecipeManager.GetRecipe<BaseRecipe>(recipeType, inputId);
-            if (recipe != null) {
-                recipe.RewardThis(true);
-                return true;
-            }
+    private static bool TryRewardRecipe(int inputId) {
+        if (inputId <= 0) {
+            return false;
         }
-        AddItemToModData(inputId, 1, 0, false);
-        return false;
+
+        BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.MineralCopy, inputId)
+                            ?? RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, inputId);
+        if (recipe == null) {
+            AddItemToModData(inputId, 1, 0, false);
+            return false;
+        }
+
+        recipe.RewardThis(true);
+        return true;
     }
 
     private static GachaRarity RollRarity(GachaPool pool, float currentSRate, bool forceS) {
         if (forceS) {
             return GachaRarity.S;
         }
-        double rand = _rng.NextDouble();
-        if (rand < currentSRate) return GachaRarity.S;
-        rand -= currentSRate;
-        if (rand < pool.RateA) return GachaRarity.A;
-        rand -= pool.RateA;
-        if (rand < pool.RateB) return GachaRarity.B;
+
+        double value = rng.NextDouble();
+        if (value < currentSRate) {
+            return GachaRarity.S;
+        }
+
+        value -= currentSRate;
+        if (value < pool.RateA) {
+            return GachaRarity.A;
+        }
+
+        value -= pool.RateA;
+        if (value < pool.RateB) {
+            return GachaRarity.B;
+        }
+
         return GachaRarity.C;
     }
 
     public static GachaPool GetPool(int poolId) {
-        foreach (var p in _pools)
-            if (p.PoolId == poolId) return p;
-        return null;
+        EnsurePoolsFresh();
+        return pools.FirstOrDefault(pool => pool.PoolId == poolId);
     }
 
-    public static List<GachaPool> GetAllPools() => _pools;
+    public static List<GachaPool> GetAllPools() {
+        EnsurePoolsFresh();
+        return pools;
+    }
 }
