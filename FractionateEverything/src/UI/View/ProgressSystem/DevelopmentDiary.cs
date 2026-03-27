@@ -20,7 +20,6 @@ public static class DevelopmentDiary {
     private static RectTransform window;
     private static RectTransform tab;
     private static MyComboBox entryCombo;
-    private static Text txtDiaryTitle;
     private static Text txtDiaryContent;
     private static List<DiaryEntry> diaryEntries = [];
     private static int currentEntryIndex;
@@ -309,14 +308,10 @@ public static class DevelopmentDiary {
             });
 
         y += 36f;
-        txtDiaryTitle = wnd.AddText2(x, y, tab, "", 16, "txtDiaryTitle");
-        txtDiaryTitle.supportRichText = true;
-        y += 32f;
-
         txtDiaryContent = wnd.AddText2(x, y, tab, "", 14, "txtDiaryContent");
         txtDiaryContent.supportRichText = true;
         txtDiaryContent.alignment = TextAnchor.UpperLeft;
-        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 640f);
+        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 680f);
 
         RefreshEntry();
     }
@@ -343,13 +338,12 @@ public static class DevelopmentDiary {
     }
 
     private static void RefreshEntry() {
-        if (txtDiaryTitle == null || txtDiaryContent == null || diaryEntries.Count == 0) {
+        if (txtDiaryContent == null || diaryEntries.Count == 0) {
             return;
         }
 
         currentEntryIndex = Mathf.Clamp(currentEntryIndex, 0, diaryEntries.Count - 1);
         DiaryEntry entry = diaryEntries[currentEntryIndex];
-        txtDiaryTitle.text = entry.TitleKey.Translate();
         txtDiaryContent.text = entry.ContentKey switch {
             "FE1.0" => BuildSeriesText("FE1.0"),
             "FE1.1" => BuildSeriesText("FE1.1"),
