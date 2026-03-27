@@ -20,7 +20,7 @@ public static class RecurringTask {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private const int TaskCount = 5;
+    private const int TaskCount = 7;
 
     private static readonly string[] taskNameKeys = [
         "分馏学徒",
@@ -28,6 +28,8 @@ public static class RecurringTask {
         "开线推进",
         "原胚循环",
         "工艺精进",
+        "残片储备",
+        "黑雾推进",
     ];
     private static readonly string[] taskCategoryKeys = [
         "生产",
@@ -35,9 +37,13 @@ public static class RecurringTask {
         "开线",
         "原胚",
         "工艺",
+        "资源",
+        "黑雾",
     ];
-    private static readonly int[] targets = [500, 5000, 50, 20, 10];
+    private static readonly int[] targets = [500, 5000, 50, 20, 10, 500, 10];
     private static long[] baselines = new long[TaskCount];
+    private static long totalClaimedCount;
+    private static bool autoClaimUnlocked;
 
     private static Text[] txtTaskNames = new Text[TaskCount];
     private static Text[] txtProgress = new Text[TaskCount];
@@ -61,23 +67,31 @@ public static class RecurringTask {
         Register("开线", "Opening");
         Register("原胚", "Proto");
         Register("工艺", "Craft");
+        Register("资源", "Resource");
+        Register("黑雾", "Dark Fog");
 
         Register("分馏学徒", "Fractionation Apprentice");
         Register("分馏大师", "Fractionation Master");
         Register("开线推进", "Opening Line Push");
         Register("原胚循环", "Proto Cycle");
         Register("工艺精进", "Craft Refinement");
+        Register("残片储备", "Fragment Reserve");
+        Register("黑雾推进", "Dark Fog Advance");
 
         Register("分馏学徒描述", "Reach {0} successful fractionations", "累计完成{0}次成功分馏");
         Register("分馏大师描述", "Reach {0} successful fractionations", "累计完成{0}次成功分馏");
         Register("开线推进描述", "Perform {0} opening-line draws", "累计完成{0}次开线抽取");
         Register("原胚循环描述", "Own {0} tower protos in storage", "仓储中持有{0}个分馏塔原胚");
         Register("工艺精进描述", "Fully upgrade {0} recipes", "累计满级{0}个分馏配方");
+        Register("残片储备描述", "Accumulate {0} fragments in stock", "累计储备{0}个残片");
+        Register("黑雾推进描述", "Accumulate {0} dark fog matrices in stock", "累计储备{0}个黑雾矩阵");
 
         Register("循环任务奖励-残片", "Fragments x{0}", "残片 x{0}");
         Register("循环任务奖励-配方核心", "Fractionation recipe core x{0}", "分馏配方核心 x{0}");
         Register("循环任务奖励-矩阵", "Current stage matrix x{0}", "当前阶段矩阵 x{0}");
         Register("循环任务奖励-定向原胚", "Directional proto x{0}", "定向原胚 x{0}");
+        Register("循环任务奖励-黑雾矩阵", "Dark fog matrix x{0}", "黑雾矩阵 x{0}");
+        Register("循环任务自动领取已启用", "Recurring task auto-claim enabled", "循环任务自动领取已启用");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -125,6 +139,7 @@ public static class RecurringTask {
             return;
         }
 
+        TryAutoClaimCompletedTasks();
         for (int i = 0; i < TaskCount; i++) {
             RefreshTaskRow(i);
         }
@@ -139,7 +154,7 @@ public static class RecurringTask {
             .WithColor(completed ? Green : Orange);
         txtProgress[index].text = $"{progress}/{targets[index]}";
         txtProgress[index].color = completed ? Green : White;
-        txtRewards[index].text = GetRewardText(index).WithColor(Blue);
+        txtRewards[index].text = $"{GetTaskDesc(index)}  |  {GetRewardText(index)}".WithColor(Blue);
 
         if (completed) {
             txtStatus[index].text = "已完成".Translate().WithColor(Green);
@@ -166,7 +181,20 @@ public static class RecurringTask {
         UIItemup.Up(rewardItemId, rewardCount);
 
         baselines[index] = GetCurrentValue(index);
+        totalClaimedCount++;
         RefreshTaskRow(index);
+    }
+
+    private static void TryAutoClaimCompletedTasks() {
+        if (!autoClaimUnlocked) {
+            return;
+        }
+
+        for (int i = 0; i < TaskCount; i++) {
+            if (IsCompleted(i)) {
+                ClaimReward(i);
+            }
+        }
     }
 
     private static (int, int) GetRewardInfo(int index) {
@@ -176,6 +204,8 @@ public static class RecurringTask {
             2 => (IFE分馏配方核心, 1),
             3 => (IFE分馏塔定向原胚, 1),
             4 => (GetCurrentStageMatrixId(), 4),
+            5 => (GetCurrentStageMatrixId(), 2),
+            6 => (I黑雾矩阵, 2),
             _ => (IFE残片, 0)
         };
     }
@@ -187,7 +217,22 @@ public static class RecurringTask {
             2 => string.Format("循环任务奖励-配方核心".Translate(), 1),
             3 => string.Format("循环任务奖励-定向原胚".Translate(), 1),
             4 => string.Format("循环任务奖励-矩阵".Translate(), 4),
+            5 => string.Format("循环任务奖励-矩阵".Translate(), 2),
+            6 => string.Format("循环任务奖励-黑雾矩阵".Translate(), 2),
             _ => string.Empty
+        };
+    }
+
+    private static string GetTaskDesc(int index) {
+        return index switch {
+            0 => string.Format("分馏学徒描述".Translate(), targets[index]),
+            1 => string.Format("分馏大师描述".Translate(), targets[index]),
+            2 => string.Format("开线推进描述".Translate(), targets[index]),
+            3 => string.Format("原胚循环描述".Translate(), targets[index]),
+            4 => string.Format("工艺精进描述".Translate(), targets[index]),
+            5 => string.Format("残片储备描述".Translate(), targets[index]),
+            6 => string.Format("黑雾推进描述".Translate(), targets[index]),
+            _ => string.Empty,
         };
     }
 
@@ -211,6 +256,8 @@ public static class RecurringTask {
             2 => TicketRaffle.totalDraws,
             3 => GetProtoInventoryCount(),
             4 => GetFullyUpgradedRecipeCount(),
+            5 => GetItemTotalCount(IFE残片),
+            6 => GetItemTotalCount(I黑雾矩阵),
             _ => 0
         };
     }
@@ -240,6 +287,17 @@ public static class RecurringTask {
         return GetProgress(index) >= targets[index];
     }
 
+    public static long TotalClaimedCount => totalClaimedCount;
+    public static bool AutoClaimUnlocked => autoClaimUnlocked;
+
+    public static void UnlockAutoClaim() {
+        if (autoClaimUnlocked) {
+            return;
+        }
+        autoClaimUnlocked = true;
+        UIRealtimeTip.Popup("循环任务自动领取已启用".Translate(), true, 2);
+    }
+
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
@@ -252,7 +310,9 @@ public static class RecurringTask {
                 for (int i = TaskCount; i < count; i++) {
                     br.ReadInt64();
                 }
-            })
+            }),
+            ("TotalClaimedCount", br => totalClaimedCount = br.ReadInt64()),
+            ("AutoClaimUnlocked", br => autoClaimUnlocked = br.ReadBoolean())
         );
     }
 
@@ -263,12 +323,16 @@ public static class RecurringTask {
                 for (int i = 0; i < TaskCount; i++) {
                     bw.Write(baselines[i]);
                 }
-            })
+            }),
+            ("TotalClaimedCount", bw => bw.Write(totalClaimedCount)),
+            ("AutoClaimUnlocked", bw => bw.Write(autoClaimUnlocked))
         );
     }
 
     public static void IntoOtherSave() {
         Array.Clear(baselines, 0, baselines.Length);
+        totalClaimedCount = 0;
+        autoClaimUnlocked = false;
     }
 
     #endregion
