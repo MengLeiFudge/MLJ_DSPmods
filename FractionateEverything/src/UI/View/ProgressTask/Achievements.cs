@@ -63,20 +63,27 @@ public static class Achievements {
 
     private static Text[] txtAchievementNames;
     private static Text[] txtAchievementDescs;
+    private static Text[] txtAchievementRewards;
     private static Text[] txtAchievementStates;
     private static MyImageButton[] rewardIcons;
     private static UIButton[] btnClaims;
 
-    private const int RowsPerPage = 10;
-    private const float AchievementRowSpacing = 43f;
+    private const int RowsPerPage = 8;
+    private const float AchievementRowSpacing = 52f;
     private static int currentPage;
     private static UIButton btnPrevPage;
     private static UIButton btnNextPage;
     private static Text txtPageIndicator;
     private static float listStartY;
     private static float listNameX;
+    private static float listNameW;
     private static float listDescX;
+    private static float listDescW;
+    private static float listRewardX;
+    private static float listRewardTextX;
+    private static float listRewardTextW;
     private static float listStateX;
+    private static float listStateW;
     private static float listActionX;
     private static float listActionW;
 
@@ -267,6 +274,7 @@ public static class Achievements {
 
         txtAchievementNames = new Text[achievements.Length];
         txtAchievementDescs = new Text[achievements.Length];
+        txtAchievementRewards = new Text[achievements.Length];
         txtAchievementStates = new Text[achievements.Length];
         rewardIcons = new MyImageButton[achievements.Length];
         btnClaims = new UIButton[achievements.Length];
@@ -289,20 +297,23 @@ public static class Achievements {
 
         y += 30f;
 
-        (float nameX, _) = GetPosition(0, 4);
-        (float descX, _) = GetPosition(1, 4);
-        (float stateX, _) = GetPosition(2, 4);
-        (float actionX, float actionW) = GetPosition(3, 4);
-        listNameX = nameX;
-        listDescX = descX;
-        listStateX = stateX;
-        listActionX = actionX;
-        listActionW = actionW;
+        listNameX = 0f;
+        listNameW = 220f;
+        listDescX = 220f;
+        listDescW = 430f;
+        listRewardX = 660f;
+        listRewardTextX = 692f;
+        listRewardTextW = 120f;
+        listStateX = 830f;
+        listStateW = 90f;
+        listActionX = 945f;
+        listActionW = 110f;
 
-        wnd.AddText2(nameX, y, tab, "成就", 14, "txtAchievementHeaderName");
-        wnd.AddText2(descX, y, tab, "描述", 14, "txtAchievementHeaderDesc");
-        wnd.AddText2(stateX, y, tab, "状态", 14, "txtAchievementHeaderState");
-        wnd.AddText2(actionX, y, tab, "操作", 14, "txtAchievementHeaderAction");
+        wnd.AddText2(listNameX, y, tab, "成就", 14, "txtAchievementHeaderName");
+        wnd.AddText2(listDescX, y, tab, "描述", 14, "txtAchievementHeaderDesc");
+        wnd.AddText2(listRewardX, y, tab, "奖励", 14, "txtAchievementHeaderReward");
+        wnd.AddText2(listStateX, y, tab, "状态", 14, "txtAchievementHeaderState");
+        wnd.AddText2(listActionX, y, tab, "操作", 14, "txtAchievementHeaderAction");
 
         y += 26f;
         listStartY = y;
@@ -310,17 +321,25 @@ public static class Achievements {
         for (int i = 0; i < achievements.Length; i++) {
             int j = i;
 
-            txtAchievementNames[j] = wnd.AddText2(nameX + x, y, tab, "动态刷新", 13, $"txtAchievementName{j}");
+            txtAchievementNames[j] = wnd.AddText2(listNameX + x, y, tab, "动态刷新", 13, $"txtAchievementName{j}");
             txtAchievementNames[j].supportRichText = true;
+            txtAchievementNames[j].rectTransform.sizeDelta = new Vector2(listNameW, 40f);
 
-            rewardIcons[j] = wnd.AddImageButton(descX + x, y, tab, null).WithSize(24f, 24f);
-            txtAchievementDescs[j] = wnd.AddText2(descX + x + 32f, y, tab, "动态刷新", 13, $"txtAchievementDesc{j}");
+            txtAchievementDescs[j] = wnd.AddText2(listDescX + x, y, tab, "动态刷新", 13, $"txtAchievementDesc{j}");
             txtAchievementDescs[j].supportRichText = true;
+            txtAchievementDescs[j].alignment = TextAnchor.UpperLeft;
+            txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
 
-            txtAchievementStates[j] = wnd.AddText2(stateX + x, y, tab, "动态刷新", 13, $"txtAchievementState{j}");
+            rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, tab, null).WithSize(24f, 24f);
+            txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, tab, "动态刷新", 13, $"txtAchievementReward{j}");
+            txtAchievementRewards[j].supportRichText = true;
+            txtAchievementRewards[j].rectTransform.sizeDelta = new Vector2(listRewardTextW, 32f);
+
+            txtAchievementStates[j] = wnd.AddText2(listStateX + x, y, tab, "动态刷新", 13, $"txtAchievementState{j}");
             txtAchievementStates[j].supportRichText = true;
+            txtAchievementStates[j].rectTransform.sizeDelta = new Vector2(listStateW, 32f);
 
-            btnClaims[j] = wnd.AddButton(actionX + x, y, actionW, tab, "领取", 13, $"btnAchievementClaim{j}",
+            btnClaims[j] = wnd.AddButton(listActionX + x, y, listActionW, tab, "领取", 13, $"btnAchievementClaim{j}",
                 () => ClaimAchievementReward(j));
 
             y += AchievementRowSpacing;
@@ -375,6 +394,7 @@ public static class Achievements {
         for (int i = 0; i < achievements.Length; i++) {
             txtAchievementNames[i].gameObject.SetActive(false);
             txtAchievementDescs[i].gameObject.SetActive(false);
+            txtAchievementRewards[i].gameObject.SetActive(false);
             txtAchievementStates[i].gameObject.SetActive(false);
             rewardIcons[i].gameObject.SetActive(false);
             btnClaims[i].gameObject.SetActive(false);
@@ -387,15 +407,17 @@ public static class Achievements {
             float rowY = listStartY + slot * AchievementRowSpacing;
 
             txtAchievementNames[i].SetPosition(listNameX, rowY);
-            txtAchievementDescs[i].SetPosition(listDescX, rowY);
+            txtAchievementDescs[i].SetPosition(listDescX, rowY - 8f);
+            NormalizeRectWithMidLeft(rewardIcons[i], listRewardX, rowY);
+            txtAchievementRewards[i].SetPosition(listRewardTextX, rowY);
             txtAchievementStates[i].SetPosition(listStateX, rowY);
             NormalizeRectWithMidLeft(btnClaims[i], listActionX, rowY);
             btnClaims[i].GetComponent<RectTransform>().sizeDelta = new(listActionW, btnClaims[i].GetComponent<RectTransform>().sizeDelta.y);
 
             txtAchievementNames[i].gameObject.SetActive(true);
             txtAchievementDescs[i].gameObject.SetActive(true);
+            txtAchievementRewards[i].gameObject.SetActive(true);
             txtAchievementStates[i].gameObject.SetActive(true);
-            rewardIcons[i].gameObject.SetActive(true);
             btnClaims[i].gameObject.SetActive(true);
 
             RefreshAchievementRow(i);
@@ -493,7 +515,9 @@ public static class Achievements {
         if (!unlocked[index]) {
             txtAchievementNames[index].text = "隐藏成就提示".Translate().WithColor(Gray);
             txtAchievementDescs[index].text = "隐藏成就描述".Translate().WithColor(Gray);
+            txtAchievementRewards[index].text = "";
             txtAchievementStates[index].text = "未解锁".Translate().WithColor(Gray);
+            rewardIcons[index].gameObject.SetActive(false);
             btnClaims[index].button.interactable = false;
             btnClaims[index].SetText("隐藏成就提示");
             return;
@@ -510,7 +534,9 @@ public static class Achievements {
             : info.RewardKey.Translate().WithColor(Blue);
 
         txtAchievementNames[index].text = $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
-        txtAchievementDescs[index].text = $"{info.DescKey.Translate()}  |  {"奖励".Translate()}：{rewardText}";
+        txtAchievementDescs[index].text = info.DescKey.Translate();
+        txtAchievementRewards[index].text = rewardText;
+        rewardIcons[index].gameObject.SetActive(hasRewardIcon);
 
         bool alreadyClaimed = claimed[index];
         txtAchievementStates[index].text = alreadyClaimed
