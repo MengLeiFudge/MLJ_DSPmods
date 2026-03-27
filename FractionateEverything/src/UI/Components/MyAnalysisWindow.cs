@@ -760,7 +760,10 @@ public class MyAnalysisWindow : MyWindow {
         for (int i = 0; i < categories.Count; i++) {
             if (categories[i].CategoryName == categoryName) {
                 OnTopCategoryClick(i);
-                if (currentPageContent != null) {
+                var pages = categories[i].Pages;
+                if (internalTabIndex >= 0 && internalTabIndex < pages.Count) {
+                    OnSubpageClick(internalTabIndex);
+                } else if (currentPageContent != null) {
                     var proxy = currentPageContent.GetComponentInChildren<MyConfigWindow>(true);
                     if (proxy != null) {
                         proxy.SetCurrentTab(internalTabIndex);
