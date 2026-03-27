@@ -68,7 +68,23 @@ public static partial class Utils {
             GameMain.mainPlayer.inhandItemId = I沙土;
             GameMain.mainPlayer.inhandItemCount += count;
         } else {
-            AddItemToPackage(itemId, count, inc, !Miscellaneous.ExtractToHand);
+            if (Miscellaneous.ExtractToHand) {
+                if (GameMain.mainPlayer.inhandItemId == 0 || GameMain.mainPlayer.inhandItemCount == 0) {
+                    GameMain.mainPlayer.inhandItemId = itemId;
+                    GameMain.mainPlayer.inhandItemCount = count;
+                    GameMain.mainPlayer.inhandItemInc = inc;
+                } else if (GameMain.mainPlayer.inhandItemId == itemId) {
+                    GameMain.mainPlayer.inhandItemCount += count;
+                    GameMain.mainPlayer.inhandItemInc += inc;
+                } else {
+                    GameMain.mainPlayer.ThrowHandItems();
+                    GameMain.mainPlayer.inhandItemId = itemId;
+                    GameMain.mainPlayer.inhandItemCount = count;
+                    GameMain.mainPlayer.inhandItemInc = inc;
+                }
+            } else {
+                AddItemToPackage(itemId, count, inc, true);
+            }
         }
     }
 
