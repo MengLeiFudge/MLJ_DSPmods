@@ -1,14 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
+using UnityEngine.UI;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressSystem;
 
 public static class DevelopmentDiary {
+    private readonly struct DiaryEntry(string label, string titleKey, string contentKey) {
+        public readonly string Label = label;
+        public readonly string TitleKey = titleKey;
+        public readonly string ContentKey = contentKey;
+    }
+
     private static Dictionary<string, int> programmingEvents;
+    private static RectTransform window;
+    private static RectTransform tab;
+    private static MyComboBox entryCombo;
+    private static Text txtDiaryTitle;
+    private static Text txtDiaryContent;
+    private static List<DiaryEntry> diaryEntries = [];
+    private static int currentEntryIndex;
 
     public static void AddTranslations() {
         Register("开发日记", "Development Diary");
@@ -278,16 +293,76 @@ public static class DevelopmentDiary {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        // window = trans;
-        // tab = wnd.AddTab(trans, "开发日记");
-        // float x = 0f;
-        // float y = 18f;
+        window = trans;
+        tab = wnd.AddTab(trans, "开发日记");
+        diaryEntries = BuildDiaryEntries();
+
+        float x = 0f;
+        float y = 18f;
+        entryCombo = wnd.AddComboBox(x, y, tab)
+            .WithItems(diaryEntries.Select(entry => entry.Label).ToArray())
+            .WithSize(280f, 0)
+            .WithIndex(0)
+            .WithOnSelChanged(index => {
+                currentEntryIndex = Mathf.Clamp(index, 0, diaryEntries.Count - 1);
+                RefreshEntry();
+            });
+
+        y += 36f;
+        txtDiaryTitle = wnd.AddText2(x, y, tab, "", 16, "txtDiaryTitle");
+        txtDiaryTitle.supportRichText = true;
+        y += 32f;
+
+        txtDiaryContent = wnd.AddText2(x, y, tab, "", 14, "txtDiaryContent");
+        txtDiaryContent.supportRichText = true;
+        txtDiaryContent.alignment = TextAnchor.UpperLeft;
+        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 640f);
+
+        RefreshEntry();
     }
 
     public static void UpdateUI() {
-        // if (!tab.gameObject.activeSelf) {
-        //     return;
-        // }
+        if (tab == null || !tab.gameObject.activeSelf) {
+            return;
+        }
+
+        RefreshEntry();
+    }
+
+    private static List<DiaryEntry> BuildDiaryEntries() {
+        var entries = new List<DiaryEntry>();
+        foreach (var pair in programmingEvents) {
+            string prefix = pair.Key;
+            entries.Add(new DiaryEntry(prefix, prefix, prefix));
+        }
+        entries.Add(new DiaryEntry("1.4.1 更新", "141标题", "141信息"));
+        entries.Add(new DiaryEntry("1.4.2 更新", "142标题", "142信息"));
+        entries.Add(new DiaryEntry("1.4.3 更新", "143标题", "143信息"));
+        entries.Add(new DiaryEntry("伊卡洛斯手记", "IK-1", "IK-1"));
+        return entries;
+    }
+
+    private static void RefreshEntry() {
+        if (txtDiaryTitle == null || txtDiaryContent == null || diaryEntries.Count == 0) {
+            return;
+        }
+
+        currentEntryIndex = Mathf.Clamp(currentEntryIndex, 0, diaryEntries.Count - 1);
+        DiaryEntry entry = diaryEntries[currentEntryIndex];
+        txtDiaryTitle.text = entry.TitleKey.Translate();
+        txtDiaryContent.text = entry.ContentKey switch {
+            "FE1.0" => BuildSeriesText("FE1.0"),
+            "FE1.1" => BuildSeriesText("FE1.1"),
+            _ => entry.ContentKey.Translate(),
+        };
+    }
+
+    private static string BuildSeriesText(string prefix) {
+        if (!programmingEvents.TryGetValue(prefix, out int count) || count <= 0) {
+            return prefix.Translate();
+        }
+
+        return string.Join("\n\n", Enumerable.Range(1, count).Select(index => $"{prefix}-{index}".Translate()));
     }
 
     #region IModCanSave

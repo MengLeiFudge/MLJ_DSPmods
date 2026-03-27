@@ -21,6 +21,7 @@ public static class Achievements {
     private static RectTransform tab;
 
     private readonly struct AchievementInfo(
+        string categoryKey,
         string nameKey,
         string descKey,
         string rewardKey,
@@ -33,6 +34,7 @@ public static class Achievements {
         float energyReductionBonus = 0f,
         float logisticsBonus = 0f,
         float powerStageBonus = 0f) {
+        public readonly string CategoryKey = categoryKey;
         public readonly string NameKey = nameKey;
         public readonly string DescKey = descKey;
         public readonly string RewardKey = rewardKey;
@@ -88,57 +90,57 @@ public static class Achievements {
     }
 
     private static readonly AchievementInfo[] achievements = [
-        new("成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-残片200", ETier.Silver,
+        new("成就分类-生产", "成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-残片200", ETier.Silver,
             () => totalFractionSuccesses >= 1000,
             () => GrantItems((IFE残片, 200)), successRateBonus: 0.02f),
-        new("成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-残片300", ETier.Gold,
+        new("成就分类-生产", "成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-残片300", ETier.Gold,
             () => totalFractionSuccesses >= 10000,
             () => GrantItems((IFE残片, 300)), successRateBonus: 0.05f),
-        new("成就-分馏之王", "成就描述-分馏之王", "成就奖励-残片500", ETier.Gold,
+        new("成就分类-生产", "成就-分馏之王", "成就描述-分馏之王", "成就奖励-残片500", ETier.Gold,
             () => totalFractionSuccesses >= 100000,
             () => GrantItems((IFE残片, 500)), destroyReductionBonus: 0.01f),
-        new("成就-永不停歇", "成就描述-永不停歇", "成就奖励-残片2000", ETier.Platinum,
+        new("成就分类-生产", "成就-永不停歇", "成就描述-永不停歇", "成就奖励-残片2000", ETier.Platinum,
             () => totalFractionSuccesses >= 1000000,
             () => GrantItems((IFE残片, 2000)), doubleOutputBonus: 0.03f),
 
-        new("成就-开线先锋", "成就描述-开线先锋", "成就奖励-当前阶段矩阵2", ETier.Bronze,
+        new("成就分类-开线", "成就-开线先锋", "成就描述-开线先锋", "成就奖励-当前阶段矩阵2", ETier.Bronze,
             () => TicketRaffle.totalDraws >= 100,
             () => GrantItems((GetCurrentStageMatrixId(), 2)), successRateBonus: 0.005f),
-        new("成就-开线专家", "成就描述-开线专家", "成就奖励-当前阶段矩阵4", ETier.Silver,
+        new("成就分类-开线", "成就-开线专家", "成就描述-开线专家", "成就奖励-当前阶段矩阵4", ETier.Silver,
             () => TicketRaffle.totalDraws >= 500,
             () => GrantItems((GetCurrentStageMatrixId(), 4)), doubleOutputBonus: 0.005f),
 
-        new("成就-配方入门", "成就描述-配方入门", "成就奖励-配方核心1", ETier.Bronze,
+        new("成就分类-配方", "成就-配方入门", "成就描述-配方入门", "成就奖励-配方核心1", ETier.Bronze,
             () => GetUnlockedRecipeCount() >= 5,
             () => GrantItems((IFE分馏配方核心, 1)), successRateBonus: 0.005f),
-        new("成就-配方学者", "成就描述-配方学者", "成就奖励-配方核心3", ETier.Silver,
+        new("成就分类-配方", "成就-配方学者", "成就描述-配方学者", "成就奖励-配方核心3", ETier.Silver,
             () => GetUnlockedRecipeCount() >= 30,
             () => GrantItems((IFE分馏配方核心, 3)), destroyReductionBonus: 0.005f),
-        new("成就-配方专家", "成就描述-配方专家", "成就奖励-当前阶段矩阵8", ETier.Gold,
+        new("成就分类-配方", "成就-配方专家", "成就描述-配方专家", "成就奖励-当前阶段矩阵8", ETier.Gold,
             () => GetUnlockedRecipeCount() >= 80,
             () => GrantItems((GetCurrentStageMatrixId(), 8)), doubleOutputBonus: 0.01f),
-        new("成就-万物百科", "成就描述-万物百科", "成就奖励-残片800", ETier.Platinum,
+        new("成就分类-配方", "成就-万物百科", "成就描述-万物百科", "成就奖励-残片800", ETier.Platinum,
             () => GetUnlockedRecipeCount() >= 150,
             () => GrantItems((IFE残片, 800)), powerStageBonus: 0.02f),
 
-        new("成就-工艺优化", "成就描述-工艺优化", "成就奖励-残片500", ETier.Bronze,
+        new("成就分类-成长", "成就-工艺优化", "成就描述-工艺优化", "成就奖励-残片500", ETier.Bronze,
             () => GetMaxBuildingLevel() >= 6,
             () => GrantItems((IFE残片, 500)), energyReductionBonus: 0.05f),
-        new("成就-工艺大师", "成就描述-工艺大师", "成就奖励-残片1000", ETier.Gold,
+        new("成就分类-成长", "成就-工艺大师", "成就描述-工艺大师", "成就奖励-残片1000", ETier.Gold,
             () => GetMaxBuildingLevel() >= 12,
             () => GrantItems((IFE残片, 1000)), energyReductionBonus: 0.10f),
 
-        new("成就-原胚循环", "成就描述-原胚循环", "成就奖励-定向原胚1", ETier.Silver,
+        new("成就分类-原胚", "成就-原胚循环", "成就描述-原胚循环", "成就奖励-定向原胚1", ETier.Silver,
             () => GetProtoInventoryCount() >= 20,
             () => GrantItems((IFE分馏塔定向原胚, 1)), logisticsBonus: 0.02f),
-        new("成就-星际整备", "成就描述-星际整备", "成就奖励-星际物流交互站1", ETier.Gold,
+        new("成就分类-原胚", "成就-星际整备", "成就描述-星际整备", "成就奖励-星际物流交互站1", ETier.Gold,
             () => IsTechUnlocked(TFE星际物流交互),
             () => GrantItems((IFE星际物流交互站, 1)), logisticsBonus: 0.05f),
-        new("成就-精馏开路", "成就描述-精馏开路", "成就奖励-精馏塔原胚3", ETier.Gold,
+        new("成就分类-原胚", "成就-精馏开路", "成就描述-精馏开路", "成就奖励-精馏塔原胚3", ETier.Gold,
             () => IsTechUnlocked(TFE物品精馏),
             () => GrantItems((IFE精馏塔原胚, 3)), powerStageBonus: 0.05f),
 
-        new("成就-万物归一", "成就描述-万物归一", "成就奖励-当前阶段矩阵16", ETier.Platinum,
+        new("成就分类-综合", "成就-万物归一", "成就描述-万物归一", "成就奖励-当前阶段矩阵16", ETier.Platinum,
             () => totalFractionSuccesses >= 50000
                   && GetUnlockedRecipeCount() >= 100
                   && GetMaxBuildingLevel() >= 10,
@@ -152,6 +154,12 @@ public static class Achievements {
         Register("成就详情", "Achievements");
         Register("成就系统", "Achievement System");
         Register("成就", "Achievement");
+        Register("成就分类-生产", "Production", "生产");
+        Register("成就分类-开线", "Opening", "开线");
+        Register("成就分类-配方", "Recipe", "配方");
+        Register("成就分类-成长", "Growth", "成长");
+        Register("成就分类-原胚", "Proto", "原胚");
+        Register("成就分类-综合", "Mixed", "综合");
         Register("描述", "Description");
         Register("状态", "Status");
         Register("操作", "Action");
@@ -483,7 +491,7 @@ public static class Achievements {
         Color tierColor = GetTierColor(info.Tier);
         string rewardText = info.RewardKey.Translate().WithColor(Blue);
 
-        txtAchievementNames[index].text = $"{tierTag.WithColor(tierColor)} {info.NameKey.Translate()}";
+        txtAchievementNames[index].text = $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
         txtAchievementDescs[index].text = $"{info.DescKey.Translate()}  |  {"奖励".Translate()}：{rewardText}";
 
         bool alreadyClaimed = claimed[index];
