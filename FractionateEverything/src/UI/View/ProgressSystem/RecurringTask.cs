@@ -48,6 +48,7 @@ public static class RecurringTask {
     private static Text[] txtTaskNames = new Text[TaskCount];
     private static Text[] txtProgress = new Text[TaskCount];
     private static Text[] txtRewards = new Text[TaskCount];
+    private static MyImageButton[] rewardIcons = new MyImageButton[TaskCount];
     private static Text[] txtStatus = new Text[TaskCount];
     private static UIButton[] btnClaims = new UIButton[TaskCount];
 
@@ -121,7 +122,8 @@ public static class RecurringTask {
             txtProgress[j] = wnd.AddText2(progressX + x, y, tab, "动态刷新", 15, $"txtTaskProgress{j}");
             txtProgress[j].supportRichText = true;
 
-            txtRewards[j] = wnd.AddText2(rewardX + x, y, tab, "动态刷新", 15, $"txtTaskReward{j}");
+            rewardIcons[j] = wnd.AddImageButton(rewardX + x, y, tab, null).WithSize(24f, 24f);
+            txtRewards[j] = wnd.AddText2(rewardX + x + 32f, y, tab, "动态刷新", 15, $"txtTaskReward{j}");
             txtRewards[j].supportRichText = true;
 
             txtStatus[j] = wnd.AddText2(actionX + x, y, tab, "动态刷新", 15, $"txtTaskStatus{j}");
@@ -154,7 +156,10 @@ public static class RecurringTask {
             .WithColor(completed ? Green : Orange);
         txtProgress[index].text = $"{progress}/{targets[index]}";
         txtProgress[index].color = completed ? Green : White;
-        txtRewards[index].text = $"{GetTaskDesc(index)}  |  {GetRewardText(index)}".WithColor(Blue);
+        (int rewardItemId, int rewardCount) = GetRewardInfo(index);
+        rewardIcons[index].Proto = rewardItemId > 0 ? LDB.items.Select(rewardItemId) : null;
+        rewardIcons[index].gameObject.SetActive(rewardItemId > 0);
+        txtRewards[index].text = $"{GetTaskDesc(index)}  |  x{rewardCount}".WithColor(Blue);
 
         if (completed) {
             txtStatus[index].text = "已完成".Translate().WithColor(Green);
