@@ -4,6 +4,7 @@ using CommonAPI.Systems;
 using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
+using static FE.Logic.Manager.BuildingManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Building;
@@ -18,23 +19,8 @@ public static class InterstellarInteractionStation {
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static int Level => PlanetaryInteractionStation.Level;
-    public static int MaxStack => Level switch {
-        < 6 => 1,
-        < 9 => 4,
-        < 12 => 8,
-        _ => 12,
-    };
-    public static float InteractEnergyRatio => Level switch {
-        < 1 => 1.00f,// 100%
-        < 2 => 0.95f,// 95% (1.05, x105%)
-        < 4 => 0.85f,// 85% (1.18, x112%)
-        < 5 => 0.70f,// 70% (1.43, x121%)
-        < 7 => 0.55f,// 55% (1.82, x127%)
-        < 8 => 0.40f,// 40% (2.50, x137%)
-        < 10 => 0.30f,// 30% (3.33, x133%)
-        < 11 => 0.25f,// 25% (4.00, x120%)
-        _ => 0.20f,// 20% (5.00, x125%)
-    };
+    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static float InteractEnergyRatio => GetStationInteractEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;
         set => model.prefabDesc.workEnergyPerTick = value;
