@@ -192,6 +192,22 @@ public static class BuildingOperate {
         btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null);
         txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 120f + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
+
+        if (!GameMain.sandboxToolsEnabled) {
+            btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
+                onClick: Reinforcement);
+        } else {
+            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置",
+                onClick: () => { ChangeLevelTo(0); });
+            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "降级",
+                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
+            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "升级",
+                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
+            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "升满",
+                onClick: () => { ChangeLevelTo(MaxLevel); });
+        }
+        y += 36f + 7f;
+
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         buildingInfoBaseY = y;
         for (int i = 0; i < LevelLineCount; i++) {
@@ -210,21 +226,6 @@ public static class BuildingOperate {
         // 特质2（+12）
         txtTrait2 = wnd.AddText2(x, y, tab, "动态刷新");
         btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
-
-        if (!GameMain.sandboxToolsEnabled) {
-            btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
-                onClick: Reinforcement);
-        } else {
-            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置",
-                onClick: () => { ChangeLevelTo(0); });
-            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "降级",
-                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "升级",
-                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "升满",
-                onClick: () => { ChangeLevelTo(MaxLevel); });
-        }
-        y += 36f;
         for (int i = 0; i < txtReinforcementBonus.Length; i++) {
             y += 36f;
             txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
