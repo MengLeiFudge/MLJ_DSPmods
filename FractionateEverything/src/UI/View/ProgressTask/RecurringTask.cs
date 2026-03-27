@@ -206,7 +206,21 @@ public static class RecurringTask {
         btnClaims[index].SetText(claimedInThisCycle ? "已领取" : "领取");
     }
 
+    private static bool IsUiReady() {
+        return txtTaskNames[0] != null
+               && txtProgress[0] != null
+               && txtDescriptions[0] != null
+               && txtRewards[0] != null
+               && rewardIcons[0] != null
+               && txtStatus[0] != null
+               && btnClaims[0] != null;
+    }
+
     private static void ClaimReward(int index) {
+        ClaimReward(index, refreshUi: true);
+    }
+
+    private static void ClaimReward(int index, bool refreshUi) {
         if (!IsCompleted(index)) {
             return;
         }
@@ -217,7 +231,9 @@ public static class RecurringTask {
 
         baselines[index] = GetCurrentValue(index);
         totalClaimedCount++;
-        RefreshTaskRow(index);
+        if (refreshUi && IsUiReady()) {
+            RefreshTaskRow(index);
+        }
     }
 
     private static void TryAutoClaimCompletedTasks() {
@@ -227,7 +243,7 @@ public static class RecurringTask {
 
         for (int i = 0; i < TaskCount; i++) {
             if (IsCompleted(i)) {
-                ClaimReward(i);
+                ClaimReward(i, refreshUi: false);
             }
         }
     }
