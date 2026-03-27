@@ -25,7 +25,10 @@ public static class BuildingOperate {
         "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(), "转化塔".Translate(),
         "精馏塔".Translate(), "物流交互站".Translate()
     ];
-    private static Text txtChipCount;
+    private static MyImageButton btnFragmentIcon;
+    private static Text txtFragmentCount;
+    private static MyImageButton btnMatrixIcon;
+    private static Text txtMatrixCount;
 
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
@@ -184,8 +187,10 @@ public static class BuildingOperate {
         var txt = wnd.AddText2(x, y, tab, "建筑类型");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
-        txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
+        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
+        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null);
+        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 120f + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
         buildingInfoBaseY = y;
@@ -244,8 +249,9 @@ public static class BuildingOperate {
             return;
         }
         int currentMatrixId = GetCurrentProgressMatrixId();
-        string matrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
-        txtChipCount.text = $"残片 x{GetItemTotalCount(IFE残片)} / {matrixName} x{GetItemTotalCount(currentMatrixId)}";
+        btnMatrixIcon.Proto = LDB.items.Select(currentMatrixId);
+        txtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
+        txtMatrixCount.text = $"x {GetItemTotalCount(currentMatrixId)}";
 
         string s = $"{"当前建筑强化等级".Translate()} +{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
