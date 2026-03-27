@@ -1,5 +1,6 @@
 using System.IO;
 using BepInEx.Configuration;
+using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,73 +10,56 @@ namespace FE.UI.View.GetItemRecipe;
 
 public static class TicketExchange {
     private static RectTransform tab;
-    private static Text fragmentCountText;
-    
+    private static Text txtOverview;
+    private static Text txtCostOpening;
+    private static Text txtCostProto;
+    private static Text txtCostFocus;
+
     public static void AddTranslations() {
-        Register("奖券兑换", "Ticket Exchange");
-        Register("矩阵兑换", "Matrix Exchange");
-        Register("残片兑换", "Fragment Exchange");
-        Register("兑换", "Exchange");
+        Register("资源统筹", "Resource Overview");
+        Register("资源统筹说明",
+            "Version 2.3 no longer uses physical tickets. Draws consume the current stage Matrix directly, while Growth / Focus use Fragments and pool points.",
+            "2.3 版本不再使用实体奖券。抽取直接消耗当前阶段矩阵，成长与聚焦则消耗残片和池积分。");
+        Register("开线池成本", "Opening Pool Cost");
+        Register("原胚池成本", "Proto Pool Cost");
+        Register("聚焦切换成本", "Focus Switch Cost");
     }
-    
+
     public static void LoadConfig(ConfigFile configFile) { }
-    
+
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "奖券兑换");
-        
-        wnd.AddText2(20, 20, tab, "矩阵兑换".Translate());
-        
-        int y = 60;
-        foreach (var rate in GachaExchangeRate.MatrixRates) {
-            CreateExchangeRow(wnd, tab, y, rate.matrixId, rate.matrixCost, rate.ticketId, rate.ticketCount);
-            y += 40;
-        }
-        
-        y += 20;
-        wnd.AddText2(20, y, tab, "残片兑换".Translate());
-        y += 40;
-        
-        wnd.AddImageButton(20, y, tab, LDB.items.Select(IFE残片));
-        fragmentCountText = wnd.AddText2(60, y, tab, "0");
-        
-        int x = 120;
-        foreach (var rate in GachaExchangeRate.ShardRates) {
-            string ticketName = LDB.items.Select(rate.ticketId)?.name ?? rate.ticketId.ToString();
-            string buttonText = $"{rate.shardCost} -> {rate.ticketCount} {ticketName}";
-            wnd.AddButton(x, y, 180f, tab, buttonText, 14, "btn", () => ExchangeFragment(rate.shardCost, rate.ticketId, rate.ticketCount));
-            x += 190;
-        }
+        tab = wnd.AddTab(trans, "资源统筹");
+        float y = 18f;
+        txtOverview = wnd.AddText2(0f, y, tab, "资源统筹说明", 14);
+        txtOverview.supportRichText = true;
+        txtOverview.rectTransform.sizeDelta = new Vector2(960f, 48f);
+
+        y += 64f;
+        txtCostOpening = wnd.AddText2(0f, y, tab, "", 14);
+        y += 30f;
+        txtCostProto = wnd.AddText2(0f, y, tab, "", 14);
+        y += 30f;
+        txtCostFocus = wnd.AddText2(0f, y, tab, "", 14);
     }
-    
-    private static void CreateExchangeRow(MyConfigWindow wnd, RectTransform tab, int y, int matrixId, int rate, int ticketId, int ticketCount) {
-        wnd.AddImageButton(20, y, tab, LDB.items.Select(matrixId));
-        wnd.AddText2(80, y, tab, "→");
-        wnd.AddImageButton(110, y, tab, LDB.items.Select(ticketId));
-        wnd.AddText2(150, y, tab, $"{rate} : {ticketCount}");
-        
-        wnd.AddButton(300, y, 80f, tab, "兑换".Translate() + " 1", 16, "btn",
-            () => ExchangeMatrix(matrixId, ticketId, rate, ticketCount));
-        wnd.AddButton(390, y, 80f, tab, "兑换".Translate() + " 10", 16, "btn",
-            () => ExchangeMatrix(matrixId, ticketId, rate * 10, ticketCount * 10));
-    }
-    
+
     public static void UpdateUI() {
-        if (tab == null || !tab.gameObject.activeSelf) return;
-        if (fragmentCountText != null) {
-            fragmentCountText.text = GameMain.mainPlayer?.package.GetItemCount(IFE残片).ToString() ?? "0";
+        if (tab == null || !tab.gameObject.activeSelf) {
+            return;
         }
+
+        int matrixId = GachaService.GetCurrentDrawMatrixId();
+        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
+        txtOverview.text =
+            $"{ "资源统筹说明".Translate() }\n"
+            + $"当前阶段矩阵：{matrixName} x{GetItemTotalCount(matrixId)}    残片 x{GetItemTotalCount(IFE残片)}";
+        txtCostOpening.text =
+            $"{ "开线池成本".Translate() }：{matrixName} x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
+        txtCostProto.text =
+            $"{ "原胚池成本".Translate() }：{matrixName} x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
+        txtCostFocus.text =
+            $"{ "聚焦切换成本".Translate() }：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起";
     }
-    
-    private static void ExchangeMatrix(int matrixId, int ticketId, int matrixCount, int ticketCount) {
-        if (!TakeItemWithTip(matrixId, matrixCount, out _)) return;
-        AddItemToModData(ticketId, ticketCount, 0, true);
-    }
-    
-    private static void ExchangeFragment(int fragmentCost, int ticketId, int ticketCount) {
-        if (!TakeItemWithTip(IFE残片, fragmentCost, out _)) return;
-        AddItemToModData(ticketId, ticketCount, 0, true);
-    }
-    
+
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
     public static void Export(BinaryWriter w) { w.WriteBlocks(); }
     public static void IntoOtherSave() { }

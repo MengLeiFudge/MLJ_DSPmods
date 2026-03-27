@@ -500,7 +500,81 @@ public static class ItemManager {
 
     #region 将物品根据前置科技分类到不同矩阵层级
 
+    public static readonly int[] MainProgressMatrixIds = [
+        I电磁矩阵,
+        I能量矩阵,
+        I结构矩阵,
+        I信息矩阵,
+        I引力矩阵,
+        I宇宙矩阵,
+    ];
+
     public static readonly int[] itemToMatrix = new int[12000];
+
+    /// <summary>
+    /// 获取主线矩阵阶段索引。黑雾矩阵按引力阶段处理，用于精馏与成长成本衰减。
+    /// </summary>
+    public static int GetMatrixStageIndex(int matrixId) {
+        return matrixId switch {
+            I电磁矩阵 => 0,
+            I能量矩阵 => 1,
+            I结构矩阵 => 2,
+            I信息矩阵 => 3,
+            I引力矩阵 => 4,
+            I宇宙矩阵 => 5,
+            I黑雾矩阵 => 4,
+            _ => matrixId > 0 && matrixId < itemToMatrix.Length
+                ? GetMatrixStageIndex(itemToMatrix[matrixId])
+                : 0,
+        };
+    }
+
+    public static int GetCurrentProgressMatrixId() {
+        if (GameMain.history == null) {
+            return I电磁矩阵;
+        }
+
+        for (int i = MainProgressMatrixIds.Length - 1; i >= 0; i--) {
+            int matrixId = MainProgressMatrixIds[i];
+            if (GameMain.history.ItemUnlocked(matrixId)) {
+                return matrixId;
+            }
+        }
+
+        return I电磁矩阵;
+    }
+
+    public static int GetCurrentProgressStageIndex() {
+        return GetMatrixStageIndex(GetCurrentProgressMatrixId());
+    }
+
+    public static float GetStageDecayFactor(int sourceMatrixId) {
+        int stageDelta = GetCurrentProgressStageIndex() - GetMatrixStageIndex(sourceMatrixId);
+        return stageDelta switch {
+            <= 0 => 1.0f,
+            1 => 0.70f,
+            2 => 0.45f,
+            _ => 0.25f,
+        };
+    }
+
+    public static int GetRectificationBaseFragmentYield(int matrixId) {
+        return matrixId switch {
+            I电磁矩阵 => 2,
+            I能量矩阵 => 4,
+            I结构矩阵 => 8,
+            I信息矩阵 => 10,
+            I引力矩阵 => 16,
+            I宇宙矩阵 => 32,
+            I黑雾矩阵 => 20,
+            _ => 1,
+        };
+    }
+
+    public static int GetRectificationFragmentYield(int matrixId, float ratio = 1f) {
+        float value = GetRectificationBaseFragmentYield(matrixId) * GetStageDecayFactor(matrixId) * ratio;
+        return Mathf.Max(1, Mathf.RoundToInt(value));
+    }
 
     public static void ClassifyItemsToMatrix() {
         //       物品状态                         missingTech    preTech
