@@ -406,6 +406,7 @@ public static class GachaService {
 
             GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
             GachaManager.AddPoolPoints(poolId, 1);
+            GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, 1);
             results.Add(new GachaResult(itemId, rarity, false, isRecipe, wasHardPity: hardPity));
         }
 
