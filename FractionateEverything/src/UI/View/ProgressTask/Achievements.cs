@@ -405,9 +405,10 @@ public static class Achievements {
         for (int i = start; i < end; i++) {
             int slot = i - start;
             float rowY = listStartY + slot * AchievementRowSpacing;
+            float rowTop = rowY - 10f;
 
             txtAchievementNames[i].SetPosition(listNameX, rowY);
-            txtAchievementDescs[i].SetPosition(listDescX, rowY - 8f);
+            NormalizeRectWithTopLeft(txtAchievementDescs[i], listDescX, rowTop);
             NormalizeRectWithMidLeft(rewardIcons[i], listRewardX, rowY);
             txtAchievementRewards[i].SetPosition(listRewardTextX, rowY);
             txtAchievementStates[i].SetPosition(listStateX, rowY);
