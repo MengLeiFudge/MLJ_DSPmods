@@ -163,6 +163,15 @@ public static class RecurringTask {
 
         TryAutoClaimCompletedTasks();
         for (int i = 0; i < TaskCount; i++) {
+            float rowY = 18f + 7f + 36f + 7f + i * 46f;
+            float rowTop = rowY - 10f;
+            txtTaskNames[i].SetPosition(TaskNameX, rowY);
+            txtProgress[i].SetPosition(TaskProgressX, rowY);
+            NormalizeRectWithTopLeft(txtDescriptions[i], TaskDescX, rowTop);
+            NormalizeRectWithMidLeft(rewardIcons[i], TaskRewardIconX, rowY);
+            txtRewards[i].SetPosition(TaskRewardTextX, rowY);
+            txtStatus[i].SetPosition(TaskStatusX, rowY);
+            NormalizeRectWithMidLeft(btnClaims[i], TaskActionX, rowY);
             RefreshTaskRow(i);
         }
     }
