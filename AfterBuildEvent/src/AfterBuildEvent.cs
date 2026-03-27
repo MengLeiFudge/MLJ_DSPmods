@@ -259,8 +259,10 @@ static class AfterBuildEvent {
             ? $@"{sourceDir}\{dllName}"
             : $@"{NugetGameLibNet45Dir}\{dllName}";
         string dllNameNoExt = Path.GetFileNameWithoutExtension(dllName).Replace("-publicized", "");
+        string dllBaseName = Path.GetFileNameWithoutExtension(dllName);
         string outputDir = Path.GetFullPath($@"{SolutionDir}\gamedata\DecompiledSource\{dllNameNoExt}");
         string csprojPath = Path.Combine(outputDir, $"{dllNameNoExt}.csproj");
+        string publicizedCsprojPath = Path.Combine(outputDir, $"{dllBaseName}.csproj");
         if (!File.Exists(dllPath)) {
             Console.WriteLine($"未找到{dllPath}，跳过反编译");
             return;
@@ -286,6 +288,16 @@ static class AfterBuildEvent {
         catch (Exception ex) {
             Console.Error.WriteLine($"执行 ilspycmd 失败: {ex.Message}");
             Console.WriteLine("请确保已安装 ilspycmd: dotnet tool install -g ilspycmd");
+        }
+
+        if (!File.Exists(csprojPath) && File.Exists(publicizedCsprojPath)) {
+            try {
+                File.Move(publicizedCsprojPath, csprojPath);
+                Console.WriteLine($"已将 {Path.GetFileName(publicizedCsprojPath)} 重命名为 {Path.GetFileName(csprojPath)}");
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"重命名 csproj 失败: {ex.Message}");
+            }
         }
 
         if (File.Exists(csprojPath)) {
