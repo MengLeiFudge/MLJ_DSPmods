@@ -31,52 +31,52 @@ public static class TechManager {
 
         Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
         Register("超值礼包1描述",
-            "Super Value Gift Pack! For as little as 100 Electromagnetic Matrix, you can get a lot of Electromagnetic Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100电磁矩阵，就可以获取大量电磁奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Electromagnetic Matrix to receive Fragments and early-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100电磁矩阵，即可获得残片与前期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包1结果",
-            "Downloaded Electromagnetic Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 电磁奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and early-stage growth supplies have been added to the fractionation data centre.",
+            "残片与前期成长物资已下载到分馏数据中心。");
         Register("一个物超所值的礼包", "A great value package deal");
 
         Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
         Register("超值礼包2描述",
-            "Super Value Gift Pack! For as little as 100 Energy Matrix, you can get a lot of Energy Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100能量矩阵，就可以获取大量能量奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Energy Matrix to receive Fragments and early-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100能量矩阵，即可获得残片与前期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包2结果",
-            "Downloaded Energy Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 能量奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and early-stage growth supplies have been added to the fractionation data centre.",
+            "残片与前期成长物资已下载到分馏数据中心。");
 
         Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
         Register("超值礼包3描述",
-            "Super Value Gift Pack! For as little as 100 Structure Matrix, you can get a lot of Structure Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100结构矩阵，就可以获取大量结构奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Structure Matrix to receive Fragments and mid-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100结构矩阵，即可获得残片与中期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包3结果",
-            "Downloaded Structure Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 结构奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and mid-stage growth supplies have been added to the fractionation data centre.",
+            "残片与中期成长物资已下载到分馏数据中心。");
 
         Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
         Register("超值礼包4描述",
-            "Super Value Gift Pack! For as little as 100 Information Matrix, you can get a lot of Information Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100信息矩阵，就可以获取大量信息奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Information Matrix to receive Fragments and mid-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100信息矩阵，即可获得残片与中期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包4结果",
-            "Downloaded Information Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 信息奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and mid-stage growth supplies have been added to the fractionation data centre.",
+            "残片与中期成长物资已下载到分馏数据中心。");
 
         Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
         Register("超值礼包5描述",
-            "Super Value Gift Pack! For as little as 100 Gravity Matrix, you can get a lot of Gravity Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100引力矩阵，就可以获取大量引力奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Gravity Matrix to receive Fragments and late-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100引力矩阵，即可获得残片与后期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包5结果",
-            "Downloaded Gravity Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 引力奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and late-stage growth supplies have been added to the fractionation data centre.",
+            "残片与后期成长物资已下载到分馏数据中心。");
 
         Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
         Register("超值礼包6描述",
-            "Super Value Gift Pack! For as little as 100 Universe Matrix, you can get a lot of Universe Tickets and Rare Rewards!\n\nIn the bottom right corner, there is a small line of text that reads: The interpretation of this activity belongs to the COSMO.",
-            "超值礼包！只要100宇宙矩阵，就可以获取大量宇宙奖券和稀有奖励！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Super Value Gift Pack! Spend 100 Universe Matrix to receive Fragments and endgame growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
+            "超值礼包！只要100宇宙矩阵，即可获得残片与终局成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
         Register("超值礼包6结果",
-            "Downloaded Universe Ticket x200, Fractionate Recipe Core x3, Fractionator Increase Chip x6 to the fractionation data centre.",
-            "已下载 宇宙奖券x200，分馏配方核心x3，分馏塔增幅芯片x6 到分馏数据中心。");
+            "Fragments and endgame growth supplies have been added to the fractionation data centre.",
+            "残片与终局成长物资已下载到分馏数据中心。");
 
 
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
@@ -138,8 +138,8 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new fractionate technology, the new fractionator cannot be crafted using materials. At the fractionation data centre's lottery page, using vouchers to draw from the Prototype Pool yields various prototypes. Interacting with the fractionator to process these prototypes cultivates different fractionators. Additionally, the prototype lottery carries a minuscule chance of yielding a Targeted Prototype for a specific fractionator, which can be directly cultivated into that designated fractionator.",
-            "在全新的分馏科技中，新分馏塔无法使用材料制作。在分馏数据中心的奖券抽奖页面使用奖券抽取原胚奖池，可以得到不同的原胚；使用交互塔分馏原胚，可以培养出不同的分馏塔。除此之外，原胚抽奖有极小概率得到分馏塔定向原胚，它可以直接培养出指定的分馏塔。");
+            "In the new fractionate technology, the new fractionators are no longer crafted directly with materials. Obtain various protos from the Proto Loop Pool or Growth page, then use the Interaction Tower to cultivate them into different fractionators. Rare directional protos can be cultivated directly into the chosen tower type.",
+            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从原胚闭环池或成长页获得不同原胚，再用交互塔培养成不同的分馏塔；稀有的定向原胚则可以直接培养为指定塔种。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
@@ -237,8 +237,8 @@ public static class TechManager {
             GetTechPos(0, 1)
         );
         tech超值礼包1.PreTechsImplicit = [TFE物品交互];
-        tech超值礼包1.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包1.AddItemCounts = [200, 3, 6];
+        tech超值礼包1.AddItems = [IFE残片, IFE交互塔原胚];
+        tech超值礼包1.AddItemCounts = [300, 20];
         tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
         tech超值礼包1.PropertyItemCounts = [100];
         tech超值礼包1.IconTag = "tczlb1";
@@ -251,8 +251,8 @@ public static class TechManager {
             GetTechPos(0, 2)
         );
         tech超值礼包2.PreTechsImplicit = [T能量矩阵];
-        tech超值礼包2.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包2.AddItemCounts = [200, 3, 6];
+        tech超值礼包2.AddItems = [IFE残片, IFE矿物复制塔原胚];
+        tech超值礼包2.AddItemCounts = [400, 20];
         tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
         tech超值礼包2.PropertyItemCounts = [100];
         tech超值礼包2.IconTag = "tczlb2";
@@ -265,8 +265,8 @@ public static class TechManager {
             GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包3.AddItemCounts = [200, 3, 6];
+        tech超值礼包3.AddItems = [IFE残片, IFE点数聚集塔原胚];
+        tech超值礼包3.AddItemCounts = [500, 10];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
         tech超值礼包3.IconTag = "tczlb3";
@@ -279,8 +279,8 @@ public static class TechManager {
             GetTechPos(0, 4)
         );
         tech超值礼包4.PreTechsImplicit = [T信息矩阵];
-        tech超值礼包4.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包4.AddItemCounts = [200, 3, 6];
+        tech超值礼包4.AddItems = [IFE残片, IFE转化塔原胚];
+        tech超值礼包4.AddItemCounts = [600, 10];
         tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
         tech超值礼包4.PropertyItemCounts = [100];
         tech超值礼包4.IconTag = "tczlb4";
@@ -293,8 +293,8 @@ public static class TechManager {
             GetTechPos(0, 5)
         );
         tech超值礼包5.PreTechsImplicit = [T引力矩阵];
-        tech超值礼包5.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包5.AddItemCounts = [200, 3, 6];
+        tech超值礼包5.AddItems = [IFE残片, IFE精馏塔原胚];
+        tech超值礼包5.AddItemCounts = [800, 10];
         tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
         tech超值礼包5.PropertyItemCounts = [100];
         tech超值礼包5.IconTag = "tczlb5";
@@ -307,8 +307,8 @@ public static class TechManager {
             GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE残片, IFE分馏配方核心, IFE分馏塔增幅芯片];
-        tech超值礼包6.AddItemCounts = [200, 3, 6];
+        tech超值礼包6.AddItems = [IFE残片, IFE分馏塔定向原胚];
+        tech超值礼包6.AddItemCounts = [1200, 2];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
         tech超值礼包6.IconTag = "tczlb6";
@@ -427,6 +427,61 @@ public static class TechManager {
             return new(8 + column * 4, -76 - row * 4);
         }
         return new(13 + column * 4, -67 - row * 4);
+    }
+
+    /// <summary>
+    /// 判断某一主线矩阵层的有限科技是否已全部研究完成。
+    /// 隐藏科技与无限科技不参与该判定。
+    /// </summary>
+    public static bool IsMatrixTierFullyResearched(int matrixId) {
+        if (GameMain.history == null) {
+            return false;
+        }
+
+        bool hasFiniteTech = false;
+        foreach (TechProto tech in LDB.techs.dataArray) {
+            if (tech == null || !tech.Published || tech.IsObsolete || tech.IsHiddenTech) {
+                continue;
+            }
+            if (tech.MaxLevel > 20) {
+                continue;
+            }
+            if (ItemManager.GetTechTopMatrixID(tech) != matrixId) {
+                continue;
+            }
+
+            hasFiniteTech = true;
+            if (!GameMain.history.TechUnlocked(tech.ID, true)) {
+                return false;
+            }
+        }
+
+        return hasFiniteTech;
+    }
+
+    /// <summary>
+    /// 原版配方增强采用“落后一层”开放规则：
+    /// 例如电磁层增强需要能量层科技全部完成，宇宙层增强需要宇宙层终局科技全部完成。
+    /// </summary>
+    public static bool IsVanillaEnhancementUnlockedForMatrix(int matrixId) {
+        int stageIndex = ItemManager.GetMatrixStageIndex(matrixId);
+        if (stageIndex < 0 || stageIndex >= ItemManager.MainProgressMatrixIds.Length) {
+            return false;
+        }
+
+        int requiredIndex = Mathf.Min(stageIndex + 1, ItemManager.MainProgressMatrixIds.Length - 1);
+        return IsMatrixTierFullyResearched(ItemManager.MainProgressMatrixIds[requiredIndex]);
+    }
+
+    public static int GetHighestUnlockedVanillaEnhancementMatrix() {
+        for (int i = ItemManager.MainProgressMatrixIds.Length - 1; i >= 0; i--) {
+            int matrixId = ItemManager.MainProgressMatrixIds[i];
+            if (IsVanillaEnhancementUnlockedForMatrix(matrixId)) {
+                return matrixId;
+            }
+        }
+
+        return 0;
     }
 
     public static void ResetTechUnlockFlags() {

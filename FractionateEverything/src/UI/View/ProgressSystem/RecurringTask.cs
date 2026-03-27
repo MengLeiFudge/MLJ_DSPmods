@@ -22,9 +22,21 @@ public static class RecurringTask {
 
     private const int TaskCount = 5;
 
-    private static readonly string[] taskNameKeys = ["分馏学徒", "分馏大师", "幸运抽奖", "符文强化", "配方收藏家"];
-    private static readonly string[] taskCategoryKeys = ["生产", "生产", "抽卡", "升级", "收集"];
-    private static readonly int[] targets = [500, 5000, 50, 10, 10];
+    private static readonly string[] taskNameKeys = [
+        "分馏学徒",
+        "分馏大师",
+        "开线推进",
+        "原胚循环",
+        "工艺精进",
+    ];
+    private static readonly string[] taskCategoryKeys = [
+        "生产",
+        "生产",
+        "开线",
+        "原胚",
+        "工艺",
+    ];
+    private static readonly int[] targets = [500, 5000, 50, 20, 10];
     private static long[] baselines = new long[TaskCount];
 
     private static Text[] txtTaskNames = new Text[TaskCount];
@@ -35,7 +47,6 @@ public static class RecurringTask {
 
     public static void AddTranslations() {
         Register("循环任务", "Recurring Task");
-
         Register("任务", "Task");
         Register("进度", "Progress");
         Register("奖励", "Reward");
@@ -47,26 +58,26 @@ public static class RecurringTask {
         Register("进行中", "In Progress");
 
         Register("生产", "Production");
-        Register("抽卡", "Draw");
-        Register("升级", "Upgrade");
-        Register("收集", "Collection");
+        Register("开线", "Opening");
+        Register("原胚", "Proto");
+        Register("工艺", "Craft");
 
         Register("分馏学徒", "Fractionation Apprentice");
         Register("分馏大师", "Fractionation Master");
-        Register("幸运抽奖", "Lucky Draw");
-        Register("符文强化", "Rune Enhancement");
-        Register("配方收藏家", "Recipe Collector");
+        Register("开线推进", "Opening Line Push");
+        Register("原胚循环", "Proto Cycle");
+        Register("工艺精进", "Craft Refinement");
 
-        Register("分馏学徒描述", "Complete {0} successful fractionations", "完成{0}次成功分馏");
-        Register("分馏大师描述", "Complete {0} successful fractionations", "完成{0}次成功分馏");
-        Register("幸运抽奖描述", "Perform {0} raffle draws", "累计抽奖{0}次");
-        Register("符文强化描述", "Upgrade runes {0} times", "累计符文强化{0}次");
-        Register("配方收藏家描述", "Unlock {0} recipes", "解锁{0}个分馏配方");
+        Register("分馏学徒描述", "Reach {0} successful fractionations", "累计完成{0}次成功分馏");
+        Register("分馏大师描述", "Reach {0} successful fractionations", "累计完成{0}次成功分馏");
+        Register("开线推进描述", "Perform {0} opening-line draws", "累计完成{0}次开线抽取");
+        Register("原胚循环描述", "Own {0} tower protos in storage", "仓储中持有{0}个分馏塔原胚");
+        Register("工艺精进描述", "Fully upgrade {0} recipes", "累计满级{0}个分馏配方");
 
-        Register("循环任务奖励-最高奖券", "Highest unlocked ticket x{0}", "当前最高已解锁奖券 x{0}");
-        Register("循环任务奖励-配方核心", "Fractionation recipe core x1", "分馏配方核心 x1");
-        Register("循环任务奖励-随机精华", "Random essence x200", "随机精华 x200");
-        Register("循环任务奖励-增幅芯片", "Fractionator amplification chip x2", "分馏塔增幅芯片 x2");
+        Register("循环任务奖励-残片", "Fragments x{0}", "残片 x{0}");
+        Register("循环任务奖励-配方核心", "Fractionation recipe core x{0}", "分馏配方核心 x{0}");
+        Register("循环任务奖励-矩阵", "Current stage matrix x{0}", "当前阶段矩阵 x{0}");
+        Register("循环任务奖励-定向原胚", "Directional proto x{0}", "定向原胚 x{0}");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -128,7 +139,6 @@ public static class RecurringTask {
             .WithColor(completed ? Green : Orange);
         txtProgress[index].text = $"{progress}/{targets[index]}";
         txtProgress[index].color = completed ? Green : White;
-
         txtRewards[index].text = GetRewardText(index).WithColor(Blue);
 
         if (completed) {
@@ -138,9 +148,7 @@ public static class RecurringTask {
             return;
         }
 
-        string progressStatus = targets[index] > 0
-            ? $"{progress}/{targets[index]}"
-            : "进行中".Translate();
+        string progressStatus = $"{progress}/{targets[index]}";
         txtStatus[index].text = claimedInThisCycle
             ? "已领取".Translate().WithColor(Green)
             : progressStatus.WithColor(Orange);
@@ -163,43 +171,63 @@ public static class RecurringTask {
 
     private static (int, int) GetRewardInfo(int index) {
         return index switch {
-            0 => (GetHighestTicketId(), 10),
-            1 => (GetHighestTicketId(), 50),
+            0 => (IFE残片, 200),
+            1 => (IFE残片, 1000),
             2 => (IFE分馏配方核心, 1),
-            3 => (GetRandomEssenceId(), 200),
-            4 => (IFE分馏塔增幅芯片, 2),
+            3 => (IFE分馏塔定向原胚, 1),
+            4 => (GetCurrentStageMatrixId(), 4),
             _ => (IFE残片, 0)
         };
     }
 
     private static string GetRewardText(int index) {
         return index switch {
-            0 => string.Format("循环任务奖励-最高奖券".Translate(), 10),
-            1 => string.Format("循环任务奖励-最高奖券".Translate(), 50),
-            2 => "循环任务奖励-配方核心".Translate(),
-            3 => "循环任务奖励-随机精华".Translate(),
-            4 => "循环任务奖励-增幅芯片".Translate(),
+            0 => string.Format("循环任务奖励-残片".Translate(), 200),
+            1 => string.Format("循环任务奖励-残片".Translate(), 1000),
+            2 => string.Format("循环任务奖励-配方核心".Translate(), 1),
+            3 => string.Format("循环任务奖励-定向原胚".Translate(), 1),
+            4 => string.Format("循环任务奖励-矩阵".Translate(), 4),
             _ => string.Empty
         };
     }
 
-    private static int GetHighestTicketId() {
-        return IFE残片;
-    }
-
-    private static int GetRandomEssenceId() {
-        return IFE残片;
+    private static int GetCurrentStageMatrixId() {
+        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵)
+            ? I宇宙矩阵
+            : GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵)
+                ? I引力矩阵
+                : GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵)
+                    ? I信息矩阵
+                    : GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵)
+                        ? I结构矩阵
+                        : GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵)
+                            ? I能量矩阵
+                            : I电磁矩阵;
     }
 
     private static long GetCurrentValue(int index) {
         return index switch {
             0 or 1 => totalFractionSuccesses,
             2 => TicketRaffle.totalDraws,
-            3 => RuneManager.totalRuneUpgrades,
-            4 => GetRecipesUnderMatrix(I宇宙矩阵).Sum(recipeList => recipeList.Count(r => r.Unlocked))
-                 + GetRecipesByMatrix(I黑雾矩阵).Count(r => r.Unlocked),
+            3 => GetProtoInventoryCount(),
+            4 => GetFullyUpgradedRecipeCount(),
             _ => 0
         };
+    }
+
+    private static long GetProtoInventoryCount() {
+        return GetItemTotalCount(IFE交互塔原胚)
+               + GetItemTotalCount(IFE矿物复制塔原胚)
+               + GetItemTotalCount(IFE点数聚集塔原胚)
+               + GetItemTotalCount(IFE转化塔原胚)
+               + GetItemTotalCount(IFE精馏塔原胚)
+               + GetItemTotalCount(IFE分馏塔定向原胚);
+    }
+
+    private static long GetFullyUpgradedRecipeCount() {
+        return GetRecipesByType(ERecipe.BuildingTrain).Count(r => r.IsMaxLevel)
+               + GetRecipesByType(ERecipe.MineralCopy).Count(r => r.IsMaxLevel)
+               + GetRecipesByType(ERecipe.Conversion).Count(r => r.IsMaxLevel);
     }
 
     private static long GetProgress(int index) {

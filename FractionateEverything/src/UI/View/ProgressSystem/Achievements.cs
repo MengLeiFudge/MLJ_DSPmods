@@ -27,7 +27,12 @@ public static class Achievements {
         ETier tier,
         Func<bool> condition,
         Action grantReward,
-        float successRateBonus = 0f) {
+        float successRateBonus = 0f,
+        float destroyReductionBonus = 0f,
+        float doubleOutputBonus = 0f,
+        float energyReductionBonus = 0f,
+        float logisticsBonus = 0f,
+        float powerStageBonus = 0f) {
         public readonly string NameKey = nameKey;
         public readonly string DescKey = descKey;
         public readonly string RewardKey = rewardKey;
@@ -35,6 +40,11 @@ public static class Achievements {
         public readonly Func<bool> Condition = condition;
         public readonly Action GrantReward = grantReward;
         public readonly float SuccessRateBonus = successRateBonus;
+        public readonly float DestroyReductionBonus = destroyReductionBonus;
+        public readonly float DoubleOutputBonus = doubleOutputBonus;
+        public readonly float EnergyReductionBonus = energyReductionBonus;
+        public readonly float LogisticsBonus = logisticsBonus;
+        public readonly float PowerStageBonus = powerStageBonus;
     }
 
     private enum ETier {
@@ -78,94 +88,61 @@ public static class Achievements {
     }
 
     private static readonly AchievementInfo[] achievements = [
-        new("成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-能量奖券20", ETier.Silver,
+        new("成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-残片200", ETier.Silver,
             () => totalFractionSuccesses >= 1000,
-            () => GrantItems((IFE残片, 200)), 0.005f),
-        new("成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-结构奖券30", ETier.Gold,
+            () => GrantItems((IFE残片, 200)), successRateBonus: 0.02f),
+        new("成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-残片300", ETier.Gold,
             () => totalFractionSuccesses >= 10000,
-            () => GrantItems((IFE残片, 300)), 0.01f),
-        new("成就-分馏之王", "成就描述-分馏之王", "成就奖励-宇宙奖券50", ETier.Platinum,
+            () => GrantItems((IFE残片, 300)), successRateBonus: 0.05f),
+        new("成就-分馏之王", "成就描述-分馏之王", "成就奖励-残片500", ETier.Gold,
             () => totalFractionSuccesses >= 100000,
-            () => GrantItems((IFE残片, 500)), 0.02f),
-        new("成就-永不停歇", "成就描述-永不停歇", "成就奖励-宇宙奖券200", ETier.Platinum,
+            () => GrantItems((IFE残片, 500)), destroyReductionBonus: 0.01f),
+        new("成就-永不停歇", "成就描述-永不停歇", "成就奖励-残片2000", ETier.Platinum,
             () => totalFractionSuccesses >= 1000000,
-            () => GrantItems((IFE残片, 2000)), 0.03f),
+            () => GrantItems((IFE残片, 2000)), doubleOutputBonus: 0.03f),
 
-        new("成就-幸运星", "成就描述-幸运星", "成就奖励-配方核心1", ETier.Bronze,
+        new("成就-开线先锋", "成就描述-开线先锋", "成就奖励-当前阶段矩阵2", ETier.Bronze,
             () => TicketRaffle.totalDraws >= 100,
-            () => GrantItems((IFE分馏配方核心, 1))),
-        new("成就-抽奖达人", "成就描述-抽奖达人", "成就奖励-配方核心3", ETier.Silver,
+            () => GrantItems((GetCurrentStageMatrixId(), 2)), successRateBonus: 0.005f),
+        new("成就-开线专家", "成就描述-开线专家", "成就奖励-当前阶段矩阵4", ETier.Silver,
             () => TicketRaffle.totalDraws >= 500,
-            () => GrantItems((IFE分馏配方核心, 3)), 0.005f),
-        new("成就-欧皇降临", "成就描述-欧皇降临", "成就奖励-宇宙奖券30", ETier.Gold,
-            () => TicketRaffle.totalDraws >= 2000,
-            () => GrantItems((IFE残片, 300)), 0.01f),
-        new("成就-氪金大佬", "成就描述-氪金大佬", "成就奖励-宇宙奖券100", ETier.Platinum,
-            () => TicketRaffle.totalDraws >= 10000,
-            () => GrantItems((IFE残片, 1000)), 0.02f),
-
-        new("成就-初级工程师", "成就描述-初级工程师", "成就奖励-增幅芯片2", ETier.Bronze,
-            () => GetMaxBuildingLevel() >= 3,
-            () => GrantItems((IFE分馏塔增幅芯片, 2))),
-        new("成就-高级工程师", "成就描述-高级工程师", "成就奖励-增幅芯片5", ETier.Silver,
-            () => GetMaxBuildingLevel() >= 6,
-            () => GrantItems((IFE分馏塔增幅芯片, 5)), 0.005f),
-        new("成就-特质觉醒", "成就描述-特质觉醒", "成就奖励-增幅芯片10", ETier.Silver,
-            () => GetMaxBuildingLevel() >= 6 && HasAnyTraitEnabled(),
-            () => GrantItems((IFE分馏塔增幅芯片, 10)), 0.005f),
-        new("成就-建筑大师", "成就描述-建筑大师", "成就奖励-增幅芯片20", ETier.Gold,
-            () => GetMaxBuildingLevel() >= 10,
-            () => GrantItems((IFE分馏塔增幅芯片, 20)), 0.01f),
-        new("成就-完美工匠", "成就描述-完美工匠", "成就奖励-宇宙奖券50", ETier.Platinum,
-            () => HasLevel12BuildingWithTrait(),
-            () => GrantItems((IFE残片, 500)), 0.02f),
+            () => GrantItems((GetCurrentStageMatrixId(), 4)), doubleOutputBonus: 0.005f),
 
         new("成就-配方入门", "成就描述-配方入门", "成就奖励-配方核心1", ETier.Bronze,
             () => GetUnlockedRecipeCount() >= 5,
-            () => GrantItems((IFE分馏配方核心, 1))),
+            () => GrantItems((IFE分馏配方核心, 1)), successRateBonus: 0.005f),
         new("成就-配方学者", "成就描述-配方学者", "成就奖励-配方核心3", ETier.Silver,
             () => GetUnlockedRecipeCount() >= 30,
-            () => GrantItems((IFE分馏配方核心, 3)), 0.005f),
-        new("成就-配方专家", "成就描述-配方专家", "成就奖励-配方核心5", ETier.Gold,
+            () => GrantItems((IFE分馏配方核心, 3)), destroyReductionBonus: 0.005f),
+        new("成就-配方专家", "成就描述-配方专家", "成就奖励-当前阶段矩阵8", ETier.Gold,
             () => GetUnlockedRecipeCount() >= 80,
-            () => GrantItems((IFE分馏配方核心, 5)), 0.01f),
-        new("成就-万物百科", "成就描述-万物百科", "成就奖励-宇宙奖券80", ETier.Platinum,
+            () => GrantItems((GetCurrentStageMatrixId(), 8)), doubleOutputBonus: 0.01f),
+        new("成就-万物百科", "成就描述-万物百科", "成就奖励-残片800", ETier.Platinum,
             () => GetUnlockedRecipeCount() >= 150,
-            () => GrantItems((IFE残片, 800)), 0.02f),
-        new("成就-满级配方", "成就描述-满级配方", "成就奖励-增幅芯片10", ETier.Gold,
-            HasMaxLevelRecipe,
-            () => GrantItems((IFE分馏塔增幅芯片, 10)), 0.01f),
+            () => GrantItems((IFE残片, 800)), powerStageBonus: 0.02f),
 
-        new("成就-符文收集者", "成就描述-符文收集者", "成就奖励-随机精华100", ETier.Bronze,
-            () => RuneManager.allRunes.Count >= 5,
-            () => GrantRandomEssence(100)),
-        new("成就-符文锻造师", "成就描述-符文锻造师", "成就奖励-随机精华300", ETier.Silver,
-            () => RuneManager.totalRuneUpgrades >= 50,
-            () => GrantRandomEssence(300), 0.005f),
-        new("成就-五星奇迹", "成就描述-五星奇迹", "成就奖励-随机精华500", ETier.Silver,
-            () => RuneManager.allRunes.Any(rune => rune.star == 5),
-            () => GrantRandomEssence(500), 0.005f),
-        new("成就-符文满槽", "成就描述-符文满槽", "成就奖励-宇宙奖券20", ETier.Gold,
-            () => RuneManager.equippedRuneIds.All(id => id != 0),
-            () => GrantItems((IFE残片, 200)), 0.01f),
-        new("成就-符文满级", "成就描述-符文满级", "成就奖励-宇宙奖券50", ETier.Platinum,
-            () => RuneManager.allRunes.Any(rune => rune.level >= 20),
-            () => GrantItems((IFE残片, 500)), 0.02f),
+        new("成就-工艺优化", "成就描述-工艺优化", "成就奖励-残片500", ETier.Bronze,
+            () => GetMaxBuildingLevel() >= 6,
+            () => GrantItems((IFE残片, 500)), energyReductionBonus: 0.05f),
+        new("成就-工艺大师", "成就描述-工艺大师", "成就奖励-残片1000", ETier.Gold,
+            () => GetMaxBuildingLevel() >= 12,
+            () => GrantItems((IFE残片, 1000)), energyReductionBonus: 0.10f),
 
-        new("成就-全面发展", "成就描述-全面发展", "成就奖励-宇宙奖券30", ETier.Gold,
-            () => totalFractionSuccesses >= 1000
-                  && TicketRaffle.totalDraws >= 100
-                  && RuneManager.allRunes.Count >= 3
-                  && GetUnlockedRecipeCount() >= 20
-                  && GetMaxBuildingLevel() >= 3,
-            () => GrantItems((IFE残片, 300)), 0.01f),
-        new("成就-万物归一", "成就描述-万物归一", "成就奖励-宇宙奖券200", ETier.Platinum,
+        new("成就-原胚循环", "成就描述-原胚循环", "成就奖励-定向原胚1", ETier.Silver,
+            () => GetProtoInventoryCount() >= 20,
+            () => GrantItems((IFE分馏塔定向原胚, 1)), logisticsBonus: 0.02f),
+        new("成就-星际整备", "成就描述-星际整备", "成就奖励-星际物流交互站1", ETier.Gold,
+            () => IsTechUnlocked(TFE星际物流交互),
+            () => GrantItems((IFE星际物流交互站, 1)), logisticsBonus: 0.05f),
+        new("成就-精馏开路", "成就描述-精馏开路", "成就奖励-精馏塔原胚3", ETier.Gold,
+            () => IsTechUnlocked(TFE物品精馏),
+            () => GrantItems((IFE精馏塔原胚, 3)), powerStageBonus: 0.05f),
+
+        new("成就-万物归一", "成就描述-万物归一", "成就奖励-当前阶段矩阵16", ETier.Platinum,
             () => totalFractionSuccesses >= 50000
                   && GetUnlockedRecipeCount() >= 100
-                  && GetMaxBuildingLevel() >= 10
-                  && RuneManager.allRunes.Count >= 20
-                  && TicketRaffle.totalDraws >= 1000,
-            () => GrantItems((IFE残片, 2000)), 0.03f),
+                  && GetMaxBuildingLevel() >= 10,
+            () => GrantItems((GetCurrentStageMatrixId(), 16)), successRateBonus: 0.03f, doubleOutputBonus: 0.02f, powerStageBonus: 0.03f),
     ];
 
     private static bool[] unlocked = new bool[achievements.Length];
@@ -181,8 +158,8 @@ public static class Achievements {
         Register("奖励", "Reward");
 
         Register("已解锁成就", "Unlocked: {0}/{1}", "已解锁：{0}/{1}");
-        Register("隐藏未解锁", "Hidden locked: {0}", "隐藏未解锁：{0}");
-        Register("成就加成格式", "Fractionation success rate bonus: +{0}%", "分馏成功率加成：+{0}%");
+        Register("隐藏未解锁", "Locked: {0}", "未解锁：{0}");
+        Register("成就加成格式", "Success +{0}% / Destroy -{1}% / Double +{2}% / Energy -{3}% / Logistics +{4}% / Power +{5}%", "成功+{0}% / 损毁-{1}% / 翻倍+{2}% / 能耗-{3}% / 物流+{4}% / 发电+{5}%");
 
         Register("已解锁", "Unlocked");
         Register("未解锁", "Locked");
@@ -201,96 +178,67 @@ public static class Achievements {
 
         Register("成就-千锤百炼", "Tempered Through Trials");
         Register("成就描述-千锤百炼", "Complete 1000 successful fractionations", "累计完成 1000 次分馏成功");
-        Register("成就奖励-能量奖券20", "Energy Tickets x20", "能量奖券 x20");
+        Register("成就奖励-残片200", "Fragments x200", "残片 x200");
 
         Register("成就-万物皆可分馏", "Fractionate Everything");
         Register("成就描述-万物皆可分馏", "Complete 10000 successful fractionations", "累计完成 10000 次分馏成功");
-        Register("成就奖励-结构奖券30", "Structure Tickets x30", "结构奖券 x30");
+        Register("成就奖励-残片300", "Fragments x300", "残片 x300");
 
         Register("成就-分馏之王", "King of Fractionation");
         Register("成就描述-分馏之王", "Complete 100000 successful fractionations", "累计完成 100000 次分馏成功");
-        Register("成就奖励-宇宙奖券50", "Universe Tickets x50", "宇宙奖券 x50");
+        Register("成就奖励-残片500", "Fragments x500", "残片 x500");
 
         Register("成就-永不停歇", "Never Stop");
         Register("成就描述-永不停歇", "Complete 1000000 successful fractionations", "累计完成 1000000 次分馏成功");
-        Register("成就奖励-宇宙奖券200", "Universe Tickets x200", "宇宙奖券 x200");
+        Register("成就奖励-残片2000", "Fragments x2000", "残片 x2000");
 
-        Register("成就-幸运星", "Lucky Star");
-        Register("成就描述-幸运星", "Perform 100 raffle draws", "累计完成 100 次奖券抽奖");
-        Register("成就奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
+        Register("成就-开线先锋", "Opening Pioneer");
+        Register("成就描述-开线先锋", "Perform 100 opening-line draws", "累计完成 100 次开线抽取");
+        Register("成就奖励-当前阶段矩阵2", "Current stage matrix x2", "当前阶段矩阵 x2");
 
-        Register("成就-抽奖达人", "Draw Expert");
-        Register("成就描述-抽奖达人", "Perform 500 raffle draws", "累计完成 500 次奖券抽奖");
-        Register("成就奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
-
-        Register("成就-欧皇降临", "Blessed by Luck");
-        Register("成就描述-欧皇降临", "Perform 2000 raffle draws", "累计完成 2000 次奖券抽奖");
-        Register("成就奖励-宇宙奖券30", "Universe Tickets x30", "宇宙奖券 x30");
-
-        Register("成就-氪金大佬", "Whale Supreme");
-        Register("成就描述-氪金大佬", "Perform 10000 raffle draws", "累计完成 10000 次奖券抽奖");
-        Register("成就奖励-宇宙奖券100", "Universe Tickets x100", "宇宙奖券 x100");
-
-        Register("成就-初级工程师", "Junior Engineer");
-        Register("成就描述-初级工程师", "Upgrade any FE building to level 3", "任意万物分馏建筑等级达到 3");
-        Register("成就奖励-增幅芯片2", "Fractionator Amplify Chip x2", "分馏塔增幅芯片 x2");
-
-        Register("成就-高级工程师", "Senior Engineer");
-        Register("成就描述-高级工程师", "Upgrade any FE building to level 6", "任意万物分馏建筑等级达到 6");
-        Register("成就奖励-增幅芯片5", "Fractionator Amplify Chip x5", "分馏塔增幅芯片 x5");
-
-        Register("成就-特质觉醒", "Trait Awakening");
-        Register("成就描述-特质觉醒", "Reach level 6 and unlock any building trait", "任意建筑达到 6 级并解锁一个特质");
-        Register("成就奖励-增幅芯片10", "Fractionator Amplify Chip x10", "分馏塔增幅芯片 x10");
-
-        Register("成就-建筑大师", "Master Builder");
-        Register("成就描述-建筑大师", "Upgrade any FE building to level 10", "任意万物分馏建筑等级达到 10");
-        Register("成就奖励-增幅芯片20", "Fractionator Amplify Chip x20", "分馏塔增幅芯片 x20");
-
-        Register("成就-完美工匠", "Perfect Artisan");
-        Register("成就描述-完美工匠", "Have one level 12 building with trait enabled", "至少一个建筑等级达到 12 且特质已生效");
+        Register("成就-开线专家", "Opening Expert");
+        Register("成就描述-开线专家", "Perform 500 opening-line draws", "累计完成 500 次开线抽取");
+        Register("成就奖励-当前阶段矩阵4", "Current stage matrix x4", "当前阶段矩阵 x4");
 
         Register("成就-配方入门", "Recipe Beginner");
         Register("成就描述-配方入门", "Unlock 5 fractionation recipes", "累计解锁 5 个分馏配方");
+        Register("成就奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
 
         Register("成就-配方学者", "Recipe Scholar");
         Register("成就描述-配方学者", "Unlock 30 fractionation recipes", "累计解锁 30 个分馏配方");
+        Register("成就奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
 
         Register("成就-配方专家", "Recipe Expert");
         Register("成就描述-配方专家", "Unlock 80 fractionation recipes", "累计解锁 80 个分馏配方");
-        Register("成就奖励-配方核心5", "Fractionation Recipe Core x5", "分馏配方核心 x5");
+        Register("成就奖励-当前阶段矩阵8", "Current stage matrix x8", "当前阶段矩阵 x8");
 
         Register("成就-万物百科", "Everything Encyclopedia");
         Register("成就描述-万物百科", "Unlock 150 fractionation recipes", "累计解锁 150 个分馏配方");
-        Register("成就奖励-宇宙奖券80", "Universe Tickets x80", "宇宙奖券 x80");
+        Register("成就奖励-残片800", "Fragments x800", "残片 x800");
 
-        Register("成就-满级配方", "Maxed Recipe");
-        Register("成就描述-满级配方", "Any fractionation recipe reaches level 10", "任意分馏配方达到 10 级");
+        Register("成就-工艺优化", "Craft Optimization");
+        Register("成就描述-工艺优化", "Reach level 6 on any FE building", "任意万物分馏建筑等级达到 6");
+        Register("成就奖励-残片500", "Fragments x500", "残片 x500");
 
-        Register("成就-符文收集者", "Rune Collector");
-        Register("成就描述-符文收集者", "Own 5 runes", "拥有 5 个符文");
-        Register("成就奖励-随机精华100", "Random Essence x100", "随机精华 x100");
+        Register("成就-工艺大师", "Craft Master");
+        Register("成就描述-工艺大师", "Reach level 12 on any FE building", "任意万物分馏建筑等级达到 12");
+        Register("成就奖励-残片1000", "Fragments x1000", "残片 x1000");
 
-        Register("成就-符文锻造师", "Rune Smith");
-        Register("成就描述-符文锻造师", "Upgrade runes 50 times", "累计进行 50 次符文升级");
-        Register("成就奖励-随机精华300", "Random Essence x300", "随机精华 x300");
+        Register("成就-原胚循环", "Proto Cycle");
+        Register("成就描述-原胚循环", "Hold 20 tower protos in storage", "仓储中持有 20 个分馏塔原胚");
+        Register("成就奖励-定向原胚1", "Directional Proto x1", "定向原胚 x1");
 
-        Register("成就-五星奇迹", "Five-Star Miracle");
-        Register("成就描述-五星奇迹", "Own at least one 5-star rune", "拥有至少一个 5 星符文");
-        Register("成就奖励-随机精华500", "Random Essence x500", "随机精华 x500");
+        Register("成就-星际整备", "Interstellar Readiness");
+        Register("成就描述-星际整备", "Unlock interstellar interaction technology", "解锁星际物流交互科技");
+        Register("成就奖励-星际物流交互站1", "Interstellar Interaction Station x1", "星际物流交互站 x1");
 
-        Register("成就-符文满槽", "Full Rune Slots");
-        Register("成就描述-符文满槽", "Equip runes in all 5 slots", "5 个符文槽全部已装备");
-        Register("成就奖励-宇宙奖券20", "Universe Tickets x20", "宇宙奖券 x20");
-
-        Register("成就-符文满级", "Rune Grandmaster");
-        Register("成就描述-符文满级", "Any rune reaches level 20", "任意符文达到 20 级");
-
-        Register("成就-全面发展", "Balanced Growth");
-        Register("成就描述-全面发展", "Meet production, draw, rune, recipe and building milestones", "同时满足分馏、抽奖、符文、配方、建筑的基础里程碑");
+        Register("成就-精馏开路", "Rectification Opening");
+        Register("成就描述-精馏开路", "Unlock item deconstruction technology", "解锁物品精馏科技");
+        Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
 
         Register("成就-万物归一", "All Into One");
-        Register("成就描述-万物归一", "Reach top milestones in every major gameplay branch", "在主要玩法分支中同时达到高阶里程碑");
+        Register("成就描述-万物归一", "Reach top milestones in production, recipes and buildings", "在生产、配方与建筑中同时达到高阶里程碑");
+        Register("成就奖励-当前阶段矩阵16", "Current stage matrix x16", "当前阶段矩阵 x16");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -388,11 +336,16 @@ public static class Achievements {
 
         int unlockedCount = unlocked.Count(v => v);
         int hiddenLockedCount = achievements.Length - unlockedCount;
-        float successRateBonusPct = GetSuccessRateBonus() * 100f;
 
         txtUnlockedSummary.text = string.Format("已解锁成就".Translate(), unlockedCount, achievements.Length).WithColor(Orange);
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
-        txtBonusSummary.text = string.Format("成就加成格式".Translate(), successRateBonusPct.ToString("0.##")).WithColor(Green);
+        txtBonusSummary.text = string.Format("成就加成格式".Translate(),
+            GetSuccessRateBonus() * 100f,
+            GetDestroyReductionBonus() * 100f,
+            GetDoubleOutputBonus() * 100f,
+            GetEnergyReductionBonus() * 100f,
+            GetLogisticsBonus() * 100f,
+            GetPowerStageBonus() * 100f).WithColor(Green);
 
         int totalPages = Math.Max(1, (achievements.Length + RowsPerPage - 1) / RowsPerPage);
         if (currentPage >= totalPages) {
@@ -460,6 +413,56 @@ public static class Achievements {
         for (int i = 0; i < achievements.Length; i++) {
             if (unlocked[i]) {
                 bonus += achievements[i].SuccessRateBonus;
+            }
+        }
+        return bonus;
+    }
+
+    public static float GetDestroyReductionBonus() {
+        float bonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (unlocked[i]) {
+                bonus += achievements[i].DestroyReductionBonus;
+            }
+        }
+        return bonus;
+    }
+
+    public static float GetDoubleOutputBonus() {
+        float bonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (unlocked[i]) {
+                bonus += achievements[i].DoubleOutputBonus;
+            }
+        }
+        return bonus;
+    }
+
+    public static float GetEnergyReductionBonus() {
+        float bonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (unlocked[i]) {
+                bonus += achievements[i].EnergyReductionBonus;
+            }
+        }
+        return bonus;
+    }
+
+    public static float GetLogisticsBonus() {
+        float bonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (unlocked[i]) {
+                bonus += achievements[i].LogisticsBonus;
+            }
+        }
+        return bonus;
+    }
+
+    public static float GetPowerStageBonus() {
+        float bonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (unlocked[i]) {
+                bonus += achievements[i].PowerStageBonus;
             }
         }
         return bonus;
@@ -533,14 +536,8 @@ public static class Achievements {
         }
     }
 
-    private static void GrantRandomEssence(int count) {
-        int essenceId = GetRandomEssenceId();
-        AddItemToModData(essenceId, count, 0, true);
-        UIItemup.Up(essenceId, count);
-    }
-
-    private static int GetRandomEssenceId() {
-        return IFE残片;
+    private static bool IsTechUnlocked(int techId) {
+        return GameMain.history != null && GameMain.history.TechUnlocked(techId);
     }
 
     private static int GetUnlockedRecipeCount() {
@@ -549,29 +546,32 @@ public static class Achievements {
             .Count(recipe => recipe.Unlocked);
     }
 
-    private static bool HasMaxLevelRecipe() {
-        return Enum.GetValues(typeof(ERecipe)).Cast<ERecipe>()
-            .SelectMany(type => GetRecipesByType(type))
-            .Any(recipe => recipe.IsMaxLevel);
-    }
-
     private static int GetMaxBuildingLevel() {
         return Math.Max(InteractionTower.Level, Math.Max(MineralReplicationTower.Level,
             Math.Max(PointAggregateTower.Level, Math.Max(ConversionTower.Level, RectificationTower.Level))));
     }
 
-    private static bool HasAnyTraitEnabled() {
-        return InteractionTower.EnableSacrificeTrait
-               || MineralReplicationTower.EnableMassEnergyFission
-               || PointAggregateTower.EnableVoidSpray
-               || ConversionTower.EnableCausalTracing;
+    private static int GetProtoInventoryCount() {
+        return (int)(GetItemTotalCount(IFE交互塔原胚)
+                     + GetItemTotalCount(IFE矿物复制塔原胚)
+                     + GetItemTotalCount(IFE点数聚集塔原胚)
+                     + GetItemTotalCount(IFE转化塔原胚)
+                     + GetItemTotalCount(IFE精馏塔原胚)
+                     + GetItemTotalCount(IFE分馏塔定向原胚));
     }
 
-    private static bool HasLevel12BuildingWithTrait() {
-        return (InteractionTower.Level >= 12 && InteractionTower.EnableSacrificeTrait)
-               || (MineralReplicationTower.Level >= 12 && MineralReplicationTower.EnableMassEnergyFission)
-               || (PointAggregateTower.Level >= 12 && PointAggregateTower.EnableVoidSpray)
-               || (ConversionTower.Level >= 12 && ConversionTower.EnableCausalTracing);
+    private static int GetCurrentStageMatrixId() {
+        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵)
+            ? I宇宙矩阵
+            : GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵)
+                ? I引力矩阵
+                : GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵)
+                    ? I信息矩阵
+                    : GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵)
+                        ? I结构矩阵
+                        : GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵)
+                            ? I能量矩阵
+                            : I电磁矩阵;
     }
 
     #region IModCanSave

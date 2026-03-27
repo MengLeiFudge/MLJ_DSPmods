@@ -6,6 +6,7 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -179,7 +180,7 @@ public static class BuildingOperate {
         var txt = wnd.AddText2(x, y, tab, "建筑类型");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE分馏塔增幅芯片));
+        wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
         txtChipCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
         y += 36f + 7f;
         wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
@@ -238,7 +239,9 @@ public static class BuildingOperate {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        txtChipCount.text = $"x {GetItemTotalCount(IFE分馏塔增幅芯片)}";
+        int currentMatrixId = GetCurrentProgressMatrixId();
+        string matrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
+        txtChipCount.text = $"残片 x{GetItemTotalCount(IFE残片)} / {matrixName} x{GetItemTotalCount(currentMatrixId)}";
 
         string s = $"{"强化等级：".Translate()}{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
@@ -374,15 +377,15 @@ public static class BuildingOperate {
         if (SelectedBuilding.Level() >= MaxLevel) {
             return;
         }
-        int takeId = IFE分馏塔增幅芯片;
-        int takeCount = buildingReinforcementCost[SelectedBuilding.Level()];
-        ItemProto takeProto = LDB.items.Select(takeId);
+        (int matrixId, int matrixCount, int fragmentCount) = GetReinforcementCost(SelectedBuilding.Level());
+        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         UIMessageBox.Show("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {takeProto.name} x {takeCount} ")
+            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
             + $"{"强化此建筑".Translate()}{"吗？".Translate()}",
             "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
-                if (!TakeItemWithTip(takeId, takeCount, out _)) {
+                if (!TakeItemWithTip(matrixId, matrixCount, out _)
+                    || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                     return;
                 }
                 SelectedBuilding.Level(SelectedBuilding.Level() + 1, true);
@@ -414,4 +417,11 @@ public static class BuildingOperate {
     public static void IntoOtherSave() { }
 
     #endregion
+
+    private static (int matrixId, int matrixCount, int fragmentCount) GetReinforcementCost(int currentLevel) {
+        int stageMatrixId = GetCurrentProgressMatrixId();
+        int fragmentCost = buildingReinforcementCost[currentLevel] * 12;
+        int matrixCost = 1 + currentLevel / 3;
+        return (stageMatrixId, matrixCost, fragmentCost);
+    }
 }

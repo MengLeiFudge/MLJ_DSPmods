@@ -249,7 +249,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 "FE存档版本不兼容内容".Translate(),
                 "确定".Translate(),
                 UIMessageBox.WARNING,
-                () => AddItemToModData(IFE精选抽卡券, 1000));
+                () => AddItemToModData(IFE残片, 5000));
             return;
         }
         r.ReadBlocks(
