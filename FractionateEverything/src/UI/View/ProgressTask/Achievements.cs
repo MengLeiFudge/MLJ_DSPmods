@@ -755,5 +755,14 @@ public static class Achievements {
         Array.Clear(claimed, 0, claimed.Length);
     }
 
+    public static bool IsAchievementClaimed(string nameKey) {
+        for (int i = 0; i < achievements.Length; i++) {
+            if (achievements[i].NameKey == nameKey) {
+                return claimed[i];
+            }
+        }
+        return false;
+    }
+
     #endregion
 }
