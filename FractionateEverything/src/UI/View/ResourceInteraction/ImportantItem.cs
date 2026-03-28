@@ -21,7 +21,7 @@ public static class ImportantItem {
         [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
     ];
     private static readonly int[] itemIdArr = itemIdOriArr.SelectMany(arr => arr).ToArray();
-    private static readonly Text[] itemCountTextArr = new Text[itemIdArr.Length];
+    private static readonly MyImageButton[] itemButtons = new MyImageButton[itemIdArr.Length];
 
     public static void AddTranslations() {
         Register("重要物品", "Important Item");
@@ -58,8 +58,9 @@ public static class ImportantItem {
                 (float, float) position = GetPosition(xIndex, 4);
                 xIndex++;
                 int itemId = itemIdOriArr[i][j];
-                wnd.AddImageButton(position.Item1, y, parent, LDB.items.Select(itemId)).WithTakeItemClickEvent();
-                itemCountTextArr[index] = wnd.AddText2(position.Item1 + 45, y, parent, "动态刷新");
+                itemButtons[index] = wnd.AddImageButton(position.Item1, y, parent, LDB.items.Select(itemId))
+                    .WithSize(40f, 40f)
+                    .WithTakeItemClickEvent();
                 index++;
             }
             y += 36f + 7f;
@@ -70,8 +71,8 @@ public static class ImportantItem {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        for (int i = 0; i < itemCountTextArr.Length; i++) {
-            itemCountTextArr[i].text = $"x {GetModDataItemCount(itemIdArr[i])}";
+        for (int i = 0; i < itemButtons.Length; i++) {
+            itemButtons[i].SetCount(GetModDataItemCount(itemIdArr[i]));
         }
     }
 

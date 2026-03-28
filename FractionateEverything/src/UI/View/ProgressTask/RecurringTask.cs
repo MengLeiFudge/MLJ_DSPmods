@@ -141,7 +141,7 @@ public static class RecurringTask {
             txtDescriptions[j].alignment = TextAnchor.UpperLeft;
             txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
 
-            rewardIcons[j] = wnd.AddImageButton(TaskRewardIconX + x, y, tab, null).WithSize(24f, 24f);
+            rewardIcons[j] = wnd.AddImageButton(TaskRewardIconX + x, y, tab, null).WithSize(40f, 40f);
             txtRewards[j] = wnd.AddText2(TaskRewardTextX + x, y, tab, "动态刷新", 15, $"txtTaskReward{j}");
             txtRewards[j].supportRichText = true;
             txtRewards[j].rectTransform.sizeDelta = new Vector2(TaskRewardTextW, 32f);
@@ -189,7 +189,13 @@ public static class RecurringTask {
         (int rewardItemId, int rewardCount) = GetRewardInfo(index);
         rewardIcons[index].Proto = rewardItemId > 0 ? LDB.items.Select(rewardItemId) : null;
         rewardIcons[index].gameObject.SetActive(rewardItemId > 0);
-        txtRewards[index].text = $"x{rewardCount}".WithColor(Blue);
+        if (rewardItemId > 0) {
+            rewardIcons[index].SetCount(rewardCount, true, false);
+            txtRewards[index].text = "";
+        } else {
+            rewardIcons[index].ClearCountText();
+            txtRewards[index].text = $"x{rewardCount}".WithColor(Blue);
+        }
 
         if (completed) {
             txtStatus[index].text = "已完成".Translate().WithColor(Green);

@@ -330,7 +330,7 @@ public static class Achievements {
             txtAchievementDescs[j].alignment = TextAnchor.UpperLeft;
             txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
 
-            rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, tab, null).WithSize(24f, 24f);
+            rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, tab, null).WithSize(40f, 40f);
             txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, tab, "动态刷新", 13, $"txtAchievementReward{j}");
             txtAchievementRewards[j].supportRichText = true;
             txtAchievementRewards[j].rectTransform.sizeDelta = new Vector2(listRewardTextW, 32f);
@@ -538,6 +538,12 @@ public static class Achievements {
         txtAchievementDescs[index].text = info.DescKey.Translate();
         txtAchievementRewards[index].text = rewardText;
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
+        if (hasRewardIcon) {
+            rewardIcons[index].SetCount(rewardCount, true, false);
+            txtAchievementRewards[index].text = "";
+        } else {
+            rewardIcons[index].ClearCountText();
+        }
 
         bool alreadyClaimed = claimed[index];
         txtAchievementStates[index].text = alreadyClaimed

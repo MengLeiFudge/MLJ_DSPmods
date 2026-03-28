@@ -187,10 +187,10 @@ public static class BuildingOperate {
         var txt = wnd.AddText2(x, y, tab, "建筑类型");
         wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
             .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
-        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
-        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null);
-        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 120f + 40 + 5, y, tab, "动态刷新");
+        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
+        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
         y += 36f + 7f;
 
         if (!GameMain.sandboxToolsEnabled) {
@@ -252,8 +252,10 @@ public static class BuildingOperate {
         }
         int currentMatrixId = GetCurrentProgressMatrixId();
         btnMatrixIcon.Proto = LDB.items.Select(currentMatrixId);
-        txtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
-        txtMatrixCount.text = $"x {GetItemTotalCount(currentMatrixId)}";
+        btnFragmentIcon.SetCount(GetItemTotalCount(IFE残片));
+        btnMatrixIcon.SetCount(GetItemTotalCount(currentMatrixId));
+        txtFragmentCount.text = "";
+        txtMatrixCount.text = "";
 
         string s = $"{"当前建筑强化等级".Translate()} +{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
