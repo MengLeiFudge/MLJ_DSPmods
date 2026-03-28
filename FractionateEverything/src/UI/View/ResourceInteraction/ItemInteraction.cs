@@ -25,7 +25,6 @@ public static class ItemInteraction {
     private static int _currentPage;
 
     private static readonly MyImageButton[,] btnItems = new MyImageButton[RowCount, ColumnCount];
-    private static readonly Text[,] txtItemCounts = new Text[RowCount, ColumnCount];
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
@@ -67,8 +66,9 @@ public static class ItemInteraction {
         for (int i = 0; i < RowCount; i++) {
             for (int j = 0; j < ColumnCount; j++) {
                 btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1, y, tab)
-                    .WithTakeItemClickEvent().WithDeselectOnHover(true, () => SelectedItemID = 0);
-                txtItemCounts[i, j] = wnd.AddText2(GetPosition(j, ColumnCount).Item1 + 40 + 5, y, tab, "动态刷新");
+                    .WithSize(40f, 40f)
+                    .WithTakeItemClickEvent()
+                    .WithDeselectOnHover(true, () => SelectedItemID = 0);
             }
             y += 36f + 7f;
         }
@@ -103,15 +103,14 @@ public static class ItemInteraction {
             int col = i % ColumnCount;
             btnItems[row, col].gameObject.SetActive(true);
             btnItems[row, col].Proto = item;
+            btnItems[row, col].SetCount(count);
             btnItems[row, col].Selected = SelectedItemID > 0 && item.ID == SelectedItemID;
-            txtItemCounts[row, col].text = $"x {count}";
             i++;
         }
         for (; i < ItemsPerPage; i++) {
             int row = i / ColumnCount;
             int col = i % ColumnCount;
             btnItems[row, col].gameObject.SetActive(false);
-            txtItemCounts[row, col].text = "";
         }
 
         UpdatePagination(totalPages);

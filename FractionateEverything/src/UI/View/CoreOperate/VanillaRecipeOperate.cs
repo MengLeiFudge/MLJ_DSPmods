@@ -86,10 +86,10 @@ public static class VanillaRecipeOperate {
             () => { OnButtonChangeRecipeClick(true, popupY); });
         wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
             "提示", "原版配方提示按钮说明1");
-        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片));
-        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 40 + 5, y, tab, "动态刷新");
-        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null);
-        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 120f + 40 + 5, y, tab, "动态刷新");
+        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
+        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
 
         y += 36f + 7f;
 
@@ -135,8 +135,10 @@ public static class VanillaRecipeOperate {
         btnSelectedRecipe.Proto = SelectedRecipe;
         int currentMatrixId = GetCurrentProgressMatrixId();
         btnMatrixIcon.Proto = LDB.items.Select(currentMatrixId);
-        txtFragmentCount.text = $"x {GetItemTotalCount(IFE残片)}";
-        txtMatrixCount.text = $"x {GetItemTotalCount(currentMatrixId)}";
+        btnFragmentIcon.SetCount(GetItemTotalCount(IFE残片));
+        btnMatrixIcon.SetCount(GetItemTotalCount(currentMatrixId));
+        txtFragmentCount.text = "";
+        txtMatrixCount.text = "";
 
         if (SelectedRecipe == null) {
             return;

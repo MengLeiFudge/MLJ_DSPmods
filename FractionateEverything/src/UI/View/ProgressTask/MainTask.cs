@@ -51,7 +51,6 @@ public static class MainTask {
     private static Text txtTaskCondition;
     private static Text txtTaskReward;
     private static MyImageButton btnTaskRewardIcon;
-    private static Text txtTaskRewardCount;
     private static Text txtTotalProgress;
     private static UIButton btnClaim;
 
@@ -163,10 +162,9 @@ public static class MainTask {
         txtTaskCondition.supportRichText = true;
 
         y += 36f + 7f;
-        btnTaskRewardIcon = wnd.AddImageButton(x, y, tab, null).WithSize(24f, 24f);
+        btnTaskRewardIcon = wnd.AddImageButton(x, y, tab, null).WithSize(40f, 40f);
         txtTaskReward = wnd.AddText2(x + 32f, y, tab, "动态刷新");
         txtTaskReward.supportRichText = true;
-        txtTaskRewardCount = wnd.AddText2(x + 260f, y, tab, "");
 
         y += 36f + 7f;
         btnClaim = wnd.AddButton(1, 3, y, tab, "领取奖励", 16, "btn-main-task-claim", ClaimCurrentReward);
@@ -190,7 +188,6 @@ public static class MainTask {
             txtTaskCondition.text = $"{"条件".Translate()}：-";
             txtTaskReward.text = $"{"奖励".Translate()}：-";
             btnTaskRewardIcon.gameObject.SetActive(false);
-            txtTaskRewardCount.text = "";
             txtTotalProgress.text = string.Format("主线总进度".Translate(), Tasks.Length, Tasks.Length).WithColor(Orange);
             btnClaim.enabled = false;
             btnClaim.gameObject.SetActive(false);
@@ -209,7 +206,12 @@ public static class MainTask {
         txtTaskReward.text = $"{"奖励".Translate()}：";
         btnTaskRewardIcon.gameObject.SetActive(task.RewardItemId > 0);
         btnTaskRewardIcon.Proto = task.RewardItemId > 0 ? LDB.items.Select(task.RewardItemId) : null;
-        txtTaskRewardCount.text = task.RewardItemId > 0 ? $"x {task.RewardCount}" : task.RewardKey.Translate();
+        if (task.RewardItemId > 0) {
+            btnTaskRewardIcon.SetCount(task.RewardCount, true, false);
+        } else {
+            btnTaskRewardIcon.ClearCountText();
+            txtTaskReward.text = $"{"奖励".Translate()}：{task.RewardKey.Translate()}";
+        }
         txtTotalProgress.text = string.Format("主线总进度".Translate(), currentStage, Tasks.Length);
 
         if (task.AutoClaim) {
