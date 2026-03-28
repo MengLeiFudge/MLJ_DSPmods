@@ -11,7 +11,7 @@ UI/
 └── View/
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
     ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
-    └── GetItemRecipe/         # 抽奖/商店重构区（TicketRaffle + LimitedTimeStore）
+    └── DrawGrowth/            # 抽奖/商店/兑换系统（TicketRaffle + LimitedTimeStore + Gacha）
 ```
 
 ## 双主面板契约（必须遵守）
@@ -21,7 +21,7 @@ UI/
 - 打开态：`OpenedMainPanelType`
 - 切换入口：`SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`
 - 跨页跳转统一走：`MainWindow.NavigateToPage(category, tabIndex)`
-- 面板共享态统一走：`MainWindow.SharedPanelState`
+- 面板共享态统一走：`MainWindow.SharedPanelState`（目前仅含抽奖总次数与成就页码）
 
 ## 页面注册规则
 

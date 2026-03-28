@@ -9,8 +9,6 @@ public enum FEMainPanelType {
 public interface IFEMainPanelSharedState {
     long TicketRaffleTotalDraws { get; set; }
     int AchievementsCurrentPage { get; set; }
-    int RuneMenuFilterMode { get; set; }
-    int RuneMenuSortMode { get; set; }
 }
 
 public sealed class EmptyMainPanelSharedState : IFEMainPanelSharedState {
@@ -18,8 +16,6 @@ public sealed class EmptyMainPanelSharedState : IFEMainPanelSharedState {
 
     public long TicketRaffleTotalDraws { get; set; }
     public int AchievementsCurrentPage { get; set; }
-    public int RuneMenuFilterMode { get; set; }
-    public int RuneMenuSortMode { get; set; }
 
     private EmptyMainPanelSharedState() {
     }
