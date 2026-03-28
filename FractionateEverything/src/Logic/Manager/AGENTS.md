@@ -1,23 +1,28 @@
 # Logic/Manager — 状态管理层
 
-12 个管理文件，约 7100 行。重点变化：抽奖系统已从 UI 内联逻辑抽离为 `GachaManager + GachaService + GachaPool (+ GalleryBonus)`。
+11 个管理文件，约 7150 行。重点变化：抽奖系统已从 UI 内联逻辑抽离为 `GachaManager + GachaService + GachaPool (+ GalleryBonus)`。
 
 ## 文件职责（当前）
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `StationManager.cs` | 2397 | 物流交互站主循环与物品流转 |
-| `ProcessManager.cs` | 917 | 分馏器热路径更新/补丁 |
-| `ItemManager.cs` | 641 | 物品价值与数据中心物品操作 |
-| `TutorialManager.cs` | 616 | 任务/教程推进 |
-| `BuildingManager.cs` | 573 | 建筑注册与等级数据 |
-| `TechManager.cs` | 514 | 科技注册与解锁联动 |
-| `GachaManager.cs` | 337 | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
-| `GachaService.cs` | 336 | 卡池构建、抽卡结算、奖励发放 |
-| `RuneManager.cs` | 309 | 精华系统 |
+| `StationManager.cs` | 2399 | 物流交互站主循环与物品流转 |
+| `ProcessManager.cs` | 949 | 分馏器热路径更新/补丁 |
+| `BuildingManager.cs` | 723 | 建筑注册与等级数据 |
+| `ItemManager.cs` | 715 | 物品价值与数据中心物品操作 |
+| `TutorialManager.cs` | 601 | 任务/教程推进 |
+| `TechManager.cs` | 568 | 科技注册、解锁联动、配方奖励发放、原版增强开放控制 |
+| `GachaService.cs` | 534 | 卡池构建、抽卡结算、奖励发放 |
 | `RecipeManager.cs` | 294 | 配方索引/查找 |
-| `GachaPool.cs` | 97 | 卡池与稀有度模型定义 |
-| `GachaGalleryBonusManager.cs` | 71 | 图鉴完成度加成缓存刷新 |
+| `GachaManager.cs` | 213 | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
+| `GachaPool.cs` | 117 | 卡池与稀有度模型定义 |
+| `GachaGalleryBonusManager.cs` | 36 | 图鉴完成度加成缓存刷新 |
+
+## 科技与配方解锁 (TechManager)
+
+- **科技奖励**：在 `NotifyTechUnlock` 后自动发放建筑培养配方。
+- **矿物复制奖励**：解锁“矿物复制”科技时，自动发放非珍奇的原矿复制配方。
+- **原版增强开放**：采用“落后一层”规则（例如：完成能量层所有科技后，才开放电磁层的原版配方增强）。
 
 ## 抽奖域边界（重构后）
 

@@ -256,7 +256,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Recipe", RecipeManager.Import),
             ("Building", BuildingManager.Import),
             ("Item", ItemManager.Import),
-            ("Rune", RuneManager.Import),
             ("Gacha", GachaManager.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
@@ -272,7 +271,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Recipe", RecipeManager.Export),
             ("Building", BuildingManager.Export),
             ("Item", ItemManager.Export),
-            ("Rune", RuneManager.Export),
             ("Gacha", GachaManager.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
@@ -297,7 +295,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RecipeManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
-        RuneManager.IntoOtherSave();
         GachaManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();

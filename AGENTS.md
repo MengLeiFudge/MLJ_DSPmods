@@ -58,13 +58,12 @@ FractionateEverything/src/
 │   └── View/                   # Feature panels → View/AGENTS.md
 │       ├── MainWindow.cs       # Dual-panel lifecycle hub (Legacy + Analysis)
 │       ├── MainWindowPageRegistry.cs # Page registry + category filtering + Analysis availability
+│       ├── Archive/            # Stats, recipe gallery, dev diary
 │       ├── CoreOperate/        # Recipe/building operate panels
-│       ├── GetItemRecipe/      # Raffle + Store (refactored; UI delegates gacha logic to Logic/Manager)
-│       ├── ProgressSystem/     # Quests, achievements, dev diary
-│       ├── RuneSystem/         # Rune (精华) menu
-│       ├── Setting/            # VIP, sandbox, misc config
-│       ├── Statistic/          # Stats + recipe gallery
-│       └── ModPackage/         # DataCentre item interaction
+│       ├── DrawGrowth/         # Gacha (Raffle + Store), exchange system
+│       ├── ProgressTask/       # Quests, achievements, main tasks
+│       ├── ResourceInteraction/ # DataCentre item interaction
+│       └── Setting/            # VIP, sandbox, misc config
 └── Utils/                      # `partial class Utils` split across 12 files → Utils/AGENTS.md
     ├── ProtoID.cs              # ALL proto ID constants (I/R/M/T prefix + IFE/RFE/MFE/TFE for mod)
     └── PackageUtils.cs         # Inventory/belt ops, TakeItemWithTip, AddItemToModData
@@ -253,10 +252,11 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ## AI Agent Notes
 
+- Rune related content has been removed (RuneManager, RuneMenu, etc.).
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
-- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `UI/View/GetItemRecipe/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
+- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `UI/View/DrawGrowth/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
 
 ## Analysis UI Layout Baseline (Mandatory)
 
