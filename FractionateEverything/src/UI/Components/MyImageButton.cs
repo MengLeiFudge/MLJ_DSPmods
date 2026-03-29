@@ -14,7 +14,6 @@ public class MyImageButton : MonoBehaviour {
     private const float ProtoTipDelay = 0.4f;
     private const int ProtoTipAnchor = 7;
     private static readonly Vector2 ProtoTipOffset = new(15f, -50f);
-    private static readonly StringBuilder countSb = new("                ", 16);
     private static GameObject _baseObject;
     public RectTransform rectTrans;
     public UIButton uiButton;
@@ -109,32 +108,25 @@ public class MyImageButton : MonoBehaviour {
         var spriteImage = spriteObj.AddComponent<Image>();
         spriteImage.color = Color.white;
 
-        // 创建右下角数字子对象（默认隐藏）
-        var countObj = new GameObject("countText");
+        // 直接复用 AddText2 的文本来源，保持亮度、材质和描边表现一致
+        var countText = Instantiate(UIRoot.instance.uiGame.assemblerWindow.stateText);
+        var countObj = countText.gameObject;
+        countObj.name = "countText";
         countObj.transform.SetParent(_baseObject.transform, false);
-        var countRect = countObj.AddComponent<RectTransform>();
+        var countRect = countText.rectTransform;
         countRect.anchorMin = new Vector2(1f, 0f);
         countRect.anchorMax = new Vector2(1f, 0f);
         countRect.pivot = new Vector2(1f, 0f);
-        countRect.anchoredPosition = new Vector2(-2f, 2f);
+        countRect.anchoredPosition = new Vector2(4f, -8f);
         countRect.sizeDelta = new Vector2(36f, 16f);
-        var countText = countObj.AddComponent<Text>();
         countText.raycastTarget = false;
         countText.alignment = TextAnchor.LowerRight;
         countText.horizontalOverflow = HorizontalWrapMode.Overflow;
         countText.verticalOverflow = VerticalWrapMode.Overflow;
         countText.resizeTextForBestFit = false;
         countText.fontSize = 12;
-        countText.color = Color.white;
+        countText.color = Blue;
         countText.text = string.Empty;
-        var fontSource = UIRoot.instance.uiGame.buildMenu.uxFacilityCheck.transform.Find("text")?.GetComponent<Text>();
-        if (fontSource != null) {
-            countText.font = fontSource.font;
-            countText.fontStyle = fontSource.fontStyle;
-        }
-        var outline = countObj.AddComponent<Outline>();
-        outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
-        outline.effectDistance = new Vector2(1f, -1f);
         countObj.SetActive(false);
 
         // 设置过渡效果
@@ -227,45 +219,34 @@ public class MyImageButton : MonoBehaviour {
         return this;
     }
 
-    public void SetCountText(string text, bool show = true) {
+    private void SetCountText(string countStr) {
         if (countText == null) {
             return;
         }
-
-        bool visible = show && !string.IsNullOrEmpty(text);
-        countText.text = visible ? text : string.Empty;
+        bool visible = !string.IsNullOrEmpty(countStr);
+        countText.text = visible ? countStr : string.Empty;
         countText.gameObject.SetActive(visible);
     }
 
-    public void SetCount(long count, bool show = true, bool formatKmg = true) {
-        SetCountText(FormatCountText(count, formatKmg), show);
+    public void SetCount(long count) {
+        SetCountText(count.FormatKMG());
+    }
+
+    public void SetCount(float count) {
+        SetCountText(count.FormatF());
+    }
+
+    public void SetCount(double count) {
+        SetCountText(count.FormatD());
     }
 
     public void ClearCountText() {
-        SetCountText(string.Empty, false);
+        SetCountText(null);
     }
 
-    public MyImageButton WithCountText(string text, bool show = true) {
-        SetCountText(text, show);
+    public MyImageButton WithCount(long count) {
+        SetCount(count);
         return this;
-    }
-
-    public MyImageButton WithCount(long count, bool show = true, bool formatKmg = true) {
-        SetCount(count, show, formatKmg);
-        return this;
-    }
-
-    private static string FormatCountText(long count, bool formatKmg) {
-        if (!formatKmg || (count <= 10000 && count >= -10000)) {
-            return count.ToString();
-        }
-
-        countSb.Length = 16;
-        for (int i = 0; i < 16; i++) {
-            countSb[i] = ' ';
-        }
-        StringBuilderUtility.WriteKMG(countSb, 8, count, blank: true);
-        return countSb.ToString().Trim();
     }
 
     private void ApplyProtoTip() {

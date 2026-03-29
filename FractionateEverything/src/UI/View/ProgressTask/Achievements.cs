@@ -539,7 +539,7 @@ public static class Achievements {
         txtAchievementRewards[index].text = rewardText;
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
         if (hasRewardIcon) {
-            rewardIcons[index].SetCount(rewardCount, true, false);
+            rewardIcons[index].SetCount(rewardCount);
             txtAchievementRewards[index].text = "";
         } else {
             rewardIcons[index].ClearCountText();

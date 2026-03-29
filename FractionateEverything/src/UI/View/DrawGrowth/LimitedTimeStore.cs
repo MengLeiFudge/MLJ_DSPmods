@@ -195,12 +195,12 @@ public static class LimitedTimeStore {
 
                 GachaGrowthOffer offer = offers[i];
                 growthPage.Rows[i].Offer = offer;
-                growthPage.Rows[i].BtnFragmentCostIcon.SetCount(offer.FragmentCost, offer.FragmentCost > 0, false);
+                growthPage.Rows[i].BtnFragmentCostIcon.SetCount(offer.FragmentCost);
                 growthPage.Rows[i].TxtCost.text = $"积分 {offer.PointCost}";
                 if (offer.ExtraCostItemId > 0) {
                     growthPage.Rows[i].BtnExtraCostIcon.Proto = LDB.items.Select(offer.ExtraCostItemId);
                     growthPage.Rows[i].BtnExtraCostIcon.gameObject.SetActive(true);
-                    growthPage.Rows[i].BtnExtraCostIcon.SetCount(offer.ExtraCostCount, true, false);
+                    growthPage.Rows[i].BtnExtraCostIcon.SetCount(offer.ExtraCostCount);
                     growthPage.Rows[i].TxtExtraCost.text = "";
                 } else {
                     growthPage.Rows[i].BtnExtraCostIcon.gameObject.SetActive(false);
@@ -208,7 +208,7 @@ public static class LimitedTimeStore {
                     growthPage.Rows[i].TxtExtraCost.text = "";
                 }
                 growthPage.Rows[i].BtnRewardIcon.Proto = LDB.items.Select(offer.OutputId);
-                growthPage.Rows[i].BtnRewardIcon.SetCount(offer.OutputCount, true, false);
+                growthPage.Rows[i].BtnRewardIcon.SetCount(offer.OutputCount);
                 growthPage.Rows[i].TxtReward.text = "";
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost

@@ -207,7 +207,7 @@ public static class MainTask {
         btnTaskRewardIcon.gameObject.SetActive(task.RewardItemId > 0);
         btnTaskRewardIcon.Proto = task.RewardItemId > 0 ? LDB.items.Select(task.RewardItemId) : null;
         if (task.RewardItemId > 0) {
-            btnTaskRewardIcon.SetCount(task.RewardCount, true, false);
+            btnTaskRewardIcon.SetCount(task.RewardCount);
         } else {
             btnTaskRewardIcon.ClearCountText();
             txtTaskReward.text = $"{"奖励".Translate()}：{task.RewardKey.Translate()}";

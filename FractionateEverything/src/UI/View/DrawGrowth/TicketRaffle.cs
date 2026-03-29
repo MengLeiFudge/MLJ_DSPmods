@@ -241,7 +241,7 @@ public static class TicketRaffle {
             GachaResult result = results[i];
             ui.BtnResultIcons[i].gameObject.SetActive(true);
             ui.BtnResultIcons[i].Proto = LDB.items.Select(result.ItemId);
-            ui.BtnResultIcons[i].SetCount(1, true, false);
+            ui.BtnResultIcons[i].SetCount(1);
             string line = $"[{result.Rarity}]";
             if (result.IsRecipe) {
                 line += "  配方".WithColor(Orange);
