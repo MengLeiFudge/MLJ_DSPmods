@@ -35,7 +35,6 @@ public static class DevelopmentDiary {
             { "FE2.1", 4 },
             { "FE2.2", 5 },
             { "FE2.3", 5 },
-            { "FE2.3", 5 },
             { "IK", 20 }
         };
 

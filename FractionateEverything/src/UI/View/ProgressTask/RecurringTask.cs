@@ -190,7 +190,7 @@ public static class RecurringTask {
         rewardIcons[index].Proto = rewardItemId > 0 ? LDB.items.Select(rewardItemId) : null;
         rewardIcons[index].gameObject.SetActive(rewardItemId > 0);
         if (rewardItemId > 0) {
-            rewardIcons[index].SetCount(rewardCount, true, false);
+            rewardIcons[index].SetCount(rewardCount);
             txtRewards[index].text = "";
         } else {
             rewardIcons[index].ClearCountText();
