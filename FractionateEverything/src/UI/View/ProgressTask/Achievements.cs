@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
@@ -10,6 +11,7 @@ using FE.UI.View;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.Manager.GachaManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -56,6 +58,15 @@ public static class Achievements {
         Platinum,
     }
 
+    private const string ConfigSection = "Achievements";
+    private const string ConfigAchievementFlags = "AchievementFlags";
+    private const string ConfigPanelOpenCount = "PanelOpenCount";
+
+    private static ConfigEntry<string> achievementFlagsEntry;
+    private static ConfigEntry<int> panelOpenCountEntry;
+    private static bool configLoaded;
+    private static int panelOpenCount;
+
     private static Text txtTitle;
     private static Text txtUnlockedSummary;
     private static Text txtHiddenSummary;
@@ -66,7 +77,6 @@ public static class Achievements {
     private static Text[] txtAchievementRewards;
     private static Text[] txtAchievementStates;
     private static MyImageButton[] rewardIcons;
-    private static UIButton[] btnClaims;
 
     private const int RowsPerPage = 8;
     private const float AchievementRowSpacing = 52f;
@@ -84,8 +94,379 @@ public static class Achievements {
     private static float listRewardTextW;
     private static float listStateX;
     private static float listStateW;
-    private static float listActionX;
-    private static float listActionW;
+    private static int nextAutoCheckFrame;
+
+    private static readonly AchievementInfo[] achievements = BuildAchievements();
+    private static readonly string[] legacyAchievementNameOrder = [
+        "成就-千锤百炼",
+        "成就-万物皆可分馏",
+        "成就-分馏之王",
+        "成就-永不停歇",
+        "成就-开线先锋",
+        "成就-开线专家",
+        "成就-配方入门",
+        "成就-配方学者",
+        "成就-配方专家",
+        "成就-万物百科",
+        "成就-工艺优化",
+        "成就-工艺大师",
+        "成就-任务自动化",
+        "成就-原胚循环",
+        "成就-星际整备",
+        "成就-精馏开路",
+        "成就-万物归一",
+    ];
+    private static readonly Dictionary<string, int> achievementIndexByName = BuildAchievementIndexByName();
+    private static bool[] unlocked = new bool[achievements.Length];
+    private static bool[] claimed = new bool[achievements.Length];
+
+    private static Dictionary<string, int> BuildAchievementIndexByName() {
+        var map = new Dictionary<string, int>(achievements.Length);
+        for (int i = 0; i < achievements.Length; i++) {
+            map[achievements[i].NameKey] = i;
+        }
+        return map;
+    }
+
+    private static AchievementInfo[] BuildAchievements() {
+        var list = new List<AchievementInfo>(72);
+        AddProductionAchievements(list);
+        AddOpeningAchievements(list);
+        AddRecipeAchievements(list);
+        AddGrowthAchievements(list);
+        AddRecurringAchievements(list);
+        AddProtoAchievements(list);
+        AddExplorationAchievements(list);
+        AddChallengeAchievements(list);
+        return [.. list];
+    }
+
+    private static void AddProductionAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float DoubleBonus)[] {
+            ("分馏初学者", 10, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
+            ("分馏熟练工", 25, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
+            ("分馏执勤员", 50, "成就奖励-残片200", ETier.Bronze, 0.0015f, 0f, 0f),
+            ("分馏推进者", 100, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f, 0f),
+            ("分馏节拍", 300, "成就奖励-残片300", ETier.Silver, 0.003f, 0f, 0f),
+            ("分馏热潮", 600, "成就奖励-残片500", ETier.Silver, 0.004f, 0.001f, 0f),
+            ("成就-千锤百炼", 1000, "成就奖励-残片500", ETier.Silver, 0.005f, 0.001f, 0f),
+            ("分馏扩张", 3000, "成就奖励-残片800", ETier.Gold, 0.007f, 0.002f, 0.002f),
+            ("成就-万物皆可分馏", 10000, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
+            ("分馏高峰", 50000, "成就奖励-残片2000", ETier.Gold, 0.015f, 0.004f, 0.005f),
+            ("成就-分馏之王", 200000, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
+            ("成就-永不停歇", 1000000, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus, float doubleBonus) in defs) {
+            string desc = $"累计完成 {target} 次分馏成功";
+            list.Add(new AchievementInfo(
+                "成就分类-生产",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => totalFractionSuccesses >= target,
+                () => GrantRewardByKey(rewardKey),
+                successRateBonus: successBonus,
+                destroyReductionBonus: destroyBonus,
+                doubleOutputBonus: doubleBonus));
+        }
+    }
+
+    private static void AddOpeningAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float DoubleBonus, float LogisticsBonus)[] {
+            ("开线初试", 1, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
+            ("开线连发", 5, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
+            ("开线热手", 10, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0.001f, 0f),
+            ("开线之门", 20, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.001f, 0f),
+            ("开线推进", 50, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
+            ("成就-开线先锋", 100, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
+            ("开线大师", 200, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.003f, 0.003f),
+            ("成就-开线专家", 500, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.005f, 0.004f),
+            ("开线统筹", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.008f, 0.006f),
+            ("开线传说", 2000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.01f, 0.01f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus, float logisticsBonus) in defs) {
+            string desc = $"累计完成 {target} 次开线抽取";
+            list.Add(new AchievementInfo(
+                "成就分类-开线",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => TicketRaffle.totalDraws >= target,
+                () => GrantRewardByKey(rewardKey),
+                doubleOutputBonus: doubleBonus,
+                logisticsBonus: logisticsBonus));
+        }
+    }
+
+    private static void AddRecipeAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float PowerBonus)[] {
+            ("配方启蒙", 1, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
+            ("配方初识", 3, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
+            ("成就-配方入门", 5, "成就奖励-配方核心1", ETier.Bronze, 0.002f, 0f, 0f),
+            ("配方进修", 10, "成就奖励-配方核心1", ETier.Silver, 0.002f, 0.001f, 0f),
+            ("配方拓展", 20, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.002f, 0f),
+            ("成就-配方学者", 30, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.003f, 0f),
+            ("配方总览", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
+            ("成就-配方专家", 80, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
+            ("配方馆长", 120, "成就奖励-残片800", ETier.Platinum, 0.01f, 0.008f, 0.015f),
+            ("成就-万物百科", 150, "成就奖励-残片1000", ETier.Platinum, 0.015f, 0.01f, 0.02f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus, float powerBonus) in defs) {
+            string desc = $"累计解锁 {target} 个分馏配方";
+            list.Add(new AchievementInfo(
+                "成就分类-配方",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => GetUnlockedRecipeCount() >= target,
+                () => GrantRewardByKey(rewardKey),
+                successRateBonus: successBonus,
+                destroyReductionBonus: destroyBonus,
+                powerStageBonus: powerBonus));
+        }
+    }
+
+    private static void AddGrowthAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float EnergyBonus, float PowerBonus)[] {
+            ("工艺起步", 1, "成就奖励-残片200", ETier.Bronze, 0.01f, 0f),
+            ("工艺进阶", 2, "成就奖励-残片300", ETier.Bronze, 0.01f, 0f),
+            ("工艺磨合", 3, "成就奖励-残片500", ETier.Silver, 0.015f, 0f),
+            ("工艺稳态", 4, "成就奖励-残片500", ETier.Silver, 0.02f, 0f),
+            ("成就-工艺优化", 6, "成就奖励-残片800", ETier.Gold, 0.03f, 0.005f),
+            ("工艺跃迁", 8, "成就奖励-残片1000", ETier.Gold, 0.04f, 0.01f),
+            ("工艺巅峰", 10, "成就奖励-残片1000", ETier.Gold, 0.05f, 0.015f),
+            ("成就-工艺大师", 12, "成就奖励-残片2000", ETier.Platinum, 0.08f, 0.02f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float energyBonus, float powerBonus) in defs) {
+            string desc = $"任意万物分馏建筑等级达到 {target}";
+            list.Add(new AchievementInfo(
+                "成就分类-成长",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => GetMaxBuildingLevel() >= target,
+                () => GrantRewardByKey(rewardKey),
+                energyReductionBonus: energyBonus,
+                powerStageBonus: powerBonus));
+        }
+    }
+
+    private static void AddRecurringAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float DoubleBonus)[] {
+            ("任务热身", 1, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f),
+            ("任务连锁", 5, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f),
+            ("任务推进", 10, "成就奖励-当前阶段矩阵2", ETier.Silver, 0.003f, 0f),
+            ("任务巡航", 20, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0.002f),
+            ("任务统筹", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.006f, 0.003f),
+            ("成就-任务自动化", 100, "成就奖励-循环任务自动领取", ETier.Gold, 0.008f, 0.004f),
+            ("任务驱动", 200, "成就奖励-当前阶段矩阵8", ETier.Platinum, 0.012f, 0.006f),
+            ("任务永动", 500, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus, float doubleBonus) in defs) {
+            string desc = $"累计完成 {target} 次循环任务";
+            Action rewardAction = rewardKey == "成就奖励-循环任务自动领取"
+                ? RecurringTask.UnlockAutoClaim
+                : () => GrantRewardByKey(rewardKey);
+
+            list.Add(new AchievementInfo(
+                "成就分类-循环",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => RecurringTask.TotalClaimedCount >= target,
+                rewardAction,
+                logisticsBonus: logisticsBonus,
+                doubleOutputBonus: doubleBonus));
+        }
+    }
+
+    private static void AddProtoAchievements(List<AchievementInfo> list) {
+        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float PowerBonus)[] {
+            ("原胚起点", 1, "成就奖励-定向原胚1", ETier.Bronze, 0.002f, 0f),
+            ("原胚整备", 5, "成就奖励-残片300", ETier.Bronze, 0.003f, 0f),
+            ("成就-原胚循环", 10, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0f),
+            ("原胚调度", 20, "成就奖励-定向原胚1", ETier.Silver, 0.006f, 0.005f),
+            ("原胚仓储", 40, "成就奖励-残片800", ETier.Gold, 0.01f, 0.01f),
+            ("原胚洪流", 80, "成就奖励-精馏塔原胚3", ETier.Platinum, 0.015f, 0.02f),
+        };
+
+        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus, float powerBonus) in defs) {
+            string desc = $"仓储中持有 {target} 个分馏塔原胚";
+            list.Add(new AchievementInfo(
+                "成就分类-原胚",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => GetProtoInventoryCount() >= target,
+                () => GrantRewardByKey(rewardKey),
+                logisticsBonus: logisticsBonus,
+                powerStageBonus: powerBonus));
+        }
+    }
+
+    private static void AddExplorationAchievements(List<AchievementInfo> list) {
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "第一次打开面板",
+            "第一次打开分馏数据中心面板",
+            "成就奖励-残片200",
+            ETier.Bronze,
+            () => panelOpenCount >= 1,
+            () => GrantRewardByKey("成就奖励-残片200"),
+            successRateBonus: 0.002f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "常规模式试跑",
+            "在常规模式下打开面板",
+            "成就奖励-当前阶段矩阵2",
+            ETier.Bronze,
+            () => !IsSpeedrunMode && panelOpenCount >= 1,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵2"),
+            powerStageBonus: 0.005f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "速通模式试跑",
+            "在速通模式下打开面板",
+            "成就奖励-当前阶段矩阵2",
+            ETier.Bronze,
+            () => IsSpeedrunMode && panelOpenCount >= 1,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵2"),
+            powerStageBonus: 0.005f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "分馏启示",
+            "解锁分馏数据中心科技",
+            "成就奖励-残片300",
+            ETier.Silver,
+            () => IsTechUnlocked(TFE分馏数据中心),
+            () => GrantRewardByKey("成就奖励-残片300"),
+            successRateBonus: 0.003f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "矿物新生",
+            "解锁矿物复制科技",
+            "成就奖励-配方核心1",
+            ETier.Silver,
+            () => IsTechUnlocked(TFE矿物复制),
+            () => GrantRewardByKey("成就奖励-配方核心1"),
+            destroyReductionBonus: 0.003f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "物品转化",
+            "解锁物品转化科技",
+            "成就奖励-残片500",
+            ETier.Gold,
+            () => IsTechUnlocked(TFE物品转化),
+            () => GrantRewardByKey("成就奖励-残片500"),
+            doubleOutputBonus: 0.005f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "成就-精馏开路",
+            "解锁物品精馏科技",
+            "成就奖励-精馏塔原胚3",
+            ETier.Gold,
+            () => IsTechUnlocked(TFE物品精馏),
+            () => GrantRewardByKey("成就奖励-精馏塔原胚3"),
+            powerStageBonus: 0.01f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-探索",
+            "成就-星际整备",
+            "解锁星际物流交互科技",
+            "成就奖励-星际物流交互站1",
+            ETier.Platinum,
+            () => IsTechUnlocked(TFE星际物流交互),
+            () => GrantRewardByKey("成就奖励-星际物流交互站1"),
+            logisticsBonus: 0.02f));
+    }
+
+    private static void AddChallengeAchievements(List<AchievementInfo> list) {
+        list.Add(new AchievementInfo(
+            "成就分类-挑战",
+            "基础闭环",
+            "累计 5000 次分馏成功、解锁 50 个配方并将任意建筑升到 6 级",
+            "成就奖励-当前阶段矩阵8",
+            ETier.Gold,
+            () => totalFractionSuccesses >= 5000 && GetUnlockedRecipeCount() >= 50 && GetMaxBuildingLevel() >= 6,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵8"),
+            successRateBonus: 0.01f,
+            doubleOutputBonus: 0.005f,
+            powerStageBonus: 0.01f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-挑战",
+            "全域工艺",
+            "累计 20000 次分馏成功、解锁 80 个配方并将任意建筑升到 8 级",
+            "成就奖励-当前阶段矩阵16",
+            ETier.Gold,
+            () => totalFractionSuccesses >= 20000 && GetUnlockedRecipeCount() >= 80 && GetMaxBuildingLevel() >= 8,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
+            successRateBonus: 0.015f,
+            destroyReductionBonus: 0.005f,
+            doubleOutputBonus: 0.01f,
+            powerStageBonus: 0.015f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-挑战",
+            "成就-万物归一",
+            "累计 50000 次分馏成功、解锁 100 个配方并将任意建筑升到 10 级",
+            "成就奖励-当前阶段矩阵16",
+            ETier.Platinum,
+            () => totalFractionSuccesses >= 50000 && GetUnlockedRecipeCount() >= 100 && GetMaxBuildingLevel() >= 10,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
+            successRateBonus: 0.02f,
+            destroyReductionBonus: 0.01f,
+            doubleOutputBonus: 0.015f,
+            energyReductionBonus: 0.02f,
+            logisticsBonus: 0.02f,
+            powerStageBonus: 0.02f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-挑战",
+            "常规毕业",
+            "常规模式下累计 30000 次分馏成功，并解锁 120 个配方与星际物流交互科技",
+            "成就奖励-残片2000",
+            ETier.Platinum,
+            () => !IsSpeedrunMode
+                  && totalFractionSuccesses >= 30000
+                  && GetUnlockedRecipeCount() >= 120
+                  && IsTechUnlocked(TFE星际物流交互),
+            () => GrantRewardByKey("成就奖励-残片2000"),
+            successRateBonus: 0.02f,
+            powerStageBonus: 0.02f));
+
+        list.Add(new AchievementInfo(
+            "成就分类-挑战",
+            "速通毕业",
+            "速通模式下累计 10000 次分馏成功、500 次开线抽取并解锁星际物流交互科技",
+            "成就奖励-残片2000",
+            ETier.Platinum,
+            () => IsSpeedrunMode
+                  && totalFractionSuccesses >= 10000
+                  && TicketRaffle.totalDraws >= 500
+                  && IsTechUnlocked(TFE星际物流交互),
+            () => GrantRewardByKey("成就奖励-残片2000"),
+            successRateBonus: 0.02f,
+            doubleOutputBonus: 0.02f,
+            logisticsBonus: 0.02f));
+    }
 
     private static void SyncCurrentPageFromSharedState() {
         currentPage = Math.Max(0, MainWindow.SharedPanelState?.AchievementsCurrentPage ?? 0);
@@ -97,71 +478,6 @@ public static class Achievements {
         }
     }
 
-    private static readonly AchievementInfo[] achievements = [
-        new("成就分类-生产", "成就-千锤百炼", "成就描述-千锤百炼", "成就奖励-残片200", ETier.Silver,
-            () => totalFractionSuccesses >= 1000,
-            () => GrantItems((IFE残片, 200)), successRateBonus: 0.02f),
-        new("成就分类-生产", "成就-万物皆可分馏", "成就描述-万物皆可分馏", "成就奖励-残片300", ETier.Gold,
-            () => totalFractionSuccesses >= 10000,
-            () => GrantItems((IFE残片, 300)), successRateBonus: 0.05f),
-        new("成就分类-生产", "成就-分馏之王", "成就描述-分馏之王", "成就奖励-残片500", ETier.Gold,
-            () => totalFractionSuccesses >= 100000,
-            () => GrantItems((IFE残片, 500)), destroyReductionBonus: 0.01f),
-        new("成就分类-生产", "成就-永不停歇", "成就描述-永不停歇", "成就奖励-残片2000", ETier.Platinum,
-            () => totalFractionSuccesses >= 1000000,
-            () => GrantItems((IFE残片, 2000)), doubleOutputBonus: 0.03f),
-
-        new("成就分类-开线", "成就-开线先锋", "成就描述-开线先锋", "成就奖励-当前阶段矩阵2", ETier.Bronze,
-            () => TicketRaffle.totalDraws >= 100,
-            () => GrantItems((GetCurrentStageMatrixId(), 2)), successRateBonus: 0.005f),
-        new("成就分类-开线", "成就-开线专家", "成就描述-开线专家", "成就奖励-当前阶段矩阵4", ETier.Silver,
-            () => TicketRaffle.totalDraws >= 500,
-            () => GrantItems((GetCurrentStageMatrixId(), 4)), doubleOutputBonus: 0.005f),
-
-        new("成就分类-配方", "成就-配方入门", "成就描述-配方入门", "成就奖励-配方核心1", ETier.Bronze,
-            () => GetUnlockedRecipeCount() >= 5,
-            () => GrantItems((IFE分馏配方核心, 1)), successRateBonus: 0.005f),
-        new("成就分类-配方", "成就-配方学者", "成就描述-配方学者", "成就奖励-配方核心3", ETier.Silver,
-            () => GetUnlockedRecipeCount() >= 30,
-            () => GrantItems((IFE分馏配方核心, 3)), destroyReductionBonus: 0.005f),
-        new("成就分类-配方", "成就-配方专家", "成就描述-配方专家", "成就奖励-当前阶段矩阵8", ETier.Gold,
-            () => GetUnlockedRecipeCount() >= 80,
-            () => GrantItems((GetCurrentStageMatrixId(), 8)), doubleOutputBonus: 0.01f),
-        new("成就分类-配方", "成就-万物百科", "成就描述-万物百科", "成就奖励-残片800", ETier.Platinum,
-            () => GetUnlockedRecipeCount() >= 150,
-            () => GrantItems((IFE残片, 800)), powerStageBonus: 0.02f),
-
-        new("成就分类-成长", "成就-工艺优化", "成就描述-工艺优化", "成就奖励-残片500", ETier.Bronze,
-            () => GetMaxBuildingLevel() >= 6,
-            () => GrantItems((IFE残片, 500)), energyReductionBonus: 0.05f),
-        new("成就分类-成长", "成就-工艺大师", "成就描述-工艺大师", "成就奖励-残片1000", ETier.Gold,
-            () => GetMaxBuildingLevel() >= 12,
-            () => GrantItems((IFE残片, 1000)), energyReductionBonus: 0.10f),
-
-        new("成就分类-成长", "成就-任务自动化", "成就描述-任务自动化", "成就奖励-循环任务自动领取", ETier.Gold,
-            () => RecurringTask.TotalClaimedCount >= 100,
-            RecurringTask.UnlockAutoClaim, logisticsBonus: 0.02f),
-
-        new("成就分类-原胚", "成就-原胚循环", "成就描述-原胚循环", "成就奖励-定向原胚1", ETier.Silver,
-            () => GetProtoInventoryCount() >= 20,
-            () => GrantItems((IFE分馏塔定向原胚, 1)), logisticsBonus: 0.02f),
-        new("成就分类-原胚", "成就-星际整备", "成就描述-星际整备", "成就奖励-星际物流交互站1", ETier.Gold,
-            () => IsTechUnlocked(TFE星际物流交互),
-            () => GrantItems((IFE星际物流交互站, 1)), logisticsBonus: 0.05f),
-        new("成就分类-原胚", "成就-精馏开路", "成就描述-精馏开路", "成就奖励-精馏塔原胚3", ETier.Gold,
-            () => IsTechUnlocked(TFE物品精馏),
-            () => GrantItems((IFE精馏塔原胚, 3)), powerStageBonus: 0.05f),
-
-        new("成就分类-综合", "成就-万物归一", "成就描述-万物归一", "成就奖励-当前阶段矩阵16", ETier.Platinum,
-            () => totalFractionSuccesses >= 50000
-                  && GetUnlockedRecipeCount() >= 100
-                  && GetMaxBuildingLevel() >= 10,
-            () => GrantItems((GetCurrentStageMatrixId(), 16)), successRateBonus: 0.03f, doubleOutputBonus: 0.02f, powerStageBonus: 0.03f),
-    ];
-
-    private static bool[] unlocked = new bool[achievements.Length];
-    private static bool[] claimed = new bool[achievements.Length];
-
     public static void AddTranslations() {
         Register("成就详情", "Achievements");
         Register("成就系统", "Achievement System");
@@ -170,102 +486,143 @@ public static class Achievements {
         Register("成就分类-开线", "Opening", "开线");
         Register("成就分类-配方", "Recipe", "配方");
         Register("成就分类-成长", "Growth", "成长");
+        Register("成就分类-循环", "Recurring", "循环");
         Register("成就分类-原胚", "Proto", "原胚");
-        Register("成就分类-综合", "Mixed", "综合");
+        Register("成就分类-探索", "Explore", "探索");
+        Register("成就分类-挑战", "Challenge", "挑战");
         Register("描述", "Description");
         Register("状态", "Status");
-        Register("操作", "Action");
         Register("奖励", "Reward");
 
-        Register("已解锁成就", "Unlocked: {0}/{1}", "已解锁：{0}/{1}");
+        Register("已获得成就", "Obtained: {0}/{1}", "已获得：{0}/{1}");
         Register("隐藏未解锁", "Locked: {0}", "未解锁：{0}");
         Register("成就加成格式", "Success +{0}% / Destroy -{1}% / Double +{2}% / Energy -{3}% / Logistics +{4}% / Power +{5}%", "成功+{0}% / 损毁-{1}% / 翻倍+{2}% / 能耗-{3}% / 物流+{4}% / 发电+{5}%");
 
-        Register("已解锁", "Unlocked");
+        Register("已获得", "Obtained", "已获得");
         Register("未解锁", "Locked");
-        Register("领取", "Claim");
-        Register("已领取", "Claimed");
-        Register("未领取", "Unclaimed");
         Register("上一页", "Prev page");
         Register("下一页", "Next page");
         Register("隐藏成就提示", "???", "???");
         Register("隐藏成就描述", "Hidden achievement", "未解锁");
+        Register("成就获得提示", "Achievement unlocked: {0}", "获得成就：{0}");
 
         Register("成就品阶-青铜", "Bronze", "青铜");
         Register("成就品阶-白银", "Silver", "白银");
         Register("成就品阶-黄金", "Gold", "黄金");
         Register("成就品阶-白金", "Platinum", "白金");
 
-        Register("成就-千锤百炼", "Tempered Through Trials");
-        Register("成就描述-千锤百炼", "Complete 1000 successful fractionations", "累计完成 1000 次分馏成功");
         Register("成就奖励-残片200", "Fragments x200", "残片 x200");
-
-        Register("成就-万物皆可分馏", "Fractionate Everything");
-        Register("成就描述-万物皆可分馏", "Complete 10000 successful fractionations", "累计完成 10000 次分馏成功");
         Register("成就奖励-残片300", "Fragments x300", "残片 x300");
-
-        Register("成就-分馏之王", "King of Fractionation");
-        Register("成就描述-分馏之王", "Complete 100000 successful fractionations", "累计完成 100000 次分馏成功");
         Register("成就奖励-残片500", "Fragments x500", "残片 x500");
-
-        Register("成就-永不停歇", "Never Stop");
-        Register("成就描述-永不停歇", "Complete 1000000 successful fractionations", "累计完成 1000000 次分馏成功");
-        Register("成就奖励-残片2000", "Fragments x2000", "残片 x2000");
-
-        Register("成就-开线先锋", "Opening Pioneer");
-        Register("成就描述-开线先锋", "Perform 100 opening-line draws", "累计完成 100 次开线抽取");
-        Register("成就奖励-当前阶段矩阵2", "Current stage matrix x2", "当前阶段矩阵 x2");
-
-        Register("成就-开线专家", "Opening Expert");
-        Register("成就描述-开线专家", "Perform 500 opening-line draws", "累计完成 500 次开线抽取");
-        Register("成就奖励-当前阶段矩阵4", "Current stage matrix x4", "当前阶段矩阵 x4");
-
-        Register("成就-配方入门", "Recipe Beginner");
-        Register("成就描述-配方入门", "Unlock 5 fractionation recipes", "累计解锁 5 个分馏配方");
-        Register("成就奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
-
-        Register("成就-配方学者", "Recipe Scholar");
-        Register("成就描述-配方学者", "Unlock 30 fractionation recipes", "累计解锁 30 个分馏配方");
-        Register("成就奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
-
-        Register("成就-配方专家", "Recipe Expert");
-        Register("成就描述-配方专家", "Unlock 80 fractionation recipes", "累计解锁 80 个分馏配方");
-        Register("成就奖励-当前阶段矩阵8", "Current stage matrix x8", "当前阶段矩阵 x8");
-
-        Register("成就-万物百科", "Everything Encyclopedia");
-        Register("成就描述-万物百科", "Unlock 150 fractionation recipes", "累计解锁 150 个分馏配方");
         Register("成就奖励-残片800", "Fragments x800", "残片 x800");
-
-        Register("成就-工艺优化", "Craft Optimization");
-        Register("成就描述-工艺优化", "Reach level 6 on any FE building", "任意万物分馏建筑等级达到 6");
-        Register("成就奖励-残片500", "Fragments x500", "残片 x500");
-
-        Register("成就-工艺大师", "Craft Master");
-        Register("成就描述-工艺大师", "Reach level 12 on any FE building", "任意万物分馏建筑等级达到 12");
         Register("成就奖励-残片1000", "Fragments x1000", "残片 x1000");
+        Register("成就奖励-残片2000", "Fragments x2000", "残片 x2000");
+        Register("成就奖励-当前阶段矩阵2", "Current stage matrix x2", "当前阶段矩阵 x2");
+        Register("成就奖励-当前阶段矩阵4", "Current stage matrix x4", "当前阶段矩阵 x4");
+        Register("成就奖励-当前阶段矩阵8", "Current stage matrix x8", "当前阶段矩阵 x8");
+        Register("成就奖励-当前阶段矩阵16", "Current stage matrix x16", "当前阶段矩阵 x16");
+        Register("成就奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
+        Register("成就奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
+        Register("成就奖励-定向原胚1", "Directional Proto x1", "定向原胚 x1");
+        Register("成就奖励-星际物流交互站1", "Interstellar Interaction Station x1", "星际物流交互站 x1");
+        Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
+        Register("成就奖励-循环任务自动领取", "Recurring task auto-claim", "循环任务自动领取");
 
         Register("成就-任务自动化", "Task Automation");
-        Register("成就描述-任务自动化", "Complete 100 recurring tasks", "累计完成 100 次循环任务");
-        Register("成就奖励-循环任务自动领取", "Future recurring tasks auto-claim", "后续循环任务自动领取");
-
+        Register("成就-千锤百炼", "Tempered Through Trials");
+        Register("成就-万物皆可分馏", "Fractionate Everything");
+        Register("成就-分馏之王", "King of Fractionation");
+        Register("成就-永不停歇", "Never Stop");
+        Register("成就-开线先锋", "Opening Pioneer");
+        Register("成就-开线专家", "Opening Expert");
+        Register("成就-配方入门", "Recipe Beginner");
+        Register("成就-配方学者", "Recipe Scholar");
+        Register("成就-配方专家", "Recipe Expert");
+        Register("成就-万物百科", "Everything Encyclopedia");
+        Register("成就-工艺优化", "Craft Optimization");
+        Register("成就-工艺大师", "Craft Master");
         Register("成就-原胚循环", "Proto Cycle");
-        Register("成就描述-原胚循环", "Hold 20 tower protos in storage", "仓储中持有 20 个分馏塔原胚");
-        Register("成就奖励-定向原胚1", "Directional Proto x1", "定向原胚 x1");
-
         Register("成就-星际整备", "Interstellar Readiness");
-        Register("成就描述-星际整备", "Unlock interstellar interaction technology", "解锁星际物流交互科技");
-        Register("成就奖励-星际物流交互站1", "Interstellar Interaction Station x1", "星际物流交互站 x1");
-
         Register("成就-精馏开路", "Rectification Opening");
-        Register("成就描述-精馏开路", "Unlock item deconstruction technology", "解锁物品精馏科技");
-        Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
-
         Register("成就-万物归一", "All Into One");
-        Register("成就描述-万物归一", "Reach top milestones in production, recipes and buildings", "在生产、配方与建筑中同时达到高阶里程碑");
-        Register("成就奖励-当前阶段矩阵16", "Current stage matrix x16", "当前阶段矩阵 x16");
     }
 
-    public static void LoadConfig(ConfigFile configFile) { }
+    public static void LoadConfig(ConfigFile configFile) {
+        achievementFlagsEntry = configFile.Bind(ConfigSection, ConfigAchievementFlags, string.Empty,
+            "Achievement obtained flags. 1=obtained, 0=locked.");
+        panelOpenCountEntry = configFile.Bind(ConfigSection, ConfigPanelOpenCount, 0,
+            "How many times FE main panel has been opened.");
+
+        panelOpenCount = Math.Max(0, panelOpenCountEntry.Value);
+        LoadAchievementFlags(achievementFlagsEntry.Value);
+        configLoaded = true;
+        PersistAchievementConfig(forceSave: true);
+    }
+
+    public static void NotifyMainPanelOpened() {
+        if (!configLoaded) {
+            return;
+        }
+
+        panelOpenCount++;
+        PersistAchievementConfig();
+        CheckAndUnlockAchievements(showPopup: true);
+    }
+
+    public static void TickAutoUnlock() {
+        if (!configLoaded) {
+            return;
+        }
+
+        int frame = Time.frameCount;
+        if (frame < nextAutoCheckFrame) {
+            return;
+        }
+        nextAutoCheckFrame = frame + 60;
+        CheckAndUnlockAchievements(showPopup: true);
+    }
+
+    private static void LoadAchievementFlags(string flags) {
+        Array.Clear(unlocked, 0, unlocked.Length);
+        Array.Clear(claimed, 0, claimed.Length);
+
+        if (string.IsNullOrEmpty(flags)) {
+            return;
+        }
+
+        int count = Math.Min(flags.Length, achievements.Length);
+        for (int i = 0; i < count; i++) {
+            bool obtained = flags[i] == '1';
+            unlocked[i] = obtained;
+            claimed[i] = obtained;
+        }
+    }
+
+    private static string BuildAchievementFlags() {
+        char[] flags = new char[achievements.Length];
+        for (int i = 0; i < achievements.Length; i++) {
+            flags[i] = claimed[i] ? '1' : '0';
+        }
+        return new string(flags);
+    }
+
+    private static void PersistAchievementConfig(bool forceSave = false) {
+        if (!configLoaded || achievementFlagsEntry == null || panelOpenCountEntry == null) {
+            return;
+        }
+
+        string flags = BuildAchievementFlags();
+        bool changed = forceSave
+                       || achievementFlagsEntry.Value != flags
+                       || panelOpenCountEntry.Value != panelOpenCount;
+        if (!changed) {
+            return;
+        }
+
+        achievementFlagsEntry.Value = flags;
+        panelOpenCountEntry.Value = panelOpenCount;
+        global::FE.FractionateEverything.SaveConfig();
+    }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         SyncCurrentPageFromSharedState();
@@ -277,7 +634,6 @@ public static class Achievements {
         txtAchievementRewards = new Text[achievements.Length];
         txtAchievementStates = new Text[achievements.Length];
         rewardIcons = new MyImageButton[achievements.Length];
-        btnClaims = new UIButton[achievements.Length];
 
         float x = 0f;
         float y = 18f + 7f;
@@ -300,20 +656,17 @@ public static class Achievements {
         listNameX = 0f;
         listNameW = 220f;
         listDescX = 220f;
-        listDescW = 430f;
-        listRewardX = 660f;
-        listRewardTextX = 692f;
+        listDescW = 460f;
+        listRewardX = 690f;
+        listRewardTextX = 722f;
         listRewardTextW = 120f;
-        listStateX = 830f;
-        listStateW = 90f;
-        listActionX = 945f;
-        listActionW = 110f;
+        listStateX = 860f;
+        listStateW = 180f;
 
         wnd.AddText2(listNameX, y, tab, "成就", 14, "txtAchievementHeaderName");
         wnd.AddText2(listDescX, y, tab, "描述", 14, "txtAchievementHeaderDesc");
         wnd.AddText2(listRewardX, y, tab, "奖励", 14, "txtAchievementHeaderReward");
         wnd.AddText2(listStateX, y, tab, "状态", 14, "txtAchievementHeaderState");
-        wnd.AddText2(listActionX, y, tab, "操作", 14, "txtAchievementHeaderAction");
 
         y += 26f;
         listStartY = y;
@@ -331,16 +684,14 @@ public static class Achievements {
             txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
 
             rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, tab, null).WithSize(40f, 40f);
-            txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, tab, "动态刷新", 13, $"txtAchievementReward{j}");
+            txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, tab, "动态刷新", 13,
+                $"txtAchievementReward{j}");
             txtAchievementRewards[j].supportRichText = true;
             txtAchievementRewards[j].rectTransform.sizeDelta = new Vector2(listRewardTextW, 32f);
 
             txtAchievementStates[j] = wnd.AddText2(listStateX + x, y, tab, "动态刷新", 13, $"txtAchievementState{j}");
             txtAchievementStates[j].supportRichText = true;
             txtAchievementStates[j].rectTransform.sizeDelta = new Vector2(listStateW, 32f);
-
-            btnClaims[j] = wnd.AddButton(listActionX + x, y, listActionW, tab, "领取", 13, $"btnAchievementClaim{j}",
-                () => ClaimAchievementReward(j));
 
             y += AchievementRowSpacing;
         }
@@ -366,16 +717,12 @@ public static class Achievements {
             return;
         }
 
-        for (int i = 0; i < achievements.Length; i++) {
-            if (!unlocked[i] && achievements[i].Condition()) {
-                unlocked[i] = true;
-            }
-        }
+        CheckAndUnlockAchievements(showPopup: false);
 
-        int unlockedCount = unlocked.Count(v => v);
-        int hiddenLockedCount = achievements.Length - unlockedCount;
+        int obtainedCount = claimed.Count(v => v);
+        int hiddenLockedCount = achievements.Length - obtainedCount;
 
-        txtUnlockedSummary.text = string.Format("已解锁成就".Translate(), unlockedCount, achievements.Length).WithColor(Orange);
+        txtUnlockedSummary.text = string.Format("已获得成就".Translate(), obtainedCount, achievements.Length).WithColor(Orange);
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
         txtBonusSummary.text = string.Format("成就加成格式".Translate(),
             GetSuccessRateBonus() * 100f,
@@ -397,7 +744,6 @@ public static class Achievements {
             txtAchievementRewards[i].gameObject.SetActive(false);
             txtAchievementStates[i].gameObject.SetActive(false);
             rewardIcons[i].gameObject.SetActive(false);
-            btnClaims[i].gameObject.SetActive(false);
         }
 
         int start = currentPage * RowsPerPage;
@@ -412,19 +758,59 @@ public static class Achievements {
             NormalizeRectWithMidLeft(rewardIcons[i], listRewardX, rowY);
             txtAchievementRewards[i].SetPosition(listRewardTextX, rowY);
             txtAchievementStates[i].SetPosition(listStateX, rowY);
-            NormalizeRectWithMidLeft(btnClaims[i], listActionX, rowY);
-            btnClaims[i].GetComponent<RectTransform>().sizeDelta = new(listActionW, btnClaims[i].GetComponent<RectTransform>().sizeDelta.y);
 
             txtAchievementNames[i].gameObject.SetActive(true);
             txtAchievementDescs[i].gameObject.SetActive(true);
             txtAchievementRewards[i].gameObject.SetActive(true);
             txtAchievementStates[i].gameObject.SetActive(true);
-            btnClaims[i].gameObject.SetActive(true);
 
             RefreshAchievementRow(i);
         }
 
         UpdatePagination(totalPages);
+    }
+
+    private static bool CheckAndUnlockAchievements(bool showPopup) {
+        bool changed = false;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (claimed[i]) {
+                continue;
+            }
+
+            if (!IsConditionSatisfied(achievements[i].Condition)) {
+                continue;
+            }
+
+            UnlockAchievement(i, showPopup);
+            changed = true;
+        }
+
+        if (changed) {
+            PersistAchievementConfig();
+        }
+
+        return changed;
+    }
+
+    private static bool IsConditionSatisfied(Func<bool> condition) {
+        try {
+            return condition();
+        }
+        catch (Exception ex) {
+            LogWarning($"[Achievement] Condition check failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static void UnlockAchievement(int index, bool showPopup) {
+        unlocked[index] = true;
+        claimed[index] = true;
+        achievements[index].GrantReward?.Invoke();
+
+        if (showPopup) {
+            string message = string.Format("成就获得提示".Translate(), achievements[index].NameKey.Translate());
+            UIRealtimeTip.Popup(message, true, 2);
+        }
     }
 
     private static void PrevPage() {
@@ -455,7 +841,7 @@ public static class Achievements {
     public static float GetSuccessRateBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].SuccessRateBonus;
             }
         }
@@ -465,7 +851,7 @@ public static class Achievements {
     public static float GetDestroyReductionBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].DestroyReductionBonus;
             }
         }
@@ -475,7 +861,7 @@ public static class Achievements {
     public static float GetDoubleOutputBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].DoubleOutputBonus;
             }
         }
@@ -485,7 +871,7 @@ public static class Achievements {
     public static float GetEnergyReductionBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].EnergyReductionBonus;
             }
         }
@@ -495,7 +881,7 @@ public static class Achievements {
     public static float GetLogisticsBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].LogisticsBonus;
             }
         }
@@ -505,7 +891,7 @@ public static class Achievements {
     public static float GetPowerStageBonus() {
         float bonus = 0f;
         for (int i = 0; i < achievements.Length; i++) {
-            if (unlocked[i]) {
+            if (claimed[i]) {
                 bonus += achievements[i].PowerStageBonus;
             }
         }
@@ -513,14 +899,12 @@ public static class Achievements {
     }
 
     private static void RefreshAchievementRow(int index) {
-        if (!unlocked[index]) {
+        if (!claimed[index]) {
             txtAchievementNames[index].text = "隐藏成就提示".Translate().WithColor(Gray);
             txtAchievementDescs[index].text = "隐藏成就描述".Translate().WithColor(Gray);
             txtAchievementRewards[index].text = "";
             txtAchievementStates[index].text = "未解锁".Translate().WithColor(Gray);
             rewardIcons[index].gameObject.SetActive(false);
-            btnClaims[index].button.interactable = false;
-            btnClaims[index].SetText("隐藏成就提示");
             return;
         }
 
@@ -534,38 +918,20 @@ public static class Achievements {
             ? $"x{rewardCount}".WithColor(Blue)
             : info.RewardKey.Translate().WithColor(Blue);
 
-        txtAchievementNames[index].text = $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
+        txtAchievementNames[index].text =
+            $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
         txtAchievementDescs[index].text = info.DescKey.Translate();
         txtAchievementRewards[index].text = rewardText;
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
         if (hasRewardIcon) {
             rewardIcons[index].SetCount(rewardCount);
             txtAchievementRewards[index].text = "";
-        } else {
+        }
+        else {
             rewardIcons[index].ClearCountText();
         }
 
-        bool alreadyClaimed = claimed[index];
-        txtAchievementStates[index].text = alreadyClaimed
-            ? "已领取".Translate().WithColor(Green)
-            : "未领取".Translate().WithColor(Orange);
-
-        bool canClaim = unlocked[index] && !alreadyClaimed;
-        btnClaims[index].button.interactable = canClaim;
-        btnClaims[index].SetText(canClaim ? "领取" : "已领取");
-    }
-
-    private static void ClaimAchievementReward(int index) {
-        if (index < 0 || index >= achievements.Length) {
-            return;
-        }
-        if (!unlocked[index] || claimed[index]) {
-            return;
-        }
-
-        achievements[index].GrantReward?.Invoke();
-        claimed[index] = true;
-        RefreshAchievementRow(index);
+        txtAchievementStates[index].text = "已获得".Translate().WithColor(Green);
     }
 
     private static string GetTierTag(ETier tier) {
@@ -602,6 +968,14 @@ public static class Achievements {
                 itemId = IFE残片;
                 count = 500;
                 return true;
+            case "成就奖励-残片800":
+                itemId = IFE残片;
+                count = 800;
+                return true;
+            case "成就奖励-残片1000":
+                itemId = IFE残片;
+                count = 1000;
+                return true;
             case "成就奖励-残片2000":
                 itemId = IFE残片;
                 count = 2000;
@@ -614,6 +988,14 @@ public static class Achievements {
                 itemId = GetCurrentStageMatrixId();
                 count = 4;
                 return true;
+            case "成就奖励-当前阶段矩阵8":
+                itemId = GetCurrentStageMatrixId();
+                count = 8;
+                return true;
+            case "成就奖励-当前阶段矩阵16":
+                itemId = GetCurrentStageMatrixId();
+                count = 16;
+                return true;
             case "成就奖励-配方核心1":
                 itemId = IFE分馏配方核心;
                 count = 1;
@@ -621,18 +1003,6 @@ public static class Achievements {
             case "成就奖励-配方核心3":
                 itemId = IFE分馏配方核心;
                 count = 3;
-                return true;
-            case "成就奖励-当前阶段矩阵8":
-                itemId = GetCurrentStageMatrixId();
-                count = 8;
-                return true;
-            case "成就奖励-残片800":
-                itemId = IFE残片;
-                count = 800;
-                return true;
-            case "成就奖励-残片1000":
-                itemId = IFE残片;
-                count = 1000;
                 return true;
             case "成就奖励-定向原胚1":
                 itemId = IFE分馏塔定向原胚;
@@ -646,14 +1016,63 @@ public static class Achievements {
                 itemId = IFE精馏塔原胚;
                 count = 3;
                 return true;
-            case "成就奖励-当前阶段矩阵16":
-                itemId = GetCurrentStageMatrixId();
-                count = 16;
-                return true;
             default:
                 itemId = 0;
                 count = 0;
                 return false;
+        }
+    }
+
+    private static void GrantRewardByKey(string rewardKey) {
+        switch (rewardKey) {
+            case "成就奖励-残片200":
+                GrantItems((IFE残片, 200));
+                break;
+            case "成就奖励-残片300":
+                GrantItems((IFE残片, 300));
+                break;
+            case "成就奖励-残片500":
+                GrantItems((IFE残片, 500));
+                break;
+            case "成就奖励-残片800":
+                GrantItems((IFE残片, 800));
+                break;
+            case "成就奖励-残片1000":
+                GrantItems((IFE残片, 1000));
+                break;
+            case "成就奖励-残片2000":
+                GrantItems((IFE残片, 2000));
+                break;
+            case "成就奖励-当前阶段矩阵2":
+                GrantItems((GetCurrentStageMatrixId(), 2));
+                break;
+            case "成就奖励-当前阶段矩阵4":
+                GrantItems((GetCurrentStageMatrixId(), 4));
+                break;
+            case "成就奖励-当前阶段矩阵8":
+                GrantItems((GetCurrentStageMatrixId(), 8));
+                break;
+            case "成就奖励-当前阶段矩阵16":
+                GrantItems((GetCurrentStageMatrixId(), 16));
+                break;
+            case "成就奖励-配方核心1":
+                GrantItems((IFE分馏配方核心, 1));
+                break;
+            case "成就奖励-配方核心3":
+                GrantItems((IFE分馏配方核心, 3));
+                break;
+            case "成就奖励-定向原胚1":
+                GrantItems((IFE分馏塔定向原胚, 1));
+                break;
+            case "成就奖励-星际物流交互站1":
+                GrantItems((IFE星际物流交互站, 1));
+                break;
+            case "成就奖励-精馏塔原胚3":
+                GrantItems((IFE精馏塔原胚, 3));
+                break;
+            case "成就奖励-循环任务自动领取":
+                RecurringTask.UnlockAutoClaim();
+                break;
         }
     }
 
@@ -706,59 +1125,71 @@ public static class Achievements {
 
     public static void Import(BinaryReader r) {
         SyncCurrentPageFromSharedState();
-        Array.Clear(unlocked, 0, unlocked.Length);
-        Array.Clear(claimed, 0, claimed.Length);
+
+        if (!configLoaded || r.BaseStream.Length <= 0) {
+            return;
+        }
+
+        bool migrated = false;
+        bool[] oldUnlocked = [];
+        bool[] oldClaimed = [];
 
         r.ReadBlocks(
             ("UnlockedFlags", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < Math.Min(count, achievements.Length); i++) {
-                    unlocked[i] = br.ReadBoolean();
-                }
-                for (int i = achievements.Length; i < count; i++) {
-                    br.ReadBoolean();
-                }
+                oldUnlocked = ReadLegacyFlags(br);
             }),
             ("ClaimedFlags", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < Math.Min(count, achievements.Length); i++) {
-                    claimed[i] = br.ReadBoolean();
-                }
-                for (int i = achievements.Length; i < count; i++) {
-                    br.ReadBoolean();
-                }
+                oldClaimed = ReadLegacyFlags(br);
             })
         );
 
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i] && !unlocked[i]) {
-                claimed[i] = false;
+        int oldCount = Math.Max(oldUnlocked.Length, oldClaimed.Length);
+        for (int oldIndex = 0; oldIndex < oldCount && oldIndex < legacyAchievementNameOrder.Length; oldIndex++) {
+            bool wasUnlocked = oldIndex < oldUnlocked.Length && oldUnlocked[oldIndex];
+            bool wasClaimed = oldIndex < oldClaimed.Length && oldClaimed[oldIndex];
+            if (!wasUnlocked && !wasClaimed) {
+                continue;
             }
+
+            string legacyName = legacyAchievementNameOrder[oldIndex];
+            if (!achievementIndexByName.TryGetValue(legacyName, out int newIndex)) {
+                continue;
+            }
+
+            if (claimed[newIndex]) {
+                continue;
+            }
+
+            if (wasClaimed) {
+                unlocked[newIndex] = true;
+                claimed[newIndex] = true;
+            }
+            else {
+                UnlockAchievement(newIndex, showPopup: false);
+            }
+            migrated = true;
+        }
+
+        if (migrated) {
+            PersistAchievementConfig();
         }
     }
 
+    private static bool[] ReadLegacyFlags(BinaryReader br) {
+        int count = br.ReadInt32();
+        bool[] flags = new bool[count];
+        for (int i = 0; i < count; i++) {
+            flags[i] = br.ReadBoolean();
+        }
+        return flags;
+    }
+
     public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            ("UnlockedFlags", bw => {
-                bw.Write(achievements.Length);
-                foreach (bool value in unlocked) {
-                    bw.Write(value);
-                }
-            }),
-            ("ClaimedFlags", bw => {
-                bw.Write(achievements.Length);
-                foreach (bool value in claimed) {
-                    bw.Write(value);
-                }
-            })
-        );
     }
 
     public static void IntoOtherSave() {
         currentPage = 0;
         SyncCurrentPageToSharedState();
-        Array.Clear(unlocked, 0, unlocked.Length);
-        Array.Clear(claimed, 0, claimed.Length);
     }
 
     public static bool IsAchievementClaimed(string nameKey) {

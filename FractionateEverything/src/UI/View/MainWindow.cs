@@ -153,6 +153,7 @@ public static class MainWindow {
         }
 
         RecurringTask.TickAutoClaim();
+        Achievements.TickAutoUnlock();
 
         if (_toggleKey.keyValue) {
             if (OpenedMainPanelType == FEMainPanelType.None) {
@@ -247,6 +248,10 @@ public static class MainWindow {
                 OpenAnalysisMainPanel();
                 OpenedMainPanelType = FEMainPanelType.Analysis;
                 break;
+        }
+
+        if (OpenedMainPanelType != FEMainPanelType.None) {
+            Achievements.NotifyMainPanelOpened();
         }
     }
 
