@@ -11,20 +11,28 @@ Multiple DSP mods in one solution:
 
 ## Build Commands
 
+**Build tool rule:** In the current WSL environment, all compilation must use the local MSBuild at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`. Do not use `dotnet build` unless the user explicitly overrides this rule.
+
 ```bash
 # Build main mod (primary verification target)
-dotnet build FractionateEverything/FractionateEverything.csproj
+"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
+  FractionateEverything/FractionateEverything.csproj \
+  /t:Build /p:Configuration=Debug
 
 # Build entire solution
-dotnet build MLJ_DSPmods.sln
+"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
+  MLJ_DSPmods.sln \
+  /t:Build /p:Configuration=Debug
 
 # Release build (creates zip package in FractionateEverything/package/)
-dotnet build -c Release FractionateEverything/FractionateEverything.csproj
+"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
+  FractionateEverything/FractionateEverything.csproj \
+  /t:Build /p:Configuration=Release
 ```
 
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
-- Always run `dotnet build` after any code change before marking work complete.
+- Always run the local `MSBuild.exe` command above after any code change before marking work complete.
 
 ## Key Files
 
