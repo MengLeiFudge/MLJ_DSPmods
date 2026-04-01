@@ -1,8 +1,0 @@
-bin/
-obj/
-.vs/
-*.dll
-*.exe
-*.pdb
-# 忽略 Unity 相关的非源码文件
-Assets/Plugins/
