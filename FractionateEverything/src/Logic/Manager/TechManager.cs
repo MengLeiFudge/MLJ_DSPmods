@@ -459,9 +459,39 @@ public static class TechManager {
         return hasFiniteTech;
     }
 
+    public static float GetMatrixTierResearchProgress(int matrixId) {
+        if (GameMain.history == null) {
+            return 0f;
+        }
+
+        int total = 0;
+        int unlocked = 0;
+        foreach (TechProto tech in LDB.techs.dataArray) {
+            if (tech == null || !tech.Published || tech.IsObsolete || tech.IsHiddenTech) {
+                continue;
+            }
+            if (tech.MaxLevel > 20) {
+                continue;
+            }
+            if (ItemManager.GetTechTopMatrixID(tech) != matrixId) {
+                continue;
+            }
+
+            total++;
+            if (GameMain.history.TechUnlocked(tech.ID, true)) {
+                unlocked++;
+            }
+        }
+
+        if (total <= 0) {
+            return 0f;
+        }
+        return unlocked / (float)total;
+    }
+
     /// <summary>
-    /// 原版配方增强采用“落后一层”开放规则：
-    /// 例如电磁层增强需要能量层科技全部完成，宇宙层增强需要宇宙层终局科技全部完成。
+    /// 原版配方增强采用“落后一层”的阶段开放规则：
+    /// 只要下一层矩阵已解锁，且该层有限科技完成度达到阈值，即可开放低一层增强。
     /// </summary>
     public static bool IsVanillaEnhancementUnlockedForMatrix(int matrixId) {
         int stageIndex = ItemManager.GetMatrixStageIndex(matrixId);
@@ -470,7 +500,16 @@ public static class TechManager {
         }
 
         int requiredIndex = Mathf.Min(stageIndex + 1, ItemManager.MainProgressMatrixIds.Length - 1);
-        return IsMatrixTierFullyResearched(ItemManager.MainProgressMatrixIds[requiredIndex]);
+        int requiredMatrixId = ItemManager.MainProgressMatrixIds[requiredIndex];
+        if (GameMain.history == null || !GameMain.history.ItemUnlocked(requiredMatrixId)) {
+            return false;
+        }
+        return GetMatrixTierResearchProgress(requiredMatrixId) >= GetVanillaEnhancementUnlockThreshold(requiredMatrixId);
+    }
+
+    public static float GetVanillaEnhancementUnlockThreshold(int matrixId) {
+        int stageIndex = ItemManager.GetMatrixStageIndex(matrixId);
+        return stageIndex >= ItemManager.MainProgressMatrixIds.Length - 1 ? 0.85f : 0.60f;
     }
 
     public static int GetHighestUnlockedVanillaEnhancementMatrix() {

@@ -317,8 +317,9 @@ public static class VanillaRecipeOperate {
     private static string GetMatrixRequirementText(VanillaRecipe recipe) {
         int stageIndex = GetMatrixStageIndex(recipe.MatrixId);
         int requiredIndex = Mathf.Min(stageIndex + 1, MainProgressMatrixIds.Length - 1);
-        string nextMatrixName = LDB.items.Select(MainProgressMatrixIds[requiredIndex])?.name
-                                ?? MainProgressMatrixIds[requiredIndex].ToString();
-        return $"{nextMatrixName}全清";
+        int requiredMatrixId = MainProgressMatrixIds[requiredIndex];
+        string nextMatrixName = LDB.items.Select(requiredMatrixId)?.name ?? requiredMatrixId.ToString();
+        int percent = Mathf.RoundToInt(TechManager.GetVanillaEnhancementUnlockThreshold(requiredMatrixId) * 100f);
+        return $"{nextMatrixName}{percent}%";
     }
 }
