@@ -58,6 +58,9 @@ public static class FragmentExchange {
         btnSelectedItem.SetCount(GetItemTotalCount(selectedItemId));
         txtQuote.text = $"{ "兑换价格".Translate() }：残片 x{quote.FragmentCost}";
         txtBalance.text = $"{ "当前持有".Translate() }：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
+        btnBuy1.SetText($"{ "买1".Translate() } ({quote.FragmentCost})");
+        btnBuy10.SetText($"{ "买10".Translate() } ({quote.FragmentCost * 10})");
+        btnBuy100.SetText($"{ "买100".Translate() } ({quote.FragmentCost * 100})");
         btnBuy1.button.interactable = GetItemTotalCount(IFE残片) >= quote.FragmentCost;
         btnBuy10.button.interactable = GetItemTotalCount(IFE残片) >= (long)quote.FragmentCost * 10;
         btnBuy100.button.interactable = GetItemTotalCount(IFE残片) >= (long)quote.FragmentCost * 100;

@@ -82,6 +82,12 @@ public static class Exchange {
         txtPrice.text = $"{ "当前价格".Translate() }：{ticker.LastPrice:F1}    买入 {ticker.AskPrice:F1}    卖出 {ticker.BidPrice:F1}";
         txtInventory.text = $"{ "库存".Translate() }：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
         txtStats.text = $"日内 {ticker.DayOpenPrice:F1} -> {ticker.LastPrice:F1}    高 {ticker.DayHighPrice:F1} / 低 {ticker.DayLowPrice:F1}";
+        btnBuy1.SetText($"{ "买1".Translate() } ({Mathf.CeilToInt(ticker.AskPrice)})");
+        btnBuy10.SetText($"{ "买10".Translate() } ({Mathf.CeilToInt(ticker.AskPrice * 10f)})");
+        btnBuy100.SetText($"{ "买100".Translate() } ({Mathf.CeilToInt(ticker.AskPrice * 100f)})");
+        btnSell1.SetText($"{ "卖1".Translate() } ({Mathf.FloorToInt(ticker.BidPrice)})");
+        btnSell10.SetText($"{ "卖10".Translate() } ({Mathf.FloorToInt(ticker.BidPrice * 10f)})");
+        btnSell100.SetText($"{ "卖100".Translate() } ({Mathf.FloorToInt(ticker.BidPrice * 100f)})");
         btnSell1.button.interactable = GetItemTotalCount(selectedItemId) >= 1;
         btnSell10.button.interactable = GetItemTotalCount(selectedItemId) >= 10;
         btnSell100.button.interactable = GetItemTotalCount(selectedItemId) >= 100;
