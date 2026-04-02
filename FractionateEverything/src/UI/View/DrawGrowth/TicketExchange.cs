@@ -70,7 +70,7 @@ public static class TicketExchange {
         txtCostProto.text =
             $"{ "原胚池成本".Translate() }：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
         txtCostFocus.text =
-            $"{ "聚焦切换成本".Translate() }：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    黑雾支线通过成长池中的黑雾矩阵报价接入";
+            $"{ "聚焦切换成本".Translate() }：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    成长积分统一进入成长池";
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }

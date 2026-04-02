@@ -93,6 +93,7 @@ public static class TicketRaffle {
         Register("残片余额", "Fragments");
         Register("保底进度", "Pity");
         Register("当前池积分", "Pool Points");
+        Register("成长池积分", "Growth Points");
         Register("当前聚焦", "Focus");
         Register("抽1次", "Draw x1");
         Register("抽10次", "Draw x10");
@@ -234,7 +235,7 @@ public static class TicketRaffle {
             + $" / A×{aCount}".WithColor(Purple)
             + $" / B×{bCount}".WithColor(Blue)
             + $" / C×{cCount}".WithColor(White)
-            + $"    积分 +{results.Count}".WithColor(Green);
+            + $"    {"成长池积分".Translate()} +{results.Count}".WithColor(Green);
 
         int lineCount = Mathf.Min(ui.TxtResultLines.Length, results.Count);
         for (int i = 0; i < lineCount; i++) {
@@ -248,6 +249,9 @@ public static class TicketRaffle {
             }
             if (result.WasHardPity) {
                 line += "  保底".WithColor(Gold);
+            }
+            if (result.IsUp) {
+                line += "  聚焦".WithColor(Green);
             }
             ui.TxtResultLines[i].text = line;
         }
@@ -283,7 +287,7 @@ public static class TicketRaffle {
         ui.TxtPity.text = GachaPool.IsDrawPool(ui.PoolId)
             ? $"{"保底进度".Translate()}：{GachaManager.PityCount[ui.PoolId] + 1}/90"
             : $"{"保底进度".Translate()}：-";
-        ui.TxtPoints.text = $"{"当前池积分".Translate()}：{GachaManager.GetPoolPoints(ui.PoolId)}";
+        ui.TxtPoints.text = $"{"成长池积分".Translate()}：{GachaService.GetDisplayPoolPoints(ui.PoolId)}";
         ui.TxtFocus.text = $"{"当前聚焦".Translate()}：{GetFocusName(GachaManager.CurrentFocus)}";
 
         bool canDraw1 = GachaPool.IsDrawPool(ui.PoolId) && matrixCount >= draw1Cost;
