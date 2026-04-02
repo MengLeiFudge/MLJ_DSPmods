@@ -504,7 +504,7 @@ NewMultiplier
 ## 代码质量
 
 - [x] 建筑等级阈值提取常量
-- [ ] `ProcessManager` 热路径预索引优化
+- [x] `ProcessManager` 热路径减少重复扫描
 - [x] 抽卡相关状态与展示字段清理
   - 未使用或半使用字段：`IsUp`、`HitUpMainTarget`、部分池积分展示
 - [x] 将抽卡 / 成长 / 聚焦的设计约束补成代码注释或子目录文档
