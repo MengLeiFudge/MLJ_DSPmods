@@ -4,6 +4,7 @@ using CommonAPI.Systems;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
+using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -243,18 +244,16 @@ public static class VanillaRecipeOperate {
         } else {
             (int matrixId, int matrixCount, int fragmentCount) = GetInputUpgradeCost(vanillaRecipe, itemID);
             string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-            UIMessageBox.Show("提示".Translate(),
+            Miscellaneous.ShowQuestion("提示".Translate(),
                 $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} "
                 + $"{"来修改此项".Translate()}{"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
                     if (!TakeItemWithTip(matrixId, matrixCount, out _)
                         || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                         return;
                     }
                     vanillaRecipe.UpgradeInput(items[itemIdx]);
-                },
-                null);
+                });
         }
     }
 
@@ -275,18 +274,16 @@ public static class VanillaRecipeOperate {
         } else {
             (int matrixId, int matrixCount, int fragmentCount) = GetTimeUpgradeCost(vanillaRecipe);
             string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-            UIMessageBox.Show("提示".Translate(),
+            Miscellaneous.ShowQuestion("提示".Translate(),
                 $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} "
                 + $"{"来修改此项".Translate()}{"吗？".Translate()}",
-                "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
                 () => {
                     if (!TakeItemWithTip(matrixId, matrixCount, out _)
                         || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                         return;
                     }
                     vanillaRecipe.UpgradeTime();
-                },
-                null);
+                });
         }
     }
 

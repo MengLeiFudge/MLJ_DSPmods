@@ -50,6 +50,7 @@ public static class Miscellaneous {
     private static ConfigEntry<float> UploadThresholdEntry;
 
     private static ConfigEntry<bool> ShowFractionateRecipeDetailsEntry;
+    private static ConfigEntry<bool> EnableConfirmationDialogEntry;
 
     private static MyCheckBox PackageSortTwiceCheckBox;
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
@@ -65,6 +66,7 @@ public static class Miscellaneous {
     public static float DownloadThreshold => DownloadThresholdEntry.Value;
     public static float UploadThreshold => UploadThresholdEntry.Value;
     public static bool ShowFractionateRecipeDetails => ShowFractionateRecipeDetailsEntry.Value;
+    public static bool EnableConfirmationDialog => EnableConfirmationDialogEntry.Value;
     public static bool EnablePackageSortTwice => EnablePackageSortTwiceEntry.Value;
     public static bool EnablePackageAutoSortTwice => EnablePackageAutoSortTwiceEntry.Value;
     public static bool EnablePackageLogistic => EnablePackageLogisticEntry.Value;
@@ -96,6 +98,10 @@ public static class Miscellaneous {
         Register("显示分馏配方详细信息说明",
             "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
             "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
+        Register("启用确认弹窗", "Enable confirmation dialogs", "启用确认弹窗");
+        Register("启用确认弹窗说明",
+            "When disabled, FE's own question dialogs execute the confirm branch directly. Warning/info dialogs are not affected.",
+            "关闭后，FE 自己的确认弹窗会直接执行“确定”分支；警告框和提示框不受影响。");
 
         Register("双击背包排序按钮将多余物品收入分馏数据中心",
             "Double-click the backpack sort button to store excess items in the distillation data center");
@@ -133,6 +139,8 @@ public static class Miscellaneous {
 
         ShowFractionateRecipeDetailsEntry =
             configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "显示分馏配方详细信息");
+        EnableConfirmationDialogEntry =
+            configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
 
         EnablePackageSortTwiceEntry =
             configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
@@ -195,6 +203,10 @@ public static class Miscellaneous {
         var cb = wnd.AddCheckBox(x, y, parent, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
         wnd.AddTipsButton2(x + cb.Width + 5, y, parent,
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
+        y += 36f;
+        cb = wnd.AddCheckBox(x, y, parent, EnableConfirmationDialogEntry, "启用确认弹窗");
+        wnd.AddTipsButton2(x + cb.Width + 5, y, parent,
+            "启用确认弹窗", "启用确认弹窗说明");
         if (AutoSorter.Enable) {
             y += 36f;
             PackageAutoSortTwiceCheckBox =
@@ -231,6 +243,15 @@ public static class Miscellaneous {
     private static FEMainPanelType GetCurrentPanelType(FEMainPanelType defaultPanelType) {
         FEMainPanelType currentPanelType = MainWindow.GetCurrentMainPanelType();
         return currentPanelType == FEMainPanelType.None ? defaultPanelType : currentPanelType;
+    }
+
+    public static void ShowQuestion(string title, string content, Action onConfirm, Action onCancel = null) {
+        if (!EnableConfirmationDialog) {
+            onConfirm?.Invoke();
+            return;
+        }
+        UIMessageBox.Show(title, content, "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
+            () => onConfirm?.Invoke(), () => onCancel?.Invoke());
     }
 
     private static void RefreshSwitchMainPanelButtonLabel() {
