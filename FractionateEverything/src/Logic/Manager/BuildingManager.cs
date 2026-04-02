@@ -7,6 +7,7 @@ using FE.Logic.Recipe;
 using HarmonyLib;
 using NebulaAPI;
 using UnityEngine;
+using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
 
@@ -16,6 +17,9 @@ public static class BuildingManager {
     public const int LevelThresholdFluidEnhancement = 3;
     public const int LevelThresholdTrait1 = 6;
     public const int LevelThresholdTrait2 = 12;
+    public static readonly int[] BreakthroughLevels = [2, 5, 8, 11];
+    public static readonly int[] BreakthroughMatrixCosts = [1, 2, 4, 8];
+    public static readonly int[] BreakthroughFragmentCosts = [36, 120, 360, 960];
     public const int DefaultMaxStackTier1UpperExclusive = 6;
     public const int DefaultMaxStackTier2UpperExclusive = 9;
     public const int DefaultMaxStackTier3UpperExclusive = 12;
@@ -446,6 +450,16 @@ public static class BuildingManager {
     public static bool NeedsBreakthrough(int buildingId) {
         return GetRequiredExpForNextLevelInternal(GetCurrentLevel(buildingId)) <= 0
                && GetCurrentLevel(buildingId) < MaxLevel;
+    }
+
+    public static (int matrixId, int matrixCount, int fragmentCount) GetBreakthroughCost(int buildingLevel) {
+        int matrixId = GetCurrentProgressMatrixId();
+        for (int i = 0; i < BreakthroughLevels.Length; i++) {
+            if (BreakthroughLevels[i] == buildingLevel) {
+                return (matrixId, BreakthroughMatrixCosts[i], BreakthroughFragmentCosts[i]);
+            }
+        }
+        return (matrixId, 0, 0);
     }
 
     public static long GetRequiredExpForNextLevel(int buildingId) {

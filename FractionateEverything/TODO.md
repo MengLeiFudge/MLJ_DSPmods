@@ -503,7 +503,7 @@ NewMultiplier
 
 ## 代码质量
 
-- [ ] 建筑等级阈值提取常量
+- [x] 建筑等级阈值提取常量
 - [ ] `ProcessManager` 热路径预索引优化
 - [x] 抽卡相关状态与展示字段清理
   - 未使用或半使用字段：`IsUp`、`HitUpMainTarget`、部分池积分展示

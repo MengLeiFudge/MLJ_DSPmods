@@ -399,7 +399,7 @@ public static class BuildingOperate {
             UIRealtimeTip.Popup("当前等级需要靠经验自动成长".Translate(), true, 2);
             return;
         }
-        (int matrixId, int matrixCount, int fragmentCount) = GetReinforcementCost(SelectedBuilding.Level());
+        (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(SelectedBuilding.Level());
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         UIMessageBox.Show("提示".Translate(),
             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
@@ -440,27 +440,8 @@ public static class BuildingOperate {
 
     #endregion
 
-    private static (int matrixId, int matrixCount, int fragmentCount) GetReinforcementCost(int currentLevel) {
-        int stageMatrixId = GetCurrentProgressMatrixId();
-        int fragmentCost = currentLevel switch {
-            2 => 36,
-            5 => 120,
-            8 => 360,
-            11 => 960,
-            _ => 0,
-        };
-        int matrixCost = currentLevel switch {
-            2 => 1,
-            5 => 2,
-            8 => 4,
-            11 => 8,
-            _ => 0,
-        };
-        return (stageMatrixId, matrixCost, fragmentCost);
-    }
-
     private static string GetBreakthroughCostText(int currentLevel) {
-        (int matrixId, int matrixCount, int fragmentCount) = GetReinforcementCost(currentLevel);
+        (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(currentLevel);
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         return $"{matrixName} x{matrixCount} + 残片 x{fragmentCount}";
     }
