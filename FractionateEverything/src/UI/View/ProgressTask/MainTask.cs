@@ -13,6 +13,7 @@ using static FE.Logic.Manager.GachaManager;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressTask;
@@ -405,7 +406,7 @@ public static class MainTask {
     }
 
     private static int GetUnlockedRecipeCount() {
-        return Enum.GetValues(typeof(ERecipe)).Cast<ERecipe>()
+        return RecipeTypes
             .SelectMany(type => GetRecipesByType(type))
             .Count(recipe => recipe.Unlocked);
     }
