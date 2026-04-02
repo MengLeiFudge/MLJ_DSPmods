@@ -496,7 +496,7 @@ NewMultiplier
   - 残片兑换
 - [ ] 配方筛选、排序、搜索
 - [ ] 新的物品购买式封装 UI
-- [ ] MyImageButton 显示优化
+- [x] MyImageButton 显示优化
 - [x] 确认弹窗开关
 - [ ] Mod 介绍图标
 - [ ] 宣传视频
