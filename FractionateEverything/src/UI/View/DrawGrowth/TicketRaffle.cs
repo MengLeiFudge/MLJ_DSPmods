@@ -250,7 +250,7 @@ public static class TicketRaffle {
             if (result.WasHardPity) {
                 line += "  保底".WithColor(Gold);
             }
-            if (result.IsUp) {
+            if (result.IsFocusHit) {
                 line += "  聚焦".WithColor(Green);
             }
             ui.TxtResultLines[i].text = line;

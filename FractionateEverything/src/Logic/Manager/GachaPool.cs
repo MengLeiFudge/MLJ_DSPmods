@@ -12,18 +12,19 @@ public enum GachaRarity { C, B, A, S }
 public readonly struct GachaResult {
     public readonly int ItemId;        // 物品ID（配方用inputID，物品用itemID）
     public readonly GachaRarity Rarity;
-    public readonly bool IsUp;         // 是否为UP物品
+    public readonly bool IsFocusHit;   // 是否命中当前聚焦方向
     public readonly bool IsRecipe;     // 是否为配方（true=配方，false=物品）
     public readonly bool WasHardPity;  // 是否由硬保底直接产出
-    public readonly bool HitUpMainTarget; // 是否命中主UP目标
+    public readonly bool HitFocusMainTarget; // 是否命中当前聚焦主目标
 
-    public GachaResult(int itemId, GachaRarity rarity, bool isUp, bool isRecipe, bool wasHardPity = false, bool hitUpMainTarget = false) {
+    public GachaResult(int itemId, GachaRarity rarity, bool isFocusHit, bool isRecipe, bool wasHardPity = false,
+        bool hitFocusMainTarget = false) {
         ItemId = itemId;
         Rarity = rarity;
-        IsUp = isUp;
+        IsFocusHit = isFocusHit;
         IsRecipe = isRecipe;
         WasHardPity = wasHardPity;
-        HitUpMainTarget = hitUpMainTarget;
+        HitFocusMainTarget = hitFocusMainTarget;
     }
 }
 
