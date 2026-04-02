@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FE.Logic.Recipe;
+using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
@@ -34,7 +35,7 @@ public readonly struct GachaGrowthOffer(
 }
 
 public static class GachaService {
-    private static readonly Random rng = new();
+    private static readonly System.Random rng = new();
     private static readonly List<GachaPool> pools = [];
 
     private static int cachedMatrixId;
@@ -117,6 +118,9 @@ public static class GachaService {
     }
 
     public static bool TryChangeFocus(GachaFocusType targetFocus) {
+        if (targetFocus == GachaManager.CurrentFocus) {
+            return true;
+        }
         int fragmentCost = GetFocusSwitchFragmentCost(targetFocus);
         if (fragmentCost > 0 && !TakeItemWithTip(IFE残片, fragmentCost, out _)) {
             return false;
@@ -127,11 +131,39 @@ public static class GachaService {
     }
 
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
-        if (IsSpeedrunMode) {
-            return BuildSpeedrunGrowthOffers();
+        IReadOnlyList<GachaGrowthOffer> baseOffers = IsSpeedrunMode
+            ? BuildSpeedrunGrowthOffers()
+            : BuildNormalGrowthOffers();
+        List<GachaGrowthOffer> adjusted = new(baseOffers.Count);
+        foreach (GachaGrowthOffer offer in baseOffers) {
+            adjusted.Add(ApplyFocusOfferModifier(offer));
+        }
+        return adjusted;
+    }
+
+    private static GachaGrowthOffer ApplyFocusOfferModifier(GachaGrowthOffer offer) {
+        if (offer.FocusType == GachaFocusType.Balanced || offer.FocusType != GachaManager.CurrentFocus) {
+            return offer;
         }
 
-        return BuildNormalGrowthOffers();
+        int pointCost = Mathf.Max(1, Mathf.RoundToInt(offer.PointCost * (IsSpeedrunMode ? 0.85f : 0.80f)));
+        int fragmentCost = offer.FragmentCost <= 0
+            ? 0
+            : Mathf.Max(0, Mathf.RoundToInt(offer.FragmentCost * (IsSpeedrunMode ? 0.85f : 0.80f)));
+        int outputCount = offer.OutputCount;
+
+        bool isCoreGrowthReward = offer.OutputId == GetFocusedEmbryoReward()
+                                  || offer.OutputId == IFE分馏塔定向原胚
+                                  || offer.OutputId == IFE残片;
+        if (isCoreGrowthReward) {
+            outputCount += 1;
+            if (offer.OutputId == IFE残片) {
+                outputCount += 10;
+            }
+        }
+
+        return new GachaGrowthOffer(pointCost, fragmentCost, offer.OutputId, outputCount, offer.FocusType,
+            offer.ExtraCostItemId, offer.ExtraCostCount);
     }
 
     private static IReadOnlyList<GachaGrowthOffer> BuildNormalGrowthOffers() {
@@ -318,6 +350,15 @@ public static class GachaService {
             && GetMatrixStageIndex(recipe.MatrixID) == currentStageIndex) {
             weight += IsSpeedrunMode ? 3 : 1;
         }
+        if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
+            weight += IsSpeedrunMode ? 4 : 2;
+        }
+        if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !recipe.Unlocked) {
+            weight += IsSpeedrunMode ? 4 : 2;
+        }
+        if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy && recipe.IsMaxLevel) {
+            weight += IsSpeedrunMode ? 2 : 1;
+        }
         return Math.Max(1, weight);
     }
 
@@ -331,16 +372,16 @@ public static class GachaService {
                 weight += 2;
                 break;
             case GachaFocusType.LogisticsInteraction when itemId == IFE交互塔原胚:
-                weight += 2;
+                weight += 3;
                 break;
             case GachaFocusType.EmbryoCycle when itemId == IFE分馏塔定向原胚:
-                weight += 3;
+                weight += 4;
                 break;
             case GachaFocusType.ProcessOptimization when itemId == IFE点数聚集塔原胚:
                 weight += 2;
                 break;
             case GachaFocusType.RectificationEconomy when itemId == IFE精馏塔原胚:
-                weight += 2;
+                weight += 3;
                 break;
         }
         if (IsSpeedrunMode) {
@@ -402,12 +443,12 @@ public static class GachaService {
             bool hardPity = GachaManager.IsHardPity(poolId);
             GachaRarity rarity = RollRarity(pool, GachaManager.GetCurrentSRate(poolId, pool.RateS), hardPity);
             int itemId = hardPity ? GetHardPityItem(poolId, pool) : pool.PickRandom(rarity, rng);
+            bool isUp = IsFocusHit(poolId, itemId);
             bool isRecipe = RewardItem(poolId, itemId);
 
             GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
-            GachaManager.AddPoolPoints(poolId, 1);
             GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, 1);
-            results.Add(new GachaResult(itemId, rarity, false, isRecipe, wasHardPity: hardPity));
+            results.Add(new GachaResult(itemId, rarity, isUp, isRecipe, wasHardPity: hardPity, hitUpMainTarget: isUp));
         }
 
         return results;
@@ -447,7 +488,11 @@ public static class GachaService {
         }
 
         if (recipe.IsMaxLevel) {
-            AddItemToModData(IFE残片, IsSpeedrunMode ? 25 : 15, 0, true);
+            int fragmentReward = IsSpeedrunMode ? 25 : 15;
+            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy) {
+                fragmentReward += IsSpeedrunMode ? 10 : 5;
+            }
+            AddItemToModData(IFE残片, fragmentReward, 0, true);
             return true;
         }
 
@@ -530,5 +575,50 @@ public static class GachaService {
     public static List<GachaPool> GetAllPools() {
         EnsurePoolsFresh();
         return pools;
+    }
+
+    public static int GetDisplayPoolPoints(int poolId) {
+        return GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth);
+    }
+
+    private static bool IsFocusHit(int poolId, int itemId) {
+        if (GachaManager.CurrentFocus == GachaFocusType.Balanced) {
+            return false;
+        }
+        if (GachaPool.IsRecipePool(poolId)) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.MineralCopy, itemId)
+                                ?? RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, itemId);
+            if (recipe == null) {
+                return false;
+            }
+            if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
+                return true;
+            }
+            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !recipe.Unlocked) {
+                return true;
+            }
+            return recipe.RecipeType switch {
+                ERecipe.MineralCopy => GachaManager.CurrentFocus == GachaFocusType.MineralExpansion,
+                ERecipe.Conversion => GachaManager.CurrentFocus == GachaFocusType.ConversionLeap,
+                _ => false,
+            };
+        }
+        if (GachaPool.IsProtoLoopPool(poolId)) {
+            return itemId == GetFocusedEmbryoReward()
+                   || (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && itemId == IFE分馏塔定向原胚);
+        }
+        return false;
+    }
+
+    private static bool IsLogisticsRecipe(int inputId) {
+        return inputId switch {
+            I配送运输机 or I物流运输机 or I星际物流运输船
+                or I物流配送器 or I行星内物流运输站 or I星际物流运输站 or I轨道采集器
+                or I传送带 or I高速传送带 or I极速传送带
+                or I四向分流器 or I流速监测器 or I自动集装机
+                or I分拣器 or I高速分拣器 or I极速分拣器 or I集装分拣器
+                or I小型储物仓 or I大型储物仓 or I储液罐 => true,
+            _ => false,
+        };
     }
 }

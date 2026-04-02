@@ -209,7 +209,10 @@ public static class LimitedTimeStore {
                 }
                 growthPage.Rows[i].BtnRewardIcon.Proto = LDB.items.Select(offer.OutputId);
                 growthPage.Rows[i].BtnRewardIcon.SetCount(offer.OutputCount);
-                growthPage.Rows[i].TxtReward.text = "";
+                string focusSuffix = offer.FocusType == GachaFocusType.Balanced
+                    ? string.Empty
+                    : $"  [{offer.FocusType}]".WithColor(Green);
+                growthPage.Rows[i].TxtReward.text = focusSuffix;
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost
                               && (offer.ExtraCostItemId <= 0 || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount);

@@ -136,6 +136,9 @@ public static class GachaManager {
     }
 
     public static void SetFocus(GachaFocusType focus) {
+        if (focus == CurrentFocus) {
+            return;
+        }
         CurrentFocus = focus;
         if (IsSpeedrunMode) {
             for (int i = 0; i < FocusAffinity.Length; i++) {
