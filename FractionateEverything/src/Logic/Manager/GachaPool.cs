@@ -8,23 +8,42 @@ namespace FE.Logic.Manager;
 /// <summary>稀有度等级</summary>
 public enum GachaRarity { C, B, A, S }
 
+/// <summary>聚焦命中层级。主目标比普通联动更强，用于结果页表达。</summary>
+public enum GachaFocusMatchType { None, Side, Main }
+
+/// <summary>单次抽卡实际结算后的奖励语义。</summary>
+public enum GachaRewardType {
+    None,
+    RecipeUnlock,
+    RecipeUpgrade,
+    DuplicateRecipeFragments,
+    ItemGranted,
+}
+
 /// <summary>单次抽卡结果</summary>
 public readonly struct GachaResult {
     public readonly int ItemId;        // 物品ID（配方用inputID，物品用itemID）
     public readonly GachaRarity Rarity;
-    public readonly bool IsFocusHit;   // 是否命中当前聚焦方向
-    public readonly bool IsRecipe;     // 是否为配方（true=配方，false=物品）
+    public readonly GachaFocusMatchType FocusMatchType;
+    public readonly GachaRewardType RewardType;
+    public readonly int RewardItemId;  // 实际补偿/发放物品ID；配方升级时为0
+    public readonly int RewardCount;   // 实际补偿/发放数量；配方升级时记录升级后的等级
     public readonly bool WasHardPity;  // 是否由硬保底直接产出
-    public readonly bool HitFocusMainTarget; // 是否命中当前聚焦主目标
+    public bool IsFocusHit => FocusMatchType != GachaFocusMatchType.None;
+    public bool HitFocusMainTarget => FocusMatchType == GachaFocusMatchType.Main;
+    public bool IsRecipe => RewardType is GachaRewardType.RecipeUnlock
+        or GachaRewardType.RecipeUpgrade
+        or GachaRewardType.DuplicateRecipeFragments;
 
-    public GachaResult(int itemId, GachaRarity rarity, bool isFocusHit, bool isRecipe, bool wasHardPity = false,
-        bool hitFocusMainTarget = false) {
+    public GachaResult(int itemId, GachaRarity rarity, GachaFocusMatchType focusMatchType, GachaRewardType rewardType,
+        int rewardItemId, int rewardCount, bool wasHardPity = false) {
         ItemId = itemId;
         Rarity = rarity;
-        IsFocusHit = isFocusHit;
-        IsRecipe = isRecipe;
+        FocusMatchType = focusMatchType;
+        RewardType = rewardType;
+        RewardItemId = rewardItemId;
+        RewardCount = rewardCount;
         WasHardPity = wasHardPity;
-        HitFocusMainTarget = hitFocusMainTarget;
     }
 }
 

@@ -19,6 +19,10 @@ public enum GachaMode {
     Speedrun = 1,
 }
 
+/// <summary>
+/// 抽卡状态存档层。
+/// 这里只保存保底、成长池积分和聚焦状态；抽卡结果分布与成长报价由 GachaService 负责实时计算。
+/// </summary>
 public static class GachaManager {
     // 每个抽卡池的保底计数器（poolId → 自上次出S后的连续未出S抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
@@ -104,6 +108,7 @@ public static class GachaManager {
         return GachaPool.IsValidPoolId(poolId) ? PoolPoints[poolId] : 0;
     }
 
+    /// <summary>2.3 起所有抽卡只累加成长池积分，其余池积分不再作为独立玩法资源。</summary>
     public static void AddPoolPoints(int poolId, int amount) {
         if (!GachaPool.IsValidPoolId(poolId) || amount <= 0) {
             return;
@@ -141,6 +146,7 @@ public static class GachaManager {
         }
         CurrentFocus = focus;
         if (IsSpeedrunMode) {
+            // 速通模式允许频繁换向，但只在切到“不同聚焦”时结算亲和度，避免免费空刷。
             for (int i = 0; i < FocusAffinity.Length; i++) {
                 if (i == (int)focus) {
                     FocusAffinity[i] = Math.Min(FocusAffinity[i] + 2, 6);
