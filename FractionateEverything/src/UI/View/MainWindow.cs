@@ -44,6 +44,10 @@ public static class MainWindow {
         Register("物资交互", "Resource Interaction");
         ItemInteraction.AddTranslations();
         ImportantItem.AddTranslations();
+        ResourceOverview.AddTranslations();
+        MarketBoard.AddTranslations();
+        Exchange.AddTranslations();
+        FragmentExchange.AddTranslations();
         Register("抽取成长", "Draw & Growth");
         Register("前往商店", "Go to Store");
         Register("前往抽奖", "Go to Raffle");
@@ -71,6 +75,10 @@ public static class MainWindow {
 
         ItemInteraction.LoadConfig(configFile);
         ImportantItem.LoadConfig(configFile);
+        ResourceOverview.LoadConfig(configFile);
+        MarketBoard.LoadConfig(configFile);
+        Exchange.LoadConfig(configFile);
+        FragmentExchange.LoadConfig(configFile);
 
         TicketRaffle.LoadConfig(configFile);
         LimitedTimeStore.LoadConfig(configFile);
