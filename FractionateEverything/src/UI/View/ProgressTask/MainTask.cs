@@ -55,6 +55,8 @@ public static class MainTask {
     private static Text txtTotalProgress;
     private static UIButton btnClaim;
 
+    // 主线任务只保留稀疏里程碑：开线 20、常规闭环 100 配方 / 5000 分馏。
+    // 更细的 50 / 100 抽、60 / 100 / 150 配方梯度交给 Achievements 承载，避免两套系统重复讲同一件事。
     private static readonly TaskInfo[] NormalTasks = [
         new("分馏启示", "主线描述-分馏启示", "主线奖励-残片200", IFE残片, 200, () => IsTechUnlocked(TFE分馏数据中心),
             () => GetTechProgressText(TFE分馏数据中心), () => GrantItems((IFE残片, 200)), true),
@@ -83,6 +85,7 @@ public static class MainTask {
             () => GrantItems((IFE残片, 2000))),
     ];
 
+    // 速通模式压缩的是时长，不改核心内容类别：仍然要求开线、产能、关键科技与配方闭环都出现。
     private static readonly TaskInfo[] SpeedrunTasks = [
         new("速通启程", "速通描述-速通启程", "主线奖励-残片200", IFE残片, 200,
             () => IsTechUnlocked(TFE分馏数据中心),

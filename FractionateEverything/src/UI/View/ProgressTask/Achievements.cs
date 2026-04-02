@@ -204,6 +204,7 @@ public static class Achievements {
     }
 
     private static void AddRecipeAchievements(List<AchievementInfo> list) {
+        // 配方线的关键锚点统一落在 60 / 100 / 150，分别对应速通闭环、常规闭环与后期百科完成度。
         var defs = new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float PowerBonus)[] {
             ("配方启蒙", 1, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
             ("配方初识", 3, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
@@ -211,8 +212,8 @@ public static class Achievements {
             ("配方进修", 10, "成就奖励-配方核心1", ETier.Silver, 0.002f, 0.001f, 0f),
             ("配方拓展", 20, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.002f, 0f),
             ("成就-配方学者", 30, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.003f, 0f),
-            ("配方总览", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
-            ("成就-配方专家", 80, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
+            ("配方总览", 60, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
+            ("成就-配方专家", 100, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
             ("配方馆长", 120, "成就奖励-残片800", ETier.Platinum, 0.01f, 0.008f, 0.015f),
             ("成就-万物百科", 150, "成就奖励-残片1000", ETier.Platinum, 0.015f, 0.01f, 0.02f),
         };
@@ -402,10 +403,10 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "基础闭环",
-            "累计 5000 次分馏成功、解锁 50 个配方并将任意建筑升到 6 级",
+            "累计 5000 次分馏成功、解锁 60 个配方并将任意建筑升到 6 级",
             "成就奖励-当前阶段矩阵8",
             ETier.Gold,
-            () => totalFractionSuccesses >= 5000 && GetUnlockedRecipeCount() >= 50 && GetMaxBuildingLevel() >= 6,
+            () => totalFractionSuccesses >= 5000 && GetUnlockedRecipeCount() >= 60 && GetMaxBuildingLevel() >= 6,
             () => GrantRewardByKey("成就奖励-当前阶段矩阵8"),
             successRateBonus: 0.01f,
             doubleOutputBonus: 0.005f,
@@ -414,10 +415,10 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "全域工艺",
-            "累计 20000 次分馏成功、解锁 80 个配方并将任意建筑升到 8 级",
+            "累计 20000 次分馏成功、解锁 100 个配方并将任意建筑升到 8 级",
             "成就奖励-当前阶段矩阵16",
             ETier.Gold,
-            () => totalFractionSuccesses >= 20000 && GetUnlockedRecipeCount() >= 80 && GetMaxBuildingLevel() >= 8,
+            () => totalFractionSuccesses >= 20000 && GetUnlockedRecipeCount() >= 100 && GetMaxBuildingLevel() >= 8,
             () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
             successRateBonus: 0.015f,
             destroyReductionBonus: 0.005f,
@@ -442,12 +443,12 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "常规毕业",
-            "常规模式下累计 30000 次分馏成功，并解锁 120 个配方与星际物流交互科技",
+            "常规模式下累计 30000 次分馏成功，并解锁 150 个配方与星际物流交互科技",
             "成就奖励-残片2000",
             ETier.Platinum,
             () => !IsSpeedrunMode
                   && totalFractionSuccesses >= 30000
-                  && GetUnlockedRecipeCount() >= 120
+                  && GetUnlockedRecipeCount() >= 150
                   && IsTechUnlocked(TFE星际物流交互),
             () => GrantRewardByKey("成就奖励-残片2000"),
             successRateBonus: 0.02f,
