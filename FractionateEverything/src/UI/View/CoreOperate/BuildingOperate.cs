@@ -4,6 +4,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
+using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
@@ -401,10 +402,9 @@ public static class BuildingOperate {
         }
         (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(SelectedBuilding.Level());
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-        UIMessageBox.Show("提示".Translate(),
+        Miscellaneous.ShowQuestion("提示".Translate(),
             (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
             + $"{"关键节点突破".Translate()}{"吗？".Translate()}",
-            "确定".Translate(), "取消".Translate(), UIMessageBox.QUESTION,
             () => {
                 if (!TakeItemWithTip(matrixId, matrixCount, out _)
                     || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
@@ -415,8 +415,7 @@ public static class BuildingOperate {
                     "关键节点突破".Translate(),
                     "确定".Translate(), UIMessageBox.INFO,
                     null);
-            },
-            null);
+            });
     }
 
     private static void ChangeLevelTo(int target) {
