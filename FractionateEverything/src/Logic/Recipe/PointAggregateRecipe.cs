@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Building;
 using FE.Logic.Manager;
@@ -47,11 +48,11 @@ public class PointAggregateRecipe : BaseRecipe {
         float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
 
         if (GetRandDouble(ref seed) < ratio) {
-            // 成功聚集：消耗 MaxInc 点数，产出一个原物品
+            // 成功聚集：双重点数仍然更强，但不再直接把点数消耗砍半，避免 12 级形成压倒性最优。
             inputChange = -1;
             outputs = [new(true, InputID, 1)];
             fluidInputInc -= PointAggregateTower.EnableDoublePoints
-                ? PointAggregateTower.MaxInc / 2
+                ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
                 : PointAggregateTower.MaxInc;
             return;
         }
