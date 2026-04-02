@@ -194,6 +194,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         ItemManager.CalculateItemValues();
         //将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
+        // 动态经济系统依赖基础价值与矩阵阶段映射
+        EconomyManager.Init();
         //UpdateHpAndEnergy用到了Init生成的数据
         BuildingManager.UpdateHpAndEnergy();
         //SetFractionatorCacheSize用到了Init生成的数据
@@ -257,6 +259,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Building", BuildingManager.Import),
             ("Item", ItemManager.Import),
             ("Gacha", GachaManager.Import),
+            ("Economy", EconomyManager.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
@@ -272,6 +275,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("Building", BuildingManager.Export),
             ("Item", ItemManager.Export),
             ("Gacha", GachaManager.Export),
+            ("Economy", EconomyManager.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -296,6 +300,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         GachaManager.IntoOtherSave();
+        EconomyManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 
