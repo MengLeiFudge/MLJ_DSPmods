@@ -102,13 +102,14 @@ public static class MarketBoardManager {
         int currentMatrixId = GetCurrentProgressMatrixId();
         IReadOnlyList<int> highDemand = MarketValueManager.GetTopMarketItems(12, descending: true);
         IReadOnlyList<int> lowDemand = MarketValueManager.GetTopMarketItems(12, descending: false);
+        var usedItems = new HashSet<int>();
         long interval = GachaManager.IsSpeedrunMode ? 60L * 60L * 20L : 60L * 60L * 60L;
         currentExpireTick = GameMain.gameTick + interval;
 
-        TryAddBuyOffer(highDemand);
-        TryAddBuyOffer(highDemand.Skip(1).ToArray());
-        TryAddSellOffer(lowDemand);
-        TryAddSellOffer(lowDemand.Skip(1).ToArray());
+        TryAddBuyOffer(highDemand, usedItems);
+        TryAddBuyOffer(highDemand, usedItems);
+        TryAddSellOffer(lowDemand, usedItems);
+        TryAddSellOffer(lowDemand, usedItems);
         activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.StageSupply,
             IFE残片, 120, 0, 0, currentMatrixId, 64, currentExpireTick, MarketValueManager.RefreshVersion));
 
@@ -122,22 +123,24 @@ public static class MarketBoardManager {
         }
     }
 
-    private static void TryAddBuyOffer(IReadOnlyList<int> candidates) {
-        int itemId = candidates.FirstOrDefault(item => item != IFE残片 && item != I沙土 && IsBoardFriendly(item));
+    private static void TryAddBuyOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
+        int itemId = PickCandidate(candidates, usedItems);
         if (itemId <= 0) {
             return;
         }
+        usedItems.Add(itemId);
         int count = GetSuggestedTradeCount(itemId, buyFromPlayer: true);
         int fragments = Mathf.Max(1, Mathf.RoundToInt(MarketValueManager.GetValue(itemId) * count * 1.10f));
         activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.BuyFromPlayer,
             itemId, count, 0, 0, IFE残片, fragments, currentExpireTick, MarketValueManager.RefreshVersion));
     }
 
-    private static void TryAddSellOffer(IReadOnlyList<int> candidates) {
-        int itemId = candidates.FirstOrDefault(item => item != IFE残片 && item != I沙土 && IsBoardFriendly(item));
+    private static void TryAddSellOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
+        int itemId = PickCandidate(candidates, usedItems);
         if (itemId <= 0) {
             return;
         }
+        usedItems.Add(itemId);
         int count = GetSuggestedTradeCount(itemId, buyFromPlayer: false);
         int fragments = Mathf.Max(1, Mathf.RoundToInt(MarketValueManager.GetValue(itemId) * count * 0.80f));
         activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.SellToPlayer,
@@ -146,6 +149,21 @@ public static class MarketBoardManager {
 
     private static bool IsBoardFriendly(int itemId) {
         return MarketValueManager.CanParticipateInEconomy(itemId) && itemId != IFE残片;
+    }
+
+    private static int PickCandidate(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
+        List<int> filtered = [];
+        foreach (int itemId in candidates) {
+            if (!IsBoardFriendly(itemId) || usedItems.Contains(itemId)) {
+                continue;
+            }
+            filtered.Add(itemId);
+        }
+        if (filtered.Count == 0) {
+            return 0;
+        }
+        int poolSize = Math.Min(filtered.Count, 4);
+        return filtered[rng.Next(poolSize)];
     }
 
     private static int GetSuggestedTradeCount(int itemId, bool buyFromPlayer) {
