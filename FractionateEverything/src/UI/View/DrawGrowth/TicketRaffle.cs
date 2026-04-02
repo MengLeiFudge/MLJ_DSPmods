@@ -10,6 +10,10 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.View.DrawGrowth;
 
+/// <summary>
+/// 开线 / 原胚抽取页。
+/// 本页只展示当前卡池状态与最近结果，所有概率、保底、聚焦命中和奖励结算都来自 GachaService。
+/// </summary>
 public static class TicketRaffle {
     private sealed class RaffleTabUi {
         public int PoolId;
@@ -102,6 +106,14 @@ public static class TicketRaffle {
         Register("结果摘要", "Summary");
         Register("暂无抽取结果", "No draws yet.", "暂无抽取结果");
         Register("更多结果已折叠", "More results folded.", "其余结果已折叠");
+        Register("配方解锁", "Recipe Unlock");
+        Register("配方提升", "Recipe Upgrade");
+        Register("满级转残片", "Duplicate -> Fragments", "满级转残片");
+        Register("物品入库", "Stored");
+        Register("聚焦主目标", "Focus Main");
+        Register("聚焦联动", "Focus Synergy");
+        Register("聚焦命中", "Focus Hit");
+        Register("保底命中", "Pity Hit");
 
         Register("聚焦-平衡发展", "Balanced Growth");
         Register("聚焦描述-平衡发展", "No extra bias; both pools stay average.", "不过度偏置任何方向，适合长期稳步推进。");
@@ -153,6 +165,7 @@ public static class TicketRaffle {
         ui.TxtPoints = MyWindow.AddText(0f, y, ui.Tab, "", 13);
         y += 24f;
         ui.TxtFocus = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        ui.TxtFocus.rectTransform.sizeDelta = new Vector2(960f, 40f);
 
         y += 34f;
         ui.BtnDraw1 = wnd.AddButton(0f, y, 140f, ui.Tab, "抽1次".Translate(), 14,
@@ -166,7 +179,7 @@ public static class TicketRaffle {
 
         y += 48f;
         ui.TxtResultSummary = MyWindow.AddText(0f, y, ui.Tab, "暂无抽取结果".Translate(), 13);
-        ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(960f, 24f);
+        ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(960f, 40f);
 
         y += 28f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
@@ -210,6 +223,9 @@ public static class TicketRaffle {
         int aCount = 0;
         int bCount = 0;
         int cCount = 0;
+        int focusHitCount = 0;
+        int focusMainHitCount = 0;
+        int hardPityCount = 0;
         foreach (var result in results) {
             switch (result.Rarity) {
                 case GachaRarity.S:
@@ -225,6 +241,15 @@ public static class TicketRaffle {
                     cCount++;
                     break;
             }
+            if (result.IsFocusHit) {
+                focusHitCount++;
+            }
+            if (result.HitFocusMainTarget) {
+                focusMainHitCount++;
+            }
+            if (result.WasHardPity) {
+                hardPityCount++;
+            }
         }
 
         int cost = GachaService.GetDrawMatrixCost(ui.PoolId, count);
@@ -235,7 +260,10 @@ public static class TicketRaffle {
             + $" / A×{aCount}".WithColor(Purple)
             + $" / B×{bCount}".WithColor(Blue)
             + $" / C×{cCount}".WithColor(White)
-            + $"    {"成长池积分".Translate()} +{results.Count}".WithColor(Green);
+            + $"    {"成长池积分".Translate()} +{results.Count}".WithColor(Green)
+            + $"    {"聚焦命中".Translate()} ×{focusHitCount}".WithColor(Green)
+            + $" / {"聚焦主目标".Translate()} ×{focusMainHitCount}".WithColor(Blue)
+            + $" / {"保底命中".Translate()} ×{hardPityCount}".WithColor(Gold);
 
         int lineCount = Mathf.Min(ui.TxtResultLines.Length, results.Count);
         for (int i = 0; i < lineCount; i++) {
@@ -243,17 +271,7 @@ public static class TicketRaffle {
             ui.BtnResultIcons[i].gameObject.SetActive(true);
             ui.BtnResultIcons[i].Proto = LDB.items.Select(result.ItemId);
             ui.BtnResultIcons[i].SetCount(1);
-            string line = $"[{result.Rarity}]";
-            if (result.IsRecipe) {
-                line += "  配方".WithColor(Orange);
-            }
-            if (result.WasHardPity) {
-                line += "  保底".WithColor(Gold);
-            }
-            if (result.IsFocusHit) {
-                line += "  聚焦".WithColor(Green);
-            }
-            ui.TxtResultLines[i].text = line;
+            ui.TxtResultLines[i].text = BuildResultLine(result);
         }
 
         for (int i = lineCount; i < ui.TxtResultLines.Length; i++) {
@@ -287,8 +305,8 @@ public static class TicketRaffle {
         ui.TxtPity.text = GachaPool.IsDrawPool(ui.PoolId)
             ? $"{"保底进度".Translate()}：{GachaManager.PityCount[ui.PoolId] + 1}/90"
             : $"{"保底进度".Translate()}：-";
-        ui.TxtPoints.text = $"{"成长池积分".Translate()}：{GachaService.GetDisplayPoolPoints(ui.PoolId)}";
-        ui.TxtFocus.text = $"{"当前聚焦".Translate()}：{GetFocusName(GachaManager.CurrentFocus)}";
+        ui.TxtPoints.text = $"{"成长池积分".Translate()}：{GachaService.GetDisplayPoolPoints()}";
+        ui.TxtFocus.text = $"{"当前聚焦".Translate()}：{GachaService.GetFocusName(GachaManager.CurrentFocus)}    {GetFocusEffectSummary()}";
 
         bool canDraw1 = GachaPool.IsDrawPool(ui.PoolId) && matrixCount >= draw1Cost;
         bool canDraw10 = GachaPool.IsDrawPool(ui.PoolId) && matrixCount >= draw10Cost;
@@ -303,13 +321,56 @@ public static class TicketRaffle {
         }
     }
 
-    private static string GetFocusName(GachaFocusType focusType) {
-        foreach (var focus in GachaService.FocusDefinitions) {
-            if (focus.FocusType == focusType) {
-                return focus.NameKey.Translate();
-            }
+    private static string BuildResultLine(GachaResult result) {
+        string itemName = LDB.items.Select(result.ItemId)?.name ?? result.ItemId.ToString();
+        string line = $"{GetRarityTag(result.Rarity)}  {itemName}  {GetRewardText(result)}";
+        if (result.WasHardPity) {
+            line += $"  {"保底命中".Translate()}".WithColor(Gold);
         }
-        return focusType.ToString();
+        if (result.FocusMatchType == GachaFocusMatchType.Main) {
+            line += $"  {"聚焦主目标".Translate()}".WithColor(Blue);
+        } else if (result.FocusMatchType == GachaFocusMatchType.Side) {
+            line += $"  {"聚焦联动".Translate()}".WithColor(Green);
+        }
+        return line;
+    }
+
+    private static string GetRewardText(GachaResult result) {
+        return result.RewardType switch {
+            GachaRewardType.RecipeUnlock => $"{"配方解锁".Translate()} Lv{result.RewardCount}".WithColor(Orange),
+            GachaRewardType.RecipeUpgrade => $"{"配方提升".Translate()} -> Lv{result.RewardCount}".WithColor(Orange),
+            GachaRewardType.DuplicateRecipeFragments =>
+                $"{"满级转残片".Translate()} {GetRewardItemName(result)} x{result.RewardCount}".WithColor(Green),
+            GachaRewardType.ItemGranted => $"{"物品入库".Translate()} x{result.RewardCount}".WithColor(Blue),
+            _ => string.Empty,
+        };
+    }
+
+    private static string GetRewardItemName(GachaResult result) {
+        return LDB.items.Select(result.RewardItemId)?.name ?? result.RewardItemId.ToString();
+    }
+
+    private static string GetRarityTag(GachaRarity rarity) {
+        return rarity switch {
+            GachaRarity.S => "[S]".WithColor(Gold),
+            GachaRarity.A => "[A]".WithColor(Purple),
+            GachaRarity.B => "[B]".WithColor(Blue),
+            _ => "[C]".WithColor(White),
+        };
+    }
+
+    private static string GetFocusEffectSummary() {
+        float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
+        return GachaManager.CurrentFocus switch {
+            GachaFocusType.Balanced => "不额外偏置开线或原胚，成长页保持原价。".WithColor(White),
+            GachaFocusType.MineralExpansion => $"开线池偏向矿物复制；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.ConversionLeap => $"开线池偏向转化配方；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.LogisticsInteraction => $"开线池偏向物流链配方，原胚池偏向交互塔原胚；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.EmbryoCycle => $"开线池偏向未解锁配方，原胚池偏向定向原胚；成长页命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
+            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向点数聚集塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.RectificationEconomy => $"原胚池偏向精馏塔，满级重复配方会补偿更多残片；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            _ => string.Empty,
+        };
     }
 
     public static void UpdateUI() {
