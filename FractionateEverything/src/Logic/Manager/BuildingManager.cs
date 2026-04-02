@@ -410,7 +410,7 @@ public static class BuildingManager {
         < 5 => 1.1f,
         < 8 => 1.3f,
         < 11 => 1.6f,
-        _ => 2.0f,
+        _ => 1.8f,
     };
 
     public static float GetStationInteractEnergyRatioByLevel(int level) => level switch {

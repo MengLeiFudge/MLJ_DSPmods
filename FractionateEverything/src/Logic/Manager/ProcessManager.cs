@@ -58,6 +58,9 @@ public static class ProcessManager {
     public static readonly int MaxLevel = 12;
     private const int SacrificeTowerTypeCount = IFE精馏塔 - IFE交互塔 + 1;
     private const float SacrificeBoostStep = 0.05f;
+    private const float SacrificeBoostCapTrait1 = 0.75f;
+    private const float SacrificeBoostCapTrait2 = 1.00f;
+    private const int ZeroPressureInternalStackCap = 8;
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
     private static readonly int[] sacrificeStepIndex = new int[SacrificeTowerTypeCount];
@@ -317,7 +320,7 @@ public static class ProcessManager {
             if (buildingID == IFE矿物复制塔
                 && MineralReplicationTower.EnableMassEnergyFission
                 && __instance.fluidInputCount > 0) {
-                int pointsPerItem = MineralReplicationTower.EnableZeroPressureCycle ? 50 : 25;
+                int pointsPerItem = MineralReplicationTower.EnableZeroPressureCycle ? 40 : 25;
                 int poolTarget = __instance.fluidInputCount * 15;
                 int pool = __instance.GetFissionPointPool(factory);
                 // 池量不足时批量消耗原料补满
@@ -462,9 +465,10 @@ public static class ProcessManager {
         // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (buildingID == IFE矿物复制塔
             && MineralReplicationTower.EnableZeroPressureCycle) {
-            // 稳定运转目标：fluidInput ≈ 360（MaxBeltSpeed×MaxStack），fluidOutput ≈ 24（2×MaxStack）
-            int fluidInputTarget = MaxBeltSpeed * MineralReplicationTower.MaxStack;// 360
-            int fluidOutputTarget = 2 * MineralReplicationTower.MaxStack;// 24
+            // 12 级仍然允许自循环，但内循环缓冲只按 8-stack 设计，避免完全替代外部物流与供料。
+            int zeroPressureStack = Math.Min(MineralReplicationTower.MaxStack, ZeroPressureInternalStackCap);
+            int fluidInputTarget = MaxBeltSpeed * zeroPressureStack;
+            int fluidOutputTarget = 2 * zeroPressureStack;
             bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
                                       || __instance.belt2 > 0 && __instance.isOutput2;
 
@@ -902,9 +906,11 @@ public static class ProcessManager {
     }
 
     private static void UpdateSacrificeBoost(int[] takeCounts) {
+        float boostCap = InteractionTower.EnableDimensionalResonance ? SacrificeBoostCapTrait2 : SacrificeBoostCapTrait1;
         for (int i = 0; i < SacrificeTowerTypeCount; i++) {
             float rawBoost = Mathf.Sqrt(takeCounts[i]) / 10.0f;
-            sacrificeStepIndex[i] = Math.Max(0, Mathf.FloorToInt(rawBoost / SacrificeBoostStep));
+            float clampedBoost = Mathf.Min(rawBoost, boostCap);
+            sacrificeStepIndex[i] = Math.Max(0, Mathf.FloorToInt(clampedBoost / SacrificeBoostStep));
         }
 
         InteractionTower.SuccessBoost = sacrificeStepIndex[0] * SacrificeBoostStep;
