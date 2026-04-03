@@ -49,7 +49,7 @@ public static class VanillaRecipeOperate {
                 return;
             }
             SelectedRecipe = recipe;
-        }, true, recipe => recipe != null && GameMain.history.RecipeUnlocked(recipe.ID));
+        }, true, recipe => recipe != null && (showLocked || GameMain.history.RecipeUnlocked(recipe.ID)));
     }
 
     public static void AddTranslations() {
