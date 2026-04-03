@@ -184,6 +184,44 @@ sudo apt update
 sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 ```
 
+根据你是否有 VPN，处理方式不一样：
+
+- **无 VPN**：直接换 apt 源，别的不用做。
+- **有 VPN**：如果 apt 仍然卡住，再继续看下面的代理/TUN通道配置。
+
+##### 1.2.1 无 VPN：直接换 apt 源
+
+如果你平时不用 VPN，最简单的方式就是直接换国内 apt 源，不要折腾代理。
+
+下面给一个 Ubuntu 的常见示例（清华源）：
+
+```
+# 先备份
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
+# 用编辑器打开 sources.list
+sudo nano /etc/apt/sources.list
+```
+
+将里面内容替换成你对应 Ubuntu 版本的国内源，例如：
+
+```
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-backports main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-security main restricted universe multiverse
+```
+
+保存之后执行：
+
+```
+sudo apt update
+```
+
+如果 `apt update` 正常，就说明无 VPN 场景已经处理完了，后面关于代理的内容都不用看。
+
+##### 1.2.2 有 VPN：让 WSL 的 apt 正常走代理
+
 假如用apt的时候必须要显式设置Proxy（就是上面的最后一行指令，添加-o参数），大概率是wsl没有走代理的TUN通道。
 
 我们先不说怎么解决，先讲清楚为什么要解决。
