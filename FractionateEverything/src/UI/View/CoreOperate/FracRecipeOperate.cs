@@ -252,19 +252,15 @@ public static class FracRecipeOperate {
             ShowTextLine(line++, "");// 空行
 
             float sacrificeBoost = building?.SuccessBoost() ?? 0f;
-            float achievementBoost = Achievements.GetSuccessRateBonus();
-            float echoBoost = recipe.EchoBonus;
-            float galleryBoost = GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
+            float progressBoost = Achievements.GetSuccessRateBonus();
             float actualSuccessRatio = Mathf.Clamp01(recipe.SuccessRatio
                                      * (1f + sacrificeBoost)
-                                     * (1f + achievementBoost)
-                                     * (1f + echoBoost)
-                                     * (1f + galleryBoost));
+                                     * (1f + progressBoost));
             ShowTextLine(line++,
-                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + achievementBoost):F3} × {(1f + echoBoost):F3} × {(1f + galleryBoost):F3} = {actualSuccessRatio:P3}"
+                $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + progressBoost):F3} = {actualSuccessRatio:P3}"
                     .WithColor(Orange));
             ShowTextLine(line++,
-                $"(献祭 +{sacrificeBoost:P2} / 成就 +{achievementBoost:P2} / 回响 +{echoBoost:P2} / 图鉴 +{galleryBoost:P2})"
+                $"(献祭 +{sacrificeBoost:P2} / 成就 +{progressBoost:P2})"
                     .WithColor(Gray));
 
             // 损毁率
@@ -272,7 +268,7 @@ public static class FracRecipeOperate {
             float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
             string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
             if (destroyReduction > 0f) {
-                destroyText += $"（图鉴 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
+                destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
             }
             ShowTextLine(line++, destroyText.WithColor(Red));
             ShowTextLine(line++, "");// 空行
@@ -452,10 +448,7 @@ public static class FracRecipeOperate {
         // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
         float plrRatio = building?.PlrRatio() ?? 1.0f;
         float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
-        float successBoost = (building?.SuccessBoost() ?? 0f)
-                             + Achievements.GetSuccessRateBonus()
-                             + recipe.EchoBonus
-                             + GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
+        float successBoost = (building?.SuccessBoost() ?? 0f) + Achievements.GetSuccessRateBonus();
         float successRatio = Mathf.Clamp01(recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
         float fracRatio = (1 - recipe.DestroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
