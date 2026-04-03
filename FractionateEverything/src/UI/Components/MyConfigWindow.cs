@@ -38,6 +38,10 @@ public class MyConfigWindow : MyWindowWithTabs {
         return true;
     }
 
+    public override void _OnOpen() {
+        AutoFitWindowSize();
+    }
+
     public override void _OnUpdate() {
         base._OnUpdate();
         if (VFInput.escape && !VFInput.inputing) {

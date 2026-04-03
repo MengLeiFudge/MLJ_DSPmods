@@ -118,6 +118,7 @@ public class MyAnalysisWindow : MyWindow {
     private readonly List<ButtonPose> nativeHorizontalButtonPoses = [];
     private readonly List<ButtonPose> nativeVerticalButtonPoses = [];
     private readonly List<ButtonPose> nativeLeftSubpageButtonPoses = [];
+    private readonly Dictionary<int, int> lastSelectedSubpageIndexByTopCategory = [];
     private UIButton nativeTopCategoryTemplateButton;
     private UIButton nativeTopCategoryHighlightStyleTemplateButton;
     private ButtonPose nativeTopCategoryTemplatePose;
@@ -618,9 +619,14 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         bool changed = selectedTopCategoryIndex != index;
+        if (changed && selectedTopCategoryIndex >= 0 && selectedSubpageIndex >= 0) {
+            lastSelectedSubpageIndexByTopCategory[selectedTopCategoryIndex] = selectedSubpageIndex;
+        }
         selectedTopCategoryIndex = index;
         if (changed) {
-            selectedSubpageIndex = -1;
+            selectedSubpageIndex = lastSelectedSubpageIndexByTopCategory.TryGetValue(index, out int rememberedIndex)
+                ? rememberedIndex
+                : 0;
         }
 
         RefreshLeftSubpages();
@@ -744,6 +750,9 @@ public class MyAnalysisWindow : MyWindow {
 
     private void OnSubpageClick(int index) {
         selectedSubpageIndex = index;
+        if (selectedTopCategoryIndex >= 0) {
+            lastSelectedSubpageIndexByTopCategory[selectedTopCategoryIndex] = index;
+        }
 
         var categories = MainWindow.AnalysisPageCategories;
         if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) return;
