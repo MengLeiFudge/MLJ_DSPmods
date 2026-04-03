@@ -29,6 +29,8 @@ public static class MainWindow {
     public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
     public static FEMainPanelType OpenedMainPanelType { get; private set; } = FEMainPanelType.None;
     public static IFEMainPanelSharedState SharedPanelState { get; private set; } = defaultSharedPanelState;
+    private static string currentPageCategoryName;
+    private static string currentPageSubpageName;
 
     public static void AddTranslations() {
         Register("KEYOpenFracCentre", "[FE] Open Fractionation Data Centre", "[FE] 打开分馏数据中心");
@@ -211,8 +213,10 @@ public static class MainWindow {
     public static void NavigateToPage(string categoryName, int internalTabIndex = 0) {
         if (OpenedMainPanelType == FEMainPanelType.Legacy && _legacyConfigWin != null) {
             _legacyConfigWin.JumpToGroup(categoryName, internalTabIndex);
+            RememberCurrentPageRouteFromLegacy();
         } else if (OpenedMainPanelType == FEMainPanelType.Analysis && _analysisMainWindow != null) {
             _analysisMainWindow.JumpToCategory(categoryName, internalTabIndex);
+            RememberCurrentPageRouteFromAnalysis();
         }
     }
 
@@ -258,6 +262,8 @@ public static class MainWindow {
                 break;
         }
 
+        ApplyCurrentPageRouteToOpenedPanel();
+
         if (OpenedMainPanelType != FEMainPanelType.None) {
             Achievements.NotifyMainPanelOpened();
         }
@@ -292,6 +298,7 @@ public static class MainWindow {
     }
 
     private static void CloseAllMainPanels() {
+        CaptureCurrentPageRouteFromOpenedPanel();
         CloseLegacyMainPanel();
         CloseAnalysisMainPanel();
         OpenedMainPanelType = FEMainPanelType.None;
@@ -342,10 +349,75 @@ public static class MainWindow {
     private static void IntoOtherSaveMainPanelSelection() {
         SelectedMainPanelType = FEMainPanelType.Legacy;
         OpenedMainPanelType = FEMainPanelType.None;
+        currentPageCategoryName = null;
+        currentPageSubpageName = null;
     }
 
     private static void RefreshAnalysisPageCategories() {
         AnalysisPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Analysis, sandboxMode, true);
+    }
+
+    private static void CaptureCurrentPageRouteFromOpenedPanel() {
+        switch (OpenedMainPanelType) {
+            case FEMainPanelType.Legacy:
+                RememberCurrentPageRouteFromLegacy();
+                break;
+            case FEMainPanelType.Analysis:
+                RememberCurrentPageRouteFromAnalysis();
+                break;
+        }
+    }
+
+    private static void RememberCurrentPageRouteFromLegacy() {
+        if (_legacyConfigWin != null
+            && _legacyConfigWin.TryGetCurrentTabRoute(out string categoryName, out string subpageName)) {
+            RememberCurrentPageRoute(categoryName, subpageName);
+        }
+    }
+
+    private static void RememberCurrentPageRouteFromAnalysis() {
+        if (_analysisMainWindow != null
+            && _analysisMainWindow.TryGetCurrentPageRoute(out string categoryName, out string subpageName)) {
+            RememberCurrentPageRoute(categoryName, subpageName);
+        }
+    }
+
+    private static void RememberCurrentPageRoute(string categoryName, string subpageName) {
+        if (string.IsNullOrEmpty(categoryName) || string.IsNullOrEmpty(subpageName)) {
+            return;
+        }
+
+        currentPageCategoryName = categoryName;
+        currentPageSubpageName = subpageName;
+    }
+
+    private static void ApplyCurrentPageRouteToOpenedPanel() {
+        if (string.IsNullOrEmpty(currentPageCategoryName) || string.IsNullOrEmpty(currentPageSubpageName)) {
+            return;
+        }
+
+        switch (OpenedMainPanelType) {
+            case FEMainPanelType.Legacy:
+                if (_legacyConfigWin == null) {
+                    return;
+                }
+
+                if (!_legacyConfigWin.JumpToPage(currentPageCategoryName, currentPageSubpageName)) {
+                    _legacyConfigWin.JumpToGroup(currentPageCategoryName);
+                    RememberCurrentPageRouteFromLegacy();
+                }
+                break;
+            case FEMainPanelType.Analysis:
+                if (_analysisMainWindow == null) {
+                    return;
+                }
+
+                if (!_analysisMainWindow.JumpToPage(currentPageCategoryName, currentPageSubpageName)) {
+                    _analysisMainWindow.JumpToCategory(currentPageCategoryName);
+                    RememberCurrentPageRouteFromAnalysis();
+                }
+                break;
+        }
     }
 
     #region IModCanSave

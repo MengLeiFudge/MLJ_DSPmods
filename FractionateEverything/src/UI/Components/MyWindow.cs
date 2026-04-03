@@ -459,6 +459,12 @@ public class MyWindow : ManualBehaviour {
 }
 
 public class MyWindowWithTabs : MyWindow {
+    private sealed class TabState {
+        public RectTransform Content;
+        public UIButton Button;
+        public string Label;
+    }
+
     private sealed class TabGroupState {
         public string Label;
         public int StartTabIndex;
@@ -466,10 +472,11 @@ public class MyWindowWithTabs : MyWindow {
         public bool Collapsed;
     }
 
-    private readonly List<Tuple<RectTransform, UIButton>> _tabs = [];
+    private readonly List<TabState> _tabs = [];
     private readonly List<TabGroupState> _tabGroups = [];
     private RectTransform _tabParent;
     private float _tabY = 66f;
+    private int _currentTabIndex = -1;
 
     public override void TryClose() {
         _Close();
@@ -506,7 +513,11 @@ public class MyWindowWithTabs : MyWindow {
         // btnText.fontStyle = srcText.fontStyle;
         btn.data = index;
 
-        _tabs.Add(Tuple.Create(tabRect, btn));
+        _tabs.Add(new() {
+            Content = tabRect,
+            Button = btn,
+            Label = label
+        });
         btn.onClick += OnTabButtonClick;
 
         MaxY = Math.Max(MaxY, y + TabHeight);
@@ -575,7 +586,7 @@ public class MyWindowWithTabs : MyWindow {
 
             int end = GetGroupEndTabIndex(g);
             for (int i = group.StartTabIndex; i <= end; i++) {
-                var (_, btn) = _tabs[i];
+                UIButton btn = _tabs[i].Button;
                 bool visible = !group.Collapsed;
                 btn.gameObject.SetActive(visible);
                 if (!visible) continue;
@@ -602,16 +613,67 @@ public class MyWindowWithTabs : MyWindow {
         }
     }
 
-    private void OnTabButtonClick(int index) {
-        foreach (var (rectTransform, btn) in _tabs) {
-            if (btn.data != index) {
-                btn.highlighted = false;
-                rectTransform.gameObject.SetActive(false);
+    public bool JumpToPage(string groupLabel, string subpageLabel) {
+        if (string.IsNullOrEmpty(groupLabel) || string.IsNullOrEmpty(subpageLabel)) {
+            return false;
+        }
+
+        for (int i = 0; i < _tabGroups.Count; i++) {
+            if (_tabGroups[i].Label != groupLabel) {
                 continue;
             }
 
-            btn.highlighted = true;
-            rectTransform.gameObject.SetActive(true);
+            _tabGroups[i].Collapsed = false;
+            RefreshTabLayout();
+            int end = GetGroupEndTabIndex(i);
+            for (int tabIndex = _tabGroups[i].StartTabIndex; tabIndex <= end; tabIndex++) {
+                if (_tabs[tabIndex].Label != subpageLabel) {
+                    continue;
+                }
+
+                SetCurrentTab(tabIndex);
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    public bool TryGetCurrentTabRoute(out string groupLabel, out string subpageLabel) {
+        groupLabel = null;
+        subpageLabel = null;
+        if (_currentTabIndex < 0 || _currentTabIndex >= _tabs.Count) {
+            return false;
+        }
+
+        for (int i = 0; i < _tabGroups.Count; i++) {
+            int start = _tabGroups[i].StartTabIndex;
+            int end = GetGroupEndTabIndex(i);
+            if (_currentTabIndex < start || _currentTabIndex > end) {
+                continue;
+            }
+
+            groupLabel = _tabGroups[i].Label;
+            subpageLabel = _tabs[_currentTabIndex].Label;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void OnTabButtonClick(int index) {
+        _currentTabIndex = index;
+        foreach (TabState tab in _tabs) {
+            if (tab.Button.data != index) {
+                tab.Button.highlighted = false;
+                tab.Content.gameObject.SetActive(false);
+                continue;
+            }
+
+            tab.Button.highlighted = true;
+            tab.Content.gameObject.SetActive(true);
         }
     }
 }
