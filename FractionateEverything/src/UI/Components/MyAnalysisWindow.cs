@@ -755,6 +755,52 @@ public class MyAnalysisWindow : MyWindow {
         ShowPageContent(pages[selectedSubpageIndex]);
     }
 
+    public bool TryGetCurrentPageRoute(out string categoryName, out string subpageName) {
+        categoryName = null;
+        subpageName = null;
+        var categories = MainWindow.AnalysisPageCategories;
+        if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) {
+            return false;
+        }
+
+        IReadOnlyList<MainWindowPageDefinition> pages = categories[selectedTopCategoryIndex].Pages;
+        if (selectedSubpageIndex < 0 || selectedSubpageIndex >= pages.Count) {
+            return false;
+        }
+
+        categoryName = categories[selectedTopCategoryIndex].CategoryName;
+        subpageName = pages[selectedSubpageIndex].SubpageName;
+        return true;
+    }
+
+    public bool JumpToPage(string categoryName, string subpageName) {
+        if (string.IsNullOrEmpty(categoryName) || string.IsNullOrEmpty(subpageName)) {
+            return false;
+        }
+
+        var categories = MainWindow.AnalysisPageCategories;
+        for (int i = 0; i < categories.Count; i++) {
+            if (categories[i].CategoryName != categoryName) {
+                continue;
+            }
+
+            OnTopCategoryClick(i);
+            var pages = categories[i].Pages;
+            for (int pageIndex = 0; pageIndex < pages.Count; pageIndex++) {
+                if (pages[pageIndex].SubpageName != subpageName) {
+                    continue;
+                }
+
+                OnSubpageClick(pageIndex);
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
     public void JumpToCategory(string categoryName, int internalTabIndex = 0) {
         var categories = MainWindow.AnalysisPageCategories;
         for (int i = 0; i < categories.Count; i++) {
