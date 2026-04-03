@@ -1,5 +1,4 @@
-﻿using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -19,7 +18,6 @@ public class MyImageButton : MonoBehaviour {
     public UIButton uiButton;
     public Image backgroundImage;
     public Image spriteImage;
-    public Image countBackground;
     public Text countText;
     //背景图在不同状态下的颜色
     private static Color normalColor = Color.clear;
@@ -31,7 +29,6 @@ public class MyImageButton : MonoBehaviour {
     private bool _selected = false;
     private bool _deselectOnHover = false;
     private UnityAction _onDeselectCallback = null;
-    private string _countTextRaw = null;
     public bool Selected {
         get => _selected;
         set {
@@ -110,19 +107,6 @@ public class MyImageButton : MonoBehaviour {
         var spriteImage = spriteObj.AddComponent<Image>();
         spriteImage.color = Color.white;
 
-        var countBackgroundObj = new GameObject("countBackground");
-        countBackgroundObj.transform.SetParent(_baseObject.transform, false);
-        var countBackgroundRect = countBackgroundObj.AddComponent<RectTransform>();
-        countBackgroundRect.anchorMin = new Vector2(1f, 0f);
-        countBackgroundRect.anchorMax = new Vector2(1f, 0f);
-        countBackgroundRect.pivot = new Vector2(1f, 0f);
-        countBackgroundRect.anchoredPosition = new Vector2(2f, -4f);
-        countBackgroundRect.sizeDelta = new Vector2(30f, 16f);
-        var countBackground = countBackgroundObj.AddComponent<Image>();
-        countBackground.color = new Color(0f, 0f, 0f, 0.55f);
-        countBackground.raycastTarget = false;
-        countBackgroundObj.SetActive(false);
-
         // 直接复用 AddText2 的文本来源，保持亮度、材质和描边表现一致
         var countText = Instantiate(UIRoot.instance.uiGame.assemblerWindow.stateText);
         var countObj = countText.gameObject;
@@ -140,7 +124,7 @@ public class MyImageButton : MonoBehaviour {
         countText.verticalOverflow = VerticalWrapMode.Overflow;
         countText.resizeTextForBestFit = false;
         countText.fontSize = 12;
-        countText.color = White;
+        countText.color = Blue;
         countText.text = string.Empty;
         countObj.SetActive(false);
 
@@ -173,7 +157,6 @@ public class MyImageButton : MonoBehaviour {
         ibtn.uiButton = go.GetComponent<UIButton>();
         ibtn.backgroundImage = go.transform.Find("backgroundImage").GetComponent<Image>();
         ibtn.spriteImage = go.transform.Find("spriteImage").GetComponent<Image>();
-        ibtn.countBackground = go.transform.Find("countBackground").GetComponent<Image>();
         ibtn.countText = go.transform.Find("countText").GetComponent<Text>();
 
         // 添加EventTrigger监听鼠标进入事件
@@ -189,7 +172,6 @@ public class MyImageButton : MonoBehaviour {
 
         rect.sizeDelta = new(width, height);
         ibtn.Proto = proto;
-        ibtn.RefreshCountVisual();
 
         //添加按钮悬浮提示
         bool isItemOrRecipeProto = proto is ItemProto or RecipeProto;
@@ -220,7 +202,6 @@ public class MyImageButton : MonoBehaviour {
 
     public MyImageButton WithSize(float width, float height) {
         rectTrans.sizeDelta = new(width, height);
-        RefreshCountVisual();
         return this;
     }
 
@@ -240,8 +221,9 @@ public class MyImageButton : MonoBehaviour {
         if (countText == null) {
             return;
         }
-        _countTextRaw = countStr;
-        RefreshCountVisual();
+        bool visible = !string.IsNullOrEmpty(countStr);
+        countText.text = visible ? countStr : string.Empty;
+        countText.gameObject.SetActive(visible);
     }
 
     public void SetCount(long count) {
@@ -327,45 +309,4 @@ public class MyImageButton : MonoBehaviour {
 
     public float Width => rectTrans.sizeDelta.x;
     public float Height => rectTrans.sizeDelta.y;
-
-    private void RefreshCountVisual() {
-        if (countText == null || countBackground == null || rectTrans == null) {
-            return;
-        }
-
-        bool visible = !string.IsNullOrEmpty(_countTextRaw);
-        countText.text = visible ? _countTextRaw : string.Empty;
-        countText.gameObject.SetActive(visible);
-        countBackground.gameObject.SetActive(visible);
-        if (!visible) {
-            return;
-        }
-
-        float width = Mathf.Clamp(18f + _countTextRaw.Length * 7f, 24f, rectTrans.sizeDelta.x * 0.90f);
-        float height = Mathf.Clamp(rectTrans.sizeDelta.y * 0.36f, 14f, 20f);
-
-        RectTransform backgroundRect = countBackground.rectTransform;
-        backgroundRect.anchorMin = new Vector2(1f, 0f);
-        backgroundRect.anchorMax = new Vector2(1f, 0f);
-        backgroundRect.pivot = new Vector2(1f, 0f);
-        backgroundRect.anchoredPosition = new Vector2(2f, -4f);
-        backgroundRect.sizeDelta = new Vector2(width, height);
-
-        RectTransform countRect = countText.rectTransform;
-        countRect.anchorMin = new Vector2(1f, 0f);
-        countRect.anchorMax = new Vector2(1f, 0f);
-        countRect.pivot = new Vector2(1f, 0f);
-        countRect.anchoredPosition = new Vector2(-2f, -5f);
-        countRect.sizeDelta = new Vector2(width - 4f, height);
-
-        int fontSize = _countTextRaw.Length switch {
-            <= 3 => 12,
-            4 => 11,
-            _ => 10,
-        };
-        if (rectTrans.sizeDelta.x >= 56f && fontSize < 13) {
-            fontSize += 1;
-        }
-        countText.fontSize = fontSize;
-    }
 }
