@@ -193,7 +193,22 @@ sudo apt-get -o Acquire::http::Proxy="http://127.0.0.1:7890" update
 
 如果你平时不用 VPN，最简单的方式就是直接换国内 apt 源，不要折腾代理。
 
-下面给一个 Ubuntu 的常见示例（清华源）：
+先确认你当前 Ubuntu 的版本代号，不要直接照抄下面的 `noble`。
+
+```
+# 推荐：直接看 Ubuntu 代号
+lsb_release -cs
+
+# 备选：从系统信息里看
+grep VERSION_CODENAME /etc/os-release
+```
+
+常见代号举例：
+
+- Ubuntu 22.04：`jammy`
+- Ubuntu 24.04：`noble`
+
+下面给一个 Ubuntu 的常见示例（清华源）。如果你的版本不是 `noble`，把下面所有 `noble` 都替换成你自己的版本代号：
 
 ```
 # 先备份
