@@ -11,28 +11,30 @@ Multiple DSP mods in one solution:
 
 ## Build Commands
 
-**Build tool rule:** In the current WSL environment, all compilation must use the local MSBuild at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`. Do not use `dotnet build` unless the user explicitly overrides this rule.
+**Build tool rule:** In the current WSL environment, every compilation must use the local MSBuild at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`.
+
+**Build scope rule:** Every build must target the full solution `MLJ_DSPmods.sln`. Do not build a single `.csproj` unless the user explicitly overrides this rule.
+
+**Post-build rule:** After every successful build, automatically run `AfterBuildEvent.exe`. The executable prompts for a mode; pressing Enter runs mode `1` (`UpdateModsThenStart()`), so automation should feed an empty line or `1`.
 
 ```bash
-# Build main mod (primary verification target)
-"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
-  FractionateEverything/FractionateEverything.csproj \
-  /t:Build /p:Configuration=Debug
-
-# Build entire solution
+# Standard Debug build + post-build automation
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
+printf '\n' | AfterBuildEvent/bin/win/Debug/AfterBuildEvent.exe
 
-# Release build (creates zip package in FractionateEverything/package/)
+# Standard Release build + post-build automation
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
-  FractionateEverything/FractionateEverything.csproj \
+  MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Release
+printf '\n' | AfterBuildEvent/bin/win/Release/AfterBuildEvent.exe
 ```
 
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
-- Always run the local `MSBuild.exe` command above after any code change before marking work complete.
+- Always run the solution-level local `MSBuild.exe` command above after any code change before marking work complete.
+- After the build succeeds, always run `AfterBuildEvent/bin/win/<Configuration>/AfterBuildEvent.exe` and let it execute mode `1`.
 
 ## Key Files
 
@@ -316,7 +318,7 @@ pattern: class GameMain|void FixedUpdate
 1. **Never modify `BaseRecipe.GetOutputs` directly** — it's shared; subclass instead
 2. **Never touch `buffBonus1/2/3`** — reserved for future use
 3. **Avoid new Harmony patches** when existing code paths suffice
-4. **Always verify build** — `dotnet build` must succeed with 0 errors after every change
+4. **Always verify build** — use the local MSBuild on `MLJ_DSPmods.sln`, ensure `0 Error(s)`, then run `AfterBuildEvent.exe`
 5. **LangVersion is `latest`** — use C# 12 features (collection expressions `[]`, primary constructors, etc.)
 
 ---
