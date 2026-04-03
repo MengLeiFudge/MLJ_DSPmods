@@ -17,38 +17,28 @@ Multiple DSP mods in one solution:
 
 **Post-build rule:** After every successful build, automatically start `AfterBuildEvent.exe`, but do not send any follow-up input. The user may choose a mode manually or close it directly.
 
-**Launch style rule:** Do not launch `AfterBuildEvent.exe` as a bare console process. On this Windows 11 machine, the closest match to the user's real double-click experience is to start it inside `wt.exe` using the `Windows PowerShell` profile. If quoting becomes fragile, it is acceptable to generate a temporary `.ps1` launcher script, start it via `wt.exe`, then clean the script up afterwards.
+**Launch style rule:** Do not launch `AfterBuildEvent.exe` as a bare console process, and do not wrap it inside `powershell.exe`. On this Windows 11 machine, the closest match to the user's real double-click experience is to let `wt.exe` host `AfterBuildEvent.exe` directly, with the working directory set to the corresponding build output folder. The expected effect is: window title shows the `AfterBuildEvent.exe` path, and the content starts directly with the program's own prompt text, without any PowerShell banner.
 
 ```bash
-# Standard Debug build + start post-build tool in Windows Terminal / Windows PowerShell host
+# Standard Debug build + start post-build tool in Windows Terminal hosting the EXE directly
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
-cat > .tmp_launch_afterbuildevent.ps1 <<'EOF'
-Set-Location 'D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug'
-& '.\AfterBuildEvent.exe'
-EOF
-wt.exe -p "Windows PowerShell" -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug" \
-  powershell.exe -NoExit -File "D:\project\csharp\DSP MOD\MLJ_DSPmods\.tmp_launch_afterbuildevent.ps1"
-rm -f .tmp_launch_afterbuildevent.ps1
+wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug" \
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug\AfterBuildEvent.exe"
 
-# Standard Release build + start post-build tool in Windows Terminal / Windows PowerShell host
+# Standard Release build + start post-build tool in Windows Terminal hosting the EXE directly
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Release
-cat > .tmp_launch_afterbuildevent.ps1 <<'EOF'
-Set-Location 'D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release'
-& '.\AfterBuildEvent.exe'
-EOF
-wt.exe -p "Windows PowerShell" -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release" \
-  powershell.exe -NoExit -File "D:\project\csharp\DSP MOD\MLJ_DSPmods\.tmp_launch_afterbuildevent.ps1"
-rm -f .tmp_launch_afterbuildevent.ps1
+wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release" \
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release\AfterBuildEvent.exe"
 ```
 
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 - Always run the solution-level local `MSBuild.exe` command above after any code change before marking work complete.
-- After the build succeeds, always start `AfterBuildEvent.exe` in a `wt.exe` `Windows PowerShell` host, and do not auto-select any mode.
+- After the build succeeds, always start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
 
 ## Key Files
 
