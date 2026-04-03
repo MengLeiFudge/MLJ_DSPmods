@@ -198,13 +198,13 @@ public static class BuildingOperate {
             btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
                 onClick: Reinforcement);
         } else {
-            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置",
+            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
                 onClick: () => { ChangeLevelTo(0); });
-            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "降级",
+            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
                 onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "升级",
+            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
                 onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "升满",
+            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
                 onClick: () => { ChangeLevelTo(MaxLevel); });
         }
         y += 36f + 7f;
@@ -306,11 +306,13 @@ public static class BuildingOperate {
             }
         } else {
             reinforcementSandboxBtn[0].gameObject.SetActive(true);
-            reinforcementSandboxBtn[1].gameObject.SetActive(SelectedBuilding.Level() > 0);
-            reinforcementSandboxBtn[2].gameObject
-                .SetActive(SelectedBuilding.Level() < MaxLevel);
-            reinforcementSandboxBtn[3].gameObject
-                .SetActive(SelectedBuilding.Level() < MaxLevel);
+            reinforcementSandboxBtn[1].gameObject.SetActive(true);
+            reinforcementSandboxBtn[2].gameObject.SetActive(true);
+            reinforcementSandboxBtn[3].gameObject.SetActive(true);
+            reinforcementSandboxBtn[0].button.interactable = SelectedBuilding.Level() > 0;
+            reinforcementSandboxBtn[1].button.interactable = SelectedBuilding.Level() > 0;
+            reinforcementSandboxBtn[2].button.interactable = SelectedBuilding.Level() < MaxLevel;
+            reinforcementSandboxBtn[3].button.interactable = SelectedBuilding.Level() < MaxLevel;
         }
         string[] strs;
         long currentExp = BuildingManager.GetBuildingExp(SelectedBuilding.ID);
