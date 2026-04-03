@@ -231,6 +231,7 @@ deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ noble-security main restricted 
 
 ```
 sudo apt update
+sudo apt upgrade -y
 ```
 
 如果 `apt update` 正常，就说明无 VPN 场景已经处理完了，后面关于代理的内容都不用看。
