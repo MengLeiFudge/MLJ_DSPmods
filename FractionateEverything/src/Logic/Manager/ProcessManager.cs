@@ -411,8 +411,7 @@ public static class ProcessManager {
                     outputs = emptyOutputs;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * building.PlrRatio();
-                    float successBoost = building.SuccessBoost() + Achievements.GetSuccessRateBonus()
-                        + recipe.EchoBonus + GachaGalleryBonusManager.GetSuccessBonus(recipe.RecipeType);
+                    float successBoost = building.SuccessBoost() + Achievements.GetSuccessRateBonus();
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);

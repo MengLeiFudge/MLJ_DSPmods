@@ -4,6 +4,13 @@ using UnityEngine;
 namespace FE.UI.Components;
 
 public class MyConfigWindow : MyWindowWithTabs {
+    // 旧版主窗口对齐新版黑色内容区 1102x787，并额外保留左侧标签区宽度。
+    private const float LegacyContentWidth = 1102f;
+    private const float LegacyContentHeight = 787f;
+    private const float LegacyLeftNavSpan = Margin + TabWidth + Spacing;
+    private const float LegacyWindowWidth = LegacyContentWidth + LegacyLeftNavSpan;
+    private const float LegacyWindowHeight = LegacyContentHeight + TitleHeight;
+
     public static Action<MyConfigWindow, RectTransform> OnUICreated;
     public static Action OnUpdateUI;
 
@@ -39,7 +46,7 @@ public class MyConfigWindow : MyWindowWithTabs {
     }
 
     public override void _OnOpen() {
-        AutoFitWindowSize();
+        _windowTrans.sizeDelta = new(LegacyWindowWidth, LegacyWindowHeight);
     }
 
     public override void _OnUpdate() {
