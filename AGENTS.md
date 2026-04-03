@@ -15,26 +15,26 @@ Multiple DSP mods in one solution:
 
 **Build scope rule:** Every build must target the full solution `MLJ_DSPmods.sln`. Do not build a single `.csproj` unless the user explicitly overrides this rule.
 
-**Post-build rule:** After every successful build, automatically run `AfterBuildEvent.exe`. The executable prompts for a mode; pressing Enter runs mode `1` (`UpdateModsThenStart()`), so automation should feed an empty line or `1`.
+**Post-build rule:** After every successful build, automatically start `AfterBuildEvent.exe`. Do not assume a fixed follow-up input; the user may choose a mode manually or close it directly. The only mandatory action is to launch the executable after the build.
 
 ```bash
-# Standard Debug build + post-build automation
+# Standard Debug build + start post-build tool
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
-printf '\n' | AfterBuildEvent/bin/win/Debug/AfterBuildEvent.exe
+AfterBuildEvent/bin/win/Debug/AfterBuildEvent.exe
 
-# Standard Release build + post-build automation
+# Standard Release build + start post-build tool
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Release
-printf '\n' | AfterBuildEvent/bin/win/Release/AfterBuildEvent.exe
+AfterBuildEvent/bin/win/Release/AfterBuildEvent.exe
 ```
 
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 - Always run the solution-level local `MSBuild.exe` command above after any code change before marking work complete.
-- After the build succeeds, always run `AfterBuildEvent/bin/win/<Configuration>/AfterBuildEvent.exe` and let it execute mode `1`.
+- After the build succeeds, always start `AfterBuildEvent/bin/win/<Configuration>/AfterBuildEvent.exe`.
 
 ## Key Files
 
