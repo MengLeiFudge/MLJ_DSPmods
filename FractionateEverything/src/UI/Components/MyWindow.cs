@@ -470,6 +470,7 @@ public class MyWindowWithTabs : MyWindow {
         public int StartTabIndex;
         public UIButton HeaderButton;
         public bool Collapsed;
+        public int LastSelectedTabIndex = -1;
     }
 
     private readonly List<TabState> _tabs = [];
@@ -568,8 +569,19 @@ public class MyWindowWithTabs : MyWindow {
 
     private void ToggleTabGroup(int groupIndex) {
         if (groupIndex < 0 || groupIndex >= _tabGroups.Count) return;
-        _tabGroups[groupIndex].Collapsed = !_tabGroups[groupIndex].Collapsed;
+        bool willExpand = _tabGroups[groupIndex].Collapsed;
+        CollapseAllGroupsExcept(willExpand ? groupIndex : -1);
+        _tabGroups[groupIndex].Collapsed = !willExpand;
         RefreshTabLayout();
+        if (willExpand) {
+            SelectRememberedTabInGroup(groupIndex);
+        }
+    }
+
+    private void CollapseAllGroupsExcept(int expandedGroupIndex) {
+        for (int i = 0; i < _tabGroups.Count; i++) {
+            _tabGroups[i].Collapsed = i != expandedGroupIndex;
+        }
     }
 
     private void RefreshTabLayout() {
@@ -602,6 +614,7 @@ public class MyWindowWithTabs : MyWindow {
     public void JumpToGroup(string label, int internalTabIndex = 0) {
         for (int i = 0; i < _tabGroups.Count; i++) {
             if (_tabGroups[i].Label == label) {
+                CollapseAllGroupsExcept(i);
                 _tabGroups[i].Collapsed = false;
                 RefreshTabLayout();
                 int targetIndex = _tabGroups[i].StartTabIndex + internalTabIndex;
@@ -623,6 +636,7 @@ public class MyWindowWithTabs : MyWindow {
                 continue;
             }
 
+            CollapseAllGroupsExcept(i);
             _tabGroups[i].Collapsed = false;
             RefreshTabLayout();
             int end = GetGroupEndTabIndex(i);
@@ -665,6 +679,13 @@ public class MyWindowWithTabs : MyWindow {
 
     private void OnTabButtonClick(int index) {
         _currentTabIndex = index;
+        int groupIndex = GetGroupIndexByTabIndex(index);
+        if (groupIndex >= 0) {
+            CollapseAllGroupsExcept(groupIndex);
+            _tabGroups[groupIndex].Collapsed = false;
+            _tabGroups[groupIndex].LastSelectedTabIndex = index;
+            RefreshTabLayout();
+        }
         foreach (TabState tab in _tabs) {
             if (tab.Button.data != index) {
                 tab.Button.highlighted = false;
@@ -675,6 +696,37 @@ public class MyWindowWithTabs : MyWindow {
             tab.Button.highlighted = true;
             tab.Content.gameObject.SetActive(true);
         }
+    }
+
+    private int GetGroupIndexByTabIndex(int tabIndex) {
+        for (int i = 0; i < _tabGroups.Count; i++) {
+            int start = _tabGroups[i].StartTabIndex;
+            int end = GetGroupEndTabIndex(i);
+            if (tabIndex >= start && tabIndex <= end) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void SelectRememberedTabInGroup(int groupIndex) {
+        if (groupIndex < 0 || groupIndex >= _tabGroups.Count) {
+            return;
+        }
+
+        int start = _tabGroups[groupIndex].StartTabIndex;
+        int end = GetGroupEndTabIndex(groupIndex);
+        if (start < 0 || start >= _tabs.Count || end < start) {
+            return;
+        }
+
+        int targetIndex = _tabGroups[groupIndex].LastSelectedTabIndex;
+        if (targetIndex < start || targetIndex > end) {
+            targetIndex = start;
+        }
+
+        SetCurrentTab(targetIndex);
     }
 }
 
