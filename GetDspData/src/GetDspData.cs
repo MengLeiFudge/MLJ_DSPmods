@@ -695,6 +695,12 @@ public class GetDspData : BaseUnityPlugin {
                     AddFracRecipes(recipes, item);
                 }
             }
+            //科技
+            var techs = new JArray();
+            dataObj.Add("techs", techs);
+            foreach (var tech in LDB.techs.dataArray) {
+                addTech(tech, techs);
+            }
             //特殊物品（无实体的工厂）
             items.Add(new JObject {
                 { "ID", I伊卡洛斯 },
@@ -852,6 +858,8 @@ public class GetDspData : BaseUnityPlugin {
         if (proto.GetSpace() >= 0) {
             //对于生产建筑，添加耗能、倍率、占地
             obj.Add("WorkEnergyPerTick", proto.prefabDesc.workEnergyPerTick);
+            obj.Add("BuildIndex", proto.BuildIndex);
+            obj.Add("MultiLevel", proto.prefabDesc.multiLevel);
             //生产设备速率以倍数显示，10000对应1x，20000对应2x
             //计算公式：(double) this.prefabDesc.assemblerSpeed / 10000.0，单位x（也就是倍数）
             //采矿设备速率以速度显示，600000对应1/s，300000对应2/s
@@ -874,6 +882,27 @@ public class GetDspData : BaseUnityPlugin {
             //obj.Add("MultipleOutput", proto.ID == I负熵熔炉 && GenesisBookEnable ? 2 : 1);
             obj.Add("Space", proto.GetSpace());
         }
+        add.Add(obj);
+    }
+
+    static void addTech(TechProto proto, JArray add) {
+        if (proto == null) {
+            return;
+        }
+
+        var obj = new JObject {
+            { "ID", proto.ID },
+            { "Name", proto.FName() },
+            { "HashNeeded", proto.HashNeeded },
+            { "Level", proto.Level },
+            { "MaxLevel", proto.MaxLevel },
+            { "IsLabTech", proto.IsLabTech },
+            { "UnlockFunctions", new JArray(proto.UnlockFunctions ?? Array.Empty<int>()) },
+            { "UnlockValues", new JArray(proto.UnlockValues ?? Array.Empty<double>()) },
+            { "UnlockRecipes", new JArray(proto.UnlockRecipes ?? Array.Empty<int>()) },
+            { "PreTechs", new JArray(proto.PreTechs ?? Array.Empty<int>()) },
+            { "PreTechsImplicit", new JArray(proto.PreTechsImplicit ?? Array.Empty<int>()) },
+        };
         add.Add(obj);
     }
 
