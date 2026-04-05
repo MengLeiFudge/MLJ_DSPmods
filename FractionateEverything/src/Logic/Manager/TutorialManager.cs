@@ -144,7 +144,7 @@ public static class TutorialManager {
 
              1.配方解锁
              在对应配方解锁后，你才可以对相应物品进行处理。
-             注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-铁矿]和[点金-铁矿]是不同的配方，它们之间没有任何关联。铁矿输入矿物复制塔，将会根据[矿物复制-铁矿]配方进行处理；铁矿输入点金塔，将会根据[点金-铁矿]配方进行处理。
+             注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-黑雾矩阵]和[转化-黑雾矩阵]是不同的配方，它们之间没有任何关联。黑雾矩阵输入矿物复制塔，将会根据[矿物复制-黑雾矩阵]配方进行处理；黑雾矩阵输入转化塔，将会根据[转化-黑雾矩阵]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
              配方的获取途径有：开线抽取、成长规划补差、直接使用分馏配方核心兑换（配方操作页面上方按钮）。
 
@@ -235,12 +235,12 @@ public static class TutorialManager {
              {"[Cultivate Fractionation Tower]".WithColor(Blue)} 
              In the new Fractionation Technology, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
              Simply put, by using the Interactive Tower to fractionate non-directional 'Fractionation Tower Raw Blanks', you can get different Fractionation Towers, and at the same time, there is a small chance that you can get 'Fractionation Tower Directional Raw Blanks'.
-             There are 5 types of non-targeted proto-germs, and their products are as follows (the introductory information of the proto-germs also shows the type of product): 
-             Type I: Mineral Replication Tower (96%), Fractionator Directed Proto (4%) 
-             Type II: Interaction Tower (96%), Fractionator Directed Proto (4%) 
-             Type III: Alchemy Tower (32%), Deconstruction Tower (32%), Conversion Tower (32%), Fractionator Directed Proto (4%)
-             Type IV: Points Aggregate Tower (96%), Fractionator Directed Proto (4%) 
-             Type V: Quantum Replication Tower (96%), Fractionator Directed Proto (4%) 
+             There are 5 types of non-directional protos, and their products are as follows (the proto descriptions also show the corresponding tower type):
+             Type I: Interaction Tower (96%), Fractionator Directed Proto (4%)
+             Type II: Mineral Replication Tower (96%), Fractionator Directed Proto (4%)
+             Type III: Points Aggregate Tower (96%), Fractionator Directed Proto (4%)
+             Type IV: Conversion Tower (96%), Fractionator Directed Proto (4%)
+             Type V: Rectification Tower (96%), Fractionator Directed Proto (4%)
              Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix the different types of Protoembryo!
              Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus unlocking the corresponding tech.
              Uploading different Fractionation Towers will unlock different techs. For example, uploading a Mineral Replication Tower will unlock the Mineral Replication tech, and uploading an Interaction Tower will unlock the Item Interaction tech.
@@ -258,18 +258,10 @@ public static class TutorialManager {
              The Points Aggregate Tower allows you to adjust the number of points for input items, focusing points on some items to break through the limitations of the Increaser.
              The initial product has only 4 points of production enhancers. You can increase the number of points you can produce by selecting Points Aggregate Tower on the Building Operations page and upgrading the 'Point Aggregation Efficiency Level', up to a maximum of 10 points.
 
-             {"[Quantum Replication Tower]".WithColor(Blue)} 
-             The Quantum Replication Tower can replicate most items.
-             All types of Essence are consumed when duplicating, and any Essence consumed is deducted directly from the Fractionation Data Centre. Lack of any type of Essence will result in all Quantum Replication Towers being unable to fractionate the item.
-             The higher the value of the item, the more Essence is consumed. The higher the average increase in production points of an ingredient, the less Essence is consumed.
+             {"[Rectification Tower]".WithColor(Blue)} 
+             The Rectification Tower stably compresses matrix-tier inputs into Fragments. The higher its level, the better its throughput, energy ratio, and fragment conversion efficiency.
 
-             {"[Alchemy Tower]".WithColor(Blue)} 
-             The Alchemy Tower converts items to the corresponding level of the matrix.
-
-             {"[Deconstruction Tower]".WithColor(Blue)} 
-             The Deconstruction Tower can decompose an item into the raw materials used to craft it. If the item being decomposed does not have a corresponding single-product recipe, it will be processed as sand.
-
-             {"[Conversion Tower Mutual Tower]".WithColor(Blue)} 
+             {"[Conversion Tower]".WithColor(Blue)} 
              The Conversion Tower can convert items into other related items.
              """,
             $"""
@@ -294,16 +286,8 @@ public static class TutorialManager {
              点数聚集塔可以调整输入物品的点数，将点数集中在部分物品上，突破增产剂的限制。
              初始产物只有4点增产点数。在建筑操作页面选择点数聚集塔，升级“点数聚集效率层次”，即可提升产物的增产点数，最多可以到10点。
 
-             {"【量子复制塔】".WithColor(Blue)}
-             量子复制塔可以复制绝大多数物品。
-             复制时会消耗所有种类的精华，消耗的精华会直接从分馏数据中心扣除。缺少任何一种精华都会导致所有量子复制塔无法分馏出物品。
-             物品价值越高，消耗的精华越多。原料的平均增产点数越多，消耗的精华越少。
-
-             {"【点金塔】".WithColor(Blue)}
-             点金塔可以将物品转换为对应层次的矩阵。
-
-             {"【分解塔】".WithColor(Blue)}
-             分解塔可以将物品精馏为制作它的原料。如果被分解的物品没有对应的单产物配方，将会被处理为沙土。
+             {"【精馏塔】".WithColor(Blue)}
+             精馏塔可以将矩阵层级物品稳定压缩为残片。精馏塔等级越高，吞吐、能耗与残片转化效率越好。
 
              {"【转化塔】".WithColor(Blue)}
              转化塔可以将物品转化为其他相关的物品。
