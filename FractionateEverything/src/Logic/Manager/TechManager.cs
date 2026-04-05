@@ -125,30 +125,30 @@ public static class TechManager {
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
 
-        Register("T物品精馏", "Item Deconstruction", "物品精馏");
+        Register("T物品精馏", "Item Rectification", "物品精馏");
         Register("物品精馏描述",
-            $"Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"物品精馏科技可以将物品精馏成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"Rectification technology can compress matrix-tier items into Fragments, providing a stable side resource for Growth and Focus systems. Higher-stage matrices and a stronger Rectification Tower both improve fragment output efficiency.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
+            $"物品精馏科技可以将矩阵层级物品稳定压缩为残片，为成长与聚焦系统提供持续副资源。矩阵层级越高、精馏塔越强，残片转化效率越好。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
         Register("物品精馏结果",
-            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了物品精馏技术，可以将物品精馏成制作它的原料了。");
+            "You have mastered Rectification technology and can now compress matrix-tier items into Fragments.",
+            "你已经掌握了物品精馏技术，可以将矩阵层级物品稳定压缩为残片了。");
 
 
-        Register("T行星内物流交互", "Item Deconstruction", "行星内物流交互");
+        Register("T行星内物流交互", "Planetary Logistics Interaction", "行星内物流交互");
         Register("行星内物流交互描述",
-            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
-            "行星内物流交互科技可以将行星内物流交互成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+            "Planetary Logistics Interaction lets local logistics stations exchange items directly with the Fractionation Data Centre, reducing repeated manual hauling within the same planet.",
+            "行星内物流交互科技允许本地物流站直接与分馏数据中心交换物品，减少同星球范围内的重复搬运与手动中转。");
         Register("行星内物流交互结果",
-            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了行星内物流交互技术，可以将行星内物流交互成制作它的原料了。");
+            "You have mastered planetary logistics interaction and can now let local logistics stations interact with the Fractionation Data Centre.",
+            "你已经掌握了行星内物流交互技术，现在可以让本地物流站与分馏数据中心直接交互。");
 
-        Register("T星际物流交互", "Item Deconstruction", "星际物流交互");
+        Register("T星际物流交互", "Interstellar Logistics Interaction", "星际物流交互");
         Register("星际物流交互描述",
-            "Item recycling technology can recover 25% of an item's materials back into raw ingredients. Note that for smelting or chemical recipes, items can only be recycled into their own components. This is not merely a method for waste disposal, but a stepping stone toward achieving superior quality.",
-            "星际物流交互科技可以将星际物流交互成制作它的原料的25%。注意，对于熔炼类或化工类配方，物品只能回收为自身。这不仅是处理垃圾的一种手段，更是通往强大品质的阶梯。");
+            "Interstellar Logistics Interaction extends the same direct data-centre exchange to interstellar logistics stations, turning them into long-range item interaction hubs.",
+            "星际物流交互科技把同样的直连交互能力扩展到星际物流站，使其成为跨星系的物资交互中枢。");
         Register("星际物流交互结果",
-            "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
-            "你已经掌握了星际物流交互技术，可以将星际物流交互成制作它的原料了。");
+            "You have mastered interstellar logistics interaction and can now let interstellar logistics stations interact with the Fractionation Data Centre.",
+            "你已经掌握了星际物流交互技术，现在可以让星际物流站与分馏数据中心直接交互。");
     }
 
     /// <summary>
