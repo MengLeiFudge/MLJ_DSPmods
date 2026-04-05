@@ -81,59 +81,59 @@ public static class TechManager {
 
         Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
         Register("电磁奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("电磁奖券结果",
-            "You have mastered the technology of making electromagnetic tickets and can now produce them through automation.",
-            "你已经掌握了制作电磁奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T能量奖券", "Energy Ticket", "能量奖券");
         Register("能量奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("能量奖券结果",
-            "You have mastered the technology of making energy tickets and can now produce them through automation.",
-            "你已经掌握了制作能量奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T结构奖券", "Structure Ticket", "结构奖券");
         Register("结构奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("结构奖券结果",
-            "You have mastered the technology of making structure tickets and can now produce them through automation.",
-            "你已经掌握了制作结构奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T信息奖券", "Information Ticket", "信息奖券");
         Register("信息奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("信息奖券结果",
-            "You have mastered the technology of making information tickets and can now produce them through automation.",
-            "你已经掌握了制作信息奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T引力奖券", "Gravity Ticket", "引力奖券");
         Register("引力奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("引力奖券结果",
-            "You have mastered the technology of making gravity tickets and can now produce them through automation.",
-            "你已经掌握了制作引力奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T宇宙奖券", "Universe Ticket", "宇宙奖券");
         Register("宇宙奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("宇宙奖券结果",
-            "You have mastered the technology of making universe tickets and can now produce them through automation.",
-            "你已经掌握了制作宇宙奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
         Register("T黑雾奖券", "Dark Fog Ticket", "黑雾奖券");
         Register("黑雾奖券描述",
-            "Lottery tickets are a type of token issued by the COSMO, which can generally only be obtained under specific conditions. However, the COSMO has also released technology for synthesizing lottery tickets on its own, but it requires a large number of matrices. Lotteries can be drawn on the lottery page of the fractionation data centre to obtain various items and formulas.",
-            "奖券是主脑发行的一种代币，一般来讲只能在特定条件下获取。不过主脑也下发了自行合成奖券的科技，只不过需要大量矩阵。奖券可以在分馏数据中心的抽奖页面进行抽奖，获取各种物品和配方。");
+            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
+            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
         Register("黑雾奖券结果",
-            "You have mastered the technology of making dark fog tickets and can now produce them through automation.",
-            "你已经掌握了制作黑雾奖券的技术，可以通过自动化的方式制作它了。");
+            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
+            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
 
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
