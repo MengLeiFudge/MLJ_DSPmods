@@ -33,7 +33,7 @@ public static class VipFeatures {
     /// 获取VIP经验，并检测能否升级。注意，VIP升级不清空现有经验。
     /// </summary>
     public static void AddExp(float exp) {
-        Exp += exp / itemValue[IFE精选抽卡券] * 50;
+        Exp += exp / itemValue[I引力矩阵] * 50;
         while (Exp >= ExpLevelUp) {
             Level++;
             FE.Logic.Manager.GachaService.InitPools();

@@ -25,8 +25,8 @@ public static class RecipeGallery {
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
         Register("配方解锁情况",
-            $"The recipe unlock status is as follows ({"Full Upgrade".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}):",
-            $"配方解锁情况如下（{"完全升级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)}）：");
+            $"The recipe gallery shows the current totals of {"Full Upgrade".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}:",
+            $"配方图鉴当前展示的是 {"完全升级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }

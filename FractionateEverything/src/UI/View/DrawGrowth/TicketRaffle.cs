@@ -37,15 +37,18 @@ public static class TicketRaffle {
     }
 
     public static long totalDraws;
+    public static long openingLineDraws;
     private static readonly List<RaffleTabUi> activeUis = [];
 
     private static void SyncTotalDrawsFromSharedState() {
         totalDraws = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? 0;
+        openingLineDraws = MainWindow.SharedPanelState?.TicketRaffleOpeningLineDraws ?? 0;
     }
 
     private static void SyncTotalDrawsToSharedState() {
         if (MainWindow.SharedPanelState != null) {
             MainWindow.SharedPanelState.TicketRaffleTotalDraws = totalDraws;
+            MainWindow.SharedPanelState.TicketRaffleOpeningLineDraws = openingLineDraws;
         }
     }
 
@@ -213,6 +216,9 @@ public static class TicketRaffle {
         }
 
         totalDraws += results.Count;
+        if (ui.PoolId == GachaPool.PoolIdOpeningLine) {
+            openingLineDraws += results.Count;
+        }
         SyncTotalDrawsToSharedState();
         RenderResults(ui, matrixId, count, results);
         RefreshTabState(ui);

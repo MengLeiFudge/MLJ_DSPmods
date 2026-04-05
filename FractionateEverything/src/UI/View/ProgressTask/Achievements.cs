@@ -196,7 +196,7 @@ public static class Achievements {
                 desc,
                 rewardKey,
                 tier,
-                () => TicketRaffle.totalDraws >= target,
+                () => TicketRaffle.openingLineDraws >= target,
                 () => GrantRewardByKey(rewardKey),
                 doubleOutputBonus: doubleBonus,
                 logisticsBonus: logisticsBonus));
@@ -462,7 +462,7 @@ public static class Achievements {
             ETier.Platinum,
             () => IsSpeedrunMode
                   && totalFractionSuccesses >= 10000
-                  && TicketRaffle.totalDraws >= 500
+                  && TicketRaffle.openingLineDraws >= 500
                   && IsTechUnlocked(TFE星际物流交互),
             () => GrantRewardByKey("成就奖励-残片2000"),
             successRateBonus: 0.02f,

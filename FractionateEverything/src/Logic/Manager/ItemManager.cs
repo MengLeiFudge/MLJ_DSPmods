@@ -447,10 +447,10 @@ public static class ItemManager {
             goto CalculateItemValue;
         }
 
-        //设置核心、芯片价值
-        itemValue[IFE分馏配方核心] = itemValue[IFE精选抽卡券] / 0.01f;
-        itemValue[IFE分馏塔增幅芯片] = itemValue[IFE精选抽卡券] / 0.03f;
-        itemValue[IFE原版配方核心] = itemValue[IFE精选抽卡券] / 0.05f;
+        // 2.3 起旧奖券仅作兼容保留；核心/芯片价值锚点直接挂到当前仍在主循环中的矩阵资源。
+        itemValue[IFE分馏配方核心] = itemValue[I引力矩阵] / 0.01f;
+        itemValue[IFE分馏塔增幅芯片] = itemValue[I引力矩阵] / 0.03f;
+        itemValue[IFE原版配方核心] = itemValue[I引力矩阵] / 0.05f;
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1
