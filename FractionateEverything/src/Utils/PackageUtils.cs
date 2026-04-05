@@ -89,21 +89,21 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 获取当前MOD数据中最少的精华的数目。
+    /// 获取当前 MOD 数据中残片的可用数目。
     /// </summary>
-    public static int GetEssenceMinCount() {
+    public static int GetFragmentMinCount() {
         long count = centerItemCount[IFE残片];
         return (int)Math.Min(int.MaxValue, count);
     }
 
     /// <summary>
-    ///     从Mod数据中拿取每种精华各n个。
-    ///     如果数目不足，则不拿取；否则扣除对应物品。
+    /// 从 Mod 数据中拿取 n 个残片。
+    /// 如果数目不足，则不拿取；否则扣除对应物品。
     /// </summary>
-    /// <param name="n">每种精华要扣除的数量</param>
-    /// <param name="consumeRegister">消耗登记表，会在对应精华索引上累加本次消耗</param>
+    /// <param name="n">要扣除的残片数量</param>
+    /// <param name="consumeRegister">消耗登记表，会在残片索引上累加本次消耗</param>
     /// <returns>扣除成功返回 true；库存不足返回 false</returns>
-    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) {
+    public static bool TakeFragmentsFromModData(int n, int[] consumeRegister) {
         if (centerItemCount[IFE残片] < n) {
             return false;
         }
@@ -115,6 +115,17 @@ public static partial class Utils {
         }
         return true;
     }
+
+    /// <summary>
+    /// 旧版精华命名接口，仅为兼容保留。
+    /// </summary>
+    public static int GetEssenceMinCount() => GetFragmentMinCount();
+
+    /// <summary>
+    /// 旧版精华命名接口，仅为兼容保留。
+    /// </summary>
+    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) =>
+        TakeFragmentsFromModData(n, consumeRegister);
 
     #region 向背包添加物品
 
