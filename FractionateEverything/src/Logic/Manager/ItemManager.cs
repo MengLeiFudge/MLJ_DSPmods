@@ -84,7 +84,7 @@ public static class ItemManager {
     /// <summary>
     /// 添加部分物品
     /// </summary>
-    public static void AddFractionalPrototypeAndEssence() {
+    public static void AddCoreItemsAndPrototypes() {
         // EItemType
         // Unknown,
         // Resource,   原矿（铁矿、铜矿等）
