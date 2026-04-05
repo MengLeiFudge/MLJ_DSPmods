@@ -163,8 +163,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     }
 
     public void PreAddData() {
-        //添加分馏塔原胚、精华
-        ItemManager.AddFractionalPrototypeAndEssence();
+        // 添加 2.3 主路径使用的核心物品与原胚
+        ItemManager.AddCoreItemsAndPrototypes();
         //初步添加分馏塔
         BuildingManager.AddFractionators();
         //添加科技
