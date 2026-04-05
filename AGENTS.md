@@ -8,37 +8,59 @@ Multiple DSP mods in one solution:
 - **FractionateEverything** (`FE` namespace) — Main mod: fractionators, recipes, UI, data centre
 - **GetDspData** — Dev tool: exports item/recipe/model/tech data to files
 - **AfterBuildEvent** — Build automation: post-build packaging and DLL publicizing
+- **VanillaCurveSim** — Standalone simulator EXE: vanilla progression curve simulation
 
 ## Build Commands
 
 **Build tool rule:** In the current WSL environment, every compilation must use the local MSBuild at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`.
 
-**Build scope rule:** Every build must target the full solution `MLJ_DSPmods.sln`. Do not build a single `.csproj` unless the user explicitly overrides this rule.
+**Build scope rule:** Build scope depends on the project that changed:
+- If any file under `FractionateEverything/` or `GetDspData/` changes, build the full solution `MLJ_DSPmods.sln`.
+- If shared build infrastructure changes, including `AfterBuildEvent/`, `Directory.Build.props`, `DefaultPath.props*`, or `MLJ_DSPmods.sln`, also build the full solution `MLJ_DSPmods.sln`.
+- If only `VanillaCurveSim/` changes, it may be built separately via `VanillaCurveSim/VanillaCurveSim.csproj`.
 
-**Post-build rule:** After every successful build, automatically start `AfterBuildEvent.exe`, but do not send any follow-up input. The user may choose a mode manually or close it directly.
+**Packaging rule:** `FractionateEverything` and `GetDspData` are packaging-dependent projects. After a successful solution build for either of them, always start `AfterBuildEvent.exe`, but do not send any follow-up input. The user may choose a mode manually or close it directly.
+
+**Simulator rule:** `VanillaCurveSim` is a standalone simulator project. When only it changes, do not start `AfterBuildEvent.exe`; instead, it may be built and run directly.
 
 **Launch style rule:** Do not launch `AfterBuildEvent.exe` as a bare console process, and do not wrap it inside `powershell.exe`. On this Windows 11 machine, the closest match to the user's real double-click experience is to let `wt.exe` host `AfterBuildEvent.exe` directly, with the working directory set to the corresponding build output folder. The expected effect is: window title shows the `AfterBuildEvent.exe` path, and the content starts directly with the program's own prompt text, without any PowerShell banner.
 
 ```bash
-# Standard Debug build + start post-build tool in Windows Terminal hosting the EXE directly
+# FractionateEverything / GetDspData / shared infrastructure change:
+# Debug build the full solution, then start the post-build tool in Windows Terminal hosting the EXE directly
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
 wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug" \
   "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug\AfterBuildEvent.exe"
 
-# Standard Release build + start post-build tool in Windows Terminal hosting the EXE directly
+# FractionateEverything / GetDspData / shared infrastructure change:
+# Release build the full solution, then start the post-build tool in Windows Terminal hosting the EXE directly
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Release
 wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release" \
   "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release\AfterBuildEvent.exe"
+
+# VanillaCurveSim-only change: standalone Debug build and run
+"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
+  VanillaCurveSim/VanillaCurveSim.csproj \
+  /t:Build /p:Configuration=Debug
+"/mnt/c/Windows/System32/cmd.exe" /c \
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\win\Debug\VanillaCurveSim.exe"
+
+# VanillaCurveSim-only change: standalone Release build and run
+"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
+  VanillaCurveSim/VanillaCurveSim.csproj \
+  /t:Build /p:Configuration=Release
+"/mnt/c/Windows/System32/cmd.exe" /c \
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\win\Release\VanillaCurveSim.exe"
 ```
 
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
-- Always run the solution-level local `MSBuild.exe` command above after any code change before marking work complete.
-- After the build succeeds, always start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
+- For `FractionateEverything` / `GetDspData` / shared infrastructure changes, always run the solution-level local `MSBuild.exe` command above before marking work complete, then start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
+- For `VanillaCurveSim`-only changes, build `VanillaCurveSim/VanillaCurveSim.csproj` and run `VanillaCurveSim.exe` directly.
 
 ## Key Files
 
@@ -46,6 +68,8 @@ wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release
 |---|---|
 | `MLJ_DSPmods.sln` | Solution entry point |
 | `FractionateEverything/FractionateEverything.csproj` | Main mod project (net472, LangVersion latest) |
+| `GetDspData/GetDspData.csproj` | DSP data export tool; depends on `FractionateEverything` |
+| `VanillaCurveSim/VanillaCurveSim.csproj` | Standalone simulator EXE; can build/run without `AfterBuildEvent` |
 | `DefaultPath.props` / `DefaultPath.props.example` | Game library path config (copy example, fill paths) |
 | `lib/` | Custom DLLs (BuildBarTool, publicized mod DLLs) |
 
@@ -322,7 +346,7 @@ pattern: class GameMain|void FixedUpdate
 1. **Never modify `BaseRecipe.GetOutputs` directly** — it's shared; subclass instead
 2. **Never touch `buffBonus1/2/3`** — reserved for future use
 3. **Avoid new Harmony patches** when existing code paths suffice
-4. **Always verify build** — use the local MSBuild on `MLJ_DSPmods.sln`, ensure `0 Error(s)`, then run `AfterBuildEvent.exe`
+4. **Always verify build with the correct scope** — `FractionateEverything` / `GetDspData` / shared infrastructure changes must build `MLJ_DSPmods.sln`, ensure `0 Error(s)`, then run `AfterBuildEvent.exe`; `VanillaCurveSim`-only changes may build `VanillaCurveSim.csproj` and run `VanillaCurveSim.exe`
 5. **LangVersion is `latest`** — use C# 12 features (collection expressions `[]`, primary constructors, etc.)
 
 ---
