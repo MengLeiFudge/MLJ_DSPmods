@@ -283,6 +283,8 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 **并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。**git 操作本身也不能并行**——git 使用单一仓库锁（`.git/index.lock`），并发执行 `git add`/`git commit` 即使针对不同文件也会导致锁冲突，只有一个能成功。所有 git 操作必须串行执行。
 
+**commit 串行规则：** `git commit` 必须始终串行执行，禁止同时发起两个或多个 commit。即使改动文件集合完全不重叠，也必须等待前一个 commit 完成并确认 `.git/index.lock` 已释放后，才能开始下一个 commit。
+
 **commit 要求：**
 - 构建无错误（`0 Error(s)`）后方可 commit；Warning 不作硬性要求（如未使用变量等无害 warning 可忽略）
 - 每个逻辑单元一个 commit，不批量堆积
