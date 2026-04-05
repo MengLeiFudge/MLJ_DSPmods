@@ -12,14 +12,6 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class ItemManager {
-    public static bool IsLegacyTicketItem(int itemId) {
-        return itemId == IFE普通抽卡券 || itemId == IFE精选抽卡券;
-    }
-
-    public static bool IsLegacyFrozenGrowthItem(int itemId) {
-        return itemId == IFE分馏塔增幅芯片 || itemId == IFE原版配方核心;
-    }
-
     public static void AddTranslations() {
         Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
         Register("I万物分馏商店刷新提示",
@@ -31,14 +23,6 @@ public static class ItemManager {
             "Use the Interactive Tower to fractionate various raw materials, yielding corresponding fractionation towers. Input the fractionation towers into the front interface of the Interactive Tower to unlock the corresponding technology.",
             "使用交互塔分馏各种原胚，即可得到对应分馏塔；将分馏塔从交互塔正面接口输入，即可解锁对应科技。");
 
-        Register("普通抽卡券", "Standard Draw Ticket");
-        Register("I普通抽卡券",
-            "Legacy ticket item kept only for archival compatibility. Version 2.3 no longer consumes physical tickets for draws.",
-            "旧版抽卡凭证，仅作归档保留。2.3版本起抽取不再消耗实体奖券。");
-        Register("精选抽卡券", "Premium Draw Ticket");
-        Register("I精选抽卡券",
-            "Legacy ticket item kept only for archival compatibility. Version 2.3 no longer consumes physical tickets for draws.",
-            "旧版抽卡凭证，仅作归档保留。2.3版本起抽取不再消耗实体奖券。");
         Register("残片", "Fragment");
         Register("I残片",
             "Stable side resource produced by fractionation. Used for growth, deterministic补差 and focus switching.",
@@ -72,15 +56,6 @@ public static class ItemManager {
         Register("I分馏配方核心",
             "A high-value compatibility resource used to unlock or catch up specific FE recipes from the Recipe Operations page.",
             "高价值兼容资源，可在配方操作页面中用于解锁指定 FE 配方或补齐关键配方进度。");
-        Register("分馏塔增幅芯片", "Fractionator Increase Chip");
-        Register("I分馏塔增幅芯片",
-            "Legacy growth material kept only for archival compatibility. Version 2.3 uses Fragments + current stage Matrix instead.",
-            "旧版建筑成长材料，仅作归档保留。2.3版本起建筑成长改为消耗残片与当前阶段矩阵。");
-        Register("原版配方核心", "Origin Recipe Core");
-        Register("I原版配方核心",
-            "Legacy vanilla recipe upgrade material kept only for archival compatibility. Version 2.3 uses Fragments + current stage Matrix instead.",
-            "旧版原版配方增强材料，仅作归档保留。2.3版本起原版配方增强改为消耗残片与当前阶段矩阵。");
-
     }
 
     #region 添加新物品
@@ -117,16 +92,6 @@ public static class ItemManager {
             Tech1134IconPath, 0, 100, EItemType.Decoration);
 
         ItemProto item;
-
-        item = ProtoRegistry.RegisterItem(IFE普通抽卡券, "普通抽卡券", "I普通抽卡券",
-            "Assets/fe/electromagnetic-ticket", tab分馏 * 1000 + 101, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.cyan, Color.gray));
-        item.IconTag = "pycjq";
-
-        item = ProtoRegistry.RegisterItem(IFE精选抽卡券, "精选抽卡券", "I精选抽卡券",
-            "Assets/fe/universe-ticket", tab分馏 * 1000 + 102, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        item.IconTag = "jxcjq";
 
         item = ProtoRegistry.RegisterItem(IFE残片, "残片", "I残片",
             "Assets/fe/copy-essence", tab分馏 * 1000 + 103, 100, EItemType.Material,
@@ -174,19 +139,6 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = "flpfhx";
-
-        item = ProtoRegistry.RegisterItem(IFE分馏塔增幅芯片, "分馏塔增幅芯片", "I分馏塔增幅芯片",
-            "Assets/fe/building-increase-chip", tab分馏 * 1000 + 208, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.magenta, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "flzfxp";
-
-        item = ProtoRegistry.RegisterItem(IFE原版配方核心, "原版配方核心", "I原版配方核心",
-            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 209, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.yellow, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "ybpfhx";
-
 
     }
 
@@ -275,9 +227,6 @@ public static class ItemManager {
         itemValue[IFE点数聚集塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE精馏塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        //设置抽卡券价值
-        itemValue[IFE普通抽卡券] = itemValue[I能量矩阵];
-        itemValue[IFE精选抽卡券] = itemValue[I引力矩阵];
         itemValue[IFE残片] = 1.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
@@ -455,10 +404,7 @@ public static class ItemManager {
             goto CalculateItemValue;
         }
 
-        // 2.3 起旧奖券仅作兼容保留；核心/芯片价值锚点直接挂到当前仍在主循环中的矩阵资源。
         itemValue[IFE分馏配方核心] = itemValue[I引力矩阵] / 0.01f;
-        itemValue[IFE分馏塔增幅芯片] = itemValue[I引力矩阵] / 0.03f;
-        itemValue[IFE原版配方核心] = itemValue[I引力矩阵] / 0.05f;
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1
@@ -500,8 +446,6 @@ public static class ItemManager {
         //根据物品价值构建交互塔可接受物品列表
         needs = LDB.items.dataArray
             .Where(item => itemValue[item.ID] < maxValue)
-            .Where(item => !IsLegacyTicketItem(item.ID))
-            .Where(item => !IsLegacyFrozenGrowthItem(item.ID))
             .Select(item => item.ID)
             .ToArray();
     }
@@ -593,8 +537,8 @@ public static class ItemManager {
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
-            if (item.ID == IFE分馏配方核心 || item.ID == IFE分馏塔增幅芯片) {
-                //核心与芯片只有转化配方，归到宇宙矩阵
+            if (item.ID == IFE分馏配方核心) {
+                // 配方核心没有主制作配方，按终局兼容物归到宇宙矩阵
                 topMatrixID = I宇宙矩阵;
             } else if (item.Type == EItemType.Matrix) {
                 //矩阵归到自己的层级，而非上一层级
