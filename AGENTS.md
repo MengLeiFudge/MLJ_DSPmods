@@ -281,9 +281,9 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 **职责要求：** 主代理下发任务时，必须在 prompt 中明确说明本轮的 commit 策略，不能让"代码已改完但暂不提交"成为默认结束状态。
 
-**并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。**git 操作本身也不能并行**——git 使用单一仓库锁（`.git/index.lock`），并发执行 `git add`/`git commit` 即使针对不同文件也会导致锁冲突，只有一个能成功。所有 git 操作必须串行执行。
+**并行场景：** 多个子代理并行执行时，子代理不得各自提交；应由主代理收齐结果、完成审查后统一 commit，以避免历史冲突和责任边界不清。**所有 Git 操作都必须串行执行**，禁止并发 `git add`、`git commit`、`git rebase`、`git stash`、`git checkout`、`git merge` 等命令；即使作用文件完全不重叠，也必须等待前一个 Git 命令完成并确认仓库锁已释放后，才能开始下一个 Git 命令。
 
-**commit 串行规则：** `git commit` 必须始终串行执行，禁止同时发起两个或多个 commit。即使改动文件集合完全不重叠，也必须等待前一个 commit 完成并确认 `.git/index.lock` 已释放后，才能开始下一个 commit。
+**Git 串行规则：** Git 使用单一仓库锁（如 `.git/index.lock`）；因此所有 Git 操作都必须串行执行，禁止任何形式的并发 Git 命令。只有确认前一个 Git 命令已经完成且仓库锁已释放后，才能启动下一个 Git 命令。
 
 **commit 要求：**
 - 构建无错误（`0 Error(s)`）后方可 commit；Warning 不作硬性要求（如未使用变量等无害 warning 可忽略）
