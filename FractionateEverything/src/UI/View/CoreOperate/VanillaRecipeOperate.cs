@@ -316,7 +316,6 @@ public static class VanillaRecipeOperate {
         int requiredIndex = Mathf.Min(stageIndex + 1, MainProgressMatrixIds.Length - 1);
         int requiredMatrixId = MainProgressMatrixIds[requiredIndex];
         string nextMatrixName = LDB.items.Select(requiredMatrixId)?.name ?? requiredMatrixId.ToString();
-        int percent = Mathf.RoundToInt(TechManager.GetVanillaEnhancementUnlockThreshold(requiredMatrixId) * 100f);
-        return $"{nextMatrixName}{percent}%";
+        return $"{nextMatrixName} 全科技";
     }
 }

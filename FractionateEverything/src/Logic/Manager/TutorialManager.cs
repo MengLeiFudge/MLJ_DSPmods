@@ -28,8 +28,8 @@ public static class TutorialManager {
              There will also be a new guide that explains how to use the Interactive Tower after you build it.
              3. Cultivate a new Interactive Tower and upload it to the Fractionation Data Centre to unlock the 'Item Interaction' technology.
              This is an extremely powerful support feature that defies space limitations and can be thought of as an external backpack with unlimited capacity.
-             4. Research the 'Super Value Gift Pack 1' tech and 'Electromagnetic Ticket' tech to automate the production of tickets and use them for raffles.
-             The information about raffles is explained in the Fractionation Data Centre guide.
+             4. Build the production line for the current-stage Matrix and spend the matrices directly in the Opening Pool or Proto Loop Pool.
+             Fragments then become the long-term resource for growth catch-up and focus switching.
 
              By the way, there is one thing you should remember: you can always revisit all the guidelines by pressing {"[G] key".WithColor(Orange)}.
 
@@ -61,55 +61,26 @@ public static class TutorialManager {
              This is a new master control panel that allows you to easily manage Fractionation Technology related content.
 
              {"[How to Use (simple version)]".WithColor(Blue)}
-             Panel has a lot of features, among which the core ones you must understand are draws and upgrades. Generally speaking, the advancement process goes like this:
-             1. Research the gift pack tech and raffle tech. This will allow you to automate the creation of raffle tickets.
-             2. create raffle tickets and upload them. If you don't understand how to upload items, you can check [Item Interaction] below.
-             3. Use raffle tickets to draw. Draw the Recipe Prize Pool, you can get Fractionated Recipe, Fractionated Recipe Universal Core, the first time you draw a recipe it will unlock the recipe, after that, it will be converted to Eponymous Echo (one of the conditions for recipe breakthrough). Draw the original embryo prize pool, you can get the original embryo of the fractionation tower, fractionation tower increase chip.
-             4. The recipe needs to be unlocked, upgraded, and broken through, and the full level is Gold 10. When using the Fractionator to process the corresponding item, you can get experience regardless of success or failure; you can also use sand to exchange experience directly. Cores can be turned into designated recipes, equivalent to drawing recipes by lottery.
-             5. Buildings need to be upgraded and strengthened with chips, and the maximum strengthening is +20. Chips can directly improve the effect of buildings. This is a very precious resource that needs to be planned wisely. Once all the upgrades have been completed, you can strengthen them to further enhance the building's effect.
+             The current 2.3 loop is organised around four keywords: Opening, Proto, Growth, and Focus.
+             1. Build the production line for the current-stage Matrix. Matrices are spent directly for draws in version 2.3; physical tickets are no longer the main currency.
+             2. Spend the current-stage Matrix in the Opening Pool or the Proto Loop Pool. The Opening Pool unlocks new recipes and line branches, while the Proto Loop Pool provides tower protos and directional protos.
+             3. Feed matrices into the Rectification Tower to compress them into Fragments. Fragments, together with Growth Points, are then used on the Growth page for deterministic catch-up and breakthroughs.
+             4. Change the Focus layer according to your current build direction. Focus does not create a new pool by itself; it biases Opening, Proto, and Growth outcomes toward the chosen route.
+             5. Recipe growth and building growth are now split: recipes care about unlocks, levels, and full-upgrade progress, while buildings care about tower-type EXP and key breakthroughs.
 
              {"[Recipe Operation]".WithColor(Blue)} 
-             In the Recipe Operation page, you can query the current status of any fractionated recipe and operate on them.
-
-             After selecting the type of recipe you want to view, left-click or right-click on the item icon to toggle the recipe. After left-clicking, all currently unlocked recipes under the selected type will be displayed; after right-clicking, all recipes under the selected type will be displayed.
-             Fractionation recipe types and fractionation towers are one-to-one correspondence. For example, building cultivation recipes can only be processed by the Interactive Tower, and the Interactive Tower can only process building cultivation recipes. The Points Aggregation Tower is a special case, which does not require fractionated recipes.
-
-             1. Recipe Unlocking 
-             You can only process the corresponding item after the corresponding recipe is unlocked.
-             Note that there are different recipes even for the same items. For example, [Mineral Duplication - Iron Ore] and [Fractionation - Iron Ore] are different recipes, and there is no connection between them. Iron Ore entered into the Mineral Duplication Tower will be processed according to the [Mineral Duplication - Iron Ore] recipe; Iron Ore entered into the Gold Pitting Tower will be processed according to the [Gold Pitting - Iron Ore] recipe.
-             When a recipe is first unlocked, its output information is hidden. You need to build the corresponding production line and use this recipe, and then the relevant information will be unlocked gradually. You can also choose to display the recipe information directly in the settings.
-             Recipes can be obtained through the Recipe Lucky Draw, purchasing from the Limited Time Store, or directly redeeming with the Fractionated Recipe Generic Core (button at the top of the Recipe Operation page).
-
-             2. Recipe Experience, Levels and Upgrades 
-             Each recipe has a level, and when unlocked, the level is 1. The higher the level, the stronger the recipe effect will be. The higher the level, the stronger the effect of the recipe. The level limit is affected by the quality.
-             Fractionated recipes will continue to gain experience when you use the Fractionation Tower to process the corresponding item. You can also exchange experience directly with sand (button at the top of the recipe operation page).
-             Once the experience reaches the value required for upgrading, the recipe will be automatically upgraded to the next level until it reaches the level cap corresponding to the current quality.
-
-             3.Recipe Quality and Breakthrough 
-             Each recipe has a quality, from low to high it is {"Unlocked".WithColor(0)}-{"White Quality".WithColor(1)}-{"Green Quality".WithColor(2)}-{"Blue Quality".WithColor(3)}-{"Purple Quality".WithColor(4)}-{"Red Quality".WithColor(5)}-{"Gold Quality".WithColor(7)}."
-             White quality recipes have a level cap of 4, red quality recipes have a level cap of 8, and gold quality recipes have a level cap of 10. 
-             There are 3 breakthrough conditions: 
-             First, the level of the recipe needs to reach the highest level of the current quality.
-             Second, the experience of the recipe must reach the current level of upgrade experience.
-             Third, you must have a sufficient number of Echoes of the same name.
-             Once all the breakthrough conditions are met, the recipe will automatically attempt to breakthrough. There is a success rate for breakthroughs, and the higher the quality, the lower the success rate.
-             Regardless of whether the breakthrough is successful or not, a certain percentage will be deducted based on the current upgrade experience required. Failure deducts 20%; success deducts 100%, and the recipe level is reset to 1 to upgrade to the next quality.
-             You can also use the button above to consume sand to break through with one click, and it will not stop until there is not enough sand or the recipe is successfully broken through.
-
-             4. Equivalent Output 
-             Equivalent Output can help you quantify to some extent.
-             Firstly, select the average yield increase points of the input item. In general, the yield enhancers MKI, II, and III will allow the item to carry 1, 2, and 4 yield increase points.
-             You can then see the final number of products that can be obtained by putting 1 feedstock carrying the specified number of yield increase points into the corresponding fractionation column.
-             This value has been calculated for various additions (including additions to the recipe itself, additions to the fractionating tower, etc.), and it is an accurate expectation.
+             This page lets you inspect any FE recipe and its current progress.
+             1. Recipes are mainly obtained from the Opening Pool, the Growth page, or by spending Fractionation Recipe Cores.
+             2. Recipe levels increase by actually running the corresponding line. Sand can still be used as a direct EXP shortcut.
+             3. The gallery and long-term progression now care more about whether a recipe is unlocked and fully upgraded than about old ticket-era pool bookkeeping.
+             4. Equivalent Output remains the best place to quantify expected outputs after recipe, tower, and proliferator bonuses are applied.
 
              {"[Building Operations]".WithColor(Blue)} 
-             On the Building Operations page, you can upgrade the effects of Fractionation Towers and Logistics Interaction Stations.
-
-             Since the upgrade items are different for each building, here are only some important ones:
-             1. Each 'Value Pack' technology will give you 3 chips, so please plan their use wisely, as it's hard to get chips in the early stages (EM Matrix and Energy Matrix stages).
-             2. Product Output Stacking can be upgraded 3 times, Point Aggregation Efficiency Level can be upgraded 6 times, and all others only need to be upgraded once.
-             3. After all the upgrades are completed, the 'Reinforcement' function will be opened. Enhancement can greatly improve the effect of the Fractionator.
-             There are 20 levels of enhancement, and each enhancement will consume 1 chip. There is a success rate for enhancement, but fortunately, failure does not result in a loss of level, which is probably the mercy of the mastermind~.
+             On the Building Operations page, you improve Fractionation Towers and Logistics Interaction Stations.
+             1. Buildings use tower-type global growth rather than per-building training.
+             2. Regular levels mainly come from tower EXP accumulated by use.
+             3. Key breakthroughs consume the current-stage Matrix plus Fragments.
+             4. Logistics Interaction Stations and Fractionation Towers follow the same growth philosophy, but gain EXP from different actions.
 
              {"[Item Interaction]".WithColor(Blue)} 
              Item Interaction is an extremely powerful and convenient feature, much loved by various Icarus.
@@ -121,7 +92,7 @@ public static class TutorialManager {
              How to upload items:
              1. The Interaction Tower will upload items entered on the front interface. Check the [Fractionation Tower User Guide] guide for more information.
              2. The Logistics Interactive Station will upload items that meet certain conditions. Check the 'Logistics Interactive Station User's Guide' for more information.
-             3. Items obtained from the Raffle Ticket Lucky Draw and items exchanged in the Limited Time Store will be uploaded automatically.
+             3. Some draw rewards and growth rewards will be uploaded automatically.
              4. When you double-click the backpack button, all items in your backpack will be uploaded (you need to unlock the 'Item Interaction' technology, and your logistics backpack will not be affected).
 
              How to download items:
@@ -129,55 +100,29 @@ public static class TutorialManager {
              2. Logistics Interactive Station downloads items that meet certain conditions. For more information, refer to the 'Logistics Interactive Station User's Guide'.
              3. Various fill operations (manual creation, manual research, TAB fill, fuel fill, etc.) will automatically download items and use them.
 
-             {"[Raffle Draw]".WithColor(Blue)} 
-             The raffle system is one of the most important parts of Fractionation Technology. There are currently four prize pools available for drawing.
+             {"[Draw System]".WithColor(Blue)}
+             The current draw structure is "three pools plus one focus layer":
+             1. Opening Pool: spends the current-stage Matrix to unlock new recipes and line branches.
+             2. Proto Loop Pool: spends the current-stage Matrix to obtain tower protos and directional protos.
+             3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, and some Dark Fog side-branch offers.
+             4. Focus Layer: not a standalone pool. It biases the Opening Pool, Proto Loop Pool, and Growth offers toward the selected direction.
 
-             1. Recipe Pool 
-             You can draw all kinds of Fractionation recipes. The first time you draw a recipe, you will unlock the corresponding recipe, and then you can use the corresponding Fractionator to process the corresponding item.
-             If you draw the same recipe later, the recipe will automatically be converted to 'Echoes of the same name', which is one of the conditions for recipe breakthrough.
-             Once the number of echoes reaches 5, the recipe will be removed from the prize pool and you will not be able to draw it again.
-             Non-Black Mist raffle tickets can only be drawn for non-Black Mist recipes, and Black Mist raffle tickets can only be drawn for Black Mist-only recipes.
-             Quantum Duplicate Recipes can only be drawn when using a higher level raffle ticket and after all non-Quantum Duplicate Recipes in the higher level pool have been drawn.
-             When drawing with a certain raffle ticket, the current level recipe will be drawn first, then the Quantum Duplication recipe from the previous level, and finally only the Fractionated Essence will be drawn.
-             There is a small chance of obtaining a Fractionated Recipe Universal Core, which can be used to unlock any recipe, or converted to any Echo of the same name.
-             Unlocking is relatively free. For example, you can still use the core to convert quantum duplicate recipes at the electromagnetic matrix level until the non-quantum duplicate recipes in the energy matrix recipe pool have been drawn.
-
-             2. Primary Embryo Pool 
-             Various types of primary embryos can be extracted. This is the main source of Fractionation Tower Primary Embryos.
-             There is a small chance that you will get a 'Fractionator Orientation Raw Blank', which can be directly converted to a specific Fractionator without cultivation. This can be converted to a specific Fractionator without cultivation, provided that the corresponding Fractionator Technology has been unlocked.
-             There is a small chance to obtain 'Fractionation Tower Increase Chip', which can be used to increase the effect of Fractionation Tower or Logistics Interactive Station.
-
-             3. Material Pool 
-             All unlocked materials (excluding Matrix) can be drawn.
-
-             4. Building Pool 
-             All unlocked buildings can be drawn.
-
-             All draws follow the 'Equivalence Principle'. The higher the value of the tickets you put in, the better the rewards you will get.
-             Also, the higher the VIP level, the higher the value of the tickets and the better the rewards.
-
-             {"[Limited Time Store]".WithColor(Blue)} 
-             The Limited Time Store sells random items and refreshes regularly.
-
-             The shop is initially refreshed every 10 minutes and offers recipes and a variety of valuable items.
-             Refreshing or purchasing items requires the use of the current tech level's Matrix; the higher the VIP level, the less Matrix value is spent.
-             In addition, there are some free items in each refreshed shipment, which will be automatically redeemed without any manual action, and the higher the VIP level, the more free items there will be.
-             The more VIP level you have, the more free items you will get. The shop will alert you in the bottom left corner when it is refreshed, so don't miss out on your favourite items!
+             {"[Growth Planning]".WithColor(Blue)}
+             The old Limited Time Store has been reworked into Growth Planning and Resource Coordination.
+             Its main jobs now are:
+             - spend Growth Points and Fragments for deterministic catch-up
+             - use the current-stage Matrix as the direct draw cost
+             - use Dark Fog Matrix offers as the entry point for the Dark Fog side branch
 
              {"[Quest System]".WithColor(Blue)} 
-             Haven't written it yet meow~ Don't curse meow!
-
-             {"[VIP Privileges]".WithColor(Blue)} 
-             VIP has the following privileges:
-             1. Raffle tickets will be considered of higher value during raffles.
-             2. There are more free redemption items in the Limited Time Store.
-             3. Greater discounts on paid redemption items in the Limited Time Store.
-
-             VIP experience can be accumulated by using Raffle Tickets to draw prizes, or by purchasing items in the Limited Time Shop. Upon reaching a certain level of experience, VIP will be automatically upgraded.
+             Progress is now split into three layers:
+             - Main Tasks: first unlocks and stage progression
+             - Recurring Tasks: stable supplemental rewards
+             - Achievement System: long-term milestones and global passive bonuses
 
              {"[Recipe Gallery]".WithColor(Blue)} 
-             Here you can view the overall situation of the recipe, including the four data items of Fully Upgraded, Maximum Reverberation, Unlocked, and Total.
-             Full Upgrade refers to recipes that have reached gold quality and level 10, and Max Reverberations refers to recipes that have a number of reverberations equal to 5.
+             The recipe gallery now focuses on three totals: Fully Upgraded, Unlocked, and Total.
+             Fully Upgraded means the recipe has reached its current full-upgrade state; the gallery no longer uses old "maximum reverberation" wording as a separate headline metric.
              """,
             $"""
              现在，你可以按{"[Shift + F]键".WithColor(Orange)}连接到分馏数据中心。
@@ -189,7 +134,7 @@ public static class TutorialManager {
              2.把矩阵投入“开线池”或“原胚闭环池”。前者负责新配方，后者负责原胚与定向原胚。
              3.通过精馏塔把矩阵稳定压缩为残片，再配合池积分进入“成长规划”。
              4.根据你想走的路线切换“流派聚焦”，让对应方向的配方或原胚更容易出现。
-             5.配方和建筑成长现在分流处理：配方侧强调开线与阶段回响；建筑侧强调塔种经验与关键节点突破。
+             5.配方和建筑成长现在分流处理：配方侧强调解锁、升级与完全升级；建筑侧强调塔种经验与关键节点突破。
 
              {"【配方操作】".WithColor(Blue)}
              在配方操作页面中，你可以查询任何分馏配方的当前状态，并对它们进行操作。
@@ -201,23 +146,16 @@ public static class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-铁矿]和[点金-铁矿]是不同的配方，它们之间没有任何关联。铁矿输入矿物复制塔，将会根据[矿物复制-铁矿]配方进行处理；铁矿输入点金塔，将会根据[点金-铁矿]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方的获取途径有：配方奖池抽奖、限时商店购买、直接使用分馏配方核心兑换（配方操作页面上方按钮）。
+             配方的获取途径有：开线抽取、成长规划补差、直接使用分馏配方核心兑换（配方操作页面上方按钮）。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限受品质影响。
              使用分馏塔处理对应物品时，分馏配方将持续获得经验。你也可以直接用沙土兑换经验（配方操作页面上方按钮）。
              经验达到升级所需的数值后，配方将自动提升到下一个等级，直至到达当前品质对应的等级上限。
 
-             3.配方品质与突破
-             每个配方都有品质，从低到高为{"未解锁".WithColor(0)}-{"白色品质".WithColor(1)}-{"绿色品质".WithColor(2)}-{"蓝色品质".WithColor(3)}-{"紫色品质".WithColor(4)}-{"红色品质".WithColor(5)}-{"金色品质".WithColor(7)}。"
-             白色品质配方的等级上限为4，红色品质配方的等级上限为8，金色品质配方的等级上限为10。
-             突破条件共有3条：
-             其一，配方的等级需要达到当前品质的最高等级。
-             其二，配方的经验需要达到当前等级的升级经验。
-             其三，拥有足够数目的同名回响。
-             突破条件全部达成后，配方将自动尝试突破。突破有成功率，品质越高成功率越低。
-             无论突破是否成功，都会以当前升级所需经验为基准，扣除一定百分比。失败扣除20%；成功扣除100%，配方等级重置为1，提升到下一品质。
-             你也可以使用上方按钮消耗沙土一键突破，直至沙土不足或配方成功突破才会停止。
+             3.完全升级与长期推进
+             当前 2.3 口径更关注“是否解锁、是否完全升级、是否补齐关键成长项”。
+             因此，任务、成就、图鉴和成长规划会更多围绕这些长期指标来组织，而不是围绕旧奖券时代的抽池文案。
 
              4.等效输出
              等效输出可以在一定程度上帮助你进行量化。
@@ -284,8 +222,8 @@ public static class TutorialManager {
              - 成就系统：里程碑与全局长期被动
 
              {"【配方图鉴】".WithColor(Blue)}
-             此处可以查看配方的整体情况，包括完全升级、最大回响、已解锁、总数这四项数据。
-             其中，完全升级指的是达到金色品质并且等级为10级的配方，最大回响指的是回响数目等于5的配方。
+             此处可以查看配方的整体情况，当前统一展示的是“完全升级 / 已解锁 / 总数”三项数据。
+             图鉴页面现在主要负责展示与统计；相关全局增幅会更多迁入成就系统统一汇总，而不再单独强调“最大回响”这类旧指标。
              """
         );
         Register("分馏数据中心后字", "", "");

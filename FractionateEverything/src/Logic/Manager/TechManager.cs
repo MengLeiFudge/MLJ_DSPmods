@@ -491,7 +491,7 @@ public static class TechManager {
 
     /// <summary>
     /// 原版配方增强采用“落后一层”的阶段开放规则：
-    /// 只要下一层矩阵已解锁，且该层有限科技完成度达到阈值，即可开放低一层增强。
+    /// 只有下一层矩阵已解锁，且该层有限科技全部研究完成时，才开放低一层增强。
     /// </summary>
     public static bool IsVanillaEnhancementUnlockedForMatrix(int matrixId) {
         int stageIndex = ItemManager.GetMatrixStageIndex(matrixId);
@@ -504,12 +504,7 @@ public static class TechManager {
         if (GameMain.history == null || !GameMain.history.ItemUnlocked(requiredMatrixId)) {
             return false;
         }
-        return GetMatrixTierResearchProgress(requiredMatrixId) >= GetVanillaEnhancementUnlockThreshold(requiredMatrixId);
-    }
-
-    public static float GetVanillaEnhancementUnlockThreshold(int matrixId) {
-        int stageIndex = ItemManager.GetMatrixStageIndex(matrixId);
-        return stageIndex >= ItemManager.MainProgressMatrixIds.Length - 1 ? 0.85f : 0.60f;
+        return IsMatrixTierFullyResearched(requiredMatrixId);
     }
 
     public static int GetHighestUnlockedVanillaEnhancementMatrix() {
