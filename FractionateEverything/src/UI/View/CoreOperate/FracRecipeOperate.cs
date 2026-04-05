@@ -120,14 +120,6 @@ public static class FracRecipeOperate {
         Register("不消耗原料", "No Consume");
         Register("翻倍产出", "Double Output");
         Register("损毁", "Destroy");
-        Register("退火", "Anneal");
-        Register("回响等级", "Echo Lv");
-        Register("退火确认", "Anneal Confirmation");
-        Register("退火后配方等级重置为0，获得永久回响加成。", "Recipe level resets to 0 and grants permanent echo bonus.");
-        Register("对", "on");
-        Register("进行退火？", "to anneal?");
-        Register("退火需配方满级", "Anneal requires max-level recipe", "退火需配方满级（+10）");
-        Register("退火已冻结", "Anneal is frozen in 2.3", "退火机制已冻结，2.3版本暂不启用");
     }
 
     // ==================== 配置加载 ====================
