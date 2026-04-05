@@ -443,8 +443,6 @@ public static partial class Utils {
     internal const int IFE精馏塔原胚 = 8015;
     internal const int IFE分馏塔定向原胚 = 8016;
     internal const int IFE分馏配方核心 = 8017;
-    internal const int IFE分馏塔增幅芯片 = 8018;
-    internal const int IFE原版配方核心 = 8019;
     internal const int IFE交互塔 = 8021;
     internal const int IFE矿物复制塔 = 8022;
     internal const int IFE点数聚集塔 = 8023;
@@ -454,15 +452,6 @@ public static partial class Utils {
     internal const int IFE星际物流交互站 = 8032;
     internal const int IFE万物分馏商店刷新提示 = 8048;
     internal const int IFE万物分馏科技解锁说明 = 8049;
-    internal const int IFE符文原胚普通 = 8051;
-    internal const int IFE符文原胚精良 = 8052;
-    internal const int IFE符文原胚稀有 = 8053;
-    internal const int IFE符文原胚罕见 = 8054;
-    internal const int IFE符文原胚史诗 = 8055;
-    internal const int IFE符文原胚传说 = 8056;
-    internal const int IFE符文原胚神话 = 8057;
-    internal const int IFE普通抽卡券 = 8058;
-    internal const int IFE精选抽卡券 = 8059;
     internal const int IFE残片 = 8060;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
@@ -983,13 +972,6 @@ public static partial class Utils {
     internal const int RFE精馏塔 = 925;
     internal const int RFE行星内物流交互站 = 931;
     internal const int RFE星际物流交互站 = 932;
-    internal const int RFE符文原胚普通 = 951;
-    internal const int RFE符文原胚精良 = 952;
-    internal const int RFE符文原胚稀有 = 953;
-    internal const int RFE符文原胚罕见 = 954;
-    internal const int RFE符文原胚史诗 = 955;
-    internal const int RFE符文原胚传说 = 956;
-    internal const int RFE符文原胚神话 = 957;
 
     internal const int T戴森球计划 = 1;
     internal const int T电磁学 = 1001;
