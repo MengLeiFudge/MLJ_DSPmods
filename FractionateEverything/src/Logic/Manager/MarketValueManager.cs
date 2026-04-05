@@ -170,6 +170,7 @@ public static class MarketValueManager {
                && LDB.items.Exist(itemId)
                && GetBaseValue(itemId) > 0f
                && GetBaseValue(itemId) < maxValue
+               && !IsLegacyTicketItem(itemId)
                && itemId != IFE残片
                && itemId != I沙土;
     }
