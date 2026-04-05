@@ -459,7 +459,7 @@ public static class GachaService {
         }
     }
 
-    public static List<GachaResult> Draw(int poolId, int ticketId, int count) {
+    public static List<GachaResult> Draw(int poolId, int resourceItemId, int count) {
         if (count <= 0) {
             return [];
         }
@@ -472,12 +472,12 @@ public static class GachaService {
         }
 
         GachaPool pool = GetPool(poolId);
-        if (pool == null || !GachaPool.CanUseTicket(poolId, ticketId)) {
+        if (pool == null || !GachaPool.CanUseDrawResource(poolId, resourceItemId)) {
             return results;
         }
 
         int totalCost = GetDrawMatrixCost(poolId, count);
-        if (!TakeItemWithTip(ticketId, totalCost, out _)) {
+        if (!TakeItemWithTip(resourceItemId, totalCost, out _)) {
             return results;
         }
 

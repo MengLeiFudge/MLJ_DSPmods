@@ -113,12 +113,12 @@ public class GachaPool {
     }
 
     /// <summary>2.3 起抽卡只直耗当前阶段矩阵。</summary>
-    public static bool CanUseTicket(int poolId, int ticketId) {
+    public static bool CanUseDrawResource(int poolId, int resourceItemId) {
         if (!IsDrawPool(poolId)) {
             return false;
         }
 
-        return ticketId == GetCurrentProgressMatrixId();
+        return resourceItemId == GetCurrentProgressMatrixId();
     }
 
     /// <summary>从对应稀有度池随机选一个物品</summary>
