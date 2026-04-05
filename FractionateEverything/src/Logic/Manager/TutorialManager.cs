@@ -104,7 +104,7 @@ public static class TutorialManager {
              The current draw structure is "three pools plus one focus layer":
              1. Opening Pool: spends the current-stage Matrix to unlock new recipes and line branches.
              2. Proto Loop Pool: spends the current-stage Matrix to obtain tower protos and directional protos.
-             3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, and some Dark Fog side-branch offers.
+             3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, and the staged offers of the Dark Fog combat branch.
              4. Focus Layer: not a standalone pool. It biases the Opening Pool, Proto Loop Pool, and Growth offers toward the selected direction.
 
              {"[Growth Planning]".WithColor(Blue)}
@@ -112,7 +112,7 @@ public static class TutorialManager {
              Its main jobs now are:
              - spend Growth Points and Fragments for deterministic catch-up
              - use the current-stage Matrix as the direct draw cost
-             - use Dark Fog Matrix offers as the entry point for the Dark Fog side branch
+             - use Dark Fog combat progression to unlock stage-based Dark Fog offers and special orders
 
              {"[Quest System]".WithColor(Blue)} 
              Progress is now split into three layers:
@@ -202,7 +202,7 @@ public static class TutorialManager {
              这是分馏塔原胚的核心来源。
 
              3.成长规划
-             属于非随机入口，主要负责定向补差、关键节点突破、黑雾支线报价等内容。
+             属于非随机入口，主要负责定向补差、关键节点突破，以及黑雾战斗支线的阶段兑现。
 
              4.流派聚焦
              不是独立奖池，而是对开线池、原胚闭环池、成长规划进行方向加权。
@@ -213,7 +213,7 @@ public static class TutorialManager {
              重点不再是随机刷新货物，而是：
              - 用池积分和残片做定向补差
              - 用当前阶段矩阵承担抽取消耗
-             - 用黑雾矩阵接入黑雾支线成长报价
+             - 通过战斗推进黑雾支线阶段，再用黑雾矩阵承接成长报价与市场特单
 
              {"【任务系统】".WithColor(Blue)}
              任务系统已经拆分为：

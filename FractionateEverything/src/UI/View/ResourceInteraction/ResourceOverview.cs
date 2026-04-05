@@ -13,6 +13,8 @@ public static class ResourceOverview {
     private static RectTransform tab;
     private static Text txtTitle;
     private static Text txtRefresh;
+    private static Text txtDarkFogTitle;
+    private static readonly Text[] darkFogLines = new Text[5];
     private static readonly MyImageButton[] hotIcons = new MyImageButton[DisplayCount];
     private static readonly Text[] hotTexts = new Text[DisplayCount];
     private static readonly MyImageButton[] coldIcons = new MyImageButton[DisplayCount];
@@ -23,6 +25,24 @@ public static class ResourceOverview {
         Register("高需求物资", "Hot Demand");
         Register("低需求物资", "Cold Demand");
         Register("下次刷新", "Next refresh");
+        Register("黑雾支线", "Dark Fog Branch");
+        Register("黑雾阶段", "Branch Stage", "支线阶段");
+        Register("黑雾战况", "Combat Status", "战况概览");
+        Register("黑雾成长报价", "Growth Offers", "成长报价");
+        Register("黑雾市场特单", "Special Orders", "市场特单");
+        Register("黑雾增强层", "Enhanced Layer", "增强层");
+        Register("黑雾下一阶段", "Next Milestone", "下一阶段");
+        Register("黑雾地面基地", "Ground Bases", "地面基地");
+        Register("黑雾星域蜂巢", "Stellar Hives", "星域蜂巢");
+        Register("黑雾物资层级", "Resource Tier", "物资层级");
+        Register("黑雾增强层-未接入", "Offline", "未接入");
+        Register("黑雾增强层-已接入", "Online", "已接入");
+        Register("黑雾增强层-事件活跃", "Event Active", "事件活跃");
+        Register("黑雾阶段-休眠观察", "Dormant", "休眠观察");
+        Register("黑雾阶段-信号接触", "Signal", "信号接触");
+        Register("黑雾阶段-地面压制", "Ground Suppression", "地面压制");
+        Register("黑雾阶段-星域围猎", "Stellar Hunt", "星域围猎");
+        Register("黑雾阶段-奇点收束", "Singularity", "奇点收束");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -49,6 +69,16 @@ public static class ResourceOverview {
             coldTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
             y += 34f;
         }
+
+        y += 16f;
+        txtDarkFogTitle = wnd.AddText2(0f, y, tab, "黑雾支线", 15);
+        y += 30f;
+        for (int i = 0; i < darkFogLines.Length; i++) {
+            darkFogLines[i] = wnd.AddText2(0f, y, tab, "", 13, $"txtDarkFog{i}");
+            darkFogLines[i].supportRichText = true;
+            darkFogLines[i].rectTransform.sizeDelta = new Vector2(960f, 24f);
+            y += 26f;
+        }
     }
 
     public static void UpdateUI() {
@@ -67,6 +97,54 @@ public static class ResourceOverview {
         var cold = MarketValueManager.GetTopMarketItems(DisplayCount, descending: false);
         RefreshColumn(hotIcons, hotTexts, hot);
         RefreshColumn(coldIcons, coldTexts, cold);
+        RefreshDarkFogSection();
+    }
+
+    private static void RefreshDarkFogSection() {
+        txtDarkFogTitle.text = "黑雾支线".Translate();
+        string stageName = GetStageText(DarkFogCombatManager.GetCurrentStage());
+
+        darkFogLines[0].text = $"{ "黑雾阶段".Translate() }：{stageName}";
+        darkFogLines[1].text =
+            $"{ "黑雾战况".Translate() }：{ "黑雾地面基地".Translate() } {DarkFogCombatManager.GetAliveGroundBaseCount()}    { "黑雾星域蜂巢".Translate() } {DarkFogCombatManager.GetAliveHiveCount()}    { "黑雾物资层级".Translate() } {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
+        darkFogLines[2].text = $"{ "黑雾成长报价".Translate() }：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    { "黑雾市场特单".Translate() }：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条";
+        darkFogLines[3].text = $"{ "黑雾增强层".Translate() }：{BuildEnhancedLayerText()}";
+        darkFogLines[4].text = $"{ "黑雾下一阶段".Translate() }：{BuildNextMilestoneText()}";
+    }
+
+    private static string GetStageText(EDarkFogCombatStage stage) {
+        return stage switch {
+            EDarkFogCombatStage.Dormant => "黑雾阶段-休眠观察".Translate().WithColor(Orange),
+            EDarkFogCombatStage.Signal => "黑雾阶段-信号接触".Translate().WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => "黑雾阶段-地面压制".Translate().WithColor(Green),
+            EDarkFogCombatStage.StellarHunt => "黑雾阶段-星域围猎".Translate().WithColor(Blue),
+            _ => "黑雾阶段-奇点收束".Translate().WithColor(Gold),
+        };
+    }
+
+    private static string BuildEnhancedLayerText() {
+        if (!DarkFogCombatManager.IsEnhancedLayerEnabled()) {
+            return "黑雾增强层-未接入".Translate().WithColor(Orange);
+        }
+
+        string eventText = DarkFogCombatManager.HasActiveEventChain()
+            ? $"    { "黑雾增强层-事件活跃".Translate() }".WithColor(Green)
+            : string.Empty;
+        return $"{ "黑雾增强层-已接入".Translate().WithColor(Green) }    节点 {DarkFogCombatManager.GetEnhancedNodeCount()}/4    遗物 {DarkFogCombatManager.GetRelicCount()}    Rank {DarkFogCombatManager.GetMeritRank()}    技能 {DarkFogCombatManager.GetAssignedSkillPointCount()}{eventText}";
+    }
+
+    private static string BuildNextMilestoneText() {
+        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        return stage switch {
+            EDarkFogCombatStage.Dormant when !DarkFogCombatManager.IsCombatModeEnabled() => "启用战斗模式".WithColor(Orange),
+            EDarkFogCombatStage.Dormant when DarkFogCombatManager.GetProgressStageIndex() < 3 => $"解锁 {LDB.items.Select(I信息矩阵).name}".WithColor(Orange),
+            EDarkFogCombatStage.Dormant => "建立黑雾矩阵库存或首次接触黑雾掉落".WithColor(Blue),
+            EDarkFogCombatStage.Signal => $"{LDB.items.Select(I引力矩阵).name} + { "黑雾物资层级".Translate() } 2/4".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => $"{LDB.items.Select(I宇宙矩阵).name} + { "黑雾物资层级".Translate() } 3/4 或接触蜂巢".WithColor(Blue),
+            EDarkFogCombatStage.StellarHunt when DarkFogCombatManager.IsEnhancedLayerEnabled() => $"{ "黑雾物资层级".Translate() } 4/4 或增强节点 2/4".WithColor(Gold),
+            EDarkFogCombatStage.StellarHunt => $"{ "黑雾物资层级".Translate() } 4/4".WithColor(Gold),
+            _ => "已到最终阶段".WithColor(Gold),
+        };
     }
 
     private static void RefreshColumn(MyImageButton[] icons, Text[] texts, System.Collections.Generic.IReadOnlyList<int> items) {

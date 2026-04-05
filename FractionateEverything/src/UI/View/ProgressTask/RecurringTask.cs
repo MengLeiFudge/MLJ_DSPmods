@@ -20,7 +20,7 @@ public static class RecurringTask {
     private static RectTransform window;
     private static RectTransform tab;
 
-    private const int TaskCount = 5;
+    private const int TaskCount = 6;
 
     private static readonly string[] taskNameKeys = [
         "分馏总量",
@@ -28,6 +28,7 @@ public static class RecurringTask {
         "原胚循环",
         "工艺精进",
         "配方收集",
+        "黑雾压制",
     ];
     private static readonly string[] taskCategoryKeys = [
         "生产",
@@ -35,8 +36,9 @@ public static class RecurringTask {
         "原胚",
         "工艺",
         "配方",
+        "黑雾",
     ];
-    private static readonly int[] targets = [2000, 30, 20, 5, 10];
+    private static readonly int[] targets = [2000, 30, 20, 5, 10, 12];
     private static long[] baselines = new long[TaskCount];
     private static long totalClaimedCount;
     private static bool autoClaimUnlocked;
@@ -80,23 +82,27 @@ public static class RecurringTask {
         Register("原胚", "Proto");
         Register("工艺", "Craft");
         Register("配方", "Recipe");
+        Register("黑雾", "Dark Fog", "黑雾");
 
         Register("分馏总量", "Fractionation Throughput");
         Register("开线推进", "Opening Line Push");
         Register("原胚循环", "Proto Cycle");
         Register("工艺精进", "Craft Refinement");
         Register("配方收集", "Recipe Collection");
+        Register("黑雾压制", "Dark Fog Suppression", "黑雾压制");
 
         Register("分馏总量描述", "Reach {0} successful fractionations", "累计完成{0}次成功分馏");
         Register("开线推进描述", "Perform {0} opening-line draws", "累计完成{0}次开线抽取");
         Register("原胚循环描述", "Own {0} tower protos in storage", "仓储中持有{0}个分馏塔原胚");
         Register("工艺精进描述", "Fully upgrade {0} recipes", "累计满级{0}个分馏配方");
         Register("配方收集描述", "Unlock {0} fractionation recipes", "累计解锁{0}个分馏配方");
+        Register("黑雾压制描述", "Accumulate {0} Dark Fog combat resources in storage", "当前黑雾战斗资源强度累计达到{0}");
 
         Register("循环任务奖励-残片", "Fragments x{0}", "残片 x{0}");
         Register("循环任务奖励-配方核心", "Fractionation recipe core x{0}", "分馏配方核心 x{0}");
         Register("循环任务奖励-矩阵", "Current stage matrix x{0}", "当前阶段矩阵 x{0}");
         Register("循环任务奖励-定向原胚", "Directional proto x{0}", "定向原胚 x{0}");
+        Register("循环任务奖励-黑雾矩阵", "Dark Fog Matrix x{0}", "黑雾矩阵 x{0}");
         Register("循环任务自动领取已启用", "Recurring task auto-claim enabled", "循环任务自动领取已启用");
     }
 
@@ -251,6 +257,7 @@ public static class RecurringTask {
             2 => (IFE分馏塔定向原胚, 1),
             3 => (GetCurrentStageMatrixId(), 4),
             4 => (IFE分馏配方核心, 1),
+            5 => (I黑雾矩阵, 2),
             _ => (IFE残片, 0)
         };
     }
@@ -262,6 +269,7 @@ public static class RecurringTask {
             2 => string.Format("循环任务奖励-定向原胚".Translate(), 1),
             3 => string.Format("循环任务奖励-矩阵".Translate(), 4),
             4 => string.Format("循环任务奖励-配方核心".Translate(), 1),
+            5 => string.Format("循环任务奖励-黑雾矩阵".Translate(), 2),
             _ => string.Empty
         };
     }
@@ -273,6 +281,7 @@ public static class RecurringTask {
             2 => string.Format("原胚循环描述".Translate(), targets[index]),
             3 => string.Format("工艺精进描述".Translate(), targets[index]),
             4 => string.Format("配方收集描述".Translate(), targets[index]),
+            5 => string.Format("黑雾压制描述".Translate(), targets[index]),
             _ => string.Empty,
         };
     }
@@ -298,6 +307,7 @@ public static class RecurringTask {
             2 => GetProtoInventoryCount(),
             3 => GetFullyUpgradedRecipeCount(),
             4 => GetUnlockedRecipeCount(),
+            5 => DarkFogCombatManager.GetCurrentDarkFogInventoryScore(),
             _ => 0
         };
     }

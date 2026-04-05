@@ -163,6 +163,35 @@ public static class GachaService {
         return adjusted;
     }
 
+    public static bool TryExchangeGrowthOffer(GachaGrowthOffer offer, out int rewardItemId, out int rewardCount) {
+        rewardItemId = 0;
+        rewardCount = 0;
+
+        if (offer.PointCost > 0 && !GachaManager.TryConsumePoolPoints(GachaPool.PoolIdGrowth, offer.PointCost)) {
+            return false;
+        }
+        if (offer.FragmentCost > 0 && !TakeItemWithTip(IFE残片, offer.FragmentCost, out _)) {
+            if (offer.PointCost > 0) {
+                GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
+            }
+            return false;
+        }
+        if (offer.ExtraCostItemId > 0 && !TakeItemWithTip(offer.ExtraCostItemId, offer.ExtraCostCount, out _)) {
+            if (offer.PointCost > 0) {
+                GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
+            }
+            if (offer.FragmentCost > 0) {
+                AddItemToModData(IFE残片, offer.FragmentCost, 0, true);
+            }
+            return false;
+        }
+
+        AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
+        rewardItemId = offer.OutputId;
+        rewardCount = offer.OutputCount;
+        return true;
+    }
+
     private static GachaGrowthOffer ApplyFocusOfferModifier(GachaGrowthOffer offer) {
         if (!IsFocusedGrowthOffer(offer)) {
             return offer;
@@ -224,22 +253,40 @@ public static class GachaService {
     }
 
     private static void AppendBlackFogOffers(List<GachaGrowthOffer> offers, int pointBaseOffset = 0, int fragmentBaseOffset = 0) {
-        int stageIndex = GetCurrentProgressStageIndex();
-        if (stageIndex >= 3) {
+        if (!DarkFogCombatManager.IsGrowthOfferUnlocked()) {
+            return;
+        }
+
+        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        int enhancedNodeCount = DarkFogCombatManager.GetEnhancedNodeCount();
+
+        if (stage >= EDarkFogCombatStage.Signal) {
             offers.Add(new(18 + pointBaseOffset, 12 + fragmentBaseOffset, I能量碎片, 20,
                 GachaFocusType.RectificationEconomy, I黑雾矩阵, 1));
         }
-        if (stageIndex >= 4) {
+        if (stage >= EDarkFogCombatStage.GroundSuppression) {
             offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I物质重组器, 5,
                 GachaFocusType.ConversionLeap, I黑雾矩阵, 2));
             offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I硅基神经元, 4,
                 GachaFocusType.ProcessOptimization, I黑雾矩阵, 2));
         }
-        if (stageIndex >= 5) {
+        if (stage >= EDarkFogCombatStage.StellarHunt) {
             offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵奇点, 2,
                 GachaFocusType.RectificationEconomy, I黑雾矩阵, 3));
+        }
+        if (stage >= EDarkFogCombatStage.Singularity) {
             offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I核心素, 1,
                 GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
+        }
+        if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity) {
+            if (enhancedNodeCount >= 1) {
+                offers.Add(new(40 + pointBaseOffset, 26 + fragmentBaseOffset, IFE分馏配方核心, 1,
+                    GachaFocusType.ProcessOptimization, I黑雾矩阵, 3));
+            }
+            if (enhancedNodeCount >= 2) {
+                offers.Add(new(48 + pointBaseOffset, 32 + fragmentBaseOffset, IFE分馏塔定向原胚, 1,
+                    GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
+            }
         }
     }
 

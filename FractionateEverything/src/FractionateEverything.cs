@@ -301,6 +301,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         ItemManager.IntoOtherSave();
         GachaManager.IntoOtherSave();
         EconomyManager.IntoOtherSave();
+        DarkFogCombatManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 

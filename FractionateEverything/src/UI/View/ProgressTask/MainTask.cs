@@ -79,6 +79,10 @@ public static class MainTask {
             () => GetTechProgressText(TFE物品精馏), () => GrantItems((IFE精馏塔原胚, 5))),
         new("星际互联", "主线描述-星际互联", "主线奖励-星际物流交互站2", IFE星际物流交互站, 2, () => IsTechUnlocked(TFE星际物流交互),
             () => GetTechProgressText(TFE星际物流交互), () => GrantItems((IFE星际物流交互站, 2))),
+        new("黑雾接战", "主线描述-黑雾接战", "主线奖励-黑雾矩阵8", I黑雾矩阵, 8,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.GroundSuppression,
+            () => GetDarkFogStageProgressText(EDarkFogCombatStage.GroundSuppression),
+            () => GrantItems((I黑雾矩阵, 8))),
         new("万物归一", "主线描述-万物归一", "主线奖励-残片2000", IFE残片, 2000,
             () => GetUnlockedRecipeCount() >= 100 && totalFractionSuccesses >= 5000,
             () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 100),
@@ -115,6 +119,10 @@ public static class MainTask {
             () => IsTechUnlocked(TFE星际物流交互),
             () => GetTechProgressText(TFE星际物流交互),
             () => GrantItems((IFE星际物流交互站, 2))),
+        new("速通接敌", "速通描述-速通接敌", "主线奖励-黑雾矩阵4", I黑雾矩阵, 4,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Signal,
+            () => GetDarkFogStageProgressText(EDarkFogCombatStage.Signal),
+            () => GrantItems((I黑雾矩阵, 4))),
         new("速通闭环", "速通描述-速通闭环", "主线奖励-残片2000", IFE残片, 2000,
             () => GetUnlockedRecipeCount() >= 60 && totalFractionSuccesses >= 3000,
             () => string.Format("解锁配方进度".Translate(), GetUnlockedRecipeCount(), 60),
@@ -135,6 +143,7 @@ public static class MainTask {
         Register("工艺优化", "Craft Optimization");
         Register("精馏经济", "Rectification Economy");
         Register("星际互联", "Interstellar Connectivity");
+        Register("黑雾接战", "Dark Fog Engagement", "黑雾接战");
         Register("万物归一", "All Into One");
 
         Register("主线描述-分馏启示", "Unlock Fractionation Data Centre tech", "解锁分馏数据中心科技");
@@ -146,6 +155,7 @@ public static class MainTask {
         Register("主线描述-工艺优化", "Raise any FE building to level 6", "任意万物分馏建筑等级达到 6");
         Register("主线描述-精馏经济", "Unlock Item Rectification tech", "解锁物品精馏科技");
         Register("主线描述-星际互联", "Unlock Interstellar Interaction tech", "解锁星际物流交互科技");
+        Register("主线描述-黑雾接战", "Advance the Dark Fog branch to Ground Suppression", "将黑雾支线推进到“地面压制”阶段");
         Register("主线描述-万物归一", "Unlock 100 fractionation recipes and 5000 successful fractionations", "累计解锁 100 个分馏配方并完成 5000 次分馏成功");
 
         Register("速通启程", "Speedrun Start");
@@ -155,6 +165,7 @@ public static class MainTask {
         Register("速通效率", "Speedrun Efficiency");
         Register("精馏冲刺", "Rectification Sprint");
         Register("星际跃迁", "Interstellar Leap");
+        Register("速通接敌", "Speedrun Engagement", "速通接敌");
         Register("速通闭环", "Speedrun Loop");
 
         Register("速通描述-速通启程", "Unlock Fractionation Data Centre tech", "解锁分馏数据中心科技");
@@ -164,6 +175,7 @@ public static class MainTask {
         Register("速通描述-速通效率", "Reach 800 successful fractionations", "累计完成 800 次分馏成功");
         Register("速通描述-精馏冲刺", "Unlock Item Rectification tech", "解锁物品精馏科技");
         Register("速通描述-星际跃迁", "Unlock Interstellar Interaction tech", "解锁星际物流交互科技");
+        Register("速通描述-速通接敌", "Advance the Dark Fog branch to Signal Contact", "将黑雾支线推进到“信号接触”阶段");
         Register("速通描述-速通闭环", "Unlock 60 fractionation recipes and 3000 successful fractionations", "累计解锁 60 个分馏配方并完成 3000 次分馏成功");
 
         Register("主线奖励-无", "No extra reward (auto completed)", "无额外奖励（自动完成）");
@@ -176,6 +188,8 @@ public static class MainTask {
         Register("主线奖励-残片1000", "Fragments x1000", "残片 x1000");
         Register("主线奖励-精馏塔原胚5", "Rectification Tower Proto x5", "精馏塔原胚 x5");
         Register("主线奖励-星际物流交互站2", "Interstellar Interaction Station x2", "星际物流交互站 x2");
+        Register("主线奖励-黑雾矩阵8", "Dark Fog Matrix x8", "黑雾矩阵 x8");
+        Register("主线奖励-黑雾矩阵4", "Dark Fog Matrix x4", "黑雾矩阵 x4");
         Register("主线奖励-残片2000", "Fragments x2000", "残片 x2000");
 
         Register("当前任务", "Current Task");
@@ -421,6 +435,24 @@ public static class MainTask {
 
     private static string GetTechProgressText(int techId) {
         return string.Format("科技解锁进度".Translate(), IsTechUnlocked(techId) ? "是".Translate() : "否".Translate());
+    }
+
+    private static string GetDarkFogStageProgressText(EDarkFogCombatStage targetStage) {
+        string currentStage = DarkFogCombatManager.GetCurrentStage() switch {
+            EDarkFogCombatStage.Dormant => "休眠观察",
+            EDarkFogCombatStage.Signal => "信号接触",
+            EDarkFogCombatStage.GroundSuppression => "地面压制",
+            EDarkFogCombatStage.StellarHunt => "星域围猎",
+            _ => "奇点收束",
+        };
+        string targetStageName = targetStage switch {
+            EDarkFogCombatStage.Signal => "信号接触",
+            EDarkFogCombatStage.GroundSuppression => "地面压制",
+            EDarkFogCombatStage.StellarHunt => "星域围猎",
+            EDarkFogCombatStage.Singularity => "奇点收束",
+            _ => "休眠观察",
+        };
+        return $"黑雾阶段：{currentStage} / {targetStageName}";
     }
 
     #region IModCanSave
