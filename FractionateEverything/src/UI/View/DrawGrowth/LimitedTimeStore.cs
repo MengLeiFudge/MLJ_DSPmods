@@ -145,30 +145,12 @@ public static class LimitedTimeStore {
         }
 
         GachaGrowthOffer offer = row.Offer;
-        if (offer.PointCost > 0 && !GachaManager.TryConsumePoolPoints(GachaPool.PoolIdGrowth, offer.PointCost)) {
-            return;
-        }
-        if (offer.FragmentCost > 0 && GetItemTotalCount(IFE残片) < offer.FragmentCost) {
-            GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
-            return;
-        }
-        if (offer.ExtraCostItemId > 0 && GetItemTotalCount(offer.ExtraCostItemId) < offer.ExtraCostCount) {
-            GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
-            return;
-        }
-        if (offer.FragmentCost > 0 && !TakeItemWithTip(IFE残片, offer.FragmentCost, out _)) {
-            GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
-            return;
-        }
-        if (offer.ExtraCostItemId > 0 && !TakeItemWithTip(offer.ExtraCostItemId, offer.ExtraCostCount, out _)) {
-            GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
-            AddItemToModData(IFE残片, offer.FragmentCost, 0, true);
+        if (!GachaService.TryExchangeGrowthOffer(offer, out int rewardItemId, out int rewardCount)) {
             return;
         }
 
-        AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
-        string itemName = LDB.items.Select(offer.OutputId)?.name ?? offer.OutputId.ToString();
-        UIRealtimeTip.Popup($"获得 {itemName} x{offer.OutputCount}");
+        string itemName = LDB.items.Select(rewardItemId)?.name ?? rewardItemId.ToString();
+        UIRealtimeTip.Popup($"获得 {itemName} x{rewardCount}");
         UpdateUI();
     }
 
@@ -261,25 +243,42 @@ public static class LimitedTimeStore {
     private static string GetOfferDetailText(GachaGrowthOffer offer) {
         if (offer.FocusType == GachaFocusType.Balanced) {
             if (offer.ExtraCostItemId == I黑雾矩阵) {
-                return "黑雾支线报价：消耗黑雾矩阵换取阶段性支线资源。".WithColor(Blue);
+                if (DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)) {
+                    return "黑雾增强层报价：消耗黑雾矩阵换取战斗支线的后段突破资源。".WithColor(Gold);
+                }
+                return $"黑雾支线报价：当前阶段 {GetDarkFogStageName()}，消耗黑雾矩阵换取阶段性支线资源。".WithColor(Blue);
             }
             return "常规补差：不受聚焦折扣影响。".WithColor(White);
         }
 
         string focusName = GachaService.GetFocusName(offer.FocusType);
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
-            string prefix = offer.ExtraCostItemId == I黑雾矩阵 ? "黑雾支线报价。" : "成长定向：";
+            string prefix = offer.ExtraCostItemId == I黑雾矩阵
+                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ? "黑雾增强层报价。" : "黑雾支线报价。"
+                : "成长定向：";
             return $"{prefix}{focusName}。切到该方向后才会降价/加量。".WithColor(White);
         }
 
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
         string detail = offer.ExtraCostItemId == I黑雾矩阵
-            ? $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
+            ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)
+                ? $"黑雾增强层命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
+                : $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
             : $"已命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算";
         if (GachaService.IsCoreGrowthReward(offer)) {
             detail += offer.OutputId == IFE残片 ? "，并额外补 10 残片" : "，并额外 +1";
         }
         return detail.WithColor(Green);
+    }
+
+    private static string GetDarkFogStageName() {
+        return DarkFogCombatManager.GetCurrentStage() switch {
+            EDarkFogCombatStage.Dormant => "休眠观察",
+            EDarkFogCombatStage.Signal => "信号接触",
+            EDarkFogCombatStage.GroundSuppression => "地面压制",
+            EDarkFogCombatStage.StellarHunt => "星域围猎",
+            _ => "奇点收束",
+        };
     }
 
     private static string GetCurrentFocusEffectText() {

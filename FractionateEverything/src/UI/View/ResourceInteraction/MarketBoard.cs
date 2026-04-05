@@ -81,9 +81,15 @@ public static class MarketBoard {
         txtExpire.text = $"{ "订单刷新".Translate() }：{FormatTicks(ticks)}";
         int specialCount = MarketBoardManager.ActiveOffers.Count(offer => offer.OfferType == MarketBoardManager.MarketOfferType.Special);
         int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special
-            && (offer.InputItemId == I黑雾矩阵 || offer.ExtraInputItemId == I黑雾矩阵 || offer.OutputItemId == I黑雾矩阵));
-        txtSummary.text = $"{ "特单概览".Translate() }：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条";
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special && DarkFogCombatManager.IsDarkFogOffer(offer));
+        string stageName = DarkFogCombatManager.GetCurrentStage() switch {
+            EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
+            EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => "地面压制".WithColor(Green),
+            EDarkFogCombatStage.StellarHunt => "星域围猎".WithColor(Blue),
+            _ => "奇点收束".WithColor(Gold),
+        };
+        txtSummary.text = $"{ "特单概览".Translate() }：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条    阶段 {stageName}";
 
         var offers = MarketBoardManager.ActiveOffers;
         for (int i = 0; i < rows.Length; i++) {
@@ -112,10 +118,10 @@ public static class MarketBoard {
     }
 
     private static string GetOfferTag(MarketBoardManager.MarketOffer offer) {
-        bool darkFogRelated = offer.InputItemId == I黑雾矩阵
-                              || offer.ExtraInputItemId == I黑雾矩阵
-                              || offer.OutputItemId == I黑雾矩阵;
-        if (darkFogRelated) {
+        if (DarkFogCombatManager.IsEnhancedDarkFogOffer(offer)) {
+            return "[黑雾增强]".WithColor(Gold);
+        }
+        if (DarkFogCombatManager.IsDarkFogOffer(offer)) {
             return "[黑雾特单]".WithColor(Blue);
         }
         return offer.OfferType == MarketBoardManager.MarketOfferType.Special

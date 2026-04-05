@@ -59,9 +59,9 @@ public static class TicketExchange {
         y += 40f;
         txtDarkFogStatus = wnd.AddText2(0f, y, tab, "", 13);
         txtDarkFogStatus.supportRichText = true;
-        txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(960f, 70f);
+        txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(960f, 100f);
 
-        y += 84f;
+        y += 110f;
         wnd.AddButton(0f, y, 140f, tab, "前往成长规划".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
         wnd.AddButton(150f, y, 140f, tab, "前往市场板".Translate(), 13,
@@ -90,17 +90,32 @@ public static class TicketExchange {
     }
 
     private static string BuildDarkFogStatusText() {
-        int stageIndex = ItemManager.GetCurrentProgressStageIndex();
-        bool growthUnlocked = stageIndex >= 3;
-        bool marketUnlocked = stageIndex >= 4;
-        int darkFogOfferCount = GachaService.GetGrowthOffers().Count(offer => offer.ExtraCostItemId == I黑雾矩阵);
-        int darkFogSpecialOrders = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special
-            && (offer.InputItemId == I黑雾矩阵 || offer.ExtraInputItemId == I黑雾矩阵 || offer.OutputItemId == I黑雾矩阵));
+        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        string stageName = stage switch {
+            EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
+            EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => "地面压制".WithColor(Green),
+            EDarkFogCombatStage.StellarHunt => "星域围猎".WithColor(Blue),
+            _ => "奇点收束".WithColor(Gold),
+        };
+        string enhancedText = !DarkFogCombatManager.IsEnhancedLayerEnabled()
+            ? "未接入".WithColor(Orange)
+            : $"节点 {DarkFogCombatManager.GetEnhancedNodeCount()}/4    遗物 {DarkFogCombatManager.GetRelicCount()}    Rank {DarkFogCombatManager.GetMeritRank()}    技能 {DarkFogCombatManager.GetAssignedSkillPointCount()}".WithColor(Green);
+        string nextTarget = stage switch {
+            EDarkFogCombatStage.Dormant when !DarkFogCombatManager.IsCombatModeEnabled() => "启用战斗模式".WithColor(Orange),
+            EDarkFogCombatStage.Dormant when DarkFogCombatManager.GetProgressStageIndex() < 3 => $"解锁 {LDB.items.Select(I信息矩阵).name}".WithColor(Orange),
+            EDarkFogCombatStage.Dormant => "建立黑雾矩阵库存或首次接触黑雾掉落".WithColor(Blue),
+            EDarkFogCombatStage.Signal => $"{LDB.items.Select(I引力矩阵).name} + 物资层级 2/4".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => $"{LDB.items.Select(I宇宙矩阵).name} + 物资层级 3/4 或接触蜂巢".WithColor(Blue),
+            EDarkFogCombatStage.StellarHunt when DarkFogCombatManager.IsEnhancedLayerEnabled() => "物资层级 4/4 或增强节点 2/4".WithColor(Gold),
+            EDarkFogCombatStage.StellarHunt => "物资层级 4/4".WithColor(Gold),
+            _ => "已到最终阶段".WithColor(Gold),
+        };
 
-        return $"{ "黑雾支线说明".Translate() }：当前黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}"
-               + $"    成长页报价 {(growthUnlocked ? $"已开放 {darkFogOfferCount} 项".WithColor(Green) : "未开放".WithColor(Orange))}"
-               + $"    市场板特单 {(marketUnlocked ? $"已开放 {darkFogSpecialOrders} 项".WithColor(Green) : "未开放".WithColor(Orange))}";
+        return $"{ "黑雾支线说明".Translate() }：当前黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}    阶段 {stageName}\n"
+               + $"战况：地面基地 {DarkFogCombatManager.GetAliveGroundBaseCount()}    星域蜂巢 {DarkFogCombatManager.GetAliveHiveCount()}    物资层级 {DarkFogCombatManager.GetDarkFogResourceTier()}/4\n"
+               + $"成长页报价 {DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    市场板特单 {DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    增强层 {enhancedText}\n"
+               + $"下一阶段：{nextTarget}";
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }

@@ -13,6 +13,22 @@ public static class TheyComeFromVoid {
     public static bool Enable;
     public static Assembly assembly;
 
+    public static int GetRelicCount() {
+        return Enable ? Relic.GetRelicCount() : 0;
+    }
+
+    public static int GetMeritRank() {
+        return Enable ? Rank.rank : 0;
+    }
+
+    public static int GetAssignedSkillPointCount() {
+        return Enable ? SkillPoints.skillLevelL.Sum() + SkillPoints.skillLevelR.Sum() : 0;
+    }
+
+    public static bool HasActiveEventChain() {
+        return Enable && EventSystem.recorder != null && EventSystem.recorder.protoId > 0;
+    }
+
     public static void Compatible() {
         Enable = Chainloader.PluginInfos.TryGetValue(GUID, out BepInEx.PluginInfo pluginInfo);
         if (!Enable || pluginInfo == null) {

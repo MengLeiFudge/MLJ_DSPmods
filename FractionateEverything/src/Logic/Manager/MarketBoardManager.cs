@@ -112,15 +112,33 @@ public static class MarketBoardManager {
         TryAddSellOffer(lowDemand, usedItems);
         activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.StageSupply,
             IFE残片, 120, 0, 0, currentMatrixId, 64, currentExpireTick, MarketValueManager.RefreshVersion));
+        activeOffers.Add(CreateSpecialOffer(currentExpireTick));
+    }
 
-        if (GetCurrentProgressStageIndex() >= 4) {
-            activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 600, I黑雾矩阵, 4, IFE分馏塔定向原胚, 1, currentExpireTick, MarketValueManager.RefreshVersion));
-        } else {
+    private static MarketOffer CreateSpecialOffer(long expireTick) {
+        if (!DarkFogCombatManager.IsSpecialOrderUnlocked()) {
             int protoReward = GachaService.GetCurrentDrawMatrixId();
-            activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 180, 0, 0, protoReward, 48, currentExpireTick, MarketValueManager.RefreshVersion));
+            return new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 180, 0, 0, protoReward, 48, expireTick, MarketValueManager.RefreshVersion);
         }
+
+        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        int enhancedNodeCount = DarkFogCombatManager.GetEnhancedNodeCount();
+        if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity && enhancedNodeCount >= 2) {
+            return new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 720, I黑雾矩阵, 4, IFE分馏塔定向原胚, 1, expireTick, MarketValueManager.RefreshVersion);
+        }
+
+        return stage switch {
+            EDarkFogCombatStage.GroundSuppression => new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 320, I黑雾矩阵, 2, I物质重组器, 6, expireTick, MarketValueManager.RefreshVersion),
+            EDarkFogCombatStage.StellarHunt => new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 480, I黑雾矩阵, 3, I负熵奇点, 2, expireTick, MarketValueManager.RefreshVersion),
+            EDarkFogCombatStage.Singularity => new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 600, I黑雾矩阵, 4, I核心素, 1, expireTick, MarketValueManager.RefreshVersion),
+            _ => new MarketOffer(nextOfferId++, MarketOfferType.Special,
+                IFE残片, 240, I黑雾矩阵, 1, I能量碎片, 24, expireTick, MarketValueManager.RefreshVersion),
+        };
     }
 
     private static void TryAddBuyOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {

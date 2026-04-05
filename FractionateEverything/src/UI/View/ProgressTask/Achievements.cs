@@ -137,6 +137,7 @@ public static class Achievements {
         AddGrowthAchievements(list);
         AddRecurringAchievements(list);
         AddProtoAchievements(list);
+        AddDarkFogAchievements(list);
         AddExplorationAchievements(list);
         AddChallengeAchievements(list);
         return [.. list];
@@ -317,6 +318,81 @@ public static class Achievements {
         }
     }
 
+    private static void AddDarkFogAchievements(List<AchievementInfo> list) {
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "黑雾信标",
+            "进入战斗模式并接通黑雾支线",
+            "成就奖励-当前阶段矩阵4",
+            ETier.Bronze,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Signal,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵4"),
+            successRateBonus: 0.002f,
+            logisticsBonus: 0.002f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "黑雾压制",
+            "将黑雾战斗支线推进到地面压制阶段",
+            "成就奖励-残片800",
+            ETier.Silver,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.GroundSuppression,
+            () => GrantRewardByKey("成就奖励-残片800"),
+            successRateBonus: 0.003f,
+            destroyReductionBonus: 0.002f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "蜂巢猎场",
+            "将黑雾战斗支线推进到星域围猎阶段",
+            "成就奖励-当前阶段矩阵8",
+            ETier.Gold,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.StellarHunt,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵8"),
+            successRateBonus: 0.004f,
+            doubleOutputBonus: 0.003f,
+            powerStageBonus: 0.008f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "奇点收束",
+            "将黑雾战斗支线推进到奇点收束阶段",
+            "成就奖励-残片2000",
+            ETier.Platinum,
+            () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Singularity,
+            () => GrantRewardByKey("成就奖励-残片2000"),
+            successRateBonus: 0.006f,
+            destroyReductionBonus: 0.004f,
+            powerStageBonus: 0.012f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "遗物共振",
+            "在黑雾增强层中持有至少 1 个元驱动",
+            "成就奖励-配方核心1",
+            ETier.Gold,
+            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetRelicCount() >= 1,
+            () => GrantRewardByKey("成就奖励-配方核心1"),
+            doubleOutputBonus: 0.003f,
+            logisticsBonus: 0.003f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "功勋回路",
+            "在黑雾增强层中将功勋等级提升到 4",
+            "成就奖励-定向原胚1",
+            ETier.Platinum,
+            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetMeritRank() >= 4,
+            () => GrantRewardByKey("成就奖励-定向原胚1"),
+            logisticsBonus: 0.004f,
+            powerStageBonus: 0.015f));
+        list.Add(new AchievementInfo(
+            "成就分类-黑雾",
+            "授权整备",
+            "在黑雾增强层中分配至少 8 点技能点",
+            "成就奖励-当前阶段矩阵16",
+            ETier.Platinum,
+            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetAssignedSkillPointCount() >= 8,
+            () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
+            energyReductionBonus: 0.03f,
+            powerStageBonus: 0.01f));
+    }
+
     private static void AddExplorationAchievements(List<AchievementInfo> list) {
         list.Add(new AchievementInfo(
             "成就分类-探索",
@@ -490,6 +566,7 @@ public static class Achievements {
         Register("成就分类-成长", "Growth", "成长");
         Register("成就分类-循环", "Recurring", "循环");
         Register("成就分类-原胚", "Proto", "原胚");
+        Register("成就分类-黑雾", "Dark Fog", "黑雾");
         Register("成就分类-探索", "Explore", "探索");
         Register("成就分类-挑战", "Challenge", "挑战");
         Register("描述", "Description");
@@ -547,6 +624,13 @@ public static class Achievements {
         Register("成就-星际整备", "Interstellar Readiness");
         Register("成就-精馏开路", "Rectification Opening");
         Register("成就-万物归一", "All Into One");
+        Register("黑雾信标", "Dark Fog Signal", "黑雾信标");
+        Register("黑雾压制", "Ground Suppression", "黑雾压制");
+        Register("蜂巢猎场", "Hive Hunt", "蜂巢猎场");
+        Register("奇点收束", "Singularity Convergence", "奇点收束");
+        Register("遗物共振", "Relic Resonance", "遗物共振");
+        Register("功勋回路", "Merit Circuit", "功勋回路");
+        Register("授权整备", "Authorization Setup", "授权整备");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -582,6 +666,15 @@ public static class Achievements {
         }
         nextAutoCheckFrame = frame + 60;
         CheckAndUnlockAchievements(showPopup: true);
+    }
+
+    private static void ResetSaveState() {
+        Array.Clear(unlocked, 0, unlocked.Length);
+        Array.Clear(claimed, 0, claimed.Length);
+        panelOpenCount = 0;
+        currentPage = 0;
+        nextAutoCheckFrame = 0;
+        SyncCurrentPageToSharedState();
     }
 
     private static void LoadAchievementFlags(string flags) {
@@ -1132,11 +1225,20 @@ public static class Achievements {
             return;
         }
 
+        ResetSaveState();
+
         bool migrated = false;
         bool[] oldUnlocked = [];
         bool[] oldClaimed = [];
+        bool[] saveClaimed = [];
 
         r.ReadBlocks(
+            ("PanelOpenCountV2", br => {
+                panelOpenCount = Math.Max(0, br.ReadInt32());
+            }),
+            ("ClaimedFlagsV2", br => {
+                saveClaimed = ReadLegacyFlags(br);
+            }),
             ("UnlockedFlags", br => {
                 oldUnlocked = ReadLegacyFlags(br);
             }),
@@ -1144,6 +1246,16 @@ public static class Achievements {
                 oldClaimed = ReadLegacyFlags(br);
             })
         );
+
+        int saveCount = Math.Min(saveClaimed.Length, achievements.Length);
+        for (int i = 0; i < saveCount; i++) {
+            if (!saveClaimed[i] || claimed[i]) {
+                continue;
+            }
+            unlocked[i] = true;
+            claimed[i] = true;
+            migrated = true;
+        }
 
         int oldCount = Math.Max(oldUnlocked.Length, oldClaimed.Length);
         for (int oldIndex = 0; oldIndex < oldCount && oldIndex < legacyAchievementNameOrder.Length; oldIndex++) {
@@ -1187,11 +1299,20 @@ public static class Achievements {
     }
 
     public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("PanelOpenCountV2", bw => bw.Write(panelOpenCount)),
+            ("ClaimedFlagsV2", bw => {
+                bw.Write(achievements.Length);
+                for (int i = 0; i < achievements.Length; i++) {
+                    bw.Write(claimed[i]);
+                }
+            })
+        );
     }
 
     public static void IntoOtherSave() {
-        currentPage = 0;
-        SyncCurrentPageToSharedState();
+        ResetSaveState();
+        PersistAchievementConfig(forceSave: true);
     }
 
     public static bool IsAchievementClaimed(string nameKey) {
