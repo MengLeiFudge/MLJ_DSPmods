@@ -182,7 +182,7 @@ public static class LimitedTimeStore {
 
     public static void UpdateUI() {
         int matrixId = GachaService.GetCurrentDrawMatrixId();
-        string resourceText = $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
+        string resourceText = $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}    黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}";
         string focusText = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}    {"当前聚焦".Translate()}：{GetCurrentFocusName()}";
 
         if (growthPage?.Tab != null && growthPage.Tab.gameObject.activeSelf) {
@@ -260,16 +260,22 @@ public static class LimitedTimeStore {
 
     private static string GetOfferDetailText(GachaGrowthOffer offer) {
         if (offer.FocusType == GachaFocusType.Balanced) {
+            if (offer.ExtraCostItemId == I黑雾矩阵) {
+                return "黑雾支线报价：消耗黑雾矩阵换取阶段性支线资源。".WithColor(Blue);
+            }
             return "常规补差：不受聚焦折扣影响。".WithColor(White);
         }
 
         string focusName = GachaService.GetFocusName(offer.FocusType);
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
-            return $"成长定向：{focusName}。切到该方向后才会降价/加量。".WithColor(White);
+            string prefix = offer.ExtraCostItemId == I黑雾矩阵 ? "黑雾支线报价。" : "成长定向：";
+            return $"{prefix}{focusName}。切到该方向后才会降价/加量。".WithColor(White);
         }
 
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
-        string detail = $"已命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算";
+        string detail = offer.ExtraCostItemId == I黑雾矩阵
+            ? $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
+            : $"已命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算";
         if (GachaService.IsCoreGrowthReward(offer)) {
             detail += offer.OutputId == IFE残片 ? "，并额外补 10 残片" : "，并额外 +1";
         }

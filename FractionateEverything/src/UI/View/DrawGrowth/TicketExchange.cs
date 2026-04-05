@@ -1,7 +1,9 @@
+using System.Linq;
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
+using FE.UI.View;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
@@ -15,6 +17,7 @@ public static class TicketExchange {
     private static Text txtCostOpening;
     private static Text txtCostProto;
     private static Text txtCostFocus;
+    private static Text txtDarkFogStatus;
     private static MyImageButton btnCurrentMatrix;
     private static MyImageButton btnFragment;
     private static MyImageButton btnDarkFogMatrix;
@@ -28,6 +31,8 @@ public static class TicketExchange {
         Register("原胚池成本", "Proto Pool Cost");
         Register("聚焦切换成本", "Focus Switch Cost");
         Register("黑雾支线说明", "Dark Fog Branch", "黑雾支线");
+        Register("前往成长规划", "Go Growth Planning");
+        Register("前往市场板", "Go Market Board");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -51,6 +56,16 @@ public static class TicketExchange {
         txtCostProto = wnd.AddText2(0f, y, tab, "", 14);
         y += 30f;
         txtCostFocus = wnd.AddText2(0f, y, tab, "", 14);
+        y += 40f;
+        txtDarkFogStatus = wnd.AddText2(0f, y, tab, "", 13);
+        txtDarkFogStatus.supportRichText = true;
+        txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(960f, 70f);
+
+        y += 84f;
+        wnd.AddButton(0f, y, 140f, tab, "前往成长规划".Translate(), 13,
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
+        wnd.AddButton(150f, y, 140f, tab, "前往市场板".Translate(), 13,
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 3));
     }
 
     public static void UpdateUI() {
@@ -71,6 +86,21 @@ public static class TicketExchange {
             $"{ "原胚池成本".Translate() }：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
         txtCostFocus.text =
             $"{ "聚焦切换成本".Translate() }：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    成长积分统一进入成长池";
+        txtDarkFogStatus.text = BuildDarkFogStatusText();
+    }
+
+    private static string BuildDarkFogStatusText() {
+        int stageIndex = ItemManager.GetCurrentProgressStageIndex();
+        bool growthUnlocked = stageIndex >= 3;
+        bool marketUnlocked = stageIndex >= 4;
+        int darkFogOfferCount = GachaService.GetGrowthOffers().Count(offer => offer.ExtraCostItemId == I黑雾矩阵);
+        int darkFogSpecialOrders = MarketBoardManager.ActiveOffers.Count(offer =>
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special
+            && (offer.InputItemId == I黑雾矩阵 || offer.ExtraInputItemId == I黑雾矩阵 || offer.OutputItemId == I黑雾矩阵));
+
+        return $"{ "黑雾支线说明".Translate() }：当前黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}"
+               + $"    成长页报价 {(growthUnlocked ? $"已开放 {darkFogOfferCount} 项".WithColor(Green) : "未开放".WithColor(Orange))}"
+               + $"    市场板特单 {(marketUnlocked ? $"已开放 {darkFogSpecialOrders} 项".WithColor(Green) : "未开放".WithColor(Orange))}";
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
