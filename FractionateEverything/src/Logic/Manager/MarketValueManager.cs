@@ -171,6 +171,7 @@ public static class MarketValueManager {
                && GetBaseValue(itemId) > 0f
                && GetBaseValue(itemId) < maxValue
                && !IsLegacyTicketItem(itemId)
+               && !IsLegacyFrozenGrowthItem(itemId)
                && itemId != IFE残片
                && itemId != I沙土;
     }

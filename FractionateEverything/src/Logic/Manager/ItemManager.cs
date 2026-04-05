@@ -16,6 +16,10 @@ public static class ItemManager {
         return itemId == IFE普通抽卡券 || itemId == IFE精选抽卡券;
     }
 
+    public static bool IsLegacyFrozenGrowthItem(int itemId) {
+        return itemId == IFE分馏塔增幅芯片 || itemId == IFE原版配方核心;
+    }
+
     public static void AddTranslations() {
         Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
         Register("I万物分馏商店刷新提示",
@@ -497,6 +501,7 @@ public static class ItemManager {
         needs = LDB.items.dataArray
             .Where(item => itemValue[item.ID] < maxValue)
             .Where(item => !IsLegacyTicketItem(item.ID))
+            .Where(item => !IsLegacyFrozenGrowthItem(item.ID))
             .Select(item => item.ID)
             .ToArray();
     }
