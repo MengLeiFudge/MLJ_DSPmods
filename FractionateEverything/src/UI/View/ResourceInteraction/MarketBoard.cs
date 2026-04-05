@@ -1,3 +1,4 @@
+using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
@@ -23,12 +24,14 @@ public static class MarketBoard {
 
     private static RectTransform tab;
     private static Text txtExpire;
+    private static Text txtSummary;
     private static readonly OfferRow[] rows = new OfferRow[RowCount];
 
     public static void AddTranslations() {
         Register("市场板", "Market Board");
         Register("交易", "Trade");
         Register("订单刷新", "Order Refresh");
+        Register("特单概览", "Special Orders", "特单概览");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -37,6 +40,10 @@ public static class MarketBoard {
         tab = wnd.AddTab(trans, "市场板");
         float y = 18f;
         txtExpire = wnd.AddText2(0f, y, tab, "", 13);
+        y += 28f;
+        txtSummary = wnd.AddText2(0f, y, tab, "", 13);
+        txtSummary.supportRichText = true;
+        txtSummary.rectTransform.sizeDelta = new Vector2(960f, 24f);
         y += 36f;
 
         for (int i = 0; i < RowCount; i++) {
@@ -72,6 +79,11 @@ public static class MarketBoard {
             ticks = 0;
         }
         txtExpire.text = $"{ "订单刷新".Translate() }：{FormatTicks(ticks)}";
+        int specialCount = MarketBoardManager.ActiveOffers.Count(offer => offer.OfferType == MarketBoardManager.MarketOfferType.Special);
+        int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special
+            && (offer.InputItemId == I黑雾矩阵 || offer.ExtraInputItemId == I黑雾矩阵 || offer.OutputItemId == I黑雾矩阵));
+        txtSummary.text = $"{ "特单概览".Translate() }：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条";
 
         var offers = MarketBoardManager.ActiveOffers;
         for (int i = 0; i < rows.Length; i++) {
@@ -90,9 +102,25 @@ public static class MarketBoard {
                 rows[i].TxtExtra.text = "";
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
+            string offerTag = GetOfferTag(offer);
+            if (!string.IsNullOrEmpty(offerTag) && !string.IsNullOrEmpty(rows[i].TxtOutput.text)) {
+                rows[i].TxtOutput.text = $"{offerTag} {rows[i].TxtOutput.text}";
+            }
             rows[i].BtnTrade.gameObject.SetActive(true);
             rows[i].BtnTrade.button.interactable = true;
         }
+    }
+
+    private static string GetOfferTag(MarketBoardManager.MarketOffer offer) {
+        bool darkFogRelated = offer.InputItemId == I黑雾矩阵
+                              || offer.ExtraInputItemId == I黑雾矩阵
+                              || offer.OutputItemId == I黑雾矩阵;
+        if (darkFogRelated) {
+            return "[黑雾特单]".WithColor(Blue);
+        }
+        return offer.OfferType == MarketBoardManager.MarketOfferType.Special
+            ? "[特单]".WithColor(Orange)
+            : string.Empty;
     }
 
     private static void SetItem(MyImageButton icon, Text text, int itemId, int count) {
