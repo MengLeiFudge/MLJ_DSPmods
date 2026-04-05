@@ -78,64 +78,6 @@ public static class TechManager {
             "Fragments and endgame growth supplies have been added to the fractionation data centre.",
             "残片与终局成长物资已下载到分馏数据中心。");
 
-
-        Register("T电磁奖券", "Electromagnetic Ticket", "电磁奖券");
-        Register("电磁奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("电磁奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T能量奖券", "Energy Ticket", "能量奖券");
-        Register("能量奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("能量奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T结构奖券", "Structure Ticket", "结构奖券");
-        Register("结构奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("结构奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T信息奖券", "Information Ticket", "信息奖券");
-        Register("信息奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("信息奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T引力奖券", "Gravity Ticket", "引力奖券");
-        Register("引力奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("引力奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T宇宙奖券", "Universe Ticket", "宇宙奖券");
-        Register("宇宙奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("宇宙奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-        Register("T黑雾奖券", "Dark Fog Ticket", "黑雾奖券");
-        Register("黑雾奖券描述",
-            "Legacy ticket tech text kept only for archival compatibility. Version 2.3 no longer uses physical tickets as the main draw resource.",
-            "旧版奖券科技说明，仅作归档兼容保留。2.3版本起抽取主资源已不再使用实体奖券。");
-        Register("黑雾奖券结果",
-            "Legacy ticket tech entry retained for old saves. It no longer represents the active 2.3 main loop.",
-            "旧版奖券科技入口仅为兼容旧存档保留，不再代表当前 2.3 主循环内容。");
-
-
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
             "In the new fractionate technology, the new fractionators are no longer crafted directly with materials. Obtain various protos from the Proto Loop Pool or Growth page, then use the Interaction Tower to cultivate them into different fractionators. Rare directional protos can be cultivated directly into the chosen tower type.",
