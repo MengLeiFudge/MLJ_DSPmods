@@ -71,7 +71,7 @@ public static class TicketRaffle {
 
         Register("开线池说明",
             "Spend the current stage Matrix to draw Mineral Replication / Conversion recipes. Focus raises matching directions.",
-            "消耗当前阶段矩阵，抽取矿物复制/转化的新配方与回响。当前聚焦会提高对应方向的命中权重。");
+            "消耗当前阶段矩阵，抽取矿物复制/转化的新配方与阶段推进条目。当前聚焦会提高对应方向的命中权重。");
         Register("原胚闭环池说明",
             "Spend the current stage Matrix to draw protos and directional protos. Focus raises matching tower embryos.",
             "消耗当前阶段矩阵，抽取各类原胚与定向原胚。当前聚焦会提高对应塔种原胚的出现权重。");

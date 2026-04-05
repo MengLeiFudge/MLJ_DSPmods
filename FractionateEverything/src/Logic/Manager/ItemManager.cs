@@ -62,8 +62,8 @@ public static class ItemManager {
             "培养过程中发生变异的分馏塔原胚，具有极高的可塑性，可以直接培养为指定的分馏塔。");
         Register("分馏配方核心", "Fractionate Recipe Core");
         Register("I分馏配方核心",
-            "A cube containing strange energy. There is a very small chance of getting it by drawing it in the recipes prize pool, and it will also be refreshed in the limited time shop. It can be used to unlock any recipes or redeem corresponding echoes in the Recipe Operations screen.",
-            "含有奇特能量的立方体。有极小概率在配方奖池中抽取得到，限时商店也会刷新。在配方操作界面，可以用它解锁任何配方，或是兑换对应的回响。");
+            "A high-value compatibility resource used to unlock or catch up specific FE recipes from the Recipe Operations page.",
+            "高价值兼容资源，可在配方操作页面中用于解锁指定 FE 配方或补齐关键配方进度。");
         Register("分馏塔增幅芯片", "Fractionator Increase Chip");
         Register("I分馏塔增幅芯片",
             "Legacy growth material kept only for archival compatibility. Version 2.3 uses Fragments + current stage Matrix instead.",
