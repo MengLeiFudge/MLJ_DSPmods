@@ -10,6 +10,10 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
 
+/// <summary>
+/// 旧版 VIP 模块，仅为兼容旧存档数据保留。
+/// 当前 2.3 主路径不再注册或消费该模块。
+/// </summary>
 public static class VipFeatures {
     private static RectTransform window;
     private static RectTransform tab;
@@ -30,28 +34,24 @@ public static class VipFeatures {
     private static float ExpLevelUp => Level == 0 ? 1 : 1000 * (float)Math.Pow(2.0f, Level);
 
     /// <summary>
-    /// 获取VIP经验，并检测能否升级。注意，VIP升级不清空现有经验。
+    /// 旧版 VIP 经验接口。
+    /// 当前版本已冻结，保留为空实现，避免遗留调用重新启用旧逻辑。
     /// </summary>
     public static void AddExp(float exp) {
-        Exp += exp / itemValue[I引力矩阵] * 50;
-        while (Exp >= ExpLevelUp) {
-            Level++;
-            FE.Logic.Manager.GachaService.InitPools();
-        }
     }
 
     /// <summary>
-    /// 抽奖时，奖券价值视为 原有价值*TicketValueMulti
+    /// 旧版 VIP 抽奖倍率。当前冻结为中性值。
     /// </summary>
-    public static float TicketValueMulti => (float)Math.Pow(1.07f, Level);
+    public static float TicketValueMulti => 1f;
     /// <summary>
-    /// 限时商店免费兑换项数
+    /// 旧版 VIP 免费兑换项数。当前冻结为 0。
     /// </summary>
-    public static int FreeExchangeCount => (Level + 1) / 2;
+    public static int FreeExchangeCount => 0;
     /// <summary>
-    /// 限时商店购买折扣
+    /// 旧版 VIP 商店折扣。当前冻结为中性值。
     /// </summary>
-    public static float ExchangeDiscount => 1.0f / TicketValueMulti;
+    public static float ExchangeDiscount => 1f;
 
     #endregion
 
@@ -61,17 +61,17 @@ public static class VipFeatures {
     public static void AddTranslations() {
         Register("VIP特权", "VIP Features");
 
-        Register("VIP等级：", "VIP level: ");
-        Register("VIP加成如下：", "VIP bonus are as follows:");
+        Register("VIP等级：", "Legacy VIP level: ");
+        Register("VIP加成如下：", "Legacy VIP data (archived):");
         Register("奖券抽奖加成",
-            "When using lottery tickets for prize draws, the rewards obtained x{0:P2}",
-            "使用奖券抽奖时，获得的奖励 x{0:P2}");
+            "Legacy archived bonus: x{0:P2}",
+            "旧版归档倍率：x{0:P2}");
         Register("限时商店免费兑换项数",
-            "Free exchange for the first {0} recipes/items in the limited-time shop",
-            "免费兑换限时商店的前{0}项配方/物品");
+            "Legacy archived free exchanges: {0}",
+            "旧版归档免费项：{0}");
         Register("限时商店购买折扣",
-            "Exchange recipes/items from the limited-time shop at the price of {0:P2}",
-            "以{0:P2}的价格兑换限时商店的配方/物品");
+            "Legacy archived discount: {0:P2}",
+            "旧版归档折扣：{0:P2}");
         //todo: 商店刷新间隔减少，刷新需要矩阵减少
     }
 

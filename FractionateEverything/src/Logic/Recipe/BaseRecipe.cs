@@ -211,49 +211,27 @@ public abstract class BaseRecipe(
     public bool IsMaxLevel => Level >= 10;
 
     /// <summary>
-    /// 回响等级，每次退火+1，永久保留
+    /// 旧版回响数据，仅为兼容旧存档保留。
+    /// 2.3 主循环不再消费该字段。
     /// </summary>
     public int EchoLevel { get; private set; } = 0;
 
     /// <summary>
-    /// 回响加成（每点EchoLevel提供+2%成功率）
+    /// 旧版回响加成接口。
+    /// 2.3 中已冻结，不再向成功率提供额外增益。
     /// </summary>
-    public float EchoBonus => EchoLevel * 0.02f;
+    public float EchoBonus => 0f;
 
     /// <summary>
-    /// 退火：重置Level为0，EchoLevel+1。需要配方已满级。
+    /// 旧版退火接口。
+    /// 2.3 中已冻结，保留方法签名仅为兼容旧代码路径。
     /// </summary>
     public bool Anneal() {
-        if (!IsMaxLevel) return false;
-        lock (this) {
-            Level = 0;
-            EchoLevel++;
-        }
-        return true;
+        return false;
     }
 
     public (int itemId, int count) GetAnnealCost() {
-        int annealIndex = EchoLevel + 1;
-        return annealIndex switch {
-            1 => (I电磁矩阵, 200),
-            2 => (I能量矩阵, 400),
-            3 => (I结构矩阵, 600),
-            4 => (I信息矩阵, 800),
-            5 => (I引力矩阵, 1000),
-            6 => (I宇宙矩阵, 1000),
-            _ => (I宇宙矩阵, GetUniverseMatrixCost(annealIndex)),
-        };
-    }
-
-    private static int GetUniverseMatrixCost(int annealIndex) {
-        long count = 1000;
-        for (int i = 0; i < annealIndex - 6; i++) {
-            count *= 2;
-            if (count >= int.MaxValue) {
-                return int.MaxValue;
-            }
-        }
-        return (int)count;
+        return (0, 0);
     }
 
     /// <summary>
