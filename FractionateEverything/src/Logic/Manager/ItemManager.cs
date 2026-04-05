@@ -12,6 +12,10 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class ItemManager {
+    public static bool IsLegacyTicketItem(int itemId) {
+        return itemId == IFE普通抽卡券 || itemId == IFE精选抽卡券;
+    }
+
     public static void AddTranslations() {
         Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
         Register("I万物分馏商店刷新提示",
@@ -492,6 +496,7 @@ public static class ItemManager {
         //根据物品价值构建交互塔可接受物品列表
         needs = LDB.items.dataArray
             .Where(item => itemValue[item.ID] < maxValue)
+            .Where(item => !IsLegacyTicketItem(item.ID))
             .Select(item => item.ID)
             .ToArray();
     }
