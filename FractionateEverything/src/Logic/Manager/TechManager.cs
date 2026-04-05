@@ -260,7 +260,7 @@ public static class TechManager {
             [TFE分馏数据中心],
             [IFE交互塔原胚], [20], 3600,
             [],
-            GetTechPos(2, 1)
+            GetTechPos(1, 1)
         );
         tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE分馏塔定向原胚];
         tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
@@ -273,7 +273,7 @@ public static class TechManager {
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE交互塔],
-            GetTechPos(2, 2)
+            GetTechPos(1, 2)
         );
         tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品交互.PropertyOverrideItems = [I电磁矩阵];
@@ -285,7 +285,7 @@ public static class TechManager {
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE矿物复制塔],
-            GetTechPos(2, 3)
+            GetTechPos(1, 3)
         );
         tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
         tech矿物复制.PropertyOverrideItems = [I电磁矩阵];
@@ -297,7 +297,7 @@ public static class TechManager {
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE点数聚集塔],
-            GetTechPos(2, 4)
+            GetTechPos(1, 4)
         );
         tech增产点数聚集.PreTechsImplicit = [TFE分馏塔原胚];
         tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
@@ -309,7 +309,7 @@ public static class TechManager {
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE转化塔],
-            GetTechPos(2, 5)
+            GetTechPos(1, 5)
         );
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品转化.PropertyOverrideItems = [I电磁矩阵];
@@ -321,7 +321,7 @@ public static class TechManager {
             [],
             [IFE万物分馏科技解锁说明], [1], 3600000,
             [RFE精馏塔],
-            GetTechPos(2, 6)
+            GetTechPos(1, 6)
         );
         tech物品精馏.PreTechsImplicit = [TFE分馏塔原胚];
         tech物品精馏.PropertyOverrideItems = [I电磁矩阵];
@@ -334,7 +334,7 @@ public static class TechManager {
             [],
             [..tech行星物流系统.Items], [..tech行星物流系统.ItemPoints], tech行星物流系统.HashNeeded,
             [RFE行星内物流交互站],
-            GetTechPos(2, 7)
+            GetTechPos(1, 7)
         );
         tech行星内物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech行星物流系统.ID];
         tech行星内物流交互.PropertyOverrideItems = [..tech行星物流系统.PropertyOverrideItems];
@@ -347,7 +347,7 @@ public static class TechManager {
             [],
             [..tech星际物流系统.Items], [..tech星际物流系统.ItemPoints], tech星际物流系统.HashNeeded,
             [RFE星际物流交互站],
-            GetTechPos(2, 8)
+            GetTechPos(1, 8)
         );
         tech星际物流交互.PreTechsImplicit = [TFE分馏塔原胚, TFE物品交互, tech星际物流系统.ID];
         tech星际物流交互.PropertyOverrideItems = [..tech星际物流系统.PropertyOverrideItems];
