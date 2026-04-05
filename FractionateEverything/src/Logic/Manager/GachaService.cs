@@ -356,12 +356,20 @@ public static class GachaService {
         }
     }
 
+    /// <summary>
+    /// 开线池当前只消费“生产型”配方。
+    /// 工具/解锁型与特殊成长型配方继续走科技、原胚闭环或成长页，不混入随机开线入口。
+    /// </summary>
+    private static bool IsOpeningLineRecipe(BaseRecipe recipe) {
+        return recipe != null
+               && recipe.GrowthRole == ERecipeGrowthRole.Production
+               && recipe.InputID > 0
+               && recipe.MatrixID != I黑雾矩阵;
+    }
+
     private static List<BaseRecipe> GetOpeningRecipes() {
-        var recipes = new List<BaseRecipe>();
-        recipes.AddRange(RecipeManager.GetRecipesByType(ERecipe.MineralCopy));
-        recipes.AddRange(RecipeManager.GetRecipesByType(ERecipe.Conversion));
-        return recipes
-            .Where(recipe => recipe != null && recipe.InputID > 0 && recipe.MatrixID != I黑雾矩阵)
+        return RecipeManager.AllRecipes
+            .Where(IsOpeningLineRecipe)
             .Where(recipe => GetMatrixStageIndex(recipe.MatrixID) <= GetCurrentProgressStageIndex())
             .ToList();
     }
@@ -515,8 +523,8 @@ public static class GachaService {
             return new GachaRewardResolution(GachaRewardType.None, 0, 0);
         }
 
-        BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.MineralCopy, inputId)
-                            ?? RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, inputId);
+        BaseRecipe recipe = RecipeManager.AllRecipes.FirstOrDefault(candidate =>
+            IsOpeningLineRecipe(candidate) && candidate.InputID == inputId);
         if (recipe == null) {
             AddItemToModData(inputId, 1, 0, false);
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
