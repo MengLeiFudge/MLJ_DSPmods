@@ -45,7 +45,7 @@ public static class XxxTower {
 | `MineralReplicationTower.cs` | 矿物复制塔 | Controls fluid enhancement |
 | `PointAggregateTower.cs` | 点数聚集塔 | Point aggregation efficiency |
 | `ConversionTower.cs` | 转化塔 | Conversion recipes |
-| `RectificationTower.cs` | 精馏塔 | Outputs tickets/essences/cores based on recipe level |
+| `RectificationTower.cs` | 精馏塔 | Converts matrix-tier inputs into Fragments as a stable special-growth resource |
 | `PlanetaryInteractionStation.cs` | 行星内物流交互站 | Station-Data Centre link |
 | `InterstellarInteractionStation.cs` | 星际物流交互站 | `Level` delegates to `PlanetaryInteractionStation.Level` |
 
