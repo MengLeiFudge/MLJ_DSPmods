@@ -36,7 +36,7 @@ public static class ProcessManager {
         Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
         Register("搬运模式", "Transport mode");
-        Register("缺少精华", "Lack of essence");
+        Register("缺少精华", "Lack of fragments", "缺少残片");
         Register("分馏永动", "Frac forever");
         Register("无配方", "No recipe");
         Register("主产物", "Main product");
