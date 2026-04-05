@@ -144,7 +144,7 @@ public static class MainTask {
         Register("主线描述-原胚萌发", "Unlock the tower proto chain", "解锁分馏塔原胚科技");
         Register("主线描述-物品转化", "Unlock Item Conversion tech", "解锁物品转化科技");
         Register("主线描述-工艺优化", "Raise any FE building to level 6", "任意万物分馏建筑等级达到 6");
-        Register("主线描述-精馏经济", "Unlock Item Deconstruction tech", "解锁物品精馏科技");
+        Register("主线描述-精馏经济", "Unlock Item Rectification tech", "解锁物品精馏科技");
         Register("主线描述-星际互联", "Unlock Interstellar Interaction tech", "解锁星际物流交互科技");
         Register("主线描述-万物归一", "Unlock 100 fractionation recipes and 5000 successful fractionations", "累计解锁 100 个分馏配方并完成 5000 次分馏成功");
 
@@ -162,7 +162,7 @@ public static class MainTask {
         Register("速通描述-矿物快启", "Unlock Mineral Replication tech", "解锁矿物复制科技");
         Register("速通描述-转化连锁", "Unlock Item Conversion tech", "解锁物品转化科技");
         Register("速通描述-速通效率", "Reach 800 successful fractionations", "累计完成 800 次分馏成功");
-        Register("速通描述-精馏冲刺", "Unlock Item Deconstruction tech", "解锁物品精馏科技");
+        Register("速通描述-精馏冲刺", "Unlock Item Rectification tech", "解锁物品精馏科技");
         Register("速通描述-星际跃迁", "Unlock Interstellar Interaction tech", "解锁星际物流交互科技");
         Register("速通描述-速通闭环", "Unlock 60 fractionation recipes and 3000 successful fractionations", "累计解锁 60 个分馏配方并完成 3000 次分馏成功");
 
