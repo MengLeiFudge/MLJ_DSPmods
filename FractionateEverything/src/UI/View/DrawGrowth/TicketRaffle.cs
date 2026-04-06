@@ -40,6 +40,21 @@ public static class TicketRaffle {
     public static long openingLineDraws;
     private static readonly List<RaffleTabUi> activeUis = [];
 
+    private static void CleanupInvalidActiveUis() {
+        activeUis.RemoveAll(ui => ui?.Tab == null);
+    }
+
+    private static void ResetActiveUisBeforeRecreate() {
+        CleanupInvalidActiveUis();
+        foreach (var ui in activeUis) {
+            if (ui?.Tab != null && ui.Tab.gameObject.activeSelf) {
+                return;
+            }
+        }
+
+        activeUis.Clear();
+    }
+
     private static void SyncTotalDrawsFromSharedState() {
         totalDraws = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? 0;
         openingLineDraws = MainWindow.SharedPanelState?.TicketRaffleOpeningLineDraws ?? 0;
@@ -142,6 +157,7 @@ public static class TicketRaffle {
     public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "流派聚焦", GachaPool.PoolIdFocus);
 
     private static void CreatePoolUI(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
+        ResetActiveUisBeforeRecreate();
         SyncTotalDrawsFromSharedState();
         var ui = new RaffleTabUi {
             PoolId = poolId,
@@ -380,6 +396,7 @@ public static class TicketRaffle {
     }
 
     public static void UpdateUI() {
+        CleanupInvalidActiveUis();
         SyncTotalDrawsFromSharedState();
         foreach (var ui in activeUis) {
             if (ui?.Tab == null || !ui.Tab.gameObject.activeSelf) {
@@ -391,5 +408,7 @@ public static class TicketRaffle {
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }
     public static void Export(BinaryWriter w) { w.WriteBlocks(); }
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        activeUis.Clear();
+    }
 }

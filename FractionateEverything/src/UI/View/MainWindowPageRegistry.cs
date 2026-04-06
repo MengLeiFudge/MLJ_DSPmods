@@ -63,11 +63,40 @@ public static class MainWindowPageRegistry {
         new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),
     ];
 
+    private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
+
     public static IReadOnlyList<string> CategoryOrder => categoryOrder;
     public static IReadOnlyList<MainWindowPageDefinition> AllPages => allPages;
 
     public static IReadOnlyList<MainWindowCategoryDefinition> GetCategories(FEMainPanelType panelType, bool sandboxMode,
         bool includeAllPages = false) {
+        int panelIndex = panelType switch {
+            FEMainPanelType.Legacy => 0,
+            FEMainPanelType.Analysis => 1,
+            _ => -1,
+        };
+        if (panelIndex < 0) {
+            return BuildCategories(panelType, sandboxMode, includeAllPages);
+        }
+
+        return categoryCache[panelIndex, sandboxMode ? 1 : 0, includeAllPages ? 1 : 0];
+    }
+
+    private static IReadOnlyList<MainWindowCategoryDefinition>[,,] BuildCategoryCache() {
+        var cache = new IReadOnlyList<MainWindowCategoryDefinition>[2, 2, 2];
+        cache[0, 0, 0] = BuildCategories(FEMainPanelType.Legacy, false, false);
+        cache[0, 1, 0] = BuildCategories(FEMainPanelType.Legacy, true, false);
+        cache[0, 0, 1] = BuildCategories(FEMainPanelType.Legacy, false, true);
+        cache[0, 1, 1] = BuildCategories(FEMainPanelType.Legacy, true, true);
+        cache[1, 0, 0] = BuildCategories(FEMainPanelType.Analysis, false, false);
+        cache[1, 1, 0] = BuildCategories(FEMainPanelType.Analysis, true, false);
+        cache[1, 0, 1] = BuildCategories(FEMainPanelType.Analysis, false, true);
+        cache[1, 1, 1] = BuildCategories(FEMainPanelType.Analysis, true, true);
+        return cache;
+    }
+
+    private static IReadOnlyList<MainWindowCategoryDefinition> BuildCategories(FEMainPanelType panelType, bool sandboxMode,
+        bool includeAllPages) {
         var categories = new List<MainWindowCategoryDefinition>(categoryOrder.Length);
         foreach (string categoryName in categoryOrder) {
             List<MainWindowPageDefinition> pages = [];

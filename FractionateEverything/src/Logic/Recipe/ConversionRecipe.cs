@@ -245,11 +245,19 @@ public class ConversionRecipe : BaseRecipe {
 
         // C8: 单路锁定 - 当启用且有锁定产物时，过滤输出
         if (ConversionTower.EnableSingleLock && CurrentLockedOutputId != 0 && outputs != null && outputs.Count > 0) {
-            // 检查锁定产物是否在输出中
-            bool lockedInOutput = outputs.Any(p => p.itemId == CurrentLockedOutputId);
-            if (lockedInOutput) {
+            List<ProductOutputInfo> lockedOutputs = null;
+            foreach (ProductOutputInfo output in outputs) {
+                if (output.itemId != CurrentLockedOutputId) {
+                    continue;
+                }
+
+                lockedOutputs ??= new List<ProductOutputInfo>(outputs.Count);
+                lockedOutputs.Add(output);
+            }
+
+            if (lockedOutputs != null) {
                 // 只保留锁定产物
-                outputs = outputs.Where(p => p.itemId == CurrentLockedOutputId).ToList();
+                outputs = lockedOutputs;
             } else {
                 // 锁定产物不在输出中，视为失败（直通）
                 outputs = ProcessManager.emptyOutputs;
