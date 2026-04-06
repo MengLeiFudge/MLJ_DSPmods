@@ -792,45 +792,17 @@ public class GetDspData : BaseUnityPlugin {
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
             float successBoost = building.SuccessBoost();
-            //成功率
-            float successRatio = recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-            //损毁率
-            float destroyRatio = recipe.DestroyRatio;
-            //最终产物转化率
-            float processRatio = (1 - destroyRatio) * successRatio / (destroyRatio + (1 - destroyRatio) * successRatio);
-            Dictionary<int, (float, bool, bool)> outputDic = [];
-            foreach (var info in recipe.OutputMain) {
-                int outputId = info.OutputID;
-                float outputCount = processRatio;
-                outputCount *= info.SuccessRatio;
-                outputCount *= info.OutputCount;
-                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                    tuple.Item1 += outputCount;
-                } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
-                }
-                outputDic[outputId] = tuple;
-            }
-            foreach (var info in recipe.OutputAppend) {
-                int outputId = info.OutputID;
-                float outputCount = processRatio;
-                outputCount *= info.SuccessRatio;
-                outputCount *= info.OutputCount;
-                if (outputDic.TryGetValue(outputId, out (float, bool, bool) tuple)) {
-                    tuple.Item1 += outputCount;
-                } else {
-                    tuple = (outputCount, info.ShowOutputName, info.ShowSuccessRatio);
-                }
-                outputDic[outputId] = tuple;
-            }
             List<int> Items = [item.ID];
             List<float> ItemCounts = [1];
-            //物品数目是outputDic[物品ID].Item1
             List<int> Results = [];
             List<float> ResultCounts = [];
-            foreach (var p in outputDic) {
-                Results.Add(p.Key);
-                ResultCounts.Add(p.Value.Item1);
+            foreach (var info in recipe.OutputMain) {
+                Results.Add(info.OutputID);
+                ResultCounts.Add(info.OutputCount);
+            }
+            foreach (var info in recipe.OutputAppend) {
+                Results.Add(info.OutputID);
+                ResultCounts.Add(info.OutputCount);
             }
             recipes.Add(new JObject {
                 { "Type", -1 },
@@ -840,11 +812,31 @@ public class GetDspData : BaseUnityPlugin {
                 { "ItemCounts", new JArray(ItemCounts) },
                 { "Results", new JArray(Results) },
                 { "ResultCounts", new JArray(ResultCounts) },
-                { "TimeSpend", Math.Round(60.0f / recipe.SuccessRatio) },
+                { "TimeSpend", 0 },
                 { "Proliferator", 1 },
+                { "SuccessRatio", recipe.SuccessRatio },
+                { "DestroyRatio", recipe.DestroyRatio },
+                { "RemainInputRatio", recipe.RemainInputRatio },
+                { "DoubleOutputRatio", recipe.DoubleOutputRatio },
+                { "PointsBonus", pointsBonus },
+                { "SuccessBoost", successBoost },
+                { "OutputMain", BuildOutputInfoArray(recipe.OutputMain) },
+                { "OutputAppend", BuildOutputInfoArray(recipe.OutputAppend) },
                 { "IconName", item.iconSprite.name },
             });
         }
+    }
+
+    private static JArray BuildOutputInfoArray(List<OutputInfo> outputs) {
+        var arr = new JArray();
+        foreach (var output in outputs) {
+            arr.Add(new JObject {
+                { "OutputID", output.OutputID },
+                { "OutputCount", output.OutputCount },
+                { "SuccessRatio", output.SuccessRatio },
+            });
+        }
+        return arr;
     }
 
     static void addItem(ItemProto proto, JArray add) {
@@ -916,13 +908,32 @@ public class GetDspData : BaseUnityPlugin {
             return;
         }
         if (proto.Type == ERecipeType.Fractionate) {
-            RecipeProto proto2 = CopyRecipeProto(proto);
-            //1%概率分馏出1个重氢，假设传送带速度为x每秒，显然重氢生成速率为x/100每秒
-            //可以转为等价配方：1氢->100s->1重氢
             float produceProb = proto.ResultCounts[0] / (float)proto.ItemCounts[0];
-            proto2.ItemCounts[0] = 1;
-            proto2.ResultCounts[0] = 1;
-            addRecipe(proto2, add, [I分馏塔], (float)Math.Round(1.0f / produceProb));
+            var obj = new JObject {
+                { "Type", (int)proto.Type },
+                { "Factories", new JArray(new[] { I分馏塔 }) },
+                { "Name", proto.name },
+                { "Items", new JArray(new[] { proto.Items[0] }) },
+                { "ItemCounts", new JArray(new[] { 1.0 }) },
+                { "Results", new JArray(new[] { proto.Results[0] }) },
+                { "ResultCounts", new JArray(new[] { 1.0 }) },
+                { "TimeSpend", 0 },
+                { "Proliferator", 1 },
+                { "SuccessRatio", produceProb },
+                { "DestroyRatio", 0.0 },
+                { "RemainInputRatio", 0.0 },
+                { "DoubleOutputRatio", 0.0 },
+                { "OutputMain", new JArray {
+                    new JObject {
+                        { "OutputID", proto.Results[0] },
+                        { "OutputCount", 1.0 },
+                        { "SuccessRatio", 1.0 },
+                    }
+                }},
+                { "OutputAppend", new JArray() },
+                { "IconName", proto.iconSprite?.name },
+            };
+            add.Add(obj);
             return;
         }
         int[] Factories;
