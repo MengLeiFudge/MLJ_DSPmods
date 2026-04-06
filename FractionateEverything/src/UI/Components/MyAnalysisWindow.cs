@@ -118,6 +118,9 @@ public class MyAnalysisWindow : MyWindow {
     private readonly List<ButtonPose> nativeHorizontalButtonPoses = [];
     private readonly List<ButtonPose> nativeVerticalButtonPoses = [];
     private readonly List<ButtonPose> nativeLeftSubpageButtonPoses = [];
+    private static readonly HashSet<string> hiddenNavigationLabels = new(StringComparer.Ordinal);
+    private static int hiddenNavigationLabelLanguageIndex = -1;
+    private int currentPageHiddenNavigationLanguageIndex = -1;
     private readonly Dictionary<int, int> lastSelectedSubpageIndexByTopCategory = [];
     private UIButton nativeTopCategoryTemplateButton;
     private UIButton nativeTopCategoryHighlightStyleTemplateButton;
@@ -471,6 +474,10 @@ public class MyAnalysisWindow : MyWindow {
         UpdateTopCategoryHighlights();
         RefreshSwitchMainPanelButtonLabel();
         if (currentPageDef != null && currentPageContent != null && currentPageContent.gameObject.activeSelf) {
+            if (currentPageHiddenNavigationLanguageIndex != Localization.CurrentLanguageIndex) {
+                HideNestedNavigationInContent(currentPageContent);
+                currentPageHiddenNavigationLanguageIndex = Localization.CurrentLanguageIndex;
+            }
             currentPageDef.UpdateUI();
         }
     }
@@ -650,7 +657,12 @@ public class MyAnalysisWindow : MyWindow {
         HideButtons(nativeLeftSubpageButtonSlots);
 
         var categories = MainWindow.AnalysisPageCategories;
-        if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) return;
+        if (selectedTopCategoryIndex < 0 || selectedTopCategoryIndex >= categories.Count) {
+            currentPageDef = null;
+            selectedSubpageIndex = -1;
+            HideAllPageContent();
+            return;
+        }
 
         var pages = categories[selectedTopCategoryIndex].Pages;
         EnsureNavigationButtonCapacity(
@@ -881,6 +893,7 @@ public class MyAnalysisWindow : MyWindow {
 
         if (currentPageContent != null) {
             HideNestedNavigationInContent(currentPageContent);
+            currentPageHiddenNavigationLanguageIndex = Localization.CurrentLanguageIndex;
             currentPageContent.gameObject.SetActive(true);
         }
     }
@@ -1251,19 +1264,24 @@ public class MyAnalysisWindow : MyWindow {
         }
 
         string normalized = text.text.Trim();
+        EnsureHiddenNavigationLabelCache();
+        return hiddenNavigationLabels.Contains(normalized);
+    }
+
+    private static void EnsureHiddenNavigationLabelCache() {
+        int languageIndex = Localization.CurrentLanguageIndex;
+        if (hiddenNavigationLabelLanguageIndex == languageIndex && hiddenNavigationLabels.Count > 0) {
+            return;
+        }
+
+        hiddenNavigationLabels.Clear();
         foreach (MainWindowPageDefinition page in MainWindowPageRegistry.AllPages) {
-            if (normalized == page.SubpageName.Translate()) {
-                return true;
-            }
+            hiddenNavigationLabels.Add(page.SubpageName.Translate());
         }
-
         foreach (string category in MainWindowPageRegistry.CategoryOrder) {
-            if (normalized == category.Translate()) {
-                return true;
-            }
+            hiddenNavigationLabels.Add(category.Translate());
         }
-
-        return false;
+        hiddenNavigationLabelLanguageIndex = languageIndex;
     }
 
     private void BindButtonClick(UIButton button, Action onClick) {
