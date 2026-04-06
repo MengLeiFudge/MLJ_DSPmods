@@ -226,32 +226,32 @@ public static partial class MainTask {
     }
 
     private static string GetTechProgressText(int techId) {
-        return $"科技解锁：{(IsTechUnlocked(techId) ? "是".Translate() : "否".Translate())}";
+        return $"{"科技解锁".Translate()}：{(IsTechUnlocked(techId) ? "是".Translate() : "否".Translate())}";
     }
 
     private static string GetCountProgressText(string label, long current, long target) {
-        return $"{label}：{current}/{target}";
+        return $"{label.Translate()}：{current}/{target}";
     }
 
     private static string GetBuildingLevelProgressText(int targetLevel) {
-        return $"建筑等级：{GetMaxBuildingLevel()}/{targetLevel}";
+        return $"{"建筑等级".Translate()}：{GetMaxBuildingLevel()}/{targetLevel}";
     }
 
     private static string GetRecipeProgressText(int targetCount) {
-        return $"解锁配方：{GetUnlockedRecipeCount()}/{targetCount}";
+        return $"{"解锁配方".Translate()}：{GetUnlockedRecipeCount()}/{targetCount}";
     }
 
     private static string GetDarkFogStageProgressText(EDarkFogCombatStage targetStage) {
-        return $"黑雾阶段：{GetDarkFogStageName(DarkFogCombatManager.GetCurrentStage())} / {GetDarkFogStageName(targetStage)}";
+        return $"{"黑雾阶段".Translate()}：{GetDarkFogStageName(DarkFogCombatManager.GetCurrentStage())} / {GetDarkFogStageName(targetStage)}";
     }
 
     private static string GetDarkFogStageName(EDarkFogCombatStage stage) {
         return stage switch {
-            EDarkFogCombatStage.Dormant => "休眠观察",
-            EDarkFogCombatStage.Signal => "信号接触",
-            EDarkFogCombatStage.GroundSuppression => "地面压制",
-            EDarkFogCombatStage.StellarHunt => "星域围猎",
-            _ => "奇点收束",
+            EDarkFogCombatStage.Dormant => "休眠观察".Translate(),
+            EDarkFogCombatStage.Signal => "信号接触".Translate(),
+            EDarkFogCombatStage.GroundSuppression => "地面压制".Translate(),
+            EDarkFogCombatStage.StellarHunt => "星域围猎".Translate(),
+            _ => "奇点收束".Translate(),
         };
     }
 }

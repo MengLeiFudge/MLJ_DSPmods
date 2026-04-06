@@ -50,6 +50,8 @@ internal readonly struct GachaRewardResolution(
 public static class GachaService {
     private static readonly System.Random rng = new();
     private static readonly List<GachaPool> pools = [];
+    private static readonly Dictionary<int, BaseRecipe> recipeRewardIndex = [];
+    private static int recipeRewardIndexRecipeCount;
 
     private static int cachedMatrixId;
     private static GachaFocusType cachedFocus = GachaFocusType.Balanced;
@@ -78,6 +80,7 @@ public static class GachaService {
     }
 
     public static void InitPools() {
+        EnsureRecipeRewardIndex();
         cachedMatrixId = GetCurrentProgressMatrixId();
         cachedFocus = GachaManager.CurrentFocus;
         cachedMode = GachaManager.CurrentMode;
@@ -570,9 +573,9 @@ public static class GachaService {
             return new GachaRewardResolution(GachaRewardType.None, 0, 0);
         }
 
-        BaseRecipe recipe = RecipeManager.AllRecipes.FirstOrDefault(candidate =>
-            IsOpeningLineRecipe(candidate) && candidate.InputID == inputId);
-        if (recipe == null) {
+        EnsureRecipeRewardIndex();
+
+        if (!recipeRewardIndex.TryGetValue(inputId, out BaseRecipe recipe)) {
             AddItemToModData(inputId, 1, 0, false);
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
         }
@@ -590,6 +593,24 @@ public static class GachaService {
         recipe.RewardThis(true);
         return new GachaRewardResolution(wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade, 0,
             recipe.Level);
+    }
+
+    private static void EnsureRecipeRewardIndex() {
+        int recipeCount = RecipeManager.AllRecipes.Count;
+        if (recipeRewardIndexRecipeCount == recipeCount) {
+            return;
+        }
+
+        recipeRewardIndex.Clear();
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            if (!IsOpeningLineRecipe(recipe) || recipeRewardIndex.ContainsKey(recipe.InputID)) {
+                continue;
+            }
+
+            recipeRewardIndex.Add(recipe.InputID, recipe);
+        }
+
+        recipeRewardIndexRecipeCount = recipeCount;
     }
 
     public static string GetModeNameKey() {

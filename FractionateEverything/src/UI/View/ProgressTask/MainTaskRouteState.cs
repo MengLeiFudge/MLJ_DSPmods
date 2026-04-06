@@ -133,6 +133,7 @@ public static partial class MainTask {
         }
 
         RefreshRouteProgress(showPopup: true);
+        GrantPendingRewards(showPopup: true);
     }
 
     private static void RefreshRouteProgress(bool showPopup, bool allowRewardGrant = true) {
@@ -186,7 +187,6 @@ public static partial class MainTask {
         // 奖励发放与去重绑定在节点状态里，避免读档或窗口刷新时重复发奖。
         TaskNode node = GetRouteByModeIndex(modeIndex).Branches[branchIndex].Nodes[nodeIndex];
         if (!allowRewardGrant) {
-            rewardedByMode[modeIndex][branchIndex][nodeIndex] = true;
             return;
         }
         if (node.RewardItemId > 0 && node.RewardCount > 0) {
@@ -196,7 +196,23 @@ public static partial class MainTask {
         rewardedByMode[modeIndex][branchIndex][nodeIndex] = true;
 
         if (showPopup) {
-            UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name), true, 2);
+            UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name.Translate()), true, 2);
+        }
+    }
+
+    private static void GrantPendingRewards(bool showPopup) {
+        EnsureRouteState();
+        for (int modeIndex = 0; modeIndex < RouteMaps.Length; modeIndex++) {
+            for (int branchIndex = 0; branchIndex < completedByMode[modeIndex].Length; branchIndex++) {
+                for (int nodeIndex = 0; nodeIndex < completedByMode[modeIndex][branchIndex].Length; nodeIndex++) {
+                    if (!completedByMode[modeIndex][branchIndex][nodeIndex]
+                        || rewardedByMode[modeIndex][branchIndex][nodeIndex]) {
+                        continue;
+                    }
+
+                    GrantNodeReward(modeIndex, branchIndex, nodeIndex, showPopup, allowRewardGrant: true);
+                }
+            }
         }
     }
 
@@ -373,10 +389,12 @@ public static partial class MainTask {
         }
 
         // 导入完成后按当前真实游戏状态重算节点完成度：
-        // 1. 旧档首迁只重建完成/已发奖状态，避免重复补发旧奖励；
-        // 2. 已进入新系统的存档仍会为新增且未发奖节点自动补发奖励。
+        // 1. 旧档首迁先静默重建完成状态，保留 legacy 节点的已领奖标记；
+        // 2. 对“已完成但未领奖”的节点统一静默补发，避免把新增节点奖励吞掉；
+        // 3. 已进入新系统的存档仍会为新增且未发奖节点自动补发奖励。
         EnsureRouteState();
         RefreshRouteProgress(showPopup: false, allowRewardGrant: !isLegacyImport);
+        GrantPendingRewards(showPopup: false);
         ClampSelections();
     }
 

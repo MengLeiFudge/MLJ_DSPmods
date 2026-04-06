@@ -224,8 +224,28 @@ public static class ProcessManager {
         return null;
     }
 
-    private static bool ContainsProduct(List<ProductOutputInfo> products, int itemId) {
-        return FindProduct(products, itemId) != null;
+    private static bool MatchesRecipeOutputs(List<ProductOutputInfo> products, BaseRecipe recipe) {
+        int expectedCount = recipe.OutputMain.Count + recipe.OutputAppend.Count;
+        if (products.Count != expectedCount) {
+            return false;
+        }
+
+        int productIndex = 0;
+        for (int i = 0; i < recipe.OutputMain.Count; i++, productIndex++) {
+            ProductOutputInfo product = products[productIndex];
+            if (!product.isMainOutput || product.itemId != recipe.OutputMain[i].OutputID) {
+                return false;
+            }
+        }
+
+        for (int i = 0; i < recipe.OutputAppend.Count; i++, productIndex++) {
+            ProductOutputInfo product = products[productIndex];
+            if (product.isMainOutput || product.itemId != recipe.OutputAppend[i].OutputID) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool HasAnyProductAtLeast(List<ProductOutputInfo> products, int countThreshold) {
@@ -270,21 +290,7 @@ public static class ProcessManager {
         } else {
             bool needResetProducts =
                 (recipe.OutputMain.Count > 0 && __instance.productId != recipe.OutputMain[0].OutputID)
-                || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
-            if (!needResetProducts) {
-                foreach (OutputInfo info in recipe.OutputMain) {
-                    if (!ContainsProduct(products, info.OutputID)) {
-                        needResetProducts = true;
-                        break;
-                    }
-                }
-                foreach (OutputInfo info in recipe.OutputAppend) {
-                    if (!ContainsProduct(products, info.OutputID)) {
-                        needResetProducts = true;
-                        break;
-                    }
-                }
-            }
+                || !MatchesRecipeOutputs(products, recipe);
             if (needResetProducts) {
                 products.Clear();
                 __instance.productId = recipe.OutputMain.Count > 0 ? recipe.OutputMain[0].OutputID : recipe.InputID;
@@ -763,23 +769,26 @@ public static class ProcessManager {
                 if (products.Count > 0) {
                     //获取分馏塔产物输出堆叠
                     int productStack = building.MaxStack();
-                    //查找数目最多的附加产物
-                    ProductOutputInfo product = null;
+                    // 一次遍历同时挑出最佳副产物和最佳主产物，减少正面输出阶段的重复扫描。
+                    ProductOutputInfo bestSideProduct = null;
+                    ProductOutputInfo bestMainProduct = null;
                     foreach (var p in products) {
-                        if (!p.isMainOutput && (product == null || p.count > product.count)) {
-                            product = p;
+                        if (p.isMainOutput) {
+                            if (bestMainProduct == null || p.count > bestMainProduct.count) {
+                                bestMainProduct = p;
+                            }
+                        } else if (bestSideProduct == null || p.count > bestSideProduct.count) {
+                            bestSideProduct = p;
                         }
                     }
-                    //如果数目小于productStack，继续查找数目最多的主产物
+                    ProductOutputInfo product = bestSideProduct;
                     if (product == null || product.count < productStack) {
-                        foreach (var p in products) {
-                            if (p.isMainOutput && (product == null || p.count > product.count)) {
-                                product = p;
-                            }
+                        if (bestMainProduct != null && (product == null || bestMainProduct.count > product.count)) {
+                            product = bestMainProduct;
                         }
                     }
                     //输出产物
-                    if (product.count > 0) {
+                    if (product != null && product.count > 0) {
                         if (product.count >= productStack) {
                             //产物达到最大堆叠数目，直接尝试输出
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)productStack,

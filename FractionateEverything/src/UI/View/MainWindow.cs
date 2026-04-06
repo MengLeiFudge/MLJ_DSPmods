@@ -24,6 +24,9 @@ public static class MainWindow {
     private static MyAnalysisWindow _analysisMainWindow;
     private static readonly IFEMainPanelSharedState defaultSharedPanelState = new FEMainPanelSharedState();
     private static bool sandboxMode = false;
+    private static bool legacyPageCategoriesInitialized;
+    private static bool legacyPageCategoriesSandboxMode;
+    private static IReadOnlyList<MainWindowCategoryDefinition> legacyPageCategories = [];
     public static IReadOnlyList<MainWindowCategoryDefinition> AnalysisPageCategories { get; private set; } = [];
 
     public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
@@ -126,8 +129,7 @@ public static class MainWindow {
     }
 
     private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        foreach (MainWindowCategoryDefinition category in MainWindowPageRegistry.GetCategories(
-                     FEMainPanelType.Legacy, sandboxMode)) {
+        foreach (MainWindowCategoryDefinition category in GetLegacyPageCategories()) {
             wnd.AddTabGroup(trans, category.CategoryName);
             foreach (MainWindowPageDefinition page in category.Pages) {
                 page.CreateUI(wnd, trans);
@@ -136,8 +138,7 @@ public static class MainWindow {
     }
 
     private static void UpdateUI() {
-        foreach (MainWindowCategoryDefinition category in MainWindowPageRegistry.GetCategories(
-                     FEMainPanelType.Legacy, sandboxMode)) {
+        foreach (MainWindowCategoryDefinition category in GetLegacyPageCategories()) {
             foreach (MainWindowPageDefinition page in category.Pages) {
                 page.UpdateUI();
             }
@@ -276,6 +277,7 @@ public static class MainWindow {
     private static void OpenLegacyMainPanel() {
         bool sandboxModeChanged = sandboxMode != GameMain.sandboxToolsEnabled;
         sandboxMode = GameMain.sandboxToolsEnabled;
+        RefreshLegacyPageCategories();
         if (!_legacyConfigWinInitialized) {
             _legacyConfigWinInitialized = true;
             _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
@@ -355,6 +357,20 @@ public static class MainWindow {
 
     private static void RefreshAnalysisPageCategories() {
         AnalysisPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Analysis, sandboxMode, true);
+    }
+
+    private static IReadOnlyList<MainWindowCategoryDefinition> GetLegacyPageCategories() {
+        if (!legacyPageCategoriesInitialized || legacyPageCategoriesSandboxMode != sandboxMode) {
+            RefreshLegacyPageCategories();
+        }
+
+        return legacyPageCategories;
+    }
+
+    private static void RefreshLegacyPageCategories() {
+        legacyPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Legacy, sandboxMode);
+        legacyPageCategoriesSandboxMode = sandboxMode;
+        legacyPageCategoriesInitialized = true;
     }
 
     private static void CaptureCurrentPageRouteFromOpenedPanel() {

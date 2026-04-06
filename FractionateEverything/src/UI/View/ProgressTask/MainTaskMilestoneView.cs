@@ -112,10 +112,10 @@ public static partial class MainTask {
         int totalNodes = CountTotalNodes(modeIndex);
         int completedBranches = CountCompletedBranches(modeIndex);
 
-        txtModeTitle.text = $"{route.RouteName}".WithColor(Orange);
+        txtModeTitle.text = route.RouteName.Translate().WithColor(Orange);
         txtOverallSummary.text = string.Format("路线总进度".Translate(), completedNodes, totalNodes).WithColor(Orange);
         txtBranchSummary.text = string.Format("分支完成数".Translate(), completedBranches, route.Branches.Length).WithColor(Blue);
-        txtCenterTitle.text = route.CenterTitle.WithColor(Orange);
+        txtCenterTitle.text = route.CenterTitle.Translate().WithColor(Orange);
         txtCenterSummary.text = $"{completedNodes}/{totalNodes}".WithColor(completedNodes >= totalNodes ? Orange : Blue);
 
         EnsureSelectedNode(modeIndex);
@@ -147,7 +147,7 @@ public static partial class MainTask {
 
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
             TaskBranch branch = route.Branches[branchIndex];
-            Text branchLabel = MyWindow.AddText(branch.LabelPosition.x, branch.LabelPosition.y, root, branch.Name, 14,
+            Text branchLabel = MyWindow.AddText(branch.LabelPosition.x, branch.LabelPosition.y, root, branch.Name.Translate(), 14,
                 $"txt-main-task-branch-{modeIndex}-{branchIndex}");
             branchLabel.supportRichText = true;
             branchLabel.color = White;
@@ -244,9 +244,9 @@ public static partial class MainTask {
         button.uiButton.tips.topLevel = true;
         button.uiButton.tips.delay = 0.25f;
         button.uiButton.tips.corner = 2;
-        button.uiButton.tips.tipTitle = node.Name;
+        button.uiButton.tips.tipTitle = node.Name.Translate();
         button.uiButton.tips.tipText =
-            $"{node.Desc}\n\n{"节点详情-条件".Translate()} {progressText}\n{"节点详情-奖励".Translate()} {rewardText}\n{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
+            $"{node.Desc.Translate()}\n\n{"节点详情-条件".Translate()} {progressText}\n{"节点详情-奖励".Translate()} {rewardText}\n{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
         button.uiButton.UpdateTip();
     }
 
@@ -257,9 +257,9 @@ public static partial class MainTask {
         TaskBranch branch = route.Branches[branchIndex];
         TaskNode node = branch.Nodes[nodeIndex];
 
-        txtDetailBranch.text = branch.Name.WithColor(Orange);
-        txtDetailName.text = node.Name.WithColor(GetDetailTitleColor(modeIndex, branchIndex, nodeIndex));
-        txtDetailDesc.text = node.Desc;
+        txtDetailBranch.text = branch.Name.Translate().WithColor(Orange);
+        txtDetailName.text = node.Name.Translate().WithColor(GetDetailTitleColor(modeIndex, branchIndex, nodeIndex));
+        txtDetailDesc.text = node.Desc.Translate();
         txtDetailCondition.text = $"{ "节点详情-条件".Translate() } {GetNodeProgressText(modeIndex, branchIndex, nodeIndex)}";
         txtDetailState.text = $"{ "节点详情-状态".Translate() } {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
 
@@ -311,7 +311,7 @@ public static partial class MainTask {
         if (node.RewardItemId > 0 && LDB.items.Exist(node.RewardItemId)) {
             return $"{LDB.items.Select(node.RewardItemId).name} x{node.RewardCount}";
         }
-        return "无";
+        return "无".Translate();
     }
 
     private static void SelectNode(int modeIndex, int branchIndex, int nodeIndex) {
