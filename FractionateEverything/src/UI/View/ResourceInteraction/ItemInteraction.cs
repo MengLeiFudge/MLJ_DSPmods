@@ -13,9 +13,34 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ResourceInteraction;
 
 public static class ItemInteraction {
-    private const int RowCount = 12;
-    private const int ColumnCount = 5;
+    private const int RowCount = 9;
+    private const int ColumnCount = 8;
     private const int ItemsPerPage = RowCount * ColumnCount;
+    private const int FilterColumnCount = 4;
+    private const float FilterLineHeight = 36f + 7f;
+    private static readonly (EItemType type, string labelKey)[] ItemTypeFilters = [
+        (EItemType.Resource, "自然资源"),
+        (EItemType.Material, "材料"),
+        (EItemType.Component, "组件"),
+        (EItemType.Product, "成品"),
+        (EItemType.Logistics, "物流运输"),
+        (EItemType.Production, "生产设备"),
+        (EItemType.Decoration, "装饰物"),
+        (EItemType.Turret, "武器"),
+        (EItemType.Defense, "防御设施"),
+        (EItemType.DarkFog, "黑雾物品"),
+        (EItemType.Matrix, "科学矩阵"),
+    ];
+    private static readonly int[][] FractionateGroupItemIdGroups = [
+        [IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE精馏塔原胚, IFE分馏塔定向原胚],
+        [IFE分馏配方核心, IFE残片],
+        [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
+        [IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔],
+        [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],
+        [I能量碎片, I黑雾矩阵, I物质重组器, I硅基神经元, I负熵奇点, I核心素],
+    ];
+    private static readonly HashSet<int> FractionateGroupItemIds =
+        new(FractionateGroupItemIdGroups.SelectMany(group => group));
 
     private static RectTransform window;
     private static RectTransform tab;
@@ -25,6 +50,8 @@ public static class ItemInteraction {
     private static int _currentPage;
 
     private static readonly MyImageButton[,] btnItems = new MyImageButton[RowCount, ColumnCount];
+    private static readonly MyCheckBox[] _typeFilterChecks = new MyCheckBox[ItemTypeFilters.Length];
+    private static MyCheckBox _fractionateGroupCheckBox;
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
@@ -37,6 +64,8 @@ public static class ItemInteraction {
         Register("查找指定物品", "Search for a specified item");
         Register("上一页", "Previous page");
         Register("下一页", "Next page");
+        Register("万物分馏", "Fractionate Everything");
+        Register("按类型筛选可见物品", "Filter visible items by type");
 
         Register("以下物品在分馏数据中心的存储量为：",
             "The storage capacity of the following items in the Fractionation data centre are: ");
@@ -53,19 +82,33 @@ public static class ItemInteraction {
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
         window = trans;
         tab = wnd.AddTab(trans, "物品交互");
+        CreateUIInternal(wnd, tab);
+    }
+
+    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+        window = trans;
+        tab = trans;
+        CreateUIInternal(wnd, trans);
+    }
+
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         float x = 0f;
         float y = 18f;
-        wnd.AddCheckBox(x, y, tab, ShowNotStoredItemEntry, "显示未存储的物品");
+        wnd.AddCheckBox(x, y, parent, ShowNotStoredItemEntry, "显示未存储的物品");
         float popupY = y + 36f / 2;
-        wnd.AddButton(3, 4, y, tab, "查找指定物品",
+        wnd.AddButton(3, 4, y, parent, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
-        y += 36f;
-        Text txt = wnd.AddText2(x, y, tab, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, tab, "提取物品", "提取物品说明");
+
+        y += FilterLineHeight;
+        CreateFilterCheckBoxes(parent, y);
+
+        y += FilterLineHeight * 3f;
+        Text txt = wnd.AddText2(x, y, parent, "以下物品在分馏数据中心的存储量为：");
+        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, parent, "提取物品", "提取物品说明");
         y += 36f + 7f;
         for (int i = 0; i < RowCount; i++) {
             for (int j = 0; j < ColumnCount; j++) {
-                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1, y, tab)
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1, y, parent)
                     .WithSize(40f, 40f)
                     .WithTakeItemClickEvent()
                     .WithDeselectOnHover(true, () => SelectedItemID = 0);
@@ -74,12 +117,31 @@ public static class ItemInteraction {
         }
 
         float paginationY = y;
-        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, tab, "上一页", onClick: PrevPage);
-        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, tab, "");
+        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, parent, "上一页", onClick: PrevPage);
+        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, parent, "");
         _pageIndicator.alignment = TextAnchor.MiddleCenter;
         RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
         pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
-        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, tab, "下一页", onClick: NextPage);
+        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, parent, "下一页", onClick: NextPage);
+    }
+
+    private static void CreateFilterCheckBoxes(RectTransform parent, float startY) {
+        for (int i = 0; i < ItemTypeFilters.Length; i++) {
+            int row = i / FilterColumnCount;
+            int col = i % FilterColumnCount;
+            (float posX, _) = GetPosition(col, FilterColumnCount);
+            _typeFilterChecks[i] = CreateFilterCheckBox(posX, startY + row * FilterLineHeight, parent,
+                ItemTypeFilters[i].labelKey);
+        }
+
+        _fractionateGroupCheckBox = CreateFilterCheckBox(GetPosition(3, FilterColumnCount).Item1,
+            startY + 2f * FilterLineHeight, parent, "万物分馏");
+    }
+
+    private static MyCheckBox CreateFilterCheckBox(float x, float y, RectTransform parent, string label) {
+        MyCheckBox checkBox = MyCheckBox.CreateCheckBox(x, y, parent, false, label, 14).WithSmallerBox(18f);
+        checkBox.OnChecked += () => { _currentPage = 0; };
+        return checkBox;
     }
 
     public static void UpdateUI() {
@@ -117,6 +179,8 @@ public static class ItemInteraction {
     }
 
     private static void SearchSpecifiedItem(float y) {
+        ClearAllGroupFilters();
+
         //物品选取窗口左上角的X值（anchoredPosition是中心点）
         float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
         //物品选取窗口左上角的Y值（anchoredPosition是中心点）
@@ -138,17 +202,74 @@ public static class ItemInteraction {
 
     private static List<(ItemProto item, long count)> GetDisplayItems() {
         List<(ItemProto, long)> itemCountList = [];
+        bool hasSelectedFilter = HasSelectedGroupFilter();
         foreach (ItemProto item in LDB.items.dataArray) {
             long count = GetModDataItemCount(item.ID);
-            if (itemValue[item.ID] >= maxValue && count <= 0) {
+            bool inFractionateGroup = FractionateGroupItemIds.Contains(item.ID);
+            bool matchFractionateGroup = _fractionateGroupCheckBox != null
+                                         && _fractionateGroupCheckBox.Checked
+                                         && inFractionateGroup;
+
+            if (!matchFractionateGroup && itemValue[item.ID] >= maxValue && count <= 0) {
                 continue;
             }
-            if (count <= 0 && !ShowNotStoredItem) {
+            if (!ShouldDisplayItemByFilter(item, matchFractionateGroup, hasSelectedFilter)) {
+                continue;
+            }
+            if (!matchFractionateGroup && count <= 0 && !ShowNotStoredItem) {
                 continue;
             }
             itemCountList.Add((item, count));
         }
         return itemCountList.OrderBy(tuple => itemValue[tuple.Item1.ID]).ToList();
+    }
+
+    /// <summary>
+    /// 当顶部有任意勾选时，仅显示命中的类型或“万物分馏”分组；全部取消勾选时回退到原来的全量列表。
+    /// </summary>
+    private static bool ShouldDisplayItemByFilter(ItemProto item, bool matchFractionateGroup, bool hasSelectedFilter) {
+        if (!hasSelectedFilter) {
+            return true;
+        }
+
+        if (matchFractionateGroup) {
+            return true;
+        }
+
+        for (int i = 0; i < ItemTypeFilters.Length; i++) {
+            if (_typeFilterChecks[i] != null
+                && _typeFilterChecks[i].Checked
+                && item.Type == ItemTypeFilters[i].type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool HasSelectedGroupFilter() {
+        if (_fractionateGroupCheckBox != null && _fractionateGroupCheckBox.Checked) {
+            return true;
+        }
+
+        for (int i = 0; i < _typeFilterChecks.Length; i++) {
+            if (_typeFilterChecks[i] != null && _typeFilterChecks[i].Checked) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void ClearAllGroupFilters() {
+        for (int i = 0; i < _typeFilterChecks.Length; i++) {
+            if (_typeFilterChecks[i] != null) {
+                _typeFilterChecks[i].Checked = false;
+            }
+        }
+
+        if (_fractionateGroupCheckBox != null) {
+            _fractionateGroupCheckBox.Checked = false;
+        }
+        _currentPage = 0;
     }
 
     private static void PrevPage() {
@@ -187,6 +308,7 @@ public static class ItemInteraction {
     public static void IntoOtherSave() {
         SelectedItemID = 0;
         _currentPage = 0;
+        ClearAllGroupFilters();
     }
 
     #endregion
