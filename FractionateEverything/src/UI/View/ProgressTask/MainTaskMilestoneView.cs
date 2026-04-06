@@ -45,7 +45,8 @@ public static partial class MainTask {
         Completed,
     }
 
-    private static RouteViewCache[] routeViewsByMode = new RouteViewCache[RouteMaps.Length];
+    // partial 类静态字段的初始化顺序不稳定，不能在这里提前依赖 RouteMaps。
+    private static RouteViewCache[] routeViewsByMode = [];
 
     private static void BuildMilestonePage(MyConfigWindow wnd) {
         txtModeTitle = wnd.AddText2(0f, 12f, tab, "主线里程碑", 18, "txt-main-task-mode");
@@ -97,6 +98,7 @@ public static partial class MainTask {
 
     private static void RefreshMilestonePage() {
         int modeIndex = GetModeIndex();
+        EnsureRouteViewCacheCapacity();
         EnsureRouteViewBuilt(modeIndex);
 
         for (int i = 0; i < routeViewsByMode.Length; i++) {
@@ -119,6 +121,12 @@ public static partial class MainTask {
         EnsureSelectedNode(modeIndex);
         RefreshRouteView(modeIndex);
         UpdateDetailPanel(modeIndex);
+    }
+
+    private static void EnsureRouteViewCacheCapacity() {
+        if (routeViewsByMode == null || routeViewsByMode.Length != RouteMaps.Length) {
+            routeViewsByMode = new RouteViewCache[RouteMaps.Length];
+        }
     }
 
     private static void EnsureRouteViewBuilt(int modeIndex) {
