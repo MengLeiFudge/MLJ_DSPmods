@@ -160,6 +160,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     private void Update() {
         MainWindow.OnInputUpdate();
+        UI.View.ProgressTask.MainTask.Tick();
     }
 
     public void PreAddData() {
