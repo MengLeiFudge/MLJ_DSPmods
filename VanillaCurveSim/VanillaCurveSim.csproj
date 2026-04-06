@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>VanillaCurveSim</RootNamespace>
+        <AssemblyName>VanillaCurveSim</AssemblyName>
+        <OutputType>Exe</OutputType>
+        <Description>DSP vanilla progression curve simulator</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+</Project>
