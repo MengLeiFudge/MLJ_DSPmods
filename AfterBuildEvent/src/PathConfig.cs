@@ -19,7 +19,7 @@ public static class PathConfig {
     public static readonly string R2GBDll =
         $@"{R2ProfileDir}\BepInEx\plugins\HiddenCirno-GenesisBook\ProjectGenesis.dll";
     public static readonly string R2ORDll =
-        $@"{R2ProfileDir}\BepInEx\plugins\ProfessorCat305-OrbitalRing\ProjectOrbitalRing.dll";
+        $@"{R2ProfileDir}\BepInEx\plugins\ProfessorCat-OrbitalRing\ProjectOrbitalRing.dll";
 
     private static string _dspGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
     public static string DSPGameDir => _dspGameDir;
