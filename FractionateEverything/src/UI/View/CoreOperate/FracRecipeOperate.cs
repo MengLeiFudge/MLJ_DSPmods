@@ -24,6 +24,7 @@ public static class FracRecipeOperate {
     private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
     private static Text txtCurrItem;
     private static MyImageButton btnSelectedItem;
+    private static readonly UIButton[] recipeSandboxBtn = new UIButton[4];
 
     private static void OnButtonChangeItemClick(bool showLocked, float y) {
         float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
@@ -160,13 +161,13 @@ public static class FracRecipeOperate {
 
         // 沙盒模式调试按钮
         if (GameMain.sandboxToolsEnabled) {
-            wnd.AddButton(0, 4, y, tab, "重置等级",
+            recipeSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo(0); });
-            wnd.AddButton(1, 4, y, tab, "等级-1",
+            recipeSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) - 1); });
-            wnd.AddButton(2, 4, y, tab, "等级+1",
+            recipeSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) + 1); });
-            wnd.AddButton(3, 4, y, tab, "等级升满",
+            recipeSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
                 onClick: () => { SelectedRecipe?.ChangeLevelTo(10); });
             y += 36f;
         }
@@ -224,6 +225,7 @@ public static class FracRecipeOperate {
         ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
         int line = 0;
         incSlider.gameObject.SetActive(false);
+        RefreshSandboxButtons(recipe);
 
         // 隐藏分节标签
         txtMainLabel.gameObject.SetActive(false);
@@ -327,6 +329,24 @@ public static class FracRecipeOperate {
 
         // 更新右列：配方强化等级表
         UpdateLevelColumn(recipe);
+    }
+
+    /// <summary>
+    /// 沙盒页顶部四个按钮统一按当前配方的真实等级边界刷新状态。
+    /// </summary>
+    private static void RefreshSandboxButtons(BaseRecipe recipe) {
+        if (!GameMain.sandboxToolsEnabled) {
+            return;
+        }
+
+        bool hasRecipe = recipe != null;
+        int recipeLevel = recipe?.Level ?? -2;
+        bool unlocked = recipe?.Unlocked ?? false;
+
+        recipeSandboxBtn[0].button.interactable = unlocked && recipeLevel > 0;
+        recipeSandboxBtn[1].button.interactable = hasRecipe && recipeLevel > -1;
+        recipeSandboxBtn[2].button.interactable = hasRecipe && recipeLevel < 10;
+        recipeSandboxBtn[3].button.interactable = hasRecipe && recipeLevel < 10;
     }
 
     // ==================== 右列：强化等级表 ====================
