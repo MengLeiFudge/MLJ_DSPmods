@@ -188,7 +188,6 @@ public class GetDspData : BaseUnityPlugin {
                 "MoreMegaStructure",
                 "TheyComeFromVoid",
                 "GenesisBook",
-                "GenesisBook_Experimental",
                 "OrbitalRing",
                 "FractionateEverything"
             ];

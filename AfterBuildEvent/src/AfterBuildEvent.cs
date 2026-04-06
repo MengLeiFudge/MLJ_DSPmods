@@ -393,21 +393,15 @@ static class AfterBuildEvent {
         List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：深空来敌
-            "HiddenCirno-GenesisBook",//mod c1：创世之书
-            "GenesisBook_Experimental-GenesisBook_Experimental",//mod c2：创世之书测试版
+            "HiddenCirno-GenesisBook",//mod c：创世之书
             "ProfessorCat-OrbitalRing",//mod d：星环
             "MengLei-FractionateEverything",//mod e：万物分馏
         ];
-        bool GBExExists = true;
-        for (int i = 0; i < names.Count; i++) {
-            string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{names[i]}";
+        foreach (string name in names) {
+            string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{name}";
             if (!Directory.Exists(modPluginsDir)) {
-                if (i == 3) {
-                    GBExExists = false;
-                } else {
-                    Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
-                    return;
-                }
+                Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
+                return;
             }
         }
         //载入Mod数据，然后构建ModInfo数组
@@ -419,22 +413,23 @@ static class AfterBuildEvent {
                 return;
             }
         }
+        ModInfo getDspData = GetModInfo("MengLei-GetDspData");
+        ModInfo errorAnalyzer = GetModInfo("starfi5h-ErrorAnalyzer");
+        if (getDspData == null || errorAnalyzer == null) {
+            Console.WriteLine("未找到 MengLei-GetDspData 或 starfi5h-ErrorAnalyzer，无法生成计算器所需文件！");
+            return;
+        }
         //生成计算器json
         for (int r = 0; r <= modInfos.Length; r++) {
             List<List<ModInfo>> result = Combinations(modInfos, r);
             for (int index = 0; index < result.Count; index++) {
                 List<ModInfo> state = result[index];
-                if (!GBExExists && state.Contains(modInfos[3])) {
-                    continue;
-                }
                 //巨构是深空的前置依赖
                 if (!state.Contains(modInfos[0]) && state.Contains(modInfos[1])) {
                     continue;
                 }
-                //创世、创世测试版、星环只能启用一个
-                if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])
-                    || state.Contains(modInfos[2]) && state.Contains(modInfos[4])
-                    || state.Contains(modInfos[3]) && state.Contains(modInfos[4])) {
+                //创世、星环只能启用一个
+                if (state.Contains(modInfos[2]) && state.Contains(modInfos[3])) {
                     continue;
                 }
                 //开始准备json相关内容
@@ -445,12 +440,6 @@ static class AfterBuildEvent {
                     cmd.Exec(KillDSP);
                     //仅启用指定的模组
                     HashSet<string> nameList = [];
-                    ModInfo getDspData = GetModInfo("MengLei-GetDspData");
-                    ModInfo errorAnalyzer = GetModInfo("starfi5h-ErrorAnalyzer");
-                    if (getDspData == null || errorAnalyzer == null) {
-                        Console.WriteLine("未找到 MengLei-GetDspData 或 starfi5h-ErrorAnalyzer，无法生成计算器所需文件！");
-                        return;
-                    }
                     state.Add(getDspData);
                     state.Add(errorAnalyzer);
                     foreach (ModInfo modInfo in state) {
