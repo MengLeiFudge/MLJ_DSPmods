@@ -52,6 +52,36 @@ public static class Achievements {
         public readonly float PowerStageBonus = powerStageBonus;
     }
 
+    private readonly struct AchievementRewardDefinition(
+        string rewardKey,
+        int itemId = 0,
+        int count = 0,
+        bool useCurrentStageMatrix = false,
+        bool unlockRecurringAutoClaim = false) {
+        public readonly string RewardKey = rewardKey;
+        public readonly int ItemId = itemId;
+        public readonly int Count = count;
+        public readonly bool UseCurrentStageMatrix = useCurrentStageMatrix;
+        public readonly bool UnlockRecurringAutoClaim = unlockRecurringAutoClaim;
+    }
+
+    private readonly struct AchievementBonusSummary(
+        int obtainedCount,
+        float successRateBonus,
+        float destroyReductionBonus,
+        float doubleOutputBonus,
+        float energyReductionBonus,
+        float logisticsBonus,
+        float powerStageBonus) {
+        public readonly int ObtainedCount = obtainedCount;
+        public readonly float SuccessRateBonus = successRateBonus;
+        public readonly float DestroyReductionBonus = destroyReductionBonus;
+        public readonly float DoubleOutputBonus = doubleOutputBonus;
+        public readonly float EnergyReductionBonus = energyReductionBonus;
+        public readonly float LogisticsBonus = logisticsBonus;
+        public readonly float PowerStageBonus = powerStageBonus;
+    }
+
     private enum ETier {
         Bronze,
         Silver,
@@ -118,8 +148,11 @@ public static class Achievements {
         "成就-万物归一",
     ];
     private static readonly Dictionary<string, int> achievementIndexByName = BuildAchievementIndexByName();
+    private static readonly Dictionary<string, AchievementRewardDefinition> rewardDefinitionsByKey = BuildRewardDefinitionsByKey();
     private static bool[] unlocked = new bool[achievements.Length];
     private static bool[] claimed = new bool[achievements.Length];
+    private static bool bonusSummaryDirty = true;
+    private static AchievementBonusSummary cachedBonusSummary;
 
     private static Dictionary<string, int> BuildAchievementIndexByName() {
         var map = new Dictionary<string, int>(achievements.Length);
@@ -127,6 +160,74 @@ public static class Achievements {
             map[achievements[i].NameKey] = i;
         }
         return map;
+    }
+
+    private static Dictionary<string, AchievementRewardDefinition> BuildRewardDefinitionsByKey() {
+        AchievementRewardDefinition[] definitions = [
+            new("成就奖励-残片200", IFE残片, 200),
+            new("成就奖励-残片300", IFE残片, 300),
+            new("成就奖励-残片500", IFE残片, 500),
+            new("成就奖励-残片800", IFE残片, 800),
+            new("成就奖励-残片1000", IFE残片, 1000),
+            new("成就奖励-残片2000", IFE残片, 2000),
+            new("成就奖励-当前阶段矩阵2", count: 2, useCurrentStageMatrix: true),
+            new("成就奖励-当前阶段矩阵4", count: 4, useCurrentStageMatrix: true),
+            new("成就奖励-当前阶段矩阵8", count: 8, useCurrentStageMatrix: true),
+            new("成就奖励-当前阶段矩阵16", count: 16, useCurrentStageMatrix: true),
+            new("成就奖励-配方核心1", IFE分馏配方核心, 1),
+            new("成就奖励-配方核心3", IFE分馏配方核心, 3),
+            new("成就奖励-定向原胚1", IFE分馏塔定向原胚, 1),
+            new("成就奖励-星际物流交互站1", IFE星际物流交互站, 1),
+            new("成就奖励-精馏塔原胚3", IFE精馏塔原胚, 3),
+            new("成就奖励-循环任务自动领取", unlockRecurringAutoClaim: true),
+        ];
+
+        var map = new Dictionary<string, AchievementRewardDefinition>(definitions.Length);
+        foreach (AchievementRewardDefinition definition in definitions) {
+            map[definition.RewardKey] = definition;
+        }
+        return map;
+    }
+
+    private static void MarkBonusSummaryDirty() {
+        bonusSummaryDirty = true;
+    }
+
+    private static void EnsureBonusSummaryCache() {
+        if (!bonusSummaryDirty) {
+            return;
+        }
+
+        int obtainedCount = 0;
+        float successRateBonus = 0f;
+        float destroyReductionBonus = 0f;
+        float doubleOutputBonus = 0f;
+        float energyReductionBonus = 0f;
+        float logisticsBonus = 0f;
+        float powerStageBonus = 0f;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (!claimed[i]) {
+                continue;
+            }
+
+            obtainedCount++;
+            successRateBonus += achievements[i].SuccessRateBonus;
+            destroyReductionBonus += achievements[i].DestroyReductionBonus;
+            doubleOutputBonus += achievements[i].DoubleOutputBonus;
+            energyReductionBonus += achievements[i].EnergyReductionBonus;
+            logisticsBonus += achievements[i].LogisticsBonus;
+            powerStageBonus += achievements[i].PowerStageBonus;
+        }
+
+        cachedBonusSummary = new AchievementBonusSummary(
+            obtainedCount,
+            successRateBonus,
+            destroyReductionBonus,
+            doubleOutputBonus,
+            energyReductionBonus,
+            logisticsBonus,
+            powerStageBonus);
+        bonusSummaryDirty = false;
     }
 
     private static AchievementInfo[] BuildAchievements() {
@@ -674,12 +775,14 @@ public static class Achievements {
         panelOpenCount = 0;
         currentPage = 0;
         nextAutoCheckFrame = 0;
+        MarkBonusSummaryDirty();
         SyncCurrentPageToSharedState();
     }
 
     private static void LoadAchievementFlags(string flags) {
         Array.Clear(unlocked, 0, unlocked.Length);
         Array.Clear(claimed, 0, claimed.Length);
+        MarkBonusSummaryDirty();
 
         if (string.IsNullOrEmpty(flags)) {
             return;
@@ -813,19 +916,19 @@ public static class Achievements {
         }
 
         CheckAndUnlockAchievements(showPopup: false);
-
-        int obtainedCount = claimed.Count(v => v);
+        EnsureBonusSummaryCache();
+        int obtainedCount = cachedBonusSummary.ObtainedCount;
         int hiddenLockedCount = achievements.Length - obtainedCount;
 
         txtUnlockedSummary.text = string.Format("已获得成就".Translate(), obtainedCount, achievements.Length).WithColor(Orange);
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
         txtBonusSummary.text = string.Format("成就加成格式".Translate(),
-            GetSuccessRateBonus() * 100f,
-            GetDestroyReductionBonus() * 100f,
-            GetDoubleOutputBonus() * 100f,
-            GetEnergyReductionBonus() * 100f,
-            GetLogisticsBonus() * 100f,
-            GetPowerStageBonus() * 100f).WithColor(Green);
+            cachedBonusSummary.SuccessRateBonus * 100f,
+            cachedBonusSummary.DestroyReductionBonus * 100f,
+            cachedBonusSummary.DoubleOutputBonus * 100f,
+            cachedBonusSummary.EnergyReductionBonus * 100f,
+            cachedBonusSummary.LogisticsBonus * 100f,
+            cachedBonusSummary.PowerStageBonus * 100f).WithColor(Green);
 
         int totalPages = Math.Max(1, (achievements.Length + RowsPerPage - 1) / RowsPerPage);
         if (currentPage >= totalPages) {
@@ -900,6 +1003,7 @@ public static class Achievements {
     private static void UnlockAchievement(int index, bool showPopup) {
         unlocked[index] = true;
         claimed[index] = true;
+        MarkBonusSummaryDirty();
         achievements[index].GrantReward?.Invoke();
 
         if (showPopup) {
@@ -934,63 +1038,33 @@ public static class Achievements {
     }
 
     public static float GetSuccessRateBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].SuccessRateBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.SuccessRateBonus;
     }
 
     public static float GetDestroyReductionBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].DestroyReductionBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.DestroyReductionBonus;
     }
 
     public static float GetDoubleOutputBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].DoubleOutputBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.DoubleOutputBonus;
     }
 
     public static float GetEnergyReductionBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].EnergyReductionBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.EnergyReductionBonus;
     }
 
     public static float GetLogisticsBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].LogisticsBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.LogisticsBonus;
     }
 
     public static float GetPowerStageBonus() {
-        float bonus = 0f;
-        for (int i = 0; i < achievements.Length; i++) {
-            if (claimed[i]) {
-                bonus += achievements[i].PowerStageBonus;
-            }
-        }
-        return bonus;
+        EnsureBonusSummaryCache();
+        return cachedBonusSummary.PowerStageBonus;
     }
 
     private static void RefreshAchievementRow(int index) {
@@ -1040,125 +1114,36 @@ public static class Achievements {
     }
 
     private static bool TryGetRewardIconInfo(string rewardKey, out int itemId, out int count) {
-        switch (rewardKey) {
-            case "成就奖励-残片200":
-                itemId = IFE残片;
-                count = 200;
-                return true;
-            case "成就奖励-残片300":
-                itemId = IFE残片;
-                count = 300;
-                return true;
-            case "成就奖励-残片500":
-                itemId = IFE残片;
-                count = 500;
-                return true;
-            case "成就奖励-残片800":
-                itemId = IFE残片;
-                count = 800;
-                return true;
-            case "成就奖励-残片1000":
-                itemId = IFE残片;
-                count = 1000;
-                return true;
-            case "成就奖励-残片2000":
-                itemId = IFE残片;
-                count = 2000;
-                return true;
-            case "成就奖励-当前阶段矩阵2":
-                itemId = GetCurrentStageMatrixId();
-                count = 2;
-                return true;
-            case "成就奖励-当前阶段矩阵4":
-                itemId = GetCurrentStageMatrixId();
-                count = 4;
-                return true;
-            case "成就奖励-当前阶段矩阵8":
-                itemId = GetCurrentStageMatrixId();
-                count = 8;
-                return true;
-            case "成就奖励-当前阶段矩阵16":
-                itemId = GetCurrentStageMatrixId();
-                count = 16;
-                return true;
-            case "成就奖励-配方核心1":
-                itemId = IFE分馏配方核心;
-                count = 1;
-                return true;
-            case "成就奖励-配方核心3":
-                itemId = IFE分馏配方核心;
-                count = 3;
-                return true;
-            case "成就奖励-定向原胚1":
-                itemId = IFE分馏塔定向原胚;
-                count = 1;
-                return true;
-            case "成就奖励-星际物流交互站1":
-                itemId = IFE星际物流交互站;
-                count = 1;
-                return true;
-            case "成就奖励-精馏塔原胚3":
-                itemId = IFE精馏塔原胚;
-                count = 3;
-                return true;
-            default:
-                itemId = 0;
-                count = 0;
-                return false;
+        if (TryResolveRewardDefinition(rewardKey, out AchievementRewardDefinition definition)
+            && !definition.UnlockRecurringAutoClaim) {
+            itemId = definition.UseCurrentStageMatrix ? GetCurrentStageMatrixId() : definition.ItemId;
+            count = definition.Count;
+            return itemId > 0 && count > 0;
         }
+
+        itemId = 0;
+        count = 0;
+        return false;
     }
 
     private static void GrantRewardByKey(string rewardKey) {
-        switch (rewardKey) {
-            case "成就奖励-残片200":
-                GrantItems((IFE残片, 200));
-                break;
-            case "成就奖励-残片300":
-                GrantItems((IFE残片, 300));
-                break;
-            case "成就奖励-残片500":
-                GrantItems((IFE残片, 500));
-                break;
-            case "成就奖励-残片800":
-                GrantItems((IFE残片, 800));
-                break;
-            case "成就奖励-残片1000":
-                GrantItems((IFE残片, 1000));
-                break;
-            case "成就奖励-残片2000":
-                GrantItems((IFE残片, 2000));
-                break;
-            case "成就奖励-当前阶段矩阵2":
-                GrantItems((GetCurrentStageMatrixId(), 2));
-                break;
-            case "成就奖励-当前阶段矩阵4":
-                GrantItems((GetCurrentStageMatrixId(), 4));
-                break;
-            case "成就奖励-当前阶段矩阵8":
-                GrantItems((GetCurrentStageMatrixId(), 8));
-                break;
-            case "成就奖励-当前阶段矩阵16":
-                GrantItems((GetCurrentStageMatrixId(), 16));
-                break;
-            case "成就奖励-配方核心1":
-                GrantItems((IFE分馏配方核心, 1));
-                break;
-            case "成就奖励-配方核心3":
-                GrantItems((IFE分馏配方核心, 3));
-                break;
-            case "成就奖励-定向原胚1":
-                GrantItems((IFE分馏塔定向原胚, 1));
-                break;
-            case "成就奖励-星际物流交互站1":
-                GrantItems((IFE星际物流交互站, 1));
-                break;
-            case "成就奖励-精馏塔原胚3":
-                GrantItems((IFE精馏塔原胚, 3));
-                break;
-            case "成就奖励-循环任务自动领取":
-                RecurringTask.UnlockAutoClaim();
-                break;
+        if (!TryResolveRewardDefinition(rewardKey, out AchievementRewardDefinition definition)) {
+            return;
         }
+
+        if (definition.UnlockRecurringAutoClaim) {
+            RecurringTask.UnlockAutoClaim();
+            return;
+        }
+
+        int itemId = definition.UseCurrentStageMatrix ? GetCurrentStageMatrixId() : definition.ItemId;
+        if (itemId > 0 && definition.Count > 0) {
+            GrantItems((itemId, definition.Count));
+        }
+    }
+
+    private static bool TryResolveRewardDefinition(string rewardKey, out AchievementRewardDefinition definition) {
+        return rewardDefinitionsByKey.TryGetValue(rewardKey, out definition);
     }
 
     private static void GrantItems(params (int itemId, int count)[] rewards) {
@@ -1275,6 +1260,7 @@ public static class Achievements {
         }
 
         if (migrated) {
+            MarkBonusSummaryDirty();
             PersistAchievementConfig();
         }
     }
