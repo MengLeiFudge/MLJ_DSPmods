@@ -98,7 +98,6 @@ public class GetDspData : BaseUnityPlugin {
     public const string GenesisBookGUID = "org.LoShin.GenesisBook";
     public const string GBMSHarmonyPatchID = "ProjectGenesis.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool GenesisBookEnable;
-    public static bool GenesisBookExperimentalEnable;
     public const string OrbitalRingGUID = "org.ProfessorCat305.OrbitalRing";
     public const string ORMSHarmonyPatchID = "ProjectOrbitalRing.Compatibility.Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool OrbitalRingEnable;
@@ -118,11 +117,7 @@ public class GetDspData : BaseUnityPlugin {
         }
         MoreMegaStructureEnable = Chainloader.PluginInfos.ContainsKey(MoreMegaStructureGUID);
         TheyComeFromVoidEnable = Chainloader.PluginInfos.ContainsKey(TheyComeFromVoidGUID);
-        Chainloader.PluginInfos.TryGetValue(GenesisBookGUID, out BepInEx.PluginInfo pluginInfo);
-        if (pluginInfo != null) {
-            GenesisBookEnable = pluginInfo.Metadata.Version.Major > 0;
-            GenesisBookExperimentalEnable = pluginInfo.Metadata.Version.Major == 0;
-        }
+        GenesisBookEnable = Chainloader.PluginInfos.ContainsKey(GenesisBookGUID);
         OrbitalRingEnable = Chainloader.PluginInfos.ContainsKey(OrbitalRingGUID);
         FractionateEverythingEnable = Chainloader.PluginInfos.ContainsKey(FractionateEverythingGUID);
 
@@ -176,34 +171,18 @@ public class GetDspData : BaseUnityPlugin {
         try {
             string modFullStr = "";
             string modShortStr = "";
-            bool[] enable = [
-                MoreMegaStructureEnable,
-                TheyComeFromVoidEnable,
-                GenesisBookEnable,
-                GenesisBookExperimentalEnable,
-                OrbitalRingEnable,
-                FractionateEverythingEnable
+            (bool enabled, string fullName, string shortName)[] calcMods = [
+                (MoreMegaStructureEnable, "MoreMegaStructure", "MS"),
+                (TheyComeFromVoidEnable, "TheyComeFromVoid", "VD"),
+                (GenesisBookEnable, "GenesisBook", "GB"),
+                (OrbitalRingEnable, "OrbitalRing", "OR"),
+                (FractionateEverythingEnable, "FractionateEverything", "FE"),
             ];
-            string[] modFullName = [
-                "MoreMegaStructure",
-                "TheyComeFromVoid",
-                "GenesisBook",
-                "OrbitalRing",
-                "FractionateEverything"
-            ];
-            string[] modShortName = [
-                "MS",
-                "VD",
-                "GB",
-                "GBEx",
-                "OR",
-                "FE"
-            ];
-            for (int i = 0; i < enable.Length; i++) {
-                if (enable[i]) {
-                    LogInfo($"已启用{modFullName[i]}");
-                    modFullStr += "_" + modFullName[i];
-                    modShortStr += "_" + modShortName[i];
+            foreach (var calcMod in calcMods) {
+                if (calcMod.enabled) {
+                    LogInfo($"已启用{calcMod.fullName}");
+                    modFullStr += "_" + calcMod.fullName;
+                    modShortStr += "_" + calcMod.shortName;
                 }
             }
             modShortStr = modShortStr == "" ? "Vanilla" : modShortStr.Substring(1);
