@@ -48,7 +48,6 @@ public static class MainWindow {
         BuildingOperate.AddTranslations();
         Register("物资交互", "Resource Interaction");
         ItemInteraction.AddTranslations();
-        ImportantItem.AddTranslations();
         ResourceOverview.AddTranslations();
         MarketBoard.AddTranslations();
         Exchange.AddTranslations();
@@ -79,7 +78,6 @@ public static class MainWindow {
         BuildingOperate.LoadConfig(configFile);
 
         ItemInteraction.LoadConfig(configFile);
-        ImportantItem.LoadConfig(configFile);
         ResourceOverview.LoadConfig(configFile);
         MarketBoard.LoadConfig(configFile);
         Exchange.LoadConfig(configFile);
@@ -445,7 +443,6 @@ public static class MainWindow {
             ("VanillaRecipeOperate", VanillaRecipeOperate.Import),
             ("BuildingOperate", BuildingOperate.Import),
             ("ItemInteraction", ItemInteraction.Import),
-            ("ImportantItem", ImportantItem.Import),
             ("TicketRaffle", TicketRaffle.Import),
             ("LimitedTimeStore", LimitedTimeStore.Import),
             ("TicketExchange", TicketExchange.Import),
@@ -467,7 +464,6 @@ public static class MainWindow {
             ("VanillaRecipeOperate", VanillaRecipeOperate.Export),
             ("BuildingOperate", BuildingOperate.Export),
             ("ItemInteraction", ItemInteraction.Export),
-            ("ImportantItem", ImportantItem.Export),
             ("TicketRaffle", TicketRaffle.Export),
             ("LimitedTimeStore", LimitedTimeStore.Export),
             ("TicketExchange", TicketExchange.Export),
@@ -489,7 +485,6 @@ public static class MainWindow {
         BuildingOperate.IntoOtherSave();
 
         ItemInteraction.IntoOtherSave();
-        ImportantItem.IntoOtherSave();
 
         TicketRaffle.IntoOtherSave();
         LimitedTimeStore.IntoOtherSave();

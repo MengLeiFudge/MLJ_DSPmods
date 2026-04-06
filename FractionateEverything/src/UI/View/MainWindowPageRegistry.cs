@@ -38,8 +38,7 @@ public static class MainWindowPageRegistry {
         new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
 
-        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
-        new(ResourceInteractionCategoryName, "重要物品", ImportantItem.CreateUI, ImportantItem.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ImportantItem.CreateUIInAnalysis),
+        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ItemInteraction.CreateUIInAnalysis),
         new(ResourceInteractionCategoryName, "资源统筹", ResourceOverview.CreateUI, ResourceOverview.UpdateUI),
         new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI),
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI),
