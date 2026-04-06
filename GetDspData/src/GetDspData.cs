@@ -44,6 +44,8 @@ namespace GetDspData;
 [BepInDependency(OrbitalRingGUID, SoftDependency)]
 [BepInDependency(FractionateEverythingGUID, SoftDependency)]
 public class GetDspData : BaseUnityPlugin {
+    private const string DynamicIconPathPrefix = "Assets/texpack/";
+
     #region Logger
 
     private static ManualLogSource logger;
@@ -517,7 +519,7 @@ public class GetDspData : BaseUnityPlugin {
                         { "ResultCounts", new JArray(new[] { 1 }) },
                         { "TimeSpend", 60 },
                         { "Proliferator", 0 },
-                        { "IconName", item.iconSprite.name },
+                        { "IconName", ResolveIconName(item) },
                     });
                     firstIdx++;
                 }
@@ -536,7 +538,7 @@ public class GetDspData : BaseUnityPlugin {
                         { "ResultCounts", new JArray(new[] { 1 }) },
                         { "TimeSpend", 600 },
                         { "Proliferator", 0 },
-                        { "IconName", item.iconSprite.name },
+                        { "IconName", ResolveIconName(item) },
                     });
                     firstIdx++;
                     //带透镜的公式
@@ -551,7 +553,7 @@ public class GetDspData : BaseUnityPlugin {
                         { "ResultCounts", new JArray(new[] { 1 }) },
                         { "TimeSpend", 300 },
                         { "Proliferator", 4 },
-                        { "IconName", item.iconSprite.name },
+                        { "IconName", ResolveIconName(item) },
                     });
                     firstIdx++;
                 }
@@ -570,7 +572,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 21600 },
                             { "Proliferator", 0 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                         recipes.Add(new JObject {
                             { "Type", -1 },
@@ -582,7 +584,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 600 },
                             { "Proliferator", 1 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                     } else if (item.ID == IOR蓄电器mk2满) {
                         recipes.Add(new JObject {
@@ -595,7 +597,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 21600 },
                             { "Proliferator", 0 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                         recipes.Add(new JObject {
                             { "Type", -1 },
@@ -607,7 +609,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 600 },
                             { "Proliferator", 1 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                     }
                 } else {
@@ -622,7 +624,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 21600 },
                             { "Proliferator", 0 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                         recipes.Add(new JObject {
                             { "Type", -1 },
@@ -634,7 +636,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 600 },
                             { "Proliferator", 1 },
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                     }
                 }
@@ -664,7 +666,7 @@ public class GetDspData : BaseUnityPlugin {
                             { "ResultCounts", new JArray(new[] { 1 }) },
                             { "TimeSpend", 60 * 60 },//暂时设为60s
                             { "Proliferator", 1 },//暂时先设为1，以便正确计算增产剂使用数目
-                            { "IconName", item.iconSprite.name },
+                            { "IconName", ResolveIconName(item) },
                         });
                     }
                 }
@@ -800,7 +802,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "SuccessBoost", successBoost },
                 { "OutputMain", BuildOutputInfoArray(recipe.OutputMain) },
                 { "OutputAppend", BuildOutputInfoArray(recipe.OutputAppend) },
-                { "IconName", item.iconSprite.name },
+                { "IconName", ResolveIconName(item) },
             });
         }
     }
@@ -817,13 +819,31 @@ public class GetDspData : BaseUnityPlugin {
         return arr;
     }
 
+    // 动态图标资源使用 Assets/texpack/<name>，计算器侧需要的名称键就是最终图片名。
+    private static string ResolveIconName(ItemProto proto) =>
+        ResolveIconName(proto?.IconPath, proto?.iconSprite?.name);
+
+    private static string ResolveIconName(RecipeProto proto) =>
+        ResolveIconName(proto?.IconPath, proto?.iconSprite?.name);
+
+    private static string ResolveIconName(string iconPath, string fallbackIconName) {
+        if (!string.IsNullOrEmpty(iconPath) &&
+            iconPath.StartsWith(DynamicIconPathPrefix, StringComparison.OrdinalIgnoreCase)) {
+            string dynamicIconName = Path.GetFileName(iconPath.Substring(DynamicIconPathPrefix.Length).Trim());
+            if (!string.IsNullOrEmpty(dynamicIconName)) {
+                return Path.GetFileNameWithoutExtension(dynamicIconName);
+            }
+        }
+        return fallbackIconName ?? "";
+    }
+
     static void addItem(ItemProto proto, JArray add) {
         var obj = new JObject {
             { "ID", proto.ID },
             { "Type", (int)proto.Type },
             { "Name", proto.name },
             { "GridIndex", proto.GridIndex },
-            { "IconName", proto.iconSprite.name },
+            { "IconName", ResolveIconName(proto) },
         };
         if (proto.GetSpace() >= 0) {
             //对于生产建筑，添加耗能、倍率、占地
@@ -909,7 +929,7 @@ public class GetDspData : BaseUnityPlugin {
                     }
                 }},
                 { "OutputAppend", new JArray() },
-                { "IconName", proto.iconSprite?.name },
+                { "IconName", ResolveIconName(proto) },
             };
             add.Add(obj);
             return;
@@ -993,7 +1013,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 { "TimeSpend", proto.TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
-                { "IconName", proto.iconSprite?.name },
+                { "IconName", ResolveIconName(proto) },
             };
             add.Add(obj);
         } else {
@@ -1007,7 +1027,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "ResultCounts", new JArray(proto.ResultCounts) },
                 { "TimeSpend", TimeSpend },
                 { "Proliferator", flag4 || !flag2 ? 1 : 3 },
-                { "IconName", proto.iconSprite?.name },
+                { "IconName", ResolveIconName(proto) },
             };
             add.Add(obj);
         }
