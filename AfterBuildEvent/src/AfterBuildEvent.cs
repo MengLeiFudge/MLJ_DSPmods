@@ -394,16 +394,16 @@ static class AfterBuildEvent {
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
             "ckcz123-TheyComeFromVoid",//mod b：深空来敌
             "HiddenCirno-GenesisBook",//mod c1：创世之书
-            "GenesisBook-GenesisBook_Experimental",//mod c2：创世之书测试版
-            "ProfessorCat305-OrbitalRing",//mod d：星环
+            "GenesisBook_Experimental-GenesisBook_Experimental",//mod c2：创世之书测试版
+            "ProfessorCat-OrbitalRing",//mod d：星环
             "MengLei-FractionateEverything",//mod e：万物分馏
         ];
-        bool GBExExists = false;
+        bool GBExExists = true;
         for (int i = 0; i < names.Count; i++) {
             string modPluginsDir = $@"{R2ProfileDir}\BepInEx\plugins\{names[i]}";
             if (!Directory.Exists(modPluginsDir)) {
                 if (i == 3) {
-                    GBExExists = true;
+                    GBExExists = false;
                 } else {
                     Console.WriteLine($"未找到 {modPluginsDir}，无法生成计算器所需文件！");
                     return;
@@ -413,6 +413,12 @@ static class AfterBuildEvent {
         //载入Mod数据，然后构建ModInfo数组
         LoadModInfos();
         ModInfo[] modInfos = names.Select(GetModInfo).ToArray();
+        for (int i = 0; i < modInfos.Length; i++) {
+            if (modInfos[i] == null) {
+                Console.WriteLine($"mods.yml 中未找到模组信息：{names[i]}，无法生成计算器所需文件！");
+                return;
+            }
+        }
         //生成计算器json
         for (int r = 0; r <= modInfos.Length; r++) {
             List<List<ModInfo>> result = Combinations(modInfos, r);
@@ -439,8 +445,14 @@ static class AfterBuildEvent {
                     cmd.Exec(KillDSP);
                     //仅启用指定的模组
                     HashSet<string> nameList = [];
-                    state.Add(GetModInfo("MengLei-GetDspData"));
-                    state.Add(GetModInfo("starfi5h-ErrorAnalyzer"));
+                    ModInfo getDspData = GetModInfo("MengLei-GetDspData");
+                    ModInfo errorAnalyzer = GetModInfo("starfi5h-ErrorAnalyzer");
+                    if (getDspData == null || errorAnalyzer == null) {
+                        Console.WriteLine("未找到 MengLei-GetDspData 或 starfi5h-ErrorAnalyzer，无法生成计算器所需文件！");
+                        return;
+                    }
+                    state.Add(getDspData);
+                    state.Add(errorAnalyzer);
                     foreach (ModInfo modInfo in state) {
                         nameList.Add(modInfo.name);
                         List<string> dependencies = GetDependencies(modInfo.name);
