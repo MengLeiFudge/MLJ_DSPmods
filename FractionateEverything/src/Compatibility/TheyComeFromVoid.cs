@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -12,21 +13,34 @@ public static class TheyComeFromVoid {
     public const string GUID = "com.ckcz123.DSP_Battle";
     public static bool Enable;
     public static Assembly assembly;
+    private static MethodInfo relicCountMethod;
+    private static FieldInfo meritRankField;
+    private static FieldInfo skillLevelLField;
+    private static FieldInfo skillLevelRField;
+    private static FieldInfo eventRecorderField;
+    private static FieldInfo eventProtoIdField;
 
     public static int GetRelicCount() {
-        return Enable ? Relic.GetRelicCount() : 0;
+        return !Enable || relicCountMethod == null ? 0 : InvokeIntMethod(relicCountMethod);
     }
 
     public static int GetMeritRank() {
-        return Enable ? Rank.rank : 0;
+        return !Enable || meritRankField == null ? 0 : GetStaticIntFieldValue(meritRankField);
     }
 
     public static int GetAssignedSkillPointCount() {
-        return Enable ? SkillPoints.skillLevelL.Sum() + SkillPoints.skillLevelR.Sum() : 0;
+        if (!Enable) {
+            return 0;
+        }
+        return SumStaticIntArray(skillLevelLField) + SumStaticIntArray(skillLevelRField);
     }
 
     public static bool HasActiveEventChain() {
-        return Enable && EventSystem.recorder != null && EventSystem.recorder.protoId > 0;
+        if (!Enable || eventRecorderField == null || eventProtoIdField == null) {
+            return false;
+        }
+        object recorder = eventRecorderField.GetValue(null);
+        return recorder != null && GetInstanceIntFieldValue(eventProtoIdField, recorder) > 0;
     }
 
     public static void Compatible() {
@@ -38,8 +52,67 @@ public static class TheyComeFromVoid {
         var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.TheyComeFromVoid");
         harmony.PatchAll(typeof(TheyComeFromVoid));
         //Compatible必定执行，所以此方法中不能出现深空的类，否则会报错
+        CacheApiMembers();
         PatchMethods(harmony);
         CheckPlugins.LogInfo("TheyComeFromVoid Compat finish.");
+    }
+
+    private static void CacheApiMembers() {
+        // 通过字符串反射隔离可选模组依赖，避免未安装深空来敌时触发 CLR 解析外部程序集。
+        Type relicType = assembly?.GetType("DSP_Battle.Relic");
+        Type rankType = assembly?.GetType("DSP_Battle.Rank");
+        Type skillPointsType = assembly?.GetType("DSP_Battle.SkillPoints");
+        Type eventSystemType = assembly?.GetType("DSP_Battle.EventSystem");
+
+        relicCountMethod = AccessTools.Method(relicType, "GetRelicCount");
+        meritRankField = AccessTools.Field(rankType, "rank");
+        skillLevelLField = AccessTools.Field(skillPointsType, "skillLevelL");
+        skillLevelRField = AccessTools.Field(skillPointsType, "skillLevelR");
+        eventRecorderField = AccessTools.Field(eventSystemType, "recorder");
+
+        Type recorderType = eventRecorderField?.FieldType;
+        eventProtoIdField = AccessTools.Field(recorderType, "protoId");
+        if (relicCountMethod == null || meritRankField == null || skillLevelLField == null || skillLevelRField == null
+            || eventRecorderField == null || eventProtoIdField == null) {
+            CheckPlugins.LogWarning("TheyComeFromVoid: 关键反射入口缺失，黑雾增强层数据将自动回退为默认值。");
+        }
+    }
+
+    private static int InvokeIntMethod(MethodInfo method) {
+        try {
+            return method.Invoke(null, null) is int value ? value : 0;
+        } catch (Exception ex) {
+            CheckPlugins.LogWarning($"TheyComeFromVoid: 调用 {method.Name} 失败，已回退为 0。{ex}");
+            return 0;
+        }
+    }
+
+    private static int GetStaticIntFieldValue(FieldInfo field) {
+        try {
+            return field.GetValue(null) is int value ? value : 0;
+        } catch (Exception ex) {
+            CheckPlugins.LogWarning($"TheyComeFromVoid: 读取字段 {field.Name} 失败，已回退为 0。{ex}");
+            return 0;
+        }
+    }
+
+    private static int GetInstanceIntFieldValue(FieldInfo field, object instance) {
+        try {
+            return field.GetValue(instance) is int value ? value : 0;
+        } catch (Exception ex) {
+            CheckPlugins.LogWarning($"TheyComeFromVoid: 读取实例字段 {field.Name} 失败，已回退为 0。{ex}");
+            return 0;
+        }
+    }
+
+    private static int SumStaticIntArray(FieldInfo field) {
+        try {
+            return field?.GetValue(null) is int[] values ? values.Sum() : 0;
+        } catch (Exception ex) {
+            string fieldName = field?.Name ?? "null";
+            CheckPlugins.LogWarning($"TheyComeFromVoid: 读取数组字段 {fieldName} 失败，已回退为 0。{ex}");
+            return 0;
+        }
     }
 
     private static void PatchMethods(Harmony harmony) {
