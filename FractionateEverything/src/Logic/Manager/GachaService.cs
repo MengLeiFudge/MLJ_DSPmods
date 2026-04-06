@@ -50,12 +50,14 @@ internal readonly struct GachaRewardResolution(
 public static class GachaService {
     private static readonly System.Random rng = new();
     private static readonly List<GachaPool> pools = [];
+    private static readonly GachaPool[] poolsById = new GachaPool[GachaPool.PoolCount];
     private static readonly Dictionary<int, BaseRecipe> recipeRewardIndex = [];
     private static int recipeRewardIndexRecipeCount;
 
     private static int cachedMatrixId;
     private static GachaFocusType cachedFocus = GachaFocusType.Balanced;
     private static GachaMode cachedMode = GachaMode.Normal;
+    private static int cachedOpeningRecipeStateHash;
 
     private static readonly GachaFocusDefinition[] focusDefinitions = [
         new(GachaFocusType.Balanced, "聚焦-平衡发展", "聚焦描述-平衡发展"),
@@ -84,38 +86,49 @@ public static class GachaService {
         cachedMatrixId = GetCurrentProgressMatrixId();
         cachedFocus = GachaManager.CurrentFocus;
         cachedMode = GachaManager.CurrentMode;
+        cachedOpeningRecipeStateHash = GetOpeningRecipeStateHash();
 
         pools.Clear();
+        Array.Clear(poolsById, 0, poolsById.Length);
 
         var openingPool = new GachaPool(GachaPool.PoolIdOpeningLine, GetPoolNameKey(GachaPool.PoolIdOpeningLine));
         FillOpeningLinePool(openingPool);
-        pools.Add(openingPool);
+        RegisterPool(openingPool);
 
         var protoPool = new GachaPool(GachaPool.PoolIdProtoLoop, GetPoolNameKey(GachaPool.PoolIdProtoLoop));
         FillProtoLoopPool(protoPool);
-        pools.Add(protoPool);
+        RegisterPool(protoPool);
 
         var growthPool = new GachaPool(GachaPool.PoolIdGrowth, GetPoolNameKey(GachaPool.PoolIdGrowth));
         FillGrowthPool(growthPool);
-        pools.Add(growthPool);
+        RegisterPool(growthPool);
 
         var focusPool = new GachaPool(GachaPool.PoolIdFocus, GetPoolNameKey(GachaPool.PoolIdFocus));
         FillFocusPool(focusPool);
-        pools.Add(focusPool);
+        RegisterPool(focusPool);
     }
 
     private static void EnsurePoolsFresh() {
         int currentMatrixId = GetCurrentProgressMatrixId();
         GachaFocusType currentFocus = GachaManager.CurrentFocus;
         GachaMode currentMode = GachaManager.CurrentMode;
+        int currentRecipeStateHash = GetOpeningRecipeStateHash();
         if (pools.Count == GachaPool.PoolCount
             && cachedMatrixId == currentMatrixId
             && cachedFocus == currentFocus
-            && cachedMode == currentMode) {
+            && cachedMode == currentMode
+            && cachedOpeningRecipeStateHash == currentRecipeStateHash) {
             return;
         }
 
         InitPools();
+    }
+
+    private static void RegisterPool(GachaPool pool) {
+        pools.Add(pool);
+        if (GachaPool.IsValidPoolId(pool.PoolId)) {
+            poolsById[pool.PoolId] = pool;
+        }
     }
 
     public static int GetCurrentDrawMatrixId() {
@@ -412,16 +425,40 @@ public static class GachaService {
     /// </summary>
     private static bool IsOpeningLineRecipe(BaseRecipe recipe) {
         return recipe != null
+               && recipe.RecipeType is ERecipe.MineralCopy or ERecipe.Conversion
                && recipe.GrowthRole == ERecipeGrowthRole.Production
                && recipe.InputID > 0
                && recipe.MatrixID != I黑雾矩阵;
     }
 
+    private static int GetOpeningRecipeStateHash() {
+        int hash = 17;
+        unchecked {
+            foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+                if (!IsOpeningLineRecipe(recipe)) {
+                    continue;
+                }
+
+                hash = hash * 31 + recipe.InputID;
+                hash = hash * 31 + (int)recipe.RecipeType;
+                hash = hash * 31 + recipe.Level;
+                hash = hash * 31 + recipe.MatrixID;
+            }
+        }
+        return hash;
+    }
+
     private static List<BaseRecipe> GetOpeningRecipes() {
-        return RecipeManager.AllRecipes
-            .Where(IsOpeningLineRecipe)
-            .Where(recipe => GetMatrixStageIndex(recipe.MatrixID) <= GetCurrentProgressStageIndex())
-            .ToList();
+        int currentStageIndex = GetCurrentProgressStageIndex();
+        var recipes = new List<BaseRecipe>();
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            if (!IsOpeningLineRecipe(recipe) || GetMatrixStageIndex(recipe.MatrixID) > currentStageIndex) {
+                continue;
+            }
+
+            recipes.Add(recipe);
+        }
+        return recipes;
     }
 
     private static int GetRecipeWeight(BaseRecipe recipe, int currentStageIndex) {
@@ -682,12 +719,12 @@ public static class GachaService {
 
     public static GachaPool GetPool(int poolId) {
         EnsurePoolsFresh();
-        return pools.FirstOrDefault(pool => pool.PoolId == poolId);
+        return GachaPool.IsValidPoolId(poolId) ? poolsById[poolId] : null;
     }
 
     public static List<GachaPool> GetAllPools() {
         EnsurePoolsFresh();
-        return pools;
+        return [.. pools];
     }
 
     public static int GetDisplayPoolPoints() {
