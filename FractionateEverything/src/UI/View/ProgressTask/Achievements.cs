@@ -994,18 +994,18 @@ public static class Achievements {
     }
 
     private static void RefreshAchievementRow(int index) {
+        AchievementInfo info = achievements[index];
+        Color tierColor = GetTierColor(info.Tier);
         if (!claimed[index]) {
-            txtAchievementNames[index].text = "隐藏成就提示".Translate().WithColor(Gray);
-            txtAchievementDescs[index].text = "隐藏成就描述".Translate().WithColor(Gray);
+            txtAchievementNames[index].text =
+                $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
+            txtAchievementDescs[index].text = info.DescKey.Translate();
             txtAchievementRewards[index].text = "";
             txtAchievementStates[index].text = "未解锁".Translate().WithColor(Gray);
             rewardIcons[index].gameObject.SetActive(false);
             return;
         }
 
-        AchievementInfo info = achievements[index];
-        string tierTag = GetTierTag(info.Tier);
-        Color tierColor = GetTierColor(info.Tier);
         bool hasRewardIcon = TryGetRewardIconInfo(info.RewardKey, out int rewardItemId, out int rewardCount);
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
         rewardIcons[index].Proto = hasRewardIcon ? LDB.items.Select(rewardItemId) : null;
@@ -1014,7 +1014,7 @@ public static class Achievements {
             : info.RewardKey.Translate().WithColor(Blue);
 
         txtAchievementNames[index].text =
-            $"{tierTag.WithColor(tierColor)} [{info.CategoryKey.Translate()}] {info.NameKey.Translate()}";
+            $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
         txtAchievementDescs[index].text = info.DescKey.Translate();
         txtAchievementRewards[index].text = rewardText;
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
@@ -1027,16 +1027,6 @@ public static class Achievements {
         }
 
         txtAchievementStates[index].text = "已获得".Translate().WithColor(Green);
-    }
-
-    private static string GetTierTag(ETier tier) {
-        return tier switch {
-            ETier.Bronze => "[铜]",
-            ETier.Silver => "[银]",
-            ETier.Gold => "[金]",
-            ETier.Platinum => "[铂]",
-            _ => "[?]",
-        };
     }
 
     private static Color GetTierColor(ETier tier) {
