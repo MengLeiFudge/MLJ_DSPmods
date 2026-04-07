@@ -627,7 +627,11 @@ public static class GachaService {
         }
 
         bool wasLocked = recipe.Locked;
-        recipe.RewardThis(true);
+        if (wasLocked) {
+            recipe.ChangeLevelTo(recipe.GetOpeningPoolInitialLevel(), true);
+        } else {
+            recipe.RewardThis(true);
+        }
         return new GachaRewardResolution(wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade, 0,
             recipe.Level);
     }
