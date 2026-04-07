@@ -16,6 +16,7 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class TechManager {
     private static readonly bool[] techUnlockFlags = new bool[7];
+    private static bool initialRecipeBaselineChecked;
 
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
@@ -462,6 +463,56 @@ public static class TechManager {
 
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
+        initialRecipeBaselineChecked = false;
+    }
+
+    /// <summary>
+    /// 保障关键科技自带的起步配方至少达到开线池首抽同档位的初始等级。
+    /// 这既覆盖新解锁科技，也用于读档后补齐旧存档遗漏的初始配方等级。
+    /// </summary>
+    private static void EnsureGuaranteedRecipeBaselines() {
+        if (GameMain.history == null) {
+            return;
+        }
+
+        if (GameMain.history.TechUnlocked(TFE分馏塔原胚, true)) {
+            EnsureBuildingTrainRecipeBaseline();
+        }
+        if (GameMain.history.TechUnlocked(TFE矿物复制, true)) {
+            EnsureInitialMineralCopyRecipeBaseline();
+        }
+    }
+
+    private static void EnsureBuildingTrainRecipeBaseline() {
+        foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
+            EnsureRecipeInitialLevel(recipe);
+        }
+    }
+
+    private static void EnsureInitialMineralCopyRecipeBaseline() {
+        foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
+            int itemID = recipe.InputID;
+            ItemProto item = LDB.items.Select(itemID);
+            if (item == null) {
+                continue;
+            }
+            if (LDB.veins.dataArray.Any(vein => vein.MiningItem == itemID) || item.Type == EItemType.Resource) {
+                if (itemID < I可燃冰 || itemID > I单极磁石) {
+                    EnsureRecipeInitialLevel(recipe);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 初始保底只补低于基线的配方，不覆盖玩家后续自己抽到或培养出的更高等级。
+    /// </summary>
+    private static void EnsureRecipeInitialLevel(BaseRecipe recipe) {
+        int targetLevel = recipe.GetOpeningPoolInitialLevel();
+        if (recipe.Level >= targetLevel) {
+            return;
+        }
+        recipe.ChangeLevelTo(targetLevel);
     }
 
     /// <summary>
@@ -487,6 +538,11 @@ public static class TechManager {
                     techUnlockFlags[i] = false;
                 }
             }
+        }
+
+        if (!initialRecipeBaselineChecked) {
+            EnsureGuaranteedRecipeBaselines();
+            initialRecipeBaselineChecked = true;
         }
     }
 
@@ -524,21 +580,9 @@ public static class TechManager {
     [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.NotifyTechUnlock))]
     public static void GameHistoryData_NotifyTechUnlock_Postfix(int _techId) {
         if (_techId == TFE分馏塔原胚) {
-            //解锁所有建筑培养配方
-            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.BuildingTrain)) {
-                recipe.RewardThis();
-            }
+            EnsureBuildingTrainRecipeBaseline();
         } else if (_techId == TFE矿物复制) {
-            //解锁非珍奇的原矿复制配方
-            foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.MineralCopy)) {
-                int itemID = recipe.InputID;
-                ItemProto item = LDB.items.Select(itemID);
-                if (recipe.RecipeType == ERecipe.MineralCopy
-                    && (LDB.veins.dataArray.Any(vein => vein.MiningItem == itemID) || item.Type == EItemType.Resource)
-                    && (itemID < I可燃冰 || itemID > I单极磁石)) {
-                    recipe.RewardThis();
-                }
-            }
+            EnsureInitialMineralCopyRecipeBaseline();
         }
     }
 }
