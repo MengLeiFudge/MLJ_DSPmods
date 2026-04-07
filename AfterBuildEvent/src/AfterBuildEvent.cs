@@ -102,11 +102,23 @@ static class AfterBuildEvent {
             //manifest.json、version
             string projectManifest = $@"{projectDir}\Assets\manifest.json";
             string version = "";
+            string manifestVersion = "";
+            string thunderstoreModName = $@"MengLei-{projectName}";
             if (File.Exists(projectManifest)) {
                 fileList.Add(projectManifest);
                 var obj = JObject.Parse(File.ReadAllText(projectManifest));
                 if (obj.TryGetValue("version_number", out JToken value)) {
-                    version = "_" + value;
+                    manifestVersion = value.ToString();
+                    version = "_" + manifestVersion;
+                }
+                string author = obj.TryGetValue("author", out JToken authorValue)
+                    ? authorValue.ToString()
+                    : "MengLei";
+                string modName = obj.TryGetValue("name", out JToken nameValue)
+                    ? nameValue.ToString()
+                    : projectName;
+                if (!string.IsNullOrWhiteSpace(author) && !string.IsNullOrWhiteSpace(modName)) {
+                    thunderstoreModName = $"{author}-{modName}";
                 }
             }
             //icon.png
@@ -163,6 +175,13 @@ static class AfterBuildEvent {
                         break;
                     }
                     catch { }
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(manifestVersion)) {
+                if (UpdateModVersionInConfig(thunderstoreModName, manifestVersion)) {
+                    Console.WriteLine($"已同步 mods.yml 版本：{thunderstoreModName} -> {manifestVersion}");
+                } else {
+                    Console.WriteLine($"未在 mods.yml 中更新版本：{thunderstoreModName}");
                 }
             }
             //复制导入教学视频
