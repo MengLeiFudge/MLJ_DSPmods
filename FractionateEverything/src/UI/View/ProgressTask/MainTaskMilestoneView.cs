@@ -157,6 +157,9 @@ public static partial class MainTask {
             cache.LinesToNodes[branchIndex] = new Image[branch.Nodes.Length];
             for (int nodeIndex = 0; nodeIndex < branch.Nodes.Length; nodeIndex++) {
                 TaskNode node = branch.Nodes[nodeIndex];
+                int capturedModeIndex = modeIndex;
+                int capturedBranchIndex = branchIndex;
+                int capturedNodeIndex = nodeIndex;
                 if (nodeIndex == 0) {
                     cache.LinesToNodes[branchIndex][nodeIndex] = CreateLine(root, GetCenterAnchor(node.Position), node.Position);
                 }
@@ -174,8 +177,9 @@ public static partial class MainTask {
                 if (LDB.items.Exist(node.IconItemId)) {
                     nodeButton.spriteImage.sprite = LDB.items.Select(node.IconItemId).iconSprite;
                 }
-                nodeButton.WithClickEvent(() => SelectNode(modeIndex, branchIndex, nodeIndex), () => SelectNode(modeIndex, branchIndex, nodeIndex));
-                AttachHoverSelection(nodeButton, () => SelectNode(modeIndex, branchIndex, nodeIndex));
+                nodeButton.WithClickEvent(() => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex),
+                    () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
+                AttachHoverSelection(nodeButton, () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
 
                 cache.NodeViews[branchIndex][nodeIndex] = new NodeView {
                     Button = nodeButton,
@@ -251,6 +255,18 @@ public static partial class MainTask {
     }
 
     private static void UpdateDetailPanel(int modeIndex) {
+        if (modeIndex < 0 || modeIndex >= RouteMaps.Length
+            || modeIndex >= selectedBranchByMode.Length
+            || modeIndex >= selectedNodeByMode.Length) {
+            return;
+        }
+
+        EnsureRouteState();
+        EnsureSelectedNode(modeIndex);
+        if (!IsSelectionValid(modeIndex)) {
+            return;
+        }
+
         RouteMap route = GetRouteByModeIndex(modeIndex);
         int branchIndex = selectedBranchByMode[modeIndex];
         int nodeIndex = selectedNodeByMode[modeIndex];
@@ -315,6 +331,20 @@ public static partial class MainTask {
     }
 
     private static void SelectNode(int modeIndex, int branchIndex, int nodeIndex) {
+        if (modeIndex < 0 || modeIndex >= RouteMaps.Length
+            || modeIndex >= selectedBranchByMode.Length
+            || modeIndex >= selectedNodeByMode.Length) {
+            return;
+        }
+
+        RouteMap route = GetRouteByModeIndex(modeIndex);
+        if (branchIndex < 0 || branchIndex >= route.Branches.Length) {
+            return;
+        }
+        if (nodeIndex < 0 || nodeIndex >= route.Branches[branchIndex].Nodes.Length) {
+            return;
+        }
+
         selectedBranchByMode[modeIndex] = branchIndex;
         selectedNodeByMode[modeIndex] = nodeIndex;
         if (modeIndex == GetModeIndex() && detailPanel != null) {
