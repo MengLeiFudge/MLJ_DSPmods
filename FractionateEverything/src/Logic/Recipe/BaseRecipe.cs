@@ -210,6 +210,18 @@ public abstract class BaseRecipe(
     /// </summary>
     public bool IsMaxLevel => Level >= 10;
 
+    public static int GetOpeningPoolInitialLevelByMatrix(int matrixId) {
+        return ItemManager.GetMatrixStageIndex(matrixId) switch {
+            0 => 6,
+            1 => 3,
+            2 => 2,
+            3 => 1,
+            _ => 0,
+        };
+    }
+
+    public int GetOpeningPoolInitialLevel() => GetOpeningPoolInitialLevelByMatrix(MatrixID);
+
     /// <summary>
     /// 旧版回响数据，仅为兼容旧存档保留。
     /// 2.3 主循环不再消费该字段。

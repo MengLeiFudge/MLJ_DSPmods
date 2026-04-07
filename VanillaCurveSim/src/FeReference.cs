@@ -15,8 +15,8 @@ internal static class FeReference {
     // 这是第一版 treatment 预设。它们是可见的、可调的，不伪装成真实存档数据。
     private static readonly int[] conventionalTowerLevels = [2, 4, 6, 8, 10, 12];
     private static readonly int[] speedrunTowerLevels = [1, 3, 5, 7, 9, 10];
-    private static readonly int[] conventionalRecipeLevels = [1, 3, 5, 7, 9, 10];
-    private static readonly int[] speedrunRecipeLevels = [0, 2, 4, 6, 8, 9];
+    private static readonly int[] conventionalRecipeLevels = [6, 3, 2, 1, 0, 0];
+    private static readonly int[] speedrunRecipeLevels = [6, 3, 2, 1, 0, 0];
     private static readonly int[] conventionalSelectedInc = [1, 3, 5, 7, 9, 10];
     private static readonly int[] speedrunSelectedInc = [0, 2, 4, 5, 7, 8];
 
