@@ -392,6 +392,7 @@ static class AfterBuildEvent {
         using CmdProcess cmd = new();
         //终止游戏
         cmd.Exec(KillDSP);
+        DeleteExistingCalcJsonFiles();
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
         string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
@@ -502,6 +503,22 @@ static class AfterBuildEvent {
         EnableModsByConfig();
         //终止游戏
         cmd.Exec(KillDSP);
+    }
+
+    /// <summary>
+    /// 每次重新生成计算器数据前，先清空计算器项目目录中的旧 json，避免遗留无效组合。
+    /// </summary>
+    private static void DeleteExistingCalcJsonFiles() {
+        string calcDataDir = @"D:\project\js\dsp-calc\data";
+        if (!Directory.Exists(calcDataDir)) {
+            Console.WriteLine($"未找到计算器数据目录：{calcDataDir}，跳过旧 json 清理");
+            return;
+        }
+
+        foreach (string jsonFile in Directory.GetFiles(calcDataDir, "*.json")) {
+            File.Delete(jsonFile);
+            Console.WriteLine($"删除旧计算器 json：{jsonFile}");
+        }
     }
 
     private static string GetJsonFilePath(List<ModInfo> state, bool isCalc) {
