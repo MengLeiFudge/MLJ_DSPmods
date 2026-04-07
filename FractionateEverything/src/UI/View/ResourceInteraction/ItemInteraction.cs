@@ -139,7 +139,7 @@ public static class ItemInteraction {
     }
 
     private static MyCheckBox CreateFilterCheckBox(float x, float y, RectTransform parent, string label) {
-        MyCheckBox checkBox = MyCheckBox.CreateCheckBox(x, y, parent, false, label, 14).WithSmallerBox(18f);
+        MyCheckBox checkBox = MyCheckBox.CreateCheckBox(x, y, parent, false, label, 14);
         checkBox.OnChecked += () => { _currentPage = 0; };
         return checkBox;
     }
