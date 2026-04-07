@@ -297,6 +297,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
 - Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `UI/View/DrawGrowth/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
+- **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
 ## Analysis UI Layout Baseline (Mandatory)
 

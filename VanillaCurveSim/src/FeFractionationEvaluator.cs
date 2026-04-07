@@ -121,6 +121,20 @@ internal sealed class FeFractionationEvaluator {
 
     private static double EvaluateGenericRecipeMultiplier(double baseSuccessRatio, double baseOutputCount, int towerLevel,
         int recipeLevel, FractionationConfigSnapshot config, double successBoost, double extraMultiplier) {
+        double baselinePotential = CalculateRecipePotential(baseSuccessRatio, baseOutputCount, towerLevel, recipeLevel: 0,
+            config, successBoost, extraMultiplier);
+        double currentPotential = CalculateRecipePotential(baseSuccessRatio, baseOutputCount, towerLevel, recipeLevel,
+            config, successBoost, extraMultiplier);
+        if (baselinePotential <= 0.0001) {
+            return 1.0;
+        }
+
+        double relativeGain = currentPotential / baselinePotential;
+        return relativeGain < 1.0 ? 1.0 : relativeGain;
+    }
+
+    private static double CalculateRecipePotential(double baseSuccessRatio, double baseOutputCount, int towerLevel,
+        int recipeLevel, FractionationConfigSnapshot config, double successBoost, double extraMultiplier) {
         double pointsBonus = FeReference.GetPointsBonus(config.SelectedIncLevel, towerLevel);
         double successRatio = baseSuccessRatio * (1.0 + pointsBonus) * (1.0 + successBoost);
         if (successRatio > 1.0) {
@@ -136,8 +150,7 @@ internal sealed class FeFractionationEvaluator {
         double stackMultiplier = FeReference.GetDefaultMaxStackByLevel(towerLevel);
 
         double outputMultiplier = fracRatio * repeatMultiplier * mainOutputBonus * baseOutputCount;
-        double throughput = outputMultiplier * stackMultiplier * (1.0 + extraMultiplier);
-        return Math.Max(1.0, throughput);
+        return outputMultiplier * stackMultiplier * (1.0 + extraMultiplier);
     }
 
     private static double EffectiveEnergyRatio(int towerLevel, float achievementEnergyReductionBonus) {
