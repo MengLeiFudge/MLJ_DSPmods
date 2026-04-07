@@ -354,7 +354,7 @@ public static class MainWindow {
     }
 
     private static void RefreshAnalysisPageCategories() {
-        AnalysisPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Analysis, sandboxMode, true);
+        AnalysisPageCategories = MainWindowPageRegistry.GetCategories(FEMainPanelType.Analysis, sandboxMode);
     }
 
     private static IReadOnlyList<MainWindowCategoryDefinition> GetLegacyPageCategories() {
