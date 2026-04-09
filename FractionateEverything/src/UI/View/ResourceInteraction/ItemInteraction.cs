@@ -33,7 +33,7 @@ public static class ItemInteraction {
     ];
     private static readonly int[][] FractionateGroupItemIdGroups = [
         [IFE交互塔原胚, IFE矿物复制塔原胚, IFE点数聚集塔原胚, IFE转化塔原胚, IFE精馏塔原胚, IFE分馏塔定向原胚],
-        [IFE分馏配方核心, IFE残片],
+        [IFE残片],
         [IFE交互塔, IFE行星内物流交互站, IFE星际物流交互站],
         [IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔],
         [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵],

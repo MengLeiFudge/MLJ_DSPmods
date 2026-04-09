@@ -442,7 +442,6 @@ public static partial class Utils {
     internal const int IFE转化塔原胚 = 8014;
     internal const int IFE精馏塔原胚 = 8015;
     internal const int IFE分馏塔定向原胚 = 8016;
-    internal const int IFE分馏配方核心 = 8017;
     internal const int IFE交互塔 = 8021;
     internal const int IFE矿物复制塔 = 8022;
     internal const int IFE点数聚集塔 = 8023;

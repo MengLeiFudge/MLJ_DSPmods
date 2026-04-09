@@ -20,7 +20,7 @@ public static class MarketValueManager {
 
     private static readonly System.Random rng = new(20260402);
     private static readonly HashSet<int> storeOfValueItems = [
-        I宇宙矩阵, I黑雾矩阵, IFE分馏塔定向原胚, IFE分馏配方核心
+        I宇宙矩阵, I黑雾矩阵, IFE分馏塔定向原胚
     ];
 
     public static readonly float[] MarketMultiplier = new float[12000];

@@ -174,8 +174,8 @@ public static class Achievements {
             new("成就奖励-当前阶段矩阵4", count: 4, useCurrentStageMatrix: true),
             new("成就奖励-当前阶段矩阵8", count: 8, useCurrentStageMatrix: true),
             new("成就奖励-当前阶段矩阵16", count: 16, useCurrentStageMatrix: true),
-            new("成就奖励-配方核心1", IFE分馏配方核心, 1),
-            new("成就奖励-配方核心3", IFE分馏配方核心, 3),
+            new("成就奖励-配方核心1", IFE残片, 500),
+            new("成就奖励-配方核心3", IFE残片, 1000),
             new("成就奖励-定向原胚1", IFE分馏塔定向原胚, 1),
             new("成就奖励-星际物流交互站1", IFE星际物流交互站, 1),
             new("成就奖励-精馏塔原胚3", IFE精馏塔原胚, 3),
@@ -701,8 +701,8 @@ public static class Achievements {
         Register("成就奖励-当前阶段矩阵4", "Current stage matrix x4", "当前阶段矩阵 x4");
         Register("成就奖励-当前阶段矩阵8", "Current stage matrix x8", "当前阶段矩阵 x8");
         Register("成就奖励-当前阶段矩阵16", "Current stage matrix x16", "当前阶段矩阵 x16");
-        Register("成就奖励-配方核心1", "Fractionation Recipe Core x1", "分馏配方核心 x1");
-        Register("成就奖励-配方核心3", "Fractionation Recipe Core x3", "分馏配方核心 x3");
+        Register("成就奖励-配方核心1", "Fragments x500", "残片 x500");
+        Register("成就奖励-配方核心3", "Fragments x1000", "残片 x1000");
         Register("成就奖励-定向原胚1", "Directional Proto x1", "定向原胚 x1");
         Register("成就奖励-星际物流交互站1", "Interstellar Interaction Station x1", "星际物流交互站 x1");
         Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
