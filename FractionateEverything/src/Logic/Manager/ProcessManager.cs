@@ -141,7 +141,8 @@ public static class ProcessManager {
     /// 返回增产加成、加速加成中二者最大的值。
     /// </summary>
     public static double MaxTableMilli(int fluidInputIncAvg) {
-        int avgPoint = fluidInputIncAvg < 10 ? fluidInputIncAvg : 10;
+        // 旧存档里可能留下负的增产点数，这里先把索引夹回合法范围，避免 UI 刷新直接越界崩溃。
+        int avgPoint = Math.Max(0, Math.Min(fluidInputIncAvg, 10));
         double ratioAcc = Cargo.accTableMilli[avgPoint];
         double ratioInc = Cargo.incTableMilli[avgPoint] * incTableFixedRatio[avgPoint];
         return ratioAcc > ratioInc ? ratioAcc : ratioInc;
