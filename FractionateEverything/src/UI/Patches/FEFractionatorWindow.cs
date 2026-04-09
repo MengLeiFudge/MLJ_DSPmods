@@ -1019,44 +1019,123 @@ public static class FEFractionatorWindow {
 
     // ===== OnProductUIButtonClick 拦截 =====
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow.OnProductUIButtonClick))]
-    public static void OnProductUIButtonClick_Postfix(UIFractionatorWindow __instance, int itemId) {
-        if (__instance.fractionatorId == 0 || __instance.factory == null) return;
-        FractionatorComponent fractionator = __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
-        if (fractionator.id != __instance.fractionatorId) return;
-        int buildingId = __instance.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingId < IFE交互塔 || buildingId > IFE精馏塔) return;
-        if (itemId == fractionator.productId || itemId == fractionator.fluidId) return;
-
-        List<ProductOutputInfo> products = fractionator.products(__instance.factory);
-        ProductOutputInfo target = products.Find(p => p.itemId == itemId);
-        if (target == null || target.count == 0) return;
-
-        Player player = __instance.player;
-        if (player.inhandItemId == 0 && player.inhandItemCount == 0) {
-            if (VFInput.control || VFInput.shift) {
-                int added = player.TryAddItemToPackage(itemId, target.count, 0, throwTrash: false);
-                if (added > 0) UIItemup.Up(itemId, added);
-            } else {
-                player.SetHandItemId_Unsafe(itemId);
-                player.SetHandItemCount_Unsafe(target.count);
+    private static ProductOutputInfo FindProductByItemId(List<ProductOutputInfo> products, int itemId) {
+        if (products == null) {
+            return null;
+        }
+        for (int i = 0; i < products.Count; i++) {
+            ProductOutputInfo product = products[i];
+            if (product.itemId == itemId) {
+                return product;
             }
-            target.count = 0;
-        } else if (player.inhandItemId == itemId && player.inhandItemCount > 0) {
-            ItemProto building = LDB.items.Select(buildingId);
-            int canAdd = building.ProductOutputMax() - target.count;
-            if (canAdd <= 0) {
-                UIRealtimeTip.Popup("栏位已满".Translate());
-                return;
+        }
+        return null;
+    }
+
+    private static int GetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products, int itemId) {
+        if (itemId == fractionator.productId) {
+            return fractionator.productOutputCount;
+        }
+        if (itemId == fractionator.fluidId) {
+            return fractionator.fluidOutputCount;
+        }
+        ProductOutputInfo product = FindProductByItemId(products, itemId);
+        return product?.count ?? 0;
+    }
+
+    private static void SetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products, int itemId,
+        int count) {
+        if (itemId == fractionator.productId) {
+            fractionator.productOutputCount = count;
+        }
+        if (itemId == fractionator.fluidId) {
+            fractionator.fluidOutputCount = count;
+            if (count <= 0) {
+                fractionator.fluidOutputInc = 0;
+            }
+        } else {
+            ProductOutputInfo product = FindProductByItemId(products, itemId);
+            if (product != null) {
+                product.count = count;
+            }
+        }
+    }
+
+    private static int GetModSlotMax(FractionatorComponent fractionator, int itemId) {
+        return itemId == fractionator.fluidId ? fractionator.fluidOutputMax : fractionator.productOutputMax;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow.OnProductUIButtonClick))]
+    public static bool OnProductUIButtonClick_Prefix(UIFractionatorWindow __instance, int itemId) {
+        if (__instance.fractionatorId == 0 || __instance.factory == null || __instance.player == null) {
+            return true;
+        }
+        FractionatorComponent fractionator = __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
+        if (fractionator.id != __instance.fractionatorId || !IsModFractionator(__instance.fractionatorId, __instance.factory)) {
+            return true;
+        }
+
+        // 额外主产物/副产物复用了原版回调；如果不在这里完全接管，
+        // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
+        Player player = __instance.player;
+        List<ProductOutputInfo> products = fractionator.products(__instance.factory);
+        int currentCount = GetModSlotCount(fractionator, products, itemId);
+        bool isFluidSlot = itemId == fractionator.fluidId;
+
+        if (player.inhandItemId > 0 && player.inhandItemCount == 0) {
+            player.SetHandItems(0, 0);
+            return false;
+        }
+
+        if (player.inhandItemId > 0 && player.inhandItemCount > 0) {
+            if (player.inhandItemId != itemId) {
+                return false;
+            }
+            int canAdd = GetModSlotMax(fractionator, itemId) - currentCount;
+            if (canAdd < 0) {
+                canAdd = 0;
             }
             int add = Math.Min(player.inhandItemCount, canAdd);
-            target.count += add;
+            if (add <= 0) {
+                UIRealtimeTip.Popup("栏位已满".Translate());
+                return false;
+            }
+            int handCount = player.inhandItemCount;
+            int handInc = player.inhandItemInc;
+            int takeInc = isFluidSlot ? split_inc(ref handCount, ref handInc, add) : 0;
+
+            SetModSlotCount(fractionator, products, itemId, currentCount + add);
             player.AddHandItemCount_Unsafe(-add);
+            if (isFluidSlot) {
+                player.SetHandItemInc_Unsafe(player.inhandItemInc - takeInc);
+                fractionator.fluidOutputInc += takeInc;
+            }
             if (player.inhandItemCount <= 0) {
                 player.SetHandItemId_Unsafe(0);
                 player.SetHandItemCount_Unsafe(0);
+                player.SetHandItemInc_Unsafe(0);
             }
+            return false;
         }
+
+        if (player.inhandItemId != 0 || player.inhandItemCount != 0 || currentCount == 0) {
+            return false;
+        }
+
+        int currentInc = isFluidSlot ? fractionator.fluidOutputInc : 0;
+        if (VFInput.control || VFInput.shift) {
+            int added = player.TryAddItemToPackage(itemId, currentCount, currentInc, throwTrash: false);
+            if (added > 0) UIItemup.Up(itemId, added);
+        } else {
+            player.SetHandItemId_Unsafe(itemId);
+            player.SetHandItemCount_Unsafe(currentCount);
+            player.SetHandItemInc_Unsafe(currentInc);
+        }
+        SetModSlotCount(fractionator, products, itemId, 0);
+        if (isFluidSlot) {
+            fractionator.fluidOutputInc = 0;
+        }
+        return false;
     }
 }
