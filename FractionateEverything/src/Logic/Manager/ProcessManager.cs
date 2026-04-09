@@ -45,6 +45,13 @@ public static class ProcessManager {
         Register("损毁", "Destroy");
         Register("流体输出", "Fluid output");
         Register("配方强化", "Recipe enhancement");
+        Register("单锁", "Single lock");
+        Register("未锁定", "Not locked");
+        Register("右键设为单锁", "Right-click to lock this output");
+        Register("右键清除单锁", "Right-click to clear single lock");
+        Register("已锁定单路产物：{0}", "Locked output: {0}");
+        Register("已清除单路锁定", "Single lock cleared");
+        Register("锁定产物无效，已清除", "Locked output invalid, cleared");
     }
     #region Field
 
@@ -288,6 +295,9 @@ public static class ProcessManager {
                 signPool[__instance.entityId].iconId0 = 0;
                 signPool[__instance.entityId].iconType = 0U;
             }
+            if (buildingID == IFE转化塔) {
+                __instance.SetLockedOutput(factory, __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
+            }
         } else {
             bool needResetProducts =
                 (recipe.OutputMain.Count > 0 && __instance.productId != recipe.OutputMain[0].OutputID)
@@ -305,9 +315,10 @@ public static class ProcessManager {
                 foreach (OutputInfo info in recipe.OutputAppend) {
                     products.Add(new(false, info.OutputID, 0));
                 }
-                // C8: 单路锁定 - 配方变化时清除锁定
+                // C8: 单路锁定 - 配方变化时按新配方校验，兼容复制粘贴/蓝图带过来的预设锁定。
                 if (buildingID == IFE转化塔) {
-                    __instance.SetLockedOutput(factory, 0);
+                    __instance.SetLockedOutput(factory,
+                        __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
                 }
             }
         }
@@ -842,8 +853,8 @@ public static class ProcessManager {
                 products.Clear();
                 signPool[__instance.entityId].iconId0 = 0;
                 signPool[__instance.entityId].iconType = 0U;
-                // C8: 单路锁定 - 缓存区清空时清除锁定
-                if (buildingID == IFE转化塔) {
+                // C8: 单路锁定 - 缓存区清空后保留实体级锁定，允许空塔预设目标产物。
+                if (buildingID == IFE转化塔 && !ConversionTower.EnableSingleLock) {
                     __instance.SetLockedOutput(factory, 0);
                 }
             }
