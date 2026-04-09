@@ -232,7 +232,6 @@ public static class DarkFogCombatManager {
                || offer.OutputItemId == I硅基神经元
                || offer.OutputItemId == I负熵奇点
                || offer.OutputItemId == I核心素
-               || offer.OutputItemId == IFE分馏配方核心
                || offer.OutputItemId == IFE分馏塔定向原胚;
     }
 
@@ -241,7 +240,7 @@ public static class DarkFogCombatManager {
     }
 
     public static bool IsEnhancedRewardItem(int itemId) {
-        return itemId == IFE分馏配方核心 || itemId == IFE分馏塔定向原胚;
+        return itemId == IFE分馏塔定向原胚;
     }
 
     public static int GetNextUnlockMatrixId() {

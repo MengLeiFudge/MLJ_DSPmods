@@ -99,7 +99,7 @@ public static class RecurringTask {
         Register("黑雾压制描述", "Accumulate {0} Dark Fog combat resources in storage", "当前黑雾战斗资源强度累计达到{0}");
 
         Register("循环任务奖励-残片", "Fragments x{0}", "残片 x{0}");
-        Register("循环任务奖励-配方核心", "Fractionation recipe core x{0}", "分馏配方核心 x{0}");
+        Register("循环任务奖励-配方核心", "Fragments x{0}", "残片 x{0}");
         Register("循环任务奖励-矩阵", "Current stage matrix x{0}", "当前阶段矩阵 x{0}");
         Register("循环任务奖励-定向原胚", "Directional proto x{0}", "定向原胚 x{0}");
         Register("循环任务奖励-黑雾矩阵", "Dark Fog Matrix x{0}", "黑雾矩阵 x{0}");
@@ -256,7 +256,7 @@ public static class RecurringTask {
             1 => (GetCurrentStageMatrixId(), 4),
             2 => (IFE分馏塔定向原胚, 1),
             3 => (GetCurrentStageMatrixId(), 4),
-            4 => (IFE分馏配方核心, 1),
+            4 => (IFE残片, 500),
             5 => (I黑雾矩阵, 2),
             _ => (IFE残片, 0)
         };
@@ -268,7 +268,7 @@ public static class RecurringTask {
             1 => string.Format("循环任务奖励-矩阵".Translate(), 4),
             2 => string.Format("循环任务奖励-定向原胚".Translate(), 1),
             3 => string.Format("循环任务奖励-矩阵".Translate(), 4),
-            4 => string.Format("循环任务奖励-配方核心".Translate(), 1),
+            4 => string.Format("循环任务奖励-配方核心".Translate(), 500),
             5 => string.Format("循环任务奖励-黑雾矩阵".Translate(), 2),
             _ => string.Empty
         };

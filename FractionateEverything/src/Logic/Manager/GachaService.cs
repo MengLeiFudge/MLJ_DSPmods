@@ -295,10 +295,6 @@ public static class GachaService {
                 GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
         }
         if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity) {
-            if (enhancedNodeCount >= 1) {
-                offers.Add(new(40 + pointBaseOffset, 26 + fragmentBaseOffset, IFE分馏配方核心, 1,
-                    GachaFocusType.ProcessOptimization, I黑雾矩阵, 3));
-            }
             if (enhancedNodeCount >= 2) {
                 offers.Add(new(48 + pointBaseOffset, 32 + fragmentBaseOffset, IFE分馏塔定向原胚, 1,
                     GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));

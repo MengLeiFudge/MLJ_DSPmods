@@ -52,10 +52,6 @@ public static class ItemManager {
         Register("I分馏塔定向原胚",
             "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
             "培养过程中发生变异的分馏塔原胚，具有极高的可塑性，可以直接培养为指定的分馏塔。");
-        Register("分馏配方核心", "Fractionate Recipe Core");
-        Register("I分馏配方核心",
-            "A high-value compatibility resource used to unlock or catch up specific FE recipes from the Recipe Operations page.",
-            "高价值兼容资源，可在配方操作页面中用于解锁指定 FE 配方或补齐关键配方进度。");
     }
 
     #region 添加新物品
@@ -133,12 +129,6 @@ public static class ItemManager {
             ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
         item.UnlockKey = -1;
         item.IconTag = "fldxyp";
-
-        item = ProtoRegistry.RegisterItem(IFE分馏配方核心, "分馏配方核心", "I分馏配方核心",
-            "Assets/fe/frac-recipe-core", tab分馏 * 1000 + 207, 100, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.blue, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "flpfhx";
 
     }
 
@@ -404,7 +394,6 @@ public static class ItemManager {
             goto CalculateItemValue;
         }
 
-        itemValue[IFE分馏配方核心] = itemValue[I引力矩阵] / 0.01f;
 
         //设置多功能集成组件的价值
         iEnumerable = LDB.recipes.dataArray.Where(r => r.Items.Length == 1
@@ -537,10 +526,7 @@ public static class ItemManager {
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
-            if (item.ID == IFE分馏配方核心) {
-                // 配方核心没有主制作配方，按终局兼容物归到宇宙矩阵
-                topMatrixID = I宇宙矩阵;
-            } else if (item.Type == EItemType.Matrix) {
+        if (item.Type == EItemType.Matrix) {
                 //矩阵归到自己的层级，而非上一层级
                 topMatrixID = item.ID switch {
                     IGB玻色矩阵 => I能量矩阵,
@@ -562,7 +548,7 @@ public static class ItemManager {
                 //黑雾特有材料或资源
                 topMatrixID = item.UnlockKey == -2 ? I黑雾矩阵 : I电磁矩阵;
             } else {
-                //主制作配方无前置科技（铁块），或没有主制作配方（分馏配方核心）
+                //主制作配方无前置科技（铁块），或没有主制作配方
                 //此时尝试从其他配方的原料确认该物品可能的层级。如果仍未找到，归到黑雾矩阵
                 List<RecipeProto> recipes = LDB.recipes.dataArray
                     .Where(r => r.Items.Contains(item.ID)).ToList();
