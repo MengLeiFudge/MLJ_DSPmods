@@ -54,6 +54,9 @@ public class PointAggregateRecipe : BaseRecipe {
             fluidInputInc -= PointAggregateTower.EnableDoublePoints
                 ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
                 : PointAggregateTower.MaxInc;
+            if (fluidInputInc < 0) {
+                fluidInputInc = 0;
+            }
             return;
         }
 
