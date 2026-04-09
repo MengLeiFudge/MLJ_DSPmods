@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility;
@@ -9,6 +10,7 @@ using NebulaAPI;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
+using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -222,6 +224,10 @@ public static class BuildingManager {
     /// (planetId, entityId) => lockedOutputItemId (0 = 未锁定)
     /// </summary>
     private static readonly ConcurrentDictionary<(int, int), int> lockedOutputDic = [];
+    private const int LockedOutputParamMagic = 0x4C4F434B;
+    private const int LockedOutputParamVersion = 1;
+    private static bool hasLockedOutputClipboard;
+    private static int lockedOutputClipboardItemId;
 
     public static void LockedOutputImport(BinaryReader r) {
         lockedOutputDic.Clear();
@@ -260,6 +266,196 @@ public static class BuildingManager {
             lockedOutputDic.TryRemove((planetId, entityId), out _);
         } else {
             lockedOutputDic[(planetId, entityId)] = itemId;
+        }
+    }
+
+    private static bool TryGetConversionFractionator(PlanetFactory factory, int entityId, out FractionatorComponent fractionator) {
+        fractionator = default;
+        if (factory == null || entityId <= 0 || entityId >= factory.entityPool.Length) {
+            return false;
+        }
+        EntityData entityData = factory.entityPool[entityId];
+        if (entityData.id != entityId || entityData.protoId != IFE转化塔 || entityData.fractionatorId <= 0) {
+            return false;
+        }
+        fractionator = factory.factorySystem.fractionatorPool[entityData.fractionatorId];
+        return fractionator.id == entityData.fractionatorId;
+    }
+
+    private static bool IsLockedOutputInRecipe(ConversionRecipe recipe, int itemId) {
+        if (itemId == 0) {
+            return true;
+        }
+        if (recipe == null) {
+            return false;
+        }
+        foreach (OutputInfo output in recipe.OutputMain) {
+            if (output.OutputID == itemId) {
+                return true;
+            }
+        }
+        foreach (OutputInfo output in recipe.OutputAppend) {
+            if (output.OutputID == itemId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static int NormalizeLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
+        if (itemId == 0 || factory == null || !ConversionTower.EnableSingleLock) {
+            return 0;
+        }
+        if (fractionator.fluidId == 0) {
+            return itemId;
+        }
+        ConversionRecipe recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
+        return IsLockedOutputInRecipe(recipe, itemId) ? itemId : 0;
+    }
+
+    public static int GetNormalizedLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int lockedItemId = fractionator.GetLockedOutput(factory);
+        int normalizedItemId = fractionator.NormalizeLockedOutput(factory, lockedItemId);
+        if (normalizedItemId != lockedItemId) {
+            fractionator.SetLockedOutput(factory, normalizedItemId);
+        }
+        return normalizedItemId;
+    }
+
+    private static int[] AppendLockedOutputParam(int[] parameters, int lockedItemId) {
+        int[] baseParameters = parameters ?? [];
+        if (TryReadLockedOutputParam(baseParameters, out _, out int baseParamCount)) {
+            Array.Resize(ref baseParameters, baseParamCount);
+        }
+        int[] result = new int[baseParameters.Length + 3];
+        Array.Copy(baseParameters, result, baseParameters.Length);
+        int tailIndex = baseParameters.Length;
+        result[tailIndex] = LockedOutputParamMagic;
+        result[tailIndex + 1] = LockedOutputParamVersion;
+        result[tailIndex + 2] = lockedItemId;
+        return result;
+    }
+
+    private static bool TryReadLockedOutputParam(int[] parameters, out int lockedItemId) {
+        return TryReadLockedOutputParam(parameters, out lockedItemId, out _);
+    }
+
+    private static bool TryReadLockedOutputParam(int[] parameters, out int lockedItemId, out int baseParamCount) {
+        lockedItemId = 0;
+        baseParamCount = parameters?.Length ?? 0;
+        if (parameters == null || parameters.Length < 3) {
+            return false;
+        }
+        int tailIndex = parameters.Length - 3;
+        if (parameters[tailIndex] != LockedOutputParamMagic || parameters[tailIndex + 1] != LockedOutputParamVersion) {
+            return false;
+        }
+        lockedItemId = parameters[tailIndex + 2];
+        baseParamCount = tailIndex;
+        return true;
+    }
+
+    private static bool TryGetBlueprintLockedOutput(PlanetFactory factory, int objectId, out int lockedItemId) {
+        lockedItemId = 0;
+        if (factory == null || objectId == 0) {
+            return false;
+        }
+        if (objectId > 0) {
+            if (!TryGetConversionFractionator(factory, objectId, out FractionatorComponent fractionator)) {
+                return false;
+            }
+            lockedItemId = fractionator.GetLockedOutput(factory);
+            return true;
+        }
+        int prebuildId = -objectId;
+        if (prebuildId <= 0 || prebuildId >= factory.prebuildPool.Length) {
+            return false;
+        }
+        ref PrebuildData prebuild = ref factory.prebuildPool[prebuildId];
+        if (prebuild.id != prebuildId || prebuild.protoId != IFE转化塔) {
+            return false;
+        }
+        TryReadLockedOutputParam(prebuild.parameters, out lockedItemId);
+        return true;
+    }
+
+    private static void ApplyLockedOutputFromParameters(PlanetFactory factory, int entityId, int[] parameters) {
+        if (!TryReadLockedOutputParam(parameters, out int lockedItemId)) {
+            return;
+        }
+        if (!TryGetConversionFractionator(factory, entityId, out FractionatorComponent fractionator)) {
+            return;
+        }
+        fractionator.SetLockedOutput(factory, fractionator.NormalizeLockedOutput(factory, lockedItemId));
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnCopyBuildingSetting))]
+    public static void PlanetFactory_OnCopyBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
+        if (TryGetConversionFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
+            hasLockedOutputClipboard = true;
+            lockedOutputClipboardItemId = fractionator.GetLockedOutput(__instance);
+            return;
+        }
+        hasLockedOutputClipboard = false;
+        lockedOutputClipboardItemId = 0;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnPasteBuildingSetting))]
+    public static void PlanetFactory_OnPasteBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
+        if (!hasLockedOutputClipboard || !TryGetConversionFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
+            return;
+        }
+        fractionator.SetLockedOutput(__instance, fractionator.NormalizeLockedOutput(__instance, lockedOutputClipboardItemId));
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BlueprintUtils), nameof(BlueprintUtils.GenerateBlueprintData))]
+    public static void BlueprintUtils_GenerateBlueprintData_Postfix(BlueprintData _blueprintData, PlanetData _planet,
+        int[] _objIds, int _objCount) {
+        if (_blueprintData?.buildings == null || _planet?.factory == null || _objIds == null) {
+            return;
+        }
+        int count = Math.Min(_objCount, Math.Min(_objIds.Length, _blueprintData.buildings.Length));
+        for (int i = 0; i < count; i++) {
+            if (!TryGetBlueprintLockedOutput(_planet.factory, _objIds[i], out int lockedItemId)) {
+                continue;
+            }
+            BlueprintBuilding building = _blueprintData.buildings[i];
+            if (building == null) {
+                continue;
+            }
+            building.parameters = AppendLockedOutputParam(building.parameters, lockedItemId);
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.CreateEntityLogicComponents))]
+    public static void PlanetFactory_CreateEntityLogicComponents_Postfix(PlanetFactory __instance, int entityId,
+        PrefabDesc desc, int prebuildId) {
+        if (prebuildId <= 0 || desc == null || !desc.isFractionator || prebuildId >= __instance.prebuildPool.Length) {
+            return;
+        }
+        PrebuildData prebuild = __instance.prebuildPool[prebuildId];
+        if (prebuild.id != prebuildId) {
+            return;
+        }
+        ApplyLockedOutputFromParameters(__instance, entityId, prebuild.parameters);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.PasteForceDown))]
+    public static void BuildTool_BlueprintPaste_PasteForceDown_Postfix(BuildTool_BlueprintPaste __instance) {
+        if (__instance?.factory == null || __instance.bpPool == null) {
+            return;
+        }
+        for (int i = 0; i < __instance.bpCursor; i++) {
+            BuildPreview buildPreview = __instance.bpPool[i];
+            if (buildPreview == null || buildPreview.coverObjId <= 0 || buildPreview.willReconstructCover) {
+                continue;
+            }
+            ApplyLockedOutputFromParameters(__instance.factory, buildPreview.coverObjId, buildPreview.parameters);
         }
     }
 
