@@ -46,6 +46,14 @@ public class RectificationRecipe : BaseRecipe {
         }
 
         int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
+        // 精馏塔特质只影响本次残片数，不改变输入消耗、产物类型与输出结构。
+        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
+            fragmentCount += 1;
+        }
+        if (RectificationTower.EnableHyperphaseCompression
+            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
+            fragmentCount += 1;
+        }
         outputs = [new(true, IFE残片, fragmentCount)];
     }
 

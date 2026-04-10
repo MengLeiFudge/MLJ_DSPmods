@@ -21,6 +21,8 @@ public static class RectificationTower {
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
+    public static bool EnableAfterglowExtraction => Level >= LevelThresholdTrait1;
+    public static bool EnableHyperphaseCompression => Level >= LevelThresholdTrait2;
     public static int MaxStack => GetDefaultMaxStackByLevel(Level);
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {

@@ -157,6 +157,16 @@ public static class BuildingOperate {
             "Allows the fractionator to output only a single conversion product. The locked output can be configured in the fractionator's control panel.",
             "允许分馏塔只输出单一转化产物。可在分馏塔操作面板中设置锁定的输出产物。");
 
+        Register("余辉萃取", "Afterglow Extraction");
+        Register("余辉萃取说明",
+            "When the average proliferator points of inputs is at least 4, the current rectification grants 1 extra Fragment.",
+            "当输入原料平均增产点数不少于4时，本次精馏额外产出1个残片。");
+
+        Register("超相压缩", "Hyperphase Compression");
+        Register("超相压缩说明",
+            "When the input is the current stage matrix or a Dark Fog Matrix, the current rectification grants 1 additional Fragment after other bonuses.",
+            "当输入为当前阶段矩阵或黑雾矩阵时，本次精馏在其他效果结算后再额外产出1个残片。");
+
         Register("特质1（+6）：", "Trait 1 (+6): ");
         Register("特质2（+12）：", "Trait 2 (+12): ");
         Register("特质未激活", "Not yet unlocked");
@@ -242,7 +252,7 @@ public static class BuildingOperate {
             IFE矿物复制塔 => ("质能裂变", "质能裂变说明", "零压循环", "零压循环说明"),
             IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "双重点数", "双重点数说明"),
             IFE转化塔 => ("因果溯源", "因果溯源说明", "单路锁定", "单路锁定说明"),
-            // 精馏塔暂无特质说明
+            IFE精馏塔 => ("余辉萃取", "余辉萃取说明", "超相压缩", "超相压缩说明"),
             _ => (null, null, null, null),
         };
     }
@@ -265,8 +275,8 @@ public static class BuildingOperate {
         // 特质行：按建筑类型动态填充
         var (title1, desc1, title2, desc2) = GetTraitKeys(SelectedBuilding.ID);
         bool hasTraits = title1 != null;
-        bool trait1Active = SelectedBuilding.Level() >= 6;
-        bool trait2Active = SelectedBuilding.Level() >= 12;
+        bool trait1Active = SelectedBuilding.Level() >= BuildingManager.LevelThresholdTrait1;
+        bool trait2Active = SelectedBuilding.Level() >= BuildingManager.LevelThresholdTrait2;
 
         if (hasTraits) {
             string trait1Name = title1.Translate();
