@@ -33,4 +33,53 @@
             <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
         </Reference>
     </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\.codex\drafts\2.3.0梳理与后续调整.md">
+        <Link>.codex\drafts\2.3.0梳理与后续调整.md</Link>
+      </Content>
+      <Content Include="..\.codex\drafts\开发日记片段解锁.md">
+        <Link>.codex\drafts\开发日记片段解锁.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\MEMORY.md">
+        <Link>.codex\memories\MEMORY.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\memory_summary.md">
+        <Link>.codex\memories\memory_summary.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-03-29T01-16-52-yukV-install_ui_ux_pro_max_skill.md">
+        <Link>.codex\memories\rollout_summaries\2026-03-29T01-16-52-yukV-install_ui_ux_pro_max_skill.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-03-29T04-47-27-CwQ5-commit_current_workspace_after_build_check.md">
+        <Link>.codex\memories\rollout_summaries\2026-03-29T04-47-27-CwQ5-commit_current_workspace_after_build_check.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-03-30T06-33-58-FOAI-codex_stuck_on_0_1160_after_global_npm_install.md">
+        <Link>.codex\memories\rollout_summaries\2026-03-30T06-33-58-FOAI-codex_stuck_on_0_1160_after_global_npm_install.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-03-30T12-06-17-5k6P-codex_global_install_version_stuck_at_0_116_0.md">
+        <Link>.codex\memories\rollout_summaries\2026-03-30T12-06-17-5k6P-codex_global_install_version_stuck_at_0_116_0.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-03-30T13-41-19-3jxB-fe_signal_picker_custom_tabs_compatibility.md">
+        <Link>.codex\memories\rollout_summaries\2026-03-30T13-41-19-3jxB-fe_signal_picker_custom_tabs_compatibility.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-04-01T15-02-29-ytdO-mcp_codex_global_config_npx_cache_registry.md">
+        <Link>.codex\memories\rollout_summaries\2026-04-01T15-02-29-ytdO-mcp_codex_global_config_npx_cache_registry.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-04-01T17-33-11-bQZ0-phoneshell_relay_install_public_host_groupsecret_client_mode.md">
+        <Link>.codex\memories\rollout_summaries\2026-04-01T17-33-11-bQZ0-phoneshell_relay_install_public_host_groupsecret_client_mode.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-04-03T06-03-07-Q5be-superpowers_integration_and_plan_naming.md">
+        <Link>.codex\memories\rollout_summaries\2026-04-03T06-03-07-Q5be-superpowers_integration_and_plan_naming.md</Link>
+      </Content>
+      <Content Include="..\.codex\memories\rollout_summaries\2026-04-03T11-06-12-K6ux-balance_mode_stage_clearing_timeline_and_opening_script.md">
+        <Link>.codex\memories\rollout_summaries\2026-04-03T11-06-12-K6ux-balance_mode_stage_clearing_timeline_and_opening_script.md</Link>
+      </Content>
+      <Content Include="..\.codex\plans\开发日记片段解锁.md">
+        <Link>.codex\plans\开发日记片段解锁.md</Link>
+      </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="..\.codex\memories\skills\">
+        <Link>.codex\memories\skills</Link>
+      </Folder>
+    </ItemGroup>
 </Project>
