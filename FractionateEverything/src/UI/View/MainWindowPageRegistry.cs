@@ -34,15 +34,15 @@ public static class MainWindowPageRegistry {
     ];
 
     private static readonly MainWindowPageDefinition[] allPages = [
-        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
-        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
-        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
+        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI, enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI, enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI, enabledInAnalysis: true),
 
         new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ItemInteraction.CreateUIInAnalysis),
-        new(ResourceInteractionCategoryName, "资源统筹", ResourceOverview.CreateUI, ResourceOverview.UpdateUI),
-        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI),
-        new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI),
-        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI),
+        new(ResourceInteractionCategoryName, "资源统筹", ResourceOverview.CreateUI, ResourceOverview.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI, enabledInAnalysis: true),
 
         new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
@@ -50,13 +50,13 @@ public static class MainWindowPageRegistry {
         new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "资源统筹", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
-        new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
-        new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
-        new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI),
+        new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI, enabledInAnalysis: true),
+        new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI, enabledInAnalysis: true),
+        new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI, enabledInAnalysis: true),
 
-        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
-        new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
-        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
+        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI, enabledInAnalysis: true),
+        new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI, enabledInAnalysis: true),
+        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI, enabledInAnalysis: true),
 
         new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: Miscellaneous.CreateUIInAnalysis),
         new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),
