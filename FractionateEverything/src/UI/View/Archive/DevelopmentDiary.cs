@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using BepInEx.Configuration;
 using FE.UI.Components;
+using FE.UI.View.ProgressTask;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
@@ -10,33 +13,45 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.Archive;
 
 public static class DevelopmentDiary {
-    private readonly struct DiaryEntry(string label, string titleKey, string contentKey) {
+    private readonly struct DiaryFragment(string id, string label, string contentKey, int order) {
+        public readonly string Id = id;
         public readonly string Label = label;
-        public readonly string TitleKey = titleKey;
         public readonly string ContentKey = contentKey;
+        public readonly int Order = order;
     }
 
-    private static Dictionary<string, int> programmingEvents;
-    private static RectTransform window;
+    private readonly struct DiaryCategory(string labelKey, DiaryFragment[] fragments) {
+        public readonly string LabelKey = labelKey;
+        public readonly DiaryFragment[] Fragments = fragments;
+    }
+
+    private const string UnlockedFragmentsBlockTag = "UnlockedFragmentsV1";
+    private const string SelectionBlockTag = "SelectionV1";
+
+    private static readonly DiaryCategory[] diaryCategories = BuildDiaryCategories();
+    private static readonly DiaryFragment[] diaryFragments = [.. diaryCategories.SelectMany(static category => category.Fragments)];
+    private static readonly HashSet<string> validFragmentIds = [.. diaryFragments.Select(static fragment => fragment.Id)];
+
     private static RectTransform tab;
-    private static MyComboBox entryCombo;
+    private static MyComboBox categoryCombo;
+    private static MyComboBox fragmentCombo;
+    private static UIButton btnPrevFragment;
+    private static UIButton btnNextFragment;
     private static Text txtDiaryContent;
-    private static List<DiaryEntry> diaryEntries = [];
-    private static int currentEntryIndex;
+    private static HashSet<string> unlockedFragmentIds = [];
+    private static int currentCategoryIndex;
+    private static int currentFragmentIndex;
+    private static bool suppressSelectionCallbacks;
 
     public static void AddTranslations() {
         Register("开发日记", "Development Diary");
         Register("IK", "Icarus's Diary", "伊卡洛斯手记");
-
-        programmingEvents = new() {
-            { "FE1.0", 9 },
-            { "FE1.1", 9 },
-            { "FE2.0", 5 },
-            { "FE2.1", 4 },
-            { "FE2.2", 5 },
-            { "FE2.3", 5 },
-            { "IK", 20 }
-        };
+        Register("日记分类-1x", "1.x", "1.x");
+        Register("日记分类-2x", "2.x", "2.x");
+        Register("日记分类-IK", "Icarus's Diary", "伊卡洛斯手记");
+        Register("开发日记锁定标题", "???", "？？？");
+        Register("向前", "Previous");
+        Register("向后", "Next");
 
         Register("FE1.0-1",
             "",
@@ -1005,29 +1020,231 @@ public static class DevelopmentDiary {
             """);
     }
 
+    private static DiaryCategory[] BuildDiaryCategories() {
+        return [
+            new DiaryCategory("日记分类-1x", BuildOneSeriesFragments()),
+            new DiaryCategory("日记分类-2x", BuildTwoSeriesFragments()),
+            new DiaryCategory("日记分类-IK", BuildIcarusFragments()),
+        ];
+    }
+
+    private static DiaryFragment[] BuildOneSeriesFragments() {
+        var fragments = new List<DiaryFragment>();
+        int order = 0;
+
+        AddSeriesFragments(fragments, "FE1.0", 9, "1.0", ref order);
+        AddSeriesFragments(fragments, "FE1.1", 9, "1.1", ref order);
+        fragments.Add(new DiaryFragment("FE1.4.1", "1.4.1", "141信息", ++order));
+        fragments.Add(new DiaryFragment("FE1.4.2", "1.4.2", "142信息", ++order));
+        fragments.Add(new DiaryFragment("FE1.4.3", "1.4.3", "143信息", ++order));
+
+        return [.. fragments.OrderBy(static fragment => fragment.Order)];
+    }
+
+    private static DiaryFragment[] BuildTwoSeriesFragments() {
+        var fragments = new List<DiaryFragment>();
+        int order = 0;
+
+        AddSeriesFragments(fragments, "FE2.0", 5, "2.0", ref order);
+        AddSeriesFragments(fragments, "FE2.1", 4, "2.1", ref order);
+        AddSeriesFragments(fragments, "FE2.2", 5, "2.2", ref order);
+        AddSeriesFragments(fragments, "FE2.3", 5, "2.3", ref order);
+
+        return [.. fragments.OrderBy(static fragment => fragment.Order)];
+    }
+
+    private static DiaryFragment[] BuildIcarusFragments() {
+        var fragments = new List<DiaryFragment>();
+        int order = 0;
+        AddSeriesFragments(fragments, "IK", 20, "IK", ref order);
+        return [.. fragments.OrderBy(static fragment => fragment.Order)];
+    }
+
+    private static void AddSeriesFragments(List<DiaryFragment> fragments, string prefix, int count, string labelPrefix, ref int order) {
+        for (int index = 1; index <= count; index++) {
+            string contentKey = $"{prefix}-{index}";
+            fragments.Add(new DiaryFragment(contentKey, $"{labelPrefix}-{index}", contentKey, ++order));
+        }
+    }
+
+    private static void ResetState() {
+        unlockedFragmentIds = [];
+        currentCategoryIndex = 0;
+        currentFragmentIndex = 0;
+    }
+
+    private static void ClampSelection() {
+        if (diaryCategories.Length == 0) {
+            currentCategoryIndex = 0;
+            currentFragmentIndex = 0;
+            return;
+        }
+
+        currentCategoryIndex = Mathf.Clamp(currentCategoryIndex, 0, diaryCategories.Length - 1);
+        DiaryFragment[] fragments = diaryCategories[currentCategoryIndex].Fragments;
+        currentFragmentIndex = fragments.Length == 0
+            ? 0
+            : Mathf.Clamp(currentFragmentIndex, 0, fragments.Length - 1);
+    }
+
+    private static DiaryFragment[] GetCurrentFragments() {
+        ClampSelection();
+        return diaryCategories[currentCategoryIndex].Fragments;
+    }
+
+    private static bool IsUnlocked(DiaryFragment fragment) {
+        return !string.IsNullOrEmpty(fragment.Id) && unlockedFragmentIds.Contains(fragment.Id);
+    }
+
+    private static string GetFragmentDisplayLabel(DiaryFragment fragment) {
+        return IsUnlocked(fragment) ? fragment.Label : "开发日记锁定标题".Translate();
+    }
+
+    private static string BuildLockedContent(string content) {
+        if (string.IsNullOrEmpty(content)) {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(content.Length);
+        bool inRichTag = false;
+
+        foreach (char ch in content) {
+            if (inRichTag) {
+                if (ch == '>') {
+                    inRichTag = false;
+                }
+                continue;
+            }
+
+            if (ch == '<') {
+                inRichTag = true;
+                continue;
+            }
+
+            if (ch is '\r' or '\n' or '\t' || char.IsWhiteSpace(ch)) {
+                builder.Append(ch);
+                continue;
+            }
+
+            builder.Append(ch <= 127 ? '?' : '？');
+        }
+
+        return builder.ToString();
+    }
+
+    private static void RefreshSelectors() {
+        if (categoryCombo == null || fragmentCombo == null) {
+            return;
+        }
+
+        ClampSelection();
+        DiaryFragment[] fragments = GetCurrentFragments();
+
+        suppressSelectionCallbacks = true;
+        try {
+            categoryCombo.SetItems(diaryCategories.Select(static category => category.LabelKey).ToArray());
+            categoryCombo.SetIndex(currentCategoryIndex);
+            fragmentCombo.SetItems(fragments.Select(GetFragmentDisplayLabel).ToArray());
+            fragmentCombo.SetIndex(currentFragmentIndex);
+        }
+        finally {
+            suppressSelectionCallbacks = false;
+        }
+
+        UpdateNavigationButtons(fragments.Length);
+    }
+
+    private static void UpdateNavigationButtons(int fragmentCount) {
+        if (btnPrevFragment == null || btnNextFragment == null) {
+            return;
+        }
+
+        btnPrevFragment.button.interactable = fragmentCount > 0 && currentFragmentIndex > 0;
+        btnNextFragment.button.interactable = fragmentCount > 0 && currentFragmentIndex < fragmentCount - 1;
+    }
+
+    private static bool TryUnlockRandomFragmentInternal() {
+        List<int> availableCategoryIndices = [];
+        for (int categoryIndex = 0; categoryIndex < diaryCategories.Length; categoryIndex++) {
+            if (diaryCategories[categoryIndex].Fragments.Any(fragment => !IsUnlocked(fragment))) {
+                availableCategoryIndices.Add(categoryIndex);
+            }
+        }
+
+        if (availableCategoryIndices.Count == 0) {
+            return false;
+        }
+
+        int selectedCategoryIndex = availableCategoryIndices[GetRandInt(0, availableCategoryIndices.Count)];
+        foreach (DiaryFragment fragment in diaryCategories[selectedCategoryIndex].Fragments.OrderBy(static item => item.Order)) {
+            if (IsUnlocked(fragment)) {
+                continue;
+            }
+
+            unlockedFragmentIds.Add(fragment.Id);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void SyncUnlockedFragmentsWithAchievements() {
+        int targetUnlockedCount = Math.Min(Achievements.GetClaimedAchievementCount(), diaryFragments.Length);
+        while (unlockedFragmentIds.Count < targetUnlockedCount) {
+            if (!TryUnlockRandomFragmentInternal()) {
+                break;
+            }
+        }
+    }
+
+    public static bool TryUnlockRandomFragmentFromAchievement() {
+        bool changed = TryUnlockRandomFragmentInternal();
+        if (changed) {
+            RefreshEntry();
+        }
+        return changed;
+    }
+
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
         tab = wnd.AddTab(trans, "开发日记");
-        diaryEntries = BuildDiaryEntries();
 
         float x = 0f;
         float y = 18f;
-        entryCombo = wnd.AddComboBox(x, y, tab)
-            .WithItems(diaryEntries.Select(entry => entry.Label).ToArray())
-            .WithSize(280f, 0)
-            .WithIndex(0)
+        categoryCombo = wnd.AddComboBox(x, y, tab)
+            .WithSize(170f, 0f)
             .WithOnSelChanged(index => {
-                currentEntryIndex = Mathf.Clamp(index, 0, diaryEntries.Count - 1);
+                if (suppressSelectionCallbacks) {
+                    return;
+                }
+
+                currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
+                currentFragmentIndex = 0;
                 RefreshEntry();
             });
 
-        y += 36f;
-        txtDiaryContent = wnd.AddText2(x, y, tab, "", 14, "txtDiaryContent");
+        fragmentCombo = wnd.AddComboBox(x + 190f, y, tab)
+            .WithSize(260f, 0f)
+            .WithOnSelChanged(index => {
+                if (suppressSelectionCallbacks) {
+                    return;
+                }
+
+                int fragmentCount = GetCurrentFragments().Length;
+                currentFragmentIndex = fragmentCount == 0 ? 0 : Mathf.Clamp(index, 0, fragmentCount - 1);
+                RefreshEntry();
+            });
+
+        y += 42f;
+        txtDiaryContent = wnd.AddText2(x, y, tab, string.Empty, 14, "txtDiaryContent");
         txtDiaryContent.supportRichText = true;
         txtDiaryContent.alignment = TextAnchor.UpperLeft;
-        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 680f);
+        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 620f);
+
+        float buttonY = y + 652f;
+        btnPrevFragment = wnd.AddButton(x, buttonY, 130f, tab, "向前", onClick: PrevFragment);
+        btnNextFragment = wnd.AddButton(x + 150f, buttonY, 130f, tab, "向后", onClick: NextFragment);
 
         RefreshEntry();
     }
@@ -1040,55 +1257,88 @@ public static class DevelopmentDiary {
         RefreshEntry();
     }
 
-    private static List<DiaryEntry> BuildDiaryEntries() {
-        var entries = new List<DiaryEntry>();
-
-        void AddSeries(string prefix) => entries.Add(new DiaryEntry(prefix, prefix, prefix));
-
-        AddSeries("FE1.0");
-        AddSeries("FE1.1");
-        entries.Add(new DiaryEntry("1.4.1 更新", "141标题", "141信息"));
-        entries.Add(new DiaryEntry("1.4.2 更新", "142标题", "142信息"));
-        entries.Add(new DiaryEntry("1.4.3 更新", "143标题", "143信息"));
-        AddSeries("FE2.0");
-        AddSeries("FE2.1");
-        AddSeries("FE2.2");
-        AddSeries("FE2.3");
-        entries.Add(new DiaryEntry("伊卡洛斯手记", "IK", "IK"));
-        return entries;
-    }
-
     private static void RefreshEntry() {
-        if (txtDiaryContent == null || diaryEntries.Count == 0) {
+        if (txtDiaryContent == null) {
             return;
         }
 
-        currentEntryIndex = Mathf.Clamp(currentEntryIndex, 0, diaryEntries.Count - 1);
-        DiaryEntry entry = diaryEntries[currentEntryIndex];
-        txtDiaryContent.text = programmingEvents.ContainsKey(entry.ContentKey)
-            ? BuildSeriesText(entry.ContentKey)
-            : entry.ContentKey.Translate();
-    }
+        DiaryFragment[] fragments = GetCurrentFragments();
+        RefreshSelectors();
 
-    private static string BuildSeriesText(string prefix) {
-        if (!programmingEvents.TryGetValue(prefix, out int count) || count <= 0) {
-            return prefix.Translate();
+        if (fragments.Length == 0) {
+            txtDiaryContent.text = string.Empty;
+            return;
         }
 
-        return string.Join("\n\n", Enumerable.Range(1, count).Select(index => $"{prefix}-{index}".Translate()));
+        DiaryFragment fragment = fragments[currentFragmentIndex];
+        string content = fragment.ContentKey.Translate();
+        txtDiaryContent.text = IsUnlocked(fragment) ? content : BuildLockedContent(content);
+    }
+
+    private static void PrevFragment() {
+        if (currentFragmentIndex <= 0) {
+            return;
+        }
+
+        currentFragmentIndex--;
+        RefreshEntry();
+    }
+
+    private static void NextFragment() {
+        DiaryFragment[] fragments = GetCurrentFragments();
+        if (currentFragmentIndex >= fragments.Length - 1) {
+            return;
+        }
+
+        currentFragmentIndex++;
+        RefreshEntry();
     }
 
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        r.ReadBlocks();
+        ResetState();
+        r.ReadBlocks(
+            (UnlockedFragmentsBlockTag, br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++) {
+                    string fragmentId = br.ReadString();
+                    if (validFragmentIds.Contains(fragmentId)) {
+                        unlockedFragmentIds.Add(fragmentId);
+                    }
+                }
+            }),
+            (SelectionBlockTag, br => {
+                currentCategoryIndex = Math.Max(0, br.ReadInt32());
+                currentFragmentIndex = Math.Max(0, br.ReadInt32());
+            })
+        );
+        ClampSelection();
+        SyncUnlockedFragmentsWithAchievements();
     }
 
     public static void Export(BinaryWriter w) {
-        w.WriteBlocks();
+        ClampSelection();
+        w.WriteBlocks(
+            (UnlockedFragmentsBlockTag, bw => {
+                string[] orderedUnlockedIds = [.. diaryFragments
+                    .Where(IsUnlocked)
+                    .Select(static fragment => fragment.Id)];
+                bw.Write(orderedUnlockedIds.Length);
+                foreach (string fragmentId in orderedUnlockedIds) {
+                    bw.Write(fragmentId);
+                }
+            }),
+            (SelectionBlockTag, bw => {
+                bw.Write(currentCategoryIndex);
+                bw.Write(currentFragmentIndex);
+            })
+        );
     }
 
-    public static void IntoOtherSave() { }
+    public static void IntoOtherSave() {
+        ResetState();
+    }
 
     #endregion
 }

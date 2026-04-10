@@ -8,6 +8,7 @@ using FE.Logic.Manager;
 using FE.Logic.Recipe;
 using FE.UI.Components;
 using FE.UI.View;
+using FE.UI.View.Archive;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
@@ -1005,6 +1006,7 @@ public static class Achievements {
         claimed[index] = true;
         MarkBonusSummaryDirty();
         achievements[index].GrantReward?.Invoke();
+        DevelopmentDiary.TryUnlockRandomFragmentFromAchievement();
 
         if (showPopup) {
             string message = string.Format("成就获得提示".Translate(), achievements[index].NameKey.Translate());
@@ -1298,6 +1300,16 @@ public static class Achievements {
             }
         }
         return false;
+    }
+
+    public static int GetClaimedAchievementCount() {
+        int count = 0;
+        for (int i = 0; i < achievements.Length; i++) {
+            if (claimed[i]) {
+                count++;
+            }
+        }
+        return count;
     }
 
     #endregion
