@@ -151,17 +151,17 @@ public static class TicketRaffle {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "开线抽取", GachaPool.PoolIdOpeningLine);
-    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "原胚抽取", GachaPool.PoolIdProtoLoop);
-    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "成长规划", GachaPool.PoolIdGrowth);
-    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, "流派聚焦", GachaPool.PoolIdFocus);
+    public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdOpeningLine);
+    public static void CreateProtoUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdProtoLoop);
+    public static void CreateUpUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdGrowth);
+    public static void CreateLimitedUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdFocus);
 
-    private static void CreatePoolUI(MyConfigWindow wnd, RectTransform trans, string tabName, int poolId) {
+    private static void CreatePoolUI(MyWindow wnd, RectTransform trans, int poolId) {
         ResetActiveUisBeforeRecreate();
         SyncTotalDrawsFromSharedState();
         var ui = new RaffleTabUi {
             PoolId = poolId,
-            Tab = wnd.AddTab(trans, tabName)
+            Tab = trans
         };
         activeUis.Add(ui);
 

@@ -30,8 +30,8 @@ public static class FragmentExchange {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "残片兑换");
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
         float y = 18f;
         btnSelectedItem = wnd.AddImageButton(0f, y, tab, null).WithSize(40f, 40f)
             .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));

@@ -66,14 +66,14 @@ public static class LimitedTimeStore {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateRecipeUI(MyConfigWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans, "成长规划");
-    public static void CreateProtoUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦");
-    public static void CreateUpUI(MyConfigWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans, "成长规划");
-    public static void CreateLimitedUI(MyConfigWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans, "流派聚焦");
+    public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans);
+    public static void CreateProtoUI(MyWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans);
+    public static void CreateUpUI(MyWindow wnd, RectTransform trans) => CreateGrowthUI(wnd, trans);
+    public static void CreateLimitedUI(MyWindow wnd, RectTransform trans) => CreateFocusUI(wnd, trans);
 
-    private static void CreateGrowthUI(MyConfigWindow wnd, RectTransform trans, string pageName) {
+    private static void CreateGrowthUI(MyWindow wnd, RectTransform trans) {
         growthPage = new GrowthPageUi {
-            Tab = wnd.AddTab(trans, pageName)
+            Tab = trans
         };
 
         float y = 8f;
@@ -110,9 +110,9 @@ public static class LimitedTimeStore {
         }
     }
 
-    private static void CreateFocusUI(MyConfigWindow wnd, RectTransform trans, string pageName) {
+    private static void CreateFocusUI(MyWindow wnd, RectTransform trans) {
         focusPage = new FocusPageUi {
-            Tab = wnd.AddTab(trans, pageName)
+            Tab = trans
         };
 
         float y = 8f;
@@ -319,9 +319,9 @@ public static class LimitedTimeStore {
         };
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        CreateGrowthUI(wnd, trans, "成长规划");
-        CreateFocusUI(wnd, trans, "流派聚焦");
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        CreateGrowthUI(wnd, trans);
+        CreateFocusUI(wnd, trans);
     }
 
     public static void Import(BinaryReader r) { r.ReadBlocks(); }

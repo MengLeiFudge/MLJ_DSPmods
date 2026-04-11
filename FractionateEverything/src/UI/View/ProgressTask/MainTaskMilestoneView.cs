@@ -48,7 +48,7 @@ public static partial class MainTask {
     // partial 类静态字段的初始化顺序不稳定，不能在这里提前依赖 RouteMaps。
     private static RouteViewCache[] routeViewsByMode = [];
 
-    private static void BuildMilestonePage(MyConfigWindow wnd) {
+    private static void BuildMilestonePage(MyWindow wnd) {
         txtModeTitle = wnd.AddText2(0f, 12f, tab, "主线里程碑", 18, "txt-main-task-mode");
         txtModeTitle.supportRichText = true;
         txtModeTitle.color = Orange;

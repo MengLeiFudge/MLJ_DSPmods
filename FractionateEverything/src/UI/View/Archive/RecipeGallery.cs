@@ -32,9 +32,9 @@ public static class RecipeGallery {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "配方图鉴");
+        tab = trans;
         float x = 0f;
         float y = 18f;
         wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;

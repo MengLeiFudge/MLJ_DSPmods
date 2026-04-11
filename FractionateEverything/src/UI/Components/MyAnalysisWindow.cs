@@ -17,9 +17,6 @@ public class MyAnalysisWindow : MyWindow {
     private const float AnalysisDesignWidth = AnalysisBlackAreaWidth - AnalysisContentGap * 2f;
     private const float AnalysisDesignHeight = AnalysisBlackAreaHeight - AnalysisContentGap * 2f;
 
-    private const float LegacyProxyContentWidth = AnalysisDesignWidth;
-    private const float LegacyProxyContentHeight = AnalysisDesignHeight;
-
     private readonly struct ButtonPose {
         public readonly Vector2 AnchorMin;
         public readonly Vector2 AnchorMax;
@@ -830,11 +827,6 @@ public class MyAnalysisWindow : MyWindow {
                 var pages = categories[i].Pages;
                 if (internalTabIndex >= 0 && internalTabIndex < pages.Count) {
                     OnSubpageClick(internalTabIndex);
-                } else if (currentPageContent != null) {
-                    var proxy = currentPageContent.GetComponentInChildren<MyConfigWindow>(true);
-                    if (proxy != null) {
-                        proxy.SetCurrentTab(internalTabIndex);
-                    }
                 }
                 return;
             }
@@ -871,20 +863,8 @@ public class MyAnalysisWindow : MyWindow {
         if (existing == null) {
             currentPageContent = CreateContainerRect(contentName, contentRootContainer, Vector2.zero, Vector2.zero,
                 Vector2.zero, Vector2.one);
-
-            if (pageDef.CreateUIInAnalysis != null) {
-                RectTransform designRoot = GetOrCreateDesignRoot(currentPageContent);
-                pageDef.CreateUIInAnalysis(this, designRoot);
-            } else {
-                GameObject proxyGo = new GameObject($"{contentName}-proxy", typeof(MyConfigWindow));
-                proxyGo.transform.SetParent(currentPageContent, false);
-                MyConfigWindow configWindowProxy = proxyGo.GetComponent<MyConfigWindow>();
-
-                RectTransform designRoot = GetOrCreateDesignRoot(currentPageContent);
-                RectTransform legacyProxyHost = CreateLegacyProxyHost(designRoot);
-                pageDef.CreateUI(configWindowProxy, legacyProxyHost);
-                configWindowProxy.SetCurrentTab(0);
-            }
+            RectTransform designRoot = GetOrCreateDesignRoot(currentPageContent);
+            pageDef.CreateUI(this, designRoot);
 
             HideNestedNavigationInContent(currentPageContent);
         } else {
@@ -896,25 +876,6 @@ public class MyAnalysisWindow : MyWindow {
             currentPageHiddenNavigationLanguageIndex = Localization.CurrentLanguageIndex;
             currentPageContent.gameObject.SetActive(true);
         }
-    }
-
-    private static RectTransform CreateLegacyProxyHost(RectTransform parent) {
-        float legacyLeftNavSpan = Margin + TabWidth + Spacing;
-        float legacyTotalWidth = LegacyProxyContentWidth + legacyLeftNavSpan;
-        float legacyTotalHeight = LegacyProxyContentHeight + TitleHeight;
-
-        RectTransform host = CreateContainerRect(
-            "analysis-legacy-proxy-host",
-            parent,
-            Vector2.zero,
-            Vector2.zero,
-            new Vector2(0f, 1f),
-            new Vector2(0f, 1f));
-
-        host.pivot = new Vector2(0f, 1f);
-        host.sizeDelta = new Vector2(legacyTotalWidth, legacyTotalHeight);
-        host.anchoredPosition = new Vector2(-legacyLeftNavSpan, TitleHeight);
-        return host;
     }
 
     private static RectTransform GetOrCreateDesignRoot(RectTransform pageRoot) {

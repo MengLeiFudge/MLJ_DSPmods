@@ -130,7 +130,8 @@ public static class MainWindow {
         foreach (MainWindowCategoryDefinition category in GetLegacyPageCategories()) {
             wnd.AddTabGroup(trans, category.CategoryName);
             foreach (MainWindowPageDefinition page in category.Pages) {
-                page.CreateUI(wnd, trans);
+                RectTransform pageRoot = wnd.AddTab(trans, page.SubpageName);
+                page.CreateUI(wnd, pageRoot);
             }
         }
     }

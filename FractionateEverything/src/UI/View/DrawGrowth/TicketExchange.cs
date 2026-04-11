@@ -38,8 +38,8 @@ public static class TicketExchange {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "资源统筹");
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
         float y = 18f;
         txtOverview = wnd.AddText2(0f, y, tab, "资源统筹说明", 14);
         txtOverview.supportRichText = true;

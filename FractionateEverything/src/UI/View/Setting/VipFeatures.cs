@@ -77,13 +77,7 @@ public static class VipFeatures {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = wnd.AddTab(trans, "VIP特权");
-        CreateUIInternal(wnd, tab);
-    }
-
-    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
         CreateUIInternal(wnd, trans);

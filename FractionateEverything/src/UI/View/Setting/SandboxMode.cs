@@ -35,13 +35,7 @@ public static class SandboxMode {
         ExpMultiRatioEntry = configFile.Bind("TabSetting", "ExpMultiRatio", 1.0f, "经验获取倍率");
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = wnd.AddTab(trans, "沙盒模式");
-        CreateUIInternal(wnd, tab);
-    }
-
-    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
         CreateUIInternal(wnd, trans);
