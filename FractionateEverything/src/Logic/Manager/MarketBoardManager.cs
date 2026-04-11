@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FE.Logic.RecipeGrowth;
 using UnityEngine;
 using FE.Utils;
 using static FE.Logic.Manager.ItemManager;
@@ -91,6 +92,12 @@ public static class MarketBoardManager {
                 AddItemToModData(offer.InputItemId, offer.InputCount, 0, true);
             }
             return false;
+        }
+
+        if (DarkFogCombatManager.IsDarkFogOffer(offer) && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+            RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(offer.OutputItemId, offer.OutputCount,
+                RecipeGrowthManager.BuildContext(manual: true));
+            return true;
         }
 
         AddItemToModData(offer.OutputItemId, offer.OutputCount, 0, true);

@@ -3,6 +3,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
@@ -191,7 +192,7 @@ public static class FracStatistic {
     }
 
     private static int GetUnlockedRecipeCount() {
-        return RecipeTypes.Sum(type => GetRecipesByType(type).Count(recipe => recipe.Unlocked));
+        return RecipeGrowthQueries.GetUnlockedCount(RecipeTypes);
     }
 
     private static string FormatMarketItem(int itemId) {

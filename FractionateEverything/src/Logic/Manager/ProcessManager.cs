@@ -346,7 +346,7 @@ public static class ProcessManager {
         int productOutputMax = building.ProductOutputMax();
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFluidEnhancement();
-        bool moveDirectly = recipe == null || recipe.Locked;
+        bool moveDirectly = recipe == null || !RecipeGrowthQueries.IsUnlocked(recipe);
         bool producedMainThisTick = false;
         bool producedSideThisTick = false;
         bool producedFluidThisTick = false;

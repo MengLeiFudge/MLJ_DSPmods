@@ -108,6 +108,9 @@ public static class MarketBoard {
                 rows[i].TxtExtra.text = "";
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
+            if (DarkFogCombatManager.IsDarkFogOffer(offer) && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+                rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方成长 +{offer.OutputCount}";
+            }
             string offerTag = GetOfferTag(offer);
             if (!string.IsNullOrEmpty(offerTag) && !string.IsNullOrEmpty(rows[i].TxtOutput.text)) {
                 rows[i].TxtOutput.text = $"{offerTag} {rows[i].TxtOutput.text}";

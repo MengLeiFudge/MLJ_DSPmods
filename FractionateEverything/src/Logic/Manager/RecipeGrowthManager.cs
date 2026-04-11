@@ -6,6 +6,7 @@ namespace FE.Logic.Manager;
 
 public static class RecipeGrowthManager {
     public static readonly RecipeGrowthStateStore Store = new();
+    private static long lastRuntimeSyncTick = long.MinValue;
 
     public static void InitializeFromRecipes() {
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
@@ -41,5 +42,22 @@ public static class RecipeGrowthManager {
             manual,
             GameMain.gameTick
         );
+    }
+
+    public static void SyncRuntimeUnlocks() {
+        long currentTick = GameMain.gameTick;
+        if (currentTick >= 0 && lastRuntimeSyncTick >= 0 && currentTick - lastRuntimeSyncTick < 60) {
+            return;
+        }
+
+        RecipeGrowthContext context = BuildContext();
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+            if (family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog) {
+                RecipeGrowthExecutor.EnsureUnlockedByDarkFogDrop(recipe, context);
+            }
+        }
+
+        lastRuntimeSyncTick = currentTick;
     }
 }

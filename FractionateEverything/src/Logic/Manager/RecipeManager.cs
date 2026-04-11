@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 using static FE.Logic.Recipe.ERecipeExtension;
@@ -180,7 +181,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (RecipeTypes.Contains(recipe.RecipeType)) {
-                recipe.ChangeLevelTo(0);
+                RecipeGrowthExecutor.SetLevelForSandbox(recipe, 0, RecipeGrowthManager.BuildContext());
             }
         }
         UIMessageBox.Show("提示".Translate(),
@@ -198,7 +199,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (RecipeTypes.Contains(recipe.RecipeType)) {
-                recipe.RewardThis(true);
+                RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
             }
         }
         UIMessageBox.Show("提示".Translate(),
@@ -216,7 +217,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (RecipeTypes.Contains(recipe.RecipeType)) {
-                recipe.ChangeLevelTo(5);
+                RecipeGrowthExecutor.SetLevelForSandbox(recipe, 5, RecipeGrowthManager.BuildContext());
             }
         }
         UIMessageBox.Show("提示".Translate(),

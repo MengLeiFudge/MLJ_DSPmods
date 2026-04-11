@@ -24,7 +24,7 @@ public abstract class BaseRecipe(
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
-                              + (Unlocked ? $" Lv{Level}" : "");
+                              + (RecipeGrowthQueries.IsUnlocked(this) ? $" Lv{RecipeGrowthQueries.GetLevel(this)}" : "");
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
 
     #region 配方类型、输入输出
@@ -49,7 +49,6 @@ public abstract class BaseRecipe(
     /// </summary>
     public int MatrixID = 0;
 
-    public bool FullUpgrade => IsMaxLevel;
     /// <summary>
     /// 配方成功率
     /// </summary>
@@ -186,54 +185,6 @@ public abstract class BaseRecipe(
     /// </summary>
     public virtual byte GetOutputInc(int itemId) => 0;
 
-    #region 配方品质、等级
-
-    /// <summary>
-    /// 配方等级，也代表重复抽取到改配方的次数
-    /// </summary>
-    public int Level => RecipeGrowthQueries.GetLevel(this);
-    /// <summary>
-    /// 是否未解锁
-    /// </summary>
-    public bool Locked => !Unlocked;
-    /// <summary>
-    /// 是否已解锁
-    /// </summary>
-    public bool Unlocked => RecipeGrowthQueries.IsUnlocked(this);
-    /// <summary>
-    /// 等级是否已达上限
-    /// </summary>
-    public bool IsMaxLevel => RecipeGrowthQueries.IsMaxed(this);
-
-    public static int GetOpeningPoolInitialLevelByMatrix(int matrixId) {
-        return RecipeGrowthRules.GetDrawUnlockLevel(matrixId);
-    }
-
-    public int GetOpeningPoolInitialLevel() => RecipeGrowthRules.GetStageBaselineLevel(MatrixID);
-
-    /// <summary>
-    /// 旧调用仍可走这里，但真正的成长状态已经转移到 RecipeGrowthExecutor。
-    /// </summary>
-    public void RewardThis(bool manual = false) {
-        RecipeGrowthExecutor.ApplyDrawReward(this, RecipeGrowthManager.BuildContext(manual));
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
-        }
-    }
-
-    /// <summary>
-    /// 沙盒模式修改等级
-    /// </summary>
-    public void ChangeLevelTo(int targetLevel, bool manual = false) {
-        RecipeGrowthExecutor.SetLevelForSandbox(this, targetLevel, RecipeGrowthManager.BuildContext(manual));
-        if (NebulaModAPI.IsMultiplayerActive && manual) {
-            NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
-                targetLevel));
-        }
-    }
-
-    #endregion
-
     #region IModCanSave
 
     public virtual void Import(BinaryReader r) {
@@ -258,8 +209,7 @@ public abstract class BaseRecipe(
                     else LogWarning($"Output {id} not found in {TypeName} append outputs");
                 }
             }),
-            ("Meta", br => { RecipeGrowthManager.ImportLegacyState(this, br.ReadInt32()); }),
-            ("EchoLevel", br => { br.ReadInt32(); })
+            ("Meta", br => { RecipeGrowthManager.ImportLegacyState(this, br.ReadInt32()); })
         );
     }
 

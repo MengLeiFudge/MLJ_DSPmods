@@ -550,6 +550,8 @@ public static class TechManager {
             EnsureGuaranteedRecipeBaselines();
             initialRecipeBaselineChecked = true;
         }
+
+        RecipeGrowthManager.SyncRuntimeUnlocks();
     }
 
     [HarmonyPrefix]

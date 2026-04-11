@@ -2,6 +2,7 @@ using System.Linq;
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using FE.UI.View;
 using UnityEngine;
@@ -91,6 +92,10 @@ public static class TicketExchange {
 
     private static string BuildDarkFogStatusText() {
         EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        var snapshots = RecipeGrowthQueries.GetDarkFogProgressSnapshots();
+        int totalRecipes = snapshots.Count;
+        int unlockedRecipes = snapshots.Count(snapshot => snapshot.IsUnlocked);
+        int maxedRecipes = snapshots.Count(snapshot => snapshot.IsMaxed);
         string stageName = stage switch {
             EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
             EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
@@ -114,7 +119,7 @@ public static class TicketExchange {
 
         return $"{ "黑雾支线说明".Translate() }：当前黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}    阶段 {stageName}\n"
                + $"战况：地面基地 {DarkFogCombatManager.GetAliveGroundBaseCount()}    星域蜂巢 {DarkFogCombatManager.GetAliveHiveCount()}    物资层级 {DarkFogCombatManager.GetDarkFogResourceTier()}/4\n"
-               + $"成长页报价 {DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    市场板特单 {DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    增强层 {enhancedText}\n"
+               + $"成长页报价 {DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    市场板特单 {DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    黑雾配方 {unlockedRecipes}/{totalRecipes} 已解锁，满级 {maxedRecipes}    增强层 {enhancedText}\n"
                + $"下一阶段：{nextTarget}";
     }
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Manager;
 using FE.Logic.Recipe;
 
 namespace FE.Logic.RecipeGrowth;
@@ -24,12 +25,25 @@ public sealed class RecipeGrowthStateStore {
         int count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             RecipeKey key = new((ERecipe)r.ReadInt32(), r.ReadInt32());
+            int level = r.ReadInt32();
+            int growthExp = r.ReadInt32();
+            int pityProgress = r.ReadInt32();
+            RecipeUnlockSourceFlags flags = (RecipeUnlockSourceFlags)r.ReadInt32();
+            long lastTouchedTick = r.ReadInt64();
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            RecipeGrowthRule rule = recipe != null ? RecipeGrowthRules.GetRule(recipe) : new RecipeGrowthRule(
+                RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false);
             states[key] = new RecipeGrowthState {
-                Level = r.ReadInt32(),
-                GrowthExp = r.ReadInt32(),
-                PityProgress = r.ReadInt32(),
-                UnlockSourceFlags = (RecipeUnlockSourceFlags)r.ReadInt32(),
-                LastTouchedTick = r.ReadInt64(),
+                Level = RecipeGrowthRules.ClampLevel(rule, level),
+                GrowthExp = growthExp < 0 ? 0 : growthExp,
+                PityProgress = pityProgress < 0 ? 0 : pityProgress,
+                UnlockSourceFlags = flags & (RecipeUnlockSourceFlags.TechBaseline
+                    | RecipeUnlockSourceFlags.Draw
+                    | RecipeUnlockSourceFlags.Processing
+                    | RecipeUnlockSourceFlags.DarkFogDrop
+                    | RecipeUnlockSourceFlags.Sandbox
+                    | RecipeUnlockSourceFlags.LegacyImport),
+                LastTouchedTick = lastTouchedTick < 0 ? 0 : lastTouchedTick,
             };
         }
     }
