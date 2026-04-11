@@ -72,9 +72,9 @@ public static class VanillaRecipeOperate {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "原版配方");
+        tab = trans;
         float x = 0f;
         float y = 18f + 7f;
 

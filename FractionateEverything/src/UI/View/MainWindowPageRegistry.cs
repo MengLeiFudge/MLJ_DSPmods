@@ -38,7 +38,7 @@ public static class MainWindowPageRegistry {
         new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI, enabledInAnalysis: true),
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI, enabledInAnalysis: true),
 
-        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: ItemInteraction.CreateUIInAnalysis),
+        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "资源统筹", ResourceOverview.CreateUI, ResourceOverview.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI, enabledInAnalysis: true),
@@ -58,8 +58,8 @@ public static class MainWindowPageRegistry {
         new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI, enabledInAnalysis: true),
         new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI, enabledInAnalysis: true),
 
-        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true, createUIInAnalysis: Miscellaneous.CreateUIInAnalysis),
-        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true, createUIInAnalysis: SandboxMode.CreateUIInAnalysis),
+        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true),
+        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true),
     ];
 
     private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
@@ -126,13 +126,12 @@ public sealed class MainWindowCategoryDefinition(string categoryName, IReadOnlyL
 }
 
 public sealed class MainWindowPageDefinition(string categoryName, string subpageName,
-    Action<MyConfigWindow, RectTransform> createUI, Action updateUI, bool enabledInAnalysis = false,
-    bool sandboxOnly = false, Action<MyAnalysisWindow, RectTransform> createUIInAnalysis = null) {
+    Action<MyWindow, RectTransform> createUI, Action updateUI, bool enabledInAnalysis = false,
+    bool sandboxOnly = false) {
     public string CategoryName { get; } = categoryName;
     public string SubpageName { get; } = subpageName;
-    public Action<MyConfigWindow, RectTransform> CreateUI { get; } = createUI;
+    public Action<MyWindow, RectTransform> CreateUI { get; } = createUI;
     public Action UpdateUI { get; } = updateUI;
-    public Action<MyAnalysisWindow, RectTransform> CreateUIInAnalysis { get; } = createUIInAnalysis;
     public bool EnabledInAnalysis { get; } = enabledInAnalysis;
     public bool SandboxOnly { get; } = sandboxOnly;
 

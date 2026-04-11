@@ -141,9 +141,9 @@ public static class FracRecipeOperate {
 
     // ==================== UI 创建 ====================
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "分馏配方");
+        tab = trans;
         float x = 0f;
         float y = 18f + 7f;
 
@@ -162,36 +162,38 @@ public static class FracRecipeOperate {
 
         y += 36f + 7f;
 
-        // 沙盒模式调试按钮
-        if (GameMain.sandboxToolsEnabled) {
-            recipeSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
-                onClick: () => {
-                    if (SelectedRecipe != null) {
-                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
-                    }
-                });
-            recipeSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
-                onClick: () => {
-                    if (SelectedRecipe != null) {
-                        int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
-                    }
-                });
-            recipeSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
-                onClick: () => {
-                    if (SelectedRecipe != null) {
-                        int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
-                    }
-                });
-            recipeSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
-                onClick: () => {
-                    if (SelectedRecipe != null) {
-                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
-                    }
-                });
-            y += 36f;
+        // 沙盒模式调试按钮始终创建，避免运行中切换沙盒状态后静态按钮引用为空。
+        recipeSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
+            onClick: () => {
+                if (SelectedRecipe != null) {
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
+                }
+            });
+        recipeSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
+            onClick: () => {
+                if (SelectedRecipe != null) {
+                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
+                }
+            });
+        recipeSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
+            onClick: () => {
+                if (SelectedRecipe != null) {
+                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
+                }
+            });
+        recipeSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
+            onClick: () => {
+                if (SelectedRecipe != null) {
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
+                }
+            });
+        bool sandboxEnabled = GameMain.sandboxToolsEnabled;
+        foreach (UIButton button in recipeSandboxBtn) {
+            button.gameObject.SetActive(sandboxEnabled);
         }
+        y += 36f;
 
         // 增产点数滑条（动态定位，初始隐藏）
         int[] rang;
@@ -371,7 +373,14 @@ public static class FracRecipeOperate {
     /// </summary>
     private static void RefreshSandboxButtons(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
         if (!GameMain.sandboxToolsEnabled) {
+            foreach (UIButton button in recipeSandboxBtn) {
+                button.gameObject.SetActive(false);
+            }
             return;
+        }
+
+        foreach (UIButton button in recipeSandboxBtn) {
+            button.gameObject.SetActive(true);
         }
 
         bool hasRecipe = recipe != null;

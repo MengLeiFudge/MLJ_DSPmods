@@ -150,19 +150,13 @@ public static class Miscellaneous {
             configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容数据中心");
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = wnd.AddTab(trans, "杂项设置");
-        CreateUIInternal(wnd, tab, FEMainPanelType.Legacy);
-    }
-
-    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
-        CreateUIInternal(wnd, trans, FEMainPanelType.Analysis);
+        CreateUIInternal(wnd, trans);
     }
 
-    private static void CreateUIInternal(MyWindow wnd, RectTransform parent, FEMainPanelType panelType) {
+    private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         float x = 0f;
         float y = 18f;
         var txt = wnd.AddText2(x, y, parent, "左键单击时提取几组物品");
@@ -216,8 +210,8 @@ public static class Miscellaneous {
         PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, parent, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
         y += 36f;
         SwitchMainPanelButton = wnd.AddButton(x, y, 220f, parent,
-            MainWindow.GetSwitchMainPanelButtonLabel(panelType), 14,
-            onClick: () => MainWindow.SwitchMainPanelFrom(GetCurrentPanelType(panelType)));
+            MainWindow.GetSwitchMainPanelButtonLabel(), 14,
+            onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
     }
 
     public static void UpdateUI() {
@@ -240,11 +234,6 @@ public static class Miscellaneous {
         RefreshSwitchMainPanelButtonLabel();
     }
 
-    private static FEMainPanelType GetCurrentPanelType(FEMainPanelType defaultPanelType) {
-        FEMainPanelType currentPanelType = MainWindow.GetCurrentMainPanelType();
-        return currentPanelType == FEMainPanelType.None ? defaultPanelType : currentPanelType;
-    }
-
     public static void ShowQuestion(string title, string content, Action onConfirm, Action onCancel = null) {
         if (!EnableConfirmationDialog) {
             onConfirm?.Invoke();
@@ -259,7 +248,7 @@ public static class Miscellaneous {
             return;
         }
 
-        string label = MainWindow.GetSwitchMainPanelButtonLabel(GetCurrentPanelType(MainWindow.SelectedMainPanelType));
+        string label = MainWindow.GetSwitchMainPanelButtonLabel();
         Transform buttonText = SwitchMainPanelButton.transform.Find("button-text");
         var localizer = buttonText?.GetComponent<Localizer>();
         if (localizer != null) {

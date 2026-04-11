@@ -36,8 +36,8 @@ public static class MarketBoard {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "市场板");
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
         float y = 18f;
         txtExpire = wnd.AddText2(0f, y, tab, "", 13);
         y += 28f;

@@ -190,9 +190,9 @@ public static class BuildingOperate {
         }
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = wnd.AddTab(trans, "建筑操作");
+        tab = trans;
         float x = 0f;
         float y = 18f + 7f;
         var txt = wnd.AddText2(x, y, tab, "建筑类型");
@@ -204,18 +204,20 @@ public static class BuildingOperate {
         txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
         y += 36f + 7f;
 
-        if (!GameMain.sandboxToolsEnabled) {
-            btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
-                onClick: Reinforcement);
-        } else {
-            reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
-                onClick: () => { ChangeLevelTo(0); });
-            reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
-                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-            reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
-                onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-            reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
-                onClick: () => { ChangeLevelTo(MaxLevel); });
+        btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
+            onClick: Reinforcement);
+        reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
+            onClick: () => { ChangeLevelTo(0); });
+        reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
+            onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
+        reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
+            onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
+        reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
+            onClick: () => { ChangeLevelTo(MaxLevel); });
+        bool sandboxEnabled = GameMain.sandboxToolsEnabled;
+        btnReinforcement.gameObject.SetActive(!sandboxEnabled);
+        foreach (UIButton button in reinforcementSandboxBtn) {
+            button.gameObject.SetActive(sandboxEnabled);
         }
         y += 36f + 7f;
 
@@ -311,10 +313,14 @@ public static class BuildingOperate {
         if (!GameMain.sandboxToolsEnabled) {
             bool showBtn = SelectedBuilding.Level() < MaxLevel && BuildingManager.NeedsBreakthrough(SelectedBuilding.ID);
             btnReinforcement.gameObject.SetActive(showBtn);
+            foreach (UIButton button in reinforcementSandboxBtn) {
+                button.gameObject.SetActive(false);
+            }
             if (showBtn) {
                 btnReinforcement.SetText("关键节点突破".Translate());
             }
         } else {
+            btnReinforcement.gameObject.SetActive(false);
             reinforcementSandboxBtn[0].gameObject.SetActive(true);
             reinforcementSandboxBtn[1].gameObject.SetActive(true);
             reinforcementSandboxBtn[2].gameObject.SetActive(true);

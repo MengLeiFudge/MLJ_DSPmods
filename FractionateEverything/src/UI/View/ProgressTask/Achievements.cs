@@ -824,10 +824,10 @@ public static class Achievements {
         global::FE.FractionateEverything.SaveConfig();
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         SyncCurrentPageFromSharedState();
         window = trans;
-        tab = wnd.AddTab(trans, "成就详情");
+        tab = trans;
 
         txtAchievementNames = new Text[achievements.Length];
         txtAchievementDescs = new Text[achievements.Length];

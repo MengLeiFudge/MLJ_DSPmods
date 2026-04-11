@@ -54,8 +54,8 @@ public static class FracStatistic {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        tab = wnd.AddTab(trans, "分馏统计");
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
         txtSummaryTitle = wnd.AddText2(0f, 18f, tab, "统计-总览", 16);
         CreateLineGroup(wnd, summaryLines, 0f, 52f, "txtSummary");
 
@@ -109,7 +109,7 @@ public static class FracStatistic {
         RefreshEconomyLines();
     }
 
-    private static void CreateLineGroup(MyConfigWindow wnd, Text[] lines, float x, float startY, string keyPrefix) {
+    private static void CreateLineGroup(MyWindow wnd, Text[] lines, float x, float startY, string keyPrefix) {
         float y = startY;
         for (int i = 0; i < lines.Length; i++) {
             lines[i] = wnd.AddText2(x, y, tab, "", 13, $"{keyPrefix}{i}");

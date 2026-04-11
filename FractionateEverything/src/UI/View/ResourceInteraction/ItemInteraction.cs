@@ -79,13 +79,7 @@ public static class ItemInteraction {
         ShowNotStoredItemEntry = configFile.Bind("Item Interaction", "Show Not Stored Item", false, "是否显示未存储的物品。");
     }
 
-    public static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
-        window = trans;
-        tab = wnd.AddTab(trans, "物品交互");
-        CreateUIInternal(wnd, tab);
-    }
-
-    public static void CreateUIInAnalysis(MyAnalysisWindow wnd, RectTransform trans) {
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
         CreateUIInternal(wnd, trans);
