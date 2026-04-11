@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using FE.UI.View;
 using FE.UI.View.Archive;
@@ -1160,9 +1161,7 @@ public static class Achievements {
     }
 
     private static int GetUnlockedRecipeCount() {
-        return RecipeTypes
-            .SelectMany(type => GetRecipesByType(type))
-            .Count(recipe => recipe.Unlocked);
+        return RecipeGrowthQueries.GetUnlockedCount(RecipeTypes);
     }
 
     private static int GetMaxBuildingLevel() {

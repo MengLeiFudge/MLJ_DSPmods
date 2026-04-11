@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -613,21 +614,15 @@ public static class GachaService {
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
         }
 
-        if (recipe.IsMaxLevel) {
-            int fragmentReward = IsSpeedrunMode ? 25 : 15;
-            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy) {
-                fragmentReward += IsSpeedrunMode ? 10 : 5;
-            }
+        bool wasLocked = recipe.Locked;
+        RecipeGrowthResult growthResult = RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
+
+        if (growthResult.FragmentReward > 0) {
+            int fragmentReward = growthResult.FragmentReward;
             AddItemToModData(IFE残片, fragmentReward, 0, true);
             return new GachaRewardResolution(GachaRewardType.DuplicateRecipeFragments, IFE残片, fragmentReward);
         }
 
-        bool wasLocked = recipe.Locked;
-        if (wasLocked) {
-            recipe.ChangeLevelTo(recipe.GetOpeningPoolInitialLevel(), true);
-        } else {
-            recipe.RewardThis(true);
-        }
         return new GachaRewardResolution(wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade, 0,
             recipe.Level);
     }

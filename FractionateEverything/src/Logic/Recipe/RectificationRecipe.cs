@@ -22,11 +22,9 @@ public class RectificationRecipe : BaseRecipe {
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
             int fragmentCount = GetRectificationBaseFragmentYield(matrixId);
-            var recipe = new RectificationRecipe(matrixId, 1.0f,
+            AddRecipe(new RectificationRecipe(matrixId, 1.0f,
                 [new(1.0f, IFE残片, fragmentCount)],
-                []);
-            recipe.Level = 0;
-            AddRecipe(recipe);
+                []));
         }
     }
 

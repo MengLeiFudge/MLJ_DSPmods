@@ -3,6 +3,7 @@ using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Manager.RecipeManager;
@@ -481,6 +482,9 @@ public static class TechManager {
         if (GameMain.history.TechUnlocked(TFE矿物复制, true)) {
             EnsureInitialMineralCopyRecipeBaseline();
         }
+        if (GameMain.history.TechUnlocked(TFE物品精馏, true)) {
+            EnsureRectificationRecipeBaseline();
+        }
     }
 
     private static void EnsureBuildingTrainRecipeBaseline() {
@@ -504,15 +508,17 @@ public static class TechManager {
         }
     }
 
+    private static void EnsureRectificationRecipeBaseline() {
+        foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.Rectification)) {
+            EnsureRecipeInitialLevel(recipe);
+        }
+    }
+
     /// <summary>
     /// 初始保底只补低于基线的配方，不覆盖玩家后续自己抽到或培养出的更高等级。
     /// </summary>
     private static void EnsureRecipeInitialLevel(BaseRecipe recipe) {
-        int targetLevel = recipe.GetOpeningPoolInitialLevel();
-        if (recipe.Level >= targetLevel) {
-            return;
-        }
-        recipe.ChangeLevelTo(targetLevel);
+        RecipeGrowthExecutor.EnsureUnlockedByTech(recipe, RecipeGrowthManager.BuildContext());
     }
 
     /// <summary>
@@ -583,6 +589,8 @@ public static class TechManager {
             EnsureBuildingTrainRecipeBaseline();
         } else if (_techId == TFE矿物复制) {
             EnsureInitialMineralCopyRecipeBaseline();
+        } else if (_techId == TFE物品精馏) {
+            EnsureRectificationRecipeBaseline();
         }
     }
 }

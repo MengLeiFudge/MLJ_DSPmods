@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using FE.UI.View.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
@@ -482,6 +483,9 @@ public static class ProcessManager {
                     // 成功产出，产出到产物列表
                     totalFractionSuccesses++;
                     BuildingManager.AddBuildingExp(buildingID, 1);
+                    if (recipe != null) {
+                        RecipeGrowthExecutor.ApplyProcessingProgress(recipe, 1, 1, RecipeGrowthManager.BuildContext());
+                    }
                     lock (consumeRegister) {
                         consumeRegister[fluidId]++;
                     }

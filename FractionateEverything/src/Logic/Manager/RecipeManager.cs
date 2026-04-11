@@ -180,7 +180,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (RecipeTypes.Contains(recipe.RecipeType)) {
-                recipe.Level = -1;
+                recipe.ChangeLevelTo(0);
             }
         }
         UIMessageBox.Show("提示".Translate(),
@@ -216,7 +216,7 @@ public static class RecipeManager {
         }
         foreach (var recipe in RecipeList) {
             if (RecipeTypes.Contains(recipe.RecipeType)) {
-                recipe.Level = 10;
+                recipe.ChangeLevelTo(5);
             }
         }
         UIMessageBox.Show("提示".Translate(),

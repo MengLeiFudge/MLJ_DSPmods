@@ -2,6 +2,7 @@
 using System.Linq;
 using FE.Logic.Building;
 using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using static FE.Logic.Manager.GachaManager;
@@ -215,9 +216,7 @@ public static partial class MainTask {
     }
 
     private static int GetUnlockedRecipeCount() {
-        return RecipeTypes
-            .SelectMany(type => GetRecipesByType(type))
-            .Count(recipe => recipe.Unlocked);
+        return RecipeGrowthQueries.GetUnlockedCount(RecipeTypes);
     }
 
     private static int GetMaxBuildingLevel() {

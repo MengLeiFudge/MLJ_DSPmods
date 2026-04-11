@@ -4,6 +4,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,8 +26,8 @@ public static class RecipeGallery {
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
         Register("配方解锁情况",
-            $"The recipe gallery shows the current totals of {"Full Upgrade".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}:",
-            $"配方图鉴当前展示的是 {"完全升级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
+            $"The recipe gallery shows the current totals of {"Maxed".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}:",
+            $"配方图鉴当前展示的是 {"满级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -73,26 +74,24 @@ public static class RecipeGallery {
         int[,] fullUpgradeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] unlockCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] totalCountArr = new int[MatrixCount + 1, RecipeCount + 1];
+        var counts = RecipeGrowthQueries.GetGalleryCounts(Matrixes, RecipeTypes);
         for (int i = 0; i < MatrixCount; i++) {
             for (int j = 0; j < RecipeCount; j++) {
                 int matrixID = Matrixes[i];
-                var type = RecipeTypes[j];
-                List<BaseRecipe> recipes = GetRecipesByType(type)
-                    .Where(r => r.MatrixID == matrixID).ToList();
-                totalCountArr[i, j] = recipes.Count;
-                totalCountArr[MatrixCount, j] += recipes.Count;
-                totalCountArr[i, RecipeCount] += recipes.Count;
-                totalCountArr[MatrixCount, RecipeCount] += recipes.Count;
-                recipes = recipes.Where(r => r.Unlocked).ToList();
-                unlockCountArr[i, j] = recipes.Count;
-                unlockCountArr[MatrixCount, j] += recipes.Count;
-                unlockCountArr[i, RecipeCount] += recipes.Count;
-                unlockCountArr[MatrixCount, RecipeCount] += recipes.Count;
-                recipes = recipes.Where(r => r.FullUpgrade).ToList();
-                fullUpgradeCountArr[i, j] = recipes.Count;
-                fullUpgradeCountArr[MatrixCount, j] += recipes.Count;
-                fullUpgradeCountArr[i, RecipeCount] += recipes.Count;
-                fullUpgradeCountArr[MatrixCount, RecipeCount] += recipes.Count;
+                ERecipe type = RecipeTypes[j];
+                (int unlocked, int maxed, int total) = counts[(matrixID, type)];
+                totalCountArr[i, j] = total;
+                totalCountArr[MatrixCount, j] += total;
+                totalCountArr[i, RecipeCount] += total;
+                totalCountArr[MatrixCount, RecipeCount] += total;
+                unlockCountArr[i, j] = unlocked;
+                unlockCountArr[MatrixCount, j] += unlocked;
+                unlockCountArr[i, RecipeCount] += unlocked;
+                unlockCountArr[MatrixCount, RecipeCount] += unlocked;
+                fullUpgradeCountArr[i, j] = maxed;
+                fullUpgradeCountArr[MatrixCount, j] += maxed;
+                fullUpgradeCountArr[i, RecipeCount] += maxed;
+                fullUpgradeCountArr[MatrixCount, RecipeCount] += maxed;
             }
         }
 

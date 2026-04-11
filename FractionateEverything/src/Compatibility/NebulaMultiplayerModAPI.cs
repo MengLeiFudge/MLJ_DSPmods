@@ -4,6 +4,7 @@ using System.Reflection;
 using BepInEx.Bootstrap;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -132,12 +133,13 @@ public class RecipeChangePacket {
 public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacket> {
     public override void ProcessPacket(RecipeChangePacket packet, INebulaConnection conn) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>((ERecipe)packet.eRecipe, packet.inputId);
+        RecipeGrowthContext context = RecipeGrowthManager.BuildContext();
         switch (packet.packetType) {
             case 1:
-                recipe.RewardThis();
+                RecipeGrowthExecutor.ApplyDrawReward(recipe, context);
                 break;
             case 2:
-                recipe.ChangeLevelTo(packet.intVal);
+                RecipeGrowthExecutor.SetLevelForSandbox(recipe, packet.intVal, context);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {

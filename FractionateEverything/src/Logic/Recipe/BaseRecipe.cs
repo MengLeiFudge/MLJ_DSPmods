@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility;
 using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
 using NebulaAPI;
 using static FE.Utils.Utils;
 
@@ -23,7 +24,7 @@ public abstract class BaseRecipe(
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
-                              + (Level > 0 ? $"+ {Level}" : "");
+                              + (Unlocked ? $" Lv{Level}" : "");
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
 
     #region 配方类型、输入输出
@@ -48,7 +49,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public int MatrixID = 0;
 
-    public bool FullUpgrade => Level >= 10;
+    public bool FullUpgrade => IsMaxLevel;
     /// <summary>
     /// 配方成功率
     /// </summary>
@@ -58,13 +59,7 @@ public abstract class BaseRecipe(
     /// </summary>
     public float DestroyRatio {
         get {
-            float raw = Level switch {
-        < 7 => 0.04f,
-        < 8 => 0.03f,
-        < 9 => 0.02f,
-        < 10 => 0.01f,
-        _ => 0f,
-            };
+            float raw = 0.04f;
             float reduce = GachaGalleryBonusManager.GetDestroyReduction(RecipeType);
             float result = raw - reduce;
             return result > 0f ? result : 0f;
@@ -88,12 +83,12 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 原料不消耗概率
     /// </summary>
-    public float RemainInputRatio => Level * 0.08f;
+    public float RemainInputRatio => RecipeGrowthQueries.GetSnapshot(this).RemainInputRatio;
 
     /// <summary>
     /// 产物翻倍概率
     /// </summary>
-    public float DoubleOutputRatio => Level * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(RecipeType);
+    public float DoubleOutputRatio => RecipeGrowthQueries.GetSnapshot(this).DoubleOutputRatio;
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -196,70 +191,31 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方等级，也代表重复抽取到改配方的次数
     /// </summary>
-    public int Level { get; set; } = -1;
+    public int Level => RecipeGrowthQueries.GetLevel(this);
     /// <summary>
     /// 是否未解锁
     /// </summary>
-    public bool Locked => Level < 0;
+    public bool Locked => !Unlocked;
     /// <summary>
     /// 是否已解锁
     /// </summary>
-    public bool Unlocked => Level >= 0;
+    public bool Unlocked => RecipeGrowthQueries.IsUnlocked(this);
     /// <summary>
     /// 等级是否已达上限
     /// </summary>
-    public bool IsMaxLevel => Level >= 10;
+    public bool IsMaxLevel => RecipeGrowthQueries.IsMaxed(this);
 
     public static int GetOpeningPoolInitialLevelByMatrix(int matrixId) {
-        return ItemManager.GetMatrixStageIndex(matrixId) switch {
-            0 => 6,
-            1 => 3,
-            2 => 2,
-            3 => 1,
-            _ => 0,
-        };
+        return RecipeGrowthRules.GetDrawUnlockLevel(matrixId);
     }
 
-    public int GetOpeningPoolInitialLevel() => GetOpeningPoolInitialLevelByMatrix(MatrixID);
+    public int GetOpeningPoolInitialLevel() => RecipeGrowthRules.GetStageBaselineLevel(MatrixID);
 
     /// <summary>
-    /// 旧版回响数据，仅为兼容旧存档保留。
-    /// 2.3 主循环不再消费该字段。
-    /// </summary>
-    public int EchoLevel { get; private set; } = 0;
-
-    /// <summary>
-    /// 旧版回响加成接口。
-    /// 2.3 中已冻结，不再向成功率提供额外增益。
-    /// </summary>
-    public float EchoBonus => 0f;
-
-    /// <summary>
-    /// 旧版退火接口。
-    /// 2.3 中已冻结，保留方法签名仅为兼容旧代码路径。
-    /// </summary>
-    public bool Anneal() {
-        return false;
-    }
-
-    public (int itemId, int count) GetAnnealCost() {
-        return (0, 0);
-    }
-
-    /// <summary>
-    /// 通过抽奖获取到该配方。
-    /// 如果配方未解锁，则解锁此配方；如果已解锁，则等级+1，并检查是否可突破。
+    /// 旧调用仍可走这里，但真正的成长状态已经转移到 RecipeGrowthExecutor。
     /// </summary>
     public void RewardThis(bool manual = false) {
-        lock (this) {
-            if (Locked) {
-                Level = 0;
-            } else if (!IsMaxLevel) {
-                Level++;
-            } else {
-                return;
-            }
-        }
+        RecipeGrowthExecutor.ApplyDrawReward(this, RecipeGrowthManager.BuildContext(manual));
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 1));
         }
@@ -269,9 +225,7 @@ public abstract class BaseRecipe(
     /// 沙盒模式修改等级
     /// </summary>
     public void ChangeLevelTo(int targetLevel, bool manual = false) {
-        lock (this) {
-            Level = Math.Max(-1, Math.Min(10, targetLevel));
-        }
+        RecipeGrowthExecutor.SetLevelForSandbox(this, targetLevel, RecipeGrowthManager.BuildContext(manual));
         if (NebulaModAPI.IsMultiplayerActive && manual) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(new RecipeChangePacket(RecipeType, inputID, 2,
                 targetLevel));
@@ -304,8 +258,8 @@ public abstract class BaseRecipe(
                     else LogWarning($"Output {id} not found in {TypeName} append outputs");
                 }
             }),
-            ("Meta", br => { Level = Math.Max(-1, Math.Min(10, br.ReadInt32())); }),
-            ("EchoLevel", br => { EchoLevel = br.ReadInt32(); })
+            ("Meta", br => { RecipeGrowthManager.ImportLegacyState(this, br.ReadInt32()); }),
+            ("EchoLevel", br => { br.ReadInt32(); })
         );
     }
 
@@ -324,11 +278,8 @@ public abstract class BaseRecipe(
                     bw.Write(info.OutputID);
                     bw.Write(info.OutputTotalCount);
                 }
-            }),
-            ("Meta", bw => { bw.Write(Level); }),
-            ("EchoLevel", bw => { bw.Write(EchoLevel); })
+            })
         );
-        // 子类特定数据由重写的方法在 Export 之后或通过额外的 Block 处理
     }
 
     public virtual void IntoOtherSave() {
@@ -338,7 +289,6 @@ public abstract class BaseRecipe(
         foreach (OutputInfo info in OutputAppend) {
             info.OutputTotalCount = 0;
         }
-        Level = -1;
     }
 
     #endregion

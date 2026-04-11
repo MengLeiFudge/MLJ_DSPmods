@@ -767,7 +767,7 @@ public class GetDspData : BaseUnityPlugin {
             //↓测试环境调整↓
             // recipe.SandBoxMaxUpDowngrade(true);
             building.Level(12);
-            recipe.Level = 10;
+            recipe.ChangeLevelTo(5);
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
