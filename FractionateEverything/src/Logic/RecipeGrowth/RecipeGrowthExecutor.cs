@@ -185,6 +185,9 @@ public static class RecipeGrowthExecutor {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
         state.Level = RecipeGrowthRules.ClampLevel(rule, targetLevel);
+        // 沙盒调级应写入“目标等级”本身，避免残留经验/保底把等级再次自动推回去。
+        state.GrowthExp = 0;
+        state.PityProgress = 0;
         if (state.Level > 0) {
             state.UnlockSourceFlags |= RecipeUnlockSourceFlags.Sandbox;
         }
