@@ -10,6 +10,7 @@ using CommonAPI;
 using crecheng.DSPModSave;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using GetDspData.Utils;
 using HarmonyLib;
 using Newtonsoft.Json;
@@ -767,7 +768,7 @@ public class GetDspData : BaseUnityPlugin {
             //↓测试环境调整↓
             // recipe.SandBoxMaxUpDowngrade(true);
             building.Level(12);
-            recipe.ChangeLevelTo(5);
+            RecipeGrowthExecutor.SetLevelForSandbox(recipe, 5, RecipeGrowthManager.BuildContext());
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);

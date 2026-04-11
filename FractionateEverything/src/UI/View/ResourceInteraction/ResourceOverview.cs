@@ -1,5 +1,7 @@
+using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -103,11 +105,15 @@ public static class ResourceOverview {
     private static void RefreshDarkFogSection() {
         txtDarkFogTitle.text = "黑雾支线".Translate();
         string stageName = GetStageText(DarkFogCombatManager.GetCurrentStage());
+        var snapshots = RecipeGrowthQueries.GetDarkFogProgressSnapshots();
+        int totalRecipes = snapshots.Count;
+        int unlockedRecipes = snapshots.Count(snapshot => snapshot.IsUnlocked);
+        int maxedRecipes = snapshots.Count(snapshot => snapshot.IsMaxed);
 
         darkFogLines[0].text = $"{ "黑雾阶段".Translate() }：{stageName}";
         darkFogLines[1].text =
             $"{ "黑雾战况".Translate() }：{ "黑雾地面基地".Translate() } {DarkFogCombatManager.GetAliveGroundBaseCount()}    { "黑雾星域蜂巢".Translate() } {DarkFogCombatManager.GetAliveHiveCount()}    { "黑雾物资层级".Translate() } {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
-        darkFogLines[2].text = $"{ "黑雾成长报价".Translate() }：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    { "黑雾市场特单".Translate() }：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条";
+        darkFogLines[2].text = $"{ "黑雾成长报价".Translate() }：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    { "黑雾市场特单".Translate() }：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
         darkFogLines[3].text = $"{ "黑雾增强层".Translate() }：{BuildEnhancedLayerText()}";
         darkFogLines[4].text = $"{ "黑雾下一阶段".Translate() }：{BuildNextMilestoneText()}";
     }

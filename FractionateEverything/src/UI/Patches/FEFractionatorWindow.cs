@@ -5,6 +5,7 @@ using System.Text;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -857,7 +858,7 @@ public static class FEFractionatorWindow {
         float pointsBonus = (float)MaxTableMilli(avgInc);
 
         float recipeSuccessRatio = 0f, mainOutputBonus = 1f, destroyRatio = 0f;
-        if (recipe != null && !recipe.Locked) {
+        if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
             recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + pointsBonus);
             mainOutputBonus = 1 + recipe.DoubleOutputRatio;
             destroyRatio = recipe.DestroyRatio;
@@ -1002,7 +1003,7 @@ public static class FEFractionatorWindow {
         int mainCount = 0, sideCount = 0;
         float mainSuccessSum = 0f;
 
-        if (recipe != null && !recipe.Locked) {
+        if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
@@ -1048,10 +1049,10 @@ public static class FEFractionatorWindow {
             fluidRightText.gameObject.SetActive(true);
             if (recipe == null) {
                 fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方不存在".Translate()}</color>";
-            } else if (recipe.Locked) {
+            } else if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
                 fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
             } else {
-                int recipeLevel = recipe.Level;
+                int recipeLevel = RecipeGrowthQueries.GetLevel(recipe);
                 bool hasDestroy = destroyRatio > 0f;
                 string destroyStr = hasDestroy ? destroyRatio.FormatP() : "";
                 fluidRightText.text = recipeLevel > 0

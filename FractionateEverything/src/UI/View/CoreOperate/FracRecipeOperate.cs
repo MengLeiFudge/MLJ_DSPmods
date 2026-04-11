@@ -36,7 +36,7 @@ public static class FracRecipeOperate {
             SelectedItem = item;
         }, true, item => {
             BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
-            return recipe != null && (showLocked || recipe.Unlocked);
+            return recipe != null && (showLocked || RecipeGrowthQueries.IsUnlocked(recipe));
         });
     }
 
@@ -165,13 +165,31 @@ public static class FracRecipeOperate {
         // 沙盒模式调试按钮
         if (GameMain.sandboxToolsEnabled) {
             recipeSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
-                onClick: () => { SelectedRecipe?.ChangeLevelTo(0); });
+                onClick: () => {
+                    if (SelectedRecipe != null) {
+                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
+                    }
+                });
             recipeSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
-                onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) - 1); });
+                onClick: () => {
+                    if (SelectedRecipe != null) {
+                        int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
+                    }
+                });
             recipeSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
-                onClick: () => { SelectedRecipe?.ChangeLevelTo((SelectedRecipe?.Level ?? 0) + 1); });
+                onClick: () => {
+                    if (SelectedRecipe != null) {
+                        int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
+                    }
+                });
             recipeSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
-                onClick: () => { SelectedRecipe?.ChangeLevelTo(5); });
+                onClick: () => {
+                    if (SelectedRecipe != null) {
+                        RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
+                    }
+                });
             y += 36f;
         }
 
@@ -225,10 +243,11 @@ public static class FracRecipeOperate {
         btnSelectedItem.Proto = SelectedItem;
         ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
+        RecipeDisplaySnapshot snapshot = recipe == null ? default : RecipeGrowthQueries.GetSnapshot(recipe);
         ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
         int line = 0;
         incSlider.gameObject.SetActive(false);
-        RefreshSandboxButtons(recipe);
+        RefreshSandboxButtons(recipe, snapshot);
 
         // 隐藏分节标签
         txtMainLabel.gameObject.SetActive(false);
@@ -236,7 +255,7 @@ public static class FracRecipeOperate {
 
         if (recipe == null) {
             ShowTextLine(line++, "配方不存在！".Translate().WithColor(Red));
-        } else if (recipe.Locked) {
+        } else if (!snapshot.IsUnlocked) {
             string headerLocked = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
             int recipeColor = recipe.MatrixID - I电磁矩阵;
             ShowTextLine(line++, $"{headerLocked.WithColor(recipeColor)} {"分馏配方未解锁".Translate().WithColor(Red)}");
@@ -269,7 +288,7 @@ public static class FracRecipeOperate {
                         .WithColor(Gray));
 
                 // 损毁率
-                float baseDestroyRatio = GetBaseDestroyRatio(recipe);
+                float baseDestroyRatio = snapshot.DestroyRatio + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
                 float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
                 string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
                 if (destroyReduction > 0f) {
@@ -344,21 +363,21 @@ public static class FracRecipeOperate {
         }
 
         // 更新右列：配方强化等级表
-        UpdateLevelColumn(recipe);
+        UpdateLevelColumn(recipe, snapshot);
     }
 
     /// <summary>
     /// 沙盒页顶部四个按钮统一按当前配方的真实等级边界刷新状态。
     /// </summary>
-    private static void RefreshSandboxButtons(BaseRecipe recipe) {
+    private static void RefreshSandboxButtons(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
         if (!GameMain.sandboxToolsEnabled) {
             return;
         }
 
         bool hasRecipe = recipe != null;
-        int recipeLevel = recipe?.Level ?? 0;
-        bool unlocked = recipe?.Unlocked ?? false;
-        int maxLevel = recipe == null ? 0 : RecipeGrowthQueries.GetMaxLevel(recipe);
+        int recipeLevel = hasRecipe ? snapshot.Level : 0;
+        bool unlocked = hasRecipe && snapshot.IsUnlocked;
+        int maxLevel = hasRecipe ? snapshot.MaxLevel : 0;
 
         recipeSandboxBtn[0].button.interactable = unlocked && recipeLevel > 0;
         recipeSandboxBtn[1].button.interactable = hasRecipe && recipeLevel > 0;
@@ -368,8 +387,8 @@ public static class FracRecipeOperate {
 
     // ==================== 右列：强化等级表 ====================
 
-    private static void UpdateLevelColumn(BaseRecipe recipe) {
-        int currentLevel = recipe == null ? 0 : recipe.Level;
+    private static void UpdateLevelColumn(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
+        int currentLevel = recipe == null ? 0 : snapshot.Level;
 
         // 标题行（放在 txtRecipeInfoBaseY）
         string headerText;
@@ -379,21 +398,21 @@ public static class FracRecipeOperate {
                 text.text = "";
             }
             return;
-        } else if (recipe.Locked) {
+        } else if (!snapshot.IsUnlocked) {
             headerText = "配方未解锁".Translate();
         } else {
             headerText = $"{"当前配方等级".Translate()} Lv{currentLevel}";
         }
-        txtLevelInfo[0].text = headerText.WithColor(recipe.Unlocked ? Orange : Red);
+        txtLevelInfo[0].text = headerText.WithColor(snapshot.IsUnlocked ? Orange : Red);
         NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, txtRecipeInfoBaseY);
 
-        int maxLevel = RecipeGrowthQueries.GetMaxLevel(recipe);
+        int maxLevel = snapshot.MaxLevel;
         for (int lvl = 0; lvl <= maxLevel; lvl++) {
             int lineIdx = lvl + 1;
-            string lvlText = GetLevelDescription(recipe, lvl);
+            string lvlText = snapshot.LevelDescriptions[lvl];
 
             string coloredText;
-            if (!recipe.Unlocked) {
+            if (!snapshot.IsUnlocked) {
                 coloredText = lvlText.WithColor(Gray);// 未解锁：全灰
             } else if (lvl == currentLevel) {
                 coloredText = lvlText.WithColor(Orange);// 当前等级：橙色高亮
@@ -412,17 +431,6 @@ public static class FracRecipeOperate {
         for (int lineIdx = maxLevel + 2; lineIdx < LevelLineCount; lineIdx++) {
             txtLevelInfo[lineIdx].text = "";
         }
-    }
-
-    private static string GetLevelDescription(BaseRecipe recipe, int level) {
-        if (level == 0) {
-            return $"Lv0  {"未解锁".Translate()}";
-        }
-        int effectiveLegacyLevel = RecipeGrowthRules.GetEffectiveLegacyLevel(recipe, level);
-        int remainPct = Mathf.RoundToInt(effectiveLegacyLevel * 8f);
-        int doublePct = Mathf.RoundToInt(effectiveLegacyLevel * 5f);
-        string maxSuffix = level >= RecipeGrowthQueries.GetMaxLevel(recipe) ? "  MAX".WithColor(Gold) : "";
-        return $"Lv{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{maxSuffix}";
     }
 
     private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;

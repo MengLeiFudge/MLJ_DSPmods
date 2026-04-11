@@ -203,6 +203,16 @@ public static class GachaService {
             return false;
         }
 
+        if (IsDarkFogCatchupOffer(offer)) {
+            int appliedRecipeCount = RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(
+                offer.OutputId,
+                offer.OutputCount,
+                RecipeGrowthManager.BuildContext(manual: true));
+            rewardItemId = offer.OutputId;
+            rewardCount = appliedRecipeCount > 0 ? offer.OutputCount : 0;
+            return true;
+        }
+
         AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
         rewardItemId = offer.OutputId;
         rewardCount = offer.OutputCount;
@@ -246,6 +256,11 @@ public static class GachaService {
                || offer.OutputId == IFE残片;
     }
 
+    public static bool IsDarkFogCatchupOffer(GachaGrowthOffer offer) {
+        return offer.ExtraCostItemId == I黑雾矩阵
+               && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId);
+    }
+
     private static IReadOnlyList<GachaGrowthOffer> BuildNormalGrowthOffers() {
         var offers = new List<GachaGrowthOffer> {
             new(5, 0, IFE残片, 50),
@@ -278,21 +293,26 @@ public static class GachaService {
         int enhancedNodeCount = DarkFogCombatManager.GetEnhancedNodeCount();
 
         if (stage >= EDarkFogCombatStage.Signal) {
-            offers.Add(new(18 + pointBaseOffset, 12 + fragmentBaseOffset, I能量碎片, 20,
+            offers.Add(new(18 + pointBaseOffset, 12 + fragmentBaseOffset, I能量碎片,
+                RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.Signal),
                 GachaFocusType.RectificationEconomy, I黑雾矩阵, 1));
         }
         if (stage >= EDarkFogCombatStage.GroundSuppression) {
-            offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I物质重组器, 5,
+            offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I物质重组器,
+                RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.GroundSuppression),
                 GachaFocusType.ConversionLeap, I黑雾矩阵, 2));
-            offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I硅基神经元, 4,
+            offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I硅基神经元,
+                RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.GroundSuppression),
                 GachaFocusType.ProcessOptimization, I黑雾矩阵, 2));
         }
         if (stage >= EDarkFogCombatStage.StellarHunt) {
-            offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵奇点, 2,
+            offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵奇点,
+                RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.StellarHunt),
                 GachaFocusType.RectificationEconomy, I黑雾矩阵, 3));
         }
         if (stage >= EDarkFogCombatStage.Singularity) {
-            offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I核心素, 1,
+            offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I核心素,
+                RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.Singularity),
                 GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
         }
         if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity) {
@@ -322,7 +342,7 @@ public static class GachaService {
             if (stageIndex == currentStageIndex) {
                 int weight = GetRecipeWeight(recipe, currentStageIndex);
                 AddWeighted(currentStageRecipes, itemId, weight);
-                if (!recipe.Unlocked) {
+                if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
                     AddWeighted(lockedCurrentStageRecipes, itemId, weight + 1);
                 }
             }
@@ -369,38 +389,16 @@ public static class GachaService {
     }
 
     private static void FillProtoLoopPool(GachaPool pool) {
-        if (IsSpeedrunMode) {
-            int focusedEmbryo = GetFocusedEmbryoReward();
-            AddWeighted(pool.PoolC, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 2);
-            AddWeighted(pool.PoolB, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 3);
-            AddWeighted(pool.PoolA, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 4);
-            AddWeighted(pool.PoolA, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚));
-            AddWeighted(pool.PoolS, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚) + 3);
-            AddWeighted(pool.PoolS, focusedEmbryo, GetEmbryoWeight(focusedEmbryo) + 4);
-            return;
+        List<int> weightedEmbryos = [];
+        for (int itemId = IFE交互塔原胚; itemId <= IFE精馏塔原胚; itemId++) {
+            AddWeighted(weightedEmbryos, itemId, GetEmbryoWeight(itemId));
         }
+        AddWeighted(weightedEmbryos, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚));
 
-        AddWeighted(pool.PoolC, IFE交互塔原胚, GetEmbryoWeight(IFE交互塔原胚));
-        AddWeighted(pool.PoolC, IFE矿物复制塔原胚, GetEmbryoWeight(IFE矿物复制塔原胚));
-
-        AddWeighted(pool.PoolB, IFE点数聚集塔原胚, GetEmbryoWeight(IFE点数聚集塔原胚));
-        AddWeighted(pool.PoolB, IFE交互塔原胚, GetEmbryoWeight(IFE交互塔原胚));
-
-        AddWeighted(pool.PoolA, IFE转化塔原胚, GetEmbryoWeight(IFE转化塔原胚));
-        AddWeighted(pool.PoolA, IFE精馏塔原胚, GetEmbryoWeight(IFE精馏塔原胚));
-
-        AddWeighted(pool.PoolS, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚) + 1);
-        AddWeighted(pool.PoolS, GetFocusedEmbryoReward(), GetEmbryoWeight(GetFocusedEmbryoReward()));
-
-        if (pool.PoolB.Count == 0) {
-            pool.PoolB.AddRange(pool.PoolC);
-        }
-        if (pool.PoolA.Count == 0) {
-            pool.PoolA.AddRange(pool.PoolB);
-        }
-        if (pool.PoolS.Count == 0) {
-            pool.PoolS.AddRange(pool.PoolA);
-        }
+        pool.PoolC.AddRange(weightedEmbryos);
+        pool.PoolB.AddRange(weightedEmbryos);
+        pool.PoolA.AddRange(weightedEmbryos);
+        pool.PoolS.AddRange(weightedEmbryos);
     }
 
     private static void FillGrowthPool(GachaPool pool) {
@@ -438,7 +436,7 @@ public static class GachaService {
 
                 hash = hash * 31 + recipe.InputID;
                 hash = hash * 31 + (int)recipe.RecipeType;
-                hash = hash * 31 + recipe.Level;
+                hash = hash * 31 + RecipeGrowthQueries.GetLevel(recipe);
                 hash = hash * 31 + recipe.MatrixID;
             }
         }
@@ -459,65 +457,76 @@ public static class GachaService {
     }
 
     private static int GetRecipeWeight(BaseRecipe recipe, int currentStageIndex) {
-        int weight = 1;
-        GachaFocusType recipeFocus = recipe.RecipeType switch {
-            ERecipe.MineralCopy => GachaFocusType.MineralExpansion,
-            ERecipe.Conversion => GachaFocusType.ConversionLeap,
-            _ => GachaFocusType.Balanced,
+        RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+        float weight = family switch {
+            RecipeFamily.MineralCopyNormal => IsSpeedrunMode ? 120f : 100f,
+            RecipeFamily.ConversionMaterialNormal => IsSpeedrunMode ? 120f : 100f,
+            RecipeFamily.ConversionBuilding => IsSpeedrunMode ? 32f : 40f,
+            _ => 1f,
         };
 
-        if (recipeFocus == GachaManager.CurrentFocus) {
-            weight += IsSpeedrunMode ? 4 + GachaManager.GetFocusAffinity(recipeFocus) : 2;
-        } else if (IsSpeedrunMode && GachaManager.CurrentFocus != GachaFocusType.Balanced) {
-            weight = Math.Max(1, weight - 1);
+        int recipeStageIndex = GetMatrixStageIndex(recipe.MatrixID);
+        if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
+            weight *= IsSpeedrunMode ? 1.8f : 1.5f;
+        }
+        if (recipeStageIndex == currentStageIndex) {
+            weight *= IsSpeedrunMode ? 1.5f : 1.3f;
+        } else if (IsSpeedrunMode && recipeStageIndex == currentStageIndex - 1 && !RecipeGrowthQueries.IsMaxed(recipe)) {
+            weight *= 1.25f;
         }
 
-        if (GachaManager.CurrentFocus == GachaFocusType.ProcessOptimization
-            && GetMatrixStageIndex(recipe.MatrixID) == currentStageIndex) {
-            weight += IsSpeedrunMode ? 3 : 1;
+        weight *= GetOpeningRecipeFocusMultiplier(recipe, currentStageIndex);
+
+        if (RecipeGrowthQueries.IsMaxed(recipe)) {
+            weight *= IsSpeedrunMode ? 0.20f : 0.35f;
         }
-        if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
-            weight += IsSpeedrunMode ? 4 : 2;
-        }
-        if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !recipe.Unlocked) {
-            weight += IsSpeedrunMode ? 4 : 2;
-        }
-        if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy && recipe.IsMaxLevel) {
-            weight += IsSpeedrunMode ? 2 : 1;
-        }
-        return Math.Max(1, weight);
+
+        return Mathf.Max(1, Mathf.RoundToInt(weight));
     }
 
     private static int GetEmbryoWeight(int itemId) {
-        int weight = 1;
-        switch (GachaManager.CurrentFocus) {
-            case GachaFocusType.MineralExpansion when itemId == IFE矿物复制塔原胚:
-                weight += 2;
-                break;
-            case GachaFocusType.ConversionLeap when itemId == IFE转化塔原胚:
-                weight += 2;
-                break;
-            case GachaFocusType.LogisticsInteraction when itemId == IFE交互塔原胚:
-                weight += 3;
-                break;
-            case GachaFocusType.EmbryoCycle when itemId == IFE分馏塔定向原胚:
-                weight += 4;
-                break;
-            case GachaFocusType.ProcessOptimization when itemId == IFE点数聚集塔原胚:
-                weight += 2;
-                break;
-            case GachaFocusType.RectificationEconomy when itemId == IFE精馏塔原胚:
-                weight += 3;
-                break;
+        float weight;
+        if (itemId == IFE分馏塔定向原胚) {
+            weight = IsSpeedrunMode ? 80f : 65f;
+        } else if (itemId == GetFocusedEmbryoReward()) {
+            weight = IsSpeedrunMode ? 115f : 100f;
+        } else {
+            weight = IsSpeedrunMode ? 85f : 80f;
         }
-        if (IsSpeedrunMode) {
-            if (itemId == GetFocusedEmbryoReward()) {
-                weight += 4 + GachaManager.GetFocusAffinity(GachaManager.CurrentFocus);
-            } else if (GachaManager.CurrentFocus != GachaFocusType.Balanced) {
-                weight = Math.Max(1, weight - 1);
-            }
+
+        if (!IsSpeedrunMode
+            && GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy
+            && itemId == IFE精馏塔原胚) {
+            weight *= 1.3f;
         }
-        return Math.Max(1, weight);
+
+        return Mathf.Max(1, Mathf.RoundToInt(weight));
+    }
+
+    private static float GetOpeningRecipeFocusMultiplier(BaseRecipe recipe, int currentStageIndex) {
+        GachaFocusType focus = GachaManager.CurrentFocus;
+        if (focus == GachaFocusType.Balanced) {
+            return 1f;
+        }
+
+        float mainMultiplier = IsSpeedrunMode ? 1.6f : 1.4f;
+        float sideMultiplier = IsSpeedrunMode ? 1.3f : 1.2f;
+
+        if (focus == GachaFocusType.ProcessOptimization && GetMatrixStageIndex(recipe.MatrixID) == currentStageIndex) {
+            return sideMultiplier;
+        }
+        if (focus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
+            return mainMultiplier;
+        }
+        if (focus == GachaFocusType.EmbryoCycle && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+            return sideMultiplier;
+        }
+
+        return recipe.RecipeType switch {
+            ERecipe.MineralCopy when focus == GachaFocusType.MineralExpansion => mainMultiplier,
+            ERecipe.Conversion when focus == GachaFocusType.ConversionLeap => mainMultiplier,
+            _ => 1f,
+        };
     }
 
     private static int GetFocusedEmbryoReward() {
@@ -614,7 +623,7 @@ public static class GachaService {
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
         }
 
-        bool wasLocked = recipe.Locked;
+        bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
         RecipeGrowthResult growthResult = RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
 
         if (growthResult.FragmentReward > 0) {
@@ -624,7 +633,7 @@ public static class GachaService {
         }
 
         return new GachaRewardResolution(wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade, 0,
-            recipe.Level);
+            RecipeGrowthQueries.GetLevel(recipe));
     }
 
     private static void EnsureRecipeRewardIndex() {
@@ -739,14 +748,14 @@ public static class GachaService {
             if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !recipe.Unlocked) {
+            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !RecipeGrowthQueries.IsUnlocked(recipe)) {
                 return GachaFocusMatchType.Main;
             }
             if (GachaManager.CurrentFocus == GachaFocusType.ProcessOptimization
                 && GetMatrixStageIndex(recipe.MatrixID) == GetCurrentProgressStageIndex()) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy && recipe.IsMaxLevel) {
+            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy && RecipeGrowthQueries.IsMaxed(recipe)) {
                 return GachaFocusMatchType.Side;
             }
             return recipe.RecipeType switch {

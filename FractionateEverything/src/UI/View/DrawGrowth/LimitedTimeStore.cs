@@ -150,7 +150,13 @@ public static class LimitedTimeStore {
         }
 
         string itemName = LDB.items.Select(rewardItemId)?.name ?? rewardItemId.ToString();
-        UIRealtimeTip.Popup($"获得 {itemName} x{rewardCount}");
+        if (GachaService.IsDarkFogCatchupOffer(offer)) {
+            UIRealtimeTip.Popup(rewardCount > 0
+                ? $"对应 {itemName} 黑雾配方成长 +{rewardCount}"
+                : $"对应 {itemName} 黑雾配方暂未推进");
+        } else {
+            UIRealtimeTip.Popup($"获得 {itemName} x{rewardCount}");
+        }
         UpdateUI();
     }
 
@@ -237,6 +243,9 @@ public static class LimitedTimeStore {
 
     private static string GetOfferRewardText(GachaGrowthOffer offer) {
         string itemName = LDB.items.Select(offer.OutputId)?.name ?? offer.OutputId.ToString();
+        if (GachaService.IsDarkFogCatchupOffer(offer)) {
+            return $"{itemName} 配方成长 +{offer.OutputCount}";
+        }
         return $"{itemName} x{offer.OutputCount}";
     }
 
