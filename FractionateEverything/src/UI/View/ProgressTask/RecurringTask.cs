@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
+using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
@@ -322,15 +323,11 @@ public static class RecurringTask {
     }
 
     private static long GetFullyUpgradedRecipeCount() {
-        return GetRecipesByType(ERecipe.BuildingTrain).Count(r => r.IsMaxLevel)
-               + GetRecipesByType(ERecipe.MineralCopy).Count(r => r.IsMaxLevel)
-               + GetRecipesByType(ERecipe.Conversion).Count(r => r.IsMaxLevel);
+        return RecipeGrowthQueries.GetMaxedCount(ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.Conversion);
     }
 
     private static long GetUnlockedRecipeCount() {
-        return GetRecipesByType(ERecipe.BuildingTrain).Count(r => r.Unlocked)
-               + GetRecipesByType(ERecipe.MineralCopy).Count(r => r.Unlocked)
-               + GetRecipesByType(ERecipe.Conversion).Count(r => r.Unlocked);
+        return RecipeGrowthQueries.GetUnlockedCount(ERecipe.BuildingTrain, ERecipe.MineralCopy, ERecipe.Conversion);
     }
 
     private static long GetProgress(int index) {

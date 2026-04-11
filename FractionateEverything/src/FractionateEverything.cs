@@ -203,6 +203,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.SetFractionatorCacheSize();
         //AddFracRecipes用到了Init生成的数据
         RecipeManager.AddFracRecipes();
+        RecipeGrowthManager.InitializeFromRecipes();
         RecipeManager.AddVanillaRecipes();
         //CalculateItemModSaveCount用到了CalculateItemValues生成的数据
         StationManager.CalculateItemModSaveCount();
@@ -257,6 +258,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         }
         r.ReadBlocks(
             ("Recipe", RecipeManager.Import),
+            ("RecipeGrowth", RecipeGrowthManager.Import),
             ("Building", BuildingManager.Import),
             ("Item", ItemManager.Import),
             ("Gacha", GachaManager.Import),
@@ -273,6 +275,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         w.Write(10);// version，固定为10
         w.WriteBlocks(
             ("Recipe", RecipeManager.Export),
+            ("RecipeGrowth", RecipeGrowthManager.Export),
             ("Building", BuildingManager.Export),
             ("Item", ItemManager.Export),
             ("Gacha", GachaManager.Export),
@@ -298,6 +301,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// </summary>
     private void BaseIntoOtherSave() {
         RecipeManager.IntoOtherSave();
+        RecipeGrowthManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         GachaManager.IntoOtherSave();

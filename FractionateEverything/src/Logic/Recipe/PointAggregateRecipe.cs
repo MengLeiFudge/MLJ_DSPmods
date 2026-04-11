@@ -17,9 +17,7 @@ public class PointAggregateRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (ItemProto item in LDB.items.dataArray) {
-            PointAggregateRecipe recipe = new(item.ID, 0.2f, [new(1.0f, item.ID, 1)], []) {
-                Level = 10,
-            };
+            PointAggregateRecipe recipe = new(item.ID, 0.2f, [new(1.0f, item.ID, 1)], []);
             AddRecipe(recipe);
         }
     }
@@ -73,7 +71,6 @@ public class PointAggregateRecipe : BaseRecipe {
     public override void Import(BinaryReader r) {
         base.Import(r);
         r.ReadBlocks();
-        Level = 10;
     }
 
     public override void Export(BinaryWriter w) {
@@ -83,7 +80,6 @@ public class PointAggregateRecipe : BaseRecipe {
 
     public override void IntoOtherSave() {
         base.IntoOtherSave();
-        Level = 10;
     }
 
     #endregion
