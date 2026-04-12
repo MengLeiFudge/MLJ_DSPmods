@@ -100,6 +100,7 @@ public static class Achievements {
     private static bool configLoaded;
     private static int panelOpenCount;
 
+    private static PageLayout.HeaderRefs header;
     private static Text txtTitle;
     private static Text txtUnlockedSummary;
     private static Text txtHiddenSummary;
@@ -828,6 +829,15 @@ public static class Achievements {
         SyncCurrentPageFromSharedState();
         window = trans;
         tab = trans;
+        header = PageLayout.CreatePageHeader(wnd, tab, "成就系统", "", "achievements-header");
+        txtTitle = header.Title;
+
+        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "achievements-summary-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 82f, true);
+        RectTransform listCard = PageLayout.CreateContentCard(tab, "achievements-list-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 82f, PageLayout.DesignWidth, 495f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(tab, "achievements-footer-card",
+            PageLayout.HeaderHeight + PageLayout.Gap * 3f + 82f + 495f);
 
         txtAchievementNames = new Text[achievements.Length];
         txtAchievementDescs = new Text[achievements.Length];
@@ -836,22 +846,21 @@ public static class Achievements {
         rewardIcons = new MyImageButton[achievements.Length];
 
         float x = 0f;
-        float y = 18f + 7f;
+        float y = 16f;
 
-        txtTitle = wnd.AddText2(x, y, tab, "成就系统", 17, "txtAchievementTitle");
-        txtTitle.supportRichText = true;
-
-        txtUnlockedSummary = wnd.AddText2(x + 235f, y, tab, "动态刷新", 14, "txtAchievementUnlockedSummary");
+        txtUnlockedSummary = wnd.AddText2(x + 18f, y, summaryCard, "动态刷新", 14, "txtAchievementUnlockedSummary");
         txtUnlockedSummary.supportRichText = true;
 
-        y += 26f;
-        txtHiddenSummary = wnd.AddText2(x, y, tab, "动态刷新", 14, "txtAchievementHiddenSummary");
+        y += 28f;
+        txtHiddenSummary = wnd.AddText2(x + 18f, y, summaryCard, "动态刷新", 14, "txtAchievementHiddenSummary");
         txtHiddenSummary.supportRichText = true;
 
-        txtBonusSummary = wnd.AddText2(x + 235f, y, tab, "动态刷新", 14, "txtAchievementBonusSummary");
+        txtBonusSummary = wnd.AddText2(x + 398f, 16f, summaryCard, "动态刷新", 14, "txtAchievementBonusSummary");
         txtBonusSummary.supportRichText = true;
+        txtBonusSummary.alignment = TextAnchor.UpperLeft;
+        txtBonusSummary.rectTransform.sizeDelta = new Vector2(650f, 52f);
 
-        y += 30f;
+        y = 18f;
 
         listNameX = 0f;
         listNameW = 220f;
@@ -863,10 +872,10 @@ public static class Achievements {
         listStateX = 860f;
         listStateW = 180f;
 
-        wnd.AddText2(listNameX, y, tab, "成就", 14, "txtAchievementHeaderName");
-        wnd.AddText2(listDescX, y, tab, "描述", 14, "txtAchievementHeaderDesc");
-        wnd.AddText2(listRewardX, y, tab, "奖励", 14, "txtAchievementHeaderReward");
-        wnd.AddText2(listStateX, y, tab, "状态", 14, "txtAchievementHeaderState");
+        wnd.AddText2(listNameX, y, listCard, "成就", 14, "txtAchievementHeaderName");
+        wnd.AddText2(listDescX, y, listCard, "描述", 14, "txtAchievementHeaderDesc");
+        wnd.AddText2(listRewardX, y, listCard, "奖励", 14, "txtAchievementHeaderReward");
+        wnd.AddText2(listStateX, y, listCard, "状态", 14, "txtAchievementHeaderState");
 
         y += 26f;
         listStartY = y;
@@ -874,34 +883,33 @@ public static class Achievements {
         for (int i = 0; i < achievements.Length; i++) {
             int j = i;
 
-            txtAchievementNames[j] = wnd.AddText2(listNameX + x, y, tab, "动态刷新", 13, $"txtAchievementName{j}");
+            txtAchievementNames[j] = wnd.AddText2(listNameX + x, y, listCard, "动态刷新", 13, $"txtAchievementName{j}");
             txtAchievementNames[j].supportRichText = true;
             txtAchievementNames[j].rectTransform.sizeDelta = new Vector2(listNameW, 40f);
 
-            txtAchievementDescs[j] = wnd.AddText2(listDescX + x, y, tab, "动态刷新", 13, $"txtAchievementDesc{j}");
+            txtAchievementDescs[j] = wnd.AddText2(listDescX + x, y, listCard, "动态刷新", 13, $"txtAchievementDesc{j}");
             txtAchievementDescs[j].supportRichText = true;
             txtAchievementDescs[j].alignment = TextAnchor.UpperLeft;
             txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
 
-            rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, tab, null).WithSize(40f, 40f);
-            txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, tab, "动态刷新", 13,
+            rewardIcons[j] = wnd.AddImageButton(listRewardX + x, y, listCard, null).WithSize(40f, 40f);
+            txtAchievementRewards[j] = wnd.AddText2(listRewardTextX + x, y, listCard, "动态刷新", 13,
                 $"txtAchievementReward{j}");
             txtAchievementRewards[j].supportRichText = true;
             txtAchievementRewards[j].rectTransform.sizeDelta = new Vector2(listRewardTextW, 32f);
 
-            txtAchievementStates[j] = wnd.AddText2(listStateX + x, y, tab, "动态刷新", 13, $"txtAchievementState{j}");
+            txtAchievementStates[j] = wnd.AddText2(listStateX + x, y, listCard, "动态刷新", 13, $"txtAchievementState{j}");
             txtAchievementStates[j].supportRichText = true;
             txtAchievementStates[j].rectTransform.sizeDelta = new Vector2(listStateW, 32f);
 
             y += AchievementRowSpacing;
         }
 
-        float paginationY = listStartY + AchievementRowSpacing * RowsPerPage + 8f;
-        btnPrevPage = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, tab, "上一页", onClick: PrevPage);
-        txtPageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, tab, "");
+        btnPrevPage = wnd.AddButton(GetPosition(0, 3).Item1, 10f, footerCard, "上一页", onClick: PrevPage);
+        txtPageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, 16f, footerCard, "");
         txtPageIndicator.alignment = TextAnchor.MiddleCenter;
         txtPageIndicator.rectTransform.sizeDelta = new(200f, txtPageIndicator.rectTransform.sizeDelta.y);
-        btnNextPage = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, tab, "下一页", onClick: NextPage);
+        btnNextPage = wnd.AddButton(GetPosition(2, 3).Item1, 10f, footerCard, "下一页", onClick: NextPage);
     }
 
     private static bool IsPageVisible() {
@@ -922,6 +930,7 @@ public static class Achievements {
         int obtainedCount = cachedBonusSummary.ObtainedCount;
         int hiddenLockedCount = achievements.Length - obtainedCount;
 
+        txtTitle.text = "成就系统".Translate().WithColor(Orange);
         txtUnlockedSummary.text = string.Format("已获得成就".Translate(), obtainedCount, achievements.Length).WithColor(Orange);
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
         txtBonusSummary.text = string.Format("成就加成格式".Translate(),

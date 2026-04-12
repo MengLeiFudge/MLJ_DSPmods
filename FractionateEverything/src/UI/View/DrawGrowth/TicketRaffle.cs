@@ -18,9 +18,11 @@ public static class TicketRaffle {
     private sealed class RaffleTabUi {
         public int PoolId;
         public RectTransform Tab;
+        public PageLayout.HeaderRefs Header;
         public Text TxtPoolName;
         public Text TxtPoolDesc;
         public Text TxtResource;
+        public Text TxtResourceTitle;
         public MyImageButton BtnMatrixIcon;
         public MyImageButton BtnFragmentIcon;
         public Text TxtMode;
@@ -28,6 +30,7 @@ public static class TicketRaffle {
         public Text TxtPoints;
         public Text TxtFocus;
         public Text TxtResultSummary;
+        public Text TxtResultTitle;
         public readonly Text[] TxtResultLines = new Text[8];
         public readonly MyImageButton[] BtnResultIcons = new MyImageButton[8];
         public UIButton BtnDraw1;
@@ -165,47 +168,58 @@ public static class TicketRaffle {
         };
         activeUis.Add(ui);
 
-        float y = 8f;
-        ui.TxtPoolName = MyWindow.AddText(0f, y, ui.Tab, GetPoolName(poolId), 18);
-        y += 28f;
-        ui.TxtPoolDesc = MyWindow.AddText(0f, y, ui.Tab, GetPoolDesc(poolId), 13);
-        ui.TxtPoolDesc.rectTransform.sizeDelta = new Vector2(960f, 56f);
+        ui.Header = PageLayout.CreatePageHeader(wnd, ui.Tab, GetPoolName(poolId), GetPoolDesc(poolId),
+            $"ticket-raffle-header-{poolId}");
+        ui.TxtPoolName = ui.Header.Title;
+        ui.TxtPoolDesc = ui.Header.Summary;
 
-        y += 72f;
-        ui.TxtResource = MyWindow.AddText(0f, y, ui.Tab, "当前资源".Translate(), 13);
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        RectTransform resourceCard = PageLayout.CreateContentCard(ui.Tab, $"ticket-raffle-resource-card-{poolId}", 0f,
+            top, PageLayout.DesignWidth, 220f, true);
+        RectTransform resultCard = PageLayout.CreateContentCard(ui.Tab, $"ticket-raffle-result-card-{poolId}", 0f,
+            top + 220f + PageLayout.Gap, PageLayout.DesignWidth, 373f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(ui.Tab, $"ticket-raffle-footer-card-{poolId}",
+            top + 220f + PageLayout.Gap + 373f + PageLayout.Gap);
+
+        ui.TxtResourceTitle = PageLayout.AddCardTitle(wnd, resourceCard, 18f, 14f, "当前资源", 15,
+            $"ticket-raffle-resource-title-{poolId}");
+        ui.TxtResultTitle = PageLayout.AddCardTitle(wnd, resultCard, 18f, 14f, "结果摘要", 15,
+            $"ticket-raffle-result-title-{poolId}");
+
+        float y = 56f;
+        ui.TxtResource = MyWindow.AddText(18f, y, resourceCard, "当前资源".Translate(), 13);
         y += 24f;
-        ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, ui.Tab, null).WithSize(40f, 40f);
-        ui.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, ui.Tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+        ui.BtnMatrixIcon = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
+        ui.BtnFragmentIcon = MyImageButton.CreateImageButton(198f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
         y += 40f;
-        ui.TxtMode = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        ui.TxtMode = MyWindow.AddText(18f, y, resourceCard, "", 13);
         y += 24f;
-        ui.TxtPity = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        ui.TxtPity = MyWindow.AddText(18f, y, resourceCard, "", 13);
         y += 24f;
-        ui.TxtPoints = MyWindow.AddText(0f, y, ui.Tab, "", 13);
+        ui.TxtPoints = MyWindow.AddText(18f, y, resourceCard, "", 13);
         y += 24f;
-        ui.TxtFocus = MyWindow.AddText(0f, y, ui.Tab, "", 13);
-        ui.TxtFocus.rectTransform.sizeDelta = new Vector2(960f, 40f);
+        ui.TxtFocus = MyWindow.AddText(18f, y, resourceCard, "", 13);
+        ui.TxtFocus.rectTransform.sizeDelta = new Vector2(1028f, 40f);
 
-        y += 34f;
-        ui.BtnDraw1 = wnd.AddButton(0f, y, 140f, ui.Tab, "抽1次".Translate(), 14,
+        ui.BtnDraw1 = wnd.AddButton(18f, 10f, 150f, footerCard, "抽1次".Translate(), 14,
             onClick: () => StartDraw(ui, 1));
-        ui.BtnDraw10 = wnd.AddButton(150f, y, 140f, ui.Tab, "抽10次".Translate(), 14,
+        ui.BtnDraw10 = wnd.AddButton(184f, 10f, 150f, footerCard, "抽10次".Translate(), 14,
             onClick: () => StartDraw(ui, 10));
-        ui.BtnGoGrowth = wnd.AddButton(620f, y, 140f, ui.Tab, "前往成长池".Translate(), 14,
+        ui.BtnGoGrowth = wnd.AddButton(706f, 10f, 150f, footerCard, "前往成长池".Translate(), 14,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
-        ui.BtnGoFocus = wnd.AddButton(770f, y, 140f, ui.Tab, "前往聚焦页".Translate(), 14,
+        ui.BtnGoFocus = wnd.AddButton(872f, 10f, 150f, footerCard, "前往聚焦页".Translate(), 14,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3));
 
-        y += 48f;
-        ui.TxtResultSummary = MyWindow.AddText(0f, y, ui.Tab, "暂无抽取结果".Translate(), 13);
-        ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(960f, 40f);
+        y = 56f;
+        ui.TxtResultSummary = MyWindow.AddText(18f, y, resultCard, "暂无抽取结果".Translate(), 13);
+        ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(1028f, 40f);
 
         y += 28f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-            ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(0f, y, ui.Tab, null).WithSize(40f, 40f);
+            ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(18f, y, resultCard, null).WithSize(40f, 40f);
             ui.BtnResultIcons[i].gameObject.SetActive(false);
-            ui.TxtResultLines[i] = MyWindow.AddText(48f, y, ui.Tab, "", 13);
-            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(912f, 22f);
+            ui.TxtResultLines[i] = MyWindow.AddText(66f, y, resultCard, "", 13);
+            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(980f, 22f);
             y += 24f;
         }
 
@@ -307,10 +321,16 @@ public static class TicketRaffle {
 
     private static void RefreshTabState(RaffleTabUi ui) {
         if (ui.TxtPoolName != null) {
-            ui.TxtPoolName.text = GetPoolName(ui.PoolId);
+            ui.TxtPoolName.text = GetPoolName(ui.PoolId).WithColor(Orange);
         }
         if (ui.TxtPoolDesc != null) {
             ui.TxtPoolDesc.text = GetPoolDesc(ui.PoolId);
+        }
+        if (ui.TxtResourceTitle != null) {
+            ui.TxtResourceTitle.text = "当前资源".Translate().WithColor(Orange);
+        }
+        if (ui.TxtResultTitle != null) {
+            ui.TxtResultTitle.text = "结果摘要".Translate().WithColor(Orange);
         }
 
         int matrixId = GachaService.GetCurrentDrawMatrixId();

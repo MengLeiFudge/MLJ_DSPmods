@@ -11,10 +11,13 @@ namespace FE.UI.View.ResourceInteraction;
 
 public static class ResourceOverview {
     private const int DisplayCount = 5;
+    private static readonly float CardWidth = (PageLayout.DesignWidth - PageLayout.Gap) / 2f;
 
     private static RectTransform tab;
-    private static Text txtTitle;
+    private static PageLayout.HeaderRefs header;
     private static Text txtRefresh;
+    private static Text txtHotTitle;
+    private static Text txtColdTitle;
     private static Text txtDarkFogTitle;
     private static readonly Text[] darkFogLines = new Text[5];
     private static readonly MyImageButton[] hotIcons = new MyImageButton[DisplayCount];
@@ -51,35 +54,40 @@ public static class ResourceOverview {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        float y = 18f;
-        txtTitle = wnd.AddText2(0f, y, tab, "资源统筹", 16);
-        y += 30f;
-        txtRefresh = wnd.AddText2(0f, y, tab, "", 13);
-        y += 36f;
+        header = PageLayout.CreatePageHeader(wnd, tab, "资源统筹", "", "resource-overview-header");
+        txtRefresh = header.Summary;
 
-        wnd.AddText2(0f, y, tab, "高需求物资", 15);
-        wnd.AddText2(560f, y, tab, "低需求物资", 15);
-        y += 34f;
+        RectTransform hotCard = PageLayout.CreateContentCard(tab, "resource-overview-hot-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, CardWidth, 248f, true);
+        RectTransform coldCard = PageLayout.CreateContentCard(tab, "resource-overview-cold-card",
+            CardWidth + PageLayout.Gap, PageLayout.HeaderHeight + PageLayout.Gap, CardWidth, 248f, true);
+        RectTransform darkFogCard = PageLayout.CreateContentCard(tab, "resource-overview-darkfog-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 248f, PageLayout.DesignWidth, 401f);
+
+        txtHotTitle = PageLayout.AddCardTitle(wnd, hotCard, 18f, 14f, "高需求物资", 15, "resource-overview-hot-title");
+        txtColdTitle = PageLayout.AddCardTitle(wnd, coldCard, 18f, 14f, "低需求物资", 15, "resource-overview-cold-title");
+        txtDarkFogTitle = PageLayout.AddCardTitle(wnd, darkFogCard, 18f, 14f, "黑雾支线", 15, "resource-overview-darkfog-title");
+
+        float y = 52f;
 
         for (int i = 0; i < DisplayCount; i++) {
-            hotIcons[i] = wnd.AddImageButton(0f, y, tab, null).WithSize(40f, 40f);
-            hotTexts[i] = wnd.AddText2(50f, y, tab, "", 13);
-            hotTexts[i].rectTransform.sizeDelta = new Vector2(460f, 24f);
+            hotIcons[i] = wnd.AddImageButton(18f, y, hotCard, null).WithSize(40f, 40f);
+            hotTexts[i] = wnd.AddText2(68f, y, hotCard, "", 13);
+            hotTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
 
-            coldIcons[i] = wnd.AddImageButton(560f, y, tab, null).WithSize(40f, 40f);
-            coldTexts[i] = wnd.AddText2(610f, y, tab, "", 13);
+            coldIcons[i] = wnd.AddImageButton(18f, y, coldCard, null).WithSize(40f, 40f);
+            coldTexts[i] = wnd.AddText2(68f, y, coldCard, "", 13);
             coldTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
             y += 34f;
         }
 
-        y += 16f;
-        txtDarkFogTitle = wnd.AddText2(0f, y, tab, "黑雾支线", 15);
-        y += 30f;
+        y = 56f;
         for (int i = 0; i < darkFogLines.Length; i++) {
-            darkFogLines[i] = wnd.AddText2(0f, y, tab, "", 13, $"txtDarkFog{i}");
+            darkFogLines[i] = wnd.AddText2(18f, y, darkFogCard, "", 13, $"txtDarkFog{i}");
             darkFogLines[i].supportRichText = true;
-            darkFogLines[i].rectTransform.sizeDelta = new Vector2(960f, 24f);
-            y += 26f;
+            darkFogLines[i].rectTransform.sizeDelta = new Vector2(1040f, i == 1 || i == 2 ? 42f : 32f);
+            darkFogLines[i].alignment = TextAnchor.UpperLeft;
+            y += i == 1 || i == 2 ? 52f : 36f;
         }
     }
 
@@ -88,12 +96,15 @@ public static class ResourceOverview {
             return;
         }
 
-        txtTitle.text = "资源统筹".Translate();
+        header.Title.text = "资源统筹".Translate().WithColor(Orange);
         long leftTicks = MarketValueManager.RefreshIntervalTicks - (GameMain.gameTick - MarketValueManager.LastRefreshTick);
         if (leftTicks < 0) {
             leftTicks = 0;
         }
-        txtRefresh.text = $"{ "下次刷新".Translate() }：{FormatTicks(leftTicks)}";
+        txtRefresh.text = $"{ "下次刷新".Translate() }：{FormatTicks(leftTicks)}    市场版本 v{MarketValueManager.RefreshVersion}";
+        txtHotTitle.text = "高需求物资".Translate().WithColor(Orange);
+        txtColdTitle.text = "低需求物资".Translate().WithColor(Orange);
+        txtDarkFogTitle.text = "黑雾支线".Translate().WithColor(Orange);
 
         var hot = MarketValueManager.GetTopMarketItems(DisplayCount, descending: true);
         var cold = MarketValueManager.GetTopMarketItems(DisplayCount, descending: false);

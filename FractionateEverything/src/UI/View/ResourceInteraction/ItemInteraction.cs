@@ -86,23 +86,34 @@ public static class ItemInteraction {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "物品交互", "", "item-interaction-header");
+        header.Summary.text = "筛选、定位并直接从数据中心提取物品".WithColor(White);
+        RectTransform filterCard = PageLayout.CreateContentCard(parent, "item-interaction-filter-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 154f, true);
+        RectTransform gridCard = PageLayout.CreateContentCard(parent, "item-interaction-grid-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 154f, PageLayout.DesignWidth, 455f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(parent, "item-interaction-footer-card",
+            PageLayout.HeaderHeight + PageLayout.Gap * 3f + 154f + 455f);
+
         float x = 0f;
         float y = 18f;
-        wnd.AddCheckBox(x, y, parent, ShowNotStoredItemEntry, "显示未存储的物品");
-        float popupY = y + 36f / 2;
-        wnd.AddButton(3, 4, y, parent, "查找指定物品",
+        PageLayout.AddCardTitle(wnd, filterCard, 18f, 14f, "筛选条件", 15, "item-interaction-filter-title");
+        wnd.AddCheckBox(x + 18f, y + 28f, filterCard, ShowNotStoredItemEntry, "显示未存储的物品");
+        float popupY = PageLayout.HeaderHeight + PageLayout.Gap + y + 28f + 18f;
+        wnd.AddButton(3, 4, y + 28f, filterCard, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
 
         y += FilterLineHeight;
-        CreateFilterCheckBoxes(parent, y);
+        CreateFilterCheckBoxes(filterCard, y + 28f);
 
         y += FilterLineHeight * 3f;
-        Text txt = wnd.AddText2(x, y, parent, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, parent, "提取物品", "提取物品说明");
+        PageLayout.AddCardTitle(wnd, gridCard, 18f, 14f, "仓储物品", 15, "item-interaction-grid-title");
+        Text txt = wnd.AddText2(x + 18f, 50f, gridCard, "以下物品在分馏数据中心的存储量为：");
+        wnd.AddTipsButton2(x + 23f + txt.preferredWidth, 50f, gridCard, "提取物品", "提取物品说明");
         y += 36f + 7f;
         for (int i = 0; i < RowCount; i++) {
             for (int j = 0; j < ColumnCount; j++) {
-                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1, y, parent)
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1 + 18f, y + 32f, gridCard)
                     .WithSize(40f, 40f)
                     .WithTakeItemClickEvent()
                     .WithDeselectOnHover(true, () => SelectedItemID = 0);
@@ -110,13 +121,12 @@ public static class ItemInteraction {
             y += 36f + 7f;
         }
 
-        float paginationY = y;
-        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, paginationY, parent, "上一页", onClick: PrevPage);
-        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, paginationY + 6f, parent, "");
+        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, 10f, footerCard, "上一页", onClick: PrevPage);
+        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, 16f, footerCard, "");
         _pageIndicator.alignment = TextAnchor.MiddleCenter;
         RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
         pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
-        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, paginationY, parent, "下一页", onClick: NextPage);
+        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, 10f, footerCard, "下一页", onClick: NextPage);
     }
 
     private static void CreateFilterCheckBoxes(RectTransform parent, float startY) {

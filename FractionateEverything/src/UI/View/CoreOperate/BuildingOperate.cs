@@ -192,7 +192,10 @@ public static class BuildingOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = trans;
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "建筑操作", "", "building-operate-header");
+        header.Summary.text = "查看建筑强化、关键节点突破与特质加成".WithColor(White);
+        tab = PageLayout.CreateContentCard(trans, "building-operate-content-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
         float x = 0f;
         float y = 18f + 7f;
         var txt = wnd.AddText2(x, y, tab, "建筑类型");

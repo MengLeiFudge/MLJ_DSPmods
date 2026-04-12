@@ -13,12 +13,16 @@ namespace FE.UI.View.DrawGrowth;
 
 public static class TicketExchange {
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
     private static Text txtOverview;
     private static Text txtMode;
     private static Text txtCostOpening;
     private static Text txtCostProto;
     private static Text txtCostFocus;
     private static Text txtDarkFogStatus;
+    private static Text txtResourceTitle;
+    private static Text txtCostTitle;
+    private static Text txtDarkFogTitle;
     private static MyImageButton btnCurrentMatrix;
     private static MyImageButton btnFragment;
     private static MyImageButton btnDarkFogMatrix;
@@ -34,38 +38,59 @@ public static class TicketExchange {
         Register("黑雾支线说明", "Dark Fog Branch", "黑雾支线");
         Register("前往成长规划", "Go Growth Planning");
         Register("前往市场板", "Go Market Board");
+        Register("当前资源", "Current Resources", "当前资源");
+        Register("核心成本", "Core Costs", "核心成本");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        float y = 18f;
-        txtOverview = wnd.AddText2(0f, y, tab, "资源统筹说明", 14);
-        txtOverview.supportRichText = true;
-        txtOverview.rectTransform.sizeDelta = new Vector2(960f, 48f);
+        header = PageLayout.CreatePageHeader(wnd, tab, "资源统筹", "", "ticket-exchange-header");
+        txtOverview = header.Summary;
 
-        y += 64f;
-        btnCurrentMatrix = MyImageButton.CreateImageButton(0f, y, tab, null).WithSize(40f, 40f);
-        btnFragment = MyImageButton.CreateImageButton(170f, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        btnDarkFogMatrix = MyImageButton.CreateImageButton(340f, y, tab, LDB.items.Select(I黑雾矩阵)).WithSize(40f, 40f);
-        y += 40f;
-        txtMode = wnd.AddText2(0f, y, tab, "", 14);
-        y += 30f;
-        txtCostOpening = wnd.AddText2(0f, y, tab, "", 14);
-        y += 30f;
-        txtCostProto = wnd.AddText2(0f, y, tab, "", 14);
-        y += 30f;
-        txtCostFocus = wnd.AddText2(0f, y, tab, "", 14);
-        y += 40f;
-        txtDarkFogStatus = wnd.AddText2(0f, y, tab, "", 13);
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        float columnWidth = (PageLayout.DesignWidth - PageLayout.Gap) / 2f;
+        RectTransform resourceCard = PageLayout.CreateContentCard(tab, "ticket-exchange-resource-card", 0f, top,
+            columnWidth, 180f, true);
+        RectTransform costCard = PageLayout.CreateContentCard(tab, "ticket-exchange-cost-card",
+            columnWidth + PageLayout.Gap, top, columnWidth, 180f, true);
+        RectTransform darkFogCard = PageLayout.CreateContentCard(tab, "ticket-exchange-darkfog-card", 0f,
+            top + 180f + PageLayout.Gap, PageLayout.DesignWidth, 293f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(tab, "ticket-exchange-footer-card",
+            top + 180f + PageLayout.Gap + 293f + PageLayout.Gap);
+
+        txtResourceTitle = PageLayout.AddCardTitle(wnd, resourceCard, 18f, 14f, "当前资源", 15, "ticket-exchange-resource-title");
+        txtCostTitle = PageLayout.AddCardTitle(wnd, costCard, 18f, 14f, "核心成本", 15, "ticket-exchange-cost-title");
+        txtDarkFogTitle = PageLayout.AddCardTitle(wnd, darkFogCard, 18f, 14f, "黑雾支线说明", 15, "ticket-exchange-darkfog-title");
+
+        float y = 64f;
+        btnCurrentMatrix = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
+        btnFragment = MyImageButton.CreateImageButton(178f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+        btnDarkFogMatrix = MyImageButton.CreateImageButton(338f, y, resourceCard, LDB.items.Select(I黑雾矩阵)).WithSize(40f, 40f);
+        y += 44f;
+        txtMode = wnd.AddText2(18f, y, resourceCard, "", 14);
+        txtMode.rectTransform.sizeDelta = new Vector2(columnWidth - 36f, 24f);
+
+        y = 64f;
+        txtCostOpening = wnd.AddText2(18f, y, costCard, "", 14);
+        txtCostOpening.rectTransform.sizeDelta = new Vector2(columnWidth - 36f, 24f);
+        y += 34f;
+        txtCostProto = wnd.AddText2(18f, y, costCard, "", 14);
+        txtCostProto.rectTransform.sizeDelta = new Vector2(columnWidth - 36f, 24f);
+        y += 34f;
+        txtCostFocus = wnd.AddText2(18f, y, costCard, "", 14);
+        txtCostFocus.rectTransform.sizeDelta = new Vector2(columnWidth - 36f, 68f);
+        txtCostFocus.alignment = TextAnchor.UpperLeft;
+
+        txtDarkFogStatus = wnd.AddText2(18f, 56f, darkFogCard, "", 13);
         txtDarkFogStatus.supportRichText = true;
-        txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(960f, 100f);
+        txtDarkFogStatus.alignment = TextAnchor.UpperLeft;
+        txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 220f);
 
-        y += 110f;
-        wnd.AddButton(0f, y, 140f, tab, "前往成长规划".Translate(), 13,
+        wnd.AddButton(18f, 10f, 160f, footerCard, "前往成长规划".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
-        wnd.AddButton(150f, y, 140f, tab, "前往市场板".Translate(), 13,
+        wnd.AddButton(194f, 10f, 160f, footerCard, "前往市场板".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 3));
     }
 
@@ -79,7 +104,11 @@ public static class TicketExchange {
         btnCurrentMatrix.SetCount(GetItemTotalCount(matrixId));
         btnFragment.SetCount(GetItemTotalCount(IFE残片));
         btnDarkFogMatrix.SetCount(GetItemTotalCount(I黑雾矩阵));
+        header.Title.text = "资源统筹".Translate().WithColor(Orange);
         txtOverview.text = $"{ "资源统筹说明".Translate() }";
+        txtResourceTitle.text = "当前资源".Translate().WithColor(Orange);
+        txtCostTitle.text = "核心成本".Translate().WithColor(Orange);
+        txtDarkFogTitle.text = "黑雾支线说明".Translate().WithColor(Orange);
         txtMode.text = $"当前模式：{GachaService.GetModeNameKey().Translate()}";
         txtCostOpening.text =
             $"{ "开线池成本".Translate() }：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";

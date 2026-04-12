@@ -143,7 +143,10 @@ public static class FracRecipeOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = trans;
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "分馏配方", "", "frac-recipe-header");
+        header.Summary.text = "查看配方成功率、损毁率、产物结构与强化等级信息".WithColor(White);
+        tab = PageLayout.CreateContentCard(trans, "frac-recipe-content-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
         float x = 0f;
         float y = 18f + 7f;
 

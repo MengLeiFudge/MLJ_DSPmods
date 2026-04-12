@@ -23,8 +23,10 @@ public static class MarketBoard {
     }
 
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
     private static Text txtExpire;
     private static Text txtSummary;
+    private static Text txtBoardTitle;
     private static readonly OfferRow[] rows = new OfferRow[RowCount];
 
     public static void AddTranslations() {
@@ -38,28 +40,35 @@ public static class MarketBoard {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        float y = 18f;
-        txtExpire = wnd.AddText2(0f, y, tab, "", 13);
-        y += 28f;
-        txtSummary = wnd.AddText2(0f, y, tab, "", 13);
+        header = PageLayout.CreatePageHeader(wnd, tab, "市场板", "", "market-board-header");
+        txtExpire = header.Summary;
+
+        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "market-board-summary-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 72f, true);
+        RectTransform listCard = PageLayout.CreateContentCard(tab, "market-board-list-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 72f, PageLayout.DesignWidth, 577f);
+
+        txtBoardTitle = PageLayout.AddCardTitle(wnd, summaryCard, 18f, 14f, "特单概览", 15, "market-board-summary-title");
+        txtSummary = wnd.AddText2(18f, 40f, summaryCard, "", 13);
         txtSummary.supportRichText = true;
-        txtSummary.rectTransform.sizeDelta = new Vector2(960f, 24f);
-        y += 36f;
+        txtSummary.rectTransform.sizeDelta = new Vector2(1040f, 24f);
+
+        float y = 18f;
 
         for (int i = 0; i < RowCount; i++) {
             int rowIndex = i;
             rows[i] = new OfferRow {
-                InputIcon = wnd.AddImageButton(0f, y, tab, null).WithSize(40f, 40f),
-                TxtInput = wnd.AddText2(50f, y, tab, "", 13),
-                ExtraIcon = wnd.AddImageButton(250f, y, tab, null).WithSize(40f, 40f),
-                TxtExtra = wnd.AddText2(300f, y, tab, "", 13),
-                OutputIcon = wnd.AddImageButton(520f, y, tab, null).WithSize(40f, 40f),
-                TxtOutput = wnd.AddText2(570f, y, tab, "", 13),
+                InputIcon = wnd.AddImageButton(18f, y, listCard, null).WithSize(40f, 40f),
+                TxtInput = wnd.AddText2(68f, y, listCard, "", 13),
+                ExtraIcon = wnd.AddImageButton(288f, y, listCard, null).WithSize(40f, 40f),
+                TxtExtra = wnd.AddText2(338f, y, listCard, "", 13),
+                OutputIcon = wnd.AddImageButton(564f, y, listCard, null).WithSize(40f, 40f),
+                TxtOutput = wnd.AddText2(614f, y, listCard, "", 13),
             };
             rows[i].TxtInput.rectTransform.sizeDelta = new Vector2(180f, 24f);
             rows[i].TxtExtra.rectTransform.sizeDelta = new Vector2(180f, 24f);
-            rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(180f, 24f);
-            rows[i].BtnTrade = wnd.AddButton(820f, y - 4f, 120f, tab, "交易", 13,
+            rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(240f, 24f);
+            rows[i].BtnTrade = wnd.AddButton(902f, y - 4f, 120f, listCard, "交易", 13,
                 onClick: () => {
                     if (rows[rowIndex].OfferId > 0 && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
                         UpdateUI();
@@ -78,7 +87,9 @@ public static class MarketBoard {
         if (ticks < 0) {
             ticks = 0;
         }
+        header.Title.text = "市场板".Translate().WithColor(Orange);
         txtExpire.text = $"{ "订单刷新".Translate() }：{FormatTicks(ticks)}";
+        txtBoardTitle.text = "特单概览".Translate().WithColor(Orange);
         int specialCount = MarketBoardManager.ActiveOffers.Count(offer => offer.OfferType == MarketBoardManager.MarketOfferType.Special);
         int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
             offer.OfferType == MarketBoardManager.MarketOfferType.Special && DarkFogCombatManager.IsDarkFogOffer(offer));
