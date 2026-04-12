@@ -13,11 +13,11 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ResourceInteraction;
 
 public static class ItemInteraction {
-    private const int RowCount = 9;
+    private const int RowCount = 8;
     private const int ColumnCount = 8;
     private const int ItemsPerPage = RowCount * ColumnCount;
     private const int FilterColumnCount = 4;
-    private const float FilterLineHeight = 36f + 7f;
+    private const float FilterLineHeight = 30f;
     private static readonly (EItemType type, string labelKey)[] ItemTypeFilters = [
         (EItemType.Resource, "自然资源"),
         (EItemType.Material, "材料"),
@@ -55,6 +55,7 @@ public static class ItemInteraction {
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
+    private static float itemGridStartY;
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
     public static void AddTranslations() {
@@ -89,36 +90,36 @@ public static class ItemInteraction {
         PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "物品交互", "", "item-interaction-header");
         header.Summary.text = "筛选、定位并直接从数据中心提取物品".WithColor(White);
         RectTransform filterCard = PageLayout.CreateContentCard(parent, "item-interaction-filter-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 154f, true);
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 146f, true);
         RectTransform gridCard = PageLayout.CreateContentCard(parent, "item-interaction-grid-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 154f, PageLayout.DesignWidth, 455f);
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 146f, PageLayout.DesignWidth, 431f);
         RectTransform footerCard = PageLayout.CreateFooterCard(parent, "item-interaction-footer-card",
-            PageLayout.HeaderHeight + PageLayout.Gap * 3f + 154f + 455f);
+            PageLayout.HeaderHeight + PageLayout.Gap * 3f + 146f + 431f);
 
         float x = 0f;
         float y = 18f;
         PageLayout.AddCardTitle(wnd, filterCard, 18f, 14f, "筛选条件", 15, "item-interaction-filter-title");
-        wnd.AddCheckBox(x + 18f, y + 28f, filterCard, ShowNotStoredItemEntry, "显示未存储的物品");
-        float popupY = PageLayout.HeaderHeight + PageLayout.Gap + y + 28f + 18f;
-        wnd.AddButton(3, 4, y + 28f, filterCard, "查找指定物品",
+        float filterRowY = 44f;
+        wnd.AddCheckBox(x + 18f, filterRowY, filterCard, ShowNotStoredItemEntry, "显示未存储的物品");
+        float popupY = PageLayout.HeaderHeight + PageLayout.Gap + filterRowY + 18f;
+        wnd.AddButton(3, 4, filterRowY, filterCard, "查找指定物品",
             onClick: () => { SearchSpecifiedItem(popupY); });
 
-        y += FilterLineHeight;
-        CreateFilterCheckBoxes(filterCard, y + 28f);
+        CreateFilterCheckBoxes(filterCard, 44f);
 
-        y += FilterLineHeight * 3f;
         PageLayout.AddCardTitle(wnd, gridCard, 18f, 14f, "仓储物品", 15, "item-interaction-grid-title");
         Text txt = wnd.AddText2(x + 18f, 50f, gridCard, "以下物品在分馏数据中心的存储量为：");
         wnd.AddTipsButton2(x + 23f + txt.preferredWidth, 50f, gridCard, "提取物品", "提取物品说明");
-        y += 36f + 7f;
+        itemGridStartY = 96f;
+        y = itemGridStartY;
         for (int i = 0; i < RowCount; i++) {
             for (int j = 0; j < ColumnCount; j++) {
-                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount).Item1 + 18f, y + 32f, gridCard)
+                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount, 1042f).Item1 + 18f, y, gridCard)
                     .WithSize(40f, 40f)
                     .WithTakeItemClickEvent()
                     .WithDeselectOnHover(true, () => SelectedItemID = 0);
             }
-            y += 36f + 7f;
+            y += 40f;
         }
 
         _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, 10f, footerCard, "上一页", onClick: PrevPage);
@@ -133,12 +134,12 @@ public static class ItemInteraction {
         for (int i = 0; i < ItemTypeFilters.Length; i++) {
             int row = i / FilterColumnCount;
             int col = i % FilterColumnCount;
-            (float posX, _) = GetPosition(col, FilterColumnCount);
+            (float posX, _) = GetPosition(col, FilterColumnCount, 1042f);
             _typeFilterChecks[i] = CreateFilterCheckBox(posX, startY + row * FilterLineHeight, parent,
                 ItemTypeFilters[i].labelKey);
         }
 
-        _fractionateGroupCheckBox = CreateFilterCheckBox(GetPosition(3, FilterColumnCount).Item1,
+        _fractionateGroupCheckBox = CreateFilterCheckBox(GetPosition(3, FilterColumnCount, 1042f).Item1,
             startY + 2f * FilterLineHeight, parent, "万物分馏");
     }
 
