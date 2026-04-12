@@ -14,12 +14,14 @@ public static class PageLayout {
     public const float FooterHeight = 56f;
     public const float Gap = 16f;
     public const float InnerGap = 14f;
+    private const float BorderInset = 2f;
+    private const float BorderThickness = 2f;
 
-    public static readonly Color HeaderColor = new(0.08f, 0.11f, 0.16f, 0.92f);
-    public static readonly Color CardColor = new(0f, 0f, 0f, 0.34f);
-    public static readonly Color CardColorStrong = new(0f, 0f, 0f, 0.48f);
-    public static readonly Color CardColorSoft = new(0.06f, 0.08f, 0.12f, 0.72f);
-    public static readonly Color AccentStripColor = new(0.38f, 0.73f, 1f, 0.22f);
+    public static readonly Color TransparentColor = new(0f, 0f, 0f, 0f);
+    public static readonly Color HeaderBorderColor = new(0.40f, 0.73f, 1f, 0.58f);
+    public static readonly Color CardBorderColor = new(1f, 1f, 1f, 0.18f);
+    public static readonly Color CardBorderColorStrong = new(0.72f, 0.86f, 1f, 0.28f);
+    public static readonly Color FooterBorderColor = new(1f, 1f, 1f, 0.16f);
 
     public readonly struct HeaderRefs {
         public readonly RectTransform Root;
@@ -35,8 +37,8 @@ public static class PageLayout {
 
     public static HeaderRefs CreatePageHeader(MyWindow wnd, RectTransform parent, string title, string summary = "",
         string objectName = "page-header") {
-        RectTransform header = CreateCard(parent, objectName, 0f, 0f, DesignWidth, HeaderHeight, HeaderColor);
-        CreateAccentStrip(header, "page-header-accent");
+        RectTransform header = CreateCard(parent, objectName, 0f, 0f, DesignWidth, HeaderHeight, TransparentColor,
+            HeaderBorderColor);
 
         Text titleText = MyWindow.AddText(20f, 15f, header, title, 20, $"{objectName}-title");
         titleText.supportRichText = true;
@@ -51,16 +53,17 @@ public static class PageLayout {
     }
 
     public static RectTransform CreateCard(RectTransform parent, string objectName, float left, float top, float width,
-        float height, Color color) {
+        float height, Color fillColor, Color borderColor) {
         var obj = new GameObject(objectName, typeof(RectTransform), typeof(Image));
         RectTransform rect = obj.GetComponent<RectTransform>();
-        NormalizeRectWithTopLeft(rect, left, top, parent);
-        rect.sizeDelta = new Vector2(width, height);
+        NormalizeRectWithTopLeft(rect, left + BorderInset, top + BorderInset, parent);
+        rect.sizeDelta = new Vector2(width - BorderInset * 2f, height - BorderInset * 2f);
 
         Image image = obj.GetComponent<Image>();
-        image.color = color;
+        image.color = fillColor;
         image.raycastTarget = false;
 
+        CreateBorderLines(rect, borderColor);
         return rect;
     }
 
@@ -83,21 +86,32 @@ public static class PageLayout {
 
     public static RectTransform CreateContentCard(RectTransform parent, string objectName, float left, float top,
         float width, float height, bool strong = false) {
-        return CreateCard(parent, objectName, left, top, width, height, strong ? CardColorStrong : CardColor);
+        return CreateCard(parent, objectName, left, top, width, height, TransparentColor,
+            strong ? CardBorderColorStrong : CardBorderColor);
     }
 
     public static RectTransform CreateFooterCard(RectTransform parent, string objectName, float top) {
-        return CreateCard(parent, objectName, 0f, top, DesignWidth, FooterHeight, CardColorSoft);
+        return CreateCard(parent, objectName, 0f, top, DesignWidth, FooterHeight, TransparentColor, FooterBorderColor);
     }
 
-    private static void CreateAccentStrip(RectTransform parent, string objectName) {
+    private static void CreateBorderLines(RectTransform parent, Color borderColor) {
+        CreateBorderLine(parent, "border-top", 0f, 0f, parent.sizeDelta.x, BorderThickness, borderColor);
+        CreateBorderLine(parent, "border-bottom", 0f, parent.sizeDelta.y - BorderThickness, parent.sizeDelta.x,
+            BorderThickness, borderColor);
+        CreateBorderLine(parent, "border-left", 0f, 0f, BorderThickness, parent.sizeDelta.y, borderColor);
+        CreateBorderLine(parent, "border-right", parent.sizeDelta.x - BorderThickness, 0f, BorderThickness,
+            parent.sizeDelta.y, borderColor);
+    }
+
+    private static void CreateBorderLine(RectTransform parent, string objectName, float left, float top, float width,
+        float height, Color color) {
         var obj = new GameObject(objectName, typeof(RectTransform), typeof(Image));
         RectTransform rect = obj.GetComponent<RectTransform>();
-        NormalizeRectWithTopLeft(rect, 0f, 0f, parent);
-        rect.sizeDelta = new Vector2(parent.rect.width, 4f);
+        NormalizeRectWithTopLeft(rect, left, top, parent);
+        rect.sizeDelta = new Vector2(width, height);
 
         Image image = obj.GetComponent<Image>();
-        image.color = AccentStripColor;
+        image.color = color;
         image.raycastTarget = false;
     }
 }
