@@ -175,29 +175,33 @@ public static class TicketRaffle {
 
         float top = PageLayout.HeaderHeight + PageLayout.Gap;
         RectTransform resourceCard = PageLayout.CreateContentCard(ui.Tab, $"ticket-raffle-resource-card-{poolId}", 0f,
-            top, PageLayout.DesignWidth, 220f, true);
+            top, PageLayout.DesignWidth, 250f, true);
         RectTransform resultCard = PageLayout.CreateContentCard(ui.Tab, $"ticket-raffle-result-card-{poolId}", 0f,
-            top + 220f + PageLayout.Gap, PageLayout.DesignWidth, 373f);
+            top + 250f + PageLayout.Gap, PageLayout.DesignWidth, 301f);
         RectTransform footerCard = PageLayout.CreateFooterCard(ui.Tab, $"ticket-raffle-footer-card-{poolId}",
-            top + 220f + PageLayout.Gap + 373f + PageLayout.Gap);
+            top + 250f + PageLayout.Gap + 301f + PageLayout.Gap);
 
         ui.TxtResourceTitle = PageLayout.AddCardTitle(wnd, resourceCard, 18f, 14f, "当前资源", 15,
             $"ticket-raffle-resource-title-{poolId}");
         ui.TxtResultTitle = PageLayout.AddCardTitle(wnd, resultCard, 18f, 14f, "结果摘要", 15,
             $"ticket-raffle-result-title-{poolId}");
 
-        float y = 56f;
+        float y = 50f;
         ui.TxtResource = MyWindow.AddText(18f, y, resourceCard, "当前资源".Translate(), 13);
-        y += 24f;
+        ui.TxtResource.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+        y += 28f;
         ui.BtnMatrixIcon = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
         ui.BtnFragmentIcon = MyImageButton.CreateImageButton(198f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        y += 40f;
+        y += 48f;
         ui.TxtMode = MyWindow.AddText(18f, y, resourceCard, "", 13);
-        y += 24f;
+        ui.TxtMode.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+        y += 26f;
         ui.TxtPity = MyWindow.AddText(18f, y, resourceCard, "", 13);
-        y += 24f;
+        ui.TxtPity.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+        y += 26f;
         ui.TxtPoints = MyWindow.AddText(18f, y, resourceCard, "", 13);
-        y += 24f;
+        ui.TxtPoints.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+        y += 26f;
         ui.TxtFocus = MyWindow.AddText(18f, y, resourceCard, "", 13);
         ui.TxtFocus.rectTransform.sizeDelta = new Vector2(1028f, 40f);
 
@@ -210,17 +214,17 @@ public static class TicketRaffle {
         ui.BtnGoFocus = wnd.AddButton(872f, 10f, 150f, footerCard, "前往聚焦页".Translate(), 14,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3));
 
-        y = 56f;
+        y = 50f;
         ui.TxtResultSummary = MyWindow.AddText(18f, y, resultCard, "暂无抽取结果".Translate(), 13);
         ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(1028f, 40f);
 
-        y += 28f;
+        y += 40f;
         for (int i = 0; i < ui.TxtResultLines.Length; i++) {
             ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(18f, y, resultCard, null).WithSize(40f, 40f);
             ui.BtnResultIcons[i].gameObject.SetActive(false);
             ui.TxtResultLines[i] = MyWindow.AddText(66f, y, resultCard, "", 13);
-            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(980f, 22f);
-            y += 24f;
+            ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(980f, 20f);
+            y += 22f;
         }
 
         RefreshTabState(ui);

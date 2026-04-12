@@ -85,26 +85,27 @@ public static class LimitedTimeStore {
         growthPage.Header = PageLayout.CreatePageHeader(wnd, growthPage.Tab, "成长规划", "", "growth-store-header");
         float top = PageLayout.HeaderHeight + PageLayout.Gap;
         RectTransform resourceCard = PageLayout.CreateContentCard(growthPage.Tab, "growth-store-resource-card", 0f,
-            top, PageLayout.DesignWidth, 148f, true);
+            top, PageLayout.DesignWidth, 180f, true);
         RectTransform offerCard = PageLayout.CreateContentCard(growthPage.Tab, "growth-store-offer-card", 0f,
-            top + 148f + PageLayout.Gap, PageLayout.DesignWidth, 503f);
+            top + 180f + PageLayout.Gap, PageLayout.DesignWidth, 397f);
         RectTransform footerCard = PageLayout.CreateFooterCard(growthPage.Tab, "growth-store-footer-card",
-            top + 148f + PageLayout.Gap + 503f + PageLayout.Gap);
+            top + 180f + PageLayout.Gap + 397f + PageLayout.Gap);
 
         growthPage.TxtResourceTitle = PageLayout.AddCardTitle(wnd, resourceCard, 18f, 14f, "当前资源", 15,
             "growth-store-resource-title");
         growthPage.TxtOfferTitle = PageLayout.AddCardTitle(wnd, offerCard, 18f, 14f, "成长定向", 15,
             "growth-store-offer-title");
 
-        float y = 52f;
+        float y = 48f;
         growthPage.TxtResource = MyWindow.AddText(18f, y, resourceCard, "当前资源".Translate(), 13);
-        y += 24f;
+        growthPage.TxtResource.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+        y += 28f;
         growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
         growthPage.BtnFragmentIcon = MyImageButton.CreateImageButton(198f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        y += 40f;
+        y += 48f;
         growthPage.TxtFocus = MyWindow.AddText(18f, y, resourceCard, "", 13);
         growthPage.TxtFocus.rectTransform.sizeDelta = new Vector2(1028f, 40f);
-        y = 56f;
+        y = 52f;
 
         wnd.AddButton(872f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
@@ -138,23 +139,24 @@ public static class LimitedTimeStore {
         focusPage.Header = PageLayout.CreatePageHeader(wnd, focusPage.Tab, "流派聚焦", "", "focus-store-header");
         float top = PageLayout.HeaderHeight + PageLayout.Gap;
         RectTransform currentCard = PageLayout.CreateContentCard(focusPage.Tab, "focus-store-current-card", 0f, top,
-            PageLayout.DesignWidth, 120f, true);
+            PageLayout.DesignWidth, 140f, true);
         RectTransform listCard = PageLayout.CreateContentCard(focusPage.Tab, "focus-store-list-card", 0f,
-            top + 120f + PageLayout.Gap, PageLayout.DesignWidth, 531f);
+            top + 140f + PageLayout.Gap, PageLayout.DesignWidth, 421f);
         RectTransform footerCard = PageLayout.CreateFooterCard(focusPage.Tab, "focus-store-footer-card",
-            top + 120f + PageLayout.Gap + 531f + PageLayout.Gap);
+            top + 140f + PageLayout.Gap + 421f + PageLayout.Gap);
 
         focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(wnd, currentCard, 18f, 14f, "当前聚焦", 15,
             "focus-store-current-title");
         focusPage.TxtFocusListTitle = PageLayout.AddCardTitle(wnd, listCard, 18f, 14f, "切换聚焦", 15,
             "focus-store-list-title");
 
-        float y = 52f;
+        float y = 48f;
         focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 14);
-        y += 28f;
+        focusPage.TxtCurrentFocus.rectTransform.sizeDelta = new Vector2(1028f, 24f);
+        y += 30f;
         focusPage.TxtOverview = MyWindow.AddText(18f, y, currentCard, "", 13);
         focusPage.TxtOverview.rectTransform.sizeDelta = new Vector2(1028f, 40f);
-        y = 56f;
+        y = 52f;
 
         wnd.AddButton(872f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
