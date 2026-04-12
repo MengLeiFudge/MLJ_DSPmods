@@ -32,7 +32,10 @@ public static class LimitedTimeStore {
 
     private sealed class GrowthPageUi {
         public RectTransform Tab;
+        public PageLayout.HeaderRefs Header;
         public Text TxtResource;
+        public Text TxtResourceTitle;
+        public Text TxtOfferTitle;
         public MyImageButton BtnMatrixIcon;
         public MyImageButton BtnFragmentIcon;
         public Text TxtFocus;
@@ -41,8 +44,11 @@ public static class LimitedTimeStore {
 
     private sealed class FocusPageUi {
         public RectTransform Tab;
+        public PageLayout.HeaderRefs Header;
         public Text TxtCurrentFocus;
         public Text TxtOverview;
+        public Text TxtCurrentFocusTitle;
+        public Text TxtFocusListTitle;
         public readonly List<UIButton> Buttons = [];
         public readonly List<Text> DescTexts = [];
     }
@@ -76,30 +82,44 @@ public static class LimitedTimeStore {
             Tab = trans
         };
 
-        float y = 8f;
-        growthPage.TxtResource = MyWindow.AddText(0f, y, growthPage.Tab, "当前资源".Translate(), 13);
-        y += 24f;
-        growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, growthPage.Tab, null).WithSize(40f, 40f);
-        growthPage.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, growthPage.Tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        y += 40f;
-        growthPage.TxtFocus = MyWindow.AddText(0f, y, growthPage.Tab, "", 13);
-        growthPage.TxtFocus.rectTransform.sizeDelta = new Vector2(960f, 40f);
-        y += 44f;
+        growthPage.Header = PageLayout.CreatePageHeader(wnd, growthPage.Tab, "成长规划", "", "growth-store-header");
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        RectTransform resourceCard = PageLayout.CreateContentCard(growthPage.Tab, "growth-store-resource-card", 0f,
+            top, PageLayout.DesignWidth, 148f, true);
+        RectTransform offerCard = PageLayout.CreateContentCard(growthPage.Tab, "growth-store-offer-card", 0f,
+            top + 148f + PageLayout.Gap, PageLayout.DesignWidth, 503f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(growthPage.Tab, "growth-store-footer-card",
+            top + 148f + PageLayout.Gap + 503f + PageLayout.Gap);
 
-        wnd.AddButton(780f, 8f, 140f, growthPage.Tab, "前往抽取".Translate(), 13,
+        growthPage.TxtResourceTitle = PageLayout.AddCardTitle(wnd, resourceCard, 18f, 14f, "当前资源", 15,
+            "growth-store-resource-title");
+        growthPage.TxtOfferTitle = PageLayout.AddCardTitle(wnd, offerCard, 18f, 14f, "成长定向", 15,
+            "growth-store-offer-title");
+
+        float y = 52f;
+        growthPage.TxtResource = MyWindow.AddText(18f, y, resourceCard, "当前资源".Translate(), 13);
+        y += 24f;
+        growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
+        growthPage.BtnFragmentIcon = MyImageButton.CreateImageButton(198f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+        y += 40f;
+        growthPage.TxtFocus = MyWindow.AddText(18f, y, resourceCard, "", 13);
+        growthPage.TxtFocus.rectTransform.sizeDelta = new Vector2(1028f, 40f);
+        y = 56f;
+
+        wnd.AddButton(872f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
 
         for (int i = 0; i < GrowthRowCount; i++) {
             var row = new GrowthRowUi {
-                BtnFragmentCostIcon = MyImageButton.CreateImageButton(110f, y, growthPage.Tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f),
-                TxtCost = MyWindow.AddText(0f, y, growthPage.Tab, "", 13),
-                BtnExtraCostIcon = MyImageButton.CreateImageButton(220f, y, growthPage.Tab, null).WithSize(40f, 40f),
-                TxtExtraCost = MyWindow.AddText(262f, y, growthPage.Tab, "", 13),
-                BtnRewardIcon = MyImageButton.CreateImageButton(420f, y, growthPage.Tab, null).WithSize(40f, 40f),
-                TxtReward = MyWindow.AddText(462f, y, growthPage.Tab, "", 13),
-                TxtDetail = MyWindow.AddText(462f, y + 18f, growthPage.Tab, "", 12),
+                BtnFragmentCostIcon = MyImageButton.CreateImageButton(128f, y, offerCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f),
+                TxtCost = MyWindow.AddText(18f, y, offerCard, "", 13),
+                BtnExtraCostIcon = MyImageButton.CreateImageButton(258f, y, offerCard, null).WithSize(40f, 40f),
+                TxtExtraCost = MyWindow.AddText(300f, y, offerCard, "", 13),
+                BtnRewardIcon = MyImageButton.CreateImageButton(472f, y, offerCard, null).WithSize(40f, 40f),
+                TxtReward = MyWindow.AddText(514f, y, offerCard, "", 13),
+                TxtDetail = MyWindow.AddText(514f, y + 18f, offerCard, "", 12),
             };
-            row.BtnExchange = wnd.AddButton(760f, y - 4f, 120f, growthPage.Tab, "兑换".Translate(), 13,
+            row.BtnExchange = wnd.AddButton(890f, y - 4f, 120f, offerCard, "兑换".Translate(), 13,
                 onClick: () => ExchangeOffer(row));
             row.TxtCost.rectTransform.sizeDelta = new Vector2(100f, 24f);
             row.TxtExtraCost.rectTransform.sizeDelta = new Vector2(120f, 24f);
@@ -115,24 +135,38 @@ public static class LimitedTimeStore {
             Tab = trans
         };
 
-        float y = 8f;
-        focusPage.TxtCurrentFocus = MyWindow.AddText(0f, y, focusPage.Tab, "", 14);
-        y += 28f;
-        focusPage.TxtOverview = MyWindow.AddText(0f, y, focusPage.Tab, "", 13);
-        focusPage.TxtOverview.rectTransform.sizeDelta = new Vector2(960f, 40f);
-        y += 52f;
+        focusPage.Header = PageLayout.CreatePageHeader(wnd, focusPage.Tab, "流派聚焦", "", "focus-store-header");
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        RectTransform currentCard = PageLayout.CreateContentCard(focusPage.Tab, "focus-store-current-card", 0f, top,
+            PageLayout.DesignWidth, 120f, true);
+        RectTransform listCard = PageLayout.CreateContentCard(focusPage.Tab, "focus-store-list-card", 0f,
+            top + 120f + PageLayout.Gap, PageLayout.DesignWidth, 531f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(focusPage.Tab, "focus-store-footer-card",
+            top + 120f + PageLayout.Gap + 531f + PageLayout.Gap);
 
-        wnd.AddButton(780f, 8f, 140f, focusPage.Tab, "前往抽取".Translate(), 13,
+        focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(wnd, currentCard, 18f, 14f, "当前聚焦", 15,
+            "focus-store-current-title");
+        focusPage.TxtFocusListTitle = PageLayout.AddCardTitle(wnd, listCard, 18f, 14f, "切换聚焦", 15,
+            "focus-store-list-title");
+
+        float y = 52f;
+        focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 14);
+        y += 28f;
+        focusPage.TxtOverview = MyWindow.AddText(18f, y, currentCard, "", 13);
+        focusPage.TxtOverview.rectTransform.sizeDelta = new Vector2(1028f, 40f);
+        y = 56f;
+
+        wnd.AddButton(872f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
 
         foreach (var focus in GachaService.FocusDefinitions) {
             float currentY = y;
-            var button = wnd.AddButton(0f, currentY, 280f, focusPage.Tab, "", 13,
+            var button = wnd.AddButton(18f, currentY, 280f, listCard, "", 13,
                 onClick: () => ChangeFocus(focus.FocusType));
-            Text desc = MyWindow.AddText(300f, currentY + 4f, focusPage.Tab,
+            Text desc = MyWindow.AddText(318f, currentY + 4f, listCard,
                 $"{focus.NameKey.Translate()}：{focus.DescKey.Translate()}", 13)
                 ;
-            desc.rectTransform.sizeDelta = new Vector2(620f, 40f);
+            desc.rectTransform.sizeDelta = new Vector2(704f, 40f);
             focusPage.Buttons.Add(button);
             focusPage.DescTexts.Add(desc);
             y += 48f;
@@ -174,6 +208,9 @@ public static class LimitedTimeStore {
         string focusText = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}    {"当前聚焦".Translate()}：{GetCurrentFocusName()}";
 
         if (growthPage?.Tab != null && growthPage.Tab.gameObject.activeSelf) {
+            growthPage.Header.Title.text = "成长规划".Translate().WithColor(Orange);
+            growthPage.TxtResourceTitle.text = "当前资源".Translate().WithColor(Orange);
+            growthPage.TxtOfferTitle.text = "成长定向".Translate().WithColor(Orange);
             growthPage.TxtResource.text = resourceText;
             growthPage.BtnMatrixIcon.Proto = LDB.items.Select(matrixId);
             growthPage.BtnMatrixIcon.SetCount(GetItemTotalCount(matrixId));
@@ -221,6 +258,9 @@ public static class LimitedTimeStore {
         }
 
         if (focusPage?.Tab != null && focusPage.Tab.gameObject.activeSelf) {
+            focusPage.Header.Title.text = "流派聚焦".Translate().WithColor(Orange);
+            focusPage.TxtCurrentFocusTitle.text = "当前聚焦".Translate().WithColor(Orange);
+            focusPage.TxtFocusListTitle.text = "切换聚焦".Translate().WithColor(Orange);
             focusPage.TxtCurrentFocus.text = focusText;
             focusPage.TxtOverview.text = GetCurrentFocusEffectText();
             for (int i = 0; i < focusPage.Buttons.Count && i < GachaService.FocusDefinitions.Count; i++) {

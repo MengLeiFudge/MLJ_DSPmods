@@ -33,11 +33,14 @@ public static class DevelopmentDiary {
     private static readonly HashSet<string> validFragmentIds = [.. diaryFragments.Select(static fragment => fragment.Id)];
 
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
     private static MyComboBox categoryCombo;
     private static MyComboBox fragmentCombo;
     private static UIButton btnPrevFragment;
     private static UIButton btnNextFragment;
     private static Text txtDiaryContent;
+    private static Text txtNavigatorTitle;
+    private static Text txtContentTitle;
     private static HashSet<string> unlockedFragmentIds = [];
     private static int currentCategoryIndex;
     private static int currentFragmentIndex;
@@ -52,6 +55,8 @@ public static class DevelopmentDiary {
         Register("开发日记锁定标题", "???", "？？？");
         Register("向前", "Previous");
         Register("向后", "Next");
+        Register("分类与片段", "Categories & Fragments", "分类与片段");
+        Register("正文阅读", "Reading View", "正文阅读");
 
         Register("FE1.0-1",
             "",
@@ -1209,10 +1214,24 @@ public static class DevelopmentDiary {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
+        header = PageLayout.CreatePageHeader(wnd, tab, "开发日记", "", "development-diary-header");
+
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        RectTransform navigatorCard = PageLayout.CreateContentCard(tab, "development-diary-nav-card", 0f, top,
+            278f, 593f, true);
+        RectTransform contentCard = PageLayout.CreateContentCard(tab, "development-diary-content-card",
+            278f + PageLayout.Gap, top, PageLayout.DesignWidth - 278f - PageLayout.Gap, 593f);
+        RectTransform footerCard = PageLayout.CreateFooterCard(tab, "development-diary-footer-card",
+            top + 593f + PageLayout.Gap);
+
+        txtNavigatorTitle = PageLayout.AddCardTitle(wnd, navigatorCard, 18f, 14f, "分类与片段", 15,
+            "development-diary-nav-title");
+        txtContentTitle = PageLayout.AddCardTitle(wnd, contentCard, 18f, 14f, "正文阅读", 15,
+            "development-diary-content-title");
 
         float x = 0f;
-        float y = 18f;
-        categoryCombo = wnd.AddComboBox(x, y, tab)
+        float y = 56f;
+        categoryCombo = wnd.AddComboBox(x + 18f, y, navigatorCard)
             .WithSize(170f, 0f)
             .WithOnSelChanged(index => {
                 if (suppressSelectionCallbacks) {
@@ -1224,8 +1243,9 @@ public static class DevelopmentDiary {
                 RefreshEntry();
             });
 
-        fragmentCombo = wnd.AddComboBox(x + 190f, y, tab)
-            .WithSize(260f, 0f)
+        y += 54f;
+        fragmentCombo = wnd.AddComboBox(x + 18f, y, navigatorCard)
+            .WithSize(230f, 0f)
             .WithOnSelChanged(index => {
                 if (suppressSelectionCallbacks) {
                     return;
@@ -1236,15 +1256,13 @@ public static class DevelopmentDiary {
                 RefreshEntry();
             });
 
-        y += 42f;
-        txtDiaryContent = wnd.AddText2(x, y, tab, string.Empty, 14, "txtDiaryContent");
+        txtDiaryContent = wnd.AddText2(18f, 56f, contentCard, string.Empty, 14, "txtDiaryContent");
         txtDiaryContent.supportRichText = true;
         txtDiaryContent.alignment = TextAnchor.UpperLeft;
-        txtDiaryContent.rectTransform.sizeDelta = new Vector2(1040f, 620f);
+        txtDiaryContent.rectTransform.sizeDelta = new Vector2(752f, 500f);
 
-        float buttonY = y + 652f;
-        btnPrevFragment = wnd.AddButton(x, buttonY, 130f, tab, "向前", onClick: PrevFragment);
-        btnNextFragment = wnd.AddButton(x + 150f, buttonY, 130f, tab, "向后", onClick: NextFragment);
+        btnPrevFragment = wnd.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);
+        btnNextFragment = wnd.AddButton(168f, 10f, 130f, footerCard, "向后", onClick: NextFragment);
 
         RefreshEntry();
     }
@@ -1272,6 +1290,11 @@ public static class DevelopmentDiary {
 
         DiaryFragment fragment = fragments[currentFragmentIndex];
         string content = fragment.ContentKey.Translate();
+        header.Title.text = "开发日记".Translate().WithColor(Orange);
+        header.Summary.text = $"{fragments.Length} 个片段可浏览    已解锁 {unlockedFragmentIds.Count}/{diaryFragments.Length}"
+            .WithColor(White);
+        txtNavigatorTitle.text = "分类与片段".Translate().WithColor(Orange);
+        txtContentTitle.text = GetFragmentDisplayLabel(fragment).WithColor(Orange);
         txtDiaryContent.text = IsUnlocked(fragment) ? content : BuildLockedContent(content);
     }
 

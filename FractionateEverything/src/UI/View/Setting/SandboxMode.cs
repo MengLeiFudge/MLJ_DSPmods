@@ -42,19 +42,28 @@ public static class SandboxMode {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "沙盒模式", "", "sandbox-mode-header");
+        header.Summary.text = "集中放置高影响力的沙盒操作，避免按钮散落在页面角落".WithColor(White);
+        RectTransform actionCard = PageLayout.CreateContentCard(parent, "sandbox-mode-action-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 250f, true);
+        RectTransform configCard = PageLayout.CreateContentCard(parent, "sandbox-mode-config-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 250f, PageLayout.DesignWidth, 413f);
+        PageLayout.AddCardTitle(wnd, actionCard, 18f, 14f, "批量操作", 15, "sandbox-mode-action-title");
+        PageLayout.AddCardTitle(wnd, configCard, 18f, 14f, "倍率与说明", 15, "sandbox-mode-config-title");
+
         float x = 0f;
         float y = 18f;
-        wnd.AddButton(0, 3, y, parent, "锁定所有分馏配方", 16, "button-lock-all-recipes",
+        wnd.AddButton(0, 3, y + 34f, actionCard, "锁定所有分馏配方", 16, "button-lock-all-recipes",
             RecipeManager.LockAllFracRecipes);
-        wnd.AddButton(1, 3, y, parent, "获得所有分馏配方", 16, "button-reward-all-recipes",
+        wnd.AddButton(1, 3, y + 34f, actionCard, "获得所有分馏配方", 16, "button-reward-all-recipes",
             RecipeManager.RewardAllFracRecipes);
-        wnd.AddButton(2, 3, y, parent, "满级所有分馏配方", 16, "button-max-all-recipes",
+        wnd.AddButton(2, 3, y + 34f, actionCard, "满级所有分馏配方", 16, "button-max-all-recipes",
             RecipeManager.MaxAllFracRecipes);
         y += 36f;
-        var txt = wnd.AddText2(x, y, parent, "经验获取倍率", 15, "text-exp-multi-ratio");
-        wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
+        var txt = wnd.AddText2(x + 18f, y + 34f, configCard, "经验获取倍率", 15, "text-exp-multi-ratio");
+        wnd.AddSlider(x + 23f + txt.preferredWidth, y + 34f, configCard,
             ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
+        wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y + 34f, configCard,
             "经验获取倍率", "经验获取倍率说明");
     }
 

@@ -157,59 +157,66 @@ public static class Miscellaneous {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "杂项设置", "", "misc-setting-header");
+        header.Summary.text = "把交互、阈值、抽卡模式与面板切换整理成统一设置页".WithColor(White);
+        RectTransform configCard = PageLayout.CreateContentCard(parent, "misc-setting-config-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 635f, true);
+        RectTransform footerCard = PageLayout.CreateFooterCard(parent, "misc-setting-footer-card",
+            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 635f);
+        PageLayout.AddCardTitle(wnd, configCard, 18f, 14f, "参数配置", 15, "misc-setting-config-title");
+
         float x = 0f;
-        float y = 18f;
-        var txt = wnd.AddText2(x, y, parent, "左键单击时提取几组物品");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+        float y = 52f;
+        var txt = wnd.AddText2(x + 18f, y, configCard, "左键单击时提取几组物品");
+        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "右键单击时提取几组物品");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+        txt = wnd.AddText2(x + 18f, y, configCard, "右键单击时提取几组物品");
+        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
             .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "物品提取目标");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+        txt = wnd.AddText2(x + 18f, y, configCard, "物品提取目标");
+        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
             .WithItems(ExtractTargetStrs).WithSize(200, 0).WithConfigEntry(ExtractTargetEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "物品消耗顺序");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+        txt = wnd.AddText2(x + 18f, y, configCard, "物品消耗顺序");
+        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
             .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "抽卡模式");
-        GachaModeComboBox = wnd.AddComboBox(x + 5 + txt.preferredWidth, y, parent)
+        txt = wnd.AddText2(x + 18f, y, configCard, "抽卡模式");
+        GachaModeComboBox = wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
             .WithItems("常规模式", "速通模式")
             .WithSize(200, 0)
             .WithIndex((int)GachaManager.CurrentMode)
             .WithOnSelChanged(index => GachaManager.SetMode((GachaMode)index));
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "物流交互站下载阈值");
-        DownloadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
+        txt = wnd.AddText2(x + 18f, y, configCard, "物流交互站下载阈值");
+        DownloadThresholdSlider = wnd.AddSlider(x + 23f + txt.preferredWidth, y, configCard,
             DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
+        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y, configCard,
             "物流交互站下载阈值", "物流交互站阈值修改说明");
         y += 36f;
-        txt = wnd.AddText2(x, y, parent, "物流交互站上传阈值");
-        UploadThresholdSlider = wnd.AddSlider(x + 5 + txt.preferredWidth, y, parent,
+        txt = wnd.AddText2(x + 18f, y, configCard, "物流交互站上传阈值");
+        UploadThresholdSlider = wnd.AddSlider(x + 23f + txt.preferredWidth, y, configCard,
             UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 5 + txt.preferredWidth + 200 + 5, y, parent,
+        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y, configCard,
             "物流交互站上传阈值", "物流交互站阈值修改说明");
         y += 36f;
-        var cb = wnd.AddCheckBox(x, y, parent, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
-        wnd.AddTipsButton2(x + cb.Width + 5, y, parent,
+        var cb = wnd.AddCheckBox(x + 18f, y, configCard, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
+        wnd.AddTipsButton2(x + 23f + cb.Width + 5, y, configCard,
             "显示分馏配方详细信息", "显示分馏配方详细信息说明");
         y += 36f;
-        cb = wnd.AddCheckBox(x, y, parent, EnableConfirmationDialogEntry, "启用确认弹窗");
-        wnd.AddTipsButton2(x + cb.Width + 5, y, parent,
+        cb = wnd.AddCheckBox(x + 18f, y, configCard, EnableConfirmationDialogEntry, "启用确认弹窗");
+        wnd.AddTipsButton2(x + 23f + cb.Width + 5, y, configCard,
             "启用确认弹窗", "启用确认弹窗说明");
         if (AutoSorter.Enable) {
             y += 36f;
             PackageAutoSortTwiceCheckBox =
-                wnd.AddCheckBox(x, y, parent, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+                wnd.AddCheckBox(x + 18f, y, configCard, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
         }
         y += 36f;
-        PackageSortTwiceCheckBox = wnd.AddCheckBox(x, y, parent, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
-        y += 36f;
-        SwitchMainPanelButton = wnd.AddButton(x, y, 220f, parent,
+        PackageSortTwiceCheckBox = wnd.AddCheckBox(x + 18f, y, configCard, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
+        SwitchMainPanelButton = wnd.AddButton(18f, 10f, 220f, footerCard,
             MainWindow.GetSwitchMainPanelButtonLabel(), 14,
             onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
     }

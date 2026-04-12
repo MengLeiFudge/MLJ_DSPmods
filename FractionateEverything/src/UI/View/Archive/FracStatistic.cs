@@ -17,6 +17,7 @@ namespace FE.UI.View.Archive;
 
 public static class FracStatistic {
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
     private static Text txtSummaryTitle;
     private static Text txtGrowthTitle;
     private static Text txtStockTitle;
@@ -50,23 +51,38 @@ public static class FracStatistic {
         Register("统计-市场下次刷新", "Market Refresh", "市场下次刷新");
         Register("统计-市场热度", "Market Heat", "市场热度");
         Register("统计-交易所概览", "Exchange Overview", "交易所概览");
+        Register("统计-页头摘要", "Growth, stock and economy overview", "成长、库存与动态经济总览");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        txtSummaryTitle = wnd.AddText2(0f, 18f, tab, "统计-总览", 16);
-        CreateLineGroup(wnd, summaryLines, 0f, 52f, "txtSummary");
+        header = PageLayout.CreatePageHeader(wnd, tab, "分馏统计", "", "frac-statistic-header");
 
-        txtStockTitle = wnd.AddText2(550f, 18f, tab, "统计-资源库存", 16);
-        CreateLineGroup(wnd, stockLines, 550f, 52f, "txtStock");
+        float top = PageLayout.HeaderHeight + PageLayout.Gap;
+        float cardWidth = (PageLayout.DesignWidth - PageLayout.Gap) / 2f;
+        float cardHeight = 284f;
+        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "frac-stat-summary-card", 0f, top,
+            cardWidth, cardHeight, true);
+        RectTransform stockCard = PageLayout.CreateContentCard(tab, "frac-stat-stock-card",
+            cardWidth + PageLayout.Gap, top, cardWidth, cardHeight, true);
+        RectTransform growthCard = PageLayout.CreateContentCard(tab, "frac-stat-growth-card", 0f,
+            top + cardHeight + PageLayout.Gap, cardWidth, cardHeight);
+        RectTransform economyCard = PageLayout.CreateContentCard(tab, "frac-stat-economy-card",
+            cardWidth + PageLayout.Gap, top + cardHeight + PageLayout.Gap, cardWidth, cardHeight);
 
-        txtGrowthTitle = wnd.AddText2(0f, 272f, tab, "统计-建筑成长", 16);
-        CreateLineGroup(wnd, growthLines, 0f, 306f, "txtGrowth");
+        txtSummaryTitle = PageLayout.AddCardTitle(wnd, summaryCard, 18f, 14f, "统计-总览", 16, "frac-stat-summary-title");
+        CreateLineGroup(wnd, summaryLines, summaryCard, 18f, 52f, "txtSummary");
 
-        txtEconomyTitle = wnd.AddText2(550f, 272f, tab, "统计-动态经济", 16);
-        CreateLineGroup(wnd, economyLines, 550f, 306f, "txtEconomy");
+        txtStockTitle = PageLayout.AddCardTitle(wnd, stockCard, 18f, 14f, "统计-资源库存", 16, "frac-stat-stock-title");
+        CreateLineGroup(wnd, stockLines, stockCard, 18f, 52f, "txtStock");
+
+        txtGrowthTitle = PageLayout.AddCardTitle(wnd, growthCard, 18f, 14f, "统计-建筑成长", 16, "frac-stat-growth-title");
+        CreateLineGroup(wnd, growthLines, growthCard, 18f, 52f, "txtGrowth");
+
+        txtEconomyTitle = PageLayout.AddCardTitle(wnd, economyCard, 18f, 14f, "统计-动态经济", 16, "frac-stat-economy-title");
+        CreateLineGroup(wnd, economyLines, economyCard, 18f, 52f, "txtEconomy");
     }
 
     public static void UpdateUI() {
@@ -74,10 +90,12 @@ public static class FracStatistic {
             return;
         }
 
-        txtSummaryTitle.text = "统计-总览".Translate();
-        txtGrowthTitle.text = "统计-建筑成长".Translate();
-        txtStockTitle.text = "统计-资源库存".Translate();
-        txtEconomyTitle.text = "统计-动态经济".Translate();
+        header.Title.text = "分馏统计".Translate().WithColor(Orange);
+        header.Summary.text = "统计-页头摘要".Translate().WithColor(White);
+        txtSummaryTitle.text = "统计-总览".Translate().WithColor(Orange);
+        txtGrowthTitle.text = "统计-建筑成长".Translate().WithColor(Orange);
+        txtStockTitle.text = "统计-资源库存".Translate().WithColor(Orange);
+        txtEconomyTitle.text = "统计-动态经济".Translate().WithColor(Orange);
 
         long drawCount = MainWindow.SharedPanelState?.TicketRaffleTotalDraws ?? TicketRaffle.totalDraws;
         int unlockedRecipes = GetUnlockedRecipeCount();
@@ -109,13 +127,14 @@ public static class FracStatistic {
         RefreshEconomyLines();
     }
 
-    private static void CreateLineGroup(MyWindow wnd, Text[] lines, float x, float startY, string keyPrefix) {
+    private static void CreateLineGroup(MyWindow wnd, Text[] lines, RectTransform parent, float x, float startY,
+        string keyPrefix) {
         float y = startY;
         for (int i = 0; i < lines.Length; i++) {
-            lines[i] = wnd.AddText2(x, y, tab, "", 13, $"{keyPrefix}{i}");
+            lines[i] = wnd.AddText2(x, y, parent, "", 13, $"{keyPrefix}{i}");
             lines[i].supportRichText = true;
-            lines[i].rectTransform.sizeDelta = new Vector2(500f, 24f);
-            y += 28f;
+            lines[i].rectTransform.sizeDelta = new Vector2(470f, 28f);
+            y += 32f;
         }
     }
 

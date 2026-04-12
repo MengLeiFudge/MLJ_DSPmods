@@ -20,6 +20,8 @@ public static class RecipeGallery {
     private const int RecipeCount = 3;
     private static RectTransform window;
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
+    private static Text txtGridTitle;
     private static readonly Text[,] recipeUnlockInfoText = new Text[MatrixCount + 2, RecipeCount + 2];
     private static int[] Matrixes = [I电磁矩阵, I能量矩阵, I结构矩阵, I信息矩阵, I引力矩阵, I宇宙矩阵, I黑雾矩阵];
 
@@ -35,14 +37,16 @@ public static class RecipeGallery {
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
-        float x = 0f;
+        header = PageLayout.CreatePageHeader(wnd, tab, "配方图鉴", "", "recipe-gallery-header");
+        RectTransform gridCard = PageLayout.CreateContentCard(tab, "recipe-gallery-grid-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
         float y = 18f;
-        wnd.AddText2(x, y, tab, "配方解锁情况").supportRichText = true;
-        y += 36f;
+        txtGridTitle = PageLayout.AddCardTitle(wnd, gridCard, 18f, 14f, "配方解锁情况", 16, "recipe-gallery-grid-title");
+        y = 58f;
         for (int i = 0; i < MatrixCount + 2; i++) {
             for (int j = 0; j < RecipeCount + 2; j++) {
                 (float, float) position = GetPosition(j, RecipeCount + 2);
-                recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, tab, "动态刷新");
+                recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, gridCard, "动态刷新");
                 recipeUnlockInfoText[i, j].supportRichText = true;
             }
             y += 36f;
@@ -70,6 +74,10 @@ public static class RecipeGallery {
         if (!IsPageVisible()) {
             return;
         }
+
+        header.Title.text = "配方图鉴".Translate().WithColor(Orange);
+        header.Summary.text = "配方解锁情况".Translate().WithColor(White);
+        txtGridTitle.text = "配方解锁情况".Translate().WithColor(Orange);
 
         int[,] fullUpgradeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] unlockCountArr = new int[MatrixCount + 1, RecipeCount + 1];

@@ -74,7 +74,10 @@ public static class VanillaRecipeOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        tab = trans;
+        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "原版配方", "", "vanilla-recipe-header");
+        header.Summary.text = "查看原版配方的原料、耗时与升级进度".WithColor(White);
+        tab = PageLayout.CreateContentCard(trans, "vanilla-recipe-content-card", 0f,
+            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
         float x = 0f;
         float y = 18f + 7f;
 
