@@ -59,7 +59,6 @@ public static class LimitedTimeStore {
     public static void AddTranslations() {
         Register("成长规划", "Growth Planning");
         Register("流派聚焦", "Focus Control");
-        Register("资源统筹", "Resource Overview");
         Register("前往抽取", "Go Draw");
         Register("兑换", "Exchange");
         Register("当前资源", "Resource");

@@ -26,7 +26,7 @@ public static class ResourceOverview {
     private static readonly Text[] coldTexts = new Text[DisplayCount];
 
     public static void AddTranslations() {
-        Register("资源统筹", "Resource Overview");
+        Register("市场总览", "Market Overview");
         Register("高需求物资", "Hot Demand");
         Register("低需求物资", "Cold Demand");
         Register("下次刷新", "Next refresh");
@@ -54,7 +54,7 @@ public static class ResourceOverview {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "资源统筹", "", "resource-overview-header");
+        header = PageLayout.CreatePageHeader(wnd, tab, "市场总览", "", "resource-overview-header");
         txtRefresh = header.Summary;
 
         RectTransform hotCard = PageLayout.CreateContentCard(tab, "resource-overview-hot-card", 0f,
@@ -96,7 +96,7 @@ public static class ResourceOverview {
             return;
         }
 
-        header.Title.text = "资源统筹".Translate().WithColor(Orange);
+        header.Title.text = "市场总览".Translate().WithColor(Orange);
         long leftTicks = MarketValueManager.RefreshIntervalTicks - (GameMain.gameTick - MarketValueManager.LastRefreshTick);
         if (leftTicks < 0) {
             leftTicks = 0;

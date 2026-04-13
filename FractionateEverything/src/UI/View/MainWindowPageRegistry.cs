@@ -12,11 +12,11 @@ using UnityEngine;
 namespace FE.UI.View;
 
 public static class MainWindowPageRegistry {
-    public const string CoreOperateCategoryName = "核心操作";
-    public const string ResourceInteractionCategoryName = "物资交互";
+    public const string CoreOperateCategoryName = "生产管理";
+    public const string ResourceInteractionCategoryName = "资源管理";
     public const string DrawGrowthCategoryName = "抽取成长";
-    public const string ProgressTaskCategoryName = "进度任务";
-    public const string ArchiveCategoryName = "资料档案";
+    public const string ProgressTaskCategoryName = "任务成就";
+    public const string ArchiveCategoryName = "图鉴档案";
     public const string SystemSettingCategoryName = "系统设置";
     public const string ItemManageCategoryName = ResourceInteractionCategoryName;
     public const string GachaCategoryName = DrawGrowthCategoryName;
@@ -26,8 +26,8 @@ public static class MainWindowPageRegistry {
 
     private static readonly string[] categoryOrder = [
         CoreOperateCategoryName,
-        ResourceInteractionCategoryName,
         DrawGrowthCategoryName,
+        ResourceInteractionCategoryName,
         ProgressTaskCategoryName,
         ArchiveCategoryName,
         SystemSettingCategoryName,
@@ -39,7 +39,7 @@ public static class MainWindowPageRegistry {
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI, enabledInAnalysis: true),
 
         new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "资源统筹", ResourceOverview.CreateUI, ResourceOverview.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI, enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI, enabledInAnalysis: true),
@@ -48,7 +48,7 @@ public static class MainWindowPageRegistry {
         new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "资源统筹", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
         new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI, enabledInAnalysis: true),
         new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI, enabledInAnalysis: true),
