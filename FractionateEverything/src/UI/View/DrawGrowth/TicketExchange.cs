@@ -28,8 +28,8 @@ public static class TicketExchange {
     private static MyImageButton btnDarkFogMatrix;
 
     public static void AddTranslations() {
-        Register("资源统筹", "Resource Overview");
-        Register("资源统筹说明",
+        Register("抽取总览", "Draw Overview");
+        Register("抽取总览说明",
             "Version 2.3 no longer uses physical tickets. Draws consume the current stage Matrix directly, while Growth / Focus use Fragments and pool points.",
             "2.3 版本不再使用实体奖券。抽取直接消耗当前阶段矩阵，成长与聚焦则消耗残片和池积分。");
         Register("开线池成本", "Opening Pool Cost");
@@ -46,7 +46,7 @@ public static class TicketExchange {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "资源统筹", "", "ticket-exchange-header");
+        header = PageLayout.CreatePageHeader(wnd, tab, "抽取总览", "", "ticket-exchange-header");
         txtOverview = header.Summary;
 
         float top = PageLayout.HeaderHeight + PageLayout.Gap;
@@ -91,7 +91,7 @@ public static class TicketExchange {
         wnd.AddButton(18f, 10f, 160f, footerCard, "前往成长规划".Translate(), 13,
             onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
         wnd.AddButton(194f, 10f, 160f, footerCard, "前往市场板".Translate(), 13,
-            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 3));
+            onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 2));
     }
 
     public static void UpdateUI() {
@@ -104,8 +104,8 @@ public static class TicketExchange {
         btnCurrentMatrix.SetCount(GetItemTotalCount(matrixId));
         btnFragment.SetCount(GetItemTotalCount(IFE残片));
         btnDarkFogMatrix.SetCount(GetItemTotalCount(I黑雾矩阵));
-        header.Title.text = "资源统筹".Translate().WithColor(Orange);
-        txtOverview.text = $"{ "资源统筹说明".Translate() }";
+        header.Title.text = "抽取总览".Translate().WithColor(Orange);
+        txtOverview.text = $"{ "抽取总览说明".Translate() }";
         txtResourceTitle.text = "当前资源".Translate().WithColor(Orange);
         txtCostTitle.text = "核心成本".Translate().WithColor(Orange);
         txtDarkFogTitle.text = "黑雾支线说明".Translate().WithColor(Orange);

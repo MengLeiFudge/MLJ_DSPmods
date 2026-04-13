@@ -42,11 +42,11 @@ public static class MainWindow {
         Register("分馏数据中心", "Fractionation Data Centre");
         Register("切换到分析主面板", "Switch to analysis main panel");
         Register("切换到旧版主面板", "Switch to legacy main panel");
-        Register("核心操作", "Core Operation");
+        Register("生产管理", "Production Management");
         FracRecipeOperate.AddTranslations();
         VanillaRecipeOperate.AddTranslations();
         BuildingOperate.AddTranslations();
-        Register("物资交互", "Resource Interaction");
+        Register("资源管理", "Resource Management");
         ItemInteraction.AddTranslations();
         ResourceOverview.AddTranslations();
         MarketBoard.AddTranslations();
@@ -59,12 +59,12 @@ public static class MainWindow {
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
         TicketExchange.AddTranslations();
-        Register("进度任务", "Progress & Tasks");
+        Register("任务成就", "Tasks & Achievements");
         MainTask.AddTranslations();
         RecurringTask.AddTranslations();
         Achievements.AddTranslations();
         DevelopmentDiary.AddTranslations();
-        Register("资料档案", "Archive");
+        Register("图鉴档案", "Gallery & Archive");
         RecipeGallery.AddTranslations();
         FracStatistic.AddTranslations();
         Register("系统设置", "System Setting");
