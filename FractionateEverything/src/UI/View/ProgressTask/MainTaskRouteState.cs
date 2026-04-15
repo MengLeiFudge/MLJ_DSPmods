@@ -179,6 +179,11 @@ public static partial class MainTask {
         }
     }
 
+    private static bool CanShowRealtimeTip() {
+        // 旧存档导入后的前几帧可能已经开始跑主线奖励检查，但游戏内提示 UI 还没完成创建。
+        return UIRoot.instance?.uiGame?.generalTips != null && UIRoot.instance.uiGame.active;
+    }
+
     private static void GrantNodeReward(int modeIndex, int branchIndex, int nodeIndex, bool showPopup, bool allowRewardGrant) {
         if (rewardedByMode[modeIndex][branchIndex][nodeIndex]) {
             return;
@@ -195,7 +200,7 @@ public static partial class MainTask {
         }
         rewardedByMode[modeIndex][branchIndex][nodeIndex] = true;
 
-        if (showPopup) {
+        if (showPopup && CanShowRealtimeTip()) {
             UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name.Translate()), true, 2);
         }
     }
