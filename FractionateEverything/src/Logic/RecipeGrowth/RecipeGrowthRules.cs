@@ -5,6 +5,7 @@ namespace FE.Logic.RecipeGrowth;
 
 public static class RecipeGrowthRules {
     private static readonly int[] BuildingTrainThresholds = [12, 20, 34, 56, 90];
+    private static readonly int[] DarkFogThresholds = [12, 20, 34, 56, 90];
     private static readonly int[] RectificationThresholds = [14, 24, 42, 72, 120];
 
     private static readonly RecipeGrowthRule BuildingTrainForwardRule = new(
@@ -113,6 +114,7 @@ public static class RecipeGrowthRules {
         }
         return rule.Family switch {
             RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse => BuildingTrainThresholds[currentLevel],
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog => DarkFogThresholds[currentLevel],
             RecipeFamily.Rectification => RectificationThresholds[currentLevel],
             _ => int.MaxValue,
         };
