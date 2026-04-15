@@ -124,6 +124,28 @@ public static class FracRecipeOperate {
         Register("不消耗原料", "No Consume");
         Register("翻倍产出", "Double Output");
         Register("损毁", "Destroy");
+        Register("解锁方式", "Unlock Method");
+        Register("升级方式", "Upgrade Method");
+        Register("成长进度", "Growth Progress");
+        Register("通过开线抽取获取", "Obtain from Opening Pool");
+        Register("通过开线抽取获取；部分前期配方也会随科技保底解锁",
+            "Obtain from Opening Pool; some early recipes are also unlocked by tech baseline");
+        Register("通过原胚闭环或成长规划获得；相关科技也会保底解锁",
+            "Obtain from Proto Loop or Growth Planning; related tech also provides baseline unlock");
+        Register("通过成长规划或固定入口获得；解锁后直接满级",
+            "Obtain from Growth Planning or fixed entry; unlocking grants max level directly");
+        Register("通过科技保底解锁", "Unlocked by tech baseline");
+        Register("首次获得对应黑雾物品后解锁", "Unlock after obtaining the related Dark Fog item once");
+        Register("重复抽到该配方即可升级", "Upgrade by drawing the same recipe again");
+        Register("处理对应原胚获取经验，重复获得时也会直接提升",
+            "Gain EXP by processing matching proto; duplicate rewards also level it up");
+        Register("处理对应原胚获取经验", "Gain EXP by processing the matching proto");
+        Register("处理对应黑雾物品获取经验，也可通过成长规划补差",
+            "Gain EXP by processing the matching Dark Fog item, or catch up through Growth Planning");
+        Register("处理对应矩阵获取保底进度", "Build pity progress by processing matching matrices");
+        Register("解锁后", "After unlocking");
+        Register("直接满级", "be granted at max level immediately");
+        Register("已完全升级，无需继续成长", "Fully upgraded; no further growth needed");
     }
 
     // ==================== 配置加载 ====================
@@ -443,6 +465,115 @@ public static class FracRecipeOperate {
         for (int lineIdx = maxLevel + 2; lineIdx < LevelLineCount; lineIdx++) {
             txtLevelInfo[lineIdx].text = "";
         }
+
+        int infoLineIdx = maxLevel + 2;
+        if (!snapshot.IsUnlocked) {
+            SetRightInfoLine(infoLineIdx++, $"{"解锁方式".Translate()}：{BuildUnlockHint(recipe)}".WithColor(Blue));
+        }
+
+        if (!snapshot.IsMaxed) {
+            string upgradeHint = BuildUpgradeHint(recipe, snapshot);
+            if (!string.IsNullOrEmpty(upgradeHint)) {
+                SetRightInfoLine(infoLineIdx++, $"{"升级方式".Translate()}：{upgradeHint}"
+                    .WithColor(snapshot.IsUnlocked ? White : Gray));
+            }
+
+            string progressHint = BuildUpgradeProgressHint(recipe, snapshot);
+            if (!string.IsNullOrEmpty(progressHint)) {
+                SetRightInfoLine(infoLineIdx++, $"{"成长进度".Translate()}：{progressHint}".WithColor(Gray));
+            }
+        } else {
+            SetRightInfoLine(infoLineIdx++, $"{"升级方式".Translate()}：{"已完全升级，无需继续成长".Translate()}".WithColor(Green));
+        }
+
+        for (; infoLineIdx < LevelLineCount; infoLineIdx++) {
+            txtLevelInfo[infoLineIdx].text = "";
+        }
+    }
+
+    /// <summary>
+    /// 右侧等级栏下方的辅助说明统一走这里，避免后续继续分散手写定位。
+    /// </summary>
+    private static void SetRightInfoLine(int lineIdx, string text) {
+        if (lineIdx < 0 || lineIdx >= LevelLineCount) {
+            return;
+        }
+
+        txtLevelInfo[lineIdx].text = text;
+        float lineY = txtRecipeInfoBaseY + LineHeight * lineIdx;
+        NormalizeRectWithMidLeft(txtLevelInfo[lineIdx], RightColX, lineY);
+    }
+
+    /// <summary>
+    /// 按当前配方家族生成解锁提示，优先输出玩家在当前版本里真正能执行的入口。
+    /// </summary>
+    private static string BuildUnlockHint(BaseRecipe recipe) {
+        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
+        return rule.Family switch {
+            RecipeFamily.MineralCopyNormal when rule.TechBaselineLevel > 0
+                => "通过开线抽取获取；部分前期配方也会随科技保底解锁".Translate(),
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
+                => "通过开线抽取获取".Translate(),
+            RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse
+                => "通过原胚闭环或成长规划获得；相关科技也会保底解锁".Translate(),
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+                => "首次获得对应黑雾物品后解锁".Translate(),
+            RecipeFamily.ConversionBuilding or RecipeFamily.PointAggregate
+                => "通过成长规划或固定入口获得；解锁后直接满级".Translate(),
+            RecipeFamily.Rectification
+                => "通过科技保底解锁".Translate(),
+            _ => "通过开线抽取获取".Translate(),
+        };
+    }
+
+    /// <summary>
+    /// 按成长模式给出升级方式说明；若当前还未解锁，会自动补上“解锁后”前缀。
+    /// </summary>
+    private static string BuildUpgradeHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
+        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
+        string prefix = snapshot.IsUnlocked ? string.Empty : $"{ "解锁后".Translate() }";
+        return rule.Family switch {
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
+                => prefix + "重复抽到该配方即可升级".Translate(),
+            RecipeFamily.BuildingTrainForward
+                => prefix + "处理对应原胚获取经验，重复获得时也会直接提升".Translate(),
+            RecipeFamily.BuildingTrainReverse
+                => prefix + "处理对应原胚获取经验".Translate(),
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+                => prefix + "处理对应黑雾物品获取经验，也可通过成长规划补差".Translate(),
+            RecipeFamily.Rectification
+                => prefix + "处理对应矩阵获取保底进度".Translate(),
+            RecipeFamily.ConversionBuilding or RecipeFamily.PointAggregate
+                => snapshot.IsUnlocked
+                    ? "已完全升级，无需继续成长".Translate()
+                    : prefix + "直接满级".Translate(),
+            _ => string.Empty,
+        };
+    }
+
+    /// <summary>
+    /// 只有当前规则存在明确阈值时，才显示经验/保底进度，避免给出虚假的进度条。
+    /// </summary>
+    private static string BuildUpgradeProgressHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
+        if (!snapshot.IsUnlocked || snapshot.IsMaxed) {
+            return string.Empty;
+        }
+
+        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
+        int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, snapshot.Level);
+        if (threshold == int.MaxValue) {
+            return string.Empty;
+        }
+
+        if (rule.UsesPity) {
+            return $"{snapshot.PityProgress}/{threshold}";
+        }
+
+        if (rule.UsesGrowthExp) {
+            return $"{snapshot.GrowthExp}/{threshold}";
+        }
+
+        return string.Empty;
     }
 
     private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;
