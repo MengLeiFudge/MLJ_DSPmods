@@ -25,7 +25,9 @@ public readonly struct GachaGrowthOffer(
     int outputCount,
     GachaFocusType focusType = GachaFocusType.Balanced,
     int extraCostItemId = 0,
-    int extraCostCount = 0) {
+    int extraCostCount = 0,
+    GachaGrowthOfferKind offerKind = GachaGrowthOfferKind.ItemGrant,
+    ERecipe recipeType = 0) {
     public int PointCost { get; } = pointCost;
     public int FragmentCost { get; } = fragmentCost;
     public int OutputId { get; } = outputId;
@@ -33,6 +35,14 @@ public readonly struct GachaGrowthOffer(
     public GachaFocusType FocusType { get; } = focusType;
     public int ExtraCostItemId { get; } = extraCostItemId;
     public int ExtraCostCount { get; } = extraCostCount;
+    public GachaGrowthOfferKind OfferKind { get; } = offerKind;
+    public ERecipe RecipeType { get; } = recipeType;
+}
+
+public enum GachaGrowthOfferKind {
+    ItemGrant = 0,
+    DarkFogCatchup = 1,
+    DarkFogRecipeGrowth = 2,
 }
 
 internal readonly struct GachaRewardResolution(
@@ -180,9 +190,8 @@ public static class GachaService {
         return adjusted;
     }
 
-    public static bool TryExchangeGrowthOffer(GachaGrowthOffer offer, out int rewardItemId, out int rewardCount) {
-        rewardItemId = 0;
-        rewardCount = 0;
+    internal static bool TryExchangeGrowthOffer(GachaGrowthOffer offer, out GachaRewardResolution reward) {
+        reward = new GachaRewardResolution(GachaRewardType.None, 0, 0);
 
         if (offer.PointCost > 0 && !GachaManager.TryConsumePoolPoints(GachaPool.PoolIdGrowth, offer.PointCost)) {
             return false;
@@ -208,14 +217,45 @@ public static class GachaService {
                 offer.OutputId,
                 offer.OutputCount,
                 RecipeGrowthManager.BuildContext(manual: true));
-            rewardItemId = offer.OutputId;
-            rewardCount = appliedRecipeCount > 0 ? offer.OutputCount : 0;
+            reward = new GachaRewardResolution(GachaRewardType.ItemGranted, offer.OutputId,
+                appliedRecipeCount > 0 ? offer.OutputCount : 0);
+            return true;
+        }
+
+        if (IsDarkFogRecipeGrowthOffer(offer)) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(offer.RecipeType, offer.OutputId);
+            if (recipe == null) {
+                if (offer.PointCost > 0) {
+                    GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
+                }
+                if (offer.FragmentCost > 0) {
+                    AddItemToModData(IFE残片, offer.FragmentCost, 0, true);
+                }
+                if (offer.ExtraCostItemId > 0) {
+                    AddItemToModData(offer.ExtraCostItemId, offer.ExtraCostCount, 0, true);
+                }
+                return false;
+            }
+
+            bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
+            RecipeGrowthResult growthResult = RecipeGrowthExecutor.ApplyDrawReward(recipe,
+                RecipeGrowthManager.BuildContext(manual: true));
+            if (growthResult.FragmentReward > 0) {
+                AddItemToModData(IFE残片, growthResult.FragmentReward, 0, true);
+                reward = new GachaRewardResolution(GachaRewardType.DuplicateRecipeFragments, IFE残片,
+                    growthResult.FragmentReward);
+                return true;
+            }
+
+            reward = new GachaRewardResolution(
+                wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade,
+                offer.OutputId,
+                RecipeGrowthQueries.GetLevel(recipe));
             return true;
         }
 
         AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
-        rewardItemId = offer.OutputId;
-        rewardCount = offer.OutputCount;
+        reward = new GachaRewardResolution(GachaRewardType.ItemGranted, offer.OutputId, offer.OutputCount);
         return true;
     }
 
@@ -239,7 +279,7 @@ public static class GachaService {
         }
 
         return new GachaGrowthOffer(pointCost, fragmentCost, offer.OutputId, outputCount, offer.FocusType,
-            offer.ExtraCostItemId, offer.ExtraCostCount);
+            offer.ExtraCostItemId, offer.ExtraCostCount, offer.OfferKind, offer.RecipeType);
     }
 
     public static bool IsFocusedGrowthOffer(GachaGrowthOffer offer) {
@@ -257,8 +297,11 @@ public static class GachaService {
     }
 
     public static bool IsDarkFogCatchupOffer(GachaGrowthOffer offer) {
-        return offer.ExtraCostItemId == I黑雾矩阵
-               && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId);
+        return offer.OfferKind == GachaGrowthOfferKind.DarkFogCatchup;
+    }
+
+    public static bool IsDarkFogRecipeGrowthOffer(GachaGrowthOffer offer) {
+        return offer.OfferKind == GachaGrowthOfferKind.DarkFogRecipeGrowth;
     }
 
     private static IReadOnlyList<GachaGrowthOffer> BuildNormalGrowthOffers() {
@@ -295,25 +338,37 @@ public static class GachaService {
         if (stage >= EDarkFogCombatStage.Signal) {
             offers.Add(new(18 + pointBaseOffset, 12 + fragmentBaseOffset, I能量碎片,
                 RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.Signal),
-                GachaFocusType.RectificationEconomy, I黑雾矩阵, 1));
+                GachaFocusType.RectificationEconomy, I黑雾矩阵, 1, GachaGrowthOfferKind.DarkFogCatchup));
         }
         if (stage >= EDarkFogCombatStage.GroundSuppression) {
             offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I物质重组器,
                 RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.GroundSuppression),
-                GachaFocusType.ConversionLeap, I黑雾矩阵, 2));
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 2, GachaGrowthOfferKind.DarkFogCatchup));
             offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I硅基神经元,
                 RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.GroundSuppression),
-                GachaFocusType.ProcessOptimization, I黑雾矩阵, 2));
+                GachaFocusType.ProcessOptimization, I黑雾矩阵, 2, GachaGrowthOfferKind.DarkFogCatchup));
+            offers.Add(new(26 + pointBaseOffset, 16 + fragmentBaseOffset, I重组式制造台, 1,
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 2,
+                GachaGrowthOfferKind.DarkFogRecipeGrowth, ERecipe.Conversion));
+            offers.Add(new(30 + pointBaseOffset, 18 + fragmentBaseOffset, I自演化研究站, 1,
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 2,
+                GachaGrowthOfferKind.DarkFogRecipeGrowth, ERecipe.Conversion));
         }
         if (stage >= EDarkFogCombatStage.StellarHunt) {
             offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵奇点,
                 RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.StellarHunt),
-                GachaFocusType.RectificationEconomy, I黑雾矩阵, 3));
+                GachaFocusType.RectificationEconomy, I黑雾矩阵, 3, GachaGrowthOfferKind.DarkFogCatchup));
+            offers.Add(new(38 + pointBaseOffset, 24 + fragmentBaseOffset, I负熵熔炉, 1,
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 3,
+                GachaGrowthOfferKind.DarkFogRecipeGrowth, ERecipe.Conversion));
         }
         if (stage >= EDarkFogCombatStage.Singularity) {
             offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I核心素,
                 RecipeGrowthCatchup.GetDarkFogCatchupBase(EDarkFogCombatStage.Singularity),
-                GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
+                GachaFocusType.EmbryoCycle, I黑雾矩阵, 4, GachaGrowthOfferKind.DarkFogCatchup));
+            offers.Add(new(45 + pointBaseOffset, 30 + fragmentBaseOffset, I奇异湮灭燃料棒, 1,
+                GachaFocusType.ConversionLeap, I黑雾矩阵, 4,
+                GachaGrowthOfferKind.DarkFogRecipeGrowth, ERecipe.Conversion));
         }
         if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity) {
             if (enhancedNodeCount >= 2) {

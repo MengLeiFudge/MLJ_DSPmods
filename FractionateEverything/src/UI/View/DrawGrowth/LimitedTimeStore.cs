@@ -176,17 +176,25 @@ public static class LimitedTimeStore {
         }
 
         GachaGrowthOffer offer = row.Offer;
-        if (!GachaService.TryExchangeGrowthOffer(offer, out int rewardItemId, out int rewardCount)) {
+        if (!GachaService.TryExchangeGrowthOffer(offer, out GachaRewardResolution reward)) {
             return;
         }
 
-        string itemName = LDB.items.Select(rewardItemId)?.name ?? rewardItemId.ToString();
+        string itemName = LDB.items.Select(offer.OutputId)?.name ?? offer.OutputId.ToString();
         if (GachaService.IsDarkFogCatchupOffer(offer)) {
-            UIRealtimeTip.Popup(rewardCount > 0
-                ? $"对应 {itemName} 黑雾配方成长 +{rewardCount}"
+            UIRealtimeTip.Popup(reward.RewardCount > 0
+                ? $"对应 {itemName} 黑雾配方成长 +{reward.RewardCount}"
                 : $"对应 {itemName} 黑雾配方暂未推进");
+        } else if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
+            string message = reward.RewardType switch {
+                GachaRewardType.RecipeUnlock => $"{itemName} 转化配方已解锁，当前 Lv{reward.RewardCount}",
+                GachaRewardType.RecipeUpgrade => $"{itemName} 转化配方提升到 Lv{reward.RewardCount}",
+                GachaRewardType.DuplicateRecipeFragments => $"{itemName} 转化配方已满级，转化为残片 x{reward.RewardCount}",
+                _ => $"{itemName} 转化配方暂未推进",
+            };
+            UIRealtimeTip.Popup(message);
         } else {
-            UIRealtimeTip.Popup($"获得 {itemName} x{rewardCount}");
+            UIRealtimeTip.Popup($"获得 {itemName} x{reward.RewardCount}");
         }
         UpdateUI();
     }
@@ -283,6 +291,9 @@ public static class LimitedTimeStore {
         if (GachaService.IsDarkFogCatchupOffer(offer)) {
             return $"{itemName} 配方成长 +{offer.OutputCount}";
         }
+        if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
+            return $"{itemName} 转化配方成长";
+        }
         return $"{itemName} x{offer.OutputCount}";
     }
 
@@ -292,6 +303,9 @@ public static class LimitedTimeStore {
                 if (DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)) {
                     return "黑雾增强层报价：消耗黑雾矩阵换取战斗支线的后段突破资源。".WithColor(Gold);
                 }
+                if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
+                    return $"黑雾支线配方报价：当前阶段 {GetDarkFogStageName()}，消耗黑雾矩阵推进隐藏科技转化配方。".WithColor(Blue);
+                }
                 return $"黑雾支线报价：当前阶段 {GetDarkFogStageName()}，消耗黑雾矩阵换取阶段性支线资源。".WithColor(Blue);
             }
             return "常规补差：不受聚焦折扣影响。".WithColor(White);
@@ -300,7 +314,11 @@ public static class LimitedTimeStore {
         string focusName = GachaService.GetFocusName(offer.FocusType);
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
             string prefix = offer.ExtraCostItemId == I黑雾矩阵
-                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ? "黑雾增强层报价。" : "黑雾支线报价。"
+                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)
+                    ? "黑雾增强层报价。"
+                    : GachaService.IsDarkFogRecipeGrowthOffer(offer)
+                        ? "黑雾支线配方报价。"
+                        : "黑雾支线报价。"
                 : "成长定向：";
             return $"{prefix}{focusName}。切到该方向后才会降价/加量。".WithColor(White);
         }
@@ -309,6 +327,8 @@ public static class LimitedTimeStore {
         string detail = offer.ExtraCostItemId == I黑雾矩阵
             ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)
                 ? $"黑雾增强层命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
+                : GachaService.IsDarkFogRecipeGrowthOffer(offer)
+                    ? $"黑雾支线配方命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
                 : $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
             : $"已命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算";
         if (GachaService.IsCoreGrowthReward(offer)) {
