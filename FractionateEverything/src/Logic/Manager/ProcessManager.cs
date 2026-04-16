@@ -46,7 +46,7 @@ public static class ProcessManager {
         Register("损毁", "Destroy");
         Register("流体输出", "Fluid output");
         Register("配方强化", "Recipe enhancement");
-        Register("单锁", "Single lock");
+        Register("单锁", "Single Lock");
         Register("未锁定", "Not locked");
         Register("右键设为单锁", "Right-click to lock this output");
         Register("右键清除单锁", "Right-click to clear single lock");

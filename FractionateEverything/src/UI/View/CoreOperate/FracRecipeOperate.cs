@@ -84,15 +84,11 @@ public static class FracRecipeOperate {
             "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
         Register("配方类型", "Recipe type");
 
-        Register("解锁配方", "Unlock recipe");
-
         Register("配方不存在！", "Recipe does not exist!");
         Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
         Register("成功率", "Success Ratio");
         Register("损毁率", "Destroy Ratio");
         Register("产出", "Output");
-        //Register("增产点数", "Proliferator Points"); // 原版已翻译
-        //Register("其他", "Others"); // 原版已翻译
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("每个原料平均产出：", "Average output per raw material:");
@@ -107,11 +103,7 @@ public static class FracRecipeOperate {
         Register("已启用", "Enabled");
         Register("未启用", "Disabled");
         Register("牺牲特性", "Sacrifice Trait");
-        Register("维度共鸣", "Dimensional Resonance");
-        Register("质能裂变", "Mass-Energy Fission");
-        Register("零压循环", "Zero Pressure Cycle");
         Register("因果追踪", "Causal Tracing");
-        Register("单锁", "Single Lock");
         Register("虚空喷射", "Void Spray");
         Register("双倍点数", "Double Points");
         Register("最大增产等级", "Max Inc Level");
@@ -123,7 +115,6 @@ public static class FracRecipeOperate {
         Register("无通用加成", "No General Bonus");
         Register("不消耗原料", "No Consume");
         Register("翻倍产出", "Double Output");
-        Register("损毁", "Destroy");
         Register("解锁方式", "Unlock Method");
         Register("升级方式", "Upgrade Method");
         Register("成长进度", "Growth Progress");

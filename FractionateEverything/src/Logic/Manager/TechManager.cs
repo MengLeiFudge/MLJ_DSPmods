@@ -89,7 +89,6 @@ public static class TechManager {
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
         Register("解锁全部建筑培养配方", "Unlock all building train recipes");
         Register("给予一个交互塔", "Provide a Interactive Tower");
-        // Register("给予一些分馏塔原胚", "Provide some fractionator protos");//上面有了
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",

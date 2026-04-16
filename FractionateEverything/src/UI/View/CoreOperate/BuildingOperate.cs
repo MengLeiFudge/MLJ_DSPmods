@@ -73,13 +73,11 @@ public static class BuildingOperate {
         Register("+1 集装数目", "+1 integration count");
         Register("+1 产物输出集装数目", "to +1 product output integration count");
 
-        //Register("分馏永动", "Frac forever");//已注册
         Register("分馏永动说明",
             "Once enabled, when the product cache reaches its limit, the building will no longer process incoming items but will instead transport them directly to the flow output.",
             "启用后，当产物缓存达到上限时，建筑将不再处理输入的物品，而是直接将其直接搬运到流动输出。");
         Register("已启用分馏永动", "Enable fractionate forever");
         Register("未启用分馏永动", "Not enable fractionate forever");
-        //Register("启用", "Enable");//已注册
         Register("启用分馏永动", "to enable fractionate forever");
 
         Register("点数聚集效率层次", "Point accumulation efficiency level");

@@ -659,8 +659,6 @@ public static class Achievements {
         Register("成就分类-探索", "Explore", "探索");
         Register("成就分类-挑战", "Challenge", "挑战");
         Register("描述", "Description");
-        Register("状态", "Status");
-        Register("奖励", "Reward");
 
         Register("已获得成就", "Obtained: {0}/{1}", "已获得：{0}/{1}");
         Register("隐藏未解锁", "Locked: {0}", "未解锁：{0}");
@@ -678,8 +676,6 @@ public static class Achievements {
         Register("功能奖励-发电", "Power +{0}%", "发电 +{0}%");
         Register("需启用深空联动", "Requires They Come From Void", "需启用深空联动");
         Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.", "需启用《深空来敌》联动，未开启时无法完成");
-        Register("上一页", "Prev page");
-        Register("下一页", "Next page");
         Register("隐藏成就提示", "???", "???");
         Register("隐藏成就描述", "Hidden achievement", "未解锁");
         Register("成就获得提示", "Achievement unlocked: {0}", "获得成就：{0}");
@@ -724,9 +720,7 @@ public static class Achievements {
         Register("成就-精馏开路", "Rectification Opening");
         Register("成就-万物归一", "All Into One");
         Register("黑雾信标", "Dark Fog Signal", "黑雾信标");
-        Register("黑雾压制", "Ground Suppression", "黑雾压制");
         Register("蜂巢猎场", "Hive Hunt", "蜂巢猎场");
-        Register("奇点收束", "Singularity Convergence", "奇点收束");
         Register("遗物共振", "Relic Resonance", "遗物共振");
         Register("功勋回路", "Merit Circuit", "功勋回路");
         Register("授权整备", "Authorization Setup", "授权整备");

@@ -81,7 +81,7 @@ public static class TicketRaffle {
         Register("开线池", "Opening Pool");
         Register("原胚闭环池", "Proto Loop Pool");
         Register("成长池", "Growth Pool");
-        Register("流派聚焦", "Focus Layer");
+        Register("流派聚焦", "Focus Control");
         Register("阶段箱池", "Stage Box Pool");
         Register("简化原胚池", "Simplified Proto Pool");
         Register("简化成长池", "Simplified Growth Pool");
@@ -112,14 +112,12 @@ public static class TicketRaffle {
             "Speedrun mode only. Focus switching is free, and selected themes become much stronger while other themes weaken.",
             "仅速通模式使用。聚焦切换免费，选中的主题会显著变强，其他主题则被明显弱化。");
 
-        Register("当前资源", "Resource");
         Register("当前模式", "Mode");
         Register("当前阶段矩阵", "Current Stage Matrix");
         Register("残片余额", "Fragments");
         Register("保底进度", "Pity");
         Register("当前池积分", "Pool Points");
         Register("成长池积分", "Growth Points");
-        Register("当前聚焦", "Focus");
         Register("抽1次", "Draw x1");
         Register("抽10次", "Draw x10");
         Register("前往成长池", "Go Growth");
