@@ -547,52 +547,6 @@ public static class TechManager {
                 EnsureRecipeInitialLevel(recipe);
             }
         }
-
-        foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.Conversion)) {
-            if (!ShouldEnsureDarkFogConversionRecipeBaseline(recipe)) {
-                continue;
-            }
-            EnsureRecipeInitialLevel(recipe);
-        }
-    }
-
-    private static bool ShouldEnsureDarkFogConversionRecipeBaseline(BaseRecipe recipe) {
-        if (recipe == null || recipe.InputID <= 0) {
-            return false;
-        }
-
-        if (recipe.InputID == I奇异湮灭燃料棒) {
-            return IsInputItemTechUnlocked(recipe.InputID);
-        }
-
-        return RecipeGrowthRules.GetFamily(recipe) == RecipeFamily.ConversionBuilding
-               && recipe.MatrixID == I黑雾矩阵
-               && IsInputItemTechUnlocked(recipe.InputID);
-    }
-
-    private static bool IsInputItemTechUnlocked(int itemId) {
-        int techId = GetInputItemUnlockTechId(itemId);
-        return techId > 0 && GameMain.history.TechUnlocked(techId, true);
-    }
-
-    private static int GetInputItemUnlockTechId(int itemId) {
-        if (itemId == I奇异湮灭燃料棒) {
-            return T高密度可控湮灭;
-        }
-
-        ItemProto item = LDB.items.Select(itemId);
-        if (item?.preTech != null) {
-            return item.preTech.ID;
-        }
-
-        foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-            if (recipe?.preTech == null || recipe.Results == null || !recipe.Results.Contains(itemId)) {
-                continue;
-            }
-            return recipe.preTech.ID;
-        }
-
-        return 0;
     }
 
     /// <summary>
