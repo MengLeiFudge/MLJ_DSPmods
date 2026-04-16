@@ -1361,6 +1361,7 @@ public static class DevelopmentDiary {
 
     public static void IntoOtherSave() {
         ResetState();
+        SyncUnlockedFragmentsWithAchievements();
     }
 
     #endregion

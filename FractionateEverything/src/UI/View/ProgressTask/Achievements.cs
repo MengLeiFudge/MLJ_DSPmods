@@ -59,14 +59,8 @@ public static class Achievements {
 
     private readonly struct AchievementRewardDefinition(
         string rewardKey,
-        int itemId = 0,
-        int count = 0,
-        bool useCurrentStageMatrix = false,
         bool unlockRecurringAutoClaim = false) {
         public readonly string RewardKey = rewardKey;
-        public readonly int ItemId = itemId;
-        public readonly int Count = count;
-        public readonly bool UseCurrentStageMatrix = useCurrentStageMatrix;
         public readonly bool UnlockRecurringAutoClaim = unlockRecurringAutoClaim;
     }
 
@@ -170,21 +164,6 @@ public static class Achievements {
 
     private static Dictionary<string, AchievementRewardDefinition> BuildRewardDefinitionsByKey() {
         AchievementRewardDefinition[] definitions = [
-            new("成就奖励-残片200", IFE残片, 200),
-            new("成就奖励-残片300", IFE残片, 300),
-            new("成就奖励-残片500", IFE残片, 500),
-            new("成就奖励-残片800", IFE残片, 800),
-            new("成就奖励-残片1000", IFE残片, 1000),
-            new("成就奖励-残片2000", IFE残片, 2000),
-            new("成就奖励-当前阶段矩阵2", count: 2, useCurrentStageMatrix: true),
-            new("成就奖励-当前阶段矩阵4", count: 4, useCurrentStageMatrix: true),
-            new("成就奖励-当前阶段矩阵8", count: 8, useCurrentStageMatrix: true),
-            new("成就奖励-当前阶段矩阵16", count: 16, useCurrentStageMatrix: true),
-            new("成就奖励-配方核心1", IFE残片, 500),
-            new("成就奖励-配方核心3", IFE残片, 1000),
-            new("成就奖励-定向原胚1", IFE分馏塔定向原胚, 1),
-            new("成就奖励-星际物流交互站1", IFE星际物流交互站, 1),
-            new("成就奖励-精馏塔原胚3", IFE精馏塔原胚, 3),
             new("成就奖励-循环任务自动领取", unlockRecurringAutoClaim: true),
         ];
 
@@ -689,6 +668,14 @@ public static class Achievements {
 
         Register("已获得", "Obtained", "已获得");
         Register("未解锁", "Locked");
+        Register("无额外功能奖励", "No extra functional bonus", "无额外功能奖励");
+        Register("功能加成过多", "Multiple passive bonuses", "多项被动加成");
+        Register("功能奖励-成功", "Success +{0}%", "成功 +{0}%");
+        Register("功能奖励-损毁", "Destroy -{0}%", "损毁 -{0}%");
+        Register("功能奖励-翻倍", "Double +{0}%", "翻倍 +{0}%");
+        Register("功能奖励-能耗", "Energy -{0}%", "能耗 -{0}%");
+        Register("功能奖励-物流", "Logistics +{0}%", "物流 +{0}%");
+        Register("功能奖励-发电", "Power +{0}%", "发电 +{0}%");
         Register("需启用深空联动", "Requires They Come From Void", "需启用深空联动");
         Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.", "需启用《深空来敌》联动，未开启时无法完成");
         Register("上一页", "Prev page");
@@ -780,13 +767,9 @@ public static class Achievements {
         CheckAndUnlockAchievements(showPopup: true);
     }
 
-    private static void ResetSaveState() {
-        Array.Clear(unlocked, 0, unlocked.Length);
-        Array.Clear(claimed, 0, claimed.Length);
-        panelOpenCount = 0;
+    private static void ResetTransientState() {
         currentPage = 0;
         nextAutoCheckFrame = 0;
-        MarkBonusSummaryDirty();
         SyncCurrentPageToSharedState();
     }
 
@@ -1094,33 +1077,19 @@ public static class Achievements {
             txtAchievementNames[index].text =
                 $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
             txtAchievementDescs[index].text = GetDisplayedDesc(info);
-            txtAchievementRewards[index].text = "";
+            rewardIcons[index].gameObject.SetActive(false);
+            txtAchievementRewards[index].text = GetFunctionalRewardText(info);
             txtAchievementStates[index].text = info.RequiresTheyComeFromVoid && !TheyComeFromVoid.Enable
                 ? "需启用深空联动".Translate().WithColor(Orange)
                 : "未解锁".Translate().WithColor(Gray);
-            rewardIcons[index].gameObject.SetActive(false);
             return;
         }
-
-        bool hasRewardIcon = TryGetRewardIconInfo(info.RewardKey, out int rewardItemId, out int rewardCount);
-        rewardIcons[index].gameObject.SetActive(hasRewardIcon);
-        rewardIcons[index].Proto = hasRewardIcon ? LDB.items.Select(rewardItemId) : null;
-        string rewardText = hasRewardIcon
-            ? $"x{rewardCount}".WithColor(Blue)
-            : info.RewardKey.Translate().WithColor(Blue);
 
         txtAchievementNames[index].text =
             $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
         txtAchievementDescs[index].text = GetDisplayedDesc(info);
-        txtAchievementRewards[index].text = rewardText;
-        rewardIcons[index].gameObject.SetActive(hasRewardIcon);
-        if (hasRewardIcon) {
-            rewardIcons[index].SetCount(rewardCount);
-            txtAchievementRewards[index].text = "";
-        }
-        else {
-            rewardIcons[index].ClearCountText();
-        }
+        rewardIcons[index].gameObject.SetActive(false);
+        txtAchievementRewards[index].text = GetFunctionalRewardText(info);
 
         txtAchievementStates[index].text = "已获得".Translate().WithColor(Green);
     }
@@ -1134,6 +1103,40 @@ public static class Achievements {
         return $"{desc}\n{"成就依赖-深空联动".Translate().WithColor(Orange)}";
     }
 
+    private static string GetFunctionalRewardText(AchievementInfo info) {
+        List<string> rewards = [];
+        AddFunctionalRewardText(rewards, "功能奖励-成功", info.SuccessRateBonus, positive: true);
+        AddFunctionalRewardText(rewards, "功能奖励-损毁", info.DestroyReductionBonus, positive: false);
+        AddFunctionalRewardText(rewards, "功能奖励-翻倍", info.DoubleOutputBonus, positive: true);
+        AddFunctionalRewardText(rewards, "功能奖励-能耗", info.EnergyReductionBonus, positive: false);
+        AddFunctionalRewardText(rewards, "功能奖励-物流", info.LogisticsBonus, positive: true);
+        AddFunctionalRewardText(rewards, "功能奖励-发电", info.PowerStageBonus, positive: true);
+
+        if (TryResolveRewardDefinition(info.RewardKey, out AchievementRewardDefinition definition)
+            && definition.UnlockRecurringAutoClaim) {
+            rewards.Add("成就奖励-循环任务自动领取".Translate());
+        }
+
+        if (rewards.Count == 0) {
+            return "无额外功能奖励".Translate().WithColor(Gray);
+        }
+
+        if (rewards.Count <= 2) {
+            return string.Join(" / ", rewards).WithColor(Blue);
+        }
+
+        return $"{string.Join(" / ", rewards.Take(2))} / {"功能加成过多".Translate()}".WithColor(Blue);
+    }
+
+    private static void AddFunctionalRewardText(List<string> rewards, string key, float value, bool positive) {
+        if (value <= 0f) {
+            return;
+        }
+
+        float percent = value * 100f;
+        rewards.Add(string.Format(key.Translate(), percent.ToString("0.##")));
+    }
+
     private static Color GetTierColor(ETier tier) {
         return tier switch {
             ETier.Bronze => Orange,
@@ -1144,19 +1147,6 @@ public static class Achievements {
         };
     }
 
-    private static bool TryGetRewardIconInfo(string rewardKey, out int itemId, out int count) {
-        if (TryResolveRewardDefinition(rewardKey, out AchievementRewardDefinition definition)
-            && !definition.UnlockRecurringAutoClaim) {
-            itemId = definition.UseCurrentStageMatrix ? GetCurrentStageMatrixId() : definition.ItemId;
-            count = definition.Count;
-            return itemId > 0 && count > 0;
-        }
-
-        itemId = 0;
-        count = 0;
-        return false;
-    }
-
     private static void GrantRewardByKey(string rewardKey) {
         if (!TryResolveRewardDefinition(rewardKey, out AchievementRewardDefinition definition)) {
             return;
@@ -1164,24 +1154,11 @@ public static class Achievements {
 
         if (definition.UnlockRecurringAutoClaim) {
             RecurringTask.UnlockAutoClaim();
-            return;
-        }
-
-        int itemId = definition.UseCurrentStageMatrix ? GetCurrentStageMatrixId() : definition.ItemId;
-        if (itemId > 0 && definition.Count > 0) {
-            GrantItems((itemId, definition.Count));
         }
     }
 
     private static bool TryResolveRewardDefinition(string rewardKey, out AchievementRewardDefinition definition) {
         return rewardDefinitionsByKey.TryGetValue(rewardKey, out definition);
-    }
-
-    private static void GrantItems(params (int itemId, int count)[] rewards) {
-        foreach ((int itemId, int count) in rewards) {
-            AddItemToModData(itemId, count, 0, true);
-            UIItemup.Up(itemId, count);
-        }
     }
 
     private static bool IsTechUnlocked(int techId) {
@@ -1229,7 +1206,7 @@ public static class Achievements {
             return;
         }
 
-        ResetSaveState();
+        ResetTransientState();
 
         bool migrated = false;
         bool[] oldUnlocked = [];
@@ -1238,7 +1215,11 @@ public static class Achievements {
 
         r.ReadBlocks(
             ("PanelOpenCountV2", br => {
-                panelOpenCount = Math.Max(0, br.ReadInt32());
+                int importedCount = Math.Max(0, br.ReadInt32());
+                if (importedCount > panelOpenCount) {
+                    panelOpenCount = importedCount;
+                    migrated = true;
+                }
             }),
             ("ClaimedFlagsV2", br => {
                 saveClaimed = ReadLegacyFlags(br);
@@ -1278,13 +1259,8 @@ public static class Achievements {
                 continue;
             }
 
-            if (wasClaimed) {
-                unlocked[newIndex] = true;
-                claimed[newIndex] = true;
-            }
-            else {
-                UnlockAchievement(newIndex, showPopup: false);
-            }
+            unlocked[newIndex] = true;
+            claimed[newIndex] = true;
             migrated = true;
         }
 
@@ -1316,7 +1292,7 @@ public static class Achievements {
     }
 
     public static void IntoOtherSave() {
-        ResetSaveState();
+        ResetTransientState();
         PersistAchievementConfig(forceSave: true);
     }
 
