@@ -1,3 +1,4 @@
+using System;
 using FE.Logic.Recipe;
 using static FE.Utils.Utils;
 
@@ -11,7 +12,7 @@ public static class RecipeGrowthRules {
     private static readonly RecipeGrowthRule BuildingTrainForwardRule = new(
         RecipeFamily.BuildingTrainForward, RecipeGrowthMode.Hybrid, 5, 0, 2, 2, false, true, false);
     private static readonly RecipeGrowthRule BuildingTrainReverseRule = new(
-        RecipeFamily.BuildingTrainReverse, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
+        RecipeFamily.BuildingTrainReverse, RecipeGrowthMode.ProcessExp, 5, 0, 1, 1, false, true, false);
     private static readonly RecipeGrowthRule MineralCopyDarkFogRule = new(
         RecipeFamily.MineralCopyDarkFog, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
     private static readonly RecipeGrowthRule ConversionMaterialDarkFogRule = new(
@@ -88,7 +89,13 @@ public static class RecipeGrowthRules {
         if (rule.Family == RecipeFamily.PointAggregate) {
             return rule.MaxLevel;
         }
-        return ClampLevel(rule, legacyLevel);
+        if (legacyLevel < 0) {
+            return 0;
+        }
+
+        // 旧版 Level=0 代表“已解锁的基础态”，新系统中必须至少映射到 Lv1。
+        int storedLevel = Math.Max(1, (legacyLevel + 2) / 2);
+        return ClampLevel(rule, storedLevel);
     }
 
     public static int GetEffectiveLegacyLevel(BaseRecipe recipe, int storedLevel) {
