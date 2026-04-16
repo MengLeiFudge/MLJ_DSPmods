@@ -17,7 +17,7 @@ namespace FE.Logic.Manager;
 /// </summary>
 public static class TechManager {
     private static readonly bool[] techUnlockFlags = new bool[7];
-    private static bool initialRecipeBaselineChecked;
+    private static bool pendingLoadTimeRecipeBaselineApply;
 
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
@@ -463,14 +463,22 @@ public static class TechManager {
 
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
-        initialRecipeBaselineChecked = false;
+        pendingLoadTimeRecipeBaselineApply = false;
     }
 
     /// <summary>
-    /// 保障关键科技自带的起步配方至少达到开线池首抽同档位的初始等级。
-    /// 这既覆盖新解锁科技，也用于读档后补齐旧存档遗漏的初始配方等级。
+    /// 读档后补齐关键科技自带的起步配方。
+    /// 只在读档阶段触发请求，等配方索引 ready 后执行一次。
     /// </summary>
-    private static bool TryEnsureGuaranteedRecipeBaselines() {
+    public static void RequestLoadTimeRecipeBaselineApply() {
+        pendingLoadTimeRecipeBaselineApply = true;
+    }
+
+    public static bool TryApplyLoadTimeRecipeBaselines() {
+        if (!pendingLoadTimeRecipeBaselineApply) {
+            return true;
+        }
+
         if (GameMain.history == null || !AreFracRecipesReady) {
             return false;
         }
@@ -484,7 +492,8 @@ public static class TechManager {
         if (GameMain.history.TechUnlocked(TFE物品精馏, true)) {
             EnsureRectificationRecipeBaseline();
         }
-        EnsureTargetedConversionRecipeBaselines();
+        EnsureGuaranteedConversionRecipeBaselines();
+        pendingLoadTimeRecipeBaselineApply = false;
         return true;
     }
 
@@ -516,10 +525,10 @@ public static class TechManager {
     }
 
     /// <summary>
-    /// 部分战斗/后勤支线配方如果长期只依赖开线池随机，容易在高进度存档里一直缺口。
-    /// 当对应原版科技已解锁时，补一个最低档位保底，避免黄棒和战斗建筑转化链长期漏出。
+    /// 部分配方不在开线池里，或被归进黑雾阶段后没有自然获取入口。
+    /// 当其对应科技已解锁时，补一个最低档位保底，避免旧档和高进度档里永久缺口。
     /// </summary>
-    private static void EnsureTargetedConversionRecipeBaselines() {
+    private static void EnsureGuaranteedConversionRecipeBaselines() {
         (int itemId, int techId)[] targets = [
             (I增产剂MkIII, T增产剂MkIII),
             (I战场分析基站, T战场分析基站),
@@ -538,6 +547,52 @@ public static class TechManager {
                 EnsureRecipeInitialLevel(recipe);
             }
         }
+
+        foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.Conversion)) {
+            if (!ShouldEnsureDarkFogConversionRecipeBaseline(recipe)) {
+                continue;
+            }
+            EnsureRecipeInitialLevel(recipe);
+        }
+    }
+
+    private static bool ShouldEnsureDarkFogConversionRecipeBaseline(BaseRecipe recipe) {
+        if (recipe == null || recipe.InputID <= 0) {
+            return false;
+        }
+
+        if (recipe.InputID == I奇异湮灭燃料棒) {
+            return IsInputItemTechUnlocked(recipe.InputID);
+        }
+
+        return RecipeGrowthRules.GetFamily(recipe) == RecipeFamily.ConversionBuilding
+               && recipe.MatrixID == I黑雾矩阵
+               && IsInputItemTechUnlocked(recipe.InputID);
+    }
+
+    private static bool IsInputItemTechUnlocked(int itemId) {
+        int techId = GetInputItemUnlockTechId(itemId);
+        return techId > 0 && GameMain.history.TechUnlocked(techId, true);
+    }
+
+    private static int GetInputItemUnlockTechId(int itemId) {
+        if (itemId == I奇异湮灭燃料棒) {
+            return T高密度可控湮灭;
+        }
+
+        ItemProto item = LDB.items.Select(itemId);
+        if (item?.preTech != null) {
+            return item.preTech.ID;
+        }
+
+        foreach (RecipeProto recipe in LDB.recipes.dataArray) {
+            if (recipe?.preTech == null || recipe.Results == null || !recipe.Results.Contains(itemId)) {
+                continue;
+            }
+            return recipe.preTech.ID;
+        }
+
+        return 0;
     }
 
     /// <summary>
@@ -572,10 +627,7 @@ public static class TechManager {
             }
         }
 
-        if (!initialRecipeBaselineChecked && TryEnsureGuaranteedRecipeBaselines()) {
-            // 配方索引在 FinalAction() 里统一建完之前，不能把“已补基线”标记提前写死。
-            initialRecipeBaselineChecked = true;
-        }
+        TryApplyLoadTimeRecipeBaselines();
 
         RecipeGrowthManager.SyncRuntimeUnlocks();
     }
@@ -620,5 +672,7 @@ public static class TechManager {
         } else if (_techId == TFE物品精馏) {
             EnsureRectificationRecipeBaseline();
         }
+
+        EnsureGuaranteedConversionRecipeBaselines();
     }
 }
