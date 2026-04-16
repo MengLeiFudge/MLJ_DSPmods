@@ -485,6 +485,7 @@ public static class TechManager {
         if (GameMain.history.TechUnlocked(TFE物品精馏, true)) {
             EnsureRectificationRecipeBaseline();
         }
+        EnsureTargetedConversionRecipeBaselines();
     }
 
     private static void EnsureBuildingTrainRecipeBaseline() {
@@ -511,6 +512,31 @@ public static class TechManager {
     private static void EnsureRectificationRecipeBaseline() {
         foreach (BaseRecipe recipe in GetRecipesByType(ERecipe.Rectification)) {
             EnsureRecipeInitialLevel(recipe);
+        }
+    }
+
+    /// <summary>
+    /// 部分战斗/后勤支线配方如果长期只依赖开线池随机，容易在高进度存档里一直缺口。
+    /// 当对应原版科技已解锁时，补一个最低档位保底，避免黄棒和战斗建筑转化链长期漏出。
+    /// </summary>
+    private static void EnsureTargetedConversionRecipeBaselines() {
+        (int itemId, int techId)[] targets = [
+            (I增产剂MkIII, T增产剂MkIII),
+            (I战场分析基站, T战场分析基站),
+            (I信号塔, T信号塔),
+            (I干扰塔, T干扰塔),
+            (I行星护盾发生器, T行星防御系统),
+        ];
+
+        foreach ((int itemId, int techId) in targets) {
+            if (!GameMain.history.TechUnlocked(techId, true)) {
+                continue;
+            }
+
+            BaseRecipe recipe = GetRecipe<BaseRecipe>(ERecipe.Conversion, itemId);
+            if (recipe != null) {
+                EnsureRecipeInitialLevel(recipe);
+            }
         }
     }
 
