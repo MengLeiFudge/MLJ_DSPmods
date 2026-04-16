@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
+using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
@@ -38,7 +39,8 @@ public static class Achievements {
         float doubleOutputBonus = 0f,
         float energyReductionBonus = 0f,
         float logisticsBonus = 0f,
-        float powerStageBonus = 0f) {
+        float powerStageBonus = 0f,
+        bool requiresTheyComeFromVoid = false) {
         public readonly string CategoryKey = categoryKey;
         public readonly string NameKey = nameKey;
         public readonly string DescKey = descKey;
@@ -52,6 +54,7 @@ public static class Achievements {
         public readonly float EnergyReductionBonus = energyReductionBonus;
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
+        public readonly bool RequiresTheyComeFromVoid = requiresTheyComeFromVoid;
     }
 
     private readonly struct AchievementRewardDefinition(
@@ -426,7 +429,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "黑雾信标",
-            "进入战斗模式并接通黑雾支线",
+            "将黑雾支线推进到“信号接触”阶段",
             "成就奖励-当前阶段矩阵4",
             ETier.Bronze,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Signal,
@@ -436,7 +439,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "黑雾压制",
-            "将黑雾战斗支线推进到地面压制阶段",
+            "将黑雾支线推进到“地面压制”阶段",
             "成就奖励-残片800",
             ETier.Silver,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.GroundSuppression,
@@ -446,7 +449,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "蜂巢猎场",
-            "将黑雾战斗支线推进到星域围猎阶段",
+            "将黑雾支线推进到“星域围猎”阶段",
             "成就奖励-当前阶段矩阵8",
             ETier.Gold,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.StellarHunt,
@@ -457,7 +460,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "奇点收束",
-            "将黑雾战斗支线推进到奇点收束阶段",
+            "将黑雾支线推进到“奇点收束”阶段",
             "成就奖励-残片2000",
             ETier.Platinum,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Singularity,
@@ -468,23 +471,25 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "遗物共振",
-            "在黑雾增强层中持有至少 1 个元驱动",
+            "在黑雾增强层获得至少 1 个元驱动",
             "成就奖励-配方核心1",
             ETier.Gold,
             () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetRelicCount() >= 1,
             () => GrantRewardByKey("成就奖励-配方核心1"),
             doubleOutputBonus: 0.003f,
-            logisticsBonus: 0.003f));
+            logisticsBonus: 0.003f,
+            requiresTheyComeFromVoid: true));
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "功勋回路",
-            "在黑雾增强层中将功勋等级提升到 4",
+            "在黑雾增强层将功勋等级提升到 4",
             "成就奖励-定向原胚1",
             ETier.Platinum,
             () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetMeritRank() >= 4,
             () => GrantRewardByKey("成就奖励-定向原胚1"),
             logisticsBonus: 0.004f,
-            powerStageBonus: 0.015f));
+            powerStageBonus: 0.015f,
+            requiresTheyComeFromVoid: true));
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
             "授权整备",
@@ -494,7 +499,8 @@ public static class Achievements {
             () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetAssignedSkillPointCount() >= 8,
             () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
             energyReductionBonus: 0.03f,
-            powerStageBonus: 0.01f));
+            powerStageBonus: 0.01f,
+            requiresTheyComeFromVoid: true));
     }
 
     private static void AddExplorationAchievements(List<AchievementInfo> list) {
@@ -683,6 +689,8 @@ public static class Achievements {
 
         Register("已获得", "Obtained", "已获得");
         Register("未解锁", "Locked");
+        Register("需启用深空联动", "Requires They Come From Void", "需启用深空联动");
+        Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.", "需启用《深空来敌》联动，未开启时无法完成");
         Register("上一页", "Prev page");
         Register("下一页", "Next page");
         Register("隐藏成就提示", "???", "???");
@@ -1085,9 +1093,11 @@ public static class Achievements {
         if (!claimed[index]) {
             txtAchievementNames[index].text =
                 $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
-            txtAchievementDescs[index].text = info.DescKey.Translate();
+            txtAchievementDescs[index].text = GetDisplayedDesc(info);
             txtAchievementRewards[index].text = "";
-            txtAchievementStates[index].text = "未解锁".Translate().WithColor(Gray);
+            txtAchievementStates[index].text = info.RequiresTheyComeFromVoid && !TheyComeFromVoid.Enable
+                ? "需启用深空联动".Translate().WithColor(Orange)
+                : "未解锁".Translate().WithColor(Gray);
             rewardIcons[index].gameObject.SetActive(false);
             return;
         }
@@ -1101,7 +1111,7 @@ public static class Achievements {
 
         txtAchievementNames[index].text =
             $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
-        txtAchievementDescs[index].text = info.DescKey.Translate();
+        txtAchievementDescs[index].text = GetDisplayedDesc(info);
         txtAchievementRewards[index].text = rewardText;
         rewardIcons[index].gameObject.SetActive(hasRewardIcon);
         if (hasRewardIcon) {
@@ -1113,6 +1123,15 @@ public static class Achievements {
         }
 
         txtAchievementStates[index].text = "已获得".Translate().WithColor(Green);
+    }
+
+    private static string GetDisplayedDesc(AchievementInfo info) {
+        string desc = info.DescKey.Translate();
+        if (!info.RequiresTheyComeFromVoid) {
+            return desc;
+        }
+
+        return $"{desc}\n{"成就依赖-深空联动".Translate().WithColor(Orange)}";
     }
 
     private static Color GetTierColor(ETier tier) {
