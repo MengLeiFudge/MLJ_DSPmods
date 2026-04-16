@@ -26,9 +26,6 @@ public static class FragmentExchange {
 
     public static void AddTranslations() {
         Register("残片兑换", "Fragment Exchange");
-        Register("买1", "Buy 1");
-        Register("买10", "Buy 10");
-        Register("买100", "Buy 100");
         Register("兑换价格", "Quote");
         Register("当前持有", "Balance");
         Register("目标物品", "Target Item", "目标物品");

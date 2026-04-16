@@ -6,6 +6,8 @@ using CommonAPI.Systems.ModLocalization;
 namespace FE.Utils;
 
 public static partial class Utils {
+    private static readonly Dictionary<string, (string enTrans, string cnTrans)> registeredTranslations = [];
+
     /// <summary>
     /// 添加翻译，仅在Awake结束前可用。
     /// </summary>
@@ -13,11 +15,20 @@ public static partial class Utils {
     /// <param name="enTrans">英文翻译</param>
     /// <param name="cnTrans">中文翻译，留空时回退到 key</param>
     public static void Register(string key, string enTrans, string cnTrans = null) {
+        string resolvedCn = cnTrans ?? key;
+        if (registeredTranslations.TryGetValue(key, out var existing)) {
+            if (existing.enTrans != enTrans || existing.cnTrans != resolvedCn) {
+                LogError($"Duplicate translation key '{key}' ignored. Existing=({existing.enTrans}, {existing.cnTrans}), New=({enTrans}, {resolvedCn})");
+            }
+            return;
+        }
+
+        registeredTranslations[key] = (enTrans, resolvedCn);
         // LocalizationModule.RegisterTranslation(key, enTrans, cnTrans ?? key, enTrans);
         // 对于当前CommonAPI版本（1.6.7），RegisterTranslation(key, dic)不会检测trans为null或空字符串的情况
         Dictionary<string, string> dic = [];
         dic["enUS"] = enTrans;
-        dic["zhCN"] = cnTrans ?? key;
+        dic["zhCN"] = resolvedCn;
         dic["frFR"] = enTrans;
         LocalizationModule.RegisterTranslation(key, dic);
     }

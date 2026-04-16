@@ -42,7 +42,6 @@ public static partial class MainTask {
         Register("否", "No");
         Register("无", "None", "无");
         Register("分馏次数", "Fractionations", "分馏次数");
-        Register("开线抽取", "Opening draws", "开线抽取");
         Register("科技解锁", "Tech unlocked", "科技解锁");
         Register("建筑等级", "Building level", "建筑等级");
         Register("解锁配方", "Unlocked recipes", "解锁配方");

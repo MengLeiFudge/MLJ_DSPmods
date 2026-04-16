@@ -31,7 +31,7 @@ public static class ResourceOverview {
         Register("低需求物资", "Cold Demand");
         Register("下次刷新", "Next refresh");
         Register("黑雾支线", "Dark Fog Branch");
-        Register("黑雾阶段", "Branch Stage", "支线阶段");
+        Register("支线阶段", "Branch Stage", "支线阶段");
         Register("黑雾战况", "Combat Status", "战况概览");
         Register("黑雾成长报价", "Growth Offers", "成长报价");
         Register("黑雾市场特单", "Special Orders", "市场特单");
@@ -121,7 +121,7 @@ public static class ResourceOverview {
         int unlockedRecipes = snapshots.Count(snapshot => snapshot.IsUnlocked);
         int maxedRecipes = snapshots.Count(snapshot => snapshot.IsMaxed);
 
-        darkFogLines[0].text = $"{ "黑雾阶段".Translate() }：{stageName}";
+        darkFogLines[0].text = $"{ "支线阶段".Translate() }：{stageName}";
         darkFogLines[1].text =
             $"{ "黑雾战况".Translate() }：{ "黑雾地面基地".Translate() } {DarkFogCombatManager.GetAliveGroundBaseCount()}    { "黑雾星域蜂巢".Translate() } {DarkFogCombatManager.GetAliveHiveCount()}    { "黑雾物资层级".Translate() } {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
         darkFogLines[2].text = $"{ "黑雾成长报价".Translate() }：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    { "黑雾市场特单".Translate() }：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";

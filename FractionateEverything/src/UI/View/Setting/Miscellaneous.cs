@@ -83,7 +83,6 @@ public static class Miscellaneous {
         Register("物品消耗顺序", "Order of consumption of items");
         Register("背包", "Package");
         Register("物流背包", "Delivery Package");
-        //Register("分馏数据中心", "Fractionation Data Centre");
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
         Register("物流交互站上传阈值", "Interaction Station upload threshold");
@@ -93,8 +92,6 @@ public static class Miscellaneous {
 
         Register("显示分馏配方详细信息", "Show fractionate recipe details");
         Register("抽卡模式", "Gacha Mode", "抽卡模式");
-        Register("常规模式", "Normal Mode", "常规模式");
-        Register("速通模式", "Speedrun Mode", "速通模式");
         Register("显示分馏配方详细信息说明",
             "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
             "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
