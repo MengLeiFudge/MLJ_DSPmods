@@ -266,6 +266,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
+        TechManager.RequestLoadTimeRecipeBaselineApply();
+        TechManager.TryApplyLoadTimeRecipeBaselines();
     }
 
     /// <summary>
