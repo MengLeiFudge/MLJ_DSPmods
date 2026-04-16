@@ -471,9 +471,9 @@ public static class TechManager {
     /// 保障关键科技自带的起步配方至少达到开线池首抽同档位的初始等级。
     /// 这既覆盖新解锁科技，也用于读档后补齐旧存档遗漏的初始配方等级。
     /// </summary>
-    private static void EnsureGuaranteedRecipeBaselines() {
-        if (GameMain.history == null) {
-            return;
+    private static bool TryEnsureGuaranteedRecipeBaselines() {
+        if (GameMain.history == null || !AreFracRecipesReady) {
+            return false;
         }
 
         if (GameMain.history.TechUnlocked(TFE分馏塔原胚, true)) {
@@ -486,6 +486,7 @@ public static class TechManager {
             EnsureRectificationRecipeBaseline();
         }
         EnsureTargetedConversionRecipeBaselines();
+        return true;
     }
 
     private static void EnsureBuildingTrainRecipeBaseline() {
@@ -572,8 +573,8 @@ public static class TechManager {
             }
         }
 
-        if (!initialRecipeBaselineChecked) {
-            EnsureGuaranteedRecipeBaselines();
+        if (!initialRecipeBaselineChecked && TryEnsureGuaranteedRecipeBaselines()) {
+            // 配方索引在 FinalAction() 里统一建完之前，不能把“已补基线”标记提前写死。
             initialRecipeBaselineChecked = true;
         }
 
