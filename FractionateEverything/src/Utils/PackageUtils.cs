@@ -195,7 +195,7 @@ public static partial class Utils {
         lock (centerItemCount) {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
-            if (itemId >= IFE交互塔 && itemId <= IFE转化塔) {
+            if (itemId >= IFE交互塔 && itemId <= IFE精馏塔) {
                 TechManager.CheckTechUnlockCondition(itemId);
             }
         }
