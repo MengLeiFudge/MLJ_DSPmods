@@ -261,6 +261,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("RecipeGrowth", RecipeGrowthManager.Import),
             ("Building", BuildingManager.Import),
             ("Item", ItemManager.Import),
+            ("Process", ProcessManager.Import),
             ("Gacha", GachaManager.Import),
             ("Economy", EconomyManager.Import),
             ("UI", MainWindow.Import),
@@ -280,6 +281,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             ("RecipeGrowth", RecipeGrowthManager.Export),
             ("Building", BuildingManager.Export),
             ("Item", ItemManager.Export),
+            ("Process", ProcessManager.Export),
             ("Gacha", GachaManager.Export),
             ("Economy", EconomyManager.Export),
             ("UI", MainWindow.Export),
@@ -306,6 +308,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         RecipeGrowthManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
+        ProcessManager.IntoOtherSave();
         GachaManager.IntoOtherSave();
         EconomyManager.IntoOtherSave();
         DarkFogCombatManager.IntoOtherSave();
