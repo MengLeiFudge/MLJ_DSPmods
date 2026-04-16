@@ -32,6 +32,7 @@ public static class RecipeManager {
     /// 按物品科技层级分类配方，Key：(int)MatrixID
     /// </summary>
     private static readonly Dictionary<int, List<BaseRecipe>> RecipeMatrixDic = [];
+    private static bool fracRecipesReady;
 
     /// <summary>
     /// 游戏配方
@@ -54,6 +55,7 @@ public static class RecipeManager {
         }
 #endif
         LogInfo("Add fractionate recipes...");
+        fracRecipesReady = false;
 
         for (int i = 0; i < RecipeTypeArr.Length; i++) {
             RecipeTypeArr[i] = new BaseRecipe[12000];
@@ -64,6 +66,7 @@ public static class RecipeManager {
         PointAggregateRecipe.CreateAll();
         ConversionRecipe.CreateAll();
         RectificationRecipe.CreateAll();
+        fracRecipesReady = true;
 
         LogInfo($"Added {RecipeList.Count} fractionate recipes.");
     }
@@ -114,13 +117,19 @@ public static class RecipeManager {
     /// <typeparam name="T">BaseRecipe的子类</typeparam>
     /// <returns>类型为recipeType，输入物品ID为inputId的配方。找不到返回null</returns>
     public static T GetRecipe<T>(ERecipe recipeType, int inputId) where T : BaseRecipe {
-        if (inputId <= 0 || inputId >= 12000) {
+        int recipeTypeIndex = (int)recipeType;
+        if (recipeTypeIndex <= 0 || recipeTypeIndex >= RecipeTypeArr.Length || inputId <= 0) {
             return null;
         }
-        return RecipeTypeArr[(int)recipeType][inputId] as T;
+        BaseRecipe[] recipeArr = RecipeTypeArr[recipeTypeIndex];
+        if (recipeArr == null || inputId >= recipeArr.Length) {
+            return null;
+        }
+        return recipeArr[inputId] as T;
     }
 
     public static IReadOnlyList<BaseRecipe> AllRecipes => RecipeList;
+    public static bool AreFracRecipesReady => fracRecipesReady;
 
     public static List<BaseRecipe> GetRecipesByType(ERecipe recipeType) {
         return RecipeTypeDic.TryGetValue(recipeType, out List<BaseRecipe> recipeList) ? recipeList : [];
