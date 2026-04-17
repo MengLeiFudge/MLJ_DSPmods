@@ -95,6 +95,8 @@ public static class Achievements {
     private static ConfigEntry<string> achievementFlagsEntry;
     private static ConfigEntry<int> panelOpenCountEntry;
     private static bool configLoaded;
+    private static string legacyConfigAchievementFlags = string.Empty;
+    private static int legacyConfigPanelOpenCount;
     private static int panelOpenCount;
 
     private static PageLayout.HeaderRefs header;
@@ -732,10 +734,11 @@ public static class Achievements {
         panelOpenCountEntry = configFile.Bind(ConfigSection, ConfigPanelOpenCount, 0,
             "How many times FE main panel has been opened.");
 
-        panelOpenCount = Math.Max(0, panelOpenCountEntry.Value);
-        LoadAchievementFlags(achievementFlagsEntry.Value);
+        legacyConfigPanelOpenCount = Math.Max(0, panelOpenCountEntry.Value);
+        legacyConfigAchievementFlags = achievementFlagsEntry.Value ?? string.Empty;
+        ResetPersistentState();
+        ResetTransientState();
         configLoaded = true;
-        PersistAchievementConfig(forceSave: true);
     }
 
     public static void NotifyMainPanelOpened() {
@@ -744,7 +747,6 @@ public static class Achievements {
         }
 
         panelOpenCount++;
-        PersistAchievementConfig();
         CheckAndUnlockAchievements(showPopup: true);
     }
 
@@ -767,11 +769,14 @@ public static class Achievements {
         SyncCurrentPageToSharedState();
     }
 
-    private static void LoadAchievementFlags(string flags) {
+    private static void ResetPersistentState() {
+        panelOpenCount = 0;
         Array.Clear(unlocked, 0, unlocked.Length);
         Array.Clear(claimed, 0, claimed.Length);
         MarkBonusSummaryDirty();
+    }
 
+    private static void ApplyAchievementFlags(string flags) {
         if (string.IsNullOrEmpty(flags)) {
             return;
         }
@@ -784,30 +789,16 @@ public static class Achievements {
         }
     }
 
-    private static string BuildAchievementFlags() {
-        char[] flags = new char[achievements.Length];
-        for (int i = 0; i < achievements.Length; i++) {
-            flags[i] = claimed[i] ? '1' : '0';
-        }
-        return new string(flags);
-    }
+    private static void ApplyClaimedFlags(bool[] flags) {
+        int count = Math.Min(flags.Length, achievements.Length);
+        for (int i = 0; i < count; i++) {
+            if (!flags[i]) {
+                continue;
+            }
 
-    private static void PersistAchievementConfig(bool forceSave = false) {
-        if (!configLoaded || achievementFlagsEntry == null || panelOpenCountEntry == null) {
-            return;
+            unlocked[i] = true;
+            claimed[i] = true;
         }
-
-        string flags = BuildAchievementFlags();
-        bool changed = forceSave
-                       || achievementFlagsEntry.Value != flags
-                       || panelOpenCountEntry.Value != panelOpenCount;
-        if (!changed) {
-            return;
-        }
-
-        achievementFlagsEntry.Value = flags;
-        panelOpenCountEntry.Value = panelOpenCount;
-        global::FE.FractionateEverything.SaveConfig();
     }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
@@ -980,7 +971,7 @@ public static class Achievements {
         }
 
         if (changed) {
-            PersistAchievementConfig();
+            MarkBonusSummaryDirty();
         }
 
         return changed;
@@ -1194,29 +1185,37 @@ public static class Achievements {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        SyncCurrentPageFromSharedState();
-
-        if (!configLoaded || r.BaseStream.Length <= 0) {
+        ResetPersistentState();
+        ResetTransientState();
+        if (!configLoaded) {
             return;
         }
-
-        ResetTransientState();
 
         bool migrated = false;
         bool[] oldUnlocked = [];
         bool[] oldClaimed = [];
         bool[] saveClaimed = [];
+        int importedPanelOpenCount = 0;
+        bool loadedPanelOpenCount = false;
+        bool loadedSaveClaimed = false;
+
+        if (r.BaseStream.Length <= 0) {
+            if (legacyConfigPanelOpenCount > 0 || !string.IsNullOrEmpty(legacyConfigAchievementFlags)) {
+                panelOpenCount = legacyConfigPanelOpenCount;
+                ApplyAchievementFlags(legacyConfigAchievementFlags);
+                migrated = panelOpenCount > 0 || claimed.Any(static value => value);
+            }
+            return;
+        }
 
         r.ReadBlocks(
             ("PanelOpenCountV2", br => {
-                int importedCount = Math.Max(0, br.ReadInt32());
-                if (importedCount > panelOpenCount) {
-                    panelOpenCount = importedCount;
-                    migrated = true;
-                }
+                importedPanelOpenCount = Math.Max(0, br.ReadInt32());
+                loadedPanelOpenCount = true;
             }),
             ("ClaimedFlagsV2", br => {
                 saveClaimed = ReadLegacyFlags(br);
+                loadedSaveClaimed = true;
             }),
             ("UnlockedFlags", br => {
                 oldUnlocked = ReadLegacyFlags(br);
@@ -1226,14 +1225,21 @@ public static class Achievements {
             })
         );
 
-        int saveCount = Math.Min(saveClaimed.Length, achievements.Length);
-        for (int i = 0; i < saveCount; i++) {
-            if (!saveClaimed[i] || claimed[i]) {
-                continue;
-            }
-            unlocked[i] = true;
-            claimed[i] = true;
-            migrated = true;
+        if (loadedPanelOpenCount) {
+            panelOpenCount = importedPanelOpenCount;
+        }
+
+        if (loadedSaveClaimed) {
+            ApplyClaimedFlags(saveClaimed);
+            migrated = saveClaimed.Any(static value => value);
+        }
+
+        bool loadedLegacyAchievementState = oldUnlocked.Length > 0 || oldClaimed.Length > 0;
+        if (!loadedPanelOpenCount && !loadedSaveClaimed && !loadedLegacyAchievementState
+            && (legacyConfigPanelOpenCount > 0 || !string.IsNullOrEmpty(legacyConfigAchievementFlags))) {
+            panelOpenCount = legacyConfigPanelOpenCount;
+            ApplyAchievementFlags(legacyConfigAchievementFlags);
+            migrated = migrated || panelOpenCount > 0 || claimed.Any(static value => value);
         }
 
         int oldCount = Math.Max(oldUnlocked.Length, oldClaimed.Length);
@@ -1260,7 +1266,6 @@ public static class Achievements {
 
         if (migrated) {
             MarkBonusSummaryDirty();
-            PersistAchievementConfig();
         }
     }
 
@@ -1286,8 +1291,8 @@ public static class Achievements {
     }
 
     public static void IntoOtherSave() {
+        ResetPersistentState();
         ResetTransientState();
-        PersistAchievementConfig(forceSave: true);
     }
 
     public static bool IsAchievementClaimed(string nameKey) {
