@@ -70,6 +70,12 @@ public static class TicketRaffle {
         }
     }
 
+    private static void ResetDrawCounters() {
+        totalDraws = 0;
+        openingLineDraws = 0;
+        SyncTotalDrawsToSharedState();
+    }
+
     public static void AddTranslations() {
         Register("开线抽取", "Opening Draw");
         Register("原胚抽取", "Proto Draw");
@@ -428,9 +434,29 @@ public static class TicketRaffle {
         }
     }
 
-    public static void Import(BinaryReader r) { r.ReadBlocks(); }
-    public static void Export(BinaryWriter w) { w.WriteBlocks(); }
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(
+            ("TotalDraws", br => {
+                long value = br.ReadInt64();
+                totalDraws = value < 0 ? 0 : value;
+            }),
+            ("OpeningLineDraws", br => {
+                long value = br.ReadInt64();
+                openingLineDraws = value < 0 ? 0 : value;
+            })
+        );
+        SyncTotalDrawsToSharedState();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("TotalDraws", bw => bw.Write(totalDraws)),
+            ("OpeningLineDraws", bw => bw.Write(openingLineDraws))
+        );
+    }
+
     public static void IntoOtherSave() {
         activeUis.Clear();
+        ResetDrawCounters();
     }
 }

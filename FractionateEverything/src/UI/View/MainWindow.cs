@@ -347,11 +347,22 @@ public static class MainWindow {
         w.Write((int)NormalizeMainPanelSelection(SelectedMainPanelType));
     }
 
+    private static void ResetSharedPanelState() {
+        if (SharedPanelState == null) {
+            return;
+        }
+
+        SharedPanelState.TicketRaffleTotalDraws = 0;
+        SharedPanelState.TicketRaffleOpeningLineDraws = 0;
+        SharedPanelState.AchievementsCurrentPage = 0;
+    }
+
     private static void IntoOtherSaveMainPanelSelection() {
         SelectedMainPanelType = FEMainPanelType.Legacy;
         OpenedMainPanelType = FEMainPanelType.None;
         currentPageCategoryName = null;
         currentPageSubpageName = null;
+        ResetSharedPanelState();
     }
 
     private static void RefreshAnalysisPageCategories() {
