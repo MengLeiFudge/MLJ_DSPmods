@@ -88,6 +88,10 @@ public static class Achievements {
         Platinum,
     }
 
+    // 成就系统是“全存档共享”的全局进度：
+    // 1. Config 是真实持久化来源，切换存档时不会清空；
+    // 2. 存档里的成就块只用于兼容旧档导入和把旧进度并入当前全局进度；
+    // 3. 因此 Achievements 的已获得状态不应按单个存档隔离。
     private const string ConfigSection = "Achievements";
     private const string ConfigAchievementFlags = "AchievementFlags";
     private const string ConfigPanelOpenCount = "PanelOpenCount";
@@ -95,8 +99,6 @@ public static class Achievements {
     private static ConfigEntry<string> achievementFlagsEntry;
     private static ConfigEntry<int> panelOpenCountEntry;
     private static bool configLoaded;
-    private static string legacyConfigAchievementFlags = string.Empty;
-    private static int legacyConfigPanelOpenCount;
     private static int panelOpenCount;
 
     private static PageLayout.HeaderRefs header;
@@ -734,11 +736,12 @@ public static class Achievements {
         panelOpenCountEntry = configFile.Bind(ConfigSection, ConfigPanelOpenCount, 0,
             "How many times FE main panel has been opened.");
 
-        legacyConfigPanelOpenCount = Math.Max(0, panelOpenCountEntry.Value);
-        legacyConfigAchievementFlags = achievementFlagsEntry.Value ?? string.Empty;
         ResetPersistentState();
+        panelOpenCount = Math.Max(0, panelOpenCountEntry.Value);
+        ApplyAchievementFlags(achievementFlagsEntry.Value);
         ResetTransientState();
         configLoaded = true;
+        PersistAchievementConfig(forceSave: true);
     }
 
     public static void NotifyMainPanelOpened() {
@@ -747,6 +750,7 @@ public static class Achievements {
         }
 
         panelOpenCount++;
+        PersistAchievementConfig();
         CheckAndUnlockAchievements(showPopup: true);
     }
 
@@ -799,6 +803,32 @@ public static class Achievements {
             unlocked[i] = true;
             claimed[i] = true;
         }
+    }
+
+    private static string BuildAchievementFlags() {
+        char[] flags = new char[achievements.Length];
+        for (int i = 0; i < achievements.Length; i++) {
+            flags[i] = claimed[i] ? '1' : '0';
+        }
+        return new string(flags);
+    }
+
+    private static void PersistAchievementConfig(bool forceSave = false) {
+        if (!configLoaded || achievementFlagsEntry == null || panelOpenCountEntry == null) {
+            return;
+        }
+
+        string flags = BuildAchievementFlags();
+        bool changed = forceSave
+                       || achievementFlagsEntry.Value != flags
+                       || panelOpenCountEntry.Value != panelOpenCount;
+        if (!changed) {
+            return;
+        }
+
+        achievementFlagsEntry.Value = flags;
+        panelOpenCountEntry.Value = panelOpenCount;
+        global::FE.FractionateEverything.SaveConfig();
     }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
@@ -972,6 +1002,7 @@ public static class Achievements {
 
         if (changed) {
             MarkBonusSummaryDirty();
+            PersistAchievementConfig();
         }
 
         return changed;
@@ -1185,7 +1216,6 @@ public static class Achievements {
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
-        ResetPersistentState();
         ResetTransientState();
         if (!configLoaded) {
             return;
@@ -1196,26 +1226,22 @@ public static class Achievements {
         bool[] oldClaimed = [];
         bool[] saveClaimed = [];
         int importedPanelOpenCount = 0;
-        bool loadedPanelOpenCount = false;
-        bool loadedSaveClaimed = false;
-
         if (r.BaseStream.Length <= 0) {
-            if (legacyConfigPanelOpenCount > 0 || !string.IsNullOrEmpty(legacyConfigAchievementFlags)) {
-                panelOpenCount = legacyConfigPanelOpenCount;
-                ApplyAchievementFlags(legacyConfigAchievementFlags);
-                migrated = panelOpenCount > 0 || claimed.Any(static value => value);
-            }
             return;
         }
 
+        // Achievements 刻意保持全存档共享：
+        // 这里不覆盖当前全局状态，只把旧档里存在的成就/计数并入当前 profile。
         r.ReadBlocks(
             ("PanelOpenCountV2", br => {
                 importedPanelOpenCount = Math.Max(0, br.ReadInt32());
-                loadedPanelOpenCount = true;
+                if (importedPanelOpenCount > panelOpenCount) {
+                    panelOpenCount = importedPanelOpenCount;
+                    migrated = true;
+                }
             }),
             ("ClaimedFlagsV2", br => {
                 saveClaimed = ReadLegacyFlags(br);
-                loadedSaveClaimed = true;
             }),
             ("UnlockedFlags", br => {
                 oldUnlocked = ReadLegacyFlags(br);
@@ -1225,21 +1251,15 @@ public static class Achievements {
             })
         );
 
-        if (loadedPanelOpenCount) {
-            panelOpenCount = importedPanelOpenCount;
-        }
+        int saveCount = Math.Min(saveClaimed.Length, achievements.Length);
+        for (int i = 0; i < saveCount; i++) {
+            if (!saveClaimed[i] || claimed[i]) {
+                continue;
+            }
 
-        if (loadedSaveClaimed) {
-            ApplyClaimedFlags(saveClaimed);
-            migrated = saveClaimed.Any(static value => value);
-        }
-
-        bool loadedLegacyAchievementState = oldUnlocked.Length > 0 || oldClaimed.Length > 0;
-        if (!loadedPanelOpenCount && !loadedSaveClaimed && !loadedLegacyAchievementState
-            && (legacyConfigPanelOpenCount > 0 || !string.IsNullOrEmpty(legacyConfigAchievementFlags))) {
-            panelOpenCount = legacyConfigPanelOpenCount;
-            ApplyAchievementFlags(legacyConfigAchievementFlags);
-            migrated = migrated || panelOpenCount > 0 || claimed.Any(static value => value);
+            unlocked[i] = true;
+            claimed[i] = true;
+            migrated = true;
         }
 
         int oldCount = Math.Max(oldUnlocked.Length, oldClaimed.Length);
@@ -1266,6 +1286,7 @@ public static class Achievements {
 
         if (migrated) {
             MarkBonusSummaryDirty();
+            PersistAchievementConfig();
         }
     }
 
@@ -1291,7 +1312,7 @@ public static class Achievements {
     }
 
     public static void IntoOtherSave() {
-        ResetPersistentState();
+        // 成就是全存档共享的 profile 状态，切档时只清理 UI/运行时缓存，不清 claimed/unlocked/panelOpenCount。
         ResetTransientState();
     }
 
