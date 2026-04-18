@@ -71,7 +71,7 @@ wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release
 | `GetDspData/GetDspData.csproj` | DSP data export tool; depends on `FractionateEverything` |
 | `VanillaCurveSim/VanillaCurveSim.csproj` | Standalone simulator EXE; can build/run without `AfterBuildEvent` |
 | `DefaultPath.props` / `DefaultPath.props.example` | Game library path config (copy example, fill paths) |
-| `lib/` | Custom DLLs (BuildBarTool, publicized mod DLLs) |
+| `lib/` | Custom binaries kept in-repo (`Newtonsoft.Json.dll`, publicizer tools, misc helpers) |
 
 **Build notes:**
 - Target framework: `net472` (Unity/.NET Framework compatibility)
@@ -323,13 +323,13 @@ For multi-column layout helper `GetPosition`, default total width is aligned to 
 - `UnityEngine.UI/` — UI components
 
 **Mod DLLs:**
-- `DSP_Battle-publicized/` — 深空来敌 (They Come From Void)
-- `ProjectGenesis-publicized/` — 创世之书 (Genesis Book)
-- `ProjectOrbitalRing-publicized/` — 星环 (Orbital Ring)
+- `DSP_Battle/` — 深空来敌 (They Come From Void)
+- `ProjectGenesis/` — 创世之书 (Genesis Book)
+- `ProjectOrbitalRing/` — 星环 (Orbital Ring)
 
 **How it's generated** — Run `AfterBuildEvent` → select option `2`:
 1. Publicizes game DLLs from game install → nuget package dir → decompiles
-2. Publicizes mod DLLs from R2 plugins → `lib/` → decompiles
+2. Reads FE soft dependencies from `CheckPlugins.cs`, confirms installation via `mods.yml`, then decompiles matching mod DLLs directly from `R2ProfileDir\BepInEx\plugins\`
 3. Decompiles each via `ilspycmd -p --nested-directories` into `DecompiledSource/{DllName}/`
 4. Requires `ilspycmd` installed globally: `dotnet tool install -g ilspycmd`
 

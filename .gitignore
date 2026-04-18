@@ -215,6 +215,12 @@ csx/
 ecf/
 rcf/
 
+# Third-party mod DLLs now resolve from the local R2 profile instead of the repo.
+lib/BuildBarTool.dll
+lib/DSP_Battle-publicized.dll
+lib/ProjectGenesis-publicized.dll
+lib/ProjectOrbitalRing-publicized.dll
+
 # Windows Store app package directories and files
 AppPackages/
 BundleArtifacts/
