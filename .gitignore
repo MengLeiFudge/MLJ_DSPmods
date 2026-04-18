@@ -221,6 +221,8 @@ lib/DSP_Battle-publicized.dll
 lib/ProjectGenesis-publicized.dll
 lib/ProjectOrbitalRing-publicized.dll
 
+*.mp4
+
 # Windows Store app package directories and files
 AppPackages/
 BundleArtifacts/
