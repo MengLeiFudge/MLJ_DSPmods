@@ -16,7 +16,7 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines
 | Option | Method | What it does |
 |---|---|---|
 | `1` | `UpdateModsThenStart()` | Kill DSP → copy DLLs to R2 → zip packages → launch game |
-| `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → publicize + decompile mod DLLs |
+| `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → scan/decompile R2 mod DLLs |
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
 
 ## Option 2 — UpdateLibDll Detail
@@ -28,13 +28,14 @@ PublizeDll(DSPACDll → NugetGameLibNet45Dir\Assembly-CSharp.dll)
 PublizeDll(DSPUIDll → NugetGameLibNet45Dir\UnityEngine.UI.dll)
     → DecompileDll(ilspycmd → gamedata/DecompiledSource/UnityEngine.UI/)
 
-# Mod DLLs (from R2 plugins → lib → decompile)
-PublizeDll(R2VDDll  → lib\DSP_Battle-publicized.dll)
-    → DecompileDll(ilspycmd → gamedata/DecompiledSource/DSP_Battle-publicized/)
-PublizeDll(R2GBDll  → lib\ProjectGenesis-publicized.dll)
-    → DecompileDll(ilspycmd → gamedata/DecompiledSource/ProjectGenesis-publicized/)
-PublizeDll(R2ORDll  → lib\ProjectOrbitalRing-publicized.dll)
-    → DecompileDll(ilspycmd → gamedata/DecompiledSource/ProjectOrbitalRing-publicized/)
+# Mod DLLs (from CheckPlugins soft dependencies → mods.yml → R2 plugins → decompile)
+Parse `FractionateEverything/src/Compatibility/CheckPlugins.cs`
+    → collect `[BepInDependency(..., SoftDependency)]`
+Read `mods.yml`
+    → confirm the user actually installed the package through R2
+Inspect `BepInEx/plugins/<package>/`
+    → find the primary mod DLL (`.dll` or `.dll.old`, skipping companion libs)
+DecompileDll(ilspycmd → gamedata/DecompiledSource/<AssemblyName>/)
 ```
 
 Requires `ilspycmd` globally installed: `dotnet tool install -g ilspycmd`

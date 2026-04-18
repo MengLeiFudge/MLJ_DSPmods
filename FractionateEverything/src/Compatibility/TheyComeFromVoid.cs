@@ -125,6 +125,14 @@ public static class TheyComeFromVoid {
         //元驱动刷新可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
             transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
+        // BattleProtos 在原版 DLL 中不是稳定 public 类型，改为运行时反射查找，兼容直接引用 R2 原始 DLL。
+        MethodInfo battleProtosAddTranslate = AccessTools.Method(assembly?.GetType("DSP_Battle.BattleProtos"), "AddTranslate");
+        if (battleProtosAddTranslate != null) {
+            harmony.Patch(battleProtosAddTranslate,
+                transpiler: new(typeof(TheyComeFromVoid), nameof(BattleProtos_AddTranslate_Transpiler)));
+        } else {
+            CheckPlugins.LogWarning("TheyComeFromVoid: 未找到 BattleProtos.AddTranslate，跳过对应翻译补丁。");
+        }
     }
 
     [HarmonyPrefix]
@@ -136,8 +144,6 @@ public static class TheyComeFromVoid {
         return true;
     }
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(BattleProtos), nameof(BattleProtos.AddTranslate))]
     private static IEnumerable<CodeInstruction> BattleProtos_AddTranslate_Transpiler(
         IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
         var matcher = new CodeMatcher(instructions, generator);

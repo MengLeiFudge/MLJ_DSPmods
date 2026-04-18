@@ -11,15 +11,10 @@ public static class PathConfig {
     private static string _r2ProfileDir =
         $@"{UserDir}\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
     public static string R2ProfileDir => _r2ProfileDir;
-    //将BepInEX.cfg的DumpAssemblies设为true，以生成此DLL
-    // public static readonly string R2ACDll =
-    //     $@"{R2ProfileDir}\BepInEx\DumpedAssemblies\DSPGAME\Assembly-CSharp.dll";
-    public static readonly string R2VDDll =
-        $@"{R2ProfileDir}\BepInEx\plugins\ckcz123-TheyComeFromVoid\DSP_Battle.dll";
-    public static readonly string R2GBDll =
-        $@"{R2ProfileDir}\BepInEx\plugins\HiddenCirno-GenesisBook\ProjectGenesis.dll";
-    public static readonly string R2ORDll =
-        $@"{R2ProfileDir}\BepInEx\plugins\ProfessorCat-OrbitalRing\ProjectOrbitalRing.dll";
+    public static string ModsConfigPath => $@"{R2ProfileDir}\mods.yml";
+    public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
+    public static string CompatibilityDir => $@"{SolutionDir}\FractionateEverything\src\Compatibility";
+    public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
 
     private static string _dspGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
     public static string DSPGameDir => _dspGameDir;

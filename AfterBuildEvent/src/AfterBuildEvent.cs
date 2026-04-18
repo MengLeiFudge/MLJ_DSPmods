@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
@@ -14,6 +15,22 @@ using static AfterBuildEvent.PathConfig;
 namespace AfterBuildEvent;
 
 static class AfterBuildEvent {
+    private static readonly Regex SoftDependencyRegex =
+        new(@"\[BepInDependency\(([^,\)]+),\s*BepInDependency\.DependencyFlags\.SoftDependency\)\]",
+            RegexOptions.Compiled);
+    private static readonly Regex GuidLiteralRegex =
+        new(@"public\s+const\s+string\s+GUID\s*=\s*""([^""]+)""", RegexOptions.Compiled);
+    private static readonly string[] IgnoredModDllPrefixes =
+        ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
+    private static readonly string[] IgnoredModDllNames =
+        ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
+
+    private sealed class ModDecompileTarget {
+        public string DependencyExpression { get; set; } = "";
+        public string SourceName { get; set; } = "";
+        public List<string> Keywords { get; set; } = [];
+    }
+
     public static void Main(string[] args) {
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
         Console.WriteLine("输入要执行的命令（直接回车表示1）：");
@@ -264,13 +281,275 @@ static class AfterBuildEvent {
         } else {
             Console.WriteLine("NugetGameLibNet45Dir为空，跳过Publize游戏dll");
         }
-        // 下面三个mod dll，r2禁用时会自动加.old后缀，由PublizeDll内部逻辑自动识别并处理
-        PublizeDll(cmd, R2VDDll, $@"{SolutionDir}\lib\DSP_Battle-publicized.dll");
-        DecompileDll(cmd, "DSP_Battle-publicized.dll", $@"{SolutionDir}\lib");
-        PublizeDll(cmd, R2GBDll, $@"{SolutionDir}\lib\ProjectGenesis-publicized.dll");
-        DecompileDll(cmd, "ProjectGenesis-publicized.dll", $@"{SolutionDir}\lib");
-        PublizeDll(cmd, R2ORDll, $@"{SolutionDir}\lib\ProjectOrbitalRing-publicized.dll");
-        DecompileDll(cmd, "ProjectOrbitalRing-publicized.dll", $@"{SolutionDir}\lib");
+        DecompileModsFromR2(cmd);
+    }
+
+    /// <summary>
+    /// 以 CheckPlugins 的软依赖为准，再通过 mods.yml 和插件目录确认是否真的需要反编译。
+    /// </summary>
+    private static void DecompileModsFromR2(CmdProcess cmd) {
+        LoadModInfos();
+        IReadOnlyList<ModInfo> installedMods = GetAllModInfos();
+        if (installedMods.Count == 0) {
+            Console.WriteLine("mods.yml 中没有可用模组信息，跳过 mod 反编译。");
+            return;
+        }
+
+        List<ModDecompileTarget> targets = GetModDecompileTargets();
+        if (targets.Count == 0) {
+            Console.WriteLine("CheckPlugins 中没有解析到软依赖，跳过 mod 反编译。");
+            return;
+        }
+
+        HashSet<string> handledDlls = new(StringComparer.OrdinalIgnoreCase);
+        foreach (ModDecompileTarget target in targets) {
+            ModInfo modInfo = FindBestMatchingMod(installedMods, target.Keywords);
+            if (modInfo == null) {
+                Console.WriteLine(
+                    $"mods.yml 中未找到 {target.SourceName}（表达式：{target.DependencyExpression}），跳过。");
+                continue;
+            }
+
+            string pluginDir = Path.Combine(R2PluginsDir, modInfo.name);
+            if (!Directory.Exists(pluginDir)) {
+                Console.WriteLine($"已在 mods.yml 找到 {modInfo.name}，但插件目录不存在：{pluginDir}");
+                continue;
+            }
+
+            string dllPath = TrySelectPrimaryModDll(pluginDir, modInfo, target);
+            if (string.IsNullOrWhiteSpace(dllPath)) {
+                Console.WriteLine($"插件目录 {pluginDir} 中未找到可反编译的主 DLL，跳过。");
+                continue;
+            }
+
+            string fullDllPath = Path.GetFullPath(dllPath);
+            if (!handledDlls.Add(fullDllPath)) {
+                Console.WriteLine($"DLL 已处理过，跳过重复目标：{fullDllPath}");
+                continue;
+            }
+
+            Console.WriteLine($"开始处理模组 {modInfo.name} -> {dllPath}");
+            DecompileModDll(cmd, dllPath);
+        }
+    }
+
+    private static List<ModDecompileTarget> GetModDecompileTargets() {
+        List<ModDecompileTarget> targets = [];
+        if (!File.Exists(CheckPluginsSourcePath)) {
+            Console.WriteLine($"未找到 CheckPlugins 源文件：{CheckPluginsSourcePath}");
+            return targets;
+        }
+
+        string source = File.ReadAllText(CheckPluginsSourcePath);
+        HashSet<string> seenExpressions = new(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in SoftDependencyRegex.Matches(source)) {
+            string dependencyExpression = match.Groups[1].Value.Trim();
+            if (!seenExpressions.Add(dependencyExpression)) {
+                continue;
+            }
+
+            string sourceName = dependencyExpression.Split('.')[0].Trim();
+            targets.Add(new() {
+                DependencyExpression = dependencyExpression,
+                SourceName = sourceName,
+                Keywords = BuildTargetKeywords(sourceName),
+            });
+        }
+        return targets;
+    }
+
+    /// <summary>
+    /// 关键字优先取兼容类名；如果本地兼容文件里有 GUID 字面量，再把 GUID 末段加入候选，兼容命名差异。
+    /// </summary>
+    private static List<string> BuildTargetKeywords(string sourceName) {
+        HashSet<string> keywords = new(StringComparer.OrdinalIgnoreCase) { sourceName };
+        if (sourceName.EndsWith("Plugin", StringComparison.OrdinalIgnoreCase)) {
+            keywords.Add(sourceName.Substring(0, sourceName.Length - "Plugin".Length));
+        }
+
+        string compatibilitySourcePath = Path.Combine(CompatibilityDir, $"{sourceName}.cs");
+        if (File.Exists(compatibilitySourcePath)) {
+            Match match = GuidLiteralRegex.Match(File.ReadAllText(compatibilitySourcePath));
+            if (match.Success) {
+                string guid = match.Groups[1].Value.Trim();
+                string guidTail = guid.Split('.').LastOrDefault();
+                if (!string.IsNullOrWhiteSpace(guidTail)) {
+                    keywords.Add(guidTail);
+                }
+            }
+        }
+
+        return keywords.Where(keyword => !string.IsNullOrWhiteSpace(keyword)).ToList();
+    }
+
+    private static ModInfo FindBestMatchingMod(IReadOnlyList<ModInfo> installedMods, IEnumerable<string> keywords) {
+        ModInfo bestMod = null;
+        int bestScore = 0;
+        foreach (ModInfo modInfo in installedMods) {
+            int score = ScoreInstalledMod(modInfo, keywords);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMod = modInfo;
+            }
+        }
+        return bestScore > 0 ? bestMod : null;
+    }
+
+    private static int ScoreInstalledMod(ModInfo modInfo, IEnumerable<string> keywords) {
+        string displayName = NormalizeForMatch(modInfo.displayName);
+        string fullName = NormalizeForMatch(modInfo.name);
+        string packageSuffix = NormalizeForMatch(GetPackageSuffix(modInfo.name));
+        string authorName = NormalizeForMatch(modInfo.authorName);
+        int bestScore = 0;
+        foreach (string keyword in keywords) {
+            string normalizedKeyword = NormalizeForMatch(keyword);
+            if (string.IsNullOrWhiteSpace(normalizedKeyword)) {
+                continue;
+            }
+            if (displayName == normalizedKeyword) {
+                bestScore = Math.Max(bestScore, 100);
+            }
+            if (packageSuffix == normalizedKeyword) {
+                bestScore = Math.Max(bestScore, 95);
+            }
+            if (fullName == normalizedKeyword) {
+                bestScore = Math.Max(bestScore, 90);
+            }
+            if (!string.IsNullOrWhiteSpace(displayName)
+                && (displayName.Contains(normalizedKeyword) || normalizedKeyword.Contains(displayName))) {
+                bestScore = Math.Max(bestScore, 80);
+            }
+            if (!string.IsNullOrWhiteSpace(packageSuffix)
+                && (packageSuffix.Contains(normalizedKeyword) || normalizedKeyword.Contains(packageSuffix))) {
+                bestScore = Math.Max(bestScore, 75);
+            }
+            if (!string.IsNullOrWhiteSpace(fullName)
+                && (fullName.Contains(normalizedKeyword) || normalizedKeyword.Contains(fullName))) {
+                bestScore = Math.Max(bestScore, 70);
+            }
+            if (authorName == normalizedKeyword) {
+                bestScore = Math.Max(bestScore, 40);
+            }
+        }
+        return bestScore;
+    }
+
+    private static string TrySelectPrimaryModDll(string pluginDir, ModInfo modInfo, ModDecompileTarget target) {
+        List<string> dllCandidates = Directory.GetFiles(pluginDir)
+            .Where(IsDllOrOld)
+            .Where(path => !IsIgnoredCompanionDll(Path.GetFileName(path)))
+            .ToList();
+        if (dllCandidates.Count == 0) {
+            return null;
+        }
+        if (dllCandidates.Count == 1) {
+            return dllCandidates[0];
+        }
+
+        string bestPath = null;
+        int bestScore = 0;
+        foreach (string path in dllCandidates) {
+            int score = ScoreAssemblyCandidate(path, modInfo, target.Keywords);
+            if (score > bestScore) {
+                bestScore = score;
+                bestPath = path;
+            }
+        }
+        return bestScore > 0 ? bestPath : null;
+    }
+
+    private static int ScoreAssemblyCandidate(string assemblyPath, ModInfo modInfo, IEnumerable<string> keywords) {
+        string assemblyName = NormalizeForMatch(GetAssemblyBaseName(Path.GetFileName(assemblyPath)));
+        string displayName = NormalizeForMatch(modInfo.displayName);
+        string packageSuffix = NormalizeForMatch(GetPackageSuffix(modInfo.name));
+        int bestScore = 0;
+        if (assemblyName == displayName) {
+            bestScore = Math.Max(bestScore, 100);
+        }
+        if (assemblyName == packageSuffix) {
+            bestScore = Math.Max(bestScore, 95);
+        }
+        foreach (string keyword in keywords) {
+            string normalizedKeyword = NormalizeForMatch(keyword);
+            if (string.IsNullOrWhiteSpace(normalizedKeyword)) {
+                continue;
+            }
+            if (assemblyName == normalizedKeyword) {
+                bestScore = Math.Max(bestScore, 90);
+            }
+            if (!string.IsNullOrWhiteSpace(assemblyName)
+                && (assemblyName.Contains(normalizedKeyword) || normalizedKeyword.Contains(assemblyName))) {
+                bestScore = Math.Max(bestScore, 75);
+            }
+        }
+        return bestScore;
+    }
+
+    private static bool IsDllOrOld(string path) {
+        return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+               || path.EndsWith(".dll.old", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsIgnoredCompanionDll(string fileName) {
+        string assemblyBaseName = GetAssemblyBaseName(fileName);
+        if (IgnoredModDllPrefixes.Any(prefix =>
+                assemblyBaseName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))) {
+            return true;
+        }
+        return IgnoredModDllNames.Any(name => string.Equals(assemblyBaseName, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void DecompileModDll(CmdProcess cmd, string dllPath) {
+        string tempDllPath = null;
+        try {
+            string actualDllPath = EnsureDllPathForDecompile(dllPath, out tempDllPath);
+            DecompileDll(cmd, Path.GetFileName(actualDllPath), Path.GetDirectoryName(actualDllPath));
+        }
+        finally {
+            if (!string.IsNullOrWhiteSpace(tempDllPath) && File.Exists(tempDllPath)) {
+                File.Delete(tempDllPath);
+            }
+        }
+    }
+
+    private static string EnsureDllPathForDecompile(string dllPath, out string tempDllPath) {
+        tempDllPath = null;
+        if (dllPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+            return dllPath;
+        }
+
+        string tempFileName = Path.GetFileNameWithoutExtension(dllPath);
+        if (!tempFileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+            tempFileName += ".dll";
+        }
+        tempDllPath = Path.Combine(Path.GetDirectoryName(dllPath) ?? "", tempFileName);
+        File.Copy(dllPath, tempDllPath, true);
+        return tempDllPath;
+    }
+
+    private static string GetPackageSuffix(string packageName) {
+        int splitIndex = packageName.IndexOf('-');
+        return splitIndex >= 0 ? packageName.Substring(splitIndex + 1) : packageName;
+    }
+
+    private static string GetAssemblyBaseName(string fileName) {
+        return fileName.EndsWith(".dll.old", StringComparison.OrdinalIgnoreCase)
+            ? Path.GetFileNameWithoutExtension(fileName.Substring(0, fileName.Length - ".old".Length))
+            : Path.GetFileNameWithoutExtension(fileName);
+    }
+
+    private static string NormalizeForMatch(string value) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return "";
+        }
+
+        StringBuilder builder = new(value.Length);
+        foreach (char ch in value) {
+            if (char.IsLetterOrDigit(ch)) {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+        }
+        return builder.ToString();
     }
 
     private static void DecompileDll(CmdProcess cmd, string dllName, string sourceDir = null) {

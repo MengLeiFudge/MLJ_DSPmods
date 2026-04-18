@@ -113,7 +113,11 @@ public static class Utils {
     /// </summary>
     public static void LoadModInfos() {
         modInfos.Clear();
-        using StreamReader sr = File.OpenText($@"{R2ProfileDir}\mods.yml");
+        if (!File.Exists(ModsConfigPath)) {
+            Console.WriteLine($"未找到 mods.yml：{ModsConfigPath}");
+            return;
+        }
+        using StreamReader sr = File.OpenText(ModsConfigPath);
         ModInfo modInfo = null;
         string line;
         Regex regex = new Regex("    - .+-.+-[0-9]+.[0-9]+.[0-9]+");
@@ -154,6 +158,10 @@ public static class Utils {
 
     public static ModInfo GetModInfo(string mod) {
         return modInfos.Find(m => m.name == mod || m.displayName == mod);
+    }
+
+    public static IReadOnlyList<ModInfo> GetAllModInfos() {
+        return modInfos;
     }
 
     /// <summary>
