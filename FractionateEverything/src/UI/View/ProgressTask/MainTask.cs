@@ -2,6 +2,7 @@
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressTask;
@@ -143,10 +144,16 @@ public static partial class MainTask {
     public static void LoadConfig(ConfigFile configFile) { }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
-        tab = trans;
-        routeViewsByMode = new RouteViewCache[RouteMaps.Length];
-        BuildMilestonePage(wnd);
-        RefreshMilestonePage();
+        BuildLayout(wnd, trans,
+            Grid(
+                children: [
+                    FE.UI.Components.GridDsl.Node(pos: (0, 0), objectName: "main-task-root", build: (w, root) => {
+                        tab = root;
+                        routeViewsByMode = new RouteViewCache[RouteMaps.Length];
+                        BuildMilestonePage(w);
+                        RefreshMilestonePage();
+                    }),
+                ]));
     }
 
     public static void UpdateUI() {
