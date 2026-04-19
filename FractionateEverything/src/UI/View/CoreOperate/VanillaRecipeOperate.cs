@@ -7,6 +7,7 @@ using FE.UI.Components;
 using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -74,62 +75,57 @@ public static class VanillaRecipeOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "原版配方", "", "vanilla-recipe-header");
-        header.Summary.text = "查看原版配方的原料、耗时与升级进度".WithColor(White);
-        tab = PageLayout.CreateContentCard(trans, "vanilla-recipe-content-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
-        float x = 0f;
-        float y = 18f + 7f;
-
-        // 第一行：当前配方选择
-        txtCurrRecipe = wnd.AddText2(x, y, tab, "当前配方", 15, "textCurrItem");
-        float popupY = y + (36f + 7f) / 2;
-        btnSelectedRecipe = wnd.AddImageButton(x + txtCurrRecipe.preferredWidth + 5, y, tab,
-            SelectedRecipe, "button-change-item").WithClickEvent(
-            () => { OnButtonChangeRecipeClick(false, popupY); },
-            () => { OnButtonChangeRecipeClick(true, popupY); });
-        wnd.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
-            "提示", "原版配方提示按钮说明1");
-        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
-        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
-        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
-
-        y += 36f + 7f;
-
-        // 输入物品标题
-        wnd.AddText2(x, y, tab, "输入物品", 16, "labelInputItems");
-        y += 36f;
-
-        // 为每个可能的输入物品创建UI元素
-        for (int i = 0; i < MaxInputCount; i++) {
-            int idx = i;
-            // 物品图标
-            inputImages[i] = wnd.AddImageButton(x, y, tab, null, $"inputImage{i}");
-            // 物品名称和当前数量
-            txtInputNames[i] = wnd.AddText2(x + 40 + 5, y, tab, "", 14, $"txtInputName{i}");
-            txtInputCounts[i] = wnd.AddText2(x + 180, y, tab, "", 14, $"txtInputCount{i}");
-            // 升级次数
-            txtInputUpgrades[i] = wnd.AddText2(x + 280, y, tab, "", 14, $"txtInputUpgrade{i}");
-            // 升级按钮
-            btnInputUpgrades[i] = wnd.AddButton(x + 380, y, 80, tab, "升级", 14, $"btnInputUpgrade{i}",
-                () => { UpgradeInput(idx); });
-            y += 36f + 5f;
-        }
-
-        y += 7f;
-
-        // 制作时间部分
-        txtTimeLabel = wnd.AddText2(x, y, tab, "制作时间", 16, "labelTime");
-        y += 36f;
-
-        // 时间值
-        txtTimeValue = wnd.AddText2(x + 40, y, tab, "", 14, "txtTimeValue");
-        // 升级次数
-        txtTimeUpgrade = wnd.AddText2(x + 280, y, tab, "", 14, "txtTimeUpgrade");
-        // 升级按钮
-        btnTimeUpgrade = wnd.AddButton(x + 380, y, 80, tab, "升级", 14, "btnTimeUpgrade",
-            () => { UpgradeTimeSpend(); });
+        BuildLayout(wnd, trans,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("原版配方", objectName: "vanilla-recipe-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "查看原版配方的原料、耗时与升级进度".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "vanilla-recipe-content-card",
+                        strong: true,
+                        children: [
+                            Node(pos: (0, 0), objectName: "vanilla-recipe-content-root", build: (w, root) => {
+                                tab = root;
+                                float x = 0f;
+                                float y = 18f + 7f;
+                                txtCurrRecipe = w.AddText2(x, y, tab, "当前配方", 15, "textCurrItem");
+                                float popupY = y + (36f + 7f) / 2;
+                                btnSelectedRecipe = w.AddImageButton(x + txtCurrRecipe.preferredWidth + 5, y, tab,
+                                    SelectedRecipe, "button-change-item").WithClickEvent(
+                                    () => { OnButtonChangeRecipeClick(false, popupY); },
+                                    () => { OnButtonChangeRecipeClick(true, popupY); });
+                                w.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
+                                    "提示", "原版配方提示按钮说明1");
+                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                txtFragmentCount = w.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
+                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+                                txtMatrixCount = w.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
+                                y += 36f + 7f;
+                                w.AddText2(x, y, tab, "输入物品", 16, "labelInputItems");
+                                y += 36f;
+                                for (int i = 0; i < MaxInputCount; i++) {
+                                    int idx = i;
+                                    inputImages[i] = w.AddImageButton(x, y, tab, null, $"inputImage{i}");
+                                    txtInputNames[i] = w.AddText2(x + 40 + 5, y, tab, "", 14, $"txtInputName{i}");
+                                    txtInputCounts[i] = w.AddText2(x + 180, y, tab, "", 14, $"txtInputCount{i}");
+                                    txtInputUpgrades[i] = w.AddText2(x + 280, y, tab, "", 14, $"txtInputUpgrade{i}");
+                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 14, $"btnInputUpgrade{i}",
+                                        () => { UpgradeInput(idx); });
+                                    y += 36f + 5f;
+                                }
+                                y += 7f;
+                                txtTimeLabel = w.AddText2(x, y, tab, "制作时间", 16, "labelTime");
+                                y += 36f;
+                                txtTimeValue = w.AddText2(x + 40, y, tab, "", 14, "txtTimeValue");
+                                txtTimeUpgrade = w.AddText2(x + 280, y, tab, "", 14, "txtTimeUpgrade");
+                                btnTimeUpgrade = w.AddButton(x + 380, y, 80, tab, "升级", 14, "btnTimeUpgrade",
+                                    () => { UpgradeTimeSpend(); });
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

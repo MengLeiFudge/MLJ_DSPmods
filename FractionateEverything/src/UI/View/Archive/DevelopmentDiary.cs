@@ -8,6 +8,7 @@ using FE.UI.Components;
 using FE.UI.View.ProgressTask;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Archive;
@@ -1044,56 +1045,55 @@ public static class DevelopmentDiary {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "开发日记", "", "development-diary-header");
-
-        float top = PageLayout.HeaderHeight + PageLayout.Gap;
-        RectTransform navigatorCard = PageLayout.CreateContentCard(tab, "development-diary-nav-card", 0f, top,
-            278f, 593f, true);
-        RectTransform contentCard = PageLayout.CreateContentCard(tab, "development-diary-content-card",
-            278f + PageLayout.Gap, top, PageLayout.DesignWidth - 278f - PageLayout.Gap, 593f);
-        RectTransform footerCard = PageLayout.CreateFooterCard(tab, "development-diary-footer-card",
-            top + 593f + PageLayout.Gap);
-
-        txtNavigatorTitle = PageLayout.AddCardTitle(wnd, navigatorCard, 18f, 14f, "分类与片段", 15,
-            "development-diary-nav-title");
-        txtContentTitle = PageLayout.AddCardTitle(wnd, contentCard, 18f, 14f, "正文阅读", 15,
-            "development-diary-content-title");
-
-        float x = 0f;
-        float y = 56f;
-        categoryCombo = wnd.AddComboBox(x + 18f, y, navigatorCard)
-            .WithSize(170f, 0f)
-            .WithOnSelChanged(index => {
-                if (suppressSelectionCallbacks) {
-                    return;
-                }
-
-                currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
-                currentFragmentIndex = 0;
-                RefreshEntry();
-            });
-
-        y += 54f;
-        fragmentCombo = wnd.AddComboBox(x + 18f, y, navigatorCard)
-            .WithSize(230f, 0f)
-            .WithOnSelChanged(index => {
-                if (suppressSelectionCallbacks) {
-                    return;
-                }
-
-                int fragmentCount = GetCurrentFragments().Length;
-                currentFragmentIndex = fragmentCount == 0 ? 0 : Mathf.Clamp(index, 0, fragmentCount - 1);
-                RefreshEntry();
-            });
-
-        txtDiaryContent = wnd.AddText2(18f, 56f, contentCard, string.Empty, 14, "txtDiaryContent");
-        txtDiaryContent.supportRichText = true;
-        txtDiaryContent.alignment = TextAnchor.UpperLeft;
-        txtDiaryContent.rectTransform.sizeDelta = new Vector2(752f, 500f);
-
-        btnPrevFragment = wnd.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);
-        btnNextFragment = wnd.AddButton(168f, 10f, 130f, footerCard, "向后", onClick: NextFragment);
-
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(593f), Px(PageLayout.FooterHeight)],
+                rowGap: PageLayout.Gap,
+                cols: [Px(278f), 1],
+                columnGap: PageLayout.Gap,
+                children: [
+                    Header("开发日记", objectName: "development-diary-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
+                    ContentCard(pos: (1, 0), objectName: "development-diary-nav-card", strong: true,
+                        children: [Node(pos: (0, 0), objectName: "development-diary-nav-body", build: (w, navigatorCard) => {
+                            txtNavigatorTitle = PageLayout.AddCardTitle(w, navigatorCard, 18f, 14f, "分类与片段", 15, "development-diary-nav-title");
+                            float x = 0f;
+                            float y = 56f;
+                            categoryCombo = w.AddComboBox(x + 18f, y, navigatorCard)
+                                .WithSize(170f, 0f)
+                                .WithOnSelChanged(index => {
+                                    if (suppressSelectionCallbacks) {
+                                        return;
+                                    }
+                                    currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
+                                    currentFragmentIndex = 0;
+                                    RefreshEntry();
+                                });
+                            y += 54f;
+                            fragmentCombo = w.AddComboBox(x + 18f, y, navigatorCard)
+                                .WithSize(230f, 0f)
+                                .WithOnSelChanged(index => {
+                                    if (suppressSelectionCallbacks) {
+                                        return;
+                                    }
+                                    int fragmentCount = GetCurrentFragments().Length;
+                                    currentFragmentIndex = fragmentCount == 0 ? 0 : Mathf.Clamp(index, 0, fragmentCount - 1);
+                                    RefreshEntry();
+                                });
+                        })]),
+                    ContentCard(pos: (1, 1), objectName: "development-diary-content-card",
+                        children: [Node(pos: (0, 0), objectName: "development-diary-content-body", build: (w, contentCard) => {
+                            txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读", 15, "development-diary-content-title");
+                            txtDiaryContent = w.AddText2(18f, 56f, contentCard, string.Empty, 14, "txtDiaryContent");
+                            txtDiaryContent.supportRichText = true;
+                            txtDiaryContent.alignment = TextAnchor.UpperLeft;
+                            txtDiaryContent.rectTransform.sizeDelta = new Vector2(752f, 500f);
+                        })]),
+                    FooterCard(pos: (2, 0), span: (1, 2), objectName: "development-diary-footer-card",
+                        children: [Node(pos: (0, 0), objectName: "development-diary-footer-body", build: (w, footerCard) => {
+                            btnPrevFragment = w.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);
+                            btnNextFragment = w.AddButton(168f, 10f, 130f, footerCard, "向后", onClick: NextFragment);
+                        })]),
+                ]));
         RefreshEntry();
     }
 

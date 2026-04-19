@@ -8,6 +8,7 @@ using FE.UI.Components;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
@@ -58,31 +59,35 @@ public static class FracStatistic {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "分馏统计", "", "frac-statistic-header");
-
-        float top = PageLayout.HeaderHeight + PageLayout.Gap;
-        float cardWidth = (PageLayout.DesignWidth - PageLayout.Gap) / 2f;
-        float cardHeight = 284f;
-        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "frac-stat-summary-card", 0f, top,
-            cardWidth, cardHeight, true);
-        RectTransform stockCard = PageLayout.CreateContentCard(tab, "frac-stat-stock-card",
-            cardWidth + PageLayout.Gap, top, cardWidth, cardHeight, true);
-        RectTransform growthCard = PageLayout.CreateContentCard(tab, "frac-stat-growth-card", 0f,
-            top + cardHeight + PageLayout.Gap, cardWidth, cardHeight);
-        RectTransform economyCard = PageLayout.CreateContentCard(tab, "frac-stat-economy-card",
-            cardWidth + PageLayout.Gap, top + cardHeight + PageLayout.Gap, cardWidth, cardHeight);
-
-        txtSummaryTitle = PageLayout.AddCardTitle(wnd, summaryCard, 18f, 14f, "统计-总览", 16, "frac-stat-summary-title");
-        CreateLineGroup(wnd, summaryLines, summaryCard, 18f, 52f, "txtSummary");
-
-        txtStockTitle = PageLayout.AddCardTitle(wnd, stockCard, 18f, 14f, "统计-资源库存", 16, "frac-stat-stock-title");
-        CreateLineGroup(wnd, stockLines, stockCard, 18f, 52f, "txtStock");
-
-        txtGrowthTitle = PageLayout.AddCardTitle(wnd, growthCard, 18f, 14f, "统计-建筑成长", 16, "frac-stat-growth-title");
-        CreateLineGroup(wnd, growthLines, growthCard, 18f, 52f, "txtGrowth");
-
-        txtEconomyTitle = PageLayout.AddCardTitle(wnd, economyCard, 18f, 14f, "统计-动态经济", 16, "frac-stat-economy-title");
-        CreateLineGroup(wnd, economyLines, economyCard, 18f, 52f, "txtEconomy");
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1, 1],
+                rowGap: PageLayout.Gap,
+                cols: [1, 1],
+                columnGap: PageLayout.Gap,
+                children: [
+                    Header("分馏统计", objectName: "frac-statistic-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
+                    ContentCard(pos: (1, 0), objectName: "frac-stat-summary-card", strong: true,
+                        children: [Node(pos: (0, 0), objectName: "frac-stat-summary-body", build: (w, summaryCard) => {
+                            txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 18f, 14f, "统计-总览", 16, "frac-stat-summary-title");
+                            CreateLineGroup(w, summaryLines, summaryCard, 18f, 52f, "txtSummary");
+                        })]),
+                    ContentCard(pos: (1, 1), objectName: "frac-stat-stock-card", strong: true,
+                        children: [Node(pos: (0, 0), objectName: "frac-stat-stock-body", build: (w, stockCard) => {
+                            txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 18f, 14f, "统计-资源库存", 16, "frac-stat-stock-title");
+                            CreateLineGroup(w, stockLines, stockCard, 18f, 52f, "txtStock");
+                        })]),
+                    ContentCard(pos: (2, 0), objectName: "frac-stat-growth-card",
+                        children: [Node(pos: (0, 0), objectName: "frac-stat-growth-body", build: (w, growthCard) => {
+                            txtGrowthTitle = PageLayout.AddCardTitle(w, growthCard, 18f, 14f, "统计-建筑成长", 16, "frac-stat-growth-title");
+                            CreateLineGroup(w, growthLines, growthCard, 18f, 52f, "txtGrowth");
+                        })]),
+                    ContentCard(pos: (2, 1), objectName: "frac-stat-economy-card",
+                        children: [Node(pos: (0, 0), objectName: "frac-stat-economy-body", build: (w, economyCard) => {
+                            txtEconomyTitle = PageLayout.AddCardTitle(w, economyCard, 18f, 14f, "统计-动态经济", 16, "frac-stat-economy-title");
+                            CreateLineGroup(w, economyLines, economyCard, 18f, 52f, "txtEconomy");
+                        })]),
+                ]));
     }
 
     public static void UpdateUI() {

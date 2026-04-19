@@ -4,6 +4,7 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ResourceInteraction;
@@ -37,38 +38,73 @@ public static class FragmentExchange {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "残片兑换", "", "fragment-exchange-header");
-
-        float top = PageLayout.HeaderHeight + PageLayout.Gap;
-        RectTransform infoCard = PageLayout.CreateContentCard(tab, "fragment-exchange-info-card", 0f, top, 410f, 190f,
-            true);
-        RectTransform actionCard = PageLayout.CreateContentCard(tab, "fragment-exchange-action-card",
-            410f + PageLayout.Gap, top, PageLayout.DesignWidth - 410f - PageLayout.Gap, 190f, true);
-        RectTransform quoteCard = PageLayout.CreateContentCard(tab, "fragment-exchange-quote-card", 0f,
-            top + 190f + PageLayout.Gap, PageLayout.DesignWidth, 455f);
-
-        txtInfoTitle = PageLayout.AddCardTitle(wnd, infoCard, 18f, 14f, "目标物品", 15, "fragment-exchange-info-title");
-        txtActionTitle = PageLayout.AddCardTitle(wnd, actionCard, 18f, 14f, "快速兑换", 15, "fragment-exchange-action-title");
-        txtQuoteTitle = PageLayout.AddCardTitle(wnd, quoteCard, 18f, 14f, "兑换摘要", 15, "fragment-exchange-quote-title");
-
-        float y = 60f;
-        btnSelectedItem = wnd.AddImageButton(18f, y, infoCard, null).WithSize(40f, 40f)
-            .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));
-        txtQuote = wnd.AddText2(78f, y, infoCard, "", 13);
-        txtQuote.rectTransform.sizeDelta = new Vector2(300f, 24f);
-        y += 34f;
-        txtBalance = wnd.AddText2(78f, y, infoCard, "", 13);
-        txtBalance.rectTransform.sizeDelta = new Vector2(300f, 24f);
-
-        y = 60f;
-        btnBuy1 = wnd.AddButton(18f, y, 150f, actionCard, "买1", onClick: () => ExchangeItems(1));
-        btnBuy10 = wnd.AddButton(184f, y, 150f, actionCard, "买10", onClick: () => ExchangeItems(10));
-        btnBuy100 = wnd.AddButton(350f, y, 150f, actionCard, "买100", onClick: () => ExchangeItems(100));
-
-        txtQuoteSummary = wnd.AddText2(18f, 56f, quoteCard, "", 13, "fragment-exchange-quote-summary");
-        txtQuoteSummary.supportRichText = true;
-        txtQuoteSummary.alignment = TextAnchor.UpperLeft;
-        txtQuoteSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 320f);
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(190f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("残片兑换", objectName: "fragment-exchange-header", pos: (0, 0), onBuilt: refs => header = refs),
+                    Grid(
+                        pos: (1, 0),
+                        cols: [Px(410f), 1],
+                        columnGap: PageLayout.Gap,
+                        children: [
+                            ContentCard(
+                                pos: (0, 0),
+                                objectName: "fragment-exchange-info-card",
+                                strong: true,
+                                rows: [Px(24f), 1],
+                                padding: Inset(18f, 14f, 18f, 18f),
+                                children: [
+                                    Node(pos: (0, 0), objectName: "fragment-exchange-info-title-node", build: (w, root) => {
+                                        txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "目标物品", 15, "fragment-exchange-info-title");
+                                    }),
+                                    Node(pos: (1, 0), objectName: "fragment-exchange-info-body", build: (w, root) => {
+                                        float y = 28f;
+                                        btnSelectedItem = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f)
+                                            .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));
+                                        txtQuote = w.AddText2(60f, y, root, "", 13);
+                                        txtQuote.rectTransform.sizeDelta = new Vector2(300f, 24f);
+                                        y += 34f;
+                                        txtBalance = w.AddText2(60f, y, root, "", 13);
+                                        txtBalance.rectTransform.sizeDelta = new Vector2(300f, 24f);
+                                    }),
+                                ]),
+                            ContentCard(
+                                pos: (0, 1),
+                                objectName: "fragment-exchange-action-card",
+                                strong: true,
+                                rows: [Px(24f), 1],
+                                padding: Inset(18f, 14f, 18f, 18f),
+                                children: [
+                                    Node(pos: (0, 0), objectName: "fragment-exchange-action-title-node", build: (w, root) => {
+                                        txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快速兑换", 15, "fragment-exchange-action-title");
+                                    }),
+                                    Node(pos: (1, 0), objectName: "fragment-exchange-action-body", build: (w, root) => {
+                                        float y = 28f;
+                                        btnBuy1 = w.AddButton(0f, y, 150f, root, "买1", onClick: () => ExchangeItems(1));
+                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10", onClick: () => ExchangeItems(10));
+                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100", onClick: () => ExchangeItems(100));
+                                    }),
+                                ]),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "fragment-exchange-quote-card",
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "fragment-exchange-quote-title-node", build: (w, root) => {
+                                txtQuoteTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "兑换摘要", 15, "fragment-exchange-quote-title");
+                            }),
+                            Node(pos: (1, 0), objectName: "fragment-exchange-quote-body", build: (w, root) => {
+                                txtQuoteSummary = w.AddText2(0f, 18f, root, "", 13, "fragment-exchange-quote-summary");
+                                txtQuoteSummary.supportRichText = true;
+                                txtQuoteSummary.alignment = TextAnchor.UpperLeft;
+                                txtQuoteSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 320f);
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

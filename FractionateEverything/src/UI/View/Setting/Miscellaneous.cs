@@ -8,6 +8,7 @@ using FE.UI.Components;
 using FE.UI.View;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
@@ -154,68 +155,89 @@ public static class Miscellaneous {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "杂项设置", "", "misc-setting-header");
-        header.Summary.text = "把交互、阈值、抽卡模式与面板切换整理成统一设置页".WithColor(White);
-        RectTransform configCard = PageLayout.CreateContentCard(parent, "misc-setting-config-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 635f, true);
-        RectTransform footerCard = PageLayout.CreateFooterCard(parent, "misc-setting-footer-card",
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 635f);
-        PageLayout.AddCardTitle(wnd, configCard, 18f, 14f, "参数配置", 15, "misc-setting-config-title");
+        BuildLayout(wnd, parent,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("杂项设置", objectName: "misc-setting-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "把交互、阈值、抽卡模式与面板切换整理成统一设置页".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "misc-setting-config-card",
+                        strong: true,
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "misc-setting-config-title",
+                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title"); }),
+                            Node(pos: (1, 0), objectName: "misc-setting-config-body", build: (w, root) => {
+                                float x = 0f;
+                                float y = 14f;
+                                var txt = w.AddText2(x, y, root, "左键单击时提取几组物品");
+                                w.AddComboBox(23f + txt.preferredWidth, y, root)
+                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "右键单击时提取几组物品");
+                                w.AddComboBox(23f + txt.preferredWidth, y, root)
+                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "物品提取目标");
+                                w.AddComboBox(23f + txt.preferredWidth, y, root)
+                                    .WithItems(ExtractTargetStrs).WithSize(200, 0).WithConfigEntry(ExtractTargetEntry);
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "物品消耗顺序");
+                                w.AddComboBox(23f + txt.preferredWidth, y, root)
+                                    .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "抽卡模式");
+                                GachaModeComboBox = w.AddComboBox(23f + txt.preferredWidth, y, root)
+                                    .WithItems("常规模式", "速通模式")
+                                    .WithSize(200, 0)
+                                    .WithIndex((int)GachaManager.CurrentMode)
+                                    .WithOnSelChanged(index => GachaManager.SetMode((GachaMode)index));
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "物流交互站下载阈值");
+                                DownloadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
+                                    DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
+                                DownloadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y, root,
+                                    "物流交互站下载阈值", "物流交互站阈值修改说明");
+                                y += 36f;
+                                txt = w.AddText2(x, y, root, "物流交互站上传阈值");
+                                UploadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
+                                    UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
+                                UploadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y, root,
+                                    "物流交互站上传阈值", "物流交互站阈值修改说明");
+                                y += 36f;
+                                var cb = w.AddCheckBox(x, y, root, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
+                                w.AddTipsButton2(23f + cb.Width + 5, y, root,
+                                    "显示分馏配方详细信息", "显示分馏配方详细信息说明");
+                                y += 36f;
+                                cb = w.AddCheckBox(x, y, root, EnableConfirmationDialogEntry, "启用确认弹窗");
+                                w.AddTipsButton2(23f + cb.Width + 5, y, root,
+                                    "启用确认弹窗", "启用确认弹窗说明");
+                                if (AutoSorter.Enable) {
+                                    y += 36f;
+                                    PackageAutoSortTwiceCheckBox =
+                                        w.AddCheckBox(x, y, root, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+                                }
 
-        float x = 0f;
-        float y = 52f;
-        var txt = wnd.AddText2(x + 18f, y, configCard, "左键单击时提取几组物品");
-        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
-            .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "右键单击时提取几组物品");
-        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
-            .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "物品提取目标");
-        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
-            .WithItems(ExtractTargetStrs).WithSize(200, 0).WithConfigEntry(ExtractTargetEntry);
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "物品消耗顺序");
-        wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
-            .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "抽卡模式");
-        GachaModeComboBox = wnd.AddComboBox(x + 23f + txt.preferredWidth, y, configCard)
-            .WithItems("常规模式", "速通模式")
-            .WithSize(200, 0)
-            .WithIndex((int)GachaManager.CurrentMode)
-            .WithOnSelChanged(index => GachaManager.SetMode((GachaMode)index));
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "物流交互站下载阈值");
-        DownloadThresholdSlider = wnd.AddSlider(x + 23f + txt.preferredWidth, y, configCard,
-            DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-        DownloadThresholdTipsButton2 = wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y, configCard,
-            "物流交互站下载阈值", "物流交互站阈值修改说明");
-        y += 36f;
-        txt = wnd.AddText2(x + 18f, y, configCard, "物流交互站上传阈值");
-        UploadThresholdSlider = wnd.AddSlider(x + 23f + txt.preferredWidth, y, configCard,
-            UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-        UploadThresholdTipsButton2 = wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y, configCard,
-            "物流交互站上传阈值", "物流交互站阈值修改说明");
-        y += 36f;
-        var cb = wnd.AddCheckBox(x + 18f, y, configCard, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
-        wnd.AddTipsButton2(x + 23f + cb.Width + 5, y, configCard,
-            "显示分馏配方详细信息", "显示分馏配方详细信息说明");
-        y += 36f;
-        cb = wnd.AddCheckBox(x + 18f, y, configCard, EnableConfirmationDialogEntry, "启用确认弹窗");
-        wnd.AddTipsButton2(x + 23f + cb.Width + 5, y, configCard,
-            "启用确认弹窗", "启用确认弹窗说明");
-        if (AutoSorter.Enable) {
-            y += 36f;
-            PackageAutoSortTwiceCheckBox =
-                wnd.AddCheckBox(x + 18f, y, configCard, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
-        }
-        y += 36f;
-        PackageSortTwiceCheckBox = wnd.AddCheckBox(x + 18f, y, configCard, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
-        SwitchMainPanelButton = wnd.AddButton(18f, 10f, 220f, footerCard,
-            MainWindow.GetSwitchMainPanelButtonLabel(), 14,
-            onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
+                                y += 36f;
+                                PackageSortTwiceCheckBox =
+                                    w.AddCheckBox(x, y, root, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
+                            }),
+                        ]),
+                    FooterCard(
+                        pos: (2, 0),
+                        objectName: "misc-setting-footer-card",
+                        children: [
+                            Node(pos: (0, 0), objectName: "misc-setting-footer-button", build: (w, root) => {
+                                SwitchMainPanelButton = w.AddButton(18f, 10f, 220f, root,
+                                    MainWindow.GetSwitchMainPanelButtonLabel(), 14,
+                                    onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

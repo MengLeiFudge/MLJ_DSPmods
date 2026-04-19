@@ -8,6 +8,7 @@ using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
 using static FE.Utils.Utils;
@@ -37,20 +38,29 @@ public static class RecipeGallery {
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "配方图鉴", "", "recipe-gallery-header");
-        RectTransform gridCard = PageLayout.CreateContentCard(tab, "recipe-gallery-grid-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
-        float y = 18f;
-        txtGridTitle = PageLayout.AddCardTitle(wnd, gridCard, 18f, 14f, "配方解锁情况", 16, "recipe-gallery-grid-title");
-        y = 58f;
-        for (int i = 0; i < MatrixCount + 2; i++) {
-            for (int j = 0; j < RecipeCount + 2; j++) {
-                (float, float) position = GetPosition(j, RecipeCount + 2);
-                recipeUnlockInfoText[i, j] = wnd.AddText2(position.Item1, y, gridCard, "动态刷新");
-                recipeUnlockInfoText[i, j].supportRichText = true;
-            }
-            y += 36f;
-        }
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("配方图鉴", objectName: "recipe-gallery-header", pos: (0, 0), onBuilt: refs => header = refs),
+                    ContentCard(pos: (1, 0), objectName: "recipe-gallery-grid-card", strong: true,
+                        children: [
+                            Node(pos: (0, 0), objectName: "recipe-gallery-grid-body", build: (w, gridCard) => {
+                                float y = 18f;
+                                txtGridTitle = PageLayout.AddCardTitle(w, gridCard, 18f, 14f, "配方解锁情况", 16, "recipe-gallery-grid-title");
+                                y = 58f;
+                                for (int i = 0; i < MatrixCount + 2; i++) {
+                                    for (int j = 0; j < RecipeCount + 2; j++) {
+                                        (float, float) position = GetPosition(j, RecipeCount + 2);
+                                        recipeUnlockInfoText[i, j] = w.AddText2(position.Item1, y, gridCard, "动态刷新");
+                                        recipeUnlockInfoText[i, j].supportRichText = true;
+                                    }
+                                    y += 36f;
+                                }
+                            }),
+                        ]),
+                ]));
         recipeUnlockInfoText[0, 0].text = "";
         for (int j = 1; j <= RecipeCount; j++) {
             recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];

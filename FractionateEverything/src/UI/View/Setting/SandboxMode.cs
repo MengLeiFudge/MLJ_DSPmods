@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.Setting;
@@ -42,29 +43,48 @@ public static class SandboxMode {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "沙盒模式", "", "sandbox-mode-header");
-        header.Summary.text = "集中放置高影响力的沙盒操作，避免按钮散落在页面角落".WithColor(White);
-        RectTransform actionCard = PageLayout.CreateContentCard(parent, "sandbox-mode-action-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 250f, true);
-        RectTransform configCard = PageLayout.CreateContentCard(parent, "sandbox-mode-config-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 250f, PageLayout.DesignWidth, 413f);
-        PageLayout.AddCardTitle(wnd, actionCard, 18f, 14f, "批量操作", 15, "sandbox-mode-action-title");
-        PageLayout.AddCardTitle(wnd, configCard, 18f, 14f, "倍率与说明", 15, "sandbox-mode-config-title");
-
-        float x = 0f;
-        float y = 18f;
-        wnd.AddButton(0, 3, y + 34f, actionCard, "锁定所有分馏配方", 16, "button-lock-all-recipes",
-            RecipeManager.LockAllFracRecipes);
-        wnd.AddButton(1, 3, y + 34f, actionCard, "获得所有分馏配方", 16, "button-reward-all-recipes",
-            RecipeManager.RewardAllFracRecipes);
-        wnd.AddButton(2, 3, y + 34f, actionCard, "满级所有分馏配方", 16, "button-max-all-recipes",
-            RecipeManager.MaxAllFracRecipes);
-        y += 36f;
-        var txt = wnd.AddText2(x + 18f, y + 34f, configCard, "经验获取倍率", 15, "text-exp-multi-ratio");
-        wnd.AddSlider(x + 23f + txt.preferredWidth, y + 34f, configCard,
-            ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
-        wnd.AddTipsButton2(x + 28f + txt.preferredWidth + 200 + 5, y + 34f, configCard,
-            "经验获取倍率", "经验获取倍率说明");
+        BuildLayout(wnd, parent,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(250f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("沙盒模式", objectName: "sandbox-mode-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "集中放置高影响力的沙盒操作，避免按钮散落在页面角落".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "sandbox-mode-action-card",
+                        strong: true,
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "sandbox-mode-action-title",
+                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title"); }),
+                            Node(pos: (1, 0), objectName: "sandbox-mode-action-body", build: (w, root) => {
+                                w.AddButton(0, 3, 32f, root, "锁定所有分馏配方", 16, "button-lock-all-recipes",
+                                    RecipeManager.LockAllFracRecipes);
+                                w.AddButton(1, 3, 32f, root, "获得所有分馏配方", 16, "button-reward-all-recipes",
+                                    RecipeManager.RewardAllFracRecipes);
+                                w.AddButton(2, 3, 32f, root, "满级所有分馏配方", 16, "button-max-all-recipes",
+                                    RecipeManager.MaxAllFracRecipes);
+                            }),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "sandbox-mode-config-card",
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "sandbox-mode-config-title",
+                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "倍率与说明", 15, "sandbox-mode-config-title"); }),
+                            Node(pos: (1, 0), objectName: "sandbox-mode-config-body", build: (w, root) => {
+                                var txt = w.AddText2(0f, 32f, root, "经验获取倍率", 15, "text-exp-multi-ratio");
+                                w.AddSlider(23f + txt.preferredWidth, 32f, root,
+                                    ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
+                                w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, 32f, root,
+                                    "经验获取倍率", "经验获取倍率说明");
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

@@ -4,6 +4,7 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ResourceInteraction;
@@ -46,41 +47,77 @@ public static class Exchange {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "交易所", "", "exchange-header");
-
-        float top = PageLayout.HeaderHeight + PageLayout.Gap;
-        RectTransform infoCard = PageLayout.CreateContentCard(tab, "exchange-info-card", 0f, top, 410f, 190f, true);
-        RectTransform actionCard = PageLayout.CreateContentCard(tab, "exchange-action-card", 410f + PageLayout.Gap,
-            top, PageLayout.DesignWidth - 410f - PageLayout.Gap, 190f, true);
-        RectTransform marketCard = PageLayout.CreateContentCard(tab, "exchange-market-card", 0f,
-            top + 190f + PageLayout.Gap, PageLayout.DesignWidth, 455f);
-
-        txtInfoTitle = PageLayout.AddCardTitle(wnd, infoCard, 18f, 14f, "当前标的", 15, "exchange-info-title");
-        txtActionTitle = PageLayout.AddCardTitle(wnd, actionCard, 18f, 14f, "快捷操作", 15, "exchange-action-title");
-        txtMarketTitle = PageLayout.AddCardTitle(wnd, marketCard, 18f, 14f, "市场概览", 15, "exchange-market-title");
-
-        float y = 60f;
-        btnSelectedItem = wnd.AddImageButton(18f, y, infoCard, null).WithSize(40f, 40f)
-            .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));
-        txtPrice = wnd.AddText2(78f, y, infoCard, "", 13);
-        txtPrice.rectTransform.sizeDelta = new Vector2(300f, 24f);
-        y += 34f;
-        txtInventory = wnd.AddText2(78f, y, infoCard, "", 13);
-        txtInventory.rectTransform.sizeDelta = new Vector2(300f, 24f);
-
-        y = 60f;
-        btnBuy1 = wnd.AddButton(18f, y, 150f, actionCard, "买1", onClick: () => Trade(true, 1));
-        btnBuy10 = wnd.AddButton(184f, y, 150f, actionCard, "买10", onClick: () => Trade(true, 10));
-        btnBuy100 = wnd.AddButton(350f, y, 150f, actionCard, "买100", onClick: () => Trade(true, 100));
-        y += 44f;
-        btnSell1 = wnd.AddButton(18f, y, 150f, actionCard, "卖1", onClick: () => Trade(false, 1));
-        btnSell10 = wnd.AddButton(184f, y, 150f, actionCard, "卖10", onClick: () => Trade(false, 10));
-        btnSell100 = wnd.AddButton(350f, y, 150f, actionCard, "卖100", onClick: () => Trade(false, 100));
-
-        txtStats = wnd.AddText2(18f, 56f, marketCard, "", 13);
-        txtStats.supportRichText = true;
-        txtStats.alignment = TextAnchor.UpperLeft;
-        txtStats.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 320f);
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(190f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("交易所", objectName: "exchange-header", pos: (0, 0), onBuilt: refs => header = refs),
+                    Grid(
+                        pos: (1, 0),
+                        cols: [Px(410f), 1],
+                        columnGap: PageLayout.Gap,
+                        children: [
+                            ContentCard(
+                                pos: (0, 0),
+                                objectName: "exchange-info-card",
+                                strong: true,
+                                rows: [Px(24f), 1],
+                                padding: Inset(18f, 14f, 18f, 18f),
+                                children: [
+                                    Node(pos: (0, 0), objectName: "exchange-info-title-node", build: (w, root) => {
+                                        txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "当前标的", 15, "exchange-info-title");
+                                    }),
+                                    Node(pos: (1, 0), objectName: "exchange-info-body", build: (w, root) => {
+                                        float y = 28f;
+                                        btnSelectedItem = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f)
+                                            .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));
+                                        txtPrice = w.AddText2(60f, y, root, "", 13);
+                                        txtPrice.rectTransform.sizeDelta = new Vector2(300f, 24f);
+                                        y += 34f;
+                                        txtInventory = w.AddText2(60f, y, root, "", 13);
+                                        txtInventory.rectTransform.sizeDelta = new Vector2(300f, 24f);
+                                    }),
+                                ]),
+                            ContentCard(
+                                pos: (0, 1),
+                                objectName: "exchange-action-card",
+                                strong: true,
+                                rows: [Px(24f), 1],
+                                padding: Inset(18f, 14f, 18f, 18f),
+                                children: [
+                                    Node(pos: (0, 0), objectName: "exchange-action-title-node", build: (w, root) => {
+                                        txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快捷操作", 15, "exchange-action-title");
+                                    }),
+                                    Node(pos: (1, 0), objectName: "exchange-action-body", build: (w, root) => {
+                                        float y = 28f;
+                                        btnBuy1 = w.AddButton(0f, y, 150f, root, "买1", onClick: () => Trade(true, 1));
+                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10", onClick: () => Trade(true, 10));
+                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100", onClick: () => Trade(true, 100));
+                                        y += 44f;
+                                        btnSell1 = w.AddButton(0f, y, 150f, root, "卖1", onClick: () => Trade(false, 1));
+                                        btnSell10 = w.AddButton(166f, y, 150f, root, "卖10", onClick: () => Trade(false, 10));
+                                        btnSell100 = w.AddButton(332f, y, 150f, root, "卖100", onClick: () => Trade(false, 100));
+                                    }),
+                                ]),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "exchange-market-card",
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "exchange-market-title-node", build: (w, root) => {
+                                txtMarketTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "市场概览", 15, "exchange-market-title");
+                            }),
+                            Node(pos: (1, 0), objectName: "exchange-market-body", build: (w, root) => {
+                                txtStats = w.AddText2(0f, 18f, root, "", 13);
+                                txtStats.supportRichText = true;
+                                txtStats.alignment = TextAnchor.UpperLeft;
+                                txtStats.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 320f);
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

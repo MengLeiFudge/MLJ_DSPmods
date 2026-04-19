@@ -10,6 +10,7 @@ using FE.UI.Components;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
@@ -114,56 +115,63 @@ public static class RecurringTask {
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "循环任务", "", "recurring-task-header");
-
-        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "recurring-task-summary-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 72f, true);
-        RectTransform listCard = PageLayout.CreateContentCard(tab, "recurring-task-list-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 72f, PageLayout.DesignWidth, 551f);
-
-        txtSummary = wnd.AddText2(18f, 16f, summaryCard, "动态刷新", 14, "txtRecurringTaskSummary");
-        txtSummary.supportRichText = true;
-        txtSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 40f);
-
-        float x = 0f;
-        float y = 18f + 7f;
-
-        wnd.AddText2(TaskNameX, y, listCard, "任务", 16, "txtHeaderTask");
-        wnd.AddText2(TaskProgressX, y, listCard, "进度", 16, "txtHeaderProgress");
-        wnd.AddText2(TaskDescX, y, listCard, "描述", 16, "txtHeaderDesc");
-        wnd.AddText2(TaskRewardIconX, y, listCard, "奖励", 16, "txtHeaderReward");
-        wnd.AddText2(TaskStatusX, y, listCard, "状态", 16, "txtHeaderStatus");
-        wnd.AddText2(TaskActionX, y, listCard, "操作", 16, "txtHeaderAction");
-
-        y += 36f + 7f;
-        for (int i = 0; i < TaskCount; i++) {
-            int j = i;
-            txtTaskNames[j] = wnd.AddText2(TaskNameX + x, y, listCard, "动态刷新", 15, $"txtTaskName{j}");
-            txtTaskNames[j].supportRichText = true;
-            txtTaskNames[j].rectTransform.sizeDelta = new Vector2(TaskNameW, 32f);
-
-            txtProgress[j] = wnd.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15, $"txtTaskProgress{j}");
-            txtProgress[j].supportRichText = true;
-            txtProgress[j].rectTransform.sizeDelta = new Vector2(TaskProgressW, 32f);
-
-            txtDescriptions[j] = wnd.AddText2(TaskDescX + x, y, listCard, "动态刷新", 14, $"txtTaskDesc{j}");
-            txtDescriptions[j].supportRichText = true;
-            txtDescriptions[j].alignment = TextAnchor.UpperLeft;
-            txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
-
-            rewardIcons[j] = wnd.AddImageButton(TaskRewardIconX + x, y, listCard, null).WithSize(40f, 40f);
-            txtRewards[j] = wnd.AddText2(TaskRewardTextX + x, y, listCard, "动态刷新", 15, $"txtTaskReward{j}");
-            txtRewards[j].supportRichText = true;
-            txtRewards[j].rectTransform.sizeDelta = new Vector2(TaskRewardTextW, 32f);
-
-            txtStatus[j] = wnd.AddText2(TaskStatusX + x, y, listCard, "动态刷新", 15, $"txtTaskStatus{j}");
-            txtStatus[j].supportRichText = true;
-            txtStatus[j].rectTransform.sizeDelta = new Vector2(TaskStatusW, 32f);
-
-            btnClaims[j] = wnd.AddButton(TaskActionX + x, y, TaskActionW, listCard, "领取", 15, $"btnTaskClaim{j}",
-                () => ClaimReward(j));
-            y += 46f;
-        }
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(72f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("循环任务", objectName: "recurring-task-header", pos: (0, 0), onBuilt: refs => header = refs),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "recurring-task-summary-card",
+                        strong: true,
+                        children: [
+                            Node(pos: (0, 0), objectName: "recurring-task-summary-body", build: (w, summaryCard) => {
+                                txtSummary = w.AddText2(18f, 16f, summaryCard, "动态刷新", 14, "txtRecurringTaskSummary");
+                                txtSummary.supportRichText = true;
+                                txtSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 40f);
+                            }),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "recurring-task-list-card",
+                        children: [
+                            Node(pos: (0, 0), objectName: "recurring-task-list-body", build: (w, listCard) => {
+                                float x = 0f;
+                                float y = 18f + 7f;
+                                w.AddText2(TaskNameX, y, listCard, "任务", 16, "txtHeaderTask");
+                                w.AddText2(TaskProgressX, y, listCard, "进度", 16, "txtHeaderProgress");
+                                w.AddText2(TaskDescX, y, listCard, "描述", 16, "txtHeaderDesc");
+                                w.AddText2(TaskRewardIconX, y, listCard, "奖励", 16, "txtHeaderReward");
+                                w.AddText2(TaskStatusX, y, listCard, "状态", 16, "txtHeaderStatus");
+                                w.AddText2(TaskActionX, y, listCard, "操作", 16, "txtHeaderAction");
+                                y += 36f + 7f;
+                                for (int i = 0; i < TaskCount; i++) {
+                                    int j = i;
+                                    txtTaskNames[j] = w.AddText2(TaskNameX + x, y, listCard, "动态刷新", 15, $"txtTaskName{j}");
+                                    txtTaskNames[j].supportRichText = true;
+                                    txtTaskNames[j].rectTransform.sizeDelta = new Vector2(TaskNameW, 32f);
+                                    txtProgress[j] = w.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15, $"txtTaskProgress{j}");
+                                    txtProgress[j].supportRichText = true;
+                                    txtProgress[j].rectTransform.sizeDelta = new Vector2(TaskProgressW, 32f);
+                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 14, $"txtTaskDesc{j}");
+                                    txtDescriptions[j].supportRichText = true;
+                                    txtDescriptions[j].alignment = TextAnchor.UpperLeft;
+                                    txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
+                                    rewardIcons[j] = w.AddImageButton(TaskRewardIconX + x, y, listCard, null).WithSize(40f, 40f);
+                                    txtRewards[j] = w.AddText2(TaskRewardTextX + x, y, listCard, "动态刷新", 15, $"txtTaskReward{j}");
+                                    txtRewards[j].supportRichText = true;
+                                    txtRewards[j].rectTransform.sizeDelta = new Vector2(TaskRewardTextW, 32f);
+                                    txtStatus[j] = w.AddText2(TaskStatusX + x, y, listCard, "动态刷新", 15, $"txtTaskStatus{j}");
+                                    txtStatus[j].supportRichText = true;
+                                    txtStatus[j].rectTransform.sizeDelta = new Vector2(TaskStatusW, 32f);
+                                    btnClaims[j] = w.AddButton(TaskActionX + x, y, TaskActionW, listCard, "领取", 15,
+                                        $"btnTaskClaim{j}", () => ClaimReward(j));
+                                    y += 46f;
+                                }
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {
