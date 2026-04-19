@@ -4,6 +4,7 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ResourceInteraction;
@@ -40,42 +41,63 @@ public static class MarketBoard {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "市场板", "", "market-board-header");
-        txtExpire = header.Summary;
-
-        RectTransform summaryCard = PageLayout.CreateContentCard(tab, "market-board-summary-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 72f, true);
-        RectTransform listCard = PageLayout.CreateContentCard(tab, "market-board-list-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 72f, PageLayout.DesignWidth, 577f);
-
-        txtBoardTitle = PageLayout.AddCardTitle(wnd, summaryCard, 18f, 14f, "特单概览", 15, "market-board-summary-title");
-        txtSummary = wnd.AddText2(18f, 40f, summaryCard, "", 13);
-        txtSummary.supportRichText = true;
-        txtSummary.rectTransform.sizeDelta = new Vector2(1040f, 24f);
-
-        float y = 18f;
-
-        for (int i = 0; i < RowCount; i++) {
-            int rowIndex = i;
-            rows[i] = new OfferRow {
-                InputIcon = wnd.AddImageButton(18f, y, listCard, null).WithSize(40f, 40f),
-                TxtInput = wnd.AddText2(68f, y, listCard, "", 13),
-                ExtraIcon = wnd.AddImageButton(288f, y, listCard, null).WithSize(40f, 40f),
-                TxtExtra = wnd.AddText2(338f, y, listCard, "", 13),
-                OutputIcon = wnd.AddImageButton(564f, y, listCard, null).WithSize(40f, 40f),
-                TxtOutput = wnd.AddText2(614f, y, listCard, "", 13),
-            };
-            rows[i].TxtInput.rectTransform.sizeDelta = new Vector2(180f, 24f);
-            rows[i].TxtExtra.rectTransform.sizeDelta = new Vector2(180f, 24f);
-            rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(240f, 24f);
-            rows[i].BtnTrade = wnd.AddButton(902f, y - 4f, 120f, listCard, "交易", 13,
-                onClick: () => {
-                    if (rows[rowIndex].OfferId > 0 && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
-                        UpdateUI();
-                    }
-                });
-            y += 40f;
-        }
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(72f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("市场板", objectName: "market-board-header", pos: (0, 0),
+                        onBuilt: refs => {
+                            header = refs;
+                            txtExpire = refs.Summary;
+                        }),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "market-board-summary-card",
+                        strong: true,
+                        padding: Inset(18f, 14f, 18f, 14f),
+                        rows: [Px(24f), 1],
+                        children: [
+                            Node(pos: (0, 0), objectName: "market-board-summary-title-node", build: (w, root) => {
+                                txtBoardTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "特单概览", 15, "market-board-summary-title");
+                            }),
+                            Node(pos: (1, 0), objectName: "market-board-summary-body", build: (w, root) => {
+                                txtSummary = w.AddText2(0f, 12f, root, "", 13);
+                                txtSummary.supportRichText = true;
+                                txtSummary.rectTransform.sizeDelta = new Vector2(1040f, 24f);
+                            }),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "market-board-list-card",
+                        padding: Inset(18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "market-board-list-body", build: (w, root) => {
+                                float y = 0f;
+                                for (int i = 0; i < RowCount; i++) {
+                                    int rowIndex = i;
+                                    rows[i] = new OfferRow {
+                                        InputIcon = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f),
+                                        TxtInput = w.AddText2(50f, y, root, "", 13),
+                                        ExtraIcon = w.AddImageButton(270f, y, root, null).WithSize(40f, 40f),
+                                        TxtExtra = w.AddText2(320f, y, root, "", 13),
+                                        OutputIcon = w.AddImageButton(546f, y, root, null).WithSize(40f, 40f),
+                                        TxtOutput = w.AddText2(596f, y, root, "", 13),
+                                    };
+                                    rows[i].TxtInput.rectTransform.sizeDelta = new Vector2(180f, 24f);
+                                    rows[i].TxtExtra.rectTransform.sizeDelta = new Vector2(180f, 24f);
+                                    rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(240f, 24f);
+                                    rows[i].BtnTrade = w.AddButton(884f, y - 4f, 120f, root, "交易", 13,
+                                        onClick: () => {
+                                            if (rows[rowIndex].OfferId > 0 && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
+                                                UpdateUI();
+                                            }
+                                        });
+                                    y += 40f;
+                                }
+                            }),
+                        ]),
+                ]));
     }
 
     public static void UpdateUI() {

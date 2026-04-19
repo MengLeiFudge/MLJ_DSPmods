@@ -7,6 +7,7 @@ using CommonAPI.Systems;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
@@ -89,47 +90,71 @@ public static class ItemInteraction {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, parent, "物品交互", "", "item-interaction-header");
-        header.Summary.text = "筛选、定位并直接从数据中心提取物品".WithColor(White);
-        RectTransform filterCard = PageLayout.CreateContentCard(parent, "item-interaction-filter-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 146f, true);
-        RectTransform gridCard = PageLayout.CreateContentCard(parent, "item-interaction-grid-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 146f, PageLayout.DesignWidth, 431f);
-        RectTransform footerCard = PageLayout.CreateFooterCard(parent, "item-interaction-footer-card",
-            PageLayout.HeaderHeight + PageLayout.Gap * 3f + 146f + 431f);
-
-        float x = 0f;
-        float y = 18f;
-        PageLayout.AddCardTitle(wnd, filterCard, 18f, 14f, "筛选条件", 15, "item-interaction-filter-title");
-        float filterRowY = FilterTopRowY;
-        wnd.AddCheckBox(x + 18f, filterRowY, filterCard, ShowNotStoredItemEntry, "显示未存储的物品");
-        float popupY = PageLayout.HeaderHeight + PageLayout.Gap + filterRowY + 18f;
-        wnd.AddButton(3, 4, filterRowY, filterCard, "查找指定物品",
-            onClick: () => { SearchSpecifiedItem(popupY); });
-
-        CreateFilterCheckBoxes(filterCard, FilterOptionsStartY);
-
-        PageLayout.AddCardTitle(wnd, gridCard, 18f, 14f, "仓储物品", 15, "item-interaction-grid-title");
-        Text txt = wnd.AddText2(x + 18f, 50f, gridCard, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + 23f + txt.preferredWidth, 50f, gridCard, "提取物品", "提取物品说明");
-        itemGridStartY = 96f;
-        y = itemGridStartY;
-        for (int i = 0; i < RowCount; i++) {
-            for (int j = 0; j < ColumnCount; j++) {
-                btnItems[i, j] = wnd.AddImageButton(GetPosition(j, ColumnCount, 1042f).Item1 + 18f, y, gridCard)
-                    .WithSize(40f, 40f)
-                    .WithTakeItemClickEvent()
-                    .WithDeselectOnHover(true, () => SelectedItemID = 0);
-            }
-            y += 40f;
-        }
-
-        _prevPageButton = wnd.AddButton(GetPosition(0, 3).Item1, 10f, footerCard, "上一页", onClick: PrevPage);
-        _pageIndicator = wnd.AddText2(GetPosition(1, 3).Item1, 16f, footerCard, "");
-        _pageIndicator.alignment = TextAnchor.MiddleCenter;
-        RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
-        pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
-        _nextPageButton = wnd.AddButton(GetPosition(2, 3).Item1, 10f, footerCard, "下一页", onClick: NextPage);
+        BuildLayout(wnd, parent,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(146f), Px(431f), Px(PageLayout.FooterHeight)],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("物品交互", objectName: "item-interaction-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "筛选、定位并直接从数据中心提取物品".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "item-interaction-filter-card",
+                        strong: true,
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "item-interaction-filter-title-node", build: (w, root) => {
+                                PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15, "item-interaction-filter-title");
+                            }),
+                            Node(pos: (1, 0), objectName: "item-interaction-filter-body", build: (w, root) => {
+                                float filterRowY = 12f;
+                                w.AddCheckBox(0f, filterRowY, root, ShowNotStoredItemEntry, "显示未存储的物品");
+                                float popupY = PageLayout.HeaderHeight + PageLayout.Gap + FilterTopRowY + 18f;
+                                w.AddButton(3, 4, filterRowY, root, "查找指定物品",
+                                    onClick: () => { SearchSpecifiedItem(popupY); });
+                                CreateFilterCheckBoxes(root, 42f);
+                            }),
+                        ]),
+                    ContentCard(
+                        pos: (2, 0),
+                        objectName: "item-interaction-grid-card",
+                        rows: [Px(24f), 1],
+                        padding: Inset(18f, 14f, 18f, 18f),
+                        children: [
+                            Node(pos: (0, 0), objectName: "item-interaction-grid-title-node", build: (w, root) => {
+                                PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
+                            }),
+                            Node(pos: (1, 0), objectName: "item-interaction-grid-body", build: (w, root) => {
+                                Text txt = w.AddText2(0f, 18f, root, "以下物品在分馏数据中心的存储量为：");
+                                w.AddTipsButton2(23f + txt.preferredWidth, 18f, root, "提取物品", "提取物品说明");
+                                itemGridStartY = 64f;
+                                float y = itemGridStartY;
+                                for (int i = 0; i < RowCount; i++) {
+                                    for (int j = 0; j < ColumnCount; j++) {
+                                        btnItems[i, j] = w.AddImageButton(GetPosition(j, ColumnCount, 1006f).Item1, y, root)
+                                            .WithSize(40f, 40f)
+                                            .WithTakeItemClickEvent()
+                                            .WithDeselectOnHover(true, () => SelectedItemID = 0);
+                                    }
+                                    y += 40f;
+                                }
+                            }),
+                        ]),
+                    FooterCard(
+                        pos: (3, 0),
+                        objectName: "item-interaction-footer-card",
+                        children: [
+                            Node(pos: (0, 0), objectName: "item-interaction-footer-body", build: (w, root) => {
+                                _prevPageButton = w.AddButton(GetPosition(0, 3).Item1, 10f, root, "上一页", onClick: PrevPage);
+                                _pageIndicator = w.AddText2(GetPosition(1, 3).Item1, 16f, root, "");
+                                _pageIndicator.alignment = TextAnchor.MiddleCenter;
+                                RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
+                                pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
+                                _nextPageButton = w.AddButton(GetPosition(2, 3).Item1, 10f, root, "下一页", onClick: NextPage);
+                            }),
+                        ]),
+                ]));
     }
 
     private static void CreateFilterCheckBoxes(RectTransform parent, float startY) {

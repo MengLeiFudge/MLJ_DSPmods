@@ -12,6 +12,7 @@ using FE.UI.View.ProgressTask;
 using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Logic.Recipe.ERecipeExtension;
@@ -156,99 +157,91 @@ public static class FracRecipeOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "分馏配方", "", "frac-recipe-header");
-        header.Summary.text = "查看配方成功率、损毁率、产物结构与强化等级信息".WithColor(White);
-        tab = PageLayout.CreateContentCard(trans, "frac-recipe-content-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
-        float x = 0f;
-        float y = 18f + 7f;
-
-        // 顶部：物品选择器 + 配方类型（移除核心按钮）
-        txtCurrItem = wnd.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
-        float popupY = y + (36f + 7f) / 2;
-        btnSelectedItem = wnd.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
-            SelectedItem, "button-change-item").WithClickEvent(
-            () => { OnButtonChangeItemClick(false, popupY); },
-            () => { OnButtonChangeItemClick(true, popupY); });
-        wnd.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
-            "提示", "分馏配方提示按钮说明1");
-        var txt = wnd.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
-        wnd.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
-            .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
-
-        y += 36f + 7f;
-
-        // 沙盒模式调试按钮始终创建，避免运行中切换沙盒状态后静态按钮引用为空。
-        recipeSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
-            onClick: () => {
-                if (SelectedRecipe != null) {
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
-                }
-            });
-        recipeSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
-            onClick: () => {
-                if (SelectedRecipe != null) {
-                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
-                }
-            });
-        recipeSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
-            onClick: () => {
-                if (SelectedRecipe != null) {
-                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
-                }
-            });
-        recipeSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
-            onClick: () => {
-                if (SelectedRecipe != null) {
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
-                }
-            });
-        bool sandboxEnabled = GameMain.sandboxToolsEnabled;
-        foreach (UIButton button in recipeSandboxBtn) {
-            button.gameObject.SetActive(sandboxEnabled);
-        }
-        y += 36f;
-
-        // 增产点数滑条（动态定位，初始隐藏）
-        int[] rang;
-        if (!GenesisBook.Enable) {
-            rang = [0, 1, 2, 4, 10];
-        } else {
-            rang = [0, 4, 10];
-        }
-        incSlider = wnd.AddSlider(0f, 0f, tab, selectedInc, rang, null, 200f);
-
-        txtRecipeInfoBaseY = y;
-
-        // 左列：动态文本行（主文本）
-        for (int i = 0; i < InfoLineCount; i++) {
-            txtRecipeInfo[i] = wnd.AddText2(x, y, tab, "");
-        }
-        // 左列：图标按钮
-        for (int i = 0; i < InfoLineCount; i++) {
-            var btn = MyImageButton.CreateImageButton(0, 0, tab, null);
-            btn.WithSize(IconSize, IconSize);
-            btn.gameObject.SetActive(false);
-            btnRecipeInfoIcons[i] = btn;
-        }
-        // 左列：产物行左侧文本（概率/等效数量）
-        for (int i = 0; i < InfoLineCount; i++) {
-            txtProductLeft[i] = MyWindow.AddText(0, 0, tab, "", 15);
-            txtProductLeft[i].gameObject.SetActive(false);
-        }
-
-        // 产物分节标签（"产出" / "其他"）
-        txtMainLabel = MyWindow.AddText(0, 0, tab, "产出", 15);
-        txtMainLabel.gameObject.SetActive(false);
-        txtAppendLabel = MyWindow.AddText(0, 0, tab, "其他", 15);
-        txtAppendLabel.gameObject.SetActive(false);
-
-        // 右列：配方强化等级信息（用较长的初始文本来撑开窗口宽度）
-        for (int i = 0; i < LevelLineCount; i++) {
-            txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, "", 14);
-        }
+        BuildLayout(wnd, trans,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("分馏配方", objectName: "frac-recipe-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "查看配方成功率、损毁率、产物结构与强化等级信息".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "frac-recipe-content-card",
+                        strong: true,
+                        children: [
+                            Node(pos: (0, 0), objectName: "frac-recipe-content-root", build: (w, root) => {
+                                tab = root;
+                                float x = 0f;
+                                float y = 18f + 7f;
+                                txtCurrItem = w.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
+                                float popupY = y + (36f + 7f) / 2;
+                                btnSelectedItem = w.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
+                                    SelectedItem, "button-change-item").WithClickEvent(
+                                    () => { OnButtonChangeItemClick(false, popupY); },
+                                    () => { OnButtonChangeItemClick(true, popupY); });
+                                w.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
+                                    "提示", "分馏配方提示按钮说明1");
+                                var txt = w.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
+                                w.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
+                                    .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
+                                y += 36f + 7f;
+                                recipeSandboxBtn[0] = w.AddButton(0, 4, y, tab, "重置等级",
+                                    onClick: () => {
+                                        if (SelectedRecipe != null) {
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
+                                        }
+                                    });
+                                recipeSandboxBtn[1] = w.AddButton(1, 4, y, tab, "等级-1",
+                                    onClick: () => {
+                                        if (SelectedRecipe != null) {
+                                            int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
+                                        }
+                                    });
+                                recipeSandboxBtn[2] = w.AddButton(2, 4, y, tab, "等级+1",
+                                    onClick: () => {
+                                        if (SelectedRecipe != null) {
+                                            int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
+                                        }
+                                    });
+                                recipeSandboxBtn[3] = w.AddButton(3, 4, y, tab, "等级升满",
+                                    onClick: () => {
+                                        if (SelectedRecipe != null) {
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
+                                        }
+                                    });
+                                bool sandboxEnabled = GameMain.sandboxToolsEnabled;
+                                foreach (UIButton button in recipeSandboxBtn) {
+                                    button.gameObject.SetActive(sandboxEnabled);
+                                }
+                                y += 36f;
+                                int[] rang = !GenesisBook.Enable ? [0, 1, 2, 4, 10] : [0, 4, 10];
+                                incSlider = w.AddSlider(0f, 0f, tab, selectedInc, rang, null, 200f);
+                                txtRecipeInfoBaseY = y;
+                                for (int i = 0; i < InfoLineCount; i++) {
+                                    txtRecipeInfo[i] = w.AddText2(x, y, tab, "");
+                                }
+                                for (int i = 0; i < InfoLineCount; i++) {
+                                    var btn = MyImageButton.CreateImageButton(0, 0, tab, null);
+                                    btn.WithSize(IconSize, IconSize);
+                                    btn.gameObject.SetActive(false);
+                                    btnRecipeInfoIcons[i] = btn;
+                                }
+                                for (int i = 0; i < InfoLineCount; i++) {
+                                    txtProductLeft[i] = MyWindow.AddText(0, 0, tab, "", 15);
+                                    txtProductLeft[i].gameObject.SetActive(false);
+                                }
+                                txtMainLabel = MyWindow.AddText(0, 0, tab, "产出", 15);
+                                txtMainLabel.gameObject.SetActive(false);
+                                txtAppendLabel = MyWindow.AddText(0, 0, tab, "其他", 15);
+                                txtAppendLabel.gameObject.SetActive(false);
+                                for (int i = 0; i < LevelLineCount; i++) {
+                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, "", 14);
+                                }
+                            }),
+                        ]),
+                ]));
     }
 
     // ==================== UI 更新 ====================

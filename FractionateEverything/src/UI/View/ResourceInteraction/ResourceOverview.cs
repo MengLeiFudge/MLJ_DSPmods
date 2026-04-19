@@ -5,13 +5,13 @@ using FE.Logic.RecipeGrowth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ResourceInteraction;
 
 public static class ResourceOverview {
     private const int DisplayCount = 5;
-    private static readonly float CardWidth = (PageLayout.DesignWidth - PageLayout.Gap) / 2f;
 
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
@@ -54,41 +54,85 @@ public static class ResourceOverview {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         tab = trans;
-        header = PageLayout.CreatePageHeader(wnd, tab, "市场总览", "", "resource-overview-header");
-        txtRefresh = header.Summary;
-
-        RectTransform hotCard = PageLayout.CreateContentCard(tab, "resource-overview-hot-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, CardWidth, 248f, true);
-        RectTransform coldCard = PageLayout.CreateContentCard(tab, "resource-overview-cold-card",
-            CardWidth + PageLayout.Gap, PageLayout.HeaderHeight + PageLayout.Gap, CardWidth, 248f, true);
-        RectTransform darkFogCard = PageLayout.CreateContentCard(tab, "resource-overview-darkfog-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap * 2f + 248f, PageLayout.DesignWidth, 401f);
-
-        txtHotTitle = PageLayout.AddCardTitle(wnd, hotCard, 18f, 14f, "高需求物资", 15, "resource-overview-hot-title");
-        txtColdTitle = PageLayout.AddCardTitle(wnd, coldCard, 18f, 14f, "低需求物资", 15, "resource-overview-cold-title");
-        txtDarkFogTitle = PageLayout.AddCardTitle(wnd, darkFogCard, 18f, 14f, "黑雾支线", 15, "resource-overview-darkfog-title");
-
-        float y = 52f;
-
-        for (int i = 0; i < DisplayCount; i++) {
-            hotIcons[i] = wnd.AddImageButton(18f, y, hotCard, null).WithSize(40f, 40f);
-            hotTexts[i] = wnd.AddText2(68f, y, hotCard, "", 13);
-            hotTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
-
-            coldIcons[i] = wnd.AddImageButton(18f, y, coldCard, null).WithSize(40f, 40f);
-            coldTexts[i] = wnd.AddText2(68f, y, coldCard, "", 13);
-            coldTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
-            y += 34f;
-        }
-
-        y = 56f;
-        for (int i = 0; i < darkFogLines.Length; i++) {
-            darkFogLines[i] = wnd.AddText2(18f, y, darkFogCard, "", 13, $"txtDarkFog{i}");
-            darkFogLines[i].supportRichText = true;
-            darkFogLines[i].rectTransform.sizeDelta = new Vector2(1040f, i == 1 || i == 2 ? 42f : 32f);
-            darkFogLines[i].alignment = TextAnchor.UpperLeft;
-            y += i == 1 || i == 2 ? 52f : 36f;
-        }
+        LayoutGrid topCards = Grid(
+            pos: (1, 0),
+            cols: [1, 1],
+            columnGap: PageLayout.Gap,
+            children: [
+                ContentCard(
+                    pos: (0, 0),
+                    objectName: "resource-overview-hot-card",
+                    strong: true,
+                    rows: [Px(24f), 1],
+                    padding: Inset(18f, 14f, 18f, 18f),
+                    children: [
+                        Node(pos: (0, 0), objectName: "resource-overview-hot-title-node", build: (w, root) => {
+                            txtHotTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "高需求物资", 15, "resource-overview-hot-title");
+                        }),
+                        Node(pos: (1, 0), objectName: "resource-overview-hot-body", build: (w, root) => {
+                            float y = 14f;
+                            for (int i = 0; i < DisplayCount; i++) {
+                                hotIcons[i] = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f);
+                                hotTexts[i] = w.AddText2(50f, y, root, "", 13);
+                                hotTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
+                                y += 34f;
+                            }
+                        }),
+                    ]),
+                ContentCard(
+                    pos: (0, 1),
+                    objectName: "resource-overview-cold-card",
+                    strong: true,
+                    rows: [Px(24f), 1],
+                    padding: Inset(18f, 14f, 18f, 18f),
+                    children: [
+                        Node(pos: (0, 0), objectName: "resource-overview-cold-title-node", build: (w, root) => {
+                            txtColdTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "低需求物资", 15, "resource-overview-cold-title");
+                        }),
+                        Node(pos: (1, 0), objectName: "resource-overview-cold-body", build: (w, root) => {
+                            float y = 14f;
+                            for (int i = 0; i < DisplayCount; i++) {
+                                coldIcons[i] = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f);
+                                coldTexts[i] = w.AddText2(50f, y, root, "", 13);
+                                coldTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
+                                y += 34f;
+                            }
+                        }),
+                    ]),
+            ]);
+        LayoutGrid darkFogCard = ContentCard(
+            pos: (2, 0),
+            objectName: "resource-overview-darkfog-card",
+            rows: [Px(24f), 1],
+            padding: Inset(18f, 14f, 18f, 18f),
+            children: [
+                Node(pos: (0, 0), objectName: "resource-overview-darkfog-title-node", build: (w, root) => {
+                    txtDarkFogTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "黑雾支线", 15, "resource-overview-darkfog-title");
+                }),
+                Node(pos: (1, 0), objectName: "resource-overview-darkfog-body", build: (w, root) => {
+                    float y = 18f;
+                    for (int i = 0; i < darkFogLines.Length; i++) {
+                        darkFogLines[i] = w.AddText2(0f, y, root, "", 13, $"txtDarkFog{i}");
+                        darkFogLines[i].supportRichText = true;
+                        darkFogLines[i].rectTransform.sizeDelta = new Vector2(1040f, i == 1 || i == 2 ? 42f : 32f);
+                        darkFogLines[i].alignment = TextAnchor.UpperLeft;
+                        y += i == 1 || i == 2 ? 52f : 36f;
+                    }
+                }),
+            ]);
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(248f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("市场总览", objectName: "resource-overview-header", pos: (0, 0),
+                        onBuilt: refs => {
+                            header = refs;
+                            txtRefresh = refs.Summary;
+                        }),
+                    topCards,
+                    darkFogCard,
+                ]));
     }
 
     public static void UpdateUI() {

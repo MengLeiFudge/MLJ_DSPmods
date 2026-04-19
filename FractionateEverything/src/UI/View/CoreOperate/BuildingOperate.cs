@@ -7,6 +7,7 @@ using FE.UI.Components;
 using FE.UI.View.Setting;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.ProcessManager;
 using static FE.Utils.Utils;
@@ -190,60 +191,64 @@ public static class BuildingOperate {
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
         window = trans;
-        PageLayout.HeaderRefs header = PageLayout.CreatePageHeader(wnd, trans, "建筑操作", "", "building-operate-header");
-        header.Summary.text = "查看建筑强化、关键节点突破与特质加成".WithColor(White);
-        tab = PageLayout.CreateContentCard(trans, "building-operate-content-card", 0f,
-            PageLayout.HeaderHeight + PageLayout.Gap, PageLayout.DesignWidth, 665f, true);
-        float x = 0f;
-        float y = 18f + 7f;
-        var txt = wnd.AddText2(x, y, tab, "建筑类型");
-        wnd.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
-            .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-        btnFragmentIcon = wnd.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-        txtFragmentCount = wnd.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
-        btnMatrixIcon = wnd.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
-        txtMatrixCount = wnd.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
-        y += 36f + 7f;
-
-        btnReinforcement = wnd.AddButton(0, 4, y, tab, "关键节点突破",
-            onClick: Reinforcement);
-        reinforcementSandboxBtn[0] = wnd.AddButton(0, 4, y, tab, "重置等级",
-            onClick: () => { ChangeLevelTo(0); });
-        reinforcementSandboxBtn[1] = wnd.AddButton(1, 4, y, tab, "等级-1",
-            onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-        reinforcementSandboxBtn[2] = wnd.AddButton(2, 4, y, tab, "等级+1",
-            onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-        reinforcementSandboxBtn[3] = wnd.AddButton(3, 4, y, tab, "等级升满",
-            onClick: () => { ChangeLevelTo(MaxLevel); });
-        bool sandboxEnabled = GameMain.sandboxToolsEnabled;
-        btnReinforcement.gameObject.SetActive(!sandboxEnabled);
-        foreach (UIButton button in reinforcementSandboxBtn) {
-            button.gameObject.SetActive(sandboxEnabled);
-        }
-        y += 36f + 7f;
-
-        wnd.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
-        buildingInfoBaseY = y;
-        for (int i = 0; i < LevelLineCount; i++) {
-            string placeholder = i == 0 ? "当前建筑强化等级 +12" :
-                i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
-            txtLevelInfo[i] = wnd.AddText2(RightColX, 0f, tab, placeholder, 14);
-        }
-        y += 36f;
-        txtBuildingInfo5 = wnd.AddText2(x, y, tab, "动态刷新");
-        btnTip5 = wnd.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
-        y += 36f;
-        // 特质1（+6）
-        txtTrait1 = wnd.AddText2(x, y, tab, "动态刷新");
-        btnTrait1Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质1（+6）：", "特质1（+6）：");
-        y += 36f;
-        // 特质2（+12）
-        txtTrait2 = wnd.AddText2(x, y, tab, "动态刷新");
-        btnTrait2Tip = wnd.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
-        for (int i = 0; i < txtReinforcementBonus.Length; i++) {
-            y += 36f;
-            txtReinforcementBonus[i] = wnd.AddText2(x, y, tab, "动态刷新");
-        }
+        BuildLayout(wnd, trans,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("建筑操作", objectName: "building-operate-header", pos: (0, 0),
+                        onBuilt: refs => refs.Summary.text = "查看建筑强化、关键节点突破与特质加成".WithColor(White)),
+                    ContentCard(
+                        pos: (1, 0),
+                        objectName: "building-operate-content-card",
+                        strong: true,
+                        children: [
+                            Node(pos: (0, 0), objectName: "building-operate-content-root", build: (w, root) => {
+                                tab = root;
+                                float x = 0f;
+                                float y = 18f + 7f;
+                                var txt = w.AddText2(x, y, tab, "建筑类型");
+                                w.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
+                                    .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
+                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                txtFragmentCount = w.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
+                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+                                txtMatrixCount = w.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
+                                y += 36f + 7f;
+                                btnReinforcement = w.AddButton(0, 4, y, tab, "关键节点突破", onClick: Reinforcement);
+                                reinforcementSandboxBtn[0] = w.AddButton(0, 4, y, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
+                                reinforcementSandboxBtn[1] = w.AddButton(1, 4, y, tab, "等级-1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
+                                reinforcementSandboxBtn[2] = w.AddButton(2, 4, y, tab, "等级+1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
+                                reinforcementSandboxBtn[3] = w.AddButton(3, 4, y, tab, "等级升满", onClick: () => { ChangeLevelTo(MaxLevel); });
+                                bool sandboxEnabled = GameMain.sandboxToolsEnabled;
+                                btnReinforcement.gameObject.SetActive(!sandboxEnabled);
+                                foreach (UIButton button in reinforcementSandboxBtn) {
+                                    button.gameObject.SetActive(sandboxEnabled);
+                                }
+                                y += 36f + 7f;
+                                w.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
+                                buildingInfoBaseY = y;
+                                for (int i = 0; i < LevelLineCount; i++) {
+                                    string placeholder = i == 0 ? "当前建筑强化等级 +12" :
+                                        i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
+                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, placeholder, 14);
+                                }
+                                y += 36f;
+                                txtBuildingInfo5 = w.AddText2(x, y, tab, "动态刷新");
+                                btnTip5 = w.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
+                                y += 36f;
+                                txtTrait1 = w.AddText2(x, y, tab, "动态刷新");
+                                btnTrait1Tip = w.AddTipsButton2(x + 250, y, tab, "特质1（+6）：", "特质1（+6）：");
+                                y += 36f;
+                                txtTrait2 = w.AddText2(x, y, tab, "动态刷新");
+                                btnTrait2Tip = w.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
+                                for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+                                    y += 36f;
+                                    txtReinforcementBonus[i] = w.AddText2(x, y, tab, "动态刷新");
+                                }
+                            }),
+                        ]),
+                ]));
     }
 
     /// <summary>
