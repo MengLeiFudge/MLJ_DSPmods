@@ -153,6 +153,9 @@ public class BuildingChangePacket {
     public int packetType { get; set; }
     public int intVal { get; set; } = 0;
     public float floatVal { get; set; } = 0;
+    public int planetId { get; set; } = 0;
+    public int entityId { get; set; } = 0;
+    public int itemId { get; set; } = 0;
 
     public BuildingChangePacket() { }
 
@@ -172,18 +175,29 @@ public class BuildingChangePacket {
         this.packetType = packetType;
         this.floatVal = floatVal;
     }
+
+    public BuildingChangePacket(int buildingId, int packetType, int planetId, int entityId, int itemId) {
+        this.buildingId = buildingId;
+        this.packetType = packetType;
+        this.planetId = planetId;
+        this.entityId = entityId;
+        this.itemId = itemId;
+    }
 }
 
 /// <summary>
-/// 在多人游戏中，当建筑强化进度发生改变时，向其他玩家推送此事件。
+/// 在多人游戏中，当建筑等级或实例级自定义状态发生改变时，向其他玩家推送此事件。
 /// </summary>
 [RegisterPacketProcessor]
 public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangePacket> {
     public override void ProcessPacket(BuildingChangePacket packet, INebulaConnection conn) {
-        ItemProto selectedBuilding = LDB.items.Select(packet.buildingId);
         switch (packet.packetType) {
             case 1:
+                ItemProto selectedBuilding = LDB.items.Select(packet.buildingId);
                 selectedBuilding.Level(packet.intVal);
+                break;
+            case 2:
+                BuildingManager.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {

@@ -229,6 +229,11 @@ public static class BuildingManager {
     private static bool hasLockedOutputClipboard;
     private static int lockedOutputClipboardItemId;
 
+    private static void ClearLockedOutputClipboard() {
+        hasLockedOutputClipboard = false;
+        lockedOutputClipboardItemId = 0;
+    }
+
     public static void LockedOutputImport(BinaryReader r) {
         lockedOutputDic.Clear();
         int count = r.ReadInt32();
@@ -251,6 +256,7 @@ public static class BuildingManager {
 
     public static void LockedOutputIntoOtherSave() {
         lockedOutputDic.Clear();
+        ClearLockedOutputClipboard();
     }
 
     public static int GetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
@@ -269,6 +275,20 @@ public static class BuildingManager {
         }
     }
 
+    /// <summary>
+    /// 统一处理单锁设置与联机广播。广播只发生在本地手动操作时。
+    /// </summary>
+    public static int SetLockedOutputAndSync(this FractionatorComponent fractionator, PlanetFactory factory, int itemId,
+        bool manual = false) {
+        int normalizedItemId = fractionator.NormalizeLockedOutput(factory, itemId);
+        fractionator.SetLockedOutput(factory, normalizedItemId);
+        if (manual && factory != null && NebulaModAPI.IsMultiplayerActive && !NebulaMultiplayerModAPI.IsOthers()) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacket(
+                new BuildingChangePacket(IFE转化塔, 2, factory.planetId, fractionator.entityId, normalizedItemId));
+        }
+        return normalizedItemId;
+    }
+
     private static bool TryGetConversionFractionator(PlanetFactory factory, int entityId, out FractionatorComponent fractionator) {
         fractionator = default;
         if (factory == null || entityId <= 0 || entityId >= factory.entityPool.Length) {
@@ -280,6 +300,37 @@ public static class BuildingManager {
         }
         fractionator = factory.factorySystem.fractionatorPool[entityData.fractionatorId];
         return fractionator.id == entityData.fractionatorId;
+    }
+
+    private static PlanetFactory GetFactoryByPlanetId(int planetId) {
+        GameData gameData = GameMain.data;
+        PlanetData planet = gameData?.galaxy?.PlanetById(planetId);
+        if (planet?.factory != null) {
+            return planet.factory;
+        }
+        int factoryIndex = planet?.factoryIndex ?? -1;
+        if (gameData?.factories == null || factoryIndex < 0 || factoryIndex >= gameData.factories.Length) {
+            return null;
+        }
+        return gameData.factories[factoryIndex];
+    }
+
+    /// <summary>
+    /// 应用联机同步过来的单锁状态。若对应工厂当前已加载，则立刻规范化到运行态。
+    /// </summary>
+    public static void ApplyLockedOutputPacket(int planetId, int entityId, int itemId) {
+        if (planetId <= 0 || entityId <= 0) {
+            return;
+        }
+        if (itemId == 0) {
+            lockedOutputDic.TryRemove((planetId, entityId), out _);
+        } else {
+            lockedOutputDic[(planetId, entityId)] = itemId;
+        }
+        PlanetFactory factory = GetFactoryByPlanetId(planetId);
+        if (TryGetConversionFractionator(factory, entityId, out FractionatorComponent fractionator)) {
+            fractionator.SetLockedOutput(factory, fractionator.NormalizeLockedOutput(factory, itemId));
+        }
     }
 
     private static bool IsLockedOutputInRecipe(ConversionRecipe recipe, int itemId) {
@@ -397,8 +448,7 @@ public static class BuildingManager {
             lockedOutputClipboardItemId = fractionator.GetLockedOutput(__instance);
             return;
         }
-        hasLockedOutputClipboard = false;
-        lockedOutputClipboardItemId = 0;
+        ClearLockedOutputClipboard();
     }
 
     [HarmonyPostfix]
@@ -407,7 +457,7 @@ public static class BuildingManager {
         if (!hasLockedOutputClipboard || !TryGetConversionFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
             return;
         }
-        fractionator.SetLockedOutput(__instance, fractionator.NormalizeLockedOutput(__instance, lockedOutputClipboardItemId));
+        fractionator.SetLockedOutputAndSync(__instance, lockedOutputClipboardItemId, manual: true);
     }
 
     [HarmonyPostfix]
@@ -457,6 +507,15 @@ public static class BuildingManager {
             }
             ApplyLockedOutputFromParameters(__instance.factory, buildPreview.coverObjId, buildPreview.parameters);
         }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.RemoveEntityWithComponents))]
+    public static void PlanetFactory_RemoveEntityWithComponents_Prefix(PlanetFactory __instance, int id) {
+        if (__instance == null || id <= 0) {
+            return;
+        }
+        lockedOutputDic.TryRemove((__instance.planetId, id), out _);
     }
 
     public static int CountInteractionTowers() {
