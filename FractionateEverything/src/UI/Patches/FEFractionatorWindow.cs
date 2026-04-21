@@ -632,10 +632,10 @@ public static class FEFractionatorWindow {
 
         int currentLockedItemId = fractionator.GetLockedOutput(target.factory);
         if (currentLockedItemId == itemId) {
-            fractionator.SetLockedOutput(target.factory, 0);
+            fractionator.SetLockedOutputAndSync(target.factory, 0, manual: true);
             UIRealtimeTip.Popup("已清除单路锁定".Translate());
         } else {
-            fractionator.SetLockedOutput(target.factory, itemId);
+            fractionator.SetLockedOutputAndSync(target.factory, itemId, manual: true);
             string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
             UIRealtimeTip.Popup(string.Format("已锁定单路产物：{0}".Translate(), itemName));
         }
