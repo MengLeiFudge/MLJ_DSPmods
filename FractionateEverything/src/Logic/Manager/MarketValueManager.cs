@@ -115,6 +115,31 @@ public static class MarketValueManager {
         return itemId > 0 && itemId < MarketValue.Length ? MarketValue[itemId] : 0f;
     }
 
+    /// <summary>
+    /// 返回距离下一次市场刷新还剩多少 tick，用于 UI 倒计时显示。
+    /// </summary>
+    public static long GetRefreshRemainingTicks() {
+        if (!initialized) {
+            return RefreshIntervalTicks;
+        }
+
+        long elapsedTicks = GameMain.gameTick - LastRefreshTick;
+        if (elapsedTicks <= 0L) {
+            return RefreshIntervalTicks;
+        }
+
+        return Math.Max(0L, RefreshIntervalTicks - elapsedTicks);
+    }
+
+    public static int GetRefreshRemainingSeconds() {
+        long remainingTicks = GetRefreshRemainingTicks();
+        if (remainingTicks <= 0L) {
+            return 0;
+        }
+
+        return (int)Math.Min(int.MaxValue, (remainingTicks + 59L) / 60L);
+    }
+
     public static float GetCurrentProductionRate(int itemId) {
         if (itemId <= 0 || itemId >= 12000 || GameMain.data?.statistics?.production?.factoryStatPool == null) {
             return 0f;

@@ -141,11 +141,7 @@ public static class ResourceOverview {
         }
 
         header.Title.text = "市场总览".Translate().WithColor(Orange);
-        long leftTicks = MarketValueManager.RefreshIntervalTicks - (GameMain.gameTick - MarketValueManager.LastRefreshTick);
-        if (leftTicks < 0) {
-            leftTicks = 0;
-        }
-        txtRefresh.text = $"{ "下次刷新".Translate() }：{FormatTicks(leftTicks)}    市场版本 v{MarketValueManager.RefreshVersion}";
+        txtRefresh.text = $"{ "下次刷新".Translate() }：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}";
         txtHotTitle.text = "高需求物资".Translate().WithColor(Orange);
         txtColdTitle.text = "低需求物资".Translate().WithColor(Orange);
         txtDarkFogTitle.text = "黑雾支线".Translate().WithColor(Orange);
@@ -225,8 +221,8 @@ public static class ResourceOverview {
         }
     }
 
-    private static string FormatTicks(long ticks) {
-        int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(ticks / 60f));
+    private static string FormatSeconds(int totalSeconds) {
+        totalSeconds = Mathf.Max(0, totalSeconds);
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
         return $"{minutes:00}:{seconds:00}";

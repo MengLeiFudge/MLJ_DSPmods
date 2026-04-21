@@ -173,10 +173,6 @@ public static class FracStatistic {
     }
 
     private static void RefreshEconomyLines() {
-        long refreshLeftTicks = MarketValueManager.RefreshIntervalTicks - (GameMain.gameTick - MarketValueManager.LastRefreshTick);
-        if (refreshLeftTicks < 0) {
-            refreshLeftTicks = 0;
-        }
         int hotItemId = MarketValueManager.GetTopMarketItems(1, descending: true).FirstOrDefault();
         int coldItemId = MarketValueManager.GetTopMarketItems(1, descending: false).FirstOrDefault();
         ExchangeManager.ExchangeTicker hotTicker = ExchangeManager.ListedItems
@@ -186,7 +182,7 @@ public static class FracStatistic {
             .ThenByDescending(ticker => ticker.LastTradeTick)
             .FirstOrDefault();
 
-        economyLines[0].text = $"{ "统计-市场下次刷新".Translate() }：{FormatTicks(refreshLeftTicks)}  (v{MarketValueManager.RefreshVersion})";
+        economyLines[0].text = $"{ "统计-市场下次刷新".Translate() }：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}  (v{MarketValueManager.RefreshVersion})";
         economyLines[1].text = $"{ "统计-市场热度".Translate() }：最热 {FormatMarketItem(hotItemId)}";
         economyLines[2].text = $"{ "统计-市场热度".Translate() }：最冷 {FormatMarketItem(coldItemId)}";
         economyLines[3].text = $"{ "统计-交易所概览".Translate() }：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
@@ -226,8 +222,8 @@ public static class FracStatistic {
         return $"{LDB.items.Select(itemId).name}  ×{MarketValueManager.GetMultiplier(itemId):F2}";
     }
 
-    private static string FormatTicks(long ticks) {
-        int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(ticks / 60f));
+    private static string FormatSeconds(int totalSeconds) {
+        totalSeconds = Mathf.Max(0, totalSeconds);
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
         return $"{minutes:00}:{seconds:00}";
