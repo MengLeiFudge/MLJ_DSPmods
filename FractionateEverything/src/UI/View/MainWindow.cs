@@ -274,28 +274,43 @@ public static class MainWindow {
     }
 
     private static void OpenLegacyMainPanel() {
-        bool sandboxModeChanged = sandboxMode != GameMain.sandboxToolsEnabled;
         sandboxMode = GameMain.sandboxToolsEnabled;
         RefreshLegacyPageCategories();
-        if (!_legacyConfigWinInitialized) {
-            _legacyConfigWinInitialized = true;
-            _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
-        } else if (sandboxModeChanged) {
-            _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
-        }
-
+        RecreateLegacyMainPanelWindow();
         _legacyConfigWin?.Open();
     }
 
     private static void OpenAnalysisMainPanel() {
         sandboxMode = GameMain.sandboxToolsEnabled;
         RefreshAnalysisPageCategories();
-        if (!_analysisMainWindowInitialized) {
-            _analysisMainWindowInitialized = true;
-            _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
+        RecreateAnalysisMainPanelWindow();
+        _analysisMainWindow?.OpenWindow();
+    }
+
+    /// <summary>
+    /// 页面层仍保留静态控件引用，切换风格后必须重建旧版窗口，避免继续指向另一种风格的页面实例。
+    /// </summary>
+    private static void RecreateLegacyMainPanelWindow() {
+        if (_legacyConfigWin != null) {
+            MyConfigWindow.DestroyInstance(_legacyConfigWin);
+            _legacyConfigWin = null;
         }
 
-        _analysisMainWindow?.OpenWindow();
+        _legacyConfigWinInitialized = true;
+        _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+    }
+
+    /// <summary>
+    /// 分析面板缓存页面内容，但页面内部仍是静态 UI 引用；重新打开时重建整窗可确保当前风格重新绑定正确控件。
+    /// </summary>
+    private static void RecreateAnalysisMainPanelWindow() {
+        if (_analysisMainWindow != null) {
+            MyAnalysisWindow.DestroyInstance(_analysisMainWindow);
+            _analysisMainWindow = null;
+        }
+
+        _analysisMainWindowInitialized = true;
+        _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
     }
 
     private static void CloseAllMainPanels() {
