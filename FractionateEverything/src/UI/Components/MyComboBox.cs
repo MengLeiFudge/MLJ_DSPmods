@@ -63,7 +63,9 @@ public class MyComboBox : MonoBehaviour {
     }
 
     protected void OnDestroy() {
-        _config.SettingChanged -= _configChanged;
+        if (_config != null) {
+            _config.SettingChanged -= _configChanged;
+        }
     }
 
     private void UpdateComboBoxPosition() {
