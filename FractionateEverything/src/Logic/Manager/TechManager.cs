@@ -92,8 +92,8 @@ public static class TechManager {
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            $"COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.\n\n{"Upload an Interaction Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。\n\n{"将交互塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
@@ -103,8 +103,8 @@ public static class TechManager {
 
         Register("T矿物复制", "Mineral Replication", "矿物复制");
         Register("矿物复制描述",
-            $"During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.\n\n{"Upload a Mineral Replication Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。\n\n{"将矿物复制塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("矿物复制结果",
             "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
@@ -112,24 +112,24 @@ public static class TechManager {
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            $"Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.\n\n{"Upload a Points Aggregate Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。\n\n{"将点数聚集塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("增产点数聚集结果",
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……\n\n{"将转化塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品转化结果",
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
 
         Register("T物品精馏", "Item Rectification", "物品精馏");
         Register("物品精馏描述",
-            $"Rectification technology can compress matrix-tier items into Fragments, providing a stable side resource for Growth and Focus systems. Higher-stage matrices and a stronger Rectification Tower both improve fragment output efficiency.\n\n{"Upload the corresponding Fractionator to the Fractionation Data Centre".WithColor(Orange)} to unlock this technology, refer to the {"[G] key".WithColor(Orange)} guide for details.",
-            $"物品精馏科技可以将矩阵层级物品稳定压缩为残片，为成长与聚焦系统提供持续副资源。矩阵层级越高、精馏塔越强，残片转化效率越好。\n\n{"上传对应分馏塔至分馏数据中心".WithColor(Orange)}以解锁此科技，详情参考{"[G]键".WithColor(Orange)}指引。");
+            $"Rectification technology can compress matrix-tier items into Fragments, providing a stable side resource for Growth and Focus systems. Higher-stage matrices and a stronger Rectification Tower both improve fragment output efficiency.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品精馏科技可以将矩阵层级物品稳定压缩为残片，为成长与聚焦系统提供持续副资源。矩阵层级越高、精馏塔越强，残片转化效率越好。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品精馏结果",
             "You have mastered Rectification technology and can now compress matrix-tier items into Fragments.",
             "你已经掌握了物品精馏技术，可以将矩阵层级物品稳定压缩为残片了。");
