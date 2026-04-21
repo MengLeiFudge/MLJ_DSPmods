@@ -221,7 +221,7 @@ public static class Achievements {
     }
 
     private static AchievementInfo[] BuildAchievements() {
-        var list = new List<AchievementInfo>(72);
+        var list = new List<AchievementInfo>(96);
         AddProductionAchievements(list);
         AddOpeningAchievements(list);
         AddRecipeAchievements(list);
@@ -230,8 +230,19 @@ public static class Achievements {
         AddProtoAchievements(list);
         AddDarkFogAchievements(list);
         AddExplorationAchievements(list);
+        AddTutorialGuideAchievements(list);
         AddChallengeAchievements(list);
         return [.. list];
+    }
+
+    private static ETier ConvertTutorialAchievementTier(TutorialManager.TutorialAchievementTier tier) {
+        return tier switch {
+            TutorialManager.TutorialAchievementTier.Bronze => ETier.Bronze,
+            TutorialManager.TutorialAchievementTier.Silver => ETier.Silver,
+            TutorialManager.TutorialAchievementTier.Gold => ETier.Gold,
+            TutorialManager.TutorialAchievementTier.Platinum => ETier.Platinum,
+            _ => ETier.Bronze,
+        };
     }
 
     private static void AddProductionAchievements(List<AchievementInfo> list) {
@@ -569,6 +580,19 @@ public static class Achievements {
             logisticsBonus: 0.02f));
     }
 
+    private static void AddTutorialGuideAchievements(List<AchievementInfo> list) {
+        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager.GetTutorialAchievementDefinitions()) {
+            list.Add(new AchievementInfo(
+                "成就分类-探索",
+                definition.NameKey,
+                definition.DescKey,
+                definition.RewardKey,
+                ConvertTutorialAchievementTier(definition.Tier),
+                () => TutorialManager.HasViewedTutorialToBottom(definition.TutorialId),
+                () => GrantRewardByKey(definition.RewardKey)));
+        }
+    }
+
     private static void AddChallengeAchievements(List<AchievementInfo> list) {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
@@ -729,6 +753,11 @@ public static class Achievements {
         Register("遗物共振", "Relic Resonance", "遗物共振");
         Register("功勋回路", "Merit Circuit", "功勋回路");
         Register("授权整备", "Authorization Setup", "授权整备");
+
+        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager.GetTutorialAchievementDefinitions()) {
+            Register(definition.NameKey, definition.NameEn, definition.NameCn);
+            Register(definition.DescKey, definition.DescEn, definition.DescCn);
+        }
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -765,6 +794,14 @@ public static class Achievements {
             return;
         }
         nextAutoCheckFrame = frame + 60;
+        CheckAndUnlockAchievements(showPopup: true);
+    }
+
+    public static void NotifyExternalConditionChanged() {
+        if (!configLoaded) {
+            return;
+        }
+
         CheckAndUnlockAchievements(showPopup: true);
     }
 

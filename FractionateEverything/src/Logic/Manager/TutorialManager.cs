@@ -3,7 +3,9 @@ using System.Reflection;
 using System.Linq;
 using System.Reflection.Emit;
 using FE.Compatibility;
+using FE.UI.View.ProgressTask;
 using HarmonyLib;
+using UnityEngine;
 using UnityEngine.UI;
 using xiaoye97;
 using static FE.Utils.Utils;
@@ -11,9 +13,129 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 public static class TutorialManager {
+    public enum TutorialAchievementTier {
+        Bronze,
+        Silver,
+        Gold,
+        Platinum,
+    }
+
+    public readonly struct TutorialAchievementDefinition(
+        int tutorialId,
+        string nameKey,
+        string nameEn,
+        string nameCn,
+        string descKey,
+        string descEn,
+        string descCn,
+        string rewardKey,
+        TutorialAchievementTier tier) {
+        public readonly int TutorialId = tutorialId;
+        public readonly string NameKey = nameKey;
+        public readonly string NameEn = nameEn;
+        public readonly string NameCn = nameCn;
+        public readonly string DescKey = descKey;
+        public readonly string DescEn = descEn;
+        public readonly string DescCn = descCn;
+        public readonly string RewardKey = rewardKey;
+        public readonly TutorialAchievementTier Tier = tier;
+    }
+
+    private readonly struct TutorialRegistration(
+        int id,
+        string baseName,
+        string englishTitle,
+        string determinatorName,
+        long[] determinatorParams,
+        bool enableAchievement = true,
+        string achievementRewardKey = DefaultTutorialAchievementRewardKey,
+        TutorialAchievementTier achievementTier = DefaultTutorialAchievementTier,
+        string achievementNameKey = null,
+        string achievementNameEn = null,
+        string achievementNameCn = null,
+        string achievementDescKey = null,
+        string achievementDescEn = null,
+        string achievementDescCn = null) {
+        public readonly int Id = id;
+        public readonly string BaseName = baseName;
+        public readonly string EnglishTitle = englishTitle;
+        public readonly string DeterminatorName = determinatorName;
+        public readonly long[] DeterminatorParams = determinatorParams;
+        public readonly bool EnableAchievement = enableAchievement;
+        public readonly string AchievementRewardKey = achievementRewardKey;
+        public readonly TutorialAchievementTier AchievementTier = achievementTier;
+        public readonly string AchievementNameKey = achievementNameKey ?? $"成就-指引通读-{baseName}";
+        public readonly string AchievementNameEn = achievementNameEn ?? $"Guide Complete: {englishTitle}";
+        public readonly string AchievementNameCn = achievementNameCn ?? $"指引通读：{baseName}";
+        public readonly string AchievementDescKey = achievementDescKey ?? $"成就描述-指引通读-{baseName}";
+        public readonly string AchievementDescEn =
+            achievementDescEn ?? $"Open the [G]-key guide, read '{englishTitle}', and scroll to the bottom.";
+        public readonly string AchievementDescCn =
+            achievementDescCn ?? $"在 G 键指引中浏览《{baseName}》并看到底部";
+    }
+
+    private const int FirstTutorialId = 201;
+    private const string FeTutorialLayoutPrefix = "tutorial-fe-";
+    private const string DefaultTutorialAchievementRewardKey = "成就奖励-残片200";
+    private const TutorialAchievementTier DefaultTutorialAchievementTier = TutorialAchievementTier.Bronze;
+
+    private static readonly TutorialRegistration[] tutorialRegistrations = BuildTutorialRegistrations();
+    private static readonly TutorialAchievementDefinition[] tutorialAchievementDefinitions = BuildTutorialAchievementDefinitions();
+    private static readonly HashSet<int> tutorialAchievementIds = BuildTutorialAchievementIds();
+    private static readonly HashSet<int> viewedToBottomTutorialIds = [];
+    private static readonly Vector3[] viewportWorldCorners = new Vector3[4];
+    private static readonly Vector3[] contentWorldCorners = new Vector3[4];
+
     static MethodInfo genesisBookIsLayoutMethod;
     static MethodInfo genesisBookGetLayoutMethod;
     static bool genesisBookLayoutMethodsInitialized;
+
+    private static TutorialRegistration[] BuildTutorialRegistrations() {
+        int nextId = FirstTutorialId;
+        return [
+            new(nextId++, "万物分馏简介", "Fractionate Everything", "TOR_GameSecond", [10]),
+            new(nextId++, "分馏数据中心", "Fractionation data centre", "TOR_TechUnlocked", [TFE分馏数据中心, 4]),
+            new(nextId++, "分馏塔使用指南", "Fractionator guidelines", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔]),
+            new(nextId++, "物流交互站使用指南", "Interaction station guidelines", "TOR_OnBuild", [IFE行星内物流交互站, IFE星际物流交互站]),
+        ];
+    }
+
+    private static TutorialAchievementDefinition[] BuildTutorialAchievementDefinitions() {
+        var definitions = new List<TutorialAchievementDefinition>(tutorialRegistrations.Length);
+        foreach (TutorialRegistration registration in tutorialRegistrations) {
+            if (!registration.EnableAchievement) {
+                continue;
+            }
+
+            definitions.Add(new TutorialAchievementDefinition(
+                registration.Id,
+                registration.AchievementNameKey,
+                registration.AchievementNameEn,
+                registration.AchievementNameCn,
+                registration.AchievementDescKey,
+                registration.AchievementDescEn,
+                registration.AchievementDescCn,
+                registration.AchievementRewardKey,
+                registration.AchievementTier));
+        }
+        return [.. definitions];
+    }
+
+    private static HashSet<int> BuildTutorialAchievementIds() {
+        var ids = new HashSet<int>();
+        foreach (TutorialAchievementDefinition definition in tutorialAchievementDefinitions) {
+            ids.Add(definition.TutorialId);
+        }
+        return ids;
+    }
+
+    public static IReadOnlyList<TutorialAchievementDefinition> GetTutorialAchievementDefinitions() {
+        return tutorialAchievementDefinitions;
+    }
+
+    public static bool HasViewedTutorialToBottom(int tutorialId) {
+        return viewedToBottomTutorialIds.Contains(tutorialId);
+    }
 
     public static void AddTranslations() {
         Register("万物分馏简介标题", "Fractionate Everything", "万物分馏简介");
@@ -347,27 +469,23 @@ public static class TutorialManager {
         //TOR_LowFuel       低能量提示，参数为[]
         //TOR_RecipeCopyTip 配方复制提示，参数为[]
 
-        AddTutorial("万物分馏简介", "TOR_GameSecond", [10]);
-        AddTutorial("分馏数据中心", "TOR_TechUnlocked", [TFE分馏数据中心, 4]);
-        AddTutorial("分馏塔使用指南", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔]);
-        AddTutorial("物流交互站使用指南", "TOR_OnBuild", [IFE行星内物流交互站, IFE星际物流交互站]);
+        foreach (TutorialRegistration registration in tutorialRegistrations) {
+            AddTutorial(registration);
+        }
     }
 
-    private static int currTutorialID = 201;
-
-    private static void AddTutorial(string name, string determinatorName, long[] determinatorParams) {
+    private static void AddTutorial(TutorialRegistration registration) {
         TutorialProto proto = new() {
-            ID = currTutorialID,
+            ID = registration.Id,
             SID = "",
-            Name = $"{name}标题",
-            name = $"{name}标题",
-            LayoutFileName = $"tutorial-fe-{currTutorialID}",
-            DeterminatorName = determinatorName,
-            DeterminatorParams = determinatorParams,
+            Name = $"{registration.BaseName}标题",
+            name = $"{registration.BaseName}标题",
+            LayoutFileName = $"{FeTutorialLayoutPrefix}{registration.Id}",
+            DeterminatorName = registration.DeterminatorName,
+            DeterminatorParams = registration.DeterminatorParams,
         };
         LDBTool.PreAddProto(proto);
         proto.Preload();
-        currTutorialID++;
     }
 
     /// <summary>
@@ -385,6 +503,20 @@ public static class TutorialManager {
             __instance.entryList.m_ScrollRect.enabled = false;
             __instance.entryList.m_ScrollRect.enabled = true;
         }
+
+        TryMarkCurrentTutorialViewedToBottom(__instance);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
+    private static void UITutorialWindow_OnTutorialChange_Postfix(UITutorialWindow __instance) {
+        TryMarkCurrentTutorialViewedToBottom(__instance);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnUpdate))]
+    private static void UITutorialWindow_OnUpdate_Postfix(UITutorialWindow __instance) {
+        TryMarkCurrentTutorialViewedToBottom(__instance);
     }
 
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
@@ -463,7 +595,7 @@ public static class TutorialManager {
 
     public static bool IsFELayout(TutorialProto proto) {
         var layoutFileName = proto.LayoutFileName;
-        return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith("tutorial-fe-");
+        return !string.IsNullOrEmpty(layoutFileName) && layoutFileName.StartsWith(FeTutorialLayoutPrefix);
     }
 
     public static bool UseCustomLayoutParser(TutorialProto proto) {
@@ -519,5 +651,44 @@ public static class TutorialManager {
         genesisBookGetLayoutMethod =
             AccessTools.Method(tutorialPatchType, "GetGenesisBookLayoutStr", [typeof(TutorialProto)]);
         return genesisBookIsLayoutMethod != null && genesisBookGetLayoutMethod != null;
+    }
+
+    private static void TryMarkCurrentTutorialViewedToBottom(UITutorialWindow tutorialWindow) {
+        if (tutorialWindow?.tutorialProto == null) {
+            return;
+        }
+
+        int tutorialId = tutorialWindow.tutorialProto.ID;
+        if (!tutorialAchievementIds.Contains(tutorialId) || viewedToBottomTutorialIds.Contains(tutorialId)) {
+            return;
+        }
+
+        if (!HasReachedTutorialBottom(tutorialWindow)) {
+            return;
+        }
+
+        if (viewedToBottomTutorialIds.Add(tutorialId)) {
+            Achievements.NotifyExternalConditionChanged();
+        }
+    }
+
+    private static bool HasReachedTutorialBottom(UITutorialWindow tutorialWindow) {
+        if (tutorialWindow.scrollViewRect == null || tutorialWindow.contentRect == null) {
+            return false;
+        }
+
+        float viewportHeight = tutorialWindow.scrollViewRect.rect.height;
+        float contentHeight = Mathf.Max(tutorialWindow.contentRect.rect.height, tutorialWindow.contentRect.sizeDelta.y);
+        if (contentHeight <= viewportHeight + 1f) {
+            return true;
+        }
+
+        // 这里通过右侧内容区与视口的世界坐标关系判断是否滚到底部，
+        // 不依赖 prefab 是否显式暴露 ScrollRect 字段，后续拆分更多教程页时更稳。
+        tutorialWindow.scrollViewRect.GetWorldCorners(viewportWorldCorners);
+        tutorialWindow.contentRect.GetWorldCorners(contentWorldCorners);
+        float viewportBottom = viewportWorldCorners[0].y;
+        float contentBottom = contentWorldCorners[0].y;
+        return contentBottom >= viewportBottom - 1f;
     }
 }
