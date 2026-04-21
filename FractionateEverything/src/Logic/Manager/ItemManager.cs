@@ -20,8 +20,8 @@ public static class ItemManager {
 
         Register("万物分馏科技解锁说明", "Tech Unlock Tip", "科技解锁说明");
         Register("I万物分馏科技解锁说明",
-            "Use the Interactive Tower to fractionate various raw materials, yielding corresponding fractionation towers. Input the fractionation towers into the front interface of the Interactive Tower to unlock the corresponding technology.",
-            "使用交互塔分馏各种原胚，即可得到对应分馏塔；将分馏塔从交互塔正面接口输入，即可解锁对应科技。");
+            "This is only a placeholder used to explain the unlock method, not a normal research material.\nThese technologies are not unlocked by consuming the displayed item in a lab. Instead, you must first cultivate the corresponding Fractionator, then upload that tower to the Fractionation Data Centre.\nUpload method: feed the tower into the front port of an Interaction Tower while it is in Item Interaction mode. The Interaction Tower must be empty, and its left and right ports must not be connected to belts.\nTech mapping: Interaction Tower -> Item Interaction; Mineral Replication Tower -> Mineral Replication; Points Aggregate Tower -> Proliferator Points Aggregate; Conversion Tower -> Item Conversion; Rectification Tower -> Item Rectification.",
+            "这只是一个用于说明解锁方式的占位符，不是常规科研材料。\n这些科技不是靠在研究站里消耗它来解锁的，而是要先培养出对应分馏塔，再将该分馏塔上传至分馏数据中心。\n上传方法：让交互塔处于“物品交互”模式，再将分馏塔从交互塔正面接口输入。此时交互塔内部不能有物品，左右接口也不能连接传送带。\n科技对应关系：交互塔 -> 物品交互；矿物复制塔 -> 矿物复制；点数聚集塔 -> 增产点数聚集；转化塔 -> 物品转化；精馏塔 -> 物品精馏。");
 
         Register("残片", "Fragment");
         Register("I残片",
