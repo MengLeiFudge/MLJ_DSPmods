@@ -167,7 +167,7 @@ public static class Miscellaneous {
                         objectName: "misc-setting-config-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
+                        padding: Inset(0f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "misc-setting-config-title",
                                 build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title"); }),
