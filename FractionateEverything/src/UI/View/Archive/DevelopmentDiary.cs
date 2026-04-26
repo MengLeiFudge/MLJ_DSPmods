@@ -1056,10 +1056,10 @@ public static class DevelopmentDiary {
                     Header("开发日记", objectName: "development-diary-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "development-diary-nav-card", strong: true,
                         children: [Node(pos: (0, 0), objectName: "development-diary-nav-body", build: (w, navigatorCard) => {
-                            txtNavigatorTitle = PageLayout.AddCardTitle(w, navigatorCard, 18f, 14f, "分类与片段", 15, "development-diary-nav-title");
+                            txtNavigatorTitle = PageLayout.AddCardTitle(w, navigatorCard, 0f, 14f, "分类与片段", 15, "development-diary-nav-title");
                             float x = 0f;
                             float y = 56f;
-                            categoryCombo = w.AddComboBox(x + 18f, y, navigatorCard)
+                            categoryCombo = w.AddComboBox(x, y, navigatorCard)
                                 .WithSize(170f, 0f)
                                 .WithOnSelChanged(index => {
                                     if (suppressSelectionCallbacks) {
@@ -1070,7 +1070,7 @@ public static class DevelopmentDiary {
                                     RefreshEntry();
                                 });
                             y += 54f;
-                            fragmentCombo = w.AddComboBox(x + 18f, y, navigatorCard)
+                            fragmentCombo = w.AddComboBox(x, y, navigatorCard)
                                 .WithSize(230f, 0f)
                                 .WithOnSelChanged(index => {
                                     if (suppressSelectionCallbacks) {

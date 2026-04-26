@@ -186,26 +186,27 @@ public static class TicketRaffle {
                     ContentCard(pos: (1, 0), objectName: $"ticket-raffle-resource-card-{poolId}", strong: true,
                         children: [
                             Node(pos: (0, 0), objectName: $"ticket-raffle-resource-body-{poolId}", build: (w, resourceCard) => {
-                                ui.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 18f, 14f, "当前资源", 15,
+                                float cardW = resourceCard.sizeDelta.x;
+                                ui.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15,
                                     $"ticket-raffle-resource-title-{poolId}");
                                 float y = 50f;
-                                ui.TxtResource = MyWindow.AddText(18f, y, resourceCard, "当前资源".Translate(), 13);
-                                ui.TxtResource.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+                                ui.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
+                                ui.TxtResource.rectTransform.sizeDelta = new Vector2(cardW, 22f);
                                 y += 28f;
-                                ui.BtnMatrixIcon = MyImageButton.CreateImageButton(18f, y, resourceCard, null).WithSize(40f, 40f);
-                                ui.BtnFragmentIcon = MyImageButton.CreateImageButton(198f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null).WithSize(40f, 40f);
+                                ui.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
                                 y += 48f;
-                                ui.TxtMode = MyWindow.AddText(18f, y, resourceCard, "", 13);
-                                ui.TxtMode.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+                                ui.TxtMode = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                ui.TxtMode.rectTransform.sizeDelta = new Vector2(cardW, 22f);
                                 y += 26f;
-                                ui.TxtPity = MyWindow.AddText(18f, y, resourceCard, "", 13);
-                                ui.TxtPity.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+                                ui.TxtPity = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                ui.TxtPity.rectTransform.sizeDelta = new Vector2(cardW, 22f);
                                 y += 26f;
-                                ui.TxtPoints = MyWindow.AddText(18f, y, resourceCard, "", 13);
-                                ui.TxtPoints.rectTransform.sizeDelta = new Vector2(1028f, 22f);
+                                ui.TxtPoints = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                ui.TxtPoints.rectTransform.sizeDelta = new Vector2(cardW, 22f);
                                 y += 26f;
-                                ui.TxtFocus = MyWindow.AddText(18f, y, resourceCard, "", 13);
-                                ui.TxtFocus.rectTransform.sizeDelta = new Vector2(1028f, 40f);
+                                ui.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                ui.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
                             }),
                         ]),
                     ContentCard(pos: (2, 0), objectName: $"ticket-raffle-result-card-{poolId}",

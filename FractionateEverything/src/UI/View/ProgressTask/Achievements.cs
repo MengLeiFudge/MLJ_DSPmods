@@ -890,12 +890,12 @@ public static class Achievements {
                             Node(pos: (0, 0), objectName: "achievements-summary-body", build: (w, summaryCard) => {
                                 float x = 0f;
                                 float y = 16f;
-                                txtUnlockedSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 13, "txtAchievementUnlockedSummary");
+                                txtUnlockedSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13, "txtAchievementUnlockedSummary");
                                 txtUnlockedSummary.supportRichText = true;
                                 y += 28f;
-                                txtHiddenSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 13, "txtAchievementHiddenSummary");
+                                txtHiddenSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13, "txtAchievementHiddenSummary");
                                 txtHiddenSummary.supportRichText = true;
-                                txtBonusSummary = w.AddText2(x + 398f, 16f, summaryCard, "动态刷新", 13, "txtAchievementBonusSummary");
+                                txtBonusSummary = w.AddText2(x + 380f, 16f, summaryCard, "动态刷新", 13, "txtAchievementBonusSummary");
                                 txtBonusSummary.supportRichText = true;
                                 txtBonusSummary.alignment = TextAnchor.UpperLeft;
                                 txtBonusSummary.rectTransform.sizeDelta = new Vector2(650f, 52f);
