@@ -55,6 +55,15 @@ public static class PageLayout {
     /// <summary>卡标题下方分隔线颜色。</summary>
     public static readonly Color CardHeaderSeparatorColor = new(1f, 1f, 1f, 0.14f);
 
+    /// <summary>选中态：比普通卡更亮的蓝白色描边，配合 hover/激活态使用。</summary>
+    public static readonly Color CardBorderColorSelected = new(1f, 0.78f, 0.32f, 0.72f);
+
+    /// <summary>鼠标悬停态：普通卡基础上亮度抬升的描边。</summary>
+    public static readonly Color CardBorderColorHover = new(1f, 1f, 1f, 0.36f);
+
+    /// <summary>空态提示文本颜色：比正文再低一档的灰白，避免抢视觉。</summary>
+    public static readonly Color EmptyStateTextColor = new(1f, 1f, 1f, 0.45f);
+
     public readonly struct HeaderRefs {
         public readonly RectTransform Root;
         public readonly Text Title;
@@ -187,6 +196,45 @@ public static class PageLayout {
     }
 
     /// <summary>
+    /// 添加一个居中的"暂无内容"空态提示。与常规正文文本共用卡片父节点。
+    /// </summary>
+    public static Text AddEmptyStateHint(MyWindow wnd, RectTransform parent, float left, float top, float width,
+        float height, string textValue = "暂无内容", string objectName = "empty-state-hint") {
+        Text text = MyWindow.AddText(left, top, parent, textValue, BodyFontSize, objectName);
+        text.supportRichText = true;
+        text.color = EmptyStateTextColor;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.rectTransform.sizeDelta = new Vector2(width, height);
+        return text;
+    }
+
+    /// <summary>
+    /// 切换卡片 border 颜色以反映选中/悬停/普通三态。目标是调用者在事件回调里统一用此方法，
+    /// 避免在各页面散写 Image.color =。
+    /// </summary>
+    public static void SetCardState(RectTransform card, CardVisualState state) {
+        if (card == null) {
+            return;
+        }
+
+        Transform border = card.Find("border");
+        if (border == null) {
+            return;
+        }
+
+        if (!border.TryGetComponent(out Image image)) {
+            return;
+        }
+
+        image.color = state switch {
+            CardVisualState.Selected => CardBorderColorSelected,
+            CardVisualState.Hover => CardBorderColorHover,
+            CardVisualState.Strong => CardBorderColorStrong,
+            _ => CardBorderColor,
+        };
+    }
+
+    /// <summary>
     /// 构造一张可滚动的圆角卡片：外层是视口（ContentCard），内部 Content 高度由调用方决定。
     /// 返回 <c>Content</c> RectTransform —— 后续子节点全部以其为 parent 定位，超出卡片物理高度的
     /// 部分会被 RectMask2D 裁剪，滚动由 ScrollRect 驱动。
@@ -226,4 +274,11 @@ public static class PageLayout {
 
         return content;
     }
+}
+
+public enum CardVisualState {
+    Normal,
+    Hover,
+    Selected,
+    Strong,
 }
