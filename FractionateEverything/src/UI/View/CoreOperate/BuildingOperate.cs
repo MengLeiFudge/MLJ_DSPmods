@@ -205,21 +205,22 @@ public static class BuildingOperate {
                         children: [
                             Node(pos: (0, 0), objectName: "building-operate-content-root", build: (w, root) => {
                                 tab = root;
+                                float cardW = root.sizeDelta.x;
                                 float x = 0f;
                                 float y = 18f + 7f;
                                 var txt = w.AddText2(x, y, tab, "建筑类型");
                                 w.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
                                     .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-                                txtFragmentCount = w.AddText2(GetPosition(3, 4).Item1 + 45f, y, tab, "");
-                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
-                                txtMatrixCount = w.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
+                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                txtFragmentCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 45f, y, tab, "");
+                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+                                txtMatrixCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 165f, y, tab, "");
                                 y += 36f + 7f;
-                                btnReinforcement = w.AddButton(0, 4, y, tab, "关键节点突破", onClick: Reinforcement);
-                                reinforcementSandboxBtn[0] = w.AddButton(0, 4, y, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
-                                reinforcementSandboxBtn[1] = w.AddButton(1, 4, y, tab, "等级-1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-                                reinforcementSandboxBtn[2] = w.AddButton(2, 4, y, tab, "等级+1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-                                reinforcementSandboxBtn[3] = w.AddButton(3, 4, y, tab, "等级升满", onClick: () => { ChangeLevelTo(MaxLevel); });
+                                btnReinforcement = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "关键节点突破", onClick: Reinforcement);
+                                reinforcementSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
+                                reinforcementSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y, GetPosition(1, 4, cardW).Item2, tab, "等级-1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
+                                reinforcementSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y, GetPosition(2, 4, cardW).Item2, tab, "等级+1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
+                                reinforcementSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y, GetPosition(3, 4, cardW).Item2, tab, "等级升满", onClick: () => { ChangeLevelTo(MaxLevel); });
                                 bool sandboxEnabled = GameMain.sandboxToolsEnabled;
                                 btnReinforcement.gameObject.SetActive(!sandboxEnabled);
                                 foreach (UIButton button in reinforcementSandboxBtn) {
