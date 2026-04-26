@@ -1080,14 +1080,24 @@ public static class DevelopmentDiary {
                                     RefreshEntry();
                                 });
                         })]),
-                    ContentCard(pos: (1, 1), objectName: "development-diary-content-card",
-                        children: [Node(pos: (0, 0), objectName: "development-diary-content-body", build: (w, contentCard) => {
-                            txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读", 15, "development-diary-content-title");
-                            txtDiaryContent = w.AddText2(18f, 56f, contentCard, string.Empty, 14, "txtDiaryContent");
-                            txtDiaryContent.supportRichText = true;
-                            txtDiaryContent.alignment = TextAnchor.UpperLeft;
-                            txtDiaryContent.rectTransform.sizeDelta = new Vector2(752f, 500f);
-                        })]),
+                    ContentCard(pos: (1, 1), objectName: "development-diary-content-outer",
+                        children: [
+                            Node(pos: (0, 0), objectName: "development-diary-content-header", build: (w, contentCard) => {
+                                txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读",
+                                    PageLayout.CardTitleFontSize, "development-diary-content-title");
+                            }),
+                            ScrollableContentCard(
+                                contentHeight: 1400f,
+                                pos: (0, 0),
+                                objectName: "development-diary-content-scroll",
+                                margin: Inset(12f, 50f, 12f, 12f),
+                                children: [Node(pos: (0, 0), objectName: "development-diary-content-body", build: (w, contentCard) => {
+                                    txtDiaryContent = w.AddText2(6f, 6f, contentCard, string.Empty, PageLayout.BodyFontSize, "txtDiaryContent");
+                                    txtDiaryContent.supportRichText = true;
+                                    txtDiaryContent.alignment = TextAnchor.UpperLeft;
+                                    txtDiaryContent.rectTransform.sizeDelta = new Vector2(720f, 1380f);
+                                })]),
+                        ]),
                     FooterCard(pos: (2, 0), span: (1, 2), objectName: "development-diary-footer-card",
                         children: [Node(pos: (0, 0), objectName: "development-diary-footer-body", build: (w, footerCard) => {
                             btnPrevFragment = w.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);

@@ -86,6 +86,36 @@ public static class GridDsl {
         };
     }
 
+    /// <summary>
+    /// 可滚动的 ContentCard。外层卡片物理高度来自 Grid 轨道，内部逻辑高度由
+    /// <paramref name="contentHeight"/> 决定；大于外层时自动启用垂直滚动。
+    /// </summary>
+    public static LayoutGrid ScrollableContentCard(float contentHeight, (int, int)? pos = null,
+        (int, int)? span = null, int? row = null, int? col = null, int? rowSpan = null, int? colSpan = null,
+        bool strong = false, string objectName = "scroll-card", IReadOnlyList<LayoutTrack> rows = null,
+        IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null, LayoutInsets? padding = null,
+        float rowGap = 0f, float columnGap = 0f, IReadOnlyList<LayoutNode> children = null) {
+        return new() {
+            Pos = pos,
+            Span = span,
+            Row = row,
+            Col = col,
+            RowSpan = rowSpan,
+            ColSpan = colSpan,
+            Rows = rows ?? Array.Empty<LayoutTrack>(),
+            Cols = cols ?? Array.Empty<LayoutTrack>(),
+            Margin = margin ?? LayoutInsets.Zero,
+            Padding = padding ?? LayoutInsets.Zero,
+            RowGap = rowGap,
+            ColumnGap = columnGap,
+            ObjectName = objectName,
+            Children = children ?? Array.Empty<LayoutNode>(),
+            ContentHeight = contentHeight,
+            RootFactory = (parent, rect) => PageLayout.CreateScrollableContentCard(parent, objectName, rect.Left,
+                rect.Top, rect.Width, rect.Height, contentHeight, strong),
+        };
+    }
+
     public static LayoutGrid FooterCard((int, int)? pos = null, (int, int)? span = null, int? row = null,
         int? col = null, int? rowSpan = null, int? colSpan = null, string objectName = "footer-card",
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,
