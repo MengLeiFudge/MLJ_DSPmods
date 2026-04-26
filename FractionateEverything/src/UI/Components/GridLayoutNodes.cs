@@ -44,7 +44,7 @@ public abstract class LayoutNode {
     internal abstract RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect);
 }
 
-public sealed class LayoutGrid : LayoutNode {
+public class LayoutGrid : LayoutNode {
     public IReadOnlyList<LayoutTrack> Rows { get; set; } = Array.Empty<LayoutTrack>();
     public IReadOnlyList<LayoutTrack> Cols { get; set; } = Array.Empty<LayoutTrack>();
     public LayoutInsets Padding { get; set; } = LayoutInsets.Zero;
@@ -52,14 +52,23 @@ public sealed class LayoutGrid : LayoutNode {
     public float ColumnGap { get; set; }
     public IReadOnlyList<LayoutNode> Children { get; set; } = Array.Empty<LayoutNode>();
 
+    /// <summary>
+    /// 可选：子节点排布使用的逻辑高度。为 0 时与外层卡片物理高度一致；
+    /// 大于物理高度时，需要 <see cref="RootFactory"/> 返回一个受裁剪的内部 Content RectTransform，
+    /// 从而把溢出部分放入滚动视口内（见 ScrollableContentCard）。
+    /// </summary>
+    public float ContentHeight { get; set; }
+
     internal Func<RectTransform, LayoutRect, RectTransform> RootFactory { get; set; }
 
     internal override RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect) {
         LayoutRect outerRect = rect.Inset(Margin);
+        float logicalHeight = ContentHeight > 0f ? ContentHeight : outerRect.Height;
+        LayoutRect factoryRect = new(outerRect.Left, outerRect.Top, outerRect.Width, outerRect.Height);
         RectTransform root = RootFactory != null
-            ? RootFactory(parent, outerRect)
+            ? RootFactory(parent, factoryRect)
             : GridLayoutRuntime.CreateContainerRect(ObjectName, parent, outerRect);
-        LayoutRect contentRect = new LayoutRect(0f, 0f, outerRect.Width, outerRect.Height).Inset(Padding);
+        LayoutRect contentRect = new LayoutRect(0f, 0f, outerRect.Width, logicalHeight).Inset(Padding);
         GridLayoutRuntime.BuildChildren(wnd, root, contentRect, Rows, Cols, RowGap, ColumnGap, Children);
         return root;
     }

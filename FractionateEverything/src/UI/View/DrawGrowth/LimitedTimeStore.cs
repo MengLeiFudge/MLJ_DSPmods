@@ -79,7 +79,7 @@ public static class LimitedTimeStore {
         };
         BuildLayout(wnd, trans,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(180f), Px(397f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(180f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("成长规划", objectName: "growth-store-header", pos: (0, 0),
@@ -143,7 +143,7 @@ public static class LimitedTimeStore {
         };
         BuildLayout(wnd, trans,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(140f), Px(421f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(140f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("流派聚焦", objectName: "focus-store-header", pos: (0, 0),
@@ -154,7 +154,7 @@ public static class LimitedTimeStore {
                                 focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(w, currentCard, 18f, 14f, "当前聚焦", 15,
                                     "focus-store-current-title");
                                 float y = 48f;
-                                focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 14);
+                                focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 13);
                                 focusPage.TxtCurrentFocus.rectTransform.sizeDelta = new Vector2(1028f, 24f);
                                 y += 30f;
                                 focusPage.TxtOverview = MyWindow.AddText(18f, y, currentCard, "", 13);
