@@ -57,6 +57,7 @@ public static class DevelopmentDiary {
         Register("向前", "Previous");
         Register("向后", "Next");
         Register("分类与片段", "Categories & Fragments", "分类与片段");
+        Register("暂无可浏览的片段", "No diary fragments available", "暂无可浏览的片段");
         Register("正文阅读", "Reading View", "正文阅读");
 
         Register("FE1.0-1",
@@ -1124,9 +1125,14 @@ public static class DevelopmentDiary {
         RefreshSelectors();
 
         if (fragments.Length == 0) {
-            txtDiaryContent.text = string.Empty;
+            txtDiaryContent.text = "暂无可浏览的片段".Translate().WithColor(White);
+            txtDiaryContent.alignment = TextAnchor.MiddleCenter;
+            txtDiaryContent.color = PageLayout.EmptyStateTextColor;
             return;
         }
+
+        txtDiaryContent.alignment = TextAnchor.UpperLeft;
+        txtDiaryContent.color = White;
 
         DiaryFragment fragment = fragments[currentFragmentIndex];
         string content = fragment.ContentKey.Translate();
