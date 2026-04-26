@@ -154,7 +154,7 @@ public static class LimitedTimeStore {
                                 focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(w, currentCard, 18f, 14f, "当前聚焦", 15,
                                     "focus-store-current-title");
                                 float y = 48f;
-                                focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 14);
+                                focusPage.TxtCurrentFocus = MyWindow.AddText(18f, y, currentCard, "", 13);
                                 focusPage.TxtCurrentFocus.rectTransform.sizeDelta = new Vector2(1028f, 24f);
                                 y += 30f;
                                 focusPage.TxtOverview = MyWindow.AddText(18f, y, currentCard, "", 13);

@@ -60,11 +60,11 @@ public static class SandboxMode {
                             Node(pos: (0, 0), objectName: "sandbox-mode-action-title",
                                 build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title"); }),
                             Node(pos: (1, 0), objectName: "sandbox-mode-action-body", build: (w, root) => {
-                                w.AddButton(0, 3, 32f, root, "锁定所有分馏配方", 16, "button-lock-all-recipes",
+                                w.AddButton(0, 3, 32f, root, "锁定所有分馏配方", 15, "button-lock-all-recipes",
                                     RecipeManager.LockAllFracRecipes);
-                                w.AddButton(1, 3, 32f, root, "获得所有分馏配方", 16, "button-reward-all-recipes",
+                                w.AddButton(1, 3, 32f, root, "获得所有分馏配方", 15, "button-reward-all-recipes",
                                     RecipeManager.RewardAllFracRecipes);
-                                w.AddButton(2, 3, 32f, root, "满级所有分馏配方", 16, "button-max-all-recipes",
+                                w.AddButton(2, 3, 32f, root, "满级所有分馏配方", 15, "button-max-all-recipes",
                                     RecipeManager.MaxAllFracRecipes);
                             }),
                         ]),

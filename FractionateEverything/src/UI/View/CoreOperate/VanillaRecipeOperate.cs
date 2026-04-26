@@ -104,24 +104,24 @@ public static class VanillaRecipeOperate {
                                 btnMatrixIcon = w.AddImageButton(GetPosition(3, 4).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
                                 txtMatrixCount = w.AddText2(GetPosition(3, 4).Item1 + 165f, y, tab, "");
                                 y += 36f + 7f;
-                                w.AddText2(x, y, tab, "输入物品", 16, "labelInputItems");
+                                w.AddText2(x, y, tab, "输入物品", 15, "labelInputItems");
                                 y += 36f;
                                 for (int i = 0; i < MaxInputCount; i++) {
                                     int idx = i;
                                     inputImages[i] = w.AddImageButton(x, y, tab, null, $"inputImage{i}");
-                                    txtInputNames[i] = w.AddText2(x + 40 + 5, y, tab, "", 14, $"txtInputName{i}");
-                                    txtInputCounts[i] = w.AddText2(x + 180, y, tab, "", 14, $"txtInputCount{i}");
-                                    txtInputUpgrades[i] = w.AddText2(x + 280, y, tab, "", 14, $"txtInputUpgrade{i}");
-                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 14, $"btnInputUpgrade{i}",
+                                    txtInputNames[i] = w.AddText2(x + 40 + 5, y, tab, "", 13, $"txtInputName{i}");
+                                    txtInputCounts[i] = w.AddText2(x + 180, y, tab, "", 13, $"txtInputCount{i}");
+                                    txtInputUpgrades[i] = w.AddText2(x + 280, y, tab, "", 13, $"txtInputUpgrade{i}");
+                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 13, $"btnInputUpgrade{i}",
                                         () => { UpgradeInput(idx); });
                                     y += 36f + 5f;
                                 }
                                 y += 7f;
-                                txtTimeLabel = w.AddText2(x, y, tab, "制作时间", 16, "labelTime");
+                                txtTimeLabel = w.AddText2(x, y, tab, "制作时间", 15, "labelTime");
                                 y += 36f;
-                                txtTimeValue = w.AddText2(x + 40, y, tab, "", 14, "txtTimeValue");
-                                txtTimeUpgrade = w.AddText2(x + 280, y, tab, "", 14, "txtTimeUpgrade");
-                                btnTimeUpgrade = w.AddButton(x + 380, y, 80, tab, "升级", 14, "btnTimeUpgrade",
+                                txtTimeValue = w.AddText2(x + 40, y, tab, "", 13, "txtTimeValue");
+                                txtTimeUpgrade = w.AddText2(x + 280, y, tab, "", 13, "txtTimeUpgrade");
+                                btnTimeUpgrade = w.AddButton(x + 380, y, 80, tab, "升级", 13, "btnTimeUpgrade",
                                     () => { UpgradeTimeSpend(); });
                             }),
                         ]),

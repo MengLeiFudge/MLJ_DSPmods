@@ -237,7 +237,7 @@ public static class FracRecipeOperate {
                                 txtAppendLabel = MyWindow.AddText(0, 0, tab, "其他", 15);
                                 txtAppendLabel.gameObject.SetActive(false);
                                 for (int i = 0; i < LevelLineCount; i++) {
-                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, "", 14);
+                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, "", 13);
                                 }
                             }),
                         ]),

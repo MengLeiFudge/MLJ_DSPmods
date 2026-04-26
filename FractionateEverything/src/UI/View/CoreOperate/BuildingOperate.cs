@@ -231,7 +231,7 @@ public static class BuildingOperate {
                                 for (int i = 0; i < LevelLineCount; i++) {
                                     string placeholder = i == 0 ? "当前建筑强化等级 +12" :
                                         i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
-                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, placeholder, 14);
+                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, placeholder, 13);
                                 }
                                 y += 36f;
                                 txtBuildingInfo5 = w.AddText2(x, y, tab, "动态刷新");
