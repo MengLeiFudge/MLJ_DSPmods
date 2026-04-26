@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FE.UI.Components;
 
 public static class GridDsl {
     public static LayoutTrack Px(float value) {
         return LayoutTrack.Px(value);
+    }
+
+    public static LayoutTrack Fr(float value) {
+        return LayoutTrack.Fr(value);
     }
 
     public static LayoutInsets Inset(float all) {
@@ -66,6 +71,12 @@ public static class GridDsl {
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,
         LayoutInsets? padding = null, float rowGap = 0f, float columnGap = 0f,
         IReadOnlyList<LayoutNode> children = null) {
+        // 强调卡默认左侧推出 (橙色条宽 + 边距)，子节点不会与橙色条重叠。
+        LayoutInsets userPadding = padding ?? LayoutInsets.Zero;
+        LayoutInsets actualPadding = strong
+            ? new LayoutInsets(userPadding.Left + PageLayout.StrongAccentWidth + 9f, userPadding.Top, userPadding.Right,
+                userPadding.Bottom)
+            : userPadding;
         return new() {
             Pos = pos,
             Span = span,
@@ -76,13 +87,38 @@ public static class GridDsl {
             Rows = rows ?? Array.Empty<LayoutTrack>(),
             Cols = cols ?? Array.Empty<LayoutTrack>(),
             Margin = margin ?? LayoutInsets.Zero,
-            Padding = padding ?? LayoutInsets.Zero,
+            Padding = actualPadding,
             RowGap = rowGap,
             ColumnGap = columnGap,
             ObjectName = objectName,
             Children = children ?? Array.Empty<LayoutNode>(),
             RootFactory = (parent, rect) => PageLayout.CreateContentCard(parent, objectName, rect.Left, rect.Top, rect.Width,
                 rect.Height, strong),
+        };
+    }
+
+    /// <summary>
+    /// 一段填满给定单元的文本节点。默认左中对齐、不折行、白色。
+    /// </summary>
+    public static LayoutLeaf TextNode(string text, int fontSize = PageLayout.BodyFontSize, Color? color = null,
+        TextAnchor anchor = TextAnchor.MiddleLeft, bool wrap = false, Action<Text> onBuilt = null,
+        (int, int)? pos = null, (int, int)? span = null, int? row = null, int? col = null, int? rowSpan = null,
+        int? colSpan = null, LayoutInsets? margin = null, string objectName = "text-node") {
+        return new() {
+            Pos = pos,
+            Span = span,
+            Row = row,
+            Col = col,
+            RowSpan = rowSpan,
+            ColSpan = colSpan,
+            Margin = margin ?? LayoutInsets.Zero,
+            ObjectName = objectName,
+            BuildAction = (wnd, parent) => {
+                Text built = PageLayout.AddCenteredText(parent, text, fontSize,
+                    color ?? new Color(1f, 1f, 1f, 1f), anchor, 0f, 0f, parent.sizeDelta.x, parent.sizeDelta.y,
+                    objectName, wrap);
+                onBuilt?.Invoke(built);
+            },
         };
     }
 
