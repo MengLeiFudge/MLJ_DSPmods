@@ -49,7 +49,7 @@ public static class TicketExchange {
         tab = trans;
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(180f), Px(293f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(180f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("抽取总览", objectName: "ticket-exchange-header", pos: (0, 0), onBuilt: refs => {

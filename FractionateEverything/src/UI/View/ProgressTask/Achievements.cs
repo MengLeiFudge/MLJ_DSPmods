@@ -875,7 +875,7 @@ public static class Achievements {
         tab = trans;
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(82f), Px(495f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(82f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("成就系统", objectName: "achievements-header", pos: (0, 0), onBuilt: refs => {

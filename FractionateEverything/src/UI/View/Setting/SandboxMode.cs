@@ -45,7 +45,7 @@ public static class SandboxMode {
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         BuildLayout(wnd, parent,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(250f), 1],
+                rows: [Px(PageLayout.HeaderHeight), 1, 3],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("沙盒模式", objectName: "sandbox-mode-header", pos: (0, 0),

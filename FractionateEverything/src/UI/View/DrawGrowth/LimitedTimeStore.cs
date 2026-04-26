@@ -79,7 +79,7 @@ public static class LimitedTimeStore {
         };
         BuildLayout(wnd, trans,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(180f), Px(397f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(180f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("成长规划", objectName: "growth-store-header", pos: (0, 0),
@@ -143,7 +143,7 @@ public static class LimitedTimeStore {
         };
         BuildLayout(wnd, trans,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(140f), Px(421f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(140f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("流派聚焦", objectName: "focus-store-header", pos: (0, 0),

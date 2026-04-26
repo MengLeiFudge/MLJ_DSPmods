@@ -1047,9 +1047,9 @@ public static class DevelopmentDiary {
         tab = trans;
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(593f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
-                cols: [Px(278f), 1],
+                cols: [1, 3],
                 columnGap: PageLayout.Gap,
                 children: [
                     Header("开发日记", objectName: "development-diary-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
