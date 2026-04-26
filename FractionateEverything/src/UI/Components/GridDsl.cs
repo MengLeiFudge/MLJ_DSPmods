@@ -131,6 +131,12 @@ public static class GridDsl {
         bool strong = false, string objectName = "scroll-card", IReadOnlyList<LayoutTrack> rows = null,
         IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null, LayoutInsets? padding = null,
         float rowGap = 0f, float columnGap = 0f, IReadOnlyList<LayoutNode> children = null) {
+        // 与 ContentCard 保持一致：strong 卡自动让出橙色条 + 9px 间距。
+        LayoutInsets userPadding = padding ?? LayoutInsets.Zero;
+        LayoutInsets actualPadding = strong
+            ? new LayoutInsets(userPadding.Left + PageLayout.StrongAccentWidth + 9f, userPadding.Top, userPadding.Right,
+                userPadding.Bottom)
+            : userPadding;
         return new() {
             Pos = pos,
             Span = span,
@@ -141,7 +147,7 @@ public static class GridDsl {
             Rows = rows ?? Array.Empty<LayoutTrack>(),
             Cols = cols ?? Array.Empty<LayoutTrack>(),
             Margin = margin ?? LayoutInsets.Zero,
-            Padding = padding ?? LayoutInsets.Zero,
+            Padding = actualPadding,
             RowGap = rowGap,
             ColumnGap = columnGap,
             ObjectName = objectName,
