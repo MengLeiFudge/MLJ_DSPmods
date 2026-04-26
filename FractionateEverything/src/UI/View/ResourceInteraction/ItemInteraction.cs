@@ -102,7 +102,8 @@ public static class ItemInteraction {
                         objectName: "item-interaction-filter-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
+                        // 强调卡左侧内边距由 ContentCard 自动加上 (橙色条宽 + 9)，故此处只设上/右/下。
+                        padding: Inset(0f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-filter-title-node", build: (w, root) => {
                                 PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15, "item-interaction-filter-title");

@@ -69,13 +69,13 @@ public static class FracStatistic {
                     Header("分馏统计", objectName: "frac-statistic-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "frac-stat-summary-card", strong: true,
                         children: [Node(pos: (0, 0), objectName: "frac-stat-summary-body", build: (w, summaryCard) => {
-                            txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 18f, 14f, "统计-总览", 16, "frac-stat-summary-title");
-                            CreateLineGroup(w, summaryLines, summaryCard, 18f, 52f, "txtSummary");
+                            txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 0f, 14f, "统计-总览", 16, "frac-stat-summary-title");
+                            CreateLineGroup(w, summaryLines, summaryCard, 0f, 52f, "txtSummary");
                         })]),
                     ContentCard(pos: (1, 1), objectName: "frac-stat-stock-card", strong: true,
                         children: [Node(pos: (0, 0), objectName: "frac-stat-stock-body", build: (w, stockCard) => {
-                            txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 18f, 14f, "统计-资源库存", 16, "frac-stat-stock-title");
-                            CreateLineGroup(w, stockLines, stockCard, 18f, 52f, "txtStock");
+                            txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 0f, 14f, "统计-资源库存", 16, "frac-stat-stock-title");
+                            CreateLineGroup(w, stockLines, stockCard, 0f, 52f, "txtStock");
                         })]),
                     ContentCard(pos: (2, 0), objectName: "frac-stat-growth-card",
                         children: [Node(pos: (0, 0), objectName: "frac-stat-growth-body", build: (w, growthCard) => {

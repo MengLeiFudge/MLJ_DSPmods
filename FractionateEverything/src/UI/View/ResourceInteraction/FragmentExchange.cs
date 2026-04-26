@@ -54,7 +54,7 @@ public static class FragmentExchange {
                                 objectName: "fragment-exchange-info-card",
                                 strong: true,
                                 rows: [Px(24f), 1],
-                                padding: Inset(18f, 14f, 18f, 18f),
+                                padding: Inset(0f, 14f, 18f, 18f),
                                 children: [
                                     Node(pos: (0, 0), objectName: "fragment-exchange-info-title-node", build: (w, root) => {
                                         txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "目标物品", 15, "fragment-exchange-info-title");
@@ -75,7 +75,7 @@ public static class FragmentExchange {
                                 objectName: "fragment-exchange-action-card",
                                 strong: true,
                                 rows: [Px(24f), 1],
-                                padding: Inset(18f, 14f, 18f, 18f),
+                                padding: Inset(0f, 14f, 18f, 18f),
                                 children: [
                                     Node(pos: (0, 0), objectName: "fragment-exchange-action-title-node", build: (w, root) => {
                                         txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快速兑换", 15, "fragment-exchange-action-title");
