@@ -185,4 +185,45 @@ public static class PageLayout {
     public static RectTransform CreateFooterCard(RectTransform parent, string objectName, float top) {
         return CreateCard(parent, objectName, 0f, top, DesignWidth, FooterHeight, FooterFillColor, FooterBorderColor);
     }
+
+    /// <summary>
+    /// 构造一张可滚动的圆角卡片：外层是视口（ContentCard），内部 Content 高度由调用方决定。
+    /// 返回 <c>Content</c> RectTransform —— 后续子节点全部以其为 parent 定位，超出卡片物理高度的
+    /// 部分会被 RectMask2D 裁剪，滚动由 ScrollRect 驱动。
+    /// </summary>
+    public static RectTransform CreateScrollableContentCard(RectTransform parent, string objectName, float left,
+        float top, float width, float height, float contentHeight, bool strong = false) {
+        RectTransform card = CreateContentCard(parent, objectName, left, top, width, height, strong);
+
+        var viewportObj = new GameObject($"{objectName}-viewport", typeof(RectTransform), typeof(RectMask2D));
+        RectTransform viewport = viewportObj.GetComponent<RectTransform>();
+        viewport.SetParent(card, false);
+        viewport.anchorMin = Vector2.zero;
+        viewport.anchorMax = Vector2.one;
+        viewport.offsetMin = new Vector2(2f, 2f);
+        viewport.offsetMax = new Vector2(-2f, -2f);
+        viewport.localScale = Vector3.one;
+
+        var contentObj = new GameObject($"{objectName}-content", typeof(RectTransform));
+        RectTransform content = contentObj.GetComponent<RectTransform>();
+        content.SetParent(viewport, false);
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.anchoredPosition = Vector2.zero;
+        content.sizeDelta = new Vector2(0f, Mathf.Max(contentHeight, height));
+        content.localScale = Vector3.one;
+
+        ScrollRect scroll = card.gameObject.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.viewport = viewport;
+        scroll.content = content;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 20f;
+        scroll.inertia = true;
+        scroll.decelerationRate = 0.135f;
+
+        return content;
+    }
 }
