@@ -174,7 +174,7 @@ public static class TicketRaffle {
         activeUis.Add(ui);
         BuildLayout(wnd, trans,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(250f), Px(301f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(250f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header(GetPoolName(poolId), GetPoolDesc(poolId), $"ticket-raffle-header-{poolId}", pos: (0, 0),
