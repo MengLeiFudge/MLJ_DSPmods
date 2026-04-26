@@ -55,7 +55,7 @@ public static class Exchange {
                     Header("交易所", objectName: "exchange-header", pos: (0, 0), onBuilt: refs => header = refs),
                     Grid(
                         pos: (1, 0),
-                        cols: [Px(410f), 1],
+                        cols: [2, 3],
                         columnGap: PageLayout.Gap,
                         children: [
                             ContentCard(

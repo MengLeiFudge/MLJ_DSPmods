@@ -49,36 +49,36 @@ public static partial class MainTask {
     private static RouteViewCache[] routeViewsByMode = [];
 
     private static void BuildMilestonePage(MyWindow wnd) {
-        txtModeTitle = wnd.AddText2(0f, 12f, tab, "主线里程碑", 18, "txt-main-task-mode");
+        txtModeTitle = wnd.AddText2(0f, 12f, tab, "主线里程碑", 20, "txt-main-task-mode");
         txtModeTitle.supportRichText = true;
         txtModeTitle.color = Orange;
 
-        txtOverallSummary = wnd.AddText2(0f, 42f, tab, "动态刷新", 14, "txt-main-task-overall");
+        txtOverallSummary = wnd.AddText2(0f, 42f, tab, "动态刷新", 13, "txt-main-task-overall");
         txtOverallSummary.supportRichText = true;
 
-        txtBranchSummary = wnd.AddText2(260f, 42f, tab, "动态刷新", 14, "txt-main-task-branch");
+        txtBranchSummary = wnd.AddText2(260f, 42f, tab, "动态刷新", 13, "txt-main-task-branch");
         txtBranchSummary.supportRichText = true;
 
         roadmapPanel = CreatePanelRect("main-task-route-panel", tab, 0f, 82f, RoutePanelWidth, RoutePanelHeight, RoutePanelColor);
         centerPanel = CreatePanelRect("main-task-center-panel", roadmapPanel, 441f, 210f, 200f, 140f, CenterPanelColor);
 
-        txtCenterTitle = MyWindow.AddText(24f, 26f, centerPanel, "主线里程碑", 18, "txt-main-task-center-title");
+        txtCenterTitle = MyWindow.AddText(24f, 26f, centerPanel, "主线里程碑", 20, "txt-main-task-center-title");
         txtCenterTitle.supportRichText = true;
         txtCenterTitle.color = Orange;
 
-        txtCenterSummary = MyWindow.AddText(24f, 72f, centerPanel, "动态刷新", 14, "txt-main-task-center-summary");
+        txtCenterSummary = MyWindow.AddText(24f, 72f, centerPanel, "动态刷新", 13, "txt-main-task-center-summary");
         txtCenterSummary.supportRichText = true;
 
         detailPanel = CreatePanelRect("main-task-detail-panel", roadmapPanel, 24f, 432f, DetailPanelWidth, DetailPanelHeight, DetailPanelColor);
 
-        txtDetailBranch = MyWindow.AddText(18f, 16f, detailPanel, "动态刷新", 14, "txt-main-task-detail-branch");
+        txtDetailBranch = MyWindow.AddText(18f, 16f, detailPanel, "动态刷新", 13, "txt-main-task-detail-branch");
         txtDetailBranch.supportRichText = true;
         txtDetailBranch.color = Orange;
 
-        txtDetailName = MyWindow.AddText(18f, 42f, detailPanel, "动态刷新", 18, "txt-main-task-detail-name");
+        txtDetailName = MyWindow.AddText(18f, 42f, detailPanel, "动态刷新", 15, "txt-main-task-detail-name");
         txtDetailName.supportRichText = true;
 
-        txtDetailDesc = MyWindow.AddText(18f, 72f, detailPanel, "动态刷新", 14, "txt-main-task-detail-desc");
+        txtDetailDesc = MyWindow.AddText(18f, 72f, detailPanel, "动态刷新", 13, "txt-main-task-detail-desc");
         txtDetailDesc.supportRichText = true;
         txtDetailDesc.rectTransform.sizeDelta = new Vector2(380f, 52f);
 

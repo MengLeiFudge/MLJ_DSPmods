@@ -49,7 +49,7 @@ public static class TicketExchange {
         tab = trans;
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(180f), Px(293f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(180f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("抽取总览", objectName: "ticket-exchange-header", pos: (0, 0), onBuilt: refs => {
@@ -70,7 +70,7 @@ public static class TicketExchange {
                                         btnFragment = MyImageButton.CreateImageButton(178f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
                                         btnDarkFogMatrix = MyImageButton.CreateImageButton(338f, y, resourceCard, LDB.items.Select(I黑雾矩阵)).WithSize(40f, 40f);
                                         y += 44f;
-                                        txtMode = w.AddText2(18f, y, resourceCard, "", 14);
+                                        txtMode = w.AddText2(18f, y, resourceCard, "", 13);
                                         txtMode.rectTransform.sizeDelta = new Vector2((PageLayout.DesignWidth - PageLayout.Gap) / 2f - 36f, 24f);
                                     }),
                                 ]),
@@ -79,13 +79,13 @@ public static class TicketExchange {
                                     Node(pos: (0, 0), objectName: "ticket-exchange-cost-body", build: (w, costCard) => {
                                         txtCostTitle = PageLayout.AddCardTitle(w, costCard, 18f, 14f, "核心成本", 15, "ticket-exchange-cost-title");
                                         float y = 64f;
-                                        txtCostOpening = w.AddText2(18f, y, costCard, "", 14);
+                                        txtCostOpening = w.AddText2(18f, y, costCard, "", 13);
                                         txtCostOpening.rectTransform.sizeDelta = new Vector2((PageLayout.DesignWidth - PageLayout.Gap) / 2f - 36f, 24f);
                                         y += 34f;
-                                        txtCostProto = w.AddText2(18f, y, costCard, "", 14);
+                                        txtCostProto = w.AddText2(18f, y, costCard, "", 13);
                                         txtCostProto.rectTransform.sizeDelta = new Vector2((PageLayout.DesignWidth - PageLayout.Gap) / 2f - 36f, 24f);
                                         y += 34f;
-                                        txtCostFocus = w.AddText2(18f, y, costCard, "", 14);
+                                        txtCostFocus = w.AddText2(18f, y, costCard, "", 13);
                                         txtCostFocus.rectTransform.sizeDelta = new Vector2((PageLayout.DesignWidth - PageLayout.Gap) / 2f - 36f, 68f);
                                         txtCostFocus.alignment = TextAnchor.UpperLeft;
                                     }),

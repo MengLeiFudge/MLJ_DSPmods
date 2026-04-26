@@ -92,7 +92,7 @@ public static class ItemInteraction {
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
         BuildLayout(wnd, parent,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(146f), Px(431f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), Px(146f), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("物品交互", objectName: "item-interaction-header", pos: (0, 0),

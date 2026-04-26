@@ -57,6 +57,7 @@ public static class DevelopmentDiary {
         Register("向前", "Previous");
         Register("向后", "Next");
         Register("分类与片段", "Categories & Fragments", "分类与片段");
+        Register("暂无可浏览的片段", "No diary fragments available", "暂无可浏览的片段");
         Register("正文阅读", "Reading View", "正文阅读");
 
         Register("FE1.0-1",
@@ -1047,9 +1048,9 @@ public static class DevelopmentDiary {
         tab = trans;
         BuildLayout(wnd, tab,
             Grid(
-                rows: [Px(PageLayout.HeaderHeight), Px(593f), Px(PageLayout.FooterHeight)],
+                rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
                 rowGap: PageLayout.Gap,
-                cols: [Px(278f), 1],
+                cols: [1, 3],
                 columnGap: PageLayout.Gap,
                 children: [
                     Header("开发日记", objectName: "development-diary-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
@@ -1080,14 +1081,24 @@ public static class DevelopmentDiary {
                                     RefreshEntry();
                                 });
                         })]),
-                    ContentCard(pos: (1, 1), objectName: "development-diary-content-card",
-                        children: [Node(pos: (0, 0), objectName: "development-diary-content-body", build: (w, contentCard) => {
-                            txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读", 15, "development-diary-content-title");
-                            txtDiaryContent = w.AddText2(18f, 56f, contentCard, string.Empty, 14, "txtDiaryContent");
-                            txtDiaryContent.supportRichText = true;
-                            txtDiaryContent.alignment = TextAnchor.UpperLeft;
-                            txtDiaryContent.rectTransform.sizeDelta = new Vector2(752f, 500f);
-                        })]),
+                    ContentCard(pos: (1, 1), objectName: "development-diary-content-outer",
+                        children: [
+                            Node(pos: (0, 0), objectName: "development-diary-content-header", build: (w, contentCard) => {
+                                txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读",
+                                    PageLayout.CardTitleFontSize, "development-diary-content-title");
+                            }),
+                            ScrollableContentCard(
+                                contentHeight: 1400f,
+                                pos: (0, 0),
+                                objectName: "development-diary-content-scroll",
+                                margin: Inset(12f, 50f, 12f, 12f),
+                                children: [Node(pos: (0, 0), objectName: "development-diary-content-body", build: (w, contentCard) => {
+                                    txtDiaryContent = w.AddText2(6f, 6f, contentCard, string.Empty, PageLayout.BodyFontSize, "txtDiaryContent");
+                                    txtDiaryContent.supportRichText = true;
+                                    txtDiaryContent.alignment = TextAnchor.UpperLeft;
+                                    txtDiaryContent.rectTransform.sizeDelta = new Vector2(720f, 1380f);
+                                })]),
+                        ]),
                     FooterCard(pos: (2, 0), span: (1, 2), objectName: "development-diary-footer-card",
                         children: [Node(pos: (0, 0), objectName: "development-diary-footer-body", build: (w, footerCard) => {
                             btnPrevFragment = w.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);
@@ -1114,9 +1125,14 @@ public static class DevelopmentDiary {
         RefreshSelectors();
 
         if (fragments.Length == 0) {
-            txtDiaryContent.text = string.Empty;
+            txtDiaryContent.text = "暂无可浏览的片段".Translate().WithColor(White);
+            txtDiaryContent.alignment = TextAnchor.MiddleCenter;
+            txtDiaryContent.color = PageLayout.EmptyStateTextColor;
             return;
         }
+
+        txtDiaryContent.alignment = TextAnchor.UpperLeft;
+        txtDiaryContent.color = White;
 
         DiaryFragment fragment = fragments[currentFragmentIndex];
         string content = fragment.ContentKey.Translate();
