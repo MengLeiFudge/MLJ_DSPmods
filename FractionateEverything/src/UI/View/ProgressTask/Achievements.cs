@@ -890,12 +890,12 @@ public static class Achievements {
                             Node(pos: (0, 0), objectName: "achievements-summary-body", build: (w, summaryCard) => {
                                 float x = 0f;
                                 float y = 16f;
-                                txtUnlockedSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 14, "txtAchievementUnlockedSummary");
+                                txtUnlockedSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 13, "txtAchievementUnlockedSummary");
                                 txtUnlockedSummary.supportRichText = true;
                                 y += 28f;
-                                txtHiddenSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 14, "txtAchievementHiddenSummary");
+                                txtHiddenSummary = w.AddText2(x + 18f, y, summaryCard, "动态刷新", 13, "txtAchievementHiddenSummary");
                                 txtHiddenSummary.supportRichText = true;
-                                txtBonusSummary = w.AddText2(x + 398f, 16f, summaryCard, "动态刷新", 14, "txtAchievementBonusSummary");
+                                txtBonusSummary = w.AddText2(x + 398f, 16f, summaryCard, "动态刷新", 13, "txtAchievementBonusSummary");
                                 txtBonusSummary.supportRichText = true;
                                 txtBonusSummary.alignment = TextAnchor.UpperLeft;
                                 txtBonusSummary.rectTransform.sizeDelta = new Vector2(650f, 52f);
@@ -922,10 +922,10 @@ public static class Achievements {
                                 listRewardTextW = 120f;
                                 listStateX = 860f;
                                 listStateW = 180f;
-                                w.AddText2(listNameX, y, listCard, "成就", 14, "txtAchievementHeaderName");
-                                w.AddText2(listDescX, y, listCard, "描述", 14, "txtAchievementHeaderDesc");
-                                w.AddText2(listRewardX, y, listCard, "奖励", 14, "txtAchievementHeaderReward");
-                                w.AddText2(listStateX, y, listCard, "状态", 14, "txtAchievementHeaderState");
+                                w.AddText2(listNameX, y, listCard, "成就", 15, "txtAchievementHeaderName");
+                                w.AddText2(listDescX, y, listCard, "描述", 15, "txtAchievementHeaderDesc");
+                                w.AddText2(listRewardX, y, listCard, "奖励", 15, "txtAchievementHeaderReward");
+                                w.AddText2(listStateX, y, listCard, "状态", 15, "txtAchievementHeaderState");
                                 y += 26f;
                                 listStartY = y;
                                 for (int i = 0; i < achievements.Length; i++) {

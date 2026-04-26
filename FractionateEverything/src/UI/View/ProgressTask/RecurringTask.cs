@@ -127,7 +127,7 @@ public static class RecurringTask {
                         strong: true,
                         children: [
                             Node(pos: (0, 0), objectName: "recurring-task-summary-body", build: (w, summaryCard) => {
-                                txtSummary = w.AddText2(18f, 16f, summaryCard, "动态刷新", 14, "txtRecurringTaskSummary");
+                                txtSummary = w.AddText2(18f, 16f, summaryCard, "动态刷新", 13, "txtRecurringTaskSummary");
                                 txtSummary.supportRichText = true;
                                 txtSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 40f);
                             }),
@@ -139,12 +139,12 @@ public static class RecurringTask {
                             Node(pos: (0, 0), objectName: "recurring-task-list-body", build: (w, listCard) => {
                                 float x = 0f;
                                 float y = 18f + 7f;
-                                w.AddText2(TaskNameX, y, listCard, "任务", 16, "txtHeaderTask");
-                                w.AddText2(TaskProgressX, y, listCard, "进度", 16, "txtHeaderProgress");
-                                w.AddText2(TaskDescX, y, listCard, "描述", 16, "txtHeaderDesc");
-                                w.AddText2(TaskRewardIconX, y, listCard, "奖励", 16, "txtHeaderReward");
-                                w.AddText2(TaskStatusX, y, listCard, "状态", 16, "txtHeaderStatus");
-                                w.AddText2(TaskActionX, y, listCard, "操作", 16, "txtHeaderAction");
+                                w.AddText2(TaskNameX, y, listCard, "任务", 15, "txtHeaderTask");
+                                w.AddText2(TaskProgressX, y, listCard, "进度", 15, "txtHeaderProgress");
+                                w.AddText2(TaskDescX, y, listCard, "描述", 15, "txtHeaderDesc");
+                                w.AddText2(TaskRewardIconX, y, listCard, "奖励", 15, "txtHeaderReward");
+                                w.AddText2(TaskStatusX, y, listCard, "状态", 15, "txtHeaderStatus");
+                                w.AddText2(TaskActionX, y, listCard, "操作", 15, "txtHeaderAction");
                                 y += 36f + 7f;
                                 for (int i = 0; i < TaskCount; i++) {
                                     int j = i;
@@ -154,7 +154,7 @@ public static class RecurringTask {
                                     txtProgress[j] = w.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15, $"txtTaskProgress{j}");
                                     txtProgress[j].supportRichText = true;
                                     txtProgress[j].rectTransform.sizeDelta = new Vector2(TaskProgressW, 32f);
-                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 14, $"txtTaskDesc{j}");
+                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 13, $"txtTaskDesc{j}");
                                     txtDescriptions[j].supportRichText = true;
                                     txtDescriptions[j].alignment = TextAnchor.UpperLeft;
                                     txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
