@@ -144,14 +144,22 @@ public static class ItemInteraction {
                     FooterCard(
                         pos: (3, 0),
                         objectName: "item-interaction-footer-card",
+                        cols: [1, 1, 1],
+                        columnGap: 12f,
+                        padding: Inset(18f, 0f, 18f, 0f),
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-footer-body", build: (w, root) => {
-                                _prevPageButton = w.AddButton(GetPosition(0, 3).Item1, 10f, root, "上一页", onClick: PrevPage);
-                                _pageIndicator = w.AddText2(GetPosition(1, 3).Item1, 16f, root, "");
-                                _pageIndicator.alignment = TextAnchor.MiddleCenter;
-                                RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
-                                pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
-                                _nextPageButton = w.AddButton(GetPosition(2, 3).Item1, 10f, root, "下一页", onClick: NextPage);
+                            Node(pos: (0, 0), objectName: "item-interaction-footer-prev", build: (w, root) => {
+                                float cellW = root.sizeDelta.x;
+                                _prevPageButton = w.AddButton(0f, 10f, cellW, root, "上一页", onClick: PrevPage);
+                            }),
+                            Node(pos: (0, 1), objectName: "item-interaction-footer-indicator", build: (w, root) => {
+                                _pageIndicator = PageLayout.AddCenteredText(root, "", PageLayout.BodyFontSize,
+                                    new Color(1f, 1f, 1f, 1f), TextAnchor.MiddleCenter, 0f, 0f,
+                                    root.sizeDelta.x, root.sizeDelta.y, "item-interaction-page-indicator");
+                            }),
+                            Node(pos: (0, 2), objectName: "item-interaction-footer-next", build: (w, root) => {
+                                float cellW = root.sizeDelta.x;
+                                _nextPageButton = w.AddButton(0f, 10f, cellW, root, "下一页", onClick: NextPage);
                             }),
                         ]),
                 ]));
