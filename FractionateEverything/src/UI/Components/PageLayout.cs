@@ -27,6 +27,9 @@ public static class PageLayout {
     public const float CardPaddingRight = 18f;
     public const float CardPaddingBottom = 18f;
 
+    /// <summary>卡内统一边距：DSL 底层 ContentCard / ScrollableContentCard / FooterCard / Header 默认内边距。</summary>
+    public const float CardInnerPadding = 10f;
+
     /// <summary>卡顶部标题带高度，CardHeader 约定用这一高度。</summary>
     public const float CardHeaderHeight = 28f;
 
@@ -81,10 +84,10 @@ public static class PageLayout {
         RectTransform header = CreateCard(parent, objectName, 0f, 0f, width, height, HeaderFillColor,
             HeaderBorderColor);
 
-        // 使用 2:3 fr 行比例：上方 2 份放橙色页标题（垂直居中），下方 3 份放白色说明（垂直居中）。
+        // 使用 1:1 fr 行比例：上下等高，上方放橙色页标题（垂直居中），下方放白色说明（垂直居中）。
         const float padX = 22f;
         float innerWidth = width - padX * 2f;
-        float titleHeight = height * 2f / 5f;
+        float titleHeight = height * 0.5f;
         float summaryHeight = height - titleHeight;
 
         Text titleText = AddCenteredText(header, title, PageTitleFontSize, Orange, TextAnchor.MiddleLeft,
