@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
 namespace FE.UI.Components;
 
@@ -71,8 +72,8 @@ public static class GridDsl {
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,
         LayoutInsets? padding = null, float rowGap = 0f, float columnGap = 0f,
         IReadOnlyList<LayoutNode> children = null) {
-        // 强调卡默认左侧推出 (橙色条宽 + 边距)，子节点不会与橙色条重叠。
-        LayoutInsets userPadding = padding ?? LayoutInsets.Zero;
+        // 默认 10px 周边内边距；强调卡额外在左侧让出橙色条 (橙色条宽 + 9px)，子节点不会与橙色条重叠。
+        LayoutInsets userPadding = padding ?? new LayoutInsets(PageLayout.CardInnerPadding);
         LayoutInsets actualPadding = strong
             ? new LayoutInsets(userPadding.Left + PageLayout.StrongAccentWidth + 9f, userPadding.Top, userPadding.Right,
                 userPadding.Bottom)
@@ -115,7 +116,7 @@ public static class GridDsl {
             ObjectName = objectName,
             BuildAction = (wnd, parent) => {
                 Text built = PageLayout.AddCenteredText(parent, text, fontSize,
-                    color ?? new Color(1f, 1f, 1f, 1f), anchor, 0f, 0f, parent.sizeDelta.x, parent.sizeDelta.y,
+                    color ?? White, anchor, 0f, 0f, parent.sizeDelta.x, parent.sizeDelta.y,
                     objectName, wrap);
                 onBuilt?.Invoke(built);
             },
@@ -131,8 +132,8 @@ public static class GridDsl {
         bool strong = false, string objectName = "scroll-card", IReadOnlyList<LayoutTrack> rows = null,
         IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null, LayoutInsets? padding = null,
         float rowGap = 0f, float columnGap = 0f, IReadOnlyList<LayoutNode> children = null) {
-        // 与 ContentCard 保持一致：strong 卡自动让出橙色条 + 9px 间距。
-        LayoutInsets userPadding = padding ?? LayoutInsets.Zero;
+        // 与 ContentCard 保持一致：默认 10px 周边内边距，strong 卡额外让出橙色条 + 9px 间距。
+        LayoutInsets userPadding = padding ?? new LayoutInsets(PageLayout.CardInnerPadding);
         LayoutInsets actualPadding = strong
             ? new LayoutInsets(userPadding.Left + PageLayout.StrongAccentWidth + 9f, userPadding.Top, userPadding.Right,
                 userPadding.Bottom)
@@ -163,6 +164,8 @@ public static class GridDsl {
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,
         LayoutInsets? padding = null, float rowGap = 0f, float columnGap = 0f,
         IReadOnlyList<LayoutNode> children = null) {
+        // 与 ContentCard 保持一致：默认 10px 周边内边距。
+        LayoutInsets actualPadding = padding ?? new LayoutInsets(PageLayout.CardInnerPadding);
         return new() {
             Pos = pos,
             Span = span,
@@ -173,7 +176,7 @@ public static class GridDsl {
             Rows = rows ?? Array.Empty<LayoutTrack>(),
             Cols = cols ?? Array.Empty<LayoutTrack>(),
             Margin = margin ?? LayoutInsets.Zero,
-            Padding = padding ?? LayoutInsets.Zero,
+            Padding = actualPadding,
             RowGap = rowGap,
             ColumnGap = columnGap,
             ObjectName = objectName,
