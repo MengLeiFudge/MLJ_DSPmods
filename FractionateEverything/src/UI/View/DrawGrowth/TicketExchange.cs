@@ -65,8 +65,8 @@ public static class TicketExchange {
                                 children: [
                                     Node(pos: (0, 0), objectName: "ticket-exchange-resource-body", build: (w, resourceCard) => {
                                         float cardW = resourceCard.sizeDelta.x;
-                                        txtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15, "ticket-exchange-resource-title");
-                                        float y = 64f;
+                                        txtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 0f, "当前资源", 15, "ticket-exchange-resource-title");
+                                        float y = 36f;
                                         btnCurrentMatrix = MyImageButton.CreateImageButton(0f, y, resourceCard, null).WithSize(40f, 40f);
                                         btnFragment = MyImageButton.CreateImageButton(160f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
                                         btnDarkFogMatrix = MyImageButton.CreateImageButton(320f, y, resourceCard, LDB.items.Select(I黑雾矩阵)).WithSize(40f, 40f);
@@ -79,8 +79,8 @@ public static class TicketExchange {
                                 children: [
                                     Node(pos: (0, 0), objectName: "ticket-exchange-cost-body", build: (w, costCard) => {
                                         float cardW = costCard.sizeDelta.x;
-                                        txtCostTitle = PageLayout.AddCardTitle(w, costCard, 0f, 14f, "核心成本", 15, "ticket-exchange-cost-title");
-                                        float y = 64f;
+                                        txtCostTitle = PageLayout.AddCardTitle(w, costCard, 0f, 0f, "核心成本", 15, "ticket-exchange-cost-title");
+                                        float y = 36f;
                                         txtCostOpening = w.AddText2(0f, y, costCard, "", 13);
                                         txtCostOpening.rectTransform.sizeDelta = new Vector2(cardW, 24f);
                                         txtCostOpening.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -99,19 +99,20 @@ public static class TicketExchange {
                     ContentCard(pos: (2, 0), objectName: "ticket-exchange-darkfog-card",
                         children: [
                             Node(pos: (0, 0), objectName: "ticket-exchange-darkfog-body", build: (w, darkFogCard) => {
-                                txtDarkFogTitle = PageLayout.AddCardTitle(w, darkFogCard, 18f, 14f, "黑雾支线说明", 15, "ticket-exchange-darkfog-title");
-                                txtDarkFogStatus = w.AddText2(18f, 56f, darkFogCard, "", 13);
+                                float cardW = darkFogCard.sizeDelta.x;
+                                txtDarkFogTitle = PageLayout.AddCardTitle(w, darkFogCard, 0f, 0f, "黑雾支线说明", 15, "ticket-exchange-darkfog-title");
+                                txtDarkFogStatus = w.AddText2(0f, 38f, darkFogCard, "", 13);
                                 txtDarkFogStatus.supportRichText = true;
                                 txtDarkFogStatus.alignment = TextAnchor.UpperLeft;
-                                txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 220f);
+                                txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(cardW, 220f);
                             }),
                         ]),
                     FooterCard(pos: (3, 0), objectName: "ticket-exchange-footer-card",
                         children: [
                             Node(pos: (0, 0), objectName: "ticket-exchange-footer-body", build: (w, footerCard) => {
-                                w.AddButton(18f, 10f, 160f, footerCard, "前往成长规划".Translate(), 13,
+                                w.AddButton(0f, 0f, 160f, footerCard, "前往成长规划".Translate(), 13,
                                     onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
-                                w.AddButton(194f, 10f, 160f, footerCard, "前往市场板".Translate(), 13,
+                                w.AddButton(176f, 0f, 160f, footerCard, "前往市场板".Translate(), 13,
                                     onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 2));
                             }),
                         ]),

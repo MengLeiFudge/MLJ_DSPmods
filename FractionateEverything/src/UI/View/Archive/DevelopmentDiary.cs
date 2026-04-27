@@ -1084,7 +1084,7 @@ public static class DevelopmentDiary {
                     ContentCard(pos: (1, 1), objectName: "development-diary-content-outer",
                         children: [
                             Node(pos: (0, 0), objectName: "development-diary-content-header", build: (w, contentCard) => {
-                                txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 18f, 14f, "正文阅读",
+                                txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 0f, 0f, "正文阅读",
                                     PageLayout.CardTitleFontSize, "development-diary-content-title");
                             }),
                             ScrollableContentCard(
@@ -1101,8 +1101,8 @@ public static class DevelopmentDiary {
                         ]),
                     FooterCard(pos: (2, 0), span: (1, 2), objectName: "development-diary-footer-card",
                         children: [Node(pos: (0, 0), objectName: "development-diary-footer-body", build: (w, footerCard) => {
-                            btnPrevFragment = w.AddButton(18f, 10f, 130f, footerCard, "向前", onClick: PrevFragment);
-                            btnNextFragment = w.AddButton(168f, 10f, 130f, footerCard, "向后", onClick: NextFragment);
+                            btnPrevFragment = w.AddButton(0f, 0f, 130f, footerCard, "向前", onClick: PrevFragment);
+                            btnNextFragment = w.AddButton(146f, 0f, 130f, footerCard, "向后", onClick: NextFragment);
                         })]),
                 ]));
         RefreshEntry();
