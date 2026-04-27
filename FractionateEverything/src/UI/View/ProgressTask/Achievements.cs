@@ -953,11 +953,12 @@ public static class Achievements {
                         objectName: "achievements-footer-card",
                         children: [
                             Node(pos: (0, 0), objectName: "achievements-footer-body", build: (w, footerCard) => {
-                                btnPrevPage = w.AddButton(GetPosition(0, 3).Item1, 10f, footerCard, "上一页", onClick: PrevPage);
-                                txtPageIndicator = w.AddText2(GetPosition(1, 3).Item1, 16f, footerCard, "");
+                                float footerW = footerCard.sizeDelta.x;
+                                btnPrevPage = w.AddButton(GetPosition(0, 3, footerW).Item1, 0f, footerCard, "上一页", onClick: PrevPage);
+                                txtPageIndicator = w.AddText2(GetPosition(1, 3, footerW).Item1, 6f, footerCard, "");
                                 txtPageIndicator.alignment = TextAnchor.MiddleCenter;
-                                txtPageIndicator.rectTransform.sizeDelta = new(200f, txtPageIndicator.rectTransform.sizeDelta.y);
-                                btnNextPage = w.AddButton(GetPosition(2, 3).Item1, 10f, footerCard, "下一页", onClick: NextPage);
+                                txtPageIndicator.rectTransform.sizeDelta = new(GetPosition(1, 3, footerW).Item2, txtPageIndicator.rectTransform.sizeDelta.y);
+                                btnNextPage = w.AddButton(GetPosition(2, 3, footerW).Item1, 0f, footerCard, "下一页", onClick: NextPage);
                             }),
                         ]),
                 ]));
