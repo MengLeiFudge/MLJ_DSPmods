@@ -102,8 +102,6 @@ public static class ItemInteraction {
                         objectName: "item-interaction-filter-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        // 强调卡左侧内边距由 ContentCard 自动加上 (橙色条宽 + 9)，故此处只设上/右/下。
-                        padding: Inset(0f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-filter-title-node", build: (w, root) => {
                                 PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15, "item-interaction-filter-title");
@@ -121,7 +119,6 @@ public static class ItemInteraction {
                         pos: (2, 0),
                         objectName: "item-interaction-grid-card",
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-grid-title-node", build: (w, root) => {
                                 PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
@@ -147,20 +144,19 @@ public static class ItemInteraction {
                         objectName: "item-interaction-footer-card",
                         cols: [1, 1, 1],
                         columnGap: 12f,
-                        padding: Inset(18f, 0f, 18f, 0f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-footer-prev", build: (w, root) => {
                                 float cellW = root.sizeDelta.x;
-                                _prevPageButton = w.AddButton(0f, 10f, cellW, root, "上一页", onClick: PrevPage);
+                                _prevPageButton = w.AddButton(0f, 0f, cellW, root, "上一页", onClick: PrevPage);
                             }),
                             Node(pos: (0, 1), objectName: "item-interaction-footer-indicator", build: (w, root) => {
                                 _pageIndicator = PageLayout.AddCenteredText(root, "", PageLayout.BodyFontSize,
-                                    new Color(1f, 1f, 1f, 1f), TextAnchor.MiddleCenter, 0f, 0f,
+                                    White, TextAnchor.MiddleCenter, 0f, 0f,
                                     root.sizeDelta.x, root.sizeDelta.y, "item-interaction-page-indicator");
                             }),
                             Node(pos: (0, 2), objectName: "item-interaction-footer-next", build: (w, root) => {
                                 float cellW = root.sizeDelta.x;
-                                _nextPageButton = w.AddButton(0f, 10f, cellW, root, "下一页", onClick: NextPage);
+                                _nextPageButton = w.AddButton(0f, 0f, cellW, root, "下一页", onClick: NextPage);
                             }),
                         ]),
                 ]));
