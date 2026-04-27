@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
@@ -55,7 +55,6 @@ public static class MarketBoard {
                         pos: (1, 0),
                         objectName: "market-board-summary-card",
                         strong: true,
-                        padding: Inset(0f, 14f, 18f, 14f),
                         rows: [Px(24f), 1],
                         children: [
                             Node(pos: (0, 0), objectName: "market-board-summary-title-node", build: (w, root) => {
@@ -70,7 +69,6 @@ public static class MarketBoard {
                     ContentCard(
                         pos: (2, 0),
                         objectName: "market-board-list-card",
-                        padding: Inset(18f),
                         children: [
                             Node(pos: (0, 0), objectName: "market-board-list-body", build: (w, root) => {
                                 float y = 0f;
