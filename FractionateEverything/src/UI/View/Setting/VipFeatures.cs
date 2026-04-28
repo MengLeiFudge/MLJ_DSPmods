@@ -37,8 +37,7 @@ public static class VipFeatures {
     /// 旧版 VIP 经验接口。
     /// 当前版本已冻结，保留为空实现，避免遗留调用重新启用旧逻辑。
     /// </summary>
-    public static void AddExp(float exp) {
-    }
+    public static void AddExp(float exp) { }
 
     /// <summary>
     /// 旧版 VIP 抽奖倍率。当前冻结为中性值。

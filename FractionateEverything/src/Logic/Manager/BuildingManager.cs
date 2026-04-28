@@ -289,7 +289,8 @@ public static class BuildingManager {
         return normalizedItemId;
     }
 
-    private static bool TryGetConversionFractionator(PlanetFactory factory, int entityId, out FractionatorComponent fractionator) {
+    private static bool TryGetConversionFractionator(PlanetFactory factory, int entityId,
+        out FractionatorComponent fractionator) {
         fractionator = default;
         if (factory == null || entityId <= 0 || entityId >= factory.entityPool.Length) {
             return false;
@@ -353,7 +354,8 @@ public static class BuildingManager {
         return false;
     }
 
-    public static int NormalizeLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
+    public static int NormalizeLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory,
+        int itemId) {
         if (itemId == 0 || factory == null || !ConversionTower.EnableSingleLock) {
             return 0;
         }
@@ -454,7 +456,8 @@ public static class BuildingManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnPasteBuildingSetting))]
     public static void PlanetFactory_OnPasteBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
-        if (!hasLockedOutputClipboard || !TryGetConversionFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
+        if (!hasLockedOutputClipboard
+            || !TryGetConversionFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
             return;
         }
         fractionator.SetLockedOutputAndSync(__instance, lockedOutputClipboardItemId, manual: true);

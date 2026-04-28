@@ -14,20 +14,20 @@ public class GachaCard : MonoBehaviour {
     private Image _glowImage;
     // 点击按钮
     private Button _button;
-    
+
     // 卡片数据
     public GachaResult Result { get; private set; }
     public bool IsRevealed { get; private set; }
-    
+
     // 翻转完成回调
     public System.Action<GachaCard> OnRevealed;
-    
+
     // 稀有度颜色
-    private static readonly Color ColorC = new(0.8f, 0.8f, 0.8f);   // 白
-    private static readonly Color ColorB = new(0.4f, 0.9f, 0.4f);   // 绿
-    private static readonly Color ColorA = new(0.4f, 0.6f, 1.0f);   // 蓝
-    private static readonly Color ColorS = new(1.0f, 0.85f, 0.2f);  // 金
-    
+    private static readonly Color ColorC = new(0.8f, 0.8f, 0.8f);// 白
+    private static readonly Color ColorB = new(0.4f, 0.9f, 0.4f);// 绿
+    private static readonly Color ColorA = new(0.4f, 0.6f, 1.0f);// 蓝
+    private static readonly Color ColorS = new(1.0f, 0.85f, 0.2f);// 金
+
     // 工厂方法：在指定父节点创建卡片
     public static GachaCard Create(RectTransform parent, float x, float y, float w, float h) {
         var go = new GameObject("GachaCard");
@@ -47,7 +47,7 @@ public class GachaCard : MonoBehaviour {
         glowRect.SetParent(rect, false);
         glowRect.anchorMin = Vector2.zero;
         glowRect.anchorMax = Vector2.one;
-        glowRect.sizeDelta = new Vector2(20, 20); // 稍微大一点
+        glowRect.sizeDelta = new Vector2(20, 20);// 稍微大一点
         card._glowImage = glowObj.AddComponent<Image>();
         card._glowImage.gameObject.SetActive(false);
 
@@ -59,7 +59,7 @@ public class GachaCard : MonoBehaviour {
         backRect.anchorMax = Vector2.one;
         backRect.sizeDelta = Vector2.zero;
         card._backImage = backObj.AddComponent<Image>();
-        card._backImage.color = Color.gray; // 默认灰色作为背面
+        card._backImage.color = Color.gray;// 默认灰色作为背面
 
         // 正面
         var frontObj = new GameObject("Front");
@@ -77,7 +77,7 @@ public class GachaCard : MonoBehaviour {
 
         return card;
     }
-    
+
     public void SetResult(GachaResult result) {
         Result = result;
         IsRevealed = false;
@@ -96,37 +96,37 @@ public class GachaCard : MonoBehaviour {
         _glowImage.gameObject.SetActive(false);
         transform.localScale = Vector3.one;
     }
-    
+
     // 触发翻转动画
     public void Reveal() {
         if (IsRevealed) return;
         StartCoroutine(FlipCoroutine());
     }
-    
+
     // 立即显示结果（无动画）
     public void RevealImmediate() {
         if (IsRevealed) return;
         IsRevealed = true;
         _button.interactable = false;
-        
+
         _backImage.gameObject.SetActive(false);
         _frontImage.gameObject.SetActive(true);
         ApplyRarityStyle();
-        
+
         transform.localScale = Vector3.one;
-        
+
         if (Result.Rarity == GachaRarity.S) {
             StartCoroutine(GlowPulse());
         }
-        
+
         OnRevealed?.Invoke(this);
     }
-    
+
     private IEnumerator FlipCoroutine() {
         IsRevealed = true;
         _button.interactable = false;
         float duration = 0.15f;
-        
+
         // 第一阶段：scaleX 1→0
         float t = 0;
         Vector3 scale = transform.localScale;
@@ -136,12 +136,12 @@ public class GachaCard : MonoBehaviour {
             transform.localScale = scale;
             yield return null;
         }
-        
+
         // 切换图片：隐藏背面，显示正面
         _backImage.gameObject.SetActive(false);
         _frontImage.gameObject.SetActive(true);
         ApplyRarityStyle();
-        
+
         // 第二阶段：scaleX 0→1
         t = 0;
         while (t < duration) {
@@ -152,12 +152,12 @@ public class GachaCard : MonoBehaviour {
         }
         scale.x = 1f;
         transform.localScale = scale;
-        
+
         // S级触发光晕脉冲
         if (Result.Rarity == GachaRarity.S) {
             StartCoroutine(GlowPulse());
         }
-        
+
         OnRevealed?.Invoke(this);
     }
 

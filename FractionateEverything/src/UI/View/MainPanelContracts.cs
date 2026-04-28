@@ -19,6 +19,5 @@ public sealed class EmptyMainPanelSharedState : IFEMainPanelSharedState {
     public long TicketRaffleOpeningLineDraws { get; set; }
     public int AchievementsCurrentPage { get; set; }
 
-    private EmptyMainPanelSharedState() {
-    }
+    private EmptyMainPanelSharedState() { }
 }

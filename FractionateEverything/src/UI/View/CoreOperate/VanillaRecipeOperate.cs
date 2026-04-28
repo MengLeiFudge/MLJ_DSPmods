@@ -98,11 +98,15 @@ public static class VanillaRecipeOperate {
                                     SelectedRecipe, "button-change-item").WithClickEvent(
                                     () => { OnButtonChangeRecipeClick(false, popupY); },
                                     () => { OnButtonChangeRecipeClick(true, popupY); });
-                                w.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y, tab,
+                                w.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y,
+                                    tab,
                                     "提示", "原版配方提示按钮说明1");
-                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                btnFragmentIcon =
+                                    w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片))
+                                        .WithSize(40f, 40f);
                                 txtFragmentCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 45f, y, tab, "");
-                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null)
+                                    .WithSize(40f, 40f);
                                 txtMatrixCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 165f, y, tab, "");
                                 y += 36f + 7f;
                                 w.AddText2(x, y, tab, "输入物品", 15, "labelInputItems");
@@ -113,7 +117,8 @@ public static class VanillaRecipeOperate {
                                     txtInputNames[i] = w.AddText2(x + 40 + 5, y, tab, "", 13, $"txtInputName{i}");
                                     txtInputCounts[i] = w.AddText2(x + 180, y, tab, "", 13, $"txtInputCount{i}");
                                     txtInputUpgrades[i] = w.AddText2(x + 280, y, tab, "", 13, $"txtInputUpgrade{i}");
-                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 13, $"btnInputUpgrade{i}",
+                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 13,
+                                        $"btnInputUpgrade{i}",
                                         () => { UpgradeInput(idx); });
                                     y += 36f + 5f;
                                 }
@@ -183,7 +188,8 @@ public static class VanillaRecipeOperate {
                 // 如果已达上限，修改按钮文本
                 if (!canUpgrade) {
                     if (limitedByMatrix) {
-                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
+                        btnInputUpgrades[i].button.GetComponentInChildren<Text>().text =
+                            GetMatrixRequirementText(vanillaRecipe);
                     } else {
                         btnInputUpgrades[i].button.GetComponentInChildren<Text>().text = "已达上限".Translate();
                     }
@@ -301,7 +307,8 @@ public static class VanillaRecipeOperate {
 
     #endregion
 
-    private static (int matrixId, int matrixCount, int fragmentCount) GetInputUpgradeCost(VanillaRecipe recipe, int itemId) {
+    private static (int matrixId, int matrixCount, int fragmentCount) GetInputUpgradeCost(VanillaRecipe recipe,
+        int itemId) {
         int currentUpgrade = recipe.GetInputUpgradeCount(itemId);
         return (GetCurrentProgressMatrixId(), 1 + currentUpgrade / 2, 20 + currentUpgrade * 10);
     }

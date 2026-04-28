@@ -43,15 +43,17 @@ public static class RecipeGrowthExecutor {
         int fragmentReward = 0;
 
         if (state.Level >= rule.MaxLevel) {
-            fragmentReward = context.CurrentFocus == GachaFocusType.RectificationEconomy
-                ? context.IsSpeedrunMode ? 35 : 20
-                : context.IsSpeedrunMode ? 25 : 15;
+            fragmentReward = context.CurrentFocus == GachaFocusType.RectificationEconomy ?
+                context.IsSpeedrunMode ? 35 : 20 :
+                context.IsSpeedrunMode ? 25 : 15;
             return new RecipeGrowthResult(previousLevel, state.Level, previousLevel > 0, previousLevel > 0,
                 true, false, fragmentReward);
         }
 
         if (state.Level <= 0) {
-            state.Level = rule.FixedMaxReward ? rule.MaxLevel : RecipeGrowthRules.ClampLevel(rule, rule.DrawUnlockLevel);
+            state.Level = rule.FixedMaxReward
+                ? rule.MaxLevel
+                : RecipeGrowthRules.ClampLevel(rule, rule.DrawUnlockLevel);
         } else {
             state.Level = rule.FixedMaxReward ? rule.MaxLevel : RecipeGrowthRules.ClampLevel(rule, state.Level + 1);
         }
@@ -114,7 +116,8 @@ public static class RecipeGrowthExecutor {
         return BuildResult(rule, previousLevel, state);
     }
 
-    public static RecipeGrowthResult ApplyCatchupProgress(BaseRecipe recipe, int growthExp, RecipeGrowthContext context) {
+    public static RecipeGrowthResult
+        ApplyCatchupProgress(BaseRecipe recipe, int growthExp, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
@@ -180,7 +183,8 @@ public static class RecipeGrowthExecutor {
         return affectedRecipes;
     }
 
-    public static RecipeGrowthResult SetLevelForSandbox(BaseRecipe recipe, int targetLevel, RecipeGrowthContext context) {
+    public static RecipeGrowthResult
+        SetLevelForSandbox(BaseRecipe recipe, int targetLevel, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
@@ -205,7 +209,8 @@ public static class RecipeGrowthExecutor {
         return recipe == null ? default : ApplyDrawReward(recipe, context);
     }
 
-    public static RecipeGrowthResult ApplyProcessingProgress(RecipeKey key, int inputCount, int successCount, RecipeGrowthContext context) {
+    public static RecipeGrowthResult ApplyProcessingProgress(RecipeKey key, int inputCount, int successCount,
+        RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : ApplyProcessingProgress(recipe, inputCount, successCount, context);
     }

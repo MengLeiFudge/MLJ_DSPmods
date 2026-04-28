@@ -153,7 +153,8 @@ public static class Achievements {
         "成就-万物归一",
     ];
     private static readonly Dictionary<string, int> achievementIndexByName = BuildAchievementIndexByName();
-    private static readonly Dictionary<string, AchievementRewardDefinition> rewardDefinitionsByKey = BuildRewardDefinitionsByKey();
+    private static readonly Dictionary<string, AchievementRewardDefinition> rewardDefinitionsByKey =
+        BuildRewardDefinitionsByKey();
     private static bool[] unlocked = new bool[achievements.Length];
     private static bool[] claimed = new bool[achievements.Length];
     private static bool bonusSummaryDirty = true;
@@ -246,22 +247,25 @@ public static class Achievements {
     }
 
     private static void AddProductionAchievements(List<AchievementInfo> list) {
-        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float DoubleBonus)[] {
-            ("分馏初学者", 10, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
-            ("分馏熟练工", 25, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
-            ("分馏执勤员", 50, "成就奖励-残片200", ETier.Bronze, 0.0015f, 0f, 0f),
-            ("分馏推进者", 100, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f, 0f),
-            ("分馏节拍", 300, "成就奖励-残片300", ETier.Silver, 0.003f, 0f, 0f),
-            ("分馏热潮", 600, "成就奖励-残片500", ETier.Silver, 0.004f, 0.001f, 0f),
-            ("成就-千锤百炼", 1000, "成就奖励-残片500", ETier.Silver, 0.005f, 0.001f, 0f),
-            ("分馏扩张", 3000, "成就奖励-残片800", ETier.Gold, 0.007f, 0.002f, 0.002f),
-            ("成就-万物皆可分馏", 10000, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
-            ("分馏高峰", 50000, "成就奖励-残片2000", ETier.Gold, 0.015f, 0.004f, 0.005f),
-            ("成就-分馏之王", 200000, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
-            ("成就-永不停歇", 1000000, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
-        };
+        var defs =
+            new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
+                DoubleBonus)[] {
+                    ("分馏初学者", 10, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
+                    ("分馏熟练工", 25, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
+                    ("分馏执勤员", 50, "成就奖励-残片200", ETier.Bronze, 0.0015f, 0f, 0f),
+                    ("分馏推进者", 100, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f, 0f),
+                    ("分馏节拍", 300, "成就奖励-残片300", ETier.Silver, 0.003f, 0f, 0f),
+                    ("分馏热潮", 600, "成就奖励-残片500", ETier.Silver, 0.004f, 0.001f, 0f),
+                    ("成就-千锤百炼", 1000, "成就奖励-残片500", ETier.Silver, 0.005f, 0.001f, 0f),
+                    ("分馏扩张", 3000, "成就奖励-残片800", ETier.Gold, 0.007f, 0.002f, 0.002f),
+                    ("成就-万物皆可分馏", 10000, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
+                    ("分馏高峰", 50000, "成就奖励-残片2000", ETier.Gold, 0.015f, 0.004f, 0.005f),
+                    ("成就-分馏之王", 200000, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
+                    ("成就-永不停歇", 1000000, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
+                };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus, float doubleBonus) in defs) {
+        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
+                     float doubleBonus) in defs) {
             string desc = $"累计完成 {target} 次分馏成功";
             list.Add(new AchievementInfo(
                 "成就分类-生产",
@@ -278,20 +282,22 @@ public static class Achievements {
     }
 
     private static void AddOpeningAchievements(List<AchievementInfo> list) {
-        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float DoubleBonus, float LogisticsBonus)[] {
-            ("开线初试", 1, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
-            ("开线连发", 5, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
-            ("开线热手", 10, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0.001f, 0f),
-            ("开线之门", 20, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.001f, 0f),
-            ("开线推进", 50, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
-            ("成就-开线先锋", 100, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
-            ("开线大师", 200, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.003f, 0.003f),
-            ("成就-开线专家", 500, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.005f, 0.004f),
-            ("开线统筹", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.008f, 0.006f),
-            ("开线传说", 2000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.01f, 0.01f),
-        };
+        var defs =
+            new (string Name, int Target, string RewardKey, ETier Tier, float DoubleBonus, float LogisticsBonus)[] {
+                ("开线初试", 1, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
+                ("开线连发", 5, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
+                ("开线热手", 10, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0.001f, 0f),
+                ("开线之门", 20, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.001f, 0f),
+                ("开线推进", 50, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
+                ("成就-开线先锋", 100, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
+                ("开线大师", 200, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.003f, 0.003f),
+                ("成就-开线专家", 500, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.005f, 0.004f),
+                ("开线统筹", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.008f, 0.006f),
+                ("开线传说", 2000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.01f, 0.01f),
+            };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus, float logisticsBonus) in defs) {
+        foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus,
+                     float logisticsBonus) in defs) {
             string desc = $"累计完成 {target} 次开线抽取";
             list.Add(new AchievementInfo(
                 "成就分类-开线",
@@ -308,20 +314,23 @@ public static class Achievements {
 
     private static void AddRecipeAchievements(List<AchievementInfo> list) {
         // 配方线的关键锚点统一落在 60 / 100 / 150，分别对应速通闭环、常规闭环与后期百科完成度。
-        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float PowerBonus)[] {
-            ("配方启蒙", 1, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
-            ("配方初识", 3, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
-            ("成就-配方入门", 5, "成就奖励-配方核心1", ETier.Bronze, 0.002f, 0f, 0f),
-            ("配方进修", 10, "成就奖励-配方核心1", ETier.Silver, 0.002f, 0.001f, 0f),
-            ("配方拓展", 20, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.002f, 0f),
-            ("成就-配方学者", 30, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.003f, 0f),
-            ("配方总览", 60, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
-            ("成就-配方专家", 100, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
-            ("配方馆长", 120, "成就奖励-残片800", ETier.Platinum, 0.01f, 0.008f, 0.015f),
-            ("成就-万物百科", 150, "成就奖励-残片1000", ETier.Platinum, 0.015f, 0.01f, 0.02f),
-        };
+        var defs =
+            new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
+                PowerBonus)[] {
+                    ("配方启蒙", 1, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
+                    ("配方初识", 3, "成就奖励-配方核心1", ETier.Bronze, 0.001f, 0f, 0f),
+                    ("成就-配方入门", 5, "成就奖励-配方核心1", ETier.Bronze, 0.002f, 0f, 0f),
+                    ("配方进修", 10, "成就奖励-配方核心1", ETier.Silver, 0.002f, 0.001f, 0f),
+                    ("配方拓展", 20, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.002f, 0f),
+                    ("成就-配方学者", 30, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.003f, 0f),
+                    ("配方总览", 60, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
+                    ("成就-配方专家", 100, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
+                    ("配方馆长", 120, "成就奖励-残片800", ETier.Platinum, 0.01f, 0.008f, 0.015f),
+                    ("成就-万物百科", 150, "成就奖励-残片1000", ETier.Platinum, 0.015f, 0.01f, 0.02f),
+                };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus, float powerBonus) in defs) {
+        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
+                     float powerBonus) in defs) {
             string desc = $"累计解锁 {target} 个分馏配方";
             list.Add(new AchievementInfo(
                 "成就分类-配方",
@@ -365,18 +374,20 @@ public static class Achievements {
     }
 
     private static void AddRecurringAchievements(List<AchievementInfo> list) {
-        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float DoubleBonus)[] {
-            ("任务热身", 1, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f),
-            ("任务连锁", 5, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f),
-            ("任务推进", 10, "成就奖励-当前阶段矩阵2", ETier.Silver, 0.003f, 0f),
-            ("任务巡航", 20, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0.002f),
-            ("任务统筹", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.006f, 0.003f),
-            ("成就-任务自动化", 100, "成就奖励-循环任务自动领取", ETier.Gold, 0.008f, 0.004f),
-            ("任务驱动", 200, "成就奖励-当前阶段矩阵8", ETier.Platinum, 0.012f, 0.006f),
-            ("任务永动", 500, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
-        };
+        var defs =
+            new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float DoubleBonus)[] {
+                ("任务热身", 1, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f),
+                ("任务连锁", 5, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f),
+                ("任务推进", 10, "成就奖励-当前阶段矩阵2", ETier.Silver, 0.003f, 0f),
+                ("任务巡航", 20, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0.002f),
+                ("任务统筹", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.006f, 0.003f),
+                ("成就-任务自动化", 100, "成就奖励-循环任务自动领取", ETier.Gold, 0.008f, 0.004f),
+                ("任务驱动", 200, "成就奖励-当前阶段矩阵8", ETier.Platinum, 0.012f, 0.006f),
+                ("任务永动", 500, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
+            };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus, float doubleBonus) in defs) {
+        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus,
+                     float doubleBonus) in defs) {
             string desc = $"累计完成 {target} 次循环任务";
             Action rewardAction = rewardKey == "成就奖励-循环任务自动领取"
                 ? RecurringTask.UnlockAutoClaim
@@ -405,7 +416,8 @@ public static class Achievements {
             ("原胚洪流", 80, "成就奖励-精馏塔原胚3", ETier.Platinum, 0.015f, 0.02f),
         };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus, float powerBonus) in defs) {
+        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus,
+                     float powerBonus) in defs) {
             string desc = $"仓储中持有 {target} 个分馏塔原胚";
             list.Add(new AchievementInfo(
                 "成就分类-原胚",
@@ -491,7 +503,8 @@ public static class Achievements {
             "在黑雾增强层中分配至少 8 点技能点",
             "成就奖励-当前阶段矩阵16",
             ETier.Platinum,
-            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetAssignedSkillPointCount() >= 8,
+            () => DarkFogCombatManager.IsEnhancedLayerEnabled()
+                  && DarkFogCombatManager.GetAssignedSkillPointCount() >= 8,
             () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
             energyReductionBonus: 0.03f,
             powerStageBonus: 0.01f,
@@ -581,7 +594,8 @@ public static class Achievements {
     }
 
     private static void AddTutorialGuideAchievements(List<AchievementInfo> list) {
-        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager.GetTutorialAchievementDefinitions()) {
+        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager
+                     .GetTutorialAchievementDefinitions()) {
             list.Add(new AchievementInfo(
                 "成就分类-探索",
                 definition.NameKey,
@@ -691,7 +705,9 @@ public static class Achievements {
 
         Register("已获得成就", "Obtained: {0}/{1}", "已获得：{0}/{1}");
         Register("隐藏未解锁", "Locked: {0}", "未解锁：{0}");
-        Register("成就加成格式", "Success +{0}% / Destroy -{1}% / Double +{2}% / Energy -{3}% / Logistics +{4}% / Power +{5}%", "成功+{0}% / 损毁-{1}% / 翻倍+{2}% / 能耗-{3}% / 物流+{4}% / 发电+{5}%");
+        Register("成就加成格式",
+            "Success +{0}% / Destroy -{1}% / Double +{2}% / Energy -{3}% / Logistics +{4}% / Power +{5}%",
+            "成功+{0}% / 损毁-{1}% / 翻倍+{2}% / 能耗-{3}% / 物流+{4}% / 发电+{5}%");
 
         Register("已获得", "Obtained", "已获得");
         Register("未解锁", "Locked");
@@ -704,7 +720,8 @@ public static class Achievements {
         Register("功能奖励-物流", "Logistics +{0}%", "物流 +{0}%");
         Register("功能奖励-发电", "Power +{0}%", "发电 +{0}%");
         Register("需启用深空联动", "Requires They Come From Void", "需启用深空联动");
-        Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.", "需启用《深空来敌》联动，未开启时无法完成");
+        Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.",
+            "需启用《深空来敌》联动，未开启时无法完成");
         Register("隐藏成就提示", "???", "???");
         Register("隐藏成就描述", "Hidden achievement", "未解锁");
         Register("成就获得提示", "Achievement unlocked: {0}", "获得成就：{0}");
@@ -754,7 +771,8 @@ public static class Achievements {
         Register("功勋回路", "Merit Circuit", "功勋回路");
         Register("授权整备", "Authorization Setup", "授权整备");
 
-        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager.GetTutorialAchievementDefinitions()) {
+        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager
+                     .GetTutorialAchievementDefinitions()) {
             Register(definition.NameKey, definition.NameEn, definition.NameCn);
             Register(definition.DescKey, definition.DescEn, definition.DescCn);
         }
@@ -890,12 +908,15 @@ public static class Achievements {
                             Node(pos: (0, 0), objectName: "achievements-summary-body", build: (w, summaryCard) => {
                                 float x = 0f;
                                 float y = 16f;
-                                txtUnlockedSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13, "txtAchievementUnlockedSummary");
+                                txtUnlockedSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13,
+                                    "txtAchievementUnlockedSummary");
                                 txtUnlockedSummary.supportRichText = true;
                                 y += 28f;
-                                txtHiddenSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13, "txtAchievementHiddenSummary");
+                                txtHiddenSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13,
+                                    "txtAchievementHiddenSummary");
                                 txtHiddenSummary.supportRichText = true;
-                                txtBonusSummary = w.AddText2(x + 380f, 16f, summaryCard, "动态刷新", 13, "txtAchievementBonusSummary");
+                                txtBonusSummary = w.AddText2(x + 380f, 16f, summaryCard, "动态刷新", 13,
+                                    "txtAchievementBonusSummary");
                                 txtBonusSummary.supportRichText = true;
                                 txtBonusSummary.alignment = TextAnchor.UpperLeft;
                                 txtBonusSummary.rectTransform.sizeDelta = new Vector2(650f, 52f);
@@ -930,18 +951,24 @@ public static class Achievements {
                                 listStartY = y;
                                 for (int i = 0; i < achievements.Length; i++) {
                                     int j = i;
-                                    txtAchievementNames[j] = w.AddText2(listNameX + x, y, listCard, "动态刷新", 13, $"txtAchievementName{j}");
+                                    txtAchievementNames[j] = w.AddText2(listNameX + x, y, listCard, "动态刷新", 13,
+                                        $"txtAchievementName{j}");
                                     txtAchievementNames[j].supportRichText = true;
                                     txtAchievementNames[j].rectTransform.sizeDelta = new Vector2(listNameW, 40f);
-                                    txtAchievementDescs[j] = w.AddText2(listDescX + x, y, listCard, "动态刷新", 13, $"txtAchievementDesc{j}");
+                                    txtAchievementDescs[j] = w.AddText2(listDescX + x, y, listCard, "动态刷新", 13,
+                                        $"txtAchievementDesc{j}");
                                     txtAchievementDescs[j].supportRichText = true;
                                     txtAchievementDescs[j].alignment = TextAnchor.UpperLeft;
                                     txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
-                                    rewardIcons[j] = w.AddImageButton(listRewardX + x, y, listCard, null).WithSize(40f, 40f);
-                                    txtAchievementRewards[j] = w.AddText2(listRewardTextX + x, y, listCard, "动态刷新", 13, $"txtAchievementReward{j}");
+                                    rewardIcons[j] = w.AddImageButton(listRewardX + x, y, listCard, null)
+                                        .WithSize(40f, 40f);
+                                    txtAchievementRewards[j] = w.AddText2(listRewardTextX + x, y, listCard, "动态刷新", 13,
+                                        $"txtAchievementReward{j}");
                                     txtAchievementRewards[j].supportRichText = true;
-                                    txtAchievementRewards[j].rectTransform.sizeDelta = new Vector2(listRewardTextW, 32f);
-                                    txtAchievementStates[j] = w.AddText2(listStateX + x, y, listCard, "动态刷新", 13, $"txtAchievementState{j}");
+                                    txtAchievementRewards[j].rectTransform.sizeDelta =
+                                        new Vector2(listRewardTextW, 32f);
+                                    txtAchievementStates[j] = w.AddText2(listStateX + x, y, listCard, "动态刷新", 13,
+                                        $"txtAchievementState{j}");
                                     txtAchievementStates[j].supportRichText = true;
                                     txtAchievementStates[j].rectTransform.sizeDelta = new Vector2(listStateW, 32f);
                                     y += AchievementRowSpacing;
@@ -954,11 +981,14 @@ public static class Achievements {
                         children: [
                             Node(pos: (0, 0), objectName: "achievements-footer-body", build: (w, footerCard) => {
                                 float footerW = footerCard.sizeDelta.x;
-                                btnPrevPage = w.AddButton(GetPosition(0, 3, footerW).Item1, 0f, footerCard, "上一页", onClick: PrevPage);
+                                btnPrevPage = w.AddButton(GetPosition(0, 3, footerW).Item1, 0f, footerCard, "上一页",
+                                    onClick: PrevPage);
                                 txtPageIndicator = w.AddText2(GetPosition(1, 3, footerW).Item1, 6f, footerCard, "");
                                 txtPageIndicator.alignment = TextAnchor.MiddleCenter;
-                                txtPageIndicator.rectTransform.sizeDelta = new(GetPosition(1, 3, footerW).Item2, txtPageIndicator.rectTransform.sizeDelta.y);
-                                btnNextPage = w.AddButton(GetPosition(2, 3, footerW).Item1, 0f, footerCard, "下一页", onClick: NextPage);
+                                txtPageIndicator.rectTransform.sizeDelta = new(GetPosition(1, 3, footerW).Item2,
+                                    txtPageIndicator.rectTransform.sizeDelta.y);
+                                btnNextPage = w.AddButton(GetPosition(2, 3, footerW).Item1, 0f, footerCard, "下一页",
+                                    onClick: NextPage);
                             }),
                         ]),
                 ]));
@@ -983,7 +1013,8 @@ public static class Achievements {
         int hiddenLockedCount = achievements.Length - obtainedCount;
 
         txtTitle.text = "成就系统".Translate().WithColor(Orange);
-        txtUnlockedSummary.text = string.Format("已获得成就".Translate(), obtainedCount, achievements.Length).WithColor(Orange);
+        txtUnlockedSummary.text =
+            string.Format("已获得成就".Translate(), obtainedCount, achievements.Length).WithColor(Orange);
         txtHiddenSummary.text = string.Format("隐藏未解锁".Translate(), hiddenLockedCount).WithColor(Blue);
         txtBonusSummary.text = string.Format("成就加成格式".Translate(),
             cachedBonusSummary.SuccessRateBonus * 100f,
@@ -1246,17 +1277,11 @@ public static class Achievements {
     }
 
     private static int GetCurrentStageMatrixId() {
-        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵)
-            ? I宇宙矩阵
-            : GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵)
-                ? I引力矩阵
-                : GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵)
-                    ? I信息矩阵
-                    : GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵)
-                        ? I结构矩阵
-                        : GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵)
-                            ? I能量矩阵
-                            : I电磁矩阵;
+        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵) ? I宇宙矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵) ? I引力矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵) ? I信息矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵) ? I结构矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵) ? I能量矩阵 : I电磁矩阵;
     }
 
     #region IModCanSave
@@ -1286,15 +1311,9 @@ public static class Achievements {
                     migrated = true;
                 }
             }),
-            ("ClaimedFlagsV2", br => {
-                saveClaimed = ReadLegacyFlags(br);
-            }),
-            ("UnlockedFlags", br => {
-                oldUnlocked = ReadLegacyFlags(br);
-            }),
-            ("ClaimedFlags", br => {
-                oldClaimed = ReadLegacyFlags(br);
-            })
+            ("ClaimedFlagsV2", br => { saveClaimed = ReadLegacyFlags(br); }),
+            ("UnlockedFlags", br => { oldUnlocked = ReadLegacyFlags(br); }),
+            ("ClaimedFlags", br => { oldClaimed = ReadLegacyFlags(br); })
         );
 
         int saveCount = Math.Min(saveClaimed.Length, achievements.Length);

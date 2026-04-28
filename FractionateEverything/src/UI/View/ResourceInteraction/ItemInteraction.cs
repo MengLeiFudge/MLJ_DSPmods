@@ -103,9 +103,11 @@ public static class ItemInteraction {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-filter-title-node", build: (w, root) => {
-                                PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15, "item-interaction-filter-title");
-                            }),
+                            Node(pos: (0, 0), objectName: "item-interaction-filter-title-node",
+                                build: (w, root) => {
+                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15,
+                                        "item-interaction-filter-title");
+                                }),
                             Node(pos: (1, 0), objectName: "item-interaction-filter-body", build: (w, root) => {
                                 float filterRowY = 12f;
                                 w.AddCheckBox(0f, filterRowY, root, ShowNotStoredItemEntry, "显示未存储的物品");
@@ -120,9 +122,10 @@ public static class ItemInteraction {
                         objectName: "item-interaction-grid-card",
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-grid-title-node", build: (w, root) => {
-                                PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
-                            }),
+                            Node(pos: (0, 0), objectName: "item-interaction-grid-title-node",
+                                build: (w, root) => {
+                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
+                                }),
                             Node(pos: (1, 0), objectName: "item-interaction-grid-body", build: (w, root) => {
                                 Text txt = w.AddText2(0f, 18f, root, "以下物品在分馏数据中心的存储量为：");
                                 w.AddTipsButton2(23f + txt.preferredWidth, 18f, root, "提取物品", "提取物品说明");
@@ -130,7 +133,8 @@ public static class ItemInteraction {
                                 float y = itemGridStartY;
                                 for (int i = 0; i < RowCount; i++) {
                                     for (int j = 0; j < ColumnCount; j++) {
-                                        btnItems[i, j] = w.AddImageButton(GetPosition(j, ColumnCount, 1006f).Item1, y, root)
+                                        btnItems[i, j] = w.AddImageButton(GetPosition(j, ColumnCount, 1006f).Item1, y,
+                                                root)
                                             .WithSize(40f, 40f)
                                             .WithTakeItemClickEvent()
                                             .WithDeselectOnHover(true, () => SelectedItemID = 0);

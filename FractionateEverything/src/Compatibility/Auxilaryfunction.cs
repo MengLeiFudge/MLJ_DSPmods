@@ -28,8 +28,10 @@ public static class Auxilaryfunction {
     [HarmonyPrefix]
     [HarmonyPatch(typeof(PerformanceMonitor), nameof(PerformanceMonitor.RecordGpuWorkByModel))]
     private static bool PerformanceMonitor_RecordGpuWorkByModel_Prefix(int modelId, int objCount, int vertCount) {
-        if (PerformanceMonitor.objectCounts == null || PerformanceMonitor.vertexCounts == null
-            || PerformanceMonitor.objectCountsByModel == null || PerformanceMonitor.vertexCountsByModel == null) {
+        if (PerformanceMonitor.objectCounts == null
+            || PerformanceMonitor.vertexCounts == null
+            || PerformanceMonitor.objectCountsByModel == null
+            || PerformanceMonitor.vertexCountsByModel == null) {
             return false;
         }
         if (Time.frameCount > PerformanceMonitor.lastGPUSampleFrame) {
@@ -40,7 +42,8 @@ public static class Auxilaryfunction {
             PerformanceMonitor.gpuCounter = 0;
             PerformanceMonitor.lastGPUSampleFrame = Time.frameCount;
         }
-        if (modelId <= 0 || modelId >= PerformanceMonitor.objectCountsByModel.Length
+        if (modelId <= 0
+            || modelId >= PerformanceMonitor.objectCountsByModel.Length
             || modelId >= PerformanceMonitor.vertexCountsByModel.Length) {
             // 只对非法模型 ID 记一次日志，避免渲染热路径刷屏。
             if (warnedModelIds.Add(modelId)) {

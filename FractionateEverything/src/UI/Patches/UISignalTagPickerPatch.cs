@@ -29,8 +29,10 @@ public static class UISignalTagPickerPatch {
                 continue;
             }
 
-            GameObject tabObject = UnityEngine.Object.Instantiate(__instance.upgradeTab2Btn.gameObject, __instance.pickerTrans, false);
-            ((RectTransform)tabObject.transform).anchoredPosition = new(anchor.x + (tabData.tabIndex - 5) * 48, anchor.y);
+            GameObject tabObject =
+                UnityEngine.Object.Instantiate(__instance.upgradeTab2Btn.gameObject, __instance.pickerTrans, false);
+            ((RectTransform)tabObject.transform).anchoredPosition =
+                new(anchor.x + (tabData.tabIndex - 5) * 48, anchor.y);
             UIButton button = tabObject.GetComponent<UIButton>();
             button.data = tabData.tabIndex + 6;
             tabObject.transform.Find("icon").GetComponent<Image>().sprite = Resources.Load<Sprite>(tabData.tabIconPath);

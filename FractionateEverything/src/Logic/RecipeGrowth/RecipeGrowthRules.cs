@@ -32,11 +32,9 @@ public static class RecipeGrowthRules {
             MineralCopyRecipe => IsDarkFogItem(recipe.InputID)
                 ? RecipeFamily.MineralCopyDarkFog
                 : RecipeFamily.MineralCopyNormal,
-            ConversionRecipe => IsBuildingItem(recipe.InputID)
-                ? RecipeFamily.ConversionBuilding
-                : IsDarkFogItem(recipe.InputID)
-                    ? RecipeFamily.ConversionMaterialDarkFog
-                    : RecipeFamily.ConversionMaterialNormal,
+            ConversionRecipe => IsBuildingItem(recipe.InputID) ? RecipeFamily.ConversionBuilding :
+                IsDarkFogItem(recipe.InputID) ? RecipeFamily.ConversionMaterialDarkFog :
+                RecipeFamily.ConversionMaterialNormal,
             PointAggregateRecipe => RecipeFamily.PointAggregate,
             RectificationRecipe => RecipeFamily.Rectification,
             _ => RecipeFamily.Unknown,
@@ -120,8 +118,10 @@ public static class RecipeGrowthRules {
             return int.MaxValue;
         }
         return rule.Family switch {
-            RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse => BuildingTrainThresholds[currentLevel],
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog => DarkFogThresholds[currentLevel],
+            RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse => BuildingTrainThresholds[
+                currentLevel],
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog => DarkFogThresholds
+                [currentLevel],
             RecipeFamily.Rectification => RectificationThresholds[currentLevel],
             _ => int.MaxValue,
         };

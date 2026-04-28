@@ -53,7 +53,8 @@ public static partial class MainTask {
         BuildSpeedrunRoute(),
     ];
 
-    private static RouteMap GetRouteByModeIndex(int modeIndex) => RouteMaps[Math.Max(0, Math.Min(RouteMaps.Length - 1, modeIndex))];
+    private static RouteMap GetRouteByModeIndex(int modeIndex) =>
+        RouteMaps[Math.Max(0, Math.Min(RouteMaps.Length - 1, modeIndex))];
 
     private static RouteMap GetCurrentRoute() => GetRouteByModeIndex(GetModeIndex());
 
@@ -131,7 +132,8 @@ public static partial class MainTask {
                         () => GetRecipeProgressText(80)),
                     Node("normal-end", "万物归一", "累计解锁 100 个分馏配方并完成 5000 次分馏成功", IFE残片, IFE残片, 2000, 503f, 606f,
                         () => GetUnlockedRecipeCount() >= 100 && totalFractionSuccesses >= 5000,
-                        () => $"{GetRecipeProgressText(100)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, 5000)}")
+                        () =>
+                            $"{GetRecipeProgressText(100)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, 5000)}")
                 )
             ]
         );
@@ -196,7 +198,8 @@ public static partial class MainTask {
                         () => GetRecipeProgressText(30)),
                     Node("speed-end", "速通闭环", "累计解锁 60 个分馏配方并完成 3000 次分馏成功", IFE残片, IFE残片, 2000, 503f, 606f,
                         () => GetUnlockedRecipeCount() >= 60 && totalFractionSuccesses >= 3000,
-                        () => $"{GetRecipeProgressText(60)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, 3000)}")
+                        () =>
+                            $"{GetRecipeProgressText(60)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, 3000)}")
                 )
             ]
         );
@@ -208,7 +211,8 @@ public static partial class MainTask {
 
     private static TaskNode Node(string id, string name, string desc, int iconItemId, int rewardItemId, int rewardCount,
         float left, float top, Func<bool> isCompleted, Func<string> progressText) {
-        return new TaskNode(id, name, desc, iconItemId, rewardItemId, rewardCount, new Vector2(left, top), isCompleted, progressText);
+        return new TaskNode(id, name, desc, iconItemId, rewardItemId, rewardCount, new Vector2(left, top), isCompleted,
+            progressText);
     }
 
     private static bool IsTechUnlocked(int techId) {
@@ -241,7 +245,8 @@ public static partial class MainTask {
     }
 
     private static string GetDarkFogStageProgressText(EDarkFogCombatStage targetStage) {
-        return $"{"黑雾阶段".Translate()}：{GetDarkFogStageName(DarkFogCombatManager.GetCurrentStage())} / {GetDarkFogStageName(targetStage)}";
+        return
+            $"{"黑雾阶段".Translate()}：{GetDarkFogStageName(DarkFogCombatManager.GetCurrentStage())} / {GetDarkFogStageName(targetStage)}";
     }
 
     private static string GetDarkFogStageName(EDarkFogCombatStage stage) {

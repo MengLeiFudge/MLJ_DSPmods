@@ -41,7 +41,8 @@ internal static class ComparisonReporter {
             sb.AppendLine($"- 成长净值/积分：{scenario.Metrics.GrowthExchangeNetValue:0.000}");
             sb.AppendLine($"- 综合影响指数：{scenario.Metrics.CompositeImpactIndex:0.000}");
             sb.AppendLine($"- 预设聚焦：{scenario.FinalConfig.Focus}");
-            sb.AppendLine($"- 五塔等级：交互 {scenario.FinalConfig.InteractionTowerLevel} / 复制 {scenario.FinalConfig.MineralReplicationTowerLevel} / 点聚 {scenario.FinalConfig.PointAggregateTowerLevel} / 转化 {scenario.FinalConfig.ConversionTowerLevel} / 精馏 {scenario.FinalConfig.RectificationTowerLevel}");
+            sb.AppendLine(
+                $"- 五塔等级：交互 {scenario.FinalConfig.InteractionTowerLevel} / 复制 {scenario.FinalConfig.MineralReplicationTowerLevel} / 点聚 {scenario.FinalConfig.PointAggregateTowerLevel} / 转化 {scenario.FinalConfig.ConversionTowerLevel} / 精馏 {scenario.FinalConfig.RectificationTowerLevel}");
             sb.AppendLine();
             sb.AppendLine("### 关键结论");
             sb.AppendLine();
@@ -54,7 +55,8 @@ internal static class ComparisonReporter {
             sb.AppendLine("| 阶段 | baseline | FE | 压缩率 | 资源倍率 | 能效倍率 | 抽卡净值 |");
             sb.AppendLine("|---|---:|---:|---:|---:|---:|---:|");
             foreach (PhaseImpactBreakdown phase in scenario.Phases) {
-                sb.AppendLine($"| {phase.PhaseName} | {FormatDuration(phase.BaselineSeconds)} | {FormatDuration(phase.TreatmentSeconds)} | {phase.TimeCompressionRatio:0.000} | {phase.ResourceGainMultiplier:0.000} | {phase.EnergyEfficiencyMultiplier:0.000} | {phase.GachaNetValuePerMatrix:0.000} |");
+                sb.AppendLine(
+                    $"| {phase.PhaseName} | {FormatDuration(phase.BaselineSeconds)} | {FormatDuration(phase.TreatmentSeconds)} | {phase.TimeCompressionRatio:0.000} | {phase.ResourceGainMultiplier:0.000} | {phase.EnergyEfficiencyMultiplier:0.000} | {phase.GachaNetValuePerMatrix:0.000} |");
             }
             sb.AppendLine();
             sb.AppendLine("### 阶段说明");

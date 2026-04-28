@@ -184,7 +184,8 @@ public static partial class MainTask {
         return UIRoot.instance?.uiGame?.generalTips != null && UIRoot.instance.uiGame.active;
     }
 
-    private static void GrantNodeReward(int modeIndex, int branchIndex, int nodeIndex, bool showPopup, bool allowRewardGrant) {
+    private static void GrantNodeReward(int modeIndex, int branchIndex, int nodeIndex, bool showPopup,
+        bool allowRewardGrant) {
         if (rewardedByMode[modeIndex][branchIndex][nodeIndex]) {
             return;
         }
@@ -450,7 +451,8 @@ public static partial class MainTask {
                 int nodeCount = r.ReadInt32();
                 for (int nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
                     bool value = r.ReadBoolean();
-                    if (modeIndex < matrix.Length && branchIndex < matrix[modeIndex].Length
+                    if (modeIndex < matrix.Length
+                        && branchIndex < matrix[modeIndex].Length
                         && nodeIndex < matrix[modeIndex][branchIndex].Length) {
                         matrix[modeIndex][branchIndex][nodeIndex] = value;
                     }
@@ -477,7 +479,8 @@ public static partial class MainTask {
     }
 
     private static void BuildLegacyExportState(int modeIndex, out int currentStage, out bool rewardClaimed) {
-        string[] legacyNodeIds = LegacyStageNodeIdsByMode[Math.Max(0, Math.Min(LegacyStageNodeIdsByMode.Length - 1, modeIndex))];
+        string[] legacyNodeIds =
+            LegacyStageNodeIdsByMode[Math.Max(0, Math.Min(LegacyStageNodeIdsByMode.Length - 1, modeIndex))];
         currentStage = legacyNodeIds.Length;
         rewardClaimed = true;
         for (int i = 0; i < legacyNodeIds.Length; i++) {

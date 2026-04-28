@@ -126,9 +126,11 @@ public static class StationManager {
     /// <summary>总控面板：记录弹窗原始X坐标，保证左移/回归可逆</summary>
     private static readonly Dictionary<RectTransform, float> controlPanelStoragePopupOriginalX = [];
     /// <summary>总控面板：传输模式按钮GameObject缓存</summary>
-    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject> controlPanelTransferGameObjects = new();
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
+        controlPanelTransferGameObjects = new();
     /// <summary>总控面板：容量模式按钮GameObject缓存</summary>
-    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject> controlPanelCapacityGameObjects = new();
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
+        controlPanelCapacityGameObjects = new();
 
     /// <summary>按钮额外间距（像素）</summary>
     private const float ExtraSpacing = 12f;
@@ -143,8 +145,9 @@ public static class StationManager {
     /// <summary>槽位弹窗状态：记录当前是传输模式(true)还是容量模式(false)</summary>
     private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsTransfer = new();
     /// <summary>槽位弹窗状态：记录弹窗RectTransform引用</summary>
-    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), RectTransform> slotPopupBoxRect =
-        new();
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), RectTransform>
+        slotPopupBoxRect =
+            new();
 
     /// <summary>获取或缓存RectTransform的原始Vector2值</summary>
     private static Vector2 GetOrCacheOriginal(Dictionary<RectTransform, Vector2> cache, RectTransform rect,
@@ -239,7 +242,8 @@ public static class StationManager {
     /// <param name="storage">总控面板存储槽位</param>
     /// <param name="buttonName">按钮名称</param>
     /// <returns>找到的Transform，未找到则返回null</returns>
-    private static Transform FindControlPanelModeButtonTransform(UIControlPanelStationStorage storage, string buttonName) {
+    private static Transform FindControlPanelModeButtonTransform(UIControlPanelStationStorage storage,
+        string buttonName) {
         // 参数校验：存储槽位为空时返回null
         if (storage == null) {
             return null;
@@ -708,7 +712,8 @@ public static class StationManager {
     /// <summary>
     /// 计算上传模式下本槽位本轮允许搬运到数据中心的数量。
     /// </summary>
-    private static int GetUploadTransferCount(in StationStore store, float uploadThreshold, ECapacityMode capacityMode) {
+    private static int GetUploadTransferCount(in StationStore store, float uploadThreshold,
+        ECapacityMode capacityMode) {
         int transferCount = store.count - (int)(store.max * uploadThreshold);
         if (transferCount <= 0) {
             return 0;
@@ -900,25 +905,25 @@ public static class StationManager {
     public static void UIControlPanelStationStorage_OnOpen_Postfix(UIControlPanelStationStorage __instance) {
         string transferName = "FE_cp_transferModeButton_" + __instance.index;
         Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
-            if (transferTrans != null) {
-                // 替换转移按钮的监听，确保我们弹窗逻辑被优先调用
-                Button transferBtn = transferTrans.GetComponent<Button>();
-                transferBtn?.onClick.RemoveAllListeners();
-                transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
-                transferTrans.gameObject.SetActive(true);
-                controlPanelTransferGameObjects[__instance] = transferTrans.gameObject;
-            }
+        if (transferTrans != null) {
+            // 替换转移按钮的监听，确保我们弹窗逻辑被优先调用
+            Button transferBtn = transferTrans.GetComponent<Button>();
+            transferBtn?.onClick.RemoveAllListeners();
+            transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+            transferTrans.gameObject.SetActive(true);
+            controlPanelTransferGameObjects[__instance] = transferTrans.gameObject;
+        }
 
         string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
         Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
-            if (capacityTrans != null) {
-                // 同样处理容量按钮，绑定弹窗显示逻辑
-                Button capBtn = capacityTrans.GetComponent<Button>();
-                capBtn?.onClick.RemoveAllListeners();
-                capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
-                capacityTrans.gameObject.SetActive(true);
-                controlPanelCapacityGameObjects[__instance] = capacityTrans.gameObject;
-            }
+        if (capacityTrans != null) {
+            // 同样处理容量按钮，绑定弹窗显示逻辑
+            Button capBtn = capacityTrans.GetComponent<Button>();
+            capBtn?.onClick.RemoveAllListeners();
+            capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+            capacityTrans.gameObject.SetActive(true);
+            controlPanelCapacityGameObjects[__instance] = capacityTrans.gameObject;
+        }
     }
 
     /// <summary>关闭总控面板存储槽时移除自定义按钮的事件监听</summary>
@@ -1019,7 +1024,8 @@ public static class StationManager {
 
         // 确保缓存中有自定义的传输按钮引用
         if (!controlPanelTransferGameObjects.TryGetValue(storage, out _)) {
-            Transform transferTrans = FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton_" + storage.index);
+            Transform transferTrans =
+                FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton_" + storage.index);
             if (transferTrans != null) {
                 controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
             }
@@ -1027,7 +1033,8 @@ public static class StationManager {
 
         // 同时保证容量按钮也已准备好
         if (!controlPanelCapacityGameObjects.TryGetValue(storage, out _)) {
-            Transform capacityTrans = FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton_" + storage.index);
+            Transform capacityTrans =
+                FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton_" + storage.index);
             if (capacityTrans != null) {
                 controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
             }
@@ -1115,7 +1122,8 @@ public static class StationManager {
     /// <returns>是否允许原始逻辑继续执行</returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton0Click))]
-    public static bool UIControlPanelStationStorage_OnOptionButton0Click_Prefix(UIControlPanelStationStorage __instance) {
+    public static bool
+        UIControlPanelStationStorage_OnOptionButton0Click_Prefix(UIControlPanelStationStorage __instance) {
         return HandleOptionClick(__instance, 0);
     }
 
@@ -1124,7 +1132,8 @@ public static class StationManager {
     /// <returns>是否允许原始逻辑继续执行</returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton1Click))]
-    public static bool UIControlPanelStationStorage_OnOptionButton1Click_Prefix(UIControlPanelStationStorage __instance) {
+    public static bool
+        UIControlPanelStationStorage_OnOptionButton1Click_Prefix(UIControlPanelStationStorage __instance) {
         return HandleOptionClick(__instance, 1);
     }
 
@@ -1741,7 +1750,7 @@ public static class StationManager {
                 stationStore = station.storage[storage.index];
             }
             // 复制槽位数据用于安全检查
-            
+
             ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
             ItemProto itemProto2 = station != null && storage.factory != null
                 ? LDB.items.Select(storage.factory.entityPool[station.entityId].protoId)
@@ -1979,7 +1988,7 @@ public static class StationManager {
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         // 获取右侧组RectTransform，用于后续调整
         RectTransform rightGroupRect = FindInspectorRightGroupRect(__instance);
-        
+
         // 如果不是物流交互站，恢复所有UI到原始状态
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             // 恢复所有存储槽的按钮位置和状态
@@ -2092,7 +2101,8 @@ public static class StationManager {
                 inspectorOriginalMasterWidth[masterRect] = masterRect.sizeDelta.x;
             }
             // 设置主窗口宽度为原始宽度加上额外间距
-            masterRect.sizeDelta = new Vector2(inspectorOriginalMasterWidth[masterRect] + spacingX, masterRect.sizeDelta.y);
+            masterRect.sizeDelta =
+                new Vector2(inspectorOriginalMasterWidth[masterRect] + spacingX, masterRect.sizeDelta.y);
         }
 
         // 调整状态筛选组的位置
@@ -2105,7 +2115,8 @@ public static class StationManager {
 
             // 设置状态筛选组位置为原始位置加上额外间距
             stateGroupTrans.anchoredPosition =
-                new Vector2(filterOriginalStateGroupPosition[stateGroupTrans] + spacingX, stateGroupTrans.anchoredPosition.y);
+                new Vector2(filterOriginalStateGroupPosition[stateGroupTrans] + spacingX,
+                    stateGroupTrans.anchoredPosition.y);
         }
 
         // 调整右侧组宽度

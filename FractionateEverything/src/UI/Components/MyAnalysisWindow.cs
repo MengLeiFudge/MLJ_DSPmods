@@ -710,7 +710,8 @@ public class MyAnalysisWindow : MyWindow {
 
         if (visibleCount <= 0 || leftSubpageButtons.Count == 0) {
             if (nativeHorizontalTabOriginalHeight > 0f) {
-                nativeHorizontalTab.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, nativeHorizontalTabOriginalHeight);
+                nativeHorizontalTab.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                    nativeHorizontalTabOriginalHeight);
             }
             return;
         }

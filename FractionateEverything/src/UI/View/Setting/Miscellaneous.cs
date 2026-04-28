@@ -169,17 +169,21 @@ public static class Miscellaneous {
                         rows: [Px(24f), 1],
                         children: [
                             Node(pos: (0, 0), objectName: "misc-setting-config-title",
-                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title"); }),
+                                build: (w, root) => {
+                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title");
+                                }),
                             Node(pos: (1, 0), objectName: "misc-setting-config-body", build: (w, root) => {
                                 float x = 0f;
                                 float y = 14f;
                                 var txt = w.AddText2(x, y, root, "左键单击时提取几组物品");
                                 w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(LeftClickTakeCountEntry);
+                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0)
+                                    .WithConfigEntry(LeftClickTakeCountEntry);
                                 y += 36f;
                                 txt = w.AddText2(x, y, root, "右键单击时提取几组物品");
                                 w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0).WithConfigEntry(RightClickTakeCountEntry);
+                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0)
+                                    .WithConfigEntry(RightClickTakeCountEntry);
                                 y += 36f;
                                 txt = w.AddText2(x, y, root, "物品提取目标");
                                 w.AddComboBox(23f + txt.preferredWidth, y, root)
@@ -187,7 +191,8 @@ public static class Miscellaneous {
                                 y += 36f;
                                 txt = w.AddText2(x, y, root, "物品消耗顺序");
                                 w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(TakeItemPriorityStrs).WithSize(400, 0).WithConfigEntry(TakeItemPriorityEntry);
+                                    .WithItems(TakeItemPriorityStrs).WithSize(400, 0)
+                                    .WithConfigEntry(TakeItemPriorityEntry);
                                 y += 36f;
                                 txt = w.AddText2(x, y, root, "抽卡模式");
                                 GachaModeComboBox = w.AddComboBox(23f + txt.preferredWidth, y, root)
@@ -199,13 +204,15 @@ public static class Miscellaneous {
                                 txt = w.AddText2(x, y, root, "物流交互站下载阈值");
                                 DownloadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
                                     DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-                                DownloadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y, root,
+                                DownloadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y,
+                                    root,
                                     "物流交互站下载阈值", "物流交互站阈值修改说明");
                                 y += 36f;
                                 txt = w.AddText2(x, y, root, "物流交互站上传阈值");
                                 UploadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
                                     UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-                                UploadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y, root,
+                                UploadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y,
+                                    root,
                                     "物流交互站上传阈值", "物流交互站阈值修改说明");
                                 y += 36f;
                                 var cb = w.AddCheckBox(x, y, root, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
@@ -218,7 +225,8 @@ public static class Miscellaneous {
                                 if (AutoSorter.Enable) {
                                     y += 36f;
                                     PackageAutoSortTwiceCheckBox =
-                                        w.AddCheckBox(x, y, root, EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心");
+                                        w.AddCheckBox(x, y, root, EnablePackageAutoSortTwiceEntry,
+                                            "AutoSorter模组将多余物品收入分馏数据中心");
                                 }
 
                                 y += 36f;
@@ -233,7 +241,8 @@ public static class Miscellaneous {
                             Node(pos: (0, 0), objectName: "misc-setting-footer-button", build: (w, root) => {
                                 SwitchMainPanelButton = w.AddButton(0f, 0f, 220f, root,
                                     MainWindow.GetSwitchMainPanelButtonLabel(), 14,
-                                    onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
+                                    onClick: () =>
+                                        MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
                             }),
                         ]),
                 ]));

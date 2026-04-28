@@ -13,7 +13,8 @@ internal sealed class FeScenarioSimulator {
         FeGachaEvaluator.RunSelfCheck();
     }
 
-    public IReadOnlyList<FractionationScenarioResult> BuildTreatments(IReadOnlyList<StrategySimulationResult> baselineResults) {
+    public IReadOnlyList<FractionationScenarioResult> BuildTreatments(
+        IReadOnlyList<StrategySimulationResult> baselineResults) {
         var results = new List<FractionationScenarioResult>(baselineResults.Count);
         foreach (StrategySimulationResult baseline in baselineResults) {
             SimulationMode mode = baseline.Strategy == PlayerStrategyKind.Speedrun
@@ -57,19 +58,23 @@ internal sealed class FeScenarioSimulator {
             double openingShare = FeReference.GetOpeningDrawShare(config);
             double matrixBudget = currentMatrixRatePerSecond * baselinePhaseSeconds * drawShare;
             scenarioWarehouse.AddMatrix(stageIndex, matrixBudget);
-            int openingDrawCount = (int)Math.Floor(matrixBudget * openingShare
-                / Math.Max(1, FeReference.GetDrawMatrixCost(isOpeningLinePool: true, 1)));
-            int protoDrawCount = (int)Math.Floor(matrixBudget * (1.0 - openingShare)
-                / Math.Max(1, FeReference.GetDrawMatrixCost(isOpeningLinePool: false, 1)));
+            int openingDrawCount = (int)Math.Floor(matrixBudget
+                                                   * openingShare
+                                                   / Math.Max(1,
+                                                       FeReference.GetDrawMatrixCost(isOpeningLinePool: true, 1)));
+            int protoDrawCount = (int)Math.Floor(matrixBudget
+                                                 * (1.0 - openingShare)
+                                                 / Math.Max(1,
+                                                     FeReference.GetDrawMatrixCost(isOpeningLinePool: false, 1)));
 
             gachaEvaluator.RunPhaseSimulation(config, scenarioWarehouse, stageIndex, openingDrawCount, protoDrawCount,
                 randomSeed: 97 + stageIndex * 17 + (config.IsSpeedrun ? 1000 : 0),
                 out GachaPhaseEstimate gacha, out GrowthExchangeEstimate growth);
 
             double timeAcceleration = 1.0
-                + Math.Max(0.0, fractionation.TimeAccelerationBonus)
-                + Math.Max(0.0, gacha.DrawNetValuePerMatrix * 0.18)
-                + Math.Max(0.0, growth.NetValuePerPoint * 0.08);
+                                      + Math.Max(0.0, fractionation.TimeAccelerationBonus)
+                                      + Math.Max(0.0, gacha.DrawNetValuePerMatrix * 0.18)
+                                      + Math.Max(0.0, growth.NetValuePerPoint * 0.08);
             double treatmentPhaseSeconds = baselinePhaseSeconds / Math.Max(1.0, timeAcceleration);
 
             var phaseBreakdown = new PhaseImpactBreakdown {
@@ -116,7 +121,8 @@ internal sealed class FeScenarioSimulator {
         result.Metrics.CompositeImpactIndex = ComputeCompositeImpactIndex(result.Metrics);
 
         result.Findings.Add(BuildImpactFinding(result.Metrics.FractionationImpact));
-        result.Findings.Add(BuildResourceFinding(result.Metrics.ResourceGainMultiplier, result.Metrics.GachaNetValuePerMatrix));
+        result.Findings.Add(BuildResourceFinding(result.Metrics.ResourceGainMultiplier,
+            result.Metrics.GachaNetValuePerMatrix));
         result.Findings.Add(BuildEnergyFinding(result.Metrics.EnergyEfficiencyMultiplier));
         return result;
     }
@@ -144,10 +150,10 @@ internal sealed class FeScenarioSimulator {
         double normalizedEnergy = metrics.EnergyEfficiencyMultiplier - 1.0;
         double normalizedGacha = metrics.GachaNetValuePerMatrix;
         return 1.0
-            + normalizedImpact * 0.45
-            + normalizedResource * 0.25
-            + normalizedEnergy * 0.15
-            + normalizedGacha * 0.15;
+               + normalizedImpact * 0.45
+               + normalizedResource * 0.25
+               + normalizedEnergy * 0.15
+               + normalizedGacha * 0.15;
     }
 
     private static string BuildImpactFinding(double fractionationImpact) {

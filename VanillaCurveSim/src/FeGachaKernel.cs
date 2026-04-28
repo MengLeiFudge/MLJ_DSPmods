@@ -68,7 +68,8 @@ internal sealed class FeGachaKernel {
         }
     }
 
-    public GrowthExchangeEstimate ExecuteGrowthPlan(FractionationConfigSnapshot config, FeWarehouse warehouse, int stageIndex) {
+    public GrowthExchangeEstimate ExecuteGrowthPlan(FractionationConfigSnapshot config, FeWarehouse warehouse,
+        int stageIndex) {
         double poolPointsBefore = warehouse.GrowthPoolPoints;
         double fragmentsBefore = warehouse.Fragments;
         double utilityBefore = warehouse.GetNormalizedUtility();
@@ -101,7 +102,8 @@ internal sealed class FeGachaKernel {
         };
     }
 
-    private bool DrawOne(FractionationConfigSnapshot config, FeWarehouse warehouse, PoolDefinition pool, FePoolId poolId,
+    private bool DrawOne(FractionationConfigSnapshot config, FeWarehouse warehouse, PoolDefinition pool,
+        FePoolId poolId,
         int stageIndex, Random rng, ref int pityCount) {
         double currentSRate = EstimateCurrentSRate(pityCount, pool.RateS);
         GachaRarity rarity = RollRarity(pool, currentSRate, pityCount >= 89, rng);
@@ -284,7 +286,8 @@ internal sealed class FeGachaKernel {
         GrowthOffer bestOffer = null;
         double bestRatio = 0.0;
         foreach (GrowthOffer offer in offers) {
-            if (warehouse.GrowthPoolPoints + 1e-6 < offer.PointCost || warehouse.Fragments + 1e-6 < offer.FragmentCost) {
+            if (warehouse.GrowthPoolPoints + 1e-6 < offer.PointCost
+                || warehouse.Fragments + 1e-6 < offer.FragmentCost) {
                 continue;
             }
             double ratio = offer.Utility / Math.Max(1.0, offer.PointCost + offer.FragmentCost * 0.15);
@@ -304,7 +307,8 @@ internal sealed class FeGachaKernel {
 
         return [
             new GrowthOffer(5 * discount, 0, RewardToken.GrowthFragments50, 50 * 0.02 + (focused ? 0.2 : 0.0)),
-            new GrowthOffer(10 * discount, 10 * discount, RewardToken.GrowthCurrentStageMatrix4, (4.0 + stageIndex * 0.2)),
+            new GrowthOffer(10 * discount, 10 * discount, RewardToken.GrowthCurrentStageMatrix4,
+                (4.0 + stageIndex * 0.2)),
             new GrowthOffer(20 * discount, 15 * discount, focusedEmbryo, speedrun ? 7.0 : 6.0),
             new GrowthOffer(36 * discount, 30 * discount, RewardToken.DirectionalEmbryo, speedrun ? 8.5 : 8.0),
         ];

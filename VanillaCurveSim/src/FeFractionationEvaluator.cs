@@ -9,8 +9,10 @@ internal sealed class FeFractionationEvaluator {
         SimulatorSelfCheck.Require(FeReference.GetDefaultMaxStackByLevel(12) == 12, "12 级堆叠应为 12。");
 
         var evaluator = new FeFractionationEvaluator();
-        FractionationPhaseEstimate low = evaluator.EvaluatePhase(FeReference.CreateScenarioConfig(SimulationMode.FeConventional, 0));
-        FractionationPhaseEstimate high = evaluator.EvaluatePhase(FeReference.CreateScenarioConfig(SimulationMode.FeConventional, 5));
+        FractionationPhaseEstimate low =
+            evaluator.EvaluatePhase(FeReference.CreateScenarioConfig(SimulationMode.FeConventional, 0));
+        FractionationPhaseEstimate high =
+            evaluator.EvaluatePhase(FeReference.CreateScenarioConfig(SimulationMode.FeConventional, 5));
         SimulatorSelfCheck.Require(high.EnergyEfficiencyMultiplier > low.EnergyEfficiencyMultiplier,
             "高阶段 FE 预设的能效应高于低阶段。");
     }
@@ -38,7 +40,8 @@ internal sealed class FeFractionationEvaluator {
             timeAccelerationBonus += weights[i] * towers[i].TimeAccelerationContribution;
         }
 
-        int fragmentCount = FeReference.GetRectificationFragmentYield(config.StageIndex, config.RectificationTowerLevel);
+        int fragmentCount =
+            FeReference.GetRectificationFragmentYield(config.StageIndex, config.RectificationTowerLevel);
         double baselineFragmentCount = FeReference.GetRectificationBaseFragmentYield(config.StageIndex);
         return new FractionationPhaseEstimate {
             ResourceGainMultiplier = weightedResourceGain,
@@ -51,7 +54,8 @@ internal sealed class FeFractionationEvaluator {
     }
 
     private static TowerEffectEstimate EvaluateInteractionTower(FractionationConfigSnapshot config) {
-        double successBoost = config.AchievementSuccessBonus + (FeReference.HasTrait1(config.InteractionTowerLevel) ? 0.05 : 0.0);
+        double successBoost = config.AchievementSuccessBonus
+                              + (FeReference.HasTrait1(config.InteractionTowerLevel) ? 0.05 : 0.0);
         double resonanceBonus = FeReference.HasTrait2(config.InteractionTowerLevel) ? 0.10 : 0.0;
         double throughput = EvaluateGenericRecipeMultiplier(0.05, 1.0, config.InteractionTowerLevel, config.RecipeLevel,
             config, successBoost, resonanceBonus);
@@ -70,8 +74,9 @@ internal sealed class FeFractionationEvaluator {
     private static TowerEffectEstimate EvaluateStandardTower(string towerName, int towerLevel, int recipeLevel,
         double baseSuccessRatio, double baseOutputCount, FractionationConfigSnapshot config, double trait1Bonus,
         double trait2Bonus) {
-        double successBoost = config.AchievementSuccessBonus + (FeReference.HasTrait1(towerLevel) ? trait1Bonus : 0.0)
-            + (FeReference.HasTrait2(towerLevel) ? trait2Bonus : 0.0);
+        double successBoost = config.AchievementSuccessBonus
+                              + (FeReference.HasTrait1(towerLevel) ? trait1Bonus : 0.0)
+                              + (FeReference.HasTrait2(towerLevel) ? trait2Bonus : 0.0);
         double throughput = EvaluateGenericRecipeMultiplier(baseSuccessRatio, baseOutputCount, towerLevel, recipeLevel,
             config, successBoost, 0.0);
         double energyRatio = EffectiveEnergyRatio(towerLevel, config.AchievementEnergyReductionBonus);
@@ -88,10 +93,12 @@ internal sealed class FeFractionationEvaluator {
 
     private static TowerEffectEstimate EvaluatePointAggregateTower(FractionationConfigSnapshot config) {
         int maxInc = FeReference.GetPointAggregateMaxInc(config.PointAggregateTowerLevel);
-        double successRatio = Math.Min(1.0, (config.SelectedIncLevel / 10.0) * 0.2 * (1.0 + config.AchievementSuccessBonus));
+        double successRatio = Math.Min(1.0,
+            (config.SelectedIncLevel / 10.0) * 0.2 * (1.0 + config.AchievementSuccessBonus));
         double doublePointBonus = FeReference.HasTrait2(config.PointAggregateTowerLevel) ? 1.18 : 1.0;
         double resourceGain = 1.0 + successRatio * (maxInc / 10.0) * doublePointBonus;
-        double energyRatio = EffectiveEnergyRatio(config.PointAggregateTowerLevel, config.AchievementEnergyReductionBonus);
+        double energyRatio =
+            EffectiveEnergyRatio(config.PointAggregateTowerLevel, config.AchievementEnergyReductionBonus);
         return new TowerEffectEstimate {
             TowerName = "点数聚集塔",
             TowerLevel = config.PointAggregateTowerLevel,
@@ -104,10 +111,12 @@ internal sealed class FeFractionationEvaluator {
     }
 
     private static TowerEffectEstimate EvaluateRectificationTower(FractionationConfigSnapshot config) {
-        int fragmentCount = FeReference.GetRectificationFragmentYield(config.StageIndex, config.RectificationTowerLevel);
+        int fragmentCount =
+            FeReference.GetRectificationFragmentYield(config.StageIndex, config.RectificationTowerLevel);
         double baselineFragmentCount = FeReference.GetRectificationBaseFragmentYield(config.StageIndex);
         double fragmentMultiplier = fragmentCount / Math.Max(1.0, baselineFragmentCount);
-        double energyRatio = EffectiveEnergyRatio(config.RectificationTowerLevel, config.AchievementEnergyReductionBonus);
+        double energyRatio =
+            EffectiveEnergyRatio(config.RectificationTowerLevel, config.AchievementEnergyReductionBonus);
         return new TowerEffectEstimate {
             TowerName = "精馏塔",
             TowerLevel = config.RectificationTowerLevel,
@@ -119,9 +128,11 @@ internal sealed class FeFractionationEvaluator {
         };
     }
 
-    private static double EvaluateGenericRecipeMultiplier(double baseSuccessRatio, double baseOutputCount, int towerLevel,
+    private static double EvaluateGenericRecipeMultiplier(double baseSuccessRatio, double baseOutputCount,
+        int towerLevel,
         int recipeLevel, FractionationConfigSnapshot config, double successBoost, double extraMultiplier) {
-        double baselinePotential = CalculateRecipePotential(baseSuccessRatio, baseOutputCount, towerLevel, recipeLevel: 0,
+        double baselinePotential = CalculateRecipePotential(baseSuccessRatio, baseOutputCount, towerLevel,
+            recipeLevel: 0,
             config, successBoost, extraMultiplier);
         double currentPotential = CalculateRecipePotential(baseSuccessRatio, baseOutputCount, towerLevel, recipeLevel,
             config, successBoost, extraMultiplier);
@@ -141,7 +152,8 @@ internal sealed class FeFractionationEvaluator {
             successRatio = 1.0;
         }
 
-        double destroyRatio = Math.Max(0.0, FeReference.GetBaseDestroyRatio(recipeLevel) - config.AchievementDestroyReductionBonus);
+        double destroyRatio = Math.Max(0.0,
+            FeReference.GetBaseDestroyRatio(recipeLevel) - config.AchievementDestroyReductionBonus);
         double fracRatio = (1.0 - destroyRatio) * successRatio;
         double remainInputRatio = recipeLevel * 0.08;
         double repeatRatio = fracRatio * remainInputRatio;

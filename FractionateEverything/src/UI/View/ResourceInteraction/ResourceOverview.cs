@@ -65,9 +65,11 @@ public static class ResourceOverview {
                     strong: true,
                     rows: [Px(24f), 1],
                     children: [
-                        Node(pos: (0, 0), objectName: "resource-overview-hot-title-node", build: (w, root) => {
-                            txtHotTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "高需求物资", 15, "resource-overview-hot-title");
-                        }),
+                        Node(pos: (0, 0), objectName: "resource-overview-hot-title-node",
+                            build: (w, root) => {
+                                txtHotTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "高需求物资", 15,
+                                    "resource-overview-hot-title");
+                            }),
                         Node(pos: (1, 0), objectName: "resource-overview-hot-body", build: (w, root) => {
                             float y = 14f;
                             for (int i = 0; i < DisplayCount; i++) {
@@ -84,9 +86,11 @@ public static class ResourceOverview {
                     strong: true,
                     rows: [Px(24f), 1],
                     children: [
-                        Node(pos: (0, 0), objectName: "resource-overview-cold-title-node", build: (w, root) => {
-                            txtColdTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "低需求物资", 15, "resource-overview-cold-title");
-                        }),
+                        Node(pos: (0, 0), objectName: "resource-overview-cold-title-node",
+                            build: (w, root) => {
+                                txtColdTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "低需求物资", 15,
+                                    "resource-overview-cold-title");
+                            }),
                         Node(pos: (1, 0), objectName: "resource-overview-cold-body", build: (w, root) => {
                             float y = 14f;
                             for (int i = 0; i < DisplayCount; i++) {
@@ -103,9 +107,11 @@ public static class ResourceOverview {
             objectName: "resource-overview-darkfog-card",
             rows: [Px(24f), 1],
             children: [
-                Node(pos: (0, 0), objectName: "resource-overview-darkfog-title-node", build: (w, root) => {
-                    txtDarkFogTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "黑雾支线", 15, "resource-overview-darkfog-title");
-                }),
+                Node(pos: (0, 0), objectName: "resource-overview-darkfog-title-node",
+                    build: (w, root) => {
+                        txtDarkFogTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "黑雾支线", 15,
+                            "resource-overview-darkfog-title");
+                    }),
                 Node(pos: (1, 0), objectName: "resource-overview-darkfog-body", build: (w, root) => {
                     float y = 18f;
                     for (int i = 0; i < darkFogLines.Length; i++) {
@@ -138,7 +144,7 @@ public static class ResourceOverview {
         }
 
         header.Title.text = "市场总览".Translate().WithColor(Orange);
-        txtRefresh.text = $"{ "下次刷新".Translate() }：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}";
+        txtRefresh.text = $"{"下次刷新".Translate()}：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}";
         txtHotTitle.text = "高需求物资".Translate().WithColor(Orange);
         txtColdTitle.text = "低需求物资".Translate().WithColor(Orange);
         txtDarkFogTitle.text = "黑雾支线".Translate().WithColor(Orange);
@@ -158,12 +164,13 @@ public static class ResourceOverview {
         int unlockedRecipes = snapshots.Count(snapshot => snapshot.IsUnlocked);
         int maxedRecipes = snapshots.Count(snapshot => snapshot.IsMaxed);
 
-        darkFogLines[0].text = $"{ "支线阶段".Translate() }：{stageName}";
+        darkFogLines[0].text = $"{"支线阶段".Translate()}：{stageName}";
         darkFogLines[1].text =
-            $"{ "黑雾战况".Translate() }：{ "黑雾地面基地".Translate() } {DarkFogCombatManager.GetAliveGroundBaseCount()}    { "黑雾星域蜂巢".Translate() } {DarkFogCombatManager.GetAliveHiveCount()}    { "黑雾物资层级".Translate() } {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
-        darkFogLines[2].text = $"{ "黑雾成长报价".Translate() }：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    { "黑雾市场特单".Translate() }：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
-        darkFogLines[3].text = $"{ "黑雾增强层".Translate() }：{BuildEnhancedLayerText()}";
-        darkFogLines[4].text = $"{ "黑雾下一阶段".Translate() }：{BuildNextMilestoneText()}";
+            $"{"黑雾战况".Translate()}：{"黑雾地面基地".Translate()} {DarkFogCombatManager.GetAliveGroundBaseCount()}    {"黑雾星域蜂巢".Translate()} {DarkFogCombatManager.GetAliveHiveCount()}    {"黑雾物资层级".Translate()} {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
+        darkFogLines[2].text =
+            $"{"黑雾成长报价".Translate()}：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    {"黑雾市场特单".Translate()}：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
+        darkFogLines[3].text = $"{"黑雾增强层".Translate()}：{BuildEnhancedLayerText()}";
+        darkFogLines[4].text = $"{"黑雾下一阶段".Translate()}：{BuildNextMilestoneText()}";
     }
 
     private static string GetStageText(EDarkFogCombatStage stage) {
@@ -182,26 +189,32 @@ public static class ResourceOverview {
         }
 
         string eventText = DarkFogCombatManager.HasActiveEventChain()
-            ? $"    { "黑雾增强层-事件活跃".Translate() }".WithColor(Green)
+            ? $"    {"黑雾增强层-事件活跃".Translate()}".WithColor(Green)
             : string.Empty;
-        return $"{ "黑雾增强层-已接入".Translate().WithColor(Green) }    节点 {DarkFogCombatManager.GetEnhancedNodeCount()}/4    遗物 {DarkFogCombatManager.GetRelicCount()}    Rank {DarkFogCombatManager.GetMeritRank()}    技能 {DarkFogCombatManager.GetAssignedSkillPointCount()}{eventText}";
+        return
+            $"{"黑雾增强层-已接入".Translate().WithColor(Green)}    节点 {DarkFogCombatManager.GetEnhancedNodeCount()}/4    遗物 {DarkFogCombatManager.GetRelicCount()}    Rank {DarkFogCombatManager.GetMeritRank()}    技能 {DarkFogCombatManager.GetAssignedSkillPointCount()}{eventText}";
     }
 
     private static string BuildNextMilestoneText() {
         EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
         return stage switch {
             EDarkFogCombatStage.Dormant when !DarkFogCombatManager.IsCombatModeEnabled() => "启用战斗模式".WithColor(Orange),
-            EDarkFogCombatStage.Dormant when DarkFogCombatManager.GetProgressStageIndex() < 3 => $"解锁 {LDB.items.Select(I信息矩阵).name}".WithColor(Orange),
+            EDarkFogCombatStage.Dormant when DarkFogCombatManager.GetProgressStageIndex() < 3 =>
+                $"解锁 {LDB.items.Select(I信息矩阵).name}".WithColor(Orange),
             EDarkFogCombatStage.Dormant => "建立黑雾矩阵库存或首次接触黑雾掉落".WithColor(Blue),
-            EDarkFogCombatStage.Signal => $"{LDB.items.Select(I引力矩阵).name} + { "黑雾物资层级".Translate() } 2/4".WithColor(Blue),
-            EDarkFogCombatStage.GroundSuppression => $"{LDB.items.Select(I宇宙矩阵).name} + { "黑雾物资层级".Translate() } 3/4 或接触蜂巢".WithColor(Blue),
-            EDarkFogCombatStage.StellarHunt when DarkFogCombatManager.IsEnhancedLayerEnabled() => $"{ "黑雾物资层级".Translate() } 4/4 或增强节点 2/4".WithColor(Gold),
-            EDarkFogCombatStage.StellarHunt => $"{ "黑雾物资层级".Translate() } 4/4".WithColor(Gold),
+            EDarkFogCombatStage.Signal =>
+                $"{LDB.items.Select(I引力矩阵).name} + {"黑雾物资层级".Translate()} 2/4".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression =>
+                $"{LDB.items.Select(I宇宙矩阵).name} + {"黑雾物资层级".Translate()} 3/4 或接触蜂巢".WithColor(Blue),
+            EDarkFogCombatStage.StellarHunt when DarkFogCombatManager.IsEnhancedLayerEnabled() =>
+                $"{"黑雾物资层级".Translate()} 4/4 或增强节点 2/4".WithColor(Gold),
+            EDarkFogCombatStage.StellarHunt => $"{"黑雾物资层级".Translate()} 4/4".WithColor(Gold),
             _ => "已到最终阶段".WithColor(Gold),
         };
     }
 
-    private static void RefreshColumn(MyImageButton[] icons, Text[] texts, System.Collections.Generic.IReadOnlyList<int> items) {
+    private static void RefreshColumn(MyImageButton[] icons, Text[] texts,
+        System.Collections.Generic.IReadOnlyList<int> items) {
         for (int i = 0; i < icons.Length; i++) {
             if (i >= items.Count) {
                 icons[i].gameObject.SetActive(false);

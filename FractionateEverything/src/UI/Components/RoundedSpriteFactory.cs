@@ -92,8 +92,10 @@ internal static class RoundedSpriteFactory {
         if (r <= 0f) {
             return true;
         }
-        float cx = px < left + r ? left + r : px > right - r ? right - r : px;
-        float cy = py < bottom + r ? bottom + r : py > top - r ? top - r : py;
+        float cx = px < left + r ? left + r :
+            px > right - r ? right - r : px;
+        float cy = py < bottom + r ? bottom + r :
+            py > top - r ? top - r : py;
         float dx = px - cx;
         float dy = py - cy;
         return dx * dx + dy * dy <= r * r;

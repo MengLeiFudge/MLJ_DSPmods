@@ -151,21 +151,27 @@ public static class RecurringTask {
                                 y += 36f + 7f;
                                 for (int i = 0; i < TaskCount; i++) {
                                     int j = i;
-                                    txtTaskNames[j] = w.AddText2(TaskNameX + x, y, listCard, "动态刷新", 15, $"txtTaskName{j}");
+                                    txtTaskNames[j] = w.AddText2(TaskNameX + x, y, listCard, "动态刷新", 15,
+                                        $"txtTaskName{j}");
                                     txtTaskNames[j].supportRichText = true;
                                     txtTaskNames[j].rectTransform.sizeDelta = new Vector2(TaskNameW, 32f);
-                                    txtProgress[j] = w.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15, $"txtTaskProgress{j}");
+                                    txtProgress[j] = w.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15,
+                                        $"txtTaskProgress{j}");
                                     txtProgress[j].supportRichText = true;
                                     txtProgress[j].rectTransform.sizeDelta = new Vector2(TaskProgressW, 32f);
-                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 13, $"txtTaskDesc{j}");
+                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 13,
+                                        $"txtTaskDesc{j}");
                                     txtDescriptions[j].supportRichText = true;
                                     txtDescriptions[j].alignment = TextAnchor.UpperLeft;
                                     txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
-                                    rewardIcons[j] = w.AddImageButton(TaskRewardIconX + x, y, listCard, null).WithSize(40f, 40f);
-                                    txtRewards[j] = w.AddText2(TaskRewardTextX + x, y, listCard, "动态刷新", 15, $"txtTaskReward{j}");
+                                    rewardIcons[j] = w.AddImageButton(TaskRewardIconX + x, y, listCard, null)
+                                        .WithSize(40f, 40f);
+                                    txtRewards[j] = w.AddText2(TaskRewardTextX + x, y, listCard, "动态刷新", 15,
+                                        $"txtTaskReward{j}");
                                     txtRewards[j].supportRichText = true;
                                     txtRewards[j].rectTransform.sizeDelta = new Vector2(TaskRewardTextW, 32f);
-                                    txtStatus[j] = w.AddText2(TaskStatusX + x, y, listCard, "动态刷新", 15, $"txtTaskStatus{j}");
+                                    txtStatus[j] = w.AddText2(TaskStatusX + x, y, listCard, "动态刷新", 15,
+                                        $"txtTaskStatus{j}");
                                     txtStatus[j].supportRichText = true;
                                     txtStatus[j].rectTransform.sizeDelta = new Vector2(TaskStatusW, 32f);
                                     btnClaims[j] = w.AddButton(TaskActionX + x, y, TaskActionW, listCard, "领取", 15,
@@ -319,17 +325,11 @@ public static class RecurringTask {
     }
 
     private static int GetCurrentStageMatrixId() {
-        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵)
-            ? I宇宙矩阵
-            : GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵)
-                ? I引力矩阵
-                : GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵)
-                    ? I信息矩阵
-                    : GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵)
-                        ? I结构矩阵
-                        : GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵)
-                            ? I能量矩阵
-                            : I电磁矩阵;
+        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵) ? I宇宙矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵) ? I引力矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵) ? I信息矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵) ? I结构矩阵 :
+            GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵) ? I能量矩阵 : I电磁矩阵;
     }
 
     private static long GetCurrentValue(int index) {

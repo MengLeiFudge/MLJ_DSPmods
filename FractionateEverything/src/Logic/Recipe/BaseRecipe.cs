@@ -24,7 +24,9 @@ public abstract class BaseRecipe(
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
-                              + (RecipeGrowthQueries.IsUnlocked(this) ? $" Lv{RecipeGrowthQueries.GetLevel(this)}" : "");
+                              + (RecipeGrowthQueries.IsUnlocked(this)
+                                  ? $" Lv{RecipeGrowthQueries.GetLevel(this)}"
+                                  : "");
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
 
     #region 配方类型、输入输出

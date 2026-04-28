@@ -327,7 +327,8 @@ public static class GachaService {
         return offers;
     }
 
-    private static void AppendBlackFogOffers(List<GachaGrowthOffer> offers, int pointBaseOffset = 0, int fragmentBaseOffset = 0) {
+    private static void AppendBlackFogOffers(List<GachaGrowthOffer> offers, int pointBaseOffset = 0,
+        int fragmentBaseOffset = 0) {
         if (!DarkFogCombatManager.IsGrowthOfferUnlocked()) {
             return;
         }
@@ -526,7 +527,9 @@ public static class GachaService {
         }
         if (recipeStageIndex == currentStageIndex) {
             weight *= IsSpeedrunMode ? 1.5f : 1.3f;
-        } else if (IsSpeedrunMode && recipeStageIndex == currentStageIndex - 1 && !RecipeGrowthQueries.IsMaxed(recipe)) {
+        } else if (IsSpeedrunMode
+                   && recipeStageIndex == currentStageIndex - 1
+                   && !RecipeGrowthQueries.IsMaxed(recipe)) {
             weight *= 1.25f;
         }
 
@@ -679,7 +682,8 @@ public static class GachaService {
         }
 
         bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
-        RecipeGrowthResult growthResult = RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
+        RecipeGrowthResult growthResult =
+            RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
 
         if (growthResult.FragmentReward > 0) {
             int fragmentReward = growthResult.FragmentReward;
@@ -810,12 +814,15 @@ public static class GachaService {
                 && GetMatrixStageIndex(recipe.MatrixID) == GetCurrentProgressStageIndex()) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy && RecipeGrowthQueries.IsMaxed(recipe)) {
+            if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy
+                && RecipeGrowthQueries.IsMaxed(recipe)) {
                 return GachaFocusMatchType.Side;
             }
             return recipe.RecipeType switch {
-                ERecipe.MineralCopy when GachaManager.CurrentFocus == GachaFocusType.MineralExpansion => GachaFocusMatchType.Main,
-                ERecipe.Conversion when GachaManager.CurrentFocus == GachaFocusType.ConversionLeap => GachaFocusMatchType.Main,
+                ERecipe.MineralCopy when GachaManager.CurrentFocus == GachaFocusType.MineralExpansion =>
+                    GachaFocusMatchType.Main,
+                ERecipe.Conversion when GachaManager.CurrentFocus == GachaFocusType.ConversionLeap =>
+                    GachaFocusMatchType.Main,
                 _ => GachaFocusMatchType.None,
             };
         }

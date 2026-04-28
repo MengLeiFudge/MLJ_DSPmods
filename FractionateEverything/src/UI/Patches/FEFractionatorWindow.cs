@@ -225,8 +225,10 @@ public static class FEFractionatorWindow {
     }
 
     private static void CacheSharedComponents(UIFractionatorWindow vanillaWindow) {
-        _modPowerText = FindClonedComponent<Text>(modWindowGo.transform, vanillaWindow.powerText, vanillaWindow.transform);
-        _modPowerIcon = FindClonedComponent<Image>(modWindowGo.transform, vanillaWindow.powerIcon, vanillaWindow.transform);
+        _modPowerText =
+            FindClonedComponent<Text>(modWindowGo.transform, vanillaWindow.powerText, vanillaWindow.transform);
+        _modPowerIcon =
+            FindClonedComponent<Image>(modWindowGo.transform, vanillaWindow.powerIcon, vanillaWindow.transform);
     }
 
     private static void ApplyModLayoutOnce(UIFractionatorWindow window, UIFractionatorWindow vanillaWindow) {
@@ -302,12 +304,13 @@ public static class FEFractionatorWindow {
         //     window.sepLine1.transform.localPosition.x,
         //     (SideY + FluidY) / 2,
         //     window.sepLine1.transform.localPosition.z);
-        
+
         // 流动输出右侧的提示文字，包括配方强化等级、损毁率
         if (window.oriProductProbText != null) {
             GameObject frGo = Object.Instantiate(window.oriProductProbText.gameObject, window.transform);
             frGo.name = "fluid-right-info";
-            frGo.transform.localPosition = new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
+            frGo.transform.localPosition =
+                new Vector3(_itemBoxLocalPos.x + 80f + _layoutOffsetX, FluidY, _itemBoxLocalPos.z);
             fluidRightText = frGo.GetComponent<Text>();
             fluidRightText.alignment = TextAnchor.UpperLeft;
             fluidRightText.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -448,7 +451,7 @@ public static class FEFractionatorWindow {
         }
         if (fluidSlot?.go != null) {
             fluidSlot.go.transform.localPosition = new Vector3(
-                    _itemBoxLocalPos.x + _layoutOffsetX, fluidY, _itemBoxLocalPos.z);
+                _itemBoxLocalPos.x + _layoutOffsetX, fluidY, _itemBoxLocalPos.z);
         }
         if (fluidRightText != null) {
             fluidRightText.transform.localPosition = new Vector3(
@@ -1048,9 +1051,11 @@ public static class FEFractionatorWindow {
         if (fluidRightText != null) {
             fluidRightText.gameObject.SetActive(true);
             if (recipe == null) {
-                fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方不存在".Translate()}</color>";
+                fluidRightText.text =
+                    $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方不存在".Translate()}</color>";
             } else if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
-                fluidRightText.text = $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
+                fluidRightText.text =
+                    $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
             } else {
                 int recipeLevel = RecipeGrowthQueries.GetLevel(recipe);
                 bool hasDestroy = destroyRatio > 0f;
@@ -1126,7 +1131,8 @@ public static class FEFractionatorWindow {
         slot.lockText.gameObject.SetActive(locked);
     }
 
-    private static void UpdateLockStatusUI(FractionatorComponent fractionator, ConversionRecipe recipe, int lockedOutputId,
+    private static void UpdateLockStatusUI(FractionatorComponent fractionator, ConversionRecipe recipe,
+        int lockedOutputId,
         bool showLockControls) {
         if (lockStateText != null) {
             lockStateText.gameObject.SetActive(showLockControls);
@@ -1143,7 +1149,7 @@ public static class FEFractionatorWindow {
             lockState = LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
         }
         if (lockStateText != null) {
-            lockStateText.text = $"{ "单锁".Translate() }：{ lockState }";
+            lockStateText.text = $"{"单锁".Translate()}：{lockState}";
         }
         if (lockHintText != null) {
             lockHintText.text = recipe == null
@@ -1167,7 +1173,8 @@ public static class FEFractionatorWindow {
         return null;
     }
 
-    private static int GetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products, int itemId) {
+    private static int GetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
+        int itemId) {
         if (itemId == fractionator.productId) {
             return fractionator.productOutputCount;
         }
@@ -1178,7 +1185,8 @@ public static class FEFractionatorWindow {
         return product?.count ?? 0;
     }
 
-    private static void SetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products, int itemId,
+    private static void SetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
+        int itemId,
         int count) {
         if (itemId == fractionator.productId) {
             fractionator.productOutputCount = count;
@@ -1207,7 +1215,8 @@ public static class FEFractionatorWindow {
             return true;
         }
         FractionatorComponent fractionator = __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
-        if (fractionator.id != __instance.fractionatorId || !IsModFractionator(__instance.fractionatorId, __instance.factory)) {
+        if (fractionator.id != __instance.fractionatorId
+            || !IsModFractionator(__instance.fractionatorId, __instance.factory)) {
             return true;
         }
 

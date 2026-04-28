@@ -18,11 +18,11 @@ public class MyWindow : ManualBehaviour {
     private const int MinFontSize = 15;
     private float _maxX;
     protected float MaxY;
-    
+
     // 固定窗口尺寸常量
     protected const float WindowWidth = 1366f;
     protected const float WindowHeight = 768f;
-    
+
     // 布局常量
     protected const float TitleHeight = 48f;
     protected const float TabWidth = 130f;
@@ -33,7 +33,7 @@ public class MyWindow : ManualBehaviour {
     protected const float OuterMargin = 24f;
     protected const float SectionGap = 16f;
     protected const float RowGap = 8f;
-    
+
     public event Action OnFree;
     private static GameObject _baseObject;
 

@@ -144,7 +144,8 @@ public static class TicketRaffle {
         Register("聚焦-平衡发展", "Balanced Growth");
         Register("聚焦描述-平衡发展", "No extra bias; both pools stay average.", "不过度偏置任何方向，适合长期稳步推进。");
         Register("聚焦-复制扩张", "Replication Expansion");
-        Register("聚焦描述-复制扩张", "Bias Mineral Replication recipes and Mineral Replication Tower protos.", "提高矿物复制配方与矿物复制塔原胚的出现权重。");
+        Register("聚焦描述-复制扩张", "Bias Mineral Replication recipes and Mineral Replication Tower protos.",
+            "提高矿物复制配方与矿物复制塔原胚的出现权重。");
         Register("聚焦-转化跃迁", "Conversion Leap");
         Register("聚焦描述-转化跃迁", "Bias Conversion recipes and Conversion Tower protos.", "提高转化配方与转化塔原胚的出现权重。");
         Register("聚焦-交互物流", "Interaction Logistics");
@@ -154,15 +155,23 @@ public static class TicketRaffle {
         Register("聚焦-工艺优化", "Process Optimization");
         Register("聚焦描述-工艺优化", "Bias current-stage recipes and Point Aggregate Tower protos.", "提高当前阶段配方与点数聚集塔原胚权重。");
         Register("聚焦-精馏经济", "Rectification Economy");
-        Register("聚焦描述-精馏经济", "Bias Rectification Tower protos and growth support for fragment economy.", "提高精馏塔原胚与残片经济相关补差收益。");
+        Register("聚焦描述-精馏经济", "Bias Rectification Tower protos and growth support for fragment economy.",
+            "提高精馏塔原胚与残片经济相关补差收益。");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdOpeningLine);
-    public static void CreateProtoUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdProtoLoop);
-    public static void CreateUpUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdGrowth);
-    public static void CreateLimitedUI(MyWindow wnd, RectTransform trans) => CreatePoolUI(wnd, trans, GachaPool.PoolIdFocus);
+    public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) =>
+        CreatePoolUI(wnd, trans, GachaPool.PoolIdOpeningLine);
+
+    public static void CreateProtoUI(MyWindow wnd, RectTransform trans) =>
+        CreatePoolUI(wnd, trans, GachaPool.PoolIdProtoLoop);
+
+    public static void CreateUpUI(MyWindow wnd, RectTransform trans) =>
+        CreatePoolUI(wnd, trans, GachaPool.PoolIdGrowth);
+
+    public static void CreateLimitedUI(MyWindow wnd, RectTransform trans) =>
+        CreatePoolUI(wnd, trans, GachaPool.PoolIdFocus);
 
     private static void CreatePoolUI(MyWindow wnd, RectTransform trans, int poolId) {
         ResetActiveUisBeforeRecreate();
@@ -185,62 +194,75 @@ public static class TicketRaffle {
                         }),
                     ContentCard(pos: (1, 0), objectName: $"ticket-raffle-resource-card-{poolId}", strong: true,
                         children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-resource-body-{poolId}", build: (w, resourceCard) => {
-                                float cardW = resourceCard.sizeDelta.x;
-                                ui.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15,
-                                    $"ticket-raffle-resource-title-{poolId}");
-                                float y = 50f;
-                                ui.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
-                                ui.TxtResource.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                y += 28f;
-                                ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null).WithSize(40f, 40f);
-                                ui.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
-                                y += 48f;
-                                ui.TxtMode = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                ui.TxtMode.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                y += 26f;
-                                ui.TxtPity = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                ui.TxtPity.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                y += 26f;
-                                ui.TxtPoints = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                ui.TxtPoints.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                y += 26f;
-                                ui.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                ui.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                            }),
+                            Node(pos: (0, 0), objectName: $"ticket-raffle-resource-body-{poolId}",
+                                build: (w, resourceCard) => {
+                                    float cardW = resourceCard.sizeDelta.x;
+                                    ui.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15,
+                                        $"ticket-raffle-resource-title-{poolId}");
+                                    float y = 50f;
+                                    ui.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
+                                    ui.TxtResource.rectTransform.sizeDelta = new Vector2(cardW, 22f);
+                                    y += 28f;
+                                    ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null)
+                                        .WithSize(40f, 40f);
+                                    ui.BtnFragmentIcon = MyImageButton
+                                        .CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片))
+                                        .WithSize(40f, 40f);
+                                    y += 48f;
+                                    ui.TxtMode = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                    ui.TxtMode.rectTransform.sizeDelta = new Vector2(cardW, 22f);
+                                    y += 26f;
+                                    ui.TxtPity = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                    ui.TxtPity.rectTransform.sizeDelta = new Vector2(cardW, 22f);
+                                    y += 26f;
+                                    ui.TxtPoints = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                    ui.TxtPoints.rectTransform.sizeDelta = new Vector2(cardW, 22f);
+                                    y += 26f;
+                                    ui.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
+                                    ui.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
+                                }),
                         ]),
                     ContentCard(pos: (2, 0), objectName: $"ticket-raffle-result-card-{poolId}",
                         children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-result-body-{poolId}", build: (w, resultCard) => {
-                                float cardW = resultCard.sizeDelta.x;
-                                ui.TxtResultTitle = PageLayout.AddCardTitle(w, resultCard, 0f, 0f, "结果摘要", 15,
-                                    $"ticket-raffle-result-title-{poolId}");
-                                float y = 32f;
-                                ui.TxtResultSummary = MyWindow.AddText(0f, y, resultCard, "暂无抽取结果".Translate(), 13);
-                                ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                y += 40f;
-                                for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-                                    ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(0f, y, resultCard, null).WithSize(40f, 40f);
-                                    ui.BtnResultIcons[i].gameObject.SetActive(false);
-                                    ui.TxtResultLines[i] = MyWindow.AddText(48f, y, resultCard, "", 13);
-                                    ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(cardW - 48f, 20f);
-                                    y += 22f;
-                                }
-                            }),
+                            Node(pos: (0, 0), objectName: $"ticket-raffle-result-body-{poolId}",
+                                build: (w, resultCard) => {
+                                    float cardW = resultCard.sizeDelta.x;
+                                    ui.TxtResultTitle = PageLayout.AddCardTitle(w, resultCard, 0f, 0f, "结果摘要", 15,
+                                        $"ticket-raffle-result-title-{poolId}");
+                                    float y = 32f;
+                                    ui.TxtResultSummary = MyWindow.AddText(0f, y, resultCard, "暂无抽取结果".Translate(), 13);
+                                    ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(cardW, 40f);
+                                    y += 40f;
+                                    for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+                                        ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(0f, y, resultCard, null)
+                                            .WithSize(40f, 40f);
+                                        ui.BtnResultIcons[i].gameObject.SetActive(false);
+                                        ui.TxtResultLines[i] = MyWindow.AddText(48f, y, resultCard, "", 13);
+                                        ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(cardW - 48f, 20f);
+                                        y += 22f;
+                                    }
+                                }),
                         ]),
                     FooterCard(pos: (3, 0), objectName: $"ticket-raffle-footer-card-{poolId}",
                         children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-footer-body-{poolId}", build: (w, footerCard) => {
-                                float cardW = footerCard.sizeDelta.x;
-                                ui.BtnDraw1 = w.AddButton(0f, 0f, 150f, footerCard, "抽1次".Translate(), 14,
-                                    onClick: () => StartDraw(ui, 1));
-                                ui.BtnDraw10 = w.AddButton(166f, 0f, 150f, footerCard, "抽10次".Translate(), 14,
-                                    onClick: () => StartDraw(ui, 10));
-                                ui.BtnGoGrowth = w.AddButton(cardW - 316f, 0f, 150f, footerCard, "前往成长池".Translate(), 14,
-                                    onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
-                                ui.BtnGoFocus = w.AddButton(cardW - 150f, 0f, 150f, footerCard, "前往聚焦页".Translate(), 14,
-                                    onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3));
-                            }),
+                            Node(pos: (0, 0), objectName: $"ticket-raffle-footer-body-{poolId}",
+                                build: (w, footerCard) => {
+                                    float cardW = footerCard.sizeDelta.x;
+                                    ui.BtnDraw1 = w.AddButton(0f, 0f, 150f, footerCard, "抽1次".Translate(), 14,
+                                        onClick: () => StartDraw(ui, 1));
+                                    ui.BtnDraw10 = w.AddButton(166f, 0f, 150f, footerCard, "抽10次".Translate(), 14,
+                                        onClick: () => StartDraw(ui, 10));
+                                    ui.BtnGoGrowth = w.AddButton(cardW - 316f, 0f, 150f, footerCard,
+                                        "前往成长池".Translate(), 14,
+                                        onClick: () =>
+                                            MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName,
+                                                2));
+                                    ui.BtnGoFocus = w.AddButton(cardW - 150f, 0f, 150f, footerCard, "前往聚焦页".Translate(),
+                                        14,
+                                        onClick: () =>
+                                            MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName,
+                                                3));
+                                }),
                         ]),
                 ]));
 
@@ -369,18 +391,19 @@ public static class TicketRaffle {
             ? $"{"保底进度".Translate()}：{GachaManager.PityCount[ui.PoolId] + 1}/90"
             : $"{"保底进度".Translate()}：-";
         ui.TxtPoints.text = $"{"成长池积分".Translate()}：{GachaService.GetDisplayPoolPoints()}";
-        ui.TxtFocus.text = $"{"当前聚焦".Translate()}：{GachaService.GetFocusName(GachaManager.CurrentFocus)}    {GetFocusEffectSummary()}";
+        ui.TxtFocus.text =
+            $"{"当前聚焦".Translate()}：{GachaService.GetFocusName(GachaManager.CurrentFocus)}    {GetFocusEffectSummary()}";
 
         bool canDraw1 = GachaPool.IsDrawPool(ui.PoolId) && matrixCount >= draw1Cost;
         bool canDraw10 = GachaPool.IsDrawPool(ui.PoolId) && matrixCount >= draw10Cost;
 
         if (ui.BtnDraw1?.button != null) {
             ui.BtnDraw1.button.interactable = canDraw1;
-            ui.BtnDraw1.SetText($"{ "抽1次".Translate() } ({draw1Cost})");
+            ui.BtnDraw1.SetText($"{"抽1次".Translate()} ({draw1Cost})");
         }
         if (ui.BtnDraw10?.button != null) {
             ui.BtnDraw10.button.interactable = canDraw10;
-            ui.BtnDraw10.SetText($"{ "抽10次".Translate() } ({draw10Cost})");
+            ui.BtnDraw10.SetText($"{"抽10次".Translate()} ({draw10Cost})");
         }
     }
 
@@ -428,10 +451,14 @@ public static class TicketRaffle {
             GachaFocusType.Balanced => "不额外偏置开线或原胚，成长页保持原价。".WithColor(White),
             GachaFocusType.MineralExpansion => $"开线池偏向矿物复制；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
             GachaFocusType.ConversionLeap => $"开线池偏向转化配方；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.LogisticsInteraction => $"开线池偏向物流链配方，原胚池偏向交互塔原胚；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.EmbryoCycle => $"开线池偏向未解锁配方，原胚池偏向定向原胚；成长页命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向点数聚集塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.RectificationEconomy => $"原胚池偏向精馏塔，满级重复配方会补偿更多残片；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.LogisticsInteraction => $"开线池偏向物流链配方，原胚池偏向交互塔原胚；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+                .WithColor(Green),
+            GachaFocusType.EmbryoCycle =>
+                $"开线池偏向未解锁配方，原胚池偏向定向原胚；成长页命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
+            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向点数聚集塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+                .WithColor(Green),
+            GachaFocusType.RectificationEconomy => $"原胚池偏向精馏塔，满级重复配方会补偿更多残片；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+                .WithColor(Green),
             _ => string.Empty,
         };
     }

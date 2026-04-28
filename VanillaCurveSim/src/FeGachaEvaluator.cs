@@ -25,10 +25,13 @@ internal sealed class FeGachaEvaluator {
         double openingShare = FeReference.GetOpeningDrawShare(config);
 
         double matrixBudget = currentMatrixRatePerSecond * baselinePhaseSeconds * drawShare;
-        int openingDrawCount = (int)Math.Floor(matrixBudget * openingShare
-            / Math.Max(1, FeReference.GetDrawMatrixCost(isOpeningLinePool: true, 1)));
-        int protoDrawCount = (int)Math.Floor(matrixBudget * (1.0 - openingShare)
-            / Math.Max(1, FeReference.GetDrawMatrixCost(isOpeningLinePool: false, 1)));
+        int openingDrawCount = (int)Math.Floor(matrixBudget
+                                               * openingShare
+                                               / Math.Max(1,
+                                                   FeReference.GetDrawMatrixCost(isOpeningLinePool: true, 1)));
+        int protoDrawCount = (int)Math.Floor(matrixBudget
+                                             * (1.0 - openingShare)
+                                             / Math.Max(1, FeReference.GetDrawMatrixCost(isOpeningLinePool: false, 1)));
         var warehouse = FeWarehouse.CreateInitial(config.IsSpeedrun);
         warehouse.AddRecipeSlotsForStage(currentStageIndex, config.IsSpeedrun);
         warehouse.AddMatrix(currentStageIndex, matrixBudget);
