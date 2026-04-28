@@ -18,6 +18,9 @@ public static class PathConfig {
     public static string DspCalcDir => @"D:\project\js\dsp-calc";
     public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
     public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
+    public static string DspCalcFullIconDir => $@"{SolutionFullDir}\gamedata\icon - full";
+    public static string IconExportRequestPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-request.json";
+    public static string IconExportMarkerPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-done.json";
 
     private static string _dspGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
     public static string DSPGameDir => _dspGameDir;
