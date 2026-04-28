@@ -246,8 +246,6 @@ ClientBin/
 *.dbproj.schemaview
 *.jfm
 *.pfx
-.codex
-.codex/
 *.publishsettings
 orleans.codegen.cs
 
@@ -374,7 +372,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 gamedata/
-lib/tools/AssetStudio-net8.0-win/
-lib/tools/AssetStudio-net8.0-win.zip
+lib/tools/
 DefaultPath.props
 .sisyphus/
+.codex/
+.claude/

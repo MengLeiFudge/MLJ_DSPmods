@@ -25,7 +25,10 @@ static class AfterBuildEvent {
     private static readonly string[] IgnoredModDllNames =
         ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
     private static readonly string[] CalcJsonLocalProjectNames = ["FractionateEverything", "GetDspData"];
+    private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
     private const int CalcJsonCacheVersion = 2;
+    private const int R2CopyRetryCount = 60;
+    private const int R2CopyRetryDelayMs = 500;
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -719,7 +722,10 @@ static class AfterBuildEvent {
         RebuildCalcIconsFromGame(dataDir, syncToCalcAssets: IsDspCalcProjectAvailable());
     }
 
-    private static void RebuildCalcIconsFromGame(string dataDir, bool syncToCalcAssets) {
+    private static void RebuildCalcIconsFromGame(
+        string dataDir,
+        bool syncToCalcAssets,
+        bool syncGetDspDataToR2 = true) {
         Dictionary<string, string> requiredIconNames = CollectRequiredIconNames(dataDir);
         if (requiredIconNames.Count == 0) {
             Console.WriteLine($"未在计算器数据目录中读取到计算器实际需要的图标：{dataDir}");
@@ -746,7 +752,7 @@ static class AfterBuildEvent {
                 Console.WriteLine($"缺少图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
             }
 
-            ExportMissingCalcIconsFromGame(dataDir, missingIcons);
+            ExportMissingCalcIconsFromGame(dataDir, missingIcons, syncGetDspDataToR2);
             if (syncToCalcAssets) {
                 SyncRequiredIconsToCalcAssets(dataDir);
             } else {
@@ -790,7 +796,6 @@ static class AfterBuildEvent {
 
     private static void PrepareCalcIconExportDirs() {
         DeleteDirectoryIfExists(CalcIconWorkDir);
-        DeleteDirectoryIfExists(DspCalcFullIconDir);
         Directory.CreateDirectory(DspCalcFullIconDir);
         Directory.CreateDirectory(CalcIconWorkDir);
     }
@@ -1159,7 +1164,7 @@ static class AfterBuildEvent {
                 continue;
             }
 
-            foreach ((string iconName, _) in EnumerateRequiredCalcIcons(root)) {
+            foreach ((_, string iconName, _) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
@@ -1174,7 +1179,7 @@ static class AfterBuildEvent {
         return result;
     }
 
-    private static IEnumerable<(string IconName, string ItemName)> EnumerateRequiredCalcIcons(JObject root) {
+    private static IEnumerable<(int ItemId, string IconName, string ItemName)> EnumerateRequiredCalcIcons(JObject root) {
         Dictionary<int, JObject> itemById = [];
         foreach (JObject item in (root["items"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>()) {
             int? id = item.Value<int?>("ID");
@@ -1200,7 +1205,7 @@ static class AfterBuildEvent {
                 continue;
             }
 
-            yield return (iconName, item.Value<string>("Name") ?? id.ToString());
+            yield return (id, iconName, item.Value<string>("Name") ?? id.ToString());
         }
     }
 
@@ -1217,7 +1222,10 @@ static class AfterBuildEvent {
         }
     }
 
-    private static void ExportMissingCalcIconsFromGame(string dataDir, Dictionary<string, MissingCalcIcon> missingIcons) {
+    private static void ExportMissingCalcIconsFromGame(
+        string dataDir,
+        Dictionary<string, MissingCalcIcon> missingIcons,
+        bool syncGetDspDataToR2) {
         using CmdProcess cmd = new();
         LoadModInfos();
         ModInfo getDspData = GetModInfo("MengLei-GetDspData");
@@ -1227,8 +1235,12 @@ static class AfterBuildEvent {
             return;
         }
 
-        KillDspGameForIconExportSync();
-        SyncGetDspDataToR2ForIconExport();
+        KillDspGameAndWaitForExit();
+        if (syncGetDspDataToR2) {
+            SyncGetDspDataToR2ForIconExport();
+        } else {
+            Console.WriteLine("本轮选项 3 已在 JSON 阶段同步 GetDspData，图标阶段跳过重复同步。");
+        }
         PrepareR2Doorstop();
         HashSet<string> handledTargets = new(StringComparer.OrdinalIgnoreCase);
         try {
@@ -1249,7 +1261,7 @@ static class AfterBuildEvent {
                     File.Delete(IconExportMarkerPath);
                 }
 
-                cmd.Exec(KillDSP);
+                KillDspGameAndWaitForExit();
                 OnlyEnableInputMods(enabledModNames);
                 cmd.Exec(RunDSP);
                 if (!WaitForFile(IconExportMarkerPath, TimeSpan.FromMinutes(5))) {
@@ -1266,7 +1278,7 @@ static class AfterBuildEvent {
                 File.Delete(IconExportRequestPath);
             }
             EnableModsByConfig();
-            cmd.Exec(KillDSP);
+            KillDspGameAndWaitForExit();
         }
     }
 
@@ -1283,16 +1295,42 @@ static class AfterBuildEvent {
         Console.WriteLine("已同步图标导出用 GetDspData 到 R2");
     }
 
-    private static void KillDspGameForIconExportSync() {
+    private static void KillDspGameAndWaitForExit() {
+        Console.WriteLine("终止游戏进程...");
         try {
             using Process process = Process.Start(new ProcessStartInfo("taskkill.exe", "/F /IM DSPGAME.exe") {
                 UseShellExecute = false,
                 CreateNoWindow = true,
             });
-            process?.WaitForExit(5000);
+            process?.WaitForExit(10000);
         }
-        catch {
+        catch (Exception ex) {
+            Console.WriteLine($"执行 taskkill 失败：{ex.Message}");
         }
+
+        if (!WaitForProcessExit("DSPGAME", TimeSpan.FromSeconds(30))) {
+            Console.WriteLine("等待 DSPGAME.exe 退出超时，后续复制如仍被占用会继续重试。");
+        }
+        Thread.Sleep(1000);
+    }
+
+    private static bool WaitForProcessExit(string processName, TimeSpan timeout) {
+        DateTime deadline = DateTime.Now + timeout;
+        while (DateTime.Now < deadline) {
+            Process[] processes = Process.GetProcessesByName(processName);
+            try {
+                if (processes.Length == 0) {
+                    return true;
+                }
+            }
+            finally {
+                foreach (Process process in processes) {
+                    process.Dispose();
+                }
+            }
+            Thread.Sleep(500);
+        }
+        return false;
     }
 
     private static CalcIconExportTarget GetNextMissingIconTarget(
@@ -1437,6 +1475,7 @@ static class AfterBuildEvent {
 
     private static Dictionary<string, Dictionary<string, string>> BuildRequiredCalcIconAssetCopies(string dataDir) {
         Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
+        Dictionary<int, HashSet<string>> iconAliases = BuildCalcIconAliases(dataDir);
         Dictionary<string, Dictionary<string, string>> result = new(StringComparer.OrdinalIgnoreCase);
         if (!Directory.Exists(dataDir)) {
             return result;
@@ -1445,15 +1484,19 @@ static class AfterBuildEvent {
         foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
             JObject root = JObject.Parse(File.ReadAllText(jsonFile));
             List<string> lookupOrder = GetIconLookupOrder(Path.GetFileName(jsonFile));
-            foreach ((string iconName, _) in EnumerateRequiredCalcIcons(root)) {
+            foreach ((int itemId, string iconName, _) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
 
-                string sourceMod = lookupOrder.FirstOrDefault(modName =>
-                    fullIconIndex.TryGetValue(modName, out Dictionary<string, string> iconFiles)
-                    && iconFiles.ContainsKey(SanitizeFileName(iconName)));
-                if (sourceMod == null) {
+                if (!TryFindIconFile(
+                        fullIconIndex,
+                        lookupOrder,
+                        iconAliases,
+                        itemId,
+                        iconName,
+                        out string sourceMod,
+                        out string sourceFile)) {
                     continue;
                 }
 
@@ -1461,7 +1504,7 @@ static class AfterBuildEvent {
                     requiredIconFiles = new(StringComparer.OrdinalIgnoreCase);
                     result.Add(sourceMod, requiredIconFiles);
                 }
-                requiredIconFiles[iconName] = fullIconIndex[sourceMod][SanitizeFileName(iconName)];
+                requiredIconFiles[iconName] = sourceFile;
             }
         }
 
@@ -1470,6 +1513,7 @@ static class AfterBuildEvent {
 
     private static Dictionary<string, MissingCalcIcon> CollectMissingRequiredIconsFromFull(string dataDir) {
         Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
+        Dictionary<int, HashSet<string>> iconAliases = BuildCalcIconAliases(dataDir);
         Dictionary<string, MissingCalcIcon> result = new(StringComparer.OrdinalIgnoreCase);
         if (!Directory.Exists(dataDir)) {
             return result;
@@ -1488,16 +1532,19 @@ static class AfterBuildEvent {
             string fileName = Path.GetFileName(jsonFile);
             List<string> lookupOrder = GetIconLookupOrder(fileName);
             List<string> candidateTargets = GetCandidateTargets(fileName);
-            foreach ((string iconName, string itemName) in EnumerateRequiredCalcIcons(root)) {
+            foreach ((int itemId, string iconName, string itemName) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
 
-                string sanitizedIconName = SanitizeFileName(iconName);
-                bool found = lookupOrder.Any(modName =>
-                    fullIconIndex.TryGetValue(modName, out Dictionary<string, string> iconFiles)
-                    && iconFiles.ContainsKey(sanitizedIconName));
-                if (found) {
+                if (TryFindIconFile(
+                        fullIconIndex,
+                        lookupOrder,
+                        iconAliases,
+                        itemId,
+                        iconName,
+                        out _,
+                        out _)) {
                     continue;
                 }
 
@@ -1531,6 +1578,99 @@ static class AfterBuildEvent {
             result[target.TargetMod] = iconFiles;
         }
         return result;
+    }
+
+    private static Dictionary<int, HashSet<string>> BuildCalcIconAliases(string dataDir) {
+        Dictionary<int, HashSet<string>> result = [];
+        if (!Directory.Exists(dataDir)) {
+            return result;
+        }
+
+        foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
+            JObject root;
+            try {
+                root = JObject.Parse(File.ReadAllText(jsonFile));
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"读取计算器 json 失败：{jsonFile}，{ex.Message}");
+                continue;
+            }
+
+            foreach (JObject item in (root["items"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>()) {
+                int? itemId = item.Value<int?>("ID");
+                string iconName = item.Value<string>("IconName");
+                if (!itemId.HasValue || string.IsNullOrWhiteSpace(iconName)) {
+                    continue;
+                }
+
+                if (!result.TryGetValue(itemId.Value, out HashSet<string> aliases)) {
+                    aliases = new(StringComparer.OrdinalIgnoreCase);
+                    result.Add(itemId.Value, aliases);
+                }
+                aliases.Add(iconName);
+            }
+        }
+
+        return result;
+    }
+
+    private static bool TryFindIconFile(
+        IReadOnlyDictionary<string, Dictionary<string, string>> fullIconIndex,
+        IReadOnlyList<string> lookupOrder,
+        IReadOnlyDictionary<int, HashSet<string>> iconAliases,
+        int itemId,
+        string iconName,
+        out string sourceMod,
+        out string sourceFile) {
+        List<string> candidateIconNames = [iconName];
+        if (iconAliases.TryGetValue(itemId, out HashSet<string> aliases)) {
+            foreach (string alias in aliases) {
+                if (!candidateIconNames.Contains(alias, StringComparer.OrdinalIgnoreCase)) {
+                    candidateIconNames.Add(alias);
+                }
+            }
+        }
+
+        // 先按当前 JSON 的启用模组优先级查，避免跨模组同名图误覆盖。
+        foreach (string candidateIconName in candidateIconNames) {
+            if (TryFindIconFileInMods(fullIconIndex, lookupOrder, candidateIconName, out sourceMod, out sourceFile)) {
+                return true;
+            }
+        }
+
+        // 再从完整图池兜底复用同名/同 ID 别名图，处理不同模组组合导出的 IconName 不一致。
+        string[] allMods = GetCalcIconExportTargets()
+            .Select(target => target.TargetMod)
+            .ToArray();
+        foreach (string candidateIconName in candidateIconNames) {
+            if (TryFindIconFileInMods(fullIconIndex, allMods, candidateIconName, out sourceMod, out sourceFile)) {
+                return true;
+            }
+        }
+
+        sourceMod = null;
+        sourceFile = null;
+        return false;
+    }
+
+    private static bool TryFindIconFileInMods(
+        IReadOnlyDictionary<string, Dictionary<string, string>> fullIconIndex,
+        IEnumerable<string> modNames,
+        string iconName,
+        out string sourceMod,
+        out string sourceFile) {
+        string sanitizedIconName = SanitizeFileName(iconName);
+        foreach (string modName in modNames) {
+            if (fullIconIndex.TryGetValue(modName, out Dictionary<string, string> iconFiles)
+                && iconFiles.TryGetValue(sanitizedIconName, out sourceFile)) {
+                sourceMod = modName;
+                return true;
+            }
+        }
+
+        sourceMod = null;
+        sourceFile = null;
+        return false;
     }
 
     private static List<string> GetIconLookupOrder(string jsonFileName) {
@@ -1585,7 +1725,7 @@ static class AfterBuildEvent {
         using CmdProcess cmd = new();
         bool calcProjectAvailable = IsDspCalcProjectAvailable();
         //终止游戏
-        cmd.Exec(KillDSP);
+        KillDspGameAndWaitForExit();
         if (calcProjectAvailable) {
             DeleteExistingCalcJsonFiles();
         } else {
@@ -1645,8 +1785,7 @@ static class AfterBuildEvent {
                 if (!IsCalcJsonCacheValid(oriFilePath, exportState, out string cacheReason)) {
                     Console.WriteLine($"缓存失效：{Path.GetFileName(oriFilePath)}，{cacheReason}");
                     DeleteCalcJsonCache(oriFilePath);
-                    Console.WriteLine("终止游戏进程...");
-                    cmd.Exec(KillDSP);
+                    KillDspGameAndWaitForExit();
                     //仅启用指定的模组
                     HashSet<string> nameList = [];
                     foreach (ModInfo modInfo in exportState) {
@@ -1693,12 +1832,14 @@ static class AfterBuildEvent {
             }
         }
         if (calcProjectAvailable) {
-            RebuildCalcIconsFromGame(DspCalcRawDataDir, syncToCalcAssets: true);
+            SyncDspCalcGameDataInfoList(modInfos);
+            KillDspGameAndWaitForExit();
+            RebuildCalcIconsFromGame(DspCalcRawDataDir, syncToCalcAssets: true, syncGetDspDataToR2: false);
         }
         //启用R2配置文件中所有enable为true的mod
         EnableModsByConfig();
         //终止游戏
-        cmd.Exec(KillDSP);
+        KillDspGameAndWaitForExit();
     }
 
     private static void SyncCalcJsonExportModsToR2() {
@@ -1741,8 +1882,26 @@ static class AfterBuildEvent {
         if (!string.IsNullOrWhiteSpace(targetDir)) {
             Directory.CreateDirectory(targetDir);
         }
-        File.Copy(sourceFile, targetPath, true);
-        Console.WriteLine($"复制 {sourceFile} -> {targetPath}");
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= R2CopyRetryCount; attempt++) {
+            try {
+                File.Copy(sourceFile, targetPath, true);
+                Console.WriteLine($"复制 {sourceFile} -> {targetPath}");
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) {
+                lastException = ex;
+                if (attempt == R2CopyRetryCount) {
+                    break;
+                }
+
+                Console.WriteLine(
+                    $"复制 R2 文件被占用，{R2CopyRetryDelayMs}ms 后重试 {attempt}/{R2CopyRetryCount}：{targetPath}；{ex.Message}");
+                Thread.Sleep(R2CopyRetryDelayMs);
+            }
+        }
+
+        throw new IOException($"复制 R2 文件失败，目标文件仍被占用：{targetPath}", lastException);
     }
 
     private static List<ModInfo> BuildCalcJsonExportState(
@@ -1875,6 +2034,84 @@ static class AfterBuildEvent {
             File.Delete(jsonFile);
             Console.WriteLine($"删除旧计算器 json：{jsonFile}");
         }
+    }
+
+    private static void SyncDspCalcGameDataInfoList(ModInfo[] modInfos) {
+        if (!File.Exists(DspCalcGameDataPath)) {
+            Console.WriteLine($"未找到计算器 gameData.ts，跳过同步模组版本：{DspCalcGameDataPath}");
+            return;
+        }
+
+        Dictionary<string, string> versions = new(StringComparer.OrdinalIgnoreCase) {
+            ["Vanilla"] = GetDspGameVersion(),
+        };
+        foreach (ModInfo modInfo in modInfos) {
+            if (!string.IsNullOrWhiteSpace(modInfo.displayName) && !string.IsNullOrWhiteSpace(modInfo.version)) {
+                versions[modInfo.displayName] = modInfo.version;
+            }
+        }
+
+        string content = File.ReadAllText(DspCalcGameDataPath, Encoding.UTF8);
+        string updated = content;
+        List<string> synced = [];
+        foreach (KeyValuePair<string, string> pair in versions) {
+            if (string.IsNullOrWhiteSpace(pair.Value)) {
+                Console.WriteLine($"跳过同步计算器版本：{pair.Key} 缺少版本号");
+                continue;
+            }
+
+            string next = ReplaceGameDataInfoVersion(updated, pair.Key, pair.Value, out bool changed);
+            if (changed) {
+                synced.Add($"{pair.Key} -> {pair.Value}");
+                updated = next;
+            }
+        }
+
+        if (updated == content) {
+            Console.WriteLine("计算器 game_data_info_list 版本已是最新。");
+            return;
+        }
+
+        File.WriteAllText(DspCalcGameDataPath, updated, Utf8NoBom);
+        Console.WriteLine($"已同步计算器 game_data_info_list 版本：{string.Join(", ", synced)}");
+    }
+
+    private static string ReplaceGameDataInfoVersion(
+        string content,
+        string nameEn,
+        string version,
+        out bool changed) {
+        string pattern =
+            $@"(\{{(?:(?!\}}\s*,?\s*\{{).)*?""name_en""\s*:\s*""{Regex.Escape(nameEn)}""(?:(?!\}}\s*,?\s*\{{).)*?""version""\s*:\s*"")([^""]*)("")";
+        string result = Regex.Replace(
+            content,
+            pattern,
+            match => {
+                if (match.Groups[2].Value == version) {
+                    return match.Value;
+                }
+                return match.Groups[1].Value + version + match.Groups[3].Value;
+            },
+            RegexOptions.Singleline);
+        changed = result != content;
+        return result;
+    }
+
+    private static string GetDspGameVersion() {
+        string versionsFile = Path.Combine(DSPGameDir, "Updates", "Versions.txt");
+        if (!File.Exists(versionsFile)) {
+            Console.WriteLine($"未找到游戏版本列表：{versionsFile}");
+            return "";
+        }
+
+        string result = "";
+        foreach (string line in File.ReadLines(versionsFile)) {
+            string version = line.Split(',').FirstOrDefault()?.Trim();
+            if (!string.IsNullOrWhiteSpace(version)) {
+                result = version;
+            }
+        }
+        return result;
     }
 
     private static string GetJsonFilePath(List<ModInfo> state, bool isCalc) {

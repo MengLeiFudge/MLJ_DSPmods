@@ -16,6 +16,7 @@ public static class PathConfig {
     public static string CompatibilityDir => $@"{SolutionDir}\FractionateEverything\src\Compatibility";
     public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
     public static string DspCalcDir => @"D:\project\js\dsp-calc";
+    public static string DspCalcGameDataPath => $@"{DspCalcDir}\src\engine\data\gameData.ts";
     public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
     public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
     public static string DspCalcFullIconDir => $@"{SolutionFullDir}\gamedata\icons";
