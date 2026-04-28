@@ -18,8 +18,6 @@ public static class PathConfig {
     public static string DspCalcDir => @"D:\project\js\dsp-calc";
     public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
     public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
-    public static string IconExportRequestPath => $@"{SolutionDir}\gamedata\calc-icon-export-request.json";
-    public static string IconExportMarkerPath => $@"{SolutionDir}\gamedata\calc-icon-export-done.json";
 
     private static string _dspGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
     public static string DSPGameDir => _dspGameDir;
@@ -30,6 +28,7 @@ public static class PathConfig {
     public static string NugetGameLibNet45Dir;
 
     public static string SolutionDir => @"..\..\..\..";
+    public static string SolutionFullDir => ResolveSolutionFullDir();
     public static FileInfo PublicizerExe => new($@"{SolutionDir}\lib\BepInEx.AssemblyPublicizer.Cli.exe");
     public static FileInfo Pdb2mdbExe => new($@"{SolutionDir}\lib\pdb2mdb.exe");
 
@@ -62,5 +61,17 @@ public static class PathConfig {
         catch (Exception ex) {
             Console.WriteLine($"Error loading from DefaultPath.props: {ex.Message}");
         }
+    }
+
+    private static string ResolveSolutionFullDir() {
+        DirectoryInfo dir = new(AppContext.BaseDirectory);
+        while (dir != null) {
+            if (File.Exists(Path.Combine(dir.FullName, "MLJ_DSPmods.sln"))) {
+                return dir.FullName;
+            }
+            dir = dir.Parent;
+        }
+
+        return Path.GetFullPath(SolutionDir);
     }
 }

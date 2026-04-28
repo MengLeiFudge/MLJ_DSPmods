@@ -33,8 +33,8 @@ static class AfterBuildEvent {
 
     private sealed class CalcIconExportTarget {
         public string TargetMod { get; set; } = "";
-        public List<string> EnabledMods { get; set; } = [];
-        public List<string> LowerPriorityMods { get; set; } = [];
+        public string SourceDirName { get; set; } = "";
+        public string SourcePrefix { get; set; } = "";
     }
 
     public static void Main(string[] args) {
@@ -694,134 +694,124 @@ static class AfterBuildEvent {
     #region 提取计算器图标资源
 
     private static void ExportCalcIcons() {
-        using CmdProcess cmd = new();
-        LoadModInfos();
-        ModInfo getDspData = GetModInfo("MengLei-GetDspData");
-        ModInfo errorAnalyzer = GetModInfo("starfi5h-ErrorAnalyzer");
-        if (getDspData == null || errorAnalyzer == null) {
-            Console.WriteLine("未找到 MengLei-GetDspData 或 starfi5h-ErrorAnalyzer，无法提取计算器图标！");
+        Dictionary<string, string> requiredIconNames = CollectRequiredIconNames();
+        if (requiredIconNames.Count == 0) {
+            Console.WriteLine($"未在计算器数据目录中读取到 IconName：{DspCalcRawDataDir}");
             return;
         }
-        PrepareR2Doorstop();
 
-        try {
-            foreach (CalcIconExportTarget target in GetCalcIconExportTargets()) {
-                if (!TryBuildIconExportModList(target, getDspData, errorAnalyzer, out List<string> enabledModNames)) {
-                    continue;
-                }
-
-                Console.WriteLine($"开始提取 {target.TargetMod} 图标...");
-                WriteIconExportRequest(target);
-                if (File.Exists(IconExportMarkerPath)) {
-                    File.Delete(IconExportMarkerPath);
-                }
-
-                cmd.Exec(KillDSP);
-                OnlyEnableInputMods(enabledModNames);
-                cmd.Exec(RunDSP);
-                if (!WaitForFile(IconExportMarkerPath, TimeSpan.FromMinutes(3))) {
-                    Console.WriteLine($"等待 {target.TargetMod} 图标导出超时，跳过。");
-                    continue;
-                }
-
-                Console.WriteLine(File.ReadAllText(IconExportMarkerPath));
-            }
-        }
-        finally {
-            if (File.Exists(IconExportRequestPath)) {
-                File.Delete(IconExportRequestPath);
-            }
-            EnableModsByConfig();
-            cmd.Exec(KillDSP);
+        foreach (CalcIconExportTarget target in GetCalcIconExportTargets()) {
+            ExportCalcIconsFromDecompiledSource(target, requiredIconNames);
         }
     }
 
     private static List<CalcIconExportTarget> GetCalcIconExportTargets() {
         return [
             new() {
-                TargetMod = "Vanilla",
-                EnabledMods = [],
-                LowerPriorityMods = [],
-            },
-            new() {
-                TargetMod = "MoreMegaStructure",
-                EnabledMods = ["jinxOAO-MoreMegaStructure"],
-                LowerPriorityMods = ["Vanilla"],
-            },
-            new() {
-                TargetMod = "TheyComeFromVoid",
-                EnabledMods = ["jinxOAO-MoreMegaStructure", "ckcz123-TheyComeFromVoid"],
-                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
-            },
-            new() {
                 TargetMod = "GenesisBook",
-                EnabledMods = ["jinxOAO-MoreMegaStructure", "HiddenCirno-GenesisBook"],
-                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
+                SourceDirName = "ProjectGenesis",
+                SourcePrefix = "ProjectGenesis.assets.sprite.",
             },
             new() {
                 TargetMod = "OrbitalRing",
-                EnabledMods = ["jinxOAO-MoreMegaStructure", "ProfessorCat-OrbitalRing"],
-                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
-            },
-            new() {
-                TargetMod = "FractionateEverything",
-                EnabledMods = ["MengLei-FractionateEverything"],
-                LowerPriorityMods = ["Vanilla"],
+                SourceDirName = "ProjectOrbitalRing",
+                SourcePrefix = "ProjectOrbitalRing.assets.sprite.",
             },
         ];
     }
 
-    private static bool TryBuildIconExportModList(
+    private static Dictionary<string, string> CollectRequiredIconNames() {
+        Dictionary<string, string> result = new(StringComparer.OrdinalIgnoreCase);
+        if (!Directory.Exists(DspCalcRawDataDir)) {
+            return result;
+        }
+
+        foreach (string jsonFile in Directory.GetFiles(DspCalcRawDataDir, "*.json")) {
+            JObject root;
+            try {
+                root = JObject.Parse(File.ReadAllText(jsonFile));
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"读取计算器 json 失败：{jsonFile}，{ex.Message}");
+                continue;
+            }
+
+            foreach (JToken token in root.SelectTokens("$..IconName")) {
+                string iconName = token.Value<string>();
+                if (string.IsNullOrWhiteSpace(iconName)) {
+                    continue;
+                }
+
+                string key = NormalizeIconNameForMatch(iconName);
+                if (!result.ContainsKey(key)) {
+                    result.Add(key, iconName);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static void ExportCalcIconsFromDecompiledSource(
         CalcIconExportTarget target,
-        ModInfo getDspData,
-        ModInfo errorAnalyzer,
-        out List<string> enabledModNames) {
-        HashSet<string> names = new(StringComparer.OrdinalIgnoreCase) {
-            getDspData.name,
-            errorAnalyzer.name,
-        };
-
-        foreach (string modName in target.EnabledMods) {
-            ModInfo modInfo = GetModInfo(modName);
-            if (modInfo == null) {
-                Console.WriteLine($"mods.yml 中未找到模组信息：{modName}，跳过 {target.TargetMod} 图标提取。");
-                enabledModNames = [];
-                return false;
-            }
-
-            names.Add(modInfo.name);
-            foreach (string dependency in GetDependencies(modInfo.name)) {
-                names.Add(dependency);
-            }
+        IReadOnlyDictionary<string, string> requiredIconNames) {
+        string sourceDir = Path.Combine(SolutionFullDir, "gamedata", "DecompiledSource", target.SourceDirName);
+        if (!Directory.Exists(sourceDir)) {
+            Console.WriteLine($"未找到 {target.TargetMod} 直接资源目录：{sourceDir}");
+            return;
         }
 
-        enabledModNames = names.ToList();
-        return true;
-    }
+        string outputDir = Path.Combine(DspCalcIconAssetsDir, target.TargetMod);
+        Directory.CreateDirectory(outputDir);
 
-    private static void WriteIconExportRequest(CalcIconExportTarget target) {
-        JObject request = new() {
-            { "TargetMod", target.TargetMod },
-            { "OutputDir", Path.Combine(DspCalcIconAssetsDir, target.TargetMod) },
-            {
-                "LowerPriorityDirs",
-                new JArray(target.LowerPriorityMods.Select(modName => Path.Combine(DspCalcIconAssetsDir, modName)))
-            },
-            { "MarkerPath", IconExportMarkerPath },
-        };
-        Directory.CreateDirectory(Path.GetDirectoryName(IconExportRequestPath) ?? ".");
-        File.WriteAllText(IconExportRequestPath, request.ToString(), Encoding.UTF8);
-    }
-
-    private static bool WaitForFile(string filePath, TimeSpan timeout) {
-        DateTime deadline = DateTime.Now + timeout;
-        while (DateTime.Now < deadline) {
-            if (File.Exists(filePath)) {
-                return true;
+        int copied = 0;
+        int skippedNotRequired = 0;
+        int skippedExistingSameSize = 0;
+        foreach (string sourceFile in Directory.GetFiles(sourceDir, "*.png")) {
+            string sourceIconName = GetSourceIconName(sourceFile, target.SourcePrefix);
+            string key = NormalizeIconNameForMatch(sourceIconName);
+            if (!requiredIconNames.TryGetValue(key, out string targetIconName)) {
+                skippedNotRequired++;
+                continue;
             }
-            Thread.Sleep(500);
+
+            string targetFile = Path.Combine(outputDir, $"{SanitizeFileName(targetIconName)}.png");
+            if (File.Exists(targetFile) && new FileInfo(targetFile).Length == new FileInfo(sourceFile).Length) {
+                skippedExistingSameSize++;
+                continue;
+            }
+
+            File.Copy(sourceFile, targetFile, true);
+            copied++;
         }
-        return false;
+
+        Console.WriteLine(
+            $"{target.TargetMod} 图标提取完成：复制 {copied}，已有同尺寸 {skippedExistingSameSize}，跳过非计算器所需 {skippedNotRequired}");
+    }
+
+    private static string GetSourceIconName(string sourceFile, string sourcePrefix) {
+        string fileName = Path.GetFileNameWithoutExtension(sourceFile);
+        if (fileName.StartsWith(sourcePrefix, StringComparison.OrdinalIgnoreCase)) {
+            return fileName.Substring(sourcePrefix.Length);
+        }
+        return fileName;
+    }
+
+    private static string NormalizeIconNameForMatch(string iconName) {
+        StringBuilder builder = new(iconName.Length);
+        foreach (char ch in iconName) {
+            if (char.IsLetterOrDigit(ch)) {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+        }
+        return builder.ToString();
+    }
+
+    private static string SanitizeFileName(string fileName) {
+        foreach (char invalidChar in Path.GetInvalidFileNameChars()) {
+            fileName = fileName.Replace(invalidChar, '_');
+        }
+        return fileName.Trim();
     }
 
     #endregion

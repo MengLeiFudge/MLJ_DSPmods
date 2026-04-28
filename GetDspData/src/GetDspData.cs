@@ -46,10 +46,7 @@ namespace GetDspData;
 [BepInDependency(FractionateEverythingGUID, SoftDependency)]
 public class GetDspData : BaseUnityPlugin {
     private const string DynamicIconPathPrefix = "Assets/texpack/";
-    private const int ExportIconSize = 80;
     private const string SolutionDir = @"D:\project\csharp\DSP MOD\MLJ_DSPmods";
-    private const string IconExportRequestPath =
-        SolutionDir + @"\gamedata\calc-icon-export-request.json";
 
     #region Logger
 
@@ -731,7 +728,6 @@ public class GetDspData : BaseUnityPlugin {
                 sw.WriteLine(dataObj.ToString(Formatting.Indented));
             }
             LogInfo($"已生成{filePath}");
-            ExportRequestedIcons();
 
             #endregion
 
@@ -840,165 +836,6 @@ public class GetDspData : BaseUnityPlugin {
             }
         }
         return fallbackIconName ?? "";
-    }
-
-    private static void ExportRequestedIcons() {
-        if (!File.Exists(IconExportRequestPath)) {
-            return;
-        }
-
-        string markerPath = "";
-        try {
-            JObject request = JObject.Parse(File.ReadAllText(IconExportRequestPath));
-            string targetMod = request.Value<string>("TargetMod") ?? "";
-            string outputDir = request.Value<string>("OutputDir") ?? "";
-            markerPath = request.Value<string>("MarkerPath") ?? "";
-            if (string.IsNullOrWhiteSpace(targetMod)
-                || string.IsNullOrWhiteSpace(outputDir)
-                || string.IsNullOrWhiteSpace(markerPath)) {
-                LogWarning("图标导出请求缺少 TargetMod / OutputDir / MarkerPath");
-                return;
-            }
-
-            HashSet<string> lowerPriorityIcons = CollectLowerPriorityIcons(request["LowerPriorityDirs"] as JArray);
-            Directory.CreateDirectory(outputDir);
-
-            int exported = 0;
-            int skippedLowerPriority = 0;
-            int skippedDuplicate = 0;
-            int failed = 0;
-            HashSet<string> handledIcons = new(StringComparer.OrdinalIgnoreCase);
-            foreach ((string iconName, Sprite sprite) in EnumerateCurrentIconSprites()) {
-                if (string.IsNullOrWhiteSpace(iconName) || sprite == null) {
-                    continue;
-                }
-                if (!handledIcons.Add(iconName)) {
-                    skippedDuplicate++;
-                    continue;
-                }
-                if (lowerPriorityIcons.Contains(iconName)) {
-                    skippedLowerPriority++;
-                    continue;
-                }
-
-                string outputPath = Path.Combine(outputDir, $"{SanitizeFileName(iconName)}.png");
-                if (TryWriteSpritePng(sprite, outputPath)) {
-                    exported++;
-                } else {
-                    failed++;
-                }
-            }
-
-            JObject marker = new() {
-                { "TargetMod", targetMod },
-                { "OutputDir", outputDir },
-                { "Exported", exported },
-                { "SkippedLowerPriority", skippedLowerPriority },
-                { "SkippedDuplicate", skippedDuplicate },
-                { "Failed", failed },
-                { "Handled", handledIcons.Count },
-            };
-            Directory.CreateDirectory(Path.GetDirectoryName(markerPath) ?? ".");
-            File.WriteAllText(markerPath, marker.ToString(Formatting.Indented), Encoding.UTF8);
-            LogInfo($"已导出 {targetMod} 图标：{exported} 个，跳过低优先级 {skippedLowerPriority} 个，失败 {failed} 个");
-        }
-        catch (Exception ex) {
-            LogError($"导出图标失败：{ex}");
-            if (!string.IsNullOrWhiteSpace(markerPath)) {
-                JObject marker = new() {
-                    { "Failed", true },
-                    { "Error", ex.ToString() },
-                };
-                Directory.CreateDirectory(Path.GetDirectoryName(markerPath) ?? ".");
-                File.WriteAllText(markerPath, marker.ToString(Formatting.Indented), Encoding.UTF8);
-            }
-        }
-    }
-
-    private static HashSet<string> CollectLowerPriorityIcons(JArray lowerPriorityDirs) {
-        HashSet<string> result = new(StringComparer.OrdinalIgnoreCase);
-        if (lowerPriorityDirs == null) {
-            return result;
-        }
-
-        foreach (JToken token in lowerPriorityDirs) {
-            string dirPath = token.Value<string>();
-            if (string.IsNullOrWhiteSpace(dirPath) || !Directory.Exists(dirPath)) {
-                continue;
-            }
-
-            foreach (string filePath in Directory.GetFiles(dirPath, "*.png")) {
-                result.Add(Path.GetFileNameWithoutExtension(filePath));
-            }
-        }
-        return result;
-    }
-
-    private static IEnumerable<(string iconName, Sprite sprite)> EnumerateCurrentIconSprites() {
-        foreach (ItemProto item in LDB.items.dataArray) {
-            yield return (ResolveIconName(item), item.iconSprite);
-        }
-        foreach (RecipeProto recipe in LDB.recipes.dataArray) {
-            yield return (ResolveIconName(recipe), recipe.iconSprite);
-        }
-        foreach (TechProto tech in LDB.techs.dataArray) {
-            yield return (ResolveIconName(tech.IconPath, tech.iconSprite?.name), tech.iconSprite);
-        }
-    }
-
-    private static bool TryWriteSpritePng(Sprite sprite, string outputPath) {
-        Texture2D texture = null;
-        Material material = null;
-        RenderTexture renderTexture = null;
-        RenderTexture previous = RenderTexture.active;
-
-        try {
-            Texture2D sourceTexture = sprite.texture;
-            Rect rect = sprite.textureRect;
-            renderTexture = RenderTexture.GetTemporary(ExportIconSize, ExportIconSize, 0, RenderTextureFormat.ARGB32);
-            RenderTexture.active = renderTexture;
-            GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
-
-            material = new Material(Shader.Find("Unlit/Transparent"));
-            material.mainTextureScale = new Vector2(rect.width / sourceTexture.width, rect.height / sourceTexture.height);
-            material.mainTextureOffset = new Vector2(rect.x / sourceTexture.width, rect.y / sourceTexture.height);
-            Graphics.Blit(sourceTexture, renderTexture, material);
-
-            texture = new Texture2D(ExportIconSize, ExportIconSize, TextureFormat.RGBA32, false);
-            texture.ReadPixels(new Rect(0, 0, ExportIconSize, ExportIconSize), 0, 0);
-            texture.Apply();
-            byte[] png = texture.EncodeToPNG();
-            if (png == null || png.Length == 0) {
-                return false;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
-            File.WriteAllBytes(outputPath, png);
-            return true;
-        }
-        catch (Exception ex) {
-            LogWarning($"导出图标失败：{sprite.name} -> {outputPath}，{ex.Message}");
-            return false;
-        }
-        finally {
-            RenderTexture.active = previous;
-            if (renderTexture != null) {
-                RenderTexture.ReleaseTemporary(renderTexture);
-            }
-            if (material != null) {
-                DestroyImmediate(material);
-            }
-            if (texture != null) {
-                DestroyImmediate(texture);
-            }
-        }
-    }
-
-    private static string SanitizeFileName(string fileName) {
-        foreach (char invalidChar in Path.GetInvalidFileNameChars()) {
-            fileName = fileName.Replace(invalidChar, '_');
-        }
-        return fileName.Trim();
     }
 
     static void addItem(ItemProto proto, JArray add) {
