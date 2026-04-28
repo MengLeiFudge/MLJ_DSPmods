@@ -15,6 +15,11 @@ public static class PathConfig {
     public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
     public static string CompatibilityDir => $@"{SolutionDir}\FractionateEverything\src\Compatibility";
     public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
+    public static string DspCalcDir => @"D:\project\js\dsp-calc";
+    public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
+    public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
+    public static string IconExportRequestPath => $@"{SolutionDir}\gamedata\calc-icon-export-request.json";
+    public static string IconExportMarkerPath => $@"{SolutionDir}\gamedata\calc-icon-export-done.json";
 
     private static string _dspGameDir = @"D:\Steam\steamapps\common\Dyson Sphere Program";
     public static string DSPGameDir => _dspGameDir;
