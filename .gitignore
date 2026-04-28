@@ -374,5 +374,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 gamedata/
+lib/tools/AssetStudio-net8.0-win/
+lib/tools/AssetStudio-net8.0-win.zip
 DefaultPath.props
 .sisyphus/

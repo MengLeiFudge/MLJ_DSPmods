@@ -79,6 +79,13 @@ wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release
 - Game libraries are "publicized" (all members made public) for mod access
 - BepInEx NuGet feed: `https://nuget.bepinex.dev/v3/index.json`
 
+## Calculator Icon Export Notes
+
+- `AfterBuildEvent` 的计算器图标正式流程应以游戏内 `ItemProto.iconSprite` / `RecipeProto.iconSprite` 导出为准。
+- AssetStudio 离线导出只适合作为辅助排查或已知资源包提取，不应作为“图标是否存在”的最终判断。
+- 已验证原版 `resources.assets` 中存在 `Texture2D: diamond`，但 AssetStudio 导出的 `diamond.png` 是 `56x56`；当前计算器图标需要 `80x80`，所以离线 80x80 过滤会跳过它。游戏内导出会把同一个图标渲染到 `80x80` 画布，才是计算器应使用的结果。
+- R2 禁用模组时会把文件改成 `.old`。图标工具查找已知资源文件时必须同时兼容 `foo` 和 `foo.old`，不要只硬编码其中一种。
+
 ## Project Structure
 
 ```

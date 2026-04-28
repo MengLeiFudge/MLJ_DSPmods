@@ -25,7 +25,7 @@ static class AfterBuildEvent {
     private static readonly string[] IgnoredModDllNames =
         ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
     private static readonly string[] CalcJsonLocalProjectNames = ["FractionateEverything", "GetDspData"];
-    private const int CalcJsonCacheVersion = 1;
+    private const int CalcJsonCacheVersion = 2;
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -37,6 +37,11 @@ static class AfterBuildEvent {
         public string TargetMod { get; set; } = "";
         public string SourceDirName { get; set; } = "";
         public string SourcePrefix { get; set; } = "";
+        public string AssetStudioPackageName { get; set; } = "";
+        public List<string> AssetStudioRelativePaths { get; set; } = [];
+        public List<string> AssetStudioGameDataRelativePaths { get; set; } = [];
+        public string EmbeddedDllPackageName { get; set; } = "";
+        public string EmbeddedDllRelativePath { get; set; } = "";
         public List<string> EnabledMods { get; set; } = [];
         public List<string> LowerPriorityMods { get; set; } = [];
     }
@@ -53,8 +58,8 @@ static class AfterBuildEvent {
         Console.WriteLine("输入要执行的命令（直接回车表示1）：");
         Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
         Console.WriteLine("2表示更新部分需要的dll类库");
-        Console.WriteLine("3表示生成计算器所需所有数据");
-        Console.WriteLine("4表示提取计算器所需80x80图标资源");
+        Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
+        Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
         string str = Console.ReadLine();
         if (str == "1" || str == "") {
             UpdateModsThenStart();
@@ -705,46 +710,368 @@ static class AfterBuildEvent {
     #region 提取计算器图标资源
 
     private static void ExportCalcIcons() {
-        Dictionary<string, string> requiredIconNames = CollectRequiredIconNames();
+        string dataDir = GetCalcIconDataDir(allowLocalFallback: true);
+        if (dataDir == null) {
+            Console.WriteLine("未找到计算器 raw 数据，也未找到本地 calc json；请先执行选项 3 生成数据。");
+            return;
+        }
+
+        RebuildCalcIconsFromGame(dataDir, syncToCalcAssets: IsDspCalcProjectAvailable());
+    }
+
+    private static void RebuildCalcIconsFromGame(string dataDir, bool syncToCalcAssets) {
+        Dictionary<string, string> requiredIconNames = CollectRequiredIconNames(dataDir);
         if (requiredIconNames.Count == 0) {
-            Console.WriteLine($"未在计算器数据目录中读取到 IconName：{DspCalcRawDataDir}");
+            Console.WriteLine($"未在计算器数据目录中读取到计算器实际需要的图标：{dataDir}");
             return;
         }
 
+        bool cleanupWorkDir = false;
+        PrepareCalcIconExportDirs();
+        try {
+            CopyStaticCalcIconFallbacks();
+
+            Dictionary<string, MissingCalcIcon> missingIcons = CollectMissingRequiredIconsFromFull(dataDir);
+            if (missingIcons.Count == 0) {
+                if (syncToCalcAssets) {
+                    SyncRequiredIconsToCalcAssets(dataDir);
+                }
+                Console.WriteLine("本地图标已覆盖所有计算器所需图标。");
+                cleanupWorkDir = true;
+                return;
+            }
+
+            Console.WriteLine($"开始启动游戏提取 {missingIcons.Count} 个缺失图标。");
+            foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
+                Console.WriteLine($"缺少图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+            }
+
+            ExportMissingCalcIconsFromGame(dataDir, missingIcons);
+            if (syncToCalcAssets) {
+                SyncRequiredIconsToCalcAssets(dataDir);
+            } else {
+                Console.WriteLine("未检测到计算器项目，跳过同步图标到计算器。");
+            }
+            missingIcons = CollectMissingRequiredIconsFromFull(dataDir);
+            Console.WriteLine($"图标提取结束，剩余缺图：{missingIcons.Count}");
+            foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
+                Console.WriteLine($"仍缺图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+            }
+            cleanupWorkDir = missingIcons.Count == 0;
+        }
+        finally {
+            if (cleanupWorkDir) {
+                DeleteDirectoryIfExists(CalcIconWorkDir);
+                Console.WriteLine($"已清理图标临时目录：{CalcIconWorkDir}");
+            } else if (Directory.Exists(CalcIconWorkDir)) {
+                Console.WriteLine($"图标流程未完全成功，保留临时目录用于排查：{CalcIconWorkDir}");
+            }
+        }
+    }
+
+    private static string GetCalcIconDataDir(bool allowLocalFallback) {
+        if (IsDspCalcProjectAvailable()) {
+            return DspCalcRawDataDir;
+        }
+
+        Console.WriteLine($"未检测到完整计算器项目：{DspCalcDir}");
+        if (allowLocalFallback && Directory.Exists(CalcJsonLocalDir)) {
+            Console.WriteLine($"改用本地 calc json 作为图标需求来源：{CalcJsonLocalDir}");
+            return CalcJsonLocalDir;
+        }
+
+        return null;
+    }
+
+    private static bool IsDspCalcProjectAvailable() {
+        return File.Exists(Path.Combine(DspCalcDir, "package.json"))
+               && Directory.Exists(DspCalcRawDataDir);
+    }
+
+    private static void PrepareCalcIconExportDirs() {
+        DeleteDirectoryIfExists(CalcIconWorkDir);
+        DeleteDirectoryIfExists(DspCalcFullIconDir);
+        Directory.CreateDirectory(DspCalcFullIconDir);
+        Directory.CreateDirectory(CalcIconWorkDir);
+    }
+
+    private static void ExportCalcIconsOffline(IReadOnlyDictionary<string, string> requiredIconNames) {
+        using CmdProcess cmd = new();
+        string assetStudioCli = EnsureAssetStudioCli();
         foreach (CalcIconExportTarget target in GetCalcIconExportTargets()) {
-            ExportCalcIconsFromDecompiledSource(target, requiredIconNames);
+            ExportCalcIconsWithAssetStudio(cmd, assetStudioCli, target, requiredIconNames);
+            ExportCalcIconsFromEmbeddedDll(cmd, target, requiredIconNames);
+        }
+    }
+
+    private static string EnsureAssetStudioCli() {
+        if (File.Exists(AssetStudioCliPath)) {
+            return AssetStudioCliPath;
         }
 
-        CopyStaticCalcIconFallbacks();
-        SyncRequiredIconsToCalcAssets();
-        Dictionary<string, MissingCalcIcon> missingIcons = CollectMissingRequiredIconsFromFull();
-        if (missingIcons.Count == 0) {
-            Console.WriteLine("离线资源已覆盖所有计算器所需图标。");
+        Directory.CreateDirectory(Path.GetDirectoryName(AssetStudioZipPath) ?? ".");
+        Console.WriteLine($"下载 AssetStudio CLI：{AssetStudioDownloadUrl}");
+        DownloadAssetStudioZip();
+
+        Console.WriteLine($"解压 AssetStudio CLI：{AssetStudioToolDir}");
+        Directory.CreateDirectory(AssetStudioToolDir);
+        new FastZip().ExtractZip(AssetStudioZipPath, AssetStudioToolDir, null);
+        if (!File.Exists(AssetStudioCliPath)) {
+            throw new FileNotFoundException("AssetStudio CLI 解压后未找到可执行文件", AssetStudioCliPath);
+        }
+
+        return AssetStudioCliPath;
+    }
+
+    private static void DownloadAssetStudioZip() {
+        using Process process = Process.Start(new ProcessStartInfo("curl.exe",
+                   $"-L --retry 3 --connect-timeout 20 --max-time 300 --fail -o \"{AssetStudioZipPath}\" \"{AssetStudioDownloadUrl}\"") {
+                   UseShellExecute = false,
+                   CreateNoWindow = true,
+               });
+        process.WaitForExit();
+        if (process.ExitCode != 0 || !File.Exists(AssetStudioZipPath)) {
+            throw new InvalidOperationException($"curl.exe 下载 AssetStudio 失败，错误码 {process.ExitCode}");
+        }
+    }
+
+    private static void ExportCalcIconsWithAssetStudio(
+        CmdProcess cmd,
+        string assetStudioCli,
+        CalcIconExportTarget target,
+        IReadOnlyDictionary<string, string> requiredIconNames) {
+        List<string> inputPaths = GetAssetStudioInputPaths(target).Distinct().ToList();
+        if (inputPaths.Count == 0) {
             return;
         }
 
-        Console.WriteLine($"离线资源仍缺 {missingIcons.Count} 个图标，开始启动游戏兜底提取。");
-        foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
-            Console.WriteLine($"缺少图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+        int totalCopied = 0;
+        foreach (string inputPath in inputPaths) {
+            List<string> nameFilters = GetAssetStudioNameFilters(target, requiredIconNames);
+            for (int i = 0; i < nameFilters.Count; i++) {
+                string outputDir = Path.Combine(
+                    CalcIconWorkDir,
+                    "assetstudio",
+                    target.TargetMod,
+                    MakeSafePathSegment(Path.GetFileName(inputPath)),
+                    $"batch-{i + 1}");
+                Directory.CreateDirectory(outputDir);
+                Console.WriteLine($"开始离线提取 Texture2D：{target.TargetMod} <- {inputPath}");
+                string arguments =
+                    $"\"{inputPath}\" \"{outputDir}\" --game Normal --types Texture2D --image_format Png --group_assets ByType";
+                if (!string.IsNullOrWhiteSpace(nameFilters[i])) {
+                    arguments += $" --names \"{nameFilters[i]}\"";
+                }
+
+                int exitCode = cmd.Run(assetStudioCli, arguments, Path.GetDirectoryName(assetStudioCli));
+                if (exitCode != 0) {
+                    Console.WriteLine($"AssetStudio 提取失败：{target.TargetMod}，错误码 {exitCode}");
+                    continue;
+                }
+
+                totalCopied += CopyRequiredPngIcons(outputDir, target, requiredIconNames, require80x80: true);
+            }
         }
 
-        ExportMissingCalcIconsFromGame(missingIcons);
-        SyncRequiredIconsToCalcAssets();
-        missingIcons = CollectMissingRequiredIconsFromFull();
-        Console.WriteLine($"图标提取结束，剩余缺图：{missingIcons.Count}");
-        foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
-            Console.WriteLine($"仍缺图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+        if (totalCopied > 0) {
+            Console.WriteLine($"{target.TargetMod} AssetStudio 离线图标：复制 {totalCopied}");
         }
+    }
+
+    private static List<string> GetAssetStudioNameFilters(
+        CalcIconExportTarget target,
+        IReadOnlyDictionary<string, string> requiredIconNames) {
+        // 原版资源会连带扫描 sharedassets，必须按名字过滤，避免每轮导出数千张无关贴图。
+        if (!target.TargetMod.Equals("Vanilla", StringComparison.OrdinalIgnoreCase)) {
+            return [""];
+        }
+
+        const int maxPatternLength = 3000;
+        List<string> result = [];
+        List<string> currentNames = [];
+        int currentLength = 4;
+        foreach (string iconName in requiredIconNames.Values
+                     .Select(Regex.Escape)
+                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)) {
+            int nextLength = currentLength + iconName.Length + 1;
+            if (currentNames.Count > 0 && nextLength > maxPatternLength) {
+                result.Add($"^({string.Join("|", currentNames)})$");
+                currentNames.Clear();
+                currentLength = 4;
+            }
+
+            currentNames.Add(iconName);
+            currentLength += iconName.Length + 1;
+        }
+
+        if (currentNames.Count > 0) {
+            result.Add($"^({string.Join("|", currentNames)})$");
+        }
+        return result.Count == 0 ? [""] : result;
+    }
+
+    private static IEnumerable<string> GetAssetStudioInputPaths(CalcIconExportTarget target) {
+        foreach (string relativePath in target.AssetStudioGameDataRelativePaths) {
+            string inputPath = ResolveExistingPathRespectingOld(Path.Combine(DSPGameDir, relativePath));
+            if (inputPath != null) {
+                yield return inputPath;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(target.AssetStudioPackageName)) {
+            string pluginDir = Path.Combine(R2PluginsDir, target.AssetStudioPackageName);
+            foreach (string relativePath in target.AssetStudioRelativePaths) {
+                string inputPath = ResolveExistingPathRespectingOld(Path.Combine(pluginDir, relativePath));
+                if (inputPath != null) {
+                    yield return inputPath;
+                }
+            }
+        }
+    }
+
+    private static void ExportCalcIconsFromEmbeddedDll(
+        CmdProcess cmd,
+        CalcIconExportTarget target,
+        IReadOnlyDictionary<string, string> requiredIconNames) {
+        if (string.IsNullOrWhiteSpace(target.EmbeddedDllPackageName)
+            || string.IsNullOrWhiteSpace(target.EmbeddedDllRelativePath)) {
+            return;
+        }
+
+        string sourceDll = ResolveExistingPathRespectingOld(
+            Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath));
+        if (sourceDll == null) {
+            Console.WriteLine($"未找到 {target.TargetMod} embedded PNG DLL：{Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath)}");
+            return;
+        }
+
+        string workDll = PrepareDllPathForTool(sourceDll, target.TargetMod);
+        string outputDir = Path.Combine(CalcIconWorkDir, "ilspy", target.TargetMod);
+        Directory.CreateDirectory(outputDir);
+        Console.WriteLine($"开始离线提取 embedded PNG：{target.TargetMod} <- {sourceDll}");
+        int exitCode = cmd.Run("ilspycmd", $"-p --nested-directories -o \"{outputDir}\" \"{workDll}\"");
+        if (exitCode != 0) {
+            Console.WriteLine($"ilspycmd 提取 embedded PNG 失败：{target.TargetMod}，错误码 {exitCode}");
+            return;
+        }
+
+        int copied = CopyRequiredPngIcons(outputDir, target, requiredIconNames, require80x80: true);
+        Console.WriteLine($"{target.TargetMod} embedded PNG 离线图标：复制 {copied}");
+    }
+
+    private static string PrepareDllPathForTool(string sourceDll, string targetMod) {
+        if (sourceDll.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+            return sourceDll;
+        }
+
+        string outputDir = Path.Combine(CalcIconWorkDir, "dll-input", targetMod);
+        Directory.CreateDirectory(outputDir);
+        string fileName = Path.GetFileName(sourceDll);
+        if (fileName.EndsWith(".old", StringComparison.OrdinalIgnoreCase)) {
+            fileName = fileName.Substring(0, fileName.Length - ".old".Length);
+        }
+        if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+            fileName += ".dll";
+        }
+
+        string targetDll = Path.Combine(outputDir, fileName);
+        File.Copy(sourceDll, targetDll, true);
+        return targetDll;
+    }
+
+    private static string ResolveExistingPathRespectingOld(string basePath) {
+        if (File.Exists(basePath)) {
+            return basePath;
+        }
+
+        string oldPath = basePath + ".old";
+        if (File.Exists(oldPath)) {
+            return oldPath;
+        }
+
+        return null;
+    }
+
+    private static int CopyRequiredPngIcons(
+        string sourceDir,
+        CalcIconExportTarget target,
+        IReadOnlyDictionary<string, string> requiredIconNames,
+        bool require80x80) {
+        string outputDir = Path.Combine(DspCalcFullIconDir, target.TargetMod);
+        Directory.CreateDirectory(outputDir);
+
+        int copied = 0;
+        int skippedSize = 0;
+        int skippedExisting = 0;
+        foreach (string sourceFile in Directory.GetFiles(sourceDir, "*.png", SearchOption.AllDirectories)) {
+            if (require80x80 && !IsPng80x80(sourceFile)) {
+                skippedSize++;
+                continue;
+            }
+
+            string sourceIconName = GetSourceIconName(sourceFile, target.SourcePrefix);
+            string key = NormalizeIconNameForMatch(sourceIconName);
+            if (!requiredIconNames.TryGetValue(key, out string requiredIconName)) {
+                continue;
+            }
+
+            string targetFile = Path.Combine(outputDir, $"{SanitizeFileName(requiredIconName)}.png");
+            if (File.Exists(targetFile)) {
+                skippedExisting++;
+                continue;
+            }
+
+            File.Copy(sourceFile, targetFile, false);
+            copied++;
+        }
+
+        if (skippedSize > 0 || skippedExisting > 0) {
+            Console.WriteLine($"{target.TargetMod} 离线图标跳过：非 80x80 {skippedSize}，已有 {skippedExisting}");
+        }
+        return copied;
+    }
+
+    private static bool IsPng80x80(string filePath) {
+        byte[] header = new byte[24];
+        using FileStream stream = File.OpenRead(filePath);
+        if (stream.Read(header, 0, header.Length) < header.Length) {
+            return false;
+        }
+
+        return header[0] == 0x89
+            && header[1] == 0x50
+            && header[2] == 0x4E
+            && header[3] == 0x47
+            && ReadBigEndianInt32(header, 16) == 80
+            && ReadBigEndianInt32(header, 20) == 80;
+    }
+
+    private static int ReadBigEndianInt32(byte[] bytes, int offset) {
+        return (bytes[offset] << 24)
+            | (bytes[offset + 1] << 16)
+            | (bytes[offset + 2] << 8)
+            | bytes[offset + 3];
+    }
+
+    private static void DeleteDirectoryIfExists(string dir) {
+        if (!Directory.Exists(dir)) {
+            return;
+        }
+
+        Directory.Delete(dir, true);
+    }
+
+    private static string MakeSafePathSegment(string value) {
+        foreach (char invalidChar in Path.GetInvalidFileNameChars()) {
+            value = value.Replace(invalidChar, '_');
+        }
+        return string.IsNullOrWhiteSpace(value) ? "input" : value;
     }
 
     private static void CopyStaticCalcIconFallbacks() {
         CopyStaticCalcIconFallback("Vanilla", "伊卡洛斯", Path.Combine(DspCalcIconAssetsDir, "Vanilla", "伊卡洛斯.png"));
         CopyStaticCalcIconFallback("Vanilla", "行星基地", Path.Combine(DspCalcIconAssetsDir, "Vanilla", "行星基地.png"));
         CopyStaticCalcIconFallback("Vanilla", "巨构星际组装厂", Path.Combine(DspCalcIconAssetsDir, "Vanilla", "巨构星际组装厂.png"));
-        CopyStaticCalcIconFallback(
-            "FractionateEverything",
-            "frac-recipe-core",
-            Path.Combine(SolutionFullDir, "gamedata", "FEAssets", "产物", "frac-recipe-core.png"));
     }
 
     private static void CopyStaticCalcIconFallback(string targetMod, string iconName, string sourceFile) {
@@ -767,48 +1094,62 @@ static class AfterBuildEvent {
         return [
             new() {
                 TargetMod = "Vanilla",
+                AssetStudioGameDataRelativePaths = [
+                    @"DSPGAME_Data\resources.assets",
+                    @"DSPGAME_Data\sharedassets0.assets",
+                ],
                 EnabledMods = [],
                 LowerPriorityMods = [],
             },
             new() {
                 TargetMod = "MoreMegaStructure",
+                AssetStudioPackageName = "jinxOAO-MoreMegaStructure",
+                AssetStudioRelativePaths = ["mmstabicon"],
                 EnabledMods = ["jinxOAO-MoreMegaStructure"],
                 LowerPriorityMods = ["Vanilla"],
             },
             new() {
                 TargetMod = "TheyComeFromVoid",
+                AssetStudioPackageName = "ckcz123-TheyComeFromVoid",
+                AssetStudioRelativePaths = ["dspbattletex"],
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "ckcz123-TheyComeFromVoid"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "GenesisBook",
-                SourceDirName = "ProjectGenesis",
+                AssetStudioPackageName = "HiddenCirno-GenesisBook",
+                EmbeddedDllPackageName = "HiddenCirno-GenesisBook",
+                EmbeddedDllRelativePath = "ProjectGenesis.dll",
                 SourcePrefix = "ProjectGenesis.assets.sprite.",
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "HiddenCirno-GenesisBook"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "OrbitalRing",
-                SourceDirName = "ProjectOrbitalRing",
+                AssetStudioPackageName = "ProfessorCat-OrbitalRing",
+                EmbeddedDllPackageName = "ProfessorCat-OrbitalRing",
+                EmbeddedDllRelativePath = "ProjectOrbitalRing.dll",
                 SourcePrefix = "ProjectOrbitalRing.assets.sprite.",
                 EnabledMods = ["jinxOAO-MoreMegaStructure", "ProfessorCat-OrbitalRing"],
                 LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
             },
             new() {
                 TargetMod = "FractionateEverything",
+                AssetStudioPackageName = "MengLei-FractionateEverything",
+                AssetStudioRelativePaths = ["fe"],
                 EnabledMods = ["MengLei-FractionateEverything"],
                 LowerPriorityMods = ["Vanilla"],
             },
         ];
     }
 
-    private static Dictionary<string, string> CollectRequiredIconNames() {
+    private static Dictionary<string, string> CollectRequiredIconNames(string dataDir) {
         Dictionary<string, string> result = new(StringComparer.OrdinalIgnoreCase);
-        if (!Directory.Exists(DspCalcRawDataDir)) {
+        if (!Directory.Exists(dataDir)) {
             return result;
         }
 
-        foreach (string jsonFile in Directory.GetFiles(DspCalcRawDataDir, "*.json")) {
+        foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
             JObject root;
             try {
                 root = JObject.Parse(File.ReadAllText(jsonFile));
@@ -818,8 +1159,7 @@ static class AfterBuildEvent {
                 continue;
             }
 
-            foreach (JToken token in root.SelectTokens("$..IconName")) {
-                string iconName = token.Value<string>();
+            foreach ((string iconName, _) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
@@ -834,53 +1174,50 @@ static class AfterBuildEvent {
         return result;
     }
 
-    private static void ExportCalcIconsFromDecompiledSource(
-        CalcIconExportTarget target,
-        IReadOnlyDictionary<string, string> requiredIconNames) {
-        if (string.IsNullOrWhiteSpace(target.SourceDirName)) {
-            return;
-        }
-
-        string sourceDir = Path.Combine(SolutionFullDir, "gamedata", "DecompiledSource", target.SourceDirName);
-        if (!Directory.Exists(sourceDir)) {
-            Console.WriteLine($"未找到 {target.TargetMod} 直接资源目录：{sourceDir}");
-            return;
-        }
-
-        string outputDir = Path.Combine(DspCalcFullIconDir, target.TargetMod);
-        Directory.CreateDirectory(outputDir);
-
-        int copied = 0;
-        int copiedRequiredAlias = 0;
-        int skippedExistingSameSize = 0;
-        foreach (string sourceFile in Directory.GetFiles(sourceDir, "*.png")) {
-            string sourceIconName = GetSourceIconName(sourceFile, target.SourcePrefix);
-            string key = NormalizeIconNameForMatch(sourceIconName);
-            string targetIconName = requiredIconNames.TryGetValue(key, out string requiredIconName)
-                ? requiredIconName
-                : sourceIconName;
-
-            string targetFile = Path.Combine(outputDir, $"{SanitizeFileName(targetIconName)}.png");
-            if (File.Exists(targetFile) && new FileInfo(targetFile).Length == new FileInfo(sourceFile).Length) {
-                skippedExistingSameSize++;
-            } else {
-                File.Copy(sourceFile, targetFile, true);
-                copied++;
-            }
-
-            string sourceNameFile = Path.Combine(outputDir, $"{SanitizeFileName(sourceIconName)}.png");
-            if (!sourceNameFile.Equals(targetFile, StringComparison.OrdinalIgnoreCase)
-                && !File.Exists(sourceNameFile)) {
-                File.Copy(sourceFile, sourceNameFile, true);
-                copiedRequiredAlias++;
+    private static IEnumerable<(string IconName, string ItemName)> EnumerateRequiredCalcIcons(JObject root) {
+        Dictionary<int, JObject> itemById = [];
+        foreach (JObject item in (root["items"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>()) {
+            int? id = item.Value<int?>("ID");
+            if (id.HasValue && !itemById.ContainsKey(id.Value)) {
+                itemById.Add(id.Value, item);
             }
         }
 
-        Console.WriteLine(
-            $"{target.TargetMod} 离线图标提取完成：复制 {copied}，补别名 {copiedRequiredAlias}，已有同尺寸 {skippedExistingSameSize}");
+        HashSet<int> requiredItemIds = [];
+        foreach (JObject recipe in (root["recipes"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>()) {
+            AddIds(requiredItemIds, recipe["Items"]);
+            AddIds(requiredItemIds, recipe["Results"]);
+            AddIds(requiredItemIds, recipe["Factories"]);
+        }
+
+        foreach (int id in requiredItemIds) {
+            if (!itemById.TryGetValue(id, out JObject item)) {
+                continue;
+            }
+
+            string iconName = item.Value<string>("IconName");
+            if (string.IsNullOrWhiteSpace(iconName)) {
+                continue;
+            }
+
+            yield return (iconName, item.Value<string>("Name") ?? id.ToString());
+        }
     }
 
-    private static void ExportMissingCalcIconsFromGame(Dictionary<string, MissingCalcIcon> missingIcons) {
+    private static void AddIds(HashSet<int> target, JToken token) {
+        if (token is not JArray array) {
+            return;
+        }
+
+        foreach (JToken item in array) {
+            int? id = item.Value<int?>();
+            if (id.HasValue) {
+                target.Add(id.Value);
+            }
+        }
+    }
+
+    private static void ExportMissingCalcIconsFromGame(string dataDir, Dictionary<string, MissingCalcIcon> missingIcons) {
         using CmdProcess cmd = new();
         LoadModInfos();
         ModInfo getDspData = GetModInfo("MengLei-GetDspData");
@@ -907,7 +1244,7 @@ static class AfterBuildEvent {
                 }
 
                 Console.WriteLine($"开始启动游戏提取 {target.TargetMod} 图标...");
-                WriteIconExportRequest(target);
+                WriteIconExportRequest(target, missingIcons);
                 if (File.Exists(IconExportMarkerPath)) {
                     File.Delete(IconExportMarkerPath);
                 }
@@ -921,7 +1258,7 @@ static class AfterBuildEvent {
                 }
 
                 Console.WriteLine(File.ReadAllText(IconExportMarkerPath));
-                missingIcons = CollectMissingRequiredIconsFromFull();
+                missingIcons = CollectMissingRequiredIconsFromFull(dataDir);
             }
         }
         finally {
@@ -941,12 +1278,9 @@ static class AfterBuildEvent {
 #endif
         string sourceDll = Path.Combine(SolutionFullDir, "GetDspData", "bin", "win", configuration, "GetDspData.dll");
         string sourceJsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
-        string targetDir = Path.Combine(R2PluginsDir, "MengLei-GetDspData");
-        Directory.CreateDirectory(targetDir);
-
-        File.Copy(sourceDll, Path.Combine(targetDir, "GetDspData.dll"), true);
-        File.Copy(sourceJsonDll, Path.Combine(targetDir, "Newtonsoft.Json.dll"), true);
-        Console.WriteLine($"已同步图标导出用 GetDspData 到 R2：{targetDir}");
+        CopyToR2RespectingOld(sourceDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "GetDspData.dll"));
+        CopyToR2RespectingOld(sourceJsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"), false);
+        Console.WriteLine("已同步图标导出用 GetDspData 到 R2");
     }
 
     private static void KillDspGameForIconExportSync() {
@@ -1005,14 +1339,27 @@ static class AfterBuildEvent {
         }
     }
 
-    private static void WriteIconExportRequest(CalcIconExportTarget target) {
+    private static void WriteIconExportRequest(
+        CalcIconExportTarget target,
+        IReadOnlyDictionary<string, MissingCalcIcon> missingIcons) {
+        JArray requestedIconNames = new();
+        foreach (MissingCalcIcon missingIcon in missingIcons.Values
+                     .Where(missingIcon => missingIcon.CandidateTargets.Contains(target.TargetMod))) {
+            requestedIconNames.Add(missingIcon.IconName);
+        }
+
+        JArray existingIconDirs = new() {
+            Path.Combine(DspCalcFullIconDir, target.TargetMod),
+        };
+        foreach (string lowerPriorityMod in target.LowerPriorityMods) {
+            existingIconDirs.Add(Path.Combine(DspCalcFullIconDir, lowerPriorityMod));
+        }
+
         JObject request = new() {
             { "TargetMod", target.TargetMod },
             { "OutputDir", Path.Combine(DspCalcFullIconDir, target.TargetMod) },
-            {
-                "LowerPriorityDirs",
-                new JArray(target.LowerPriorityMods.Select(modName => Path.Combine(DspCalcFullIconDir, modName)))
-            },
+            { "LowerPriorityDirs", existingIconDirs },
+            { "IconNames", requestedIconNames },
             { "MarkerPath", IconExportMarkerPath },
         };
         Directory.CreateDirectory(Path.GetDirectoryName(IconExportRequestPath) ?? ".");
@@ -1030,8 +1377,13 @@ static class AfterBuildEvent {
         return false;
     }
 
-    private static void SyncRequiredIconsToCalcAssets() {
-        Dictionary<string, Dictionary<string, string>> requiredIconCopies = BuildRequiredCalcIconAssetCopies();
+    private static void SyncRequiredIconsToCalcAssets(string dataDir) {
+        if (!IsDspCalcProjectAvailable()) {
+            Console.WriteLine("未检测到完整计算器项目，跳过同步图标到计算器。");
+            return;
+        }
+
+        Dictionary<string, Dictionary<string, string>> requiredIconCopies = BuildRequiredCalcIconAssetCopies(dataDir);
         int removedStale = RemoveStaleCalcIconAssets(requiredIconCopies);
         int copied = 0;
         int skippedSameSize = 0;
@@ -1083,18 +1435,17 @@ static class AfterBuildEvent {
         return removed;
     }
 
-    private static Dictionary<string, Dictionary<string, string>> BuildRequiredCalcIconAssetCopies() {
+    private static Dictionary<string, Dictionary<string, string>> BuildRequiredCalcIconAssetCopies(string dataDir) {
         Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
         Dictionary<string, Dictionary<string, string>> result = new(StringComparer.OrdinalIgnoreCase);
-        if (!Directory.Exists(DspCalcRawDataDir)) {
+        if (!Directory.Exists(dataDir)) {
             return result;
         }
 
-        foreach (string jsonFile in Directory.GetFiles(DspCalcRawDataDir, "*.json")) {
+        foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
             JObject root = JObject.Parse(File.ReadAllText(jsonFile));
             List<string> lookupOrder = GetIconLookupOrder(Path.GetFileName(jsonFile));
-            foreach (JToken item in root["items"] ?? new JArray()) {
-                string iconName = item.Value<string>("IconName");
+            foreach ((string iconName, _) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
@@ -1117,14 +1468,14 @@ static class AfterBuildEvent {
         return result;
     }
 
-    private static Dictionary<string, MissingCalcIcon> CollectMissingRequiredIconsFromFull() {
+    private static Dictionary<string, MissingCalcIcon> CollectMissingRequiredIconsFromFull(string dataDir) {
         Dictionary<string, Dictionary<string, string>> fullIconIndex = BuildIconFileIndex(DspCalcFullIconDir);
         Dictionary<string, MissingCalcIcon> result = new(StringComparer.OrdinalIgnoreCase);
-        if (!Directory.Exists(DspCalcRawDataDir)) {
+        if (!Directory.Exists(dataDir)) {
             return result;
         }
 
-        foreach (string jsonFile in Directory.GetFiles(DspCalcRawDataDir, "*.json")) {
+        foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
             JObject root;
             try {
                 root = JObject.Parse(File.ReadAllText(jsonFile));
@@ -1137,8 +1488,7 @@ static class AfterBuildEvent {
             string fileName = Path.GetFileName(jsonFile);
             List<string> lookupOrder = GetIconLookupOrder(fileName);
             List<string> candidateTargets = GetCandidateTargets(fileName);
-            foreach (JToken item in root["items"] ?? new JArray()) {
-                string iconName = item.Value<string>("IconName");
+            foreach ((string iconName, string itemName) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
                 }
@@ -1160,7 +1510,7 @@ static class AfterBuildEvent {
                 missingIcon.CandidateTargets.UnionWith(candidateTargets);
                 missingIcon.DataFiles.Add(fileName);
                 if (missingIcon.Examples.Count < 3) {
-                    missingIcon.Examples.Add($"{fileName}: {item.Value<string>("Name") ?? item.Value<string>("ID")}");
+                    missingIcon.Examples.Add($"{fileName}: {itemName}");
                 }
             }
         }
@@ -1233,9 +1583,15 @@ static class AfterBuildEvent {
 
     private static void GetAllCalcJson() {
         using CmdProcess cmd = new();
+        bool calcProjectAvailable = IsDspCalcProjectAvailable();
         //终止游戏
         cmd.Exec(KillDSP);
-        DeleteExistingCalcJsonFiles();
+        if (calcProjectAvailable) {
+            DeleteExistingCalcJsonFiles();
+        } else {
+            Console.WriteLine($"未检测到完整计算器项目：{DspCalcDir}");
+            Console.WriteLine("本次只生成 C# 本地 gamedata/calc json，跳过复制到计算器和图标同步。");
+        }
         PrepareR2Doorstop();
         SyncCalcJsonExportModsToR2();
         //判断所有mod是否均已存在
@@ -1317,6 +1673,9 @@ static class AfterBuildEvent {
                     Console.WriteLine($"复用缓存：{oriFilePath}");
                 }
                 Console.WriteLine($"已生成 {oriFilePath}");
+                if (!calcProjectAvailable) {
+                    continue;
+                }
                 DirectoryInfo info = new FileInfo(calcFilePath).Directory;
                 if (info == null || !info.Exists) {
                     Console.WriteLine("未检测到戴森球计算器项目对应的文件夹，跳过复制");
@@ -1332,6 +1691,9 @@ static class AfterBuildEvent {
                 }
                 Console.WriteLine($"已复制到 {calcFilePath}");
             }
+        }
+        if (calcProjectAvailable) {
+            RebuildCalcIconsFromGame(DspCalcRawDataDir, syncToCalcAssets: true);
         }
         //启用R2配置文件中所有enable为true的mod
         EnableModsByConfig();
@@ -1526,7 +1888,7 @@ static class AfterBuildEvent {
         jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc
             ? $@"{DspCalcRawDataDir}\{jsonFileName}.json"
-            : $@"..\..\..\..\gamedata\calc json\{jsonFileName}.json";
+            : $@"{CalcJsonLocalDir}\{jsonFileName}.json";
     }
 
     #endregion
