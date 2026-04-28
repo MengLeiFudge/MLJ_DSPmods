@@ -31,12 +31,19 @@ static class AfterBuildEvent {
         public List<string> Keywords { get; set; } = [];
     }
 
+    private sealed class CalcIconExportTarget {
+        public string TargetMod { get; set; } = "";
+        public List<string> EnabledMods { get; set; } = [];
+        public List<string> LowerPriorityMods { get; set; } = [];
+    }
+
     public static void Main(string[] args) {
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
         Console.WriteLine("输入要执行的命令（直接回车表示1）：");
         Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
         Console.WriteLine("2表示更新部分需要的dll类库");
         Console.WriteLine("3表示生成计算器所需所有数据");
+        Console.WriteLine("4表示提取计算器所需80x80图标资源");
         string str = Console.ReadLine();
         if (str == "1" || str == "") {
             UpdateModsThenStart();
@@ -44,6 +51,8 @@ static class AfterBuildEvent {
             UpdateLibDll();
         } else if (str == "3") {
             GetAllCalcJson();
+        } else if (str == "4") {
+            ExportCalcIcons();
         } else {
             Console.WriteLine("输入有误！");
         }
@@ -236,6 +245,23 @@ static class AfterBuildEvent {
         if (str == "" || str == "1") {
             cmd.Exec(RunDSP);
         }
+    }
+
+    private static void PrepareR2Doorstop() {
+        File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
+        string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
+        File.Copy($@"{R2ProfileDir}\doorstop_config.ini", doorstop_config, true);
+        string[] lines = File.ReadAllLines(doorstop_config);
+        for (int i = 0; i < lines.Length; i++) {
+            if (lines[i].StartsWith("enabled=")) {
+                lines[i] = "enabled=true";
+            } else if (lines[i].StartsWith("targetAssembly=")) {
+                lines[i] = $@"targetAssembly={R2ProfileDir}\BepInEx\core\BepInEx.Preloader.dll";
+            } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
+                lines[i] = "ignoreDisableSwitch=false";
+            }
+        }
+        File.WriteAllLines(doorstop_config, lines);
     }
 
     static void ZipMod(List<string> fileList, string zipPath) {
@@ -665,6 +691,141 @@ static class AfterBuildEvent {
 
     #endregion
 
+    #region 提取计算器图标资源
+
+    private static void ExportCalcIcons() {
+        using CmdProcess cmd = new();
+        LoadModInfos();
+        ModInfo getDspData = GetModInfo("MengLei-GetDspData");
+        ModInfo errorAnalyzer = GetModInfo("starfi5h-ErrorAnalyzer");
+        if (getDspData == null || errorAnalyzer == null) {
+            Console.WriteLine("未找到 MengLei-GetDspData 或 starfi5h-ErrorAnalyzer，无法提取计算器图标！");
+            return;
+        }
+        PrepareR2Doorstop();
+
+        try {
+            foreach (CalcIconExportTarget target in GetCalcIconExportTargets()) {
+                if (!TryBuildIconExportModList(target, getDspData, errorAnalyzer, out List<string> enabledModNames)) {
+                    continue;
+                }
+
+                Console.WriteLine($"开始提取 {target.TargetMod} 图标...");
+                WriteIconExportRequest(target);
+                if (File.Exists(IconExportMarkerPath)) {
+                    File.Delete(IconExportMarkerPath);
+                }
+
+                cmd.Exec(KillDSP);
+                OnlyEnableInputMods(enabledModNames);
+                cmd.Exec(RunDSP);
+                if (!WaitForFile(IconExportMarkerPath, TimeSpan.FromMinutes(3))) {
+                    Console.WriteLine($"等待 {target.TargetMod} 图标导出超时，跳过。");
+                    continue;
+                }
+
+                Console.WriteLine(File.ReadAllText(IconExportMarkerPath));
+            }
+        }
+        finally {
+            if (File.Exists(IconExportRequestPath)) {
+                File.Delete(IconExportRequestPath);
+            }
+            EnableModsByConfig();
+            cmd.Exec(KillDSP);
+        }
+    }
+
+    private static List<CalcIconExportTarget> GetCalcIconExportTargets() {
+        return [
+            new() {
+                TargetMod = "Vanilla",
+                EnabledMods = [],
+                LowerPriorityMods = [],
+            },
+            new() {
+                TargetMod = "MoreMegaStructure",
+                EnabledMods = ["jinxOAO-MoreMegaStructure"],
+                LowerPriorityMods = ["Vanilla"],
+            },
+            new() {
+                TargetMod = "TheyComeFromVoid",
+                EnabledMods = ["jinxOAO-MoreMegaStructure", "ckcz123-TheyComeFromVoid"],
+                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
+            },
+            new() {
+                TargetMod = "GenesisBook",
+                EnabledMods = ["jinxOAO-MoreMegaStructure", "HiddenCirno-GenesisBook"],
+                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
+            },
+            new() {
+                TargetMod = "OrbitalRing",
+                EnabledMods = ["jinxOAO-MoreMegaStructure", "ProfessorCat-OrbitalRing"],
+                LowerPriorityMods = ["Vanilla", "MoreMegaStructure"],
+            },
+            new() {
+                TargetMod = "FractionateEverything",
+                EnabledMods = ["MengLei-FractionateEverything"],
+                LowerPriorityMods = ["Vanilla"],
+            },
+        ];
+    }
+
+    private static bool TryBuildIconExportModList(
+        CalcIconExportTarget target,
+        ModInfo getDspData,
+        ModInfo errorAnalyzer,
+        out List<string> enabledModNames) {
+        HashSet<string> names = new(StringComparer.OrdinalIgnoreCase) {
+            getDspData.name,
+            errorAnalyzer.name,
+        };
+
+        foreach (string modName in target.EnabledMods) {
+            ModInfo modInfo = GetModInfo(modName);
+            if (modInfo == null) {
+                Console.WriteLine($"mods.yml 中未找到模组信息：{modName}，跳过 {target.TargetMod} 图标提取。");
+                enabledModNames = [];
+                return false;
+            }
+
+            names.Add(modInfo.name);
+            foreach (string dependency in GetDependencies(modInfo.name)) {
+                names.Add(dependency);
+            }
+        }
+
+        enabledModNames = names.ToList();
+        return true;
+    }
+
+    private static void WriteIconExportRequest(CalcIconExportTarget target) {
+        JObject request = new() {
+            { "TargetMod", target.TargetMod },
+            { "OutputDir", Path.Combine(DspCalcIconAssetsDir, target.TargetMod) },
+            {
+                "LowerPriorityDirs",
+                new JArray(target.LowerPriorityMods.Select(modName => Path.Combine(DspCalcIconAssetsDir, modName)))
+            },
+            { "MarkerPath", IconExportMarkerPath },
+        };
+        Directory.CreateDirectory(Path.GetDirectoryName(IconExportRequestPath) ?? ".");
+        File.WriteAllText(IconExportRequestPath, request.ToString(), Encoding.UTF8);
+    }
+
+    private static bool WaitForFile(string filePath, TimeSpan timeout) {
+        DateTime deadline = DateTime.Now + timeout;
+        while (DateTime.Now < deadline) {
+            if (File.Exists(filePath)) {
+                return true;
+            }
+            Thread.Sleep(500);
+        }
+        return false;
+    }
+
+    #endregion
+
     #region 生成戴森球量化计算器所需文件，并将其复制到计算器项目目录下
 
     private static void GetAllCalcJson() {
@@ -672,22 +833,7 @@ static class AfterBuildEvent {
         //终止游戏
         cmd.Exec(KillDSP);
         DeleteExistingCalcJsonFiles();
-        //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
-        File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
-        string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
-        File.Copy($@"{R2ProfileDir}\doorstop_config.ini", doorstop_config, true);
-        //修改doorstop_config.ini，使其目标指向R2的preloader.dll
-        string[] lines = File.ReadAllLines(doorstop_config);
-        for (int i = 0; i < lines.Length; i++) {
-            if (lines[i].StartsWith("enabled=")) {
-                lines[i] = "enabled=true";
-            } else if (lines[i].StartsWith("targetAssembly=")) {
-                lines[i] = $@"targetAssembly={R2ProfileDir}\BepInEx\core\BepInEx.Preloader.dll";
-            } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
-                lines[i] = "ignoreDisableSwitch=false";
-            }
-        }
-        File.WriteAllLines(doorstop_config, lines);
+        PrepareR2Doorstop();
         //判断所有mod是否均已存在
         List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
@@ -788,7 +934,7 @@ static class AfterBuildEvent {
     /// 每次重新生成计算器数据前，先清空计算器项目目录中的旧 json，避免遗留无效组合。
     /// </summary>
     private static void DeleteExistingCalcJsonFiles() {
-        string calcDataDir = @"D:\project\js\dsp-calc\data";
+        string calcDataDir = DspCalcRawDataDir;
         if (!Directory.Exists(calcDataDir)) {
             Console.WriteLine($"未找到计算器数据目录：{calcDataDir}，跳过旧 json 清理");
             return;
@@ -810,7 +956,7 @@ static class AfterBuildEvent {
         }
         jsonFileName = jsonFileName == "" ? "Vanilla" : jsonFileName.Substring(1);
         return isCalc
-            ? $@"D:\project\js\dsp-calc\data\{jsonFileName}.json"
+            ? $@"{DspCalcRawDataDir}\{jsonFileName}.json"
             : $@"..\..\..\..\gamedata\calc json\{jsonFileName}.json";
     }
 
