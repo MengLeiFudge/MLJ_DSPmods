@@ -127,9 +127,12 @@ public static class RecurringTask {
                         strong: true,
                         children: [
                             Node(pos: (0, 0), objectName: "recurring-task-summary-body", build: (w, summaryCard) => {
-                                txtSummary = w.AddText2(18f, 16f, summaryCard, "动态刷新", 13, "txtRecurringTaskSummary");
+                                float cardW = summaryCard.sizeDelta.x;
+                                txtSummary = w.AddText2(0f, 16f, summaryCard, "动态刷新", 13, "txtRecurringTaskSummary");
                                 txtSummary.supportRichText = true;
-                                txtSummary.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 40f);
+                                txtSummary.rectTransform.sizeDelta = new Vector2(cardW, 40f);
+                                txtSummary.horizontalOverflow = HorizontalWrapMode.Wrap;
+                                txtSummary.verticalOverflow = VerticalWrapMode.Overflow;
                             }),
                         ]),
                     ContentCard(

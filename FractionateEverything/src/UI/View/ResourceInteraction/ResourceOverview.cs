@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.RecipeGrowth;
@@ -64,7 +64,6 @@ public static class ResourceOverview {
                     objectName: "resource-overview-hot-card",
                     strong: true,
                     rows: [Px(24f), 1],
-                    padding: Inset(18f, 14f, 18f, 18f),
                     children: [
                         Node(pos: (0, 0), objectName: "resource-overview-hot-title-node", build: (w, root) => {
                             txtHotTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "高需求物资", 15, "resource-overview-hot-title");
@@ -84,7 +83,6 @@ public static class ResourceOverview {
                     objectName: "resource-overview-cold-card",
                     strong: true,
                     rows: [Px(24f), 1],
-                    padding: Inset(18f, 14f, 18f, 18f),
                     children: [
                         Node(pos: (0, 0), objectName: "resource-overview-cold-title-node", build: (w, root) => {
                             txtColdTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "低需求物资", 15, "resource-overview-cold-title");
@@ -104,7 +102,6 @@ public static class ResourceOverview {
             pos: (2, 0),
             objectName: "resource-overview-darkfog-card",
             rows: [Px(24f), 1],
-            padding: Inset(18f, 14f, 18f, 18f),
             children: [
                 Node(pos: (0, 0), objectName: "resource-overview-darkfog-title-node", build: (w, root) => {
                     txtDarkFogTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "黑雾支线", 15, "resource-overview-darkfog-title");

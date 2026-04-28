@@ -102,7 +102,6 @@ public static class ItemInteraction {
                         objectName: "item-interaction-filter-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-filter-title-node", build: (w, root) => {
                                 PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15, "item-interaction-filter-title");
@@ -120,7 +119,6 @@ public static class ItemInteraction {
                         pos: (2, 0),
                         objectName: "item-interaction-grid-card",
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "item-interaction-grid-title-node", build: (w, root) => {
                                 PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
@@ -144,14 +142,21 @@ public static class ItemInteraction {
                     FooterCard(
                         pos: (3, 0),
                         objectName: "item-interaction-footer-card",
+                        cols: [1, 1, 1],
+                        columnGap: 12f,
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-footer-body", build: (w, root) => {
-                                _prevPageButton = w.AddButton(GetPosition(0, 3).Item1, 10f, root, "上一页", onClick: PrevPage);
-                                _pageIndicator = w.AddText2(GetPosition(1, 3).Item1, 16f, root, "");
-                                _pageIndicator.alignment = TextAnchor.MiddleCenter;
-                                RectTransform pageIndicatorRect = _pageIndicator.rectTransform;
-                                pageIndicatorRect.sizeDelta = new(200f, pageIndicatorRect.sizeDelta.y);
-                                _nextPageButton = w.AddButton(GetPosition(2, 3).Item1, 10f, root, "下一页", onClick: NextPage);
+                            Node(pos: (0, 0), objectName: "item-interaction-footer-prev", build: (w, root) => {
+                                float cellW = root.sizeDelta.x;
+                                _prevPageButton = w.AddButton(0f, 0f, cellW, root, "上一页", onClick: PrevPage);
+                            }),
+                            Node(pos: (0, 1), objectName: "item-interaction-footer-indicator", build: (w, root) => {
+                                _pageIndicator = PageLayout.AddCenteredText(root, "", PageLayout.BodyFontSize,
+                                    White, TextAnchor.MiddleCenter, 0f, 0f,
+                                    root.sizeDelta.x, root.sizeDelta.y, "item-interaction-page-indicator");
+                            }),
+                            Node(pos: (0, 2), objectName: "item-interaction-footer-next", build: (w, root) => {
+                                float cellW = root.sizeDelta.x;
+                                _nextPageButton = w.AddButton(0f, 0f, cellW, root, "下一页", onClick: NextPage);
                             }),
                         ]),
                 ]));

@@ -171,6 +171,7 @@ public static class FracRecipeOperate {
                         children: [
                             Node(pos: (0, 0), objectName: "frac-recipe-content-root", build: (w, root) => {
                                 tab = root;
+                                float cardW = root.sizeDelta.x;
                                 float x = 0f;
                                 float y = 18f + 7f;
                                 txtCurrItem = w.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
@@ -181,31 +182,31 @@ public static class FracRecipeOperate {
                                     () => { OnButtonChangeItemClick(true, popupY); });
                                 w.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
                                     "提示", "分馏配方提示按钮说明1");
-                                var txt = w.AddText2(GetPosition(1, 4).Item1, y, tab, "配方类型");
-                                w.AddComboBox(GetPosition(1, 4).Item1 + 5 + txt.preferredWidth, y, tab)
+                                var txt = w.AddText2(GetPosition(1, 4, cardW).Item1, y, tab, "配方类型");
+                                w.AddComboBox(GetPosition(1, 4, cardW).Item1 + 5 + txt.preferredWidth, y, tab)
                                     .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
                                 y += 36f + 7f;
-                                recipeSandboxBtn[0] = w.AddButton(0, 4, y, tab, "重置等级",
+                                recipeSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "重置等级",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[1] = w.AddButton(1, 4, y, tab, "等级-1",
+                                recipeSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y, GetPosition(1, 4, cardW).Item2, tab, "等级-1",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
                                             RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[2] = w.AddButton(2, 4, y, tab, "等级+1",
+                                recipeSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y, GetPosition(2, 4, cardW).Item2, tab, "等级+1",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
                                             RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[3] = w.AddButton(3, 4, y, tab, "等级升满",
+                                recipeSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y, GetPosition(3, 4, cardW).Item2, tab, "等级升满",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));

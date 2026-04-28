@@ -167,7 +167,6 @@ public static class Miscellaneous {
                         objectName: "misc-setting-config-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "misc-setting-config-title",
                                 build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title"); }),
@@ -232,7 +231,7 @@ public static class Miscellaneous {
                         objectName: "misc-setting-footer-card",
                         children: [
                             Node(pos: (0, 0), objectName: "misc-setting-footer-button", build: (w, root) => {
-                                SwitchMainPanelButton = w.AddButton(18f, 10f, 220f, root,
+                                SwitchMainPanelButton = w.AddButton(0f, 0f, 220f, root,
                                     MainWindow.GetSwitchMainPanelButtonLabel(), 14,
                                     onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
                             }),
