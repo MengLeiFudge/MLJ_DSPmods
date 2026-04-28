@@ -24,6 +24,8 @@ static class AfterBuildEvent {
         ["System.", "Newtonsoft.Json", "0Harmony", "BepInEx.", "Mono.", "MonoMod.", "K4os.", "Unity."];
     private static readonly string[] IgnoredModDllNames =
         ["websocket-sharp", "discord_game_sdk", "discord_game_sdk_dotnet", "Open.Nat", "HarmonyXInterop"];
+    private static readonly string[] CalcJsonLocalProjectNames = ["FractionateEverything", "GetDspData"];
+    private const int CalcJsonCacheVersion = 1;
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -1235,6 +1237,7 @@ static class AfterBuildEvent {
         cmd.Exec(KillDSP);
         DeleteExistingCalcJsonFiles();
         PrepareR2Doorstop();
+        SyncCalcJsonExportModsToR2();
         //判断所有mod是否均已存在
         List<string> names = [
             "jinxOAO-MoreMegaStructure",//mod a：更多巨构
@@ -1281,14 +1284,16 @@ static class AfterBuildEvent {
                 //开始准备json相关内容
                 string oriFilePath = GetJsonFilePath(state, false);
                 string calcFilePath = GetJsonFilePath(state, true);
-                if (!File.Exists(oriFilePath)) {
+                List<ModInfo> gameState = state.ToList();
+                List<ModInfo> exportState = BuildCalcJsonExportState(gameState, getDspData, errorAnalyzer);
+                if (!IsCalcJsonCacheValid(oriFilePath, exportState, out string cacheReason)) {
+                    Console.WriteLine($"缓存失效：{Path.GetFileName(oriFilePath)}，{cacheReason}");
+                    DeleteCalcJsonCache(oriFilePath);
                     Console.WriteLine("终止游戏进程...");
                     cmd.Exec(KillDSP);
                     //仅启用指定的模组
                     HashSet<string> nameList = [];
-                    state.Add(getDspData);
-                    state.Add(errorAnalyzer);
-                    foreach (ModInfo modInfo in state) {
+                    foreach (ModInfo modInfo in exportState) {
                         nameList.Add(modInfo.name);
                         List<string> dependencies = GetDependencies(modInfo.name);
                         foreach (string dependency in dependencies) {
@@ -1298,7 +1303,7 @@ static class AfterBuildEvent {
                     OnlyEnableInputMods(nameList.ToList());
                     StringBuilder sb = new("启动游戏，mod情况：");
                     for (int i = 0; i < modInfos.Length; i++) {
-                        sb.Append(modInfos[i].displayName).Append(state.Contains(modInfos[i]) ? "启用 " : "禁用 ");
+                        sb.Append(modInfos[i].displayName).Append(gameState.Contains(modInfos[i]) ? "启用 " : "禁用 ");
                     }
                     Console.WriteLine(sb.ToString());
                     cmd.Exec(RunDSP);
@@ -1307,6 +1312,9 @@ static class AfterBuildEvent {
                     }
                     //多等一会，确保文件已经全部写入
                     Thread.Sleep(500);
+                    WriteCalcJsonCacheMeta(oriFilePath, exportState);
+                } else {
+                    Console.WriteLine($"复用缓存：{oriFilePath}");
                 }
                 Console.WriteLine($"已生成 {oriFilePath}");
                 DirectoryInfo info = new FileInfo(calcFilePath).Directory;
@@ -1329,6 +1337,166 @@ static class AfterBuildEvent {
         EnableModsByConfig();
         //终止游戏
         cmd.Exec(KillDSP);
+    }
+
+    private static void SyncCalcJsonExportModsToR2() {
+#if DEBUG
+        string configuration = "Debug";
+#else
+        string configuration = "Release";
+#endif
+        SyncProjectFileToR2("FractionateEverything", configuration, "FractionateEverything.dll");
+        SyncProjectFileToR2("FractionateEverything", configuration, "FractionateEverything.dll.mdb", false);
+        SyncProjectFileToR2("GetDspData", configuration, "GetDspData.dll");
+        SyncProjectFileToR2("GetDspData", configuration, "GetDspData.dll.mdb", false);
+
+        string jsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
+        CopyToR2RespectingOld(jsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"), false);
+
+        string feAsset = Path.Combine(SolutionFullDir, "FractionateEverything", "Assets", "fe");
+        CopyToR2RespectingOld(feAsset, Path.Combine(R2PluginsDir, "MengLei-FractionateEverything", "fe"), false);
+        Console.WriteLine("已同步计算器数据导出所需本项目 DLL 到 R2");
+    }
+
+    private static void SyncProjectFileToR2(string projectName, string configuration, string fileName, bool required = true) {
+        string sourceFile = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration, fileName);
+        string targetFile = Path.Combine(R2PluginsDir, $"MengLei-{projectName}", fileName);
+        CopyToR2RespectingOld(sourceFile, targetFile, required);
+    }
+
+    private static void CopyToR2RespectingOld(string sourceFile, string targetFile, bool required = true) {
+        if (!File.Exists(sourceFile)) {
+            string message = $"未找到待同步文件：{sourceFile}";
+            if (required) {
+                throw new FileNotFoundException(message, sourceFile);
+            }
+            Console.WriteLine(message);
+            return;
+        }
+
+        string targetPath = File.Exists(targetFile + ".old") ? targetFile + ".old" : targetFile;
+        string targetDir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrWhiteSpace(targetDir)) {
+            Directory.CreateDirectory(targetDir);
+        }
+        File.Copy(sourceFile, targetPath, true);
+        Console.WriteLine($"复制 {sourceFile} -> {targetPath}");
+    }
+
+    private static List<ModInfo> BuildCalcJsonExportState(
+        List<ModInfo> gameState,
+        ModInfo getDspData,
+        ModInfo errorAnalyzer) {
+        List<ModInfo> result = gameState.ToList();
+        result.Add(getDspData);
+        result.Add(errorAnalyzer);
+        return result;
+    }
+
+    private static bool IsCalcJsonCacheValid(string jsonFilePath, List<ModInfo> exportState, out string reason) {
+        if (!File.Exists(jsonFilePath)) {
+            reason = "缺少 json";
+            return false;
+        }
+
+        string metaFilePath = GetCalcJsonMetaFilePath(jsonFilePath);
+        if (!File.Exists(metaFilePath)) {
+            reason = "缺少 meta";
+            return false;
+        }
+
+        JObject actual;
+        try {
+            actual = JObject.Parse(File.ReadAllText(metaFilePath));
+        }
+        catch (Exception ex) {
+            reason = $"meta 读取失败：{ex.Message}";
+            return false;
+        }
+
+        JObject expected = BuildCalcJsonCacheSignature(exportState);
+        string actualSignature = actual.Value<string>("Signature") ?? "";
+        string expectedSignature = expected.ToString(Newtonsoft.Json.Formatting.None);
+        if (actualSignature != expectedSignature) {
+            reason = "meta 与当前模组版本或本地 DLL 不匹配";
+            return false;
+        }
+
+        reason = "命中";
+        return true;
+    }
+
+    private static void WriteCalcJsonCacheMeta(string jsonFilePath, List<ModInfo> exportState) {
+        JObject signature = BuildCalcJsonCacheSignature(exportState);
+        JObject meta = new() {
+            { "GeneratedAtUtc", DateTime.UtcNow.ToString("O") },
+            { "Signature", signature.ToString(Newtonsoft.Json.Formatting.None) },
+            { "SignatureData", signature },
+        };
+        File.WriteAllText(GetCalcJsonMetaFilePath(jsonFilePath),
+            meta.ToString(Newtonsoft.Json.Formatting.Indented), Encoding.UTF8);
+    }
+
+    private static JObject BuildCalcJsonCacheSignature(List<ModInfo> exportState) {
+        SortedSet<string> enabledNames = new(StringComparer.OrdinalIgnoreCase);
+        foreach (ModInfo modInfo in exportState) {
+            enabledNames.Add(modInfo.name);
+            foreach (string dependency in GetDependencies(modInfo.name)) {
+                enabledNames.Add(dependency);
+            }
+        }
+
+        JArray mods = [];
+        foreach (string name in enabledNames) {
+            ModInfo modInfo = GetModInfo(name);
+            mods.Add(new JObject {
+                { "Name", name },
+                { "DisplayName", modInfo?.displayName ?? "" },
+                { "Version", modInfo?.version ?? "" },
+            });
+        }
+
+        return new JObject {
+            { "CacheVersion", CalcJsonCacheVersion },
+            { "EnabledMods", mods },
+            { "LocalDlls", BuildLocalDllSignature() },
+        };
+    }
+
+    private static JArray BuildLocalDllSignature() {
+        JArray result = [];
+#if DEBUG
+        string configuration = "Debug";
+#else
+        string configuration = "Release";
+#endif
+        foreach (string projectName in CalcJsonLocalProjectNames) {
+            string dllPath = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration, $"{projectName}.dll");
+            FileInfo fileInfo = new(dllPath);
+            result.Add(new JObject {
+                { "Project", projectName },
+                { "Path", dllPath },
+                { "Exists", fileInfo.Exists },
+                { "Length", fileInfo.Exists ? fileInfo.Length : 0 },
+                { "LastWriteTimeUtc", fileInfo.Exists ? fileInfo.LastWriteTimeUtc.ToString("O") : "" },
+            });
+        }
+        return result;
+    }
+
+    private static void DeleteCalcJsonCache(string jsonFilePath) {
+        if (File.Exists(jsonFilePath)) {
+            File.Delete(jsonFilePath);
+        }
+
+        string metaFilePath = GetCalcJsonMetaFilePath(jsonFilePath);
+        if (File.Exists(metaFilePath)) {
+            File.Delete(metaFilePath);
+        }
+    }
+
+    private static string GetCalcJsonMetaFilePath(string jsonFilePath) {
+        return Path.ChangeExtension(jsonFilePath, ".meta.json");
     }
 
     /// <summary>
