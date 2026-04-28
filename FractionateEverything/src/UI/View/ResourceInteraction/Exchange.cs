@@ -64,13 +64,16 @@ public static class Exchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "exchange-info-title-node", build: (w, root) => {
-                                        txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "当前标的", 15, "exchange-info-title");
-                                    }),
+                                    Node(pos: (0, 0), objectName: "exchange-info-title-node",
+                                        build: (w, root) => {
+                                            txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "当前标的", 15,
+                                                "exchange-info-title");
+                                        }),
                                     Node(pos: (1, 0), objectName: "exchange-info-body", build: (w, root) => {
                                         float y = 28f;
                                         btnSelectedItem = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f)
-                                            .WithClickEvent(() => OpenItemPicker(y + 18f), () => OpenItemPicker(y + 18f));
+                                            .WithClickEvent(() => OpenItemPicker(y + 18f),
+                                                () => OpenItemPicker(y + 18f));
                                         txtPrice = w.AddText2(60f, y, root, "", 13);
                                         txtPrice.rectTransform.sizeDelta = new Vector2(300f, 24f);
                                         y += 34f;
@@ -84,18 +87,24 @@ public static class Exchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "exchange-action-title-node", build: (w, root) => {
-                                        txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快捷操作", 15, "exchange-action-title");
-                                    }),
+                                    Node(pos: (0, 0), objectName: "exchange-action-title-node",
+                                        build: (w, root) => {
+                                            txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快捷操作", 15,
+                                                "exchange-action-title");
+                                        }),
                                     Node(pos: (1, 0), objectName: "exchange-action-body", build: (w, root) => {
                                         float y = 28f;
                                         btnBuy1 = w.AddButton(0f, y, 150f, root, "买1", onClick: () => Trade(true, 1));
-                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10", onClick: () => Trade(true, 10));
-                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100", onClick: () => Trade(true, 100));
+                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10",
+                                            onClick: () => Trade(true, 10));
+                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100",
+                                            onClick: () => Trade(true, 100));
                                         y += 44f;
                                         btnSell1 = w.AddButton(0f, y, 150f, root, "卖1", onClick: () => Trade(false, 1));
-                                        btnSell10 = w.AddButton(166f, y, 150f, root, "卖10", onClick: () => Trade(false, 10));
-                                        btnSell100 = w.AddButton(332f, y, 150f, root, "卖100", onClick: () => Trade(false, 100));
+                                        btnSell10 = w.AddButton(166f, y, 150f, root, "卖10",
+                                            onClick: () => Trade(false, 10));
+                                        btnSell100 = w.AddButton(332f, y, 150f, root, "卖100",
+                                            onClick: () => Trade(false, 100));
                                     }),
                                 ]),
                         ]),
@@ -104,9 +113,11 @@ public static class Exchange {
                         objectName: "exchange-market-card",
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "exchange-market-title-node", build: (w, root) => {
-                                txtMarketTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "市场概览", 15, "exchange-market-title");
-                            }),
+                            Node(pos: (0, 0), objectName: "exchange-market-title-node",
+                                build: (w, root) => {
+                                    txtMarketTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "市场概览", 15,
+                                        "exchange-market-title");
+                                }),
                             Node(pos: (1, 0), objectName: "exchange-market-body", build: (w, root) => {
                                 txtStats = w.AddText2(0f, 18f, root, "", 13);
                                 txtStats.supportRichText = true;
@@ -142,15 +153,18 @@ public static class Exchange {
             return;
         }
 
-        txtPrice.text = $"{ "当前价格".Translate() }：{ticker.LastPrice:F1}\n买入 {ticker.AskPrice:F1}    卖出 {ticker.BidPrice:F1}";
-        txtInventory.text = $"{ "库存".Translate() }：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
-        txtStats.text = $"日内开盘 {ticker.DayOpenPrice:F1}\n最新价格 {ticker.LastPrice:F1}\n日高 / 日低 {ticker.DayHighPrice:F1} / {ticker.DayLowPrice:F1}\n净成交量 {ticker.NetPlayerVolume:F1}";
-        btnBuy1.SetText($"{ "买1".Translate() } ({Mathf.CeilToInt(ticker.AskPrice)})");
-        btnBuy10.SetText($"{ "买10".Translate() } ({Mathf.CeilToInt(ticker.AskPrice * 10f)})");
-        btnBuy100.SetText($"{ "买100".Translate() } ({Mathf.CeilToInt(ticker.AskPrice * 100f)})");
-        btnSell1.SetText($"{ "卖1".Translate() } ({Mathf.FloorToInt(ticker.BidPrice)})");
-        btnSell10.SetText($"{ "卖10".Translate() } ({Mathf.FloorToInt(ticker.BidPrice * 10f)})");
-        btnSell100.SetText($"{ "卖100".Translate() } ({Mathf.FloorToInt(ticker.BidPrice * 100f)})");
+        txtPrice.text =
+            $"{"当前价格".Translate()}：{ticker.LastPrice:F1}\n买入 {ticker.AskPrice:F1}    卖出 {ticker.BidPrice:F1}";
+        txtInventory.text =
+            $"{"库存".Translate()}：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
+        txtStats.text =
+            $"日内开盘 {ticker.DayOpenPrice:F1}\n最新价格 {ticker.LastPrice:F1}\n日高 / 日低 {ticker.DayHighPrice:F1} / {ticker.DayLowPrice:F1}\n净成交量 {ticker.NetPlayerVolume:F1}";
+        btnBuy1.SetText($"{"买1".Translate()} ({Mathf.CeilToInt(ticker.AskPrice)})");
+        btnBuy10.SetText($"{"买10".Translate()} ({Mathf.CeilToInt(ticker.AskPrice * 10f)})");
+        btnBuy100.SetText($"{"买100".Translate()} ({Mathf.CeilToInt(ticker.AskPrice * 100f)})");
+        btnSell1.SetText($"{"卖1".Translate()} ({Mathf.FloorToInt(ticker.BidPrice)})");
+        btnSell10.SetText($"{"卖10".Translate()} ({Mathf.FloorToInt(ticker.BidPrice * 10f)})");
+        btnSell100.SetText($"{"卖100".Translate()} ({Mathf.FloorToInt(ticker.BidPrice * 100f)})");
         btnSell1.button.interactable = GetItemTotalCount(selectedItemId) >= 1;
         btnSell10.button.interactable = GetItemTotalCount(selectedItemId) >= 10;
         btnSell100.button.interactable = GetItemTotalCount(selectedItemId) >= 100;

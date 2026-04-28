@@ -23,7 +23,8 @@ internal static class GridLayoutRuntime {
         BuildChildren(wnd, parent, rootRect, root.Rows, root.Cols, root.RowGap, root.ColumnGap, root.Children);
     }
 
-    public static void BuildChildren(MyWindow wnd, RectTransform parent, LayoutRect rect, IReadOnlyList<LayoutTrack> rows,
+    public static void BuildChildren(MyWindow wnd, RectTransform parent, LayoutRect rect,
+        IReadOnlyList<LayoutTrack> rows,
         IReadOnlyList<LayoutTrack> cols, float rowGap, float columnGap, IReadOnlyList<LayoutNode> children) {
         IReadOnlyList<LayoutTrack> effectiveRows = rows.Count > 0 ? rows : [1];
         IReadOnlyList<LayoutTrack> effectiveCols = cols.Count > 0 ? cols : [1];
@@ -47,8 +48,7 @@ internal static class GridLayoutRuntime {
         for (int i = 0; i < count; i++) {
             if (tracks[i].Kind == LayoutTrackKind.Px) {
                 pxTotal += tracks[i].Value;
-            }
-            else {
+            } else {
                 frTotal += tracks[i].Value;
             }
         }

@@ -54,6 +54,7 @@ public static class ProcessManager {
         Register("已清除单路锁定", "Single lock cleared");
         Register("锁定产物无效，已清除", "Locked output invalid, cleared");
     }
+
     #region Field
 
     public static int MaxOutputTimes = 2;
@@ -297,7 +298,8 @@ public static class ProcessManager {
                 signPool[__instance.entityId].iconType = 0U;
             }
             if (buildingID == IFE转化塔) {
-                __instance.SetLockedOutput(factory, __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
+                __instance.SetLockedOutput(factory,
+                    __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
             }
         } else {
             bool needResetProducts =
@@ -972,7 +974,9 @@ public static class ProcessManager {
     }
 
     private static void UpdateSacrificeBoost(int[] takeCounts) {
-        float boostCap = InteractionTower.EnableDimensionalResonance ? SacrificeBoostCapTrait2 : SacrificeBoostCapTrait1;
+        float boostCap = InteractionTower.EnableDimensionalResonance
+            ? SacrificeBoostCapTrait2
+            : SacrificeBoostCapTrait1;
         for (int i = 0; i < SacrificeTowerTypeCount; i++) {
             float rawBoost = Mathf.Sqrt(takeCounts[i]) / 10.0f;
             float clampedBoost = Mathf.Min(rawBoost, boostCap);
@@ -1017,5 +1021,4 @@ public static class ProcessManager {
     }
 
     #endregion
-
 }

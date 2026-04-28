@@ -46,16 +46,26 @@ internal static class FeReference {
             Focus = isSpeedrun ? FeGachaFocus.ProcessOptimization : FeGachaFocus.Balanced,
             StageIndex = safeStageIndex,
             RecipeLevel = SelectByStage(isSpeedrun ? speedrunRecipeLevels : conventionalRecipeLevels, safeStageIndex),
-            SelectedIncLevel = SelectByStage(isSpeedrun ? speedrunSelectedInc : conventionalSelectedInc, safeStageIndex),
-            InteractionTowerLevel = SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
-            MineralReplicationTowerLevel = SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
-            PointAggregateTowerLevel = SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
-            ConversionTowerLevel = SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
-            RectificationTowerLevel = SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
-            AchievementSuccessBonus = SelectByStage(isSpeedrun ? speedrunSuccessBonus : conventionalSuccessBonus, safeStageIndex),
-            AchievementDestroyReductionBonus = SelectByStage(isSpeedrun ? speedrunDestroyBonus : conventionalDestroyBonus, safeStageIndex),
-            AchievementDoubleOutputBonus = SelectByStage(isSpeedrun ? speedrunDoubleBonus : conventionalDoubleBonus, safeStageIndex),
-            AchievementEnergyReductionBonus = SelectByStage(isSpeedrun ? speedrunEnergyBonus : conventionalEnergyBonus, safeStageIndex),
+            SelectedIncLevel =
+                SelectByStage(isSpeedrun ? speedrunSelectedInc : conventionalSelectedInc, safeStageIndex),
+            InteractionTowerLevel =
+                SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
+            MineralReplicationTowerLevel =
+                SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
+            PointAggregateTowerLevel =
+                SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
+            ConversionTowerLevel =
+                SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
+            RectificationTowerLevel =
+                SelectByStage(isSpeedrun ? speedrunTowerLevels : conventionalTowerLevels, safeStageIndex),
+            AchievementSuccessBonus =
+                SelectByStage(isSpeedrun ? speedrunSuccessBonus : conventionalSuccessBonus, safeStageIndex),
+            AchievementDestroyReductionBonus =
+                SelectByStage(isSpeedrun ? speedrunDestroyBonus : conventionalDestroyBonus, safeStageIndex),
+            AchievementDoubleOutputBonus =
+                SelectByStage(isSpeedrun ? speedrunDoubleBonus : conventionalDoubleBonus, safeStageIndex),
+            AchievementEnergyReductionBonus = SelectByStage(isSpeedrun ? speedrunEnergyBonus : conventionalEnergyBonus,
+                safeStageIndex),
         };
     }
 
@@ -139,11 +149,13 @@ internal static class FeReference {
     }
 
     public static double GetDrawShare(FractionationConfigSnapshot config) {
-        return SelectByStage(config.IsSpeedrun ? phaseDrawShareSpeedrun : phaseDrawShareConventional, config.StageIndex);
+        return SelectByStage(config.IsSpeedrun ? phaseDrawShareSpeedrun : phaseDrawShareConventional,
+            config.StageIndex);
     }
 
     public static double GetOpeningDrawShare(FractionationConfigSnapshot config) {
-        return SelectByStage(config.IsSpeedrun ? phaseOpeningShareSpeedrun : phaseOpeningShareConventional, config.StageIndex);
+        return SelectByStage(config.IsSpeedrun ? phaseOpeningShareSpeedrun : phaseOpeningShareConventional,
+            config.StageIndex);
     }
 
     public static double[] GetTowerWeights(int stageIndex) {

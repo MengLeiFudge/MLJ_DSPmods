@@ -165,7 +165,8 @@ public static class ExchangeManager {
         ticker.BidPrice = Math.Max(1f, ticker.LastPrice * 0.96f);
         ticker.AskPrice = Math.Max(ticker.BidPrice, ticker.LastPrice * 1.04f);
         ticker.DayHighPrice = Math.Max(ticker.DayHighPrice, ticker.LastPrice);
-        ticker.DayLowPrice = ticker.DayLowPrice <= 0f ? ticker.LastPrice : Math.Min(ticker.DayLowPrice, ticker.LastPrice);
+        ticker.DayLowPrice =
+            ticker.DayLowPrice <= 0f ? ticker.LastPrice : Math.Min(ticker.DayLowPrice, ticker.LastPrice);
     }
 
     public static void Import(BinaryReader r) {

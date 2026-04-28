@@ -526,7 +526,7 @@ public static class ItemManager {
         // 找不到主制作配方的对应科技                 true         null
         foreach (var item in LDB.items.dataArray) {
             int topMatrixID;
-        if (item.Type == EItemType.Matrix) {
+            if (item.Type == EItemType.Matrix) {
                 //矩阵归到自己的层级，而非上一层级
                 topMatrixID = item.ID switch {
                     IGB玻色矩阵 => I能量矩阵,

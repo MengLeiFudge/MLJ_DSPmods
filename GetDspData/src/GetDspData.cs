@@ -837,8 +837,8 @@ public class GetDspData : BaseUnityPlugin {
         ResolveIconName(proto?.IconPath, proto?.iconSprite?.name);
 
     private static string ResolveIconName(string iconPath, string fallbackIconName) {
-        if (!string.IsNullOrEmpty(iconPath) &&
-            iconPath.StartsWith(DynamicIconPathPrefix, StringComparison.OrdinalIgnoreCase)) {
+        if (!string.IsNullOrEmpty(iconPath)
+            && iconPath.StartsWith(DynamicIconPathPrefix, StringComparison.OrdinalIgnoreCase)) {
             string dynamicIconName = Path.GetFileName(iconPath.Substring(DynamicIconPathPrefix.Length).Trim());
             if (!string.IsNullOrEmpty(dynamicIconName)) {
                 return Path.GetFileNameWithoutExtension(dynamicIconName);
@@ -912,7 +912,8 @@ public class GetDspData : BaseUnityPlugin {
             };
             Directory.CreateDirectory(Path.GetDirectoryName(markerPath) ?? ".");
             File.WriteAllText(markerPath, marker.ToString(Formatting.Indented), Encoding.UTF8);
-            LogInfo($"已导出 {targetMod} 图标：{exported} 个，跳过非请求 {skippedNotRequested} 个，跳过已存在/低优先级 {skippedLowerPriority} 个，失败 {failed} 个");
+            LogInfo(
+                $"已导出 {targetMod} 图标：{exported} 个，跳过非请求 {skippedNotRequested} 个，跳过已存在/低优先级 {skippedLowerPriority} 个，失败 {failed} 个");
         }
         catch (Exception ex) {
             LogError($"导出图标失败：{ex}");
@@ -987,7 +988,8 @@ public class GetDspData : BaseUnityPlugin {
             GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
 
             material = new Material(Shader.Find("Unlit/Transparent"));
-            material.mainTextureScale = new Vector2(rect.width / sourceTexture.width, rect.height / sourceTexture.height);
+            material.mainTextureScale =
+                new Vector2(rect.width / sourceTexture.width, rect.height / sourceTexture.height);
             material.mainTextureOffset = new Vector2(rect.x / sourceTexture.width, rect.y / sourceTexture.height);
             Graphics.Blit(sourceTexture, renderTexture, material);
 
@@ -1111,14 +1113,15 @@ public class GetDspData : BaseUnityPlugin {
                 { "SuccessRatio", produceProb },
                 { "DestroyRatio", 0.0 },
                 { "RemainInputRatio", 0.0 },
-                { "DoubleOutputRatio", 0.0 },
-                { "OutputMain", new JArray {
-                    new JObject {
-                        { "OutputID", proto.Results[0] },
-                        { "OutputCount", 1.0 },
-                        { "SuccessRatio", 1.0 },
+                { "DoubleOutputRatio", 0.0 }, {
+                    "OutputMain", new JArray {
+                        new JObject {
+                            { "OutputID", proto.Results[0] },
+                            { "OutputCount", 1.0 },
+                            { "SuccessRatio", 1.0 },
+                        }
                     }
-                }},
+                },
                 { "OutputAppend", new JArray() },
                 { "IconName", ResolveIconName(proto) },
             };

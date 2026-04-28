@@ -31,18 +31,21 @@ public sealed class RecipeGrowthStateStore {
             RecipeUnlockSourceFlags flags = (RecipeUnlockSourceFlags)r.ReadInt32();
             long lastTouchedTick = r.ReadInt64();
             BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
-            RecipeGrowthRule rule = recipe != null ? RecipeGrowthRules.GetRule(recipe) : new RecipeGrowthRule(
-                RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false);
+            RecipeGrowthRule rule = recipe != null
+                ? RecipeGrowthRules.GetRule(recipe)
+                : new RecipeGrowthRule(
+                    RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false);
             states[key] = new RecipeGrowthState {
                 Level = RecipeGrowthRules.ClampLevel(rule, level),
                 GrowthExp = growthExp < 0 ? 0 : growthExp,
                 PityProgress = pityProgress < 0 ? 0 : pityProgress,
-                UnlockSourceFlags = flags & (RecipeUnlockSourceFlags.TechBaseline
-                    | RecipeUnlockSourceFlags.Draw
-                    | RecipeUnlockSourceFlags.Processing
-                    | RecipeUnlockSourceFlags.DarkFogDrop
-                    | RecipeUnlockSourceFlags.Sandbox
-                    | RecipeUnlockSourceFlags.LegacyImport),
+                UnlockSourceFlags = flags
+                                    & (RecipeUnlockSourceFlags.TechBaseline
+                                       | RecipeUnlockSourceFlags.Draw
+                                       | RecipeUnlockSourceFlags.Processing
+                                       | RecipeUnlockSourceFlags.DarkFogDrop
+                                       | RecipeUnlockSourceFlags.Sandbox
+                                       | RecipeUnlockSourceFlags.LegacyImport),
                 LastTouchedTick = lastTouchedTick < 0 ? 0 : lastTouchedTick,
             };
         }

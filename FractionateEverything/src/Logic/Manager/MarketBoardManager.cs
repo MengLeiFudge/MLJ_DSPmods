@@ -62,7 +62,9 @@ public static class MarketBoardManager {
 
     public static void Tick() {
         long interval = GachaManager.IsSpeedrunMode ? 60L * 60L * 20L : 60L * 60L * 60L;
-        if (activeOffers.Count == 0 || GameMain.gameTick >= currentExpireTick || GameMain.gameTick + interval < currentExpireTick) {
+        if (activeOffers.Count == 0
+            || GameMain.gameTick >= currentExpireTick
+            || GameMain.gameTick + interval < currentExpireTick) {
             RefreshOffers();
         }
     }
@@ -94,7 +96,8 @@ public static class MarketBoardManager {
             return false;
         }
 
-        if (DarkFogCombatManager.IsDarkFogOffer(offer) && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+        if (DarkFogCombatManager.IsDarkFogOffer(offer)
+            && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
             RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(offer.OutputItemId, offer.OutputCount,
                 RecipeGrowthManager.BuildContext(manual: true));
             return true;
@@ -131,7 +134,9 @@ public static class MarketBoardManager {
 
         EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
         int enhancedNodeCount = DarkFogCombatManager.GetEnhancedNodeCount();
-        if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity && enhancedNodeCount >= 2) {
+        if (DarkFogCombatManager.IsEnhancedLayerEnabled()
+            && stage >= EDarkFogCombatStage.Singularity
+            && enhancedNodeCount >= 2) {
             return new MarketOffer(nextOfferId++, MarketOfferType.Special,
                 IFE残片, 720, I黑雾矩阵, 4, IFE分馏塔定向原胚, 1, expireTick, MarketValueManager.RefreshVersion);
         }

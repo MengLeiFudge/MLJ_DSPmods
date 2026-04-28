@@ -541,7 +541,8 @@ static class AfterBuildEvent {
                 assemblyBaseName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))) {
             return true;
         }
-        return IgnoredModDllNames.Any(name => string.Equals(assemblyBaseName, name, StringComparison.OrdinalIgnoreCase));
+        return IgnoredModDllNames.Any(name =>
+            string.Equals(assemblyBaseName, name, StringComparison.OrdinalIgnoreCase));
     }
 
     private static void DecompileModDll(CmdProcess cmd, string dllPath) {
@@ -749,7 +750,8 @@ static class AfterBuildEvent {
 
             Console.WriteLine($"开始启动游戏提取 {missingIcons.Count} 个缺失图标。");
             foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
-                Console.WriteLine($"缺少图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+                Console.WriteLine(
+                    $"缺少图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
             }
 
             ExportMissingCalcIconsFromGame(dataDir, missingIcons, syncGetDspDataToR2);
@@ -761,7 +763,8 @@ static class AfterBuildEvent {
             missingIcons = CollectMissingRequiredIconsFromFull(dataDir);
             Console.WriteLine($"图标提取结束，剩余缺图：{missingIcons.Count}");
             foreach (MissingCalcIcon missingIcon in missingIcons.Values) {
-                Console.WriteLine($"仍缺图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
+                Console.WriteLine(
+                    $"仍缺图标：{missingIcon.IconName}（{missingIcon.DataFiles.Count} 个数据文件；{string.Join("; ", missingIcon.Examples)}）");
             }
             cleanupWorkDir = missingIcons.Count == 0;
         }
@@ -830,10 +833,10 @@ static class AfterBuildEvent {
 
     private static void DownloadAssetStudioZip() {
         using Process process = Process.Start(new ProcessStartInfo("curl.exe",
-                   $"-L --retry 3 --connect-timeout 20 --max-time 300 --fail -o \"{AssetStudioZipPath}\" \"{AssetStudioDownloadUrl}\"") {
-                   UseShellExecute = false,
-                   CreateNoWindow = true,
-               });
+            $"-L --retry 3 --connect-timeout 20 --max-time 300 --fail -o \"{AssetStudioZipPath}\" \"{AssetStudioDownloadUrl}\"") {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
         process.WaitForExit();
         if (process.ExitCode != 0 || !File.Exists(AssetStudioZipPath)) {
             throw new InvalidOperationException($"curl.exe 下载 AssetStudio 失败，错误码 {process.ExitCode}");
@@ -946,7 +949,8 @@ static class AfterBuildEvent {
         string sourceDll = ResolveExistingPathRespectingOld(
             Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath));
         if (sourceDll == null) {
-            Console.WriteLine($"未找到 {target.TargetMod} embedded PNG DLL：{Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath)}");
+            Console.WriteLine(
+                $"未找到 {target.TargetMod} embedded PNG DLL：{Path.Combine(R2PluginsDir, target.EmbeddedDllPackageName, target.EmbeddedDllRelativePath)}");
             return;
         }
 
@@ -1044,18 +1048,18 @@ static class AfterBuildEvent {
         }
 
         return header[0] == 0x89
-            && header[1] == 0x50
-            && header[2] == 0x4E
-            && header[3] == 0x47
-            && ReadBigEndianInt32(header, 16) == 80
-            && ReadBigEndianInt32(header, 20) == 80;
+               && header[1] == 0x50
+               && header[2] == 0x4E
+               && header[3] == 0x47
+               && ReadBigEndianInt32(header, 16) == 80
+               && ReadBigEndianInt32(header, 20) == 80;
     }
 
     private static int ReadBigEndianInt32(byte[] bytes, int offset) {
         return (bytes[offset] << 24)
-            | (bytes[offset + 1] << 16)
-            | (bytes[offset + 2] << 8)
-            | bytes[offset + 3];
+               | (bytes[offset + 1] << 16)
+               | (bytes[offset + 2] << 8)
+               | bytes[offset + 3];
     }
 
     private static void DeleteDirectoryIfExists(string dir) {
@@ -1179,7 +1183,8 @@ static class AfterBuildEvent {
         return result;
     }
 
-    private static IEnumerable<(int ItemId, string IconName, string ItemName)> EnumerateRequiredCalcIcons(JObject root) {
+    private static IEnumerable<(int ItemId, string IconName, string ItemName)>
+        EnumerateRequiredCalcIcons(JObject root) {
         Dictionary<int, JObject> itemById = [];
         foreach (JObject item in (root["items"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>()) {
             int? id = item.Value<int?>("ID");
@@ -1291,7 +1296,8 @@ static class AfterBuildEvent {
         string sourceDll = Path.Combine(SolutionFullDir, "GetDspData", "bin", "win", configuration, "GetDspData.dll");
         string sourceJsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
         CopyToR2RespectingOld(sourceDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "GetDspData.dll"));
-        CopyToR2RespectingOld(sourceJsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"), false);
+        CopyToR2RespectingOld(sourceJsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"),
+            false);
         Console.WriteLine("已同步图标导出用 GetDspData 到 R2");
     }
 
@@ -1457,7 +1463,8 @@ static class AfterBuildEvent {
         foreach (KeyValuePair<string, Dictionary<string, string>> modPair in requiredIconCopies) {
             string sourceMod = modPair.Key;
             foreach (string iconName in modPair.Value.Keys) {
-                requiredFiles.Add(Path.GetFullPath(Path.Combine(DspCalcIconAssetsDir, sourceMod, $"{SanitizeFileName(iconName)}.png")));
+                requiredFiles.Add(Path.GetFullPath(Path.Combine(DspCalcIconAssetsDir, sourceMod,
+                    $"{SanitizeFileName(iconName)}.png")));
             }
         }
 
@@ -1861,7 +1868,8 @@ static class AfterBuildEvent {
         Console.WriteLine("已同步计算器数据导出所需本项目 DLL 到 R2");
     }
 
-    private static void SyncProjectFileToR2(string projectName, string configuration, string fileName, bool required = true) {
+    private static void SyncProjectFileToR2(string projectName, string configuration, string fileName,
+        bool required = true) {
         string sourceFile = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration, fileName);
         string targetFile = Path.Combine(R2PluginsDir, $"MengLei-{projectName}", fileName);
         CopyToR2RespectingOld(sourceFile, targetFile, required);
@@ -1992,7 +2000,8 @@ static class AfterBuildEvent {
         string configuration = "Release";
 #endif
         foreach (string projectName in CalcJsonLocalProjectNames) {
-            string dllPath = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration, $"{projectName}.dll");
+            string dllPath = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration,
+                $"{projectName}.dll");
             FileInfo fileInfo = new(dllPath);
             result.Add(new JObject {
                 { "Project", projectName },

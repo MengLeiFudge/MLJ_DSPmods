@@ -50,24 +50,29 @@ internal static class ReportWriter {
                 sb.AppendLine("| 时间点 | 操作 | 补充说明 |");
                 sb.AppendLine("|---|---|---|");
                 foreach (TimelineMilestone milestone in result.Milestones) {
-                    sb.AppendLine($"| {FormatDuration(milestone.Seconds)} | {EscapeTable(milestone.Name)} | {EscapeTable(milestone.Notes)} |");
+                    sb.AppendLine(
+                        $"| {FormatDuration(milestone.Seconds)} | {EscapeTable(milestone.Name)} | {EscapeTable(milestone.Notes)} |");
                 }
                 sb.AppendLine();
             }
             foreach (PhaseSummary phase in result.PhaseSummaries) {
                 sb.AppendLine($"### {FormatPhaseName(phase.Phase)}");
                 sb.AppendLine();
-                sb.AppendLine($"- 时间：{FormatDuration(phase.StartSeconds)} -> {FormatDuration(phase.PhaseEndSeconds)}（共 {FormatDuration(phase.PhaseEndSeconds - phase.StartSeconds)}）");
+                sb.AppendLine(
+                    $"- 时间：{FormatDuration(phase.StartSeconds)} -> {FormatDuration(phase.PhaseEndSeconds)}（共 {FormatDuration(phase.PhaseEndSeconds - phase.StartSeconds)}）");
                 sb.AppendLine($"- 代表科技：{FormatCompactTechs(phase.Techs)}");
                 sb.AppendLine($"- 代表产线：{FormatPhaseLineSummary(phase)}");
-                sb.AppendLine($"- 矩阵主线：目标 {FormatSingleRatePerMinute(phase.MatrixTargetRatePerSecond)}；实际 {FormatRateMapPerMinute(phase.MatrixRatesPerSecond)}；研究站 {FormatMatrixLabLayout(phase)}");
+                sb.AppendLine(
+                    $"- 矩阵主线：目标 {FormatSingleRatePerMinute(phase.MatrixTargetRatePerSecond)}；实际 {FormatRateMapPerMinute(phase.MatrixRatesPerSecond)}；研究站 {FormatMatrixLabLayout(phase)}");
                 sb.AppendLine($"- 阻塞：{FormatDuration(phase.TotalBlockingSeconds)}；主要瓶颈 {FormatBlockingSummary(phase)}");
-                sb.AppendLine($"- 电力：{FormatPower(phase.TotalPowerDemandWatts)}；主力 {phase.PrimaryPowerSourceName}；发电建筑 {FormatPowerBuildings(phase.PrimaryPowerSourceName, phase.PrimaryPowerBuildingCount)}；燃料 {FormatFuelRate(phase.FuelName, phase.FuelConsumptionPerSecond)}");
+                sb.AppendLine(
+                    $"- 电力：{FormatPower(phase.TotalPowerDemandWatts)}；主力 {phase.PrimaryPowerSourceName}；发电建筑 {FormatPowerBuildings(phase.PrimaryPowerSourceName, phase.PrimaryPowerBuildingCount)}；燃料 {FormatFuelRate(phase.FuelName, phase.FuelConsumptionPerSecond)}");
                 sb.AppendLine();
                 sb.AppendLine("| 时间点 | 操作 | 补充说明 |");
                 sb.AppendLine("|---|---|---|");
                 foreach (TimelineEvent timelineEvent in phase.TimelineEvents) {
-                    sb.AppendLine($"| {FormatDuration(timelineEvent.Seconds)} | {EscapeTable(timelineEvent.Action)} | {EscapeTable(timelineEvent.Notes)} |");
+                    sb.AppendLine(
+                        $"| {FormatDuration(timelineEvent.Seconds)} | {EscapeTable(timelineEvent.Action)} | {EscapeTable(timelineEvent.Notes)} |");
                 }
                 sb.AppendLine();
             }
@@ -177,7 +182,8 @@ internal static class ReportWriter {
             return "无";
         }
 
-        return $"{phase.PrimaryBlockingItemName}（{FormatDuration(phase.PrimaryBlockingSeconds)}，{FormatStringOrNone(phase.PrimaryBlockingReason)}）";
+        return
+            $"{phase.PrimaryBlockingItemName}（{FormatDuration(phase.PrimaryBlockingSeconds)}，{FormatStringOrNone(phase.PrimaryBlockingReason)}）";
     }
 
     private static string FormatTopBuildings(Dictionary<string, int> buildings) =>
@@ -204,7 +210,8 @@ internal static class ReportWriter {
     private static string FormatTopInventory(Dictionary<string, double> inventory) =>
         inventory.Count == 0
             ? "无"
-            : string.Join(" / ", inventory.OrderByDescending(p => p.Value).Take(10).Select(p => $"{p.Key} {p.Value:0.##}"));
+            : string.Join(" / ",
+                inventory.OrderByDescending(p => p.Value).Take(10).Select(p => $"{p.Key} {p.Value:0.##}"));
 
     private static string FormatRateMapPerMinute(Dictionary<string, double> ratesPerSecond) =>
         ratesPerSecond.Count == 0

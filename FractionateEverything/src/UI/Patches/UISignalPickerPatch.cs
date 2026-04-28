@@ -16,7 +16,8 @@ namespace FE.UI.Patches;
 /// 创世和星环已各自接管 UISignalPicker，避免重复注入。
 /// </summary>
 public static class UISignalPickerPatch {
-    private static readonly FieldInfo currentTypeField = AccessTools.Field(typeof(UISignalPicker), nameof(UISignalPicker.currentType));
+    private static readonly FieldInfo currentTypeField =
+        AccessTools.Field(typeof(UISignalPicker), nameof(UISignalPicker.currentType));
     private static readonly List<UITabButton> customTabs = [];
 
     [HarmonyPrepare]
@@ -32,7 +33,8 @@ public static class UISignalPickerPatch {
             if (tabData == null) {
                 continue;
             }
-            GameObject tabObject = UnityEngine.Object.Instantiate(TabSystem.GetTabPrefab(), __instance.pickerTrans, false);
+            GameObject tabObject =
+                UnityEngine.Object.Instantiate(TabSystem.GetTabPrefab(), __instance.pickerTrans, false);
             ((RectTransform)tabObject.transform).anchoredPosition = new((tabData.tabIndex + 3) * 70 - 54, -75f);
             UITabButton tabButton = tabObject.GetComponent<UITabButton>();
             Sprite tabIcon = Resources.Load<Sprite>(tabData.tabIconPath);
@@ -56,7 +58,8 @@ public static class UISignalPickerPatch {
 
     [HarmonyPatch(typeof(UISignalPicker), nameof(UISignalPicker._OnUpdate))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> UISignalPicker_OnUpdate_Transpiler(IEnumerable<CodeInstruction> instructions) {
+    private static IEnumerable<CodeInstruction> UISignalPicker_OnUpdate_Transpiler(
+        IEnumerable<CodeInstruction> instructions) {
         CodeMatcher matcher = new(instructions);
         matcher.MatchForward(true,
             new CodeMatch(OpCodes.Ldarg_0),

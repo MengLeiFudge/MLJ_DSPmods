@@ -80,7 +80,8 @@ public static class TutorialManager {
     private const TutorialAchievementTier DefaultTutorialAchievementTier = TutorialAchievementTier.Bronze;
 
     private static readonly TutorialRegistration[] tutorialRegistrations = BuildTutorialRegistrations();
-    private static readonly TutorialAchievementDefinition[] tutorialAchievementDefinitions = BuildTutorialAchievementDefinitions();
+    private static readonly TutorialAchievementDefinition[] tutorialAchievementDefinitions =
+        BuildTutorialAchievementDefinitions();
     private static readonly HashSet<int> tutorialAchievementIds = BuildTutorialAchievementIds();
     private static readonly HashSet<int> viewedToBottomTutorialIds = [];
     private static readonly Vector3[] viewportWorldCorners = new Vector3[4];
@@ -647,7 +648,8 @@ public static class TutorialManager {
             return false;
         }
 
-        genesisBookIsLayoutMethod = AccessTools.Method(tutorialPatchType, "IsGenesisBookLayout", [typeof(TutorialProto)]);
+        genesisBookIsLayoutMethod =
+            AccessTools.Method(tutorialPatchType, "IsGenesisBookLayout", [typeof(TutorialProto)]);
         genesisBookGetLayoutMethod =
             AccessTools.Method(tutorialPatchType, "GetGenesisBookLayoutStr", [typeof(TutorialProto)]);
         return genesisBookIsLayoutMethod != null && genesisBookGetLayoutMethod != null;

@@ -18,7 +18,8 @@ public static partial class Utils {
         string resolvedCn = cnTrans ?? key;
         if (registeredTranslations.TryGetValue(key, out var existing)) {
             if (existing.enTrans != enTrans || existing.cnTrans != resolvedCn) {
-                LogError($"Duplicate translation key '{key}' ignored. Existing=({existing.enTrans}, {existing.cnTrans}), New=({enTrans}, {resolvedCn})");
+                LogError(
+                    $"Duplicate translation key '{key}' ignored. Existing=({existing.enTrans}, {existing.cnTrans}), New=({enTrans}, {resolvedCn})");
             }
             return;
         }

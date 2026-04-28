@@ -34,20 +34,30 @@ public static class MainWindowPageRegistry {
     ];
 
     private static readonly MainWindowPageDefinition[] allPages = [
-        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI, enabledInAnalysis: true),
-        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI, enabledInAnalysis: true),
-        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI, enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI,
+            enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI,
+            enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI,
+            enabledInAnalysis: true),
 
-        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI, enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI, enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI,
+            enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI,
+            enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI,
+            enabledInAnalysis: true),
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI, enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI, enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI,
+            enabledInAnalysis: true),
 
-        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI,
+            enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI,
+            enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI,
+            enabledInAnalysis: true),
         new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
 
         new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI, enabledInAnalysis: true),
@@ -59,7 +69,8 @@ public static class MainWindowPageRegistry {
         new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI, enabledInAnalysis: true),
 
         new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true),
-        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true, enabledInAnalysis: true),
+        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true,
+            enabledInAnalysis: true),
     ];
 
     private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
@@ -94,7 +105,8 @@ public static class MainWindowPageRegistry {
         return cache;
     }
 
-    private static IReadOnlyList<MainWindowCategoryDefinition> BuildCategories(FEMainPanelType panelType, bool sandboxMode,
+    private static IReadOnlyList<MainWindowCategoryDefinition> BuildCategories(FEMainPanelType panelType,
+        bool sandboxMode,
         bool includeAllPages) {
         var categories = new List<MainWindowCategoryDefinition>(categoryOrder.Length);
         foreach (string categoryName in categoryOrder) {
@@ -125,8 +137,12 @@ public sealed class MainWindowCategoryDefinition(string categoryName, IReadOnlyL
     public IReadOnlyList<MainWindowPageDefinition> Pages { get; } = pages;
 }
 
-public sealed class MainWindowPageDefinition(string categoryName, string subpageName,
-    Action<MyWindow, RectTransform> createUI, Action updateUI, bool enabledInAnalysis = false,
+public sealed class MainWindowPageDefinition(
+    string categoryName,
+    string subpageName,
+    Action<MyWindow, RectTransform> createUI,
+    Action updateUI,
+    bool enabledInAnalysis = false,
     bool sandboxOnly = false) {
     public string CategoryName { get; } = categoryName;
     public string SubpageName { get; } = subpageName;

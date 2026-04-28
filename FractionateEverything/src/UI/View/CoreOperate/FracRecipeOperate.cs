@@ -186,30 +186,38 @@ public static class FracRecipeOperate {
                                 w.AddComboBox(GetPosition(1, 4, cardW).Item1 + 5 + txt.preferredWidth, y, tab)
                                     .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
                                 y += 36f + 7f;
-                                recipeSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "重置等级",
+                                recipeSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
+                                    GetPosition(0, 4, cardW).Item2, tab, "重置等级",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0, RecipeGrowthManager.BuildContext(manual: true));
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0,
+                                                RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y, GetPosition(1, 4, cardW).Item2, tab, "等级-1",
+                                recipeSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y,
+                                    GetPosition(1, 4, cardW).Item2, tab, "等级-1",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1, RecipeGrowthManager.BuildContext(manual: true));
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1,
+                                                RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y, GetPosition(2, 4, cardW).Item2, tab, "等级+1",
+                                recipeSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y,
+                                    GetPosition(2, 4, cardW).Item2, tab, "等级+1",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
                                             int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1, RecipeGrowthManager.BuildContext(manual: true));
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1,
+                                                RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
-                                recipeSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y, GetPosition(3, 4, cardW).Item2, tab, "等级升满",
+                                recipeSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y,
+                                    GetPosition(3, 4, cardW).Item2, tab, "等级升满",
                                     onClick: () => {
                                         if (SelectedRecipe != null) {
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5, RecipeGrowthManager.BuildContext(manual: true));
+                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5,
+                                                RecipeGrowthManager.BuildContext(manual: true));
                                         }
                                     });
                                 bool sandboxEnabled = GameMain.sandboxToolsEnabled;
@@ -290,8 +298,8 @@ public static class FracRecipeOperate {
                 float sacrificeBoost = building?.SuccessBoost() ?? 0f;
                 float progressBoost = Achievements.GetSuccessRateBonus();
                 float actualSuccessRatio = Mathf.Clamp01(recipe.SuccessRatio
-                                         * (1f + sacrificeBoost)
-                                         * (1f + progressBoost));
+                                                         * (1f + sacrificeBoost)
+                                                         * (1f + progressBoost));
                 ShowTextLine(line++,
                     $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + progressBoost):F3} = {actualSuccessRatio:P3}"
                         .WithColor(Orange));
@@ -300,7 +308,8 @@ public static class FracRecipeOperate {
                         .WithColor(Gray));
 
                 // 损毁率
-                float baseDestroyRatio = snapshot.DestroyRatio + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+                float baseDestroyRatio = snapshot.DestroyRatio
+                                         + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
                 float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
                 string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
                 if (destroyReduction > 0f) {
@@ -516,7 +525,7 @@ public static class FracRecipeOperate {
     /// </summary>
     private static string BuildUpgradeHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
-        string prefix = snapshot.IsUnlocked ? string.Empty : $"{ "解锁后".Translate() }";
+        string prefix = snapshot.IsUnlocked ? string.Empty : $"{"解锁后".Translate()}";
         return rule.Family switch {
             RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
                 => prefix + "重复抽到该配方即可升级".Translate(),

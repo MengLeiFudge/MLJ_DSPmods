@@ -72,8 +72,12 @@ public static class TheyComeFromVoid {
 
         Type recorderType = eventRecorderField?.FieldType;
         eventProtoIdField = AccessTools.Field(recorderType, "protoId");
-        if (relicCountMethod == null || meritRankField == null || skillLevelLField == null || skillLevelRField == null
-            || eventRecorderField == null || eventProtoIdField == null) {
+        if (relicCountMethod == null
+            || meritRankField == null
+            || skillLevelLField == null
+            || skillLevelRField == null
+            || eventRecorderField == null
+            || eventProtoIdField == null) {
             CheckPlugins.LogWarning("TheyComeFromVoid: 关键反射入口缺失，黑雾增强层数据将自动回退为默认值。");
         }
     }
@@ -81,7 +85,8 @@ public static class TheyComeFromVoid {
     private static int InvokeIntMethod(MethodInfo method) {
         try {
             return method.Invoke(null, null) is int value ? value : 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             CheckPlugins.LogWarning($"TheyComeFromVoid: 调用 {method.Name} 失败，已回退为 0。{ex}");
             return 0;
         }
@@ -90,7 +95,8 @@ public static class TheyComeFromVoid {
     private static int GetStaticIntFieldValue(FieldInfo field) {
         try {
             return field.GetValue(null) is int value ? value : 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             CheckPlugins.LogWarning($"TheyComeFromVoid: 读取字段 {field.Name} 失败，已回退为 0。{ex}");
             return 0;
         }
@@ -99,7 +105,8 @@ public static class TheyComeFromVoid {
     private static int GetInstanceIntFieldValue(FieldInfo field, object instance) {
         try {
             return field.GetValue(instance) is int value ? value : 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             CheckPlugins.LogWarning($"TheyComeFromVoid: 读取实例字段 {field.Name} 失败，已回退为 0。{ex}");
             return 0;
         }
@@ -108,7 +115,8 @@ public static class TheyComeFromVoid {
     private static int SumStaticIntArray(FieldInfo field) {
         try {
             return field?.GetValue(null) is int[] values ? values.Sum() : 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             string fieldName = field?.Name ?? "null";
             CheckPlugins.LogWarning($"TheyComeFromVoid: 读取数组字段 {fieldName} 失败，已回退为 0。{ex}");
             return 0;
@@ -126,7 +134,8 @@ public static class TheyComeFromVoid {
         harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
             transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
         // BattleProtos 在原版 DLL 中不是稳定 public 类型，改为运行时反射查找，兼容直接引用 R2 原始 DLL。
-        MethodInfo battleProtosAddTranslate = AccessTools.Method(assembly?.GetType("DSP_Battle.BattleProtos"), "AddTranslate");
+        MethodInfo battleProtosAddTranslate =
+            AccessTools.Method(assembly?.GetType("DSP_Battle.BattleProtos"), "AddTranslate");
         if (battleProtosAddTranslate != null) {
             harmony.Patch(battleProtosAddTranslate,
                 transpiler: new(typeof(TheyComeFromVoid), nameof(BattleProtos_AddTranslate_Transpiler)));

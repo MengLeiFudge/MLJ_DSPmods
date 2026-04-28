@@ -211,16 +211,27 @@ public static class BuildingOperate {
                                 var txt = w.AddText2(x, y, tab, "建筑类型");
                                 w.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
                                     .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-                                btnFragmentIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                btnFragmentIcon =
+                                    w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片))
+                                        .WithSize(40f, 40f);
                                 txtFragmentCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 45f, y, tab, "");
-                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null).WithSize(40f, 40f);
+                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null)
+                                    .WithSize(40f, 40f);
                                 txtMatrixCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 165f, y, tab, "");
                                 y += 36f + 7f;
-                                btnReinforcement = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "关键节点突破", onClick: Reinforcement);
-                                reinforcementSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y, GetPosition(0, 4, cardW).Item2, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
-                                reinforcementSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y, GetPosition(1, 4, cardW).Item2, tab, "等级-1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-                                reinforcementSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y, GetPosition(2, 4, cardW).Item2, tab, "等级+1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-                                reinforcementSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y, GetPosition(3, 4, cardW).Item2, tab, "等级升满", onClick: () => { ChangeLevelTo(MaxLevel); });
+                                btnReinforcement = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
+                                    GetPosition(0, 4, cardW).Item2, tab, "关键节点突破", onClick: Reinforcement);
+                                reinforcementSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
+                                    GetPosition(0, 4, cardW).Item2, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
+                                reinforcementSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y,
+                                    GetPosition(1, 4, cardW).Item2, tab, "等级-1",
+                                    onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
+                                reinforcementSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y,
+                                    GetPosition(2, 4, cardW).Item2, tab, "等级+1",
+                                    onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
+                                reinforcementSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y,
+                                    GetPosition(3, 4, cardW).Item2, tab, "等级升满",
+                                    onClick: () => { ChangeLevelTo(MaxLevel); });
                                 bool sandboxEnabled = GameMain.sandboxToolsEnabled;
                                 btnReinforcement.gameObject.SetActive(!sandboxEnabled);
                                 foreach (UIButton button in reinforcementSandboxBtn) {
@@ -318,7 +329,8 @@ public static class BuildingOperate {
         }
 
         if (!GameMain.sandboxToolsEnabled) {
-            bool showBtn = SelectedBuilding.Level() < MaxLevel && BuildingManager.NeedsBreakthrough(SelectedBuilding.ID);
+            bool showBtn = SelectedBuilding.Level() < MaxLevel
+                           && BuildingManager.NeedsBreakthrough(SelectedBuilding.ID);
             btnReinforcement.gameObject.SetActive(showBtn);
             foreach (UIButton button in reinforcementSandboxBtn) {
                 button.gameObject.SetActive(false);
@@ -342,22 +354,18 @@ public static class BuildingOperate {
         long nextExp = BuildingManager.GetRequiredExpForNextLevel(SelectedBuilding.ID);
         if (SelectedBuilding.ID == IFE行星内物流交互站 || SelectedBuilding.ID == IFE星际物流交互站) {
             strs = [
-                nextExp > 0
-                    ? $"{"成长经验".Translate()} {currentExp}/{nextExp}"
-                    : SelectedBuilding.Level() >= MaxLevel
-                        ? "已满级".Translate()
-                        : $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
+                nextExp > 0 ? $"{"成长经验".Translate()} {currentExp}/{nextExp}" :
+                SelectedBuilding.Level() >= MaxLevel ? "已满级".Translate() :
+                $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"上传/下载电力消耗".Translate()} x{SelectedBuilding.InteractEnergyRatio():P1}",
                 $"{"物品最大堆叠".Translate()} {SelectedBuilding.MaxStack()}",
             ];
         } else {
             strs = [
-                nextExp > 0
-                    ? $"{"成长经验".Translate()} {currentExp}/{nextExp}"
-                    : SelectedBuilding.Level() >= MaxLevel
-                        ? "已满级".Translate()
-                        : $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
+                nextExp > 0 ? $"{"成长经验".Translate()} {currentExp}/{nextExp}" :
+                SelectedBuilding.Level() >= MaxLevel ? "已满级".Translate() :
+                $"{"关键节点突破".Translate()}：{GetBreakthroughCostText(SelectedBuilding.Level())}",
                 $"{"待机/运行电力消耗".Translate()} x{SelectedBuilding.EnergyRatio():P1}",
                 $"{"增产剂效果".Translate()} x{SelectedBuilding.PlrRatio():P1}",
                 $"{"原料流动增强".Translate()} {(SelectedBuilding.EnableFluidEnhancement() ? "启用" : "禁用").Translate()}",
@@ -412,7 +420,8 @@ public static class BuildingOperate {
 
     private static float LevelToPlrRatio(int level) => BuildingManager.GetDefaultPlrRatioByLevel(level);
 
-    private static float LevelToInteractEnergyRatio(int level) => BuildingManager.GetStationInteractEnergyRatioByLevel(level);
+    private static float LevelToInteractEnergyRatio(int level) =>
+        BuildingManager.GetStationInteractEnergyRatioByLevel(level);
 
     private static void Reinforcement() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -425,10 +434,13 @@ public static class BuildingOperate {
             UIRealtimeTip.Popup("当前等级需要靠经验自动成长".Translate(), true, 2);
             return;
         }
-        (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(SelectedBuilding.Level());
+        (int matrixId, int matrixCount, int fragmentCount) =
+            BuildingManager.GetBreakthroughCost(SelectedBuilding.Level());
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         Miscellaneous.ShowQuestion("提示".Translate(),
-            (GameMain.sandboxToolsEnabled ? "" : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
+            (GameMain.sandboxToolsEnabled
+                ? ""
+                : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
             + $"{"关键节点突破".Translate()}{"吗？".Translate()}",
             () => {
                 if (!TakeItemWithTip(matrixId, matrixCount, out _)

@@ -6,10 +6,19 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Manager;
 
 /// <summary>稀有度等级</summary>
-public enum GachaRarity { C, B, A, S }
+public enum GachaRarity {
+    C,
+    B,
+    A,
+    S
+}
 
 /// <summary>聚焦命中层级。主目标比普通联动更强，用于结果页表达。</summary>
-public enum GachaFocusMatchType { None, Side, Main }
+public enum GachaFocusMatchType {
+    None,
+    Side,
+    Main
+}
 
 /// <summary>单次抽卡实际结算后的奖励语义。</summary>
 public enum GachaRewardType {
@@ -22,13 +31,13 @@ public enum GachaRewardType {
 
 /// <summary>单次抽卡结果</summary>
 public readonly struct GachaResult {
-    public readonly int ItemId;        // 物品ID（配方用inputID，物品用itemID）
+    public readonly int ItemId;// 物品ID（配方用inputID，物品用itemID）
     public readonly GachaRarity Rarity;
     public readonly GachaFocusMatchType FocusMatchType;
     public readonly GachaRewardType RewardType;
-    public readonly int RewardItemId;  // 实际补偿/发放物品ID；配方升级时为0
-    public readonly int RewardCount;   // 实际补偿/发放数量；配方升级时记录升级后的等级
-    public readonly bool WasHardPity;  // 是否由硬保底直接产出
+    public readonly int RewardItemId;// 实际补偿/发放物品ID；配方升级时为0
+    public readonly int RewardCount;// 实际补偿/发放数量；配方升级时记录升级后的等级
+    public readonly bool WasHardPity;// 是否由硬保底直接产出
     public bool IsFocusHit => FocusMatchType != GachaFocusMatchType.None;
     public bool HitFocusMainTarget => FocusMatchType == GachaFocusMatchType.Main;
     public bool IsRecipe => RewardType is GachaRewardType.RecipeUnlock
@@ -63,7 +72,7 @@ public class GachaPool {
     public const int PoolCount = 4;
 
     public readonly int PoolId;
-    public readonly string NameKey;    // 翻译key
+    public readonly string NameKey;// 翻译key
 
     // 各稀有度基础概率（0~1）
     public float RateC = 0.809f;

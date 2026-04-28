@@ -174,7 +174,8 @@ public static class PageLayout {
     /// <summary>
     /// 约定卡内顶部 28 px 为标题带：橙色卡标题 + 底部 1 px 分隔线。
     /// </summary>
-    public static Text AddCardHeader(MyWindow wnd, RectTransform parent, string title, string objectName = "card-header",
+    public static Text AddCardHeader(MyWindow wnd, RectTransform parent, string title,
+        string objectName = "card-header",
         float left = CardPaddingLeft, float right = CardPaddingRight) {
         Text text = MyWindow.AddText(left, 4f, parent, title, CardTitleFontSize, $"{objectName}-title");
         text.supportRichText = true;

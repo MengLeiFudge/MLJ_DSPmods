@@ -88,7 +88,8 @@ public static class LimitedTimeStore {
                         children: [
                             Node(pos: (0, 0), objectName: "growth-store-resource-body", build: (w, resourceCard) => {
                                 float cardW = resourceCard.sizeDelta.x;
-                                growthPage.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15,
+                                growthPage.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源",
+                                    15,
                                     "growth-store-resource-title");
                                 float y = 48f;
                                 growthPage.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
@@ -96,8 +97,11 @@ public static class LimitedTimeStore {
                                 growthPage.TxtResource.horizontalOverflow = HorizontalWrapMode.Wrap;
                                 growthPage.TxtResource.verticalOverflow = VerticalWrapMode.Overflow;
                                 y += 28f;
-                                growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null).WithSize(40f, 40f);
-                                growthPage.BtnFragmentIcon = MyImageButton.CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f);
+                                growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null)
+                                    .WithSize(40f, 40f);
+                                growthPage.BtnFragmentIcon = MyImageButton
+                                    .CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片))
+                                    .WithSize(40f, 40f);
                                 y += 48f;
                                 growthPage.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
                                 growthPage.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
@@ -122,15 +126,20 @@ public static class LimitedTimeStore {
                                 float y = 52f;
                                 for (int i = 0; i < GrowthRowCount; i++) {
                                     var row = new GrowthRowUi {
-                                        BtnFragmentCostIcon = MyImageButton.CreateImageButton(colCostIcon, y, offerCard, LDB.items.Select(IFE残片)).WithSize(40f, 40f),
+                                        BtnFragmentCostIcon = MyImageButton
+                                            .CreateImageButton(colCostIcon, y, offerCard, LDB.items.Select(IFE残片))
+                                            .WithSize(40f, 40f),
                                         TxtCost = MyWindow.AddText(colCost, y, offerCard, "", 13),
-                                        BtnExtraCostIcon = MyImageButton.CreateImageButton(colExtraIcon, y, offerCard, null).WithSize(40f, 40f),
+                                        BtnExtraCostIcon = MyImageButton
+                                            .CreateImageButton(colExtraIcon, y, offerCard, null).WithSize(40f, 40f),
                                         TxtExtraCost = MyWindow.AddText(colExtraText, y, offerCard, "", 13),
-                                        BtnRewardIcon = MyImageButton.CreateImageButton(colRewardIcon, y, offerCard, null).WithSize(40f, 40f),
+                                        BtnRewardIcon = MyImageButton
+                                            .CreateImageButton(colRewardIcon, y, offerCard, null).WithSize(40f, 40f),
                                         TxtReward = MyWindow.AddText(colRewardText, y, offerCard, "", 13),
                                         TxtDetail = MyWindow.AddText(colRewardText, y + 18f, offerCard, "", 12),
                                     };
-                                    row.BtnExchange = w.AddButton(colExchange, y - 4f, 120f, offerCard, "兑换".Translate(), 13,
+                                    row.BtnExchange = w.AddButton(colExchange, y - 4f, 120f, offerCard,
+                                        "兑换".Translate(), 13,
                                         onClick: () => ExchangeOffer(row));
                                     row.TxtCost.rectTransform.sizeDelta = new Vector2(100f, 24f);
                                     row.TxtExtraCost.rectTransform.sizeDelta = new Vector2(120f, 24f);
@@ -148,7 +157,8 @@ public static class LimitedTimeStore {
                             Node(pos: (0, 0), objectName: "growth-store-footer-body", build: (w, footerCard) => {
                                 float cellW = footerCard.sizeDelta.x;
                                 w.AddButton(cellW - 168f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
-                                    onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
+                                    onClick: () =>
+                                        MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
                             }),
                         ]),
                 ]));
@@ -169,7 +179,8 @@ public static class LimitedTimeStore {
                         children: [
                             Node(pos: (0, 0), objectName: "focus-store-current-body", build: (w, currentCard) => {
                                 float cardW = currentCard.sizeDelta.x;
-                                focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(w, currentCard, 0f, 14f, "当前聚焦", 15,
+                                focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(w, currentCard, 0f, 14f,
+                                    "当前聚焦", 15,
                                     "focus-store-current-title");
                                 float y = 48f;
                                 focusPage.TxtCurrentFocus = MyWindow.AddText(0f, y, currentCard, "", 13);
@@ -214,7 +225,8 @@ public static class LimitedTimeStore {
                             Node(pos: (0, 0), objectName: "focus-store-footer-body", build: (w, footerCard) => {
                                 float cellW = footerCard.sizeDelta.x;
                                 w.AddButton(cellW - 168f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
-                                    onClick: () => MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
+                                    onClick: () =>
+                                        MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
                             }),
                         ]),
                 ]));
@@ -259,8 +271,10 @@ public static class LimitedTimeStore {
 
     public static void UpdateUI() {
         int matrixId = GachaService.GetCurrentDrawMatrixId();
-        string resourceText = $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}    黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}";
-        string focusText = $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}    {"当前聚焦".Translate()}：{GetCurrentFocusName()}";
+        string resourceText =
+            $"成长积分 x{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}    黑雾矩阵 x{GetItemTotalCount(I黑雾矩阵)}";
+        string focusText =
+            $"{"当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}    {"当前聚焦".Translate()}：{GetCurrentFocusName()}";
 
         if (growthPage?.Tab != null && growthPage.Tab.gameObject.activeSelf) {
             growthPage.Header.Title.text = "成长规划".Translate().WithColor(Orange);
@@ -307,7 +321,8 @@ public static class LimitedTimeStore {
                 growthPage.Rows[i].TxtDetail.text = GetOfferDetailText(offer);
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost
-                              && (offer.ExtraCostItemId <= 0 || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount);
+                              && (offer.ExtraCostItemId <= 0
+                                  || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount);
                 growthPage.Rows[i].BtnExchange.button.interactable = canBuy;
             }
         }
@@ -323,11 +338,12 @@ public static class LimitedTimeStore {
                 int fragmentCost = GachaService.GetFocusSwitchFragmentCost(focus.FocusType);
                 bool active = focus.FocusType == GachaManager.CurrentFocus;
                 string buttonText = active
-                    ? $"{focus.NameKey.Translate()} ({ "已生效".Translate() })"
-                    : $"{focus.NameKey.Translate()} ({ "切换聚焦".Translate() }: {fragmentCost})";
+                    ? $"{focus.NameKey.Translate()} ({"已生效".Translate()})"
+                    : $"{focus.NameKey.Translate()} ({"切换聚焦".Translate()}: {fragmentCost})";
                 focusPage.Buttons[i].SetText(buttonText);
                 focusPage.Buttons[i].button.interactable = active || GetItemTotalCount(IFE残片) >= fragmentCost;
-                focusPage.DescTexts[i].text = $"{focus.DescKey.Translate()}  {GetFocusDetailText(focus.FocusType, active)}";
+                focusPage.DescTexts[i].text =
+                    $"{focus.DescKey.Translate()}  {GetFocusDetailText(focus.FocusType, active)}";
             }
         }
     }
@@ -364,22 +380,19 @@ public static class LimitedTimeStore {
         string focusName = GachaService.GetFocusName(offer.FocusType);
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
             string prefix = offer.ExtraCostItemId == I黑雾矩阵
-                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)
-                    ? "黑雾增强层报价。"
-                    : GachaService.IsDarkFogRecipeGrowthOffer(offer)
-                        ? "黑雾支线配方报价。"
-                        : "黑雾支线报价。"
+                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ? "黑雾增强层报价。" :
+                GachaService.IsDarkFogRecipeGrowthOffer(offer) ? "黑雾支线配方报价。" : "黑雾支线报价。"
                 : "成长定向：";
             return $"{prefix}{focusName}。切到该方向后才会降价/加量。".WithColor(White);
         }
 
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
         string detail = offer.ExtraCostItemId == I黑雾矩阵
-            ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)
-                ? $"黑雾增强层命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
-                : GachaService.IsDarkFogRecipeGrowthOffer(offer)
-                    ? $"黑雾支线配方命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
-                : $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
+            ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ?
+                $"黑雾增强层命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算" :
+                GachaService.IsDarkFogRecipeGrowthOffer(offer) ?
+                    $"黑雾支线配方命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算" :
+                    $"黑雾支线命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算"
             : $"已命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算";
         if (GachaService.IsCoreGrowthReward(offer)) {
             detail += offer.OutputId == IFE残片 ? "，并额外补 10 残片" : "，并额外 +1";
@@ -403,10 +416,14 @@ public static class LimitedTimeStore {
             GachaFocusType.Balanced => "平衡发展：开线池与原胚池不额外偏置，成长页只保留常规补差。".WithColor(White),
             GachaFocusType.MineralExpansion => $"复制扩张：开线池更偏矿物复制，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
             GachaFocusType.ConversionLeap => $"转化跃迁：开线池更偏转化配方，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.LogisticsInteraction => $"交互物流：开线池偏物流链，原胚池偏交互塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.EmbryoCycle => $"原胚循环：开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"工艺优化：开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.RectificationEconomy => $"精馏经济：原胚池偏精馏塔，重复满级配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.LogisticsInteraction =>
+                $"交互物流：开线池偏物流链，原胚池偏交互塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.EmbryoCycle =>
+                $"原胚循环：开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
+            GachaFocusType.ProcessOptimization => $"工艺优化：开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。"
+                .WithColor(Green),
+            GachaFocusType.RectificationEconomy => $"精馏经济：原胚池偏精馏塔，重复满级配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。"
+                .WithColor(Green),
             _ => string.Empty,
         };
     }
@@ -416,12 +433,21 @@ public static class LimitedTimeStore {
         string activePrefix = active ? "当前生效。" : "切换后生效。";
         return focusType switch {
             GachaFocusType.Balanced => $"{activePrefix} 不额外偏置两类抽池，成长页不触发方向折扣。".WithColor(active ? Green : White),
-            GachaFocusType.MineralExpansion => $"{activePrefix} 开线池更偏矿物复制，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
-            GachaFocusType.ConversionLeap => $"{activePrefix} 开线池更偏转化配方，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
-            GachaFocusType.LogisticsInteraction => $"{activePrefix} 开线池偏物流链，原胚池偏交互塔原胚，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
-            GachaFocusType.EmbryoCycle => $"{activePrefix} 开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(active ? Green : White),
-            GachaFocusType.ProcessOptimization => $"{activePrefix} 开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
-            GachaFocusType.RectificationEconomy => $"{activePrefix} 原胚池偏精馏塔，满级重复配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
+            GachaFocusType.MineralExpansion =>
+                $"{activePrefix} 开线池更偏矿物复制，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
+            GachaFocusType.ConversionLeap => $"{activePrefix} 开线池更偏转化配方，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                active ? Green : White),
+            GachaFocusType.LogisticsInteraction =>
+                $"{activePrefix} 开线池偏物流链，原胚池偏交互塔原胚，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                    active ? Green : White),
+            GachaFocusType.EmbryoCycle => $"{activePrefix} 开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。"
+                .WithColor(active ? Green : White),
+            GachaFocusType.ProcessOptimization =>
+                $"{activePrefix} 开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                    active ? Green : White),
+            GachaFocusType.RectificationEconomy =>
+                $"{activePrefix} 原胚池偏精馏塔，满级重复配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                    active ? Green : White),
             _ => string.Empty,
         };
     }
@@ -431,7 +457,13 @@ public static class LimitedTimeStore {
         CreateFocusUI(wnd, trans);
     }
 
-    public static void Import(BinaryReader r) { r.ReadBlocks(); }
-    public static void Export(BinaryWriter w) { w.WriteBlocks(); }
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks();
+    }
+
     public static void IntoOtherSave() { }
 }

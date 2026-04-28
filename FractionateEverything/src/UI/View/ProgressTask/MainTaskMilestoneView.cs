@@ -59,7 +59,8 @@ public static partial class MainTask {
         txtBranchSummary = wnd.AddText2(260f, 42f, tab, "动态刷新", 13, "txt-main-task-branch");
         txtBranchSummary.supportRichText = true;
 
-        roadmapPanel = CreatePanelRect("main-task-route-panel", tab, 0f, 82f, RoutePanelWidth, RoutePanelHeight, RoutePanelColor);
+        roadmapPanel = CreatePanelRect("main-task-route-panel", tab, 0f, 82f, RoutePanelWidth, RoutePanelHeight,
+            RoutePanelColor);
         centerPanel = CreatePanelRect("main-task-center-panel", roadmapPanel, 441f, 210f, 200f, 140f, CenterPanelColor);
 
         txtCenterTitle = MyWindow.AddText(24f, 26f, centerPanel, "主线里程碑", 20, "txt-main-task-center-title");
@@ -69,7 +70,8 @@ public static partial class MainTask {
         txtCenterSummary = MyWindow.AddText(24f, 72f, centerPanel, "动态刷新", 13, "txt-main-task-center-summary");
         txtCenterSummary.supportRichText = true;
 
-        detailPanel = CreatePanelRect("main-task-detail-panel", roadmapPanel, 24f, 432f, DetailPanelWidth, DetailPanelHeight, DetailPanelColor);
+        detailPanel = CreatePanelRect("main-task-detail-panel", roadmapPanel, 24f, 432f, DetailPanelWidth,
+            DetailPanelHeight, DetailPanelColor);
 
         txtDetailBranch = MyWindow.AddText(18f, 16f, detailPanel, "动态刷新", 13, "txt-main-task-detail-branch");
         txtDetailBranch.supportRichText = true;
@@ -86,7 +88,8 @@ public static partial class MainTask {
         txtDetailCondition.supportRichText = true;
         txtDetailCondition.rectTransform.sizeDelta = new Vector2(384f, 28f);
 
-        btnDetailRewardIcon = wnd.AddImageButton(18f, 148f, detailPanel, null, "btn-main-task-detail-reward").WithSize(40f, 40f);
+        btnDetailRewardIcon = wnd.AddImageButton(18f, 148f, detailPanel, null, "btn-main-task-detail-reward")
+            .WithSize(40f, 40f);
         txtDetailReward = MyWindow.AddText(68f, 144f, detailPanel, "动态刷新", 13, "txt-main-task-detail-reward");
         txtDetailReward.supportRichText = true;
         txtDetailReward.rectTransform.sizeDelta = new Vector2(136f, 28f);
@@ -114,9 +117,11 @@ public static partial class MainTask {
 
         txtModeTitle.text = route.RouteName.Translate().WithColor(Orange);
         txtOverallSummary.text = string.Format("路线总进度".Translate(), completedNodes, totalNodes).WithColor(Orange);
-        txtBranchSummary.text = string.Format("分支完成数".Translate(), completedBranches, route.Branches.Length).WithColor(Blue);
+        txtBranchSummary.text =
+            string.Format("分支完成数".Translate(), completedBranches, route.Branches.Length).WithColor(Blue);
         txtCenterTitle.text = route.CenterTitle.Translate().WithColor(Orange);
-        txtCenterSummary.text = $"{completedNodes}/{totalNodes}".WithColor(completedNodes >= totalNodes ? Orange : Blue);
+        txtCenterSummary.text =
+            $"{completedNodes}/{totalNodes}".WithColor(completedNodes >= totalNodes ? Orange : Blue);
 
         EnsureSelectedNode(modeIndex);
         RefreshRouteView(modeIndex);
@@ -147,7 +152,8 @@ public static partial class MainTask {
 
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
             TaskBranch branch = route.Branches[branchIndex];
-            Text branchLabel = MyWindow.AddText(branch.LabelPosition.x, branch.LabelPosition.y, root, branch.Name.Translate(), 14,
+            Text branchLabel = MyWindow.AddText(branch.LabelPosition.x, branch.LabelPosition.y, root,
+                branch.Name.Translate(), 14,
                 $"txt-main-task-branch-{modeIndex}-{branchIndex}");
             branchLabel.supportRichText = true;
             branchLabel.color = White;
@@ -161,13 +167,15 @@ public static partial class MainTask {
                 int capturedBranchIndex = branchIndex;
                 int capturedNodeIndex = nodeIndex;
                 if (nodeIndex == 0) {
-                    cache.LinesToNodes[branchIndex][nodeIndex] = CreateLine(root, GetCenterAnchor(node.Position), node.Position);
-                }
-                else {
-                    cache.LinesToNodes[branchIndex][nodeIndex] = CreateLine(root, branch.Nodes[nodeIndex - 1].Position, node.Position);
+                    cache.LinesToNodes[branchIndex][nodeIndex] =
+                        CreateLine(root, GetCenterAnchor(node.Position), node.Position);
+                } else {
+                    cache.LinesToNodes[branchIndex][nodeIndex] =
+                        CreateLine(root, branch.Nodes[nodeIndex - 1].Position, node.Position);
                 }
 
-                MyImageButton nodeButton = MyImageButton.CreateImageButton(node.Position.x, node.Position.y, root, null, NodeSize, NodeSize);
+                MyImageButton nodeButton = MyImageButton.CreateImageButton(node.Position.x, node.Position.y, root, null,
+                    NodeSize, NodeSize);
                 nodeButton.gameObject.name = $"btn-main-task-node-{modeIndex}-{branchIndex}-{nodeIndex}";
                 nodeButton.spriteImage.raycastTarget = true;
                 nodeButton.backgroundImage.raycastTarget = false;
@@ -179,7 +187,8 @@ public static partial class MainTask {
                 }
                 nodeButton.WithClickEvent(() => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex),
                     () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
-                AttachHoverSelection(nodeButton, () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
+                AttachHoverSelection(nodeButton,
+                    () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
 
                 cache.NodeViews[branchIndex][nodeIndex] = new NodeView {
                     Button = nodeButton,
@@ -239,7 +248,8 @@ public static partial class MainTask {
         };
     }
 
-    private static void UpdateNodeTip(MyImageButton button, TaskNode node, int modeIndex, int branchIndex, int nodeIndex) {
+    private static void UpdateNodeTip(MyImageButton button, TaskNode node, int modeIndex, int branchIndex,
+        int nodeIndex) {
         string progressText = GetNodeProgressText(modeIndex, branchIndex, nodeIndex);
         string rewardText = GetRewardText(node);
 
@@ -255,7 +265,8 @@ public static partial class MainTask {
     }
 
     private static void UpdateDetailPanel(int modeIndex) {
-        if (modeIndex < 0 || modeIndex >= RouteMaps.Length
+        if (modeIndex < 0
+            || modeIndex >= RouteMaps.Length
             || modeIndex >= selectedBranchByMode.Length
             || modeIndex >= selectedNodeByMode.Length) {
             return;
@@ -276,20 +287,19 @@ public static partial class MainTask {
         txtDetailBranch.text = branch.Name.Translate().WithColor(Orange);
         txtDetailName.text = node.Name.Translate().WithColor(GetDetailTitleColor(modeIndex, branchIndex, nodeIndex));
         txtDetailDesc.text = node.Desc.Translate();
-        txtDetailCondition.text = $"{ "节点详情-条件".Translate() } {GetNodeProgressText(modeIndex, branchIndex, nodeIndex)}";
-        txtDetailState.text = $"{ "节点详情-状态".Translate() } {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
+        txtDetailCondition.text = $"{"节点详情-条件".Translate()} {GetNodeProgressText(modeIndex, branchIndex, nodeIndex)}";
+        txtDetailState.text = $"{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
 
         bool hasReward = node.RewardItemId > 0 && node.RewardCount > 0 && LDB.items.Exist(node.RewardItemId);
         btnDetailRewardIcon.gameObject.SetActive(hasReward);
         if (hasReward) {
             btnDetailRewardIcon.Proto = LDB.items.Select(node.RewardItemId);
             btnDetailRewardIcon.SetCount(node.RewardCount);
-        }
-        else {
+        } else {
             btnDetailRewardIcon.Proto = null;
             btnDetailRewardIcon.ClearCountText();
         }
-        txtDetailReward.text = $"{ "节点详情-奖励".Translate() } {GetRewardText(node)}".WithColor(Blue);
+        txtDetailReward.text = $"{"节点详情-奖励".Translate()} {GetRewardText(node)}".WithColor(Blue);
     }
 
     private static Color GetDetailTitleColor(int modeIndex, int branchIndex, int nodeIndex) {
@@ -331,7 +341,8 @@ public static partial class MainTask {
     }
 
     private static void SelectNode(int modeIndex, int branchIndex, int nodeIndex) {
-        if (modeIndex < 0 || modeIndex >= RouteMaps.Length
+        if (modeIndex < 0
+            || modeIndex >= RouteMaps.Length
             || modeIndex >= selectedBranchByMode.Length
             || modeIndex >= selectedNodeByMode.Length) {
             return;
@@ -374,11 +385,12 @@ public static partial class MainTask {
         rect.SetParent(parent, false);
 
         if (Math.Abs(startCenter.x - endCenter.x) >= Math.Abs(startCenter.y - endCenter.y)) {
-            NormalizeRectWithTopLeft(line, Math.Min(startCenter.x, endCenter.x), startCenter.y - LineThickness / 2f, parent);
+            NormalizeRectWithTopLeft(line, Math.Min(startCenter.x, endCenter.x), startCenter.y - LineThickness / 2f,
+                parent);
             rect.sizeDelta = new Vector2(Math.Abs(startCenter.x - endCenter.x), LineThickness);
-        }
-        else {
-            NormalizeRectWithTopLeft(line, startCenter.x - LineThickness / 2f, Math.Min(startCenter.y, endCenter.y), parent);
+        } else {
+            NormalizeRectWithTopLeft(line, startCenter.x - LineThickness / 2f, Math.Min(startCenter.y, endCenter.y),
+                parent);
             rect.sizeDelta = new Vector2(LineThickness, Math.Abs(startCenter.y - endCenter.y));
         }
         return line;

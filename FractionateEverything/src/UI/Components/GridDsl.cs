@@ -68,7 +68,8 @@ public static class GridDsl {
     }
 
     public static LayoutGrid ContentCard((int, int)? pos = null, (int, int)? span = null, int? row = null,
-        int? col = null, int? rowSpan = null, int? colSpan = null, bool strong = false, string objectName = "content-card",
+        int? col = null, int? rowSpan = null, int? colSpan = null, bool strong = false,
+        string objectName = "content-card",
         IReadOnlyList<LayoutTrack> rows = null, IReadOnlyList<LayoutTrack> cols = null, LayoutInsets? margin = null,
         LayoutInsets? padding = null, float rowGap = 0f, float columnGap = 0f,
         IReadOnlyList<LayoutNode> children = null) {
@@ -93,7 +94,8 @@ public static class GridDsl {
             ColumnGap = columnGap,
             ObjectName = objectName,
             Children = children ?? Array.Empty<LayoutNode>(),
-            RootFactory = (parent, rect) => PageLayout.CreateContentCard(parent, objectName, rect.Left, rect.Top, rect.Width,
+            RootFactory = (parent, rect) => PageLayout.CreateContentCard(parent, objectName, rect.Left, rect.Top,
+                rect.Width,
                 rect.Height, strong),
         };
     }

@@ -66,27 +66,40 @@ public static class FracStatistic {
                 cols: [1, 1],
                 columnGap: PageLayout.Gap,
                 children: [
-                    Header("分馏统计", objectName: "frac-statistic-header", pos: (0, 0), span: (1, 2), onBuilt: refs => header = refs),
+                    Header("分馏统计", objectName: "frac-statistic-header", pos: (0, 0), span: (1, 2),
+                        onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "frac-stat-summary-card", strong: true,
-                        children: [Node(pos: (0, 0), objectName: "frac-stat-summary-body", build: (w, summaryCard) => {
-                            txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 0f, 0f, "统计-总览", 16, "frac-stat-summary-title");
-                            CreateLineGroup(w, summaryLines, summaryCard, 0f, 32f, "txtSummary");
-                        })]),
+                        children: [
+                            Node(pos: (0, 0), objectName: "frac-stat-summary-body", build: (w, summaryCard) => {
+                                txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 0f, 0f, "统计-总览", 16,
+                                    "frac-stat-summary-title");
+                                CreateLineGroup(w, summaryLines, summaryCard, 0f, 32f, "txtSummary");
+                            })
+                        ]),
                     ContentCard(pos: (1, 1), objectName: "frac-stat-stock-card", strong: true,
-                        children: [Node(pos: (0, 0), objectName: "frac-stat-stock-body", build: (w, stockCard) => {
-                            txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 0f, 0f, "统计-资源库存", 16, "frac-stat-stock-title");
-                            CreateLineGroup(w, stockLines, stockCard, 0f, 32f, "txtStock");
-                        })]),
+                        children: [
+                            Node(pos: (0, 0), objectName: "frac-stat-stock-body", build: (w, stockCard) => {
+                                txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 0f, 0f, "统计-资源库存", 16,
+                                    "frac-stat-stock-title");
+                                CreateLineGroup(w, stockLines, stockCard, 0f, 32f, "txtStock");
+                            })
+                        ]),
                     ContentCard(pos: (2, 0), objectName: "frac-stat-growth-card",
-                        children: [Node(pos: (0, 0), objectName: "frac-stat-growth-body", build: (w, growthCard) => {
-                            txtGrowthTitle = PageLayout.AddCardTitle(w, growthCard, 0f, 0f, "统计-建筑成长", 16, "frac-stat-growth-title");
-                            CreateLineGroup(w, growthLines, growthCard, 0f, 32f, "txtGrowth");
-                        })]),
+                        children: [
+                            Node(pos: (0, 0), objectName: "frac-stat-growth-body", build: (w, growthCard) => {
+                                txtGrowthTitle = PageLayout.AddCardTitle(w, growthCard, 0f, 0f, "统计-建筑成长", 16,
+                                    "frac-stat-growth-title");
+                                CreateLineGroup(w, growthLines, growthCard, 0f, 32f, "txtGrowth");
+                            })
+                        ]),
                     ContentCard(pos: (2, 1), objectName: "frac-stat-economy-card",
-                        children: [Node(pos: (0, 0), objectName: "frac-stat-economy-body", build: (w, economyCard) => {
-                            txtEconomyTitle = PageLayout.AddCardTitle(w, economyCard, 0f, 0f, "统计-动态经济", 16, "frac-stat-economy-title");
-                            CreateLineGroup(w, economyLines, economyCard, 0f, 32f, "txtEconomy");
-                        })]),
+                        children: [
+                            Node(pos: (0, 0), objectName: "frac-stat-economy-body", build: (w, economyCard) => {
+                                txtEconomyTitle = PageLayout.AddCardTitle(w, economyCard, 0f, 0f, "统计-动态经济", 16,
+                                    "frac-stat-economy-title");
+                                CreateLineGroup(w, economyLines, economyCard, 0f, 32f, "txtEconomy");
+                            })
+                        ]),
                 ]));
     }
 
@@ -113,20 +126,20 @@ public static class FracStatistic {
         string currentMatrixName = LDB.items.Select(currentMatrixId)?.name ?? currentMatrixId.ToString();
         string focusName = GachaService.GetFocusName(GachaManager.CurrentFocus);
 
-        summaryLines[0].text = $"{ "统计-分馏成功总数".Translate() }：{totalFractionSuccesses}";
-        summaryLines[1].text = $"{ "统计-抽取总次数".Translate() }：{drawCount}";
-        summaryLines[2].text = $"{ "统计-配方解锁".Translate() }：{unlockedRecipes}/{totalRecipes}";
-        summaryLines[3].text = $"{ "统计-最高建筑等级".Translate() }：{maxBuildingLevel}";
-        summaryLines[4].text = $"{ "统计-当前模式".Translate() }：{GachaService.GetModeNameKey().Translate()}";
-        summaryLines[5].text = $"{ "统计-当前聚焦".Translate() }：{focusName}";
-        summaryLines[6].text = $"{ "统计-当前阶段矩阵".Translate() }：{currentMatrixName}  (阶段 {currentStageIndex + 1})";
+        summaryLines[0].text = $"{"统计-分馏成功总数".Translate()}：{totalFractionSuccesses}";
+        summaryLines[1].text = $"{"统计-抽取总次数".Translate()}：{drawCount}";
+        summaryLines[2].text = $"{"统计-配方解锁".Translate()}：{unlockedRecipes}/{totalRecipes}";
+        summaryLines[3].text = $"{"统计-最高建筑等级".Translate()}：{maxBuildingLevel}";
+        summaryLines[4].text = $"{"统计-当前模式".Translate()}：{GachaService.GetModeNameKey().Translate()}";
+        summaryLines[5].text = $"{"统计-当前聚焦".Translate()}：{focusName}";
+        summaryLines[6].text = $"{"统计-当前阶段矩阵".Translate()}：{currentMatrixName}  (阶段 {currentStageIndex + 1})";
 
-        stockLines[0].text = $"{ "统计-残片余额".Translate() }：{GetItemTotalCount(IFE残片)}";
-        stockLines[1].text = $"{ "统计-成长池积分".Translate() }：{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
-        stockLines[2].text = $"{ "统计-当前阶段矩阵".Translate() }：{currentMatrixName} x{GetItemTotalCount(currentMatrixId)}";
-        stockLines[3].text = $"{ "统计-黑雾矩阵库存".Translate() }：{GetItemTotalCount(I黑雾矩阵)}";
-        stockLines[4].text = $"{ "统计-原胚库存".Translate() }：{GetProtoSummary()}";
-        stockLines[5].text = $"{ "统计-建筑成长经验".Translate() }：{GetBuildingExpTotal()}";
+        stockLines[0].text = $"{"统计-残片余额".Translate()}：{GetItemTotalCount(IFE残片)}";
+        stockLines[1].text = $"{"统计-成长池积分".Translate()}：{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
+        stockLines[2].text = $"{"统计-当前阶段矩阵".Translate()}：{currentMatrixName} x{GetItemTotalCount(currentMatrixId)}";
+        stockLines[3].text = $"{"统计-黑雾矩阵库存".Translate()}：{GetItemTotalCount(I黑雾矩阵)}";
+        stockLines[4].text = $"{"统计-原胚库存".Translate()}：{GetProtoSummary()}";
+        stockLines[5].text = $"{"统计-建筑成长经验".Translate()}：{GetBuildingExpTotal()}";
 
         RefreshGrowthLines();
         RefreshEconomyLines();
@@ -163,7 +176,9 @@ public static class FracStatistic {
             if (BuildingManager.NeedsBreakthrough(buildingId)) {
                 (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(level);
                 string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-                growthLines[i].text = $"{building.name}  Lv{level}  突破：{matrixName} x{matrixCount} + 残片 x{fragmentCount}".WithColor(Orange);
+                growthLines[i].text =
+                    $"{building.name}  Lv{level}  突破：{matrixName} x{matrixCount} + 残片 x{fragmentCount}"
+                        .WithColor(Orange);
                 continue;
             }
             long currentExp = BuildingManager.GetBuildingExp(buildingId);
@@ -182,14 +197,17 @@ public static class FracStatistic {
             .ThenByDescending(ticker => ticker.LastTradeTick)
             .FirstOrDefault();
 
-        economyLines[0].text = $"{ "统计-市场下次刷新".Translate() }：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}  (v{MarketValueManager.RefreshVersion})";
-        economyLines[1].text = $"{ "统计-市场热度".Translate() }：最热 {FormatMarketItem(hotItemId)}";
-        economyLines[2].text = $"{ "统计-市场热度".Translate() }：最冷 {FormatMarketItem(coldItemId)}";
-        economyLines[3].text = $"{ "统计-交易所概览".Translate() }：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
+        economyLines[0].text =
+            $"{"统计-市场下次刷新".Translate()}：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}  (v{MarketValueManager.RefreshVersion})";
+        economyLines[1].text = $"{"统计-市场热度".Translate()}：最热 {FormatMarketItem(hotItemId)}";
+        economyLines[2].text = $"{"统计-市场热度".Translate()}：最冷 {FormatMarketItem(coldItemId)}";
+        economyLines[3].text =
+            $"{"统计-交易所概览".Translate()}：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
         economyLines[4].text = hotTicker == null
-            ? $"{ "统计-交易所概览".Translate() }：暂无活跃成交"
-            : $"{ "统计-交易所概览".Translate() }：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F1}  净量 {hotTicker.NetPlayerVolume}";
-        economyLines[5].text = $"{ "统计-当前阶段矩阵".Translate() }：生产 {MarketValueManager.GetCurrentProductionRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m  消耗 {MarketValueManager.GetCurrentConsumeRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m";
+            ? $"{"统计-交易所概览".Translate()}：暂无活跃成交"
+            : $"{"统计-交易所概览".Translate()}：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F1}  净量 {hotTicker.NetPlayerVolume}";
+        economyLines[5].text =
+            $"{"统计-当前阶段矩阵".Translate()}：生产 {MarketValueManager.GetCurrentProductionRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m  消耗 {MarketValueManager.GetCurrentConsumeRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m";
     }
 
     private static string GetProtoSummary() {
@@ -200,7 +218,8 @@ public static class FracStatistic {
         long rectification = GetItemTotalCount(IFE精馏塔原胚);
         long directed = GetItemTotalCount(IFE分馏塔定向原胚);
         long total = interaction + mineral + point + conversion + rectification + directed;
-        return $"{total}  (交互 {interaction} / 复制 {mineral} / 聚集 {point} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed})";
+        return
+            $"{total}  (交互 {interaction} / 复制 {mineral} / 聚集 {point} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed})";
     }
 
     private static long GetBuildingExpTotal() {

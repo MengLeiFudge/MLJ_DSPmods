@@ -27,7 +27,8 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private sealed class PowerSourceProfile {
-        public PowerSourceProfile(string sourceName, double powerPerBuildingWatts, string fuelName, double fuelHeatValue) {
+        public PowerSourceProfile(string sourceName, double powerPerBuildingWatts, string fuelName,
+            double fuelHeatValue) {
             SourceName = sourceName;
             PowerPerBuildingWatts = powerPerBuildingWatts;
             FuelName = fuelName;
@@ -109,12 +110,12 @@ internal sealed class VanillaCurveSimulator {
     private const double SolarSailAbsorbDelaySeconds = 240.0;
     private const double RayReceiverWarmupSeconds = 20.0 * 60.0;
     private const double RayReceiverWarmupWithLensSeconds = 8.0 * 60.0;
-    private const double EjectorLaunchesPerMinute = 30.0;       // 3600 / (80 + 40)
-    private const double SiloLaunchesPerMinute = 13.3333333333; // 3600 / (150 + 120)
-    private const long ReceiverBasePowerWatts = 480_000_000;    // 8,000,000 * 60
-    private const long SwarmPowerPerSailWatts = 24_000;         // 400 * 60
-    private const long FramePowerPerSpWatts = 90_000;           // 1500 * 60
-    private const long ShellPowerPerCpWatts = 18_000;          // 300 * 60
+    private const double EjectorLaunchesPerMinute = 30.0;// 3600 / (80 + 40)
+    private const double SiloLaunchesPerMinute = 13.3333333333;// 3600 / (150 + 120)
+    private const long ReceiverBasePowerWatts = 480_000_000;// 8,000,000 * 60
+    private const long SwarmPowerPerSailWatts = 24_000;// 400 * 60
+    private const long FramePowerPerSpWatts = 90_000;// 1500 * 60
+    private const long ShellPowerPerCpWatts = 18_000;// 300 * 60
     private const double ShellCpPerSpCap = 60.0;
 
     private static readonly int[] matrixIds = [6001, 6002, 6003, 6004, 6005, 6006];
@@ -139,49 +140,51 @@ internal sealed class VanillaCurveSimulator {
     private static readonly double[] phaseInventoryCoverageRatios = [0.04, 0.12, 0.28, 0.45, 0.65, 0.85, 1.0];
     // 阶段电力模型只做主体建筑近似，不追求逐秒电网精度。
     private static readonly Dictionary<int, double> factorySpeedByItemId = new() {
-        [2302] = 1.0,  // 电弧熔炉
-        [2315] = 2.0,  // 位面熔炉
-        [2319] = 3.0,  // 负熵熔炉
-        [2303] = 0.75, // 制造台 Mk.I
-        [2304] = 1.0,  // 制造台 Mk.II
-        [2305] = 1.5,  // 制造台 Mk.III
-        [2318] = 3.0,  // 重组式制造台
-        [2309] = 1.0,  // 化工厂
-        [2317] = 2.0,  // 量子化工厂
-        [2308] = 1.0,  // 原油精炼厂
-        [2310] = 1.0,  // 微型粒子对撞机
-        [2314] = 1.0,  // 分馏塔
-        [2208] = 1.0,  // 射线接收站（临界光子）
-        [2901] = 1.0,  // 矩阵研究站
-        [2902] = 3.0,  // 自演化研究站（初步假设）
+        [2302] = 1.0,// 电弧熔炉
+        [2315] = 2.0,// 位面熔炉
+        [2319] = 3.0,// 负熵熔炉
+        [2303] = 0.75,// 制造台 Mk.I
+        [2304] = 1.0,// 制造台 Mk.II
+        [2305] = 1.5,// 制造台 Mk.III
+        [2318] = 3.0,// 重组式制造台
+        [2309] = 1.0,// 化工厂
+        [2317] = 2.0,// 量子化工厂
+        [2308] = 1.0,// 原油精炼厂
+        [2310] = 1.0,// 微型粒子对撞机
+        [2314] = 1.0,// 分馏塔
+        [2208] = 1.0,// 射线接收站（临界光子）
+        [2901] = 1.0,// 矩阵研究站
+        [2902] = 3.0,// 自演化研究站（初步假设）
     };
     private static readonly Dictionary<int, double> buildingPowerByItemId = new() {
-        [2301] = 420_000,    // 采矿机
-        [2316] = 1_440_000,  // 大型采矿机
-        [2306] = 300_000,    // 抽水站
-        [2307] = 840_000,    // 原油萃取站
-        [2302] = 360_000,    // 电弧熔炉
-        [2315] = 1_440_000,  // 位面熔炉
-        [2319] = 2_880_000,  // 负熵熔炉
-        [2303] = 270_000,    // 制造台 Mk.I
-        [2304] = 540_000,    // 制造台 Mk.II
-        [2305] = 1_080_000,  // 制造台 Mk.III
-        [2318] = 2_160_000,  // 重组式制造台
-        [2309] = 720_000,    // 化工厂
-        [2317] = 2_160_000,  // 量子化工厂
-        [2308] = 960_000,    // 原油精炼厂
-        [2310] = 12_000_000, // 微型粒子对撞机
-        [2314] = 720_000,    // 分馏塔
-        [2901] = 480_000,    // 矩阵研究站
-        [2902] = 1_440_000,  // 矩阵研究站 Mk.II
+        [2301] = 420_000,// 采矿机
+        [2316] = 1_440_000,// 大型采矿机
+        [2306] = 300_000,// 抽水站
+        [2307] = 840_000,// 原油萃取站
+        [2302] = 360_000,// 电弧熔炉
+        [2315] = 1_440_000,// 位面熔炉
+        [2319] = 2_880_000,// 负熵熔炉
+        [2303] = 270_000,// 制造台 Mk.I
+        [2304] = 540_000,// 制造台 Mk.II
+        [2305] = 1_080_000,// 制造台 Mk.III
+        [2318] = 2_160_000,// 重组式制造台
+        [2309] = 720_000,// 化工厂
+        [2317] = 2_160_000,// 量子化工厂
+        [2308] = 960_000,// 原油精炼厂
+        [2310] = 12_000_000,// 微型粒子对撞机
+        [2314] = 720_000,// 分馏塔
+        [2901] = 480_000,// 矩阵研究站
+        [2902] = 1_440_000,// 矩阵研究站 Mk.II
     };
     private static readonly PowerSourceProfile windPowerProfile = new("风力涡轮机", 300_000, string.Empty, 0);
     private static readonly PowerSourceProfile thermalPowerProfile = new("火力发电厂", 2_160_000, "煤矿", 5_400_000);
     private static readonly PowerSourceProfile fusionPowerProfile = new("微型聚变发电站", 9_000_000, "氘核燃料棒", 3_000_000_000);
-    private static readonly PowerSourceProfile artificialStarPowerProfile = new("人造恒星", 75_000_000, "反物质燃料棒", 72_000_000_000);
+    private static readonly PowerSourceProfile artificialStarPowerProfile =
+        new("人造恒星", 75_000_000, "反物质燃料棒", 72_000_000_000);
     private static readonly int[] verticalConstructionTechIds = [3701, 3702, 3703, 3704, 3705, 3706];
     private static readonly int[] beltItemIds = [BeltMkIItemId, BeltMkIIItemId, BeltMkIIIItemId];
-    private static readonly int[] inserterItemIds = [InserterMkIItemId, InserterMkIIItemId, InserterMkIIIItemId, StackedInserterItemId];
+    private static readonly int[] inserterItemIds =
+        [InserterMkIItemId, InserterMkIIItemId, InserterMkIIIItemId, StackedInserterItemId];
     private static readonly int[] smelterUpgradeItemIds = [2302, 2315, 2319];
     private static readonly int[] assemblerUpgradeItemIds = [2303, 2304, 2305, 2318];
     private static readonly int[] chemicalUpgradeItemIds = [2309, 2317];
@@ -399,7 +402,9 @@ internal sealed class VanillaCurveSimulator {
         }
 
         int factoryId = ChooseStaticFactory(calcRecipe, recipe);
-        if (!dataSet.ItemsById.TryGetValue(factoryId, out VanillaItem factory) || factory.Space <= 0 || factory.Speed <= 0) {
+        if (!dataSet.ItemsById.TryGetValue(factoryId, out VanillaItem factory)
+            || factory.Space <= 0
+            || factory.Speed <= 0) {
             stack.Remove(recipe.Id);
             return double.PositiveInfinity;
         }
@@ -413,7 +418,8 @@ internal sealed class VanillaCurveSimulator {
         double outputMultiplier = GetOutputMultiplier(recipe, mode);
         double speedMultiplier = GetSpeedMultiplier(recipe, mode);
         double effectiveOutputCount = outputCount * outputMultiplier;
-        double localRate = effectiveOutputCount * factory.Speed * speedMultiplier * 60.0 / Math.Max(1, recipe.TimeSpend);
+        double localRate =
+            effectiveOutputCount * factory.Speed * speedMultiplier * 60.0 / Math.Max(1, recipe.TimeSpend);
         if (localRate <= 0) {
             stack.Remove(recipe.Id);
             return double.PositiveInfinity;
@@ -433,7 +439,8 @@ internal sealed class VanillaCurveSimulator {
 
     private CalcRecipe FindMatchingCalcRecipe(VanillaRecipe recipe) {
         int primaryOutputId = recipe.Outputs.Count > 0 ? recipe.Outputs[0].Id : 0;
-        if (primaryOutputId <= 0 || !dataSet.CalcRecipesByOutputId.TryGetValue(primaryOutputId, out List<CalcRecipe> recipes)) {
+        if (primaryOutputId <= 0
+            || !dataSet.CalcRecipesByOutputId.TryGetValue(primaryOutputId, out List<CalcRecipe> recipes)) {
             return null;
         }
 
@@ -539,7 +546,9 @@ internal sealed class VanillaCurveSimulator {
         int selected = factories[0];
         double bestScore = double.MinValue;
         foreach (int factoryId in factories) {
-            if (!dataSet.ItemsById.TryGetValue(factoryId, out VanillaItem factory) || factory.Space <= 0 || factory.Speed <= 0) {
+            if (!dataSet.ItemsById.TryGetValue(factoryId, out VanillaItem factory)
+                || factory.Space <= 0
+                || factory.Speed <= 0) {
                 continue;
             }
 
@@ -569,7 +578,8 @@ internal sealed class VanillaCurveSimulator {
         return Math.Min(MaxLabStackLevel, InitialLabStackLevel + unlockedVerticalTechCount * 2);
     }
 
-    private static int GetCurrentMatrixInventoryLimit(int matrixItemId, HashSet<int> unlockedTechs, GameDataSet dataSet) {
+    private static int
+        GetCurrentMatrixInventoryLimit(int matrixItemId, HashSet<int> unlockedTechs, GameDataSet dataSet) {
         if (!dataSet.ItemsById.TryGetValue(matrixItemId, out VanillaItem item)) {
             return 0;
         }
@@ -610,9 +620,12 @@ internal sealed class VanillaCurveSimulator {
         return InserterMkIItemId;
     }
 
-    private static double GetCurrentDynamicFullBeltRatePerSecond(HashSet<int> unlockedTechs, HashSet<int> unlockedItems) {
+    private static double
+        GetCurrentDynamicFullBeltRatePerSecond(HashSet<int> unlockedTechs, HashSet<int> unlockedItems) {
         int beltItemId = GetCurrentBestBeltItemId(unlockedItems);
-        double beltRate = beltRateByItemId.TryGetValue(beltItemId, out double mappedRate) ? mappedRate : beltRateByItemId[BeltMkIItemId];
+        double beltRate = beltRateByItemId.TryGetValue(beltItemId, out double mappedRate)
+            ? mappedRate
+            : beltRateByItemId[BeltMkIItemId];
         return beltRate * GetCurrentCargoStackMultiplier(unlockedTechs);
     }
 
@@ -690,8 +703,8 @@ internal sealed class VanillaCurveSimulator {
         int[] newFamily = GetUpgradeFamily(newItemId);
         int[] oldFamily = GetUpgradeFamily(oldItemId);
         return newFamily.Length > 0
-            && ReferenceEquals(newFamily, oldFamily)
-            && GetUpgradeRank(newItemId) > GetUpgradeRank(oldItemId);
+               && ReferenceEquals(newFamily, oldFamily)
+               && GetUpgradeRank(newItemId) > GetUpgradeRank(oldItemId);
     }
 
     private int GetBuildingInventoryTargetCount(int itemId) {
@@ -779,7 +792,9 @@ internal sealed class VanillaCurveSimulator {
             }
 
             materialDemandParts.Add($"{cost.Name}x{FormatAmount(cost.Count)}");
-            double snapshotCount = phase.InventorySnapshot.TryGetValue(cost.Name, out double storedCount) ? storedCount : 0;
+            double snapshotCount = phase.InventorySnapshot.TryGetValue(cost.Name, out double storedCount)
+                ? storedCount
+                : 0;
             materialSnapshotParts.Add($"{cost.Name}{FormatAmount(snapshotCount)}");
         }
 
@@ -788,7 +803,8 @@ internal sealed class VanillaCurveSimulator {
             List<string> activeMatrixParts = matrixIds
                 .Select((matrixId, index) => (matrixId, demand: matrixDemand[index], snapshot: matrixSnapshot[index]))
                 .Where(entry => entry.demand > 0 || entry.snapshot > 0)
-                .Select(entry => $"{GetItemName(entry.matrixId)}x{FormatAmount(entry.demand)}/{FormatAmount(entry.snapshot)}")
+                .Select(entry =>
+                    $"{GetItemName(entry.matrixId)}x{FormatAmount(entry.demand)}/{FormatAmount(entry.snapshot)}")
                 .ToList();
             if (activeMatrixParts.Count > 0) {
                 sections.Add($"矩阵 {string.Join(" / ", activeMatrixParts)}（需求/快照）");
@@ -823,7 +839,9 @@ internal sealed class VanillaCurveSimulator {
             int gatherBuildingId = GetGatherBuildingForTiming(phase, itemId);
             string gatherBuildingName = gatherBuildingId > 0 ? GetItemName(gatherBuildingId) : "手采";
             double gatherStartSeconds = FindFactorySupplyStartSeconds(phase, gatherBuildingId);
-            int gatherTargetCount = phase.BuildingCounts.TryGetValue(gatherBuildingName, out int gatherCount) ? gatherCount : 0;
+            int gatherTargetCount = phase.BuildingCounts.TryGetValue(gatherBuildingName, out int gatherCount)
+                ? gatherCount
+                : 0;
             return eventSeconds >= gatherStartSeconds
                 ? $"采集供给，{gatherBuildingName} {FormatTimelineDuration(gatherStartSeconds)}起，阶段目标 {gatherTargetCount} 台"
                 : $"手动采矿，{gatherBuildingName} 需到 {FormatTimelineDuration(gatherStartSeconds)}，阶段目标 {gatherTargetCount} 台";
@@ -844,14 +862,16 @@ internal sealed class VanillaCurveSimulator {
             : $"手动采矿+手搓，{factoryName} 需到 {FormatTimelineDuration(factorySupplyStartSeconds)}，阶段目标 {factoryTargetCount} 台";
     }
 
-    private string BuildMatrixSourceNote(string matrixName, double eventSeconds, PhaseSummary phase, double requiredCount) {
+    private string BuildMatrixSourceNote(string matrixName, double eventSeconds, PhaseSummary phase,
+        double requiredCount) {
         if (CanManualSupplyMatrixCount(requiredCount)) {
             return "手动采矿+手搓";
         }
 
-        double productionStartSeconds = phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
-            ? mappedStartSeconds
-            : phase.StartSeconds;
+        double productionStartSeconds =
+            phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
+                ? mappedStartSeconds
+                : phase.StartSeconds;
         int targetCount = phase.MatrixLabCounts.TryGetValue(matrixName, out int count) ? count : 0;
         return eventSeconds >= productionStartSeconds
             ? $"矩阵产线供给，矩阵研究站 {FormatTimelineDuration(productionStartSeconds)}起，阶段目标 {targetCount} 台"
@@ -904,7 +924,8 @@ internal sealed class VanillaCurveSimulator {
             return phase.StartSeconds;
         }
 
-        if (!int.TryParse(item.PreTechCode.Substring(1), out int unlockTechId) || !dataSet.TechsById.TryGetValue(unlockTechId, out VanillaTech unlockTech)) {
+        if (!int.TryParse(item.PreTechCode.Substring(1), out int unlockTechId)
+            || !dataSet.TechsById.TryGetValue(unlockTechId, out VanillaTech unlockTech)) {
             return phase.StartSeconds;
         }
 
@@ -921,8 +942,10 @@ internal sealed class VanillaCurveSimulator {
         return unlockTiming?.EndSeconds ?? double.MaxValue;
     }
 
-    private void PopulateMatrixLineTimelineData(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedItemsBeforePhase,
-        HashSet<int> unlockedTechsBeforePhase, Dictionary<int, int> carriedMatrixLabCounts, Dictionary<int, int> activeBuildCounts,
+    private void PopulateMatrixLineTimelineData(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedItemsBeforePhase,
+        HashSet<int> unlockedTechsBeforePhase, Dictionary<int, int> carriedMatrixLabCounts,
+        Dictionary<int, int> activeBuildCounts,
         Dictionary<int, double> currentInventory) {
         phase.MatrixBuildStartSeconds.Clear();
         phase.MatrixProductionStartSeconds.Clear();
@@ -949,14 +972,20 @@ internal sealed class VanillaCurveSimulator {
             var buildingDemand = new Dictionary<int, double>();
             var resourceDemand = new Dictionary<int, double>();
             // 开线时先按阶段起点已解锁的机器估算，避免把本阶段后续升级科技反向当成开线前置。
-            AccumulateDemand(matrixItemId, pair.Value, buildAvailableItems, buildingDemand, resourceDemand, new HashSet<int>());
+            AccumulateDemand(matrixItemId, pair.Value, buildAvailableItems, buildingDemand, resourceDemand,
+                new HashSet<int>());
 
             Dictionary<int, int> requiredBuildingCounts = buildingDemand
-                .Where(demand => demand.Value > 0 && dataSet.ItemsById.TryGetValue(demand.Key, out VanillaItem item) && item.CanBuild)
+                .Where(demand =>
+                    demand.Value > 0
+                    && dataSet.ItemsById.TryGetValue(demand.Key, out VanillaItem item)
+                    && item.CanBuild)
                 .ToDictionary(demand => demand.Key, demand => RoundUpCount(demand.Value));
             Dictionary<int, int> addedBuildingCounts = requiredBuildingCounts
-                .Select(demand => (itemId: demand.Key, count: Math.Max(0, demand.Value - GetExistingBuildingCountForMatrixLine(
-                    demand.Key, matrixItemId, existingLabCount, activeBuildCounts))))
+                .Select(demand => (itemId: demand.Key, count: Math.Max(0, demand.Value
+                                                                          - GetExistingBuildingCountForMatrixLine(
+                                                                              demand.Key, matrixItemId,
+                                                                              existingLabCount, activeBuildCounts))))
                 .Where(demand => demand.count > 0)
                 .ToDictionary(demand => demand.itemId, demand => demand.count);
             int actualLabCount = labUpgradeItemIds.Sum(labItemId =>
@@ -980,14 +1009,13 @@ internal sealed class VanillaCurveSimulator {
             double buildStartSeconds = Math.Max(
                 GetLatestUnlockSeconds(phase.StartSeconds, itemUnlockSeconds, prerequisiteItemIds),
                 powerReadySeconds);
-            Dictionary<int, int> bootstrapAddedBuildingCounts = BuildBootstrapAddedBuildingCounts(strategyKind, actualLabCount, existingLabCount,
+            Dictionary<int, int> bootstrapAddedBuildingCounts = BuildBootstrapAddedBuildingCounts(strategyKind,
+                actualLabCount, existingLabCount,
                 requiredBuildingCounts, matrixItemId, activeBuildCounts);
-            double buildLeadSeconds = EstimateBuildLeadSeconds(strategyKind, bootstrapAddedBuildingCounts, buildAvailableItems, unlockedTechsBeforePhase, currentInventory);
-            double productionStartSeconds = existingLabCount > 0
-                ? phase.StartSeconds
-                : addedBuildingCounts.Count == 0
-                    ? phase.StartSeconds
-                    : buildStartSeconds + buildLeadSeconds;
+            double buildLeadSeconds = EstimateBuildLeadSeconds(strategyKind, bootstrapAddedBuildingCounts,
+                buildAvailableItems, unlockedTechsBeforePhase, currentInventory);
+            double productionStartSeconds = existingLabCount > 0 ? phase.StartSeconds :
+                addedBuildingCounts.Count == 0 ? phase.StartSeconds : buildStartSeconds + buildLeadSeconds;
             string prerequisiteTechNotes = BuildUnlockTechSummary(phase, prerequisiteItemIds, powerPriorityTiming);
             string addedBuildingNotes = FormatBuildingCountSummary(addedBuildingCounts);
             string requiredBuildingNotes = FormatBuildingCountSummary(requiredBuildingCounts);
@@ -1020,7 +1048,8 @@ internal sealed class VanillaCurveSimulator {
         return phaseUnlockedItems;
     }
 
-    private Dictionary<int, double> BuildPhaseItemUnlockSeconds(PhaseSummary phase, HashSet<int> unlockedItemsBeforePhase) {
+    private Dictionary<int, double> BuildPhaseItemUnlockSeconds(PhaseSummary phase,
+        HashSet<int> unlockedItemsBeforePhase) {
         var unlockSeconds = new Dictionary<int, double>();
         foreach (int itemId in unlockedItemsBeforePhase) {
             unlockSeconds[itemId] = phase.StartSeconds;
@@ -1059,7 +1088,8 @@ internal sealed class VanillaCurveSimulator {
         visiting.Remove(itemId);
     }
 
-    private double GetLatestUnlockSeconds(double defaultSeconds, Dictionary<int, double> itemUnlockSeconds, IEnumerable<int> itemIds) {
+    private double GetLatestUnlockSeconds(double defaultSeconds, Dictionary<int, double> itemUnlockSeconds,
+        IEnumerable<int> itemIds) {
         double latestSeconds = defaultSeconds;
         foreach (int itemId in itemIds.Distinct()) {
             if (itemUnlockSeconds.TryGetValue(itemId, out double unlockSeconds)) {
@@ -1082,7 +1112,8 @@ internal sealed class VanillaCurveSimulator {
         return GetActiveBuildCount(activeBuildCounts, buildingItemId);
     }
 
-    private Dictionary<int, int> BuildBootstrapAddedBuildingCounts(PlayerStrategyKind strategyKind, int actualLabCount, int existingLabCount,
+    private Dictionary<int, int> BuildBootstrapAddedBuildingCounts(PlayerStrategyKind strategyKind, int actualLabCount,
+        int existingLabCount,
         Dictionary<int, int> requiredBuildingCounts, int matrixItemId, Dictionary<int, int> activeBuildCounts) {
         if (existingLabCount > 0 || actualLabCount <= 0) {
             return [];
@@ -1095,7 +1126,8 @@ internal sealed class VanillaCurveSimulator {
             int targetCount = labUpgradeItemIds.Contains(pair.Key)
                 ? bootstrapLabCount
                 : Math.Max(1, (int)Math.Ceiling(pair.Value * bootstrapRatio));
-            int existingCount = GetExistingBuildingCountForMatrixLine(pair.Key, matrixItemId, existingLabCount, activeBuildCounts);
+            int existingCount =
+                GetExistingBuildingCountForMatrixLine(pair.Key, matrixItemId, existingLabCount, activeBuildCounts);
             int deltaCount = Math.Max(0, targetCount - existingCount);
             if (deltaCount > 0) {
                 bootstrapCounts[pair.Key] = deltaCount;
@@ -1109,7 +1141,8 @@ internal sealed class VanillaCurveSimulator {
         return Math.Max(1, Math.Min(actualLabCount, (int)Math.Ceiling(actualLabCount * ratio)));
     }
 
-    private double EstimateBuildLeadSeconds(PlayerStrategyKind strategyKind, Dictionary<int, int> addedBuildingCounts, HashSet<int> unlockedItems,
+    private double EstimateBuildLeadSeconds(PlayerStrategyKind strategyKind, Dictionary<int, int> addedBuildingCounts,
+        HashSet<int> unlockedItems,
         HashSet<int> unlockedTechs, Dictionary<int, double> currentInventory) {
         double maxLeadSeconds = 0;
         int parallelFactor = GetBuildParallelFactor(strategyKind, unlockedTechs, unlockedItems);
@@ -1131,7 +1164,8 @@ internal sealed class VanillaCurveSimulator {
         return maxLeadSeconds;
     }
 
-    private int GetBuildParallelFactor(PlayerStrategyKind strategyKind, HashSet<int> unlockedTechs, HashSet<int> unlockedItems) {
+    private int GetBuildParallelFactor(PlayerStrategyKind strategyKind, HashSet<int> unlockedTechs,
+        HashSet<int> unlockedItems) {
         double fullBeltRate = GetCurrentDynamicFullBeltRatePerSecond(unlockedTechs, unlockedItems);
         return strategyKind switch {
             PlayerStrategyKind.Conventional => Math.Max(1, (int)Math.Ceiling(fullBeltRate)),
@@ -1159,7 +1193,8 @@ internal sealed class VanillaCurveSimulator {
             : string.Join(" / ", unlockTimings.Select(timing => $"{timing.TechCode} {timing.TechName}"));
     }
 
-    private TechTiming FindPhasePowerPriorityTiming(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedTechsBeforePhase) {
+    private TechTiming FindPhasePowerPriorityTiming(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedTechsBeforePhase) {
         if (phase.Phase == ProgressPhase.Electromagnetic) {
             // 蓝糖首线默认允许直接吃前期风电，避免把火电科技反向当成开线前置。
             return null;
@@ -1174,14 +1209,16 @@ internal sealed class VanillaCurveSimulator {
         }
 
         return phase.TechTimings
-            .Where(timing => dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech) && tech.UnlockTargets.Any(IsPowerUnlock))
+            .Where(timing => dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech)
+                             && tech.UnlockTargets.Any(IsPowerUnlock))
             .OrderBy(timing => timing.EndSeconds)
             .ThenBy(timing => timing.PhaseIndex)
             .FirstOrDefault();
     }
 
     private TechTiming FindUnlockTimingForItem(PhaseSummary phase, int itemId) {
-        foreach (TechTiming timing in phase.TechTimings.OrderBy(timing => timing.EndSeconds).ThenBy(timing => timing.PhaseIndex)) {
+        foreach (TechTiming timing in phase.TechTimings.OrderBy(timing => timing.EndSeconds)
+                     .ThenBy(timing => timing.PhaseIndex)) {
             if (!dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech)) {
                 continue;
             }
@@ -1203,7 +1240,8 @@ internal sealed class VanillaCurveSimulator {
                 .Select(pair => $"{GetItemName(pair.Key)} x{pair.Value}"));
     }
 
-    private string BuildDirectInputRateSummary(int outputItemId, double outputRatePerSecond, HashSet<int> unlockedItems) {
+    private string BuildDirectInputRateSummary(int outputItemId, double outputRatePerSecond,
+        HashSet<int> unlockedItems) {
         VanillaRecipe recipe = ChoosePrimaryRecipe(outputItemId);
         if (recipe == null || recipe.Inputs.Count == 0) {
             return "无";
@@ -1252,7 +1290,8 @@ internal sealed class VanillaCurveSimulator {
             phase.MatrixLabCount = 0;
             phase.MatrixLabBaseCount = 0;
 
-            phase.EstimatedResearchSeconds = EstimatePhaseResearchSeconds(strategyKind, phase, unlockedTechs, unlockedItems,
+            phase.EstimatedResearchSeconds = EstimatePhaseResearchSeconds(strategyKind, phase, unlockedTechs,
+                unlockedItems,
                 currentMatrixLabCounts, phaseIndex);
             HashSet<int> unlockedItemsBeforePhase = [.. unlockedItems];
             HashSet<int> unlockedTechsBeforePhase = [.. unlockedTechs];
@@ -1260,29 +1299,38 @@ internal sealed class VanillaCurveSimulator {
                 .Where(pair => GetMatrixStage(pair.Key) > 0)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, phaseIndex,
+            EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                currentMatrixLabCounts, phaseIndex,
                 phase.EstimatedResearchSeconds);
-            PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, builtFactoryCounts, currentInventory);
+            PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                currentMatrixLabCounts, builtFactoryCounts, currentInventory);
             for (int iteration = 0; iteration < MaxTimelineIterations; iteration++) {
                 List<(double startSeconds, double endSeconds)> previousTimingWindows = phase.TechTimings
                     .OrderBy(timing => timing.PhaseIndex)
                     .Select(timing => (timing.StartSeconds, timing.EndSeconds))
                     .ToList();
-                var previousMatrixProductionStartSeconds = new Dictionary<string, double>(phase.MatrixProductionStartSeconds);
+                var previousMatrixProductionStartSeconds =
+                    new Dictionary<string, double>(phase.MatrixProductionStartSeconds);
 
-                RecalculatePhaseTechTimingsWithMatrixAvailability(strategyKind, phase, unlockedTechsBeforePhase, unlockedItemsBeforePhase,
+                RecalculatePhaseTechTimingsWithMatrixAvailability(strategyKind, phase, unlockedTechsBeforePhase,
+                    unlockedItemsBeforePhase,
                     matrixInventoryBeforePhase, phaseIndex);
-                EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, phaseIndex,
+                EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                    currentMatrixLabCounts, phaseIndex,
                     phase.EstimatedResearchSeconds);
-                PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, builtFactoryCounts, currentInventory);
+                PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                    currentMatrixLabCounts, builtFactoryCounts, currentInventory);
 
                 bool timelineStable = phase.TechTimings
                     .OrderBy(timing => timing.PhaseIndex)
                     .Select((timing, index) =>
-                        Math.Abs(timing.StartSeconds - previousTimingWindows[index].startSeconds) <= TimelineConvergenceToleranceSeconds
-                        && Math.Abs(timing.EndSeconds - previousTimingWindows[index].endSeconds) <= TimelineConvergenceToleranceSeconds)
+                        Math.Abs(timing.StartSeconds - previousTimingWindows[index].startSeconds)
+                        <= TimelineConvergenceToleranceSeconds
+                        && Math.Abs(timing.EndSeconds - previousTimingWindows[index].endSeconds)
+                        <= TimelineConvergenceToleranceSeconds)
                     .All(stable => stable);
-                bool matrixStable = previousMatrixProductionStartSeconds.Count == phase.MatrixProductionStartSeconds.Count
+                bool matrixStable =
+                    previousMatrixProductionStartSeconds.Count == phase.MatrixProductionStartSeconds.Count
                     && phase.MatrixProductionStartSeconds.All(pair =>
                         previousMatrixProductionStartSeconds.TryGetValue(pair.Key, out double previousStartSeconds)
                         && Math.Abs(pair.Value - previousStartSeconds) <= TimelineConvergenceToleranceSeconds);
@@ -1290,11 +1338,14 @@ internal sealed class VanillaCurveSimulator {
                     break;
                 }
             }
-            RecalculatePhaseTechTimingsWithMatrixAvailability(strategyKind, phase, unlockedTechsBeforePhase, unlockedItemsBeforePhase,
+            RecalculatePhaseTechTimingsWithMatrixAvailability(strategyKind, phase, unlockedTechsBeforePhase,
+                unlockedItemsBeforePhase,
                 matrixInventoryBeforePhase, phaseIndex);
-            EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, phaseIndex,
+            EstimateMatrixLimitedSeconds(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                currentMatrixLabCounts, phaseIndex,
                 phase.EstimatedResearchSeconds);
-            PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase, currentMatrixLabCounts, builtFactoryCounts, currentInventory);
+            PopulateMatrixLineTimelineData(strategyKind, phase, unlockedItemsBeforePhase, unlockedTechsBeforePhase,
+                currentMatrixLabCounts, builtFactoryCounts, currentInventory);
 
             phase.ResearchEndSeconds = phase.StartSeconds + phase.EstimatedResearchSeconds;
             cumulativeSeconds = phase.ResearchEndSeconds;
@@ -1328,11 +1379,14 @@ internal sealed class VanillaCurveSimulator {
             var buildingDemand = new Dictionary<int, double>();
             var resourceDemand = new Dictionary<int, double>();
             foreach (var pair in itemRateDemand) {
-                AccumulateDemand(pair.Key, pair.Value, unlockedItems, buildingDemand, resourceDemand, new HashSet<int>());
+                AccumulateDemand(pair.Key, pair.Value, unlockedItems, buildingDemand, resourceDemand,
+                    new HashSet<int>());
             }
 
-            PhaseBuildPlan buildPlan = BuildPhaseBuildPlan(phase, buildingDemand, unlockedItems, builtFactoryCounts, currentInventory);
-            List<BlockingRecord> blockingRecords = ApplyBackgroundBuildModel(strategyKind, phase, unlockedItems, unlockedTechs, currentInventory, buildPlan);
+            PhaseBuildPlan buildPlan = BuildPhaseBuildPlan(phase, buildingDemand, unlockedItems, builtFactoryCounts,
+                currentInventory);
+            List<BlockingRecord> blockingRecords = ApplyBackgroundBuildModel(strategyKind, phase, unlockedItems,
+                unlockedTechs, currentInventory, buildPlan);
 
             foreach (var pair in buildingDemand.OrderBy(p => p.Key)) {
                 string name = dataSet.ItemsById.TryGetValue(pair.Key, out VanillaItem item)
@@ -1382,7 +1436,8 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private double EstimatePhaseResearchSeconds(PlayerStrategyKind strategyKind, PhaseSummary phase,
-        HashSet<int> unlockedTechs, HashSet<int> unlockedItems, Dictionary<int, int> currentMatrixLabCounts, int phaseIndex) {
+        HashSet<int> unlockedTechs, HashSet<int> unlockedItems, Dictionary<int, int> currentMatrixLabCounts,
+        int phaseIndex) {
         double estimatedSeconds = 0;
         foreach (TechTiming timing in phase.TechTimings) {
             if (!dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech)) {
@@ -1401,7 +1456,8 @@ internal sealed class VanillaCurveSimulator {
 
         for (int iteration = 0; iteration < 2; iteration++) {
             Dictionary<int, double> matrixRatesByItemId =
-                BuildPhaseMatrixRates(strategyKind, phase, unlockedItems, unlockedTechs, currentMatrixLabCounts, phaseIndex,
+                BuildPhaseMatrixRates(strategyKind, phase, unlockedItems, unlockedTechs, currentMatrixLabCounts,
+                    phaseIndex,
                     estimatedSeconds);
             var techUnlockedTechs = new HashSet<int>(unlockedTechs);
             var techUnlockedItems = new HashSet<int>(unlockedItems);
@@ -1414,7 +1470,8 @@ internal sealed class VanillaCurveSimulator {
                     continue;
                 }
 
-                double duration = EstimateSingleTechResearchSeconds(strategyKind, tech, techUnlockedTechs, techUnlockedItems, phaseIndex,
+                double duration = EstimateSingleTechResearchSeconds(strategyKind, tech, techUnlockedTechs,
+                    techUnlockedItems, phaseIndex,
                     matrixRatesByItemId);
                 timing.StartSeconds = currentSeconds;
                 timing.EndSeconds = currentSeconds + duration;
@@ -1435,7 +1492,8 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private void RecalculatePhaseTechTimingsWithMatrixAvailability(PlayerStrategyKind strategyKind, PhaseSummary phase,
-        HashSet<int> unlockedTechsBeforePhase, HashSet<int> unlockedItemsBeforePhase, Dictionary<int, double> matrixInventoryBeforePhase,
+        HashSet<int> unlockedTechsBeforePhase, HashSet<int> unlockedItemsBeforePhase,
+        Dictionary<int, double> matrixInventoryBeforePhase,
         int phaseIndex) {
         var localUnlockedTechs = new HashSet<int>(unlockedTechsBeforePhase);
         var localUnlockedItems = new HashSet<int>(unlockedItemsBeforePhase);
@@ -1449,17 +1507,22 @@ internal sealed class VanillaCurveSimulator {
 
         while (pendingTimings.Count > 0) {
             List<(TechTiming timing, VanillaTech tech, double startSeconds)> readyTimings = pendingTimings
-                .Select(timing => (timing, tech: dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech) ? tech : null))
+                .Select(timing => (timing,
+                    tech: dataSet.TechsById.TryGetValue(timing.TechId, out VanillaTech tech) ? tech : null))
                 .Where(pair => pair.tech != null && IsUnlocked(pair.tech, localUnlockedTechs))
-                .Select(pair => (pair.timing, pair.tech, startSeconds: GetTechEarliestStartSeconds(phase, pair.tech, currentSeconds)))
+                .Select(pair => (pair.timing, pair.tech,
+                    startSeconds: GetTechEarliestStartSeconds(phase, pair.tech, currentSeconds)))
                 .ToList();
             if (phase.Phase == ProgressPhase.Electromagnetic) {
-                double electromagneticProductionReadySeconds = phase.MatrixProductionStartSeconds.TryGetValue("电磁矩阵", out double mappedStartSeconds)
-                    ? mappedStartSeconds
-                    : double.MaxValue;
+                double electromagneticProductionReadySeconds =
+                    phase.MatrixProductionStartSeconds.TryGetValue("电磁矩阵", out double mappedStartSeconds)
+                        ? mappedStartSeconds
+                        : double.MaxValue;
                 if (currentSeconds + TimelineConvergenceToleranceSeconds < electromagneticProductionReadySeconds) {
                     List<(TechTiming timing, VanillaTech tech, double startSeconds)> bootstrapCandidates = readyTimings
-                        .Where(pair => !RequiresMatrixProductionLine(pair.tech) || IsElectromagneticLinePrerequisiteTech(pair.tech.Id))
+                        .Where(pair =>
+                            !RequiresMatrixProductionLine(pair.tech)
+                            || IsElectromagneticLinePrerequisiteTech(pair.tech.Id))
                         .ToList();
                     if (bootstrapCandidates.Count > 0) {
                         readyTimings = bootstrapCandidates;
@@ -1491,7 +1554,8 @@ internal sealed class VanillaCurveSimulator {
             double hashLimitedSeconds = !RequiresMatrixResearch(selected.tech) || labCount <= 0
                 ? selected.tech.HashNeeded / (DefaultLabHashPerSecond * researchSpeed)
                 : selected.tech.HashNeeded / Math.Max(1.0, labCount * DefaultLabHashPerSecond * researchSpeed);
-            double matrixLimitedSeconds = GetTechMatrixWaitSeconds(phase, selected.tech, selected.startSeconds, localMatrixInventory,
+            double matrixLimitedSeconds = GetTechMatrixWaitSeconds(phase, selected.tech, selected.startSeconds,
+                localMatrixInventory,
                 matrixRatesByItemId);
             double duration = Math.Max(hashLimitedSeconds, matrixLimitedSeconds);
 
@@ -1502,14 +1566,20 @@ internal sealed class VanillaCurveSimulator {
             foreach (int matrixItemId in matrixRatesByItemId.Keys) {
                 double rate = matrixRatesByItemId[matrixItemId];
                 string matrixName = GetItemName(matrixItemId);
-                double productionStartSeconds = phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
-                    ? mappedStartSeconds
-                    : phase.StartSeconds;
-                double producedSeconds = Math.Max(0, selected.timing.EndSeconds - Math.Max(selected.timing.StartSeconds, productionStartSeconds));
+                double productionStartSeconds =
+                    phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
+                        ? mappedStartSeconds
+                        : phase.StartSeconds;
+                double producedSeconds = Math.Max(0,
+                    selected.timing.EndSeconds - Math.Max(selected.timing.StartSeconds, productionStartSeconds));
                 double producedCount = producedSeconds * rate;
-                double consumedCount = selected.tech.CostItems.Where(cost => cost.Id == matrixItemId).Sum(cost => cost.Count);
-                double updatedInventory = (localMatrixInventory.TryGetValue(matrixItemId, out double existingInventory) ? existingInventory : 0)
-                    + producedCount - consumedCount;
+                double consumedCount = selected.tech.CostItems.Where(cost => cost.Id == matrixItemId)
+                    .Sum(cost => cost.Count);
+                double updatedInventory = (localMatrixInventory.TryGetValue(matrixItemId, out double existingInventory)
+                                              ? existingInventory
+                                              : 0)
+                                          + producedCount
+                                          - consumedCount;
                 localMatrixInventory[matrixItemId] = Math.Max(0, updatedInventory);
             }
 
@@ -1539,9 +1609,10 @@ internal sealed class VanillaCurveSimulator {
                 continue;
             }
 
-            double productionReadySeconds = phase.MatrixProductionStartSeconds.TryGetValue(cost.Name, out double mappedStartSeconds)
-                ? mappedStartSeconds
-                : phase.StartSeconds;
+            double productionReadySeconds =
+                phase.MatrixProductionStartSeconds.TryGetValue(cost.Name, out double mappedStartSeconds)
+                    ? mappedStartSeconds
+                    : phase.StartSeconds;
             startSeconds = Math.Max(startSeconds, Math.Max(unlockReadySeconds, productionReadySeconds));
         }
 
@@ -1562,9 +1633,10 @@ internal sealed class VanillaCurveSimulator {
                 continue;
             }
 
-            double productionStartSeconds = phase.MatrixProductionStartSeconds.TryGetValue(cost.Name, out double mappedStartSeconds)
-                ? mappedStartSeconds
-                : phase.StartSeconds;
+            double productionStartSeconds =
+                phase.MatrixProductionStartSeconds.TryGetValue(cost.Name, out double mappedStartSeconds)
+                    ? mappedStartSeconds
+                    : phase.StartSeconds;
             double rate = matrixRatesByItemId.TryGetValue(cost.Id, out double mappedRate) ? mappedRate : 0;
             double earliestProductionSeconds = Math.Max(startSeconds, productionStartSeconds);
             if (rate <= 0) {
@@ -1582,7 +1654,8 @@ internal sealed class VanillaCurveSimulator {
         tech.CostItems.Any(cost => GetMatrixStage(cost.Id) > 0 && !CanManualSupplyMatrixCount(cost.Count));
 
     private double EstimateSingleTechResearchSeconds(PlayerStrategyKind strategyKind, VanillaTech tech,
-        HashSet<int> unlockedTechs, HashSet<int> unlockedItems, int phaseIndex, Dictionary<int, double> matrixRatesByItemId) {
+        HashSet<int> unlockedTechs, HashSet<int> unlockedItems, int phaseIndex,
+        Dictionary<int, double> matrixRatesByItemId) {
         double researchSpeed = GetCurrentResearchSpeed(unlockedTechs);
         if (researchSpeed <= 0) {
             researchSpeed = 1;
@@ -1622,7 +1695,8 @@ internal sealed class VanillaCurveSimulator {
         }
     }
 
-    private void PopulateTechMatrixFlows(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedTechs,
+    private void PopulateTechMatrixFlows(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedTechs,
         HashSet<int> unlockedItems, Dictionary<int, double> currentMatrixInventory) {
         Dictionary<int, double> productionCapacityByItemId = phase.MatrixRatesPerSecond
             .Select(pair => (itemId: TryGetItemIdByName(pair.Key), rate: pair.Value))
@@ -1654,27 +1728,34 @@ internal sealed class VanillaCurveSimulator {
                 string matrixName = dataSet.ItemsById.TryGetValue(matrixItemId, out VanillaItem matrixItem)
                     ? matrixItem.Name
                     : matrixItemId.ToString();
-                double startInventory = currentMatrixInventory.TryGetValue(matrixItemId, out double stored) ? stored : 0;
-                double productionCapacity = productionCapacityByItemId.TryGetValue(matrixItemId, out double rate) ? rate : 0;
-                double productionStartSeconds = phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
-                    ? mappedStartSeconds
-                    : phase.StartSeconds;
+                double startInventory =
+                    currentMatrixInventory.TryGetValue(matrixItemId, out double stored) ? stored : 0;
+                double productionCapacity =
+                    productionCapacityByItemId.TryGetValue(matrixItemId, out double rate) ? rate : 0;
+                double productionStartSeconds =
+                    phase.MatrixProductionStartSeconds.TryGetValue(matrixName, out double mappedStartSeconds)
+                        ? mappedStartSeconds
+                        : phase.StartSeconds;
                 double consumptionRate = 0;
                 double consumptionCount = tech.CostItems.Where(cost => cost.Id == matrixItemId).Sum(cost => cost.Count);
                 if (duration > 0 && consumptionCount > 0) {
                     consumptionRate = consumptionCount / duration;
                 }
-                double targetEndInventory = EstimateTargetMatrixInventory(strategyKind, phase, timing.PhaseIndex, matrixItemId,
+                double targetEndInventory = EstimateTargetMatrixInventory(strategyKind, phase, timing.PhaseIndex,
+                    matrixItemId,
                     unlockedTechs, unlockedItems);
                 double productionRate = productionCapacity;
                 if (duration > 0 && productionCapacity > 0) {
-                    double availableSeconds = Math.Max(0, timing.EndSeconds - Math.Max(timing.StartSeconds, productionStartSeconds));
+                    double availableSeconds = Math.Max(0,
+                        timing.EndSeconds - Math.Max(timing.StartSeconds, productionStartSeconds));
                     if (availableSeconds <= 0) {
                         productionRate = 0;
                     } else {
                         double maxProducedCount = productionCapacity * availableSeconds;
-                        double requiredProducedCount = Math.Max(0, targetEndInventory - startInventory + consumptionCount);
-                        double actualProducedCount = Math.Min(maxProducedCount, requiredProducedCount <= 0 ? maxProducedCount : requiredProducedCount);
+                        double requiredProducedCount =
+                            Math.Max(0, targetEndInventory - startInventory + consumptionCount);
+                        double actualProducedCount = Math.Min(maxProducedCount,
+                            requiredProducedCount <= 0 ? maxProducedCount : requiredProducedCount);
                         productionRate = actualProducedCount / duration;
                     }
                 }
@@ -1687,9 +1768,10 @@ internal sealed class VanillaCurveSimulator {
                 }
                 if (productionRate > 0) {
                     timing.MatrixProductionRatesPerSecond[matrixName] = Math.Round(productionRate, 3);
-                    actualProductionMaxByItemId[matrixItemId] = actualProductionMaxByItemId.TryGetValue(matrixItemId, out double existingMax)
-                        ? Math.Max(existingMax, productionRate)
-                        : productionRate;
+                    actualProductionMaxByItemId[matrixItemId] =
+                        actualProductionMaxByItemId.TryGetValue(matrixItemId, out double existingMax)
+                            ? Math.Max(existingMax, productionRate)
+                            : productionRate;
                 }
                 if (consumptionRate > 0) {
                     timing.MatrixConsumptionRatesPerSecond[matrixName] = Math.Round(consumptionRate, 3);
@@ -1718,7 +1800,8 @@ internal sealed class VanillaCurveSimulator {
         }
     }
 
-    private double EstimateTargetMatrixInventory(PlayerStrategyKind strategyKind, PhaseSummary phase, int currentPhaseIndex,
+    private double EstimateTargetMatrixInventory(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        int currentPhaseIndex,
         int matrixItemId, HashSet<int> unlockedTechs, HashSet<int> unlockedItems) {
         int inventoryLimit = GetCurrentMatrixInventoryLimit(matrixItemId, unlockedTechs, dataSet);
         if (inventoryLimit <= 0) {
@@ -1757,7 +1840,8 @@ internal sealed class VanillaCurveSimulator {
         return 0;
     }
 
-    private static void AddBuildDemand(Dictionary<int, double> demandByItemId, Dictionary<int, string> reasonByItemId, int itemId,
+    private static void AddBuildDemand(Dictionary<int, double> demandByItemId, Dictionary<int, string> reasonByItemId,
+        int itemId,
         double count, string reason) {
         if (itemId <= 0 || count <= 0) {
             return;
@@ -1774,7 +1858,8 @@ internal sealed class VanillaCurveSimulator {
         }
     }
 
-    private int DismantleLowerTierBuildFamily(Dictionary<int, int> activeBuildCounts, Dictionary<int, double> currentInventory,
+    private int DismantleLowerTierBuildFamily(Dictionary<int, int> activeBuildCounts,
+        Dictionary<int, double> currentInventory,
         int preferredItemId) {
         int[] family = GetUpgradeFamily(preferredItemId);
         if (family.Length == 0) {
@@ -1801,7 +1886,8 @@ internal sealed class VanillaCurveSimulator {
         return dismantledCount;
     }
 
-    private PhaseBuildPlan BuildPhaseBuildPlan(PhaseSummary phase, Dictionary<int, double> buildingDemand, HashSet<int> unlockedItems,
+    private PhaseBuildPlan BuildPhaseBuildPlan(PhaseSummary phase, Dictionary<int, double> buildingDemand,
+        HashSet<int> unlockedItems,
         Dictionary<int, int> activeBuildCounts, Dictionary<int, double> currentInventory) {
         var plan = new PhaseBuildPlan();
         foreach (var pair in activeBuildCounts) {
@@ -1838,7 +1924,9 @@ internal sealed class VanillaCurveSimulator {
             }
 
             int currentActiveCount = activeBuildCounts.TryGetValue(itemId, out int activeCount) ? activeCount : 0;
-            int targetCount = plan.TargetActiveCounts.TryGetValue(itemId, out int plannedCount) ? plannedCount : currentActiveCount;
+            int targetCount = plan.TargetActiveCounts.TryGetValue(itemId, out int plannedCount)
+                ? plannedCount
+                : currentActiveCount;
             int deltaBuilt = Math.Max(0, targetCount - currentActiveCount);
             if (deltaBuilt <= 0) {
                 continue;
@@ -1860,22 +1948,29 @@ internal sealed class VanillaCurveSimulator {
         }
 
         int preferredInserterItemId = GetCurrentBestInserterItemId(unlockedItems);
-        int rebuiltInserters = DismantleLowerTierBuildFamily(activeBuildCounts, currentInventory, preferredInserterItemId);
+        int rebuiltInserters =
+            DismantleLowerTierBuildFamily(activeBuildCounts, currentInventory, preferredInserterItemId);
         if (rebuiltInserters > 0) {
-            AddBuildDemand(plan.BuildItemDemand, plan.BuildReasons, preferredInserterItemId, rebuiltInserters, "分拣器升级重建整片产线");
+            AddBuildDemand(plan.BuildItemDemand, plan.BuildReasons, preferredInserterItemId, rebuiltInserters,
+                "分拣器升级重建整片产线");
         }
 
         if (addedInserterCount > 0) {
-            AddBuildDemand(plan.BuildItemDemand, plan.BuildReasons, preferredInserterItemId, addedInserterCount, "配套铺设产线");
+            AddBuildDemand(plan.BuildItemDemand, plan.BuildReasons, preferredInserterItemId, addedInserterCount,
+                "配套铺设产线");
         }
 
         if (plan.BuildItemDemand.TryGetValue(preferredBeltItemId, out double beltDemand)) {
-            int currentBeltCount = activeBuildCounts.TryGetValue(preferredBeltItemId, out int activeCount) ? activeCount : 0;
+            int currentBeltCount = activeBuildCounts.TryGetValue(preferredBeltItemId, out int activeCount)
+                ? activeCount
+                : 0;
             plan.TargetActiveCounts[preferredBeltItemId] = currentBeltCount + (int)Math.Ceiling(beltDemand);
         }
 
         if (plan.BuildItemDemand.TryGetValue(preferredInserterItemId, out double inserterDemand)) {
-            int currentInserterCount = activeBuildCounts.TryGetValue(preferredInserterItemId, out int activeCount) ? activeCount : 0;
+            int currentInserterCount = activeBuildCounts.TryGetValue(preferredInserterItemId, out int activeCount)
+                ? activeCount
+                : 0;
             plan.TargetActiveCounts[preferredInserterItemId] = currentInserterCount + (int)Math.Ceiling(inserterDemand);
         }
 
@@ -1886,20 +1981,23 @@ internal sealed class VanillaCurveSimulator {
         return plan;
     }
 
-    private List<BlockingRecord> ApplyBackgroundBuildModel(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedItems,
+    private List<BlockingRecord> ApplyBackgroundBuildModel(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedItems,
         HashSet<int> unlockedTechs, Dictionary<int, double> currentInventory, PhaseBuildPlan buildPlan) {
         var blockingRecords = new List<BlockingRecord>();
         double maxBlockingSeconds = 0;
         int parallelFactor = GetBuildParallelFactor(strategyKind, unlockedTechs, unlockedItems);
         double buildDemandScale = GetBuildDemandScale(strategyKind, phase.Phase);
 
-        HashSet<int> trackedItemIds = [.. currentInventory.Keys, .. buildPlan.BuildItemDemand.Keys, .. buildPlan.TargetActiveCounts.Keys];
+        HashSet<int> trackedItemIds =
+            [.. currentInventory.Keys, .. buildPlan.BuildItemDemand.Keys, .. buildPlan.TargetActiveCounts.Keys];
         foreach (int itemId in trackedItemIds.OrderBy(id => id)) {
             if (!dataSet.ItemsById.TryGetValue(itemId, out VanillaItem item) || !item.CanBuild) {
                 continue;
             }
 
-            double buildNeed = (buildPlan.BuildItemDemand.TryGetValue(itemId, out double mappedNeed) ? mappedNeed : 0) * buildDemandScale;
+            double buildNeed = (buildPlan.BuildItemDemand.TryGetValue(itemId, out double mappedNeed) ? mappedNeed : 0)
+                               * buildDemandScale;
             double currentStored = currentInventory.TryGetValue(itemId, out double stored) ? stored : 0;
             double machineRate = GetBackgroundBuildRatePerSecond(itemId, unlockedItems) * parallelFactor;
             double availableBeforeBlocking = currentStored + machineRate * phase.EstimatedResearchSeconds;
@@ -1938,7 +2036,8 @@ internal sealed class VanillaCurveSimulator {
             }
 
             double currentStored = currentInventory.TryGetValue(itemId, out double stored) ? stored : 0;
-            double buildNeed = (buildPlan.BuildItemDemand.TryGetValue(itemId, out double mappedNeed) ? mappedNeed : 0) * buildDemandScale;
+            double buildNeed = (buildPlan.BuildItemDemand.TryGetValue(itemId, out double mappedNeed) ? mappedNeed : 0)
+                               * buildDemandScale;
             double machineRate = GetBackgroundBuildRatePerSecond(itemId, unlockedItems) * parallelFactor;
             int targetInventory = GetBuildingInventoryTargetCount(itemId);
             double endInventory = currentStored + machineRate * totalBackgroundSeconds - buildNeed;
@@ -1998,7 +2097,8 @@ internal sealed class VanillaCurveSimulator {
     private static double? FindPhaseTechEndSeconds(PhaseSummary phase, int techId) =>
         phase.TechTimings.FirstOrDefault(timing => timing.TechId == techId)?.EndSeconds;
 
-    private void PopulateDysonTimelineEvents(PhaseSummary phase, IReadOnlyDictionary<int, double> techUnlockSeconds, ref int sequence) {
+    private void PopulateDysonTimelineEvents(PhaseSummary phase, IReadOnlyDictionary<int, double> techUnlockSeconds,
+        ref int sequence) {
         double? lensStartSeconds = null;
         if (techUnlockSeconds.TryGetValue(GravitonRefractionTechId, out double lensUnlockSeconds)
             && techUnlockSeconds.TryGetValue(IonosphereUtilizationTechId, out double ionosphereUnlockSeconds)) {
@@ -2017,8 +2117,8 @@ internal sealed class VanillaCurveSimulator {
         double? receiverUnlockSeconds = FindPhaseTechEndSeconds(phase, RayReceiverTechId);
         if (receiverUnlockSeconds.HasValue) {
             bool lensReadyAtReceiverStart = phase.UseGravitonLens
-                && lensStartSeconds.HasValue
-                && lensStartSeconds.Value <= receiverUnlockSeconds.Value;
+                                            && lensStartSeconds.HasValue
+                                            && lensStartSeconds.Value <= receiverUnlockSeconds.Value;
             AddTimelineEvent(phase, ref sequence, receiverUnlockSeconds.Value,
                 "开始临界光子产线",
                 phase.RayReceiverCount > 0
@@ -2029,7 +2129,8 @@ internal sealed class VanillaCurveSimulator {
             AddTimelineEvent(
                 phase,
                 ref sequence,
-                receiverUnlockSeconds.Value + (lensReadyAtReceiverStart ? RayReceiverWarmupWithLensSeconds : RayReceiverWarmupSeconds),
+                receiverUnlockSeconds.Value
+                + (lensReadyAtReceiverStart ? RayReceiverWarmupWithLensSeconds : RayReceiverWarmupSeconds),
                 lensReadyAtReceiverStart ? "临界光子产线透镜热机完成" : "临界光子产线热机完成",
                 lensReadyAtReceiverStart ? "持续照射假设；达到带透镜稳定态" : "持续照射假设；达到无透镜稳定态");
         }
@@ -2070,13 +2171,16 @@ internal sealed class VanillaCurveSimulator {
             AddTimelineEvent(phase, ref sequence, phase.StartSeconds, powerAction, powerNotes);
         }
 
-        foreach (var pair in phase.MatrixRatesPerSecond.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key)) {
-            double buildStartSeconds = phase.MatrixBuildStartSeconds.TryGetValue(pair.Key, out double mappedBuildStartSeconds)
-                ? mappedBuildStartSeconds
-                : phase.StartSeconds;
-            double productionStartSeconds = phase.MatrixProductionStartSeconds.TryGetValue(pair.Key, out double mappedProductionStartSeconds)
-                ? mappedProductionStartSeconds
-                : phase.StartSeconds;
+        foreach (var pair in phase.MatrixRatesPerSecond.OrderByDescending(pair => pair.Value)
+                     .ThenBy(pair => pair.Key)) {
+            double buildStartSeconds =
+                phase.MatrixBuildStartSeconds.TryGetValue(pair.Key, out double mappedBuildStartSeconds)
+                    ? mappedBuildStartSeconds
+                    : phase.StartSeconds;
+            double productionStartSeconds =
+                phase.MatrixProductionStartSeconds.TryGetValue(pair.Key, out double mappedProductionStartSeconds)
+                    ? mappedProductionStartSeconds
+                    : phase.StartSeconds;
             string buildNotes = phase.MatrixBuildNotes.TryGetValue(pair.Key, out string mappedBuildNotes)
                 ? mappedBuildNotes
                 : BuildMatrixLabNotes(phase, pair.Key);
@@ -2085,10 +2189,12 @@ internal sealed class VanillaCurveSimulator {
                 : BuildMatrixLabNotes(phase, pair.Key);
 
             if (buildStartSeconds > phase.StartSeconds || !string.IsNullOrEmpty(buildNotes)) {
-                AddTimelineEvent(phase, ref sequence, buildStartSeconds, $"开始建设 {pair.Value * 60:0.##}个/min 的{pair.Key}产线",
+                AddTimelineEvent(phase, ref sequence, buildStartSeconds,
+                    $"开始建设 {pair.Value * 60:0.##}个/min 的{pair.Key}产线",
                     buildNotes);
             }
-            AddTimelineEvent(phase, ref sequence, productionStartSeconds, $"开始制作 {pair.Value * 60:0.##}个/min 的{pair.Key}产线",
+            AddTimelineEvent(phase, ref sequence, productionStartSeconds,
+                $"开始制作 {pair.Value * 60:0.##}个/min 的{pair.Key}产线",
                 productionNotes);
         }
 
@@ -2096,21 +2202,26 @@ internal sealed class VanillaCurveSimulator {
 
         if (phase.TechTimings.Count > 0) {
             TechTiming firstTiming = phase.TechTimings[0];
-            AddTimelineEvent(phase, ref sequence, phase.StartSeconds, $"开始 {firstTiming.TechCode} {firstTiming.TechName}",
+            AddTimelineEvent(phase, ref sequence, phase.StartSeconds,
+                $"开始 {firstTiming.TechCode} {firstTiming.TechName}",
                 BuildTechEventNotes(firstTiming.TechId, firstTiming, phase));
-            AddTimelineEvent(phase, ref sequence, firstTiming.EndSeconds, $"完成 {firstTiming.TechCode} {firstTiming.TechName}",
+            AddTimelineEvent(phase, ref sequence, firstTiming.EndSeconds,
+                $"完成 {firstTiming.TechCode} {firstTiming.TechName}",
                 BuildTechUnlockNotes(firstTiming.TechId));
 
             for (int index = 1; index < phase.TechTimings.Count; index++) {
                 TechTiming currentTiming = phase.TechTimings[index];
-                AddTimelineEvent(phase, ref sequence, currentTiming.StartSeconds, $"开始 {currentTiming.TechCode} {currentTiming.TechName}",
+                AddTimelineEvent(phase, ref sequence, currentTiming.StartSeconds,
+                    $"开始 {currentTiming.TechCode} {currentTiming.TechName}",
                     BuildTechEventNotes(currentTiming.TechId, currentTiming, phase));
-                AddTimelineEvent(phase, ref sequence, currentTiming.EndSeconds, $"完成 {currentTiming.TechCode} {currentTiming.TechName}",
+                AddTimelineEvent(phase, ref sequence, currentTiming.EndSeconds,
+                    $"完成 {currentTiming.TechCode} {currentTiming.TechName}",
                     BuildTechUnlockNotes(currentTiming.TechId));
             }
         }
 
-        foreach (BlockingRecord record in blockingRecords.OrderByDescending(record => record.BlockingSeconds).ThenBy(record => record.ItemId)) {
+        foreach (BlockingRecord record in blockingRecords.OrderByDescending(record => record.BlockingSeconds)
+                     .ThenBy(record => record.ItemId)) {
             AddTimelineEvent(phase, ref sequence, phase.ResearchEndSeconds, $"开始等待{record.ItemName}补足",
                 $"{record.ItemName} x{Math.Ceiling(record.MissingCount)}，{record.Reason}");
         }
@@ -2121,7 +2232,8 @@ internal sealed class VanillaCurveSimulator {
         }
     }
 
-    private void ApplySupermarketModel(PhaseSummary phase, HashSet<int> unlockedItems, Dictionary<int, double> currentInventory) {
+    private void ApplySupermarketModel(PhaseSummary phase, HashSet<int> unlockedItems,
+        Dictionary<int, double> currentInventory) {
         var supermarketGroups = new Dictionary<int, int>();
         foreach (int itemId in unlockedItems.OrderBy(id => id)) {
             if (!dataSet.ItemsById.TryGetValue(itemId, out VanillaItem item) || !item.CanBuild) {
@@ -2184,9 +2296,10 @@ internal sealed class VanillaCurveSimulator {
             int gatherBuildingId = GetGatherBuildingId(itemId, unlockedItems);
             double gatherRate = GetGatherRatePerBuilding(itemId, gatherBuildingId);
             if (gatherBuildingId > 0 && gatherRate > 0) {
-                buildingDemand[gatherBuildingId] = buildingDemand.TryGetValue(gatherBuildingId, out double existingBuildings)
-                    ? existingBuildings + requiredRate / gatherRate
-                    : requiredRate / gatherRate;
+                buildingDemand[gatherBuildingId] =
+                    buildingDemand.TryGetValue(gatherBuildingId, out double existingBuildings)
+                        ? existingBuildings + requiredRate / gatherRate
+                        : requiredRate / gatherRate;
             }
             resourceDemand[itemId] = resourceDemand.TryGetValue(itemId, out double existingRate)
                 ? existingRate + requiredRate
@@ -2230,7 +2343,8 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private VanillaRecipe ChoosePrimaryRecipe(int outputItemId) {
-        if (!dataSet.RecipesByOutputId.TryGetValue(outputItemId, out List<VanillaRecipe> recipes) || recipes.Count == 0) {
+        if (!dataSet.RecipesByOutputId.TryGetValue(outputItemId, out List<VanillaRecipe> recipes)
+            || recipes.Count == 0) {
             return null;
         }
 
@@ -2242,12 +2356,14 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private CalcRecipe ChoosePrimaryCalcRecipe(int outputItemId) {
-        if (!dataSet.CalcRecipesByOutputId.TryGetValue(outputItemId, out List<CalcRecipe> recipes) || recipes.Count == 0) {
+        if (!dataSet.CalcRecipesByOutputId.TryGetValue(outputItemId, out List<CalcRecipe> recipes)
+            || recipes.Count == 0) {
             return null;
         }
 
         return recipes
-            .Where(r => r.Factories.Any(id => dataSet.ItemsById.TryGetValue(id, out VanillaItem item) && item.Space > 0 && item.Speed > 0))
+            .Where(r => r.Factories.Any(id =>
+                dataSet.ItemsById.TryGetValue(id, out VanillaItem item) && item.Space > 0 && item.Speed > 0))
             .OrderBy(r => r.Items.Sum(GetItemDepth))
             .ThenBy(r => r.TimeSpend)
             .FirstOrDefault();
@@ -2263,11 +2379,11 @@ internal sealed class VanillaCurveSimulator {
 
     private static int GetGatherBuildingId(int itemId, HashSet<int> unlockedItems) {
         if (itemId == 1000) {
-            return 2306; // 抽水站
+            return 2306;// 抽水站
         }
 
         if (itemId == 1007) {
-            return 2307; // 原油萃取站
+            return 2307;// 原油萃取站
         }
 
         return unlockedItems.Contains(2316) ? 2316 : 2301;
@@ -2316,7 +2432,8 @@ internal sealed class VanillaCurveSimulator {
 
         visiting.Add(itemId);
         int depth = recipes
-            .Select(recipe => 1 + recipe.Items.Select(inputId => GetItemDepth(inputId, visiting)).DefaultIfEmpty(0).Max())
+            .Select(recipe =>
+                1 + recipe.Items.Select(inputId => GetItemDepth(inputId, visiting)).DefaultIfEmpty(0).Max())
             .Min();
         visiting.Remove(itemId);
         itemDepthCache[itemId] = depth;
@@ -2352,10 +2469,21 @@ internal sealed class VanillaCurveSimulator {
 
         return strategyKind switch {
             PlayerStrategyKind.Conventional =>
-                hardPriorityScore + criticalPathBonus + capacityUpgradeCount * 80.0 + unlockCount * 2.0 + unlockedDepth * 0.3 + matrixAdvance * 6.0 + verticalConstructionAdvance * 4.0
+                hardPriorityScore
+                + criticalPathBonus
+                + capacityUpgradeCount * 80.0
+                + unlockCount * 2.0
+                + unlockedDepth * 0.3
+                + matrixAdvance * 6.0
+                + verticalConstructionAdvance * 4.0
                 - matrixStage * 0.4,
             PlayerStrategyKind.Speedrun =>
-                hardPriorityScore * 0.7 + capacityUpgradeCount * 10.0 + matrixAdvance * 12.0 + matrixStage * 2.0 + unlockCount * 1.2 + verticalConstructionAdvance * 2.0
+                hardPriorityScore * 0.7
+                + capacityUpgradeCount * 10.0
+                + matrixAdvance * 12.0
+                + matrixStage * 2.0
+                + unlockCount * 1.2
+                + verticalConstructionAdvance * 2.0
                 + unlockedDepth * 0.15,
             _ => unlockCount,
         };
@@ -2368,16 +2496,26 @@ internal sealed class VanillaCurveSimulator {
         ResolveUnlockedItemIds(target).Any(itemId => GetUpgradeFamily(itemId).Length > 0 || IsLogisticsItem(itemId));
 
     private bool IsBuildingUnlock(UnlockTarget target) =>
-        ResolveUnlockedItemIds(target).Any(itemId => dataSet.ItemsById.TryGetValue(itemId, out VanillaItem item) && item.CanBuild);
+        ResolveUnlockedItemIds(target).Any(itemId =>
+            dataSet.ItemsById.TryGetValue(itemId, out VanillaItem item) && item.CanBuild);
 
     private static bool IsInfrastructureUnlock(UnlockTarget target) =>
-        target.Name.Contains("物流") || target.Name.Contains("传送带") || target.Name.Contains("分拣器")
-        || target.Name.Contains("储物仓") || target.Name.Contains("流速监测器") || target.Name.Contains("喷涂机")
-        || target.Name.Contains("配送") || target.Name.Contains("运输站");
+        target.Name.Contains("物流")
+        || target.Name.Contains("传送带")
+        || target.Name.Contains("分拣器")
+        || target.Name.Contains("储物仓")
+        || target.Name.Contains("流速监测器")
+        || target.Name.Contains("喷涂机")
+        || target.Name.Contains("配送")
+        || target.Name.Contains("运输站");
 
     private static bool IsPowerUnlock(UnlockTarget target) =>
-        target.Name.Contains("发电") || target.Name.Contains("电力") || target.Name.Contains("蓄电")
-        || target.Name.Contains("太阳能") || target.Name.Contains("射线接收站") || target.Name.Contains("能量枢纽");
+        target.Name.Contains("发电")
+        || target.Name.Contains("电力")
+        || target.Name.Contains("蓄电")
+        || target.Name.Contains("太阳能")
+        || target.Name.Contains("射线接收站")
+        || target.Name.Contains("能量枢纽");
 
     private static ProgressPhase GetPhase(VanillaTech tech) {
         int stage = tech.CostItems.Select(a => GetMatrixStage(a.Id)).DefaultIfEmpty(0).Max();
@@ -2396,7 +2534,8 @@ internal sealed class VanillaCurveSimulator {
         return index >= 0 ? index + 1 : 0;
     }
 
-    private double EstimateMatrixLimitedSeconds(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedItems,
+    private double EstimateMatrixLimitedSeconds(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedItems,
         HashSet<int> unlockedTechs, Dictionary<int, int> currentMatrixLabCounts, int phaseIndex, double targetSeconds) {
         phase.MatrixTargetRatePerSecond = 0;
         phase.MatrixLabCount = 0;
@@ -2410,10 +2549,12 @@ internal sealed class VanillaCurveSimulator {
             return 0;
         }
 
-        double matrixTargetRatePerSecond = GetPhaseMatrixTargetRatePerSecond(strategyKind, matrixCosts, phaseIndex, targetSeconds, unlockedTechs, unlockedItems);
+        double matrixTargetRatePerSecond = GetPhaseMatrixTargetRatePerSecond(strategyKind, matrixCosts, phaseIndex,
+            targetSeconds, unlockedTechs, unlockedItems);
         phase.MatrixTargetRatePerSecond = Math.Round(matrixTargetRatePerSecond, 3);
         Dictionary<int, double> matrixRatesByItemId =
-            BuildPhaseMatrixRates(strategyKind, phase, unlockedItems, unlockedTechs, currentMatrixLabCounts, phaseIndex, targetSeconds);
+            BuildPhaseMatrixRates(strategyKind, phase, unlockedItems, unlockedTechs, currentMatrixLabCounts, phaseIndex,
+                targetSeconds);
         double bottleneckSeconds = 0;
         foreach (var pair in matrixCosts.OrderBy(p => p.Key)) {
             if (!dataSet.ItemsById.TryGetValue(pair.Key, out VanillaItem matrixItem)) {
@@ -2421,7 +2562,8 @@ internal sealed class VanillaCurveSimulator {
             }
 
             double rate = matrixRatesByItemId.TryGetValue(pair.Key, out double mappedRate) ? mappedRate : 0;
-            int labCount = GetAdaptiveMatrixLabCount(unlockedItems, currentMatrixLabCounts, pair.Key, matrixTargetRatePerSecond);
+            int labCount = GetAdaptiveMatrixLabCount(unlockedItems, currentMatrixLabCounts, pair.Key,
+                matrixTargetRatePerSecond);
             int baseCount = GetMatrixLabBaseCount(labCount, phase.LabStackLevel);
             phase.MatrixLabCounts[matrixItem.Name] = labCount;
             phase.MatrixLabBaseCounts[matrixItem.Name] = baseCount;
@@ -2466,20 +2608,24 @@ internal sealed class VanillaCurveSimulator {
     }
 
     // 每个阶段先确定一个统一矩阵目标产率，再按各色矩阵单站产能反推所需研究站台数。
-    private Dictionary<int, double> BuildPhaseMatrixRates(PlayerStrategyKind strategyKind, PhaseSummary phase, HashSet<int> unlockedItems,
+    private Dictionary<int, double> BuildPhaseMatrixRates(PlayerStrategyKind strategyKind, PhaseSummary phase,
+        HashSet<int> unlockedItems,
         HashSet<int> unlockedTechs, Dictionary<int, int> currentMatrixLabCounts, int phaseIndex, double targetSeconds) {
         var matrixRatesByItemId = new Dictionary<int, double>();
         Dictionary<int, double> matrixCosts = BuildPhaseMatrixCosts(phase);
-        double matrixTargetRatePerSecond = GetPhaseMatrixTargetRatePerSecond(strategyKind, matrixCosts, phaseIndex, targetSeconds, unlockedTechs, unlockedItems);
+        double matrixTargetRatePerSecond = GetPhaseMatrixTargetRatePerSecond(strategyKind, matrixCosts, phaseIndex,
+            targetSeconds, unlockedTechs, unlockedItems);
         foreach (var pair in matrixCosts) {
-            int labCount = GetAdaptiveMatrixLabCount(unlockedItems, currentMatrixLabCounts, pair.Key, matrixTargetRatePerSecond);
+            int labCount = GetAdaptiveMatrixLabCount(unlockedItems, currentMatrixLabCounts, pair.Key,
+                matrixTargetRatePerSecond);
             matrixRatesByItemId[pair.Key] = GetMatrixRatePerSecond(pair.Key, labCount, unlockedItems);
         }
 
         return matrixRatesByItemId;
     }
 
-    private double GetPhaseMatrixTargetRatePerSecond(PlayerStrategyKind strategyKind, Dictionary<int, double> matrixCosts, int phaseIndex,
+    private double GetPhaseMatrixTargetRatePerSecond(PlayerStrategyKind strategyKind,
+        Dictionary<int, double> matrixCosts, int phaseIndex,
         double targetSeconds, HashSet<int> unlockedTechs, HashSet<int> unlockedItems) {
         if (matrixCosts.Count == 0 || targetSeconds <= 0) {
             return 0;
@@ -2490,11 +2636,13 @@ internal sealed class VanillaCurveSimulator {
         if (strategyKind == PlayerStrategyKind.Conventional) {
             double fullBeltRate = GetCurrentDynamicFullBeltRatePerSecond(unlockedTechs, unlockedItems);
             targetRate = Math.Max(targetRate, fullBeltRate);
-            targetRate = Math.Min(targetRate, GetConventionalMatrixRateCapPerSecond((ProgressPhase)phaseIndex, fullBeltRate));
+            targetRate = Math.Min(targetRate,
+                GetConventionalMatrixRateCapPerSecond((ProgressPhase)phaseIndex, fullBeltRate));
         } else if (strategyKind == PlayerStrategyKind.Speedrun) {
             double fullBeltRate = GetCurrentDynamicFullBeltRatePerSecond(unlockedTechs, unlockedItems);
             targetRate = Math.Max(targetRate, fullBeltRate * 0.25);
-            targetRate = Math.Min(targetRate, GetSpeedrunMatrixRateCapPerSecond((ProgressPhase)phaseIndex, fullBeltRate));
+            targetRate = Math.Min(targetRate,
+                GetSpeedrunMatrixRateCapPerSecond((ProgressPhase)phaseIndex, fullBeltRate));
         }
         return targetRate;
     }
@@ -2558,7 +2706,8 @@ internal sealed class VanillaCurveSimulator {
         return table[Math.Min(phaseIndex, table.Length - 1)];
     }
 
-    private int GetAdaptiveMatrixLabCount(HashSet<int> unlockedItems, Dictionary<int, int> currentMatrixLabCounts, int matrixItemId,
+    private int GetAdaptiveMatrixLabCount(HashSet<int> unlockedItems, Dictionary<int, int> currentMatrixLabCounts,
+        int matrixItemId,
         double targetRatePerSecond) {
         double singleLabRate = GetSingleMatrixLabRatePerSecond(matrixItemId, unlockedItems);
         if (singleLabRate <= 0) {
@@ -2568,7 +2717,9 @@ internal sealed class VanillaCurveSimulator {
         int requiredLabCount = targetRatePerSecond <= 0
             ? 1
             : Math.Max(1, (int)Math.Ceiling(targetRatePerSecond / singleLabRate));
-        int existingLabCount = currentMatrixLabCounts.TryGetValue(matrixItemId, out int mappedLabCount) ? mappedLabCount : 0;
+        int existingLabCount = currentMatrixLabCounts.TryGetValue(matrixItemId, out int mappedLabCount)
+            ? mappedLabCount
+            : 0;
         return Math.Max(requiredLabCount, Math.Max(1, existingLabCount));
     }
 
@@ -2592,7 +2743,8 @@ internal sealed class VanillaCurveSimulator {
         return baseHeadroom + phaseBonus;
     }
 
-    private void ApplyDysonPowerModel(StrategySimulationResult result, PlayerStrategyKind strategyKind, PhaseSummary phase,
+    private void ApplyDysonPowerModel(StrategySimulationResult result, PlayerStrategyKind strategyKind,
+        PhaseSummary phase,
         Dictionary<int, double> techUnlockSeconds) {
         DysonPowerEstimate estimate = EstimateDysonPower(result, strategyKind, phase, techUnlockSeconds);
         phase.DysonModeName = estimate.Mode switch {
@@ -2613,7 +2765,8 @@ internal sealed class VanillaCurveSimulator {
         phase.ConstructedCpEstimate = estimate.ConstructedCpEstimate;
     }
 
-    private DysonPowerEstimate EstimateDysonPower(StrategySimulationResult result, PlayerStrategyKind strategyKind, PhaseSummary phase,
+    private DysonPowerEstimate EstimateDysonPower(StrategySimulationResult result, PlayerStrategyKind strategyKind,
+        PhaseSummary phase,
         Dictionary<int, double> techUnlockSeconds) {
         // 速通校准第一轮：前中期仍以火电/核电为主，不允许过早把射线接收站当主力供电。
         if (phase.Phase < ProgressPhase.Gravity) {
@@ -2654,7 +2807,8 @@ internal sealed class VanillaCurveSimulator {
             : 0;
         double maxLivingSwarmSails = sailLaunchPerMinute * (DefaultSolarSailLifeSeconds / 60.0);
         double shellCpCap = constructedSp * ShellCpPerSpCap;
-        double shellAbsorbProgress = Math.Min(1.0, shellUnlockMinutes * 60.0 / Math.Max(SolarSailAbsorbDelaySeconds, 1.0));
+        double shellAbsorbProgress =
+            Math.Min(1.0, shellUnlockMinutes * 60.0 / Math.Max(SolarSailAbsorbDelaySeconds, 1.0));
         double absorbedSails = mode == DysonBuildMode.SailAndRocket
             ? Math.Min(totalLaunchedSails * shellAbsorbProgress, shellCpCap)
             : 0;
@@ -2662,14 +2816,14 @@ internal sealed class VanillaCurveSimulator {
         double constructedCp = absorbedSails;
 
         long availablePowerWatts = (long)Math.Round(swarmSails * SwarmPowerPerSailWatts
-            + constructedSp * FramePowerPerSpWatts
-            + constructedCp * ShellPowerPerCpWatts);
+                                                    + constructedSp * FramePowerPerSpWatts
+                                                    + constructedCp * ShellPowerPerCpWatts);
 
         bool useGravitonLens = techUnlockSeconds.ContainsKey(1704) && techUnlockSeconds.ContainsKey(1505);
         double warmupProgress = Math.Min(1.0, receiverRuntimeMinutes / (useGravitonLens ? 8.0 : 20.0));
         long receiverPowerPerBuildingWatts = (long)Math.Round(ReceiverBasePowerWatts
-            * (1.0 + 1.5 * warmupProgress)
-            * (useGravitonLens ? 2.0 : 1.0));
+                                                              * (1.0 + 1.5 * warmupProgress)
+                                                              * (useGravitonLens ? 2.0 : 1.0));
         long capturedPowerWatts = phase.TotalPowerDemandWatts > 0
             ? Math.Min(availablePowerWatts, phase.TotalPowerDemandWatts)
             : availablePowerWatts;
@@ -2701,7 +2855,8 @@ internal sealed class VanillaCurveSimulator {
         return Math.Max(minimum, Math.Ceiling(researchLabCount * ratio * Math.Max(1.0, 1.0 + phaseIndex * 0.15)));
     }
 
-    private void ApplyPhasePowerModel(PhaseSummary phase, Dictionary<int, double> buildingDemand, HashSet<int> unlockedItems) {
+    private void ApplyPhasePowerModel(PhaseSummary phase, Dictionary<int, double> buildingDemand,
+        HashSet<int> unlockedItems) {
         PowerSourceProfile profile = GetPowerSourceProfile(phase.Phase);
         long totalPowerDemandWatts = phase.TotalPowerDemandWatts > 0
             ? phase.TotalPowerDemandWatts
@@ -2720,7 +2875,8 @@ internal sealed class VanillaCurveSimulator {
             : 0;
     }
 
-    private long EstimatePhasePowerDemandWatts(PhaseSummary phase, Dictionary<int, double> buildingDemand, HashSet<int> unlockedItems) {
+    private long EstimatePhasePowerDemandWatts(PhaseSummary phase, Dictionary<int, double> buildingDemand,
+        HashSet<int> unlockedItems) {
         long totalPowerDemandWatts = 0;
         foreach (var pair in buildingDemand) {
             if (pair.Key is 2901 or 2902) {
@@ -2737,7 +2893,8 @@ internal sealed class VanillaCurveSimulator {
 
         // 研究站由阶段科研站 + 矩阵站统一收口，避免和 buildingDemand 重复统计。
         int explicitLabCount = phase.ResearchLabCount + phase.MatrixLabCount;
-        int plannedLabCount = GetRoundedBuildingCount(buildingDemand, 2901) + GetRoundedBuildingCount(buildingDemand, 2902);
+        int plannedLabCount = GetRoundedBuildingCount(buildingDemand, 2901)
+                              + GetRoundedBuildingCount(buildingDemand, 2902);
         int totalLabCount = Math.Max(explicitLabCount, plannedLabCount);
         int labItemId = unlockedItems.Contains(2902) ? 2902 : 2901;
         if (totalLabCount > 0 && buildingPowerByItemId.TryGetValue(labItemId, out double labPowerWatts)) {
@@ -2842,11 +2999,8 @@ internal sealed class VanillaCurveSimulator {
     }
 
     private static double GetInventoryBufferSeconds(int itemId) {
-        return GetMatrixStage(itemId) > 0
-            ? MatrixBufferSeconds
-            : itemId < 2000
-                ? ResourceBufferSeconds
-                : IntermediateBufferSeconds;
+        return GetMatrixStage(itemId) > 0 ? MatrixBufferSeconds :
+            itemId < 2000 ? ResourceBufferSeconds : IntermediateBufferSeconds;
     }
 
     private static int ParseNumericCode(string code) => int.Parse(code.Substring(1));

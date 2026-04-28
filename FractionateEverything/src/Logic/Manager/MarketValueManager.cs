@@ -81,7 +81,8 @@ public static class MarketValueManager {
             float consumeRate = GetCurrentConsumeRate(itemId);
             long stock = centerItemCount[itemId];
 
-            float targetMultiplier = CalculateTargetMultiplier(itemId, currentStageIndex, stock, currentRate, consumeRate);
+            float targetMultiplier =
+                CalculateTargetMultiplier(itemId, currentStageIndex, stock, currentRate, consumeRate);
             LastTargetMultiplier[itemId] = targetMultiplier;
             LastCurrentRate[itemId] = currentRate;
             LastConsumeRate[itemId] = consumeRate;

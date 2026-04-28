@@ -57,9 +57,11 @@ public static class MarketBoard {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "market-board-summary-title-node", build: (w, root) => {
-                                txtBoardTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "特单概览", 15, "market-board-summary-title");
-                            }),
+                            Node(pos: (0, 0), objectName: "market-board-summary-title-node",
+                                build: (w, root) => {
+                                    txtBoardTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "特单概览", 15,
+                                        "market-board-summary-title");
+                                }),
                             Node(pos: (1, 0), objectName: "market-board-summary-body", build: (w, root) => {
                                 txtSummary = w.AddText2(0f, 12f, root, "", 13);
                                 txtSummary.supportRichText = true;
@@ -87,7 +89,8 @@ public static class MarketBoard {
                                     rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(240f, 24f);
                                     rows[i].BtnTrade = w.AddButton(884f, y - 4f, 120f, root, "交易", 13,
                                         onClick: () => {
-                                            if (rows[rowIndex].OfferId > 0 && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
+                                            if (rows[rowIndex].OfferId > 0
+                                                && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
                                                 UpdateUI();
                                             }
                                         });
@@ -108,11 +111,14 @@ public static class MarketBoard {
             ticks = 0;
         }
         header.Title.text = "市场板".Translate().WithColor(Orange);
-        txtExpire.text = $"{ "订单刷新".Translate() }：{FormatTicks(ticks)}";
+        txtExpire.text = $"{"订单刷新".Translate()}：{FormatTicks(ticks)}";
         txtBoardTitle.text = "特单概览".Translate().WithColor(Orange);
-        int specialCount = MarketBoardManager.ActiveOffers.Count(offer => offer.OfferType == MarketBoardManager.MarketOfferType.Special);
+        int specialCount =
+            MarketBoardManager.ActiveOffers.Count(offer =>
+                offer.OfferType == MarketBoardManager.MarketOfferType.Special);
         int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special && DarkFogCombatManager.IsDarkFogOffer(offer));
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special
+            && DarkFogCombatManager.IsDarkFogOffer(offer));
         string stageName = DarkFogCombatManager.GetCurrentStage() switch {
             EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
             EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
@@ -120,7 +126,7 @@ public static class MarketBoard {
             EDarkFogCombatStage.StellarHunt => "星域围猎".WithColor(Blue),
             _ => "奇点收束".WithColor(Gold),
         };
-        txtSummary.text = $"{ "特单概览".Translate() }：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条    阶段 {stageName}";
+        txtSummary.text = $"{"特单概览".Translate()}：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条    阶段 {stageName}";
 
         var offers = MarketBoardManager.ActiveOffers;
         for (int i = 0; i < rows.Length; i++) {
@@ -139,7 +145,8 @@ public static class MarketBoard {
                 rows[i].TxtExtra.text = "";
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
-            if (DarkFogCombatManager.IsDarkFogOffer(offer) && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+            if (DarkFogCombatManager.IsDarkFogOffer(offer)
+                && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
                 rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方成长 +{offer.OutputCount}";
             }
             string offerTag = GetOfferTag(offer);

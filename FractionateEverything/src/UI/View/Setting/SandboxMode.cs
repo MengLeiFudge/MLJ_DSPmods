@@ -57,7 +57,9 @@ public static class SandboxMode {
                         rows: [Px(24f), 1],
                         children: [
                             Node(pos: (0, 0), objectName: "sandbox-mode-action-title",
-                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title"); }),
+                                build: (w, root) => {
+                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title");
+                                }),
                             Node(pos: (1, 0), objectName: "sandbox-mode-action-body", build: (w, root) => {
                                 w.AddButton(0, 3, 32f, root, "锁定所有分馏配方", 15, "button-lock-all-recipes",
                                     RecipeManager.LockAllFracRecipes);
@@ -73,7 +75,9 @@ public static class SandboxMode {
                         rows: [Px(24f), 1],
                         children: [
                             Node(pos: (0, 0), objectName: "sandbox-mode-config-title",
-                                build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "倍率与说明", 15, "sandbox-mode-config-title"); }),
+                                build: (w, root) => {
+                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "倍率与说明", 15, "sandbox-mode-config-title");
+                                }),
                             Node(pos: (1, 0), objectName: "sandbox-mode-config-body", build: (w, root) => {
                                 var txt = w.AddText2(0f, 32f, root, "经验获取倍率", 15, "text-exp-multi-ratio");
                                 w.AddSlider(23f + txt.preferredWidth, 32f, root,

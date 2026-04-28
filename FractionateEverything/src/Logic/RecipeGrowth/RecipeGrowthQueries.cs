@@ -154,7 +154,8 @@ public static class RecipeGrowthQueries {
             int remainPct = UnityEngine.Mathf.RoundToInt(effectiveLegacyLevel * 8f);
             int doublePct = UnityEngine.Mathf.RoundToInt(effectiveLegacyLevel * 5f);
             string maxSuffix = level >= maxLevel ? "  MAX".WithColor(Gold) : string.Empty;
-            descriptions[level] = $"Lv{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{maxSuffix}";
+            descriptions[level] =
+                $"Lv{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{maxSuffix}";
         }
         return descriptions;
     }
