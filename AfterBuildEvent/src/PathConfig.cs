@@ -18,7 +18,14 @@ public static class PathConfig {
     public static string DspCalcDir => @"D:\project\js\dsp-calc";
     public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
     public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
-    public static string DspCalcFullIconDir => $@"{SolutionFullDir}\gamedata\icon - full";
+    public static string DspCalcFullIconDir => $@"{SolutionFullDir}\gamedata\icons";
+    public static string CalcJsonLocalDir => $@"{SolutionFullDir}\gamedata\calc json";
+    public static string CalcIconWorkDir => $@"{SolutionFullDir}\gamedata\test";
+    public static string AssetStudioToolDir => $@"{SolutionFullDir}\lib\tools\AssetStudio-net8.0-win";
+    public static string AssetStudioZipPath => $@"{SolutionFullDir}\lib\tools\AssetStudio-net8.0-win.zip";
+    public static string AssetStudioCliPath => $@"{AssetStudioToolDir}\AssetStudio.CLI.exe";
+    public const string AssetStudioDownloadUrl =
+        "https://github.com/Razviar/assetstudio/releases/download/v2.4.1/AssetStudio-net8.0-win.zip";
     public static string IconExportRequestPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-request.json";
     public static string IconExportMarkerPath => $@"{SolutionFullDir}\gamedata\calc-icon-export-done.json";
 

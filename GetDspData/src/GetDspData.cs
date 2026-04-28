@@ -502,14 +502,15 @@ public class GetDspData : BaseUnityPlugin {
                     factorySpecial = [..factorySpecial, IGB大气采集站];
                 }
                 if (factorySpecial.Count == 0) {
-                    if (item.canMiningByIcarus() || item.recipes == null || item.recipes.Count == 0) {
+                    bool noNormalRecipe = item.recipes == null || item.recipes.Count == 0;
+                    if (item.canMiningByIcarus() || (item.GridIndexValid() && noNormalRecipe)) {
                         factorySpecial = [..factorySpecial, I伊卡洛斯];
                     }
                 }
                 if (item.canMiningByMS()) {
                     factorySpecial = [..factorySpecial, I巨构星际组装厂];
                 }
-                if (item.canDropFromEnemy()) {
+                if (item.GridIndexValid() && item.canDropFromEnemy()) {
                     factorySpecial = [..factorySpecial, I行星基地];
                 }
                 if (factorySpecial.Count > 0) {
@@ -763,6 +764,10 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     private static void AddFracRecipes(JArray recipes, ItemProto item) {
+        if (!item.GridIndexValid()) {
+            return;
+        }
+
         foreach (var type in RecipeTypes) {
             BaseRecipe recipe = GetRecipe<BaseRecipe>(type, item.ID);
             if (recipe == null) {
@@ -861,15 +866,21 @@ public class GetDspData : BaseUnityPlugin {
             }
 
             HashSet<string> lowerPriorityIcons = CollectLowerPriorityIcons(request["LowerPriorityDirs"] as JArray);
+            HashSet<string> requestedIcons = CollectRequestedIcons(request["IconNames"] as JArray);
             Directory.CreateDirectory(outputDir);
 
             int exported = 0;
+            int skippedNotRequested = 0;
             int skippedLowerPriority = 0;
             int skippedDuplicate = 0;
             int failed = 0;
             HashSet<string> handledIcons = new(StringComparer.OrdinalIgnoreCase);
             foreach ((string iconName, Sprite sprite) in EnumerateCurrentIconSprites()) {
                 if (string.IsNullOrWhiteSpace(iconName) || sprite == null) {
+                    continue;
+                }
+                if (requestedIcons.Count > 0 && !requestedIcons.Contains(iconName)) {
+                    skippedNotRequested++;
                     continue;
                 }
                 if (!handledIcons.Add(iconName)) {
@@ -893,6 +904,7 @@ public class GetDspData : BaseUnityPlugin {
                 { "TargetMod", targetMod },
                 { "OutputDir", outputDir },
                 { "Exported", exported },
+                { "SkippedNotRequested", skippedNotRequested },
                 { "SkippedLowerPriority", skippedLowerPriority },
                 { "SkippedDuplicate", skippedDuplicate },
                 { "Failed", failed },
@@ -900,7 +912,7 @@ public class GetDspData : BaseUnityPlugin {
             };
             Directory.CreateDirectory(Path.GetDirectoryName(markerPath) ?? ".");
             File.WriteAllText(markerPath, marker.ToString(Formatting.Indented), Encoding.UTF8);
-            LogInfo($"已导出 {targetMod} 图标：{exported} 个，跳过低优先级 {skippedLowerPriority} 个，失败 {failed} 个");
+            LogInfo($"已导出 {targetMod} 图标：{exported} 个，跳过非请求 {skippedNotRequested} 个，跳过已存在/低优先级 {skippedLowerPriority} 个，失败 {failed} 个");
         }
         catch (Exception ex) {
             LogError($"导出图标失败：{ex}");
@@ -929,6 +941,21 @@ public class GetDspData : BaseUnityPlugin {
 
             foreach (string filePath in Directory.GetFiles(dirPath, "*.png")) {
                 result.Add(Path.GetFileNameWithoutExtension(filePath));
+            }
+        }
+        return result;
+    }
+
+    private static HashSet<string> CollectRequestedIcons(JArray iconNames) {
+        HashSet<string> result = new(StringComparer.OrdinalIgnoreCase);
+        if (iconNames == null) {
+            return result;
+        }
+
+        foreach (JToken token in iconNames) {
+            string iconName = token.Value<string>();
+            if (!string.IsNullOrWhiteSpace(iconName)) {
+                result.Add(iconName);
             }
         }
         return result;
