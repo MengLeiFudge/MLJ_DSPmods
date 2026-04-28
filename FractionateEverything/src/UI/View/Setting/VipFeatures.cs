@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using FE.UI.View.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
@@ -83,17 +85,31 @@ public static class VipFeatures {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        float x = 0f;
-        float y = 18f;
-        txtVipInfo = wnd.AddText2(x, y, parent, "动态刷新");
-        txtVipInfo.supportRichText = true;
-        y += 36f;
-        wnd.AddText2(x, y, parent, "VIP加成如下：");
-        for (int i = 0; i < 3; i++) {
-            y += 36f;
-            txtVipBonus[i] = wnd.AddText2(x, y, parent, "动态刷新");
-            txtVipBonus[i].supportRichText = true;
+        BuildLayout(wnd, parent,
+            Grid(
+                rows: BuildRows(5),
+                rowGap: PageLayout.InnerGap,
+                children: [
+                    TextNode("动态刷新", onBuilt: text => txtVipInfo = text,
+                        pos: (0, 0), objectName: "vip-info"),
+                    TextNode("VIP加成如下：",
+                        pos: (1, 0), objectName: "vip-bonus-title"),
+                    TextNode("动态刷新", onBuilt: text => txtVipBonus[0] = text,
+                        pos: (2, 0), objectName: "vip-bonus-0"),
+                    TextNode("动态刷新", onBuilt: text => txtVipBonus[1] = text,
+                        pos: (3, 0), objectName: "vip-bonus-1"),
+                    TextNode("动态刷新", onBuilt: text => txtVipBonus[2] = text,
+                        pos: (4, 0), objectName: "vip-bonus-2"),
+                ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildRows(int count) {
+        var rows = new List<LayoutTrack>();
+        for (int i = 0; i < count; i++) {
+            rows.Add(1);
         }
+
+        return rows;
     }
 
     public static void UpdateUI() {

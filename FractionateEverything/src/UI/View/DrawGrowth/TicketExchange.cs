@@ -62,71 +62,62 @@ public static class TicketExchange {
                         columnGap: PageLayout.Gap,
                         children: [
                             ContentCard(pos: (0, 0), objectName: "ticket-exchange-resource-card", strong: true,
+                                rows: [Px(24f), Px(50f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "ticket-exchange-resource-body",
-                                        build: (w, resourceCard) => {
-                                            float cardW = resourceCard.sizeDelta.x;
-                                            txtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 0f, "当前资源",
-                                                15, "ticket-exchange-resource-title");
-                                            float y = 36f;
-                                            btnCurrentMatrix = MyImageButton
-                                                .CreateImageButton(0f, y, resourceCard, null).WithSize(40f, 40f);
-                                            btnFragment = MyImageButton
-                                                .CreateImageButton(160f, y, resourceCard, LDB.items.Select(IFE残片))
-                                                .WithSize(40f, 40f);
-                                            btnDarkFogMatrix = MyImageButton
-                                                .CreateImageButton(320f, y, resourceCard, LDB.items.Select(I黑雾矩阵))
-                                                .WithSize(40f, 40f);
-                                            y += 44f;
-                                            txtMode = w.AddText2(0f, y, resourceCard, "", 13);
-                                            txtMode.rectTransform.sizeDelta = new Vector2(cardW, 24f);
-                                        }),
+                                    CardTitleNode("当前资源", onBuilt: text => txtResourceTitle = text,
+                                        pos: (0, 0), objectName: "ticket-exchange-resource-title"),
+                                    Grid(
+                                        pos: (1, 0),
+                                        cols: [1, 1, 1],
+                                        columnGap: PageLayout.InnerGap,
+                                        children: [
+                                            ImageButtonNode(size: 40f, onBuilt: btn => btnCurrentMatrix = btn,
+                                                pos: (0, 0), objectName: "ticket-exchange-current-matrix"),
+                                            ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => btnFragment = btn,
+                                                pos: (0, 1), objectName: "ticket-exchange-fragment"),
+                                            ImageButtonNode(LDB.items.Select(I黑雾矩阵), 40f,
+                                                onBuilt: btn => btnDarkFogMatrix = btn,
+                                                pos: (0, 2), objectName: "ticket-exchange-darkfog-matrix"),
+                                        ]),
+                                    TextNode("", 13, onBuilt: text => txtMode = text,
+                                        pos: (2, 0), objectName: "ticket-exchange-mode"),
                                 ]),
                             ContentCard(pos: (0, 1), objectName: "ticket-exchange-cost-card", strong: true,
+                                rows: [Px(24f), 1, 1, 2],
+                                rowGap: 6f,
                                 children: [
-                                    Node(pos: (0, 0), objectName: "ticket-exchange-cost-body", build: (w, costCard) => {
-                                        float cardW = costCard.sizeDelta.x;
-                                        txtCostTitle = PageLayout.AddCardTitle(w, costCard, 0f, 0f, "核心成本", 15,
-                                            "ticket-exchange-cost-title");
-                                        float y = 36f;
-                                        txtCostOpening = w.AddText2(0f, y, costCard, "", 13);
-                                        txtCostOpening.rectTransform.sizeDelta = new Vector2(cardW, 24f);
-                                        txtCostOpening.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                        y += 34f;
-                                        txtCostProto = w.AddText2(0f, y, costCard, "", 13);
-                                        txtCostProto.rectTransform.sizeDelta = new Vector2(cardW, 24f);
-                                        txtCostProto.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                        y += 34f;
-                                        txtCostFocus = w.AddText2(0f, y, costCard, "", 13);
-                                        txtCostFocus.rectTransform.sizeDelta = new Vector2(cardW, 68f);
-                                        txtCostFocus.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                        txtCostFocus.alignment = TextAnchor.UpperLeft;
-                                    }),
+                                    CardTitleNode("核心成本", onBuilt: text => txtCostTitle = text,
+                                        pos: (0, 0), objectName: "ticket-exchange-cost-title"),
+                                    TextNode("", 13, wrap: true, onBuilt: text => txtCostOpening = text,
+                                        pos: (1, 0), objectName: "ticket-exchange-cost-opening"),
+                                    TextNode("", 13, wrap: true, onBuilt: text => txtCostProto = text,
+                                        pos: (2, 0), objectName: "ticket-exchange-cost-proto"),
+                                    TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                        onBuilt: text => txtCostFocus = text,
+                                        pos: (3, 0), objectName: "ticket-exchange-cost-focus"),
                                 ]),
                         ]),
                     ContentCard(pos: (2, 0), objectName: "ticket-exchange-darkfog-card",
+                        rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "ticket-exchange-darkfog-body", build: (w, darkFogCard) => {
-                                float cardW = darkFogCard.sizeDelta.x;
-                                txtDarkFogTitle = PageLayout.AddCardTitle(w, darkFogCard, 0f, 0f, "黑雾支线说明", 15,
-                                    "ticket-exchange-darkfog-title");
-                                txtDarkFogStatus = w.AddText2(0f, 38f, darkFogCard, "", 13);
-                                txtDarkFogStatus.supportRichText = true;
-                                txtDarkFogStatus.alignment = TextAnchor.UpperLeft;
-                                txtDarkFogStatus.rectTransform.sizeDelta = new Vector2(cardW, 220f);
-                            }),
+                            CardTitleNode("黑雾支线说明", onBuilt: text => txtDarkFogTitle = text,
+                                pos: (0, 0), objectName: "ticket-exchange-darkfog-title"),
+                            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                onBuilt: text => txtDarkFogStatus = text,
+                                pos: (1, 0), objectName: "ticket-exchange-darkfog-status"),
                         ]),
                     FooterCard(pos: (3, 0), objectName: "ticket-exchange-footer-card",
+                        cols: [1, 1, 4],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "ticket-exchange-footer-body", build: (w, footerCard) => {
-                                w.AddButton(0f, 0f, 160f, footerCard, "前往成长规划".Translate(), 13,
-                                    onClick: () =>
-                                        MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2));
-                                w.AddButton(176f, 0f, 160f, footerCard, "前往市场板".Translate(), 13,
-                                    onClick: () =>
-                                        MainWindow.NavigateToPage(
-                                            MainWindowPageRegistry.ResourceInteractionCategoryName, 2));
-                            }),
+                            ButtonNode("前往成长规划",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2),
+                                pos: (0, 0), objectName: "ticket-exchange-go-growth"),
+                            ButtonNode("前往市场板",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 2),
+                                pos: (0, 1), objectName: "ticket-exchange-go-market"),
                         ]),
                 ]));
     }

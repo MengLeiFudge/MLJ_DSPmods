@@ -45,22 +45,17 @@ public static class RecipeGallery {
                 children: [
                     Header("配方图鉴", objectName: "recipe-gallery-header", pos: (0, 0), onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "recipe-gallery-grid-card", strong: true,
+                        rows: [Px(32f), 1],
+                        rowGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "recipe-gallery-grid-body", build: (w, gridCard) => {
-                                float cardW = gridCard.sizeDelta.x;
-                                float y = 18f;
-                                txtGridTitle = PageLayout.AddCardTitle(w, gridCard, 0f, 14f, "配方解锁情况", 16,
-                                    "recipe-gallery-grid-title");
-                                y = 58f;
-                                for (int i = 0; i < MatrixCount + 2; i++) {
-                                    for (int j = 0; j < RecipeCount + 2; j++) {
-                                        (float, float) position = GetPosition(j, RecipeCount + 2, cardW);
-                                        recipeUnlockInfoText[i, j] = w.AddText2(position.Item1, y, gridCard, "动态刷新");
-                                        recipeUnlockInfoText[i, j].supportRichText = true;
-                                    }
-                                    y += 36f;
-                                }
-                            }),
+                            CardTitleNode("配方解锁情况", 16, onBuilt: text => txtGridTitle = text,
+                                pos: (0, 0), objectName: "recipe-gallery-grid-title"),
+                            Grid(pos: (1, 0),
+                                rows: BuildRecipeGalleryRows(),
+                                cols: BuildRecipeGalleryCols(),
+                                rowGap: 4f,
+                                columnGap: PageLayout.InnerGap,
+                                children: BuildRecipeGalleryCells()),
                         ]),
                 ]));
         recipeUnlockInfoText[0, 0].text = "";
@@ -72,6 +67,38 @@ public static class RecipeGallery {
             recipeUnlockInfoText[i, 0].text = LDB.items.Select(Matrixes[i - 1]).name.Replace(" Matrix", "");
         }
         recipeUnlockInfoText[MatrixCount + 1, 0].text = "总计".Translate();
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildRecipeGalleryRows() {
+        var rows = new List<LayoutTrack>();
+        for (int i = 0; i < MatrixCount + 2; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildRecipeGalleryCols() {
+        var cols = new List<LayoutTrack>();
+        for (int i = 0; i < RecipeCount + 2; i++) {
+            cols.Add(i == 0 ? Fr(2) : Fr(1));
+        }
+
+        return cols;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildRecipeGalleryCells() {
+        var cells = new List<LayoutNode>();
+        for (int i = 0; i < MatrixCount + 2; i++) {
+            for (int j = 0; j < RecipeCount + 2; j++) {
+                int row = i;
+                int col = j;
+                cells.Add(TextNode("动态刷新", onBuilt: text => recipeUnlockInfoText[row, col] = text,
+                    pos: (row, col), objectName: $"recipe-gallery-cell-{row}-{col}"));
+            }
+        }
+
+        return cells;
     }
 
     private static bool IsPageVisible() {

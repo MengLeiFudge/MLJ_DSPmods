@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.RecipeGrowth;
@@ -64,64 +65,27 @@ public static class ResourceOverview {
                     objectName: "resource-overview-hot-card",
                     strong: true,
                     rows: [Px(24f), 1],
-                    children: [
-                        Node(pos: (0, 0), objectName: "resource-overview-hot-title-node",
-                            build: (w, root) => {
-                                txtHotTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "高需求物资", 15,
-                                    "resource-overview-hot-title");
-                            }),
-                        Node(pos: (1, 0), objectName: "resource-overview-hot-body", build: (w, root) => {
-                            float y = 14f;
-                            for (int i = 0; i < DisplayCount; i++) {
-                                hotIcons[i] = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f);
-                                hotTexts[i] = w.AddText2(50f, y, root, "", 13);
-                                hotTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
-                                y += 34f;
-                            }
-                        }),
-                    ]),
+                    children: BuildDemandCardChildren("高需求物资", text => txtHotTitle = text, hotIcons, hotTexts,
+                        "resource-overview-hot")),
                 ContentCard(
                     pos: (0, 1),
                     objectName: "resource-overview-cold-card",
                     strong: true,
                     rows: [Px(24f), 1],
-                    children: [
-                        Node(pos: (0, 0), objectName: "resource-overview-cold-title-node",
-                            build: (w, root) => {
-                                txtColdTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "低需求物资", 15,
-                                    "resource-overview-cold-title");
-                            }),
-                        Node(pos: (1, 0), objectName: "resource-overview-cold-body", build: (w, root) => {
-                            float y = 14f;
-                            for (int i = 0; i < DisplayCount; i++) {
-                                coldIcons[i] = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f);
-                                coldTexts[i] = w.AddText2(50f, y, root, "", 13);
-                                coldTexts[i].rectTransform.sizeDelta = new Vector2(420f, 24f);
-                                y += 34f;
-                            }
-                        }),
-                    ]),
+                    children: BuildDemandCardChildren("低需求物资", text => txtColdTitle = text, coldIcons, coldTexts,
+                        "resource-overview-cold")),
             ]);
         LayoutGrid darkFogCard = ContentCard(
             pos: (2, 0),
             objectName: "resource-overview-darkfog-card",
             rows: [Px(24f), 1],
             children: [
-                Node(pos: (0, 0), objectName: "resource-overview-darkfog-title-node",
-                    build: (w, root) => {
-                        txtDarkFogTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "黑雾支线", 15,
-                            "resource-overview-darkfog-title");
-                    }),
-                Node(pos: (1, 0), objectName: "resource-overview-darkfog-body", build: (w, root) => {
-                    float y = 18f;
-                    for (int i = 0; i < darkFogLines.Length; i++) {
-                        darkFogLines[i] = w.AddText2(0f, y, root, "", 13, $"txtDarkFog{i}");
-                        darkFogLines[i].supportRichText = true;
-                        darkFogLines[i].rectTransform.sizeDelta = new Vector2(1040f, i == 1 || i == 2 ? 42f : 32f);
-                        darkFogLines[i].alignment = TextAnchor.UpperLeft;
-                        y += i == 1 || i == 2 ? 52f : 36f;
-                    }
-                }),
+                CardTitleNode("黑雾支线", onBuilt: text => txtDarkFogTitle = text,
+                    pos: (0, 0), objectName: "resource-overview-darkfog-title"),
+                Grid(pos: (1, 0),
+                    rows: [1, 2, 2, 1, 1],
+                    rowGap: 6f,
+                    children: BuildDarkFogLineNodes()),
             ]);
         BuildLayout(wnd, tab,
             Grid(
@@ -136,6 +100,38 @@ public static class ResourceOverview {
                     topCards,
                     darkFogCard,
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildDemandCardChildren(string title, System.Action<Text> onTitleBuilt,
+        MyImageButton[] icons, Text[] texts, string objectNamePrefix) {
+        var rowNodes = new List<LayoutNode>();
+        var rowTracks = new List<LayoutTrack>();
+        for (int i = 0; i < DisplayCount; i++) {
+            int index = i;
+            rowTracks.Add(1);
+            rowNodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => icons[index] = btn,
+                pos: (index, 0), objectName: $"{objectNamePrefix}-icon-{index}"));
+            rowNodes.Add(TextNode("", 13, onBuilt: text => texts[index] = text,
+                pos: (index, 1), objectName: $"{objectNamePrefix}-text-{index}"));
+        }
+
+        return [
+            CardTitleNode(title, onBuilt: onTitleBuilt, pos: (0, 0), objectName: $"{objectNamePrefix}-title"),
+            Grid(pos: (1, 0), rows: rowTracks, cols: [Px(50f), 1],
+                rowGap: 6f, columnGap: 10f, children: rowNodes),
+        ];
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildDarkFogLineNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < darkFogLines.Length; i++) {
+            int index = i;
+            nodes.Add(TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                onBuilt: text => darkFogLines[index] = text,
+                pos: (index, 0), objectName: $"txtDarkFog{index}"));
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {

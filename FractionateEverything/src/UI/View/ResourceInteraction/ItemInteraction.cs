@@ -18,9 +18,6 @@ public static class ItemInteraction {
     private const int ColumnCount = 8;
     private const int ItemsPerPage = RowCount * ColumnCount;
     private const int FilterColumnCount = 4;
-    private const float FilterTopRowY = 44f;
-    private const float FilterOptionsStartY = 74f;
-    private const float FilterLineHeight = 24f;
     private static readonly (EItemType type, string labelKey)[] ItemTypeFilters = [
         (EItemType.Resource, "自然资源"),
         (EItemType.Material, "材料"),
@@ -58,7 +55,6 @@ public static class ItemInteraction {
     private static UIButton _prevPageButton;
     private static UIButton _nextPageButton;
     private static Text _pageIndicator;
-    private static float itemGridStartY;
     private static bool ShowNotStoredItem => ShowNotStoredItemEntry.Value;
 
     public static void AddTranslations() {
@@ -103,45 +99,39 @@ public static class ItemInteraction {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-filter-title-node",
-                                build: (w, root) => {
-                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "筛选条件", 15,
-                                        "item-interaction-filter-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "item-interaction-filter-body", build: (w, root) => {
-                                float filterRowY = 12f;
-                                w.AddCheckBox(0f, filterRowY, root, ShowNotStoredItemEntry, "显示未存储的物品");
-                                float popupY = PageLayout.HeaderHeight + PageLayout.Gap + FilterTopRowY + 18f;
-                                w.AddButton(3, 4, filterRowY, root, "查找指定物品",
-                                    onClick: () => { SearchSpecifiedItem(popupY); });
-                                CreateFilterCheckBoxes(root, 42f);
-                            }),
+                            CardTitleNode("筛选条件", pos: (0, 0), objectName: "item-interaction-filter-title"),
+                            Grid(
+                                pos: (1, 0),
+                                rows: [1, 1, 1, 1],
+                                cols: [1, 1, 1, 1],
+                                rowGap: 4f,
+                                columnGap: PageLayout.InnerGap,
+                                children: BuildFilterNodes()),
                         ]),
                     ContentCard(
                         pos: (2, 0),
                         objectName: "item-interaction-grid-card",
-                        rows: [Px(24f), 1],
+                        rows: [Px(24f), Px(32f), 1],
+                        rowGap: 6f,
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-grid-title-node",
-                                build: (w, root) => {
-                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "仓储物品", 15, "item-interaction-grid-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "item-interaction-grid-body", build: (w, root) => {
-                                Text txt = w.AddText2(0f, 18f, root, "以下物品在分馏数据中心的存储量为：");
-                                w.AddTipsButton2(23f + txt.preferredWidth, 18f, root, "提取物品", "提取物品说明");
-                                itemGridStartY = 64f;
-                                float y = itemGridStartY;
-                                for (int i = 0; i < RowCount; i++) {
-                                    for (int j = 0; j < ColumnCount; j++) {
-                                        btnItems[i, j] = w.AddImageButton(GetPosition(j, ColumnCount, 1006f).Item1, y,
-                                                root)
-                                            .WithSize(40f, 40f)
-                                            .WithTakeItemClickEvent()
-                                            .WithDeselectOnHover(true, () => SelectedItemID = 0);
-                                    }
-                                    y += 40f;
-                                }
-                            }),
+                            CardTitleNode("仓储物品", pos: (0, 0), objectName: "item-interaction-grid-title"),
+                            Grid(
+                                pos: (1, 0),
+                                cols: [1, Px(28f), 2],
+                                columnGap: 8f,
+                                children: [
+                                    TextNode("以下物品在分馏数据中心的存储量为：",
+                                        pos: (0, 0), objectName: "item-interaction-grid-summary"),
+                                    TipsButtonNode("提取物品", "提取物品说明",
+                                        pos: (0, 1), objectName: "item-interaction-grid-tip"),
+                                ]),
+                            Grid(
+                                pos: (2, 0),
+                                rows: BuildEqualRows(RowCount),
+                                cols: BuildEqualRows(ColumnCount),
+                                rowGap: 4f,
+                                columnGap: 4f,
+                                children: BuildItemGridNodes()),
                         ]),
                     FooterCard(
                         pos: (3, 0),
@@ -149,40 +139,72 @@ public static class ItemInteraction {
                         cols: [1, 1, 1],
                         columnGap: 12f,
                         children: [
-                            Node(pos: (0, 0), objectName: "item-interaction-footer-prev", build: (w, root) => {
-                                float cellW = root.sizeDelta.x;
-                                _prevPageButton = w.AddButton(0f, 0f, cellW, root, "上一页", onClick: PrevPage);
-                            }),
-                            Node(pos: (0, 1), objectName: "item-interaction-footer-indicator", build: (w, root) => {
-                                _pageIndicator = PageLayout.AddCenteredText(root, "", PageLayout.BodyFontSize,
-                                    White, TextAnchor.MiddleCenter, 0f, 0f,
-                                    root.sizeDelta.x, root.sizeDelta.y, "item-interaction-page-indicator");
-                            }),
-                            Node(pos: (0, 2), objectName: "item-interaction-footer-next", build: (w, root) => {
-                                float cellW = root.sizeDelta.x;
-                                _nextPageButton = w.AddButton(0f, 0f, cellW, root, "下一页", onClick: NextPage);
-                            }),
+                            ButtonNode("上一页", onClick: PrevPage, onBuilt: btn => _prevPageButton = btn,
+                                pos: (0, 0), objectName: "item-interaction-footer-prev"),
+                            TextNode("", anchor: TextAnchor.MiddleCenter, onBuilt: text => _pageIndicator = text,
+                                pos: (0, 1), objectName: "item-interaction-page-indicator"),
+                            ButtonNode("下一页", onClick: NextPage, onBuilt: btn => _nextPageButton = btn,
+                                pos: (0, 2), objectName: "item-interaction-footer-next"),
                         ]),
                 ]));
     }
 
-    private static void CreateFilterCheckBoxes(RectTransform parent, float startY) {
+    private static IReadOnlyList<LayoutNode> BuildFilterNodes() {
+        var nodes = new List<LayoutNode> {
+            CheckBoxNode(ShowNotStoredItemEntry, "显示未存储的物品",
+                pos: (0, 0), span: (1, 2), objectName: "item-interaction-show-empty"),
+            ButtonNode("查找指定物品", onClick: () => { SearchSpecifiedItem(150f); },
+                pos: (0, 3), objectName: "item-interaction-search"),
+        };
+
         for (int i = 0; i < ItemTypeFilters.Length; i++) {
             int row = i / FilterColumnCount;
             int col = i % FilterColumnCount;
-            (float posX, _) = GetPosition(col, FilterColumnCount, 1042f);
-            _typeFilterChecks[i] = CreateFilterCheckBox(posX, startY + row * FilterLineHeight, parent,
-                ItemTypeFilters[i].labelKey);
+            int filterIndex = i;
+            nodes.Add(CheckBoxNode(false, ItemTypeFilters[i].labelKey, 14,
+                onBuilt: cb => {
+                    _typeFilterChecks[filterIndex] = cb;
+                    cb.OnChecked += () => { _currentPage = 0; };
+                },
+                pos: (row + 1, col), objectName: $"item-interaction-filter-{filterIndex}"));
         }
 
-        _fractionateGroupCheckBox = CreateFilterCheckBox(GetPosition(3, FilterColumnCount, 1042f).Item1,
-            startY + 2f * FilterLineHeight, parent, "万物分馏");
+        nodes.Add(CheckBoxNode(false, "万物分馏", 14,
+            onBuilt: cb => {
+                _fractionateGroupCheckBox = cb;
+                cb.OnChecked += () => { _currentPage = 0; };
+            },
+            pos: (3, 3), objectName: "item-interaction-filter-fractionate"));
+
+        return nodes;
     }
 
-    private static MyCheckBox CreateFilterCheckBox(float x, float y, RectTransform parent, string label) {
-        MyCheckBox checkBox = MyCheckBox.CreateCheckBox(x, y, parent, false, label, 14);
-        checkBox.OnChecked += () => { _currentPage = 0; };
-        return checkBox;
+    private static IReadOnlyList<LayoutTrack> BuildEqualRows(int count) {
+        var rows = new List<LayoutTrack>();
+        for (int i = 0; i < count; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildItemGridNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int row = 0; row < RowCount; row++) {
+            for (int col = 0; col < ColumnCount; col++) {
+                int r = row;
+                int c = col;
+                nodes.Add(ImageButtonNode(size: 40f,
+                    onBuilt: btn => {
+                        btnItems[r, c] = btn
+                            .WithTakeItemClickEvent()
+                            .WithDeselectOnHover(true, () => SelectedItemID = 0);
+                    },
+                    pos: (r, c), objectName: $"item-interaction-item-{r}-{c}"));
+            }
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {

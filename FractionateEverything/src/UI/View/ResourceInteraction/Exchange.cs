@@ -64,22 +64,24 @@ public static class Exchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "exchange-info-title-node",
-                                        build: (w, root) => {
-                                            txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "当前标的", 15,
-                                                "exchange-info-title");
-                                        }),
-                                    Node(pos: (1, 0), objectName: "exchange-info-body", build: (w, root) => {
-                                        float y = 28f;
-                                        btnSelectedItem = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f)
-                                            .WithClickEvent(() => OpenItemPicker(y + 18f),
-                                                () => OpenItemPicker(y + 18f));
-                                        txtPrice = w.AddText2(60f, y, root, "", 13);
-                                        txtPrice.rectTransform.sizeDelta = new Vector2(300f, 24f);
-                                        y += 34f;
-                                        txtInventory = w.AddText2(60f, y, root, "", 13);
-                                        txtInventory.rectTransform.sizeDelta = new Vector2(300f, 24f);
-                                    }),
+                                    CardTitleNode("当前标的", onBuilt: text => txtInfoTitle = text,
+                                        pos: (0, 0), objectName: "exchange-info-title"),
+                                    Grid(
+                                        pos: (1, 0),
+                                        rows: [1, 1],
+                                        cols: [Px(50f), 1],
+                                        rowGap: PageLayout.InnerGap,
+                                        columnGap: 10f,
+                                        children: [
+                                            ImageButtonNode(size: 40f,
+                                                onBuilt: btn => btnSelectedItem = btn.WithClickEvent(
+                                                    () => OpenItemPicker(46f), () => OpenItemPicker(46f)),
+                                                pos: (0, 0), span: (2, 1), objectName: "exchange-selected-item"),
+                                            TextNode("", 13, onBuilt: text => txtPrice = text,
+                                                pos: (0, 1), objectName: "exchange-price"),
+                                            TextNode("", 13, onBuilt: text => txtInventory = text,
+                                                pos: (1, 1), objectName: "exchange-inventory"),
+                                        ]),
                                 ]),
                             ContentCard(
                                 pos: (0, 1),
@@ -87,25 +89,33 @@ public static class Exchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "exchange-action-title-node",
-                                        build: (w, root) => {
-                                            txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快捷操作", 15,
-                                                "exchange-action-title");
-                                        }),
-                                    Node(pos: (1, 0), objectName: "exchange-action-body", build: (w, root) => {
-                                        float y = 28f;
-                                        btnBuy1 = w.AddButton(0f, y, 150f, root, "买1", onClick: () => Trade(true, 1));
-                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10",
-                                            onClick: () => Trade(true, 10));
-                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100",
-                                            onClick: () => Trade(true, 100));
-                                        y += 44f;
-                                        btnSell1 = w.AddButton(0f, y, 150f, root, "卖1", onClick: () => Trade(false, 1));
-                                        btnSell10 = w.AddButton(166f, y, 150f, root, "卖10",
-                                            onClick: () => Trade(false, 10));
-                                        btnSell100 = w.AddButton(332f, y, 150f, root, "卖100",
-                                            onClick: () => Trade(false, 100));
-                                    }),
+                                    CardTitleNode("快捷操作", onBuilt: text => txtActionTitle = text,
+                                        pos: (0, 0), objectName: "exchange-action-title"),
+                                    Grid(
+                                        pos: (1, 0),
+                                        rows: [1, 1],
+                                        cols: [1, 1, 1],
+                                        rowGap: PageLayout.InnerGap,
+                                        columnGap: PageLayout.InnerGap,
+                                        children: [
+                                            ButtonNode("买1", onClick: () => Trade(true, 1), onBuilt: btn => btnBuy1 = btn,
+                                                pos: (0, 0), objectName: "exchange-buy-1"),
+                                            ButtonNode("买10", onClick: () => Trade(true, 10),
+                                                onBuilt: btn => btnBuy10 = btn,
+                                                pos: (0, 1), objectName: "exchange-buy-10"),
+                                            ButtonNode("买100", onClick: () => Trade(true, 100),
+                                                onBuilt: btn => btnBuy100 = btn,
+                                                pos: (0, 2), objectName: "exchange-buy-100"),
+                                            ButtonNode("卖1", onClick: () => Trade(false, 1),
+                                                onBuilt: btn => btnSell1 = btn,
+                                                pos: (1, 0), objectName: "exchange-sell-1"),
+                                            ButtonNode("卖10", onClick: () => Trade(false, 10),
+                                                onBuilt: btn => btnSell10 = btn,
+                                                pos: (1, 1), objectName: "exchange-sell-10"),
+                                            ButtonNode("卖100", onClick: () => Trade(false, 100),
+                                                onBuilt: btn => btnSell100 = btn,
+                                                pos: (1, 2), objectName: "exchange-sell-100"),
+                                        ]),
                                 ]),
                         ]),
                     ContentCard(
@@ -113,17 +123,11 @@ public static class Exchange {
                         objectName: "exchange-market-card",
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "exchange-market-title-node",
-                                build: (w, root) => {
-                                    txtMarketTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "市场概览", 15,
-                                        "exchange-market-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "exchange-market-body", build: (w, root) => {
-                                txtStats = w.AddText2(0f, 18f, root, "", 13);
-                                txtStats.supportRichText = true;
-                                txtStats.alignment = TextAnchor.UpperLeft;
-                                txtStats.rectTransform.sizeDelta = new Vector2(PageLayout.DesignWidth - 36f, 320f);
-                            }),
+                            CardTitleNode("市场概览", onBuilt: text => txtMarketTitle = text,
+                                pos: (0, 0), objectName: "exchange-market-title"),
+                            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                onBuilt: text => txtStats = text,
+                                pos: (1, 0), objectName: "exchange-market-stats"),
                         ]),
                 ]));
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
@@ -43,9 +44,6 @@ public static class BuildingOperate {
     private static Text[] txtReinforcementBonus = new Text[10];
 
     private const int LevelLineCount = 15;
-    private const float RightColX = 620f;
-    private const float LineHeight = 22f;
-    private static float buildingInfoBaseY;
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
 
     public static void AddTranslations() {
@@ -202,65 +200,104 @@ public static class BuildingOperate {
                         pos: (1, 0),
                         objectName: "building-operate-content-card",
                         strong: true,
+                        onBuilt: root => tab = root,
+                        rows: BuildContentRows(),
+                        cols: [Fr(3), Fr(2)],
+                        rowGap: 6f,
+                        columnGap: 20f,
                         children: [
-                            Node(pos: (0, 0), objectName: "building-operate-content-root", build: (w, root) => {
-                                tab = root;
-                                float cardW = root.sizeDelta.x;
-                                float x = 0f;
-                                float y = 18f + 7f;
-                                var txt = w.AddText2(x, y, tab, "建筑类型");
-                                w.AddComboBox(x + 5 + txt.preferredWidth, y, tab)
-                                    .WithItems(BuildingTypeNames).WithSize(200, 0).WithConfigEntry(BuildingTypeEntry);
-                                btnFragmentIcon =
-                                    w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片))
-                                        .WithSize(40f, 40f);
-                                txtFragmentCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 45f, y, tab, "");
-                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null)
-                                    .WithSize(40f, 40f);
-                                txtMatrixCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 165f, y, tab, "");
-                                y += 36f + 7f;
-                                btnReinforcement = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
-                                    GetPosition(0, 4, cardW).Item2, tab, "关键节点突破", onClick: Reinforcement);
-                                reinforcementSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
-                                    GetPosition(0, 4, cardW).Item2, tab, "重置等级", onClick: () => { ChangeLevelTo(0); });
-                                reinforcementSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y,
-                                    GetPosition(1, 4, cardW).Item2, tab, "等级-1",
-                                    onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); });
-                                reinforcementSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y,
-                                    GetPosition(2, 4, cardW).Item2, tab, "等级+1",
-                                    onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); });
-                                reinforcementSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y,
-                                    GetPosition(3, 4, cardW).Item2, tab, "等级升满",
-                                    onClick: () => { ChangeLevelTo(MaxLevel); });
-                                bool sandboxEnabled = GameMain.sandboxToolsEnabled;
-                                btnReinforcement.gameObject.SetActive(!sandboxEnabled);
-                                foreach (UIButton button in reinforcementSandboxBtn) {
-                                    button.gameObject.SetActive(sandboxEnabled);
-                                }
-                                y += 36f + 7f;
-                                w.AddText2(x, y, tab, "建筑加成：", 15, "text-building-info-0");
-                                buildingInfoBaseY = y;
-                                for (int i = 0; i < LevelLineCount; i++) {
-                                    string placeholder = i == 0 ? "当前建筑强化等级 +12" :
-                                        i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
-                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, placeholder, 13);
-                                }
-                                y += 36f;
-                                txtBuildingInfo5 = w.AddText2(x, y, tab, "动态刷新");
-                                btnTip5 = w.AddTipsButton2(x + 250, y, tab, "强化等级", "强化等级说明");
-                                y += 36f;
-                                txtTrait1 = w.AddText2(x, y, tab, "动态刷新");
-                                btnTrait1Tip = w.AddTipsButton2(x + 250, y, tab, "特质1（+6）：", "特质1（+6）：");
-                                y += 36f;
-                                txtTrait2 = w.AddText2(x, y, tab, "动态刷新");
-                                btnTrait2Tip = w.AddTipsButton2(x + 250, y, tab, "特质2（+12）：", "特质2（+12）：");
-                                for (int i = 0; i < txtReinforcementBonus.Length; i++) {
-                                    y += 36f;
-                                    txtReinforcementBonus[i] = w.AddText2(x, y, tab, "动态刷新");
-                                }
-                            }),
+                            Grid(pos: (0, 0), span: (1, 2),
+                                cols: [Px(82f), Px(220f), Fr(1), Px(44f), Px(70f), Px(44f), Px(70f)],
+                                columnGap: 8f,
+                                children: [
+                                    TextNode("建筑类型", 15, pos: (0, 0), objectName: "building-type-label"),
+                                    ComboBoxNode(onBuilt: combo => combo.WithItems(BuildingTypeNames)
+                                            .WithSize(200, 0).WithConfigEntry(BuildingTypeEntry),
+                                        pos: (0, 1), objectName: "building-type-combo"),
+                                    ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => btnFragmentIcon = btn,
+                                        pos: (0, 3), objectName: "building-fragment-icon"),
+                                    TextNode("", 13, onBuilt: text => txtFragmentCount = text,
+                                        pos: (0, 4), objectName: "building-fragment-count"),
+                                    ImageButtonNode(size: 40f, onBuilt: btn => btnMatrixIcon = btn,
+                                        pos: (0, 5), objectName: "building-matrix-icon"),
+                                    TextNode("", 13, onBuilt: text => txtMatrixCount = text,
+                                        pos: (0, 6), objectName: "building-matrix-count"),
+                                ]),
+                            Grid(pos: (1, 0), span: (1, 2), cols: [1, 1, 1, 1], columnGap: 12f,
+                                children: [
+                                    ButtonNode("关键节点突破", onClick: Reinforcement,
+                                        onBuilt: btn => btnReinforcement = btn,
+                                        pos: (0, 0), objectName: "building-breakthrough"),
+                                    ButtonNode("重置等级", onClick: () => { ChangeLevelTo(0); },
+                                        onBuilt: btn => reinforcementSandboxBtn[0] = btn,
+                                        pos: (0, 0), objectName: "building-reset-level"),
+                                    ButtonNode("等级-1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() - 1); },
+                                        onBuilt: btn => reinforcementSandboxBtn[1] = btn,
+                                        pos: (0, 1), objectName: "building-level-down"),
+                                    ButtonNode("等级+1", onClick: () => { ChangeLevelTo(SelectedBuilding.Level() + 1); },
+                                        onBuilt: btn => reinforcementSandboxBtn[2] = btn,
+                                        pos: (0, 2), objectName: "building-level-up"),
+                                    ButtonNode("等级升满", onClick: () => { ChangeLevelTo(MaxLevel); },
+                                        onBuilt: btn => reinforcementSandboxBtn[3] = btn,
+                                        pos: (0, 3), objectName: "building-level-max"),
+                                ]),
+                            TextNode("建筑加成：", 15, pos: (2, 0), objectName: "text-building-info-0"),
+                            ..BuildLeftInfoNodes(),
+                            ..BuildLevelInfoNodes(),
                         ]),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildContentRows() {
+        var rows = new List<LayoutTrack> { Px(44f), Px(36f), Px(26f), Px(30f), Px(30f), Px(30f) };
+        for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+            rows.Add(Px(30f));
+        }
+        for (int i = rows.Count; i < LevelLineCount + 2; i++) {
+            rows.Add(Px(26f));
+        }
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildLeftInfoNodes() {
+        var nodes = new List<LayoutNode> {
+            Grid(pos: (3, 0), cols: [Fr(1), Px(28f)], columnGap: 8f, children: [
+                TextNode("动态刷新", onBuilt: text => txtBuildingInfo5 = text,
+                    pos: (0, 0), objectName: "building-current-level"),
+                TipsButtonNode("强化等级", "强化等级说明", onBuilt: btn => btnTip5 = btn,
+                    pos: (0, 1), objectName: "building-level-tip"),
+            ]),
+            Grid(pos: (4, 0), cols: [Fr(1), Px(28f)], columnGap: 8f, children: [
+                TextNode("动态刷新", onBuilt: text => txtTrait1 = text,
+                    pos: (0, 0), objectName: "building-trait-1"),
+                TipsButtonNode("特质1（+6）：", "特质1（+6）：", onBuilt: btn => btnTrait1Tip = btn,
+                    pos: (0, 1), objectName: "building-trait-1-tip"),
+            ]),
+            Grid(pos: (5, 0), cols: [Fr(1), Px(28f)], columnGap: 8f, children: [
+                TextNode("动态刷新", onBuilt: text => txtTrait2 = text,
+                    pos: (0, 0), objectName: "building-trait-2"),
+                TipsButtonNode("特质2（+12）：", "特质2（+12）：", onBuilt: btn => btnTrait2Tip = btn,
+                    pos: (0, 1), objectName: "building-trait-2-tip"),
+            ]),
+        };
+        for (int i = 0; i < txtReinforcementBonus.Length; i++) {
+            int index = i;
+            nodes.Add(TextNode("动态刷新", onBuilt: text => txtReinforcementBonus[index] = text,
+                pos: (6 + index, 0), objectName: $"building-reinforcement-bonus-{index}"));
+        }
+        return nodes;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildLevelInfoNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < LevelLineCount; i++) {
+            int index = i;
+            string placeholder = i == 0 ? "当前建筑强化等级 +12" :
+                i <= MaxLevel + 1 ? "+12  ×12  能耗50%  增产×2.0" : "";
+            nodes.Add(TextNode(placeholder, 13, onBuilt: text => txtLevelInfo[index] = text,
+                pos: (2 + index, 1), objectName: $"building-level-info-{index}"));
+        }
+        return nodes;
     }
 
     /// <summary>
@@ -388,14 +425,12 @@ public static class BuildingOperate {
         int buildingId = SelectedBuilding.ID;
 
         txtLevelInfo[0].text = $"{"当前建筑强化等级".Translate()} +{currentLevel}".WithColor(Orange);
-        NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, buildingInfoBaseY);
 
         for (int lvl = 0; lvl <= MaxLevel; lvl++) {
             string desc = GetLevelDescription(buildingId, lvl);
             string colored = lvl == currentLevel ? desc.WithColor(Orange) :
                 lvl < currentLevel ? desc.WithColor(Green) : desc;
             txtLevelInfo[lvl + 1].text = colored;
-            NormalizeRectWithMidLeft(txtLevelInfo[lvl + 1], RightColX, buildingInfoBaseY + LineHeight * (lvl + 1));
         }
 
         txtLevelInfo[MaxLevel + 2].text = "";

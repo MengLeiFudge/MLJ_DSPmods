@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using FE.UI.Components;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressTask;
@@ -49,54 +50,117 @@ public static partial class MainTask {
     private static RouteViewCache[] routeViewsByMode = [];
 
     private static void BuildMilestonePage(MyWindow wnd) {
-        txtModeTitle = wnd.AddText2(0f, 12f, tab, "主线里程碑", 20, "txt-main-task-mode");
-        txtModeTitle.supportRichText = true;
-        txtModeTitle.color = Orange;
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(70f), Px(RoutePanelHeight)],
+                rowGap: 12f,
+                children: [
+                    Grid(pos: (0, 0), rows: [Px(34f), Px(24f)], cols: [Px(250f), Px(260f), Fr(1)],
+                        children: [
+                            TextNode("主线里程碑", 20, Orange,
+                                onBuilt: text => {
+                                    txtModeTitle = text;
+                                    text.supportRichText = true;
+                                },
+                                pos: (0, 0), objectName: "txt-main-task-mode"),
+                            TextNode("动态刷新", 13,
+                                onBuilt: text => {
+                                    txtOverallSummary = text;
+                                    text.supportRichText = true;
+                                },
+                                pos: (1, 0), objectName: "txt-main-task-overall"),
+                            TextNode("动态刷新", 13,
+                                onBuilt: text => {
+                                    txtBranchSummary = text;
+                                    text.supportRichText = true;
+                                },
+                                pos: (1, 1), objectName: "txt-main-task-branch"),
+                        ]),
+                    Grid(pos: (1, 0), objectName: "main-task-route-panel",
+                        onBuilt: root => {
+                            roadmapPanel = root;
+                            AddPanelImage(root, RoutePanelColor);
+                        },
+                        rows: [Px(210f), Px(140f), Px(82f), Px(DetailPanelHeight), Fr(1)],
+                        cols: [Px(24f), Px(DetailPanelWidth), Px(200f), Fr(1)],
+                        children: [
+                            Grid(pos: (1, 2), objectName: "main-task-center-panel",
+                                onBuilt: root => {
+                                    centerPanel = root;
+                                    AddPanelImage(root, CenterPanelColor);
+                                },
+                                padding: Inset(24f, 22f),
+                                rows: [Px(46f), Px(34f)],
+                                children: [
+                                    TextNode("主线里程碑", 20, Orange,
+                                        onBuilt: text => {
+                                            txtCenterTitle = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (0, 0), objectName: "txt-main-task-center-title"),
+                                    TextNode("动态刷新", 13,
+                                        onBuilt: text => {
+                                            txtCenterSummary = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (1, 0), objectName: "txt-main-task-center-summary"),
+                                ]),
+                            Grid(pos: (3, 1), objectName: "main-task-detail-panel",
+                                onBuilt: root => {
+                                    detailPanel = root;
+                                    AddPanelImage(root, DetailPanelColor);
+                                },
+                                padding: Inset(18f, 14f),
+                                rows: [Px(26f), Px(30f), Px(34f), Px(42f), Px(42f)],
+                                cols: [Px(40f), Px(10f), Px(138f), Fr(1)],
+                                children: [
+                                    TextNode("动态刷新", 13, Orange,
+                                        onBuilt: text => {
+                                            txtDetailBranch = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (0, 0), span: (1, 4), objectName: "txt-main-task-detail-branch"),
+                                    TextNode("动态刷新", 15,
+                                        onBuilt: text => {
+                                            txtDetailName = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (1, 0), span: (1, 4), objectName: "txt-main-task-detail-name"),
+                                    TextNode("动态刷新", 13, wrap: true,
+                                        onBuilt: text => {
+                                            txtDetailDesc = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (2, 0), span: (1, 4), objectName: "txt-main-task-detail-desc"),
+                                    TextNode("动态刷新", 13, wrap: true,
+                                        onBuilt: text => {
+                                            txtDetailCondition = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (3, 0), span: (1, 4), objectName: "txt-main-task-detail-condition"),
+                                    ImageButtonNode(size: 40f, onBuilt: btn => btnDetailRewardIcon = btn,
+                                        pos: (4, 0), objectName: "btn-main-task-detail-reward"),
+                                    TextNode("动态刷新", 13,
+                                        onBuilt: text => {
+                                            txtDetailReward = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (4, 2), objectName: "txt-main-task-detail-reward"),
+                                    TextNode("动态刷新", 13,
+                                        onBuilt: text => {
+                                            txtDetailState = text;
+                                            text.supportRichText = true;
+                                        },
+                                        pos: (4, 3), objectName: "txt-main-task-detail-state"),
+                                ]),
+                        ]),
+                ]));
+    }
 
-        txtOverallSummary = wnd.AddText2(0f, 42f, tab, "动态刷新", 13, "txt-main-task-overall");
-        txtOverallSummary.supportRichText = true;
-
-        txtBranchSummary = wnd.AddText2(260f, 42f, tab, "动态刷新", 13, "txt-main-task-branch");
-        txtBranchSummary.supportRichText = true;
-
-        roadmapPanel = CreatePanelRect("main-task-route-panel", tab, 0f, 82f, RoutePanelWidth, RoutePanelHeight,
-            RoutePanelColor);
-        centerPanel = CreatePanelRect("main-task-center-panel", roadmapPanel, 441f, 210f, 200f, 140f, CenterPanelColor);
-
-        txtCenterTitle = MyWindow.AddText(24f, 26f, centerPanel, "主线里程碑", 20, "txt-main-task-center-title");
-        txtCenterTitle.supportRichText = true;
-        txtCenterTitle.color = Orange;
-
-        txtCenterSummary = MyWindow.AddText(24f, 72f, centerPanel, "动态刷新", 13, "txt-main-task-center-summary");
-        txtCenterSummary.supportRichText = true;
-
-        detailPanel = CreatePanelRect("main-task-detail-panel", roadmapPanel, 24f, 432f, DetailPanelWidth,
-            DetailPanelHeight, DetailPanelColor);
-
-        txtDetailBranch = MyWindow.AddText(18f, 16f, detailPanel, "动态刷新", 13, "txt-main-task-detail-branch");
-        txtDetailBranch.supportRichText = true;
-        txtDetailBranch.color = Orange;
-
-        txtDetailName = MyWindow.AddText(18f, 42f, detailPanel, "动态刷新", 15, "txt-main-task-detail-name");
-        txtDetailName.supportRichText = true;
-
-        txtDetailDesc = MyWindow.AddText(18f, 72f, detailPanel, "动态刷新", 13, "txt-main-task-detail-desc");
-        txtDetailDesc.supportRichText = true;
-        txtDetailDesc.rectTransform.sizeDelta = new Vector2(380f, 52f);
-
-        txtDetailCondition = MyWindow.AddText(18f, 106f, detailPanel, "动态刷新", 13, "txt-main-task-detail-condition");
-        txtDetailCondition.supportRichText = true;
-        txtDetailCondition.rectTransform.sizeDelta = new Vector2(384f, 28f);
-
-        btnDetailRewardIcon = wnd.AddImageButton(18f, 148f, detailPanel, null, "btn-main-task-detail-reward")
-            .WithSize(40f, 40f);
-        txtDetailReward = MyWindow.AddText(68f, 144f, detailPanel, "动态刷新", 13, "txt-main-task-detail-reward");
-        txtDetailReward.supportRichText = true;
-        txtDetailReward.rectTransform.sizeDelta = new Vector2(136f, 28f);
-
-        txtDetailState = MyWindow.AddText(216f, 144f, detailPanel, "动态刷新", 13, "txt-main-task-detail-state");
-        txtDetailState.supportRichText = true;
-        txtDetailState.rectTransform.sizeDelta = new Vector2(176f, 28f);
+    private static void AddPanelImage(RectTransform root, Color color) {
+        Image image = root.gameObject.AddComponent<Image>();
+        image.color = color;
+        image.raycastTarget = false;
     }
 
     private static void RefreshMilestonePage() {

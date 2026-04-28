@@ -115,21 +115,10 @@ public static class Achievements {
     private static MyImageButton[] rewardIcons;
 
     private const int RowsPerPage = 8;
-    private const float AchievementRowSpacing = 52f;
     private static int currentPage;
     private static UIButton btnPrevPage;
     private static UIButton btnNextPage;
     private static Text txtPageIndicator;
-    private static float listStartY;
-    private static float listNameX;
-    private static float listNameW;
-    private static float listDescX;
-    private static float listDescW;
-    private static float listRewardX;
-    private static float listRewardTextX;
-    private static float listRewardTextW;
-    private static float listStateX;
-    private static float listStateW;
     private static int nextAutoCheckFrame;
 
     private static readonly AchievementInfo[] achievements = BuildAchievements();
@@ -904,94 +893,83 @@ public static class Achievements {
                         pos: (1, 0),
                         objectName: "achievements-summary-card",
                         strong: true,
+                        rows: [1, 1],
+                        cols: [1, 2],
+                        rowGap: 4f,
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "achievements-summary-body", build: (w, summaryCard) => {
-                                float x = 0f;
-                                float y = 16f;
-                                txtUnlockedSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13,
-                                    "txtAchievementUnlockedSummary");
-                                txtUnlockedSummary.supportRichText = true;
-                                y += 28f;
-                                txtHiddenSummary = w.AddText2(x, y, summaryCard, "动态刷新", 13,
-                                    "txtAchievementHiddenSummary");
-                                txtHiddenSummary.supportRichText = true;
-                                txtBonusSummary = w.AddText2(x + 380f, 16f, summaryCard, "动态刷新", 13,
-                                    "txtAchievementBonusSummary");
-                                txtBonusSummary.supportRichText = true;
-                                txtBonusSummary.alignment = TextAnchor.UpperLeft;
-                                txtBonusSummary.rectTransform.sizeDelta = new Vector2(650f, 52f);
-                            }),
+                            TextNode("动态刷新", 13, onBuilt: text => txtUnlockedSummary = text,
+                                pos: (0, 0), objectName: "txtAchievementUnlockedSummary"),
+                            TextNode("动态刷新", 13, onBuilt: text => txtHiddenSummary = text,
+                                pos: (1, 0), objectName: "txtAchievementHiddenSummary"),
+                            TextNode("动态刷新", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                onBuilt: text => txtBonusSummary = text,
+                                pos: (0, 1), span: (2, 1), objectName: "txtAchievementBonusSummary"),
                         ]),
                     ContentCard(
                         pos: (2, 0),
                         objectName: "achievements-list-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "achievements-list-body", build: (w, listCard) => {
-                                txtAchievementNames = new Text[achievements.Length];
-                                txtAchievementDescs = new Text[achievements.Length];
-                                txtAchievementRewards = new Text[achievements.Length];
-                                txtAchievementStates = new Text[achievements.Length];
-                                rewardIcons = new MyImageButton[achievements.Length];
-                                float x = 0f;
-                                float y = 16f;
-                                listNameX = 0f;
-                                listNameW = 220f;
-                                listDescX = 220f;
-                                listDescW = 460f;
-                                listRewardX = 690f;
-                                listRewardTextX = 722f;
-                                listRewardTextW = 120f;
-                                listStateX = 860f;
-                                listStateW = 180f;
-                                w.AddText2(listNameX, y, listCard, "成就", 15, "txtAchievementHeaderName");
-                                w.AddText2(listDescX, y, listCard, "描述", 15, "txtAchievementHeaderDesc");
-                                w.AddText2(listRewardX, y, listCard, "奖励", 15, "txtAchievementHeaderReward");
-                                w.AddText2(listStateX, y, listCard, "状态", 15, "txtAchievementHeaderState");
-                                y += 26f;
-                                listStartY = y;
-                                for (int i = 0; i < achievements.Length; i++) {
-                                    int j = i;
-                                    txtAchievementNames[j] = w.AddText2(listNameX + x, y, listCard, "动态刷新", 13,
-                                        $"txtAchievementName{j}");
-                                    txtAchievementNames[j].supportRichText = true;
-                                    txtAchievementNames[j].rectTransform.sizeDelta = new Vector2(listNameW, 40f);
-                                    txtAchievementDescs[j] = w.AddText2(listDescX + x, y, listCard, "动态刷新", 13,
-                                        $"txtAchievementDesc{j}");
-                                    txtAchievementDescs[j].supportRichText = true;
-                                    txtAchievementDescs[j].alignment = TextAnchor.UpperLeft;
-                                    txtAchievementDescs[j].rectTransform.sizeDelta = new Vector2(listDescW, 40f);
-                                    rewardIcons[j] = w.AddImageButton(listRewardX + x, y, listCard, null)
-                                        .WithSize(40f, 40f);
-                                    txtAchievementRewards[j] = w.AddText2(listRewardTextX + x, y, listCard, "动态刷新", 13,
-                                        $"txtAchievementReward{j}");
-                                    txtAchievementRewards[j].supportRichText = true;
-                                    txtAchievementRewards[j].rectTransform.sizeDelta =
-                                        new Vector2(listRewardTextW, 32f);
-                                    txtAchievementStates[j] = w.AddText2(listStateX + x, y, listCard, "动态刷新", 13,
-                                        $"txtAchievementState{j}");
-                                    txtAchievementStates[j].supportRichText = true;
-                                    txtAchievementStates[j].rectTransform.sizeDelta = new Vector2(listStateW, 32f);
-                                    y += AchievementRowSpacing;
-                                }
-                            }),
-                        ]),
+                        rows: BuildAchievementListRows(),
+                        cols: [Fr(220), Fr(460), Px(42f), Fr(120), Fr(180)],
+                        rowGap: 6f,
+                        columnGap: 8f,
+                        children: BuildAchievementListNodes()),
                     FooterCard(
                         pos: (3, 0),
                         objectName: "achievements-footer-card",
+                        cols: [1, 1, 1],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "achievements-footer-body", build: (w, footerCard) => {
-                                float footerW = footerCard.sizeDelta.x;
-                                btnPrevPage = w.AddButton(GetPosition(0, 3, footerW).Item1, 0f, footerCard, "上一页",
-                                    onClick: PrevPage);
-                                txtPageIndicator = w.AddText2(GetPosition(1, 3, footerW).Item1, 6f, footerCard, "");
-                                txtPageIndicator.alignment = TextAnchor.MiddleCenter;
-                                txtPageIndicator.rectTransform.sizeDelta = new(GetPosition(1, 3, footerW).Item2,
-                                    txtPageIndicator.rectTransform.sizeDelta.y);
-                                btnNextPage = w.AddButton(GetPosition(2, 3, footerW).Item1, 0f, footerCard, "下一页",
-                                    onClick: NextPage);
-                            }),
+                            ButtonNode("上一页", onClick: PrevPage, onBuilt: btn => btnPrevPage = btn,
+                                pos: (0, 0), objectName: "achievements-prev-page"),
+                            TextNode("", anchor: TextAnchor.MiddleCenter, onBuilt: text => txtPageIndicator = text,
+                                pos: (0, 1), objectName: "achievements-page-indicator"),
+                            ButtonNode("下一页", onClick: NextPage, onBuilt: btn => btnNextPage = btn,
+                                pos: (0, 2), objectName: "achievements-next-page"),
                         ]),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildAchievementListRows() {
+        var rows = new List<LayoutTrack> { Px(28f) };
+        for (int i = 0; i < RowsPerPage; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildAchievementListNodes() {
+        txtAchievementNames = new Text[RowsPerPage];
+        txtAchievementDescs = new Text[RowsPerPage];
+        txtAchievementRewards = new Text[RowsPerPage];
+        txtAchievementStates = new Text[RowsPerPage];
+        rewardIcons = new MyImageButton[RowsPerPage];
+
+        var nodes = new List<LayoutNode> {
+            TextNode("成就", 15, pos: (0, 0), objectName: "txtAchievementHeaderName"),
+            TextNode("描述", 15, pos: (0, 1), objectName: "txtAchievementHeaderDesc"),
+            TextNode("奖励", 15, pos: (0, 2), span: (1, 2), objectName: "txtAchievementHeaderReward"),
+            TextNode("状态", 15, pos: (0, 4), objectName: "txtAchievementHeaderState"),
+        };
+        for (int i = 0; i < RowsPerPage; i++) {
+            int slot = i;
+            int row = i + 1;
+            nodes.Add(TextNode("动态刷新", 13, wrap: true,
+                onBuilt: text => txtAchievementNames[slot] = text,
+                pos: (row, 0), objectName: $"txtAchievementName{slot}"));
+            nodes.Add(TextNode("动态刷新", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                onBuilt: text => txtAchievementDescs[slot] = text,
+                pos: (row, 1), objectName: $"txtAchievementDesc{slot}"));
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => rewardIcons[slot] = btn,
+                pos: (row, 2), objectName: $"txtAchievementRewardIcon{slot}"));
+            nodes.Add(TextNode("动态刷新", 13, onBuilt: text => txtAchievementRewards[slot] = text,
+                pos: (row, 3), objectName: $"txtAchievementReward{slot}"));
+            nodes.Add(TextNode("动态刷新", 13, onBuilt: text => txtAchievementStates[slot] = text,
+                pos: (row, 4), objectName: $"txtAchievementState{slot}"));
+        }
+
+        return nodes;
     }
 
     private static bool IsPageVisible() {
@@ -1030,7 +1008,7 @@ public static class Achievements {
             SyncCurrentPageToSharedState();
         }
 
-        for (int i = 0; i < achievements.Length; i++) {
+        for (int i = 0; i < RowsPerPage; i++) {
             txtAchievementNames[i].gameObject.SetActive(false);
             txtAchievementDescs[i].gameObject.SetActive(false);
             txtAchievementRewards[i].gameObject.SetActive(false);
@@ -1042,21 +1020,12 @@ public static class Achievements {
         int end = Math.Min(start + RowsPerPage, achievements.Length);
         for (int i = start; i < end; i++) {
             int slot = i - start;
-            float rowY = listStartY + slot * AchievementRowSpacing;
-            float rowTop = rowY - 10f;
+            txtAchievementNames[slot].gameObject.SetActive(true);
+            txtAchievementDescs[slot].gameObject.SetActive(true);
+            txtAchievementRewards[slot].gameObject.SetActive(true);
+            txtAchievementStates[slot].gameObject.SetActive(true);
 
-            txtAchievementNames[i].SetPosition(listNameX, rowY);
-            NormalizeRectWithTopLeft(txtAchievementDescs[i], listDescX, rowTop);
-            NormalizeRectWithMidLeft(rewardIcons[i], listRewardX, rowY);
-            txtAchievementRewards[i].SetPosition(listRewardTextX, rowY);
-            txtAchievementStates[i].SetPosition(listStateX, rowY);
-
-            txtAchievementNames[i].gameObject.SetActive(true);
-            txtAchievementDescs[i].gameObject.SetActive(true);
-            txtAchievementRewards[i].gameObject.SetActive(true);
-            txtAchievementStates[i].gameObject.SetActive(true);
-
-            RefreshAchievementRow(i);
+            RefreshAchievementRow(i, slot);
         }
 
         UpdatePagination(totalPages);
@@ -1163,28 +1132,28 @@ public static class Achievements {
         return cachedBonusSummary.PowerStageBonus;
     }
 
-    private static void RefreshAchievementRow(int index) {
+    private static void RefreshAchievementRow(int index, int slot) {
         AchievementInfo info = achievements[index];
         Color tierColor = GetTierColor(info.Tier);
         if (!claimed[index]) {
-            txtAchievementNames[index].text =
+            txtAchievementNames[slot].text =
                 $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
-            txtAchievementDescs[index].text = GetDisplayedDesc(info);
-            rewardIcons[index].gameObject.SetActive(false);
-            txtAchievementRewards[index].text = GetFunctionalRewardText(info);
-            txtAchievementStates[index].text = info.RequiresTheyComeFromVoid && !TheyComeFromVoid.Enable
+            txtAchievementDescs[slot].text = GetDisplayedDesc(info);
+            rewardIcons[slot].gameObject.SetActive(false);
+            txtAchievementRewards[slot].text = GetFunctionalRewardText(info);
+            txtAchievementStates[slot].text = info.RequiresTheyComeFromVoid && !TheyComeFromVoid.Enable
                 ? "需启用深空联动".Translate().WithColor(Orange)
                 : "未解锁".Translate().WithColor(Gray);
             return;
         }
 
-        txtAchievementNames[index].text =
+        txtAchievementNames[slot].text =
             $"[{info.CategoryKey.Translate()}] {info.NameKey.Translate().WithColor(tierColor)}";
-        txtAchievementDescs[index].text = GetDisplayedDesc(info);
-        rewardIcons[index].gameObject.SetActive(false);
-        txtAchievementRewards[index].text = GetFunctionalRewardText(info);
+        txtAchievementDescs[slot].text = GetDisplayedDesc(info);
+        rewardIcons[slot].gameObject.SetActive(false);
+        txtAchievementRewards[slot].text = GetFunctionalRewardText(info);
 
-        txtAchievementStates[index].text = "已获得".Translate().WithColor(Green);
+        txtAchievementStates[slot].text = "已获得".Translate().WithColor(Green);
     }
 
     private static string GetDisplayedDesc(AchievementInfo info) {

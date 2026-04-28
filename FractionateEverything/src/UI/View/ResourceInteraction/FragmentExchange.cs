@@ -55,22 +55,25 @@ public static class FragmentExchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "fragment-exchange-info-title-node",
-                                        build: (w, root) => {
-                                            txtInfoTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "目标物品", 15,
-                                                "fragment-exchange-info-title");
-                                        }),
-                                    Node(pos: (1, 0), objectName: "fragment-exchange-info-body", build: (w, root) => {
-                                        float y = 28f;
-                                        btnSelectedItem = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f)
-                                            .WithClickEvent(() => OpenItemPicker(y + 18f),
-                                                () => OpenItemPicker(y + 18f));
-                                        txtQuote = w.AddText2(60f, y, root, "", 13);
-                                        txtQuote.rectTransform.sizeDelta = new Vector2(300f, 24f);
-                                        y += 34f;
-                                        txtBalance = w.AddText2(60f, y, root, "", 13);
-                                        txtBalance.rectTransform.sizeDelta = new Vector2(300f, 24f);
-                                    }),
+                                    CardTitleNode("目标物品", onBuilt: text => txtInfoTitle = text,
+                                        pos: (0, 0), objectName: "fragment-exchange-info-title"),
+                                    Grid(
+                                        pos: (1, 0),
+                                        rows: [1, 1],
+                                        cols: [Px(50f), 1],
+                                        rowGap: PageLayout.InnerGap,
+                                        columnGap: 10f,
+                                        children: [
+                                            ImageButtonNode(size: 40f,
+                                                onBuilt: btn => btnSelectedItem = btn.WithClickEvent(
+                                                    () => OpenItemPicker(46f), () => OpenItemPicker(46f)),
+                                                pos: (0, 0), span: (2, 1),
+                                                objectName: "fragment-exchange-selected-item"),
+                                            TextNode("", 13, onBuilt: text => txtQuote = text,
+                                                pos: (0, 1), objectName: "fragment-exchange-quote"),
+                                            TextNode("", 13, onBuilt: text => txtBalance = text,
+                                                pos: (1, 1), objectName: "fragment-exchange-balance"),
+                                        ]),
                                 ]),
                             ContentCard(
                                 pos: (0, 1),
@@ -78,19 +81,23 @@ public static class FragmentExchange {
                                 strong: true,
                                 rows: [Px(24f), 1],
                                 children: [
-                                    Node(pos: (0, 0), objectName: "fragment-exchange-action-title-node",
-                                        build: (w, root) => {
-                                            txtActionTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "快速兑换", 15,
-                                                "fragment-exchange-action-title");
-                                        }),
-                                    Node(pos: (1, 0), objectName: "fragment-exchange-action-body", build: (w, root) => {
-                                        float y = 28f;
-                                        btnBuy1 = w.AddButton(0f, y, 150f, root, "买1", onClick: () => ExchangeItems(1));
-                                        btnBuy10 = w.AddButton(166f, y, 150f, root, "买10",
-                                            onClick: () => ExchangeItems(10));
-                                        btnBuy100 = w.AddButton(332f, y, 150f, root, "买100",
-                                            onClick: () => ExchangeItems(100));
-                                    }),
+                                    CardTitleNode("快速兑换", onBuilt: text => txtActionTitle = text,
+                                        pos: (0, 0), objectName: "fragment-exchange-action-title"),
+                                    Grid(
+                                        pos: (1, 0),
+                                        cols: [1, 1, 1],
+                                        columnGap: PageLayout.InnerGap,
+                                        children: [
+                                            ButtonNode("买1", onClick: () => ExchangeItems(1),
+                                                onBuilt: btn => btnBuy1 = btn,
+                                                pos: (0, 0), objectName: "fragment-exchange-buy-1"),
+                                            ButtonNode("买10", onClick: () => ExchangeItems(10),
+                                                onBuilt: btn => btnBuy10 = btn,
+                                                pos: (0, 1), objectName: "fragment-exchange-buy-10"),
+                                            ButtonNode("买100", onClick: () => ExchangeItems(100),
+                                                onBuilt: btn => btnBuy100 = btn,
+                                                pos: (0, 2), objectName: "fragment-exchange-buy-100"),
+                                        ]),
                                 ]),
                         ]),
                     ContentCard(
@@ -98,18 +105,11 @@ public static class FragmentExchange {
                         objectName: "fragment-exchange-quote-card",
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "fragment-exchange-quote-title-node",
-                                build: (w, root) => {
-                                    txtQuoteTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "兑换摘要", 15,
-                                        "fragment-exchange-quote-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "fragment-exchange-quote-body", build: (w, root) => {
-                                txtQuoteSummary = w.AddText2(0f, 18f, root, "", 13, "fragment-exchange-quote-summary");
-                                txtQuoteSummary.supportRichText = true;
-                                txtQuoteSummary.alignment = TextAnchor.UpperLeft;
-                                txtQuoteSummary.rectTransform.sizeDelta =
-                                    new Vector2(PageLayout.DesignWidth - 36f, 320f);
-                            }),
+                            CardTitleNode("兑换摘要", onBuilt: text => txtQuoteTitle = text,
+                                pos: (0, 0), objectName: "fragment-exchange-quote-title"),
+                            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                onBuilt: text => txtQuoteSummary = text,
+                                pos: (1, 0), objectName: "fragment-exchange-quote-summary"),
                         ]),
                 ]));
     }

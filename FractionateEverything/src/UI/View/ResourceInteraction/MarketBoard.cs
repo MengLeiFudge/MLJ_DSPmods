@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.UI.Components;
@@ -57,48 +58,63 @@ public static class MarketBoard {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "market-board-summary-title-node",
-                                build: (w, root) => {
-                                    txtBoardTitle = PageLayout.AddCardTitle(w, root, 0f, 0f, "特单概览", 15,
-                                        "market-board-summary-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "market-board-summary-body", build: (w, root) => {
-                                txtSummary = w.AddText2(0f, 12f, root, "", 13);
-                                txtSummary.supportRichText = true;
-                                txtSummary.rectTransform.sizeDelta = new Vector2(1040f, 24f);
-                            }),
+                            CardTitleNode("特单概览", onBuilt: text => txtBoardTitle = text,
+                                pos: (0, 0), objectName: "market-board-summary-title"),
+                            TextNode("", 13, onBuilt: text => txtSummary = text,
+                                pos: (1, 0), objectName: "market-board-summary"),
                         ]),
                     ContentCard(
                         pos: (2, 0),
                         objectName: "market-board-list-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "market-board-list-body", build: (w, root) => {
-                                float y = 0f;
-                                for (int i = 0; i < RowCount; i++) {
-                                    int rowIndex = i;
-                                    rows[i] = new OfferRow {
-                                        InputIcon = w.AddImageButton(0f, y, root, null).WithSize(40f, 40f),
-                                        TxtInput = w.AddText2(50f, y, root, "", 13),
-                                        ExtraIcon = w.AddImageButton(270f, y, root, null).WithSize(40f, 40f),
-                                        TxtExtra = w.AddText2(320f, y, root, "", 13),
-                                        OutputIcon = w.AddImageButton(546f, y, root, null).WithSize(40f, 40f),
-                                        TxtOutput = w.AddText2(596f, y, root, "", 13),
-                                    };
-                                    rows[i].TxtInput.rectTransform.sizeDelta = new Vector2(180f, 24f);
-                                    rows[i].TxtExtra.rectTransform.sizeDelta = new Vector2(180f, 24f);
-                                    rows[i].TxtOutput.rectTransform.sizeDelta = new Vector2(240f, 24f);
-                                    rows[i].BtnTrade = w.AddButton(884f, y - 4f, 120f, root, "交易", 13,
-                                        onClick: () => {
-                                            if (rows[rowIndex].OfferId > 0
-                                                && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
-                                                UpdateUI();
-                                            }
-                                        });
-                                    y += 40f;
-                                }
-                            }),
-                        ]),
+                        rows: BuildEqualRows(RowCount),
+                        rowGap: 6f,
+                        children: BuildOfferRowNodes()),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildEqualRows(int count) {
+        var tracks = new List<LayoutTrack>();
+        for (int i = 0; i < count; i++) {
+            tracks.Add(1);
+        }
+
+        return tracks;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildOfferRowNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < RowCount; i++) {
+            int rowIndex = i;
+            rows[i] = new OfferRow();
+            nodes.Add(Grid(
+                pos: (rowIndex, 0),
+                cols: [Px(50f), 2, Px(50f), 2, Px(50f), 3, 1],
+                columnGap: 10f,
+                children: [
+                    ImageButtonNode(size: 40f, onBuilt: btn => rows[rowIndex].InputIcon = btn,
+                        pos: (0, 0), objectName: $"market-board-input-icon-{rowIndex}"),
+                    TextNode("", 13, onBuilt: text => rows[rowIndex].TxtInput = text,
+                        pos: (0, 1), objectName: $"market-board-input-text-{rowIndex}"),
+                    ImageButtonNode(size: 40f, onBuilt: btn => rows[rowIndex].ExtraIcon = btn,
+                        pos: (0, 2), objectName: $"market-board-extra-icon-{rowIndex}"),
+                    TextNode("", 13, onBuilt: text => rows[rowIndex].TxtExtra = text,
+                        pos: (0, 3), objectName: $"market-board-extra-text-{rowIndex}"),
+                    ImageButtonNode(size: 40f, onBuilt: btn => rows[rowIndex].OutputIcon = btn,
+                        pos: (0, 4), objectName: $"market-board-output-icon-{rowIndex}"),
+                    TextNode("", 13, onBuilt: text => rows[rowIndex].TxtOutput = text,
+                        pos: (0, 5), objectName: $"market-board-output-text-{rowIndex}"),
+                    ButtonNode("交易", fontSize: 13, onBuilt: btn => rows[rowIndex].BtnTrade = btn,
+                        onClick: () => {
+                            if (rows[rowIndex].OfferId > 0
+                                && MarketBoardManager.TryExecuteOffer(rows[rowIndex].OfferId)) {
+                                UpdateUI();
+                            }
+                        },
+                        pos: (0, 6), objectName: $"market-board-trade-{rowIndex}"),
+                ]));
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {

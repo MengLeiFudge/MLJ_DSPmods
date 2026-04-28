@@ -56,35 +56,29 @@ public static class SandboxMode {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "sandbox-mode-action-title",
-                                build: (w, root) => {
-                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "sandbox-mode-action-body", build: (w, root) => {
-                                w.AddButton(0, 3, 32f, root, "锁定所有分馏配方", 15, "button-lock-all-recipes",
-                                    RecipeManager.LockAllFracRecipes);
-                                w.AddButton(1, 3, 32f, root, "获得所有分馏配方", 15, "button-reward-all-recipes",
-                                    RecipeManager.RewardAllFracRecipes);
-                                w.AddButton(2, 3, 32f, root, "满级所有分馏配方", 15, "button-max-all-recipes",
-                                    RecipeManager.MaxAllFracRecipes);
-                            }),
+                            CardTitleNode("批量操作", pos: (0, 0), objectName: "sandbox-mode-action-title"),
+                            Grid(
+                                pos: (1, 0),
+                                cols: [1, 1, 1],
+                                columnGap: PageLayout.InnerGap,
+                                children: [
+                                    ButtonNode("锁定所有分馏配方", RecipeManager.LockAllFracRecipes,
+                                        pos: (0, 0), objectName: "button-lock-all-recipes"),
+                                    ButtonNode("获得所有分馏配方", RecipeManager.RewardAllFracRecipes,
+                                        pos: (0, 1), objectName: "button-reward-all-recipes"),
+                                    ButtonNode("满级所有分馏配方", RecipeManager.MaxAllFracRecipes,
+                                        pos: (0, 2), objectName: "button-max-all-recipes"),
+                                ]),
                         ]),
                     ContentCard(
                         pos: (2, 0),
                         objectName: "sandbox-mode-config-card",
                         rows: [Px(24f), 1],
                         children: [
-                            Node(pos: (0, 0), objectName: "sandbox-mode-config-title",
-                                build: (w, root) => {
-                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "倍率与说明", 15, "sandbox-mode-config-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "sandbox-mode-config-body", build: (w, root) => {
-                                var txt = w.AddText2(0f, 32f, root, "经验获取倍率", 15, "text-exp-multi-ratio");
-                                w.AddSlider(23f + txt.preferredWidth, 32f, root,
-                                    ExpMultiRatioEntry, new MultiRatioMapper(), "0.#", 200f);
-                                w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, 32f, root,
-                                    "经验获取倍率", "经验获取倍率说明");
-                            }),
+                            CardTitleNode("倍率与说明", pos: (0, 0), objectName: "sandbox-mode-config-title"),
+                            LabeledSliderNode("经验获取倍率", ExpMultiRatioEntry, new MultiRatioMapper(), "0.#",
+                                tipTitle: "经验获取倍率", tipContent: "经验获取倍率说明",
+                                pos: (1, 0), objectName: "sandbox-mode-exp-ratio"),
                         ]),
                 ]));
     }

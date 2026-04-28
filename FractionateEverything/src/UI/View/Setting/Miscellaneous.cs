@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
@@ -155,6 +156,52 @@ public static class Miscellaneous {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
+        const float rowH = 36f;
+        int rowIdx = 0;
+        List<LayoutTrack> configRows = [Px(24f)];
+        List<LayoutNode> configChildren = [
+            CardTitleNode("参数配置", pos: (0, 0), objectName: "misc-config-title"),
+            LabeledComboBoxNode("左键单击时提取几组物品", ClickTakeCountsStr, LeftClickTakeCountEntry,
+                pos: (++rowIdx, 0), objectName: "misc-left-click"),
+            LabeledComboBoxNode("右键单击时提取几组物品", ClickTakeCountsStr, RightClickTakeCountEntry,
+                pos: (++rowIdx, 0), objectName: "misc-right-click"),
+            LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry,
+                pos: (++rowIdx, 0), objectName: "misc-extract-target"),
+            LabeledComboBoxNode("物品消耗顺序", TakeItemPriorityStrs, TakeItemPriorityEntry,
+                pos: (++rowIdx, 0), objectName: "misc-take-priority"),
+            LabeledComboBoxNode("抽卡模式", ["常规模式", "速通模式"], (int)GachaManager.CurrentMode,
+                index => GachaManager.SetMode((GachaMode)index),
+                onBuilt: cb => GachaModeComboBox = cb,
+                pos: (++rowIdx, 0), objectName: "misc-gacha-mode"),
+            LabeledSliderNode("物流交互站下载阈值", DownloadThresholdEntry, new DownloadThresholdMapper(), "P0",
+                tipTitle: "物流交互站下载阈值", tipContent: "物流交互站阈值修改说明",
+                onSliderBuilt: s => DownloadThresholdSlider = s,
+                onTipBuilt: t => DownloadThresholdTipsButton2 = t,
+                pos: (++rowIdx, 0), objectName: "misc-download-threshold"),
+            LabeledSliderNode("物流交互站上传阈值", UploadThresholdEntry, new UploadThresholdMapper(), "P0",
+                tipTitle: "物流交互站上传阈值", tipContent: "物流交互站阈值修改说明",
+                onSliderBuilt: s => UploadThresholdSlider = s,
+                onTipBuilt: t => UploadThresholdTipsButton2 = t,
+                pos: (++rowIdx, 0), objectName: "misc-upload-threshold"),
+            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息",
+                tipTitle: "显示分馏配方详细信息", tipContent: "显示分馏配方详细信息说明",
+                pos: (++rowIdx, 0), objectName: "misc-show-recipe-details"),
+            CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗",
+                tipTitle: "启用确认弹窗", tipContent: "启用确认弹窗说明",
+                pos: (++rowIdx, 0), objectName: "misc-enable-confirm-dialog"),
+        ];
+        for (int i = 0; i < rowIdx; i++) configRows.Add(Px(rowH));
+        if (AutoSorter.Enable) {
+            configRows.Add(Px(rowH));
+            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心",
+                onBuilt: cb => PackageAutoSortTwiceCheckBox = cb,
+                pos: (++rowIdx, 0), objectName: "misc-auto-sorter"));
+        }
+        configRows.Add(Px(rowH));
+        configChildren.Add(CheckBoxNode(EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心",
+            onBuilt: cb => PackageSortTwiceCheckBox = cb,
+            pos: (++rowIdx, 0), objectName: "misc-sort-twice"));
+
         BuildLayout(wnd, parent,
             Grid(
                 rows: [Px(PageLayout.HeaderHeight), 1, Px(PageLayout.FooterHeight)],
@@ -166,84 +213,17 @@ public static class Miscellaneous {
                         pos: (1, 0),
                         objectName: "misc-setting-config-card",
                         strong: true,
-                        rows: [Px(24f), 1],
-                        children: [
-                            Node(pos: (0, 0), objectName: "misc-setting-config-title",
-                                build: (w, root) => {
-                                    PageLayout.AddCardTitle(w, root, 0f, 0f, "参数配置", 15, "misc-setting-config-title");
-                                }),
-                            Node(pos: (1, 0), objectName: "misc-setting-config-body", build: (w, root) => {
-                                float x = 0f;
-                                float y = 14f;
-                                var txt = w.AddText2(x, y, root, "左键单击时提取几组物品");
-                                w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0)
-                                    .WithConfigEntry(LeftClickTakeCountEntry);
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "右键单击时提取几组物品");
-                                w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(ClickTakeCountsStr).WithSize(200, 0)
-                                    .WithConfigEntry(RightClickTakeCountEntry);
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "物品提取目标");
-                                w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(ExtractTargetStrs).WithSize(200, 0).WithConfigEntry(ExtractTargetEntry);
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "物品消耗顺序");
-                                w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems(TakeItemPriorityStrs).WithSize(400, 0)
-                                    .WithConfigEntry(TakeItemPriorityEntry);
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "抽卡模式");
-                                GachaModeComboBox = w.AddComboBox(23f + txt.preferredWidth, y, root)
-                                    .WithItems("常规模式", "速通模式")
-                                    .WithSize(200, 0)
-                                    .WithIndex((int)GachaManager.CurrentMode)
-                                    .WithOnSelChanged(index => GachaManager.SetMode((GachaMode)index));
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "物流交互站下载阈值");
-                                DownloadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
-                                    DownloadThresholdEntry, new DownloadThresholdMapper(), "P0", 200f);
-                                DownloadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y,
-                                    root,
-                                    "物流交互站下载阈值", "物流交互站阈值修改说明");
-                                y += 36f;
-                                txt = w.AddText2(x, y, root, "物流交互站上传阈值");
-                                UploadThresholdSlider = w.AddSlider(23f + txt.preferredWidth, y, root,
-                                    UploadThresholdEntry, new UploadThresholdMapper(), "P0", 200f);
-                                UploadThresholdTipsButton2 = w.AddTipsButton2(28f + txt.preferredWidth + 200 + 5, y,
-                                    root,
-                                    "物流交互站上传阈值", "物流交互站阈值修改说明");
-                                y += 36f;
-                                var cb = w.AddCheckBox(x, y, root, ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息");
-                                w.AddTipsButton2(23f + cb.Width + 5, y, root,
-                                    "显示分馏配方详细信息", "显示分馏配方详细信息说明");
-                                y += 36f;
-                                cb = w.AddCheckBox(x, y, root, EnableConfirmationDialogEntry, "启用确认弹窗");
-                                w.AddTipsButton2(23f + cb.Width + 5, y, root,
-                                    "启用确认弹窗", "启用确认弹窗说明");
-                                if (AutoSorter.Enable) {
-                                    y += 36f;
-                                    PackageAutoSortTwiceCheckBox =
-                                        w.AddCheckBox(x, y, root, EnablePackageAutoSortTwiceEntry,
-                                            "AutoSorter模组将多余物品收入分馏数据中心");
-                                }
-
-                                y += 36f;
-                                PackageSortTwiceCheckBox =
-                                    w.AddCheckBox(x, y, root, EnablePackageSortTwiceEntry, "双击背包排序按钮将多余物品收入分馏数据中心");
-                            }),
-                        ]),
+                        rows: configRows,
+                        children: configChildren),
                     FooterCard(
                         pos: (2, 0),
                         objectName: "misc-setting-footer-card",
                         children: [
-                            Node(pos: (0, 0), objectName: "misc-setting-footer-button", build: (w, root) => {
-                                SwitchMainPanelButton = w.AddButton(0f, 0f, 220f, root,
-                                    MainWindow.GetSwitchMainPanelButtonLabel(), 14,
-                                    onClick: () =>
-                                        MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()));
-                            }),
+                            ButtonNode(MainWindow.GetSwitchMainPanelButtonLabel(),
+                                onClick: () => MainWindow.SwitchMainPanelFrom(MainWindow.GetCurrentMainPanelType()),
+                                fontSize: 14,
+                                onBuilt: btn => SwitchMainPanelButton = btn,
+                                pos: (0, 0), objectName: "misc-switch-panel-btn"),
                         ]),
                 ]));
     }
