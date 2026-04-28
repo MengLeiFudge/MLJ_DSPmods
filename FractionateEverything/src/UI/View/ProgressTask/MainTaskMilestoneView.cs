@@ -206,7 +206,7 @@ public static partial class MainTask {
                     break;
                 }
             }
-            cache.BranchLabels[branchIndex].color = branchCompleted ? Orange : new Color(1f, 1f, 1f, 0.72f);
+            cache.BranchLabels[branchIndex].color = branchCompleted ? Orange : White;
 
             for (int nodeIndex = 0; nodeIndex < route.Branches[branchIndex].Nodes.Length; nodeIndex++) {
                 TaskNode node = route.Branches[branchIndex].Nodes[nodeIndex];

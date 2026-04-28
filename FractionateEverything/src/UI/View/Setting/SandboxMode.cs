@@ -55,7 +55,6 @@ public static class SandboxMode {
                         objectName: "sandbox-mode-action-card",
                         strong: true,
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "sandbox-mode-action-title",
                                 build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "批量操作", 15, "sandbox-mode-action-title"); }),
@@ -72,7 +71,6 @@ public static class SandboxMode {
                         pos: (2, 0),
                         objectName: "sandbox-mode-config-card",
                         rows: [Px(24f), 1],
-                        padding: Inset(18f, 14f, 18f, 18f),
                         children: [
                             Node(pos: (0, 0), objectName: "sandbox-mode-config-title",
                                 build: (w, root) => { PageLayout.AddCardTitle(w, root, 0f, 0f, "倍率与说明", 15, "sandbox-mode-config-title"); }),

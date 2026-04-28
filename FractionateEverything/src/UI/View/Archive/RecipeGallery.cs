@@ -47,12 +47,13 @@ public static class RecipeGallery {
                     ContentCard(pos: (1, 0), objectName: "recipe-gallery-grid-card", strong: true,
                         children: [
                             Node(pos: (0, 0), objectName: "recipe-gallery-grid-body", build: (w, gridCard) => {
+                                float cardW = gridCard.sizeDelta.x;
                                 float y = 18f;
-                                txtGridTitle = PageLayout.AddCardTitle(w, gridCard, 18f, 14f, "配方解锁情况", 16, "recipe-gallery-grid-title");
+                                txtGridTitle = PageLayout.AddCardTitle(w, gridCard, 0f, 14f, "配方解锁情况", 16, "recipe-gallery-grid-title");
                                 y = 58f;
                                 for (int i = 0; i < MatrixCount + 2; i++) {
                                     for (int j = 0; j < RecipeCount + 2; j++) {
-                                        (float, float) position = GetPosition(j, RecipeCount + 2);
+                                        (float, float) position = GetPosition(j, RecipeCount + 2, cardW);
                                         recipeUnlockInfoText[i, j] = w.AddText2(position.Item1, y, gridCard, "动态刷新");
                                         recipeUnlockInfoText[i, j].supportRichText = true;
                                     }

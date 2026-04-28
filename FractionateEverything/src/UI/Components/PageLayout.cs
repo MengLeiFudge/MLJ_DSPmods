@@ -10,7 +10,7 @@ namespace FE.UI.Components;
 public static class PageLayout {
     public const float DesignWidth = 1082f;
     public const float DesignHeight = 767f;
-    public const float HeaderHeight = 86f;
+    public const float HeaderHeight = 72f;
     public const float FooterHeight = 56f;
     public const float Gap = 16f;
     public const float InnerGap = 14f;
@@ -26,6 +26,9 @@ public static class PageLayout {
     public const float CardPaddingTop = 14f;
     public const float CardPaddingRight = 18f;
     public const float CardPaddingBottom = 18f;
+
+    /// <summary>卡内统一边距：DSL 底层 ContentCard / ScrollableContentCard / FooterCard / Header 默认内边距。</summary>
+    public const float CardInnerPadding = 10f;
 
     /// <summary>卡顶部标题带高度，CardHeader 约定用这一高度。</summary>
     public const float CardHeaderHeight = 28f;
@@ -77,20 +80,41 @@ public static class PageLayout {
     }
 
     public static HeaderRefs CreatePageHeader(MyWindow wnd, RectTransform parent, string title, string summary = "",
-        string objectName = "page-header") {
-        RectTransform header = CreateCard(parent, objectName, 0f, 0f, DesignWidth, HeaderHeight, HeaderFillColor,
+        string objectName = "page-header", float width = DesignWidth, float height = HeaderHeight) {
+        RectTransform header = CreateCard(parent, objectName, 0f, 0f, width, height, HeaderFillColor,
             HeaderBorderColor);
 
-        Text titleText = MyWindow.AddText(20f, 15f, header, title, PageTitleFontSize, $"{objectName}-title");
-        titleText.supportRichText = true;
-        titleText.color = Orange;
+        // 使用 1:1 fr 行比例：上下等高，上方放橙色页标题（垂直居中），下方放白色说明（垂直居中）。
+        const float padX = 22f;
+        float innerWidth = width - padX * 2f;
+        float titleHeight = height * 0.5f;
+        float summaryHeight = height - titleHeight;
 
-        Text summaryText = MyWindow.AddText(20f, 49f, header, summary, BodyFontSize, $"{objectName}-summary");
-        summaryText.supportRichText = true;
-        summaryText.color = White;
-        summaryText.rectTransform.sizeDelta = new Vector2(DesignWidth - 40f, 26f);
+        Text titleText = AddCenteredText(header, title, PageTitleFontSize, Orange, TextAnchor.MiddleLeft,
+            padX, 0f, innerWidth, titleHeight, $"{objectName}-title", wrap: false);
+        Text summaryText = AddCenteredText(header, summary, BodyFontSize, White, TextAnchor.MiddleLeft,
+            padX, titleHeight, innerWidth, summaryHeight, $"{objectName}-summary", wrap: true);
 
         return new(header, titleText, summaryText);
+    }
+
+    /// <summary>
+    /// 创建一段填充给定矩形并按 anchor 对齐的 Text。用于在 fr 网格单元里放一段居中文字的统一入口。
+    /// </summary>
+    public static Text AddCenteredText(RectTransform parent, string label, int fontSize, Color color,
+        TextAnchor anchor, float left, float top, float width, float height, string objectName, bool wrap = false) {
+        Text text = MyWindow.AddText(0f, 0f, parent, label, fontSize, objectName);
+        text.supportRichText = true;
+        text.color = color;
+        text.alignment = anchor;
+        if (wrap) {
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+        }
+        RectTransform rt = text.rectTransform;
+        NormalizeRectWithTopLeft(rt, left, top, parent);
+        rt.sizeDelta = new Vector2(width, height);
+        return text;
     }
 
     /// <summary>
