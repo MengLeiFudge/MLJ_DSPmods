@@ -1060,66 +1060,56 @@ public static class DevelopmentDiary {
                     Header("开发日记", objectName: "development-diary-header", pos: (0, 0), span: (1, 2),
                         onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "development-diary-nav-card", strong: true,
+                        rows: [Px(28f), Px(44f), Px(44f), 1],
+                        rowGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "development-diary-nav-body", build: (w, navigatorCard) => {
-                                txtNavigatorTitle = PageLayout.AddCardTitle(w, navigatorCard, 0f, 14f, "分类与片段", 15,
-                                    "development-diary-nav-title");
-                                float x = 0f;
-                                float y = 56f;
-                                categoryCombo = w.AddComboBox(x, y, navigatorCard)
-                                    .WithSize(170f, 0f)
-                                    .WithOnSelChanged(index => {
-                                        if (suppressSelectionCallbacks) {
-                                            return;
-                                        }
-                                        currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
-                                        currentFragmentIndex = 0;
-                                        RefreshEntry();
-                                    });
-                                y += 54f;
-                                fragmentCombo = w.AddComboBox(x, y, navigatorCard)
-                                    .WithSize(230f, 0f)
-                                    .WithOnSelChanged(index => {
-                                        if (suppressSelectionCallbacks) {
-                                            return;
-                                        }
-                                        int fragmentCount = GetCurrentFragments().Length;
-                                        currentFragmentIndex = fragmentCount == 0
-                                            ? 0
-                                            : Mathf.Clamp(index, 0, fragmentCount - 1);
-                                        RefreshEntry();
-                                    });
-                            })
+                            CardTitleNode("分类与片段", onBuilt: text => txtNavigatorTitle = text,
+                                pos: (0, 0), objectName: "development-diary-nav-title"),
+                            ComboBoxNode(onBuilt: combo => categoryCombo = combo.WithOnSelChanged(index => {
+                                    if (suppressSelectionCallbacks) {
+                                        return;
+                                    }
+                                    currentCategoryIndex = Mathf.Clamp(index, 0, diaryCategories.Length - 1);
+                                    currentFragmentIndex = 0;
+                                    RefreshEntry();
+                                }),
+                                pos: (1, 0), objectName: "development-diary-category-combo"),
+                            ComboBoxNode(onBuilt: combo => fragmentCombo = combo.WithOnSelChanged(index => {
+                                    if (suppressSelectionCallbacks) {
+                                        return;
+                                    }
+                                    int fragmentCount = GetCurrentFragments().Length;
+                                    currentFragmentIndex = fragmentCount == 0
+                                        ? 0
+                                        : Mathf.Clamp(index, 0, fragmentCount - 1);
+                                    RefreshEntry();
+                                }),
+                                pos: (2, 0), objectName: "development-diary-fragment-combo"),
                         ]),
                     ContentCard(pos: (1, 1), objectName: "development-diary-content-outer",
+                        rows: [Px(28f), 1],
+                        rowGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "development-diary-content-header",
-                                build: (w, contentCard) => {
-                                    txtContentTitle = PageLayout.AddCardTitle(w, contentCard, 0f, 0f, "正文阅读",
-                                        PageLayout.CardTitleFontSize, "development-diary-content-title");
-                                }),
+                            CardTitleNode("正文阅读", onBuilt: text => txtContentTitle = text,
+                                pos: (0, 0), objectName: "development-diary-content-title"),
                             ScrollableContentCard(
                                 contentHeight: 1400f,
-                                pos: (0, 0),
+                                pos: (1, 0),
                                 objectName: "development-diary-content-scroll",
-                                margin: Inset(12f, 50f, 12f, 12f),
                                 children: [
-                                    Node(pos: (0, 0), objectName: "development-diary-content-body",
-                                        build: (w, contentCard) => {
-                                            txtDiaryContent = w.AddText2(6f, 6f, contentCard, string.Empty,
-                                                PageLayout.BodyFontSize, "txtDiaryContent");
-                                            txtDiaryContent.supportRichText = true;
-                                            txtDiaryContent.alignment = TextAnchor.UpperLeft;
-                                            txtDiaryContent.rectTransform.sizeDelta = new Vector2(720f, 1380f);
-                                        })
+                                    TextNode(string.Empty, PageLayout.BodyFontSize, anchor: TextAnchor.UpperLeft,
+                                        wrap: true, onBuilt: text => txtDiaryContent = text,
+                                        pos: (0, 0), objectName: "txtDiaryContent"),
                                 ]),
                         ]),
                     FooterCard(pos: (2, 0), span: (1, 2), objectName: "development-diary-footer-card",
+                        cols: [1, 1, 4],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "development-diary-footer-body", build: (w, footerCard) => {
-                                btnPrevFragment = w.AddButton(0f, 0f, 130f, footerCard, "向前", onClick: PrevFragment);
-                                btnNextFragment = w.AddButton(146f, 0f, 130f, footerCard, "向后", onClick: NextFragment);
-                            })
+                            ButtonNode("向前", onClick: PrevFragment, onBuilt: btn => btnPrevFragment = btn,
+                                pos: (0, 0), objectName: "development-diary-prev"),
+                            ButtonNode("向后", onClick: NextFragment, onBuilt: btn => btnNextFragment = btn,
+                                pos: (0, 1), objectName: "development-diary-next"),
                         ]),
                 ]));
         RefreshEntry();

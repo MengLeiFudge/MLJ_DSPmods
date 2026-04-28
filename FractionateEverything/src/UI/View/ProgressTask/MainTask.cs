@@ -147,10 +147,10 @@ public static partial class MainTask {
         BuildLayout(wnd, trans,
             Grid(
                 children: [
-                    FE.UI.Components.GridDsl.Node(pos: (0, 0), objectName: "main-task-root", build: (w, root) => {
+                    Grid(pos: (0, 0), objectName: "main-task-root", onBuilt: root => {
                         tab = root;
                         routeViewsByMode = new RouteViewCache[RouteMaps.Length];
-                        BuildMilestonePage(w);
+                        BuildMilestonePage(wnd);
                         RefreshMilestonePage();
                     }),
                 ]));

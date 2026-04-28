@@ -60,6 +60,7 @@ public class LayoutGrid : LayoutNode {
     public float ContentHeight { get; set; }
 
     internal Func<RectTransform, LayoutRect, RectTransform> RootFactory { get; set; }
+    internal Action<RectTransform> OnBuilt { get; set; }
 
     internal override RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect) {
         LayoutRect outerRect = rect.Inset(Margin);
@@ -68,6 +69,7 @@ public class LayoutGrid : LayoutNode {
         RectTransform root = RootFactory != null
             ? RootFactory(parent, factoryRect)
             : GridLayoutRuntime.CreateContainerRect(ObjectName, parent, outerRect);
+        OnBuilt?.Invoke(root);
         LayoutRect contentRect = new LayoutRect(0f, 0f, outerRect.Width, logicalHeight).Inset(Padding);
         GridLayoutRuntime.BuildChildren(wnd, root, contentRect, Rows, Cols, RowGap, ColumnGap, Children);
         return root;

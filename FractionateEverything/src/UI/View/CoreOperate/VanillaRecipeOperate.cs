@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Manager;
@@ -86,52 +87,77 @@ public static class VanillaRecipeOperate {
                         pos: (1, 0),
                         objectName: "vanilla-recipe-content-card",
                         strong: true,
+                        rows: BuildContentRows(),
+                        cols: [Px(50f), Fr(2), Fr(1), Fr(1), Fr(1), Fr(3)],
+                        rowGap: 6f,
+                        columnGap: 8f,
+                        onBuilt: root => tab = root,
                         children: [
-                            Node(pos: (0, 0), objectName: "vanilla-recipe-content-root", build: (w, root) => {
-                                float cardW = root.sizeDelta.x;
-                                tab = root;
-                                float x = 0f;
-                                float y = 18f + 7f;
-                                txtCurrRecipe = w.AddText2(x, y, tab, "当前配方", 15, "textCurrItem");
-                                float popupY = y + (36f + 7f) / 2;
-                                btnSelectedRecipe = w.AddImageButton(x + txtCurrRecipe.preferredWidth + 5, y, tab,
-                                    SelectedRecipe, "button-change-item").WithClickEvent(
-                                    () => { OnButtonChangeRecipeClick(false, popupY); },
-                                    () => { OnButtonChangeRecipeClick(true, popupY); });
-                                w.AddTipsButton2(x + txtCurrRecipe.preferredWidth + 5 + btnSelectedRecipe.Width + 5, y,
-                                    tab,
-                                    "提示", "原版配方提示按钮说明1");
-                                btnFragmentIcon =
-                                    w.AddImageButton(GetPosition(3, 4, cardW).Item1, y, tab, LDB.items.Select(IFE残片))
-                                        .WithSize(40f, 40f);
-                                txtFragmentCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 45f, y, tab, "");
-                                btnMatrixIcon = w.AddImageButton(GetPosition(3, 4, cardW).Item1 + 120f, y, tab, null)
-                                    .WithSize(40f, 40f);
-                                txtMatrixCount = w.AddText2(GetPosition(3, 4, cardW).Item1 + 165f, y, tab, "");
-                                y += 36f + 7f;
-                                w.AddText2(x, y, tab, "输入物品", 15, "labelInputItems");
-                                y += 36f;
-                                for (int i = 0; i < MaxInputCount; i++) {
-                                    int idx = i;
-                                    inputImages[i] = w.AddImageButton(x, y, tab, null, $"inputImage{i}");
-                                    txtInputNames[i] = w.AddText2(x + 40 + 5, y, tab, "", 13, $"txtInputName{i}");
-                                    txtInputCounts[i] = w.AddText2(x + 180, y, tab, "", 13, $"txtInputCount{i}");
-                                    txtInputUpgrades[i] = w.AddText2(x + 280, y, tab, "", 13, $"txtInputUpgrade{i}");
-                                    btnInputUpgrades[i] = w.AddButton(x + 380, y, 80, tab, "升级", 13,
-                                        $"btnInputUpgrade{i}",
-                                        () => { UpgradeInput(idx); });
-                                    y += 36f + 5f;
-                                }
-                                y += 7f;
-                                txtTimeLabel = w.AddText2(x, y, tab, "制作时间", 15, "labelTime");
-                                y += 36f;
-                                txtTimeValue = w.AddText2(x + 40, y, tab, "", 13, "txtTimeValue");
-                                txtTimeUpgrade = w.AddText2(x + 280, y, tab, "", 13, "txtTimeUpgrade");
-                                btnTimeUpgrade = w.AddButton(x + 380, y, 80, tab, "升级", 13, "btnTimeUpgrade",
-                                    () => { UpgradeTimeSpend(); });
-                            }),
+                            Grid(pos: (0, 0), span: (1, 6), cols: [Fr(1), Px(44f), Px(28f), Fr(2), Px(44f), Fr(1), Px(44f), Fr(1)],
+                                columnGap: 8f, children: [
+                                    TextNode("当前配方", 15, onBuilt: text => txtCurrRecipe = text,
+                                        pos: (0, 0), objectName: "textCurrItem"),
+                                    ImageButtonNode(SelectedRecipe, 40f,
+                                        onBuilt: btn => btnSelectedRecipe = btn.WithClickEvent(
+                                            () => { OnButtonChangeRecipeClick(false, 46f); },
+                                            () => { OnButtonChangeRecipeClick(true, 46f); }),
+                                        pos: (0, 1), objectName: "button-change-item"),
+                                    TipsButtonNode("提示", "原版配方提示按钮说明1",
+                                        pos: (0, 2), objectName: "vanilla-recipe-tip"),
+                                    ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => btnFragmentIcon = btn,
+                                        pos: (0, 4), objectName: "vanilla-recipe-fragment"),
+                                    TextNode("", 13, onBuilt: text => txtFragmentCount = text,
+                                        pos: (0, 5), objectName: "vanilla-recipe-fragment-count"),
+                                    ImageButtonNode(size: 40f, onBuilt: btn => btnMatrixIcon = btn,
+                                        pos: (0, 6), objectName: "vanilla-recipe-matrix"),
+                                    TextNode("", 13, onBuilt: text => txtMatrixCount = text,
+                                        pos: (0, 7), objectName: "vanilla-recipe-matrix-count"),
+                                ]),
+                            TextNode("输入物品", 15, pos: (1, 0), span: (1, 6), objectName: "labelInputItems"),
+                            ..BuildInputNodes(),
+                            TextNode("制作时间", 15, onBuilt: text => txtTimeLabel = text,
+                                pos: (MaxInputCount + 2, 0), span: (1, 6), objectName: "labelTime"),
+                            TextNode("", 13, onBuilt: text => txtTimeValue = text,
+                                pos: (MaxInputCount + 3, 1), objectName: "txtTimeValue"),
+                            TextNode("", 13, onBuilt: text => txtTimeUpgrade = text,
+                                pos: (MaxInputCount + 3, 3), objectName: "txtTimeUpgrade"),
+                            ButtonNode("升级", fontSize: 13, onClick: UpgradeTimeSpend,
+                                onBuilt: btn => btnTimeUpgrade = btn,
+                                pos: (MaxInputCount + 3, 4), objectName: "btnTimeUpgrade"),
                         ]),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildContentRows() {
+        var rows = new List<LayoutTrack> { Px(44f), Px(28f) };
+        for (int i = 0; i < MaxInputCount; i++) {
+            rows.Add(1);
+        }
+        rows.Add(Px(28f));
+        rows.Add(1);
+        rows.Add(1);
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildInputNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < MaxInputCount; i++) {
+            int index = i;
+            int row = i + 2;
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => inputImages[index] = btn,
+                pos: (row, 0), objectName: $"inputImage{index}"));
+            nodes.Add(TextNode("", 13, onBuilt: text => txtInputNames[index] = text,
+                pos: (row, 1), objectName: $"txtInputName{index}"));
+            nodes.Add(TextNode("", 13, onBuilt: text => txtInputCounts[index] = text,
+                pos: (row, 2), objectName: $"txtInputCount{index}"));
+            nodes.Add(TextNode("", 13, onBuilt: text => txtInputUpgrades[index] = text,
+                pos: (row, 3), objectName: $"txtInputUpgrade{index}"));
+            nodes.Add(ButtonNode("升级", fontSize: 13, onClick: () => { UpgradeInput(index); },
+                onBuilt: btn => btnInputUpgrades[index] = btn,
+                pos: (row, 4), objectName: $"btnInputUpgrade{index}"));
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {

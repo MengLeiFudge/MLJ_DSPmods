@@ -85,81 +85,23 @@ public static class LimitedTimeStore {
                     Header("成长规划", objectName: "growth-store-header", pos: (0, 0),
                         onBuilt: refs => growthPage.Header = refs),
                     ContentCard(pos: (1, 0), objectName: "growth-store-resource-card", strong: true,
-                        children: [
-                            Node(pos: (0, 0), objectName: "growth-store-resource-body", build: (w, resourceCard) => {
-                                float cardW = resourceCard.sizeDelta.x;
-                                growthPage.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源",
-                                    15,
-                                    "growth-store-resource-title");
-                                float y = 48f;
-                                growthPage.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
-                                growthPage.TxtResource.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                growthPage.TxtResource.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                growthPage.TxtResource.verticalOverflow = VerticalWrapMode.Overflow;
-                                y += 28f;
-                                growthPage.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null)
-                                    .WithSize(40f, 40f);
-                                growthPage.BtnFragmentIcon = MyImageButton
-                                    .CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片))
-                                    .WithSize(40f, 40f);
-                                y += 48f;
-                                growthPage.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                growthPage.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                growthPage.TxtFocus.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                growthPage.TxtFocus.verticalOverflow = VerticalWrapMode.Overflow;
-                            }),
-                        ]),
+                        rows: [Px(28f), 1, Px(50f), 2],
+                        rowGap: 4f,
+                        children: BuildGrowthResourceNodes()),
                     ContentCard(pos: (2, 0), objectName: "growth-store-offer-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "growth-store-offer-body", build: (w, offerCard) => {
-                                float cardW = offerCard.sizeDelta.x;
-                                const float colCost = 0f;
-                                const float colCostIcon = 110f;
-                                const float colExtraIcon = 240f;
-                                const float colExtraText = 282f;
-                                const float colRewardIcon = 442f;
-                                const float colRewardText = 484f;
-                                float colExchange = cardW - 120f;
-                                float rewardW = colExchange - colRewardText - 6f;
-                                growthPage.TxtOfferTitle = PageLayout.AddCardTitle(w, offerCard, 0f, 14f, "成长定向", 15,
-                                    "growth-store-offer-title");
-                                float y = 52f;
-                                for (int i = 0; i < GrowthRowCount; i++) {
-                                    var row = new GrowthRowUi {
-                                        BtnFragmentCostIcon = MyImageButton
-                                            .CreateImageButton(colCostIcon, y, offerCard, LDB.items.Select(IFE残片))
-                                            .WithSize(40f, 40f),
-                                        TxtCost = MyWindow.AddText(colCost, y, offerCard, "", 13),
-                                        BtnExtraCostIcon = MyImageButton
-                                            .CreateImageButton(colExtraIcon, y, offerCard, null).WithSize(40f, 40f),
-                                        TxtExtraCost = MyWindow.AddText(colExtraText, y, offerCard, "", 13),
-                                        BtnRewardIcon = MyImageButton
-                                            .CreateImageButton(colRewardIcon, y, offerCard, null).WithSize(40f, 40f),
-                                        TxtReward = MyWindow.AddText(colRewardText, y, offerCard, "", 13),
-                                        TxtDetail = MyWindow.AddText(colRewardText, y + 18f, offerCard, "", 12),
-                                    };
-                                    row.BtnExchange = w.AddButton(colExchange, y - 4f, 120f, offerCard,
-                                        "兑换".Translate(), 13,
-                                        onClick: () => ExchangeOffer(row));
-                                    row.TxtCost.rectTransform.sizeDelta = new Vector2(100f, 24f);
-                                    row.TxtExtraCost.rectTransform.sizeDelta = new Vector2(120f, 24f);
-                                    row.TxtReward.rectTransform.sizeDelta = new Vector2(rewardW, 24f);
-                                    row.TxtDetail.rectTransform.sizeDelta = new Vector2(rewardW, 20f);
-                                    row.TxtReward.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                    row.TxtDetail.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                    growthPage.Rows.Add(row);
-                                    y += 42f;
-                                }
-                            }),
-                        ]),
+                        rows: BuildGrowthOfferRows(),
+                        cols: [Fr(1), Px(44f), Px(44f), Fr(1), Px(44f), Fr(2), Fr(1)],
+                        rowGap: 4f,
+                        columnGap: 8f,
+                        children: BuildGrowthOfferNodes()),
                     FooterCard(pos: (3, 0), objectName: "growth-store-footer-card",
+                        cols: [4, 1],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "growth-store-footer-body", build: (w, footerCard) => {
-                                float cellW = footerCard.sizeDelta.x;
-                                w.AddButton(cellW - 168f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
-                                    onClick: () =>
-                                        MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
-                            }),
+                            ButtonNode("前往抽取",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0),
+                                pos: (0, 1), objectName: "growth-store-go-draw"),
                         ]),
                 ]));
     }
@@ -176,60 +118,125 @@ public static class LimitedTimeStore {
                     Header("流派聚焦", objectName: "focus-store-header", pos: (0, 0),
                         onBuilt: refs => focusPage.Header = refs),
                     ContentCard(pos: (1, 0), objectName: "focus-store-current-card", strong: true,
+                        rows: [Px(28f), 1, 2],
+                        rowGap: 4f,
                         children: [
-                            Node(pos: (0, 0), objectName: "focus-store-current-body", build: (w, currentCard) => {
-                                float cardW = currentCard.sizeDelta.x;
-                                focusPage.TxtCurrentFocusTitle = PageLayout.AddCardTitle(w, currentCard, 0f, 14f,
-                                    "当前聚焦", 15,
-                                    "focus-store-current-title");
-                                float y = 48f;
-                                focusPage.TxtCurrentFocus = MyWindow.AddText(0f, y, currentCard, "", 13);
-                                focusPage.TxtCurrentFocus.rectTransform.sizeDelta = new Vector2(cardW, 24f);
-                                focusPage.TxtCurrentFocus.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                focusPage.TxtCurrentFocus.verticalOverflow = VerticalWrapMode.Overflow;
-                                y += 30f;
-                                focusPage.TxtOverview = MyWindow.AddText(0f, y, currentCard, "", 13);
-                                focusPage.TxtOverview.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                focusPage.TxtOverview.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                focusPage.TxtOverview.verticalOverflow = VerticalWrapMode.Overflow;
-                            }),
+                            CardTitleNode("当前聚焦", onBuilt: text => focusPage.TxtCurrentFocusTitle = text,
+                                pos: (0, 0), objectName: "focus-store-current-title"),
+                            TextNode("", 13, wrap: true, onBuilt: text => focusPage.TxtCurrentFocus = text,
+                                pos: (1, 0), objectName: "focus-store-current-focus"),
+                            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                                onBuilt: text => focusPage.TxtOverview = text,
+                                pos: (2, 0), objectName: "focus-store-overview"),
                         ]),
                     ContentCard(pos: (2, 0), objectName: "focus-store-list-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "focus-store-list-body", build: (w, listCard) => {
-                                float cardW = listCard.sizeDelta.x;
-                                const float btnW = 260f;
-                                const float gap = 18f;
-                                float descX = btnW + gap;
-                                float descW = cardW - descX;
-                                focusPage.TxtFocusListTitle = PageLayout.AddCardTitle(w, listCard, 0f, 14f, "切换聚焦", 15,
-                                    "focus-store-list-title");
-                                float y = 52f;
-                                foreach (var focus in GachaService.FocusDefinitions) {
-                                    float currentY = y;
-                                    var button = w.AddButton(0f, currentY, btnW, listCard, "", 13,
-                                        onClick: () => ChangeFocus(focus.FocusType));
-                                    Text desc = MyWindow.AddText(descX, currentY + 4f, listCard,
-                                        $"{focus.NameKey.Translate()}：{focus.DescKey.Translate()}", 13);
-                                    desc.rectTransform.sizeDelta = new Vector2(descW, 40f);
-                                    desc.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                    desc.verticalOverflow = VerticalWrapMode.Overflow;
-                                    focusPage.Buttons.Add(button);
-                                    focusPage.DescTexts.Add(desc);
-                                    y += 48f;
-                                }
-                            }),
-                        ]),
+                        rows: BuildFocusRows(),
+                        cols: [Fr(1), Fr(3)],
+                        rowGap: 6f,
+                        columnGap: PageLayout.InnerGap,
+                        children: BuildFocusNodes()),
                     FooterCard(pos: (3, 0), objectName: "focus-store-footer-card",
+                        cols: [4, 1],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: "focus-store-footer-body", build: (w, footerCard) => {
-                                float cellW = footerCard.sizeDelta.x;
-                                w.AddButton(cellW - 168f, 10f, 150f, footerCard, "前往抽取".Translate(), 13,
-                                    onClick: () =>
-                                        MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0));
-                            }),
+                            ButtonNode("前往抽取",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 0),
+                                pos: (0, 1), objectName: "focus-store-go-draw"),
                         ]),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildGrowthResourceNodes() {
+        return [
+            CardTitleNode("当前资源", onBuilt: text => growthPage.TxtResourceTitle = text,
+                pos: (0, 0), objectName: "growth-store-resource-title"),
+            TextNode("当前资源", 13, wrap: true, onBuilt: text => growthPage.TxtResource = text,
+                pos: (1, 0), objectName: "growth-store-resource-text"),
+            Grid(pos: (2, 0), cols: [1, 1, 4], columnGap: PageLayout.InnerGap, children: [
+                ImageButtonNode(size: 40f, onBuilt: btn => growthPage.BtnMatrixIcon = btn,
+                    pos: (0, 0), objectName: "growth-store-matrix-icon"),
+                ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => growthPage.BtnFragmentIcon = btn,
+                    pos: (0, 1), objectName: "growth-store-fragment-icon"),
+            ]),
+            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true, onBuilt: text => growthPage.TxtFocus = text,
+                pos: (3, 0), objectName: "growth-store-focus"),
+        ];
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildGrowthOfferRows() {
+        var rows = new List<LayoutTrack> { Px(28f) };
+        for (int i = 0; i < GrowthRowCount; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildGrowthOfferNodes() {
+        var nodes = new List<LayoutNode> {
+            CardTitleNode("成长定向", onBuilt: text => growthPage.TxtOfferTitle = text,
+                pos: (0, 0), span: (1, 7), objectName: "growth-store-offer-title"),
+        };
+        for (int i = 0; i < GrowthRowCount; i++) {
+            int rowIndex = i;
+            var row = new GrowthRowUi();
+            growthPage.Rows.Add(row);
+            int rowPos = rowIndex + 1;
+            nodes.Add(TextNode("", 13, onBuilt: text => row.TxtCost = text,
+                pos: (rowPos, 0), objectName: $"growth-store-cost-{rowIndex}"));
+            nodes.Add(ImageButtonNode(LDB.items.Select(IFE残片), 40f,
+                onBuilt: btn => row.BtnFragmentCostIcon = btn,
+                pos: (rowPos, 1), objectName: $"growth-store-fragment-cost-{rowIndex}"));
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => row.BtnExtraCostIcon = btn,
+                pos: (rowPos, 2), objectName: $"growth-store-extra-cost-icon-{rowIndex}"));
+            nodes.Add(TextNode("", 13, onBuilt: text => row.TxtExtraCost = text,
+                pos: (rowPos, 3), objectName: $"growth-store-extra-cost-{rowIndex}"));
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => row.BtnRewardIcon = btn,
+                pos: (rowPos, 4), objectName: $"growth-store-reward-icon-{rowIndex}"));
+            nodes.Add(TextNode("", 13, wrap: true, onBuilt: text => row.TxtReward = text,
+                pos: (rowPos, 5), objectName: $"growth-store-reward-{rowIndex}"));
+            nodes.Add(TextNode("", 12, wrap: true, onBuilt: text => row.TxtDetail = text,
+                pos: (rowPos, 5), margin: Inset(0f, 18f, 0f, 0f),
+                objectName: $"growth-store-detail-{rowIndex}"));
+            nodes.Add(ButtonNode("兑换", fontSize: 13, onBuilt: btn => row.BtnExchange = btn,
+                onClick: () => ExchangeOffer(row),
+                pos: (rowPos, 6), objectName: $"growth-store-exchange-{rowIndex}"));
+        }
+
+        return nodes;
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildFocusRows() {
+        var rows = new List<LayoutTrack> { Px(28f) };
+        foreach (var _ in GachaService.FocusDefinitions) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildFocusNodes() {
+        var nodes = new List<LayoutNode> {
+            CardTitleNode("切换聚焦", onBuilt: text => focusPage.TxtFocusListTitle = text,
+                pos: (0, 0), span: (1, 2), objectName: "focus-store-list-title"),
+        };
+        int index = 0;
+        foreach (var focus in GachaService.FocusDefinitions) {
+            var focusDefinition = focus;
+            int row = index + 1;
+            nodes.Add(ButtonNode("", fontSize: 13,
+                onClick: () => ChangeFocus(focusDefinition.FocusType),
+                onBuilt: button => focusPage.Buttons.Add(button),
+                pos: (row, 0), objectName: $"focus-store-button-{index}"));
+            nodes.Add(TextNode($"{focus.NameKey.Translate()}：{focus.DescKey.Translate()}", 13,
+                anchor: TextAnchor.UpperLeft, wrap: true,
+                onBuilt: text => focusPage.DescTexts.Add(text),
+                pos: (row, 1), objectName: $"focus-store-desc-{index}"));
+            index++;
+        }
+
+        return nodes;
     }
 
     private static void ExchangeOffer(GrowthRowUi row) {

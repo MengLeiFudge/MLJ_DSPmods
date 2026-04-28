@@ -64,13 +64,8 @@ public static class FracRecipeOperate {
     private static Text[] txtRecipeInfo = new Text[InfoLineCount];
     private static Text[] txtProductLeft = new Text[InfoLineCount];// 产物行左侧文本（概率/等效数量）
     private static MyImageButton[] btnRecipeInfoIcons = new MyImageButton[InfoLineCount];
-    private static float txtRecipeInfoBaseY;
-    private static MySlider incSlider;
+    private static MySlider[] incSliders = new MySlider[InfoLineCount];
     private static ConfigEntry<int> selectedInc;
-
-    // 产物分节标签（动态定位）
-    private static Text txtMainLabel;// "产出" 标签
-    private static Text txtAppendLabel;// "其他" 标签
 
     // 右列：配方强化等级信息
     private static Text[] txtLevelInfo = new Text[LevelLineCount];
@@ -168,89 +163,112 @@ public static class FracRecipeOperate {
                         pos: (1, 0),
                         objectName: "frac-recipe-content-card",
                         strong: true,
+                        onBuilt: root => tab = root,
+                        rows: BuildContentRows(),
+                        cols: [Px(600f), Fr(1)],
+                        rowGap: 0f,
+                        columnGap: 20f,
                         children: [
-                            Node(pos: (0, 0), objectName: "frac-recipe-content-root", build: (w, root) => {
-                                tab = root;
-                                float cardW = root.sizeDelta.x;
-                                float x = 0f;
-                                float y = 18f + 7f;
-                                txtCurrItem = w.AddText2(x, y, tab, "当前物品", 15, "textCurrItem");
-                                float popupY = y + (36f + 7f) / 2;
-                                btnSelectedItem = w.AddImageButton(x + txtCurrItem.preferredWidth + 5, y, tab,
-                                    SelectedItem, "button-change-item").WithClickEvent(
-                                    () => { OnButtonChangeItemClick(false, popupY); },
-                                    () => { OnButtonChangeItemClick(true, popupY); });
-                                w.AddTipsButton2(x + txtCurrItem.preferredWidth + 5 + btnSelectedItem.Width + 5, y, tab,
-                                    "提示", "分馏配方提示按钮说明1");
-                                var txt = w.AddText2(GetPosition(1, 4, cardW).Item1, y, tab, "配方类型");
-                                w.AddComboBox(GetPosition(1, 4, cardW).Item1 + 5 + txt.preferredWidth, y, tab)
-                                    .WithItems(RecipeTypeShortNames).WithSize(200, 0).WithConfigEntry(RecipeTypeEntry);
-                                y += 36f + 7f;
-                                recipeSandboxBtn[0] = w.AddButton(GetPosition(0, 4, cardW).Item1, y,
-                                    GetPosition(0, 4, cardW).Item2, tab, "重置等级",
-                                    onClick: () => {
-                                        if (SelectedRecipe != null) {
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0,
-                                                RecipeGrowthManager.BuildContext(manual: true));
-                                        }
-                                    });
-                                recipeSandboxBtn[1] = w.AddButton(GetPosition(1, 4, cardW).Item1, y,
-                                    GetPosition(1, 4, cardW).Item2, tab, "等级-1",
-                                    onClick: () => {
-                                        if (SelectedRecipe != null) {
-                                            int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1,
-                                                RecipeGrowthManager.BuildContext(manual: true));
-                                        }
-                                    });
-                                recipeSandboxBtn[2] = w.AddButton(GetPosition(2, 4, cardW).Item1, y,
-                                    GetPosition(2, 4, cardW).Item2, tab, "等级+1",
-                                    onClick: () => {
-                                        if (SelectedRecipe != null) {
-                                            int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1,
-                                                RecipeGrowthManager.BuildContext(manual: true));
-                                        }
-                                    });
-                                recipeSandboxBtn[3] = w.AddButton(GetPosition(3, 4, cardW).Item1, y,
-                                    GetPosition(3, 4, cardW).Item2, tab, "等级升满",
-                                    onClick: () => {
-                                        if (SelectedRecipe != null) {
-                                            RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5,
-                                                RecipeGrowthManager.BuildContext(manual: true));
-                                        }
-                                    });
-                                bool sandboxEnabled = GameMain.sandboxToolsEnabled;
-                                foreach (UIButton button in recipeSandboxBtn) {
-                                    button.gameObject.SetActive(sandboxEnabled);
-                                }
-                                y += 36f;
-                                int[] rang = !GenesisBook.Enable ? [0, 1, 2, 4, 10] : [0, 4, 10];
-                                incSlider = w.AddSlider(0f, 0f, tab, selectedInc, rang, null, 200f);
-                                txtRecipeInfoBaseY = y;
-                                for (int i = 0; i < InfoLineCount; i++) {
-                                    txtRecipeInfo[i] = w.AddText2(x, y, tab, "");
-                                }
-                                for (int i = 0; i < InfoLineCount; i++) {
-                                    var btn = MyImageButton.CreateImageButton(0, 0, tab, null);
-                                    btn.WithSize(IconSize, IconSize);
-                                    btn.gameObject.SetActive(false);
-                                    btnRecipeInfoIcons[i] = btn;
-                                }
-                                for (int i = 0; i < InfoLineCount; i++) {
-                                    txtProductLeft[i] = MyWindow.AddText(0, 0, tab, "", 15);
-                                    txtProductLeft[i].gameObject.SetActive(false);
-                                }
-                                txtMainLabel = MyWindow.AddText(0, 0, tab, "产出", 15);
-                                txtMainLabel.gameObject.SetActive(false);
-                                txtAppendLabel = MyWindow.AddText(0, 0, tab, "其他", 15);
-                                txtAppendLabel.gameObject.SetActive(false);
-                                for (int i = 0; i < LevelLineCount; i++) {
-                                    txtLevelInfo[i] = w.AddText2(RightColX, 0f, tab, "", 13);
-                                }
-                            }),
+                            Grid(pos: (0, 0), span: (1, 2),
+                                cols: [Px(72f), Px(44f), Px(28f), Px(90f), Px(220f), Fr(1)],
+                                columnGap: 8f,
+                                children: [
+                                    TextNode("当前物品", 15, onBuilt: text => txtCurrItem = text,
+                                        pos: (0, 0), objectName: "textCurrItem"),
+                                    ImageButtonNode(SelectedItem, 40f,
+                                        onBuilt: btn => btnSelectedItem = btn.WithClickEvent(
+                                            () => { OnButtonChangeItemClick(false, 22f); },
+                                            () => { OnButtonChangeItemClick(true, 22f); }),
+                                        pos: (0, 1), objectName: "button-change-item"),
+                                    TipsButtonNode("提示", "分馏配方提示按钮说明1",
+                                        pos: (0, 2), objectName: "frac-recipe-tip"),
+                                    TextNode("配方类型", 15, pos: (0, 3), objectName: "frac-recipe-type-label"),
+                                    ComboBoxNode(onBuilt: combo => combo.WithItems(RecipeTypeShortNames)
+                                            .WithSize(200, 0).WithConfigEntry(RecipeTypeEntry),
+                                        pos: (0, 4), objectName: "frac-recipe-type-combo"),
+                                ]),
+                            Grid(pos: (1, 0), span: (1, 2), cols: [1, 1, 1, 1], columnGap: 12f,
+                                children: BuildSandboxButtonNodes()),
+                            ..BuildInfoLineNodes(),
                         ]),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildContentRows() {
+        var rows = new List<LayoutTrack> { Px(44f), Px(36f) };
+        for (int i = 0; i < InfoLineCount; i++) {
+            rows.Add(Px(LineHeight));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildSandboxButtonNodes() {
+        return [
+            ButtonNode("重置等级", onClick: () => {
+                if (SelectedRecipe != null) {
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0,
+                        RecipeGrowthManager.BuildContext(manual: true));
+                }
+            }, onBuilt: btn => recipeSandboxBtn[0] = btn, pos: (0, 0), objectName: "frac-recipe-reset-level"),
+            ButtonNode("等级-1", onClick: () => {
+                if (SelectedRecipe != null) {
+                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1,
+                        RecipeGrowthManager.BuildContext(manual: true));
+                }
+            }, onBuilt: btn => recipeSandboxBtn[1] = btn, pos: (0, 1), objectName: "frac-recipe-level-down"),
+            ButtonNode("等级+1", onClick: () => {
+                if (SelectedRecipe != null) {
+                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1,
+                        RecipeGrowthManager.BuildContext(manual: true));
+                }
+            }, onBuilt: btn => recipeSandboxBtn[2] = btn, pos: (0, 2), objectName: "frac-recipe-level-up"),
+            ButtonNode("等级升满", onClick: () => {
+                if (SelectedRecipe != null) {
+                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5,
+                        RecipeGrowthManager.BuildContext(manual: true));
+                }
+            }, onBuilt: btn => recipeSandboxBtn[3] = btn, pos: (0, 3), objectName: "frac-recipe-level-max"),
+        ];
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildInfoLineNodes() {
+        int[] rang = !GenesisBook.Enable ? [0, 1, 2, 4, 10] : [0, 4, 10];
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < InfoLineCount; i++) {
+            int index = i;
+            int row = i + 2;
+            nodes.Add(Grid(pos: (row, 0), cols: [Px(72f), Px(24f), Px(24f), Fr(1)], children: [
+                TextNode("", 15, onBuilt: text => {
+                        txtRecipeInfo[index] = text;
+                        text.rectTransform.sizeDelta = new Vector2(560f, LineHeight);
+                    },
+                    pos: (0, 0), span: (1, 4), objectName: $"frac-recipe-info-{index}"),
+                TextNode("", 15, onBuilt: text => {
+                        txtProductLeft[index] = text;
+                        text.gameObject.SetActive(false);
+                    },
+                    pos: (0, 0), objectName: $"frac-recipe-product-ratio-{index}"),
+                ImageButtonNode(size: IconSize, onBuilt: btn => {
+                        btn.gameObject.SetActive(false);
+                        btnRecipeInfoIcons[index] = btn;
+                    },
+                    pos: (0, 1), objectName: $"frac-recipe-product-icon-{index}"),
+                SliderNode(selectedInc, rang, null, 200f, onBuilt: slider => {
+                        slider.gameObject.SetActive(false);
+                        incSliders[index] = slider;
+                    },
+                    pos: (0, 3), objectName: $"frac-recipe-inc-slider-{index}"),
+            ]));
+            if (i < LevelLineCount) {
+                nodes.Add(TextNode("", 13, onBuilt: text => txtLevelInfo[index] = text,
+                    pos: (row, 1), objectName: $"frac-recipe-level-info-{index}"));
+            }
+        }
+
+        return nodes;
     }
 
     // ==================== UI 更新 ====================
@@ -266,12 +284,10 @@ public static class FracRecipeOperate {
         RecipeDisplaySnapshot snapshot = recipe == null ? default : RecipeGrowthQueries.GetSnapshot(recipe);
         ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
         int line = 0;
-        incSlider.gameObject.SetActive(false);
+        foreach (MySlider slider in incSliders) {
+            slider?.gameObject.SetActive(false);
+        }
         RefreshSandboxButtons(recipe, snapshot);
-
-        // 隐藏分节标签
-        txtMainLabel.gameObject.SetActive(false);
-        txtAppendLabel.gameObject.SetActive(false);
 
         if (recipe == null) {
             ShowTextLine(line++, "配方不存在！".Translate().WithColor(Red));
@@ -321,9 +337,7 @@ public static class FracRecipeOperate {
 
             // 主产物：标签独占一行，下方竖向列表
             if (recipe.OutputMain.Count > 0) {
-                float labelY = txtRecipeInfoBaseY + LineHeight * line;
-                NormalizeRectWithMidLeft(txtMainLabel, 0, labelY);
-                txtMainLabel.gameObject.SetActive(true);
+                ShowTextLine(line, "产出".Translate().WithColor(Orange));
                 line++;// 标签独占一行
             }
             foreach (OutputInfo info in recipe.OutputMain) {
@@ -336,9 +350,7 @@ public static class FracRecipeOperate {
 
             // 副产物：标签独占一行，下方竖向列表
             if (recipe.OutputAppend.Count > 0) {
-                float labelY = txtRecipeInfoBaseY + LineHeight * line;
-                NormalizeRectWithMidLeft(txtAppendLabel, 0, labelY);
-                txtAppendLabel.gameObject.SetActive(true);
+                ShowTextLine(line, "其他".Translate().WithColor(Orange));
                 line++;// 标签独占一行
             }
             foreach (OutputInfo info in recipe.OutputAppend) {
@@ -418,7 +430,7 @@ public static class FracRecipeOperate {
     private static void UpdateLevelColumn(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
         int currentLevel = recipe == null ? 0 : snapshot.Level;
 
-        // 标题行（放在 txtRecipeInfoBaseY）
+        // 标题行
         string headerText;
         if (recipe == null) {
             headerText = "";
@@ -432,7 +444,6 @@ public static class FracRecipeOperate {
             headerText = $"{"当前配方等级".Translate()} Lv{currentLevel}";
         }
         txtLevelInfo[0].text = headerText.WithColor(snapshot.IsUnlocked ? Orange : Red);
-        NormalizeRectWithMidLeft(txtLevelInfo[0], RightColX, txtRecipeInfoBaseY);
 
         int maxLevel = snapshot.MaxLevel;
         for (int lvl = 0; lvl <= maxLevel; lvl++) {
@@ -451,9 +462,6 @@ public static class FracRecipeOperate {
             }
 
             txtLevelInfo[lineIdx].text = coloredText;
-            // lvl+1 使第一个等级行（+0）位于标题行下方
-            float levelY = txtRecipeInfoBaseY + LineHeight * (lvl + 1);
-            NormalizeRectWithMidLeft(txtLevelInfo[lineIdx], RightColX, levelY);
         }
 
         for (int lineIdx = maxLevel + 2; lineIdx < LevelLineCount; lineIdx++) {
@@ -494,8 +502,6 @@ public static class FracRecipeOperate {
         }
 
         txtLevelInfo[lineIdx].text = text;
-        float lineY = txtRecipeInfoBaseY + LineHeight * lineIdx;
-        NormalizeRectWithMidLeft(txtLevelInfo[lineIdx], RightColX, lineY);
     }
 
     /// <summary>
@@ -578,44 +584,41 @@ public static class FracRecipeOperate {
     /// 显示单个产物行：左侧概率文本，中间物品图标，右侧数量。
     /// </summary>
     private static void ShowProductLine(int line, ItemProto itemProto, OutputInfo info) {
-        float lineY = txtRecipeInfoBaseY + LineHeight * line;
-
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         string count = forceShow || info.ShowOutputCount ? info.OutputCount.ToString("F3") : "???";
         string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
 
         // 左侧：概率文本
         txtProductLeft[line].text = ratio;
-        txtProductLeft[line].SetPosition(ProductRatioX, lineY);
+        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
         txtProductLeft[line].gameObject.SetActive(true);
 
         // 中间：物品图标
         btnRecipeInfoIcons[line].gameObject.SetActive(true);
         btnRecipeInfoIcons[line].Proto = itemProto;
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
+        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
         // 右侧：数量
         txtRecipeInfo[line].text = $"×{count}";
-        txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
+        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
     }
 
     private static void ShowRectificationProductLine(int line, RectificationRecipe recipe, OutputInfo info) {
-        float lineY = txtRecipeInfoBaseY + LineHeight * line;
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         int fragmentCount = GetRectificationDisplayFragmentCount(recipe.InputID, selectedInc.Value);
         string count = forceShow || info.ShowOutputCount ? fragmentCount.ToString("F3") : "???";
         string ratio = forceShow || info.ShowSuccessRatio ? 1.0f.ToString("P3") : "???";
 
         txtProductLeft[line].text = ratio;
-        txtProductLeft[line].SetPosition(ProductRatioX, lineY);
+        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
         txtProductLeft[line].gameObject.SetActive(true);
 
         btnRecipeInfoIcons[line].gameObject.SetActive(true);
         btnRecipeInfoIcons[line].Proto = LDB.items.Select(info.OutputID);
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
+        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
         txtRecipeInfo[line].text = $"×{count}";
-        txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
+        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
     }
 
     // ==================== 等效处理（滑条 + 竖向输出列表） ====================
@@ -624,22 +627,20 @@ public static class FracRecipeOperate {
         HideIconOnLine(line);
         txtProductLeft[line].gameObject.SetActive(false);
         txtRecipeInfo[line].text = "增产点数".Translate();
-        txtRecipeInfo[line].SetPosition(0, txtRecipeInfoBaseY + LineHeight * line);
-        incSlider.SetPosition(120, txtRecipeInfoBaseY + LineHeight * line);
-        incSlider.gameObject.SetActive(true);
+        txtRecipeInfo[line].SetPosition(0f, 0f);
+        incSliders[line].gameObject.SetActive(true);
         line++;
 
         ShowTextLine(line++, "每个原料平均产出：".Translate());
 
         if (recipe is RectificationRecipe rectificationRecipe) {
             // 精馏配方是稳定压缩：不参与成功率/损毁/双倍/返料公式，直接显示当前条件下的真实残片数。
-            float lineY = txtRecipeInfoBaseY + LineHeight * line;
             int fragmentCount = GetRectificationDisplayFragmentCount(rectificationRecipe.InputID, selectedInc.Value);
             btnRecipeInfoIcons[line].gameObject.SetActive(true);
             btnRecipeInfoIcons[line].Proto = LDB.items.Select(IFE残片);
-            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
+            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
             txtRecipeInfo[line].text = $"×{fragmentCount:F3}";
-            txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
+            txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
             txtProductLeft[line].gameObject.SetActive(false);
             return line + 1;
         }
@@ -684,7 +685,6 @@ public static class FracRecipeOperate {
         bool showDetails = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
 
         foreach (var (id, cnt, showCount) in outputs) {
-            float lineY = txtRecipeInfoBaseY + LineHeight * line;
             ItemProto outItem = LDB.items.Select(id);
             string outCount = showDetails || showCount ? cnt.ToString("F3") : "???";
 
@@ -692,10 +692,10 @@ public static class FracRecipeOperate {
 
             btnRecipeInfoIcons[line].gameObject.SetActive(true);
             btnRecipeInfoIcons[line].Proto = outItem;
-            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, lineY);
+            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
             txtRecipeInfo[line].text = $"×{outCount}";
-            txtRecipeInfo[line].SetPosition(ProductTextX, lineY);
+            txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
 
             line++;
         }
@@ -747,21 +747,21 @@ public static class FracRecipeOperate {
     // ==================== 辅助显示方法 ====================
 
     private static void ShowIconLine(int line, ItemProto itemProto, string text) {
-        float lineY = txtRecipeInfoBaseY + LineHeight * line;
         txtProductLeft[line].gameObject.SetActive(false);
+        incSliders[line].gameObject.SetActive(false);
         btnRecipeInfoIcons[line].gameObject.SetActive(true);
         btnRecipeInfoIcons[line].Proto = itemProto;
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], 0, lineY);
+        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], 0f, 0f);
         txtRecipeInfo[line].text = text;
-        txtRecipeInfo[line].SetPosition(TextOffsetWithIcon, lineY);
+        txtRecipeInfo[line].SetPosition(TextOffsetWithIcon, 0f);
     }
 
     private static void ShowTextLine(int line, string text) {
-        float lineY = txtRecipeInfoBaseY + LineHeight * line;
         HideIconOnLine(line);
         txtProductLeft[line].gameObject.SetActive(false);
+        incSliders[line].gameObject.SetActive(false);
         txtRecipeInfo[line].text = text;
-        txtRecipeInfo[line].SetPosition(0, lineY);
+        txtRecipeInfo[line].SetPosition(0f, 0f);
     }
 
     private static void HideIconOnLine(int line) {
@@ -771,9 +771,10 @@ public static class FracRecipeOperate {
     private static void HideAllLine(int line) {
         btnRecipeInfoIcons[line].gameObject.SetActive(false);
         txtProductLeft[line].gameObject.SetActive(false);
+        incSliders[line].gameObject.SetActive(false);
         txtProductLeft[line].text = "";
         txtRecipeInfo[line].text = "";
-        txtRecipeInfo[line].SetPosition(0, 0);
+        txtRecipeInfo[line].SetPosition(0f, 0f);
     }
 
     private static string FeatureStatus(bool enabled) =>

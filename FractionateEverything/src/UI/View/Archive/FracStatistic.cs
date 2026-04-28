@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
@@ -69,37 +71,25 @@ public static class FracStatistic {
                     Header("分馏统计", objectName: "frac-statistic-header", pos: (0, 0), span: (1, 2),
                         onBuilt: refs => header = refs),
                     ContentCard(pos: (1, 0), objectName: "frac-stat-summary-card", strong: true,
-                        children: [
-                            Node(pos: (0, 0), objectName: "frac-stat-summary-body", build: (w, summaryCard) => {
-                                txtSummaryTitle = PageLayout.AddCardTitle(w, summaryCard, 0f, 0f, "统计-总览", 16,
-                                    "frac-stat-summary-title");
-                                CreateLineGroup(w, summaryLines, summaryCard, 0f, 32f, "txtSummary");
-                            })
-                        ]),
+                        rows: BuildCardRows(summaryLines.Length),
+                        rowGap: 4f,
+                        children: BuildCardNodes("统计-总览", text => txtSummaryTitle = text, summaryLines,
+                            "txtSummary")),
                     ContentCard(pos: (1, 1), objectName: "frac-stat-stock-card", strong: true,
-                        children: [
-                            Node(pos: (0, 0), objectName: "frac-stat-stock-body", build: (w, stockCard) => {
-                                txtStockTitle = PageLayout.AddCardTitle(w, stockCard, 0f, 0f, "统计-资源库存", 16,
-                                    "frac-stat-stock-title");
-                                CreateLineGroup(w, stockLines, stockCard, 0f, 32f, "txtStock");
-                            })
-                        ]),
+                        rows: BuildCardRows(stockLines.Length),
+                        rowGap: 4f,
+                        children: BuildCardNodes("统计-资源库存", text => txtStockTitle = text, stockLines,
+                            "txtStock")),
                     ContentCard(pos: (2, 0), objectName: "frac-stat-growth-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "frac-stat-growth-body", build: (w, growthCard) => {
-                                txtGrowthTitle = PageLayout.AddCardTitle(w, growthCard, 0f, 0f, "统计-建筑成长", 16,
-                                    "frac-stat-growth-title");
-                                CreateLineGroup(w, growthLines, growthCard, 0f, 32f, "txtGrowth");
-                            })
-                        ]),
+                        rows: BuildCardRows(growthLines.Length),
+                        rowGap: 4f,
+                        children: BuildCardNodes("统计-建筑成长", text => txtGrowthTitle = text, growthLines,
+                            "txtGrowth")),
                     ContentCard(pos: (2, 1), objectName: "frac-stat-economy-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "frac-stat-economy-body", build: (w, economyCard) => {
-                                txtEconomyTitle = PageLayout.AddCardTitle(w, economyCard, 0f, 0f, "统计-动态经济", 16,
-                                    "frac-stat-economy-title");
-                                CreateLineGroup(w, economyLines, economyCard, 0f, 32f, "txtEconomy");
-                            })
-                        ]),
+                        rows: BuildCardRows(economyLines.Length),
+                        rowGap: 4f,
+                        children: BuildCardNodes("统计-动态经济", text => txtEconomyTitle = text, economyLines,
+                            "txtEconomy")),
                 ]));
     }
 
@@ -145,15 +135,27 @@ public static class FracStatistic {
         RefreshEconomyLines();
     }
 
-    private static void CreateLineGroup(MyWindow wnd, Text[] lines, RectTransform parent, float x, float startY,
-        string keyPrefix) {
-        float y = startY;
-        for (int i = 0; i < lines.Length; i++) {
-            lines[i] = wnd.AddText2(x, y, parent, "", 13, $"{keyPrefix}{i}");
-            lines[i].supportRichText = true;
-            lines[i].rectTransform.sizeDelta = new Vector2(470f, 28f);
-            y += 32f;
+    private static IReadOnlyList<LayoutTrack> BuildCardRows(int lineCount) {
+        var rows = new List<LayoutTrack> { Px(28f) };
+        for (int i = 0; i < lineCount; i++) {
+            rows.Add(1);
         }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildCardNodes(string title, Action<Text> onTitleBuilt, Text[] lines,
+        string keyPrefix) {
+        var nodes = new List<LayoutNode> {
+            CardTitleNode(title, 16, onBuilt: onTitleBuilt, pos: (0, 0), objectName: $"{keyPrefix}-title"),
+        };
+        for (int i = 0; i < lines.Length; i++) {
+            int index = i;
+            nodes.Add(TextNode("", 13, onBuilt: text => lines[index] = text,
+                pos: (index + 1, 0), objectName: $"{keyPrefix}{index}"));
+        }
+
+        return nodes;
     }
 
     private static void RefreshGrowthLines() {

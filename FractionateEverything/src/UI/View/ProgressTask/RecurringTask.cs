@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
@@ -126,61 +127,65 @@ public static class RecurringTask {
                         objectName: "recurring-task-summary-card",
                         strong: true,
                         children: [
-                            Node(pos: (0, 0), objectName: "recurring-task-summary-body", build: (w, summaryCard) => {
-                                float cardW = summaryCard.sizeDelta.x;
-                                txtSummary = w.AddText2(0f, 16f, summaryCard, "动态刷新", 13, "txtRecurringTaskSummary");
-                                txtSummary.supportRichText = true;
-                                txtSummary.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                txtSummary.horizontalOverflow = HorizontalWrapMode.Wrap;
-                                txtSummary.verticalOverflow = VerticalWrapMode.Overflow;
-                            }),
+                            TextNode("动态刷新", 13, wrap: true, onBuilt: text => txtSummary = text,
+                                pos: (0, 0), objectName: "txtRecurringTaskSummary"),
                         ]),
                     ContentCard(
                         pos: (2, 0),
                         objectName: "recurring-task-list-card",
-                        children: [
-                            Node(pos: (0, 0), objectName: "recurring-task-list-body", build: (w, listCard) => {
-                                float x = 0f;
-                                float y = 18f + 7f;
-                                w.AddText2(TaskNameX, y, listCard, "任务", 15, "txtHeaderTask");
-                                w.AddText2(TaskProgressX, y, listCard, "进度", 15, "txtHeaderProgress");
-                                w.AddText2(TaskDescX, y, listCard, "描述", 15, "txtHeaderDesc");
-                                w.AddText2(TaskRewardIconX, y, listCard, "奖励", 15, "txtHeaderReward");
-                                w.AddText2(TaskStatusX, y, listCard, "状态", 15, "txtHeaderStatus");
-                                w.AddText2(TaskActionX, y, listCard, "操作", 15, "txtHeaderAction");
-                                y += 36f + 7f;
-                                for (int i = 0; i < TaskCount; i++) {
-                                    int j = i;
-                                    txtTaskNames[j] = w.AddText2(TaskNameX + x, y, listCard, "动态刷新", 15,
-                                        $"txtTaskName{j}");
-                                    txtTaskNames[j].supportRichText = true;
-                                    txtTaskNames[j].rectTransform.sizeDelta = new Vector2(TaskNameW, 32f);
-                                    txtProgress[j] = w.AddText2(TaskProgressX + x, y, listCard, "动态刷新", 15,
-                                        $"txtTaskProgress{j}");
-                                    txtProgress[j].supportRichText = true;
-                                    txtProgress[j].rectTransform.sizeDelta = new Vector2(TaskProgressW, 32f);
-                                    txtDescriptions[j] = w.AddText2(TaskDescX + x, y, listCard, "动态刷新", 13,
-                                        $"txtTaskDesc{j}");
-                                    txtDescriptions[j].supportRichText = true;
-                                    txtDescriptions[j].alignment = TextAnchor.UpperLeft;
-                                    txtDescriptions[j].rectTransform.sizeDelta = new Vector2(TaskDescW, 34f);
-                                    rewardIcons[j] = w.AddImageButton(TaskRewardIconX + x, y, listCard, null)
-                                        .WithSize(40f, 40f);
-                                    txtRewards[j] = w.AddText2(TaskRewardTextX + x, y, listCard, "动态刷新", 15,
-                                        $"txtTaskReward{j}");
-                                    txtRewards[j].supportRichText = true;
-                                    txtRewards[j].rectTransform.sizeDelta = new Vector2(TaskRewardTextW, 32f);
-                                    txtStatus[j] = w.AddText2(TaskStatusX + x, y, listCard, "动态刷新", 15,
-                                        $"txtTaskStatus{j}");
-                                    txtStatus[j].supportRichText = true;
-                                    txtStatus[j].rectTransform.sizeDelta = new Vector2(TaskStatusW, 32f);
-                                    btnClaims[j] = w.AddButton(TaskActionX + x, y, TaskActionW, listCard, "领取", 15,
-                                        $"btnTaskClaim{j}", () => ClaimReward(j));
-                                    y += 46f;
-                                }
-                            }),
-                        ]),
+                        rows: BuildTaskListRows(),
+                        cols: [Fr(160), Fr(90), Fr(360), Px(42f), Fr(95), Fr(85), Fr(170)],
+                        rowGap: 6f,
+                        columnGap: 8f,
+                        children: BuildTaskListNodes()),
                 ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildTaskListRows() {
+        var rows = new List<LayoutTrack> { Px(28f) };
+        for (int i = 0; i < TaskCount; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildTaskListNodes() {
+        var nodes = new List<LayoutNode> {
+            TextNode("任务", 15, pos: (0, 0), objectName: "txtHeaderTask"),
+            TextNode("进度", 15, pos: (0, 1), objectName: "txtHeaderProgress"),
+            TextNode("描述", 15, pos: (0, 2), objectName: "txtHeaderDesc"),
+            TextNode("奖励", 15, pos: (0, 3), span: (1, 2), objectName: "txtHeaderReward"),
+            TextNode("状态", 15, pos: (0, 5), objectName: "txtHeaderStatus"),
+            TextNode("操作", 15, pos: (0, 6), objectName: "txtHeaderAction"),
+        };
+
+        for (int i = 0; i < TaskCount; i++) {
+            int row = i + 1;
+            int index = i;
+            nodes.Add(TextNode("动态刷新", 15, wrap: true,
+                onBuilt: text => txtTaskNames[index] = text,
+                pos: (row, 0), objectName: $"txtTaskName{index}"));
+            nodes.Add(TextNode("动态刷新", 15,
+                onBuilt: text => txtProgress[index] = text,
+                pos: (row, 1), objectName: $"txtTaskProgress{index}"));
+            nodes.Add(TextNode("动态刷新", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                onBuilt: text => txtDescriptions[index] = text,
+                pos: (row, 2), objectName: $"txtTaskDesc{index}"));
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => rewardIcons[index] = btn,
+                pos: (row, 3), objectName: $"txtTaskRewardIcon{index}"));
+            nodes.Add(TextNode("动态刷新", 15,
+                onBuilt: text => txtRewards[index] = text,
+                pos: (row, 4), objectName: $"txtTaskReward{index}"));
+            nodes.Add(TextNode("动态刷新", 15,
+                onBuilt: text => txtStatus[index] = text,
+                pos: (row, 5), objectName: $"txtTaskStatus{index}"));
+            nodes.Add(ButtonNode("领取", onClick: () => ClaimReward(index),
+                onBuilt: btn => btnClaims[index] = btn,
+                pos: (row, 6), objectName: $"btnTaskClaim{index}"));
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {
@@ -195,15 +200,6 @@ public static class RecurringTask {
             if (IsCompleted(i)) {
                 completedCount++;
             }
-            float rowY = 18f + 7f + 36f + 7f + i * 46f;
-            float rowTop = rowY - 10f;
-            txtTaskNames[i].SetPosition(TaskNameX, rowY);
-            txtProgress[i].SetPosition(TaskProgressX, rowY);
-            NormalizeRectWithTopLeft(txtDescriptions[i], TaskDescX, rowTop);
-            NormalizeRectWithMidLeft(rewardIcons[i], TaskRewardIconX, rowY);
-            txtRewards[i].SetPosition(TaskRewardTextX, rowY);
-            txtStatus[i].SetPosition(TaskStatusX, rowY);
-            NormalizeRectWithMidLeft(btnClaims[i], TaskActionX, rowY);
             RefreshTaskRow(i);
         }
         txtSummary.text = $"已完成 {completedCount}/{TaskCount}    已累计领取 {totalClaimedCount} 次循环奖励"

@@ -193,80 +193,94 @@ public static class TicketRaffle {
                             ui.TxtPoolDesc = refs.Summary;
                         }),
                     ContentCard(pos: (1, 0), objectName: $"ticket-raffle-resource-card-{poolId}", strong: true,
-                        children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-resource-body-{poolId}",
-                                build: (w, resourceCard) => {
-                                    float cardW = resourceCard.sizeDelta.x;
-                                    ui.TxtResourceTitle = PageLayout.AddCardTitle(w, resourceCard, 0f, 14f, "当前资源", 15,
-                                        $"ticket-raffle-resource-title-{poolId}");
-                                    float y = 50f;
-                                    ui.TxtResource = MyWindow.AddText(0f, y, resourceCard, "当前资源".Translate(), 13);
-                                    ui.TxtResource.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                    y += 28f;
-                                    ui.BtnMatrixIcon = MyImageButton.CreateImageButton(0f, y, resourceCard, null)
-                                        .WithSize(40f, 40f);
-                                    ui.BtnFragmentIcon = MyImageButton
-                                        .CreateImageButton(180f, y, resourceCard, LDB.items.Select(IFE残片))
-                                        .WithSize(40f, 40f);
-                                    y += 48f;
-                                    ui.TxtMode = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                    ui.TxtMode.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                    y += 26f;
-                                    ui.TxtPity = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                    ui.TxtPity.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                    y += 26f;
-                                    ui.TxtPoints = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                    ui.TxtPoints.rectTransform.sizeDelta = new Vector2(cardW, 22f);
-                                    y += 26f;
-                                    ui.TxtFocus = MyWindow.AddText(0f, y, resourceCard, "", 13);
-                                    ui.TxtFocus.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                }),
-                        ]),
+                        rows: [Px(28f), Px(50f), 1, 1, 1, 2],
+                        rowGap: 4f,
+                        children: BuildResourceNodes(ui, poolId)),
                     ContentCard(pos: (2, 0), objectName: $"ticket-raffle-result-card-{poolId}",
-                        children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-result-body-{poolId}",
-                                build: (w, resultCard) => {
-                                    float cardW = resultCard.sizeDelta.x;
-                                    ui.TxtResultTitle = PageLayout.AddCardTitle(w, resultCard, 0f, 0f, "结果摘要", 15,
-                                        $"ticket-raffle-result-title-{poolId}");
-                                    float y = 32f;
-                                    ui.TxtResultSummary = MyWindow.AddText(0f, y, resultCard, "暂无抽取结果".Translate(), 13);
-                                    ui.TxtResultSummary.rectTransform.sizeDelta = new Vector2(cardW, 40f);
-                                    y += 40f;
-                                    for (int i = 0; i < ui.TxtResultLines.Length; i++) {
-                                        ui.BtnResultIcons[i] = MyImageButton.CreateImageButton(0f, y, resultCard, null)
-                                            .WithSize(40f, 40f);
-                                        ui.BtnResultIcons[i].gameObject.SetActive(false);
-                                        ui.TxtResultLines[i] = MyWindow.AddText(48f, y, resultCard, "", 13);
-                                        ui.TxtResultLines[i].rectTransform.sizeDelta = new Vector2(cardW - 48f, 20f);
-                                        y += 22f;
-                                    }
-                                }),
-                        ]),
+                        rows: BuildResultRows(ui),
+                        cols: [Px(50f), 1],
+                        rowGap: 4f,
+                        columnGap: 8f,
+                        children: BuildResultNodes(ui, poolId)),
                     FooterCard(pos: (3, 0), objectName: $"ticket-raffle-footer-card-{poolId}",
+                        cols: [1, 1, 2, 1, 1],
+                        columnGap: PageLayout.InnerGap,
                         children: [
-                            Node(pos: (0, 0), objectName: $"ticket-raffle-footer-body-{poolId}",
-                                build: (w, footerCard) => {
-                                    float cardW = footerCard.sizeDelta.x;
-                                    ui.BtnDraw1 = w.AddButton(0f, 0f, 150f, footerCard, "抽1次".Translate(), 14,
-                                        onClick: () => StartDraw(ui, 1));
-                                    ui.BtnDraw10 = w.AddButton(166f, 0f, 150f, footerCard, "抽10次".Translate(), 14,
-                                        onClick: () => StartDraw(ui, 10));
-                                    ui.BtnGoGrowth = w.AddButton(cardW - 316f, 0f, 150f, footerCard,
-                                        "前往成长池".Translate(), 14,
-                                        onClick: () =>
-                                            MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName,
-                                                2));
-                                    ui.BtnGoFocus = w.AddButton(cardW - 150f, 0f, 150f, footerCard, "前往聚焦页".Translate(),
-                                        14,
-                                        onClick: () =>
-                                            MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName,
-                                                3));
-                                }),
+                            ButtonNode("抽1次", onClick: () => StartDraw(ui, 1), fontSize: 14,
+                                onBuilt: btn => ui.BtnDraw1 = btn,
+                                pos: (0, 0), objectName: $"ticket-raffle-draw-1-{poolId}"),
+                            ButtonNode("抽10次", onClick: () => StartDraw(ui, 10), fontSize: 14,
+                                onBuilt: btn => ui.BtnDraw10 = btn,
+                                pos: (0, 1), objectName: $"ticket-raffle-draw-10-{poolId}"),
+                            ButtonNode("前往成长池",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2),
+                                fontSize: 14,
+                                onBuilt: btn => ui.BtnGoGrowth = btn,
+                                pos: (0, 3), objectName: $"ticket-raffle-go-growth-{poolId}"),
+                            ButtonNode("前往聚焦页",
+                                onClick: () =>
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3),
+                                fontSize: 14,
+                                onBuilt: btn => ui.BtnGoFocus = btn,
+                                pos: (0, 4), objectName: $"ticket-raffle-go-focus-{poolId}"),
                         ]),
                 ]));
 
         RefreshTabState(ui);
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildResourceNodes(RaffleTabUi ui, int poolId) {
+        return [
+            CardTitleNode("当前资源", onBuilt: text => ui.TxtResourceTitle = text,
+                pos: (0, 0), objectName: $"ticket-raffle-resource-title-{poolId}"),
+            Grid(pos: (1, 0), cols: [1, 1, 4], columnGap: PageLayout.InnerGap, children: [
+                ImageButtonNode(size: 40f, onBuilt: btn => ui.BtnMatrixIcon = btn,
+                    pos: (0, 0), objectName: $"ticket-raffle-matrix-{poolId}"),
+                ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => ui.BtnFragmentIcon = btn,
+                    pos: (0, 1), objectName: $"ticket-raffle-fragment-{poolId}"),
+            ]),
+            TextNode("当前资源", 13, wrap: true, onBuilt: text => ui.TxtResource = text,
+                pos: (2, 0), objectName: $"ticket-raffle-resource-text-{poolId}"),
+            TextNode("", 13, onBuilt: text => ui.TxtMode = text,
+                pos: (3, 0), objectName: $"ticket-raffle-mode-{poolId}"),
+            TextNode("", 13, onBuilt: text => ui.TxtPity = text,
+                pos: (4, 0), objectName: $"ticket-raffle-pity-{poolId}"),
+            TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true, onBuilt: text => ui.TxtFocus = text,
+                pos: (5, 0), objectName: $"ticket-raffle-focus-{poolId}"),
+            TextNode("", 13, onBuilt: text => ui.TxtPoints = text,
+                pos: (5, 0), objectName: $"ticket-raffle-points-{poolId}", margin: Inset(0f, 22f, 0f, 0f)),
+        ];
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildResultRows(RaffleTabUi ui) {
+        var rows = new List<LayoutTrack> { Px(28f), Px(40f) };
+        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+            rows.Add(1);
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildResultNodes(RaffleTabUi ui, int poolId) {
+        var nodes = new List<LayoutNode> {
+            CardTitleNode("结果摘要", onBuilt: text => ui.TxtResultTitle = text,
+                pos: (0, 0), span: (1, 2), objectName: $"ticket-raffle-result-title-{poolId}"),
+            TextNode("暂无抽取结果", 13, wrap: true, onBuilt: text => ui.TxtResultSummary = text,
+                pos: (1, 0), span: (1, 2), objectName: $"ticket-raffle-result-summary-{poolId}"),
+        };
+        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+            int index = i;
+            nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => {
+                    ui.BtnResultIcons[index] = btn;
+                    ui.BtnResultIcons[index].gameObject.SetActive(false);
+                },
+                pos: (index + 2, 0), objectName: $"ticket-raffle-result-icon-{poolId}-{index}"));
+            nodes.Add(TextNode("", 13, onBuilt: text => ui.TxtResultLines[index] = text,
+                pos: (index + 2, 1), objectName: $"ticket-raffle-result-line-{poolId}-{index}"));
+        }
+
+        return nodes;
     }
 
     private static string GetPoolName(int poolId) {

@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ResourceInteraction;
@@ -36,29 +38,53 @@ public static class ImportantItem {
     }
 
     private static void CreateUIInternal(MyWindow wnd, RectTransform parent) {
-        float x = 0f;
-        float y = 18f;
-        Text txt = wnd.AddText2(x, y, parent, "以下物品在分馏数据中心的存储量为：");
-        wnd.AddTipsButton2(x + 5 + txt.preferredWidth, y, parent, "提取物品", "提取物品说明");
-        y += 36f + 7f;
-        int index = 0;
-        for (int i = 0; i < itemIdOriArr.Length; i++) {
-            int xIndex = 0;
-            for (int j = 0; j < itemIdOriArr[i].Length; j++) {
-                if (xIndex > 3) {
-                    y += 36f + 7f;
-                    xIndex = 0;
-                }
-                (float, float) position = GetPosition(xIndex, 4);
-                xIndex++;
-                int itemId = itemIdOriArr[i][j];
-                itemButtons[index] = wnd.AddImageButton(position.Item1, y, parent, LDB.items.Select(itemId))
-                    .WithSize(40f, 40f)
-                    .WithTakeItemClickEvent();
-                index++;
-            }
-            y += 36f + 7f;
+        BuildLayout(wnd, parent,
+            Grid(
+                rows: [Px(32f), 1],
+                rowGap: PageLayout.InnerGap,
+                children: [
+                    Grid(
+                        pos: (0, 0),
+                        cols: [1, Px(28f), 2],
+                        columnGap: 8f,
+                        children: [
+                            TextNode("以下物品在分馏数据中心的存储量为：",
+                                pos: (0, 0), objectName: "important-item-summary"),
+                            TipsButtonNode("提取物品", "提取物品说明",
+                                pos: (0, 1), objectName: "important-item-tip"),
+                        ]),
+                    Grid(
+                        pos: (1, 0),
+                        rows: BuildItemRows(),
+                        cols: [1, 1, 1, 1],
+                        rowGap: PageLayout.InnerGap,
+                        columnGap: PageLayout.InnerGap,
+                        children: BuildItemNodes()),
+                ]));
+    }
+
+    private static IReadOnlyList<LayoutTrack> BuildItemRows() {
+        var rows = new List<LayoutTrack>();
+        int rowCount = (itemIdArr.Length + 3) / 4;
+        for (int i = 0; i < rowCount; i++) {
+            rows.Add(1);
         }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildItemNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < itemIdArr.Length; i++) {
+            int index = i;
+            int row = i / 4;
+            int col = i % 4;
+            nodes.Add(ImageButtonNode(LDB.items.Select(itemIdArr[index]), 40f,
+                onBuilt: btn => itemButtons[index] = btn.WithTakeItemClickEvent(),
+                pos: (row, col), objectName: $"important-item-{index}"));
+        }
+
+        return nodes;
     }
 
     public static void UpdateUI() {
