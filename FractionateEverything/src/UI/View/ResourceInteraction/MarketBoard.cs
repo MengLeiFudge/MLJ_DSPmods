@@ -11,7 +11,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.View.ResourceInteraction;
 
 public static class MarketBoard {
-    private const int RowCount = 6;
+    private const int RowCount = 8;
 
     private sealed class OfferRow {
         public MyImageButton InputIcon;
@@ -35,7 +35,12 @@ public static class MarketBoard {
         Register("市场板", "Market Board");
         Register("交易", "Trade");
         Register("订单刷新", "Order Refresh");
+        Register("补给刷新", "Supply Refresh", "补给刷新");
         Register("特单概览", "Special Orders", "特单概览");
+        Register("补给概览", "Supply Overview", "补给概览");
+        Register("短缺补给", "Shortage Supply", "短缺补给");
+        Register("阶段矩阵补给", "Stage Matrix Supply", "阶段矩阵补给");
+        Register("黑雾补票", "Dark Fog Catch-up", "黑雾补票");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -127,14 +132,14 @@ public static class MarketBoard {
             ticks = 0;
         }
         header.Title.text = "市场板".Translate().WithColor(Orange);
-        txtExpire.text = $"{"订单刷新".Translate()}：{FormatTicks(ticks)}";
-        txtBoardTitle.text = "特单概览".Translate().WithColor(Orange);
-        int specialCount =
-            MarketBoardManager.ActiveOffers.Count(offer =>
-                offer.OfferType == MarketBoardManager.MarketOfferType.Special);
+        txtExpire.text = $"{"补给刷新".Translate()}：{FormatTicks(ticks)}";
+        txtBoardTitle.text = "补给概览".Translate().WithColor(Orange);
+        int shortageCount = MarketBoardManager.ActiveOffers.Count(offer =>
+            offer.OfferType == MarketBoardManager.MarketOfferType.SellToPlayer);
+        int matrixCount = MarketBoardManager.ActiveOffers.Count(offer =>
+            offer.OfferType == MarketBoardManager.MarketOfferType.StageSupply);
         int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special
-            && DarkFogCombatManager.IsDarkFogOffer(offer));
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special && DarkFogCombatManager.IsDarkFogOffer(offer));
         string stageName = DarkFogCombatManager.GetCurrentStage() switch {
             EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
             EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
@@ -142,7 +147,8 @@ public static class MarketBoard {
             EDarkFogCombatStage.StellarHunt => "星域围猎".WithColor(Blue),
             _ => "奇点收束".WithColor(Gold),
         };
-        txtSummary.text = $"{"特单概览".Translate()}：特单 {specialCount} 条    黑雾相关 {darkFogSpecialCount} 条    阶段 {stageName}";
+        txtSummary.text =
+            $"{"补给概览".Translate()}：{"短缺补给".Translate()} {shortageCount} 项    {"阶段矩阵补给".Translate()} {matrixCount} 项    {"黑雾补票".Translate()} {darkFogSpecialCount} 项    阶段 {stageName}";
 
         var offers = MarketBoardManager.ActiveOffers;
         for (int i = 0; i < rows.Length; i++) {
@@ -161,7 +167,9 @@ public static class MarketBoard {
                 rows[i].TxtExtra.text = "";
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
-            if (DarkFogCombatManager.IsDarkFogOffer(offer)
+            if (MarketBoardManager.IsDarkFogRecipeBackfillOffer(offer)) {
+                rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方补票 +{offer.OutputCount}";
+            } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
                 && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
                 rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方成长 +{offer.OutputCount}";
             }
@@ -179,7 +187,13 @@ public static class MarketBoard {
             return "[黑雾增强]".WithColor(Gold);
         }
         if (DarkFogCombatManager.IsDarkFogOffer(offer)) {
-            return "[黑雾特单]".WithColor(Blue);
+            return $"[{"黑雾补票".Translate()}]".WithColor(Blue);
+        }
+        if (offer.OfferType == MarketBoardManager.MarketOfferType.StageSupply) {
+            return $"[{"阶段矩阵补给".Translate()}]".WithColor(Green);
+        }
+        if (offer.OfferType == MarketBoardManager.MarketOfferType.SellToPlayer) {
+            return $"[{"短缺补给".Translate()}]".WithColor(Orange);
         }
         return offer.OfferType == MarketBoardManager.MarketOfferType.Special
             ? "[特单]".WithColor(Orange)

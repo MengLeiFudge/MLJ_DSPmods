@@ -232,6 +232,10 @@ public static class DarkFogCombatManager {
                || offer.OutputItemId == I硅基神经元
                || offer.OutputItemId == I负熵奇点
                || offer.OutputItemId == I核心素
+               || offer.OutputItemId == I重组式制造台
+               || offer.OutputItemId == I自演化研究站
+               || offer.OutputItemId == I负熵熔炉
+               || offer.OutputItemId == I奇异湮灭燃料棒
                || offer.OutputItemId == IFE分馏塔定向原胚;
     }
 
