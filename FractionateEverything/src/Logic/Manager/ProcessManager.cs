@@ -276,6 +276,79 @@ public static class ProcessManager {
         return true;
     }
 
+    private static int GetFluidOutputStackToMove(FractionatorComponent fractionator, int preferredStack) {
+        if (fractionator.fluidOutputCount >= preferredStack) {
+            return preferredStack;
+        }
+        // 输入已空时释放不足一组的尾料，避免旧 fluidId 被残留流动输出卡住。
+        return fractionator.fluidInputCount == 0 ? fractionator.fluidOutputCount : 0;
+    }
+
+    private static int GetFluidOutputIncAvg(FractionatorComponent fractionator, int buildingID, int outputStack) {
+        if (outputStack <= 0 || fractionator.fluidOutputCount <= 0) {
+            return 0;
+        }
+        if (buildingID == IFE点数聚集塔) {
+            return fractionator.fluidOutputInc >= 4 * outputStack ? 4 : 0;
+        }
+        return fractionator.fluidOutputInc / fractionator.fluidOutputCount;
+    }
+
+    private static void RemoveFluidOutput(ref FractionatorComponent fractionator, int outputStack, int incAvg) {
+        fractionator.fluidOutputCount -= outputStack;
+        fractionator.fluidOutputInc -= incAvg * outputStack;
+        if (fractionator.fluidOutputCount <= 0) {
+            fractionator.fluidOutputCount = 0;
+            fractionator.fluidOutputInc = 0;
+        } else if (fractionator.fluidOutputInc < 0) {
+            fractionator.fluidOutputInc = 0;
+        }
+    }
+
+    private static void TryOutputFluidToBelt(ref FractionatorComponent fractionator, ItemProto building,
+        int buildingID, CargoTraffic cargoTraffic, int beltId, float fluidInputCountPerCargo) {
+        if (beltId <= 0 || fractionator.fluidOutputCount <= 0) {
+            return;
+        }
+
+        if (building.EnableFluidEnhancement()) {
+            int fluidStack = building.MaxStack();
+            for (int i = 0; i < MaxOutputTimes && fractionator.fluidOutputCount > 0; i++) {
+                int outputStack = GetFluidOutputStackToMove(fractionator, fluidStack);
+                if (outputStack <= 0) {
+                    break;
+                }
+                int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, buildingID, outputStack);
+                if (!cargoTraffic.TryInsertItemAtHead(beltId, fractionator.fluidId, (byte)outputStack,
+                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
+                    break;
+                }
+                RemoveFluidOutput(ref fractionator, outputStack, fluidOutputIncAvg);
+            }
+            return;
+        }
+
+        CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
+        if (cargoPath == null) {
+            return;
+        }
+        int preferredStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
+        for (int i = 0; i < MaxOutputTimes && fractionator.fluidOutputCount > 0; i++) {
+            int outputStack = GetFluidOutputStackToMove(fractionator, preferredStack);
+            if (outputStack <= 0) {
+                break;
+            }
+            int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, buildingID, outputStack);
+            if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fractionator.fluidId,
+                    Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
+                    (byte)outputStack,
+                    (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
+                break;
+            }
+            RemoveFluidOutput(ref fractionator, outputStack, fluidOutputIncAvg);
+        }
+    }
+
     /// <summary>
     /// InternalUpdate的默认实现。
     /// </summary>
@@ -602,43 +675,8 @@ public static class ProcessManager {
         byte inc;
         if (__instance.belt1 > 0) {
             if (__instance.isOutput1) {
-                if (__instance.fluidOutputCount > 0) {
-                    // 准备增产点数
-                    int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-
-                    if (building.EnableFluidEnhancement()) {
-                        int fluidStack = building.MaxStack();
-                        for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= fluidStack; i++) {
-                            if (buildingID == IFE点数聚集塔)
-                                fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * fluidStack ? 4 : 0;
-                            if (cargoTraffic.TryInsertItemAtHead(__instance.belt1, fluidId, (byte)fluidStack,
-                                    (byte)Math.Min(255, fluidOutputIncAvg * fluidStack))) {
-                                __instance.fluidOutputCount -= fluidStack;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg * fluidStack;
-                            } else {
-                                break;
-                            }
-                        }
-                    } else {
-                        CargoPath cargoPath =
-                            cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt1].segPathId);
-                        if (cargoPath != null) {
-                            int outputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= outputStack; i++) {
-                                if (buildingID == IFE点数聚集塔)
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
-                                if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
-                                        (byte)outputStack,
-                                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
-                                    break;
-                                }
-                                __instance.fluidOutputCount -= outputStack;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg * outputStack;
-                            }
-                        }
-                    }
-                }
+                TryOutputFluidToBelt(ref __instance, building, buildingID, cargoTraffic, __instance.belt1,
+                    fluidInputCountPerCargo);
             } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
                     for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
@@ -696,43 +734,8 @@ public static class ProcessManager {
         }
         if (__instance.belt2 > 0) {
             if (__instance.isOutput2) {
-                if (__instance.fluidOutputCount > 0) {
-                    // 准备增产点数
-                    int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-
-                    if (building.EnableFluidEnhancement()) {
-                        int fluidStack = building.MaxStack();
-                        for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= fluidStack; i++) {
-                            if (buildingID == IFE点数聚集塔)
-                                fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * fluidStack ? 4 : 0;
-                            if (cargoTraffic.TryInsertItemAtHead(__instance.belt2, fluidId, (byte)fluidStack,
-                                    (byte)Math.Min(255, fluidOutputIncAvg * fluidStack))) {
-                                __instance.fluidOutputCount -= fluidStack;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg * fluidStack;
-                            } else {
-                                break;
-                            }
-                        }
-                    } else {
-                        CargoPath cargoPath =
-                            cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
-                        if (cargoPath != null) {
-                            int outputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
-                            for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount >= outputStack; i++) {
-                                if (buildingID == IFE点数聚集塔)
-                                    fluidOutputIncAvg = __instance.fluidOutputInc >= 4 * outputStack ? 4 : 0;
-                                if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
-                                        (byte)outputStack,
-                                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
-                                    break;
-                                }
-                                __instance.fluidOutputCount -= outputStack;
-                                __instance.fluidOutputInc -= fluidOutputIncAvg * outputStack;
-                            }
-                        }
-                    }
-                }
+                TryOutputFluidToBelt(ref __instance, building, buildingID, cargoTraffic, __instance.belt2,
+                    fluidInputCountPerCargo);
             } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
                     for (int i = 0; i < MaxOutputTimes && __instance.fluidInputCargoCount < fluidInputCargoMax; i++) {
