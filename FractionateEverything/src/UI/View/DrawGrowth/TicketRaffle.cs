@@ -422,8 +422,7 @@ public static class TicketRaffle {
     }
 
     private static string BuildResultLine(GachaResult result) {
-        string itemName = LDB.items.Select(result.ItemId)?.name ?? result.ItemId.ToString();
-        string line = $"{GetRarityTag(result.Rarity)}  {itemName}  {GetRewardText(result)}";
+        string line = $"{GetRarityTag(result.Rarity)}  {GetRewardText(result)}";
         if (result.WasHardPity) {
             line += $"  {"保底命中".Translate()}".WithColor(Gold);
         }
@@ -440,14 +439,10 @@ public static class TicketRaffle {
             GachaRewardType.RecipeUnlock => $"{"配方解锁".Translate()} Lv{result.RewardCount}".WithColor(Orange),
             GachaRewardType.RecipeUpgrade => $"{"配方提升".Translate()} -> Lv{result.RewardCount}".WithColor(Orange),
             GachaRewardType.DuplicateRecipeFragments =>
-                $"{"满级转残片".Translate()} {GetRewardItemName(result)} x{result.RewardCount}".WithColor(Green),
+                $"{"满级转残片".Translate()} x{result.RewardCount}".WithColor(Green),
             GachaRewardType.ItemGranted => $"{"物品入库".Translate()} x{result.RewardCount}".WithColor(Blue),
             _ => string.Empty,
         };
-    }
-
-    private static string GetRewardItemName(GachaResult result) {
-        return LDB.items.Select(result.RewardItemId)?.name ?? result.RewardItemId.ToString();
     }
 
     private static string GetRarityTag(GachaRarity rarity) {
