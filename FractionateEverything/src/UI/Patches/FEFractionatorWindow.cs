@@ -1012,7 +1012,7 @@ public static class FEFractionatorWindow {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
                 float ratio = singleLockActive
-                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
+                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio * output.SuccessRatio : 0f)
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
@@ -1025,7 +1025,7 @@ public static class FEFractionatorWindow {
                 if (sideCount >= MaxSideSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && !p.isMainOutput);
                 float ratio = singleLockActive
-                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
+                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio * output.SuccessRatio : 0f)
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
                     ratio,

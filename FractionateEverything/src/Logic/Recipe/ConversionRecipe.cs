@@ -285,8 +285,9 @@ public class ConversionRecipe : BaseRecipe {
             return;
         }
 
-        // 2. 成功判定：单路锁定时，成功后固定走锁定产物路径，不再先抽其他产物再过滤。
-        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
+        // 2. 成功判定：单路锁定只保留目标产物原本的路径权重，避免改变配方价值期望。
+        float lockedSuccessRatio = SuccessRatio * lockedOutput.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        if (GetRandDouble(ref seed) < lockedSuccessRatio) {
             int countReal = RollOutputCount(ref seed, lockedOutput.OutputCount);
 
             if (GetRandDouble(ref seed) < DoubleOutputRatio) {
