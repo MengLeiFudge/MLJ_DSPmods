@@ -15,6 +15,16 @@ namespace FE.Logic.Recipe;
 /// </summary>
 public class ConversionRecipe : BaseRecipe {
     /// <summary>
+    /// 单路锁定时使用的固定目标方案。构造期预计算，运行期只查表。
+    /// </summary>
+    public readonly struct LockedOutputPlan(OutputInfo sourceOutput, bool isMainOutput, float outputCount) {
+        public OutputInfo SourceOutput => sourceOutput;
+        public int OutputID => sourceOutput.OutputID;
+        public bool IsMainOutput => isMainOutput;
+        public float OutputCount => outputCount;
+    }
+
+    /// <summary>
     /// 添加所有转化配方
     /// </summary>
     public static void CreateAll() {
@@ -230,7 +240,11 @@ public class ConversionRecipe : BaseRecipe {
     /// <param name="outputAppend">附加输出物品</param>
     public ConversionRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
+        lockedOutputPlansByItemId = BuildLockedOutputPlans(inputID, outputMain, outputAppend);
+    }
+
+    private readonly Dictionary<int, LockedOutputPlan> lockedOutputPlansByItemId;
 
     /// <summary>
     /// 当前分馏塔锁定的输出物品ID（由 ProcessManager 在调用 GetOutputs 前设置）
@@ -241,9 +255,9 @@ public class ConversionRecipe : BaseRecipe {
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         if (ConversionTower.EnableSingleLock
             && CurrentLockedOutputId != 0
-            && TryGetLockedOutputInfo(CurrentLockedOutputId, out OutputInfo lockedOutput, out bool isMainOutput)) {
+            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
             GetLockedOutput(ref seed, pointsBonus, successBoost, fluidInputIncAvg, ref fluidInputInc,
-                lockedOutput, isMainOutput, out inputChange, out outputs);
+                lockedPlan, out inputChange, out outputs);
             return;
         }
 
@@ -252,30 +266,11 @@ public class ConversionRecipe : BaseRecipe {
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
     }
 
-    private bool TryGetLockedOutputInfo(int itemId, out OutputInfo lockedOutput, out bool isMainOutput) {
-        foreach (OutputInfo outputInfo in OutputMain) {
-            if (outputInfo.OutputID == itemId) {
-                lockedOutput = outputInfo;
-                isMainOutput = true;
-                return true;
-            }
-        }
-
-        foreach (OutputInfo outputInfo in OutputAppend) {
-            if (outputInfo.OutputID == itemId) {
-                lockedOutput = outputInfo;
-                isMainOutput = false;
-                return true;
-            }
-        }
-
-        lockedOutput = null;
-        isMainOutput = false;
-        return false;
-    }
+    public bool TryGetLockedOutputPlan(int itemId, out LockedOutputPlan lockedPlan) =>
+        lockedOutputPlansByItemId.TryGetValue(itemId, out lockedPlan);
 
     private void GetLockedOutput(ref uint seed, float pointsBonus, float successBoost,
-        int fluidInputIncAvg, ref int fluidInputInc, OutputInfo lockedOutput, bool isMainOutput,
+        int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
         out int inputChange, out List<ProductOutputInfo> outputs) {
         // 1. 损毁判定
         if (GetRandDouble(ref seed) < DestroyRatio) {
@@ -285,23 +280,23 @@ public class ConversionRecipe : BaseRecipe {
             return;
         }
 
-        // 2. 成功判定：单路锁定只保留目标产物原本的路径权重，避免改变配方价值期望。
-        float lockedSuccessRatio = SuccessRatio * lockedOutput.SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
+        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         if (GetRandDouble(ref seed) < lockedSuccessRatio) {
-            int countReal = RollOutputCount(ref seed, lockedOutput.OutputCount);
+            int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
 
             if (GetRandDouble(ref seed) < DoubleOutputRatio) {
                 countReal *= 2;
             }
 
             if (countReal > 0) {
-                lockedOutput.OutputTotalCount += countReal;
+                lockedPlan.SourceOutput.OutputTotalCount += countReal;
                 inputChange = GetRandDouble(ref seed) < RemainInputRatio ? 0 : -1;
                 if (inputChange < 0) {
                     fluidInputInc -= fluidInputIncAvg;
                 }
 
-                outputs = [new ProductOutputInfo(isMainOutput, lockedOutput.OutputID, countReal)];
+                outputs = [new ProductOutputInfo(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal)];
                 return;
             }
 
@@ -316,6 +311,31 @@ public class ConversionRecipe : BaseRecipe {
         inputChange = -1;
         fluidInputInc -= fluidInputIncAvg;
         outputs = ProcessManager.emptyOutputs;
+    }
+
+    private static Dictionary<int, LockedOutputPlan> BuildLockedOutputPlans(int inputId,
+        List<OutputInfo> outputMain, List<OutputInfo> outputAppend) {
+        Dictionary<int, LockedOutputPlan> plans = [];
+        AddLockedOutputPlans(plans, inputId, outputMain, true);
+        AddLockedOutputPlans(plans, inputId, outputAppend, false);
+        return plans;
+    }
+
+    private static void AddLockedOutputPlans(Dictionary<int, LockedOutputPlan> plans, int inputId,
+        List<OutputInfo> outputs, bool isMainOutput) {
+        foreach (OutputInfo output in outputs) {
+            if (plans.ContainsKey(output.OutputID)) {
+                continue;
+            }
+
+            float outputValue = itemValue[output.OutputID];
+            if (outputValue <= 0f || outputValue >= maxValue) {
+                continue;
+            }
+
+            float lockedOutputCount = itemValue[inputId] / outputValue;
+            plans.Add(output.OutputID, new(output, isMainOutput, lockedOutputCount));
+        }
     }
 
     private static int RollOutputCount(ref uint seed, float outputCount) {

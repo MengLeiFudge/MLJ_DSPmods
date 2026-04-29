@@ -1005,19 +1005,24 @@ public static class FEFractionatorWindow {
 
         int mainCount = 0, sideCount = 0;
         float mainSuccessSum = 0f;
-        bool singleLockActive = showLockControls && lockedOutputId != 0;
+        ConversionRecipe conversionRecipe = recipe as ConversionRecipe;
+        ConversionRecipe.LockedOutputPlan lockedPlan = default;
+        bool singleLockActive = showLockControls
+                                && lockedOutputId != 0
+                                && conversionRecipe != null
+                                && conversionRecipe.TryGetLockedOutputPlan(lockedOutputId, out lockedPlan);
 
         if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
                 float ratio = singleLockActive
-                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio * output.SuccessRatio : 0f)
+                    ? (output.OutputID == lockedPlan.OutputID ? recipeSuccessRatio : 0f)
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
-                    output.ShowSuccessRatio || sandboxMode);
-                SetSlotLocked(mainSlots[mainCount], output.OutputID == lockedOutputId);
+                    singleLockActive || output.ShowSuccessRatio || sandboxMode);
+                SetSlotLocked(mainSlots[mainCount], singleLockActive && output.OutputID == lockedPlan.OutputID);
                 mainSuccessSum += ratio;
                 mainCount++;
             }
@@ -1025,12 +1030,12 @@ public static class FEFractionatorWindow {
                 if (sideCount >= MaxSideSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && !p.isMainOutput);
                 float ratio = singleLockActive
-                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio * output.SuccessRatio : 0f)
+                    ? (output.OutputID == lockedPlan.OutputID ? recipeSuccessRatio : 0f)
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
                     ratio,
-                    output.ShowSuccessRatio || sandboxMode);
-                SetSlotLocked(sideSlots[sideCount], output.OutputID == lockedOutputId);
+                    singleLockActive || output.ShowSuccessRatio || sandboxMode);
+                SetSlotLocked(sideSlots[sideCount], singleLockActive && output.OutputID == lockedPlan.OutputID);
                 sideCount++;
             }
         }
@@ -1051,7 +1056,7 @@ public static class FEFractionatorWindow {
             _fluidArrowText.color = ProbColor;
         }
         if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
-        UpdateLockStatusUI(fractionator, recipe as ConversionRecipe, lockedOutputId, showLockControls);
+        UpdateLockStatusUI(fractionator, conversionRecipe, lockedOutputId, showLockControls);
 
         // 流体输出右侧信息
         if (fluidRightText != null) {
@@ -1153,6 +1158,10 @@ public static class FEFractionatorWindow {
         string lockState = "未锁定".Translate();
         if (lockedOutputId != 0) {
             lockState = LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
+            if (recipe != null && recipe.TryGetLockedOutputPlan(lockedOutputId,
+                    out ConversionRecipe.LockedOutputPlan lockedPlan)) {
+                lockState += $" ×{lockedPlan.OutputCount:F3}";
+            }
         }
         if (lockStateText != null) {
             lockStateText.text = $"{"单锁".Translate()}：{lockState}";
