@@ -239,30 +239,92 @@ public class ConversionRecipe : BaseRecipe {
 
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
+        if (ConversionTower.EnableSingleLock
+            && CurrentLockedOutputId != 0
+            && TryGetLockedOutputInfo(CurrentLockedOutputId, out OutputInfo lockedOutput, out bool isMainOutput)) {
+            GetLockedOutput(ref seed, pointsBonus, successBoost, fluidInputIncAvg, ref fluidInputInc,
+                lockedOutput, isMainOutput, out inputChange, out outputs);
+            return;
+        }
+
         // 调用基类获取原始结果
         base.GetOutputs(ref seed, pointsBonus, successBoost,
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
+    }
 
-        // C8: 单路锁定 - 当启用且有锁定产物时，过滤输出
-        if (ConversionTower.EnableSingleLock && CurrentLockedOutputId != 0 && outputs != null && outputs.Count > 0) {
-            List<ProductOutputInfo> lockedOutputs = null;
-            foreach (ProductOutputInfo output in outputs) {
-                if (output.itemId != CurrentLockedOutputId) {
-                    continue;
-                }
-
-                lockedOutputs ??= new List<ProductOutputInfo>(outputs.Count);
-                lockedOutputs.Add(output);
-            }
-
-            if (lockedOutputs != null) {
-                // 只保留锁定产物
-                outputs = lockedOutputs;
-            } else {
-                // 锁定产物不在输出中，视为失败（直通）
-                outputs = ProcessManager.emptyOutputs;
+    private bool TryGetLockedOutputInfo(int itemId, out OutputInfo lockedOutput, out bool isMainOutput) {
+        foreach (OutputInfo outputInfo in OutputMain) {
+            if (outputInfo.OutputID == itemId) {
+                lockedOutput = outputInfo;
+                isMainOutput = true;
+                return true;
             }
         }
+
+        foreach (OutputInfo outputInfo in OutputAppend) {
+            if (outputInfo.OutputID == itemId) {
+                lockedOutput = outputInfo;
+                isMainOutput = false;
+                return true;
+            }
+        }
+
+        lockedOutput = null;
+        isMainOutput = false;
+        return false;
+    }
+
+    private void GetLockedOutput(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, OutputInfo lockedOutput, bool isMainOutput,
+        out int inputChange, out List<ProductOutputInfo> outputs) {
+        // 1. 损毁判定
+        if (GetRandDouble(ref seed) < DestroyRatio) {
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            outputs = null;
+            return;
+        }
+
+        // 2. 成功判定：单路锁定时，成功后固定走锁定产物路径，不再先抽其他产物再过滤。
+        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
+            int countReal = RollOutputCount(ref seed, lockedOutput.OutputCount);
+
+            if (GetRandDouble(ref seed) < DoubleOutputRatio) {
+                countReal *= 2;
+            }
+
+            if (countReal > 0) {
+                lockedOutput.OutputTotalCount += countReal;
+                inputChange = GetRandDouble(ref seed) < RemainInputRatio ? 0 : -1;
+                if (inputChange < 0) {
+                    fluidInputInc -= fluidInputIncAvg;
+                }
+
+                outputs = [new ProductOutputInfo(isMainOutput, lockedOutput.OutputID, countReal)];
+                return;
+            }
+
+            // 与 BaseRecipe 保持一致：成功但产出数为 0，视为损毁。
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            outputs = null;
+            return;
+        }
+
+        // 3. 无变化 -> 直通输出
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        outputs = ProcessManager.emptyOutputs;
+    }
+
+    private static int RollOutputCount(ref uint seed, float outputCount) {
+        int countReal = (int)outputCount;
+        float fractionalCount = outputCount - countReal;
+        if (fractionalCount > 0.0001 && GetRandDouble(ref seed) < fractionalCount) {
+            countReal++;
+        }
+
+        return countReal;
     }
 
     #region IModCanSave

@@ -1005,12 +1005,15 @@ public static class FEFractionatorWindow {
 
         int mainCount = 0, sideCount = 0;
         float mainSuccessSum = 0f;
+        bool singleLockActive = showLockControls && lockedOutputId != 0;
 
         if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
-                float ratio = recipeSuccessRatio * output.SuccessRatio;
+                float ratio = singleLockActive
+                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
+                    : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
                     output.ShowSuccessRatio || sandboxMode);
@@ -1021,8 +1024,11 @@ public static class FEFractionatorWindow {
             foreach (var output in recipe.OutputAppend) {
                 if (sideCount >= MaxSideSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && !p.isMainOutput);
+                float ratio = singleLockActive
+                    ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
+                    : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
-                    recipeSuccessRatio * output.SuccessRatio,
+                    ratio,
                     output.ShowSuccessRatio || sandboxMode);
                 SetSlotLocked(sideSlots[sideCount], output.OutputID == lockedOutputId);
                 sideCount++;

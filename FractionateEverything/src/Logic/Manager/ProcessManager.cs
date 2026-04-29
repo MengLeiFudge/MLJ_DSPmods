@@ -437,8 +437,15 @@ public static class ProcessManager {
                     if (buildingID == IFE转化塔) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
                     }
-                    recipe.GetOutputs(ref __instance.seed, pointsBonus, successBoost,
-                        fluidInputIncAvg, ref __instance.fluidInputInc, out inputChange, out outputs);
+                    try {
+                        recipe.GetOutputs(ref __instance.seed, pointsBonus, successBoost,
+                            fluidInputIncAvg, ref __instance.fluidInputInc, out inputChange, out outputs);
+                    }
+                    finally {
+                        if (buildingID == IFE转化塔) {
+                            ConversionRecipe.CurrentLockedOutputId = 0;
+                        }
+                    }
                 }
 
                 __instance.fractionSuccess = outputs != null && outputs.Count > 0;
