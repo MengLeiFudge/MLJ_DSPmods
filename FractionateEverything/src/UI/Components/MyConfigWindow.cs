@@ -27,6 +27,7 @@ public class MyConfigWindow : MyWindowWithTabs {
     public override void _OnCreate() {
         base._OnCreate();
         _windowTrans = GetComponent<RectTransform>();
+        _windowTrans.sizeDelta = new(LegacyWindowWidth, LegacyWindowHeight);
         OnUICreated?.Invoke(this, _windowTrans);
         SetCurrentTab(0);
         OnUpdateUI?.Invoke();
