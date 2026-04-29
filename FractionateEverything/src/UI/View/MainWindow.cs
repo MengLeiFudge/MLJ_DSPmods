@@ -298,6 +298,9 @@ public static class MainWindow {
 
         _legacyConfigWinInitialized = true;
         _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+        if (_legacyConfigWin != null) {
+            _legacyConfigWin.OnFree += () => OnMainPanelWindowFreed(FEMainPanelType.Legacy);
+        }
     }
 
     /// <summary>
@@ -311,6 +314,9 @@ public static class MainWindow {
 
         _analysisMainWindowInitialized = true;
         _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
+        if (_analysisMainWindow != null) {
+            _analysisMainWindow.OnFree += () => OnMainPanelWindowFreed(FEMainPanelType.Analysis);
+        }
     }
 
     private static void CloseAllMainPanels() {
@@ -351,6 +357,17 @@ public static class MainWindow {
             return;
         }
 
+        OpenedMainPanelType = FEMainPanelType.None;
+    }
+
+    private static void OnMainPanelWindowFreed(FEMainPanelType panelType) {
+        if (OpenedMainPanelType != panelType) {
+            return;
+        }
+
+        // 右上角 X、Esc、游戏统一关窗都可能绕过 CloseAllMainPanels，
+        // 这里统一补上关闭前的页面路由保存。
+        CaptureCurrentPageRouteFromOpenedPanel();
         OpenedMainPanelType = FEMainPanelType.None;
     }
 
