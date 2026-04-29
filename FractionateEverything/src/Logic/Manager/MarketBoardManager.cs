@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FE.Logic.Recipe;
 using FE.Logic.RecipeGrowth;
 using UnityEngine;
 using FE.Utils;
@@ -15,6 +16,8 @@ namespace FE.Logic.Manager;
 /// 给普通玩家提供可理解的机会单。
 /// </summary>
 public static class MarketBoardManager {
+    private const int MaxActiveOfferCount = 8;
+
     public enum MarketOfferType {
         BuyFromPlayer = 0,
         SellToPlayer = 1,
@@ -96,85 +99,183 @@ public static class MarketBoardManager {
             return false;
         }
 
-        if (DarkFogCombatManager.IsDarkFogOffer(offer)
+        bool success;
+        if (IsDarkFogRecipeBackfillOffer(offer)) {
+            success = TryApplyDarkFogRecipeBackfill(offer);
+        } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
             && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
-            RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(offer.OutputItemId, offer.OutputCount,
-                RecipeGrowthManager.BuildContext(manual: true));
+            success = TryApplyDarkFogResourceBackfill(offer);
+        } else {
+            AddItemToModData(offer.OutputItemId, offer.OutputCount, 0, true);
+            success = true;
+        }
+
+        if (success) {
+            activeOffers.RemoveAt(index);
+        }
+        return success;
+    }
+
+    private static bool TryApplyDarkFogResourceBackfill(MarketOffer offer) {
+        int appliedRecipeCount = RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(offer.OutputItemId, offer.OutputCount,
+            RecipeGrowthManager.BuildContext(manual: true));
+        if (appliedRecipeCount > 0) {
             return true;
         }
 
-        AddItemToModData(offer.OutputItemId, offer.OutputCount, 0, true);
+        RefundOfferCost(offer);
+        return false;
+    }
+
+    private static bool TryApplyDarkFogRecipeBackfill(MarketOffer offer) {
+        BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, offer.OutputItemId);
+        if (recipe == null || RecipeGrowthQueries.IsMaxed(recipe)) {
+            RefundOfferCost(offer);
+            return false;
+        }
+
+        RecipeGrowthResult result = RecipeGrowthExecutor.ApplyDrawReward(recipe,
+                RecipeGrowthManager.BuildContext(manual: true));
+        if (result.FragmentReward > 0) {
+            AddItemToModData(IFE残片, result.FragmentReward, 0, true);
+        }
         return true;
+    }
+
+    private static void RefundOfferCost(MarketOffer offer) {
+        if (offer.InputItemId > 0 && offer.InputCount > 0) {
+            AddItemToModData(offer.InputItemId, offer.InputCount, 0, true);
+        }
+        if (offer.ExtraInputItemId > 0 && offer.ExtraInputCount > 0) {
+            AddItemToModData(offer.ExtraInputItemId, offer.ExtraInputCount, 0, true);
+        }
     }
 
     private static void RefreshOffers() {
         activeOffers.Clear();
         int currentMatrixId = GetCurrentProgressMatrixId();
         IReadOnlyList<int> highDemand = MarketValueManager.GetTopMarketItems(12, descending: true);
-        IReadOnlyList<int> lowDemand = MarketValueManager.GetTopMarketItems(12, descending: false);
         var usedItems = new HashSet<int>();
         long interval = GachaManager.IsSpeedrunMode ? 60L * 60L * 20L : 60L * 60L * 60L;
         currentExpireTick = GameMain.gameTick + interval;
 
-        TryAddBuyOffer(highDemand, usedItems);
-        TryAddBuyOffer(highDemand, usedItems);
-        TryAddSellOffer(lowDemand, usedItems);
-        TryAddSellOffer(lowDemand, usedItems);
-        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.StageSupply,
-            IFE残片, 120, 0, 0, currentMatrixId, 64, currentExpireTick, MarketValueManager.RefreshVersion));
-        activeOffers.Add(CreateSpecialOffer(currentExpireTick));
+        TryAddShortageSupplyOffer(highDemand, usedItems);
+        TryAddShortageSupplyOffer(highDemand, usedItems);
+        TryAddShortageSupplyOffer(highDemand, usedItems);
+        TryAddStageMatrixSupplyOffer(currentMatrixId);
+        AppendDarkFogBackfillOffers(currentExpireTick);
     }
 
-    private static MarketOffer CreateSpecialOffer(long expireTick) {
-        if (!DarkFogCombatManager.IsSpecialOrderUnlocked()) {
-            int protoReward = GachaService.GetCurrentDrawMatrixId();
-            return new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 180, 0, 0, protoReward, 48, expireTick, MarketValueManager.RefreshVersion);
-        }
-
-        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
-        int enhancedNodeCount = DarkFogCombatManager.GetEnhancedNodeCount();
-        if (DarkFogCombatManager.IsEnhancedLayerEnabled()
-            && stage >= EDarkFogCombatStage.Singularity
-            && enhancedNodeCount >= 2) {
-            return new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 720, I黑雾矩阵, 4, IFE分馏塔定向原胚, 1, expireTick, MarketValueManager.RefreshVersion);
-        }
-
-        return stage switch {
-            EDarkFogCombatStage.GroundSuppression => new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 320, I黑雾矩阵, 2, I物质重组器, 6, expireTick, MarketValueManager.RefreshVersion),
-            EDarkFogCombatStage.StellarHunt => new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 480, I黑雾矩阵, 3, I负熵奇点, 2, expireTick, MarketValueManager.RefreshVersion),
-            EDarkFogCombatStage.Singularity => new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 600, I黑雾矩阵, 4, I核心素, 1, expireTick, MarketValueManager.RefreshVersion),
-            _ => new MarketOffer(nextOfferId++, MarketOfferType.Special,
-                IFE残片, 240, I黑雾矩阵, 1, I能量碎片, 24, expireTick, MarketValueManager.RefreshVersion),
-        };
-    }
-
-    private static void TryAddBuyOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
-        int itemId = PickCandidate(candidates, usedItems);
-        if (itemId <= 0) {
+    private static void TryAddShortageSupplyOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
+        if (activeOffers.Count >= MaxActiveOfferCount) {
             return;
         }
-        usedItems.Add(itemId);
-        int count = GetSuggestedTradeCount(itemId, buyFromPlayer: true);
-        int fragments = Mathf.Max(1, Mathf.RoundToInt(MarketValueManager.GetValue(itemId) * count * 1.10f));
-        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.BuyFromPlayer,
-            itemId, count, 0, 0, IFE残片, fragments, currentExpireTick, MarketValueManager.RefreshVersion));
-    }
 
-    private static void TryAddSellOffer(IReadOnlyList<int> candidates, HashSet<int> usedItems) {
         int itemId = PickCandidate(candidates, usedItems);
         if (itemId <= 0) {
             return;
         }
         usedItems.Add(itemId);
         int count = GetSuggestedTradeCount(itemId, buyFromPlayer: false);
-        int fragments = Mathf.Max(1, Mathf.RoundToInt(MarketValueManager.GetValue(itemId) * count * 0.80f));
+        int fragments = GetFragmentCost(itemId, count, 0.95f);
         activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.SellToPlayer,
             IFE残片, fragments, 0, 0, itemId, count, currentExpireTick, MarketValueManager.RefreshVersion));
+    }
+
+    private static void TryAddStageMatrixSupplyOffer(int matrixId) {
+        if (activeOffers.Count >= MaxActiveOfferCount || matrixId <= 0) {
+            return;
+        }
+
+        int count = GetStageMatrixSupplyCount(matrixId);
+        int fragments = GetFragmentCost(matrixId, count, 0.92f);
+        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.StageSupply,
+            IFE残片, fragments, 0, 0, matrixId, count, currentExpireTick, MarketValueManager.RefreshVersion));
+    }
+
+    private static void AppendDarkFogBackfillOffers(long expireTick) {
+        TryAddDarkFogResourceBackfill(EDarkFogCombatStage.Signal, I能量碎片, I黑雾矩阵, 1, expireTick);
+        TryAddDarkFogResourceBackfill(EDarkFogCombatStage.GroundSuppression, I物质重组器, I黑雾矩阵, 2, expireTick);
+        TryAddDarkFogResourceBackfill(EDarkFogCombatStage.GroundSuppression, I硅基神经元, I黑雾矩阵, 2, expireTick);
+        TryAddDarkFogRecipeBackfill(EDarkFogCombatStage.GroundSuppression, I重组式制造台, I黑雾矩阵, 2,
+            expireTick);
+        TryAddDarkFogRecipeBackfill(EDarkFogCombatStage.GroundSuppression, I自演化研究站, I黑雾矩阵, 2,
+            expireTick);
+        TryAddDarkFogResourceBackfill(EDarkFogCombatStage.StellarHunt, I负熵奇点, I黑雾矩阵, 3, expireTick);
+        TryAddDarkFogRecipeBackfill(EDarkFogCombatStage.StellarHunt, I负熵熔炉, I黑雾矩阵, 3, expireTick);
+        TryAddDarkFogResourceBackfill(EDarkFogCombatStage.Singularity, I核心素, I黑雾矩阵, 4, expireTick);
+        TryAddDarkFogRecipeBackfill(EDarkFogCombatStage.Singularity, I奇异湮灭燃料棒, I黑雾矩阵, 4, expireTick);
+
+        if (DarkFogCombatManager.IsEnhancedLayerEnabled()
+            && DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Singularity
+            && DarkFogCombatManager.GetEnhancedNodeCount() >= 2) {
+            TryAddEnhancedDarkFogOffer(expireTick);
+        }
+    }
+
+    private static void TryAddDarkFogResourceBackfill(EDarkFogCombatStage requiredStage, int itemId,
+        int extraCostItemId, int extraCostCount, long expireTick) {
+        if (activeOffers.Count >= MaxActiveOfferCount
+            || DarkFogCombatManager.GetCurrentStage() < requiredStage
+            || !HasDarkFogResourceGrowthTarget(itemId)) {
+            return;
+        }
+
+        int growthExp = RecipeGrowthCatchup.GetDarkFogCatchupBase(requiredStage);
+        int fragments = GetDarkFogBackfillFragmentCost(requiredStage, recipeBackfill: false);
+        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.Special,
+            IFE残片, fragments, extraCostItemId, extraCostCount, itemId, growthExp, expireTick,
+            MarketValueManager.RefreshVersion));
+    }
+
+    private static void TryAddDarkFogRecipeBackfill(EDarkFogCombatStage requiredStage, int itemId,
+        int extraCostItemId, int extraCostCount, long expireTick) {
+        if (activeOffers.Count >= MaxActiveOfferCount
+            || DarkFogCombatManager.GetCurrentStage() < requiredStage
+            || !HasDarkFogRecipeBackfillTarget(itemId)) {
+            return;
+        }
+
+        int fragments = GetDarkFogBackfillFragmentCost(requiredStage, recipeBackfill: true);
+        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.Special,
+            IFE残片, fragments, extraCostItemId, extraCostCount, itemId, 1, expireTick,
+            MarketValueManager.RefreshVersion));
+    }
+
+    private static void TryAddEnhancedDarkFogOffer(long expireTick) {
+        if (activeOffers.Count >= MaxActiveOfferCount) {
+            return;
+        }
+
+        activeOffers.Add(new MarketOffer(nextOfferId++, MarketOfferType.Special,
+            IFE残片, 720, I黑雾矩阵, 4, IFE分馏塔定向原胚, 1, expireTick, MarketValueManager.RefreshVersion));
+    }
+
+    private static bool HasDarkFogResourceGrowthTarget(int itemId) {
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+            if (recipe.InputID == itemId
+                && family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+                && !RecipeGrowthQueries.IsMaxed(recipe)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool HasDarkFogRecipeBackfillTarget(int itemId) {
+        BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, itemId);
+        return recipe != null && !RecipeGrowthQueries.IsMaxed(recipe);
+    }
+
+    public static bool IsDarkFogRecipeBackfillOffer(MarketOffer offer) {
+        return offer.OfferType == MarketOfferType.Special
+               && offer.ExtraInputItemId == I黑雾矩阵
+               && IsDarkFogRecipeBackfillItem(offer.OutputItemId);
+    }
+
+    public static bool IsDarkFogRecipeBackfillItem(int itemId) {
+        return itemId is I重组式制造台 or I自演化研究站 or I负熵熔炉 or I奇异湮灭燃料棒;
     }
 
     private static bool IsBoardFriendly(int itemId) {
@@ -210,6 +311,36 @@ public static class MarketBoardManager {
             rough = Math.Max(1, rough / 2);
         }
         return Math.Max(1, Mathf.CeilToInt((float)rough / stack) * stack);
+    }
+
+    private static int GetStageMatrixSupplyCount(int matrixId) {
+        return GetMatrixStageIndex(matrixId) switch {
+            <= 1 => 64,
+            2 => 48,
+            3 => 32,
+            4 => 24,
+            5 => 16,
+            _ => 8,
+        };
+    }
+
+    private static int GetFragmentCost(int itemId, int count, float ratio) {
+        float value = MarketValueManager.GetValue(itemId);
+        if (value <= 0f) {
+            value = MarketValueManager.GetBaseValue(itemId);
+        }
+        return Mathf.Max(1, Mathf.RoundToInt(value * count * ratio));
+    }
+
+    private static int GetDarkFogBackfillFragmentCost(EDarkFogCombatStage stage, bool recipeBackfill) {
+        int baseCost = stage switch {
+            EDarkFogCombatStage.Signal => 28,
+            EDarkFogCombatStage.GroundSuppression => 44,
+            EDarkFogCombatStage.StellarHunt => 64,
+            EDarkFogCombatStage.Singularity => 82,
+            _ => 24,
+        };
+        return recipeBackfill ? baseCost + 12 : baseCost;
     }
 
     public static void Import(BinaryReader r) {
