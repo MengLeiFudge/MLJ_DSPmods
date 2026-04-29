@@ -85,6 +85,8 @@ public static class FracRecipeOperate {
         Register("成功率", "Success Ratio");
         Register("损毁率", "Destroy Ratio");
         Register("产出", "Output");
+        Register("随机", "Random");
+        Register("单锁", "Single Lock");
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("每个原料平均产出：", "Average output per raw material:");
@@ -344,7 +346,11 @@ public static class FracRecipeOperate {
                 if (recipe is RectificationRecipe rectificationRecipe) {
                     ShowRectificationProductLine(line++, rectificationRecipe, info);
                 } else {
-                    ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
+                    if (recipe is ConversionRecipe conversionRecipe) {
+                        ShowConversionProductLine(line++, conversionRecipe, LDB.items.Select(info.OutputID), info);
+                    } else {
+                        ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
+                    }
                 }
             }
 
@@ -354,7 +360,11 @@ public static class FracRecipeOperate {
                 line++;// 标签独占一行
             }
             foreach (OutputInfo info in recipe.OutputAppend) {
-                ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
+                if (recipe is ConversionRecipe conversionRecipe) {
+                    ShowConversionProductLine(line++, conversionRecipe, LDB.items.Select(info.OutputID), info);
+                } else {
+                    ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
+                }
             }
 
             ShowTextLine(line++, "");// 空行
@@ -603,6 +613,28 @@ public static class FracRecipeOperate {
         txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
     }
 
+    private static void ShowConversionProductLine(int line, ConversionRecipe recipe, ItemProto itemProto, OutputInfo info) {
+        bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
+        bool showCount = forceShow || info.ShowOutputCount;
+        string randomCount = showCount ? info.OutputCount.ToString("F3") : "???";
+        string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
+        string lockedCount = recipe.TryGetLockedOutputPlan(info.OutputID,
+            out ConversionRecipe.LockedOutputPlan lockedPlan)
+            ? (showCount ? lockedPlan.OutputCount.ToString("F3") : "???")
+            : "???";
+
+        txtProductLeft[line].text = ratio;
+        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
+        txtProductLeft[line].gameObject.SetActive(true);
+
+        btnRecipeInfoIcons[line].gameObject.SetActive(true);
+        btnRecipeInfoIcons[line].Proto = itemProto;
+        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
+
+        txtRecipeInfo[line].text = $"{"随机".Translate()}×{randomCount}  {"单锁".Translate()}×{lockedCount}";
+        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
+    }
+
     private static void ShowRectificationProductLine(int line, RectificationRecipe recipe, OutputInfo info) {
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         int fragmentCount = GetRectificationDisplayFragmentCount(recipe.InputID, selectedInc.Value);
@@ -656,37 +688,43 @@ public static class FracRecipeOperate {
         float repeatMultiplier = repeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - repeatRatio);
         float mainOutputBonus = 1.0f + recipe.DoubleOutputRatio;
 
-        List<(int id, float cnt, bool showCount)> outputs = [];
+        ConversionRecipe conversionRecipe = recipe as ConversionRecipe;
+        List<(int id, float cnt, float lockedCnt, bool showCount)> outputs = [];
         Dictionary<int, int> outputIndex = [];
 
         foreach (var info in recipe.OutputMain) {
             int id = info.OutputID;
             float cnt = fracRatio * info.SuccessRatio * info.OutputCount * mainOutputBonus * repeatMultiplier;
+            float lockedCnt = GetLockedEquivalentCount(conversionRecipe, id, fracRatio, mainOutputBonus,
+                repeatMultiplier);
             if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, ecu);
+                var (eid, ec, elc, ecu) = outputs[idx];
+                outputs[idx] = (eid, ec + cnt, elc >= 0f ? elc : lockedCnt, ecu);
             } else {
                 outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, info.ShowSuccessRatio));
+                outputs.Add((id, cnt, lockedCnt, info.ShowSuccessRatio));
             }
         }
         foreach (var info in recipe.OutputAppend) {
             int id = info.OutputID;
             float cnt = fracRatio * info.SuccessRatio * info.OutputCount * repeatMultiplier;
+            float lockedCnt = GetLockedEquivalentCount(conversionRecipe, id, fracRatio, mainOutputBonus,
+                repeatMultiplier);
             if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, ecu);
+                var (eid, ec, elc, ecu) = outputs[idx];
+                outputs[idx] = (eid, ec + cnt, elc >= 0f ? elc : lockedCnt, ecu);
             } else {
                 outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, info.ShowSuccessRatio));
+                outputs.Add((id, cnt, lockedCnt, info.ShowSuccessRatio));
             }
         }
 
         bool showDetails = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
 
-        foreach (var (id, cnt, showCount) in outputs) {
+        foreach (var (id, cnt, lockedCnt, showCount) in outputs) {
             ItemProto outItem = LDB.items.Select(id);
             string outCount = showDetails || showCount ? cnt.ToString("F3") : "???";
+            string lockedOutCount = showDetails || showCount ? lockedCnt.ToString("F3") : "???";
 
             txtProductLeft[line].gameObject.SetActive(false);
 
@@ -694,13 +732,25 @@ public static class FracRecipeOperate {
             btnRecipeInfoIcons[line].Proto = outItem;
             NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
-            txtRecipeInfo[line].text = $"×{outCount}";
+            txtRecipeInfo[line].text = conversionRecipe != null && lockedCnt >= 0f
+                ? $"{"随机".Translate()}×{outCount}  {"单锁".Translate()}×{lockedOutCount}"
+                : $"×{outCount}";
             txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
 
             line++;
         }
 
         return line;
+    }
+
+    private static float GetLockedEquivalentCount(ConversionRecipe recipe, int outputId, float fracRatio,
+        float mainOutputBonus, float repeatMultiplier) {
+        if (recipe == null || !recipe.TryGetLockedOutputPlan(outputId,
+                out ConversionRecipe.LockedOutputPlan lockedPlan)) {
+            return -1f;
+        }
+
+        return fracRatio * lockedPlan.OutputCount * mainOutputBonus * repeatMultiplier;
     }
 
     private static int GetRectificationDisplayFragmentCount(int inputId, int inputInc) {
