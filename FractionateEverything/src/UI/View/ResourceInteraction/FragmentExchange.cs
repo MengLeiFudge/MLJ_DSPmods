@@ -133,9 +133,9 @@ public static class FragmentExchange {
         btnSelectedItem.SetCount(GetItemTotalCount(selectedItemId));
         txtQuote.text = $"{"兑换价格".Translate()}：残片 x{quote.FragmentCost}";
         txtBalance.text =
-            $"{"当前持有".Translate()}：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
+            $"{"当前持有".Translate()}：残片 {GetItemTotalCount(IFE残片)}";
         txtQuoteSummary.text =
-            $"{"当前持有".Translate()}：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}\n"
+            $"{"当前持有".Translate()}：残片 {GetItemTotalCount(IFE残片)}\n"
             + $"批量兑换预估：10 次需要 {quote.FragmentCost * 10} 残片，100 次需要 {quote.FragmentCost * 100} 残片";
         btnBuy1.SetText($"{"买1".Translate()} ({quote.FragmentCost})");
         btnBuy10.SetText($"{"买10".Translate()} ({quote.FragmentCost * 10})");

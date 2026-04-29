@@ -160,7 +160,7 @@ public static class Exchange {
         txtPrice.text =
             $"{"当前价格".Translate()}：{ticker.LastPrice:F1}\n买入 {ticker.AskPrice:F1}    卖出 {ticker.BidPrice:F1}";
         txtInventory.text =
-            $"{"库存".Translate()}：物品 {GetItemTotalCount(selectedItemId)}    残片 {GetItemTotalCount(IFE残片)}";
+            $"{"库存".Translate()}：残片 {GetItemTotalCount(IFE残片)}";
         txtStats.text =
             $"日内开盘 {ticker.DayOpenPrice:F1}\n最新价格 {ticker.LastPrice:F1}\n日高 / 日低 {ticker.DayHighPrice:F1} / {ticker.DayLowPrice:F1}\n净成交量 {ticker.NetPlayerVolume:F1}";
         btnBuy1.SetText($"{"买1".Translate()} ({Mathf.CeilToInt(ticker.AskPrice)})");

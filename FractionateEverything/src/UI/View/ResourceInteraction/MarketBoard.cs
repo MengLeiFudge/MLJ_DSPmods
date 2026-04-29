@@ -168,14 +168,16 @@ public static class MarketBoard {
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
             if (MarketBoardManager.IsDarkFogRecipeBackfillOffer(offer)) {
-                rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方补票 +{offer.OutputCount}";
+                rows[i].TxtOutput.text = "配方补票";
             } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
                 && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
-                rows[i].TxtOutput.text = $"{LDB.items.Select(offer.OutputItemId).name} 配方成长 +{offer.OutputCount}";
+                rows[i].TxtOutput.text = "配方成长";
             }
             string offerTag = GetOfferTag(offer);
-            if (!string.IsNullOrEmpty(offerTag) && !string.IsNullOrEmpty(rows[i].TxtOutput.text)) {
-                rows[i].TxtOutput.text = $"{offerTag} {rows[i].TxtOutput.text}";
+            if (!string.IsNullOrEmpty(offerTag)) {
+                rows[i].TxtOutput.text = string.IsNullOrEmpty(rows[i].TxtOutput.text)
+                    ? offerTag
+                    : $"{offerTag} {rows[i].TxtOutput.text}";
             }
             rows[i].BtnTrade.gameObject.SetActive(true);
             rows[i].BtnTrade.button.interactable = true;
@@ -205,7 +207,7 @@ public static class MarketBoard {
         icon.Proto = itemId > 0 ? LDB.items.Select(itemId) : null;
         if (itemId > 0) {
             icon.SetCount(count);
-            text.text = $"{LDB.items.Select(itemId).name} x{count}";
+            text.text = "";
         } else {
             icon.ClearCountText();
             text.text = "";

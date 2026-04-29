@@ -223,7 +223,7 @@ public static class ResourceOverview {
             icons[i].SetCount(GetItemTotalCount(itemId));
             float multiplier = MarketValueManager.GetMultiplier(itemId);
             float rate = MarketValueManager.LastCurrentRate[itemId];
-            texts[i].text = $"{LDB.items.Select(itemId).name}  ×{multiplier:F2}  速率 {rate:F1}/m";
+            texts[i].text = $"×{multiplier:F2}  速率 {rate:F1}/m";
         }
     }
 

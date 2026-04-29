@@ -360,14 +360,13 @@ public static class LimitedTimeStore {
     }
 
     private static string GetOfferRewardText(GachaGrowthOffer offer) {
-        string itemName = LDB.items.Select(offer.OutputId)?.name ?? offer.OutputId.ToString();
         if (GachaService.IsDarkFogCatchupOffer(offer)) {
-            return $"{itemName} 配方成长 +{offer.OutputCount}";
+            return "配方成长";
         }
         if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
-            return $"{itemName} 转化配方成长";
+            return "转化配方成长";
         }
-        return $"{itemName} x{offer.OutputCount}";
+        return string.Empty;
     }
 
     private static string GetOfferDetailText(GachaGrowthOffer offer) {

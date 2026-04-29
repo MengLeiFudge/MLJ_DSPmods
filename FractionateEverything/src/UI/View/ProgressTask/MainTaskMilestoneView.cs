@@ -363,7 +363,9 @@ public static partial class MainTask {
             btnDetailRewardIcon.Proto = null;
             btnDetailRewardIcon.ClearCountText();
         }
-        txtDetailReward.text = $"{"节点详情-奖励".Translate()} {GetRewardText(node)}".WithColor(Blue);
+        txtDetailReward.text = hasReward
+            ? "节点详情-奖励".Translate().WithColor(Blue)
+            : $"{"节点详情-奖励".Translate()} {"无".Translate()}".WithColor(Blue);
     }
 
     private static Color GetDetailTitleColor(int modeIndex, int branchIndex, int nodeIndex) {
