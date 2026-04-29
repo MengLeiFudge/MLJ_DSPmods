@@ -1160,7 +1160,7 @@ public static class FEFractionatorWindow {
             lockState = LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
             if (recipe != null && recipe.TryGetLockedOutputPlan(lockedOutputId,
                     out ConversionRecipe.LockedOutputPlan lockedPlan)) {
-                lockState += $" ×{lockedPlan.OutputCount:F3}";
+                lockState += $" +{lockedPlan.OutputCount.FormatP()}";
             }
         }
         if (lockStateText != null) {
