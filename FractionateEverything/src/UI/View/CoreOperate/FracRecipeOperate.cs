@@ -123,6 +123,8 @@ public static class FracRecipeOperate {
             "Obtain from Proto Loop or Growth Planning; related tech also provides baseline unlock");
         Register("通过成长规划或固定入口获得；解锁后直接满级",
             "Obtain from Growth Planning or fixed entry; unlocking grants max level directly");
+        Register("通过黑雾支线成长规划报价获得",
+            "Obtain from Dark Fog branch Growth Planning offers");
         Register("通过科技保底解锁", "Unlocked by tech baseline");
         Register("首次获得对应黑雾物品后解锁", "Unlock after obtaining the related Dark Fog item once");
         Register("重复抽到该配方即可升级", "Upgrade by drawing the same recipe again");
@@ -528,6 +530,8 @@ public static class FracRecipeOperate {
                 => "通过原胚闭环或成长规划获得；相关科技也会保底解锁".Translate(),
             RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
                 => "首次获得对应黑雾物品后解锁".Translate(),
+            _ when recipe.RecipeType == ERecipe.Conversion && recipe.MatrixID == I黑雾矩阵
+                => "通过黑雾支线成长规划报价获得".Translate(),
             RecipeFamily.ConversionBuilding or RecipeFamily.PointAggregate
                 => "通过成长规划或固定入口获得；解锁后直接满级".Translate(),
             RecipeFamily.Rectification
