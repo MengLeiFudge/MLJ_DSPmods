@@ -140,7 +140,7 @@ public static class FEFractionatorWindow {
         public UIButton button;
         public Text countText;
         public Text probText;
-        public Text lockText;
+        public Image lockIcon;
         public Image[] incArrows;
     }
 
@@ -528,19 +528,20 @@ public static class FEFractionatorWindow {
             RectTransform countRect = cloneCountText.GetComponent<RectTransform>();
             if (probRect != null && countRect != null)
                 probRect.anchoredPosition = countRect.anchoredPosition + new Vector2(0, -16f);
+        }
 
-            GameObject lockGo = Object.Instantiate(cloneCountText.gameObject, go.transform);
-            lockGo.name = "lock-text";
-            slot.lockText = lockGo.GetComponent<Text>();
-            slot.lockText.alignment = TextAnchor.UpperRight;
-            slot.lockText.color = Orange;
-            slot.lockText.fontSize = Mathf.Max(10, cloneCountText.fontSize - 2);
-            slot.lockText.horizontalOverflow = HorizontalWrapMode.Overflow;
-            slot.lockText.verticalOverflow = VerticalWrapMode.Overflow;
-            RectTransform lockRect = slot.lockText.GetComponent<RectTransform>();
-            if (lockRect != null && countRect != null) {
-                lockRect.anchoredPosition = countRect.anchoredPosition + new Vector2(10f, 14f);
-            }
+        if (cloneIcon != null) {
+            GameObject lockGo = new("lock-icon");
+            lockGo.transform.SetParent(cloneIcon.transform, false);
+            slot.lockIcon = lockGo.AddComponent<Image>();
+            slot.lockIcon.raycastTarget = false;
+            ApplyLockIconStyle(slot.lockIcon);
+            RectTransform lockRect = slot.lockIcon.rectTransform;
+            lockRect.anchorMin = new Vector2(1f, 1f);
+            lockRect.anchorMax = new Vector2(1f, 1f);
+            lockRect.pivot = new Vector2(0f, 1f);
+            lockRect.anchoredPosition = new Vector2(6f, 6f);
+            lockRect.sizeDelta = new Vector2(14f, 14f);
             lockGo.SetActive(false);
         }
 
@@ -1135,11 +1136,79 @@ public static class FEFractionatorWindow {
     }
 
     private static void SetSlotLocked(ProductSlot slot, bool locked) {
-        if (slot?.lockText == null) {
+        if (slot?.lockIcon == null) {
             return;
         }
-        slot.lockText.text = locked ? "单锁".Translate() : string.Empty;
-        slot.lockText.gameObject.SetActive(locked);
+        ApplyLockIconStyle(slot.lockIcon);
+        slot.lockIcon.gameObject.SetActive(locked);
+    }
+
+    private static Image lockIconTemplateImage;
+    private static UIButton lockIconTemplateButton;
+
+    private static Image GetLockIconTemplateImage() {
+        if (lockIconTemplateImage != null) {
+            return lockIconTemplateImage;
+        }
+
+        UIStationStorage[] storages = UIRoot.instance?.uiGame?.stationWindow?.storageUIs;
+        if (storages == null) {
+            return null;
+        }
+
+        foreach (UIStationStorage storage in storages) {
+            UIButton keepModeButton = storage?.keepModeButton;
+            if (keepModeButton == null) {
+                continue;
+            }
+
+            Image image = keepModeButton.GetComponent<Image>() ?? keepModeButton.GetComponentInChildren<Image>(true);
+            if (image != null && image.sprite != null) {
+                lockIconTemplateImage = image;
+                lockIconTemplateButton = keepModeButton;
+                return lockIconTemplateImage;
+            }
+        }
+
+        return null;
+    }
+
+    private static void ApplyLockIconStyle(Image target) {
+        Image template = GetLockIconTemplateImage();
+        if (target == null || template == null) {
+            return;
+        }
+
+        target.sprite = template.sprite;
+        target.type = template.type;
+        target.material = template.material;
+        target.preserveAspect = true;
+        target.color = GetLockIconHighlightedColor(template);
+    }
+
+    private static Color GetLockIconHighlightedColor(Image template) {
+        UIButton.Transition[] transitions = lockIconTemplateButton?.transitions;
+        if (transitions == null) {
+            return Color.white;
+        }
+
+        foreach (UIButton.Transition transition in transitions) {
+            if (transition?.target != template) {
+                continue;
+            }
+
+            Color color = transition.normalColor;
+            if (color.r == 0f && color.g == 0f && color.b == 0f && color.a == 0f) {
+                color = template.color;
+            }
+
+            return transition.highlightColorOverride.a > 0f
+                ? transition.highlightColorOverride
+                : color * new Color(transition.highlightColorMultiplier, transition.highlightColorMultiplier,
+                    transition.highlightColorMultiplier, transition.highlightAlphaMultiplier);
+        }
+
+        return Color.white;
     }
 
     private static void UpdateLockStatusUI(FractionatorComponent fractionator, ConversionRecipe recipe,
