@@ -51,12 +51,38 @@ public static class UIComboBoxPatch {
             return;
         }
         if (isDroppedDown) {
-            // 在SetState中也调用SetAsLastSibling，确保每次Update都保持在最上层
-            // 因为其他UI元素可能在Update中改变层级顺序
-            if (dropdownTransform.parent != null) {
-                dropdownTransform.parent.SetAsLastSibling();
-            }
+            PromotePageChild(dropdownTransform);
             dropdownTransform.SetAsLastSibling();
         }
+    }
+
+    private static void PromotePageChild(Transform dropdownTransform) {
+        Transform directParent = dropdownTransform.parent;
+        if (directParent == null) {
+            return;
+        }
+
+        // 页面迁移到卡片/格子后，ComboBox 通常嵌在“单元格 -> 卡片 -> 页面根”多层结构里。
+        // 只提升下拉框自身或直接父节点时，后面的卡片仍会整体盖住下拉列表。
+        Transform cursor = dropdownTransform;
+        while (cursor.parent != null) {
+            if (IsPageContentRoot(cursor.parent)) {
+                cursor.SetAsLastSibling();
+                return;
+            }
+            cursor = cursor.parent;
+        }
+
+        directParent.SetAsLastSibling();
+    }
+
+    private static bool IsPageContentRoot(Transform transform) {
+        if (transform == null) {
+            return false;
+        }
+
+        string name = transform.name;
+        return name.StartsWith("tab-")
+               || name.StartsWith("analysis-content-") && name != "analysis-content-root";
     }
 }
