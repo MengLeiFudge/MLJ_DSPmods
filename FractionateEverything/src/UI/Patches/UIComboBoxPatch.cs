@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FE.UI.Patches;
 
 public static class UIComboBoxPatch {
     private const string DropdownLayerName = "fe-dropdown-layer";
-    private const int DropdownSortingOrderOffset = 1000;
     private static readonly Dictionary<UIComboBox, DropdownPortalState> DropdownStates = [];
 
     /// <summary>
@@ -117,7 +115,7 @@ public static class UIComboBoxPatch {
             return existingRect;
         }
 
-        var obj = new GameObject(DropdownLayerName, typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+        var obj = new GameObject(DropdownLayerName, typeof(RectTransform));
         RectTransform layer = obj.GetComponent<RectTransform>();
         layer.SetParent(pageRoot, false);
         layer.anchorMin = Vector2.zero;
@@ -126,16 +124,7 @@ public static class UIComboBoxPatch {
         layer.offsetMax = Vector2.zero;
         layer.localScale = Vector3.one;
 
-        Canvas layerCanvas = obj.GetComponent<Canvas>();
-        layerCanvas.overrideSorting = true;
-        layerCanvas.sortingOrder = GetBaseSortingOrder(pageRoot) + DropdownSortingOrderOffset;
-
         return layer;
-    }
-
-    private static int GetBaseSortingOrder(RectTransform pageRoot) {
-        Canvas parentCanvas = pageRoot.GetComponentInParent<Canvas>();
-        return parentCanvas != null ? parentCanvas.sortingOrder : 0;
     }
 
     private sealed class DropdownPortalState {
