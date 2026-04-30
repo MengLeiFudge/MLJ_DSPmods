@@ -16,6 +16,7 @@ namespace FE.UI.View;
 
 public static class MainWindow {
     private const string MainPanelSelectionBlockTag = "MainPanelSelection";
+    private const float LegacyContentGap = 10f;
     private static PressKeyBind _toggleKey;
     private static PressKeyBind _switchStyleKey;
     private static bool _legacyConfigWinInitialized;
@@ -131,9 +132,18 @@ public static class MainWindow {
             wnd.AddTabGroup(trans, category.CategoryName);
             foreach (MainWindowPageDefinition page in category.Pages) {
                 RectTransform pageRoot = wnd.AddTab(trans, page.SubpageName);
-                page.CreateUI(wnd, pageRoot);
+                RectTransform designRoot = CreateLegacyDesignRoot(pageRoot);
+                page.CreateUI(wnd, designRoot);
             }
         }
+    }
+
+    private static RectTransform CreateLegacyDesignRoot(RectTransform pageRoot) {
+        var obj = new GameObject("legacy-design-root", typeof(RectTransform));
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        NormalizeRectWithTopLeft(rect, LegacyContentGap, LegacyContentGap, pageRoot);
+        rect.sizeDelta = new(PageLayout.DesignWidth, PageLayout.DesignHeight);
+        return rect;
     }
 
     private static void UpdateUI() {
