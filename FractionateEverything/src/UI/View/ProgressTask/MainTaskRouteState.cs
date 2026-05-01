@@ -176,6 +176,14 @@ public static partial class MainTask {
         return UIRoot.instance?.uiGame?.generalTips != null && UIRoot.instance.uiGame.active;
     }
 
+    private static bool CanShowItemupTip() {
+        return GameMain.mainPlayer != null && UIRoot.instance?.uiGame?.itemupTips != null;
+    }
+
+    private static int GetMainTaskRewardTipId() {
+        return GameMain.gameScenario?.advisorLogic != null ? 2 : 0;
+    }
+
     private static void GrantNodeReward(int modeIndex, int branchIndex, int nodeIndex, bool showPopup,
         bool allowRewardGrant) {
         if (rewardedByMode[modeIndex][branchIndex][nodeIndex]) {
@@ -189,12 +197,15 @@ public static partial class MainTask {
         }
         if (node.RewardItemId > 0 && node.RewardCount > 0) {
             AddItemToModData(node.RewardItemId, node.RewardCount, 0, true);
-            UIItemup.Up(node.RewardItemId, node.RewardCount);
+            if (showPopup && CanShowItemupTip()) {
+                UIItemup.Up(node.RewardItemId, node.RewardCount);
+            }
         }
         rewardedByMode[modeIndex][branchIndex][nodeIndex] = true;
 
         if (showPopup && CanShowRealtimeTip()) {
-            UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name.Translate()), true, 2);
+            UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name.Translate()), true,
+                GetMainTaskRewardTipId());
         }
     }
 
