@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
@@ -40,8 +39,7 @@ public static class Achievements {
         float doubleOutputBonus = 0f,
         float energyReductionBonus = 0f,
         float logisticsBonus = 0f,
-        float powerStageBonus = 0f,
-        bool requiresTheyComeFromVoid = false) {
+        float powerStageBonus = 0f) {
         public readonly string CategoryKey = categoryKey;
         public readonly string NameKey = nameKey;
         public readonly string DescKey = descKey;
@@ -55,7 +53,6 @@ public static class Achievements {
         public readonly float EnergyReductionBonus = energyReductionBonus;
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
-        public readonly bool RequiresTheyComeFromVoid = requiresTheyComeFromVoid;
     }
 
     private readonly struct AchievementRewardDefinition(
@@ -217,45 +214,23 @@ public static class Achievements {
         AddRecipeAchievements(list);
         AddGrowthAchievements(list);
         AddRecurringAchievements(list);
-        AddProtoAchievements(list);
         AddDarkFogAchievements(list);
-        AddExplorationAchievements(list);
-        AddTutorialGuideAchievements(list);
         AddChallengeAchievements(list);
         return [.. list];
     }
 
-    private static ETier ConvertTutorialAchievementTier(TutorialManager.TutorialAchievementTier tier) {
-        return tier switch {
-            TutorialManager.TutorialAchievementTier.Bronze => ETier.Bronze,
-            TutorialManager.TutorialAchievementTier.Silver => ETier.Silver,
-            TutorialManager.TutorialAchievementTier.Gold => ETier.Gold,
-            TutorialManager.TutorialAchievementTier.Platinum => ETier.Platinum,
-            _ => ETier.Bronze,
-        };
-    }
-
     private static void AddProductionAchievements(List<AchievementInfo> list) {
-        var defs =
-            new (string Name, int Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
+        var totalDefs =
+            new (string Name, long Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
                 DoubleBonus)[] {
-                    ("分馏初学者", 10, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
-                    ("分馏熟练工", 25, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f, 0f),
-                    ("分馏执勤员", 50, "成就奖励-残片200", ETier.Bronze, 0.0015f, 0f, 0f),
-                    ("分馏推进者", 100, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f, 0f),
-                    ("分馏节拍", 300, "成就奖励-残片300", ETier.Silver, 0.003f, 0f, 0f),
-                    ("分馏热潮", 600, "成就奖励-残片500", ETier.Silver, 0.004f, 0.001f, 0f),
-                    ("成就-千锤百炼", 1000, "成就奖励-残片500", ETier.Silver, 0.005f, 0.001f, 0f),
-                    ("分馏扩张", 3000, "成就奖励-残片800", ETier.Gold, 0.007f, 0.002f, 0.002f),
-                    ("成就-万物皆可分馏", 10000, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
-                    ("分馏高峰", 50000, "成就奖励-残片2000", ETier.Gold, 0.015f, 0.004f, 0.005f),
-                    ("成就-分馏之王", 200000, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
-                    ("成就-永不停歇", 1000000, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
+                    ("分馏星河", 100_000_000L, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
+                    ("分馏星海", 1_000_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
+                    ("分馏宇宙", 10_000_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
                 };
 
-        foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
-                     float doubleBonus) in defs) {
-            string desc = $"累计完成 {target} 次分馏成功";
+        foreach ((string name, long target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
+                     float doubleBonus) in totalDefs) {
+            string desc = $"累计完成 {target:N0} 次分馏成功";
             list.Add(new AchievementInfo(
                 "成就分类-生产",
                 name,
@@ -268,21 +243,38 @@ public static class Achievements {
                 destroyReductionBonus: destroyBonus,
                 doubleOutputBonus: doubleBonus));
         }
+
+        var rateDefs =
+            new (string Name, long Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
+                DoubleBonus)[] {
+                    ("带速成型", 100_000L, "成就奖励-残片1000", ETier.Gold, 0.006f, 0.002f, 0.002f),
+                    ("满带洪流", 1_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.012f, 0.004f, 0.006f),
+                    ("星河带速", 10_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.008f, 0.012f),
+                };
+
+        foreach ((string name, long target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
+                     float doubleBonus) in rateDefs) {
+            string desc = $"历史峰值分馏速率达到 {target:N0} 次/min";
+            list.Add(new AchievementInfo(
+                "成就分类-生产",
+                name,
+                desc,
+                rewardKey,
+                tier,
+                () => peakFractionSuccessesPerMinute >= target,
+                () => GrantRewardByKey(rewardKey),
+                successRateBonus: successBonus,
+                destroyReductionBonus: destroyBonus,
+                doubleOutputBonus: doubleBonus));
+        }
     }
 
     private static void AddOpeningAchievements(List<AchievementInfo> list) {
         var defs =
             new (string Name, int Target, string RewardKey, ETier Tier, float DoubleBonus, float LogisticsBonus)[] {
-                ("开线初试", 1, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
-                ("开线连发", 5, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0f, 0f),
-                ("开线热手", 10, "成就奖励-当前阶段矩阵2", ETier.Bronze, 0.001f, 0f),
-                ("开线之门", 20, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.001f, 0f),
-                ("开线推进", 50, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
                 ("成就-开线先锋", 100, "成就奖励-当前阶段矩阵4", ETier.Silver, 0.002f, 0f),
-                ("开线大师", 200, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.003f, 0.003f),
-                ("成就-开线专家", 500, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.005f, 0.004f),
                 ("开线统筹", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.008f, 0.006f),
-                ("开线传说", 2000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.01f, 0.01f),
+                ("开线传说", 10000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.012f, 0.012f),
             };
 
         foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus,
@@ -365,14 +357,9 @@ public static class Achievements {
     private static void AddRecurringAchievements(List<AchievementInfo> list) {
         var defs =
             new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float DoubleBonus)[] {
-                ("任务热身", 1, "成就奖励-残片200", ETier.Bronze, 0.001f, 0f),
-                ("任务连锁", 5, "成就奖励-残片300", ETier.Bronze, 0.002f, 0f),
                 ("任务推进", 10, "成就奖励-当前阶段矩阵2", ETier.Silver, 0.003f, 0f),
-                ("任务巡航", 20, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0.002f),
-                ("任务统筹", 50, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.006f, 0.003f),
                 ("成就-任务自动化", 100, "成就奖励-循环任务自动领取", ETier.Gold, 0.008f, 0.004f),
-                ("任务驱动", 200, "成就奖励-当前阶段矩阵8", ETier.Platinum, 0.012f, 0.006f),
-                ("任务永动", 500, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
+                ("任务永动", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
             };
 
         foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus,
@@ -392,32 +379,6 @@ public static class Achievements {
                 rewardAction,
                 logisticsBonus: logisticsBonus,
                 doubleOutputBonus: doubleBonus));
-        }
-    }
-
-    private static void AddProtoAchievements(List<AchievementInfo> list) {
-        var defs = new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float PowerBonus)[] {
-            ("原胚起点", 1, "成就奖励-定向原胚1", ETier.Bronze, 0.002f, 0f),
-            ("原胚整备", 5, "成就奖励-残片300", ETier.Bronze, 0.003f, 0f),
-            ("成就-原胚循环", 10, "成就奖励-配方核心1", ETier.Silver, 0.004f, 0f),
-            ("原胚调度", 20, "成就奖励-定向原胚1", ETier.Silver, 0.006f, 0.005f),
-            ("原胚仓储", 40, "成就奖励-残片800", ETier.Gold, 0.01f, 0.01f),
-            ("原胚洪流", 80, "成就奖励-精馏塔原胚3", ETier.Platinum, 0.015f, 0.02f),
-        };
-
-        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus,
-                     float powerBonus) in defs) {
-            string desc = $"仓储中持有 {target} 个分馏塔原胚";
-            list.Add(new AchievementInfo(
-                "成就分类-原胚",
-                name,
-                desc,
-                rewardKey,
-                tier,
-                () => GetProtoInventoryCount() >= target,
-                () => GrantRewardByKey(rewardKey),
-                logisticsBonus: logisticsBonus,
-                powerStageBonus: powerBonus));
         }
     }
 
@@ -464,136 +425,6 @@ public static class Achievements {
             successRateBonus: 0.006f,
             destroyReductionBonus: 0.004f,
             powerStageBonus: 0.012f));
-        list.Add(new AchievementInfo(
-            "成就分类-黑雾",
-            "遗物共振",
-            "在黑雾增强层获得至少 1 个元驱动",
-            "成就奖励-配方核心1",
-            ETier.Gold,
-            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetRelicCount() >= 1,
-            () => GrantRewardByKey("成就奖励-配方核心1"),
-            doubleOutputBonus: 0.003f,
-            logisticsBonus: 0.003f,
-            requiresTheyComeFromVoid: true));
-        list.Add(new AchievementInfo(
-            "成就分类-黑雾",
-            "功勋回路",
-            "在黑雾增强层将功勋等级提升到 4",
-            "成就奖励-定向原胚1",
-            ETier.Platinum,
-            () => DarkFogCombatManager.IsEnhancedLayerEnabled() && DarkFogCombatManager.GetMeritRank() >= 4,
-            () => GrantRewardByKey("成就奖励-定向原胚1"),
-            logisticsBonus: 0.004f,
-            powerStageBonus: 0.015f,
-            requiresTheyComeFromVoid: true));
-        list.Add(new AchievementInfo(
-            "成就分类-黑雾",
-            "授权整备",
-            "在黑雾增强层中分配至少 8 点技能点",
-            "成就奖励-当前阶段矩阵16",
-            ETier.Platinum,
-            () => DarkFogCombatManager.IsEnhancedLayerEnabled()
-                  && DarkFogCombatManager.GetAssignedSkillPointCount() >= 8,
-            () => GrantRewardByKey("成就奖励-当前阶段矩阵16"),
-            energyReductionBonus: 0.03f,
-            powerStageBonus: 0.01f,
-            requiresTheyComeFromVoid: true));
-    }
-
-    private static void AddExplorationAchievements(List<AchievementInfo> list) {
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "第一次打开面板",
-            "第一次打开分馏数据中心面板",
-            "成就奖励-残片200",
-            ETier.Bronze,
-            () => panelOpenCount >= 1,
-            () => GrantRewardByKey("成就奖励-残片200"),
-            successRateBonus: 0.002f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "常规模式试跑",
-            "在常规模式下打开面板",
-            "成就奖励-当前阶段矩阵2",
-            ETier.Bronze,
-            () => !IsSpeedrunMode && panelOpenCount >= 1,
-            () => GrantRewardByKey("成就奖励-当前阶段矩阵2"),
-            powerStageBonus: 0.005f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "速通模式试跑",
-            "在速通模式下打开面板",
-            "成就奖励-当前阶段矩阵2",
-            ETier.Bronze,
-            () => IsSpeedrunMode && panelOpenCount >= 1,
-            () => GrantRewardByKey("成就奖励-当前阶段矩阵2"),
-            powerStageBonus: 0.005f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "分馏启示",
-            "解锁分馏数据中心科技",
-            "成就奖励-残片300",
-            ETier.Silver,
-            () => IsTechUnlocked(TFE分馏数据中心),
-            () => GrantRewardByKey("成就奖励-残片300"),
-            successRateBonus: 0.003f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "矿物新生",
-            "解锁矿物复制科技",
-            "成就奖励-配方核心1",
-            ETier.Silver,
-            () => IsTechUnlocked(TFE矿物复制),
-            () => GrantRewardByKey("成就奖励-配方核心1"),
-            destroyReductionBonus: 0.003f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "物品转化",
-            "解锁物品转化科技",
-            "成就奖励-残片500",
-            ETier.Gold,
-            () => IsTechUnlocked(TFE物品转化),
-            () => GrantRewardByKey("成就奖励-残片500"),
-            doubleOutputBonus: 0.005f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "成就-精馏开路",
-            "解锁物品精馏科技",
-            "成就奖励-精馏塔原胚3",
-            ETier.Gold,
-            () => IsTechUnlocked(TFE物品精馏),
-            () => GrantRewardByKey("成就奖励-精馏塔原胚3"),
-            powerStageBonus: 0.01f));
-
-        list.Add(new AchievementInfo(
-            "成就分类-探索",
-            "成就-星际整备",
-            "解锁星际物流交互科技",
-            "成就奖励-星际物流交互站1",
-            ETier.Platinum,
-            () => IsTechUnlocked(TFE星际物流交互),
-            () => GrantRewardByKey("成就奖励-星际物流交互站1"),
-            logisticsBonus: 0.02f));
-    }
-
-    private static void AddTutorialGuideAchievements(List<AchievementInfo> list) {
-        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager
-                     .GetTutorialAchievementDefinitions()) {
-            list.Add(new AchievementInfo(
-                "成就分类-探索",
-                definition.NameKey,
-                definition.DescKey,
-                definition.RewardKey,
-                ConvertTutorialAchievementTier(definition.Tier),
-                () => TutorialManager.HasViewedTutorialToBottom(definition.TutorialId),
-                () => GrantRewardByKey(definition.RewardKey)));
-        }
     }
 
     private static void AddChallengeAchievements(List<AchievementInfo> list) {
@@ -686,9 +517,7 @@ public static class Achievements {
         Register("成就分类-配方", "Recipe", "配方");
         Register("成就分类-成长", "Growth", "成长");
         Register("成就分类-循环", "Recurring", "循环");
-        Register("成就分类-原胚", "Proto", "原胚");
         Register("成就分类-黑雾", "Dark Fog", "黑雾");
-        Register("成就分类-探索", "Explore", "探索");
         Register("成就分类-挑战", "Challenge", "挑战");
         Register("描述", "Description");
 
@@ -708,9 +537,6 @@ public static class Achievements {
         Register("功能奖励-能耗", "Energy -{0}%", "能耗 -{0}%");
         Register("功能奖励-物流", "Logistics +{0}%", "物流 +{0}%");
         Register("功能奖励-发电", "Power +{0}%", "发电 +{0}%");
-        Register("需启用深空联动", "Requires They Come From Void", "需启用深空联动");
-        Register("成就依赖-深空联动", "Requires They Come From Void linkage; impossible without the mod enabled.",
-            "需启用《深空来敌》联动，未开启时无法完成");
         Register("隐藏成就提示", "???", "???");
         Register("隐藏成就描述", "Hidden achievement", "未解锁");
         Register("成就获得提示", "Achievement unlocked: {0}", "获得成就：{0}");
@@ -737,34 +563,27 @@ public static class Achievements {
         Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
         Register("成就奖励-循环任务自动领取", "Recurring task auto-claim", "循环任务自动领取");
 
+        Register("分馏星河", "Fractionation Galaxy", "分馏星河");
+        Register("分馏星海", "Fractionation Starsea", "分馏星海");
+        Register("分馏宇宙", "Fractionation Universe", "分馏宇宙");
+        Register("带速成型", "Throughput Online", "带速成型");
+        Register("满带洪流", "Full-Belt Torrent", "满带洪流");
+        Register("星河带速", "Galactic Throughput", "星河带速");
         Register("成就-任务自动化", "Task Automation");
-        Register("成就-千锤百炼", "Tempered Through Trials");
-        Register("成就-万物皆可分馏", "Fractionate Everything");
-        Register("成就-分馏之王", "King of Fractionation");
-        Register("成就-永不停歇", "Never Stop");
         Register("成就-开线先锋", "Opening Pioneer");
-        Register("成就-开线专家", "Opening Expert");
+        Register("开线统筹", "Opening Coordination", "开线统筹");
+        Register("开线传说", "Opening Legend", "开线传说");
+        Register("任务推进", "Task Momentum", "任务推进");
+        Register("任务永动", "Task Perpetual", "任务永动");
         Register("成就-配方入门", "Recipe Beginner");
         Register("成就-配方学者", "Recipe Scholar");
         Register("成就-配方专家", "Recipe Expert");
         Register("成就-万物百科", "Everything Encyclopedia");
         Register("成就-工艺优化", "Craft Optimization");
         Register("成就-工艺大师", "Craft Master");
-        Register("成就-原胚循环", "Proto Cycle");
-        Register("成就-星际整备", "Interstellar Readiness");
-        Register("成就-精馏开路", "Rectification Opening");
         Register("成就-万物归一", "All Into One");
         Register("黑雾信标", "Dark Fog Signal", "黑雾信标");
         Register("蜂巢猎场", "Hive Hunt", "蜂巢猎场");
-        Register("遗物共振", "Relic Resonance", "遗物共振");
-        Register("功勋回路", "Merit Circuit", "功勋回路");
-        Register("授权整备", "Authorization Setup", "授权整备");
-
-        foreach (TutorialManager.TutorialAchievementDefinition definition in TutorialManager
-                     .GetTutorialAchievementDefinitions()) {
-            Register(definition.NameKey, definition.NameEn, definition.NameCn);
-            Register(definition.DescKey, definition.DescEn, definition.DescCn);
-        }
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -1141,9 +960,7 @@ public static class Achievements {
             txtAchievementDescs[slot].text = GetDisplayedDesc(info);
             rewardIcons[slot].gameObject.SetActive(false);
             txtAchievementRewards[slot].text = GetFunctionalRewardText(info);
-            txtAchievementStates[slot].text = info.RequiresTheyComeFromVoid && !TheyComeFromVoid.Enable
-                ? "需启用深空联动".Translate().WithColor(Orange)
-                : "未解锁".Translate().WithColor(Gray);
+            txtAchievementStates[slot].text = "未解锁".Translate().WithColor(Gray);
             return;
         }
 
@@ -1156,14 +973,7 @@ public static class Achievements {
         txtAchievementStates[slot].text = "已获得".Translate().WithColor(Green);
     }
 
-    private static string GetDisplayedDesc(AchievementInfo info) {
-        string desc = info.DescKey.Translate();
-        if (!info.RequiresTheyComeFromVoid) {
-            return desc;
-        }
-
-        return $"{desc}\n{"成就依赖-深空联动".Translate().WithColor(Orange)}";
-    }
+    private static string GetDisplayedDesc(AchievementInfo info) => info.DescKey.Translate();
 
     private static string GetFunctionalRewardText(AchievementInfo info) {
         List<string> rewards = [];
@@ -1234,23 +1044,6 @@ public static class Achievements {
     private static int GetMaxBuildingLevel() {
         return Math.Max(InteractionTower.Level, Math.Max(MineralReplicationTower.Level,
             Math.Max(PointAggregateTower.Level, Math.Max(ConversionTower.Level, RectificationTower.Level))));
-    }
-
-    private static int GetProtoInventoryCount() {
-        return (int)(GetItemTotalCount(IFE交互塔原胚)
-                     + GetItemTotalCount(IFE矿物复制塔原胚)
-                     + GetItemTotalCount(IFE点数聚集塔原胚)
-                     + GetItemTotalCount(IFE转化塔原胚)
-                     + GetItemTotalCount(IFE精馏塔原胚)
-                     + GetItemTotalCount(IFE分馏塔定向原胚));
-    }
-
-    private static int GetCurrentStageMatrixId() {
-        return GameMain.history != null && GameMain.history.TechUnlocked(T宇宙矩阵) ? I宇宙矩阵 :
-            GameMain.history != null && GameMain.history.TechUnlocked(T引力矩阵) ? I引力矩阵 :
-            GameMain.history != null && GameMain.history.TechUnlocked(T信息矩阵) ? I信息矩阵 :
-            GameMain.history != null && GameMain.history.TechUnlocked(T结构矩阵) ? I结构矩阵 :
-            GameMain.history != null && GameMain.history.TechUnlocked(T能量矩阵) ? I能量矩阵 : I电磁矩阵;
     }
 
     #region IModCanSave
