@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using FE.UI.Components;
 using static FE.UI.Components.GridDsl;
+using static FE.UI.Components.PageLayout;
 using static FE.Utils.Utils;
 
 namespace FE.UI.View.ProgressTask;
@@ -15,17 +16,26 @@ public static partial class MainTask {
     private const float DetailPanelWidth = 420f;
     private const float NodeSize = 44f;
     private const float LineThickness = 4f;
+    private const float NodeBgPadding = 5f;
 
-    private static readonly Color RoutePanelColor = new(0f, 0f, 0f, 0.34f);
-    private static readonly Color DetailPanelColor = new(0f, 0f, 0f, 0.46f);
-    private static readonly Color CenterPanelColor = new(0.08f, 0.1f, 0.14f, 0.88f);
+    private static readonly Color RoutePanelFillColor = new(20f / 255f, 24f / 255f, 30f / 255f, 0.5f);
+    private static readonly Color RoutePanelBorderColor = new(1f, 1f, 1f, 0.10f);
+    private static readonly Color DetailPanelFillColor = new(24f / 255f, 28f / 255f, 36f / 255f, 0.72f);
+    private static readonly Color DetailPanelBorderColor = new(0.72f, 0.86f, 1f, 0.22f);
+    private static readonly Color CenterPanelFillColor = new(0.05f, 0.07f, 0.11f, 0.92f);
+    private static readonly Color CenterPanelBorderColor = new(1f, 0.65f, 0.18f, 0.45f);
     private static readonly Color LockedNodeColor = new(1f, 1f, 1f, 0.22f);
     private static readonly Color AvailableNodeColor = new(0.62f, 0.8f, 1f, 0.92f);
     private static readonly Color CompletedNodeColor = new(0.42f, 0.73f, 1f, 1f);
     private static readonly Color LockedLineColor = new(1f, 1f, 1f, 0.09f);
     private static readonly Color AvailableLineColor = new(0.42f, 0.73f, 1f, 0.35f);
     private static readonly Color CompletedLineColor = new(0.42f, 0.73f, 1f, 0.88f);
-    private static readonly Color SelectedOutlineColor = new(1f, 0.72f, 0.31f, 0.32f);
+    private static readonly Color NodeBgLocked = new(0.08f, 0.10f, 0.14f, 0.55f);
+    private static readonly Color NodeBgAvailable = new(0.08f, 0.16f, 0.28f, 0.7f);
+    private static readonly Color NodeBgCompleted = new(0.06f, 0.18f, 0.38f, 0.72f);
+    private static readonly Color NodeBorderSelected = new(1f, 0.72f, 0.31f, 0.72f);
+    private static readonly Color NodeBorderAvailable = new(0.42f, 0.73f, 1f, 0.28f);
+    private static readonly Color DetailSeparatorColor = new(1f, 1f, 1f, 0.10f);
 
     private sealed class RouteViewCache {
         public RectTransform Root;
@@ -36,6 +46,8 @@ public static partial class MainTask {
 
     private sealed class NodeView {
         public MyImageButton Button;
+        public Image Background;
+        public Image BackgroundBorder;
         public int BranchIndex;
         public int NodeIndex;
     }
@@ -79,7 +91,7 @@ public static partial class MainTask {
                     Grid(pos: (1, 0), objectName: "main-task-route-panel",
                         onBuilt: root => {
                             roadmapPanel = root;
-                            AddPanelImage(root, RoutePanelColor);
+                            AddRoundedPanel(root, RoutePanelFillColor, RoutePanelBorderColor);
                         },
                         rows: [Px(210f), Px(140f), Px(82f), Px(DetailPanelHeight), Fr(1)],
                         cols: [Px(24f), Px(DetailPanelWidth), Px(200f), Fr(1)],
@@ -87,7 +99,8 @@ public static partial class MainTask {
                             Grid(pos: (1, 2), objectName: "main-task-center-panel",
                                 onBuilt: root => {
                                     centerPanel = root;
-                                    AddPanelImage(root, CenterPanelColor);
+                                    AddRoundedPanel(root, CenterPanelFillColor, CenterPanelBorderColor);
+                                    AddAccentStrip(root);
                                 },
                                 padding: Inset(24f, 22f),
                                 rows: [Px(46f), Px(34f)],
@@ -108,7 +121,8 @@ public static partial class MainTask {
                             Grid(pos: (3, 1), objectName: "main-task-detail-panel",
                                 onBuilt: root => {
                                     detailPanel = root;
-                                    AddPanelImage(root, DetailPanelColor);
+                                    AddRoundedPanel(root, DetailPanelFillColor, DetailPanelBorderColor);
+                                    AddDetailSeparator(root);
                                 },
                                 padding: Inset(18f, 14f),
                                 rows: [Px(26f), Px(30f), Px(34f), Px(42f), Px(42f)],
@@ -157,9 +171,55 @@ public static partial class MainTask {
                 ]));
     }
 
-    private static void AddPanelImage(RectTransform root, Color color) {
-        Image image = root.gameObject.AddComponent<Image>();
-        image.color = color;
+    private static void AddRoundedPanel(RectTransform root, Color fillColor, Color borderColor) {
+        Image fill = root.gameObject.AddComponent<Image>();
+        fill.sprite = RoundedSpriteFactory.GetFillSprite();
+        fill.type = Image.Type.Sliced;
+        fill.color = fillColor;
+        fill.raycastTarget = false;
+
+        var borderObj = new GameObject("border", typeof(RectTransform), typeof(Image));
+        RectTransform borderRect = borderObj.GetComponent<RectTransform>();
+        borderRect.SetParent(root, false);
+        borderRect.anchorMin = Vector2.zero;
+        borderRect.anchorMax = Vector2.one;
+        borderRect.offsetMin = Vector2.zero;
+        borderRect.offsetMax = Vector2.zero;
+        borderRect.localScale = Vector3.one;
+
+        Image borderImg = borderObj.GetComponent<Image>();
+        borderImg.sprite = RoundedSpriteFactory.GetBorderSprite();
+        borderImg.type = Image.Type.Sliced;
+        borderImg.color = borderColor;
+        borderImg.raycastTarget = false;
+    }
+
+    private static void AddAccentStrip(RectTransform parent) {
+        var obj = new GameObject("accent-strip", typeof(RectTransform), typeof(Image));
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.anchorMin = new Vector2(0f, 0f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 0.5f);
+        rect.offsetMin = new Vector2(0f, 6f);
+        rect.offsetMax = new Vector2(StrongAccentWidth, -6f);
+        rect.localScale = Vector3.one;
+
+        Image image = obj.GetComponent<Image>();
+        image.sprite = RoundedSpriteFactory.GetFillSprite();
+        image.type = Image.Type.Sliced;
+        image.color = StrongAccentColor;
+        image.raycastTarget = false;
+    }
+
+    private static void AddDetailSeparator(RectTransform parent) {
+        var obj = new GameObject("detail-separator", typeof(RectTransform), typeof(Image));
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        NormalizeRectWithTopLeft(rect, 18f, 104f, parent);
+        rect.sizeDelta = new Vector2(DetailPanelWidth - 36f, 1f);
+
+        Image image = obj.GetComponent<Image>();
+        image.color = DetailSeparatorColor;
         image.raycastTarget = false;
     }
 
@@ -238,6 +298,24 @@ public static partial class MainTask {
                         CreateLine(root, branch.Nodes[nodeIndex - 1].Position, node.Position);
                 }
 
+                float bgSize = NodeSize + NodeBgPadding * 2;
+
+                Image nodeBg = new GameObject("node-bg").AddComponent<Image>();
+                nodeBg.sprite = RoundedSpriteFactory.GetFillSprite();
+                nodeBg.type = Image.Type.Sliced;
+                nodeBg.color = NodeBgLocked;
+                nodeBg.raycastTarget = false;
+                NormalizeRectWithMidLeft(nodeBg, node.Position.x - NodeBgPadding, node.Position.y, root, bgSize);
+                nodeBg.rectTransform.sizeDelta = new Vector2(bgSize, bgSize);
+
+                Image nodeBorder = new GameObject("node-border").AddComponent<Image>();
+                nodeBorder.sprite = RoundedSpriteFactory.GetBorderSprite();
+                nodeBorder.type = Image.Type.Sliced;
+                nodeBorder.color = Color.clear;
+                nodeBorder.raycastTarget = false;
+                NormalizeRectWithMidLeft(nodeBorder, node.Position.x - NodeBgPadding, node.Position.y, root, bgSize);
+                nodeBorder.rectTransform.sizeDelta = new Vector2(bgSize, bgSize);
+
                 MyImageButton nodeButton = MyImageButton.CreateImageButton(node.Position.x, node.Position.y, root, null,
                     NodeSize, NodeSize);
                 nodeButton.gameObject.name = $"btn-main-task-node-{modeIndex}-{branchIndex}-{nodeIndex}";
@@ -256,6 +334,8 @@ public static partial class MainTask {
 
                 cache.NodeViews[branchIndex][nodeIndex] = new NodeView {
                     Button = nodeButton,
+                    Background = nodeBg,
+                    BackgroundBorder = nodeBorder,
                     BranchIndex = branchIndex,
                     NodeIndex = nodeIndex,
                 };
@@ -286,21 +366,34 @@ public static partial class MainTask {
                 NodeView view = cache.NodeViews[branchIndex][nodeIndex];
                 Image line = cache.LinesToNodes[branchIndex][nodeIndex];
                 NodeVisualState visualState = GetNodeVisualState(modeIndex, branchIndex, nodeIndex);
-                UpdateNodeVisual(view.Button, visualState, branchIndex == selectedBranch && nodeIndex == selectedNode);
+                UpdateNodeVisual(view, visualState, branchIndex == selectedBranch && nodeIndex == selectedNode);
                 UpdateLineVisual(line, modeIndex, branchIndex, nodeIndex);
                 UpdateNodeTip(view.Button, node, modeIndex, branchIndex, nodeIndex);
             }
         }
     }
 
-    private static void UpdateNodeVisual(MyImageButton button, NodeVisualState visualState, bool selected) {
+    private static void UpdateNodeVisual(NodeView view, NodeVisualState visualState, bool selected) {
         Color iconColor = visualState switch {
             NodeVisualState.Completed => CompletedNodeColor,
             NodeVisualState.Available => AvailableNodeColor,
             _ => LockedNodeColor,
         };
-        button.spriteImage.color = iconColor;
-        button.backgroundImage.color = selected ? SelectedOutlineColor : Color.clear;
+        view.Button.spriteImage.color = iconColor;
+        view.Button.backgroundImage.color = Color.clear;
+
+        if (view.Background != null) {
+            view.Background.color = visualState switch {
+                NodeVisualState.Completed => NodeBgCompleted,
+                NodeVisualState.Available => NodeBgAvailable,
+                _ => NodeBgLocked,
+            };
+        }
+
+        if (view.BackgroundBorder != null) {
+            view.BackgroundBorder.color = selected ? NodeBorderSelected :
+                visualState == NodeVisualState.Available ? NodeBorderAvailable : Color.clear;
+        }
     }
 
     private static void UpdateLineVisual(Image line, int modeIndex, int branchIndex, int nodeIndex) {
