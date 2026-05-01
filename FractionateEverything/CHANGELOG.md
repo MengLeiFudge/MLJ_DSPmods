@@ -1,3 +1,7 @@
+- v2.2.9
+    + 物流交互站有限上传目标数量改为与物品价值相关。
+    + The limited upload target count of the Interaction Station is now related to item value.
+
 - v2.2.7
     + 修复下拉框不在最上面的问题。
     + Fix dropdown box not at the top.
