@@ -142,6 +142,15 @@ public static class FEFractionatorWindow {
         public Text probText;
         public Image lockIcon;
         public Image[] incArrows;
+        public ProductSlotKind kind;
+        public Action<int> clickHandler;
+        public Action<int> rightClickHandler;
+    }
+
+    private enum ProductSlotKind {
+        Main,
+        Side,
+        Fluid,
     }
 
     private static void BindSlotClickHandlers() {
@@ -150,18 +159,23 @@ public static class FEFractionatorWindow {
         }
         foreach (var slot in mainSlots) {
             if (slot?.button != null) {
-                slot.button.onClick += OnSlotClick;
-                slot.button.onRightClick += OnSlotRightClick;
+                slot.clickHandler = itemId => OnSlotClick(slot, itemId);
+                slot.rightClickHandler = OnSlotRightClick;
+                slot.button.onClick += slot.clickHandler;
+                slot.button.onRightClick += slot.rightClickHandler;
             }
         }
         foreach (var slot in sideSlots) {
             if (slot?.button != null) {
-                slot.button.onClick += OnSlotClick;
-                slot.button.onRightClick += OnSlotRightClick;
+                slot.clickHandler = itemId => OnSlotClick(slot, itemId);
+                slot.rightClickHandler = OnSlotRightClick;
+                slot.button.onClick += slot.clickHandler;
+                slot.button.onRightClick += slot.rightClickHandler;
             }
         }
         if (fluidSlot?.button != null) {
-            fluidSlot.button.onClick += OnSlotClick;
+            fluidSlot.clickHandler = itemId => OnSlotClick(fluidSlot, itemId);
+            fluidSlot.button.onClick += fluidSlot.clickHandler;
         }
         slotClickBound = true;
     }
@@ -172,18 +186,33 @@ public static class FEFractionatorWindow {
         }
         foreach (var slot in mainSlots) {
             if (slot?.button != null) {
-                slot.button.onClick -= OnSlotClick;
-                slot.button.onRightClick -= OnSlotRightClick;
+                if (slot.clickHandler != null) {
+                    slot.button.onClick -= slot.clickHandler;
+                    slot.clickHandler = null;
+                }
+                if (slot.rightClickHandler != null) {
+                    slot.button.onRightClick -= slot.rightClickHandler;
+                    slot.rightClickHandler = null;
+                }
             }
         }
         foreach (var slot in sideSlots) {
             if (slot?.button != null) {
-                slot.button.onClick -= OnSlotClick;
-                slot.button.onRightClick -= OnSlotRightClick;
+                if (slot.clickHandler != null) {
+                    slot.button.onClick -= slot.clickHandler;
+                    slot.clickHandler = null;
+                }
+                if (slot.rightClickHandler != null) {
+                    slot.button.onRightClick -= slot.rightClickHandler;
+                    slot.rightClickHandler = null;
+                }
             }
         }
         if (fluidSlot?.button != null) {
-            fluidSlot.button.onClick -= OnSlotClick;
+            if (fluidSlot.clickHandler != null) {
+                fluidSlot.button.onClick -= fluidSlot.clickHandler;
+                fluidSlot.clickHandler = null;
+            }
         }
         slotClickBound = false;
     }
@@ -601,10 +630,10 @@ public static class FEFractionatorWindow {
         BindSlotClickHandlers();
     }
 
-    private static void OnSlotClick(int itemId) {
+    private static void OnSlotClick(ProductSlot slot, int itemId) {
         UIFractionatorWindow target = sourceWindow ?? modWindow;
         if (target == null) return;
-        target.OnProductUIButtonClick(itemId);
+        HandleProductSlotClick(target, itemId, slot);
     }
 
     private static bool IsLockableOutput(ConversionRecipe recipe, int itemId) {
@@ -1022,7 +1051,7 @@ public static class FEFractionatorWindow {
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
-                    singleLockActive || output.ShowSuccessRatio || sandboxMode);
+                    singleLockActive || output.ShowSuccessRatio || sandboxMode, ProductSlotKind.Main);
                 SetSlotLocked(mainSlots[mainCount], singleLockActive && output.OutputID == lockedPlan.OutputID);
                 mainSuccessSum += ratio;
                 mainCount++;
@@ -1035,7 +1064,7 @@ public static class FEFractionatorWindow {
                     : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
                     ratio,
-                    singleLockActive || output.ShowSuccessRatio || sandboxMode);
+                    singleLockActive || output.ShowSuccessRatio || sandboxMode, ProductSlotKind.Side);
                 SetSlotLocked(sideSlots[sideCount], singleLockActive && output.OutputID == lockedPlan.OutputID);
                 sideCount++;
             }
@@ -1113,6 +1142,7 @@ public static class FEFractionatorWindow {
     private static void FillFluidSlot(ProductSlot slot, int itemId, int count, float ratio) {
         if (slot == null) return;
         slot.go.SetActive(true);
+        slot.kind = ProductSlotKind.Fluid;
         if (slot.button != null) slot.button.data = itemId;
         ItemProto itemProto = LDB.items.Select(itemId);
         if (itemProto != null && slot.icon != null) slot.icon.sprite = itemProto.iconSprite;
@@ -1123,8 +1153,10 @@ public static class FEFractionatorWindow {
         }
     }
 
-    private static void FillSlot(ProductSlot slot, OutputInfo output, int count, float ratio, bool showRatio) {
+    private static void FillSlot(ProductSlot slot, OutputInfo output, int count, float ratio, bool showRatio,
+        ProductSlotKind kind) {
         slot.go.SetActive(true);
+        slot.kind = kind;
         if (slot.button != null) slot.button.data = output.OutputID;
         ItemProto itemProto = LDB.items.Select(output.OutputID);
         if (itemProto != null && slot.icon != null) slot.icon.sprite = itemProto.iconSprite;
@@ -1257,8 +1289,33 @@ public static class FEFractionatorWindow {
         return null;
     }
 
-    private static int GetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
+    private static ProductOutputInfo FindProductBySlot(List<ProductOutputInfo> products, ProductSlot slot,
         int itemId) {
+        if (products == null || slot == null || slot.kind == ProductSlotKind.Fluid) {
+            return null;
+        }
+        bool isMainOutput = slot.kind == ProductSlotKind.Main;
+        for (int i = 0; i < products.Count; i++) {
+            ProductOutputInfo product = products[i];
+            if (product.itemId == itemId && product.isMainOutput == isMainOutput) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    private static bool IsFluidSlot(FractionatorComponent fractionator, ProductSlot slot, int itemId) {
+        return slot != null ? slot.kind == ProductSlotKind.Fluid : itemId == fractionator.fluidId;
+    }
+
+    private static int GetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
+        int itemId, ProductSlot slot = null) {
+        if (slot != null) {
+            if (slot.kind == ProductSlotKind.Fluid) {
+                return itemId == fractionator.fluidId ? fractionator.fluidOutputCount : 0;
+            }
+            return FindProductBySlot(products, slot, itemId)?.count ?? 0;
+        }
         if (itemId == fractionator.productId) {
             return fractionator.productOutputCount;
         }
@@ -1271,7 +1328,26 @@ public static class FEFractionatorWindow {
 
     private static void SetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
         int itemId,
-        int count) {
+        int count, ProductSlot slot = null) {
+        if (slot != null) {
+            if (slot.kind == ProductSlotKind.Fluid) {
+                if (itemId == fractionator.fluidId) {
+                    fractionator.fluidOutputCount = count;
+                    if (count <= 0) {
+                        fractionator.fluidOutputInc = 0;
+                    }
+                }
+                return;
+            }
+            ProductOutputInfo slotProduct = FindProductBySlot(products, slot, itemId);
+            if (slotProduct != null) {
+                slotProduct.count = count;
+                if (slotProduct.itemId == fractionator.productId && slotProduct.isMainOutput) {
+                    fractionator.productOutputCount = count;
+                }
+            }
+            return;
+        }
         if (itemId == fractionator.productId) {
             fractionator.productOutputCount = count;
         }
@@ -1288,13 +1364,17 @@ public static class FEFractionatorWindow {
         }
     }
 
-    private static int GetModSlotMax(FractionatorComponent fractionator, int itemId) {
-        return itemId == fractionator.fluidId ? fractionator.fluidOutputMax : fractionator.productOutputMax;
+    private static int GetModSlotMax(FractionatorComponent fractionator, int itemId, ProductSlot slot = null) {
+        return IsFluidSlot(fractionator, slot, itemId) ? fractionator.fluidOutputMax : fractionator.productOutputMax;
     }
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow.OnProductUIButtonClick))]
     public static bool OnProductUIButtonClick_Prefix(UIFractionatorWindow __instance, int itemId) {
+        return HandleProductSlotClick(__instance, itemId, null);
+    }
+
+    private static bool HandleProductSlotClick(UIFractionatorWindow __instance, int itemId, ProductSlot slot) {
         if (__instance.fractionatorId == 0 || __instance.factory == null || __instance.player == null) {
             return true;
         }
@@ -1306,10 +1386,11 @@ public static class FEFractionatorWindow {
 
         // 额外主产物/副产物复用了原版回调；如果不在这里完全接管，
         // 原版会把“非第一主产物”错误走到流体输出分支，导致错取和无限取。
+        // 自定义槽位需要额外带上槽位身份，避免单锁产物只靠 itemId 反查到错误缓存。
         Player player = __instance.player;
         List<ProductOutputInfo> products = fractionator.products(__instance.factory);
-        int currentCount = GetModSlotCount(fractionator, products, itemId);
-        bool isFluidSlot = itemId == fractionator.fluidId;
+        int currentCount = GetModSlotCount(fractionator, products, itemId, slot);
+        bool isFluidSlot = IsFluidSlot(fractionator, slot, itemId);
 
         if (player.inhandItemId > 0 && player.inhandItemCount == 0) {
             player.SetHandItems(0, 0);
@@ -1320,7 +1401,7 @@ public static class FEFractionatorWindow {
             if (player.inhandItemId != itemId) {
                 return false;
             }
-            int canAdd = GetModSlotMax(fractionator, itemId) - currentCount;
+            int canAdd = GetModSlotMax(fractionator, itemId, slot) - currentCount;
             if (canAdd < 0) {
                 canAdd = 0;
             }
@@ -1333,7 +1414,7 @@ public static class FEFractionatorWindow {
             int handInc = player.inhandItemInc;
             int takeInc = isFluidSlot ? split_inc(ref handCount, ref handInc, add) : 0;
 
-            SetModSlotCount(fractionator, products, itemId, currentCount + add);
+            SetModSlotCount(fractionator, products, itemId, currentCount + add, slot);
             player.AddHandItemCount_Unsafe(-add);
             if (isFluidSlot) {
                 player.SetHandItemInc_Unsafe(player.inhandItemInc - takeInc);
@@ -1360,7 +1441,7 @@ public static class FEFractionatorWindow {
             player.SetHandItemCount_Unsafe(currentCount);
             player.SetHandItemInc_Unsafe(currentInc);
         }
-        SetModSlotCount(fractionator, products, itemId, 0);
+        SetModSlotCount(fractionator, products, itemId, 0, slot);
         if (isFluidSlot) {
             fractionator.fluidOutputInc = 0;
         }
