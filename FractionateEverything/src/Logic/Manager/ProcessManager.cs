@@ -239,6 +239,59 @@ public static class ProcessManager {
         return null;
     }
 
+    private static ProductOutputInfo SelectByNormalOutputPriority(ProductOutputInfo bestSideProduct,
+        ProductOutputInfo bestMainProduct, int productStack) {
+        ProductOutputInfo product = bestSideProduct;
+        if (product == null || product.count < productStack) {
+            if (bestMainProduct != null && (product == null || bestMainProduct.count > product.count)) {
+                product = bestMainProduct;
+            }
+        }
+        return product;
+    }
+
+    private static ProductOutputInfo SelectProductForBeltOutput(List<ProductOutputInfo> products, int productStack,
+        int lockedOutputId, out bool flushNonLockedProduct) {
+        ProductOutputInfo bestSideProduct = null;
+        ProductOutputInfo bestMainProduct = null;
+        ProductOutputInfo bestNonLockedSideProduct = null;
+        ProductOutputInfo bestNonLockedMainProduct = null;
+        foreach (ProductOutputInfo p in products) {
+            if (p.count <= 0) {
+                continue;
+            }
+            if (p.isMainOutput) {
+                if (bestMainProduct == null || p.count > bestMainProduct.count) {
+                    bestMainProduct = p;
+                }
+                if (lockedOutputId != 0
+                    && p.itemId != lockedOutputId
+                    && (bestNonLockedMainProduct == null || p.count > bestNonLockedMainProduct.count)) {
+                    bestNonLockedMainProduct = p;
+                }
+            } else {
+                if (bestSideProduct == null || p.count > bestSideProduct.count) {
+                    bestSideProduct = p;
+                }
+                if (lockedOutputId != 0
+                    && p.itemId != lockedOutputId
+                    && (bestNonLockedSideProduct == null || p.count > bestNonLockedSideProduct.count)) {
+                    bestNonLockedSideProduct = p;
+                }
+            }
+        }
+
+        ProductOutputInfo nonLockedProduct = SelectByNormalOutputPriority(bestNonLockedSideProduct,
+            bestNonLockedMainProduct, productStack);
+        if (nonLockedProduct != null) {
+            flushNonLockedProduct = true;
+            return nonLockedProduct;
+        }
+
+        flushNonLockedProduct = false;
+        return SelectByNormalOutputPriority(bestSideProduct, bestMainProduct, productStack);
+    }
+
     private static bool MatchesRecipeOutputs(List<ProductOutputInfo> products, BaseRecipe recipe) {
         int expectedCount = recipe.OutputMain.Count + recipe.OutputAppend.Count;
         if (products.Count != expectedCount) {
@@ -802,24 +855,11 @@ public static class ProcessManager {
                 if (products.Count > 0) {
                     //获取分馏塔产物输出堆叠
                     int productStack = building.MaxStack();
-                    // 一次遍历同时挑出最佳副产物和最佳主产物，减少正面输出阶段的重复扫描。
-                    ProductOutputInfo bestSideProduct = null;
-                    ProductOutputInfo bestMainProduct = null;
-                    foreach (var p in products) {
-                        if (p.isMainOutput) {
-                            if (bestMainProduct == null || p.count > bestMainProduct.count) {
-                                bestMainProduct = p;
-                            }
-                        } else if (bestSideProduct == null || p.count > bestSideProduct.count) {
-                            bestSideProduct = p;
-                        }
-                    }
-                    ProductOutputInfo product = bestSideProduct;
-                    if (product == null || product.count < productStack) {
-                        if (bestMainProduct != null && (product == null || bestMainProduct.count > product.count)) {
-                            product = bestMainProduct;
-                        }
-                    }
+                    int lockedOutputId = buildingID == IFE转化塔 && ConversionTower.EnableSingleLock
+                        ? __instance.GetNormalizedLockedOutput(factory)
+                        : 0;
+                    ProductOutputInfo product = SelectProductForBeltOutput(products, productStack, lockedOutputId,
+                        out bool flushNonLockedProduct);
                     //输出产物
                     if (product != null && product.count > 0) {
                         if (product.count >= productStack) {
@@ -827,16 +867,16 @@ public static class ProcessManager {
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)productStack,
                                     (byte)(productStack * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
                                 product.count -= productStack;
-                                if (product.itemId == product0Id) {
+                                if (ReferenceEquals(product, product0)) {
                                     __instance.productOutputCount = product.count;
                                 }
                             }
-                        } else if (product.count > 0 && __instance.fluidInputCount == 0) {
-                            //产物未达到最大堆叠数目且大于0，且没有正在处理的物品，尝试输出
+                        } else if (product.count > 0 && (flushNonLockedProduct || __instance.fluidInputCount == 0)) {
+                            // 单锁后非锁定产物要尽快清空；普通产物仍等输入停下后再吐出尾料。
                             if (cargoTraffic.TryInsertItemAtHead(__instance.belt0, product.itemId, (byte)product.count,
                                     (byte)(product.count * (recipe?.GetOutputInc(product.itemId) ?? 0)))) {
                                 product.count = 0;
-                                if (product.itemId == product0Id) {
+                                if (ReferenceEquals(product, product0)) {
                                     __instance.productOutputCount = product.count;
                                 }
                             }
