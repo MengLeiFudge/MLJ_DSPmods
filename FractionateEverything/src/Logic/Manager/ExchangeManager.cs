@@ -39,6 +39,7 @@ public static class ExchangeManager {
     private static readonly Dictionary<int, ExchangeTicker> tickers = [];
     private static long lastRefreshTick;
     private static int lastRefreshVersion = -1;
+    public static long TotalTradeCount;
 
     public static IReadOnlyList<int> ListedItems => listedItems;
 
@@ -105,6 +106,7 @@ public static class ExchangeManager {
 
         AddItemToModData(itemId, count, 0, true);
         ApplyTradeImpact(ticker, count, isBuy: true);
+        TotalTradeCount++;
         return true;
     }
 
@@ -121,6 +123,7 @@ public static class ExchangeManager {
             AddItemToModData(IFE残片, (int)Math.Min(int.MaxValue, fragments), 0, true);
         }
         ApplyTradeImpact(ticker, count, isBuy: false);
+        TotalTradeCount++;
         return true;
     }
 
@@ -194,7 +197,8 @@ public static class ExchangeManager {
             ("RefreshMeta", br => {
                 lastRefreshTick = br.ReadInt64();
                 lastRefreshVersion = br.ReadInt32();
-            })
+            }),
+            ("TradeStats", br => TotalTradeCount = Math.Max(0L, br.ReadInt64()))
         );
     }
 
@@ -219,11 +223,13 @@ public static class ExchangeManager {
             ("RefreshMeta", bw => {
                 bw.Write(lastRefreshTick);
                 bw.Write(lastRefreshVersion);
-            })
+            }),
+            ("TradeStats", bw => bw.Write(TotalTradeCount))
         );
     }
 
     public static void IntoOtherSave() {
         Init();
+        TotalTradeCount = 0;
     }
 }

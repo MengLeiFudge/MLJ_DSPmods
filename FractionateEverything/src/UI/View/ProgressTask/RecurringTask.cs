@@ -45,6 +45,7 @@ public static class RecurringTask {
     ];
     private static readonly int[] targets = [2000, 30, 20, 5, 10, 12];
     private static long[] baselines = new long[TaskCount];
+    private static long[] claimedCountsByTask = new long[TaskCount];
     private static long totalClaimedCount;
     private static bool autoClaimUnlocked;
 
@@ -266,6 +267,7 @@ public static class RecurringTask {
         UIItemup.Up(rewardItemId, rewardCount);
 
         baselines[index] = GetCurrentValue(index);
+        claimedCountsByTask[index]++;
         totalClaimedCount++;
         if (refreshUi && IsUiReady()) {
             RefreshTaskRow(index);
@@ -368,6 +370,18 @@ public static class RecurringTask {
     }
 
     public static long TotalClaimedCount => totalClaimedCount;
+    public static int ClaimedTaskTypeCount {
+        get {
+            int count = 0;
+            for (int i = 0; i < Math.Min(TaskCount, claimedCountsByTask.Length); i++) {
+                if (claimedCountsByTask[i] > 0) {
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+    public static bool HasClaimedAllTaskTypes => ClaimedTaskTypeCount >= TaskCount;
     public static bool AutoClaimUnlocked => autoClaimUnlocked;
 
     public static void UnlockAutoClaim() {
@@ -399,6 +413,15 @@ public static class RecurringTask {
                     br.ReadInt64();
                 }
             }),
+            ("ClaimedCountsByTask", br => {
+                int count = br.ReadInt32();
+                for (int i = 0; i < Math.Min(count, TaskCount); i++) {
+                    claimedCountsByTask[i] = Math.Max(0L, br.ReadInt64());
+                }
+                for (int i = TaskCount; i < count; i++) {
+                    br.ReadInt64();
+                }
+            }),
             ("TotalClaimedCount", br => totalClaimedCount = br.ReadInt64()),
             ("AutoClaimUnlocked", br => autoClaimUnlocked = br.ReadBoolean())
         );
@@ -412,6 +435,12 @@ public static class RecurringTask {
                     bw.Write(baselines[i]);
                 }
             }),
+            ("ClaimedCountsByTask", bw => {
+                bw.Write(TaskCount);
+                for (int i = 0; i < TaskCount; i++) {
+                    bw.Write(claimedCountsByTask[i]);
+                }
+            }),
             ("TotalClaimedCount", bw => bw.Write(totalClaimedCount)),
             ("AutoClaimUnlocked", bw => bw.Write(autoClaimUnlocked))
         );
@@ -419,6 +448,7 @@ public static class RecurringTask {
 
     public static void IntoOtherSave() {
         Array.Clear(baselines, 0, baselines.Length);
+        Array.Clear(claimedCountsByTask, 0, claimedCountsByTask.Length);
         totalClaimedCount = 0;
         autoClaimUnlocked = false;
     }

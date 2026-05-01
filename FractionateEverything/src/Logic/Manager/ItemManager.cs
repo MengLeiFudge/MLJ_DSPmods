@@ -601,6 +601,8 @@ public static class ItemManager {
     public static readonly long[] centerItemCount = new long[12000];
     public static readonly long[] centerItemInc = new long[12000];
     public static int leftInc = 0;
+    public static long ManualExtractCount;
+    public static long ManualUploadCount;
 
     #endregion
 
@@ -621,7 +623,11 @@ public static class ItemManager {
                     bw.Write(centerItemInc[itemId]);
                 }
             }),
-            ("LeftInc", bw => bw.Write(leftInc))
+            ("LeftInc", bw => bw.Write(leftInc)),
+            ("ManualInteractionStats", bw => {
+                bw.Write(ManualExtractCount);
+                bw.Write(ManualUploadCount);
+            })
         );
     }
 
@@ -641,7 +647,11 @@ public static class ItemManager {
                     }
                 }
             }),
-            ("LeftInc", br => leftInc = br.ReadInt32())
+            ("LeftInc", br => leftInc = br.ReadInt32()),
+            ("ManualInteractionStats", br => {
+                ManualExtractCount = Math.Max(0L, br.ReadInt64());
+                ManualUploadCount = Math.Max(0L, br.ReadInt64());
+            })
         );
     }
 
@@ -649,6 +659,8 @@ public static class ItemManager {
         Array.Clear(centerItemCount, 0, centerItemCount.Length);
         Array.Clear(centerItemInc, 0, centerItemInc.Length);
         leftInc = 0;
+        ManualExtractCount = 0;
+        ManualUploadCount = 0;
     }
 
     #endregion

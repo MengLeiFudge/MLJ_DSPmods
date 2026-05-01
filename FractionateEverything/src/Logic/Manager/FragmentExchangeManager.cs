@@ -22,6 +22,7 @@ public static class FragmentExchangeManager {
 
     private static readonly Dictionary<int, FragmentQuote> quotes = [];
     private static int lastRefreshVersion = -1;
+    public static long TotalExchangeCount;
 
     public static void Init() {
         quotes.Clear();
@@ -72,6 +73,7 @@ public static class FragmentExchangeManager {
         }
 
         AddItemToModData(itemId, count, 0, true);
+        TotalExchangeCount++;
         return true;
     }
 
@@ -133,7 +135,8 @@ public static class FragmentExchangeManager {
                     quotes[itemId] = new FragmentQuote(itemId, fragmentCost, stageWeight, safetyPremium);
                 }
             }),
-            ("RefreshVersion", br => lastRefreshVersion = br.ReadInt32())
+            ("RefreshVersion", br => lastRefreshVersion = br.ReadInt32()),
+            ("ExchangeStats", br => TotalExchangeCount = Math.Max(0L, br.ReadInt64()))
         );
     }
 
@@ -148,11 +151,13 @@ public static class FragmentExchangeManager {
                     bw.Write(pair.Value.SafetyPremium);
                 }
             }),
-            ("RefreshVersion", bw => bw.Write(lastRefreshVersion))
+            ("RefreshVersion", bw => bw.Write(lastRefreshVersion)),
+            ("ExchangeStats", bw => bw.Write(TotalExchangeCount))
         );
     }
 
     public static void IntoOtherSave() {
         Init();
+        TotalExchangeCount = 0;
     }
 }
