@@ -22,6 +22,7 @@ public class ConversionRecipe : BaseRecipe {
         public int OutputID => sourceOutput.OutputID;
         public bool IsMainOutput => isMainOutput;
         public float OutputCount => outputCount;
+        public float ExtraOutputCount => OutputCount - SourceOutput.SuccessRatio * SourceOutput.OutputCount;
     }
 
     /// <summary>
@@ -245,6 +246,7 @@ public class ConversionRecipe : BaseRecipe {
     }
 
     private readonly Dictionary<int, LockedOutputPlan> lockedOutputPlansByItemId;
+    public bool SupportsLockedOutput => lockedOutputPlansByItemId.Count > 0;
 
     /// <summary>
     /// 当前分馏塔锁定的输出物品ID（由 ProcessManager 在调用 GetOutputs 前设置）
@@ -316,9 +318,24 @@ public class ConversionRecipe : BaseRecipe {
     private static Dictionary<int, LockedOutputPlan> BuildLockedOutputPlans(int inputId,
         List<OutputInfo> outputMain, List<OutputInfo> outputAppend) {
         Dictionary<int, LockedOutputPlan> plans = [];
+        HashSet<int> lockableOutputIds = [];
+        CollectLockableOutputIds(lockableOutputIds, outputMain);
+        CollectLockableOutputIds(lockableOutputIds, outputAppend);
+        if (lockableOutputIds.Count <= 1) {
+            return plans;
+        }
+
         AddLockedOutputPlans(plans, inputId, outputMain, true);
         AddLockedOutputPlans(plans, inputId, outputAppend, false);
         return plans;
+    }
+
+    private static void CollectLockableOutputIds(HashSet<int> lockableOutputIds, List<OutputInfo> outputs) {
+        foreach (OutputInfo output in outputs) {
+            if (IsLockableOutputValue(output.OutputID)) {
+                lockableOutputIds.Add(output.OutputID);
+            }
+        }
     }
 
     private static void AddLockedOutputPlans(Dictionary<int, LockedOutputPlan> plans, int inputId,
@@ -328,14 +345,19 @@ public class ConversionRecipe : BaseRecipe {
                 continue;
             }
 
-            float outputValue = itemValue[output.OutputID];
-            if (outputValue <= 0f || outputValue >= maxValue) {
+            if (!IsLockableOutputValue(output.OutputID)) {
                 continue;
             }
 
+            float outputValue = itemValue[output.OutputID];
             float lockedOutputCount = itemValue[inputId] / outputValue;
             plans.Add(output.OutputID, new(output, isMainOutput, lockedOutputCount));
         }
+    }
+
+    private static bool IsLockableOutputValue(int outputId) {
+        float outputValue = itemValue[outputId];
+        return outputValue > 0f && outputValue < maxValue;
     }
 
     private static int RollOutputCount(ref uint seed, float outputCount) {

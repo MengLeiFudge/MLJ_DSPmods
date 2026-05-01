@@ -568,8 +568,8 @@ public static class FEFractionatorWindow {
             RectTransform lockRect = slot.lockIcon.rectTransform;
             lockRect.anchorMin = new Vector2(1f, 1f);
             lockRect.anchorMax = new Vector2(1f, 1f);
-            lockRect.pivot = new Vector2(0f, 1f);
-            lockRect.anchoredPosition = new Vector2(6f, 6f);
+            lockRect.pivot = new Vector2(1f, 1f);
+            lockRect.anchoredPosition = new Vector2(8f, 6f);
             lockRect.sizeDelta = new Vector2(14f, 14f);
             lockGo.SetActive(false);
         }
@@ -640,8 +640,7 @@ public static class FEFractionatorWindow {
         if (recipe == null || itemId == 0) {
             return false;
         }
-        return recipe.OutputMain.Any(output => output.OutputID == itemId)
-               || recipe.OutputAppend.Any(output => output.OutputID == itemId);
+        return recipe.TryGetLockedOutputPlan(itemId, out _);
     }
 
     private static void OnSlotRightClick(int itemId) {
@@ -997,8 +996,11 @@ public static class FEFractionatorWindow {
 
         List<ProductOutputInfo> products = fractionator.products(src.factory);
         bool sandboxMode = GameMain.sandboxToolsEnabled;
+        ConversionRecipe conversionRecipe = recipe as ConversionRecipe;
         bool showLockControls = src.factory.entityPool[fractionator.entityId].protoId == IFE转化塔
-                                && ConversionTower.EnableSingleLock;
+                                && ConversionTower.EnableSingleLock
+                                && conversionRecipe != null
+                                && conversionRecipe.SupportsLockedOutput;
 
         foreach (var slot in mainSlots)
             if (slot != null) {
@@ -1035,7 +1037,6 @@ public static class FEFractionatorWindow {
 
         int mainCount = 0, sideCount = 0;
         float mainSuccessSum = 0f;
-        ConversionRecipe conversionRecipe = recipe as ConversionRecipe;
         ConversionRecipe.LockedOutputPlan lockedPlan = default;
         bool singleLockActive = showLockControls
                                 && lockedOutputId != 0
@@ -1258,14 +1259,18 @@ public static class FEFractionatorWindow {
 
         string lockState = "未锁定".Translate();
         if (lockedOutputId != 0) {
-            lockState = LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
+            lockState = null;
             if (recipe != null && recipe.TryGetLockedOutputPlan(lockedOutputId,
                     out ConversionRecipe.LockedOutputPlan lockedPlan)) {
-                lockState += $" +{lockedPlan.OutputCount.FormatP()}";
+                float extraOutputCount = lockedPlan.ExtraOutputCount;
+                if (extraOutputCount < 0.0001f && extraOutputCount > -0.0001f) {
+                    extraOutputCount = 0f;
+                }
+                lockState = $"{"单锁产物数目".Translate()}+{extraOutputCount.FormatP()}";
             }
         }
         if (lockStateText != null) {
-            lockStateText.text = $"{"单锁".Translate()}：{lockState}";
+            lockStateText.text = lockState ?? $"{"单锁".Translate()}：{"未锁定".Translate()}";
         }
         if (lockHintText != null) {
             lockHintText.text = recipe == null
