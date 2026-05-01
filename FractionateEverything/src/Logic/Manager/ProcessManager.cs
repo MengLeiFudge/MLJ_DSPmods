@@ -80,6 +80,11 @@ public static class ProcessManager {
     /// 累计分馏成功次数（用于任务系统）
     /// </summary>
     public static long totalFractionSuccesses;
+    private const int FractionRateWindowSeconds = 60;
+    private static readonly long[] fractionSuccessBuckets = new long[FractionRateWindowSeconds];
+    private static long currentFractionRateSecond = -1;
+    private static long currentFractionSuccessesPerMinute;
+    public static long peakFractionSuccessesPerMinute;
 
     private static readonly ConcurrentDictionary<(int, int), byte> outputFlagDic = [];
 
@@ -563,7 +568,7 @@ public static class ProcessManager {
                     }
                 } else {
                     // 成功产出，产出到产物列表
-                    totalFractionSuccesses++;
+                    RecordFractionSuccess();
                     BuildingManager.AddBuildingExp(buildingID, 1);
                     if (recipe != null) {
                         RecipeGrowthExecutor.ApplyProcessingProgress(recipe, 1, 1, RecipeGrowthManager.BuildContext());
@@ -883,6 +888,54 @@ public static class ProcessManager {
         __result = !__instance.isWorking ? 0U : 1U;
     }
 
+    private static void RecordFractionSuccess() {
+        totalFractionSuccesses++;
+        long second = GameMain.gameTick >= 0 ? GameMain.gameTick / 60L : 0L;
+        AdvanceFractionRateWindow(second);
+
+        int bucketIndex = (int)(second % FractionRateWindowSeconds);
+        fractionSuccessBuckets[bucketIndex]++;
+        currentFractionSuccessesPerMinute++;
+        if (currentFractionSuccessesPerMinute > peakFractionSuccessesPerMinute) {
+            peakFractionSuccessesPerMinute = currentFractionSuccessesPerMinute;
+        }
+    }
+
+    private static void AdvanceFractionRateWindow(long second) {
+        if (currentFractionRateSecond < 0) {
+            currentFractionRateSecond = second;
+            return;
+        }
+
+        if (second <= currentFractionRateSecond) {
+            return;
+        }
+
+        long delta = second - currentFractionRateSecond;
+        if (delta >= FractionRateWindowSeconds) {
+            Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
+            currentFractionSuccessesPerMinute = 0;
+            currentFractionRateSecond = second;
+            return;
+        }
+
+        for (long bucketSecond = currentFractionRateSecond + 1; bucketSecond <= second; bucketSecond++) {
+            int bucketIndex = (int)(bucketSecond % FractionRateWindowSeconds);
+            currentFractionSuccessesPerMinute -= fractionSuccessBuckets[bucketIndex];
+            if (currentFractionSuccessesPerMinute < 0) {
+                currentFractionSuccessesPerMinute = 0;
+            }
+            fractionSuccessBuckets[bucketIndex] = 0;
+        }
+        currentFractionRateSecond = second;
+    }
+
+    private static void ResetFractionRateWindow() {
+        Array.Clear(fractionSuccessBuckets, 0, fractionSuccessBuckets.Length);
+        currentFractionRateSecond = -1;
+        currentFractionSuccessesPerMinute = 0;
+    }
+
     #endregion
 
     #region 分馏塔耗电调整
@@ -1015,18 +1068,23 @@ public static class ProcessManager {
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses))
+            ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses)),
+            ("PeakFractionSuccessesPerMinute", bw => bw.Write(peakFractionSuccessesPerMinute))
         );
     }
 
     public static void Import(BinaryReader r) {
+        ResetFractionRateWindow();
         r.ReadBlocks(
-            ("TotalFractionSuccesses", br => totalFractionSuccesses = br.ReadInt64())
+            ("TotalFractionSuccesses", br => totalFractionSuccesses = Math.Max(0, br.ReadInt64())),
+            ("PeakFractionSuccessesPerMinute", br => peakFractionSuccessesPerMinute = Math.Max(0, br.ReadInt64()))
         );
     }
 
     public static void IntoOtherSave() {
         totalFractionSuccesses = 0;
+        peakFractionSuccessesPerMinute = 0;
+        ResetFractionRateWindow();
         ResetSacrificeBoostState();
     }
 
