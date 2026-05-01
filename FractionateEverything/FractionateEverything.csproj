@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\DefaultPath.props" Condition="Exists('..\DefaultPath.props')"/>
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
         <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
@@ -12,6 +13,14 @@
         <RootNamespace>FE</RootNamespace>
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <ProfileDir Condition="'$(ProfileDir)' == '' and '$(USERPROFILE)' != ''">$(USERPROFILE)\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
+        <R2PluginsDir Condition="'$(ProfileDir)' != ''">$(ProfileDir)\BepInEx\plugins</R2PluginsDir>
+        <BuildBarToolHintPath Condition="Exists('$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll')">$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll</BuildBarToolHintPath>
+        <BuildBarToolHintPath Condition="'$(BuildBarToolHintPath)' == '' and Exists('$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll.old')">$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll.old</BuildBarToolHintPath>
+        <TheyComeFromVoidHintPath Condition="Exists('$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll')">$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll</TheyComeFromVoidHintPath>
+        <TheyComeFromVoidHintPath Condition="'$(TheyComeFromVoidHintPath)' == '' and Exists('$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll.old')">$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll.old</TheyComeFromVoidHintPath>
+        <GenesisBookHintPath Condition="Exists('$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll')">$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll</GenesisBookHintPath>
+        <GenesisBookHintPath Condition="'$(GenesisBookHintPath)' == '' and Exists('$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll.old')">$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll.old</GenesisBookHintPath>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DebugType>full</DebugType>
@@ -35,18 +44,29 @@
         -->
         <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*"/>
         <Reference Include="BuildBarTool">
-            <HintPath>..\lib\BuildBarTool.dll</HintPath>
+            <HintPath>$(BuildBarToolHintPath)</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="DSP_Battle">
-            <HintPath>..\lib\DSP_Battle-publicized.dll</HintPath>
+            <HintPath>$(TheyComeFromVoidHintPath)</HintPath>
+            <Private>false</Private>
         </Reference>
         <Reference Include="ProjectGenesis">
-            <HintPath>..\lib\ProjectGenesis-publicized.dll</HintPath>
+            <HintPath>$(GenesisBookHintPath)</HintPath>
+            <Private>false</Private>
         </Reference>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
     </ItemGroup>
+    <Target Name="ValidateExternalModReferences" BeforeTargets="ResolveReferences">
+        <Error Condition="'$(BuildBarToolHintPath)' == ''"
+               Text="未在 R2 中找到 BuildBarTool.dll 或 BuildBarTool.dll.old；请检查 ProfileDir 与 jinxOAO-BuildBarTool 安装状态。"/>
+        <Error Condition="'$(TheyComeFromVoidHintPath)' == ''"
+               Text="未在 R2 中找到 DSP_Battle.dll 或 DSP_Battle.dll.old；请检查 ProfileDir 与 ckcz123-TheyComeFromVoid 安装状态。"/>
+        <Error Condition="'$(GenesisBookHintPath)' == ''"
+               Text="未在 R2 中找到 ProjectGenesis.dll 或 ProjectGenesis.dll.old；请检查 ProfileDir 与 HiddenCirno-GenesisBook 安装状态。"/>
+    </Target>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
         <Exec Command="del /F /Q package\$(ProjectName)-$(Version).zip&#xA;powershell Compress-Archive -Force -DestinationPath 'package/$(ProjectName)-$(Version).zip' -Path &quot;$(TargetPath)&quot;, package/icon.png, package/manifest.json, README.md, CHANGELOG.md"/>
     </Target>
