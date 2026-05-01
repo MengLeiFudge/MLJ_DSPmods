@@ -35,8 +35,8 @@ public static class PlanetaryInteractionStation {
         Register("物流交互站", "Interaction Station");
         Register("行星内物流交互站", "Planetary Interaction Station");
         Register("I行星内物流交互站",
-            "Planetary logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count; Infinite - unlimited upload.",
-            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制；无限上传-不限制上传数量。");
+            "Planetary logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count, which is related to item value; Infinite - unlimited upload.",
+            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制，目标数量与物品价值相关；无限上传-不限制上传数量。");
     }
 
     public static void Create() {

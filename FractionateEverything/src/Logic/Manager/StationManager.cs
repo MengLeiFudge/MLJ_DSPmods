@@ -46,11 +46,23 @@ public static class StationManager {
                 // 建筑类物品：限制为10组（防止建筑占用过多空间）
                 itemModSaveCount[item.ID] = item.StackSize * 10;
             } else {
-                // 非建筑物品：基于物品价值计算，最多100组
-                // 公式：min(100000/物品价值 + 1, 堆叠数 * 100)
-                itemModSaveCount[item.ID] = (int)Math.Min(100000 / itemValue[item.ID] + 1, item.StackSize * 100);
+                // 非建筑物品：按价值对数压低有限上传目标，避免高价值物品目标数过低。
+                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(itemValue[item.ID]);
             }
         }
+    }
+
+    private static int CalculateLimitedUploadTarget(float value) {
+        if (value <= 0 || value >= maxValue) {
+            return 0;
+        }
+
+        double divisor = Math.Log10(value + 1);
+        if (divisor <= 0) {
+            return 100000;
+        }
+
+        return Math.Min((int)(100000 / divisor), 100000);
     }
 
     /// <summary>防止同一 stationPool 在同一 tick 被重复处理</summary>
