@@ -23,11 +23,24 @@ public static class StationManager {
                 //建筑10组
                 itemModSaveCount[item.ID] = item.StackSize * 10;
             } else {
-                //其他至多100组
-                itemModSaveCount[item.ID] = (int)Math.Min(100000 / itemValue[item.ID] + 1, item.StackSize * 100);
+                //非建筑按价值对数压低目标，避免高价值物品目标数过低
+                itemModSaveCount[item.ID] = CalculateLimitedUploadTarget(itemValue[item.ID]);
             }
         }
         SetMaxCount();
+    }
+
+    private static int CalculateLimitedUploadTarget(float value) {
+        if (value <= 0 || value >= maxValue) {
+            return 0;
+        }
+
+        double divisor = Math.Log10(value + 1);
+        if (divisor <= 0) {
+            return 100000;
+        }
+
+        return Math.Min((int)(100000 / divisor), 100000);
     }
 
     public static void SetMaxCount() {
