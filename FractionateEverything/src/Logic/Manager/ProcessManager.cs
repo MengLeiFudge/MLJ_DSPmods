@@ -47,6 +47,7 @@ public static class ProcessManager {
         Register("流体输出", "Fluid output");
         Register("配方强化", "Recipe enhancement");
         Register("单锁", "Single Lock");
+        Register("单锁产物数目", "Single-lock output count");
         Register("未锁定", "Not locked");
         Register("右键设为单锁", "Right-click to lock this output");
         Register("右键清除单锁", "Right-click to clear single lock");

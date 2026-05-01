@@ -334,26 +334,6 @@ public static class BuildingManager {
         }
     }
 
-    private static bool IsLockedOutputInRecipe(ConversionRecipe recipe, int itemId) {
-        if (itemId == 0) {
-            return true;
-        }
-        if (recipe == null) {
-            return false;
-        }
-        foreach (OutputInfo output in recipe.OutputMain) {
-            if (output.OutputID == itemId) {
-                return true;
-            }
-        }
-        foreach (OutputInfo output in recipe.OutputAppend) {
-            if (output.OutputID == itemId) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static int NormalizeLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory,
         int itemId) {
         if (itemId == 0 || factory == null || !ConversionTower.EnableSingleLock) {
@@ -363,7 +343,7 @@ public static class BuildingManager {
             return itemId;
         }
         ConversionRecipe recipe = GetRecipe<ConversionRecipe>(ERecipe.Conversion, fractionator.fluidId);
-        return IsLockedOutputInRecipe(recipe, itemId) ? itemId : 0;
+        return recipe != null && recipe.TryGetLockedOutputPlan(itemId, out _) ? itemId : 0;
     }
 
     public static int GetNormalizedLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
