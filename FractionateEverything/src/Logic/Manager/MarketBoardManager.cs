@@ -52,6 +52,7 @@ public static class MarketBoardManager {
     private static readonly List<MarketOffer> activeOffers = [];
     private static int nextOfferId = 1;
     private static long currentExpireTick;
+    public static long TotalCompletedOfferCount;
 
     public static IReadOnlyList<MarketOffer> ActiveOffers => activeOffers;
     public static long CurrentExpireTick => currentExpireTick;
@@ -112,6 +113,7 @@ public static class MarketBoardManager {
 
         if (success) {
             activeOffers.RemoveAt(index);
+            TotalCompletedOfferCount++;
         }
         return success;
     }
@@ -365,7 +367,8 @@ public static class MarketBoardManager {
             ("Meta", br => {
                 nextOfferId = br.ReadInt32();
                 currentExpireTick = br.ReadInt64();
-            })
+            }),
+            ("CompletedOfferStats", br => TotalCompletedOfferCount = Math.Max(0L, br.ReadInt64()))
         );
     }
 
@@ -389,11 +392,13 @@ public static class MarketBoardManager {
             ("Meta", bw => {
                 bw.Write(nextOfferId);
                 bw.Write(currentExpireTick);
-            })
+            }),
+            ("CompletedOfferStats", bw => bw.Write(TotalCompletedOfferCount))
         );
     }
 
     public static void IntoOtherSave() {
         Init();
+        TotalCompletedOfferCount = 0;
     }
 }

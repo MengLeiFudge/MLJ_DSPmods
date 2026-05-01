@@ -146,16 +146,9 @@ public static partial class MainTask {
     private static void RefreshRouteProgress(int modeIndex, bool showPopup, bool allowRewardGrant) {
         RouteMap route = GetRouteByModeIndex(modeIndex);
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
-            // 分支内按节点顺序推进；前置节点没完成时，后续节点即使条件已满足也暂不点亮。
-            bool branchOpen = true;
             TaskBranch branch = route.Branches[branchIndex];
             for (int nodeIndex = 0; nodeIndex < branch.Nodes.Length; nodeIndex++) {
-                if (!branchOpen) {
-                    break;
-                }
-
                 if (completedByMode[modeIndex][branchIndex][nodeIndex]) {
-                    branchOpen = true;
                     continue;
                 }
 
@@ -169,7 +162,6 @@ public static partial class MainTask {
                 }
 
                 if (!completed) {
-                    branchOpen = false;
                     continue;
                 }
 
@@ -292,7 +284,7 @@ public static partial class MainTask {
     }
 
     private static bool IsNodeUnlocked(int modeIndex, int branchIndex, int nodeIndex) {
-        return nodeIndex <= 0 || completedByMode[modeIndex][branchIndex][nodeIndex - 1];
+        return true;
     }
 
     private static int CountCompletedNodes(int modeIndex) {

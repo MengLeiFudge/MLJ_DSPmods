@@ -62,6 +62,9 @@ public static partial class Utils {
         lock (centerItemCount) {
             count = TakeItemFromModData(itemId, count, out inc, true);
         }
+        if (count > 0) {
+            ManualExtractCount++;
+        }
         if (itemId == I沙土) {
             if (GameMain.mainPlayer.inhandItemId != I沙土) {
                 GameMain.mainPlayer.ThrowHandItems();
@@ -151,6 +154,7 @@ public static partial class Utils {
         if (itemId <= 0 || itemId >= 12000 || itemValue[itemId] >= maxValue) {
             return true;
         }
+        ManualUploadCount++;
         AddItemToModData(itemId, count, inc, true);
         return false;
     }
@@ -169,6 +173,7 @@ public static partial class Utils {
             return true;
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
+            ManualUploadCount++;
             AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount, __instance.inhandItemInc, true);
         }
         __instance.inhandItemId = 0;

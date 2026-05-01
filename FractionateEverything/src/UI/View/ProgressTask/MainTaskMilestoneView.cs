@@ -12,36 +12,37 @@ namespace FE.UI.View.ProgressTask;
 public static partial class MainTask {
     private const float RoutePanelWidth = 1082f;
     private const float RoutePanelHeight = 650f;
-    private const float DetailPanelHeight = 190f;
-    private const float DetailPanelWidth = 420f;
-    private const float NodeSize = 44f;
-    private const float LineThickness = 4f;
-    private const float NodeBgPadding = 5f;
+    private const float LeftColumnWidth = 156f;
+    private const float StageColumnWidth = 154f;
+    private const float StageHeaderHeight = 54f;
+    private const float CategoryRowHeight = 56f;
+    private const float NodeSize = 30f;
+    private const float NodeGap = 6f;
+    private const float NodeCellLeftPadding = 10f;
+    private const float NodeCellTopPadding = 13f;
+    private static readonly Vector2 NodeTipOffset = new(15f, -50f);
 
     private static readonly Color RoutePanelFillColor = new(20f / 255f, 24f / 255f, 30f / 255f, 0.5f);
     private static readonly Color RoutePanelBorderColor = new(1f, 1f, 1f, 0.10f);
-    private static readonly Color DetailPanelFillColor = new(24f / 255f, 28f / 255f, 36f / 255f, 0.72f);
-    private static readonly Color DetailPanelBorderColor = new(0.72f, 0.86f, 1f, 0.22f);
-    private static readonly Color CenterPanelFillColor = new(0.05f, 0.07f, 0.11f, 0.92f);
-    private static readonly Color CenterPanelBorderColor = new(1f, 0.65f, 0.18f, 0.45f);
     private static readonly Color LockedNodeColor = new(1f, 1f, 1f, 0.22f);
     private static readonly Color AvailableNodeColor = new(0.62f, 0.8f, 1f, 0.92f);
-    private static readonly Color CompletedNodeColor = new(0.42f, 0.73f, 1f, 1f);
-    private static readonly Color LockedLineColor = new(1f, 1f, 1f, 0.09f);
-    private static readonly Color AvailableLineColor = new(0.42f, 0.73f, 1f, 0.35f);
-    private static readonly Color CompletedLineColor = new(0.42f, 0.73f, 1f, 0.88f);
+    private static readonly Color CompletedNodeColor = new(1f, 0.72f, 0.31f, 1f);
+    private static readonly Color RowOddColor = new(1f, 1f, 1f, 0.035f);
+    private static readonly Color RowEvenColor = new(1f, 1f, 1f, 0.018f);
+    private static readonly Color HeaderFillColor = new(0.05f, 0.07f, 0.11f, 0.72f);
     private static readonly Color NodeBgLocked = new(0.08f, 0.10f, 0.14f, 0.55f);
     private static readonly Color NodeBgAvailable = new(0.08f, 0.16f, 0.28f, 0.7f);
-    private static readonly Color NodeBgCompleted = new(0.06f, 0.18f, 0.38f, 0.72f);
+    private static readonly Color NodeBgCompleted = new(0.18f, 0.13f, 0.05f, 0.78f);
     private static readonly Color NodeBorderSelected = new(1f, 0.72f, 0.31f, 0.72f);
     private static readonly Color NodeBorderAvailable = new(0.42f, 0.73f, 1f, 0.28f);
-    private static readonly Color DetailSeparatorColor = new(1f, 1f, 1f, 0.10f);
 
     private sealed class RouteViewCache {
         public RectTransform Root;
+        public RectTransform ScrollContent;
+        public ScrollRect Scroll;
         public Text[] BranchLabels;
+        public Text[] StageLabels;
         public NodeView[][] NodeViews;
-        public Image[][] LinesToNodes;
     }
 
     private sealed class NodeView {
@@ -87,87 +88,15 @@ public static partial class MainTask {
                                     text.supportRichText = true;
                                 },
                                 pos: (1, 1), objectName: "txt-main-task-branch"),
+                            TextNode("节点详情-推荐说明", 13, Gray,
+                                onBuilt: text => text.supportRichText = true,
+                                pos: (1, 2), objectName: "txt-main-task-hint"),
                         ]),
                     Grid(pos: (1, 0), objectName: "main-task-route-panel",
                         onBuilt: root => {
                             roadmapPanel = root;
                             AddRoundedPanel(root, RoutePanelFillColor, RoutePanelBorderColor);
-                        },
-                        rows: [Px(210f), Px(140f), Px(82f), Px(DetailPanelHeight), Fr(1)],
-                        cols: [Px(24f), Px(DetailPanelWidth), Px(200f), Fr(1)],
-                        children: [
-                            Grid(pos: (1, 2), objectName: "main-task-center-panel",
-                                onBuilt: root => {
-                                    centerPanel = root;
-                                    AddRoundedPanel(root, CenterPanelFillColor, CenterPanelBorderColor);
-                                    AddAccentStrip(root);
-                                },
-                                padding: Inset(24f, 22f),
-                                rows: [Px(46f), Px(34f)],
-                                children: [
-                                    TextNode("主线里程碑", 20, Orange,
-                                        onBuilt: text => {
-                                            txtCenterTitle = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (0, 0), objectName: "txt-main-task-center-title"),
-                                    TextNode("动态刷新", 13,
-                                        onBuilt: text => {
-                                            txtCenterSummary = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (1, 0), objectName: "txt-main-task-center-summary"),
-                                ]),
-                            Grid(pos: (3, 1), objectName: "main-task-detail-panel",
-                                onBuilt: root => {
-                                    detailPanel = root;
-                                    AddRoundedPanel(root, DetailPanelFillColor, DetailPanelBorderColor);
-                                    AddDetailSeparator(root);
-                                },
-                                padding: Inset(18f, 14f),
-                                rows: [Px(26f), Px(30f), Px(34f), Px(42f), Px(42f)],
-                                cols: [Px(40f), Px(10f), Px(138f), Fr(1)],
-                                children: [
-                                    TextNode("动态刷新", 13, Orange,
-                                        onBuilt: text => {
-                                            txtDetailBranch = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (0, 0), span: (1, 4), objectName: "txt-main-task-detail-branch"),
-                                    TextNode("动态刷新", 15,
-                                        onBuilt: text => {
-                                            txtDetailName = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (1, 0), span: (1, 4), objectName: "txt-main-task-detail-name"),
-                                    TextNode("动态刷新", 13, wrap: true,
-                                        onBuilt: text => {
-                                            txtDetailDesc = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (2, 0), span: (1, 4), objectName: "txt-main-task-detail-desc"),
-                                    TextNode("动态刷新", 13, wrap: true,
-                                        onBuilt: text => {
-                                            txtDetailCondition = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (3, 0), span: (1, 4), objectName: "txt-main-task-detail-condition"),
-                                    ImageButtonNode(size: 40f, onBuilt: btn => btnDetailRewardIcon = btn,
-                                        pos: (4, 0), objectName: "btn-main-task-detail-reward"),
-                                    TextNode("动态刷新", 13,
-                                        onBuilt: text => {
-                                            txtDetailReward = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (4, 2), objectName: "txt-main-task-detail-reward"),
-                                    TextNode("动态刷新", 13,
-                                        onBuilt: text => {
-                                            txtDetailState = text;
-                                            text.supportRichText = true;
-                                        },
-                                        pos: (4, 3), objectName: "txt-main-task-detail-state"),
-                                ]),
-                        ]),
+                        }),
                 ]));
     }
 
@@ -194,35 +123,6 @@ public static partial class MainTask {
         borderImg.raycastTarget = false;
     }
 
-    private static void AddAccentStrip(RectTransform parent) {
-        var obj = new GameObject("accent-strip", typeof(RectTransform), typeof(Image));
-        RectTransform rect = obj.GetComponent<RectTransform>();
-        rect.SetParent(parent, false);
-        rect.anchorMin = new Vector2(0f, 0f);
-        rect.anchorMax = new Vector2(0f, 1f);
-        rect.pivot = new Vector2(0f, 0.5f);
-        rect.offsetMin = new Vector2(0f, 6f);
-        rect.offsetMax = new Vector2(StrongAccentWidth, -6f);
-        rect.localScale = Vector3.one;
-
-        Image image = obj.GetComponent<Image>();
-        image.sprite = RoundedSpriteFactory.GetFillSprite();
-        image.type = Image.Type.Sliced;
-        image.color = StrongAccentColor;
-        image.raycastTarget = false;
-    }
-
-    private static void AddDetailSeparator(RectTransform parent) {
-        var obj = new GameObject("detail-separator", typeof(RectTransform), typeof(Image));
-        RectTransform rect = obj.GetComponent<RectTransform>();
-        NormalizeRectWithTopLeft(rect, 18f, 104f, parent);
-        rect.sizeDelta = new Vector2(DetailPanelWidth - 36f, 1f);
-
-        Image image = obj.GetComponent<Image>();
-        image.color = DetailSeparatorColor;
-        image.raycastTarget = false;
-    }
-
     private static void RefreshMilestonePage() {
         int modeIndex = GetModeIndex();
         EnsureRouteViewCacheCapacity();
@@ -243,13 +143,9 @@ public static partial class MainTask {
         txtOverallSummary.text = string.Format("路线总进度".Translate(), completedNodes, totalNodes).WithColor(Orange);
         txtBranchSummary.text =
             string.Format("分支完成数".Translate(), completedBranches, route.Branches.Length).WithColor(Blue);
-        txtCenterTitle.text = route.CenterTitle.Translate().WithColor(Orange);
-        txtCenterSummary.text =
-            $"{completedNodes}/{totalNodes}".WithColor(completedNodes >= totalNodes ? Orange : Blue);
 
         EnsureSelectedNode(modeIndex);
         RefreshRouteView(modeIndex);
-        UpdateDetailPanel(modeIndex);
     }
 
     private static void EnsureRouteViewCacheCapacity() {
@@ -270,63 +166,126 @@ public static partial class MainTask {
         RouteViewCache cache = new() {
             Root = root,
             BranchLabels = new Text[route.Branches.Length],
+            StageLabels = new Text[route.Stages.Length],
             NodeViews = new NodeView[route.Branches.Length][],
-            LinesToNodes = new Image[route.Branches.Length][],
         };
 
+        RectTransform leftRoot = CreatePanelRect("main-task-left-fixed", root, 10f, 10f, LeftColumnWidth - 10f,
+            RoutePanelHeight - 20f, Color.clear);
+        AddRowBackground(leftRoot, 0f, StageHeaderHeight, HeaderFillColor);
+        Text categoryTitle = MyWindow.AddText(12f, 18f, leftRoot, "类别".Translate(), 14,
+            $"txt-main-task-category-title-{modeIndex}");
+        categoryTitle.color = Orange;
+        categoryTitle.supportRichText = true;
+
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
+            float y = StageHeaderHeight + branchIndex * CategoryRowHeight;
+            AddRowBackground(leftRoot, 0f, y, branchIndex % 2 == 0 ? RowEvenColor : RowOddColor);
             TaskBranch branch = route.Branches[branchIndex];
-            Text branchLabel = MyWindow.AddText(branch.LabelPosition.x, branch.LabelPosition.y, root,
-                branch.Name.Translate(), 14,
+            Text branchLabel = MyWindow.AddText(12f, y + 18f, leftRoot, branch.Name.Translate(), 13,
                 $"txt-main-task-branch-{modeIndex}-{branchIndex}");
             branchLabel.supportRichText = true;
             branchLabel.color = White;
             cache.BranchLabels[branchIndex] = branchLabel;
+        }
 
+        RectTransform viewport = CreateViewport("main-task-scroll-viewport", root, LeftColumnWidth, 10f,
+            RoutePanelWidth - LeftColumnWidth - 10f, RoutePanelHeight - 20f);
+        float contentWidth = Math.Max(RoutePanelWidth - LeftColumnWidth - 12f, route.Stages.Length * StageColumnWidth);
+        RectTransform content = CreateScrollContent("main-task-scroll-content", viewport, contentWidth,
+            RoutePanelHeight - 20f);
+        cache.ScrollContent = content;
+
+        ScrollRect scroll = root.gameObject.AddComponent<ScrollRect>();
+        scroll.horizontal = true;
+        scroll.vertical = false;
+        scroll.viewport = viewport;
+        scroll.content = content;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 34f;
+        scroll.inertia = true;
+        scroll.decelerationRate = 0.135f;
+        cache.Scroll = scroll;
+
+        BuildStageHeaders(route, cache, content, modeIndex);
+        BuildMatrixRows(route, content);
+        BuildNodeViews(route, cache, content, modeIndex);
+
+        routeViewsByMode[modeIndex] = cache;
+    }
+
+    private static void BuildStageHeaders(RouteMap route, RouteViewCache cache, RectTransform content, int modeIndex) {
+        AddRowBackground(content, 0f, 0f, HeaderFillColor, route.Stages.Length * StageColumnWidth, StageHeaderHeight);
+        for (int stageIndex = 0; stageIndex < route.Stages.Length; stageIndex++) {
+            StageColumn stage = route.Stages[stageIndex];
+            float x = stageIndex * StageColumnWidth + 10f;
+            MyImageButton icon = MyImageButton.CreateImageButton(x, 12f, content,
+                LDB.items.Exist(stage.IconItemId) ? LDB.items.Select(stage.IconItemId) : null, 28f, 28f);
+            icon.backgroundImage.color = Color.clear;
+            icon.countText.gameObject.SetActive(false);
+
+            Text label = MyWindow.AddText(x + 36f, 17f, content, stage.Name.Translate(), 13,
+                $"txt-main-task-stage-{modeIndex}-{stageIndex}");
+            label.supportRichText = true;
+            label.color = Orange;
+            cache.StageLabels[stageIndex] = label;
+        }
+    }
+
+    private static void BuildMatrixRows(RouteMap route, RectTransform content) {
+        float contentWidth = route.Stages.Length * StageColumnWidth;
+        for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
+            float y = StageHeaderHeight + branchIndex * CategoryRowHeight;
+            AddRowBackground(content, 0f, y, branchIndex % 2 == 0 ? RowEvenColor : RowOddColor, contentWidth,
+                CategoryRowHeight);
+            for (int stageIndex = 1; stageIndex < route.Stages.Length; stageIndex++) {
+                AddColumnSeparator(content, stageIndex * StageColumnWidth, y, CategoryRowHeight);
+            }
+        }
+    }
+
+    private static void BuildNodeViews(RouteMap route, RouteViewCache cache, RectTransform content, int modeIndex) {
+        for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
+            TaskBranch branch = route.Branches[branchIndex];
             cache.NodeViews[branchIndex] = new NodeView[branch.Nodes.Length];
-            cache.LinesToNodes[branchIndex] = new Image[branch.Nodes.Length];
             for (int nodeIndex = 0; nodeIndex < branch.Nodes.Length; nodeIndex++) {
                 TaskNode node = branch.Nodes[nodeIndex];
-                int capturedModeIndex = modeIndex;
-                int capturedBranchIndex = branchIndex;
-                int capturedNodeIndex = nodeIndex;
-                if (nodeIndex == 0) {
-                    cache.LinesToNodes[branchIndex][nodeIndex] =
-                        CreateLine(root, GetCenterAnchor(node.Position), node.Position);
-                } else {
-                    cache.LinesToNodes[branchIndex][nodeIndex] =
-                        CreateLine(root, branch.Nodes[nodeIndex - 1].Position, node.Position);
-                }
+                int stageIndex = Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex));
+                int cellIndex = CountPreviousNodesInCell(branch, nodeIndex, stageIndex);
+                int cellColumn = cellIndex % 3;
+                int cellRow = cellIndex / 3;
+                float x = stageIndex * StageColumnWidth + NodeCellLeftPadding + cellColumn * (NodeSize + NodeGap);
+                float y = StageHeaderHeight + branchIndex * CategoryRowHeight + NodeCellTopPadding
+                          + cellRow * (NodeSize + 2f);
 
-                float bgSize = NodeSize + NodeBgPadding * 2;
-
-                Image nodeBg = new GameObject("node-bg").AddComponent<Image>();
+                float bgSize = NodeSize + 6f;
+                Image nodeBg = new GameObject("node-bg", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                 nodeBg.sprite = RoundedSpriteFactory.GetFillSprite();
                 nodeBg.type = Image.Type.Sliced;
                 nodeBg.color = NodeBgLocked;
                 nodeBg.raycastTarget = false;
-                NormalizeRectWithMidLeft(nodeBg, node.Position.x - NodeBgPadding, node.Position.y, root, bgSize);
+                NormalizeRectWithTopLeft(nodeBg, x - 3f, y - 3f, content);
                 nodeBg.rectTransform.sizeDelta = new Vector2(bgSize, bgSize);
 
-                Image nodeBorder = new GameObject("node-border").AddComponent<Image>();
+                Image nodeBorder =
+                    new GameObject("node-border", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                 nodeBorder.sprite = RoundedSpriteFactory.GetBorderSprite();
                 nodeBorder.type = Image.Type.Sliced;
                 nodeBorder.color = Color.clear;
                 nodeBorder.raycastTarget = false;
-                NormalizeRectWithMidLeft(nodeBorder, node.Position.x - NodeBgPadding, node.Position.y, root, bgSize);
+                NormalizeRectWithTopLeft(nodeBorder, x - 3f, y - 3f, content);
                 nodeBorder.rectTransform.sizeDelta = new Vector2(bgSize, bgSize);
 
-                MyImageButton nodeButton = MyImageButton.CreateImageButton(node.Position.x, node.Position.y, root, null,
-                    NodeSize, NodeSize);
+                int capturedModeIndex = modeIndex;
+                int capturedBranchIndex = branchIndex;
+                int capturedNodeIndex = nodeIndex;
+                MyImageButton nodeButton = MyImageButton.CreateImageButton(x, y, content,
+                    LDB.items.Exist(node.IconItemId) ? LDB.items.Select(node.IconItemId) : null, NodeSize, NodeSize);
                 nodeButton.gameObject.name = $"btn-main-task-node-{modeIndex}-{branchIndex}-{nodeIndex}";
                 nodeButton.spriteImage.raycastTarget = true;
                 nodeButton.backgroundImage.raycastTarget = false;
                 nodeButton.countText.gameObject.SetActive(false);
                 nodeButton.backgroundImage.color = Color.clear;
-
-                if (LDB.items.Exist(node.IconItemId)) {
-                    nodeButton.spriteImage.sprite = LDB.items.Select(node.IconItemId).iconSprite;
-                }
                 nodeButton.WithClickEvent(() => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex),
                     () => SelectNode(capturedModeIndex, capturedBranchIndex, capturedNodeIndex));
                 AttachHoverSelection(nodeButton,
@@ -341,8 +300,16 @@ public static partial class MainTask {
                 };
             }
         }
+    }
 
-        routeViewsByMode[modeIndex] = cache;
+    private static int CountPreviousNodesInCell(TaskBranch branch, int nodeIndex, int stageIndex) {
+        int count = 0;
+        for (int i = 0; i < nodeIndex; i++) {
+            if (branch.Nodes[i].StageIndex == stageIndex) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static void RefreshRouteView(int modeIndex) {
@@ -364,10 +331,8 @@ public static partial class MainTask {
             for (int nodeIndex = 0; nodeIndex < route.Branches[branchIndex].Nodes.Length; nodeIndex++) {
                 TaskNode node = route.Branches[branchIndex].Nodes[nodeIndex];
                 NodeView view = cache.NodeViews[branchIndex][nodeIndex];
-                Image line = cache.LinesToNodes[branchIndex][nodeIndex];
                 NodeVisualState visualState = GetNodeVisualState(modeIndex, branchIndex, nodeIndex);
                 UpdateNodeVisual(view, visualState, branchIndex == selectedBranch && nodeIndex == selectedNode);
-                UpdateLineVisual(line, modeIndex, branchIndex, nodeIndex);
                 UpdateNodeTip(view.Button, node, modeIndex, branchIndex, nodeIndex);
             }
         }
@@ -396,83 +361,26 @@ public static partial class MainTask {
         }
     }
 
-    private static void UpdateLineVisual(Image line, int modeIndex, int branchIndex, int nodeIndex) {
-        NodeVisualState state = GetNodeVisualState(modeIndex, branchIndex, nodeIndex);
-        line.color = state switch {
-            NodeVisualState.Completed => CompletedLineColor,
-            NodeVisualState.Available => AvailableLineColor,
-            _ => LockedLineColor,
-        };
-    }
-
     private static void UpdateNodeTip(MyImageButton button, TaskNode node, int modeIndex, int branchIndex,
         int nodeIndex) {
+        RouteMap route = GetRouteByModeIndex(modeIndex);
         string progressText = GetNodeProgressText(modeIndex, branchIndex, nodeIndex);
         string rewardText = GetRewardText(node);
+        string stageName = route.Stages[Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex))].Name.Translate();
 
         button.uiButton.tips.type = UIButton.ItemTipType.Other;
         button.uiButton.tips.itemId = 0;
         button.uiButton.tips.topLevel = true;
         button.uiButton.tips.delay = 0.25f;
-        button.uiButton.tips.corner = 2;
+        button.uiButton.tips.corner = 7;
+        button.uiButton.tips.offset = NodeTipOffset;
         button.uiButton.tips.tipTitle = node.Name.Translate();
         button.uiButton.tips.tipText =
-            $"{node.Desc.Translate()}\n\n{"节点详情-条件".Translate()} {progressText}\n{"节点详情-奖励".Translate()} {rewardText}\n{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
+            $"{node.Desc.Translate()}\n\n{"节点详情-推荐阶段".Translate()} {stageName}\n{"节点详情-条件".Translate()} {progressText}\n{"节点详情-奖励".Translate()} {rewardText}\n{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}\n\n{"节点详情-推荐说明".Translate().WithColor(Gray)}";
         button.uiButton.UpdateTip();
     }
 
-    private static void UpdateDetailPanel(int modeIndex) {
-        if (modeIndex < 0
-            || modeIndex >= RouteMaps.Length
-            || modeIndex >= selectedBranchByMode.Length
-            || modeIndex >= selectedNodeByMode.Length) {
-            return;
-        }
-
-        EnsureRouteState();
-        EnsureSelectedNode(modeIndex);
-        if (!IsSelectionValid(modeIndex)) {
-            return;
-        }
-
-        RouteMap route = GetRouteByModeIndex(modeIndex);
-        int branchIndex = selectedBranchByMode[modeIndex];
-        int nodeIndex = selectedNodeByMode[modeIndex];
-        TaskBranch branch = route.Branches[branchIndex];
-        TaskNode node = branch.Nodes[nodeIndex];
-
-        txtDetailBranch.text = branch.Name.Translate().WithColor(Orange);
-        txtDetailName.text = node.Name.Translate().WithColor(GetDetailTitleColor(modeIndex, branchIndex, nodeIndex));
-        txtDetailDesc.text = node.Desc.Translate();
-        txtDetailCondition.text = $"{"节点详情-条件".Translate()} {GetNodeProgressText(modeIndex, branchIndex, nodeIndex)}";
-        txtDetailState.text = $"{"节点详情-状态".Translate()} {GetNodeStateText(modeIndex, branchIndex, nodeIndex)}";
-
-        bool hasReward = node.RewardItemId > 0 && node.RewardCount > 0 && LDB.items.Exist(node.RewardItemId);
-        btnDetailRewardIcon.gameObject.SetActive(hasReward);
-        if (hasReward) {
-            btnDetailRewardIcon.Proto = LDB.items.Select(node.RewardItemId);
-            btnDetailRewardIcon.SetCount(node.RewardCount);
-        } else {
-            btnDetailRewardIcon.Proto = null;
-            btnDetailRewardIcon.ClearCountText();
-        }
-        txtDetailReward.text = hasReward
-            ? "节点详情-奖励".Translate().WithColor(Blue)
-            : $"{"节点详情-奖励".Translate()} {"无".Translate()}".WithColor(Blue);
-    }
-
-    private static Color GetDetailTitleColor(int modeIndex, int branchIndex, int nodeIndex) {
-        return GetNodeVisualState(modeIndex, branchIndex, nodeIndex) switch {
-            NodeVisualState.Completed => Orange,
-            NodeVisualState.Available => Blue,
-            _ => Gray,
-        };
-    }
-
     private static string GetNodeProgressText(int modeIndex, int branchIndex, int nodeIndex) {
-        if (!IsNodeUnlocked(modeIndex, branchIndex, nodeIndex)) {
-            return "节点详情-前置未完成".Translate();
-        }
         if (completedByMode[modeIndex][branchIndex][nodeIndex]) {
             return "节点状态-已完成".Translate();
         }
@@ -517,9 +425,8 @@ public static partial class MainTask {
 
         selectedBranchByMode[modeIndex] = branchIndex;
         selectedNodeByMode[modeIndex] = nodeIndex;
-        if (modeIndex == GetModeIndex() && detailPanel != null) {
+        if (modeIndex == GetModeIndex()) {
             RefreshRouteView(modeIndex);
-            UpdateDetailPanel(modeIndex);
         }
     }
 
@@ -533,40 +440,52 @@ public static partial class MainTask {
         trigger.triggers.Add(pointerEnter);
     }
 
-    private static Image CreateLine(RectTransform parent, Vector2 startNodePosition, Vector2 endNodePosition) {
-        Vector2 startCenter = startNodePosition + new Vector2(NodeSize / 2f, NodeSize / 2f);
-        Vector2 endCenter = endNodePosition + new Vector2(NodeSize / 2f, NodeSize / 2f);
-
-        Image line = new GameObject("main-task-route-line").AddComponent<Image>();
-        line.color = LockedLineColor;
-        line.raycastTarget = false;
-        RectTransform rect = line.rectTransform;
-        rect.SetParent(parent, false);
-
-        if (Math.Abs(startCenter.x - endCenter.x) >= Math.Abs(startCenter.y - endCenter.y)) {
-            NormalizeRectWithTopLeft(line, Math.Min(startCenter.x, endCenter.x), startCenter.y - LineThickness / 2f,
-                parent);
-            rect.sizeDelta = new Vector2(Math.Abs(startCenter.x - endCenter.x), LineThickness);
-        } else {
-            NormalizeRectWithTopLeft(line, startCenter.x - LineThickness / 2f, Math.Min(startCenter.y, endCenter.y),
-                parent);
-            rect.sizeDelta = new Vector2(LineThickness, Math.Abs(startCenter.y - endCenter.y));
-        }
-        return line;
+    private static void AddRowBackground(RectTransform parent, float left, float top, Color color,
+        float width = LeftColumnWidth, float height = CategoryRowHeight) {
+        Image image = new GameObject("row-bg", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        image.color = color;
+        image.raycastTarget = false;
+        NormalizeRectWithTopLeft(image, left, top, parent);
+        image.rectTransform.sizeDelta = new Vector2(width, height);
     }
 
-    private static Vector2 GetCenterAnchor(Vector2 nodePosition) {
-        return new Vector2(519f, 258f);
+    private static void AddColumnSeparator(RectTransform parent, float left, float top, float height) {
+        Image image = new GameObject("column-separator", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        image.color = new Color(1f, 1f, 1f, 0.06f);
+        image.raycastTarget = false;
+        NormalizeRectWithTopLeft(image, left, top + 6f, parent);
+        image.rectTransform.sizeDelta = new Vector2(1f, height - 12f);
     }
 
     private static RectTransform CreatePanelRect(string name, RectTransform parent, float left, float top, float width,
         float height, Color color) {
-        Image image = new GameObject(name).AddComponent<Image>();
+        Image image = new GameObject(name, typeof(RectTransform), typeof(Image)).GetComponent<Image>();
         image.color = color;
         image.raycastTarget = false;
         RectTransform rect = image.rectTransform;
         NormalizeRectWithTopLeft(image, left, top, parent);
         rect.sizeDelta = new Vector2(width, height);
+        return rect;
+    }
+
+    private static RectTransform CreateViewport(string name, RectTransform parent, float left, float top, float width,
+        float height) {
+        var obj = new GameObject(name, typeof(RectTransform), typeof(RectMask2D));
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        NormalizeRectWithTopLeft(rect, left, top, parent);
+        rect.sizeDelta = new Vector2(width, height);
+        return rect;
+    }
+
+    private static RectTransform CreateScrollContent(string name, RectTransform parent, float width, float height) {
+        RectTransform rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(width, height);
+        rect.localScale = Vector3.one;
         return rect;
     }
 
