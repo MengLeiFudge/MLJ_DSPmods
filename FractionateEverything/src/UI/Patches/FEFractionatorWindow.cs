@@ -1368,6 +1368,16 @@ public static class FEFractionatorWindow {
         return IsFluidSlot(fractionator, slot, itemId) ? fractionator.fluidOutputMax : fractionator.productOutputMax;
     }
 
+    private static bool BlockSingleLockManualInsert(UIFractionatorWindow window,
+        FractionatorComponent fractionator) {
+        if (window?.factory == null || !ConversionTower.EnableSingleLock) {
+            return false;
+        }
+
+        int buildingId = window.factory.entityPool[fractionator.entityId].protoId;
+        return buildingId == IFE转化塔 && fractionator.GetNormalizedLockedOutput(window.factory) != 0;
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow.OnProductUIButtonClick))]
     public static bool OnProductUIButtonClick_Prefix(UIFractionatorWindow __instance, int itemId) {
@@ -1398,6 +1408,10 @@ public static class FEFractionatorWindow {
         }
 
         if (player.inhandItemId > 0 && player.inhandItemCount > 0) {
+            // 单锁后的输出槽只允许取出/清空，不再作为手动塞回缓存入口。
+            if (BlockSingleLockManualInsert(__instance, fractionator)) {
+                return false;
+            }
             if (player.inhandItemId != itemId) {
                 return false;
             }
