@@ -1434,6 +1434,7 @@ public static class FEFractionatorWindow {
             int takeInc = isFluidSlot ? split_inc(ref handCount, ref handInc, add) : 0;
 
             SetModSlotCount(fractionator, products, itemId, currentCount + add, slot);
+            fractionator.GetExtraState(__instance.factory).InvalidateFullProductCache();
             player.AddHandItemCount_Unsafe(-add);
             if (isFluidSlot) {
                 player.SetHandItemInc_Unsafe(player.inhandItemInc - takeInc);
@@ -1461,6 +1462,7 @@ public static class FEFractionatorWindow {
             player.SetHandItemInc_Unsafe(currentInc);
         }
         SetModSlotCount(fractionator, products, itemId, 0, slot);
+        fractionator.GetExtraState(__instance.factory).InvalidateFullProductCache();
         if (isFluidSlot) {
             fractionator.fluidOutputInc = 0;
         }

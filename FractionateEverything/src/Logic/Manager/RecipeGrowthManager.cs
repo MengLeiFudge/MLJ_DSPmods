@@ -12,10 +12,12 @@ public static class RecipeGrowthManager {
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             Store.GetOrCreate(recipe);
         }
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 
     public static void Import(BinaryReader r) {
         Store.Import(r);
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 
     public static void Export(BinaryWriter w) {
@@ -24,6 +26,7 @@ public static class RecipeGrowthManager {
 
     public static void IntoOtherSave() {
         Store.IntoOtherSave();
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 
     public static void ImportLegacyState(BaseRecipe recipe, int legacyLevel) {
@@ -31,6 +34,7 @@ public static class RecipeGrowthManager {
         state.Level = RecipeGrowthRules.ConvertLegacyLevelToStored(recipe, legacyLevel);
         state.UnlockSourceFlags |= RecipeUnlockSourceFlags.LegacyImport;
         state.LastTouchedTick = GameMain.gameTick;
+        RecipeGrowthQueries.InvalidateProcessingCache(recipe);
     }
 
     public static RecipeGrowthContext BuildContext(bool manual = false) {

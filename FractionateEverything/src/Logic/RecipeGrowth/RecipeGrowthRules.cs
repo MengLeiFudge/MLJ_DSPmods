@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FE.Logic.Recipe;
 using static FE.Utils.Utils;
 
@@ -23,9 +24,15 @@ public static class RecipeGrowthRules {
         RecipeFamily.PointAggregate, RecipeGrowthMode.FixedMax, 5, 5, 5, 5, true, false, false);
     private static readonly RecipeGrowthRule RectificationRule = new(
         RecipeFamily.Rectification, RecipeGrowthMode.ProcessExpWithPity, 5, 0, 1, 0, false, false, true);
+    private static readonly Dictionary<BaseRecipe, RecipeFamily> FamilyCache = [];
+    private static readonly Dictionary<BaseRecipe, RecipeGrowthRule> RuleCache = [];
 
     public static RecipeFamily GetFamily(BaseRecipe recipe) {
-        return recipe switch {
+        if (FamilyCache.TryGetValue(recipe, out RecipeFamily family)) {
+            return family;
+        }
+
+        family = recipe switch {
             BuildingTrainRecipe => IsEmbryoInput(recipe.InputID)
                 ? RecipeFamily.BuildingTrainForward
                 : RecipeFamily.BuildingTrainReverse,
@@ -39,11 +46,17 @@ public static class RecipeGrowthRules {
             RectificationRecipe => RecipeFamily.Rectification,
             _ => RecipeFamily.Unknown,
         };
+        FamilyCache[recipe] = family;
+        return family;
     }
 
     public static RecipeGrowthRule GetRule(BaseRecipe recipe) {
+        if (RuleCache.TryGetValue(recipe, out RecipeGrowthRule rule)) {
+            return rule;
+        }
+
         RecipeFamily family = GetFamily(recipe);
-        return family switch {
+        rule = family switch {
             RecipeFamily.BuildingTrainForward => BuildingTrainForwardRule,
             RecipeFamily.BuildingTrainReverse => BuildingTrainReverseRule,
             RecipeFamily.MineralCopyNormal => new RecipeGrowthRule(
@@ -59,6 +72,8 @@ public static class RecipeGrowthRules {
             RecipeFamily.Rectification => RectificationRule,
             _ => new RecipeGrowthRule(RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false),
         };
+        RuleCache[recipe] = rule;
+        return rule;
     }
 
     public static int GetStageBaselineLevel(int matrixId) {

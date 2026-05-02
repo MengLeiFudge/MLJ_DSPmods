@@ -15,7 +15,7 @@ public static class RecipeGrowthExecutor {
             state.UnlockSourceFlags |= RecipeUnlockSourceFlags.TechBaseline;
             state.LastTouchedTick = context.GameTick;
         }
-        return BuildResult(rule, previousLevel, state);
+        return BuildResult(recipe, rule, previousLevel, state);
     }
 
     public static RecipeGrowthResult EnsureUnlockedByDarkFogDrop(BaseRecipe recipe, RecipeGrowthContext context) {
@@ -23,7 +23,7 @@ public static class RecipeGrowthExecutor {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
         if (rule.Family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
-            return BuildResult(rule, previousLevel, state);
+            return BuildResult(recipe, rule, previousLevel, state);
         }
 
         bool unlocked = (GameMain.history != null && GameMain.history.ItemUnlocked(recipe.InputID))
@@ -33,7 +33,7 @@ public static class RecipeGrowthExecutor {
             state.UnlockSourceFlags |= RecipeUnlockSourceFlags.DarkFogDrop;
             state.LastTouchedTick = context.GameTick;
         }
-        return BuildResult(rule, previousLevel, state);
+        return BuildResult(recipe, rule, previousLevel, state);
     }
 
     public static RecipeGrowthResult ApplyDrawReward(BaseRecipe recipe, RecipeGrowthContext context) {
@@ -60,7 +60,7 @@ public static class RecipeGrowthExecutor {
 
         state.UnlockSourceFlags |= RecipeUnlockSourceFlags.Draw;
         state.LastTouchedTick = context.GameTick;
-        return BuildResult(rule, previousLevel, state, fragmentReward);
+        return BuildResult(recipe, rule, previousLevel, state, fragmentReward);
     }
 
     public static RecipeGrowthResult ApplyProcessingProgress(BaseRecipe recipe, int inputCount, int successCount,
@@ -69,7 +69,7 @@ public static class RecipeGrowthExecutor {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
         if (state.Level <= 0 || state.Level >= rule.MaxLevel || !rule.UsesGrowthExp && !rule.UsesPity) {
-            return BuildResult(rule, previousLevel, state);
+            return BuildResult(recipe, rule, previousLevel, state);
         }
 
         int gain = inputCount;
@@ -113,7 +113,7 @@ public static class RecipeGrowthExecutor {
             state.LastTouchedTick = context.GameTick;
         }
 
-        return BuildResult(rule, previousLevel, state);
+        return BuildResult(recipe, rule, previousLevel, state);
     }
 
     public static RecipeGrowthResult
@@ -122,7 +122,7 @@ public static class RecipeGrowthExecutor {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
         if (growthExp <= 0 || state.Level <= 0 || state.Level >= rule.MaxLevel) {
-            return BuildResult(rule, previousLevel, state);
+            return BuildResult(recipe, rule, previousLevel, state);
         }
 
         switch (rule.Family) {
@@ -138,7 +138,7 @@ public static class RecipeGrowthExecutor {
                 state.PityProgress += growthExp;
                 break;
             default:
-                return BuildResult(rule, previousLevel, state);
+                return BuildResult(recipe, rule, previousLevel, state);
         }
 
         while (state.Level < rule.MaxLevel) {
@@ -158,7 +158,7 @@ public static class RecipeGrowthExecutor {
         }
 
         state.LastTouchedTick = context.GameTick;
-        return BuildResult(rule, previousLevel, state);
+        return BuildResult(recipe, rule, previousLevel, state);
     }
 
     public static int ApplyDarkFogCatchupByItem(int itemId, int growthExp, RecipeGrowthContext context) {
@@ -196,7 +196,7 @@ public static class RecipeGrowthExecutor {
             state.UnlockSourceFlags |= RecipeUnlockSourceFlags.Sandbox;
         }
         state.LastTouchedTick = context.GameTick;
-        return BuildResult(rule, previousLevel, state);
+        return BuildResult(recipe, rule, previousLevel, state);
     }
 
     public static RecipeGrowthResult EnsureUnlockedByTech(RecipeKey key, RecipeGrowthContext context) {
@@ -230,8 +230,11 @@ public static class RecipeGrowthExecutor {
         return recipe == null ? default : SetLevelForSandbox(recipe, targetLevel, context);
     }
 
-    private static RecipeGrowthResult BuildResult(RecipeGrowthRule rule, int previousLevel, RecipeGrowthState state,
-        int fragmentReward = 0) {
+    private static RecipeGrowthResult BuildResult(BaseRecipe recipe, RecipeGrowthRule rule, int previousLevel,
+        RecipeGrowthState state, int fragmentReward = 0) {
+        if (state.Level != previousLevel) {
+            RecipeGrowthQueries.InvalidateProcessingCache(recipe);
+        }
         bool wasUnlocked = previousLevel > 0;
         bool isUnlocked = state.Level > 0;
         bool isMaxed = state.Level >= rule.MaxLevel;
