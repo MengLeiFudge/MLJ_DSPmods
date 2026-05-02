@@ -7,7 +7,25 @@ using static FE.Utils.Utils;
 namespace FE.Logic.RecipeGrowth;
 
 public static class RecipeGrowthQueries {
+    private readonly struct ProcessingRatioCache(
+        int level,
+        bool isUnlocked,
+        bool canApplyProcessingProgress,
+        float remainInputRatio,
+        float doubleOutputRatio) {
+        public readonly int Level = level;
+        public readonly bool IsUnlocked = isUnlocked;
+        public readonly bool CanApplyProcessingProgress = canApplyProcessingProgress;
+        public readonly float RemainInputRatio = remainInputRatio;
+        public readonly float DoubleOutputRatio = doubleOutputRatio;
+    }
+
+    private static readonly Dictionary<BaseRecipe, ProcessingRatioCache> processingRatioCache = [];
+
     public static int GetLevel(BaseRecipe recipe) {
+        if (processingRatioCache.TryGetValue(recipe, out ProcessingRatioCache cache)) {
+            return cache.Level;
+        }
         return RecipeGrowthManager.Store.GetOrCreate(recipe).Level;
     }
 
@@ -17,7 +35,7 @@ public static class RecipeGrowthQueries {
     }
 
     public static bool IsUnlocked(BaseRecipe recipe) {
-        return GetLevel(recipe) > 0;
+        return GetProcessingCache(recipe).IsUnlocked;
     }
 
     public static bool IsUnlocked(RecipeKey key) => GetLevel(key) > 0;
@@ -38,6 +56,52 @@ public static class RecipeGrowthQueries {
 
     public static int GetEffectiveLegacyLevel(BaseRecipe recipe) {
         return RecipeGrowthRules.GetEffectiveLegacyLevel(recipe, GetLevel(recipe));
+    }
+
+    public static float GetRemainInputRatio(BaseRecipe recipe) {
+        return GetProcessingCache(recipe).RemainInputRatio;
+    }
+
+    public static float GetDoubleOutputRatio(BaseRecipe recipe) {
+        return GetProcessingCache(recipe).DoubleOutputRatio;
+    }
+
+    public static bool CanApplyProcessingProgress(BaseRecipe recipe) {
+        return GetProcessingCache(recipe).CanApplyProcessingProgress;
+    }
+
+    public static void GetProcessingRatios(BaseRecipe recipe, out float remainInputRatio, out float doubleOutputRatio) {
+        ProcessingRatioCache cache = GetProcessingCache(recipe);
+        remainInputRatio = cache.RemainInputRatio;
+        doubleOutputRatio = cache.DoubleOutputRatio;
+    }
+
+    private static ProcessingRatioCache GetProcessingCache(BaseRecipe recipe) {
+        if (processingRatioCache.TryGetValue(recipe, out ProcessingRatioCache cache)) {
+            return cache;
+        }
+        // 生产热路径只需要两个概率，缓存后避免每次分馏都重复查规则族和存档状态。
+        int level = RecipeGrowthManager.Store.GetOrCreate(recipe).Level;
+        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
+        int legacyLevel = RecipeGrowthRules.GetEffectiveLegacyLevel(recipe, level);
+        cache = new ProcessingRatioCache(
+            level,
+            level > 0,
+            level > 0 && level < rule.MaxLevel && (rule.UsesGrowthExp || rule.UsesPity),
+            legacyLevel * 0.08f,
+            legacyLevel * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(recipe.RecipeType));
+        processingRatioCache[recipe] = cache;
+        return cache;
+    }
+
+    public static void InvalidateProcessingCache(BaseRecipe recipe) {
+        if (recipe != null) {
+            processingRatioCache.Remove(recipe);
+        }
+    }
+
+    public static void ClearProcessingCache() {
+        processingRatioCache.Clear();
     }
 
     public static RecipeDisplaySnapshot GetSnapshot(BaseRecipe recipe) {

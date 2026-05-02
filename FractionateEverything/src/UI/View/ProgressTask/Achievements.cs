@@ -168,6 +168,7 @@ public static class Achievements {
 
     private static void MarkBonusSummaryDirty() {
         bonusSummaryDirty = true;
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 
     private static void EnsureBonusSummaryCache() {

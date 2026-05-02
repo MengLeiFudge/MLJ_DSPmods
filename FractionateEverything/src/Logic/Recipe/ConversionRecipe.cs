@@ -4,6 +4,7 @@ using System.Linq;
 using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
@@ -268,6 +269,32 @@ public class ConversionRecipe : BaseRecipe {
             fluidInputIncAvg, ref fluidInputInc, out inputChange, out outputs);
     }
 
+    public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
+        if (ConversionTower.EnableSingleLock
+            && CurrentLockedOutputId != 0
+            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
+            return GetLockedOutputFast(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
+                ref fluidInputInc, lockedPlan, out inputChange, outputs);
+        }
+
+        return base.GetOutputsFast(ref seed, pointsBonus, successBoost,
+            fluidInputIncAvg, ref fluidInputInc, out inputChange, outputs);
+    }
+
+    public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
+        if (ConversionTower.EnableSingleLock
+            && CurrentLockedOutputId != 0
+            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
+            return GetLockedOutputBatchFast(ref seed, pointsBonus, successBoost, batchCount,
+                fluidInputIncAvg, ref fluidInputInc, lockedPlan, outputs);
+        }
+
+        return base.GetOutputsBatchFast(ref seed, pointsBonus, successBoost, batchCount,
+            fluidInputIncAvg, ref fluidInputInc, outputs);
+    }
+
     public bool TryGetLockedOutputPlan(int itemId, out LockedOutputPlan lockedPlan) =>
         lockedOutputPlansByItemId.TryGetValue(itemId, out lockedPlan);
 
@@ -285,15 +312,16 @@ public class ConversionRecipe : BaseRecipe {
         // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
         float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         if (GetRandDouble(ref seed) < lockedSuccessRatio) {
+            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
 
-            if (GetRandDouble(ref seed) < DoubleOutputRatio) {
+            if (GetRandDouble(ref seed) < doubleOutputRatio) {
                 countReal *= 2;
             }
 
             if (countReal > 0) {
                 lockedPlan.SourceOutput.OutputTotalCount += countReal;
-                inputChange = GetRandDouble(ref seed) < RemainInputRatio ? 0 : -1;
+                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
                 if (inputChange < 0) {
                     fluidInputInc -= fluidInputIncAvg;
                 }
@@ -313,6 +341,104 @@ public class ConversionRecipe : BaseRecipe {
         inputChange = -1;
         fluidInputInc -= fluidInputIncAvg;
         outputs = ProcessManager.emptyOutputs;
+    }
+
+    private FractionationOutcome GetLockedOutputFast(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
+        out int inputChange, ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        // 1. 损毁判定
+        if (GetRandDouble(ref seed) < DestroyRatio) {
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            return FractionationOutcome.Destroyed;
+        }
+
+        // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
+        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        if (GetRandDouble(ref seed) < lockedSuccessRatio) {
+            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
+            int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
+
+            if (GetRandDouble(ref seed) < doubleOutputRatio) {
+                countReal *= 2;
+            }
+
+            if (countReal > 0) {
+                lockedPlan.SourceOutput.OutputTotalCount += countReal;
+                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
+                if (inputChange < 0) {
+                    fluidInputInc -= fluidInputIncAvg;
+                }
+
+                outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal);
+                return FractionationOutcome.Produced;
+            }
+
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            return FractionationOutcome.Destroyed;
+        }
+
+        // 3. 无变化 -> 直通输出
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        return FractionationOutcome.PassThrough;
+    }
+
+    private FractionationBatchResult GetLockedOutputBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, LockedOutputPlan lockedPlan,
+        ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
+        int aliveCount = batchCount - destroyedCount;
+        float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        int successCount = RollBinomialApprox(ref seed, aliveCount, lockedSuccessRatio);
+        int passThroughCount = aliveCount - successCount;
+
+        RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
+        int remainInputCount = RollBinomialApprox(ref seed, successCount, remainInputRatio);
+        int successConsumedCount = successCount - remainInputCount;
+
+        AddRolledLockedOutput(ref seed, outputs, lockedPlan, successCount, doubleOutputRatio);
+
+        int inputRemoveCount = destroyedCount + passThroughCount + successConsumedCount;
+        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+
+        FractionationBatchResult result = new() {
+            InputRemoveCount = inputRemoveCount,
+            ConsumedRegisterCount = destroyedCount + successCount,
+            SuccessCount = successCount,
+            DestroyedCount = destroyedCount,
+            PassThroughCount = passThroughCount,
+        };
+        return result;
+    }
+
+    private static void AddRolledLockedOutput(ref uint seed, ProductOutputBuffer outputs,
+        LockedOutputPlan lockedPlan, int outputHits, float doubleOutputRatio) {
+        if (outputHits <= 0) {
+            return;
+        }
+
+        int baseCount = (int)lockedPlan.OutputCount;
+        float fractionalCount = lockedPlan.OutputCount - baseCount;
+        int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
+        if (doubleOutputRatio > 0f) {
+            int doubleHits = RollBinomialApprox(ref seed, outputHits, doubleOutputRatio);
+            totalCount += doubleHits * baseCount + RollBinomialApprox(ref seed, doubleHits, fractionalCount);
+        }
+        if (totalCount <= 0) {
+            return;
+        }
+
+        lockedPlan.SourceOutput.OutputTotalCount += totalCount;
+        outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, totalCount);
     }
 
     private static Dictionary<int, LockedOutputPlan> BuildLockedOutputPlans(int inputId,
@@ -358,16 +484,6 @@ public class ConversionRecipe : BaseRecipe {
     private static bool IsLockableOutputValue(int outputId) {
         float outputValue = itemValue[outputId];
         return outputValue > 0f && outputValue < maxValue;
-    }
-
-    private static int RollOutputCount(ref uint seed, float outputCount) {
-        int countReal = (int)outputCount;
-        float fractionalCount = outputCount - countReal;
-        if (fractionalCount > 0.0001 && GetRandDouble(ref seed) < fractionalCount) {
-            countReal++;
-        }
-
-        return countReal;
     }
 
     #region IModCanSave

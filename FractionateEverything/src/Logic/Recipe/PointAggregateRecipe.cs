@@ -64,6 +64,58 @@ public class PointAggregateRecipe : BaseRecipe {
         fluidInputInc -= fluidInputIncAvg;
     }
 
+    public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        // 点数聚集逻辑：如果平均增产等级足够，则有概率聚集成功
+        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
+
+        if (GetRandDouble(ref seed) < ratio) {
+            inputChange = -1;
+            outputs.Add(true, InputID, 1);
+            fluidInputInc -= PointAggregateTower.EnableDoublePoints
+                ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
+                : PointAggregateTower.MaxInc;
+            if (fluidInputInc < 0) {
+                fluidInputInc = 0;
+            }
+            return FractionationOutcome.Produced;
+        }
+
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        return FractionationOutcome.PassThrough;
+    }
+
+    public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
+        int successCount = RollBinomialApprox(ref seed, batchCount, ratio);
+        int passThroughCount = batchCount - successCount;
+        if (successCount > 0) {
+            outputs.Add(true, InputID, successCount);
+        }
+
+        int successIncCost = PointAggregateTower.EnableDoublePoints
+            ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
+            : PointAggregateTower.MaxInc;
+        fluidInputInc -= successIncCost * successCount + fluidInputIncAvg * passThroughCount;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+
+        return new FractionationBatchResult {
+            InputRemoveCount = batchCount,
+            ConsumedRegisterCount = successCount,
+            SuccessCount = successCount,
+            DestroyedCount = 0,
+            PassThroughCount = passThroughCount,
+        };
+    }
+
     public override byte GetOutputInc(int itemId) => (byte)PointAggregateTower.MaxInc;
 
     #region IModCanSave

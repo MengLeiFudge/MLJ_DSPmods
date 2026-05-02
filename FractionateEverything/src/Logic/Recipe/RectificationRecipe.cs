@@ -55,6 +55,54 @@ public class RectificationRecipe : BaseRecipe {
         outputs = [new(true, IFE残片, fragmentCount)];
     }
 
+    public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
+        outputs.Clear();
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+
+        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
+        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
+            fragmentCount += 1;
+        }
+        if (RectificationTower.EnableHyperphaseCompression
+            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
+            fragmentCount += 1;
+        }
+        outputs.Add(true, IFE残片, fragmentCount);
+        return FractionationOutcome.Produced;
+    }
+
+    public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
+        outputs.Clear();
+        fluidInputInc -= fluidInputIncAvg * batchCount;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+
+        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
+        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
+            fragmentCount += 1;
+        }
+        if (RectificationTower.EnableHyperphaseCompression
+            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
+            fragmentCount += 1;
+        }
+        outputs.Add(true, IFE残片, fragmentCount * batchCount);
+
+        return new FractionationBatchResult {
+            InputRemoveCount = batchCount,
+            ConsumedRegisterCount = batchCount,
+            SuccessCount = batchCount,
+            DestroyedCount = 0,
+            PassThroughCount = 0,
+        };
+    }
+
     #region IModCanSave
 
     public override void Import(BinaryReader r) {

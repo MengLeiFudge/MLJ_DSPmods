@@ -7,7 +7,13 @@
 /// <param name="itemId">物品ID</param>
 /// <param name="count">物品数目</param>
 public class ProductOutputInfo(bool isMainOutput, int itemId, int count) {
-    public readonly bool isMainOutput = isMainOutput;
-    public readonly int itemId = itemId;
+    public bool isMainOutput = isMainOutput;
+    public int itemId = itemId;
     public int count = count;
+
+    public void Set(bool newIsMainOutput, int newItemId, int newCount) {
+        isMainOutput = newIsMainOutput;
+        itemId = newItemId;
+        count = newCount;
+    }
 }

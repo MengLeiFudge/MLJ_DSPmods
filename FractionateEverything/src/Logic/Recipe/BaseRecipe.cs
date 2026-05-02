@@ -84,12 +84,12 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 原料不消耗概率
     /// </summary>
-    public float RemainInputRatio => RecipeGrowthQueries.GetSnapshot(this).RemainInputRatio;
+    public float RemainInputRatio => RecipeGrowthQueries.GetRemainInputRatio(this);
 
     /// <summary>
     /// 产物翻倍概率
     /// </summary>
-    public float DoubleOutputRatio => RecipeGrowthQueries.GetSnapshot(this).DoubleOutputRatio;
+    public float DoubleOutputRatio => RecipeGrowthQueries.GetDoubleOutputRatio(this);
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -115,6 +115,7 @@ public abstract class BaseRecipe(
         // 2. 成功判定
         if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
             List<ProductOutputInfo> list = [];
+            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             // 主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
             double ratio = GetRandDouble(ref seed);
             float ratioMain = 0.0f;// 用于累计概率
@@ -130,7 +131,7 @@ public abstract class BaseRecipe(
                     }
 
                     // 产物翻倍判定
-                    if (GetRandDouble(ref seed) < DoubleOutputRatio) {
+                    if (GetRandDouble(ref seed) < doubleOutputRatio) {
                         countReal *= 2;
                     }
 
@@ -159,7 +160,7 @@ public abstract class BaseRecipe(
 
             if (list.Count > 0) {
                 // 原料不消耗判定
-                inputChange = (GetRandDouble(ref seed) < RemainInputRatio) ? 0 : -1;
+                inputChange = (GetRandDouble(ref seed) < remainInputRatio) ? 0 : -1;
                 if (inputChange < 0) {
                     fluidInputInc -= fluidInputIncAvg;
                 }
@@ -178,6 +179,179 @@ public abstract class BaseRecipe(
         inputChange = -1;
         fluidInputInc -= fluidInputIncAvg;
         outputs = ProcessManager.emptyOutputs;
+    }
+
+    public virtual FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        // 1. 损毁判定
+        if (GetRandDouble(ref seed) < DestroyRatio) {
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            return FractionationOutcome.Destroyed;
+        }
+
+        // 2. 成功判定
+        if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
+            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
+            double ratio = GetRandDouble(ref seed);
+            float ratioMain = 0.0f;
+            foreach (var outputInfo in OutputMain) {
+                ratioMain += outputInfo.SuccessRatio;
+                if (ratio <= ratioMain) {
+                    int countReal = RollOutputCount(ref seed, outputInfo.OutputCount);
+                    if (GetRandDouble(ref seed) < doubleOutputRatio) {
+                        countReal *= 2;
+                    }
+                    if (countReal > 0) {
+                        outputs.Add(true, outputInfo.OutputID, countReal);
+                        outputInfo.OutputTotalCount += countReal;
+                    }
+                    break;
+                }
+            }
+
+            foreach (var outputInfo in OutputAppend) {
+                if (GetRandDouble(ref seed) <= outputInfo.SuccessRatio) {
+                    int countReal = RollOutputCount(ref seed, outputInfo.OutputCount);
+                    if (countReal > 0) {
+                        outputs.Add(false, outputInfo.OutputID, countReal);
+                        outputInfo.OutputTotalCount += countReal;
+                    }
+                }
+            }
+
+            if (outputs.Count > 0) {
+                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
+                if (inputChange < 0) {
+                    fluidInputInc -= fluidInputIncAvg;
+                }
+                return FractionationOutcome.Produced;
+            }
+
+            inputChange = -1;
+            fluidInputInc -= fluidInputIncAvg;
+            return FractionationOutcome.Destroyed;
+        }
+
+        // 3. 无变化 -> 直通输出
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        return FractionationOutcome.PassThrough;
+    }
+
+    public virtual FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
+        int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
+        outputs.Clear();
+
+        int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
+        int aliveCount = batchCount - destroyedCount;
+        float successRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        int successCount = RollBinomialApprox(ref seed, aliveCount, successRatio);
+        int passThroughCount = aliveCount - successCount;
+
+        RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
+        int remainInputCount = RollBinomialApprox(ref seed, successCount, remainInputRatio);
+        int successConsumedCount = successCount - remainInputCount;
+
+        int remainingMainCount = successCount;
+        float remainingMainRatio = 1.0f;
+        for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
+            OutputInfo outputInfo = OutputMain[i];
+            int outputHits = i == OutputMain.Count - 1
+                ? remainingMainCount
+                : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
+            remainingMainCount -= outputHits;
+            remainingMainRatio -= outputInfo.SuccessRatio;
+            if (remainingMainRatio <= 0f) {
+                remainingMainRatio = 1.0f;
+            }
+            AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits, doubleOutputRatio);
+        }
+
+        foreach (var outputInfo in OutputAppend) {
+            int outputHits = RollBinomialApprox(ref seed, successCount, outputInfo.SuccessRatio);
+            AddRolledOutput(ref seed, outputs, outputInfo, false, outputHits, 0f);
+        }
+
+        int inputRemoveCount = destroyedCount + passThroughCount + successConsumedCount;
+        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+
+        FractionationBatchResult result = new() {
+            InputRemoveCount = inputRemoveCount,
+            ConsumedRegisterCount = destroyedCount + successCount,
+            SuccessCount = successCount,
+            DestroyedCount = destroyedCount,
+            PassThroughCount = passThroughCount,
+        };
+        return result;
+    }
+
+    protected static void AddRolledOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
+        bool isMainOutput, int outputHits, float doubleOutputRatio) {
+        if (outputHits <= 0) {
+            return;
+        }
+
+        int baseCount = (int)outputInfo.OutputCount;
+        float fractionalCount = outputInfo.OutputCount - baseCount;
+        int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
+        if (doubleOutputRatio > 0f) {
+            int doubleHits = RollBinomialApprox(ref seed, outputHits, doubleOutputRatio);
+            totalCount += doubleHits * baseCount + RollBinomialApprox(ref seed, doubleHits, fractionalCount);
+        }
+        if (totalCount <= 0) {
+            return;
+        }
+
+        outputs.Add(isMainOutput, outputInfo.OutputID, totalCount);
+        outputInfo.OutputTotalCount += totalCount;
+    }
+
+    protected static int RollOutputCount(ref uint seed, float outputCount) {
+        int countReal = (int)outputCount;
+        float fractionalCount = outputCount - countReal;
+        if (fractionalCount > 0.0001 && GetRandDouble(ref seed) < fractionalCount) {
+            countReal++;
+        }
+
+        return countReal;
+    }
+
+    public static int RollBinomialApprox(ref uint seed, int trials, float probability) {
+        if (trials <= 0 || probability <= 0f) {
+            return 0;
+        }
+        if (probability >= 1f) {
+            return trials;
+        }
+        if (trials <= 8) {
+            int result = 0;
+            for (int i = 0; i < trials; i++) {
+                if (GetRandDouble(ref seed) < probability) {
+                    result++;
+                }
+            }
+            return result;
+        }
+
+        double mean = trials * probability;
+        double variance = mean * (1.0 - probability);
+        if (variance <= 0.000001) {
+            return (int)(mean + GetRandDouble(ref seed));
+        }
+
+        // 3 次均匀随机近似正态分布，比逐次判定少得多，同时保留批量波动。
+        double normalized = (GetRandDouble(ref seed) + GetRandDouble(ref seed) + GetRandDouble(ref seed) - 1.5) * 2.0;
+        int sampled = (int)Math.Round(mean + Math.Sqrt(variance) * normalized);
+        if (sampled < 0) {
+            return 0;
+        }
+        return sampled > trials ? trials : sampled;
     }
 
     #endregion
