@@ -30,7 +30,7 @@ public static class MainWindow {
     private static IReadOnlyList<MainWindowCategoryDefinition> legacyPageCategories = [];
     public static IReadOnlyList<MainWindowCategoryDefinition> AnalysisPageCategories { get; private set; } = [];
 
-    public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Legacy;
+    public static FEMainPanelType SelectedMainPanelType { get; private set; } = FEMainPanelType.Analysis;
     public static FEMainPanelType OpenedMainPanelType { get; private set; } = FEMainPanelType.None;
     public static IFEMainPanelSharedState SharedPanelState { get; private set; } = defaultSharedPanelState;
     private static string currentPageCategoryName;
@@ -233,7 +233,7 @@ public static class MainWindow {
     private static FEMainPanelType NormalizeMainPanelSelection(FEMainPanelType panelType) {
         return panelType is FEMainPanelType.Legacy or FEMainPanelType.Analysis
             ? panelType
-            : FEMainPanelType.Legacy;
+            : FEMainPanelType.Analysis;
     }
 
     public static void OpenSelectedMainPanel() {
@@ -400,7 +400,7 @@ public static class MainWindow {
     }
 
     private static void IntoOtherSaveMainPanelSelection() {
-        SelectedMainPanelType = FEMainPanelType.Legacy;
+        SelectedMainPanelType = FEMainPanelType.Analysis;
         OpenedMainPanelType = FEMainPanelType.None;
         currentPageCategoryName = null;
         currentPageSubpageName = null;
