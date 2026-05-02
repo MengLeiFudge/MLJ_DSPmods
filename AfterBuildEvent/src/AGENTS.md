@@ -11,13 +11,31 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines
 | `CmdProcess.cs` | 75 | Persistent cmd.exe process wrapper |
 | `PathConfig.cs` | 66 | All path constants, auto-detects latest nuget version |
 
-## Three Modes (console prompt 1/2/3)
+## Modes
 
 | Option | Method | What it does |
 |---|---|---|
 | `1` | `UpdateModsThenStart()` | Kill DSP → copy DLLs to R2 → zip packages → launch game |
 | `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → scan/decompile R2 mod DLLs |
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
+
+Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
+
+qqbot/Codex automation usage passes the mode as argv:
+
+```bash
+./AfterBuildEvent.exe 1
+```
+
+In automation mode, option `1` keeps the packaging/R2 sync behavior but changes the user-facing side effects:
+- copy built mod files to the R2 profile
+- create zip packages under `ModZips`
+- write generated package paths to `ModZips/afterbuild-result.json`
+- do not open Explorer
+- do not ask whether to launch Dyson Sphere Program
+- do not launch Dyson Sphere Program
+
+Codex final replies for automation runs must include the `AfterBuildEvent.exe 1` command result and the generated zip paths, because qqbot reads those paths and uploads the packages back to the source group.
 
 ## Option 2 — UpdateLibDll Detail
 
