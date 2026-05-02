@@ -55,7 +55,8 @@ public static class ProcessManager {
         Register("副产物", "Append product");
         Register("流动", "Flow");
         Register("损毁", "Destroy");
-        Register("流体输出", "Fluid output");
+        Register("流动输入", "Flow input");
+        Register("流动输出", "Flow output");
         Register("配方强化", "Recipe enhancement");
         Register("单锁", "Single Lock");
         Register("单锁产物数目", "Single-lock output count");
