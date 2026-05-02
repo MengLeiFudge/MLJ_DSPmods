@@ -57,15 +57,16 @@ static class AfterBuildEvent {
     }
 
     public static void Main(string[] args) {
+        bool automationMode = args.Length > 0;
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
-        Console.WriteLine("输入要执行的命令（直接回车表示1）：");
+        Console.WriteLine(automationMode ? "自动模式：使用命令行参数选择执行模式" : "输入要执行的命令（直接回车表示1）：");
         Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
         Console.WriteLine("2表示更新部分需要的dll类库");
         Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
-        string str = Console.ReadLine();
+        string str = automationMode ? args[0].Trim() : Console.ReadLine();
         if (str == "1" || str == "") {
-            UpdateModsThenStart();
+            UpdateModsThenStart(automationMode);
         } else if (str == "2") {
             UpdateLibDll();
         } else if (str == "3") {
@@ -79,8 +80,9 @@ static class AfterBuildEvent {
 
     #region 更新mod、打包、启动游戏
 
-    private static void UpdateModsThenStart() {
+    private static void UpdateModsThenStart(bool automationMode = false) {
         using CmdProcess cmd = new();
+        List<string> generatedPackages = [];
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
@@ -201,6 +203,7 @@ static class AfterBuildEvent {
             string zipFile = $@".\ModZips\{projectName}{version}.zip";
             ZipMod(fileList, zipFile);
             Console.WriteLine($"创建 {zipFile}");
+            generatedPackages.Add(Path.GetFullPath(zipFile));
             //所有文件复制到R2，注意R2是否禁用了mod
             //mdb也要复制到R2（pdb不需要）
             fileList.Add(projectModMdbFile);
@@ -213,14 +216,7 @@ static class AfterBuildEvent {
                 if (!fileInfo.Directory.Exists) {
                     Directory.CreateDirectory(fileInfo.Directory.FullName);
                 }
-                while (true) {
-                    try {
-                        File.Copy(file, targetPath, true);
-                        Console.WriteLine($"复制 {file} -> {targetPath}");
-                        break;
-                    }
-                    catch { }
-                }
+                CopyFileWithRetry(file, targetPath);
             }
             if (!string.IsNullOrWhiteSpace(manifestVersion)) {
                 if (UpdateModVersionInConfig(thunderstoreModName, manifestVersion)) {
@@ -239,24 +235,17 @@ static class AfterBuildEvent {
         }
 
         //打开所有压缩包的文件夹
-        Process.Start("explorer", @".\ModZips");
+        if (!automationMode) {
+            Process.Start("explorer", @".\ModZips");
+        }
 
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
-        File.Copy($@"{R2ProfileDir}\winhttp.dll", $@"{DSPGameDir}\winhttp.dll", true);
-        string doorstop_config = $@"{DSPGameDir}\doorstop_config.ini";
-        File.Copy($@"{R2ProfileDir}\doorstop_config.ini", doorstop_config, true);
-        //修改doorstop_config.ini，使其目标指向R2的preloader.dll
-        string[] lines = File.ReadAllLines(doorstop_config);
-        for (int i = 0; i < lines.Length; i++) {
-            if (lines[i].StartsWith("enabled=")) {
-                lines[i] = "enabled=true";
-            } else if (lines[i].StartsWith("targetAssembly=")) {
-                lines[i] = $@"targetAssembly={R2ProfileDir}\BepInEx\core\BepInEx.Preloader.dll";
-            } else if (lines[i].StartsWith("ignoreDisableSwitch=")) {
-                lines[i] = "ignoreDisableSwitch=false";
-            }
+        PrepareR2Doorstop();
+        if (automationMode) {
+            WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false);
+            Console.WriteLine("自动模式完成：不打开 ModZips 文件夹，不启动游戏");
+            return;
         }
-        File.WriteAllLines(doorstop_config, lines);
 
         //启动使用R2MOD的游戏
         Console.WriteLine("是否启动游戏？1或回车表示启动，其他表示结束程序");
@@ -264,6 +253,34 @@ static class AfterBuildEvent {
         if (str == "" || str == "1") {
             cmd.Exec(RunDSP);
         }
+    }
+
+    private static void CopyFileWithRetry(string source, string targetPath) {
+        for (int attempt = 1; attempt <= R2CopyRetryCount; attempt++) {
+            try {
+                File.Copy(source, targetPath, true);
+                Console.WriteLine($"复制 {source} -> {targetPath}");
+                return;
+            }
+            catch (Exception ex) when (attempt < R2CopyRetryCount) {
+                Console.WriteLine($"复制失败，稍后重试 {attempt}/{R2CopyRetryCount}：{source} -> {targetPath}，{ex.Message}");
+                Thread.Sleep(R2CopyRetryDelayMs);
+            }
+        }
+        File.Copy(source, targetPath, true);
+        Console.WriteLine($"复制 {source} -> {targetPath}");
+    }
+
+    private static void WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame, bool openedModZips) {
+        string resultPath = Path.GetFullPath(@".\ModZips\afterbuild-result.json");
+        JObject result = new() {
+            ["automation_mode"] = true,
+            ["started_game"] = startedGame,
+            ["opened_modzips"] = openedModZips,
+            ["generated_packages"] = new JArray(generatedPackages),
+        };
+        File.WriteAllText(resultPath, result.ToString(), Utf8NoBom);
+        Console.WriteLine($"写入自动模式结果 {resultPath}");
     }
 
     private static void PrepareR2Doorstop() {
