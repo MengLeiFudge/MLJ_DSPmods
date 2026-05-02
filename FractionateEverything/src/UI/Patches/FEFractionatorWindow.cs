@@ -812,6 +812,7 @@ public static class FEFractionatorWindow {
             }
             modWindow.needCountText.text = fractionator.fluidInputCount.ToString();
             ((Behaviour)modWindow.needCountText).enabled = true;
+            modWindow.inputTitleText.text = "流动输入".Translate();
             ((Behaviour)modWindow.inputTitleText).enabled = true;
             ((Behaviour)modWindow.speedText).enabled = true;
             int inputInc = fractionator.fluidInputCount > 0 && fractionator.fluidInputInc > 0
@@ -1083,7 +1084,7 @@ public static class FEFractionatorWindow {
         }
         if (_fluidArrowText != null) {
             _fluidArrowText.gameObject.SetActive(true);
-            _fluidArrowText.text = "流体输出".Translate();
+            _fluidArrowText.text = "流动输出".Translate();
             _fluidArrowText.color = ProbColor;
         }
         if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
