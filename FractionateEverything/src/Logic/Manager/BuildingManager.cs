@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using FE.Compatibility;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
@@ -286,25 +287,33 @@ public static class BuildingManager {
     }
 
     private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
-    private static readonly Dictionary<int, FractionatorExtraState[]> outputStateArraysByPlanet = [];
-    private static readonly object outputStateArrayLock = new();
-    private static int outputStateArrayVersion;
+    private sealed class FractionatorExtraStateArray(int length) {
+        public readonly object SyncRoot = new();
+        public FractionatorExtraState[] States = new FractionatorExtraState[length];
+        public int Version;
+    }
+
+    private static readonly ConcurrentDictionary<int, FractionatorExtraStateArray> outputStateArraysByPlanet = [];
+    private static int outputStateArrayGeneration;
     [ThreadStatic]
     private static int cachedOutputStatePlanetId;
     [ThreadStatic]
     private static int cachedOutputStateVersion;
     [ThreadStatic]
-    private static FractionatorExtraState[] cachedOutputStates;
+    private static int cachedOutputStateGeneration;
+    [ThreadStatic]
+    private static FractionatorExtraStateArray cachedOutputStateArray;
 
     private static FractionatorExtraState[] EnsureOutputStateArray(int planetId, int entityId,
         PlanetFactory factory = null) {
-        FractionatorExtraState[] cachedStates = cachedOutputStates;
-        int version = outputStateArrayVersion;
-        if (cachedStates != null
+        int generation = Volatile.Read(ref outputStateArrayGeneration);
+        FractionatorExtraStateArray cachedArray = cachedOutputStateArray;
+        if (cachedArray != null
             && cachedOutputStatePlanetId == planetId
-            && cachedOutputStateVersion == version
-            && (uint)entityId < (uint)cachedStates.Length) {
-            return cachedStates;
+            && cachedOutputStateVersion == cachedArray.Version
+            && cachedOutputStateGeneration == generation
+            && (uint)entityId < (uint)cachedArray.States.Length) {
+            return cachedArray.States;
         }
 
         int minLength = entityId + 1;
@@ -313,34 +322,35 @@ public static class BuildingManager {
         }
         minLength = Math.Max(minLength, 64);
 
+        FractionatorExtraStateArray stateArray =
+            outputStateArraysByPlanet.GetOrAdd(planetId, _ => new FractionatorExtraStateArray(minLength));
         FractionatorExtraState[] states;
-        lock (outputStateArrayLock) {
-            if (!outputStateArraysByPlanet.TryGetValue(planetId, out states)) {
-                states = new FractionatorExtraState[minLength];
-                outputStateArraysByPlanet[planetId] = states;
-            } else if (states.Length <= entityId) {
+        int version;
+        lock (stateArray.SyncRoot) {
+            states = stateArray.States;
+            if (states.Length <= entityId) {
                 Array.Resize(ref states, minLength);
-                outputStateArraysByPlanet[planetId] = states;
-                outputStateArrayVersion++;
+                stateArray.States = states;
+                stateArray.Version++;
             }
-            version = outputStateArrayVersion;
+            version = stateArray.Version;
         }
 
         cachedOutputStatePlanetId = planetId;
         cachedOutputStateVersion = version;
-        cachedOutputStates = states;
+        cachedOutputStateGeneration = generation;
+        cachedOutputStateArray = stateArray;
         return states;
     }
 
     public static void OutputExtendImport(BinaryReader r) {
         outputDic.Clear();
-        lock (outputStateArrayLock) {
-            outputStateArraysByPlanet.Clear();
-            outputStateArrayVersion++;
-        }
+        outputStateArraysByPlanet.Clear();
+        Interlocked.Increment(ref outputStateArrayGeneration);
         cachedOutputStatePlanetId = 0;
         cachedOutputStateVersion = 0;
-        cachedOutputStates = null;
+        cachedOutputStateGeneration = 0;
+        cachedOutputStateArray = null;
         int fractionatorNum = r.ReadInt32();
         for (int i = 0; i < fractionatorNum; i++) {
             int planetId = r.ReadInt32();
@@ -378,13 +388,12 @@ public static class BuildingManager {
 
     public static void OutputExtendIntoOtherSave() {
         outputDic.Clear();
-        lock (outputStateArrayLock) {
-            outputStateArraysByPlanet.Clear();
-            outputStateArrayVersion++;
-        }
+        outputStateArraysByPlanet.Clear();
+        Interlocked.Increment(ref outputStateArrayGeneration);
         cachedOutputStatePlanetId = 0;
         cachedOutputStateVersion = 0;
-        cachedOutputStates = null;
+        cachedOutputStateGeneration = 0;
+        cachedOutputStateArray = null;
     }
 
     public static List<ProductOutputInfo> products(this FractionatorComponent fractionator,
@@ -420,17 +429,24 @@ public static class BuildingManager {
         }
         int planetId = factory.planetId;
         outputDic.TryRemove((planetId, entityId), out _);
-        lock (outputStateArrayLock) {
-            if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraState[] states)
-                && entityId < states.Length) {
-                states[entityId] = null;
+        if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraStateArray stateArray)) {
+            lock (stateArray.SyncRoot) {
+                FractionatorExtraState[] states = stateArray.States;
+                if (entityId < states.Length) {
+                    states[entityId] = null;
+                }
             }
         }
         if (cachedOutputStatePlanetId == planetId
-            && cachedOutputStates != null
-            && cachedOutputStateVersion == outputStateArrayVersion
-            && entityId < cachedOutputStates.Length) {
-            cachedOutputStates[entityId] = null;
+            && cachedOutputStateArray != null
+            && cachedOutputStateGeneration == Volatile.Read(ref outputStateArrayGeneration)) {
+            lock (cachedOutputStateArray.SyncRoot) {
+                FractionatorExtraState[] states = cachedOutputStateArray.States;
+                if (cachedOutputStateVersion == cachedOutputStateArray.Version
+                    && entityId < states.Length) {
+                    states[entityId] = null;
+                }
+            }
         }
     }
 
