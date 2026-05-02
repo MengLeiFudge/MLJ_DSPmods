@@ -287,15 +287,24 @@ public static class BuildingManager {
 
     private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
     private static readonly Dictionary<int, FractionatorExtraState[]> outputStateArraysByPlanet = [];
+    private static readonly object outputStateArrayLock = new();
+    private static int outputStateArrayVersion;
+    [ThreadStatic]
     private static int cachedOutputStatePlanetId;
+    [ThreadStatic]
+    private static int cachedOutputStateVersion;
+    [ThreadStatic]
     private static FractionatorExtraState[] cachedOutputStates;
 
     private static FractionatorExtraState[] EnsureOutputStateArray(int planetId, int entityId,
         PlanetFactory factory = null) {
-        if (cachedOutputStates != null
+        FractionatorExtraState[] cachedStates = cachedOutputStates;
+        int version = outputStateArrayVersion;
+        if (cachedStates != null
             && cachedOutputStatePlanetId == planetId
-            && entityId < cachedOutputStates.Length) {
-            return cachedOutputStates;
+            && cachedOutputStateVersion == version
+            && (uint)entityId < (uint)cachedStates.Length) {
+            return cachedStates;
         }
 
         int minLength = entityId + 1;
@@ -304,23 +313,33 @@ public static class BuildingManager {
         }
         minLength = Math.Max(minLength, 64);
 
-        if (!outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraState[] states)) {
-            states = new FractionatorExtraState[minLength];
-            outputStateArraysByPlanet[planetId] = states;
-        } else if (states.Length <= entityId) {
-            Array.Resize(ref states, minLength);
-            outputStateArraysByPlanet[planetId] = states;
+        FractionatorExtraState[] states;
+        lock (outputStateArrayLock) {
+            if (!outputStateArraysByPlanet.TryGetValue(planetId, out states)) {
+                states = new FractionatorExtraState[minLength];
+                outputStateArraysByPlanet[planetId] = states;
+            } else if (states.Length <= entityId) {
+                Array.Resize(ref states, minLength);
+                outputStateArraysByPlanet[planetId] = states;
+                outputStateArrayVersion++;
+            }
+            version = outputStateArrayVersion;
         }
 
         cachedOutputStatePlanetId = planetId;
+        cachedOutputStateVersion = version;
         cachedOutputStates = states;
         return states;
     }
 
     public static void OutputExtendImport(BinaryReader r) {
         outputDic.Clear();
-        outputStateArraysByPlanet.Clear();
+        lock (outputStateArrayLock) {
+            outputStateArraysByPlanet.Clear();
+            outputStateArrayVersion++;
+        }
         cachedOutputStatePlanetId = 0;
+        cachedOutputStateVersion = 0;
         cachedOutputStates = null;
         int fractionatorNum = r.ReadInt32();
         for (int i = 0; i < fractionatorNum; i++) {
@@ -359,8 +378,12 @@ public static class BuildingManager {
 
     public static void OutputExtendIntoOtherSave() {
         outputDic.Clear();
-        outputStateArraysByPlanet.Clear();
+        lock (outputStateArrayLock) {
+            outputStateArraysByPlanet.Clear();
+            outputStateArrayVersion++;
+        }
         cachedOutputStatePlanetId = 0;
+        cachedOutputStateVersion = 0;
         cachedOutputStates = null;
     }
 
@@ -397,12 +420,15 @@ public static class BuildingManager {
         }
         int planetId = factory.planetId;
         outputDic.TryRemove((planetId, entityId), out _);
-        if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraState[] states)
-            && entityId < states.Length) {
-            states[entityId] = null;
+        lock (outputStateArrayLock) {
+            if (outputStateArraysByPlanet.TryGetValue(planetId, out FractionatorExtraState[] states)
+                && entityId < states.Length) {
+                states[entityId] = null;
+            }
         }
         if (cachedOutputStatePlanetId == planetId
             && cachedOutputStates != null
+            && cachedOutputStateVersion == outputStateArrayVersion
             && entityId < cachedOutputStates.Length) {
             cachedOutputStates[entityId] = null;
         }
