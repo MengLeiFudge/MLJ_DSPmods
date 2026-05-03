@@ -36,8 +36,8 @@ public static partial class MainTask {
         Register("无", "None", "无");
         Register("数量", "Count", "数量");
         Register("分馏次数", "Fractionations", "分馏次数");
-        Register("开线抽取", "Opening draws", "开线抽取");
-        Register("原胚抽取", "Proto draws", "原胚抽取");
+        Register("主线统计-开线抽取", "Opening draws", "开线抽取");
+        Register("主线统计-原胚抽取", "Proto draws", "原胚抽取");
         Register("科技解锁", "Tech unlocked", "科技解锁");
         Register("物品解锁", "Item unlocked", "物品解锁");
         Register("建筑等级", "Building level", "建筑等级");
@@ -50,10 +50,14 @@ public static partial class MainTask {
         Register("提取次数", "Extracts", "提取次数");
         Register("上传次数", "Uploads", "上传次数");
         Register("交易次数", "Trades", "交易次数");
-        Register("市场订单", "Market orders", "市场订单");
-        Register("残片兑换", "Fragment exchanges", "残片兑换");
-        Register("成长报价", "Growth offers", "成长报价");
-        Register("循环任务", "Recurring tasks", "循环任务");
+        Register("主线统计-市场订单", "Market orders", "市场订单");
+        Register("主线统计-残片兑换", "Fragment exchanges", "残片兑换");
+        Register("主线统计-成长报价", "Growth offers", "成长报价");
+        Register("主线统计-循环任务", "Recurring tasks", "循环任务");
+        Register("主线节点-流派聚焦", "Focus Style", "流派聚焦");
+        Register("主线节点-成长报价", "Growth Offer", "成长报价");
+        Register("主线节点-市场订单", "Market Order", "市场订单");
+        Register("主线节点-残片兑换", "Fragment Exchange", "残片兑换");
         Register("循环类型", "Recurring types", "循环类型");
         Register("资源层级", "Resource tier", "资源层级");
         Register("黑雾阶段", "Dark Fog stage", "黑雾阶段");
@@ -116,8 +120,6 @@ public static partial class MainTask {
             ("原胚十次", "Ten Proto Draws"),
             ("首次配方", "First Recipe"),
             ("首次升级", "First Upgrade"),
-            ("流派聚焦", "Focus Style"),
-            ("成长报价", "Growth Offer"),
             ("首次补差", "First Catch-up"),
             ("首获原胚", "First Proto"),
             ("原胚整备", "Proto Setup"),
@@ -141,8 +143,6 @@ public static partial class MainTask {
             ("物品交互", "Item Interaction"),
             ("首次提取", "First Extract"),
             ("首次交易", "First Trade"),
-            ("市场订单", "Market Order"),
-            ("残片兑换", "Fragment Exchange"),
             ("首次循环", "First Recurring"),
             ("循环五次", "Five Recurring"),
             ("六类循环", "Six Recurring Types"),
