@@ -15,7 +15,10 @@ public static partial class MainTask {
     private const float LeftColumnWidth = 156f;
     private const float StageColumnWidth = 154f;
     private const float StageHeaderHeight = 54f;
-    private const float CategoryRowHeight = 56f;
+    private const float CategoryRowHeight = 54f;
+    private const int NodesPerCellRow = 3;
+    private const float NodeRowGap = 2f;
+    private const float NodeCellBottomPadding = 10f;
     private const float NodeSize = 30f;
     private const float NodeGap = 6f;
     private const float NodeCellLeftPadding = 10f;
@@ -169,20 +172,23 @@ public static partial class MainTask {
             StageLabels = new Text[route.Stages.Length],
             NodeViews = new NodeView[route.Branches.Length][],
         };
+        float[] branchRowTops = BuildBranchRowTops(route, out float contentHeight);
 
         RectTransform leftRoot = CreatePanelRect("main-task-left-fixed", root, 10f, 10f, LeftColumnWidth - 10f,
             RoutePanelHeight - 20f, Color.clear);
-        AddRowBackground(leftRoot, 0f, StageHeaderHeight, HeaderFillColor);
+        AddRowBackground(leftRoot, 0f, 0f, HeaderFillColor, LeftColumnWidth, StageHeaderHeight);
         Text categoryTitle = MyWindow.AddText(12f, 18f, leftRoot, "类别".Translate(), 14,
             $"txt-main-task-category-title-{modeIndex}");
         categoryTitle.color = Orange;
         categoryTitle.supportRichText = true;
 
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
-            float y = StageHeaderHeight + branchIndex * CategoryRowHeight;
-            AddRowBackground(leftRoot, 0f, y, branchIndex % 2 == 0 ? RowEvenColor : RowOddColor);
+            float y = branchRowTops[branchIndex];
+            float rowHeight = GetBranchRowHeight(route, branchIndex);
+            AddRowBackground(leftRoot, 0f, y, branchIndex % 2 == 0 ? RowEvenColor : RowOddColor, LeftColumnWidth,
+                rowHeight);
             TaskBranch branch = route.Branches[branchIndex];
-            Text branchLabel = MyWindow.AddText(12f, y + 18f, leftRoot, branch.Name.Translate(), 13,
+            Text branchLabel = MyWindow.AddText(12f, y + rowHeight / 2f, leftRoot, branch.Name.Translate(), 13,
                 $"txt-main-task-branch-{modeIndex}-{branchIndex}");
             branchLabel.supportRichText = true;
             branchLabel.color = White;
@@ -193,12 +199,12 @@ public static partial class MainTask {
             RoutePanelWidth - LeftColumnWidth - 10f, RoutePanelHeight - 20f);
         float contentWidth = Math.Max(RoutePanelWidth - LeftColumnWidth - 12f, route.Stages.Length * StageColumnWidth);
         RectTransform content = CreateScrollContent("main-task-scroll-content", viewport, contentWidth,
-            RoutePanelHeight - 20f);
+            contentHeight);
         cache.ScrollContent = content;
 
         ScrollRect scroll = root.gameObject.AddComponent<ScrollRect>();
         scroll.horizontal = true;
-        scroll.vertical = false;
+        scroll.vertical = true;
         scroll.viewport = viewport;
         scroll.content = content;
         scroll.movementType = ScrollRect.MovementType.Clamped;
@@ -208,8 +214,8 @@ public static partial class MainTask {
         cache.Scroll = scroll;
 
         BuildStageHeaders(route, cache, content, modeIndex);
-        BuildMatrixRows(route, content);
-        BuildNodeViews(route, cache, content, modeIndex);
+        BuildMatrixRows(route, content, branchRowTops);
+        BuildNodeViews(route, cache, content, modeIndex, branchRowTops);
 
         routeViewsByMode[modeIndex] = cache;
     }
@@ -232,19 +238,21 @@ public static partial class MainTask {
         }
     }
 
-    private static void BuildMatrixRows(RouteMap route, RectTransform content) {
+    private static void BuildMatrixRows(RouteMap route, RectTransform content, float[] branchRowTops) {
         float contentWidth = route.Stages.Length * StageColumnWidth;
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
-            float y = StageHeaderHeight + branchIndex * CategoryRowHeight;
+            float y = branchRowTops[branchIndex];
+            float rowHeight = GetBranchRowHeight(route, branchIndex);
             AddRowBackground(content, 0f, y, branchIndex % 2 == 0 ? RowEvenColor : RowOddColor, contentWidth,
-                CategoryRowHeight);
+                rowHeight);
             for (int stageIndex = 1; stageIndex < route.Stages.Length; stageIndex++) {
-                AddColumnSeparator(content, stageIndex * StageColumnWidth, y, CategoryRowHeight);
+                AddColumnSeparator(content, stageIndex * StageColumnWidth, y, rowHeight);
             }
         }
     }
 
-    private static void BuildNodeViews(RouteMap route, RouteViewCache cache, RectTransform content, int modeIndex) {
+    private static void BuildNodeViews(RouteMap route, RouteViewCache cache, RectTransform content, int modeIndex,
+        float[] branchRowTops) {
         for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
             TaskBranch branch = route.Branches[branchIndex];
             cache.NodeViews[branchIndex] = new NodeView[branch.Nodes.Length];
@@ -252,11 +260,11 @@ public static partial class MainTask {
                 TaskNode node = branch.Nodes[nodeIndex];
                 int stageIndex = Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex));
                 int cellIndex = CountPreviousNodesInCell(branch, nodeIndex, stageIndex);
-                int cellColumn = cellIndex % 3;
-                int cellRow = cellIndex / 3;
+                int cellColumn = cellIndex % NodesPerCellRow;
+                int cellRow = cellIndex / NodesPerCellRow;
                 float x = stageIndex * StageColumnWidth + NodeCellLeftPadding + cellColumn * (NodeSize + NodeGap);
-                float y = StageHeaderHeight + branchIndex * CategoryRowHeight + NodeCellTopPadding
-                          + cellRow * (NodeSize + 2f);
+                float y = branchRowTops[branchIndex] + NodeCellTopPadding
+                          + cellRow * (NodeSize + NodeRowGap);
 
                 float bgSize = NodeSize + 6f;
                 Image nodeBg = new GameObject("node-bg", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
@@ -300,6 +308,39 @@ public static partial class MainTask {
                 };
             }
         }
+    }
+
+    private static float[] BuildBranchRowTops(RouteMap route, out float contentHeight) {
+        float[] rowTops = new float[route.Branches.Length];
+        float y = StageHeaderHeight;
+        for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
+            rowTops[branchIndex] = y;
+            y += GetBranchRowHeight(route, branchIndex);
+        }
+        contentHeight = Math.Max(RoutePanelHeight - 20f, y);
+        return rowTops;
+    }
+
+    private static float GetBranchRowHeight(RouteMap route, int branchIndex) {
+        int maxCellRows = 1;
+        for (int stageIndex = 0; stageIndex < route.Stages.Length; stageIndex++) {
+            int nodeCount = CountNodesInCell(route.Branches[branchIndex], stageIndex);
+            if (nodeCount > 0) {
+                maxCellRows = Math.Max(maxCellRows, (nodeCount + NodesPerCellRow - 1) / NodesPerCellRow);
+            }
+        }
+        return Math.Max(CategoryRowHeight,
+            NodeCellTopPadding + maxCellRows * NodeSize + (maxCellRows - 1) * NodeRowGap + NodeCellBottomPadding);
+    }
+
+    private static int CountNodesInCell(TaskBranch branch, int stageIndex) {
+        int count = 0;
+        for (int i = 0; i < branch.Nodes.Length; i++) {
+            if (branch.Nodes[i].StageIndex == stageIndex) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static int CountPreviousNodesInCell(TaskBranch branch, int nodeIndex, int stageIndex) {
