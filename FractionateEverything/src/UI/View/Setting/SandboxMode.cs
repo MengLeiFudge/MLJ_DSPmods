@@ -49,7 +49,7 @@ public static class SandboxMode {
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("沙盒模式", objectName: "sandbox-mode-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "集中放置高影响力的沙盒操作，避免按钮散落在页面角落".WithColor(White)),
+                        onBuilt: refs => refs.Summary.text = "批量锁定或解锁配方，调整经验倍率，并执行测试用沙盒操作".WithColor(White)),
                     ContentCard(
                         pos: (1, 0),
                         objectName: "sandbox-mode-action-card",
