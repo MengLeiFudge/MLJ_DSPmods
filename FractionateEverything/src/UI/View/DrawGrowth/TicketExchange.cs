@@ -31,8 +31,8 @@ public static class TicketExchange {
     public static void AddTranslations() {
         Register("抽取总览", "Draw Overview");
         Register("抽取总览说明",
-            "Version 2.3 no longer uses physical tickets. Draws consume the current stage Matrix directly, while Growth / Focus use Fragments and pool points.",
-            "2.3 版本不再使用实体奖券。抽取直接消耗当前阶段矩阵，成长与聚焦则消耗残片和池积分。");
+            "Review draw costs, current resources, focus switch costs and Dark Fog branch progress.",
+            "查看抽取成本、当前资源、聚焦切换成本与黑雾支线进度。");
         Register("开线池成本", "Opening Pool Cost");
         Register("原胚池成本", "Proto Pool Cost");
         Register("聚焦切换成本", "Focus Switch Cost");

@@ -208,7 +208,7 @@ public static class Miscellaneous {
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("杂项设置", objectName: "misc-setting-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "把交互、阈值、抽卡模式与面板切换整理成统一设置页".WithColor(White)),
+                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值、抽取模式和主面板风格".WithColor(White)),
                     ContentCard(
                         pos: (1, 0),
                         objectName: "misc-setting-config-card",
