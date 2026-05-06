@@ -78,6 +78,8 @@ public static class InterstellarInteractionStation {
         }
         ModelProto stationModel = LDB.models.Select(M星际物流运输站);
         model.HpMax = stationModel.HpMax;
+        model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;
+        model.prefabDesc.stationMaxItemCount = stationModel.prefabDesc.stationMaxItemCount;
         workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }

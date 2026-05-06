@@ -65,6 +65,21 @@ public static class StationManager {
         return Math.Min((int)(100000 / divisor), 100000);
     }
 
+    private static void EnsureInteractionStationStorage(StationComponent station, int buildingID) {
+        if (station?.storage == null || station.priorityLocks == null) {
+            return;
+        }
+
+        int targetStorageCount = LDB.items.Select(buildingID)?.prefabDesc.stationMaxItemKinds ?? 0;
+        if (targetStorageCount <= station.storage.Length) {
+            return;
+        }
+
+        // 旧存档和“先放小塔再升级”的路径可能保留旧数组长度，这里只扩容不收缩，避免丢槽位数据。
+        Array.Resize(ref station.storage, targetStorageCount);
+        Array.Resize(ref station.priorityLocks, targetStorageCount);
+    }
+
     /// <summary>防止同一 stationPool 在同一 tick 被重复处理</summary>
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
     /// <summary>按 stationPool 复用交互站扫描缓冲，避免 30 帧热路径重复分配列表。</summary>
@@ -567,6 +582,7 @@ public static class StationManager {
 
                     int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
                     if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
+                        EnsureInteractionStationStorage(stationComponent, buildingID);
                         stations.Add(stationComponent);
                     }
                 }
