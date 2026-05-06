@@ -98,8 +98,4 @@ public static partial class TechManager {
     private static void EnsureRecipeInitialLevel(BaseRecipe recipe) {
         RecipeGrowthExecutor.EnsureUnlockedByTech(recipe, RecipeGrowthManager.BuildContext());
     }
-
-    /// <summary>
-    /// 当分馏塔上传至数据中心时，将解锁标记置为true。
-    /// </summary>
 }

@@ -9,11 +9,12 @@ Shell/
 ├── MessageBox/
 │   └── MessageBoxMainPanelWindow.cs
 └── Analysis/
-    ├── AnalysisMainPanelWindow.cs
-    ├── AnalysisMainPanelWindow.ButtonStyle.cs
-    ├── AnalysisMainPanelWindow.Layout.cs
-    ├── AnalysisMainPanelWindow.NativeShell.cs
-    └── AnalysisMainPanelWindow.Navigation.cs
+    └── AnalysisMainPanelWindow/
+        ├── AnalysisMainPanelWindow.cs
+        ├── ButtonStyle.cs
+        ├── Layout.cs
+        ├── NativeShell.cs
+        └── Navigation.cs
 ```
 
 ## Rules

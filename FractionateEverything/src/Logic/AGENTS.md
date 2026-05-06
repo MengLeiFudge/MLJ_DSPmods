@@ -23,7 +23,7 @@ Logic/
 
 - `Bootstrap/FeatureBootstrap.cs` 负责翻译、原型注册和 FinalAction 编排。
 - `Persistence/FeatureSaveRegistry.cs` 负责 Import/Export/IntoOtherSave 顺序。
-- 功能域内部再由各自 manager 聚合，例如 `Buildings/BuildingManager.cs`、`Fractionation/Recipes/RecipeManager.cs`、`Station/StationManager.cs`。
+- 功能域内部再由各自 manager 聚合，例如 `Buildings/BuildingManager.cs`、`Fractionation/Recipes/RecipeManager.cs`、`Station/StationManager/StationManager.cs`。
 
 ## 存档约束
 
