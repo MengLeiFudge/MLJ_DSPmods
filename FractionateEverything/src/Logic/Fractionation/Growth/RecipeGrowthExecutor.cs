@@ -1,5 +1,6 @@
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Gacha;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;

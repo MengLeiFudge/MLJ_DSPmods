@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FE.Logic.Gacha;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;

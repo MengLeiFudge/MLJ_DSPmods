@@ -1,4 +1,4 @@
-namespace FE.Logic.Manager;
+namespace FE.Logic.DarkFog;
 
 public enum EDarkFogBranchStage {
     Locked = 0,

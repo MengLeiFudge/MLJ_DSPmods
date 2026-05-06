@@ -10,6 +10,8 @@ using FE.UI.Components;
 using FE.UI.MainPanel.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using FE.Logic.Economy;
+using FE.Logic.Gacha;
 using static FE.UI.Components.GridDsl;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;

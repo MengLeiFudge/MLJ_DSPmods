@@ -1,4 +1,6 @@
 using FE.Logic.Manager;
+using FE.Logic.DarkFog;
+using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
 

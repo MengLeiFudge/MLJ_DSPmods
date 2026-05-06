@@ -6,7 +6,7 @@ using FE.Utils;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Economy;
 
 /// <summary>
 /// 残片稳定兑换。

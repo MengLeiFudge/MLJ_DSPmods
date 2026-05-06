@@ -9,7 +9,7 @@ using UnityEngine;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Progression;
 
 /// <summary>
 /// 添加科技后，需要Preload、Preload2。

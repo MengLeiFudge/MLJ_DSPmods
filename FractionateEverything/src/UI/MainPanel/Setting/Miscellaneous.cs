@@ -9,6 +9,7 @@ using FE.UI.Components;
 using FE.UI.MainPanel;
 using UnityEngine;
 using UnityEngine.UI;
+using FE.Logic.Gacha;
 using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 

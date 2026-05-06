@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Gacha;
 
 /// <summary>稀有度等级</summary>
 public enum GachaRarity {

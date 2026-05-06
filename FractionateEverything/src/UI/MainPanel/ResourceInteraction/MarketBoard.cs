@@ -5,6 +5,8 @@ using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using FE.Logic.DarkFog;
+using FE.Logic.Economy;
 using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
 

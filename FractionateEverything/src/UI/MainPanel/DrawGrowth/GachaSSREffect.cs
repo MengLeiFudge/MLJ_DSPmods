@@ -2,6 +2,7 @@ using System.Collections;
 using FE.Logic.Manager;
 using UnityEngine;
 using UnityEngine.UI;
+using FE.Logic.Gacha;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 

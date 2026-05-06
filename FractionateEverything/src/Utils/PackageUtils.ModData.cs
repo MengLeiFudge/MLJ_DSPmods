@@ -3,6 +3,7 @@ using FE.Compatibility;
 using FE.Logic.Manager;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
+using FE.Logic.Progression;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Utils;
