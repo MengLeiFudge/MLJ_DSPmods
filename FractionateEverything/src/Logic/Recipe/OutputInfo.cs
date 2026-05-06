@@ -1,5 +1,5 @@
 ﻿using System;
-using FE.UI.View.Setting;
+using FE.UI.MainPanel.Setting;
 using static FE.Logic.Manager.ItemManager;
 
 namespace FE.Logic.Recipe;

@@ -1,7 +1,7 @@
 ﻿using System;
 using FE.Compatibility;
 using FE.Logic.Manager;
-using FE.UI.View.Setting;
+using FE.UI.MainPanel.Setting;
 using NebulaAPI;
 using static FE.Logic.Manager.ItemManager;
 

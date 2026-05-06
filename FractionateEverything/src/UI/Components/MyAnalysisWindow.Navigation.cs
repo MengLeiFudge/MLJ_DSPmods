@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using FE.UI.View;
+using FE.UI.MainPanel;
 using UnityEngine;
 using UnityEngine.UI;
 

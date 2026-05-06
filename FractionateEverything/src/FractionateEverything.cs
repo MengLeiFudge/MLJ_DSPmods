@@ -14,7 +14,8 @@ using FE.Compatibility;
 using FE.Logic.Manager;
 using FE.Persistence;
 using FE.UI.Components;
-using FE.UI.View;
+using FE.UI.MainPanel;
+using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -149,7 +150,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     private void Update() {
         MainWindow.OnInputUpdate();
-        UI.View.ProgressTask.MainTask.Tick();
+        MainTask.Tick();
     }
 
     #region IModCanSave & IMultiplayerModWithSettings

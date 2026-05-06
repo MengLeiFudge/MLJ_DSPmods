@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
 using FE.Logic.Building;
-using FE.UI.View.Setting;
+using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;

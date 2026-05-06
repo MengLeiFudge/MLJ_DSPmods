@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FE.UI.View;
+using FE.UI.MainPanel;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;

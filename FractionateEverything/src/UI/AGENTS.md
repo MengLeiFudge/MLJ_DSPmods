@@ -1,14 +1,14 @@
 # UI — Unity UI Layer
 
-34 files, ~8k lines。View 仍是静态类架构，但主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
+34 files, ~8k lines。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
 
 ## Structure
 
 ```
 UI/
 ├── Components/   # 通用组件；含 MyAnalysisWindow
-├── Patches/      # UI Harmony 补丁（图标、控件兼容）
-└── View/
+├── Patches/      # UI Harmony 补丁；最终只保留 Common 通用控件 patch
+└── MainPanel/
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
     ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
     └── DrawGrowth/            # 抽奖/商店/兑换系统（TicketRaffle + LimitedTimeStore + Gacha）
@@ -39,7 +39,7 @@ new(category, subpage,
 - Analysis 仅 `enabledInAnalysis=true` 才可见
 - Analysis 可选专用渲染：`createUIInAnalysis`
 
-## View 最小接口（静态类）
+## MainPanel 页面最小接口（静态类）
 
 ```csharp
 AddTranslations();
@@ -52,10 +52,17 @@ Import/Export/IntoOtherSave();
 ## 关键约束
 
 - `UpdateUI()` 必须先做可见性/面板态判断（避免离屏刷新）
-- 文本颜色在 `UI/View/*` 禁止硬编码，统一走 `RichTextUtils` 常量 + `WithColor`
+- 文本颜色在 `UI/MainPanel/*` 禁止硬编码，统一走 `RichTextUtils` 常量 + `WithColor`
 - 新页面优先接入 `MainWindowPageRegistry`，不要再在 `MainWindow` 手写大段分类分发逻辑
 
 ## Patches Folder
+
+- `Patches/Common/`：只放与功能域无关的通用控件 patch，例如按钮、下拉框兼容。
+- 分馏塔窗口、配方显示、图标注入、信号选择等 patch 不再定义为“主面板 UI”，应归入对应功能域的 `Presentation`：
+  - 分馏塔窗口、分馏塔 brief info、分馏配方显示 -> `Logic/Fractionation/Presentation`
+  - 物品图标、信号选择、信号标签选择 -> `Logic/Items/Presentation`
+
+历史文件迁移前的归属参考：
 
 - `FEFractionatorWindow*.cs`：模组分馏塔独立窗口 patch，按 partial 拆分：
   - `FEFractionatorWindow.cs`：共享字段、槽位模型、事件绑定、模组分馏塔判定
@@ -65,6 +72,7 @@ Import/Export/IntoOtherSave();
   - `FEFractionatorWindow.Lock.cs`：转化塔单路锁定右键交互、锁图标、锁状态 UI
   - `FEFractionatorWindow.Inventory.cs`：`OnProductUIButtonClick` 拦截与手动取放物品
 - `IconSetPatch.cs`：mod 图标注入
-- `UIRecipeEntryPatch.cs` / `UIComboBoxPatch.cs` / `UIButtonPatch.cs`：控件兼容
+- `UIRecipeEntryPatch.cs`：配方显示 patch
+- `UIComboBoxPatch.cs` / `UIButtonPatch.cs`：通用控件兼容
 
-UI 补丁只处理界面层；游戏状态逻辑放 `Logic/Manager/`。
+UI 补丁只处理界面层；游戏状态逻辑放对应 `Logic/*` 功能域。
