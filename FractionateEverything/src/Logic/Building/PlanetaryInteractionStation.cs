@@ -82,6 +82,7 @@ public static class PlanetaryInteractionStation {
         model.HpMax = stationModel.HpMax;
         model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;
         model.prefabDesc.stationMaxItemCount = stationModel.prefabDesc.stationMaxItemCount;
+        model.prefabDesc.stationMaxEnergyAcc = stationModel.prefabDesc.stationMaxEnergyAcc;
         workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
