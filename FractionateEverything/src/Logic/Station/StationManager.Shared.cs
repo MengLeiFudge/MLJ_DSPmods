@@ -9,7 +9,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
-
+/// <summary>
+/// StationManager 类型。
+/// </summary>
 public static partial class StationManager {
     /// <summary>按钮额外间距（像素）</summary>
     private const float ExtraSpacing = 12f;

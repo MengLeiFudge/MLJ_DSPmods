@@ -13,7 +13,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
-
+/// <summary>
+/// StationManager 类型。
+/// </summary>
 public static partial class StationManager {
     /// <summary>切换总控站点 ID 时刷新面板的堆叠描述和按钮</summary>
     /// <param name="__instance">当前的 UIControlPanelStationInspector 实例</param>

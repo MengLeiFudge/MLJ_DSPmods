@@ -2,7 +2,9 @@
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;
-
+/// <summary>
+/// PackageAccessRules 类型。
+/// </summary>
 public static class PackageAccessRules {
     /// <summary>
     /// 建筑师模式，所有建筑数目显示为999且建造时不消耗。

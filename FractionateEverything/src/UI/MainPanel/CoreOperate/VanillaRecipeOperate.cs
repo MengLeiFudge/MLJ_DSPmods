@@ -18,7 +18,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
-
+/// <summary>
+/// VanillaRecipeOperate 类型。
+/// </summary>
 public static class VanillaRecipeOperate {
     // UI元素：输入物品
     private const int MaxInputCount = 6;

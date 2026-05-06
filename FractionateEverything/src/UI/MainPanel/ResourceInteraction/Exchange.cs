@@ -13,7 +13,9 @@ using FE.UI.MainPanel.Theme;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// Exchange 类型。
+/// </summary>
 public static class Exchange {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;

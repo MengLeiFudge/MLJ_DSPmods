@@ -4,7 +4,9 @@ using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthRules 类型。
+/// </summary>
 public static class RecipeGrowthRules {
     private static readonly int[] BuildingTrainThresholds = [12, 20, 34, 56, 90];
     private static readonly int[] DarkFogThresholds = [12, 20, 34, 56, 90];

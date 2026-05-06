@@ -15,6 +15,9 @@ namespace FE.Logic.Economy;
 /// 这是保底系统，不参与交易所价格波动。
 /// </summary>
 public static class FragmentExchangeManager {
+    /// <summary>
+    /// 残片兑换报价。
+    /// </summary>
     public readonly struct FragmentQuote(int itemId, int fragmentCost, float stageWeight, float safetyPremium) {
         public int ItemId { get; } = itemId;
         public int FragmentCost { get; } = fragmentCost;

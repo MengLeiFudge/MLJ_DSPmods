@@ -38,6 +38,9 @@ namespace FE;
 [BepInDependency(CheckPlugins.GUID)]
 [CommonAPISubmoduleDependency(nameof(CustomKeyBindSystem), nameof(ProtoRegistry), nameof(TabSystem),
     nameof(LocalizationModule))]
+/// <summary>
+/// FE 模组入口插件。
+/// </summary>
 public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerModWithSettings {
     #region Fields
 

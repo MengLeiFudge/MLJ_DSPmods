@@ -5,7 +5,9 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
 
-/// <summary>稀有度等级</summary>
+/// <summary>
+/// 稀有度等级。
+/// </summary>
 public enum GachaRarity {
     C,
     B,
@@ -13,14 +15,18 @@ public enum GachaRarity {
     S
 }
 
-/// <summary>聚焦命中层级。主目标比普通联动更强，用于结果页表达。</summary>
+/// <summary>
+/// 聚焦命中层级。
+/// </summary>
 public enum GachaFocusMatchType {
     None,
     Side,
     Main
 }
 
-/// <summary>单次抽卡实际结算后的奖励语义。</summary>
+/// <summary>
+/// 单次抽卡实际结算后的奖励语义。
+/// </summary>
 public enum GachaRewardType {
     None,
     RecipeUnlock,
@@ -29,7 +35,9 @@ public enum GachaRewardType {
     ItemGranted,
 }
 
-/// <summary>单次抽卡结果</summary>
+/// <summary>
+/// 单次抽卡结果。
+/// </summary>
 public readonly struct GachaResult {
     public readonly int ItemId;// 物品ID（配方用inputID，物品用itemID）
     public readonly GachaRarity Rarity;
@@ -56,7 +64,9 @@ public readonly struct GachaResult {
     }
 }
 
-/// <summary>卡池定义</summary>
+/// <summary>
+/// 卡池定义。
+/// </summary>
 public class GachaPool {
     /// <summary>
     /// 卡池ID语义合同：

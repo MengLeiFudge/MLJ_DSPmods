@@ -9,7 +9,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaService 类型。
+/// </summary>
 public static partial class GachaService {
     private static readonly GachaFocusDefinition[] focusDefinitions = [
         new(GachaFocusType.Balanced, "聚焦-平衡发展", "聚焦描述-平衡发展"),

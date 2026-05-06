@@ -1,11 +1,15 @@
 namespace FE.Logic.Fractionation.Recipes;
-
+/// <summary>
+/// FractionationOutcome 枚举。
+/// </summary>
 public enum FractionationOutcome {
     Destroyed,
     PassThrough,
     Produced,
 }
-
+/// <summary>
+/// FractionationBatchResult 数据结构。
+/// </summary>
 public struct FractionationBatchResult {
     public int InputRemoveCount;
     public int ConsumedRegisterCount;

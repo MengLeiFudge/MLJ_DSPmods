@@ -26,11 +26,15 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ProgressTask;
-
+/// <summary>
+/// Achievements 类型。
+/// </summary>
 public static class Achievements {
     private static RectTransform window;
     private static RectTransform tab;
-
+    /// <summary>
+    /// AchievementInfo 数据结构。
+    /// </summary>
     private readonly struct AchievementInfo(
         string categoryKey,
         string nameKey,
@@ -59,14 +63,18 @@ public static class Achievements {
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
     }
-
+    /// <summary>
+    /// 成就奖励定义。
+    /// </summary>
     private readonly struct AchievementRewardDefinition(
         string rewardKey,
         bool unlockRecurringAutoClaim = false) {
         public readonly string RewardKey = rewardKey;
         public readonly bool UnlockRecurringAutoClaim = unlockRecurringAutoClaim;
     }
-
+    /// <summary>
+    /// 成就加成汇总。
+    /// </summary>
     private readonly struct AchievementBonusSummary(
         int obtainedCount,
         float successRateBonus,
@@ -83,7 +91,9 @@ public static class Achievements {
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
     }
-
+    /// <summary>
+    /// 成就档位枚举。
+    /// </summary>
     private enum ETier {
         Bronze,
         Silver,

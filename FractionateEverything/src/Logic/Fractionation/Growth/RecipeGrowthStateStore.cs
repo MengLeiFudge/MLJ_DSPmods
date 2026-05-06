@@ -4,7 +4,9 @@ using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthStateStore 类型。
+/// </summary>
 public sealed class RecipeGrowthStateStore {
     private readonly Dictionary<RecipeKey, RecipeGrowthState> states = [];
 

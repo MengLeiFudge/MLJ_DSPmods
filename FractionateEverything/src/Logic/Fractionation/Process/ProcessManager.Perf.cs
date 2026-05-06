@@ -16,7 +16,9 @@ using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
-
+/// <summary>
+/// ProcessManager 类型。
+/// </summary>
 public static partial class ProcessManager {
     private static bool EnableFractionatorPerfProbe = false;
     private const int FractionatorPerfBucketCount = 4;

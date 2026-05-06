@@ -8,7 +8,9 @@ using static FE.Utils.Utils;
 using Object = UnityEngine.Object;
 
 namespace FE.Logic.Fractionation.Presentation;
-
+/// <summary>
+/// FractionatorWindow 类型。
+/// </summary>
 public static partial class FractionatorWindow {
     private static string GetRelativePath(Transform root, Transform target) {
         if (root == null || target == null) return null;

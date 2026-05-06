@@ -24,7 +24,9 @@ namespace FE.UI.MainPanel.DrawGrowth;
 /// </summary>
 public static class LimitedTimeStore {
     private const int GrowthRowCount = 8;
-
+    /// <summary>
+    /// GrowthRowUi 类型。
+    /// </summary>
     private sealed class GrowthRowUi {
         public bool HasOffer;
         public GachaGrowthOffer Offer;
@@ -37,7 +39,9 @@ public static class LimitedTimeStore {
         public Text TxtDetail;
         public UIButton BtnExchange;
     }
-
+    /// <summary>
+    /// GrowthPageUi 类型。
+    /// </summary>
     private sealed class GrowthPageUi {
         public RectTransform Tab;
         public PageLayout.HeaderRefs Header;
@@ -49,7 +53,9 @@ public static class LimitedTimeStore {
         public Text TxtFocus;
         public readonly List<GrowthRowUi> Rows = [];
     }
-
+    /// <summary>
+    /// FocusPageUi 类型。
+    /// </summary>
     private sealed class FocusPageUi {
         public RectTransform Tab;
         public PageLayout.HeaderRefs Header;

@@ -17,7 +17,9 @@ using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Station;
-
+/// <summary>
+/// StationManager 类型。
+/// </summary>
 public static partial class StationManager {
     /// <summary>交互站逻辑更新周期（每30帧更新一次）</summary>
     private static int updateTick = 30;

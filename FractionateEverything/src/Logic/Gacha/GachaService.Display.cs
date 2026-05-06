@@ -8,7 +8,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaService 类型。
+/// </summary>
 public static partial class GachaService {
     public static string GetModeNameKey() {
         return IsSpeedrunMode ? "速通模式" : "常规模式";

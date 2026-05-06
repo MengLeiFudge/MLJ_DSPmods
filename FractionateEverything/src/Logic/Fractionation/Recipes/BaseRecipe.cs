@@ -10,7 +10,9 @@ using NebulaAPI;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
-
+/// <summary>
+/// ERecipeGrowthRole 枚举。
+/// </summary>
 public enum ERecipeGrowthRole {
     Production = 0,
     ToolUnlock = 1,

@@ -6,7 +6,9 @@ using HarmonyLib;
 using xiaoye97;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// DeliverySlotsTweaks 类型。
+/// </summary>
 public static class DeliverySlotsTweaks {
     public const string GUID = "starfi5h.plugin.DeliverySlotsTweaks";
     public static bool Enable;

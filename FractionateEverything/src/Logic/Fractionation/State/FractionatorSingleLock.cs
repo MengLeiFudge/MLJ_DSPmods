@@ -16,7 +16,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
-
+/// <summary>
+/// FractionatorSingleLock 类型。
+/// </summary>
 public static class FractionatorSingleLock {
     #region 转化塔锁定
 

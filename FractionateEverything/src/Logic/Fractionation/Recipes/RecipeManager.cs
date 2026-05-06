@@ -9,7 +9,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 
 namespace FE.Logic.Fractionation.Recipes;
-
+/// <summary>
+/// RecipeManager 类型。
+/// </summary>
 public static class RecipeManager {
     #region 配方创建、读取
 

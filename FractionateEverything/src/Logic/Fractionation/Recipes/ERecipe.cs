@@ -33,7 +33,9 @@ public enum ERecipe {
     /// </summary>
     Rectification,
 }
-
+/// <summary>
+/// 配方类型扩展方法。
+/// </summary>
 public static class ERecipeExtension {
     public static void AddTranslations() {
         Register("未知", "Unknown");

@@ -1,5 +1,7 @@
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthRule 数据结构。
+/// </summary>
 public readonly struct RecipeGrowthRule {
     public RecipeGrowthRule(
         RecipeFamily family,

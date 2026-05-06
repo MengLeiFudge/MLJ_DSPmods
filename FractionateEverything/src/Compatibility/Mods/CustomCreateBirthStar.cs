@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// CustomCreateBirthStar 类型。
+/// </summary>
 public static class CustomCreateBirthStar {
     public const string GUID = "kumor.plugin.CustomCreateBirthStar";
     public static bool Enable;

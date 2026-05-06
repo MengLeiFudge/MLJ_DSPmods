@@ -1,7 +1,9 @@
 ﻿using System;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     /// <summary>
     /// 戴森球的随机数发生器。

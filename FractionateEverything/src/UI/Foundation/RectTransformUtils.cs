@@ -6,7 +6,9 @@ using FE.UI.Controls;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Foundation;
-
+/// <summary>
+/// RectTransformUtils 类型。
+/// </summary>
 public static class RectTransformUtils {
     /// <summary>
     /// 设置元素左上角相对于parent左上角的位置

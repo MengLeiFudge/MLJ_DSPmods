@@ -6,14 +6,21 @@ using static FE.UI.Foundation.RectTransformUtils;
 using static FE.Utils.Utils;
 
 namespace FE.UI.Foundation.Window;
-
+/// <summary>
+/// MyWindowWithTabs 类型。
+/// </summary>
 public class MyWindowWithTabs : MyWindow {
+    /// <summary>
+    /// TabState 类型。
+    /// </summary>
     private sealed class TabState {
         public RectTransform Content;
         public UIButton Button;
         public string Label;
     }
-
+    /// <summary>
+    /// TabGroupState 类型。
+    /// </summary>
     private sealed class TabGroupState {
         public string Label;
         public int StartTabIndex;

@@ -13,7 +13,9 @@ using FE.UI.MainPanel.Theme;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// FragmentExchange 类型。
+/// </summary>
 public static class FragmentExchange {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;

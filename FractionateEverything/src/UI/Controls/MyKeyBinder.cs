@@ -9,6 +9,9 @@ using static FE.UI.Foundation.RectTransformUtils;
 namespace FE.UI.Controls;
 
 // MyKeyBinder modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyKeyBinder.cs
+/// <summary>
+/// MyKeyBinder 类型。
+/// </summary>
 public class MyKeyBinder : MonoBehaviour {
     private ConfigEntry<KeyboardShortcut> _config;
     protected event Action OnFree;

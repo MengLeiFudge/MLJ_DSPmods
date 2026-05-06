@@ -7,7 +7,9 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
-
+/// <summary>
+/// MonitorManager 类型。
+/// </summary>
 public static class MonitorManager {
     private const int VanillaMonitorMaxStack = 4;
     private const int VanillaMonitorMaxCargoPerSecond = 120;

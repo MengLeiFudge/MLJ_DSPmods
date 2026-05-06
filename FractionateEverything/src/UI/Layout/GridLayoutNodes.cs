@@ -5,7 +5,9 @@ using UnityEngine.UI;
 using FE.UI.Foundation.Window;
 
 namespace FE.UI.Layout;
-
+/// <summary>
+/// LayoutNode 类型。
+/// </summary>
 public abstract class LayoutNode {
     public (int row, int col)? Pos { get; set; }
     public (int rows, int cols)? Span { get; set; }
@@ -44,7 +46,9 @@ public abstract class LayoutNode {
 
     internal abstract RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect);
 }
-
+/// <summary>
+/// LayoutGrid 类型。
+/// </summary>
 public class LayoutGrid : LayoutNode {
     public IReadOnlyList<LayoutTrack> Rows { get; set; } = Array.Empty<LayoutTrack>();
     public IReadOnlyList<LayoutTrack> Cols { get; set; } = Array.Empty<LayoutTrack>();
@@ -76,7 +80,9 @@ public class LayoutGrid : LayoutNode {
         return root;
     }
 }
-
+/// <summary>
+/// LayoutLeaf 类型。
+/// </summary>
 public sealed class LayoutLeaf : LayoutNode {
     public LayoutInsets Padding { get; set; } = LayoutInsets.Zero;
     public Action<MyWindow, RectTransform> BuildAction { get; set; }

@@ -14,10 +14,14 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// MarketBoard 类型。
+/// </summary>
 public static class MarketBoard {
     private const int RowCount = 8;
-
+    /// <summary>
+    /// OfferRow 类型。
+    /// </summary>
     private sealed class OfferRow {
         public MyImageButton InputIcon;
         public Text TxtInput;

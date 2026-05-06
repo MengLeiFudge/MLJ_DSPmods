@@ -3,7 +3,9 @@ using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// StorageSortPatch 类型。
+/// </summary>
 public static class StorageSortPatch {
     #region 背包排序
 

@@ -6,7 +6,9 @@ using HarmonyLib;
 using xiaoye97;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// CheatEnabler 类型。
+/// </summary>
 public static class CheatEnabler {
     public const string GUID = "org.soardev.cheatenabler";
     public static bool Enable;

@@ -6,7 +6,9 @@ using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthManager 类型。
+/// </summary>
 public static class RecipeGrowthManager {
     public static readonly RecipeGrowthStateStore Store = new();
     private static long lastRuntimeSyncTick = long.MinValue;

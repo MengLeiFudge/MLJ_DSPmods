@@ -5,7 +5,9 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// PlayerInventoryItemAccessPatches 类型。
+/// </summary>
 public static class PlayerInventoryItemAccessPatches {
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取

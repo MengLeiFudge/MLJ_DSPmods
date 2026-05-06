@@ -10,7 +10,9 @@ using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// PackageLogistic 类型。
+/// </summary>
 public static class PackageLogistic {
     public const string GUID = "com.qlvlp.dsp.PackageLogistic";
     public static bool Enable;

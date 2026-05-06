@@ -1,5 +1,7 @@
 ﻿namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     internal const int I伊卡洛斯 = 0;
     internal const int I行星基地 = 1;

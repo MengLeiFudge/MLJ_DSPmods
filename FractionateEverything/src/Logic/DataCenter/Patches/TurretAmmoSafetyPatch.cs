@@ -3,7 +3,9 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// TurretAmmoSafetyPatch 类型。
+/// </summary>
 public static class TurretAmmoSafetyPatch {
     /// <summary>
     /// 兼容旧版炮台窗口与战斗模组对 turretNeeds 的直接索引访问。

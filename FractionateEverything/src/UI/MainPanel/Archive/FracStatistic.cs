@@ -24,7 +24,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Archive;
-
+/// <summary>
+/// FracStatistic 类型。
+/// </summary>
 public static class FracStatistic {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;

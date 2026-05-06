@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// BuildToolOpt 类型。
+/// </summary>
 public static class BuildToolOpt {
     public const string GUID = "starfi5h.plugin.BuildToolOpt";
     public static bool Enable;

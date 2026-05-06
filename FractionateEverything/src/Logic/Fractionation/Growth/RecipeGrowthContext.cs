@@ -3,7 +3,9 @@ using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthContext 数据结构。
+/// </summary>
 public readonly struct RecipeGrowthContext {
     public RecipeGrowthContext(
         bool isSpeedrunMode,

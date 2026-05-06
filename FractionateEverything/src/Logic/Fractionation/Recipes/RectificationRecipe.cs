@@ -7,7 +7,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
-
+/// <summary>
+/// RectificationRecipe 类型。
+/// </summary>
 public class RectificationRecipe : BaseRecipe {
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,

@@ -3,7 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
-
+/// <summary>
+/// AnalysisMainPanelWindow 类型。
+/// </summary>
 public partial class AnalysisMainPanelWindow {
     private void CaptureNativeNavigationButtons(UIStatisticsWindow stat) {
         nativeHorizontalButtonSlots.Clear();

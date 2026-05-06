@@ -16,7 +16,9 @@ using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
-
+/// <summary>
+/// ProcessManager 类型。
+/// </summary>
 public static partial class ProcessManager {
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
@@ -26,6 +28,9 @@ public static partial class ProcessManager {
     public static int BaseFracProductOutputMax = 20;
     public static int BaseFracFluidInputCargoMax = 40;
     public static int MaxBeltSpeed = 30;
+    /// <summary>
+    /// FractionatorRuntimeConfig 数据结构。
+    /// </summary>
     private struct FractionatorRuntimeConfig {
         public int MaxStack;
         public int ProductOutputMax;

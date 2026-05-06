@@ -1,5 +1,7 @@
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthState 类型。
+/// </summary>
 public sealed class RecipeGrowthState {
     public int Level;
     public int GrowthExp;

@@ -2,7 +2,9 @@ using FE.Logic.Fractionation.Recipes;
 using FE.UI.MainPanel.ProgressTask;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaGalleryBonusManager 类型。
+/// </summary>
 public static class GachaGalleryBonusManager {
     public static void Tick() { }
 

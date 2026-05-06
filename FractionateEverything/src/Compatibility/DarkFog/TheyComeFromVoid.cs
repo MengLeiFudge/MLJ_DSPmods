@@ -10,7 +10,9 @@ using FE.Logic.DataCenter;
 using FE.Logic.DataCenter.Patches;
 
 namespace FE.Compatibility.DarkFog;
-
+/// <summary>
+/// TheyComeFromVoid 类型。
+/// </summary>
 public static class TheyComeFromVoid {
     public const string GUID = "com.ckcz123.DSP_Battle";
     public static bool Enable;

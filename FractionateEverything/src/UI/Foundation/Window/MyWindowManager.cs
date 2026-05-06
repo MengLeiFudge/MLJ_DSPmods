@@ -4,7 +4,9 @@ using HarmonyLib;
 using FE.UI.Controls;
 
 namespace FE.UI.Foundation.Window;
-
+/// <summary>
+/// MyWindowManager 类型。
+/// </summary>
 public abstract class MyWindowManager {
     private static readonly List<ManualBehaviour> Windows = new(4);
 
@@ -45,7 +47,9 @@ public abstract class MyWindowManager {
         //rectTransform.sizeDelta = rect;
     }
     */
-
+    /// <summary>
+    /// Patch 类型。
+    /// </summary>
     public class Patch : PatchImpl<Patch> {
         protected override void OnEnable() {
             InitAllWindows();

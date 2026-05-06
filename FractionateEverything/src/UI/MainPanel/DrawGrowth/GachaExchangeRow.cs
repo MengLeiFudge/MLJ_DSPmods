@@ -1,5 +1,7 @@
 namespace FE.UI.MainPanel.DrawGrowth;
-
+/// <summary>
+/// GachaExchangeRow 数据结构。
+/// </summary>
 public readonly struct GachaExchangeRow(
     int inputItemId,
     int inputCount,

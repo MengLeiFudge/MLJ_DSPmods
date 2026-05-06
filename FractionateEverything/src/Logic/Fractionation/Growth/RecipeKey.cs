@@ -1,7 +1,9 @@
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeKey 数据结构。
+/// </summary>
 public readonly struct RecipeKey {
     public RecipeKey(ERecipe recipeType, int inputId) {
         RecipeType = recipeType;

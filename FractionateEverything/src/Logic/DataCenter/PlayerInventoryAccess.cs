@@ -4,7 +4,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.DataCenterInventory;
 
 namespace FE.Logic.DataCenter;
-
+/// <summary>
+/// PlayerInventoryAccess 类型。
+/// </summary>
 public static class PlayerInventoryAccess {
     #region 向背包添加物品
 

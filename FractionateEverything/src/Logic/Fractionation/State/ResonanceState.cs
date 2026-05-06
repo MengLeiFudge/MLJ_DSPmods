@@ -15,7 +15,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
-
+/// <summary>
+/// ResonanceState 类型。
+/// </summary>
 public static class ResonanceState {
     #region 分馏塔维度共鸣拓展
 

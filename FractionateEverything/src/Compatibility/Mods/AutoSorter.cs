@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// AutoSorter 类型。
+/// </summary>
 public static class AutoSorter {
     public const string GUID = "Appun.DSP.plugin.AutoSorter";
     public static bool Enable;

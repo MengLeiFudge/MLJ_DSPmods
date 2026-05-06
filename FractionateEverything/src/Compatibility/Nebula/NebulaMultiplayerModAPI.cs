@@ -16,7 +16,9 @@ using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Nebula;
-
+/// <summary>
+/// NebulaMultiplayerModAPI 类型。
+/// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
     public static bool Enable;
@@ -62,7 +64,9 @@ public static class NebulaMultiplayerModAPI {
                && factoryManager.PacketAuthor != NebulaModAPI.MultiplayerSession.LocalPlayer.Id;
     }
 }
-
+/// <summary>
+/// CenterItemChangePacket 类型。
+/// </summary>
 public class CenterItemChangePacket {
     public byte[] data { get; set; }
 
@@ -95,7 +99,9 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
         }
     }
 }
-
+/// <summary>
+/// RecipeChangePacket 类型。
+/// </summary>
 public class RecipeChangePacket {
     public int eRecipe { get; set; }
     public int inputId { get; set; }
@@ -150,7 +156,9 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
         }
     }
 }
-
+/// <summary>
+/// BuildingChangePacket 类型。
+/// </summary>
 public class BuildingChangePacket {
     public int buildingId { get; set; }
     public int packetType { get; set; }

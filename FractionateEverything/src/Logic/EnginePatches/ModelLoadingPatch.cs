@@ -6,7 +6,9 @@ using FE.Compatibility.Mods;
 using HarmonyLib;
 
 namespace FE.Logic.EnginePatches;
-
+/// <summary>
+/// ModelLoadingPatch 类型。
+/// </summary>
 public static class ModelLoadingPatch {
     [HarmonyPatch(typeof(SpaceSector), nameof(SpaceSector.InitPrefabDescArray))]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.InitPrefabDescArray))]

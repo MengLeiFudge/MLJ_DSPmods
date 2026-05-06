@@ -2,7 +2,9 @@ using System;
 using UnityEngine;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     /*
      * 物品ID包含了品质，万及万以上的部分就是品质级别

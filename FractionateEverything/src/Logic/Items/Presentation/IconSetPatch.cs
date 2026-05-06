@@ -6,7 +6,9 @@ using UnityEngine;
 using UnityEngine.UI.Youthcat;
 
 namespace FE.Logic.Items.Presentation;
-
+/// <summary>
+/// IconSetPatch 类型。
+/// </summary>
 public static class IconSetPatch {
     /// <summary>
     /// 升级科技（也就是ID>2000的科技）仅添加最后一个图标到图标集。

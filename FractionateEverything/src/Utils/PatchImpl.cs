@@ -5,11 +5,16 @@ using HarmonyLib;
 
 namespace FE.Utils;
 
+/// <summary>
+/// Harmony 补丁标识特性。
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public class PatchGuidAttribute(string guid) : Attribute {
     public string Guid { get; } = guid;
 }
-
+/// <summary>
+/// Harmony 补丁生命周期回调标记。
+/// </summary>
 public enum PatchCallbackFlag {
     // By default, OnEnable() is called After patch applied, set this flag to call it before patch is applied
     CallOnEnableBeforePatch,
@@ -17,11 +22,16 @@ public enum PatchCallbackFlag {
     CallOnDisableAfterUnpatch,
 }
 
+/// <summary>
+/// Harmony 补丁回调标记特性。
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 public class PatchSetCallbackFlagAttribute(PatchCallbackFlag flag) : Attribute {
     public PatchCallbackFlag Flag { get; } = flag;
 }
-
+/// <summary>
+/// 可开关 Harmony 补丁基类。
+/// </summary>
 public class PatchImpl<T> where T : PatchImpl<T>, new() {
     protected static T Instance { get; } = new();
 

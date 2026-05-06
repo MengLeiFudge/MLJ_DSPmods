@@ -15,6 +15,9 @@ namespace FE.Logic.Economy;
 /// 使用 MarketValue 作为锚点，但价格存在独立波动与玩家交易冲击。
 /// </summary>
 public static class ExchangeManager {
+    /// <summary>
+    /// 交易所行情状态。
+    /// </summary>
     public sealed class ExchangeTicker {
         public int ItemId;
         public float LastPrice;

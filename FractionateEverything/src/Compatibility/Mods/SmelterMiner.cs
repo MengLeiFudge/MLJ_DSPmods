@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// SmelterMiner 类型。
+/// </summary>
 public static class SmelterMiner {
     public const string GUID = "Gnimaerd.DSP.plugin.SmelterMiner";
     public static bool Enable;

@@ -7,7 +7,9 @@ using static FE.UI.Foundation.RectTransformUtils;
 namespace FE.UI.Controls;
 
 // MySlider modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MySlider.cs
-
+/// <summary>
+/// MySideSlider 类型。
+/// </summary>
 public class MySideSlider : MonoBehaviour {
     public RectTransform rectTrans;
     public Slider slider;

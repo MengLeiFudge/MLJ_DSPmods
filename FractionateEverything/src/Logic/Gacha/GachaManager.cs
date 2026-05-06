@@ -3,7 +3,9 @@ using System.IO;
 using FE.Utils;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaFocusType 枚举。
+/// </summary>
 public enum GachaFocusType {
     Balanced = 0,
     MineralExpansion = 1,
@@ -13,7 +15,9 @@ public enum GachaFocusType {
     ProcessOptimization = 5,
     RectificationEconomy = 6,
 }
-
+/// <summary>
+/// GachaMode 枚举。
+/// </summary>
 public enum GachaMode {
     Normal = 0,
     Speedrun = 1,

@@ -11,7 +11,9 @@ using UnityEngine;
 using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel;
-
+/// <summary>
+/// MainWindowPageRegistry 类型。
+/// </summary>
 public static class MainWindowPageRegistry {
     public const string CoreOperateCategoryName = "生产管理";
     public const string ResourceInteractionCategoryName = "资源管理";
@@ -132,12 +134,16 @@ public static class MainWindowPageRegistry {
         return categories;
     }
 }
-
+/// <summary>
+/// 分馏主面板页面分类定义。
+/// </summary>
 public sealed class MainWindowCategoryDefinition(string categoryName, IReadOnlyList<MainWindowPageDefinition> pages) {
     public string CategoryName { get; } = categoryName;
     public IReadOnlyList<MainWindowPageDefinition> Pages { get; } = pages;
 }
-
+/// <summary>
+/// 分馏主面板页面定义。
+/// </summary>
 public sealed class MainWindowPageDefinition(
     string categoryName,
     string subpageName,

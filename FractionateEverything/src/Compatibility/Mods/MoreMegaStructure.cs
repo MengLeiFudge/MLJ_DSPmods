@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// MoreMegaStructure 类型。
+/// </summary>
 public static class MoreMegaStructure {
     public const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
     public static bool Enable;

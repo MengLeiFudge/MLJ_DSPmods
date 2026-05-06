@@ -7,7 +7,9 @@ using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
-
+/// <summary>
+/// MyComboBox 类型。
+/// </summary>
 public class MyComboBox : MonoBehaviour {
     private RectTransform _rectTrans;
     private UIComboBox _comboBox;

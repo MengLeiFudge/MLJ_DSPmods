@@ -2,7 +2,9 @@
 using System.Text;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     /// <summary>
     /// 将浮点数转化为字符串，至少保留2位有效数字。

@@ -2,7 +2,9 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.Logic.Fractionation.Presentation;
-
+/// <summary>
+/// FractionatorWindow 类型。
+/// </summary>
 public static partial class FractionatorWindow {
     // ===== _OnOpen Postfix：让原版正常执行，然后切换显示 =====
     // 关键原理：
