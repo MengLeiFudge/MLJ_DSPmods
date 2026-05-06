@@ -1,14 +1,18 @@
 # Logic/Manager — 状态管理层
 
-核心管理层按领域组织；`BuildingManager` 与 `ProcessManager` 已拆成 partial 文件，避免继续把新逻辑堆回单个大文件。
+核心管理层按领域组织；`BuildingManager`、`ProcessManager` 与 `StationManager` 已拆成 partial 文件，避免继续把新逻辑堆回单个大文件。
 
 ## 文件职责（当前）
 
-| File | Lines | Responsibility |
-|---|---:|---|
 | File | Responsibility |
 |---|---|
-| `StationManager.cs` | 物流交互站主循环、UI patch、弹窗状态、集装输出与存档；仍是下一轮拆分重点 |
+| `StationManager.cs` | 物流交互站翻译入口与顶层说明 |
+| `StationManager.Runtime.cs` | 交互站与数据中心的上传/下载同步、槽位目标数量、电力消耗 |
+| `StationManager.UIShared.cs` | 传输/容量模式、UI 状态缓存、共享弹窗与集装 helper |
+| `StationManager.StationWindow.cs` | 独立物流站窗口与 `UIStationStorage` patch |
+| `StationManager.ControlPanel.cs` | 总控面板窗口、槽位、检查器 patch |
+| `StationManager.OutputStackPatch.cs` | 物流站输出集装上限 transpiler |
+| `StationManager.Save.cs` | 交互站传输/容量模式存档读写 |
 | `BuildingManager.cs` | 建筑注册、材质/能耗刷新、分馏塔基础缓存、存档聚合入口 |
 | `BuildingManager.OutputState.cs` | 分馏塔多产物输出拓展状态与运行缓存 |
 | `BuildingManager.SingleLock.cs` | 转化塔单锁、复制粘贴/蓝图参数、实体删除清理 |
@@ -41,6 +45,12 @@
 - 新增性能计数或日志桶：放 `ProcessManager.Perf.cs`，不要散落在热路径里。
 - 新增能耗 IL patch：放 `ProcessManager.PowerPatch.cs`。
 - 新增交互塔献祭相关逻辑：放 `ProcessManager.Sacrifice.cs`。
+- 新增交互站运行同步逻辑：放 `StationManager.Runtime.cs`。
+- 新增交互站 UI 状态、弹窗状态或共享 helper：放 `StationManager.UIShared.cs`。
+- 新增独立物流站窗口 patch：放 `StationManager.StationWindow.cs`。
+- 新增总控面板 patch：放 `StationManager.ControlPanel.cs`。
+- 新增物流站输出堆叠 IL patch：放 `StationManager.OutputStackPatch.cs`。
+- 新增交互站传输/容量模式存档字段：放 `StationManager.Save.cs`。
 
 ## 科技与配方解锁 (TechManager)
 
