@@ -10,7 +10,11 @@
 | `StationManager.Runtime.cs` | 交互站与数据中心的上传/下载同步、槽位目标数量、电力消耗 |
 | `StationManager.UIShared.cs` | 传输/容量模式、UI 状态缓存、共享弹窗与集装 helper |
 | `StationManager.StationWindow.cs` | 独立物流站窗口与 `UIStationStorage` patch |
-| `StationManager.ControlPanel.cs` | 总控面板窗口、槽位、检查器 patch |
+| `StationManager.ControlPanel.cs` | 总控面板窗口创建/销毁、槽位打开/关闭生命周期 |
+| `StationManager.ControlPanel.Refresh.cs` | 总控面板槽位刷新、模式按钮文本/颜色/位置同步 |
+| `StationManager.ControlPanel.Popup.cs` | 总控面板传输/容量模式弹窗与选项点击拦截 |
+| `StationManager.ControlPanel.InspectorLayout.cs` | 总控面板检查器宽度、能量条、筛选组与右侧区域布局适配 |
+| `StationManager.ControlPanel.Piler.cs` | 总控面板集装滑块与自动集装按钮 patch |
 | `StationManager.OutputStackPatch.cs` | 物流站输出集装上限 transpiler |
 | `StationManager.Save.cs` | 交互站传输/容量模式存档读写 |
 | `BuildingManager.cs` | 建筑注册、材质/能耗刷新、分馏塔基础缓存、存档聚合入口 |
@@ -61,7 +65,11 @@
 - 新增交互站运行同步逻辑：放 `StationManager.Runtime.cs`。
 - 新增交互站 UI 状态、弹窗状态或共享 helper：放 `StationManager.UIShared.cs`。
 - 新增独立物流站窗口 patch：放 `StationManager.StationWindow.cs`。
-- 新增总控面板 patch：放 `StationManager.ControlPanel.cs`。
+- 新增总控面板窗口/槽位生命周期 patch：放 `StationManager.ControlPanel.cs`。
+- 新增总控面板槽位刷新与按钮定位：放 `StationManager.ControlPanel.Refresh.cs`。
+- 新增总控面板 FE 弹窗选项：放 `StationManager.ControlPanel.Popup.cs`。
+- 新增总控面板检查器宽度/能量条布局适配：放 `StationManager.ControlPanel.InspectorLayout.cs`。
+- 新增总控面板集装滑块或自动集装按钮 patch：放 `StationManager.ControlPanel.Piler.cs`。
 - 新增物流站输出堆叠 IL patch：放 `StationManager.OutputStackPatch.cs`。
 - 新增交互站传输/容量模式存档字段：放 `StationManager.Save.cs`。
 - 新增科技注册、科技树位置：放 `TechManager.Techs.cs`。
