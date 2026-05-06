@@ -1,6 +1,6 @@
 # UI/View — 功能面板层
 
-当前 26 个 `.cs` 文件：根层 `MainWindow`/`MainWindowPageRegistry` + 6 个业务子域。核心变化：**双主面板架构**、**抽取成长页重构**，且符文页已移除。
+当前 37 个 `.cs` 文件：根层 `MainWindow`/`MainWindowPageRegistry` + 6 个业务子域。核心变化：**双主面板架构**、**抽取成长页重构**，且符文页已移除。
 
 ## 入口与路由
 
@@ -21,7 +21,7 @@
 | `DrawGrowth/` | 7 | 抽取成长主域：抽奖、成长规划、聚焦、资源统筹与表现组件 |
 | `CoreOperate/` | 3 | 配方/建筑操作主面板 |
 | `ProgressTask/` | 3 | 主线/循环任务、成就系统 |
-| `Archive/` | 3 | 统计、图鉴、开发日志 |
+| `Archive/` | 8 | 统计、图鉴、开发日志；开发日志拆为目录、文本注册、状态、UI、存档 partial |
 | `ResourceInteraction/` | 2 | 数据中心物品上传/下载与重要物品 |
 | `Setting/` | 3 | 面板风格切换按钮与沙盒开关 |
 
