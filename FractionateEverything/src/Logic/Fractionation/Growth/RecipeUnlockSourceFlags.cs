@@ -2,6 +2,9 @@ using System;
 
 namespace FE.Logic.Fractionation.Growth;
 
+/// <summary>
+/// RecipeUnlockSourceFlags 枚举。
+/// </summary>
 [Flags]
 public enum RecipeUnlockSourceFlags {
     None = 0,

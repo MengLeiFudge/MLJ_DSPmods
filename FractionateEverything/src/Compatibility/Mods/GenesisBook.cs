@@ -7,7 +7,9 @@ using ProjectGenesis.Patches;
 using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// GenesisBook 类型。
+/// </summary>
 public static class GenesisBook {
     public const string GUID = "org.LoShin.GenesisBook";
     public static bool Enable;

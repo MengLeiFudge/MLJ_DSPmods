@@ -5,7 +5,9 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// Auxilaryfunction 类型。
+/// </summary>
 public static class Auxilaryfunction {
     public const string GUID = "cn.blacksnipe.dsp.Auxilaryfunction";
     public static bool Enable;

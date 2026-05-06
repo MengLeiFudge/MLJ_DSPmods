@@ -16,7 +16,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// ItemInteraction 类型。
+/// </summary>
 public static class ItemInteraction {
     private const int RowCount = 8;
     private const int ColumnCount = 8;

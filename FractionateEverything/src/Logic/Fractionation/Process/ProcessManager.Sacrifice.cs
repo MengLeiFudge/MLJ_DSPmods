@@ -17,7 +17,9 @@ using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
-
+/// <summary>
+/// ProcessManager 类型。
+/// </summary>
 public static partial class ProcessManager {
     private const int SacrificeTowerTypeCount = IFE精馏塔 - IFE交互塔 + 1;
     private const float SacrificeBoostStep = 0.05f;

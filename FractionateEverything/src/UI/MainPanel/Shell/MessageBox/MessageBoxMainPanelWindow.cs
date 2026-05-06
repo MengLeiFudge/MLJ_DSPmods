@@ -3,7 +3,9 @@ using UnityEngine;
 using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel.Shell.MessageBox;
-
+/// <summary>
+/// MessageBoxMainPanelWindow 类型。
+/// </summary>
 public class MessageBoxMainPanelWindow : MyWindowWithTabs {
     // 旧版主窗口对齐新版黑色内容区 1102x787，并额外保留左侧标签区宽度。
     private const float LegacyContentWidth = 1102f;

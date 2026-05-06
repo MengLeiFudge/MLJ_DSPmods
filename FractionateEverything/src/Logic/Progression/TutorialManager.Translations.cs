@@ -11,7 +11,9 @@ using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
-
+/// <summary>
+/// TutorialManager 类型。
+/// </summary>
 public static partial class TutorialManager {
     public static void AddTranslations() {
         Register("万物分馏简介标题", "Fractionate Everything", "万物分馏简介");

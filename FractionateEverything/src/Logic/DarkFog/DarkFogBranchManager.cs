@@ -1,5 +1,7 @@
 namespace FE.Logic.DarkFog;
-
+/// <summary>
+/// EDarkFogBranchStage 枚举。
+/// </summary>
 public enum EDarkFogBranchStage {
     Locked = 0,
     Signal = 1,

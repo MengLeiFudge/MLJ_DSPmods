@@ -1,5 +1,7 @@
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthResult 数据结构。
+/// </summary>
 public readonly struct RecipeGrowthResult {
     public RecipeGrowthResult(
         int previousLevel,

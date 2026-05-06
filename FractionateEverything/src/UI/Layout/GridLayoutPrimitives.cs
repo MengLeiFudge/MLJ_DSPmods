@@ -1,12 +1,16 @@
 using System;
 
 namespace FE.UI.Layout;
-
+/// <summary>
+/// LayoutTrackKind 枚举。
+/// </summary>
 public enum LayoutTrackKind {
     Fr,
     Px,
 }
-
+/// <summary>
+/// LayoutTrack 数据结构。
+/// </summary>
 public readonly struct LayoutTrack {
     public LayoutTrackKind Kind { get; }
     public float Value { get; }
@@ -32,7 +36,9 @@ public readonly struct LayoutTrack {
         return Fr(value);
     }
 }
-
+/// <summary>
+/// LayoutInsets 数据结构。
+/// </summary>
 public readonly struct LayoutInsets {
     public float Left { get; }
     public float Top { get; }
@@ -52,7 +58,9 @@ public readonly struct LayoutInsets {
 
     public static readonly LayoutInsets Zero = new(0f);
 }
-
+/// <summary>
+/// LayoutRect 数据结构。
+/// </summary>
 public readonly struct LayoutRect {
     public float Left { get; }
     public float Top { get; }
@@ -72,7 +80,9 @@ public readonly struct LayoutRect {
         return new(Left + insets.Left, Top + insets.Top, width, height);
     }
 }
-
+/// <summary>
+/// LayoutPlacement 数据结构。
+/// </summary>
 internal readonly struct LayoutPlacement {
     public int Row { get; }
     public int Col { get; }

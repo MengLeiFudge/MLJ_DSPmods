@@ -20,7 +20,9 @@ using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.CoreOperate;
-
+/// <summary>
+/// BuildingOperate 类型。
+/// </summary>
 public static class BuildingOperate {
     private static RectTransform window;
     private static RectTransform tab;

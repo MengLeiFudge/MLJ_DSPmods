@@ -14,17 +14,23 @@ using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Archive;
-
+/// <summary>
+/// DevelopmentDiary 类型。
+/// </summary>
 public static class DevelopmentDiary {
     public static void LoadConfig(ConfigFile configFile) { }
-
+    /// <summary>
+    /// DiaryFragment 数据结构。
+    /// </summary>
     private readonly struct DiaryFragment(string id, string label, string contentKey, int order) {
         public readonly string Id = id;
         public readonly string Label = label;
         public readonly string ContentKey = contentKey;
         public readonly int Order = order;
     }
-
+    /// <summary>
+    /// DiaryCategory 数据结构。
+    /// </summary>
     private readonly struct DiaryCategory(string labelKey, DiaryFragment[] fragments) {
         public readonly string LabelKey = labelKey;
         public readonly DiaryFragment[] Fragments = fragments;

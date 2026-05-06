@@ -1,7 +1,9 @@
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeStatsSnapshot 数据结构。
+/// </summary>
 public readonly struct RecipeStatsSnapshot {
     public RecipeStatsSnapshot(
         RecipeFamily family,

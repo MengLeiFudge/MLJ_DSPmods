@@ -1,5 +1,7 @@
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthMode 枚举。
+/// </summary>
 public enum RecipeGrowthMode {
     None = 0,
     DrawDuplicate = 1,

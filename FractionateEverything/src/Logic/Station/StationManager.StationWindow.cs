@@ -14,7 +14,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
-
+/// <summary>
+/// StationManager 类型。
+/// </summary>
 public static partial class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnCreate))]

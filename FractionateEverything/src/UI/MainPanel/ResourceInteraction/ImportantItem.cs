@@ -13,7 +13,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// ImportantItem 类型。
+/// </summary>
 public static class ImportantItem {
     private static RectTransform window;
     private static RectTransform tab;

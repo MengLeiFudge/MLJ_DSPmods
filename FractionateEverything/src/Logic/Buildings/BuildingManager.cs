@@ -16,7 +16,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Buildings;
-
+/// <summary>
+/// BuildingManager 类型。
+/// </summary>
 public static partial class BuildingManager {
     public const int LevelThresholdFluidEnhancement = 3;
     public const int LevelThresholdTrait1 = 6;

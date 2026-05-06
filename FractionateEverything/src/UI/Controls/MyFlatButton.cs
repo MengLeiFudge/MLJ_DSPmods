@@ -5,7 +5,9 @@ using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
-
+/// <summary>
+/// MyFlatButton 类型。
+/// </summary>
 public class MyFlatButton : MonoBehaviour {
     public RectTransform rectTrans;
     public UIButton uiButton;

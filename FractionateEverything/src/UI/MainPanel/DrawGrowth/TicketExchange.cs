@@ -16,7 +16,9 @@ using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.DrawGrowth;
-
+/// <summary>
+/// TicketExchange 类型。
+/// </summary>
 public static class TicketExchange {
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;

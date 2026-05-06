@@ -15,7 +15,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
-
+/// <summary>
+/// FissionPointPool 类型。
+/// </summary>
 public static class FissionPointPool {
     #region 质能裂变点数池
 

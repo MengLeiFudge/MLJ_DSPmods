@@ -2,7 +2,9 @@
 using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// TrashRecyclePatch 类型。
+/// </summary>
 public static class TrashRecyclePatch {
     /// <summary>
     /// 扔掉的垃圾会自动回收到Mod背包

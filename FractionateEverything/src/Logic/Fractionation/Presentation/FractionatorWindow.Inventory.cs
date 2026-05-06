@@ -9,7 +9,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Presentation;
-
+/// <summary>
+/// FractionatorWindow 类型。
+/// </summary>
 public static partial class FractionatorWindow {
     // ===== OnProductUIButtonClick 拦截 =====
 

@@ -76,7 +76,9 @@ public static partial class FractionatorWindow {
     private static Vector3 _oriBoxLocalPos;
     private static Vector3 _speedArrowParentLocalPos;
     private static float _layoutOffsetX;
-
+    /// <summary>
+    /// ProductSlot 类型。
+    /// </summary>
     private class ProductSlot {
         public GameObject go;
         public Image icon;
@@ -89,7 +91,9 @@ public static partial class FractionatorWindow {
         public Action<int> clickHandler;
         public Action<int> rightClickHandler;
     }
-
+    /// <summary>
+    /// ProductSlotKind 枚举。
+    /// </summary>
     private enum ProductSlotKind {
         Main,
         Side,

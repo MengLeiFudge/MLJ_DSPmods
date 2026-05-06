@@ -11,14 +11,18 @@ using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Setting;
-
+/// <summary>
+/// SandboxMode 类型。
+/// </summary>
 public static class SandboxMode {
     private static RectTransform window;
     private static RectTransform tab;
 
     private static ConfigEntry<float> ExpMultiRatioEntry;
     public static float ExpMultiRatio => GameMain.sandboxToolsEnabled ? ExpMultiRatioEntry.Value : 1;
-
+    /// <summary>
+    /// MultiRatioMapper 类型。
+    /// </summary>
     private class MultiRatioMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
         public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);
         public override int ValueToIndex(float value) => (int)(Math.Log10(value) * 10.0 + 10);

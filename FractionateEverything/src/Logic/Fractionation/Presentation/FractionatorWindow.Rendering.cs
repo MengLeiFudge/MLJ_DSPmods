@@ -15,7 +15,9 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
-
+/// <summary>
+/// FractionatorWindow 类型。
+/// </summary>
 public static partial class FractionatorWindow {
     private static void DoModWindowUpdate(UIFractionatorWindow src) {
         if (src.fractionatorId == 0 || src.factory == null) {

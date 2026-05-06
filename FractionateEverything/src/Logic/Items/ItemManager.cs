@@ -9,7 +9,9 @@ using static FE.FractionateEverything;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Items;
-
+/// <summary>
+/// ItemManager 类型。
+/// </summary>
 public static class ItemManager {
     public static void AddTranslations() {
         Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");

@@ -27,7 +27,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
-
+/// <summary>
+/// FracRecipeOperate 类型。
+/// </summary>
 public static class FracRecipeOperate {
     private static RectTransform window;
     private static RectTransform tab;
@@ -622,7 +624,6 @@ public static class FracRecipeOperate {
     /// <summary>
     /// 显示单个产物行：左侧概率文本，中间物品图标，右侧数量。
     /// </summary>
-
     private static void ShowProductLine(int line, ItemProto itemProto, OutputInfo info) {
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         string count = forceShow || info.ShowOutputCount ? info.OutputCount.ToString("F3") : "???";

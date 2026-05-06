@@ -11,7 +11,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaService 类型。
+/// </summary>
 public static partial class GachaService {
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
         IReadOnlyList<GachaGrowthOffer> baseOffers = IsSpeedrunMode

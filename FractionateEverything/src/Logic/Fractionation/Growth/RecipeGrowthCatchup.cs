@@ -4,7 +4,9 @@ using FE.Logic.DarkFog;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthCatchup 类型。
+/// </summary>
 public static class RecipeGrowthCatchup {
     public static int GetDarkFogTier(int inputId) {
         return inputId switch {

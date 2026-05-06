@@ -5,7 +5,9 @@ using UnityEngine.UI;
 using FE.Logic.Gacha;
 
 namespace FE.UI.MainPanel.DrawGrowth;
-
+/// <summary>
+/// GachaCard 类型。
+/// </summary>
 public class GachaCard : MonoBehaviour {
     // 卡背面Image（默认显示）
     private Image _backImage;

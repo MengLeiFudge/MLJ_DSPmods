@@ -3,7 +3,9 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.UI.Patches.Common;
-
+/// <summary>
+/// UIComboBoxPatch 类型。
+/// </summary>
 public static class UIComboBoxPatch {
     private const string DropdownLayerName = "fe-dropdown-layer";
     private static readonly Dictionary<UIComboBox, DropdownPortalState> DropdownStates = [];
@@ -126,7 +128,9 @@ public static class UIComboBoxPatch {
 
         return layer;
     }
-
+    /// <summary>
+    /// 下拉框层级迁移状态。
+    /// </summary>
     private sealed class DropdownPortalState {
         public RectTransform Parent { get; private set; }
         public int SiblingIndex { get; private set; }

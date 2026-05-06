@@ -5,7 +5,9 @@ using UnityEngine.UI;
 using FE.Logic.Gacha;
 
 namespace FE.UI.MainPanel.DrawGrowth;
-
+/// <summary>
+/// GachaSSREffect 类型。
+/// </summary>
 public class GachaSSREffect : MonoBehaviour {
     private Image _overlay;// 半透明黑色蒙层
     private Image _itemIcon;// 物品大图

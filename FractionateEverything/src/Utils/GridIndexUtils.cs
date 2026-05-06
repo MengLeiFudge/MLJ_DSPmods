@@ -1,7 +1,9 @@
 ﻿using FE.Compatibility.Mods;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     /// <summary>
     /// 校验网格索引是否处于当前游戏版本可用范围。

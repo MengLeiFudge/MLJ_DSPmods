@@ -4,7 +4,9 @@ using System.Linq;
 using CommonAPI.Systems.ModLocalization;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     private static readonly Dictionary<string, (string enTrans, string cnTrans)> registeredTranslations = [];
 

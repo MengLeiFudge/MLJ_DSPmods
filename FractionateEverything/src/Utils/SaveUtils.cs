@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     /// <summary>
     /// 将一个数据块包装成带 Tag 和长度的格式写入。

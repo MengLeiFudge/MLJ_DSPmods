@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 
 namespace FE.Utils;
-
+/// <summary>
+/// 通用工具方法分部类型。
+/// </summary>
 public static partial class Utils {
     // /// <summary>
     // /// 启用此patch后，可以得知红色是FF5D4CB7，蓝色是61D8FFB8

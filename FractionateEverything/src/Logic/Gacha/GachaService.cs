@@ -8,7 +8,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
-
+/// <summary>
+/// GachaFocusDefinition 数据结构。
+/// </summary>
 public readonly struct GachaFocusDefinition(
     GachaFocusType focusType,
     string nameKey,
@@ -17,7 +19,9 @@ public readonly struct GachaFocusDefinition(
     public string NameKey { get; } = nameKey;
     public string DescKey { get; } = descKey;
 }
-
+/// <summary>
+/// GachaGrowthOffer 数据结构。
+/// </summary>
 public readonly struct GachaGrowthOffer(
     int pointCost,
     int fragmentCost,
@@ -38,13 +42,17 @@ public readonly struct GachaGrowthOffer(
     public GachaGrowthOfferKind OfferKind { get; } = offerKind;
     public ERecipe RecipeType { get; } = recipeType;
 }
-
+/// <summary>
+/// GachaGrowthOfferKind 枚举。
+/// </summary>
 public enum GachaGrowthOfferKind {
     ItemGrant = 0,
     DarkFogCatchup = 1,
     DarkFogRecipeGrowth = 2,
 }
-
+/// <summary>
+/// GachaRewardResolution 数据结构。
+/// </summary>
 internal readonly struct GachaRewardResolution(
     GachaRewardType rewardType,
     int rewardItemId,

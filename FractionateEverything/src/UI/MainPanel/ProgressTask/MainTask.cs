@@ -27,7 +27,9 @@ using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.ProgressTask;
-
+/// <summary>
+/// MainTask 类型。
+/// </summary>
 public static class MainTask {
     private static RectTransform tab;
     private static RectTransform roadmapPanel;
@@ -232,26 +234,34 @@ public static class MainTask {
 
         RefreshMilestonePage();
     }
-
+    /// <summary>
+    /// 分馏主线路线图定义。
+    /// </summary>
     private readonly struct RouteMap(string routeName, string centerTitle, StageColumn[] stages, TaskBranch[] branches) {
         public readonly string RouteName = routeName;
         public readonly string CenterTitle = centerTitle;
         public readonly StageColumn[] Stages = stages;
         public readonly TaskBranch[] Branches = branches;
     }
-
+    /// <summary>
+    /// 主线路线阶段列定义。
+    /// </summary>
     private readonly struct StageColumn(string id, string name, int iconItemId) {
         public readonly string Id = id;
         public readonly string Name = name;
         public readonly int IconItemId = iconItemId;
     }
-
+    /// <summary>
+    /// 主线任务分支定义。
+    /// </summary>
     private readonly struct TaskBranch(string id, string name, TaskNode[] nodes) {
         public readonly string Id = id;
         public readonly string Name = name;
         public readonly TaskNode[] Nodes = nodes;
     }
-
+    /// <summary>
+    /// 主线任务节点定义。
+    /// </summary>
     private readonly struct TaskNode(
         string id,
         string name,
@@ -1127,7 +1137,9 @@ public static class MainTask {
     private static readonly Color NodeBgCompleted = new(0.18f, 0.13f, 0.05f, 0.78f);
     private static readonly Color NodeBorderSelected = new(1f, 0.72f, 0.31f, 0.72f);
     private static readonly Color NodeBorderAvailable = new(0.42f, 0.73f, 1f, 0.28f);
-
+    /// <summary>
+    /// 路线图视图缓存。
+    /// </summary>
     private sealed class RouteViewCache {
         public RectTransform Root;
         public RectTransform ScrollContent;
@@ -1136,7 +1148,9 @@ public static class MainTask {
         public Text[] StageLabels;
         public NodeView[][] NodeViews;
     }
-
+    /// <summary>
+    /// 任务节点视图引用。
+    /// </summary>
     private sealed class NodeView {
         public MyImageButton Button;
         public Image Background;
@@ -1144,7 +1158,9 @@ public static class MainTask {
         public int BranchIndex;
         public int NodeIndex;
     }
-
+    /// <summary>
+    /// 任务节点视觉状态。
+    /// </summary>
     private enum NodeVisualState {
         Locked,
         Available,

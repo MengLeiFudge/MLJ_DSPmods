@@ -22,6 +22,9 @@ namespace FE.UI.MainPanel.DrawGrowth;
 /// 本页只展示当前卡池状态与最近结果，所有概率、保底、聚焦命中和奖励结算都来自 GachaService。
 /// </summary>
 public static class TicketRaffle {
+    /// <summary>
+    /// RaffleTabUi 类型。
+    /// </summary>
     private sealed class RaffleTabUi {
         public int PoolId;
         public RectTransform Tab;

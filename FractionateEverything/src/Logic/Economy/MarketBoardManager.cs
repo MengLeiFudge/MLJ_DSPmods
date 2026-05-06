@@ -21,14 +21,18 @@ namespace FE.Logic.Economy;
 /// </summary>
 public static class MarketBoardManager {
     private const int MaxActiveOfferCount = 8;
-
+    /// <summary>
+    /// 市场订单类型。
+    /// </summary>
     public enum MarketOfferType {
         BuyFromPlayer = 0,
         SellToPlayer = 1,
         StageSupply = 2,
         Special = 3,
     }
-
+    /// <summary>
+    /// 市场订单定义。
+    /// </summary>
     public readonly struct MarketOffer(
         int offerId,
         MarketOfferType offerType,

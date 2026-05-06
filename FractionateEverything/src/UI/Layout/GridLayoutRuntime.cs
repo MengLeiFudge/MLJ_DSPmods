@@ -6,7 +6,9 @@ using static FE.UI.Foundation.RectTransformUtils;
 using FE.UI.Foundation.Window;
 
 namespace FE.UI.Layout;
-
+/// <summary>
+/// GridLayoutRuntime 类型。
+/// </summary>
 internal static class GridLayoutRuntime {
     public static RectTransform CreateContainerRect(string objectName, RectTransform parent, LayoutRect rect) {
         var obj = new GameObject(objectName, typeof(RectTransform));

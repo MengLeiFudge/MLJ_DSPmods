@@ -5,7 +5,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthExecutor 类型。
+/// </summary>
 public static class RecipeGrowthExecutor {
     public static RecipeGrowthResult EnsureUnlockedByTech(BaseRecipe recipe, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);

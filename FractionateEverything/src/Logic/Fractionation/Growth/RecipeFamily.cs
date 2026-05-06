@@ -1,5 +1,7 @@
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeFamily 枚举。
+/// </summary>
 public enum RecipeFamily {
     Unknown = 0,
     BuildingTrainForward = 1,

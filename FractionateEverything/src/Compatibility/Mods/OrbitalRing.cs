@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// OrbitalRing 类型。
+/// </summary>
 public static class OrbitalRing {
     public const string GUID = "org.ProfessorCat305.OrbitalRing";
     public static bool Enable;

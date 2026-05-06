@@ -5,7 +5,9 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.UI.Patches.Common;
-
+/// <summary>
+/// UIButtonPatch 类型。
+/// </summary>
 public static class UIButtonPatch {
     /// <summary>
     /// Bring popup tip window to top layer.

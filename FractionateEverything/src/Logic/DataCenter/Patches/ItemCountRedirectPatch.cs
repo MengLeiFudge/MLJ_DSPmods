@@ -9,7 +9,9 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// ItemCountRedirectPatch 类型。
+/// </summary>
 public static class ItemCountRedirectPatch {
     //StorageComponent获取物品数目方法一览：
     //public int GetItemCount(int itemId)：player.package多处调用此方法

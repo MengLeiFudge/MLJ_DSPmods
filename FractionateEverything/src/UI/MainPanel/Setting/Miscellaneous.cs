@@ -19,7 +19,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Setting;
-
+/// <summary>
+/// Miscellaneous 类型。
+/// </summary>
 public static class Miscellaneous {
     private static RectTransform window;
     private static RectTransform tab;
@@ -281,12 +283,16 @@ public static class Miscellaneous {
             text.text = label.Translate();
         }
     }
-
+    /// <summary>
+    /// DownloadThresholdMapper 类型。
+    /// </summary>
     private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
         public override float IndexToValue(int index) => index * 0.02f;
         public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
     }
-
+    /// <summary>
+    /// UploadThresholdMapper 类型。
+    /// </summary>
     private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
         public override float IndexToValue(int index) => 0.6f + index * 0.02f;
         public override int ValueToIndex(float value) => (int)Math.Round((value - 0.6f) / 0.02f);

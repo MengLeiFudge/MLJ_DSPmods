@@ -25,7 +25,9 @@ using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ProgressTask;
-
+/// <summary>
+/// RecurringTask 类型。
+/// </summary>
 public static class RecurringTask {
     private static RectTransform window;
     private static RectTransform tab;

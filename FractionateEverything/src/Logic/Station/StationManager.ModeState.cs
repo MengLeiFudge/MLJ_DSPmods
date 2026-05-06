@@ -8,16 +8,22 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
-
+/// <summary>
+/// StationManager 类型。
+/// </summary>
 public static partial class StationManager {
-    /// <summary>传输模式枚举：双向同步、仅上传、仅下载</summary>
+    /// <summary>
+    /// 传输模式枚举：双向同步、仅上传、仅下载。
+    /// </summary>
     private enum ETransferMode {
         Sync = 0,
         Upload = 1,
         Download = 2
     }
 
-    /// <summary>容量模式枚举：有限上传、无限上传</summary>
+    /// <summary>
+    /// 容量模式枚举：有限上传、无限上传。
+    /// </summary>
     private enum ECapacityMode {
         Limited = 0,
         Infinite = 1

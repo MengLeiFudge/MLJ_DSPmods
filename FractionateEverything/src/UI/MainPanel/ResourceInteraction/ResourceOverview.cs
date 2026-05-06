@@ -16,7 +16,9 @@ using FE.UI.MainPanel.Theme;
 using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
-
+/// <summary>
+/// ResourceOverview 类型。
+/// </summary>
 public static class ResourceOverview {
     private const int DisplayCount = 5;
 

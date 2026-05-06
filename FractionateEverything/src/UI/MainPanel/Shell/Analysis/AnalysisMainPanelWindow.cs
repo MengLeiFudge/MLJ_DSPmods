@@ -8,7 +8,9 @@ using UnityEngine.UI;
 using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
-
+/// <summary>
+/// AnalysisMainPanelWindow 类型。
+/// </summary>
 public partial class AnalysisMainPanelWindow : MyWindow {
     // Analysis 面板内容区标准：黑色底板固定为 1102x787。
     // 所有页面统一保留四边 10px gap，设计基准区为 1082x767，左上角基点为 (10,10)。
@@ -17,7 +19,9 @@ public partial class AnalysisMainPanelWindow : MyWindow {
     private const float AnalysisContentGap = 10f;
     private const float AnalysisDesignWidth = AnalysisBlackAreaWidth - AnalysisContentGap * 2f;
     private const float AnalysisDesignHeight = AnalysisBlackAreaHeight - AnalysisContentGap * 2f;
-
+    /// <summary>
+    /// ButtonPose 数据结构。
+    /// </summary>
     private readonly struct ButtonPose {
         public readonly Vector2 AnchorMin;
         public readonly Vector2 AnchorMax;
@@ -47,7 +51,9 @@ public partial class AnalysisMainPanelWindow : MyWindow {
             rect.localRotation = LocalRotation;
         }
     }
-
+    /// <summary>
+    /// DragWindowForwarder 类型。
+    /// </summary>
     private sealed class DragWindowForwarder : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
         private const float DragThresholdPixels = 5f;
 

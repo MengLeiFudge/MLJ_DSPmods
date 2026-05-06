@@ -11,16 +11,22 @@ using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
-
+/// <summary>
+/// TutorialManager 类型。
+/// </summary>
 public static partial class TutorialManager {
-
+    /// <summary>
+    /// 教程成就档位枚举。
+    /// </summary>
     public enum TutorialAchievementTier {
         Bronze,
         Silver,
         Gold,
         Platinum,
     }
-
+    /// <summary>
+    /// 教程成就定义。
+    /// </summary>
     public readonly struct TutorialAchievementDefinition(
         int tutorialId,
         string nameKey,
@@ -41,7 +47,9 @@ public static partial class TutorialManager {
         public readonly string RewardKey = rewardKey;
         public readonly TutorialAchievementTier Tier = tier;
     }
-
+    /// <summary>
+    /// 教程注册项定义。
+    /// </summary>
     private readonly struct TutorialRegistration(
         int id,
         string baseName,

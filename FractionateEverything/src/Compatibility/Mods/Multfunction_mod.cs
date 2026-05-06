@@ -6,7 +6,9 @@ using HarmonyLib;
 using xiaoye97;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// Multfunction_mod 类型。
+/// </summary>
 public static class Multfunction_mod {
     public const string GUID = "cn.blacksnipe.dsp.Multfuntion_mod";
     public static bool Enable;

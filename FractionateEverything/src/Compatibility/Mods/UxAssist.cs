@@ -3,7 +3,9 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
-
+/// <summary>
+/// UxAssist 类型。
+/// </summary>
 public static class UxAssist {
     public const string GUID = "org.soardev.uxassist";
     public static bool Enable;

@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 
 namespace FE.Logic.Fractionation.Presentation;
-
+/// <summary>
+/// UIItemTipPatch 类型。
+/// </summary>
 public static class UIItemTipPatch {
     /// <summary>
     /// 物品提示增加分馏配方

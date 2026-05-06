@@ -9,7 +9,9 @@ using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.DarkFog;
-
+/// <summary>
+/// EDarkFogCombatStage 枚举。
+/// </summary>
 public enum EDarkFogCombatStage {
     Dormant = 0,
     Signal = 1,
@@ -23,6 +25,9 @@ public enum EDarkFogCombatStage {
 /// 这里只负责读取原版战斗状态与可选的 TCFV 增强层状态，不直接发奖励或输出 UI 文案。
 /// </summary>
 public static class DarkFogCombatManager {
+    /// <summary>
+    /// 黑雾战斗状态快照。
+    /// </summary>
     private readonly struct Snapshot(
         bool combatMode,
         bool baseLayerEnabled,

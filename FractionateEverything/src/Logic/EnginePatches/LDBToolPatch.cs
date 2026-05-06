@@ -5,7 +5,9 @@ using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.EnginePatches;
-
+/// <summary>
+/// LDBToolPatch 类型。
+/// </summary>
 public static class LDBToolPatch {
     private static bool cleared = false;
 

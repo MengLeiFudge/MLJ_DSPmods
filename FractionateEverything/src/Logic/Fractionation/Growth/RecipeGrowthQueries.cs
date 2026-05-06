@@ -6,8 +6,13 @@ using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
-
+/// <summary>
+/// RecipeGrowthQueries 类型。
+/// </summary>
 public static class RecipeGrowthQueries {
+    /// <summary>
+    /// 配方加工倍率缓存。
+    /// </summary>
     private readonly struct ProcessingRatioCache(
         int level,
         bool isUnlocked,

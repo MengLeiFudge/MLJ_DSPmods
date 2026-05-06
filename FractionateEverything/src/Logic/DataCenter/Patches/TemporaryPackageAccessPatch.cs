@@ -5,7 +5,9 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
-
+/// <summary>
+/// TemporaryPackageAccessPatch 类型。
+/// </summary>
 public static class TemporaryPackageAccessPatch {
     /// <summary>
     /// 临时背包已经消耗的物品数目

@@ -17,7 +17,9 @@ using FE.UI.MainPanel.Shell.Analysis;
 using FE.UI.MainPanel.Shell.MessageBox;
 
 namespace FE.UI.MainPanel;
-
+/// <summary>
+/// MainWindow 类型。
+/// </summary>
 public static class MainWindow {
     private const string MainPanelSelectionBlockTag = "MainPanelSelection";
     private const float LegacyContentGap = 10f;
