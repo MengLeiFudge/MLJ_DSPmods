@@ -1,6 +1,8 @@
 ﻿using CommonAPI.Systems.ModLocalization;
+using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Process;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.MainPanel;
 using FeUtils = FE.Utils.Utils;
 using static FE.Utils.Utils;

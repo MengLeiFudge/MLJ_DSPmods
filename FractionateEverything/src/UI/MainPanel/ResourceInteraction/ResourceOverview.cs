@@ -2,7 +2,7 @@
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
-using FE.Logic.RecipeGrowth;
+using FE.Logic.Fractionation.Growth;
 using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;

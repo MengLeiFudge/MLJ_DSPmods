@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FE.Logic.Recipe;
-using FE.Logic.RecipeGrowth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Growth;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;

@@ -1,12 +1,12 @@
 ﻿using System;
 using FE.Logic.Building;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
-using FE.Logic.RecipeGrowth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Growth;
 using FE.UI.MainPanel.DrawGrowth;
-using static FE.Logic.Manager.ProcessManager;
-using static FE.Logic.Manager.RecipeManager;
-using static FE.Logic.Recipe.ERecipeExtension;
+using static FE.Logic.Fractionation.Process.ProcessManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.ProgressTask;

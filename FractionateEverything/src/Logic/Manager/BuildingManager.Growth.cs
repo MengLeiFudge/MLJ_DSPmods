@@ -5,13 +5,13 @@ using System.IO;
 using System.Threading;
 using FE.Compatibility;
 using FE.Logic.Building;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Manager.ProcessManager;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Process.ProcessManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;

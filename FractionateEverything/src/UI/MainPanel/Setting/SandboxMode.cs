@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using BepInEx.Configuration;
+using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using UnityEngine;

@@ -1,5 +1,5 @@
 using HarmonyLib;
-using static FE.Logic.Manager.ProcessManager;
+using static FE.Logic.Fractionation.Process.ProcessManager;
 
 namespace FE.Logic.Fractionation.Presentation;
 

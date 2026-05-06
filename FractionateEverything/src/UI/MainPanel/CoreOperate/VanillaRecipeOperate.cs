@@ -3,14 +3,14 @@ using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.Components;
 using FE.UI.MainPanel.Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.CoreOperate;

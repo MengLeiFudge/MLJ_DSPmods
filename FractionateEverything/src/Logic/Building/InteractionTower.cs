@@ -5,7 +5,7 @@ using FE.Compatibility;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Manager.BuildingManager;
-using static FE.Logic.Manager.ProcessManager;
+using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Building;
