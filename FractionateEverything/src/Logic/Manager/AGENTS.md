@@ -1,114 +1,25 @@
-# Logic/Manager — 状态管理层
+# Logic/Manager — 迁移期共享 Manager
 
-核心管理层按领域组织；`BuildingManager`、`ProcessManager` 与 `StationManager` 已拆成 partial 文件，避免继续把新逻辑堆回单个大文件。
+`Manager` 不再是新增功能的默认位置。当前只保留尚未归域或用于兼容旧引用的共享 manager/facade。
 
-## 文件职责（当前）
+## Current Files
 
-| File | Responsibility |
-|---|---|
-| `StationManager.cs` | 物流交互站翻译入口与顶层说明 |
-| `StationManager.Runtime.cs` | 交互站与数据中心的上传/下载同步、槽位目标数量、电力消耗 |
-| `StationManager.UIShared.cs` | 传输/容量模式、UI 状态缓存、共享弹窗与集装 helper |
-| `StationManager.StationWindow.cs` | 独立物流站窗口与 `UIStationStorage` patch |
-| `StationManager.ControlPanel.cs` | 总控面板窗口创建/销毁、槽位打开/关闭生命周期 |
-| `StationManager.ControlPanel.Refresh.cs` | 总控面板槽位刷新、模式按钮文本/颜色/位置同步 |
-| `StationManager.ControlPanel.Popup.cs` | 总控面板传输/容量模式弹窗与选项点击拦截 |
-| `StationManager.ControlPanel.InspectorLayout.cs` | 总控面板检查器宽度、能量条、筛选组与右侧区域布局适配 |
-| `StationManager.ControlPanel.Piler.cs` | 总控面板集装滑块与自动集装按钮 patch |
-| `StationManager.OutputStackPatch.cs` | 物流站输出集装上限 transpiler |
-| `StationManager.Save.cs` | 交互站传输/容量模式存档读写 |
-| `BuildingManager.cs` | 建筑注册、材质/能耗刷新、分馏塔基础缓存、存档聚合入口 |
-| `BuildingManager.OutputState.cs` | 分馏塔多产物输出拓展状态与运行缓存 |
-| `BuildingManager.SingleLock.cs` | 转化塔单锁、复制粘贴/蓝图参数、实体删除清理 |
-| `BuildingManager.Growth.cs` | 建筑等级、经验、突破消耗、等级派生属性 |
-| `BuildingManager.Resonance.cs` | 交互塔维度共鸣加成状态 |
-| `BuildingManager.FissionPool.cs` | 矿物复制塔质能裂变点数池 |
-| `ProcessManager.cs` | 分馏器调度入口、各塔 `InternalUpdate` 热路径、成功统计存档 |
-| `ProcessManager.Runtime.cs` | 传送带速度、缓存上限、运行配置和强化数组初始化 |
-| `ProcessManager.Belts.cs` | 分馏产物选择、流动输入/输出、传送带 IO helper |
-| `ProcessManager.Perf.cs` | 分馏热路径性能探针与日志格式化 |
-| `ProcessManager.PowerPatch.cs` | 分馏塔能耗 Harmony transpiler 与 `SetPCState` 适配 |
-| `ProcessManager.Sacrifice.cs` | 交互塔献祭特质与成功率加成刷新 |
-| `ItemManager.cs` | 物品价值与数据中心物品操作 |
-| `TutorialManager.cs` | G 键指引教程/成就元数据 |
-| `TutorialManager.Translations.cs` | G 键指引教程多语言正文 |
-| `TutorialManager.Registry.cs` | G 键指引教程注册 |
-| `TutorialManager.LayoutPatch.cs` | `UITutorialWindow` 布局解析与 GenesisBook 兼容 patch |
-| `TutorialManager.AchievementProgress.cs` | G 键指引阅读到底部成就进度检测 |
-| `TechManager.cs` | 科技多语言注册入口 |
-| `TechManager.Techs.cs` | 科技注册与科技树坐标 |
-| `TechManager.MatrixProgress.cs` | 矩阵层研究进度、原版配方增强开放判断 |
-| `TechManager.RecipeBaselines.cs` | 读档/科技解锁后的配方基线补齐 |
-| `TechManager.RuntimePatches.cs` | 特殊科技运行解锁标记、科技提示文本 patch、解锁回调 |
-| `GachaService.cs` | 抽卡服务 DTO、共享缓存字段、模式状态入口 |
-| `GachaService.Focus.cs` | 流派聚焦定义、切换、报价修正、聚焦命中判定 |
-| `GachaService.Pools.cs` | 卡池构建、池刷新、开线/原胚/成长/聚焦池填充与权重 |
-| `GachaService.GrowthOffers.cs` | 成长报价列表、黑雾报价、成长报价兑换 |
-| `GachaService.Draw.cs` | 抽卡执行、保底、稀有度 roll、奖励解析 |
-| `GachaService.Display.cs` | 模式/池名称说明、池读取、成长池积分显示 |
-| `RecipeManager.cs` | 配方索引/查找 |
-| `GachaManager.cs` | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
-| `GachaPool.cs` | 卡池与稀有度模型定义 |
-| `GachaGalleryBonusManager.cs` | 图鉴完成度加成缓存刷新 |
+- `ItemManager.cs`：迁移期 facade，核心物品逻辑已在 `Logic/Items/ItemManager.cs` 和 `Logic/DataCenter/DataCenterInventory.cs`。
+- `LabManager.cs`：实验室相关共享逻辑，暂未单独成域。
+- `MonitorManager.cs`：监控/统计相关共享逻辑，引用建筑定义但不拥有建筑域。
 
-## Partial 文件归属
+## Rule
 
-- 新增建筑注册、原型刷新、存档聚合入口：放 `BuildingManager.cs`。
-- 新增分馏塔实例级状态：优先放 `BuildingManager.OutputState.cs`，不要混进等级成长。
-- 新增转化塔单锁、复制粘贴、蓝图参数：放 `BuildingManager.SingleLock.cs`。
-- 新增建筑经验/等级/突破公式：放 `BuildingManager.Growth.cs`。
-- 新增分馏热路径核心流程：放 `ProcessManager.cs`，保持 `InternalUpdate<T>` 可集中阅读。
-- 新增传送带输入输出辅助：放 `ProcessManager.Belts.cs`。
-- 新增性能计数或日志桶：放 `ProcessManager.Perf.cs`，不要散落在热路径里。
-- 新增能耗 IL patch：放 `ProcessManager.PowerPatch.cs`。
-- 新增交互塔献祭相关逻辑：放 `ProcessManager.Sacrifice.cs`。
-- 新增交互站运行同步逻辑：放 `StationManager.Runtime.cs`。
-- 新增交互站 UI 状态、弹窗状态或共享 helper：放 `StationManager.UIShared.cs`。
-- 新增独立物流站窗口 patch：放 `StationManager.StationWindow.cs`。
-- 新增总控面板窗口/槽位生命周期 patch：放 `StationManager.ControlPanel.cs`。
-- 新增总控面板槽位刷新与按钮定位：放 `StationManager.ControlPanel.Refresh.cs`。
-- 新增总控面板 FE 弹窗选项：放 `StationManager.ControlPanel.Popup.cs`。
-- 新增总控面板检查器宽度/能量条布局适配：放 `StationManager.ControlPanel.InspectorLayout.cs`。
-- 新增总控面板集装滑块或自动集装按钮 patch：放 `StationManager.ControlPanel.Piler.cs`。
-- 新增物流站输出堆叠 IL patch：放 `StationManager.OutputStackPatch.cs`。
-- 新增交互站传输/容量模式存档字段：放 `StationManager.Save.cs`。
-- 新增科技注册、科技树位置：放 `TechManager.Techs.cs`。
-- 新增矩阵层研究进度或原版配方增强开放判断：放 `TechManager.MatrixProgress.cs`。
-- 新增科技解锁/读档后的配方基线补齐：放 `TechManager.RecipeBaselines.cs`。
-- 新增特殊科技运行解锁、科技提示文本或解锁回调 patch：放 `TechManager.RuntimePatches.cs`。
-- 新增科技多语言文本：保留在 `TechManager.cs`。
-- 新增 G 键指引教程元数据或成就定义：放 `TutorialManager.cs`。
-- 新增 G 键指引教程正文翻译：放 `TutorialManager.Translations.cs`。
-- 新增教程注册入口：放 `TutorialManager.Registry.cs`。
-- 新增 `UITutorialWindow` 布局解析、GenesisBook 兼容或教程窗口 patch：放 `TutorialManager.LayoutPatch.cs`。
-- 新增教程阅读进度与成就触发检测：放 `TutorialManager.AchievementProgress.cs`。
-- 新增抽卡流派聚焦、聚焦命中表达：放 `GachaService.Focus.cs`。
-- 新增卡池内容构建、权重和刷新条件：放 `GachaService.Pools.cs`。
-- 新增成长报价和报价兑换：放 `GachaService.GrowthOffers.cs`。
-- 新增抽卡执行、保底和奖励解析：放 `GachaService.Draw.cs`。
-- 新增抽卡模式/池名称说明：放 `GachaService.Display.cs`。
+新增功能先判断归属：
 
-## 科技与配方解锁 (TechManager)
+- 建筑：`Logic/Buildings`
+- 分馏配方/运行/状态/表现层：`Logic/Fractionation`
+- 物流交互站：`Logic/Station`
+- 数据中心库存/背包访问：`Logic/DataCenter`
+- 物品原型/价值/矩阵阶段：`Logic/Items`
+- 抽取：`Logic/Gacha`
+- 经济：`Logic/Economy`
+- 科技/教程：`Logic/Progression`
+- 黑雾：`Logic/DarkFog`
 
-- **科技奖励**：在 `NotifyTechUnlock` 后自动发放建筑培养配方。
-- **矿物复制奖励**：解锁“矿物复制”科技时，自动发放非珍奇的原矿复制配方。
-- **原版增强开放**：采用“落后一层”规则（例如：完成能量层所有科技后，才开放电磁层的原版配方增强）。
-
-## 抽奖域边界（重构后）
-
-- `GachaPool`：池 ID 合同 + 概率池 + `PickRandom`
-- `GachaManager`：状态机（保底、积分、UP 组轮换）+ Import/Export
-- `GachaService`：纯业务流程（构池、Draw、奖励）
-- UI 层（`TicketRaffle`/`LimitedTimeStore`）只负责展示与交互，不承载核心概率/保底规则
-
-## 序列化约束
-
-- 统一 `WriteBlocks/ReadBlocks` 标签化存档
-- `GachaManager` 对导入值有显式归一化（非负、范围、组索引合法化）
-- 兼容老档的迁移规则集中在 `GachaManager`，不要分散到 UI
-
-## 反模式
-
-- 在 `TicketRaffle` 里重写概率/保底逻辑（应进 `GachaService/GachaManager`）
-- 跳过 `GachaPool.IsValidPoolId` 直接访问数组
-- 在热路径里重复做高开销查询（遵循缓存/预构建思路）
+只有确实跨域且暂时没有更清晰归属的共享入口，才允许放在本目录。
