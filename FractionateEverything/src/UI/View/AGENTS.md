@@ -20,7 +20,7 @@
 |---|---:|---|
 | `DrawGrowth/` | 7 | 抽取成长主域：抽奖、成长规划、聚焦、资源统筹与表现组件 |
 | `CoreOperate/` | 3 | 配方/建筑操作主面板 |
-| `ProgressTask/` | 3 | 主线/循环任务、成就系统 |
+| `ProgressTask/` | 8 | 主线/循环任务、成就系统；`Achievements*.cs` 按定义、翻译、状态、UI、奖励拆分 |
 | `Archive/` | 8 | 统计、图鉴、开发日志；开发日志拆为目录、文本注册、状态、UI、存档 partial |
 | `ResourceInteraction/` | 2 | 数据中心物品上传/下载与重要物品 |
 | `Setting/` | 3 | 面板风格切换按钮与沙盒开关 |
@@ -32,6 +32,7 @@
 3. 需要跨面板共享的数据（如抽卡总次数）统一进 `MainWindow.SharedPanelState`。
 4. `UpdateUI` 必须先判断页面可见性 + 当前主面板类型。
 5. `UI/View/*` 颜色文本禁止硬编码，统一 `RichTextUtils`。
+6. 成就页逻辑按 `Achievements*.cs` partial 边界维护：成就条件放 `Definitions`，翻译放 `Translations`，配置/存档放 `State`，布局刷新放 `UI`，奖励文本与对外加成查询放 `Rewards`。
 
 ## 反模式
 
