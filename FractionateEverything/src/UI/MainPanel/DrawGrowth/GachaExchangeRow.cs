@@ -1,6 +1,6 @@
 namespace FE.UI.MainPanel.DrawGrowth;
 /// <summary>
-/// GachaExchangeRow 数据结构。
+/// 奖券兑换表中的输入输出物品数量。
 /// </summary>
 public readonly struct GachaExchangeRow(
     int inputItemId,

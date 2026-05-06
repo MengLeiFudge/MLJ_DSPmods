@@ -2,7 +2,7 @@ using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// DarkFogRecipeProgressSnapshot 数据结构。
+/// 黑雾配方追赶进度的展示快照。
 /// </summary>
 public readonly struct DarkFogRecipeProgressSnapshot {
     public DarkFogRecipeProgressSnapshot(

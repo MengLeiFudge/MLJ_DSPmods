@@ -3,7 +3,7 @@ using System;
 namespace FE.Logic.Fractionation.Growth;
 
 /// <summary>
-/// RecipeUnlockSourceFlags 枚举。
+/// 记录配方由科技、抽取或追赶解锁的来源标记。
 /// </summary>
 [Flags]
 public enum RecipeUnlockSourceFlags {

@@ -7,7 +7,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthQueries 类型。
+/// 配方成长状态的只读查询和显示快照生成逻辑。
 /// </summary>
 public static class RecipeGrowthQueries {
     /// <summary>

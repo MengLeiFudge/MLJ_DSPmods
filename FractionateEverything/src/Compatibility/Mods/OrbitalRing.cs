@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// OrbitalRing 类型。
+/// 星环模组检测与兼容状态入口。
 /// </summary>
 public static class OrbitalRing {
     public const string GUID = "org.ProfessorCat305.OrbitalRing";

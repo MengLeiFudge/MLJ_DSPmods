@@ -2,7 +2,7 @@
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// UIItemTipPatch 类型。
+/// 在物品提示中追加相关分馏配方入口。
 /// </summary>
 public static class UIItemTipPatch {
     /// <summary>

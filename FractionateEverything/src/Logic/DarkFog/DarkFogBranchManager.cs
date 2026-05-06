@@ -1,6 +1,6 @@
 namespace FE.Logic.DarkFog;
 /// <summary>
-/// EDarkFogBranchStage 枚举。
+/// 黑雾剧情分支推进阶段。
 /// </summary>
 public enum EDarkFogBranchStage {
     Locked = 0,

@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Recipes;
 /// <summary>
-/// FractionationOutcome 枚举。
+/// 单次分馏输入的销毁、通过或产出结果。
 /// </summary>
 public enum FractionationOutcome {
     Destroyed,
@@ -8,7 +8,7 @@ public enum FractionationOutcome {
     Produced,
 }
 /// <summary>
-/// FractionationBatchResult 数据结构。
+/// 一批分馏处理的消耗、产出和增产点统计。
 /// </summary>
 public struct FractionationBatchResult {
     public int InputRemoveCount;

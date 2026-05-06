@@ -12,7 +12,7 @@ using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel;
 /// <summary>
-/// MainWindowPageRegistry 类型。
+/// FE 主面板页面注册、分类顺序和可见性过滤中心。
 /// </summary>
 public static class MainWindowPageRegistry {
     public const string CoreOperateCategoryName = "生产管理";

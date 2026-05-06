@@ -11,7 +11,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// PackageLogistic 类型。
+/// 背包物流模组检测与兼容状态入口。
 /// </summary>
 public static class PackageLogistic {
     public const string GUID = "com.qlvlp.dsp.PackageLogistic";

@@ -12,7 +12,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
 /// <summary>
-/// TutorialManager 类型。
+/// 教程窗口布局兼容与滚动阅读检测补丁。
 /// </summary>
 public static partial class TutorialManager {
     static MethodInfo genesisBookIsLayoutMethod;

@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthRule 数据结构。
+/// 单个配方家族的成长模式、上限和倍率配置。
 /// </summary>
 public readonly struct RecipeGrowthRule {
     public RecipeGrowthRule(

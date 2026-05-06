@@ -5,7 +5,7 @@ using CommonAPI.Systems.ModLocalization;
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 翻译注册、查询和坐标显示辅助方法。
 /// </summary>
 public static partial class Utils {
     private static readonly Dictionary<string, (string enTrans, string cnTrans)> registeredTranslations = [];

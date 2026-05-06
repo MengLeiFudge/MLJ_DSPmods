@@ -26,7 +26,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ProgressTask;
 /// <summary>
-/// RecurringTask 类型。
+/// 循环任务进度和奖励展示页面。
 /// </summary>
 public static class RecurringTask {
     private static RectTransform window;

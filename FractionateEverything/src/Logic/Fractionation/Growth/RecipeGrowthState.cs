@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthState 类型。
+/// 单个分馏配方的等级、经验和解锁来源状态。
 /// </summary>
 public sealed class RecipeGrowthState {
     public int Level;

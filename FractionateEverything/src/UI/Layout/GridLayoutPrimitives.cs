@@ -2,14 +2,14 @@ using System;
 
 namespace FE.UI.Layout;
 /// <summary>
-/// LayoutTrackKind 枚举。
+/// 网格行列轨道的尺寸单位。
 /// </summary>
 public enum LayoutTrackKind {
     Fr,
     Px,
 }
 /// <summary>
-/// LayoutTrack 数据结构。
+/// 描述网格行列轨道的单位与数值。
 /// </summary>
 public readonly struct LayoutTrack {
     public LayoutTrackKind Kind { get; }
@@ -37,7 +37,7 @@ public readonly struct LayoutTrack {
     }
 }
 /// <summary>
-/// LayoutInsets 数据结构。
+/// 描述布局四边内边距。
 /// </summary>
 public readonly struct LayoutInsets {
     public float Left { get; }
@@ -59,7 +59,7 @@ public readonly struct LayoutInsets {
     public static readonly LayoutInsets Zero = new(0f);
 }
 /// <summary>
-/// LayoutRect 数据结构。
+/// 描述布局结果矩形区域。
 /// </summary>
 public readonly struct LayoutRect {
     public float Left { get; }
@@ -81,7 +81,7 @@ public readonly struct LayoutRect {
     }
 }
 /// <summary>
-/// LayoutPlacement 数据结构。
+/// 描述节点在网格中的行列位置与跨度。
 /// </summary>
 internal readonly struct LayoutPlacement {
     public int Row { get; }

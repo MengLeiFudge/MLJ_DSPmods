@@ -10,7 +10,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaService 类型。
+/// 抽取聚焦选项、权重和加成计算逻辑。
 /// </summary>
 public static partial class GachaService {
     private static readonly GachaFocusDefinition[] focusDefinitions = [

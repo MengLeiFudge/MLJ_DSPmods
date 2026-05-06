@@ -6,7 +6,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthExecutor 类型。
+/// 配方解锁、抽取重复和加工经验的成长执行逻辑。
 /// </summary>
 public static class RecipeGrowthExecutor {
     public static RecipeGrowthResult EnsureUnlockedByTech(BaseRecipe recipe, RecipeGrowthContext context) {

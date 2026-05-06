@@ -16,7 +16,7 @@ namespace FE.UI.Foundation.Window;
 // MyWindow modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyWindowCtl.cs
 // 大部分UI来源为UXAssist，感谢@soarqin的源码以供参考！
 /// <summary>
-/// MyWindow 类型。
+/// FE 自定义窗口的基础布局、控件创建和刷新框架。
 /// </summary>
 public class MyWindow : ManualBehaviour {
     private const int MinFontSize = 15;
@@ -259,7 +259,7 @@ public class MyWindow : ManualBehaviour {
 
     #region Slider
     /// <summary>
-    /// ValueMapper 类型。
+    /// 滑条索引与业务值之间的映射基类。
     /// </summary>
     public class ValueMapper<T> {
         public virtual int Min => 1;

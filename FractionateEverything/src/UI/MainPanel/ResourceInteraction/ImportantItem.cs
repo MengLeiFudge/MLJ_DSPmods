@@ -14,7 +14,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 /// <summary>
-/// ImportantItem 类型。
+/// 关键物品获取与说明的归档页面。
 /// </summary>
 public static class ImportantItem {
     private static RectTransform window;

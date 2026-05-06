@@ -4,7 +4,7 @@ using FE.Utils;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaFocusType 枚举。
+/// 抽取 UP 组聚焦方向。
 /// </summary>
 public enum GachaFocusType {
     Balanced = 0,
@@ -16,7 +16,7 @@ public enum GachaFocusType {
     RectificationEconomy = 6,
 }
 /// <summary>
-/// GachaMode 枚举。
+/// 抽取系统的常规与速通模式。
 /// </summary>
 public enum GachaMode {
     Normal = 0,

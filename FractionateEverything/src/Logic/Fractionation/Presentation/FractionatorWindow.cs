@@ -77,7 +77,7 @@ public static partial class FractionatorWindow {
     private static Vector3 _speedArrowParentLocalPos;
     private static float _layoutOffsetX;
     /// <summary>
-    /// ProductSlot 类型。
+    /// 分馏塔窗口单个产物槽位的 UI 引用。
     /// </summary>
     private class ProductSlot {
         public GameObject go;
@@ -92,7 +92,7 @@ public static partial class FractionatorWindow {
         public Action<int> rightClickHandler;
     }
     /// <summary>
-    /// ProductSlotKind 枚举。
+    /// 分馏塔产物槽位的主产物、副产物和流体分类。
     /// </summary>
     private enum ProductSlotKind {
         Main,

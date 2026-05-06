@@ -7,11 +7,11 @@ using static FE.Utils.Utils;
 
 namespace FE.UI.Foundation.Window;
 /// <summary>
-/// MyWindowWithTabs 类型。
+/// 带分组标签页的 FE 基础窗口。
 /// </summary>
 public class MyWindowWithTabs : MyWindow {
     /// <summary>
-    /// TabState 类型。
+    /// 记录单个标签页的内容根节点与按钮。
     /// </summary>
     private sealed class TabState {
         public RectTransform Content;
@@ -19,7 +19,7 @@ public class MyWindowWithTabs : MyWindow {
         public string Label;
     }
     /// <summary>
-    /// TabGroupState 类型。
+    /// 记录一组标签页的折叠状态和范围。
     /// </summary>
     private sealed class TabGroupState {
         public string Label;

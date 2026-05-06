@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaService 类型。
+/// 抽取模式、卡池和奖励展示文本生成逻辑。
 /// </summary>
 public static partial class GachaService {
     public static string GetModeNameKey() {

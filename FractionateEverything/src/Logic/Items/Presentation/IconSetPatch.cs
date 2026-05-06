@@ -7,7 +7,7 @@ using UnityEngine.UI.Youthcat;
 
 namespace FE.Logic.Items.Presentation;
 /// <summary>
-/// IconSetPatch 类型。
+/// 物品、配方和科技图标集补充逻辑。
 /// </summary>
 public static class IconSetPatch {
     /// <summary>

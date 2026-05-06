@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流交互站模式状态的存档读写逻辑。
 /// </summary>
 public static partial class StationManager {
     #region IModCanSave

@@ -10,7 +10,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.DarkFog;
 /// <summary>
-/// EDarkFogCombatStage 枚举。
+/// 黑雾战斗进度阶段。
 /// </summary>
 public enum EDarkFogCombatStage {
     Dormant = 0,

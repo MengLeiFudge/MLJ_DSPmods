@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
 /// <summary>
-/// ProcessManager 类型。
+/// 分馏塔运行参数、增产倍率和核心更新热路径。
 /// </summary>
 public static partial class ProcessManager {
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
@@ -29,7 +29,7 @@ public static partial class ProcessManager {
     public static int BaseFracFluidInputCargoMax = 40;
     public static int MaxBeltSpeed = 30;
     /// <summary>
-    /// FractionatorRuntimeConfig 数据结构。
+    /// 单次分馏更新使用的运行参数快照。
     /// </summary>
     private struct FractionatorRuntimeConfig {
         public int MaxStack;

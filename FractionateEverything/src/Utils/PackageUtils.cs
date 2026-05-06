@@ -1,6 +1,6 @@
 ﻿namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 背包、物流背包和数据中心物品存取辅助方法。
 /// </summary>
 public static partial class Utils {
     public static void AddTranslations() {

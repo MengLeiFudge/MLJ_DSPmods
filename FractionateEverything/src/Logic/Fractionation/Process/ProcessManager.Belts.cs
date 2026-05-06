@@ -18,7 +18,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
 /// <summary>
-/// ProcessManager 类型。
+/// 分馏塔传送带输入输出和产物查找辅助逻辑。
 /// </summary>
 public static partial class ProcessManager {
     private static ProductOutputInfo FindProduct(List<ProductOutputInfo> products, int itemId, bool mainOnly = false) {

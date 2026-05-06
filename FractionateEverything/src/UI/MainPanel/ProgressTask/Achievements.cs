@@ -27,13 +27,13 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ProgressTask;
 /// <summary>
-/// Achievements 类型。
+/// 成就进度、奖励领取和分页展示页面。
 /// </summary>
 public static class Achievements {
     private static RectTransform window;
     private static RectTransform tab;
     /// <summary>
-    /// AchievementInfo 数据结构。
+    /// 单个成就的分类、文案、奖励和进度绑定。
     /// </summary>
     private readonly struct AchievementInfo(
         string categoryKey,
@@ -92,7 +92,7 @@ public static class Achievements {
         public readonly float PowerStageBonus = powerStageBonus;
     }
     /// <summary>
-    /// 成就档位枚举。
+    /// 成就奖励和显示使用的档位。
     /// </summary>
     private enum ETier {
         Bronze,

@@ -11,7 +11,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaService 类型。
+/// 抽取执行、保底推进与奖励结算逻辑。
 /// </summary>
 public static partial class GachaService {
     public static List<GachaResult> Draw(int poolId, int resourceItemId, int count) {

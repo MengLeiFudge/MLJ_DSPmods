@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// TrashRecyclePatch 类型。
+/// 玩家丢弃物品自动回收到数据中心的补丁。
 /// </summary>
 public static class TrashRecyclePatch {
     /// <summary>

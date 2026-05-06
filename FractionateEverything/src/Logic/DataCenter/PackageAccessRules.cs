@@ -3,7 +3,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;
 /// <summary>
-/// PackageAccessRules 类型。
+/// 统一判断背包访问是否可走建筑师模式或无限资源。
 /// </summary>
 public static class PackageAccessRules {
     /// <summary>

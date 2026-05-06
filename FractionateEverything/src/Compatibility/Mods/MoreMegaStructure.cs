@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// MoreMegaStructure 类型。
+/// MoreMegaStructure 模组检测与兼容状态入口。
 /// </summary>
 public static class MoreMegaStructure {
     public const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";

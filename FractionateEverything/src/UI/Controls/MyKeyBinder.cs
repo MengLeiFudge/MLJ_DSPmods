@@ -10,7 +10,7 @@ namespace FE.UI.Controls;
 
 // MyKeyBinder modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MyKeyBinder.cs
 /// <summary>
-/// MyKeyBinder 类型。
+/// 用于配置快捷键的按键绑定控件。
 /// </summary>
 public class MyKeyBinder : MonoBehaviour {
     private ConfigEntry<KeyboardShortcut> _config;

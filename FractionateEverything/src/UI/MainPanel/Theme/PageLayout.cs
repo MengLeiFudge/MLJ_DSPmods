@@ -70,7 +70,7 @@ public static class PageLayout {
     /// <summary>空态提示文本颜色：比正文再低一档的灰白，避免抢视觉。</summary>
     public static readonly Color EmptyStateTextColor = new(1f, 1f, 1f, 0.45f);
     /// <summary>
-    /// HeaderRefs 数据结构。
+    /// 主面板页头根节点与标题文本引用。
     /// </summary>
     public readonly struct HeaderRefs {
         public readonly RectTransform Root;

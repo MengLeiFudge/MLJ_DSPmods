@@ -5,7 +5,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthCatchup 类型。
+/// 黑雾配方追赶层级和目标等级计算逻辑。
 /// </summary>
 public static class RecipeGrowthCatchup {
     public static int GetDarkFogTier(int inputId) {

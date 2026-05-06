@@ -7,7 +7,7 @@ using FE.UI.Foundation.Window;
 
 namespace FE.UI.Layout;
 /// <summary>
-/// GridLayoutRuntime 类型。
+/// 声明式网格布局的 RectTransform 构建与定位运行时。
 /// </summary>
 internal static class GridLayoutRuntime {
     public static RectTransform CreateContainerRect(string objectName, RectTransform parent, LayoutRect rect) {

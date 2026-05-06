@@ -4,7 +4,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// ProliferatorPool 类型。
+/// 物流交互站自动增产点池状态与结算逻辑。
 /// </summary>
 public static class ProliferatorPool {
     #region 物流交互站自动喷涂

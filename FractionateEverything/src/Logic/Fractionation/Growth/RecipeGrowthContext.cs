@@ -4,7 +4,7 @@ using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthContext 数据结构。
+/// 配方成长规则评估所需的当前进度上下文。
 /// </summary>
 public readonly struct RecipeGrowthContext {
     public RecipeGrowthContext(

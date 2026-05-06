@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// FractionatorWindow 类型。
+/// 分馏塔窗口刷新、产物渲染和比例显示逻辑。
 /// </summary>
 public static partial class FractionatorWindow {
     private static void DoModWindowUpdate(UIFractionatorWindow src) {

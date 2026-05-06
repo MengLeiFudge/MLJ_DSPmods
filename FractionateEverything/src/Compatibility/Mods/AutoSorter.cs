@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// AutoSorter 类型。
+/// AutoSorter 模组检测与兼容状态入口。
 /// </summary>
 public static class AutoSorter {
     public const string GUID = "Appun.DSP.plugin.AutoSorter";

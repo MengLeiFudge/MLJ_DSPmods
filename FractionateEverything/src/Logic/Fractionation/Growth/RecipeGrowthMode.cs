@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthMode 枚举。
+/// 配方成长经验来源模式。
 /// </summary>
 public enum RecipeGrowthMode {
     None = 0,

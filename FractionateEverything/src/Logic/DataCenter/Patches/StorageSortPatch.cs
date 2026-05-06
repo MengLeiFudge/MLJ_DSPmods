@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// StorageSortPatch 类型。
+/// 背包排序后恢复数据中心物品缓存的补丁。
 /// </summary>
 public static class StorageSortPatch {
     #region 背包排序

@@ -11,7 +11,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
 /// <summary>
-/// ERecipeGrowthRole 枚举。
+/// 配方在成长系统中的职责分类。
 /// </summary>
 public enum ERecipeGrowthRole {
     Production = 0,

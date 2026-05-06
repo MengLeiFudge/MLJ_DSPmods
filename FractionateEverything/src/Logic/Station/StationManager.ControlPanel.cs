@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流站总控面板槽位刷新与交互按钮逻辑。
 /// </summary>
 public static partial class StationManager {
     [HarmonyPostfix]

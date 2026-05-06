@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
 /// <summary>
-/// RectificationRecipe 类型。
+/// 矩阵精馏配方的产出分布逻辑。
 /// </summary>
 public class RectificationRecipe : BaseRecipe {
     private static readonly int[] MatrixInputs = [

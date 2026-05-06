@@ -1,6 +1,6 @@
 namespace FE.UI.MainPanel;
 /// <summary>
-/// FEMainPanelType 枚举。
+/// FE 主面板窗口风格和打开态标识。
 /// </summary>
 public enum FEMainPanelType {
     None = 0,
@@ -8,7 +8,7 @@ public enum FEMainPanelType {
     Analysis = 2,
 }
 /// <summary>
-/// IFEMainPanelSharedState 契约。
+/// 跨主面板共享页面状态的最小接口。
 /// </summary>
 public interface IFEMainPanelSharedState {
     long TicketRaffleTotalDraws { get; set; }
@@ -16,7 +16,7 @@ public interface IFEMainPanelSharedState {
     int AchievementsCurrentPage { get; set; }
 }
 /// <summary>
-/// EmptyMainPanelSharedState 类型。
+/// 未绑定主面板时使用的空共享状态对象。
 /// </summary>
 public sealed class EmptyMainPanelSharedState : IFEMainPanelSharedState {
     public static readonly EmptyMainPanelSharedState Instance = new();

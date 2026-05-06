@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 总控面板检查器布局与集装倍率滑条逻辑。
 /// </summary>
 public static partial class StationManager {
     /// <summary>切换总控站点 ID 时刷新面板的堆叠描述和按钮</summary>

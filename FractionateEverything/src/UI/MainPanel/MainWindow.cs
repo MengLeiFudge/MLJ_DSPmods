@@ -18,7 +18,7 @@ using FE.UI.MainPanel.Shell.MessageBox;
 
 namespace FE.UI.MainPanel;
 /// <summary>
-/// MainWindow 类型。
+/// FE 双主面板的打开、切换、导航和状态持久化入口。
 /// </summary>
 public static class MainWindow {
     private const string MainPanelSelectionBlockTag = "MainPanelSelection";

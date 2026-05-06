@@ -11,7 +11,7 @@ using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.Layout;
 /// <summary>
-/// GridDsl 类型。
+/// 声明式网格布局的简写工厂方法。
 /// </summary>
 public static class GridDsl {
     public static LayoutTrack Px(float value) {

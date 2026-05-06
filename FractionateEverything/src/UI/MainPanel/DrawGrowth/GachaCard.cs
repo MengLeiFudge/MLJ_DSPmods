@@ -6,7 +6,7 @@ using FE.Logic.Gacha;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 /// <summary>
-/// GachaCard 类型。
+/// 抽取结果卡片翻转动画控件。
 /// </summary>
 public class GachaCard : MonoBehaviour {
     // 卡背面Image（默认显示）

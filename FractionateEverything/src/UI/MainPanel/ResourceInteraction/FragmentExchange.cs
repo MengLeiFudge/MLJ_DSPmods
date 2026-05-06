@@ -14,7 +14,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 /// <summary>
-/// FragmentExchange 类型。
+/// 万能残片兑换资源的主面板页面。
 /// </summary>
 public static class FragmentExchange {
     private static RectTransform tab;

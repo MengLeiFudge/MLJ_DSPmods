@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthResult 数据结构。
+/// 一次配方成长操作前后的等级和解锁变化。
 /// </summary>
 public readonly struct RecipeGrowthResult {
     public RecipeGrowthResult(

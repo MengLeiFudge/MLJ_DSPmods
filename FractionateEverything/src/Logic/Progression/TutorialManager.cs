@@ -12,11 +12,11 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
 /// <summary>
-/// TutorialManager 类型。
+/// FE 教程系统的状态、解锁和阅读奖励管理。
 /// </summary>
 public static partial class TutorialManager {
     /// <summary>
-    /// 教程成就档位枚举。
+    /// 教程阅读奖励使用的成就档位。
     /// </summary>
     public enum TutorialAchievementTier {
         Bronze,

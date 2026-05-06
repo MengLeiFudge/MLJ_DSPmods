@@ -7,7 +7,7 @@ using HarmonyLib;
 
 namespace FE.Logic.EnginePatches;
 /// <summary>
-/// ModelLoadingPatch 类型。
+/// 模型加载阶段的原型数组容量修正补丁。
 /// </summary>
 public static class ModelLoadingPatch {
     [HarmonyPatch(typeof(SpaceSector), nameof(SpaceSector.InitPrefabDescArray))]

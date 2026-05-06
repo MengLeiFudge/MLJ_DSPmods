@@ -22,7 +22,7 @@ namespace FE.Logic.Economy;
 public static class MarketBoardManager {
     private const int MaxActiveOfferCount = 8;
     /// <summary>
-    /// 市场订单类型。
+    /// 市场中玩家买卖、阶段补给和特殊订单的分类。
     /// </summary>
     public enum MarketOfferType {
         BuyFromPlayer = 0,

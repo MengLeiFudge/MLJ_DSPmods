@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
 /// <summary>
-/// AnalysisMainPanelWindow 类型。
+/// Analysis 主面板内容区骨架与尺寸布局逻辑。
 /// </summary>
 public partial class AnalysisMainPanelWindow {
     private void CreateContainerSkeleton() {

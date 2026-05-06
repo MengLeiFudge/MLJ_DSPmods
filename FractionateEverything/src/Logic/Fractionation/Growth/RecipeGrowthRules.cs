@@ -5,7 +5,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthRules 类型。
+/// 不同配方家族的成长阈值和倍率规则。
 /// </summary>
 public static class RecipeGrowthRules {
     private static readonly int[] BuildingTrainThresholds = [12, 20, 34, 56, 90];

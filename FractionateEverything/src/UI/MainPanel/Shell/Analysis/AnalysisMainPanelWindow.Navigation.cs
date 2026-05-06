@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
 /// <summary>
-/// AnalysisMainPanelWindow 类型。
+/// Analysis 主面板分类与子页导航逻辑。
 /// </summary>
 public partial class AnalysisMainPanelWindow {
     private void ConfigureTopCategoryButtons() {

@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// PlayerInventoryItemAccessPatches 类型。
+/// 玩家取物调用重定向到统一库存访问的补丁。
 /// </summary>
 public static class PlayerInventoryItemAccessPatches {
     /// <summary>

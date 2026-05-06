@@ -12,7 +12,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaService 类型。
+/// 成长商店报价生成与购买结算逻辑。
 /// </summary>
 public static partial class GachaService {
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 数字、百分比和物品名称格式化辅助方法。
 /// </summary>
 public static partial class Utils {
     /// <summary>

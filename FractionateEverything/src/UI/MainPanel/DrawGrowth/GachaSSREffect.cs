@@ -6,7 +6,7 @@ using FE.Logic.Gacha;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 /// <summary>
-/// GachaSSREffect 类型。
+/// SSR 抽取结果的全屏展示特效控件。
 /// </summary>
 public class GachaSSREffect : MonoBehaviour {
     private Image _overlay;// 半透明黑色蒙层

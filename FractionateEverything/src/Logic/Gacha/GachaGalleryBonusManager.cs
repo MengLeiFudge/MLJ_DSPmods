@@ -3,7 +3,7 @@ using FE.UI.MainPanel.ProgressTask;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaGalleryBonusManager 类型。
+/// 抽取图鉴完成度带来的成功率加成入口。
 /// </summary>
 public static class GachaGalleryBonusManager {
     public static void Tick() { }

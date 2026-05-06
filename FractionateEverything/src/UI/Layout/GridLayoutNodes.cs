@@ -6,7 +6,7 @@ using FE.UI.Foundation.Window;
 
 namespace FE.UI.Layout;
 /// <summary>
-/// LayoutNode 类型。
+/// 声明式网格布局节点的公共约束。
 /// </summary>
 public abstract class LayoutNode {
     public (int row, int col)? Pos { get; set; }
@@ -47,7 +47,7 @@ public abstract class LayoutNode {
     internal abstract RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect);
 }
 /// <summary>
-/// LayoutGrid 类型。
+/// 包含行列轨道和子节点的网格容器。
 /// </summary>
 public class LayoutGrid : LayoutNode {
     public IReadOnlyList<LayoutTrack> Rows { get; set; } = Array.Empty<LayoutTrack>();
@@ -81,7 +81,7 @@ public class LayoutGrid : LayoutNode {
     }
 }
 /// <summary>
-/// LayoutLeaf 类型。
+/// 执行具体 UI 构建动作的网格叶子节点。
 /// </summary>
 public sealed class LayoutLeaf : LayoutNode {
     public LayoutInsets Padding { get; set; } = LayoutInsets.Zero;
