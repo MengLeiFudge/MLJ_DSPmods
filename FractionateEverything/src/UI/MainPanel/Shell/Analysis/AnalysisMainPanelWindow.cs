@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FE.UI.MainPanel;
+using FE.UI.Foundation.Window;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
+
 /// <summary>
 /// 分析面板风格 FE 主面板窗口壳。
 /// </summary>
@@ -19,6 +19,7 @@ public partial class AnalysisMainPanelWindow : MyWindow {
     private const float AnalysisContentGap = 10f;
     private const float AnalysisDesignWidth = AnalysisBlackAreaWidth - AnalysisContentGap * 2f;
     private const float AnalysisDesignHeight = AnalysisBlackAreaHeight - AnalysisContentGap * 2f;
+
     /// <summary>
     /// 记录原生导航按钮的锚点、尺寸和位置。
     /// </summary>
@@ -51,6 +52,7 @@ public partial class AnalysisMainPanelWindow : MyWindow {
             rect.localRotation = LocalRotation;
         }
     }
+
     /// <summary>
     /// 把自定义拖拽事件转发给 Analysis 主窗口。
     /// </summary>

@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 一次配方成长操作前后的等级和解锁变化。
 /// </summary>

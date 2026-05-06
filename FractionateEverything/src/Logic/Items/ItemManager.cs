@@ -9,6 +9,7 @@ using static FE.FractionateEverything;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Items;
+
 /// <summary>
 /// FE 物品原型、翻译和物品价值注册入口。
 /// </summary>
@@ -596,5 +597,4 @@ public static class ItemManager {
     }
 
     #endregion
-
 }

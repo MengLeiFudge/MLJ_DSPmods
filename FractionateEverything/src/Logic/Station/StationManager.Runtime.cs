@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Emit;
 using FE.Logic.Buildings;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
@@ -17,6 +13,7 @@ using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Station;
+
 /// <summary>
 /// 物流交互站上传下载同步、目标数量与耗电运行逻辑。
 /// </summary>
@@ -83,13 +80,15 @@ public static partial class StationManager {
         long minChargePower = prefabDesc.workEnergyPerTick / 2;
         long maxChargePower = prefabDesc.workEnergyPerTick * 5;
         ref PowerConsumerComponent powerConsumer = ref factory.powerSystem.consumerPool[station.pcId];
-        powerConsumer.workEnergyPerTick = Math.Max(minChargePower, Math.Min(maxChargePower, powerConsumer.workEnergyPerTick));
+        powerConsumer.workEnergyPerTick =
+            Math.Max(minChargePower, Math.Min(maxChargePower, powerConsumer.workEnergyPerTick));
     }
 
     /// <summary>防止同一 stationPool 在同一 tick 被重复处理</summary>
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
     /// <summary>按 stationPool 复用交互站扫描缓冲，避免 30 帧热路径重复分配列表。</summary>
     private static readonly ConcurrentDictionary<StationComponent[], List<StationComponent>> stationBufferDic = [];
+
     /// <summary>在行星运输周期内按自定义规则处理交互站的上传下载</summary>
     /// <param name="__instance">PlanetTransport 实例</param>
     /// <param name="time">当前游戏 tick 时间</param>

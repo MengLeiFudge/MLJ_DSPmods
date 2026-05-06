@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using FE.Logic.DarkFog;
-using static FE.Logic.Manager.ItemManager;
+using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
+
 /// <summary>
 /// 成长商店报价生成与购买结算逻辑。
 /// </summary>

@@ -1,9 +1,10 @@
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.DarkFog;
+using FE.Logic.Fractionation.Recipes;
+using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 黑雾配方追赶层级和目标等级计算逻辑。
 /// </summary>
@@ -60,13 +61,13 @@ public static class RecipeGrowthCatchup {
         int tier = GetDarkFogTier(recipe.InputID);
         int stageIndex = GetDarkFogStageIndex(context.DarkFogStage);
         float multiplier = GetDarkFogProcessMultiplier(stageIndex, tier);
-        return UnityEngine.Mathf.Max(1, UnityEngine.Mathf.RoundToInt(growthExp * multiplier));
+        return Mathf.Max(1, Mathf.RoundToInt(growthExp * multiplier));
     }
 
     public static int GetAdjustedDarkFogCatchupExp(BaseRecipe recipe, int growthExp, RecipeGrowthContext context) {
         int tier = GetDarkFogTier(recipe.InputID);
         int stageIndex = GetDarkFogStageIndex(context.DarkFogStage);
         float multiplier = GetDarkFogCatchupMultiplier(stageIndex, tier);
-        return UnityEngine.Mathf.Max(1, UnityEngine.Mathf.RoundToInt(growthExp * multiplier));
+        return Mathf.Max(1, Mathf.RoundToInt(growthExp * multiplier));
     }
 }

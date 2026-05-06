@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace FE.Utils;
+
 /// <summary>
 /// DSP 风格随机数与随机选择辅助方法。
 /// </summary>

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEngine;
 using FE.Logic.DataCenter;
-using FE.Utils;
+using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
+using Random = System.Random;
 
 namespace FE.Logic.Economy;
 
@@ -19,7 +19,7 @@ public static class MarketValueManager {
     public const float MultiplierMin = 0.35f;
     public const float MultiplierMax = 3.50f;
 
-    private static readonly System.Random rng = new(20260402);
+    private static readonly Random rng = new(20260402);
     private static readonly HashSet<int> storeOfValueItems = [
         I宇宙矩阵, I黑雾矩阵, IFE分馏塔定向原胚
     ];

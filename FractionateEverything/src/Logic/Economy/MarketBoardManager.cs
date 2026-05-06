@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using UnityEngine;
-using FE.Utils;
 using FE.Logic.DarkFog;
+using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Gacha;
+using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using Random = System.Random;
 
 namespace FE.Logic.Economy;
 
@@ -21,6 +20,7 @@ namespace FE.Logic.Economy;
 /// </summary>
 public static class MarketBoardManager {
     private const int MaxActiveOfferCount = 8;
+
     /// <summary>
     /// 市场中玩家买卖、阶段补给和特殊订单的分类。
     /// </summary>
@@ -30,6 +30,7 @@ public static class MarketBoardManager {
         StageSupply = 2,
         Special = 3,
     }
+
     /// <summary>
     /// 市场订单定义。
     /// </summary>
@@ -56,7 +57,7 @@ public static class MarketBoardManager {
         public int RefreshVersion { get; } = refreshVersion;
     }
 
-    private static readonly System.Random rng = new(20260404);
+    private static readonly Random rng = new(20260404);
     private static readonly List<MarketOffer> activeOffers = [];
     private static int nextOfferId = 1;
     private static long currentExpireTick;
@@ -112,7 +113,7 @@ public static class MarketBoardManager {
         if (IsDarkFogRecipeBackfillOffer(offer)) {
             success = TryApplyDarkFogRecipeBackfill(offer);
         } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
-            && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+                   && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
             success = TryApplyDarkFogResourceBackfill(offer);
         } else {
             AddItemToModData(offer.OutputItemId, offer.OutputCount, 0, true);
@@ -145,7 +146,7 @@ public static class MarketBoardManager {
         }
 
         RecipeGrowthResult result = RecipeGrowthExecutor.ApplyDrawReward(recipe,
-                RecipeGrowthManager.BuildContext(manual: true));
+            RecipeGrowthManager.BuildContext(manual: true));
         if (result.FragmentReward > 0) {
             AddItemToModData(IFE残片, result.FragmentReward, 0, true);
         }

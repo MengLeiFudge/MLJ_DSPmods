@@ -1,21 +1,14 @@
 ﻿using System;
-using FE.Logic.Fractionation.State;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using System.Threading;
 using FE.Logic.Buildings;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.State;
 using FE.Logic.Manager;
 using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
-using UnityEngine;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.Station.ProliferatorPool;
@@ -37,6 +30,7 @@ public static partial class ProcessManager {
         UpdateConversionTower,
         UpdateRectificationTower,
     ];
+
     public static void AddTranslations() {
         Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
@@ -102,10 +96,7 @@ public static partial class ProcessManager {
         extraState.CurrentOutputFlags = flags;
     }
 
-
-
     #endregion
-
 
 
     #region 分馏塔处理逻辑
@@ -145,7 +136,8 @@ public static partial class ProcessManager {
                 updateHandlersByBuildingOffset[handlerIndex](ref fractionator, factory, power, signPool,
                     productRegister, consumeRegister, ref result);
                 return result;
-            } finally {
+            }
+            finally {
                 RecordFractionatorPerf(FractionatorPerfUpdateFe, buildingID, GetFractionatorPerfElapsed(perfStart));
             }
         }
@@ -153,7 +145,8 @@ public static partial class ProcessManager {
         //原版分馏塔不做处理
         try {
             return fractionator.InternalUpdate(factory, power, signPool, productRegister, consumeRegister);
-        } finally {
+        }
+        finally {
             RecordFractionatorPerf(FractionatorPerfUpdateVanilla, buildingID, GetFractionatorPerfElapsed(perfStart));
         }
     }
@@ -192,7 +185,6 @@ public static partial class ProcessManager {
         InternalUpdate<RectificationRecipe>(ref fractionator, factory, power, signPool, productRegister,
             consumeRegister, ref result, ERecipe.Rectification);
     }
-
 
 
     /// <summary>
@@ -890,7 +882,6 @@ public static partial class ProcessManager {
     }
 
     #endregion
-
 
 
     #region IModCanSave

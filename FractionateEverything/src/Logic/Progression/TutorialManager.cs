@@ -1,16 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
-using System.Reflection.Emit;
-using FE.Compatibility.Mods;
-using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
-using UnityEngine;
-using UnityEngine.UI;
-using xiaoye97;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
+
 /// <summary>
 /// FE 教程系统的状态、解锁和阅读奖励管理。
 /// </summary>
@@ -24,6 +16,7 @@ public static partial class TutorialManager {
         Gold,
         Platinum,
     }
+
     /// <summary>
     /// 教程成就定义。
     /// </summary>
@@ -47,6 +40,7 @@ public static partial class TutorialManager {
         public readonly string RewardKey = rewardKey;
         public readonly TutorialAchievementTier Tier = tier;
     }
+
     /// <summary>
     /// 教程注册项定义。
     /// </summary>

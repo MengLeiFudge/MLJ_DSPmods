@@ -4,9 +4,11 @@ using System.IO;
 using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Buildings;
-using FE.Logic.Manager;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.Setting;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
@@ -14,12 +16,10 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.CoreOperate;
+
 /// <summary>
 /// FE 建筑等级、经验和特性操作页面。
 /// </summary>

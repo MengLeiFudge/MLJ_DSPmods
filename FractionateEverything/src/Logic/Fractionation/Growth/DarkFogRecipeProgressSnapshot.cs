@@ -1,6 +1,7 @@
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 黑雾配方追赶进度的展示快照。
 /// </summary>

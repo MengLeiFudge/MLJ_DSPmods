@@ -1,6 +1,7 @@
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方统计页面使用的成长与产出快照。
 /// </summary>

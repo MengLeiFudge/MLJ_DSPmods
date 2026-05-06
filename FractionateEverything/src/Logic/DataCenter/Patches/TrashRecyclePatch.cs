@@ -1,7 +1,8 @@
-﻿using FE.Logic.DataCenter;
+﻿using FE.Logic.Items;
 using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 玩家丢弃物品自动回收到数据中心的补丁。
 /// </summary>
@@ -15,7 +16,9 @@ public static class TrashRecyclePatch {
         if (!PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
-        if (itemId <= 0 || itemId >= 12000 || FE.Logic.Items.ItemManager.itemValue[itemId] >= FE.Logic.Items.ItemManager.maxValue) {
+        if (itemId <= 0
+            || itemId >= 12000
+            || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
             return true;
         }
         DataCenterInventory.ManualUploadCount++;
@@ -33,7 +36,9 @@ public static class TrashRecyclePatch {
             return true;
         }
         int itemId = __instance.inhandItemId;
-        if (itemId <= 0 || itemId >= 12000 || FE.Logic.Items.ItemManager.itemValue[itemId] >= FE.Logic.Items.ItemManager.maxValue) {
+        if (itemId <= 0
+            || itemId >= 12000
+            || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
             return true;
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
@@ -46,5 +51,4 @@ public static class TrashRecyclePatch {
         __instance.inhandItemInc = 0;
         return false;
     }
-
 }

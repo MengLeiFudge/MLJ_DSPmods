@@ -16,7 +16,8 @@ public static class LabManager {
 
     public static int GetLabStackTransferLimit() {
         int maxStack = MonitorManager.GetMonitorMaxStack();
-        return Math.Max(VanillaLabTransferLimit, (VanillaLabTransferLimit * maxStack + VanillaLabMaxStack - 1) / VanillaLabMaxStack);
+        return Math.Max(VanillaLabTransferLimit,
+            (VanillaLabTransferLimit * maxStack + VanillaLabMaxStack - 1) / VanillaLabMaxStack);
     }
 
     public static int GetAdjustedAssembleNeedThreshold(ref LabComponent lab, int vanillaThreshold) {
@@ -121,7 +122,8 @@ public static class LabManager {
 
     private static bool IsIntConstant(CodeInstruction instruction, int value) {
         if (value == 5 && instruction.opcode == OpCodes.Ldc_I4_5) return true;
-        if (instruction.opcode == OpCodes.Ldc_I4_S && instruction.operand is sbyte sbyteValue) return sbyteValue == value;
+        if (instruction.opcode == OpCodes.Ldc_I4_S && instruction.operand is sbyte sbyteValue)
+            return sbyteValue == value;
         if (instruction.opcode == OpCodes.Ldc_I4 && instruction.operand is int intValue) return intValue == value;
         return false;
     }

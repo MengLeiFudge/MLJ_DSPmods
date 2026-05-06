@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Foundation.RectTransformUtils;
-using static FE.Utils.Utils;
 
 namespace FE.UI.Foundation.Window;
+
 /// <summary>
 /// 带分组标签页的 FE 基础窗口。
 /// </summary>
@@ -18,6 +18,7 @@ public class MyWindowWithTabs : MyWindow {
         public UIButton Button;
         public string Label;
     }
+
     /// <summary>
     /// 记录一组标签页的折叠状态和范围。
     /// </summary>

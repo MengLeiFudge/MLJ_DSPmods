@@ -1,18 +1,18 @@
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Manager;
+using FE.Logic.Economy;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Economy;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
+
 /// <summary>
 /// 万能残片兑换资源的主面板页面。
 /// </summary>

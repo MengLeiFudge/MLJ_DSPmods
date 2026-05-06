@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 在物品提示中追加相关分馏配方入口。
 /// </summary>

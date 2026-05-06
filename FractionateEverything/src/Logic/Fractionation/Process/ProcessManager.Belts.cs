@@ -1,22 +1,12 @@
 ﻿using System;
-using FE.Logic.Fractionation.State;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
-using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
+using FE.Logic.Fractionation.State;
 using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
+
 /// <summary>
 /// 分馏塔传送带输入输出和产物查找辅助逻辑。
 /// </summary>
@@ -201,4 +191,5 @@ public static partial class ProcessManager {
             }
             RemoveFluidOutput(ref fractionator, outputStack, fluidOutputIncAvg);
         }
-    }}
+    }
+}

@@ -1,15 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
+using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
-using FE.UI.Foundation.Window;
-using FE.UI.Controls;
-using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.Layout;
+
 /// <summary>
 /// 声明式网格布局的简写工厂方法。
 /// </summary>
@@ -372,8 +373,7 @@ public static class GridDsl {
     /// 标签 + 滑条节点：左侧标签，右侧 Slider 填满剩余空间，整行垂直居中。
     /// 可选 TipsButton 在最右侧。
     /// </summary>
-    public static LayoutLeaf LabeledSliderNode<T>(string label, ConfigEntry<T> config,
-        MyWindow.ValueMapper<T> mapper, string format = "G",
+    public static LayoutLeaf LabeledSliderNode<T>(string label, ConfigEntry<T> config, MyWindow.ValueMapper<T> mapper, string format = "G",
         int fontSize = PageLayout.BodyFontSize,
         string tipTitle = null, string tipContent = null,
         Action<MySlider> onSliderBuilt = null, Action<UIButton> onTipBuilt = null,

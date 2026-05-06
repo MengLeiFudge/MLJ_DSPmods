@@ -1,32 +1,32 @@
+using System;
+using System.IO;
 using BepInEx.Configuration;
+using FE.Logic.Buildings.Definitions;
+using FE.Logic.DarkFog;
+using FE.Logic.Economy;
+using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Gacha;
+using FE.Logic.Manager;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.DrawGrowth;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using System;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.DrawGrowth;
-using FE.Logic.DarkFog;
-using FE.Logic.Economy;
-using FE.Logic.Gacha;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using System.IO;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
-using UnityEngine.EventSystems;
-using static FE.UI.MainPanel.Theme.PageLayout;
 using static FE.UI.Foundation.RectTransformUtils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.ProgressTask;
+
 /// <summary>
 /// 主线阶段目标、路线图和奖励展示页面。
 /// </summary>
@@ -234,15 +234,21 @@ public static class MainTask {
 
         RefreshMilestonePage();
     }
+
     /// <summary>
     /// 分馏主线路线图定义。
     /// </summary>
-    private readonly struct RouteMap(string routeName, string centerTitle, StageColumn[] stages, TaskBranch[] branches) {
+    private readonly struct RouteMap(
+        string routeName,
+        string centerTitle,
+        StageColumn[] stages,
+        TaskBranch[] branches) {
         public readonly string RouteName = routeName;
         public readonly string CenterTitle = centerTitle;
         public readonly StageColumn[] Stages = stages;
         public readonly TaskBranch[] Branches = branches;
     }
+
     /// <summary>
     /// 主线路线阶段列定义。
     /// </summary>
@@ -251,6 +257,7 @@ public static class MainTask {
         public readonly string Name = name;
         public readonly int IconItemId = iconItemId;
     }
+
     /// <summary>
     /// 主线任务分支定义。
     /// </summary>
@@ -259,6 +266,7 @@ public static class MainTask {
         public readonly string Name = name;
         public readonly TaskNode[] Nodes = nodes;
     }
+
     /// <summary>
     /// 主线任务节点定义。
     /// </summary>
@@ -361,8 +369,10 @@ public static class MainTask {
                 CountNode("frac-final", "主线闭环", $"累计解锁 {finalRecipeTarget} 个配方并完成 {finalFractionTarget} 次分馏成功",
                     6, IFE残片, finalFractionTarget, totalFractionSuccesses,
                     () => totalFractionSuccesses, 1000,
-                    () => GetUnlockedRecipeCount() >= finalRecipeTarget && totalFractionSuccesses >= finalFractionTarget,
-                    () => $"{GetRecipeProgressText(finalRecipeTarget)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, finalFractionTarget)}")),
+                    () => GetUnlockedRecipeCount() >= finalRecipeTarget
+                          && totalFractionSuccesses >= finalFractionTarget,
+                    () =>
+                        $"{GetRecipeProgressText(finalRecipeTarget)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, finalFractionTarget)}")),
             Branch("draw-low", "低档抽取",
                 DrawNode("draw-opening-1", "首次开线", "累计完成 1 次开线抽取", 1, IFE残片, 1, true, 100),
                 DrawNode("draw-opening-5", "开线五次", "累计完成 5 次开线抽取", 1, IFE残片, 5, true, 150),
@@ -378,7 +388,7 @@ public static class MainTask {
                 Node("growth-recipe-upgrade", "首次升级", "任意分馏配方达到 2 级", 2, IFE残片, IFE残片, 250,
                     () => GetMaxRecipeLevel() >= 2, () => GetRecipeLevelProgressText(2)),
                 Node("growth-focus", "主线节点-流派聚焦", "切换到任意非均衡聚焦流派", 2, IFE残片, IFE残片, 250,
-                    () => GachaManager.CurrentFocus != GachaFocusType.Balanced, () => GetFocusProgressText()),
+                    () => CurrentFocus != GachaFocusType.Balanced, () => GetFocusProgressText()),
                 Node("growth-offer", "主线节点-成长报价", "解锁至少 1 项黑雾成长报价", 7, I黑雾矩阵, IFE残片, 400,
                     () => DarkFogCombatManager.GetUnlockedGrowthOfferCount() >= 1,
                     () => GetCountProgressText("主线统计-成长报价", DarkFogCombatManager.GetUnlockedGrowthOfferCount(), 1)),
@@ -394,9 +404,11 @@ public static class MainTask {
                 Node("building-train-five", "五塔培养", "五类万物分馏建筑均达到 1 级", 4, IFE点数聚集塔, IFE残片, 600,
                     () => GetMinBuildingLevel() >= 1, () => GetMinBuildingLevelProgressText(1)),
                 Node("building-upload-one", "首次上传", "分馏数据中心内持有任意万物分馏建筑", 2, IFE交互塔, IFE残片, 200,
-                    () => GetUploadedBuildingTypeCount() >= 1, () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 1)),
+                    () => GetUploadedBuildingTypeCount() >= 1,
+                    () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 1)),
                 Node("building-upload-five", "五塔上传", "分馏数据中心内持有五类万物分馏建筑", 5, IFE精馏塔, IFE残片, 800,
-                    () => GetUploadedBuildingTypeCount() >= 5, () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 5))),
+                    () => GetUploadedBuildingTypeCount() >= 5,
+                    () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 5))),
             Branch("building-level-low", "低档建筑等级",
                 BuildingLevelNode("building-level-1", "建筑 1 级", 1, 1, 200),
                 BuildingLevelNode("building-level-2", "建筑 2 级", 2, 2, 300),
@@ -415,11 +427,14 @@ public static class MainTask {
                 Node("resource-tech", "物品交互", "解锁物品交互科技", 1, IFE残片, IFE残片, 200,
                     () => IsTechUnlocked(TFE物品交互), () => GetTechProgressText(TFE物品交互)),
                 Node("resource-extract", "首次提取", "从分馏数据中心提取至少 1 次物品", 1, IFE残片, IFE残片, 200,
-                    () => ItemManager.ManualExtractCount >= 1, () => GetCountProgressText("提取次数", ItemManager.ManualExtractCount, 1)),
+                    () => ItemManager.ManualExtractCount >= 1,
+                    () => GetCountProgressText("提取次数", ItemManager.ManualExtractCount, 1)),
                 Node("resource-upload", "首次上传", "向分馏数据中心手动上传至少 1 次物品", 2, IFE残片, IFE残片, 200,
-                    () => ItemManager.ManualUploadCount >= 1, () => GetCountProgressText("上传次数", ItemManager.ManualUploadCount, 1)),
+                    () => ItemManager.ManualUploadCount >= 1,
+                    () => GetCountProgressText("上传次数", ItemManager.ManualUploadCount, 1)),
                 Node("resource-trade", "首次交易", "在交易所完成至少 1 次买入或卖出", 3, IFE残片, IFE残片, 300,
-                    () => ExchangeManager.TotalTradeCount >= 1, () => GetCountProgressText("交易次数", ExchangeManager.TotalTradeCount, 1)),
+                    () => ExchangeManager.TotalTradeCount >= 1,
+                    () => GetCountProgressText("交易次数", ExchangeManager.TotalTradeCount, 1)),
                 Node("resource-board", "主线节点-市场订单", "完成至少 1 次市场板订单", 4, IFE残片, IFE残片, 400,
                     () => MarketBoardManager.TotalCompletedOfferCount >= 1,
                     () => GetCountProgressText("主线统计-市场订单", MarketBoardManager.TotalCompletedOfferCount, 1)),
@@ -428,14 +443,17 @@ public static class MainTask {
                     () => GetCountProgressText("主线统计-残片兑换", FragmentExchangeManager.TotalExchangeCount, 1))),
             Branch("recurring-entry", "循环任务入门",
                 Node("recurring-first", "首次循环", "领取第 1 次循环任务奖励", 2, IFE残片, IFE残片, 200,
-                    () => RecurringTask.TotalClaimedCount >= 1, () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 1)),
+                    () => RecurringTask.TotalClaimedCount >= 1,
+                    () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 1)),
                 Node("recurring-five", "循环五次", "累计领取 5 次循环任务奖励", 3, IFE残片, IFE残片, 300,
-                    () => RecurringTask.TotalClaimedCount >= 5, () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 5)),
+                    () => RecurringTask.TotalClaimedCount >= 5,
+                    () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 5)),
                 Node("recurring-all-types", "六类循环", "六类循环任务各领取至少 1 次", 4, IFE残片, IFE残片, 500,
                     () => RecurringTask.HasClaimedAllTaskTypes, () => GetRecurringTypeProgressText())),
             Branch("darkfog-early", "黑雾早期",
                 Node("darkfog-matrix", "黑雾矩阵", "持有或解锁黑雾矩阵", 7, I黑雾矩阵, I黑雾矩阵, 2,
-                    () => GameMain.history != null && (GameMain.history.ItemUnlocked(I黑雾矩阵) || GetItemTotalCount(I黑雾矩阵) > 0),
+                    () => GameMain.history != null
+                          && (GameMain.history.ItemUnlocked(I黑雾矩阵) || GetItemTotalCount(I黑雾矩阵) > 0),
                     () => GetItemUnlockProgressText(I黑雾矩阵)),
                 Node("darkfog-resource-1", "资源层 1", "黑雾资源层级达到 1", 7, I能量碎片, I黑雾矩阵, 2,
                     () => DarkFogCombatManager.GetDarkFogResourceTier() >= 1,
@@ -482,7 +500,8 @@ public static class MainTask {
             () => GetCountProgressText("原胚种类", GetProtoTypeCount(), targetTypeCount));
     }
 
-    private static TaskNode BuildingLevelNode(string id, string name, int stageIndex, int targetLevel, int rewardCount) {
+    private static TaskNode
+        BuildingLevelNode(string id, string name, int stageIndex, int targetLevel, int rewardCount) {
         return Node(id, name, $"任意万物分馏建筑等级达到 {targetLevel}", stageIndex, IFE残片, IFE残片, rewardCount,
             () => GetMaxBuildingLevel() >= targetLevel, () => GetBuildingLevelProgressText(targetLevel));
     }
@@ -540,7 +559,9 @@ public static class MainTask {
     }
 
     private static long GetDrawCount(bool opening) {
-        return opening ? TicketRaffle.openingLineDraws : Math.Max(0L, TicketRaffle.totalDraws - TicketRaffle.openingLineDraws);
+        return opening
+            ? TicketRaffle.openingLineDraws
+            : Math.Max(0L, TicketRaffle.totalDraws - TicketRaffle.openingLineDraws);
     }
 
     private static string GetTechProgressText(int techId) {
@@ -549,7 +570,8 @@ public static class MainTask {
 
     private static string GetItemUnlockProgressText(int itemId) {
         bool unlocked = GameMain.history != null && GameMain.history.ItemUnlocked(itemId);
-        return $"{"物品解锁".Translate()}：{(unlocked || GetItemTotalCount(itemId) > 0 ? "是".Translate() : "否".Translate())}";
+        return
+            $"{"物品解锁".Translate()}：{(unlocked || GetItemTotalCount(itemId) > 0 ? "是".Translate() : "否".Translate())}";
     }
 
     private static string GetCountProgressText(string label, long current, long target) {
@@ -573,7 +595,8 @@ public static class MainTask {
     }
 
     private static string GetFocusProgressText() {
-        return $"{"聚焦流派".Translate()}：{(GachaManager.CurrentFocus == GachaFocusType.Balanced ? "否".Translate() : "是".Translate())}";
+        return
+            $"{"聚焦流派".Translate()}：{(CurrentFocus == GachaFocusType.Balanced ? "否".Translate() : "是".Translate())}";
     }
 
     private static string GetRecurringTypeProgressText() {
@@ -1137,6 +1160,7 @@ public static class MainTask {
     private static readonly Color NodeBgCompleted = new(0.18f, 0.13f, 0.05f, 0.78f);
     private static readonly Color NodeBorderSelected = new(1f, 0.72f, 0.31f, 0.72f);
     private static readonly Color NodeBorderAvailable = new(0.42f, 0.73f, 1f, 0.28f);
+
     /// <summary>
     /// 路线图视图缓存。
     /// </summary>
@@ -1148,6 +1172,7 @@ public static class MainTask {
         public Text[] StageLabels;
         public NodeView[][] NodeViews;
     }
+
     /// <summary>
     /// 任务节点视图引用。
     /// </summary>
@@ -1158,6 +1183,7 @@ public static class MainTask {
         public int BranchIndex;
         public int NodeIndex;
     }
+
     /// <summary>
     /// 任务节点视觉状态。
     /// </summary>
@@ -1368,7 +1394,8 @@ public static class MainTask {
                 int cellColumn = cellIndex % NodesPerCellRow;
                 int cellRow = cellIndex / NodesPerCellRow;
                 float x = stageIndex * StageColumnWidth + NodeCellLeftPadding + cellColumn * (NodeSize + NodeGap);
-                float y = branchRowTops[branchIndex] + NodeCellTopPadding
+                float y = branchRowTops[branchIndex]
+                          + NodeCellTopPadding
                           + cellRow * (NodeSize + NodeRowGap);
 
                 float bgSize = NodeSize + 6f;
@@ -1512,7 +1539,8 @@ public static class MainTask {
         RouteMap route = GetRouteByModeIndex(modeIndex);
         string progressText = GetNodeProgressText(modeIndex, branchIndex, nodeIndex);
         string rewardText = GetRewardText(node);
-        string stageName = route.Stages[Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex))].Name.Translate();
+        string stageName = route.Stages[Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex))].Name
+            .Translate();
 
         button.uiButton.tips.type = UIButton.ItemTipType.Other;
         button.uiButton.tips.itemId = 0;

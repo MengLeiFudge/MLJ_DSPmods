@@ -1,18 +1,18 @@
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Manager;
+using FE.Logic.Economy;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Economy;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
+
 /// <summary>
 /// 数据中心物品兑换与价格预览页面。
 /// </summary>
@@ -105,7 +105,8 @@ public static class Exchange {
                                         rowGap: PageLayout.InnerGap,
                                         columnGap: PageLayout.InnerGap,
                                         children: [
-                                            ButtonNode("买1", onClick: () => Trade(true, 1), onBuilt: btn => btnBuy1 = btn,
+                                            ButtonNode("买1", onClick: () => Trade(true, 1),
+                                                onBuilt: btn => btnBuy1 = btn,
                                                 pos: (0, 0), objectName: "exchange-buy-1"),
                                             ButtonNode("买10", onClick: () => Trade(true, 10),
                                                 onBuilt: btn => btnBuy10 = btn,

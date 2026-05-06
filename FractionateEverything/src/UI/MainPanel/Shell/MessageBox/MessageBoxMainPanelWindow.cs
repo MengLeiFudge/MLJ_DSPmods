@@ -1,8 +1,9 @@
-using System;
-using UnityEngine;
+﻿using System;
 using FE.UI.Foundation.Window;
+using UnityEngine;
 
 namespace FE.UI.MainPanel.Shell.MessageBox;
+
 /// <summary>
 /// 消息框风格 FE 主面板窗口壳。
 /// </summary>

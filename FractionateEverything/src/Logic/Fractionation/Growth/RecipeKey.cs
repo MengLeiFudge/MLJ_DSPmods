@@ -1,6 +1,7 @@
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 按配方类型和输入物品定位成长状态的键。
 /// </summary>

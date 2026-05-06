@@ -7,6 +7,7 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
+
 /// <summary>
 /// 流速监测器上限和货物容量扩展逻辑。
 /// </summary>
@@ -33,8 +34,8 @@ public static class MonitorManager {
     public static float GetMonitorMaxCargoPerSecondFloat() => GetMonitorMaxCargoPerSecond();
 
     public static int GetMonitorMaxTargetCargoBytes() => VanillaMonitorMaxTargetCargoBytes
-                                                        / VanillaMonitorMaxStack
-                                                        * GetMonitorMaxStack();
+                                                         / VanillaMonitorMaxStack
+                                                         * GetMonitorMaxStack();
 
     [HarmonyFinalizer]
     [HarmonyPatch(typeof(MonitorComponent), nameof(MonitorComponent.InternalUpdate))]

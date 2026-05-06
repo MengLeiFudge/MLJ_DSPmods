@@ -1,37 +1,34 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
 using FE.UI.Controls;
-using FE.UI.MainPanel;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.DrawGrowth;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Gacha;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
-using FE.Logic.DarkFog;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ProgressTask;
+
 /// <summary>
 /// 成就进度、奖励领取和分页展示页面。
 /// </summary>
 public static class Achievements {
     private static RectTransform window;
     private static RectTransform tab;
+
     /// <summary>
     /// 单个成就的分类、文案、奖励和进度绑定。
     /// </summary>
@@ -63,6 +60,7 @@ public static class Achievements {
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
     }
+
     /// <summary>
     /// 成就奖励定义。
     /// </summary>
@@ -72,6 +70,7 @@ public static class Achievements {
         public readonly string RewardKey = rewardKey;
         public readonly bool UnlockRecurringAutoClaim = unlockRecurringAutoClaim;
     }
+
     /// <summary>
     /// 成就加成汇总。
     /// </summary>
@@ -91,6 +90,7 @@ public static class Achievements {
         public readonly float LogisticsBonus = logisticsBonus;
         public readonly float PowerStageBonus = powerStageBonus;
     }
+
     /// <summary>
     /// 成就奖励和显示使用的档位。
     /// </summary>
@@ -708,7 +708,7 @@ public static class Achievements {
 
         achievementFlagsEntry.Value = flags;
         panelOpenCountEntry.Value = panelOpenCount;
-        global::FE.FractionateEverything.SaveConfig();
+        FractionateEverything.SaveConfig();
     }
 
     private static bool CheckAndUnlockAchievements(bool showPopup) {

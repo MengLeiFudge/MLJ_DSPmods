@@ -4,6 +4,7 @@ using System.Linq;
 using CommonAPI.Systems.ModLocalization;
 
 namespace FE.Utils;
+
 /// <summary>
 /// 翻译注册、查询和坐标显示辅助方法。
 /// </summary>

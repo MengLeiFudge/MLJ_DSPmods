@@ -4,6 +4,7 @@ using FE.Logic.Fractionation.Recipes;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 不同配方家族的成长阈值和倍率规则。
 /// </summary>

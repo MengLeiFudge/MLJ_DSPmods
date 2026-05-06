@@ -1,13 +1,12 @@
 using System;
-using FE.Logic.Fractionation.State;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FE.Logic.Buildings;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.State;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Fractionation.Process.ProcessManager;
@@ -15,6 +14,7 @@ using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 分馏塔窗口刷新、产物渲染和比例显示逻辑。
 /// </summary>

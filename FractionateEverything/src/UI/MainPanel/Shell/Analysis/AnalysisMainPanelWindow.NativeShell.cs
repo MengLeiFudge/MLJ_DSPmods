@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
+
 /// <summary>
 /// 捕获并复用原版统计窗口导航按钮的逻辑。
 /// </summary>

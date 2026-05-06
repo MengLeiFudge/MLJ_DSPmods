@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
-using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
+
 /// <summary>
 /// 分馏塔耗电计算的运行时补丁。
 /// </summary>
@@ -75,14 +67,16 @@ public static partial class ProcessManager {
             try {
                 fractionator.SetPCState(pcPool);// 原版分馏塔保持原逻辑
                 return;
-            } finally {
+            }
+            finally {
                 RecordFractionatorPerf(FractionatorPerfSetPcVanilla, buildingID,
                     GetFractionatorPerfElapsed(perfStart));
             }
         }
         try {
             fractionator.SetPCState(pcPool, buildingID);
-        } finally {
+        }
+        finally {
             RecordFractionatorPerf(FractionatorPerfSetPcFe, buildingID, GetFractionatorPerfElapsed(perfStart));
         }
     }

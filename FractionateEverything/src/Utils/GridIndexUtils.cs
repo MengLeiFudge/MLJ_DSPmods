@@ -1,6 +1,7 @@
 ﻿using FE.Compatibility.Mods;
 
 namespace FE.Utils;
+
 /// <summary>
 /// 原型 GridIndex 校验与排序辅助方法。
 /// </summary>

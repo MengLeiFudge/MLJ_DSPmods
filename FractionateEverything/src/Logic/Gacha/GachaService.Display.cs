@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
-using static FE.Utils.Utils;
+﻿using System.Collections.Generic;
 
 namespace FE.Logic.Gacha;
+
 /// <summary>
 /// 抽取模式、卡池和奖励展示文本生成逻辑。
 /// </summary>

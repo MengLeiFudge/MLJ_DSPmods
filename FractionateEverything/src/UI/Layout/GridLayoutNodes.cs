@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using FE.UI.Foundation.Window;
+using UnityEngine;
 
 namespace FE.UI.Layout;
+
 /// <summary>
 /// 声明式网格布局节点的公共约束。
 /// </summary>
@@ -46,6 +46,7 @@ public abstract class LayoutNode {
 
     internal abstract RectTransform Build(MyWindow wnd, RectTransform parent, LayoutRect rect);
 }
+
 /// <summary>
 /// 包含行列轨道和子节点的网格容器。
 /// </summary>
@@ -80,6 +81,7 @@ public class LayoutGrid : LayoutNode {
         return root;
     }
 }
+
 /// <summary>
 /// 执行具体 UI 构建动作的网格叶子节点。
 /// </summary>

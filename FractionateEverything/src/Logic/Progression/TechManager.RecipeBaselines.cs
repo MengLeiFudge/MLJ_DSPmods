@@ -1,11 +1,6 @@
-﻿using System;
-using System.Linq;
-using CommonAPI.Systems;
-using FE.Compatibility.Mods;
-using FE.Logic.Fractionation.Recipes;
+﻿using System.Linq;
 using FE.Logic.Fractionation.Growth;
-using HarmonyLib;
-using UnityEngine;
+using FE.Logic.Fractionation.Recipes;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 

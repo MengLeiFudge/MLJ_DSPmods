@@ -1,4 +1,5 @@
 ﻿namespace FE.Utils;
+
 /// <summary>
 /// 原版与 FE 新增原型 ID 常量表。
 /// </summary>

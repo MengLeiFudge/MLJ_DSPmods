@@ -2,7 +2,6 @@ using System;
 using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;

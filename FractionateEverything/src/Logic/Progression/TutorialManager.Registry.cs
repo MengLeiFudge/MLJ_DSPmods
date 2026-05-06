@@ -1,16 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
-using System.Reflection.Emit;
-using FE.Compatibility.Mods;
-using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
-using UnityEngine;
-using UnityEngine.UI;
-using xiaoye97;
-using static FE.Utils.Utils;
+﻿using xiaoye97;
 
 namespace FE.Logic.Progression;
+
 /// <summary>
 /// 教程条目和触发条件注册入口。
 /// </summary>

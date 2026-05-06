@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using BepInEx.Configuration;
-using FE.Utils;
-using HarmonyLib;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
-using FE.UI.Controls;
 
 namespace FE.UI.Foundation.Window;
 
@@ -258,6 +254,7 @@ public class MyWindow : ManualBehaviour {
     }
 
     #region Slider
+
     /// <summary>
     /// 滑条索引与业务值之间的映射基类。
     /// </summary>

@@ -1,21 +1,20 @@
-using System.Linq;
 using System.IO;
+using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Manager;
+using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
-using FE.UI.MainPanel;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.DarkFog;
-using FE.Logic.Gacha;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.DrawGrowth;
+
 /// <summary>
 /// 抽取奖券兑换与模式说明页面。
 /// </summary>
@@ -80,7 +79,8 @@ public static class TicketExchange {
                                         children: [
                                             ImageButtonNode(size: 40f, onBuilt: btn => btnCurrentMatrix = btn,
                                                 pos: (0, 0), objectName: "ticket-exchange-current-matrix"),
-                                            ImageButtonNode(LDB.items.Select(IFE残片), 40f, onBuilt: btn => btnFragment = btn,
+                                            ImageButtonNode(LDB.items.Select(IFE残片), 40f,
+                                                onBuilt: btn => btnFragment = btn,
                                                 pos: (0, 1), objectName: "ticket-exchange-fragment"),
                                             ImageButtonNode(LDB.items.Select(I黑雾矩阵), 40f,
                                                 onBuilt: btn => btnDarkFogMatrix = btn,
@@ -123,7 +123,8 @@ public static class TicketExchange {
                                 pos: (0, 0), objectName: "ticket-exchange-go-growth"),
                             ButtonNode("前往市场板",
                                 onClick: () =>
-                                    MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName, 2),
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.ResourceInteractionCategoryName,
+                                        2),
                                 pos: (0, 1), objectName: "ticket-exchange-go-market"),
                         ]),
                 ]));

@@ -1,14 +1,5 @@
-﻿using System;
-using System.Linq;
-using CommonAPI.Systems;
-using FE.Compatibility.Mods;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.Logic.Manager;
-using HarmonyLib;
+﻿using FE.Logic.Manager;
 using UnityEngine;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
 

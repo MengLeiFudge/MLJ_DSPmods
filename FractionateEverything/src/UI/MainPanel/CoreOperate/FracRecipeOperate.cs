@@ -1,15 +1,20 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Buildings;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Process;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.Setting;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
@@ -17,16 +22,10 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
-using FE.Logic.Buildings;
-using FE.Logic.Gacha;
-using FE.Logic.Fractionation.State;
-using FE.Logic.Fractionation.Process;
 using static FE.UI.Foundation.RectTransformUtils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
+
 /// <summary>
 /// 分馏配方等级、经验和解锁操作页面。
 /// </summary>
@@ -644,7 +643,8 @@ public static class FracRecipeOperate {
         txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
     }
 
-    private static void ShowConversionProductLine(int line, ConversionRecipe recipe, ItemProto itemProto, OutputInfo info) {
+    private static void ShowConversionProductLine(int line, ConversionRecipe recipe, ItemProto itemProto,
+        OutputInfo info) {
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
         bool showCount = forceShow || info.ShowOutputCount;
         string randomCount = showCount ? info.OutputCount.ToString("F3") : "???";
@@ -776,7 +776,8 @@ public static class FracRecipeOperate {
 
     private static float GetLockedEquivalentCount(ConversionRecipe recipe, int outputId, float fracRatio,
         float mainOutputBonus, float repeatMultiplier) {
-        if (recipe == null || !recipe.TryGetLockedOutputPlan(outputId,
+        if (recipe == null
+            || !recipe.TryGetLockedOutputPlan(outputId,
                 out ConversionRecipe.LockedOutputPlan lockedPlan)) {
             return -1f;
         }

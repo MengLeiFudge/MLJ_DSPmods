@@ -1,24 +1,23 @@
-using System;
-using FE.Compatibility.Nebula;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Compatibility.Mods;
-using FE.Logic.Manager;
+using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
-using FE.UI.MainPanel;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Gacha;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Setting;
+
 /// <summary>
 /// 主面板风格、快捷操作和物流阈值设置页面。
 /// </summary>
@@ -283,6 +282,7 @@ public static class Miscellaneous {
             text.text = label.Translate();
         }
     }
+
     /// <summary>
     /// 物流下载阈值滑条映射。
     /// </summary>
@@ -290,6 +290,7 @@ public static class Miscellaneous {
         public override float IndexToValue(int index) => index * 0.02f;
         public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
     }
+
     /// <summary>
     /// 物流上传阈值滑条映射。
     /// </summary>

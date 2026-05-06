@@ -1,6 +1,4 @@
 using System;
-using FE.Compatibility;
-using FE.Compatibility.Nebula;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -12,20 +10,19 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Bootstrap;
-using FE.Compatibility.Mods;
-using FE.Logic.Manager;
+using FE.Compatibility;
+using FE.Compatibility.Nebula;
+using FE.Logic.Gacha;
 using FE.Persistence;
-using FE.UI.Controls;
+using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
 using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
 using xiaoye97;
-using FE.Logic.Gacha;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
-using FE.UI.Foundation.Window;
 
 namespace FE;
 

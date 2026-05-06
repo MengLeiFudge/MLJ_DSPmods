@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using FE.UI.MainPanel;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
+
 /// <summary>
 /// Analysis 主面板导航按钮样式和可见性逻辑。
 /// </summary>

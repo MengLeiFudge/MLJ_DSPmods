@@ -2,6 +2,7 @@ using FE.Logic.Fractionation.Recipes;
 using FE.UI.MainPanel.ProgressTask;
 
 namespace FE.Logic.Gacha;
+
 /// <summary>
 /// 抽取图鉴完成度带来的成功率加成入口。
 /// </summary>

@@ -3,6 +3,7 @@ using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
+
 /// <summary>
 /// 物流交互站自动增产点池状态与结算逻辑。
 /// </summary>

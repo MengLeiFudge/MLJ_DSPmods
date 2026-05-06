@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
-using System.Threading;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
-using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
+
 /// <summary>
 /// 分馏热路径性能探针和日志统计逻辑。
 /// </summary>
@@ -52,10 +41,13 @@ public static partial class ProcessManager {
     private static readonly long[] fractionatorPerfDetailCalls = new long[FractionatorPerfDetailCount];
     private static readonly long[] fractionatorPerfDetailTicks = new long[FractionatorPerfDetailCount];
     private static readonly long[] fractionatorPerfDetailMaxTicks = new long[FractionatorPerfDetailCount];
-    private static readonly long[] fractionatorPerfFeUpdateCallsByType = new long[updateHandlersByBuildingOffset.Length];
-    private static readonly long[] fractionatorPerfFeUpdateTicksByType = new long[updateHandlersByBuildingOffset.Length];
+    private static readonly long[] fractionatorPerfFeUpdateCallsByType =
+        new long[updateHandlersByBuildingOffset.Length];
+    private static readonly long[] fractionatorPerfFeUpdateTicksByType =
+        new long[updateHandlersByBuildingOffset.Length];
     private static long fractionatorPerfWindowStartTick = -1;
     private static int fractionatorPerfLogging;
+
     private static void RecordFractionatorPerf(int bucket, int buildingID, long elapsedTicks) {
         if (!EnableFractionatorPerfProbe) {
             return;
@@ -191,7 +183,8 @@ public static partial class ProcessManager {
                     + FormatDetailPerf(detailCalls, detailTicks, detailMaxTicks)
                     + " "
                     + FormatFeTypePerf(feTypeCalls, feTypeTicks));
-        } finally {
+        }
+        finally {
             fractionatorPerfLogging = 0;
         }
     }
@@ -265,4 +258,5 @@ public static partial class ProcessManager {
         long callCount = calls[index];
         double avgUs = callCount > 0 ? ticks[index] * 1000000.0 / Stopwatch.Frequency / callCount : 0.0;
         return $"{buildingID}:{callCount}/{avgUs:F3}us";
-    }}
+    }
+}

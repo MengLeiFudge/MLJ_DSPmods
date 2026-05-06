@@ -30,7 +30,7 @@ public static class SignalTagPickerPatch {
             }
 
             GameObject tabObject =
-                UnityEngine.Object.Instantiate(__instance.upgradeTab2Btn.gameObject, __instance.pickerTrans, false);
+                Object.Instantiate(__instance.upgradeTab2Btn.gameObject, __instance.pickerTrans, false);
             ((RectTransform)tabObject.transform).anchoredPosition =
                 new(anchor.x + (tabData.tabIndex - 5) * 48, anchor.y);
             UIButton button = tabObject.GetComponent<UIButton>();

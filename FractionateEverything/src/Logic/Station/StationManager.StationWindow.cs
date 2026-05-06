@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Emit;
 using FE.Logic.Buildings;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
+
 /// <summary>
 /// 物流站独立窗口按钮创建与槽位交互逻辑。
 /// </summary>

@@ -1,13 +1,13 @@
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.State;
-using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.State;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 分馏塔窗口单路锁定图标与锁定状态显示逻辑。
 /// </summary>
@@ -120,8 +120,9 @@ public static partial class FractionatorWindow {
 
             return transition.highlightColorOverride.a > 0f
                 ? transition.highlightColorOverride
-                : color * new Color(transition.highlightColorMultiplier, transition.highlightColorMultiplier,
-                    transition.highlightColorMultiplier, transition.highlightAlphaMultiplier);
+                : color
+                  * new Color(transition.highlightColorMultiplier, transition.highlightColorMultiplier,
+                      transition.highlightColorMultiplier, transition.highlightAlphaMultiplier);
         }
 
         return Color.white;
@@ -143,7 +144,8 @@ public static partial class FractionatorWindow {
         string lockState = "未锁定".Translate();
         if (lockedOutputId != 0) {
             lockState = null;
-            if (recipe != null && recipe.TryGetLockedOutputPlan(lockedOutputId,
+            if (recipe != null
+                && recipe.TryGetLockedOutputPlan(lockedOutputId,
                     out ConversionRecipe.LockedOutputPlan lockedPlan)) {
                 float extraOutputCount = lockedPlan.ExtraOutputCount;
                 if (extraOutputCount < 0.0001f && extraOutputCount > -0.0001f) {

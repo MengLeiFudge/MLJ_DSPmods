@@ -1,24 +1,26 @@
-using BepInEx.Configuration;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using static FE.Utils.Utils;
-using System;
-using System.Text;
-using FE.UI.MainPanel.ProgressTask;
-using UnityEngine;
-using FE.UI.Controls;
-using UnityEngine.UI;
-using static FE.UI.Layout.GridDsl;
 using System.IO;
+using System.Linq;
+using System.Text;
+using BepInEx.Configuration;
+using FE.UI.Controls;
 using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.Theme;
+using UnityEngine;
+using UnityEngine.UI;
+using static FE.Utils.Utils;
+using static FE.UI.Layout.GridDsl;
 
 namespace FE.UI.MainPanel.Archive;
+
 /// <summary>
 /// 开发日志归档与阅读状态页面。
 /// </summary>
 public static class DevelopmentDiary {
     public static void LoadConfig(ConfigFile configFile) { }
+
     /// <summary>
     /// 开发日志单篇条目的标识、标题和正文键。
     /// </summary>
@@ -28,6 +30,7 @@ public static class DevelopmentDiary {
         public readonly string ContentKey = contentKey;
         public readonly int Order = order;
     }
+
     /// <summary>
     /// 开发日志分类及其条目集合。
     /// </summary>

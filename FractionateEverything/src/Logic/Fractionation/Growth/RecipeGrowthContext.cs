@@ -1,8 +1,8 @@
-using FE.Logic.Manager;
 using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方成长规则评估所需的当前进度上下文。
 /// </summary>
