@@ -1,28 +1,28 @@
 ﻿using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Logic.Buildings.BuildingManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Building;
+namespace FE.Logic.Buildings.Definitions;
 
 /// <summary>
-/// 交互塔
+/// 矿物复制塔
 /// </summary>
-public static class InteractionTower {
+public static class MineralReplicationTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.8f, 0.3f, 0.6f);
+    public static Color color = new(0.4f, 1.0f, 0.949f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
-    public static bool EnableSacrificeTrait => Level >= LevelThresholdTrait1;
-    public static bool EnableDimensionalResonance => Level >= LevelThresholdTrait2;
+    public static bool EnableMassEnergyFission => Level >= LevelThresholdTrait1;
+    public static bool EnableZeroPressureCycle => Level >= LevelThresholdTrait2;
     public static int MaxStack => GetDefaultMaxStackByLevel(Level);
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
@@ -37,24 +37,24 @@ public static class InteractionTower {
     public static float SuccessBoost = 0;
 
     public static void AddTranslations() {
-        Register("交互塔", "Interaction Tower");
-        Register("I交互塔",
-            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
-            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
+        Register("矿物复制塔", "Mineral Replication Tower");
+        Register("I矿物复制塔",
+            "Replicate various minerals, including dark fog-specific drops. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
+            "复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。");
     }
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
-            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE矿物复制塔, "矿物复制塔", "I矿物复制塔",
+            "Assets/fe/mineral-copy-tower", tab分馏 * 1000 + 302, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
-        recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE交互塔], [5],
-            "I交互塔", TFE物品交互, item.GridIndex, item.Name, item.IconPath);
+        recipe = ProtoRegistry.RegisterRecipe(RFE矿物复制塔,
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE矿物复制塔], [10],
+            "I矿物复制塔", TFE矿物复制, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
-        item.IconTag = "jht";
-        recipe.IconTag = "jht";
-        model = ProtoRegistry.RegisterModel(MFE交互塔, item,
+        item.IconTag = "kwfzt";
+        recipe.IconTag = "kwfzt";
+        model = ProtoRegistry.RegisterModel(MFE矿物复制塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

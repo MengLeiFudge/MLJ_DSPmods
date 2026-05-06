@@ -2,10 +2,10 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class OrbitalRing {
-    public const string GUID = "org.ProfessorCat305.OrbitalRing";
+public static class CustomCreateBirthStar {
+    public const string GUID = "kumor.plugin.CustomCreateBirthStar";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class OrbitalRing {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.OrbitalRing");
-        harmony.PatchAll(typeof(OrbitalRing));
-        CheckPlugins.LogInfo("OrbitalRing Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.CustomCreateBirthStar");
+        harmony.PatchAll(typeof(CustomCreateBirthStar));
+        CheckPlugins.LogInfo("CustomCreateBirthStar Compat finish.");
     }
 }

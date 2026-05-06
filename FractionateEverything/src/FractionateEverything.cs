@@ -1,4 +1,6 @@
 ﻿using System;
+using FE.Compatibility;
+using FE.Compatibility.Nebula;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -10,7 +12,7 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using FE.Bootstrap;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Logic.Manager;
 using FE.Persistence;
 using FE.UI.Components;

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;

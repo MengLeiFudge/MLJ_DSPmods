@@ -2,10 +2,10 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class AutoSorter {
-    public const string GUID = "Appun.DSP.plugin.AutoSorter";
+public static class OrbitalRing {
+    public const string GUID = "org.ProfessorCat305.OrbitalRing";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class AutoSorter {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.AutoSorter");
-        harmony.PatchAll(typeof(AutoSorter));
-        CheckPlugins.LogInfo("AutoSorter Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.OrbitalRing");
+        harmony.PatchAll(typeof(OrbitalRing));
+        CheckPlugins.LogInfo("OrbitalRing Compat finish.");
     }
 }

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using BuildBarTool;
 using CommonAPI.Patches;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

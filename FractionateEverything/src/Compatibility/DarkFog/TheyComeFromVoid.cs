@@ -9,7 +9,7 @@ using HarmonyLib;
 using FE.Logic.DataCenter;
 using FE.Logic.DataCenter.Patches;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.DarkFog;
 
 public static class TheyComeFromVoid {
     public const string GUID = "com.ckcz123.DSP_Battle";

@@ -5,7 +5,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using xiaoye97;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
 public static class DeliverySlotsTweaks {
     public const string GUID = "starfi5h.plugin.DeliverySlotsTweaks";

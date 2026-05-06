@@ -1,10 +1,11 @@
 ﻿using System;
+using FE.Compatibility.Nebula;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;

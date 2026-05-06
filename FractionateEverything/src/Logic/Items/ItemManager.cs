@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings.Definitions;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;

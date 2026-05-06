@@ -1,11 +1,11 @@
 ﻿using System;
-using FE.UI.Components;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Utils.Utils;
 
-namespace FE.Utils;
+namespace FE.UI.Components;
 
-public static partial class Utils {
+public static class NormalizeRectUtils {
     /// <summary>
     /// 设置元素左上角相对于parent左上角的位置
     /// </summary>

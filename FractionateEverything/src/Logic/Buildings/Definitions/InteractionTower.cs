@@ -1,28 +1,28 @@
 ﻿using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Logic.Buildings.BuildingManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Building;
+namespace FE.Logic.Buildings.Definitions;
 
 /// <summary>
-/// 转化塔
+/// 交互塔
 /// </summary>
-public static class ConversionTower {
+public static class InteractionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.7f, 0.6f, 0.8f);
+    public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
-    public static bool EnableCausalTracing => Level >= LevelThresholdTrait1;
-    public static bool EnableSingleLock => Level >= LevelThresholdTrait2;
+    public static bool EnableSacrificeTrait => Level >= LevelThresholdTrait1;
+    public static bool EnableDimensionalResonance => Level >= LevelThresholdTrait2;
     public static int MaxStack => GetDefaultMaxStackByLevel(Level);
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
@@ -37,24 +37,24 @@ public static class ConversionTower {
     public static float SuccessBoost = 0;
 
     public static void AddTranslations() {
-        Register("转化塔", "Conversion Tower");
-        Register("I转化塔",
-            "Convert items into other items related to them. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。");
+        Register("交互塔", "Interaction Tower");
+        Register("I交互塔",
+            "The fractionator prototype may be cultivated into various fractionators. Furthermore, when the interaction tower receives a direct input and neither side is connected, the input item shall be transmitted to the fractionation data centre.",
+            "可以将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。");
     }
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE转化塔, "转化塔", "I转化塔",
-            "Assets/fe/conversion-tower", tab分馏 * 1000 + 304, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE交互塔, "交互塔", "I交互塔",
+            "Assets/fe/interaction-tower", tab分馏 * 1000 + 301, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
-        recipe = ProtoRegistry.RegisterRecipe(RFE转化塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE转化塔], [5],
-            "I转化塔", TFE物品转化, item.GridIndex, item.Name, item.IconPath);
+        recipe = ProtoRegistry.RegisterRecipe(RFE交互塔,
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE交互塔], [5],
+            "I交互塔", TFE物品交互, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
-        item.IconTag = "zht";
-        recipe.IconTag = "zht";
-        model = ProtoRegistry.RegisterModel(MFE转化塔, item,
+        item.IconTag = "jht";
+        recipe.IconTag = "jht";
+        model = ProtoRegistry.RegisterModel(MFE交互塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

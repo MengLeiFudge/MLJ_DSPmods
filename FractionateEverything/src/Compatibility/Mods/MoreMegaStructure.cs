@@ -2,7 +2,7 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
 public static class MoreMegaStructure {
     public const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";

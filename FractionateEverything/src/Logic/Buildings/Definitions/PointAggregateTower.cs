@@ -1,28 +1,29 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Logic.Buildings.BuildingManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Building;
+namespace FE.Logic.Buildings.Definitions;
 
 /// <summary>
-/// 精馏塔
+/// 点数聚集塔
 /// </summary>
-public static class RectificationTower {
+public static class PointAggregateTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.3f, 0.6f, 0.9f);
+    public static Color color = new(0.2509f, 0.8392f, 1.0f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
-    public static bool EnableAfterglowExtraction => Level >= LevelThresholdTrait1;
-    public static bool EnableHyperphaseCompression => Level >= LevelThresholdTrait2;
+    public static bool EnableVoidSpray => Level >= LevelThresholdTrait1;
+    public static bool EnableDoublePoints => Level >= LevelThresholdTrait2;
     public static int MaxStack => GetDefaultMaxStackByLevel(Level);
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
@@ -33,28 +34,29 @@ public static class RectificationTower {
         get => model.prefabDesc.idleEnergyPerTick;
         set => model.prefabDesc.idleEnergyPerTick = value;
     }
-    public static float PlrRatio => GetDefaultPlrRatioByLevel(Level);
+    public static float PlrRatio => 1.0f;
+    public static int MaxInc => Math.Min(Level + 4, 10);
     public static float SuccessBoost = 0;
 
     public static void AddTranslations() {
-        Register("精馏塔", "Rectification Tower");
-        Register("I精馏塔",
-            "Compress matrices into Fragments. Higher tower levels improve throughput, power efficiency and fragment conversion.",
-            "将矩阵稳定压缩为残片。精馏塔等级越高，吞吐、能耗与残片转化效率越好。");
+        Register("点数聚集塔", "Points Aggregate Tower");
+        Register("I点数聚集塔",
+            "Concentrate proliferator points onto specific items to produce goods carrying greater proliferator points. Requires upgrading the proliferator point aggregation efficiency tier at the fractionation data centre.",
+            "将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。");
     }
 
     public static void Create() {
-        item = ProtoRegistry.RegisterItem(IFE精馏塔, "精馏塔", "I精馏塔",
-            "Assets/fe/deconstruction-tower", tab分馏 * 1000 + 305, 30, EItemType.Production,
+        item = ProtoRegistry.RegisterItem(IFE点数聚集塔, "点数聚集塔", "I点数聚集塔",
+            "Assets/fe/point-aggregate-tower", tab分馏 * 1000 + 303, 30, EItemType.Production,
             ProtoRegistry.GetDefaultIconDesc(Color.white, color));
-        recipe = ProtoRegistry.RegisterRecipe(RFE精馏塔,
-            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE精馏塔], [5],
-            "I精馏塔", TFE物品精馏, item.GridIndex, item.Name, item.IconPath);
+        recipe = ProtoRegistry.RegisterRecipe(RFE点数聚集塔,
+            ERecipeType.Assemble, 60, [IFE分馏塔定向原胚], [2], [IFE点数聚集塔], [3],
+            "I点数聚集塔", TFE增产点数聚集, item.GridIndex, item.Name, item.IconPath);
         recipe.IconPath = "";
         recipe.NonProductive = true;
-        item.IconTag = "jlt";
-        recipe.IconTag = "jlt";
-        model = ProtoRegistry.RegisterModel(MFE精馏塔, item,
+        item.IconTag = "dsjjt";
+        recipe.IconTag = "dsjjt";
+        model = ProtoRegistry.RegisterModel(MFE点数聚集塔, item,
             "Entities/Prefabs/fractionator", null, [53, 11, 12, 1, 40], 0);
         item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
     }

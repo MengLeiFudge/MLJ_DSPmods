@@ -4,7 +4,7 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 using UnityEngine;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
 public static class Auxilaryfunction {
     public const string GUID = "cn.blacksnipe.dsp.Auxilaryfunction";

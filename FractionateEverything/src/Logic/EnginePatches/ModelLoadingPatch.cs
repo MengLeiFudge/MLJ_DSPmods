@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using FE.Compatibility.DarkFog;
 using System.Linq;
 using System.Reflection.Emit;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using HarmonyLib;
 
-namespace FE.Logic.Patches;
+namespace FE.Logic.EnginePatches;
 
 public static class ModelLoadingPatch {
     [HarmonyPatch(typeof(SpaceSector), nameof(SpaceSector.InitPrefabDescArray))]

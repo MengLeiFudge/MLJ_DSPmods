@@ -1,9 +1,10 @@
 ﻿using System;
+using FE.Compatibility.Nebula;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Logic.Manager;
 using FE.Logic.DataCenter;
 using FE.UI.Components;

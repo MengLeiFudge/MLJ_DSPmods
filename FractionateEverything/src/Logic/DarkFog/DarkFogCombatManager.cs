@@ -1,5 +1,6 @@
 using System.Linq;
-using FE.Compatibility;
+using FE.Compatibility.DarkFog;
+using FE.Compatibility.Mods;
 using UnityEngine;
 using FE.Logic.Economy;
 using FE.Logic.Gacha;

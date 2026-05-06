@@ -2,10 +2,10 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class SmelterMiner {
-    public const string GUID = "Gnimaerd.DSP.plugin.SmelterMiner";
+public static class BuildToolOpt {
+    public const string GUID = "starfi5h.plugin.BuildToolOpt";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class SmelterMiner {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.SmelterMiner");
-        harmony.PatchAll(typeof(SmelterMiner));
-        CheckPlugins.LogInfo("SmelterMiner Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.BuildToolOpt");
+        harmony.PatchAll(typeof(BuildToolOpt));
+        CheckPlugins.LogInfo("BuildToolOpt Compat finish.");
     }
 }

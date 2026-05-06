@@ -8,6 +8,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using CommonAPI;
 using crecheng.DSPModSave;
+using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.Recipes;

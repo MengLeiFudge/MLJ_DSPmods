@@ -5,10 +5,10 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using xiaoye97;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class CheatEnabler {
-    public const string GUID = "org.soardev.cheatenabler";
+public static class Multfunction_mod {
+    public const string GUID = "cn.blacksnipe.dsp.Multfuntion_mod";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -21,9 +21,9 @@ public static class CheatEnabler {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.CheatEnabler");
-        harmony.PatchAll(typeof(CheatEnabler));
-        CheckPlugins.LogInfo("CheatEnabler Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.Multfunction_mod");
+        harmony.PatchAll(typeof(Multfunction_mod));
+        CheckPlugins.LogInfo("Multfunction_mod Compat finish.");
     }
 
     private static bool _finished = false;
@@ -34,12 +34,12 @@ public static class CheatEnabler {
     private static void AfterLDBToolPostAddData() {
         if (_finished) return;
         try {
-            Type classType = assembly.GetType("CheatEnabler.Patches.FactoryPatch");
+            Type classType = assembly.GetType("Multifunction_mod.Multifunction");
             ArchitectModeEnabledEntry =
-                (ConfigEntry<bool>)AccessTools.Field(classType, "ArchitectModeEnabled").GetValue(null);
+                (ConfigEntry<bool>)AccessTools.Field(classType, "ArchitectMode").GetValue(null);
         }
         catch (Exception ex) {
-            CheckPlugins.LogWarning($"Failed to compat CheatEnabler: {ex}");
+            CheckPlugins.LogWarning($"Failed to compat Multfunction_mod: {ex}");
         }
         _finished = true;
     }

@@ -1,13 +1,13 @@
 ﻿using System.IO;
 using BuildBarTool;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.BuildingManager;
+using static FE.Logic.Buildings.BuildingManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Building;
+namespace FE.Logic.Buildings.Definitions;
 
 /// <summary>
 /// 星际物流交互站

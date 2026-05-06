@@ -4,7 +4,7 @@ using HarmonyLib;
 using xiaoye97;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Patches;
+namespace FE.Logic.EnginePatches;
 
 public static class LDBToolPatch {
     private static bool cleared = false;

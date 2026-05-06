@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
 using FE.UI.MainPanel.ProgressTask;

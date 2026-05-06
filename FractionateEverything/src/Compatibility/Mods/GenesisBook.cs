@@ -6,7 +6,7 @@ using HarmonyLib;
 using ProjectGenesis.Patches;
 using static FE.Utils.Utils;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
 public static class GenesisBook {
     public const string GUID = "org.LoShin.GenesisBook";

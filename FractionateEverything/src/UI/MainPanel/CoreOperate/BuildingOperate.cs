@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BepInEx.Configuration;
+using FE.Logic.Buildings;
 using FE.Logic.Manager;
 using FE.UI.Components;
 using FE.UI.MainPanel.Setting;

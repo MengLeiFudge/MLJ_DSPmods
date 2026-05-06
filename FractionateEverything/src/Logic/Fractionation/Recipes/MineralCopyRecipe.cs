@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings.Definitions;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

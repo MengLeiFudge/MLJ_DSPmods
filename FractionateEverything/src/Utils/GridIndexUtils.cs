@@ -1,4 +1,4 @@
-﻿using FE.Compatibility;
+﻿using FE.Compatibility.Mods;
 
 namespace FE.Utils;
 

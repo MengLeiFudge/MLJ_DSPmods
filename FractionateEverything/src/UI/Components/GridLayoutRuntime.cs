@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using static FE.Utils.Utils;
+using static FE.UI.Components.NormalizeRectUtils;
 
 namespace FE.UI.Components;
 
