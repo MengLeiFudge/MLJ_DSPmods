@@ -22,11 +22,11 @@ Fractionation/
 
 ## Process Rules
 
-- `ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
-- 传送带输入输出 helper 放 `ProcessManager.Belts.cs`。
-- 能耗 IL patch 放 `ProcessManager.PowerPatch.cs`。
-- 性能探针和日志桶放 `ProcessManager.Perf.cs`。
-- 交互塔献祭相关成功率逻辑放 `ProcessManager.Sacrifice.cs`。
+- `Process/ProcessManager/ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
+- 传送带输入输出 helper 放 `Process/ProcessManager/Belts.cs`。
+- 能耗 IL patch 放 `Process/ProcessManager/PowerPatch.cs`。
+- 性能探针和日志桶放 `Process/ProcessManager/Perf.cs`。
+- 交互塔献祭相关成功率逻辑放 `Process/ProcessManager/Sacrifice.cs`。
 
 ## State Rules
 
@@ -35,5 +35,5 @@ Fractionation/
 
 ## Presentation Rules
 
-- 分馏塔原生窗口 patch、分馏塔 brief info、配方显示 patch 放 `Presentation`。
+- 分馏塔原生窗口 partial 放 `Presentation/FractionatorWindow/`，brief info、配方显示 patch 直接放 `Presentation`。
 - 这里只处理表现层和窗口交互；核心配方/运行状态不得写进 Presentation。
