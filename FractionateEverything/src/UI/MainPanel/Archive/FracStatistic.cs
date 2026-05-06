@@ -25,7 +25,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Archive;
 /// <summary>
-/// FracStatistic 类型。
+/// 分馏次数、成长经验和阶段统计页面。
 /// </summary>
 public static class FracStatistic {
     private static RectTransform tab;

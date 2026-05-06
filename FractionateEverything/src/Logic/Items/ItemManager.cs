@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Items;
 /// <summary>
-/// ItemManager 类型。
+/// FE 物品原型、翻译和物品价值注册入口。
 /// </summary>
 public static class ItemManager {
     public static void AddTranslations() {

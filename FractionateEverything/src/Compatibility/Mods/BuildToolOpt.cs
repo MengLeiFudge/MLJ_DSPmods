@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// BuildToolOpt 类型。
+/// BuildToolOpt 模组检测与兼容状态入口。
 /// </summary>
 public static class BuildToolOpt {
     public const string GUID = "starfi5h.plugin.BuildToolOpt";

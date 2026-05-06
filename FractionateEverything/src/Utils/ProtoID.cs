@@ -1,6 +1,6 @@
 ﻿namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 原版与 FE 新增原型 ID 常量表。
 /// </summary>
 public static partial class Utils {
     internal const int I伊卡洛斯 = 0;

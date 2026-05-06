@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
 /// <summary>
-/// FractionatorSingleLock 类型。
+/// 转化塔单路锁定状态、交互和存档逻辑。
 /// </summary>
 public static class FractionatorSingleLock {
     #region 转化塔锁定

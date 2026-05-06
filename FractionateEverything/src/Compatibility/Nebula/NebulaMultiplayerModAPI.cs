@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Nebula;
 /// <summary>
-/// NebulaMultiplayerModAPI 类型。
+/// Nebula 联机同步的注册、发送与接收入口。
 /// </summary>
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;
@@ -65,7 +65,7 @@ public static class NebulaMultiplayerModAPI {
     }
 }
 /// <summary>
-/// CenterItemChangePacket 类型。
+/// 数据中心物品变化的联机同步包。
 /// </summary>
 public class CenterItemChangePacket {
     public byte[] data { get; set; }
@@ -100,7 +100,7 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
     }
 }
 /// <summary>
-/// RecipeChangePacket 类型。
+/// 分馏配方等级与经验变化的联机同步包。
 /// </summary>
 public class RecipeChangePacket {
     public int eRecipe { get; set; }
@@ -157,7 +157,7 @@ public class RecipeChangePacketProcessor : BasePacketProcessor<RecipeChangePacke
     }
 }
 /// <summary>
-/// BuildingChangePacket 类型。
+/// 建筑等级与经验变化的联机同步包。
 /// </summary>
 public class BuildingChangePacket {
     public int buildingId { get; set; }

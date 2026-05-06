@@ -1,6 +1,6 @@
 namespace FE.UI.MainPanel;
 /// <summary>
-/// FEMainPanelSharedState 类型。
+/// Analysis 与 MessageBox 主面板共用的页面状态。
 /// </summary>
 public sealed class FEMainPanelSharedState : IFEMainPanelSharedState {
     public long TicketRaffleTotalDraws { get; set; }

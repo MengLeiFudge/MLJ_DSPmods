@@ -10,7 +10,7 @@ using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 
 namespace FE.Logic.Fractionation.Recipes;
 /// <summary>
-/// RecipeManager 类型。
+/// 分馏配方创建、查找、翻译和存档聚合入口。
 /// </summary>
 public static class RecipeManager {
     #region 配方创建、读取

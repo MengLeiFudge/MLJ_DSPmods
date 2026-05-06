@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.EnginePatches;
 /// <summary>
-/// LDBToolPatch 类型。
+/// 清理 LDBTool 冲突缓存配置的启动补丁。
 /// </summary>
 public static class LDBToolPatch {
     private static bool cleared = false;

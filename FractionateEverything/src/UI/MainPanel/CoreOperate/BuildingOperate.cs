@@ -21,7 +21,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.CoreOperate;
 /// <summary>
-/// BuildingOperate 类型。
+/// FE 建筑等级、经验和特性操作页面。
 /// </summary>
 public static class BuildingOperate {
     private static RectTransform window;

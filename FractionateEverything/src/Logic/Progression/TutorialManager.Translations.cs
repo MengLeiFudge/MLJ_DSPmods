@@ -12,7 +12,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
 /// <summary>
-/// TutorialManager 类型。
+/// 教程系统翻译文本注册入口。
 /// </summary>
 public static partial class TutorialManager {
     public static void AddTranslations() {

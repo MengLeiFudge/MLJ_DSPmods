@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// FractionatorWindow 类型。
+/// 分馏塔窗口单路锁定图标与锁定状态显示逻辑。
 /// </summary>
 public static partial class FractionatorWindow {
     private static Image lockIconTemplateImage;

@@ -4,7 +4,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// TurretAmmoSafetyPatch 类型。
+/// 炮台弹药需求数组访问前的安全补齐补丁。
 /// </summary>
 public static class TurretAmmoSafetyPatch {
     /// <summary>

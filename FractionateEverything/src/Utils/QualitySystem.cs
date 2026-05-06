@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 物品品质等级、颜色和名称辅助方法。
 /// </summary>
 public static partial class Utils {
     /*

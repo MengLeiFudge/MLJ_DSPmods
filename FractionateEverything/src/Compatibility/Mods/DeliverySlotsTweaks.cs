@@ -7,7 +7,7 @@ using xiaoye97;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// DeliverySlotsTweaks 类型。
+/// DeliverySlotsTweaks 模组检测与建筑师模式兼容入口。
 /// </summary>
 public static class DeliverySlotsTweaks {
     public const string GUID = "starfi5h.plugin.DeliverySlotsTweaks";

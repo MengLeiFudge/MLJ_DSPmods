@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// SmelterMiner 类型。
+/// 熔炉矿机模组检测与兼容状态入口。
 /// </summary>
 public static class SmelterMiner {
     public const string GUID = "Gnimaerd.DSP.plugin.SmelterMiner";

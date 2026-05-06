@@ -6,7 +6,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// TemporaryPackageAccessPatch 类型。
+/// 建造与沙盒临时背包消耗重定向补丁。
 /// </summary>
 public static class TemporaryPackageAccessPatch {
     /// <summary>

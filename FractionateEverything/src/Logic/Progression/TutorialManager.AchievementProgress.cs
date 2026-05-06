@@ -12,7 +12,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
 /// <summary>
-/// TutorialManager 类型。
+/// 教程窗口阅读到底部后的成就进度记录逻辑。
 /// </summary>
 public static partial class TutorialManager {
     private static readonly HashSet<int> viewedToBottomTutorialIds = [];

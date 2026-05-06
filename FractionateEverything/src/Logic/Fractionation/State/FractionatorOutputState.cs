@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
 /// <summary>
-/// FractionatorOutputState 类型。
+/// 分馏塔扩展产物状态缓存、存档和同步逻辑。
 /// </summary>
 public static class FractionatorOutputState {
     #region 分馏塔产物输出拓展
@@ -149,7 +149,7 @@ public static class FractionatorOutputState {
 
     private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
     /// <summary>
-    /// FractionatorExtraStateArray 类型。
+    /// 单个星球的分馏塔扩展状态数组和版本号。
     /// </summary>
     private sealed class FractionatorExtraStateArray(int length) {
         public readonly object SyncRoot = new();

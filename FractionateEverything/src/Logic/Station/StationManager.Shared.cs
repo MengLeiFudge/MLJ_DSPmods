@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流交互站窗口共用按钮布局与 UI 辅助方法。
 /// </summary>
 public static partial class StationManager {
     /// <summary>按钮额外间距（像素）</summary>

@@ -15,12 +15,12 @@ using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Archive;
 /// <summary>
-/// DevelopmentDiary 类型。
+/// 开发日志归档与阅读状态页面。
 /// </summary>
 public static class DevelopmentDiary {
     public static void LoadConfig(ConfigFile configFile) { }
     /// <summary>
-    /// DiaryFragment 数据结构。
+    /// 开发日志单篇条目的标识、标题和正文键。
     /// </summary>
     private readonly struct DiaryFragment(string id, string label, string contentKey, int order) {
         public readonly string Id = id;
@@ -29,7 +29,7 @@ public static class DevelopmentDiary {
         public readonly int Order = order;
     }
     /// <summary>
-    /// DiaryCategory 数据结构。
+    /// 开发日志分类及其条目集合。
     /// </summary>
     private readonly struct DiaryCategory(string labelKey, DiaryFragment[] fragments) {
         public readonly string LabelKey = labelKey;

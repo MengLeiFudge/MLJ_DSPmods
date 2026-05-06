@@ -18,7 +18,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流交互站上传下载同步、目标数量与耗电运行逻辑。
 /// </summary>
 public static partial class StationManager {
     /// <summary>交互站逻辑更新周期（每30帧更新一次）</summary>

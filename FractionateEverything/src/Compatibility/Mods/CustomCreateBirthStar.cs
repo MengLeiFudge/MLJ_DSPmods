@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// CustomCreateBirthStar 类型。
+/// 自定义母星系模组检测与兼容状态入口。
 /// </summary>
 public static class CustomCreateBirthStar {
     public const string GUID = "kumor.plugin.CustomCreateBirthStar";

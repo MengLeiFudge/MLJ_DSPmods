@@ -23,7 +23,7 @@ namespace FE.UI.MainPanel.DrawGrowth;
 /// </summary>
 public static class TicketRaffle {
     /// <summary>
-    /// RaffleTabUi 类型。
+    /// 单个抽取卡池标签页的 UI 引用集合。
     /// </summary>
     private sealed class RaffleTabUi {
         public int PoolId;

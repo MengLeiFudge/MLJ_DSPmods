@@ -7,7 +7,7 @@ using FE.Logic.Gacha;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeGrowthManager 类型。
+/// 配方成长状态初始化、同步和存档聚合入口。
 /// </summary>
 public static class RecipeGrowthManager {
     public static readonly RecipeGrowthStateStore Store = new();

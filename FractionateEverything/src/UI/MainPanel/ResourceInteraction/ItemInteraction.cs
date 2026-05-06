@@ -17,7 +17,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 /// <summary>
-/// ItemInteraction 类型。
+/// 数据中心物品上传、下载和筛选分页页面。
 /// </summary>
 public static class ItemInteraction {
     private const int RowCount = 8;

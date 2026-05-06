@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FE.UI.Patches.Common;
 /// <summary>
-/// UIComboBoxPatch 类型。
+/// 修正通用下拉框弹层层级的 UI 补丁。
 /// </summary>
 public static class UIComboBoxPatch {
     private const string DropdownLayerName = "fe-dropdown-layer";

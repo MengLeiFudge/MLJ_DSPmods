@@ -10,7 +10,7 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// FractionatorWindow 类型。
+/// 分馏塔窗口物品点击、锁定切换和背包交互逻辑。
 /// </summary>
 public static partial class FractionatorWindow {
     // ===== OnProductUIButtonClick 拦截 =====

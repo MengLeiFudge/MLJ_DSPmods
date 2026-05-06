@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FE.UI.Patches.Common;
 /// <summary>
-/// UIButtonPatch 类型。
+/// 修正通用按钮提示弹窗层级的 UI 补丁。
 /// </summary>
 public static class UIButtonPatch {
     /// <summary>

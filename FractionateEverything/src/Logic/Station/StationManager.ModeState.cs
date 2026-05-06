@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流交互站传输模式和容量模式状态管理。
 /// </summary>
 public static partial class StationManager {
     /// <summary>

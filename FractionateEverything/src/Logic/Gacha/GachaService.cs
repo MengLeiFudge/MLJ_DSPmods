@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaFocusDefinition 数据结构。
+/// 抽取聚焦选项的类型和文案键。
 /// </summary>
 public readonly struct GachaFocusDefinition(
     GachaFocusType focusType,
@@ -20,7 +20,7 @@ public readonly struct GachaFocusDefinition(
     public string DescKey { get; } = descKey;
 }
 /// <summary>
-/// GachaGrowthOffer 数据结构。
+/// 成长商店单个报价的成本、奖励和类别。
 /// </summary>
 public readonly struct GachaGrowthOffer(
     int pointCost,
@@ -43,7 +43,7 @@ public readonly struct GachaGrowthOffer(
     public ERecipe RecipeType { get; } = recipeType;
 }
 /// <summary>
-/// GachaGrowthOfferKind 枚举。
+/// 成长商店报价的结算行为分类。
 /// </summary>
 public enum GachaGrowthOfferKind {
     ItemGrant = 0,
@@ -51,7 +51,7 @@ public enum GachaGrowthOfferKind {
     DarkFogRecipeGrowth = 2,
 }
 /// <summary>
-/// GachaRewardResolution 数据结构。
+/// 抽取奖励解析后的物品与数量。
 /// </summary>
 internal readonly struct GachaRewardResolution(
     GachaRewardType rewardType,

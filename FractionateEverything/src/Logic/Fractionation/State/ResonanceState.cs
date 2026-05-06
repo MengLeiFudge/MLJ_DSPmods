@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
 /// <summary>
-/// ResonanceState 类型。
+/// 交互塔维度共鸣加成状态缓存与存档逻辑。
 /// </summary>
 public static class ResonanceState {
     #region 分馏塔维度共鸣拓展

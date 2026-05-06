@@ -7,7 +7,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Foundation;
 /// <summary>
-/// RectTransformUtils 类型。
+/// Unity UI 矩形定位与锚点辅助方法。
 /// </summary>
 public static class RectTransformUtils {
     /// <summary>

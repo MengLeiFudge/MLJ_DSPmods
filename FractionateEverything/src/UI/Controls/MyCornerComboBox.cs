@@ -9,7 +9,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
 /// <summary>
-/// MyCornerComboBox 类型。
+/// 用于角落选择项的下拉框控件。
 /// </summary>
 public class MyCornerComboBox : MonoBehaviour {
     private RectTransform _rectTrans;

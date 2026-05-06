@@ -2,7 +2,7 @@ using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeKey 数据结构。
+/// 按配方类型和输入物品定位成长状态的键。
 /// </summary>
 public readonly struct RecipeKey {
     public RecipeKey(ERecipe recipeType, int inputId) {

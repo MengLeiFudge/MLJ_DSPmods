@@ -14,7 +14,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 /// <summary>
-/// Exchange 类型。
+/// 数据中心物品兑换与价格预览页面。
 /// </summary>
 public static class Exchange {
     private static RectTransform tab;

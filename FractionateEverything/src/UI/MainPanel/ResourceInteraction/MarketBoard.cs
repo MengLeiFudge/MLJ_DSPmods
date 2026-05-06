@@ -15,12 +15,12 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 /// <summary>
-/// MarketBoard 类型。
+/// 动态市场订单浏览与交易页面。
 /// </summary>
 public static class MarketBoard {
     private const int RowCount = 8;
     /// <summary>
-    /// OfferRow 类型。
+    /// 市场订单列表中的一行 UI 引用。
     /// </summary>
     private sealed class OfferRow {
         public MyImageButton InputIcon;

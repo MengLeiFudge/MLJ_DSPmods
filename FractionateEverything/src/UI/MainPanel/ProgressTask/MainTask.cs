@@ -28,7 +28,7 @@ using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.ProgressTask;
 /// <summary>
-/// MainTask 类型。
+/// 主线阶段目标、路线图和奖励展示页面。
 /// </summary>
 public static class MainTask {
     private static RectTransform tab;

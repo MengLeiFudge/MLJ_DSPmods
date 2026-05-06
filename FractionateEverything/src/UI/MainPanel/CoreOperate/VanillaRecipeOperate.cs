@@ -19,7 +19,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
 /// <summary>
-/// VanillaRecipeOperate 类型。
+/// 原版配方强化和倍率调整页面。
 /// </summary>
 public static class VanillaRecipeOperate {
     // UI元素：输入物品

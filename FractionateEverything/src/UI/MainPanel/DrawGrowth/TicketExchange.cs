@@ -17,7 +17,7 @@ using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 /// <summary>
-/// TicketExchange 类型。
+/// 抽取奖券兑换与模式说明页面。
 /// </summary>
 public static class TicketExchange {
     private static RectTransform tab;

@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Buildings;
 /// <summary>
-/// BuildingManager 类型。
+/// FE 建筑等级阈值、原型注册和建筑聚合入口。
 /// </summary>
 public static partial class BuildingManager {
     public const int LevelThresholdFluidEnhancement = 3;

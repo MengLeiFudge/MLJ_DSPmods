@@ -2,7 +2,7 @@
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// DSP 风格随机数与随机选择辅助方法。
 /// </summary>
 public static partial class Utils {
     /// <summary>

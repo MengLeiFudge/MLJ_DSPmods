@@ -15,7 +15,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
 /// <summary>
-/// StationManager 类型。
+/// 物流站输出堆叠上限的运行补丁。
 /// </summary>
 public static partial class StationManager {
     [HarmonyTranspiler]

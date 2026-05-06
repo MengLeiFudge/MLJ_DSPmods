@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;
 /// <summary>
-/// GachaService 类型。
+/// 抽取卡池构建、缓存和奖励索引逻辑。
 /// </summary>
 public static partial class GachaService {
     public static void InitPools() {

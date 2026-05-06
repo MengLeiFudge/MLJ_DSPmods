@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
 /// <summary>
-/// ProcessManager 类型。
+/// 分馏塔耗电计算的运行时补丁。
 /// </summary>
 public static partial class ProcessManager {
     #region 分馏塔耗电调整

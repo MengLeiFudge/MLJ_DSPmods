@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// FractionatorWindow 类型。
+/// 分馏塔窗口控件定位和布局迁移逻辑。
 /// </summary>
 public static partial class FractionatorWindow {
     private static string GetRelativePath(Transform root, Transform target) {

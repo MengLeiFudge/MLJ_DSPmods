@@ -9,7 +9,7 @@ using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
 /// <summary>
-/// AnalysisMainPanelWindow 类型。
+/// 分析面板风格 FE 主面板窗口壳。
 /// </summary>
 public partial class AnalysisMainPanelWindow : MyWindow {
     // Analysis 面板内容区标准：黑色底板固定为 1102x787。
@@ -20,7 +20,7 @@ public partial class AnalysisMainPanelWindow : MyWindow {
     private const float AnalysisDesignWidth = AnalysisBlackAreaWidth - AnalysisContentGap * 2f;
     private const float AnalysisDesignHeight = AnalysisBlackAreaHeight - AnalysisContentGap * 2f;
     /// <summary>
-    /// ButtonPose 数据结构。
+    /// 记录原生导航按钮的锚点、尺寸和位置。
     /// </summary>
     private readonly struct ButtonPose {
         public readonly Vector2 AnchorMin;
@@ -52,7 +52,7 @@ public partial class AnalysisMainPanelWindow : MyWindow {
         }
     }
     /// <summary>
-    /// DragWindowForwarder 类型。
+    /// 把自定义拖拽事件转发给 Analysis 主窗口。
     /// </summary>
     private sealed class DragWindowForwarder : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
         private const float DragThresholdPixels = 5f;

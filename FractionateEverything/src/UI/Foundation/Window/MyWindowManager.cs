@@ -5,7 +5,7 @@ using FE.UI.Controls;
 
 namespace FE.UI.Foundation.Window;
 /// <summary>
-/// MyWindowManager 类型。
+/// FE 自定义窗口的初始化与启停管理基类。
 /// </summary>
 public abstract class MyWindowManager {
     private static readonly List<ManualBehaviour> Windows = new(4);
@@ -48,7 +48,7 @@ public abstract class MyWindowManager {
     }
     */
     /// <summary>
-    /// Patch 类型。
+    /// 在 UI 根节点创建后初始化自定义窗口。
     /// </summary>
     public class Patch : PatchImpl<Patch> {
         protected override void OnEnable() {

@@ -1,6 +1,6 @@
 namespace FE.Logic.Fractionation.Growth;
 /// <summary>
-/// RecipeFamily 枚举。
+/// 配方成长规则使用的配方家族分类。
 /// </summary>
 public enum RecipeFamily {
     Unknown = 0,

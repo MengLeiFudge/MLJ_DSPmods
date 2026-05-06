@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FE.Logic.Fractionation.Presentation;
 /// <summary>
-/// FractionatorWindow 类型。
+/// 分馏塔窗口打开、关闭和生命周期接管逻辑。
 /// </summary>
 public static partial class FractionatorWindow {
     // ===== _OnOpen Postfix：让原版正常执行，然后切换显示 =====

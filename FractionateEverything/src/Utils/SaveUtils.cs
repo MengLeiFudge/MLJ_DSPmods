@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 标签化存档块读写辅助方法。
 /// </summary>
 public static partial class Utils {
     /// <summary>

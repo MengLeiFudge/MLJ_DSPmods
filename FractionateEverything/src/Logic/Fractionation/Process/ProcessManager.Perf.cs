@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
 /// <summary>
-/// ProcessManager 类型。
+/// 分馏热路径性能探针和日志统计逻辑。
 /// </summary>
 public static partial class ProcessManager {
     private static bool EnableFractionatorPerfProbe = false;

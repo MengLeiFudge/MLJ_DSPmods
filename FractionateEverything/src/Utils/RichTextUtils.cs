@@ -2,7 +2,7 @@
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// 富文本颜色、字号与数值显示辅助方法。
 /// </summary>
 public static partial class Utils {
     // /// <summary>

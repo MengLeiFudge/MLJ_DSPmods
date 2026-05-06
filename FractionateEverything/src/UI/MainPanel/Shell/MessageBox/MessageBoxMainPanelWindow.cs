@@ -4,7 +4,7 @@ using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel.Shell.MessageBox;
 /// <summary>
-/// MessageBoxMainPanelWindow 类型。
+/// 消息框风格 FE 主面板窗口壳。
 /// </summary>
 public class MessageBoxMainPanelWindow : MyWindowWithTabs {
     // 旧版主窗口对齐新版黑色内容区 1102x787，并额外保留左侧标签区宽度。

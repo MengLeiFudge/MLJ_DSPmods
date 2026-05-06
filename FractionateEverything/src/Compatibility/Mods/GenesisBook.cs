@@ -8,7 +8,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// GenesisBook 类型。
+/// 创世之书模组检测与原型页签兼容入口。
 /// </summary>
 public static class GenesisBook {
     public const string GUID = "org.LoShin.GenesisBook";

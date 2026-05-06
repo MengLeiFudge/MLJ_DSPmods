@@ -20,7 +20,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Setting;
 /// <summary>
-/// Miscellaneous 类型。
+/// 主面板风格、快捷操作和物流阈值设置页面。
 /// </summary>
 public static class Miscellaneous {
     private static RectTransform window;
@@ -284,14 +284,14 @@ public static class Miscellaneous {
         }
     }
     /// <summary>
-    /// DownloadThresholdMapper 类型。
+    /// 物流下载阈值滑条映射。
     /// </summary>
     private class DownloadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
         public override float IndexToValue(int index) => index * 0.02f;
         public override int ValueToIndex(float value) => (int)Math.Round(value / 0.02f);
     }
     /// <summary>
-    /// UploadThresholdMapper 类型。
+    /// 物流上传阈值滑条映射。
     /// </summary>
     private class UploadThresholdMapper() : MyWindow.RangeValueMapper<float>(0, 20) {
         public override float IndexToValue(int index) => 0.6f + index * 0.02f;

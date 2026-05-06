@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// UxAssist 类型。
+/// UXAssist 模组检测与兼容状态入口。
 /// </summary>
 public static class UxAssist {
     public const string GUID = "org.soardev.uxassist";

@@ -7,7 +7,7 @@ using xiaoye97;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// Multfunction_mod 类型。
+/// Multfunction_mod 模组检测与建筑师模式兼容入口。
 /// </summary>
 public static class Multfunction_mod {
     public const string GUID = "cn.blacksnipe.dsp.Multfuntion_mod";

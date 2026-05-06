@@ -8,7 +8,7 @@ namespace FE.UI.Controls;
 
 // MySlider modified from LSTM: https://github.com/hetima/DSP_LSTM/blob/main/LSTM/MySlider.cs
 /// <summary>
-/// MySlider 类型。
+/// 带文本标签和值映射的横向滑条控件。
 /// </summary>
 public class MySlider : MonoBehaviour {
     public RectTransform rectTrans;

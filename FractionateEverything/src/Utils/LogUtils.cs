@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FE.Utils;
 /// <summary>
-/// 通用工具方法分部类型。
+/// BepInEx 与 Unity 日志输出辅助方法。
 /// </summary>
 public static partial class Utils {
     private static ManualLogSource logger;

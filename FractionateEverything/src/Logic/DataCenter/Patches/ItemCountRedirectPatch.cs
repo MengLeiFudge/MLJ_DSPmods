@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
 /// <summary>
-/// ItemCountRedirectPatch 类型。
+/// 玩家物品数量查询重定向到统一库存访问的补丁。
 /// </summary>
 public static class ItemCountRedirectPatch {
     //StorageComponent获取物品数目方法一览：

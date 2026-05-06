@@ -12,7 +12,7 @@ using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Setting;
 /// <summary>
-/// SandboxMode 类型。
+/// 沙盒模式倍率和调试开关设置页面。
 /// </summary>
 public static class SandboxMode {
     private static RectTransform window;
@@ -21,7 +21,7 @@ public static class SandboxMode {
     private static ConfigEntry<float> ExpMultiRatioEntry;
     public static float ExpMultiRatio => GameMain.sandboxToolsEnabled ? ExpMultiRatioEntry.Value : 1;
     /// <summary>
-    /// MultiRatioMapper 类型。
+    /// 沙盒倍率滑条的指数映射。
     /// </summary>
     private class MultiRatioMapper() : MyWindow.RangeValueMapper<float>(0, 40) {
         public override float IndexToValue(int index) => (float)Math.Pow(10, (index - 10) / 10.0);

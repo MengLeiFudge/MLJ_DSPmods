@@ -17,7 +17,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Buildings;
 /// <summary>
-/// BuildingManager 类型。
+/// FE 建筑等级、经验和特性查询逻辑。
 /// </summary>
 public static partial class BuildingManager {
     public static int Level(this ItemProto building) {

@@ -18,7 +18,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Archive;
 /// <summary>
-/// RecipeGallery 类型。
+/// 分馏配方图鉴与完成度统计页面。
 /// </summary>
 public static class RecipeGallery {
     // 行数：配方类型+矩阵7种+总计    列数：矩阵类型+配方3种+总计

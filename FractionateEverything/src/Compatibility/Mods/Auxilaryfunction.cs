@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// Auxilaryfunction 类型。
+/// Auxilaryfunction 模组检测与模型显示兼容入口。
 /// </summary>
 public static class Auxilaryfunction {
     public const string GUID = "cn.blacksnipe.dsp.Auxilaryfunction";

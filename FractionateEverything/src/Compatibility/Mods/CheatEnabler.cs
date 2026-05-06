@@ -7,7 +7,7 @@ using xiaoye97;
 
 namespace FE.Compatibility.Mods;
 /// <summary>
-/// CheatEnabler 类型。
+/// CheatEnabler 模组检测与建筑师模式兼容入口。
 /// </summary>
 public static class CheatEnabler {
     public const string GUID = "org.soardev.cheatenabler";

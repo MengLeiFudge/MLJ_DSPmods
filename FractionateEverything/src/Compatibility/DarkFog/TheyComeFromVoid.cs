@@ -11,7 +11,7 @@ using FE.Logic.DataCenter.Patches;
 
 namespace FE.Compatibility.DarkFog;
 /// <summary>
-/// TheyComeFromVoid 类型。
+/// 深空来敌模组检测与反射访问入口。
 /// </summary>
 public static class TheyComeFromVoid {
     public const string GUID = "com.ckcz123.DSP_Battle";

@@ -16,7 +16,7 @@ using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
 /// <summary>
-/// FissionPointPool 类型。
+/// 矿物复制塔质能裂变点池状态与存档逻辑。
 /// </summary>
 public static class FissionPointPool {
     #region 质能裂变点数池

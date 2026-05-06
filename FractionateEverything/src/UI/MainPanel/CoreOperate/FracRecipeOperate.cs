@@ -28,7 +28,7 @@ using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
 /// <summary>
-/// FracRecipeOperate 类型。
+/// 分馏配方等级、经验和解锁操作页面。
 /// </summary>
 public static class FracRecipeOperate {
     private static RectTransform window;
