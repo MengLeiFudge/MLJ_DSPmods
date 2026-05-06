@@ -12,9 +12,9 @@ using static FE.Logic.Manager.ProcessManager;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
-public static partial class FEFractionatorWindow {
+public static partial class FractionatorWindow {
     private static void DoModWindowUpdate(UIFractionatorWindow src) {
         if (src.fractionatorId == 0 || src.factory == null) {
             if (src.active) src._Close();

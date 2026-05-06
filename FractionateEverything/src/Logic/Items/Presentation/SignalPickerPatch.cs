@@ -9,13 +9,13 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Items.Presentation;
 
 /// <summary>
 /// 为原版图标选择弹窗补充 CommonAPI 自定义页面入口。
 /// 创世和星环已各自接管 UISignalPicker，避免重复注入。
 /// </summary>
-public static class UISignalPickerPatch {
+public static class SignalPickerPatch {
     private static readonly FieldInfo currentTypeField =
         AccessTools.Field(typeof(UISignalPicker), nameof(UISignalPicker.currentType));
     private static readonly List<UITabButton> customTabs = [];
@@ -66,7 +66,7 @@ public static class UISignalPickerPatch {
             new CodeMatch(OpCodes.Ldfld, currentTypeField),
             new CodeMatch(OpCodes.Ldc_I4_2));
         if (matcher.IsInvalid) {
-            CheckPlugins.LogWarning("UISignalPickerPatch: 未找到 _OnUpdate 里的 currentType == 2 判断，跳过 tooltip 扩展。");
+            CheckPlugins.LogWarning("SignalPickerPatch: 未找到 _OnUpdate 里的 currentType == 2 判断，跳过 tooltip 扩展。");
             return instructions;
         }
 

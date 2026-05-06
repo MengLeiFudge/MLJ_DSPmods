@@ -1,7 +1,7 @@
 using HarmonyLib;
 using static FE.Logic.Manager.ProcessManager;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
 /// <summary>
 /// 分馏塔简洁提示信息窗口的UI修改。

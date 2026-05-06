@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
 public static class UIItemTipPatch {
     /// <summary>

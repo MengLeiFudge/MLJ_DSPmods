@@ -9,14 +9,14 @@ using UnityEngine.UI;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
 /// <summary>
 /// 模组分馏塔独立窗口。
 /// 复制原版窗口实例，在创建时一次性修改布局，后续只需控制显示/隐藏。
 /// 原版分馏塔直接使用原版窗口，不做任何修改。
 /// </summary>
-public static partial class FEFractionatorWindow {
+public static partial class FractionatorWindow {
     // ===== 窗口实例 =====
     private static GameObject modWindowGo;
 

@@ -1,9 +1,9 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
-public static partial class FEFractionatorWindow {
+public static partial class FractionatorWindow {
     // ===== _OnOpen Postfix：让原版正常执行，然后切换显示 =====
     // 关键原理：
     //   ManualBehaviour._Open() 先设 active=true，再调用 _OnOpen()。

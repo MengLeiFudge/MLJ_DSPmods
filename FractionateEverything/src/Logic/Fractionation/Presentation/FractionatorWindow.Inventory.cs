@@ -6,9 +6,9 @@ using FE.Logic.Recipe;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
-public static partial class FEFractionatorWindow {
+public static partial class FractionatorWindow {
     // ===== OnProductUIButtonClick 拦截 =====
 
     private static ProductOutputInfo FindProductByItemId(List<ProductOutputInfo> products, int itemId) {

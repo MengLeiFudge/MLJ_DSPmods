@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace FE.UI.Patches;
+namespace FE.UI.Patches.Common;
 
 public static class UIComboBoxPatch {
     private const string DropdownLayerName = "fe-dropdown-layer";
