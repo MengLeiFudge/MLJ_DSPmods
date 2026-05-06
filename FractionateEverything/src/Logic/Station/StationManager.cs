@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
 using FE.Logic.Building;
+using FE.Logic.Manager;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
@@ -11,7 +12,7 @@ using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Station;
 
 /// <summary>
 /// 物流交互站管理器。
