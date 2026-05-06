@@ -1,6 +1,6 @@
 # Utils — Shared Utilities (partial class)
 
-12 files, ~3200 lines. All declare `public static partial class Utils` in `namespace FE.Utils`.
+17 files, ~3200 lines. All declare `public static partial class Utils` in `namespace FE.Utils`.
 Import with `using static FE.Utils.Utils;` — then call helpers directly without prefix.
 
 ## File Breakdown
@@ -8,7 +8,12 @@ Import with `using static FE.Utils.Utils;` — then call helpers directly withou
 | File | Lines | Contains |
 |---|---|---|
 | `ProtoID.cs` | 1236 | ALL proto ID constants (`I铁块`, `RFE分馏配方`, `MFE转化塔`, `TFE分馏数据中心`, …) |
-| `PackageUtils.cs` | 1273 | Inventory ops, belt ops, item-take/give, building-mode checks, `GetItemTotalCount` |
+| `PackageUtils.cs` | 34 | Package/data-centre shared flags and translations (`ArchitectMode`, `TechItemInteractionUnlocked`) |
+| `PackageUtils.ModData.cs` | 220 | Data-centre item operations: click extract, fragment/essence compatibility, add/take/count mod data |
+| `PackageUtils.Package.cs` | 247 | Player/delivery package add/count/take helpers, `TakeItemWithTip`, `split_inc` |
+| `PackageUtils.ItemAccessPatches.cs` | 704 | Harmony patches/transpilers that redirect item count/take/build availability to all package sources |
+| `PackageUtils.Sort.cs` | 95 | Package sort / double-sort upload behavior |
+| `PackageUtils.Proliferator.cs` | 111 | Proliferator point-pool logic for station auto-spray |
 | `I18NUtils.cs` | 105 | `Register(zh, en)`, `Translate()` extension, `GetPosition(col, totalCols)` |
 | `QualitySystem.cs` | 129 | Quality tier logic (white/green/blue/purple/red/gold) |
 | `NormalizeRectUtils.cs` | 131 | `NormalizeRectWithMidLeft`, `NormalizeRectWithTopLeft` layout helpers |
