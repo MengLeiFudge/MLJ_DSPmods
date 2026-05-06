@@ -21,12 +21,6 @@ public static class MainWindowPageRegistry {
     public const string ProgressTaskCategoryName = "任务成就";
     public const string ArchiveCategoryName = "图鉴档案";
     public const string SystemSettingCategoryName = "系统设置";
-    public const string ItemManageCategoryName = ResourceInteractionCategoryName;
-    public const string GachaCategoryName = DrawGrowthCategoryName;
-    public const string StoreCategoryName = DrawGrowthCategoryName;
-    public const string ProgressSystemCategoryName = ProgressTaskCategoryName;
-    public const string StatisticCategoryName = ArchiveCategoryName;
-
     private static readonly string[] categoryOrder = [
         CoreOperateCategoryName,
         DrawGrowthCategoryName,
@@ -37,43 +31,32 @@ public static class MainWindowPageRegistry {
     ];
 
     private static readonly MainWindowPageDefinition[] allPages = [
-        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI,
-            enabledInAnalysis: true),
-        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI,
-            enabledInAnalysis: true),
-        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI,
-            enabledInAnalysis: true),
+        new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
+        new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
+        new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
 
-        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI,
-            enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI,
-            enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI,
-            enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI, enabledInAnalysis: true),
-        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI,
-            enabledInAnalysis: true),
+        new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
+        new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI),
+        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI),
+        new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI),
+        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI),
 
-        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI,
-            enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI, enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI,
-            enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI,
-            enabledInAnalysis: true),
-        new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI, enabledInAnalysis: true),
+        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI),
+        new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI),
+        new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI),
+        new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI),
+        new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI),
 
-        new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI, enabledInAnalysis: true),
-        new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI, enabledInAnalysis: true),
-        new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI, enabledInAnalysis: true),
+        new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
+        new(ProgressTaskCategoryName, "循环任务", RecurringTask.CreateUI, RecurringTask.UpdateUI),
+        new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI),
 
-        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI, enabledInAnalysis: true),
-        new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI, enabledInAnalysis: true),
-        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI, enabledInAnalysis: true),
+        new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
+        new(ArchiveCategoryName, "分馏统计", FracStatistic.CreateUI, FracStatistic.UpdateUI),
+        new(ArchiveCategoryName, "开发日记", DevelopmentDiary.CreateUI, DevelopmentDiary.UpdateUI),
 
-        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI, enabledInAnalysis: true),
-        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true,
-            enabledInAnalysis: true),
+        new(SystemSettingCategoryName, "杂项设置", Miscellaneous.CreateUI, Miscellaneous.UpdateUI),
+        new(SystemSettingCategoryName, "沙盒模式", SandboxMode.CreateUI, SandboxMode.UpdateUI, sandboxOnly: true),
     ];
 
     private static readonly IReadOnlyList<MainWindowCategoryDefinition>[,,] categoryCache = BuildCategoryCache();
@@ -149,13 +132,11 @@ public sealed class MainWindowPageDefinition(
     string subpageName,
     Action<MyWindow, RectTransform> createUI,
     Action updateUI,
-    bool enabledInAnalysis = false,
     bool sandboxOnly = false) {
     public string CategoryName { get; } = categoryName;
     public string SubpageName { get; } = subpageName;
     public Action<MyWindow, RectTransform> CreateUI { get; } = createUI;
     public Action UpdateUI { get; } = updateUI;
-    public bool EnabledInAnalysis { get; } = enabledInAnalysis;
     public bool SandboxOnly { get; } = sandboxOnly;
 
     public bool IsEnabledFor(FEMainPanelType panelType, bool sandboxMode) {
@@ -164,8 +145,7 @@ public sealed class MainWindowPageDefinition(
         }
 
         return panelType switch {
-            FEMainPanelType.Legacy => true,
-            FEMainPanelType.Analysis => EnabledInAnalysis,
+            FEMainPanelType.Legacy or FEMainPanelType.Analysis => true,
             _ => false,
         };
     }
