@@ -27,7 +27,11 @@
 | `ProcessManager.Sacrifice.cs` | 交互塔献祭特质与成功率加成刷新 |
 | `ItemManager.cs` | 物品价值与数据中心物品操作 |
 | `TutorialManager.cs` | 任务/教程推进 |
-| `TechManager.cs` | 科技注册、解锁联动、配方奖励发放、原版增强开放控制 |
+| `TechManager.cs` | 科技多语言注册入口 |
+| `TechManager.Techs.cs` | 科技注册与科技树坐标 |
+| `TechManager.MatrixProgress.cs` | 矩阵层研究进度、原版配方增强开放判断 |
+| `TechManager.RecipeBaselines.cs` | 读档/科技解锁后的配方基线补齐 |
+| `TechManager.RuntimePatches.cs` | 特殊科技运行解锁标记、科技提示文本 patch、解锁回调 |
 | `GachaService.cs` | 卡池构建、抽卡结算、奖励发放 |
 | `RecipeManager.cs` | 配方索引/查找 |
 | `GachaManager.cs` | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
@@ -51,6 +55,11 @@
 - 新增总控面板 patch：放 `StationManager.ControlPanel.cs`。
 - 新增物流站输出堆叠 IL patch：放 `StationManager.OutputStackPatch.cs`。
 - 新增交互站传输/容量模式存档字段：放 `StationManager.Save.cs`。
+- 新增科技注册、科技树位置：放 `TechManager.Techs.cs`。
+- 新增矩阵层研究进度或原版配方增强开放判断：放 `TechManager.MatrixProgress.cs`。
+- 新增科技解锁/读档后的配方基线补齐：放 `TechManager.RecipeBaselines.cs`。
+- 新增特殊科技运行解锁、科技提示文本或解锁回调 patch：放 `TechManager.RuntimePatches.cs`。
+- 新增科技多语言文本：保留在 `TechManager.cs`。
 
 ## 科技与配方解锁 (TechManager)
 
