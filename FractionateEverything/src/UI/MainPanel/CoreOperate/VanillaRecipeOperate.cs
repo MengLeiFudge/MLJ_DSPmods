@@ -1,18 +1,21 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel.Setting;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
 

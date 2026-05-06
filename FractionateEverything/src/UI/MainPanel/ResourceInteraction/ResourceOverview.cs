@@ -1,16 +1,19 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Growth;
-using FE.UI.Components;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.UI;
 using FE.Logic.DarkFog;
 using FE.Logic.Economy;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 

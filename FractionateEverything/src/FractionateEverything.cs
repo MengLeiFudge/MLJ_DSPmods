@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FE.Compatibility;
 using FE.Compatibility.Nebula;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using FE.Bootstrap;
 using FE.Compatibility.Mods;
 using FE.Logic.Manager;
 using FE.Persistence;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel;
 using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
@@ -25,6 +25,7 @@ using xiaoye97;
 using FE.Logic.Gacha;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using FE.UI.Foundation.Window;
 
 namespace FE;
 

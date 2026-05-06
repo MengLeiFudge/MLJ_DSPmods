@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Manager;
-using FE.UI.Components;
+using FE.UI.Controls;
 using UnityEngine;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Setting;
 

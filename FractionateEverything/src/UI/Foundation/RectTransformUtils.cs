@@ -1,0 +1,147 @@
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+using static FE.Utils.Utils;
+using FE.UI.Controls;
+using static FE.UI.Foundation.RectTransformUtils;
+
+namespace FE.UI.Foundation;
+
+public static class RectTransformUtils {
+    /// <summary>
+    /// 设置元素左上角相对于parent左上角的位置
+    /// </summary>
+    /// <param name="cmp">组件，类型为Component表示可以传入任何类型组件（例如Button、Image等）</param>
+    /// <param name="left">cmp左上角在parent左上角的往右多少</param>
+    /// <param name="top">cmp左上角在parent左上角的往下多少</param>
+    /// <param name="parent">如果不为空，可以重设cmp的parent</param>
+    /// <returns>cmp的transform</returns>
+    public static RectTransform NormalizeRectWithTopLeft(Component cmp, float left, float top,
+        Transform parent = null) {
+        //只有UI相关的元素，transform才是RectTransform
+        if (cmp.transform is not RectTransform rect) return null;
+        //如果parent不为空，可以重设cmp的parent
+        if (parent != null) {
+            rect.SetParent(parent, false);
+        }
+        //锚点矩形的左下角是父容器的左上角，锚点矩形的右上角是父容器的左上角
+        //anchorMin和anchorMax相等时，UI元素的大小不会随父容器大小变化而自动调整
+        rect.anchorMin = new(0f, 1f);
+        rect.anchorMax = new(0f, 1f);
+        //UI元素自身的参考点为左上角。这意味着：
+        //当设置位置时，是以元素的左上角为基准点
+        //当旋转元素时，会围绕左上角旋转
+        //当缩放元素时，左上角位置保持不变
+        rect.pivot = new(0f, 1f);
+        //UI元素的pivot点相对于锚点的偏移量。由于传入的是2D UI，所以z为0
+        rect.anchoredPosition3D = new(left, -top, 0f);
+        return rect;
+    }
+
+    /// <summary>
+    /// 以组件左侧中点为参考设置位置（可选重设父节点与高度基准）。
+    /// </summary>
+    /// <param name="cmp">目标组件</param>
+    /// <param name="left">距父节点左上角向右偏移</param>
+    /// <param name="top">距父节点左上角向下偏移</param>
+    /// <param name="parent">可选父节点，非空时会重新挂载</param>
+    /// <param name="height">用于计算中点的高度，留空时使用组件当前高度</param>
+    public static RectTransform NormalizeRectWithMidLeft(Component cmp, float left, float top,
+        Transform parent = null, float? height = null) {
+        RectTransform rect = NormalizeRectWithTopLeft(cmp, left, top, parent);
+        float actualHeight = height ?? rect.sizeDelta.y;
+        rect.anchoredPosition3D = new(left, -top + actualHeight / 2, 0f);
+        return rect;
+    }
+
+    public static RectTransform NormalizeRectWithTopRight(Component cmp, float right, float top,
+        Transform parent = null) {
+        if (cmp.transform is not RectTransform rect) return null;
+        if (parent != null) {
+            rect.SetParent(parent, false);
+        }
+        rect.anchorMax = new(1f, 1f);
+        rect.anchorMin = new(1f, 1f);
+        rect.pivot = new(1f, 1f);
+        rect.anchoredPosition3D = new(-right, -top, 0f);
+        return rect;
+    }
+
+    public static RectTransform NormalizeRectWithBottomLeft(Component cmp, float left, float bottom,
+        Transform parent = null) {
+        if (cmp.transform is not RectTransform rect) return null;
+        if (parent != null) {
+            rect.SetParent(parent, false);
+        }
+        rect.anchorMax = new(0f, 0f);
+        rect.anchorMin = new(0f, 0f);
+        rect.pivot = new(0f, 0f);
+        rect.anchoredPosition3D = new(left, bottom, 0f);
+        return rect;
+    }
+
+    public static RectTransform NormalizeRectWithMargin(Component cmp, float top, float left, float bottom, float right,
+        Transform parent = null) {
+        if (cmp.transform is not RectTransform rect) return null;
+        if (parent != null) {
+            rect.SetParent(parent, false);
+        }
+        rect.anchoredPosition3D = Vector3.zero;
+        rect.localScale = Vector3.one;
+        rect.anchorMax = Vector2.one;
+        rect.anchorMin = Vector2.zero;
+        rect.pivot = new(0.5f, 0.5f);
+        rect.offsetMax = new(-right, -top);
+        rect.offsetMin = new(left, bottom);
+        return rect;
+    }
+
+    public static RectTransform NormalizeRectCenter(GameObject go, float width = 0, float height = 0) {
+        if (go.transform is not RectTransform rect) return null;
+        rect.anchorMax = new(0.5f, 0.5f);
+        rect.anchorMin = new(0.5f, 0.5f);
+        rect.pivot = new(0.5f, 0.5f);
+        if (width > 0 && height > 0) {
+            rect.sizeDelta = new(width, height);
+        }
+        return rect;
+    }
+
+    public static void SetPosition(this Text text, float x, float y) {
+        NormalizeRectWithMidLeft(text, x, y);
+    }
+
+    public static void SetPosition(this MySlider slider, float x, float y) {
+        NormalizeRectWithMidLeft(slider, x, y);
+    }
+
+    /// <summary>
+    /// 计算等宽分栏布局中的起始 X 与单栏宽度。
+    /// </summary>
+    /// <param name="index">当前栏位索引（从 0 开始）</param>
+    /// <param name="count">总栏位数</param>
+    /// <param name="totalPx">可用总宽度（像素）。Analysis 统一设计区默认宽度为 1082。</param>
+    /// <returns>(起始X, 栏位宽度)</returns>
+    public static (float, float) GetPosition(int index, int count, float totalPx = 1082f) {
+        float targetLen = (totalPx - (count - 1) * 20) / count;
+        float targetPx = index * (targetLen + 20);
+        return (targetPx, targetLen);
+    }
+
+    public static void SetText(this UIButton btn, string notTranslateStr) {
+        try {
+            var l = btn.gameObject.transform.Find("button-text").GetComponent<Localizer>();
+            var t = btn.gameObject.transform.Find("button-text").GetComponent<Text>();
+            if (l != null) {
+                l.stringKey = notTranslateStr;
+                l.translation = notTranslateStr.Translate();
+            }
+            if (t != null) {
+                t.text = notTranslateStr.Translate();
+            }
+        }
+        catch (Exception ex) {
+            LogError($"SetText error: {ex}");
+        }
+    }
+}

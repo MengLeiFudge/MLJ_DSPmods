@@ -1,22 +1,26 @@
 # UI — Unity UI Layer
 
-UI 层包含通用组件、FE 主面板页面和通用 UI 控件 patch。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
+UI 层包含基础窗口设施、可复用控件、声明式布局、FE 主面板页面和通用 UI 控件 patch。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：MessageBox(`MessageBoxMainPanelWindow`) + Analysis(`AnalysisMainPanelWindow`)。
 
 ## Structure
 
 ```
 UI/
-├── Components/   # 通用组件；含 MyAnalysisWindow
-├── Patches/      # 只保留 Common 通用控件 patch
+├── Foundation/   # 窗口生命周期、窗口基类、RectTransform 工具
+├── Controls/     # 可复用控件，一类一文件
+├── Layout/       # Grid DSL 与布局运行时
 └── MainPanel/
+    ├── Shell/               # MessageBox / Analysis 主面板窗口壳
+    ├── Theme/               # 主面板页面视觉骨架
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
     ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
     └── DrawGrowth/            # 抽奖/商店/兑换系统（TicketRaffle + LimitedTimeStore + Gacha）
+└── Patches/      # 只保留 Common 通用控件 patch
 ```
 
 ## 双主面板契约（必须遵守）
 
-- 枚举：`FEMainPanelType = None/Legacy/Analysis`
+- 枚举：`FEMainPanelType = None/Legacy/Analysis`（枚举名暂保留存档兼容语义；窗口实现命名使用 MessageBox / Analysis）
 - 选中态：`SelectedMainPanelType`
 - 打开态：`OpenedMainPanelType`
 - 切换入口：`SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`
@@ -44,7 +48,7 @@ new(category, subpage,
 ```csharp
 AddTranslations();
 LoadConfig(ConfigFile);
-CreateUI(MyConfigWindow, RectTransform);
+CreateUI(MyWindow, RectTransform);
 UpdateUI();
 Import/Export/IntoOtherSave();
 ```
@@ -54,6 +58,8 @@ Import/Export/IntoOtherSave();
 - `UpdateUI()` 必须先做可见性/面板态判断（避免离屏刷新）
 - 文本颜色在 `UI/MainPanel/*` 禁止硬编码，统一走 `RichTextUtils` 常量 + `WithColor`
 - 新页面优先接入 `MainWindowPageRegistry`，不要再在 `MainWindow` 手写大段分类分发逻辑
+- 主面板窗口壳放 `UI/MainPanel/Shell`，不要放回 `UI/Controls` 或 `UI/Foundation`。
+- 页面卡片/页头/页脚视觉骨架放 `UI/MainPanel/Theme`，不要放进通用控件目录。
 
 ## Patches Folder
 

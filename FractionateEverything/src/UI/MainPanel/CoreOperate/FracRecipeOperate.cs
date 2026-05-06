@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
@@ -7,12 +7,12 @@ using FE.Logic.Buildings.Definitions;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.Setting;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
@@ -21,7 +21,10 @@ using FE.Logic.Buildings;
 using FE.Logic.Gacha;
 using FE.Logic.Fractionation.State;
 using FE.Logic.Fractionation.Process;
-using static FE.UI.Components.NormalizeRectUtils;
+using static FE.UI.Foundation.RectTransformUtils;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
 

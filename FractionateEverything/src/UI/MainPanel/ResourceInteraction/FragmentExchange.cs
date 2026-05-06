@@ -1,13 +1,16 @@
-﻿using BepInEx.Configuration;
+using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Logic.Manager;
-using FE.UI.Components;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.UI;
 using FE.Logic.Economy;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 

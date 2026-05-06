@@ -3,15 +3,17 @@ using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Growth;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel;
 using UnityEngine;
 using UnityEngine.UI;
 using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 

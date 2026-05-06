@@ -1,4 +1,4 @@
-﻿using BepInEx.Configuration;
+using BepInEx.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using static FE.Utils.Utils;
@@ -6,10 +6,12 @@ using System;
 using System.Text;
 using FE.UI.MainPanel.ProgressTask;
 using UnityEngine;
-using FE.UI.Components;
+using FE.UI.Controls;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using System.IO;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Archive;
 
