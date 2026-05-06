@@ -1,22 +1,46 @@
 # Logic/Manager — 状态管理层
 
-11 个管理文件，约 7150 行。重点变化：抽奖系统已从 UI 内联逻辑抽离为 `GachaManager + GachaService + GachaPool (+ GalleryBonus)`。
+核心管理层按领域组织；`BuildingManager` 与 `ProcessManager` 已拆成 partial 文件，避免继续把新逻辑堆回单个大文件。
 
 ## 文件职责（当前）
 
 | File | Lines | Responsibility |
 |---|---:|---|
-| `StationManager.cs` | 2399 | 物流交互站主循环与物品流转 |
-| `ProcessManager.cs` | 949 | 分馏器热路径更新/补丁 |
-| `BuildingManager.cs` | 723 | 建筑注册与等级数据 |
-| `ItemManager.cs` | 715 | 物品价值与数据中心物品操作 |
-| `TutorialManager.cs` | 601 | 任务/教程推进 |
-| `TechManager.cs` | 568 | 科技注册、解锁联动、配方奖励发放、原版增强开放控制 |
-| `GachaService.cs` | 534 | 卡池构建、抽卡结算、奖励发放 |
-| `RecipeManager.cs` | 294 | 配方索引/查找 |
-| `GachaManager.cs` | 213 | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
-| `GachaPool.cs` | 117 | 卡池与稀有度模型定义 |
-| `GachaGalleryBonusManager.cs` | 36 | 图鉴完成度加成缓存刷新 |
+| File | Responsibility |
+|---|---|
+| `StationManager.cs` | 物流交互站主循环、UI patch、弹窗状态、集装输出与存档；仍是下一轮拆分重点 |
+| `BuildingManager.cs` | 建筑注册、材质/能耗刷新、分馏塔基础缓存、存档聚合入口 |
+| `BuildingManager.OutputState.cs` | 分馏塔多产物输出拓展状态与运行缓存 |
+| `BuildingManager.SingleLock.cs` | 转化塔单锁、复制粘贴/蓝图参数、实体删除清理 |
+| `BuildingManager.Growth.cs` | 建筑等级、经验、突破消耗、等级派生属性 |
+| `BuildingManager.Resonance.cs` | 交互塔维度共鸣加成状态 |
+| `BuildingManager.FissionPool.cs` | 矿物复制塔质能裂变点数池 |
+| `ProcessManager.cs` | 分馏器调度入口、各塔 `InternalUpdate` 热路径、成功统计存档 |
+| `ProcessManager.Runtime.cs` | 传送带速度、缓存上限、运行配置和强化数组初始化 |
+| `ProcessManager.Belts.cs` | 分馏产物选择、流动输入/输出、传送带 IO helper |
+| `ProcessManager.Perf.cs` | 分馏热路径性能探针与日志格式化 |
+| `ProcessManager.PowerPatch.cs` | 分馏塔能耗 Harmony transpiler 与 `SetPCState` 适配 |
+| `ProcessManager.Sacrifice.cs` | 交互塔献祭特质与成功率加成刷新 |
+| `ItemManager.cs` | 物品价值与数据中心物品操作 |
+| `TutorialManager.cs` | 任务/教程推进 |
+| `TechManager.cs` | 科技注册、解锁联动、配方奖励发放、原版增强开放控制 |
+| `GachaService.cs` | 卡池构建、抽卡结算、奖励发放 |
+| `RecipeManager.cs` | 配方索引/查找 |
+| `GachaManager.cs` | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
+| `GachaPool.cs` | 卡池与稀有度模型定义 |
+| `GachaGalleryBonusManager.cs` | 图鉴完成度加成缓存刷新 |
+
+## Partial 文件归属
+
+- 新增建筑注册、原型刷新、存档聚合入口：放 `BuildingManager.cs`。
+- 新增分馏塔实例级状态：优先放 `BuildingManager.OutputState.cs`，不要混进等级成长。
+- 新增转化塔单锁、复制粘贴、蓝图参数：放 `BuildingManager.SingleLock.cs`。
+- 新增建筑经验/等级/突破公式：放 `BuildingManager.Growth.cs`。
+- 新增分馏热路径核心流程：放 `ProcessManager.cs`，保持 `InternalUpdate<T>` 可集中阅读。
+- 新增传送带输入输出辅助：放 `ProcessManager.Belts.cs`。
+- 新增性能计数或日志桶：放 `ProcessManager.Perf.cs`，不要散落在热路径里。
+- 新增能耗 IL patch：放 `ProcessManager.PowerPatch.cs`。
+- 新增交互塔献祭相关逻辑：放 `ProcessManager.Sacrifice.cs`。
 
 ## 科技与配方解锁 (TechManager)
 
