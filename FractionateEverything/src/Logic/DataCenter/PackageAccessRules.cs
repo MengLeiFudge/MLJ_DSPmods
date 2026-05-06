@@ -1,4 +1,4 @@
-﻿using FE.Compatibility;
+﻿using FE.Compatibility.Mods;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter;

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Linq;
 using System.Reflection.Emit;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;

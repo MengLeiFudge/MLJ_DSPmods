@@ -6,6 +6,7 @@ using FE.UI.Components;
 using static FE.UI.Components.GridDsl;
 using static FE.UI.Components.PageLayout;
 using static FE.Utils.Utils;
+using static FE.UI.Components.NormalizeRectUtils;
 
 namespace FE.UI.MainPanel.ProgressTask;
 

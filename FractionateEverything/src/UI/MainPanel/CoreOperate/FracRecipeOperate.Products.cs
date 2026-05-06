@@ -3,8 +3,9 @@ using FE.Logic.Fractionation.State;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
@@ -19,6 +20,7 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
+using static FE.UI.Components.NormalizeRectUtils;
 
 namespace FE.UI.MainPanel.CoreOperate;
 

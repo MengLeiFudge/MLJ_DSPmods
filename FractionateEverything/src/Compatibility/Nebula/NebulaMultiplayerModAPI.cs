@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
+using FE.Logic.Buildings;
 using FE.Logic.Fractionation.State;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
@@ -14,7 +15,7 @@ using NebulaAPI.Packets;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Nebula;
 
 public static class NebulaMultiplayerModAPI {
     public const string GUID = NebulaModAPI.API_GUID;

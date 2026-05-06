@@ -2,10 +2,10 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class UxAssist {
-    public const string GUID = "org.soardev.uxassist";
+public static class AutoSorter {
+    public const string GUID = "Appun.DSP.plugin.AutoSorter";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class UxAssist {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.UxAssist");
-        harmony.PatchAll(typeof(UxAssist));
-        CheckPlugins.LogInfo("UxAssist Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.AutoSorter");
+        harmony.PatchAll(typeof(AutoSorter));
+        CheckPlugins.LogInfo("AutoSorter Compat finish.");
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
+using FE.Compatibility.Nebula;
 using System.Collections.Generic;
 using System.IO;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Logic.Progression;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;

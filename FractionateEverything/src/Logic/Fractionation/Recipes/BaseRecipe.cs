@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Gacha;
 using FE.Logic.Manager;

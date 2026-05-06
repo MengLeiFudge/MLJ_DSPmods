@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using CommonAPI.Systems;
 using CommonAPI.Systems.UI;
 using FE.Compatibility;
+using FE.Compatibility.Mods;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;

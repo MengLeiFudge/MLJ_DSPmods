@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Manager;
 using static FE.Utils.Utils;

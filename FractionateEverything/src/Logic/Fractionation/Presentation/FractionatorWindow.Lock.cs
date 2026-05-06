@@ -1,4 +1,4 @@
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.State;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;

@@ -11,6 +11,7 @@ using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Archive;
 using UnityEngine;
 using static FE.Utils.Utils;
+using static FE.UI.Components.NormalizeRectUtils;
 
 namespace FE.UI.MainPanel;
 

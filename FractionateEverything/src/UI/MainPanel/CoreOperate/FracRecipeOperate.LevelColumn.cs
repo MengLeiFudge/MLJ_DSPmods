@@ -2,8 +2,8 @@
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;

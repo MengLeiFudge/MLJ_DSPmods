@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
 public static class PackageLogistic {
     public const string GUID = "com.qlvlp.dsp.PackageLogistic";

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
+using static FE.UI.Components.NormalizeRectUtils;
 
 namespace FE.UI.Components;
 

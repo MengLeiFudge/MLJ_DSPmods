@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.Logic.Buildings;
 using FE.Logic.Manager;
 using UnityEngine;
 using UnityEngine.UI;

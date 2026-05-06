@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Building;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;

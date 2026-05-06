@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;

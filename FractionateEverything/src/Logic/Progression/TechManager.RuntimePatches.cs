@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CommonAPI.Systems;
-using FE.Compatibility;
+using FE.Compatibility.Mods;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
 using HarmonyLib;

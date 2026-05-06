@@ -2,10 +2,10 @@
 using BepInEx.Bootstrap;
 using HarmonyLib;
 
-namespace FE.Compatibility;
+namespace FE.Compatibility.Mods;
 
-public static class CustomCreateBirthStar {
-    public const string GUID = "kumor.plugin.CustomCreateBirthStar";
+public static class SmelterMiner {
+    public const string GUID = "Gnimaerd.DSP.plugin.SmelterMiner";
     public static bool Enable;
     public static Assembly assembly;
 
@@ -15,8 +15,8 @@ public static class CustomCreateBirthStar {
             return;
         }
         assembly = pluginInfo.Instance.GetType().Assembly;
-        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.CustomCreateBirthStar");
-        harmony.PatchAll(typeof(CustomCreateBirthStar));
-        CheckPlugins.LogInfo("CustomCreateBirthStar Compat finish.");
+        var harmony = new Harmony(PluginInfo.PLUGIN_GUID + ".Compatibility.SmelterMiner");
+        harmony.PatchAll(typeof(SmelterMiner));
+        CheckPlugins.LogInfo("SmelterMiner Compat finish.");
     }
 }

@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using FE.Compatibility;
-using FE.Logic.Building;
+using FE.Compatibility.Nebula;
+using FE.Compatibility.Mods;
+using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;
@@ -14,7 +15,7 @@ using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Buildings;
 
 public static partial class BuildingManager {
     public static int Level(this ItemProto building) {
