@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Linq;
 using System.Reflection.Emit;
 using FE.Compatibility;
-using FE.UI.View.ProgressTask;
+using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;

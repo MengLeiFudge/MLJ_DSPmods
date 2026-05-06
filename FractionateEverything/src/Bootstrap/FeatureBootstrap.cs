@@ -1,7 +1,7 @@
 ﻿using CommonAPI.Systems.ModLocalization;
 using FE.Logic.Manager;
 using FE.Logic.Recipe;
-using FE.UI.View;
+using FE.UI.MainPanel;
 using FeUtils = FE.Utils.Utils;
 using static FE.Utils.Utils;
 

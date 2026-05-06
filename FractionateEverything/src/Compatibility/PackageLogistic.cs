@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using BepInEx.Bootstrap;
-using FE.UI.View.Setting;
+using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

@@ -1,0 +1,236 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using BepInEx.Configuration;
+using FE.Logic.Manager;
+using FE.Logic.RecipeGrowth;
+using FE.UI.Components;
+using UnityEngine;
+using UnityEngine.UI;
+using static FE.UI.Components.GridDsl;
+using static FE.Utils.Utils;
+
+namespace FE.UI.MainPanel.ResourceInteraction;
+
+public static class ResourceOverview {
+    private const int DisplayCount = 5;
+
+    private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
+    private static Text txtRefresh;
+    private static Text txtHotTitle;
+    private static Text txtColdTitle;
+    private static Text txtDarkFogTitle;
+    private static readonly Text[] darkFogLines = new Text[5];
+    private static readonly MyImageButton[] hotIcons = new MyImageButton[DisplayCount];
+    private static readonly Text[] hotTexts = new Text[DisplayCount];
+    private static readonly MyImageButton[] coldIcons = new MyImageButton[DisplayCount];
+    private static readonly Text[] coldTexts = new Text[DisplayCount];
+
+    public static void AddTranslations() {
+        Register("市场总览", "Market Overview");
+        Register("高需求物资", "Hot Demand");
+        Register("低需求物资", "Cold Demand");
+        Register("下次刷新", "Next refresh");
+        Register("黑雾支线", "Dark Fog Branch");
+        Register("支线阶段", "Branch Stage", "支线阶段");
+        Register("黑雾战况", "Combat Status", "战况概览");
+        Register("黑雾成长报价", "Growth Offers", "成长报价");
+        Register("黑雾市场特单", "Special Orders", "市场特单");
+        Register("黑雾增强层", "Enhanced Layer", "增强层");
+        Register("黑雾下一阶段", "Next Milestone", "下一阶段");
+        Register("黑雾地面基地", "Ground Bases", "地面基地");
+        Register("黑雾星域蜂巢", "Stellar Hives", "星域蜂巢");
+        Register("黑雾物资层级", "Resource Tier", "物资层级");
+        Register("黑雾增强层-未接入", "Offline", "未接入");
+        Register("黑雾增强层-已接入", "Online", "已接入");
+        Register("黑雾增强层-事件活跃", "Event Active", "事件活跃");
+        Register("黑雾阶段-休眠观察", "Dormant", "休眠观察");
+        Register("黑雾阶段-信号接触", "Signal", "信号接触");
+        Register("黑雾阶段-地面压制", "Ground Suppression", "地面压制");
+        Register("黑雾阶段-星域围猎", "Stellar Hunt", "星域围猎");
+        Register("黑雾阶段-奇点收束", "Singularity", "奇点收束");
+    }
+
+    public static void LoadConfig(ConfigFile configFile) { }
+
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
+        LayoutGrid topCards = Grid(
+            pos: (1, 0),
+            cols: [1, 1],
+            columnGap: PageLayout.Gap,
+            children: [
+                ContentCard(
+                    pos: (0, 0),
+                    objectName: "resource-overview-hot-card",
+                    strong: true,
+                    rows: [Px(24f), 1],
+                    children: BuildDemandCardChildren("高需求物资", text => txtHotTitle = text, hotIcons, hotTexts,
+                        "resource-overview-hot")),
+                ContentCard(
+                    pos: (0, 1),
+                    objectName: "resource-overview-cold-card",
+                    strong: true,
+                    rows: [Px(24f), 1],
+                    children: BuildDemandCardChildren("低需求物资", text => txtColdTitle = text, coldIcons, coldTexts,
+                        "resource-overview-cold")),
+            ]);
+        LayoutGrid darkFogCard = ContentCard(
+            pos: (2, 0),
+            objectName: "resource-overview-darkfog-card",
+            rows: [Px(24f), 1],
+            children: [
+                CardTitleNode("黑雾支线", onBuilt: text => txtDarkFogTitle = text,
+                    pos: (0, 0), objectName: "resource-overview-darkfog-title"),
+                Grid(pos: (1, 0),
+                    rows: [1, 2, 2, 1, 1],
+                    rowGap: 6f,
+                    children: BuildDarkFogLineNodes()),
+            ]);
+        BuildLayout(wnd, tab,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(248f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("市场总览", objectName: "resource-overview-header", pos: (0, 0),
+                        onBuilt: refs => {
+                            header = refs;
+                            txtRefresh = refs.Summary;
+                        }),
+                    topCards,
+                    darkFogCard,
+                ]));
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildDemandCardChildren(string title, System.Action<Text> onTitleBuilt,
+        MyImageButton[] icons, Text[] texts, string objectNamePrefix) {
+        var rowNodes = new List<LayoutNode>();
+        var rowTracks = new List<LayoutTrack>();
+        for (int i = 0; i < DisplayCount; i++) {
+            int index = i;
+            rowTracks.Add(1);
+            rowNodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => icons[index] = btn,
+                pos: (index, 0), objectName: $"{objectNamePrefix}-icon-{index}"));
+            rowNodes.Add(TextNode("", 13, onBuilt: text => texts[index] = text,
+                pos: (index, 1), objectName: $"{objectNamePrefix}-text-{index}"));
+        }
+
+        return [
+            CardTitleNode(title, onBuilt: onTitleBuilt, pos: (0, 0), objectName: $"{objectNamePrefix}-title"),
+            Grid(pos: (1, 0), rows: rowTracks, cols: [Px(50f), 1],
+                rowGap: 6f, columnGap: 10f, children: rowNodes),
+        ];
+    }
+
+    private static IReadOnlyList<LayoutNode> BuildDarkFogLineNodes() {
+        var nodes = new List<LayoutNode>();
+        for (int i = 0; i < darkFogLines.Length; i++) {
+            int index = i;
+            nodes.Add(TextNode("", 13, anchor: TextAnchor.UpperLeft, wrap: true,
+                onBuilt: text => darkFogLines[index] = text,
+                pos: (index, 0), objectName: $"txtDarkFog{index}"));
+        }
+
+        return nodes;
+    }
+
+    public static void UpdateUI() {
+        if (tab == null || !tab.gameObject.activeSelf) {
+            return;
+        }
+
+        header.Title.text = "市场总览".Translate().WithColor(Orange);
+        txtRefresh.text = $"{"下次刷新".Translate()}：{FormatSeconds(MarketValueManager.GetRefreshRemainingSeconds())}";
+        txtHotTitle.text = "高需求物资".Translate().WithColor(Orange);
+        txtColdTitle.text = "低需求物资".Translate().WithColor(Orange);
+        txtDarkFogTitle.text = "黑雾支线".Translate().WithColor(Orange);
+
+        var hot = MarketValueManager.GetTopMarketItems(DisplayCount, descending: true);
+        var cold = MarketValueManager.GetTopMarketItems(DisplayCount, descending: false);
+        RefreshColumn(hotIcons, hotTexts, hot);
+        RefreshColumn(coldIcons, coldTexts, cold);
+        RefreshDarkFogSection();
+    }
+
+    private static void RefreshDarkFogSection() {
+        txtDarkFogTitle.text = "黑雾支线".Translate();
+        string stageName = GetStageText(DarkFogCombatManager.GetCurrentStage());
+        var snapshots = RecipeGrowthQueries.GetDarkFogProgressSnapshots();
+        int totalRecipes = snapshots.Count;
+        int unlockedRecipes = snapshots.Count(snapshot => snapshot.IsUnlocked);
+        int maxedRecipes = snapshots.Count(snapshot => snapshot.IsMaxed);
+
+        darkFogLines[0].text = $"{"支线阶段".Translate()}：{stageName}";
+        darkFogLines[1].text =
+            $"{"黑雾战况".Translate()}：{"黑雾地面基地".Translate()} {DarkFogCombatManager.GetAliveGroundBaseCount()}    {"黑雾星域蜂巢".Translate()} {DarkFogCombatManager.GetAliveHiveCount()}    {"黑雾物资层级".Translate()} {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
+        darkFogLines[2].text =
+            $"{"黑雾成长报价".Translate()}：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    {"黑雾市场特单".Translate()}：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
+        darkFogLines[3].text = $"{"黑雾增强层".Translate()}：{BuildEnhancedLayerText()}";
+        darkFogLines[4].text = $"{"黑雾下一阶段".Translate()}：{BuildNextMilestoneText()}";
+    }
+
+    private static string GetStageText(EDarkFogCombatStage stage) {
+        return stage switch {
+            EDarkFogCombatStage.Dormant => "黑雾阶段-休眠观察".Translate().WithColor(Orange),
+            EDarkFogCombatStage.Signal => "黑雾阶段-信号接触".Translate().WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression => "黑雾阶段-地面压制".Translate().WithColor(Green),
+            EDarkFogCombatStage.StellarHunt => "黑雾阶段-星域围猎".Translate().WithColor(Blue),
+            _ => "黑雾阶段-奇点收束".Translate().WithColor(Gold),
+        };
+    }
+
+    private static string BuildEnhancedLayerText() {
+        if (!DarkFogCombatManager.IsEnhancedLayerEnabled()) {
+            return "黑雾增强层-未接入".Translate().WithColor(Orange);
+        }
+
+        string eventText = DarkFogCombatManager.HasActiveEventChain()
+            ? $"    {"黑雾增强层-事件活跃".Translate()}".WithColor(Green)
+            : string.Empty;
+        return
+            $"{"黑雾增强层-已接入".Translate().WithColor(Green)}    节点 {DarkFogCombatManager.GetEnhancedNodeCount()}/4    遗物 {DarkFogCombatManager.GetRelicCount()}    Rank {DarkFogCombatManager.GetMeritRank()}    技能 {DarkFogCombatManager.GetAssignedSkillPointCount()}{eventText}";
+    }
+
+    private static string BuildNextMilestoneText() {
+        EDarkFogCombatStage stage = DarkFogCombatManager.GetCurrentStage();
+        return stage switch {
+            EDarkFogCombatStage.Dormant when !DarkFogCombatManager.IsCombatModeEnabled() => "启用战斗模式".WithColor(Orange),
+            EDarkFogCombatStage.Dormant when DarkFogCombatManager.GetProgressStageIndex() < 3 =>
+                $"解锁 {LDB.items.Select(I信息矩阵).name}".WithColor(Orange),
+            EDarkFogCombatStage.Dormant => "建立黑雾矩阵库存或首次接触黑雾掉落".WithColor(Blue),
+            EDarkFogCombatStage.Signal =>
+                $"{LDB.items.Select(I引力矩阵).name} + {"黑雾物资层级".Translate()} 2/4".WithColor(Blue),
+            EDarkFogCombatStage.GroundSuppression =>
+                $"{LDB.items.Select(I宇宙矩阵).name} + {"黑雾物资层级".Translate()} 3/4 或接触蜂巢".WithColor(Blue),
+            EDarkFogCombatStage.StellarHunt when DarkFogCombatManager.IsEnhancedLayerEnabled() =>
+                $"{"黑雾物资层级".Translate()} 4/4 或增强节点 2/4".WithColor(Gold),
+            EDarkFogCombatStage.StellarHunt => $"{"黑雾物资层级".Translate()} 4/4".WithColor(Gold),
+            _ => "已到最终阶段".WithColor(Gold),
+        };
+    }
+
+    private static void RefreshColumn(MyImageButton[] icons, Text[] texts,
+        System.Collections.Generic.IReadOnlyList<int> items) {
+        for (int i = 0; i < icons.Length; i++) {
+            if (i >= items.Count) {
+                icons[i].gameObject.SetActive(false);
+                texts[i].text = "";
+                continue;
+            }
+            int itemId = items[i];
+            icons[i].gameObject.SetActive(true);
+            icons[i].Proto = LDB.items.Select(itemId);
+            icons[i].SetCount(GetItemTotalCount(itemId));
+            float multiplier = MarketValueManager.GetMultiplier(itemId);
+            float rate = MarketValueManager.LastCurrentRate[itemId];
+            texts[i].text = $"×{multiplier:F2}  速率 {rate:F1}/m";
+        }
+    }
+
+    private static string FormatSeconds(int totalSeconds) {
+        totalSeconds = Mathf.Max(0, totalSeconds);
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return $"{minutes:00}:{seconds:00}";
+    }
+}

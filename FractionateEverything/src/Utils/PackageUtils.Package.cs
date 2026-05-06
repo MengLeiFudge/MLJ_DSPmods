@@ -1,4 +1,4 @@
-﻿using FE.UI.View.Setting;
+﻿using FE.UI.MainPanel.Setting;
 
 namespace FE.Utils;
 

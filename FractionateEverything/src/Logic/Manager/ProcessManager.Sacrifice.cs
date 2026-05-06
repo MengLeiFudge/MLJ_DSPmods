@@ -10,7 +10,7 @@ using System.Threading;
 using FE.Logic.Building;
 using FE.Logic.Recipe;
 using FE.Logic.RecipeGrowth;
-using FE.UI.View.ProgressTask;
+using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Utils.Utils;
