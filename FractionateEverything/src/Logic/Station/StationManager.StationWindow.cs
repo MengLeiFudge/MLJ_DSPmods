@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
 using FE.Logic.Building;
+using FE.Logic.Manager;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using UnityEngine;
@@ -11,7 +12,7 @@ using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Station;
 
 public static partial class StationManager {
     [HarmonyPostfix]
@@ -637,5 +638,138 @@ public static partial class StationManager {
                 : maxStack;
         __instance.OnStationIdChange();
         return false;
+    }
+
+    /// <summary>独立物流站面板：窗口原始宽度缓存</summary>
+    private static readonly Dictionary<RectTransform, float> windowOriginalWidth = [];
+    /// <summary>独立物流站面板：滑块原始尺寸缓存</summary>
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalSize = [];
+    /// <summary>独立物流站面板：滑块原始位置缓存</summary>
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
+
+    /// <summary>独立物流站面板：记录栏位是否已加宽</summary>
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
+    /// <summary>独立物流站面板：记录弹窗当前是否处于偏移状态</summary>
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
+    /// <summary>独立物流站面板：记录弹窗原始X坐标，避免多次点击累加偏移</summary>
+    private static readonly Dictionary<RectTransform, float> storagePopupOriginalX = [];
+
+    /// <summary>独立物流站面板：传输模式按钮GameObject缓存</summary>
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
+    /// <summary>独立物流站面板：容量模式按钮GameObject缓存</summary>
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
+
+    /// <summary>
+    /// 调整独立物流站面板中滑块控件的位置和尺寸
+    /// </summary>
+    /// <param name="window">物流站窗口实例</param>
+    /// <param name="shouldWiden">是否需要加宽</param>
+    private static void AdjustSliders(UIStationWindow window, bool shouldWiden) {
+        // 如果窗口为空，直接返回
+        if (window == null) {
+            return;
+        }
+
+        // 计算宽度变化量：如果需要加宽则使用spacingX，否则为0
+        float delta = shouldWiden ? spacingX : 0f;
+
+        // 定义需要调整的所有滑块控件及其对应的数值文本组件
+        (Slider slider, Component valueText)[] controls = [
+            (window.maxChargePowerSlider, window.maxChargePowerValue),
+            (window.maxTripDroneSlider, window.maxTripDroneValue),
+            (window.maxTripVesselSlider, window.maxTripVesselValue),
+            (window.warperDistanceSlider, window.warperDistanceValue),
+            (window.minDeliverDroneSlider, window.minDeliverDroneValue),
+            (window.minDeliverVesselSlider, window.minDeliverVesselValue),
+            (window.maxMiningSpeedSlider, window.maxMiningSpeedValue),
+            (window.minPilerSlider, window.minPilerValue)
+        ];
+        // 遍历所有滑块控件，调整其位置和尺寸
+        foreach ((Slider slider, Component valueText) in controls) {
+            // 跳过空的滑块控件
+            if (slider == null) {
+                continue;
+            }
+
+            // 获取滑块的RectTransform组件
+            RectTransform sliderRect = slider.GetComponent<RectTransform>();
+            if (sliderRect == null) {
+                continue;
+            }
+
+            // 获取滑块的原始尺寸和位置（首次访问时缓存）
+            Vector2 originalSize = GetOrCacheOriginal(sliderOriginalSize, sliderRect, x => x.sizeDelta);
+            Vector2 originalPosition = GetOrCacheOriginal(sliderOriginalPosition, sliderRect, x => x.anchoredPosition);
+
+            // 调整滑块的宽度和水平位置
+            sliderRect.sizeDelta = new Vector2(originalSize.x + delta, originalSize.y);
+            sliderRect.anchoredPosition = new Vector2(originalPosition.x + delta, originalPosition.y);
+
+            // 如果存在数值文本，也调整其位置
+            RectTransform valueRect = valueText?.GetComponent<RectTransform>();
+            if (valueRect != null) {
+                // 获取数值文本的原始位置（首次访问时缓存）
+                Vector2 originalValuePosition =
+                    GetOrCacheOriginal(sliderOriginalPosition, valueRect, x => x.anchoredPosition);
+                // 调整数值文本的水平位置
+                valueRect.anchoredPosition =
+                    new Vector2(originalValuePosition.x + delta, originalValuePosition.y);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 判断窗口中的物流站是否为Mod添加的交互站
+    /// </summary>
+    /// <param name="window">物流站窗口</param>
+    /// <param name="station">物流站组件</param>
+    /// <returns>是Mod交互站返回true，否则返回false</returns>
+    private static bool IsModStation(UIStationWindow window, StationComponent station) {
+        // 校验窗口、工厂和实体ID的有效性
+        if (window?.factory == null || station == null || station.entityId <= 0) {
+            return false;
+        }
+
+        // 从实体池获取建筑ID并判断是否为交互站
+        int buildingID = window.factory.entityPool[station.entityId].protoId;
+        return IsInteractionStation(buildingID);
+    }
+
+    /// <summary>
+    /// 设置独立物流站面板的加宽状态
+    /// </summary>
+    /// <param name="window">物流站窗口</param>
+    /// <param name="shouldWiden">是否加宽</param>
+    private static void SetWindowWidenState(UIStationWindow window, bool shouldWiden) {
+        // 校验窗口和窗口Transform的有效性
+        if (window?.windowTrans == null) {
+            return;
+        }
+
+        // 调用AdjustSliders调整所有滑块的位置和尺寸
+        AdjustSliders(window, shouldWiden);
+    }
+
+    /// <summary>
+    /// 将独立物流站面板弹窗切换到“右移”或“回归原位”。
+    /// </summary>
+    private static void SetStoragePopupShift(UIStationStorage storage, bool shiftRight) {
+        RectTransform popupRect = storage?.popupBoxRect;
+        if (popupRect == null) {
+            return;
+        }
+
+        // 第一次遇到该弹窗时，缓存“原始 X 坐标”。
+        float originalX = GetOrCacheOriginal(storagePopupOriginalX, popupRect, x => x.anchoredPosition.x);
+        // 独立面板规则：mod 按钮 -> 右移；原版按钮 -> 回归。
+        float targetX = shiftRight ? originalX + spacingX : originalX;
+        popupRect.anchoredPosition = new Vector2(targetX, popupRect.anchoredPosition.y);
+
+        // 记录当前是否处于“偏移态”，用于后续恢复。
+        if (shiftRight) {
+            storagePopup[storage] = true;
+        } else {
+            storagePopup.TryRemove(storage, out _);
+        }
     }
 }
