@@ -11,7 +11,6 @@
 - `MyFlatButton.cs`
 - `MyImageButton.cs`
 - `MyImageButtonGroup.cs`
-- `MyKeyBinder.cs`
 - `MySideSlider.cs`
 - `MySlider.cs`
 

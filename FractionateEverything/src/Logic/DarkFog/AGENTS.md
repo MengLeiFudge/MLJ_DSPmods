@@ -4,7 +4,6 @@
 
 ## Files
 
-- `DarkFogBranchManager.cs`：黑雾路线/分支相关逻辑。
 - `DarkFogCombatManager.cs`：黑雾战斗进度、存档、切档清理。
 
 ## Rules
