@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.DrawGrowth;
 using FE.UI.MainPanel.ResourceInteraction;
@@ -8,6 +8,7 @@ using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Archive;
 using UnityEngine;
+using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel;
 

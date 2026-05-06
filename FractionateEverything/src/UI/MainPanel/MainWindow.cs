@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.DrawGrowth;
 using FE.UI.MainPanel.ResourceInteraction;
@@ -11,7 +11,10 @@ using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Archive;
 using UnityEngine;
 using static FE.Utils.Utils;
-using static FE.UI.Components.NormalizeRectUtils;
+using static FE.UI.Foundation.RectTransformUtils;
+using FE.UI.MainPanel.Theme;
+using FE.UI.MainPanel.Shell.Analysis;
+using FE.UI.MainPanel.Shell.MessageBox;
 
 namespace FE.UI.MainPanel;
 
@@ -21,9 +24,9 @@ public static class MainWindow {
     private static PressKeyBind _toggleKey;
     private static PressKeyBind _switchStyleKey;
     private static bool _legacyConfigWinInitialized;
-    private static MyConfigWindow _legacyConfigWin;
+    private static MessageBoxMainPanelWindow _legacyConfigWin;
     private static bool _analysisMainWindowInitialized;
-    private static MyAnalysisWindow _analysisMainWindow;
+    private static AnalysisMainPanelWindow _analysisMainWindow;
     private static readonly IFEMainPanelSharedState defaultSharedPanelState = new FEMainPanelSharedState();
     private static bool sandboxMode = false;
     private static bool legacyPageCategoriesInitialized;
@@ -102,8 +105,8 @@ public static class MainWindow {
     }
 
     public static void Init() {
-        MyConfigWindow.OnUICreated += CreateUI;
-        MyConfigWindow.OnUpdateUI += UpdateUI;
+        MessageBoxMainPanelWindow.OnUICreated += CreateUI;
+        MessageBoxMainPanelWindow.OnUpdateUI += UpdateUI;
         _toggleKey = CustomKeyBindSystem.RegisterKeyBindWithReturn<PressKeyBind>(new() {
             key = new((int)KeyCode.F, CombineKey.SHIFT_COMB, ECombineKeyAction.OnceClick, false),
             conflictGroup = KeyBindConflict.MOVEMENT
@@ -128,7 +131,7 @@ public static class MainWindow {
         });
     }
 
-    private static void CreateUI(MyConfigWindow wnd, RectTransform trans) {
+    private static void CreateUI(MessageBoxMainPanelWindow wnd, RectTransform trans) {
         foreach (MainWindowCategoryDefinition category in GetLegacyPageCategories()) {
             wnd.AddTabGroup(trans, category.CategoryName);
             foreach (MainWindowPageDefinition page in category.Pages) {
@@ -303,12 +306,12 @@ public static class MainWindow {
     /// </summary>
     private static void RecreateLegacyMainPanelWindow() {
         if (_legacyConfigWin != null) {
-            MyConfigWindow.DestroyInstance(_legacyConfigWin);
+            MessageBoxMainPanelWindow.DestroyInstance(_legacyConfigWin);
             _legacyConfigWin = null;
         }
 
         _legacyConfigWinInitialized = true;
-        _legacyConfigWin = MyConfigWindow.CreateInstance("FEMainWindow", "分馏数据中心");
+        _legacyConfigWin = MessageBoxMainPanelWindow.CreateInstance("FEMainWindow", "分馏数据中心");
         if (_legacyConfigWin != null) {
             _legacyConfigWin.OnFree += () => OnMainPanelWindowFreed(FEMainPanelType.Legacy);
         }
@@ -319,12 +322,12 @@ public static class MainWindow {
     /// </summary>
     private static void RecreateAnalysisMainPanelWindow() {
         if (_analysisMainWindow != null) {
-            MyAnalysisWindow.DestroyInstance(_analysisMainWindow);
+            AnalysisMainPanelWindow.DestroyInstance(_analysisMainWindow);
             _analysisMainWindow = null;
         }
 
         _analysisMainWindowInitialized = true;
-        _analysisMainWindow = MyAnalysisWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
+        _analysisMainWindow = AnalysisMainPanelWindow.CreateInstance("FEAnalysisMainWindow", "分馏数据中心");
         if (_analysisMainWindow != null) {
             _analysisMainWindow.OnFree += () => OnMainPanelWindowFreed(FEMainPanelType.Analysis);
         }

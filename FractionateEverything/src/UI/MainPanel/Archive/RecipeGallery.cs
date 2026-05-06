@@ -1,17 +1,20 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
-using FE.UI.Components;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Archive;
 

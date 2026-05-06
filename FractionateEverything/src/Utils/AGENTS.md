@@ -21,7 +21,7 @@
 - 数据中心库存和背包访问：`Logic/DataCenter`。
 - 物品访问重定向 patch：`Logic/DataCenter/Patches`。
 - 增产点池：`Logic/Station/ProliferatorPool.cs`。
-- UI 矩形布局 helper：`UI/Components/NormalizeRectUtils.cs`。
+- UI 矩形布局 helper：`UI/Foundation/RectTransformUtils.cs`。
 
 ## Proto ID Naming
 

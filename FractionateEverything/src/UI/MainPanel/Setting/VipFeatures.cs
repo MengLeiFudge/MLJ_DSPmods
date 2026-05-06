@@ -1,14 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
-using FE.UI.Components;
+using FE.UI.Controls;
 using FE.UI.MainPanel.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
+using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Setting;
 

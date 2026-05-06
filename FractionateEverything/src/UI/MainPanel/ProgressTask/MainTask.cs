@@ -1,8 +1,8 @@
-﻿using BepInEx.Configuration;
-using FE.UI.Components;
+using BepInEx.Configuration;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Components.GridDsl;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using System;
 using FE.Logic.Buildings.Definitions;
@@ -21,8 +21,10 @@ using System.IO;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using UnityEngine.EventSystems;
-using static FE.UI.Components.PageLayout;
-using static FE.UI.Components.NormalizeRectUtils;
+using static FE.UI.MainPanel.Theme.PageLayout;
+using static FE.UI.Foundation.RectTransformUtils;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.ProgressTask;
 
