@@ -26,7 +26,11 @@
 | `ProcessManager.PowerPatch.cs` | 分馏塔能耗 Harmony transpiler 与 `SetPCState` 适配 |
 | `ProcessManager.Sacrifice.cs` | 交互塔献祭特质与成功率加成刷新 |
 | `ItemManager.cs` | 物品价值与数据中心物品操作 |
-| `TutorialManager.cs` | 任务/教程推进 |
+| `TutorialManager.cs` | G 键指引教程/成就元数据 |
+| `TutorialManager.Translations.cs` | G 键指引教程多语言正文 |
+| `TutorialManager.Registry.cs` | G 键指引教程注册 |
+| `TutorialManager.LayoutPatch.cs` | `UITutorialWindow` 布局解析与 GenesisBook 兼容 patch |
+| `TutorialManager.AchievementProgress.cs` | G 键指引阅读到底部成就进度检测 |
 | `TechManager.cs` | 科技多语言注册入口 |
 | `TechManager.Techs.cs` | 科技注册与科技树坐标 |
 | `TechManager.MatrixProgress.cs` | 矩阵层研究进度、原版配方增强开放判断 |
@@ -60,6 +64,11 @@
 - 新增科技解锁/读档后的配方基线补齐：放 `TechManager.RecipeBaselines.cs`。
 - 新增特殊科技运行解锁、科技提示文本或解锁回调 patch：放 `TechManager.RuntimePatches.cs`。
 - 新增科技多语言文本：保留在 `TechManager.cs`。
+- 新增 G 键指引教程元数据或成就定义：放 `TutorialManager.cs`。
+- 新增 G 键指引教程正文翻译：放 `TutorialManager.Translations.cs`。
+- 新增教程注册入口：放 `TutorialManager.Registry.cs`。
+- 新增 `UITutorialWindow` 布局解析、GenesisBook 兼容或教程窗口 patch：放 `TutorialManager.LayoutPatch.cs`。
+- 新增教程阅读进度与成就触发检测：放 `TutorialManager.AchievementProgress.cs`。
 
 ## 科技与配方解锁 (TechManager)
 
