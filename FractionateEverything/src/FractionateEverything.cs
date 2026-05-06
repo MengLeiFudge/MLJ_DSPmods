@@ -9,9 +9,10 @@ using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
+using FE.Bootstrap;
 using FE.Compatibility;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Persistence;
 using FE.UI.Components;
 using FE.UI.View;
 using HarmonyLib;
@@ -45,7 +46,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     public static string ModPath;
     public static ResourceData FEAssets;
     public static readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
-    private static bool _finished;
 
     #endregion
 
@@ -75,18 +75,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         using (ProtoRegistry.StartModLoad(PluginInfo.PLUGIN_GUID)) {
             InitLogger(Logger);
 
-            Register("分馏页面", "Fractionate", "分馏");
-            Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
-            ERecipeExtension.AddTranslations();
-            OutputInfo.AddTranslations();
-            AddTranslations();//Utils.AddTranslations()
-            BuildingManager.AddTranslations();
-            ItemManager.AddTranslations();
-            ProcessManager.AddTranslations();
-            StationManager.AddTranslations();
-            TechManager.AddTranslations();
-            TutorialManager.AddTranslations();
-            MainWindow.AddTranslations();
+            FeatureBootstrap.AddTranslations();
 
             LoadConfig();
 
@@ -115,8 +104,8 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             //  tech preload2
             //LDBTool.PostAddDataAction
 
-            LDBTool.PreAddDataAction += PreAddData;
-            LDBTool.PostAddDataAction += PostAddData;
+            LDBTool.PreAddDataAction += FeatureBootstrap.PreAddData;
+            LDBTool.PostAddDataAction += FeatureBootstrap.PostAddData;
 
             string CheckPluginsNamespace = typeof(CheckPlugins).Namespace;
             foreach (Type type in executingAssembly.GetTypes()) {
@@ -131,7 +120,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             harmony.Patch(
                 AccessTools.Method(typeof(VFPreload), nameof(VFPreload.InvokeOnLoadWorkEnded)),
                 null,
-                new(typeof(FractionateEverything), nameof(FinalAction)) {
+                new(typeof(FeatureBootstrap), nameof(FeatureBootstrap.FinalAction)) {
                     after = [LDBToolPlugin.MODGUID]
                 }
             );
@@ -163,85 +152,13 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         UI.View.ProgressTask.MainTask.Tick();
     }
 
-    public void PreAddData() {
-        // 添加 2.3 主路径使用的核心物品与原胚
-        ItemManager.AddCoreItemsAndPrototypes();
-        //初步添加分馏塔
-        BuildingManager.AddFractionators();
-        //添加科技
-        TechManager.AddTechs();
-        //添加指引手册
-        TutorialManager.AddTutorials();
-        // //添加品质物品
-        // ItemManager.AddQualityItems();
-        // //添加品质配方
-        // RecipeManager.AddQualityRecipes();
-    }
-
-    public void PostAddData() {
-        //设置分馏塔、物流交互站颜色
-        BuildingManager.SetFractionatorMaterial();
-    }
-
-    /// <summary>
-    /// 在所有内容添加完毕后，再执行的代码。
-    /// </summary>
-    public static void FinalAction() {
-        if (_finished) return;
-        PreloadAndInitAll();
-        //获取部分数据，例如传送带最大速度等
-        ProcessManager.Init();
-        //计算物品价值
-        ItemManager.CalculateItemValues();
-        //将物品分类到各个矩阵层级中
-        ItemManager.ClassifyItemsToMatrix();
-        // 动态经济系统依赖基础价值与矩阵阶段映射
-        EconomyManager.Init();
-        //UpdateHpAndEnergy用到了Init生成的数据
-        BuildingManager.UpdateHpAndEnergy();
-        //SetFractionatorCacheSize用到了Init生成的数据
-        BuildingManager.SetFractionatorCacheSize();
-        //AddFracRecipes用到了Init生成的数据
-        RecipeManager.AddFracRecipes();
-        RecipeGrowthManager.InitializeFromRecipes();
-        RecipeManager.AddVanillaRecipes();
-        //CalculateItemModSaveCount用到了CalculateItemValues生成的数据
-        StationManager.CalculateItemModSaveCount();
-        _finished = true;
-    }
-
-    public static void PreloadAndInitAll() {
-        ItemProto.InitFuelNeeds();
-        ItemProto.InitTurretNeeds();
-        ItemProto.InitFluids();
-        ItemProto.InitTurrets();
-        ItemProto.InitEnemyDropTables();
-        ItemProto.InitConstructableItems();
-        ItemProto.InitItemIds();
-        ItemProto.InitItemIndices();
-        ItemProto.InitMechaMaterials();
-        ItemProto.InitFighterIndices();
-        ItemProto.InitPowerFacilityIndices();
-        ItemProto.InitProductionMask();
-        ModelProto.InitMaxModelIndex();
-        ModelProto.InitModelIndices();
-        ModelProto.InitModelOrders();
-        RecipeProto.InitRecipeItems();
-        RecipeProto.InitFractionatorNeeds();
-        SignalProtoSet.InitSignalKeyIdPairs();
-        RaycastLogic.LoadStatic();
-        //重新设定堆叠大小
-        StorageComponent.staticLoaded = false;
-        StorageComponent.LoadStatic();
-    }
-
     #region IModCanSave & IMultiplayerModWithSettings
 
     /// <summary>
     /// 载入存档时执行。
     /// </summary>
     public void Import(BinaryReader r) {
-        BaseIntoOtherSave();
+        FeatureSaveRegistry.IntoOtherSave();
         int version = r.ReadInt32();
         if (version < 10) {
             // 旧版存档不兼容，读取流中剩余所有字节
@@ -256,19 +173,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
                 () => AddItemToModData(IFE残片, 5000));
             return;
         }
-        r.ReadBlocks(
-            ("Recipe", RecipeManager.Import),
-            ("RecipeGrowth", RecipeGrowthManager.Import),
-            ("Building", BuildingManager.Import),
-            ("Item", ItemManager.Import),
-            ("Process", ProcessManager.Import),
-            ("Gacha", GachaManager.Import),
-            ("Economy", EconomyManager.Import),
-            ("UI", MainWindow.Import),
-            ("Station", StationManager.Import)
-        );
-        TechManager.RequestLoadTimeRecipeBaselineApply();
-        TechManager.TryApplyLoadTimeRecipeBaselines();
+        FeatureSaveRegistry.Import(r);
     }
 
     /// <summary>
@@ -276,17 +181,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     /// </summary>
     public void Export(BinaryWriter w) {
         w.Write(10);// version，固定为10
-        w.WriteBlocks(
-            ("Recipe", RecipeManager.Export),
-            ("RecipeGrowth", RecipeGrowthManager.Export),
-            ("Building", BuildingManager.Export),
-            ("Item", ItemManager.Export),
-            ("Process", ProcessManager.Export),
-            ("Gacha", GachaManager.Export),
-            ("Economy", EconomyManager.Export),
-            ("UI", MainWindow.Export),
-            ("Station", StationManager.Export)
-        );
+        FeatureSaveRegistry.Export(w);
     }
 
     /// <summary>
@@ -297,25 +192,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         if (NebulaMultiplayerModAPI.IsClient) {
             return;
         }
-        BaseIntoOtherSave();
-    }
-
-    /// <summary>
-    /// 新建存档时执行。
-    /// </summary>
-    private void BaseIntoOtherSave() {
-        RecipeManager.IntoOtherSave();
-        RecipeGrowthManager.IntoOtherSave();
-        BuildingManager.IntoOtherSave();
-        ItemManager.IntoOtherSave();
-        ProcessManager.IntoOtherSave();
-        GachaManager.IntoOtherSave();
-        EconomyManager.IntoOtherSave();
-        DarkFogCombatManager.IntoOtherSave();
-        MainWindow.IntoOtherSave();
-        StationManager.IntoOtherSave();
-
-        TechManager.ResetTechUnlockFlags();
+        FeatureSaveRegistry.IntoOtherSave();
     }
 
     public string Version => PluginInfo.PLUGIN_VERSION;
