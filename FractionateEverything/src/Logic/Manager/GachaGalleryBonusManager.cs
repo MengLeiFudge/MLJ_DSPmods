@@ -1,4 +1,4 @@
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.MainPanel.ProgressTask;
 
 namespace FE.Logic.Manager;

@@ -1,9 +1,10 @@
 using FE.Logic.Building;
+using FE.Logic.Fractionation.State;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;

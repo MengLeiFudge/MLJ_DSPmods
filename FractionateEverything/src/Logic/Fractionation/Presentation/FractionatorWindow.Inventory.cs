@@ -1,8 +1,9 @@
 using System;
+using FE.Logic.Fractionation.State;
 using System.Collections.Generic;
 using FE.Logic.Building;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

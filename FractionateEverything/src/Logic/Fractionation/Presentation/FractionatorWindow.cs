@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using FE.Logic.Building;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;

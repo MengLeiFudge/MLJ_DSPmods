@@ -1,4 +1,7 @@
 ﻿using System.IO;
+using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Process;
+using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Manager;
 using FE.UI.MainPanel;
 using static FE.Utils.Utils;

@@ -2,11 +2,11 @@
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility;
-using FE.Logic.Recipe;
-using FE.Logic.RecipeGrowth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Growth;
 using HarmonyLib;
 using UnityEngine;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;

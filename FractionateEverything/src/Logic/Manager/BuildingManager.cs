@@ -5,13 +5,14 @@ using System.IO;
 using System.Threading;
 using FE.Compatibility;
 using FE.Logic.Building;
-using FE.Logic.Recipe;
+using FE.Logic.Fractionation.State;
+using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Manager.ProcessManager;
-using static FE.Logic.Manager.RecipeManager;
+using static FE.Logic.Fractionation.Process.ProcessManager;
+using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Manager;
@@ -168,10 +169,10 @@ public static partial class BuildingManager {
             ("RectificationTower", RectificationTower.Import),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Import),
             ("InterstellarInteractionStation", InterstellarInteractionStation.Import),
-            ("OutputExtend", OutputExtendImport),
-            ("LockedOutput", LockedOutputImport),
-            ("FissionPointPool", FissionPointPoolImport),
-            ("Resonance", ResonanceImport),
+            ("OutputExtend", FractionatorOutputState.OutputExtendImport),
+            ("LockedOutput", FractionatorSingleLock.LockedOutputImport),
+            ("FissionPointPool", FissionPointPool.FissionPointPoolImport),
+            ("Resonance", ResonanceState.ResonanceImport),
             ("BuildingExp", br => {
                 int count = br.ReadInt32();
                 for (int i = 0; i < System.Math.Min(count, buildingExp.Length); i++) {
@@ -193,10 +194,10 @@ public static partial class BuildingManager {
             ("RectificationTower", RectificationTower.Export),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Export),
             ("InterstellarInteractionStation", InterstellarInteractionStation.Export),
-            ("OutputExtend", OutputExtendExport),
-            ("LockedOutput", LockedOutputExport),
-            ("FissionPointPool", FissionPointPoolExport),
-            ("Resonance", ResonanceExport),
+            ("OutputExtend", FractionatorOutputState.OutputExtendExport),
+            ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
+            ("FissionPointPool", FissionPointPool.FissionPointPoolExport),
+            ("Resonance", ResonanceState.ResonanceExport),
             ("BuildingExp", bw => {
                 bw.Write(buildingExp.Length);
                 for (int i = 0; i < buildingExp.Length; i++) {
@@ -214,10 +215,10 @@ public static partial class BuildingManager {
         RectificationTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();
         InterstellarInteractionStation.IntoOtherSave();
-        OutputExtendIntoOtherSave();
-        LockedOutputIntoOtherSave();
-        FissionPointPoolIntoOtherSave();
-        ResonanceIntoOtherSave();
+        FractionatorOutputState.OutputExtendIntoOtherSave();
+        FractionatorSingleLock.LockedOutputIntoOtherSave();
+        FissionPointPool.FissionPointPoolIntoOtherSave();
+        ResonanceState.ResonanceIntoOtherSave();
         System.Array.Clear(buildingExp, 0, buildingExp.Length);
     }
 

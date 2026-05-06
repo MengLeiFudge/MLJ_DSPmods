@@ -2,9 +2,10 @@
 using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
+using FE.Logic.Fractionation.State;
 using FE.Logic.Manager;
-using FE.Logic.Recipe;
-using FE.Logic.RecipeGrowth;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.Growth;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -197,7 +198,7 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
                 selectedBuilding.Level(packet.intVal);
                 break;
             case 2:
-                BuildingManager.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
+                FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
