@@ -57,7 +57,13 @@ Import/Export/IntoOtherSave();
 
 ## Patches Folder
 
-- `FEFractionatorWindow.cs`：分馏塔窗口布局复制与改造
+- `FEFractionatorWindow*.cs`：模组分馏塔独立窗口 patch，按 partial 拆分：
+  - `FEFractionatorWindow.cs`：共享字段、槽位模型、事件绑定、模组分馏塔判定
+  - `FEFractionatorWindow.Layout.cs`：窗口复制、布局改造、尺寸调整、槽位创建
+  - `FEFractionatorWindow.Lifecycle.cs`：`_OnOpen` / `_OnClose` / `_OnUpdate` 窗口生命周期 patch
+  - `FEFractionatorWindow.Rendering.cs`：窗口刷新、状态文字、电力、产物槽渲染
+  - `FEFractionatorWindow.Lock.cs`：转化塔单路锁定右键交互、锁图标、锁状态 UI
+  - `FEFractionatorWindow.Inventory.cs`：`OnProductUIButtonClick` 拦截与手动取放物品
 - `IconSetPatch.cs`：mod 图标注入
 - `UIRecipeEntryPatch.cs` / `UIComboBoxPatch.cs` / `UIButtonPatch.cs`：控件兼容
 
