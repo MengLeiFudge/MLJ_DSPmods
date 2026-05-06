@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using UnityEngine;
-using static FE.Logic.Manager.GachaManager;
+using FE.Logic.Gacha;
+using static FE.Logic.Gacha.GachaManager;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.ProgressTask;

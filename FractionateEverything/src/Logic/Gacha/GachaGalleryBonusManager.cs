@@ -1,7 +1,7 @@
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.MainPanel.ProgressTask;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Gacha;
 
 public static class GachaGalleryBonusManager {
     public static void Tick() { }

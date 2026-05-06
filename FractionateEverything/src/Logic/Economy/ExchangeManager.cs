@@ -6,7 +6,7 @@ using UnityEngine;
 using FE.Utils;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Economy;
 
 /// <summary>
 /// 股票式交易所。

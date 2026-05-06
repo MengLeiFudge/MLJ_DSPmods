@@ -6,10 +6,12 @@ using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
 using UnityEngine;
 using FE.Utils;
+using FE.Logic.DarkFog;
+using FE.Logic.Gacha;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Economy;
 
 /// <summary>
 /// 限时市场板。

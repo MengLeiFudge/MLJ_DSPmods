@@ -7,7 +7,7 @@ using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Gacha;
 
 public static partial class GachaService {
     private static readonly GachaFocusDefinition[] focusDefinitions = [

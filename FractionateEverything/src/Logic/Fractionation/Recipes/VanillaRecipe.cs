@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Manager;
+using FE.Logic.Progression;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 

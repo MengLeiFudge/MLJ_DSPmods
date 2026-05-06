@@ -2,7 +2,7 @@ using System.IO;
 using HarmonyLib;
 using FE.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Economy;
 
 /// <summary>
 /// 动态经济系统的统一入口。

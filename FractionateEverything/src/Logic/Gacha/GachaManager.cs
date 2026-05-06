@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using FE.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Gacha;
 
 public enum GachaFocusType {
     Balanced = 0,

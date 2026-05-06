@@ -1,9 +1,12 @@
 using System.Linq;
 using FE.Compatibility;
 using UnityEngine;
+using FE.Logic.Economy;
+using FE.Logic.Gacha;
+using FE.Logic.Manager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.DarkFog;
 
 public enum EDarkFogCombatStage {
     Dormant = 0,

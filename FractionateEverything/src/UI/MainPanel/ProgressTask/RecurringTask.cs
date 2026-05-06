@@ -11,6 +11,7 @@ using FE.UI.Components;
 using FE.UI.MainPanel.DrawGrowth;
 using UnityEngine;
 using UnityEngine.UI;
+using FE.Logic.DarkFog;
 using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;

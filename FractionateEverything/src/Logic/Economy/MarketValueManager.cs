@@ -7,7 +7,7 @@ using FE.Utils;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Economy;
 
 /// <summary>
 /// 维护动态市场价值。

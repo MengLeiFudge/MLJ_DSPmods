@@ -20,6 +20,7 @@ using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
 using xiaoye97;
+using FE.Logic.Gacha;
 using static FE.Utils.Utils;
 
 namespace FE;

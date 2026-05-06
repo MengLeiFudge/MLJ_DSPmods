@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using CommonAPI.Systems;
 using FE.Compatibility;
 using FE.Logic.Building;
+using FE.Logic.Gacha;
 using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;

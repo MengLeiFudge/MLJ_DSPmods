@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using xiaoye97;
 using static FE.Utils.Utils;
 
-namespace FE.Logic.Manager;
+namespace FE.Logic.Progression;
 
 public static partial class TutorialManager {
     private static readonly HashSet<int> viewedToBottomTutorialIds = [];
