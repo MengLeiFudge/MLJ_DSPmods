@@ -65,19 +65,35 @@ public static class StationManager {
         return Math.Min((int)(100000 / divisor), 100000);
     }
 
-    private static void EnsureInteractionStationStorage(StationComponent station, int buildingID) {
-        if (station?.storage == null || station.priorityLocks == null) {
+    private static void EnsureInteractionStationState(PlanetFactory factory, StationComponent station, int buildingID) {
+        if (factory == null || station?.storage == null || station.priorityLocks == null) {
             return;
         }
 
-        int targetStorageCount = LDB.items.Select(buildingID)?.prefabDesc.stationMaxItemKinds ?? 0;
-        if (targetStorageCount <= station.storage.Length) {
+        PrefabDesc prefabDesc = LDB.items.Select(buildingID)?.prefabDesc;
+        if (prefabDesc == null) {
             return;
         }
 
-        // 旧存档和“先放小塔再升级”的路径可能保留旧数组长度，这里只扩容不收缩，避免丢槽位数据。
-        Array.Resize(ref station.storage, targetStorageCount);
-        Array.Resize(ref station.priorityLocks, targetStorageCount);
+        if (prefabDesc.stationMaxItemKinds > station.storage.Length) {
+            // 旧存档和“先放小塔再升级”的路径可能保留旧数组长度，这里只扩容不收缩，避免丢槽位数据。
+            Array.Resize(ref station.storage, prefabDesc.stationMaxItemKinds);
+            Array.Resize(ref station.priorityLocks, prefabDesc.stationMaxItemKinds);
+        }
+
+        station.energyMax = prefabDesc.stationMaxEnergyAcc;
+        if (station.energy > station.energyMax) {
+            station.energy = station.energyMax;
+        }
+
+        if (station.pcId <= 0 || station.pcId >= factory.powerSystem.consumerPool.Length) {
+            return;
+        }
+
+        long minChargePower = prefabDesc.workEnergyPerTick / 2;
+        long maxChargePower = prefabDesc.workEnergyPerTick * 5;
+        ref PowerConsumerComponent powerConsumer = ref factory.powerSystem.consumerPool[station.pcId];
+        powerConsumer.workEnergyPerTick = Math.Max(minChargePower, Math.Min(maxChargePower, powerConsumer.workEnergyPerTick));
     }
 
     /// <summary>防止同一 stationPool 在同一 tick 被重复处理</summary>
@@ -582,7 +598,7 @@ public static class StationManager {
 
                     int buildingID = __instance.factory.entityPool[stationComponent.entityId].protoId;
                     if (buildingID == IFE行星内物流交互站 || buildingID == IFE星际物流交互站) {
-                        EnsureInteractionStationStorage(stationComponent, buildingID);
+                        EnsureInteractionStationState(__instance.factory, stationComponent, buildingID);
                         stations.Add(stationComponent);
                     }
                 }
