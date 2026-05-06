@@ -16,6 +16,7 @@ ManualBehaviour (DSP base)
 | Class | Lines | Created via |
 |---|---|---|
 | `MyWindow` | 635 | `MyWindow.Create<T>(name, title)` |
+| `MyAnalysisWindow*.cs` | ~1400 | `MyAnalysisWindow.CreateInstance(name, title)` |
 | `MyImageButton` | 206 | `wnd.AddImageButton(x, y, tab [, proto])` |
 | `MyCheckButton` | 232 | `wnd.AddCheckButton(x, y, tab, ...)` |
 | `MyKeyBinder` | 205 | `wnd.AddKeyBinder(x, y, tab, config)` |
@@ -27,6 +28,14 @@ ManualBehaviour (DSP base)
 | `MyFlatButton` | 87 | `wnd.AddButton(col, cols, y, tab, label)` |
 | `MyImageButtonGroup` | 66 | `wnd.AddImageButtonGroup(x, y, tab)` |
 | `MyConfigWindow` | 50 | `MyConfigWindow.CreateWindow(...)` |
+
+## MyAnalysisWindow Split
+
+- `MyAnalysisWindow.cs`：共享字段、嵌套类型、实例创建、窗口生命周期。
+- `MyAnalysisWindow.NativeShell.cs`：复制并改造原生统计窗口、隐藏原生控件、解析内容宿主。
+- `MyAnalysisWindow.Navigation.cs`：顶部分类、左侧子页、跨页跳转、页面内容显示。
+- `MyAnalysisWindow.ButtonStyle.cs`：按钮克隆容量、位置恢复、拖拽转发、状态高亮、文本与隐藏内嵌导航。
+- `MyAnalysisWindow.Layout.cs`：Analysis 内容根、设计根、窗口尺寸和容器创建 helper。
 
 ## Fluent API Pattern
 
