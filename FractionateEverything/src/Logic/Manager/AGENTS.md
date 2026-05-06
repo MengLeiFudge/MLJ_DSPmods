@@ -36,7 +36,12 @@
 | `TechManager.MatrixProgress.cs` | 矩阵层研究进度、原版配方增强开放判断 |
 | `TechManager.RecipeBaselines.cs` | 读档/科技解锁后的配方基线补齐 |
 | `TechManager.RuntimePatches.cs` | 特殊科技运行解锁标记、科技提示文本 patch、解锁回调 |
-| `GachaService.cs` | 卡池构建、抽卡结算、奖励发放 |
+| `GachaService.cs` | 抽卡服务 DTO、共享缓存字段、模式状态入口 |
+| `GachaService.Focus.cs` | 流派聚焦定义、切换、报价修正、聚焦命中判定 |
+| `GachaService.Pools.cs` | 卡池构建、池刷新、开线/原胚/成长/聚焦池填充与权重 |
+| `GachaService.GrowthOffers.cs` | 成长报价列表、黑雾报价、成长报价兑换 |
+| `GachaService.Draw.cs` | 抽卡执行、保底、稀有度 roll、奖励解析 |
+| `GachaService.Display.cs` | 模式/池名称说明、池读取、成长池积分显示 |
 | `RecipeManager.cs` | 配方索引/查找 |
 | `GachaManager.cs` | 保底计数、池积分、UP 轮换、抽卡状态持久化 |
 | `GachaPool.cs` | 卡池与稀有度模型定义 |
@@ -69,6 +74,11 @@
 - 新增教程注册入口：放 `TutorialManager.Registry.cs`。
 - 新增 `UITutorialWindow` 布局解析、GenesisBook 兼容或教程窗口 patch：放 `TutorialManager.LayoutPatch.cs`。
 - 新增教程阅读进度与成就触发检测：放 `TutorialManager.AchievementProgress.cs`。
+- 新增抽卡流派聚焦、聚焦命中表达：放 `GachaService.Focus.cs`。
+- 新增卡池内容构建、权重和刷新条件：放 `GachaService.Pools.cs`。
+- 新增成长报价和报价兑换：放 `GachaService.GrowthOffers.cs`。
+- 新增抽卡执行、保底和奖励解析：放 `GachaService.Draw.cs`。
+- 新增抽卡模式/池名称说明：放 `GachaService.Display.cs`。
 
 ## 科技与配方解锁 (TechManager)
 
