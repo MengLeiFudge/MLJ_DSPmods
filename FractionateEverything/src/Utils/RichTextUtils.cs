@@ -43,7 +43,7 @@ public static partial class Utils {
     }
 
     /// <summary>
-    /// 根据品质等级为字符串添加对应颜色的富文本标签。
+    /// 根据颜色档位为字符串添加对应富文本颜色。
     /// </summary>
     public static string WithColor(this string s, int colorIdx) {
         return colorIdx switch {

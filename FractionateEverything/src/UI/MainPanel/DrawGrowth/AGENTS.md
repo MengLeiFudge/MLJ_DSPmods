@@ -1,6 +1,6 @@
 # UI/MainPanel/DrawGrowth — 抽取与成长系统
 
-本目录负责 `抽取成长` 分类下的页面与表现组件：开线抽取、原胚抽取、成长规划、流派聚焦、资源统筹。原 `GetItemRecipe` 路径已废弃，本文件为当前权威子文档。
+本目录负责 `抽取成长` 分类下的页面：开线抽取、原胚抽取、成长规划、流派聚焦、资源统筹。原 `GetItemRecipe` 路径已废弃，本文件为当前权威子文档。
 
 ## 文件职责划分
 
@@ -8,13 +8,8 @@
   - `TicketRaffle.cs`：开线抽取 / 原胚抽取 UI，处理单抽、十抽、结果摘要与跳转按钮。
 - **成长页**
   - `LimitedTimeStore.cs`：成长规划 / 流派聚焦 UI，消费成长池积分并切换聚焦方向。
-  - `GachaExchangeRow.cs`：成长兑换行组件。
 - **资源页**
   - `TicketExchange.cs`：矩阵与残片兑换、资源统筹入口。
-- **表现组件**
-  - `GachaCard.cs`：结果卡片与稀有度显示。
-  - `GachaSSREffect.cs`：高稀有度抽取效果。
-  - `GachaWindow.cs`：抽取结果窗口占位/承载入口。
 
 ## 核心交互契约
 
@@ -30,5 +25,5 @@
 ## 开发约束
 
 - **禁止**在 UI 类中直接修改 `GachaManager` 的原始状态数组或字段，所有变更应通过 Service/Manager 接口。
-- **禁止**硬编码颜色，必须使用 `RichTextUtils` 或 `GachaCard` 定义的稀有度常量。
+- **禁止**硬编码颜色，必须使用 `RichTextUtils` 中的共享颜色。
 - **可见性检查**：`UpdateUI` 必须先判断页面是否处于当前活跃面板，避免离屏刷新。

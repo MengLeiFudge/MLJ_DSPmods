@@ -62,7 +62,6 @@ public static class MainWindow {
         Register("抽取成长", "Draw & Growth");
         Register("前往商店", "Go to Store");
         Register("前往抽奖", "Go to Raffle");
-        GachaWindow.AddTranslations();
         TicketRaffle.AddTranslations();
         LimitedTimeStore.AddTranslations();
         TicketExchange.AddTranslations();
