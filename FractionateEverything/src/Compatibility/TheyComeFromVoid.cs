@@ -6,6 +6,8 @@ using System.Reflection.Emit;
 using BepInEx.Bootstrap;
 using DSP_Battle;
 using HarmonyLib;
+using FE.Logic.DataCenter;
+using FE.Logic.DataCenter.Patches;
 
 namespace FE.Compatibility;
 
@@ -126,13 +128,13 @@ public static class TheyComeFromVoid {
     private static void PatchMethods(Harmony harmony) {
         //任务链可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.RefreshRequestMeetData)),
-            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.GetItemCount_Transpiler)));
+            transpiler: new(typeof(ItemCountRedirectPatch), nameof(ItemCountRedirectPatch.GetItemCount_Transpiler)));
         //任务链可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.Decision)),
-            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
+            transpiler: new(typeof(PlayerInventoryItemAccessPatches), nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
         //元驱动刷新可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
-            transpiler: new(typeof(Utils.Utils), nameof(Utils.Utils.TakeTailItems_Transpiler)));
+            transpiler: new(typeof(PlayerInventoryItemAccessPatches), nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
         // BattleProtos 在原版 DLL 中不是稳定 public 类型，改为运行时反射查找，兼容直接引用 R2 原始 DLL。
         MethodInfo battleProtosAddTranslate =
             AccessTools.Method(assembly?.GetType("DSP_Battle.BattleProtos"), "AddTranslate");
@@ -177,7 +179,7 @@ public static class TheyComeFromVoid {
             return true;
         }
         int need = Relic.basicMatrixCost << Relic.rollCount;
-        __result = Utils.Utils.GetItemTotalCount(5201) >= need;
+        __result = PlayerInventoryAccess.GetItemTotalCount(5201) >= need;
         return false;
     }
 
@@ -200,7 +202,7 @@ public static class TheyComeFromVoid {
         if (need > 5000) {
             need = 5000;
         }
-        __result = Utils.Utils.GetItemTotalCount(6006) >= need;
+        __result = PlayerInventoryAccess.GetItemTotalCount(6006) >= need;
         return false;
     }
 
@@ -219,7 +221,7 @@ public static class TheyComeFromVoid {
                 int itemId = 6006;
                 int inc = 0;
                 //GameMain.mainPlayer.package.TakeTailItems(ref itemId, ref need, out inc);
-                Utils.Utils.TakeItemWithTip(itemId, need, out inc, false);
+                PlayerInventoryAccess.TakeItemWithTip(itemId, need, out inc, false);
                 SkillPoints.ResetAll();
                 UISkillPointsWindow.RefreshResetButton();
             });

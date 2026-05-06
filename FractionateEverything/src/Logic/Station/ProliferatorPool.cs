@@ -1,9 +1,10 @@
 ﻿using System;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.DataCenter.DataCenterInventory;
+using static FE.Utils.Utils;
 
-namespace FE.Utils;
+namespace FE.Logic.Station;
 
-public static partial class Utils {
+public static class ProliferatorPool {
     #region 物流交互站自动喷涂
 
     private static readonly int[] plrIDs = [I增产剂MkI, I增产剂MkII, I增产剂MkIII];

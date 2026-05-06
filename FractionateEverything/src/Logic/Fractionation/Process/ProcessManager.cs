@@ -15,7 +15,9 @@ using FE.Logic.Manager;
 using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using static FE.Logic.Station.ProliferatorPool;
 
 namespace FE.Logic.Fractionation.Process;
 

@@ -1,20 +1,6 @@
-﻿using FE.Compatibility;
-
-namespace FE.Utils;
+﻿namespace FE.Utils;
 
 public static partial class Utils {
-    /// <summary>
-    /// 建筑师模式，所有建筑数目显示为999且建造时不消耗
-    /// </summary>
-    private static bool ArchitectMode => Multfunction_mod.ArchitectMode
-                                         || CheatEnabler.ArchitectMode
-                                         || DeliverySlotsTweaks.ArchitectMode;
-
-    /// <summary>
-    /// 指示物品交互科技是否已解锁
-    /// </summary>
-    public static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
-    private const int MinTurretAmmoNeedCount = 6;
     public static void AddTranslations() {
         Register("提示", "Tip");
         Register("确定", "Confirm");

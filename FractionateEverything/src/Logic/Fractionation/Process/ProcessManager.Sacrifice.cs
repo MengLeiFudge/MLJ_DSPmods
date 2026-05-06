@@ -13,6 +13,7 @@ using FE.Logic.Fractionation.Growth;
 using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;

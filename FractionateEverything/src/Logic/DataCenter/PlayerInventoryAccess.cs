@@ -1,8 +1,11 @@
-﻿using FE.UI.MainPanel.Setting;
+﻿using FE.Logic.DataCenter.Patches;
+using FE.UI.MainPanel.Setting;
+using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.DataCenterInventory;
 
-namespace FE.Utils;
+namespace FE.Logic.DataCenter;
 
-public static partial class Utils {
+public static class PlayerInventoryAccess {
     #region 向背包添加物品
 
     //配送器与玩家交互：GameMain.mainPlayer.packageUtility.AddItemToAllPackages
@@ -113,7 +116,7 @@ public static partial class Utils {
     /// 按照玩家设定的顺序，从各个背包拿取物品。
     /// 使用前需要检测是不是目标背包。
     /// </summary>
-    private static void TakeItemInternal(this StorageComponent storage, int itemId, int needCount, out int realCount,
+    public static void TakeItemInternal(this StorageComponent storage, int itemId, int needCount, out int realCount,
         out int inc, bool useBan = false) {
         realCount = 0;
         inc = 0;
@@ -136,7 +139,7 @@ public static partial class Utils {
             return;
         }
         //如果是建筑师模式并且为建筑，不消耗物品
-        if (ArchitectMode && item.BuildMode != 0) {
+        if (PackageAccessRules.ArchitectMode && item.BuildMode != 0) {
             realCount = needCount;
             return;
         }
@@ -183,7 +186,7 @@ public static partial class Utils {
         if (takeProto == null) {
             return false;
         }
-        if (ArchitectMode && takeProto.BuildMode != 0) {
+        if (PackageAccessRules.ArchitectMode && takeProto.BuildMode != 0) {
             return true;
         }
         if (GetItemTotalCount(itemId) < count) {
@@ -203,7 +206,7 @@ public static partial class Utils {
             GameMain.mainPlayer.sandCount -= count;
             return true;
         }
-        TakeTailItems(GameMain.mainPlayer.package, ref itemId, ref count, out inc);
+        PlayerInventoryItemAccessPatches.TakeTailItems(GameMain.mainPlayer.package, ref itemId, ref count, out inc);
         return true;
     }
 

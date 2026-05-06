@@ -5,6 +5,7 @@ using System.Linq;
 using BepInEx.Configuration;
 using FE.Compatibility;
 using FE.Logic.Manager;
+using FE.Logic.DataCenter;
 using FE.UI.Components;
 using FE.UI.MainPanel;
 using UnityEngine;
@@ -238,9 +239,9 @@ public static class Miscellaneous {
         DownloadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
         UploadThresholdSlider.slider.interactable = !isMultiplayer;
         UploadThresholdTipsButton2.gameObject.SetActive(isMultiplayer);
-        PackageSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+        PackageSortTwiceCheckBox.enabled = PackageAccessRules.TechItemInteractionUnlocked;
         if (AutoSorter.Enable) {
-            PackageAutoSortTwiceCheckBox.enabled = TechItemInteractionUnlocked;
+            PackageAutoSortTwiceCheckBox.enabled = PackageAccessRules.TechItemInteractionUnlocked;
         }
         if (GachaModeComboBox != null) {
             GachaModeComboBox.SetIndex((int)GachaManager.CurrentMode);

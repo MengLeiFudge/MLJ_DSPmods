@@ -10,7 +10,10 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using static FE.Logic.Station.ProliferatorPool;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Station;
 

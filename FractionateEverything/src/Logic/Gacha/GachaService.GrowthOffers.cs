@@ -6,7 +6,9 @@ using FE.Logic.Fractionation.Growth;
 using UnityEngine;
 using FE.Logic.DarkFog;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
 

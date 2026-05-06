@@ -10,6 +10,7 @@ using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
 using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.UI.MainPanel.DrawGrowth;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using FE.Logic.DataCenter;
 using FE.Utils;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
@@ -79,7 +80,7 @@ public static class MarketValueManager {
 
             float currentRate = GetCurrentProductionRate(itemId);
             float consumeRate = GetCurrentConsumeRate(itemId);
-            long stock = centerItemCount[itemId];
+            long stock = DataCenterInventory.centerItemCount[itemId];
 
             float targetMultiplier =
                 CalculateTargetMultiplier(itemId, currentStageIndex, stock, currentRate, consumeRate);

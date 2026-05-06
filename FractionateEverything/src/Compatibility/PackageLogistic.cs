@@ -2,8 +2,12 @@
 using System.Reflection;
 using BepInEx.Bootstrap;
 using FE.UI.MainPanel.Setting;
+using FE.Logic.DataCenter;
 using HarmonyLib;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using static FE.Logic.Station.ProliferatorPool;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility;
 
@@ -35,7 +39,7 @@ public static class PackageLogistic {
     }
 
     private static bool HasItem(int itemId, ref bool __result) {
-        if (!Miscellaneous.EnablePackageLogistic || !TechItemInteractionUnlocked) {
+        if (!Miscellaneous.EnablePackageLogistic || !PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
         if (itemId < 0) {
@@ -48,7 +52,7 @@ public static class PackageLogistic {
     }
 
     private static bool AddItem(int itemId, int count, int inc, ref int[] __result, bool assembler = true) {
-        if (!Miscellaneous.EnablePackageLogistic || !TechItemInteractionUnlocked) {
+        if (!Miscellaneous.EnablePackageLogistic || !PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
         if (itemId < 0 || count < 1) {
@@ -76,7 +80,7 @@ public static class PackageLogistic {
     }
 
     private static bool TakeItem(int itemId, int count, ref int[] __result) {
-        if (!Miscellaneous.EnablePackageLogistic || !TechItemInteractionUnlocked) {
+        if (!Miscellaneous.EnablePackageLogistic || !PackageAccessRules.TechItemInteractionUnlocked) {
             return true;
         }
         if (itemId < 0 || count < 1) {

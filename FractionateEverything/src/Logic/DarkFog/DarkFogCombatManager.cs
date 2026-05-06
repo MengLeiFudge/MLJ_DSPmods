@@ -5,6 +5,7 @@ using FE.Logic.Economy;
 using FE.Logic.Gacha;
 using FE.Logic.Manager;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.DarkFog;
 
