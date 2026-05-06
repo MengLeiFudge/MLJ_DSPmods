@@ -20,7 +20,7 @@
 
 1. **跨页跳转**：本域页面切换统一调用 `MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, index)`。
 2. **状态同步**：
-   - 概率、保底进度、池积分等核心逻辑状态**严禁**在 UI 层计算，必须通过 `Logic/Manager/Gacha*`（如 `GachaService`）获取。
+   - 概率、保底进度、池积分等核心逻辑状态**严禁**在 UI 层计算，必须通过 `Logic/Gacha`（如 `GachaService`）获取。
    - 跨面板共享状态（如总抽卡次数）存储在 `MainWindow.SharedPanelState`。
 3. **配方获取路径**：
    - 科技奖励：`TechManager` 在关键科技解锁时直接奖励部分配方。

@@ -1,13 +1,13 @@
 # UI — Unity UI Layer
 
-34 files, ~8k lines。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
+UI 层包含通用组件、FE 主面板页面和通用 UI 控件 patch。MainPanel 是 FE 主面板页面系统，页面仍是静态类架构；主界面已升级为**双主面板并行**：Legacy(`MyConfigWindow`) + Analysis(`MyAnalysisWindow`)。
 
 ## Structure
 
 ```
 UI/
 ├── Components/   # 通用组件；含 MyAnalysisWindow
-├── Patches/      # UI Harmony 补丁；最终只保留 Common 通用控件 patch
+├── Patches/      # 只保留 Common 通用控件 patch
 └── MainPanel/
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
     ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
@@ -61,18 +61,5 @@ Import/Export/IntoOtherSave();
 - 分馏塔窗口、配方显示、图标注入、信号选择等 patch 不再定义为“主面板 UI”，应归入对应功能域的 `Presentation`：
   - 分馏塔窗口、分馏塔 brief info、分馏配方显示 -> `Logic/Fractionation/Presentation`
   - 物品图标、信号选择、信号标签选择 -> `Logic/Items/Presentation`
-
-历史文件迁移前的归属参考：
-
-- `FEFractionatorWindow*.cs`：模组分馏塔独立窗口 patch，按 partial 拆分：
-  - `FEFractionatorWindow.cs`：共享字段、槽位模型、事件绑定、模组分馏塔判定
-  - `FEFractionatorWindow.Layout.cs`：窗口复制、布局改造、尺寸调整、槽位创建
-  - `FEFractionatorWindow.Lifecycle.cs`：`_OnOpen` / `_OnClose` / `_OnUpdate` 窗口生命周期 patch
-  - `FEFractionatorWindow.Rendering.cs`：窗口刷新、状态文字、电力、产物槽渲染
-  - `FEFractionatorWindow.Lock.cs`：转化塔单路锁定右键交互、锁图标、锁状态 UI
-  - `FEFractionatorWindow.Inventory.cs`：`OnProductUIButtonClick` 拦截与手动取放物品
-- `IconSetPatch.cs`：mod 图标注入
-- `UIRecipeEntryPatch.cs`：配方显示 patch
-- `UIComboBoxPatch.cs` / `UIButtonPatch.cs`：通用控件兼容
 
 UI 补丁只处理界面层；游戏状态逻辑放对应 `Logic/*` 功能域。

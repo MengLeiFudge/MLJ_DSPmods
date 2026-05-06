@@ -1,6 +1,6 @@
 # UI/Components — Reusable Widget Library
 
-12 files, ~2200 lines. Wraps Unity UI + DSP's ManualBehaviour. Do not construct directly — use factory methods on `MyWindow`.
+通用组件库包装 Unity UI + DSP `ManualBehaviour`。窗口类和布局 helper 归这里，业务页面归 `UI/MainPanel`。
 
 ## Class Hierarchy
 
@@ -15,7 +15,9 @@ ManualBehaviour (DSP base)
 
 | Class | Lines | Created via |
 |---|---|---|
-| `MyWindow` | 635 | `MyWindow.Create<T>(name, title)` |
+| `MyWindow` | base | `MyWindow.Create<T>(name, title)` |
+| `MyWindowWithTabs` | tabs | inherited by `MyConfigWindow` |
+| `MyWindowManager` | lifecycle | `MyWindowManager.CreateWindow<T>()` |
 | `MyAnalysisWindow*.cs` | ~1400 | `MyAnalysisWindow.CreateInstance(name, title)` |
 | `MyImageButton` | 206 | `wnd.AddImageButton(x, y, tab [, proto])` |
 | `MyCheckButton` | 232 | `wnd.AddCheckButton(x, y, tab, ...)` |
@@ -28,6 +30,7 @@ ManualBehaviour (DSP base)
 | `MyFlatButton` | 87 | `wnd.AddButton(col, cols, y, tab, label)` |
 | `MyImageButtonGroup` | 66 | `wnd.AddImageButtonGroup(x, y, tab)` |
 | `MyConfigWindow` | 50 | `MyConfigWindow.CreateWindow(...)` |
+| `NormalizeRectUtils` | layout | static layout helpers |
 
 ## MyAnalysisWindow Split
 

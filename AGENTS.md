@@ -102,16 +102,28 @@ cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Release"
 ```
 FractionateEverything/src/
 ├── FractionateEverything.cs    # BepInEx plugin entry point (Awake, config, Harmony)
-├── Logic/                      # → Logic/AGENTS.md
-│   ├── Building/               # Static building definition classes → Building/AGENTS.md
-│   ├── Manager/                # Static game-state managers → Manager/AGENTS.md
-│   ├── Patches/                # Standalone Harmony transpiler patches (IL-level only)
-│   └── Recipe/                 # BaseRecipe hierarchy → Recipe/AGENTS.md
+├── Bootstrap/                  # FeatureBootstrap lifecycle orchestration
+├── Persistence/                # FeatureSaveRegistry save/load dispatch
 ├── Compatibility/              # Per-mod detection + integration → Compatibility/AGENTS.md
+│   ├── Mods/                   # General external mod integrations
+│   ├── Nebula/                 # Multiplayer packets and sync hooks
+│   └── DarkFog/                # They Come From Void compatibility
+├── Logic/                      # → Logic/AGENTS.md
+│   ├── Buildings/              # Building definitions + building growth → Buildings/AGENTS.md
+│   ├── Fractionation/          # Recipes, growth, process, state, fractionator window presentation
+│   ├── Station/                # Data-centre station interaction, station UI patches, proliferator pool
+│   ├── DataCenter/             # Data centre inventory + package access patches
+│   ├── Items/                  # Item prototypes/value/matrix helpers + item presentation patches
+│   ├── Gacha/                  # Gacha state, pools, draw service, gallery bonus
+│   ├── Economy/                # Market value, exchange, fragment economy, market board
+│   ├── Progression/            # Tech and tutorial systems
+│   ├── DarkFog/                # FE dark-fog branch and combat progression
+│   ├── EnginePatches/          # Standalone engine/data loading transpilers
+│   └── Manager/                # Transitional/shared managers only; do not add new feature managers
 ├── UI/                         # → UI/AGENTS.md
 │   ├── Components/             # Reusable widgets (MyWindow, MyImageButton, …) → Components/AGENTS.md
-│   ├── Patches/                # UI-specific Harmony patches
-│   └── View/                   # Feature panels → View/AGENTS.md
+│   ├── Patches/Common/         # UI-specific common control patches
+│   └── MainPanel/              # FE main panel pages → MainPanel/AGENTS.md
 │       ├── MainWindow.cs       # Dual-panel lifecycle hub (Legacy + Analysis)
 │       ├── MainWindowPageRegistry.cs # Page registry + category filtering + Analysis availability
 │       ├── Archive/            # Stats, recipe gallery, dev diary
@@ -120,9 +132,9 @@ FractionateEverything/src/
 │       ├── ProgressTask/       # Quests, achievements, main tasks
 │       ├── ResourceInteraction/ # DataCentre item interaction
 │       └── Setting/            # VIP, sandbox, misc config
-└── Utils/                      # `partial class Utils` split across 12 files → Utils/AGENTS.md
+└── Utils/                      # Shared low-level utilities and proto IDs → Utils/AGENTS.md
     ├── ProtoID.cs              # ALL proto ID constants (I/R/M/T prefix + IFE/RFE/MFE/TFE for mod)
-    └── PackageUtils.cs         # Inventory/belt ops, TakeItemWithTip, AddItemToModData
+    └── PackageUtils.cs         # Package/data-centre shared flags and translations
 ```
 
 ## Naming Conventions
@@ -136,7 +148,7 @@ FractionateEverything/src/
 | Local variables | `camelCase` | `outputList`, `fluidInputInc` |
 | Proto ID constants | `I` prefix + Chinese item name | `I铁块`, `I电磁矩阵` |
 | Harmony patch methods | `ClassName_MethodName_Suffix` | `FractionatorComponent_Import_Postfix` |
-| Namespaces | `FE.*` (root `FE`) | `FE.Logic.Building`, `FE.Utils` |
+| Namespaces | `FE.*` (root `FE`) | `FE.Logic.Buildings`, `FE.Utils` |
 
 ## Import Organization
 
@@ -153,13 +165,13 @@ using UnityEngine;
 
 // 3. Internal FE namespaces (alphabetical)
 using FE.Compatibility;
-using FE.Logic.Building;
-using FE.Logic.Manager;
-using FE.Logic.Recipe;
+using FE.Logic.Buildings;
+using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Station;
 
 // 4. Static imports last
 using static FE.FractionateEverything;
-using static FE.Logic.Manager.ProcessManager;
+using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 ```
 
@@ -202,9 +214,9 @@ public static void SomeMethod() { ... }
 ## DSP/Unity-Specific Patterns
 
 ### Static Building Class Template
-Every building in `Logic/Building/` follows this structure:
+Every building definition in `Logic/Buildings/Definitions/` follows this structure:
 ```csharp
-namespace FE.Logic.Building;
+namespace FE.Logic.Buildings.Definitions;
 
 public static class ConversionTower {
     private static ItemProto item;
@@ -265,21 +277,21 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 ## Common Tasks
 
 ### Adding a New Building
-1. Create `Logic/Building/NewBuildingName.cs` following the static class template above
+1. Create `Logic/Buildings/Definitions/NewBuildingName.cs` following the static class template above
 2. Add `Level`, `EnableXxx`, switch-expression properties as needed
 3. Implement `AddTranslations()`, `Create()`, `SetMaterial()`, `UpdateHpAndEnergy()`
-4. Register in `BuildingManager`: call new methods inside `AddTranslations()`, `AddFractionators()`, `SetFractionatorMaterial()`, `UpdateHpAndEnergy()`
+4. Register in `Logic/Buildings/BuildingManager.cs`: call new methods inside `AddTranslations()`, `AddFractionators()`, `SetFractionatorMaterial()`, `UpdateHpAndEnergy()`
 5. Add Proto IDs to `Utils/ProtoID.cs`
 
 ### Adding a New Recipe Type
-1. Create `Logic/Recipe/NewRecipe.cs` inheriting from `BaseRecipe`
+1. Create `Logic/Fractionation/Recipes/NewRecipe.cs` inheriting from `BaseRecipe`
 2. Override `RecipeType` (returns an `ERecipe` value)
 3. Override `GetOutputs()` with the distribution logic
-4. Add a static `CreateAll()` method and call it from `RecipeManager`
+4. Add a static `CreateAll()` method and call it from `Logic/Fractionation/Recipes/RecipeManager.cs`
 
 ### Modifying Game Logic
 1. Check if an existing manager/patch covers the target method
-2. Prefer adding to existing Harmony patch classes in `Logic/Manager/` or `Logic/Patches/`
+2. Prefer adding to an existing feature-domain patch class under `Logic/*` or to `Logic/EnginePatches/` for standalone engine/data loading transpilers
 3. Use `[HarmonyPostfix]` by default; use `[HarmonyTranspiler]` only when postfix is insufficient
 4. Place patches as static methods directly inside the relevant manager class when cohesive
 
@@ -314,7 +326,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
-- Subdirectory `AGENTS.md` files exist for: `Logic/`, `Logic/Building/`, `Logic/Manager/`, `Logic/Recipe/`, `UI/`, `UI/Components/`, `UI/View/`, `UI/View/DrawGrowth/`, `Compatibility/`, `Utils/`, `AfterBuildEvent/src/`
+- Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Fractionation/`, `Logic/Station/`, `Logic/Buildings/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Gacha/`, `Logic/Economy/`, `Logic/Progression/`, `Logic/DarkFog/`, `UI/`, `UI/Components/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
 - **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
 ## Analysis UI Layout Baseline (Mandatory)
