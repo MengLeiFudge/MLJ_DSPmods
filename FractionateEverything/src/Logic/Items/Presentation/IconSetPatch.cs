@@ -5,7 +5,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI.Youthcat;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Items.Presentation;
 
 public static class IconSetPatch {
     /// <summary>

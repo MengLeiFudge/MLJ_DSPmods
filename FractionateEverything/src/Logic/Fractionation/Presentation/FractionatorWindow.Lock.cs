@@ -6,9 +6,9 @@ using UnityEngine.UI;
 using static FE.Logic.Manager.RecipeManager;
 using static FE.Utils.Utils;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Fractionation.Presentation;
 
-public static partial class FEFractionatorWindow {
+public static partial class FractionatorWindow {
     private static Image lockIconTemplateImage;
     private static UIButton lockIconTemplateButton;
 

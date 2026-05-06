@@ -5,13 +5,13 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FE.UI.Patches;
+namespace FE.Logic.Items.Presentation;
 
 /// <summary>
 /// 为标签图标选择弹窗补充 CommonAPI 自定义页面入口。
 /// 创世已接管 UISignalTagPicker，避免与其重复注入。
 /// </summary>
-public static class UISignalTagPickerPatch {
+public static class SignalTagPickerPatch {
     private static readonly List<UIButton> customTabButtons = [];
 
     [HarmonyPrepare]
