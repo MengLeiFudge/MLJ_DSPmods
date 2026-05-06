@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方成长经验来源模式。
 /// </summary>

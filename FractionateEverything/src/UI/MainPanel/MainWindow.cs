@@ -2,21 +2,21 @@ using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.UI.Controls;
+using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.DrawGrowth;
-using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.ProgressTask;
+using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
-using FE.UI.MainPanel.Archive;
+using FE.UI.MainPanel.Shell.Analysis;
+using FE.UI.MainPanel.Shell.MessageBox;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
-using FE.UI.MainPanel.Theme;
-using FE.UI.MainPanel.Shell.Analysis;
-using FE.UI.MainPanel.Shell.MessageBox;
 
 namespace FE.UI.MainPanel;
+
 /// <summary>
 /// FE 双主面板的打开、切换、导航和状态持久化入口。
 /// </summary>

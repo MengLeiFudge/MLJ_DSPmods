@@ -1,19 +1,17 @@
 using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
-using FE.Logic.Manager;
-using FE.UI.Controls;
-using FE.UI.MainPanel;
-using UnityEngine;
-using UnityEngine.UI;
 using FE.Logic.DarkFog;
 using FE.Logic.Gacha;
+using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
+using FE.UI.MainPanel.Theme;
+using UnityEngine;
+using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.DrawGrowth;
@@ -24,6 +22,7 @@ namespace FE.UI.MainPanel.DrawGrowth;
 /// </summary>
 public static class LimitedTimeStore {
     private const int GrowthRowCount = 8;
+
     /// <summary>
     /// 成长商店单个报价行的 UI 引用集合。
     /// </summary>
@@ -39,6 +38,7 @@ public static class LimitedTimeStore {
         public Text TxtDetail;
         public UIButton BtnExchange;
     }
+
     /// <summary>
     /// 成长商店页面的 UI 引用集合。
     /// </summary>
@@ -53,6 +53,7 @@ public static class LimitedTimeStore {
         public Text TxtFocus;
         public readonly List<GrowthRowUi> Rows = [];
     }
+
     /// <summary>
     /// 聚焦选择页面的 UI 引用集合。
     /// </summary>

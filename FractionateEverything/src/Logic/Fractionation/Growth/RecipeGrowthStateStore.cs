@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
-using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 按配方键保存和遍历成长状态的内存仓库。
 /// </summary>

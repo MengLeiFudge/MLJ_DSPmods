@@ -1,11 +1,11 @@
-using System;
+﻿using System;
+using FE.UI.Controls;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
-using FE.UI.Controls;
-using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Foundation;
+
 /// <summary>
 /// Unity UI 矩形定位与锚点辅助方法。
 /// </summary>

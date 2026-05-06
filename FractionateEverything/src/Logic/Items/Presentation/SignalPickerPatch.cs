@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using CommonAPI.Systems;
-using CommonAPI.Systems.UI;
 using FE.Compatibility;
 using FE.Compatibility.Mods;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FE.Logic.Items.Presentation;
 
@@ -35,7 +32,7 @@ public static class SignalPickerPatch {
                 continue;
             }
             GameObject tabObject =
-                UnityEngine.Object.Instantiate(TabSystem.GetTabPrefab(), __instance.pickerTrans, false);
+                Object.Instantiate(TabSystem.GetTabPrefab(), __instance.pickerTrans, false);
             ((RectTransform)tabObject.transform).anchoredPosition = new((tabData.tabIndex + 3) * 70 - 54, -75f);
             UITabButton tabButton = tabObject.GetComponent<UITabButton>();
             Sprite tabIcon = Resources.Load<Sprite>(tabData.tabIconPath);

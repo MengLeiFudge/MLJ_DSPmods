@@ -1,14 +1,14 @@
 using System.Linq;
 using FE.Compatibility.DarkFog;
-using FE.Compatibility.Mods;
-using UnityEngine;
 using FE.Logic.Economy;
 using FE.Logic.Gacha;
 using FE.Logic.Manager;
+using UnityEngine;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.DarkFog;
+
 /// <summary>
 /// 黑雾战斗进度阶段。
 /// </summary>

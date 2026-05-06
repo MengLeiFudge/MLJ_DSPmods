@@ -3,6 +3,7 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 炮台弹药需求数组访问前的安全补齐补丁。
 /// </summary>

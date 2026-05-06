@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Archive;
 using FE.UI.MainPanel.CoreOperate;
 using FE.UI.MainPanel.DrawGrowth;
-using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.ProgressTask;
+using FE.UI.MainPanel.ResourceInteraction;
 using FE.UI.MainPanel.Setting;
-using FE.UI.MainPanel.Archive;
 using UnityEngine;
-using FE.UI.Foundation.Window;
 
 namespace FE.UI.MainPanel;
+
 /// <summary>
 /// FE 主面板页面注册、分类顺序和可见性过滤中心。
 /// </summary>
@@ -117,6 +117,7 @@ public static class MainWindowPageRegistry {
         return categories;
     }
 }
+
 /// <summary>
 /// 分馏主面板页面分类定义。
 /// </summary>
@@ -124,6 +125,7 @@ public sealed class MainWindowCategoryDefinition(string categoryName, IReadOnlyL
     public string CategoryName { get; } = categoryName;
     public IReadOnlyList<MainWindowPageDefinition> Pages { get; } = pages;
 }
+
 /// <summary>
 /// 分馏主面板页面定义。
 /// </summary>

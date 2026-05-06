@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using FE.Compatibility.Mods;
 using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.State;
-using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
-using NebulaAPI;
 using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Buildings;
+
 /// <summary>
 /// FE 建筑等级阈值、原型注册和建筑聚合入口。
 /// </summary>
@@ -177,7 +170,7 @@ public static partial class BuildingManager {
             ("Resonance", ResonanceState.ResonanceImport),
             ("BuildingExp", br => {
                 int count = br.ReadInt32();
-                for (int i = 0; i < System.Math.Min(count, buildingExp.Length); i++) {
+                for (int i = 0; i < Math.Min(count, buildingExp.Length); i++) {
                     buildingExp[i] = br.ReadInt64();
                 }
                 for (int i = buildingExp.Length; i < count; i++) {
@@ -221,7 +214,7 @@ public static partial class BuildingManager {
         FractionatorSingleLock.LockedOutputIntoOtherSave();
         FissionPointPool.FissionPointPoolIntoOtherSave();
         ResonanceState.ResonanceIntoOtherSave();
-        System.Array.Clear(buildingExp, 0, buildingExp.Length);
+        Array.Clear(buildingExp, 0, buildingExp.Length);
     }
 
     #endregion

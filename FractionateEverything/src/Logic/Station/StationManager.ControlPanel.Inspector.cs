@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Emit;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.UI.MainPanel.Setting;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station;
+
 /// <summary>
 /// 总控面板检查器布局与集装倍率滑条逻辑。
 /// </summary>

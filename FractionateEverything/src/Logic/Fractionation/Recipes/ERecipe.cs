@@ -33,6 +33,7 @@ public enum ERecipe {
     /// </summary>
     Rectification,
 }
+
 /// <summary>
 /// 配方类型扩展方法。
 /// </summary>

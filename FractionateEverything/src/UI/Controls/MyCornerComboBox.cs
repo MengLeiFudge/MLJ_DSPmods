@@ -4,10 +4,10 @@ using System.Linq;
 using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.Controls;
+
 /// <summary>
 /// 用于角落选择项的下拉框控件。
 /// </summary>

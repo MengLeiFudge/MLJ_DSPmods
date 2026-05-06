@@ -1,30 +1,26 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.DrawGrowth;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.DarkFog;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.ProgressTask;
+
 /// <summary>
 /// 循环任务进度和奖励展示页面。
 /// </summary>

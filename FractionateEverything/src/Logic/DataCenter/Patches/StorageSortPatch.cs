@@ -1,8 +1,10 @@
 ﻿using System;
+using FE.Logic.Items;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 背包排序后恢复数据中心物品缓存的补丁。
 /// </summary>
@@ -45,7 +47,8 @@ public static class StorageSortPatch {
     }
 
     private static bool sortUpload() {
-        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && PackageAccessRules.TechItemInteractionUnlocked;
+        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400
+                             && PackageAccessRules.TechItemInteractionUnlocked;
         lastSortTime = DateTime.Now;
         if (!isDoubleClick) {
             //一次排序
@@ -79,7 +82,9 @@ public static class StorageSortPatch {
                     continue;
                 }
                 int itemId = package.grids[index].itemId;
-                if (itemId <= 0 || itemId >= 12000 || FE.Logic.Items.ItemManager.itemValue[itemId] >= FE.Logic.Items.ItemManager.maxValue) {
+                if (itemId <= 0
+                    || itemId >= 12000
+                    || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
                     continue;
                 }
                 DataCenterInventory.AddItemToModData(itemId, package.grids[index].count, package.grids[index].inc,

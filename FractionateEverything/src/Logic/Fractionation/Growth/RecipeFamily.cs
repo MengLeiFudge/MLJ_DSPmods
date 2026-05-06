@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方成长规则使用的配方家族分类。
 /// </summary>

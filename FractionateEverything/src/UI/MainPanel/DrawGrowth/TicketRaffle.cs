@@ -1,18 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
-using FE.Logic.Manager;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
-using FE.UI.MainPanel;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Gacha;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.DrawGrowth;

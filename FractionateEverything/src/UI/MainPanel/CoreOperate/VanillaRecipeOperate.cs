@@ -1,11 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.Setting;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
@@ -13,11 +15,9 @@ using static FE.Logic.Manager.ItemManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.CoreOperate;
+
 /// <summary>
 /// 原版配方强化和倍率调整页面。
 /// </summary>
@@ -99,7 +99,8 @@ public static class VanillaRecipeOperate {
                         columnGap: 8f,
                         onBuilt: root => tab = root,
                         children: [
-                            Grid(pos: (0, 0), span: (1, 6), cols: [Fr(1), Px(44f), Px(28f), Fr(2), Px(44f), Fr(1), Px(44f), Fr(1)],
+                            Grid(pos: (0, 0), span: (1, 6),
+                                cols: [Fr(1), Px(44f), Px(28f), Fr(2), Px(44f), Fr(1), Px(44f), Fr(1)],
                                 columnGap: 8f, children: [
                                     TextNode("当前配方", 15, onBuilt: text => txtCurrRecipe = text,
                                         pos: (0, 0), objectName: "textCurrItem"),

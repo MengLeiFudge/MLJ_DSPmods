@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FE.Logic.Fractionation.Recipes;
+﻿using System.Collections.Generic;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Recipes;
 using UnityEngine;
 using static FE.Logic.Manager.ItemManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Gacha;
+
 /// <summary>
 /// 抽取聚焦选项、权重和加成计算逻辑。
 /// </summary>

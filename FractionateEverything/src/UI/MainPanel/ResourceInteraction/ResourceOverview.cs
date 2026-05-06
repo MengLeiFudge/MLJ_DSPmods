@@ -1,21 +1,22 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.Controls;
-using UnityEngine;
-using UnityEngine.UI;
 using FE.Logic.DarkFog;
 using FE.Logic.Economy;
+using FE.Logic.Fractionation.Growth;
+using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
+using FE.UI.MainPanel.Theme;
+using UnityEngine;
+using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
+
 /// <summary>
 /// 资源管理总览页面。
 /// </summary>
@@ -110,7 +111,7 @@ public static class ResourceOverview {
                 ]));
     }
 
-    private static IReadOnlyList<LayoutNode> BuildDemandCardChildren(string title, System.Action<Text> onTitleBuilt,
+    private static IReadOnlyList<LayoutNode> BuildDemandCardChildren(string title, Action<Text> onTitleBuilt,
         MyImageButton[] icons, Text[] texts, string objectNamePrefix) {
         var rowNodes = new List<LayoutNode>();
         var rowTracks = new List<LayoutTrack>();
@@ -218,7 +219,7 @@ public static class ResourceOverview {
     }
 
     private static void RefreshColumn(MyImageButton[] icons, Text[] texts,
-        System.Collections.Generic.IReadOnlyList<int> items) {
+        IReadOnlyList<int> items) {
         for (int i = 0; i < icons.Length; i++) {
             if (i >= items.Count) {
                 icons[i].gameObject.SetActive(false);

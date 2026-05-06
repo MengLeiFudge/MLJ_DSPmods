@@ -1,7 +1,4 @@
 ﻿using System.IO;
-using FE.Compatibility.DarkFog;
-using FE.Compatibility.Mods;
-using FE.Compatibility.Nebula;
 using System.Text;
 using BepInEx;
 using BepInEx.Bootstrap;
@@ -10,6 +7,9 @@ using BepInEx.Logging;
 using BuildBarTool;
 using CommonAPI;
 using crecheng.DSPModSave;
+using FE.Compatibility.DarkFog;
+using FE.Compatibility.Mods;
+using FE.Compatibility.Nebula;
 using HarmonyLib;
 using UnityEngine;
 using xiaoye97;

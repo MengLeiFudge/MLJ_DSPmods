@@ -5,6 +5,7 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 玩家取物调用重定向到统一库存访问的补丁。
 /// </summary>
@@ -30,7 +31,8 @@ public static class PlayerInventoryItemAccessPatches {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeItem))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeItem))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -84,7 +86,8 @@ public static class PlayerInventoryItemAccessPatches {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeTailItems))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeTailItems))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -126,7 +129,8 @@ public static class PlayerInventoryItemAccessPatches {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeTailItemsByIncTable))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(PlayerInventoryItemAccessPatches), nameof(TakeTailItemsByIncTable))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -160,5 +164,4 @@ public static class PlayerInventoryItemAccessPatches {
         }
         return true;
     }
-
 }

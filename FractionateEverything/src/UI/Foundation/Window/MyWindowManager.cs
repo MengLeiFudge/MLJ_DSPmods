@@ -1,9 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using FE.UI.Controls;
 using FE.Utils;
 using HarmonyLib;
-using FE.UI.Controls;
 
 namespace FE.UI.Foundation.Window;
+
 /// <summary>
 /// FE 自定义窗口的初始化与启停管理基类。
 /// </summary>

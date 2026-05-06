@@ -12,6 +12,7 @@ namespace FE.Utils;
 public class PatchGuidAttribute(string guid) : Attribute {
     public string Guid { get; } = guid;
 }
+
 /// <summary>
 /// Harmony 补丁生命周期回调标记。
 /// </summary>
@@ -29,6 +30,7 @@ public enum PatchCallbackFlag {
 public class PatchSetCallbackFlagAttribute(PatchCallbackFlag flag) : Attribute {
     public PatchCallbackFlag Flag { get; } = flag;
 }
+
 /// <summary>
 /// 可开关 Harmony 补丁基类。
 /// </summary>

@@ -2,6 +2,7 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 分馏塔窗口打开、关闭和生命周期接管逻辑。
 /// </summary>

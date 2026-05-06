@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
-using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
@@ -76,6 +71,7 @@ public static partial class FractionatorWindow {
     private static Vector3 _oriBoxLocalPos;
     private static Vector3 _speedArrowParentLocalPos;
     private static float _layoutOffsetX;
+
     /// <summary>
     /// 分馏塔窗口单个产物槽位的 UI 引用。
     /// </summary>
@@ -91,6 +87,7 @@ public static partial class FractionatorWindow {
         public Action<int> clickHandler;
         public Action<int> rightClickHandler;
     }
+
     /// <summary>
     /// 分馏塔产物槽位的主产物、副产物和流体分类。
     /// </summary>
@@ -178,5 +175,4 @@ public static partial class FractionatorWindow {
         if (target == null) return;
         HandleProductSlotClick(target, itemId, slot);
     }
-
 }

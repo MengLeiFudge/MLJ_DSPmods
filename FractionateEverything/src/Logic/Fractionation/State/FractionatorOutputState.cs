@@ -3,18 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using FE.Compatibility.Mods;
-using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
-using HarmonyLib;
-using NebulaAPI;
-using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
+
 /// <summary>
 /// 分馏塔扩展产物状态缓存、存档和同步逻辑。
 /// </summary>
@@ -148,6 +140,7 @@ public static class FractionatorOutputState {
     }
 
     private static readonly ConcurrentDictionary<(int, int), FractionatorExtraState> outputDic = [];
+
     /// <summary>
     /// 单个星球的分馏塔扩展状态数组和版本号。
     /// </summary>
@@ -159,14 +152,10 @@ public static class FractionatorOutputState {
 
     private static readonly ConcurrentDictionary<int, FractionatorExtraStateArray> outputStateArraysByPlanet = [];
     private static int outputStateArrayGeneration;
-    [ThreadStatic]
-    private static int cachedOutputStatePlanetId;
-    [ThreadStatic]
-    private static int cachedOutputStateVersion;
-    [ThreadStatic]
-    private static int cachedOutputStateGeneration;
-    [ThreadStatic]
-    private static FractionatorExtraStateArray cachedOutputStateArray;
+    [ThreadStatic] private static int cachedOutputStatePlanetId;
+    [ThreadStatic] private static int cachedOutputStateVersion;
+    [ThreadStatic] private static int cachedOutputStateGeneration;
+    [ThreadStatic] private static FractionatorExtraStateArray cachedOutputStateArray;
 
     private static FractionatorExtraState[] EnsureOutputStateArray(int planetId, int entityId,
         PlanetFactory factory = null) {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using FE.Utils;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using Random = System.Random;
 
 namespace FE.Logic.Economy;
 
@@ -32,7 +32,7 @@ public static class ExchangeManager {
         public int RecentPlayerSellVolume;
     }
 
-    private static readonly System.Random rng = new(20260403);
+    private static readonly Random rng = new(20260403);
     private static readonly int[] listedItems = [
         I铁矿, I铜矿, I石矿, I煤矿, I硅石, I钛石, I氢, I重氢,
         I铁块, I铜块, I钢材, I石材, I高能石墨, I玻璃,

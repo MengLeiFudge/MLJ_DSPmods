@@ -5,6 +5,7 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 建造与沙盒临时背包消耗重定向补丁。
 /// </summary>
@@ -43,7 +44,8 @@ public static class TemporaryPackageAccessPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TryTakeItem))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TryTakeItem))));
             return codeMacher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -125,7 +127,8 @@ public static class TemporaryPackageAccessPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TryTakeTailItems))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TryTakeTailItems))));
             return codeMacher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -172,7 +175,8 @@ public static class TemporaryPackageAccessPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TakeTailItemsWithIncTable))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(TemporaryPackageAccessPatch), nameof(TakeTailItemsWithIncTable))));
             return codeMacher.InstructionEnumeration();
         }
         catch (Exception ex) {

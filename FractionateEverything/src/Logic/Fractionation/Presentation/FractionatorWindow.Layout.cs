@@ -4,10 +4,10 @@ using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Utils.Utils;
 using Object = UnityEngine.Object;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 分馏塔窗口控件定位和布局迁移逻辑。
 /// </summary>

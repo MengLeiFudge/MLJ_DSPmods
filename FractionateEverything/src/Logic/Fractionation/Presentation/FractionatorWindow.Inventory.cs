@@ -1,14 +1,14 @@
 using System;
-using FE.Logic.Fractionation.State;
 using System.Collections.Generic;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.State;
 using HarmonyLib;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Presentation;
+
 /// <summary>
 /// 分馏塔窗口物品点击、锁定切换和背包交互逻辑。
 /// </summary>

@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.ProgressTask;
-using HarmonyLib;
-using UnityEngine;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
+
 /// <summary>
 /// 分馏塔运行参数、增产倍率和核心更新热路径。
 /// </summary>
@@ -28,6 +17,7 @@ public static partial class ProcessManager {
     public static int BaseFracProductOutputMax = 20;
     public static int BaseFracFluidInputCargoMax = 40;
     public static int MaxBeltSpeed = 30;
+
     /// <summary>
     /// 单次分馏更新使用的运行参数快照。
     /// </summary>
@@ -130,4 +120,5 @@ public static partial class ProcessManager {
             SuccessBoost = 0f,
             EnableFluidEnhancement = false,
         };
-    }}
+    }
+}

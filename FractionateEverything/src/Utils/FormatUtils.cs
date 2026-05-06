@@ -2,6 +2,7 @@
 using System.Text;
 
 namespace FE.Utils;
+
 /// <summary>
 /// 数字、百分比和物品名称格式化辅助方法。
 /// </summary>

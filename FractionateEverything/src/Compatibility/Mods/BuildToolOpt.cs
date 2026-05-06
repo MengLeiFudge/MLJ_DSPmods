@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
+
 /// <summary>
 /// BuildToolOpt 模组检测与兼容状态入口。
 /// </summary>

@@ -6,6 +6,7 @@ using HarmonyLib;
 using xiaoye97;
 
 namespace FE.Compatibility.Mods;
+
 /// <summary>
 /// CheatEnabler 模组检测与建筑师模式兼容入口。
 /// </summary>

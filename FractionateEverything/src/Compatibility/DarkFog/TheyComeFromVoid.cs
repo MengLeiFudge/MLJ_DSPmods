@@ -5,11 +5,12 @@ using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Bootstrap;
 using DSP_Battle;
-using HarmonyLib;
 using FE.Logic.DataCenter;
 using FE.Logic.DataCenter.Patches;
+using HarmonyLib;
 
 namespace FE.Compatibility.DarkFog;
+
 /// <summary>
 /// 深空来敌模组检测与反射访问入口。
 /// </summary>
@@ -133,10 +134,12 @@ public static class TheyComeFromVoid {
             transpiler: new(typeof(ItemCountRedirectPatch), nameof(ItemCountRedirectPatch.GetItemCount_Transpiler)));
         //任务链可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(EventSystem), nameof(EventSystem.Decision)),
-            transpiler: new(typeof(PlayerInventoryItemAccessPatches), nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
+            transpiler: new(typeof(PlayerInventoryItemAccessPatches),
+                nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
         //元驱动刷新可使用所有来源物品
         harmony.Patch(AccessTools.Method(typeof(UIRelic), nameof(UIRelic.RollNewAlternateRelics)),
-            transpiler: new(typeof(PlayerInventoryItemAccessPatches), nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
+            transpiler: new(typeof(PlayerInventoryItemAccessPatches),
+                nameof(PlayerInventoryItemAccessPatches.TakeTailItems_Transpiler)));
         // BattleProtos 在原版 DLL 中不是稳定 public 类型，改为运行时反射查找，兼容直接引用 R2 原始 DLL。
         MethodInfo battleProtosAddTranslate =
             AccessTools.Method(assembly?.GetType("DSP_Battle.BattleProtos"), "AddTranslate");

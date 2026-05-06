@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 单个分馏配方的等级、经验和解锁来源状态。
 /// </summary>

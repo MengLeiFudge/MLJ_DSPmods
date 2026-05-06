@@ -3,6 +3,7 @@ using System.IO;
 using FE.Utils;
 
 namespace FE.Logic.Gacha;
+
 /// <summary>
 /// 抽取 UP 组聚焦方向。
 /// </summary>
@@ -15,6 +16,7 @@ public enum GachaFocusType {
     ProcessOptimization = 5,
     RectificationEconomy = 6,
 }
+
 /// <summary>
 /// 抽取系统的常规与速通模式。
 /// </summary>

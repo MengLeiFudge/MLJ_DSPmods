@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 
 namespace FE.UI.Layout;
+
 /// <summary>
 /// 网格行列轨道的尺寸单位。
 /// </summary>
@@ -8,6 +9,7 @@ public enum LayoutTrackKind {
     Fr,
     Px,
 }
+
 /// <summary>
 /// 描述网格行列轨道的单位与数值。
 /// </summary>
@@ -36,6 +38,7 @@ public readonly struct LayoutTrack {
         return Fr(value);
     }
 }
+
 /// <summary>
 /// 描述布局四边内边距。
 /// </summary>
@@ -58,6 +61,7 @@ public readonly struct LayoutInsets {
 
     public static readonly LayoutInsets Zero = new(0f);
 }
+
 /// <summary>
 /// 描述布局结果矩形区域。
 /// </summary>
@@ -80,6 +84,7 @@ public readonly struct LayoutRect {
         return new(Left + insets.Left, Top + insets.Top, width, height);
     }
 }
+
 /// <summary>
 /// 描述节点在网格中的行列位置与跨度。
 /// </summary>

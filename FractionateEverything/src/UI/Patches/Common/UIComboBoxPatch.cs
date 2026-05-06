@@ -3,6 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace FE.UI.Patches.Common;
+
 /// <summary>
 /// 修正通用下拉框弹层层级的 UI 补丁。
 /// </summary>
@@ -128,6 +129,7 @@ public static class UIComboBoxPatch {
 
         return layer;
     }
+
     /// <summary>
     /// 下拉框层级迁移状态。
     /// </summary>

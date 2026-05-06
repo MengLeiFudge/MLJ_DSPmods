@@ -1,10 +1,9 @@
-using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Gacha;
-using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方解锁、抽取重复和加工经验的成长执行逻辑。
 /// </summary>

@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 
 namespace FE.Compatibility.Mods;
+
 /// <summary>
 /// UXAssist 模组检测与兼容状态入口。
 /// </summary>

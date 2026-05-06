@@ -1,11 +1,11 @@
 using System.IO;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.DarkFog;
+using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Gacha;
+using FE.Logic.Manager;
 
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 配方成长状态初始化、同步和存档聚合入口。
 /// </summary>

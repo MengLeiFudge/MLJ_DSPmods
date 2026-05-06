@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 namespace FE.Utils;
+
 /// <summary>
 /// 富文本颜色、字号与数值显示辅助方法。
 /// </summary>

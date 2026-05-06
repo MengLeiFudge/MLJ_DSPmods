@@ -1,22 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
 using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.Growth;
-using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
+
 /// <summary>
 /// 交互塔献祭加成与矩阵消耗逻辑。
 /// </summary>
@@ -86,5 +76,4 @@ public static partial class ProcessManager {
         RectificationTower.SuccessBoost = 0f;
         RefreshFractionatorRuntimeConfig();
     }
-
 }

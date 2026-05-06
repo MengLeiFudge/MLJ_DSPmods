@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using BepInEx.Bootstrap;
-using FE.UI.MainPanel.Setting;
 using FE.Logic.DataCenter;
+using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
@@ -10,6 +10,7 @@ using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility.Mods;
+
 /// <summary>
 /// 背包物流模组检测与兼容状态入口。
 /// </summary>

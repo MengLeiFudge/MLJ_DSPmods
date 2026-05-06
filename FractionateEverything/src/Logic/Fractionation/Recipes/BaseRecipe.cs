@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using FE.Compatibility.Mods;
+using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Gacha;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Growth;
-using NebulaAPI;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Recipes;
+
 /// <summary>
 /// 配方在成长系统中的职责分类。
 /// </summary>

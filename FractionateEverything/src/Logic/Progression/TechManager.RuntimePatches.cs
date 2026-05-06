@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Linq;
-using CommonAPI.Systems;
-using FE.Compatibility.Mods;
-using FE.Logic.Fractionation.Recipes;
 using FE.Logic.Fractionation.Growth;
 using HarmonyLib;
-using UnityEngine;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;
@@ -17,6 +11,7 @@ namespace FE.Logic.Progression;
 /// </summary>
 public static partial class TechManager {
     private static readonly bool[] techUnlockFlags = new bool[7];
+
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
         pendingLoadTimeRecipeBaselineApply = false;

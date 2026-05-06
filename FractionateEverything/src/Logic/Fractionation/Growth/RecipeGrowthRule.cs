@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Growth;
+
 /// <summary>
 /// 单个配方家族的成长模式、上限和倍率配置。
 /// </summary>

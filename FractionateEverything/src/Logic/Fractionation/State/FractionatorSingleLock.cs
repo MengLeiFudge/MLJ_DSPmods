@@ -1,21 +1,16 @@
 ﻿using System;
-using FE.Compatibility.Nebula;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using FE.Compatibility.Mods;
+using FE.Compatibility.Nebula;
 using FE.Logic.Buildings.Definitions;
 using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using NebulaAPI;
-using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.State;
+
 /// <summary>
 /// 转化塔单路锁定状态、交互和存档逻辑。
 /// </summary>

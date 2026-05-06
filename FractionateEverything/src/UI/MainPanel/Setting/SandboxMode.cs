@@ -2,15 +2,14 @@ using System;
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Manager;
-using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Setting;
+
 /// <summary>
 /// 沙盒模式倍率和调试开关设置页面。
 /// </summary>
@@ -20,6 +19,7 @@ public static class SandboxMode {
 
     private static ConfigEntry<float> ExpMultiRatioEntry;
     public static float ExpMultiRatio => GameMain.sandboxToolsEnabled ? ExpMultiRatioEntry.Value : 1;
+
     /// <summary>
     /// 沙盒倍率滑条的指数映射。
     /// </summary>

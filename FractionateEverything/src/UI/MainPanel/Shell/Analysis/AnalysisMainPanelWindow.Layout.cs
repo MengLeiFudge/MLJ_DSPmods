@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FE.UI.MainPanel.Shell.Analysis;
+
 /// <summary>
 /// Analysis 主面板内容区骨架与尺寸布局逻辑。
 /// </summary>

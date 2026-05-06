@@ -1,29 +1,28 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Buildings;
-using FE.Logic.Manager;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Economy;
 using FE.Logic.Fractionation.Growth;
-using FE.UI.Controls;
+using FE.Logic.Gacha;
+using FE.Logic.Manager;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
 using FE.UI.MainPanel.DrawGrowth;
+using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using FE.Logic.Economy;
-using FE.Logic.Gacha;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.Archive;
+
 /// <summary>
 /// 分馏次数、成长经验和阶段统计页面。
 /// </summary>

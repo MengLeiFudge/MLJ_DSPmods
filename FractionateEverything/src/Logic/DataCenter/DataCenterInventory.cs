@@ -1,13 +1,11 @@
 ﻿using System;
-using FE.Compatibility.Nebula;
 using System.Collections.Generic;
 using System.IO;
-using FE.Compatibility.Mods;
+using FE.Compatibility.Nebula;
 using FE.Logic.Progression;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
 using static FE.Utils.Utils;
-using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.DataCenter;
 
@@ -204,7 +202,8 @@ public static class DataCenterInventory {
                 return 0;
             }
             if (centerItemInc[itemId] / centerItemCount[itemId] >= 4) {
-                inc = (int)PlayerInventoryAccess.split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId], count);
+                inc = (int)PlayerInventoryAccess.split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId],
+                    count);
             } else {
                 if (centerItemInc[itemId] >= count * 4) {
                     centerItemCount[itemId] -= count;

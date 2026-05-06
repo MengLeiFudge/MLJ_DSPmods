@@ -1,4 +1,5 @@
 namespace FE.Logic.Fractionation.Recipes;
+
 /// <summary>
 /// 单次分馏输入的销毁、通过或产出结果。
 /// </summary>
@@ -7,6 +8,7 @@ public enum FractionationOutcome {
     PassThrough,
     Produced,
 }
+
 /// <summary>
 /// 一批分馏处理的消耗、产出和增产点统计。
 /// </summary>

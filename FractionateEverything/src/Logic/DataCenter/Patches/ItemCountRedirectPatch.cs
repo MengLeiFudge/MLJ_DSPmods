@@ -9,6 +9,7 @@ using HarmonyLib;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.DataCenter.Patches;
+
 /// <summary>
 /// 玩家物品数量查询重定向到统一库存访问的补丁。
 /// </summary>
@@ -50,7 +51,8 @@ public static class ItemCountRedirectPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(GetItemCount))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(GetItemCount))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -114,7 +116,8 @@ public static class ItemCountRedirectPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(GetItemCount))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(GetItemCount))));
             // Replace history.ItemUnlocked(int itemId)
             method = AccessTools.Method(typeof(GameHistoryData), nameof(GameHistoryData.ItemUnlocked),
                 [typeof(int)]);
@@ -123,7 +126,8 @@ public static class ItemCountRedirectPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(ItemUnlocked))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(ItemUnlocked))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -153,7 +157,8 @@ public static class ItemCountRedirectPatch {
                     new CodeMatch(i => i.opcode == OpCodes.Callvirt
                                        && i.operand.Equals(method)))
                 .Repeat(matcher => matcher
-                    .SetAndAdvance(OpCodes.Call, AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(ItemUnlocked))));
+                    .SetAndAdvance(OpCodes.Call,
+                        AccessTools.Method(typeof(ItemCountRedirectPatch), nameof(ItemUnlocked))));
             return codeMatcher.InstructionEnumeration();
         }
         catch (Exception ex) {
@@ -229,5 +234,4 @@ public static class ItemCountRedirectPatch {
             num += count;
         }
     }
-
 }

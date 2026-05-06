@@ -1,24 +1,25 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Manager;
-using FE.UI.Controls;
-using UnityEngine;
-using UnityEngine.UI;
 using FE.Logic.DarkFog;
 using FE.Logic.Economy;
+using FE.UI.Controls;
+using FE.UI.Foundation.Window;
+using FE.UI.Layout;
+using FE.UI.MainPanel.Theme;
+using UnityEngine;
+using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
-using FE.UI.Layout;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
+
 /// <summary>
 /// 动态市场订单浏览与交易页面。
 /// </summary>
 public static class MarketBoard {
     private const int RowCount = 8;
+
     /// <summary>
     /// 市场订单列表中的一行 UI 引用。
     /// </summary>
@@ -148,7 +149,8 @@ public static class MarketBoard {
         int matrixCount = MarketBoardManager.ActiveOffers.Count(offer =>
             offer.OfferType == MarketBoardManager.MarketOfferType.StageSupply);
         int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special && DarkFogCombatManager.IsDarkFogOffer(offer));
+            offer.OfferType == MarketBoardManager.MarketOfferType.Special
+            && DarkFogCombatManager.IsDarkFogOffer(offer));
         string stageName = DarkFogCombatManager.GetCurrentStage() switch {
             EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
             EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
@@ -179,7 +181,7 @@ public static class MarketBoard {
             if (MarketBoardManager.IsDarkFogRecipeBackfillOffer(offer)) {
                 rows[i].TxtOutput.text = "配方补票";
             } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
-                && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
+                       && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
                 rows[i].TxtOutput.text = "配方成长";
             }
             string offerTag = GetOfferTag(offer);

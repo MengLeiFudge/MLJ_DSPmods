@@ -1,5 +1,4 @@
-using UnityEngine;
-using FE.UI.MainPanel.Theme;
+﻿using UnityEngine;
 
 namespace FE.UI.MainPanel.Theme;
 

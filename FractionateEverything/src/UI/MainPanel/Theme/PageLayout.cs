@@ -1,9 +1,8 @@
+﻿using FE.UI.Foundation.Window;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
-using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.Theme;
 
 namespace FE.UI.MainPanel.Theme;
 
@@ -69,6 +68,7 @@ public static class PageLayout {
 
     /// <summary>空态提示文本颜色：比正文再低一档的灰白，避免抢视觉。</summary>
     public static readonly Color EmptyStateTextColor = new(1f, 1f, 1f, 0.45f);
+
     /// <summary>
     /// 主面板页头根节点与标题文本引用。
     /// </summary>
@@ -305,6 +305,7 @@ public static class PageLayout {
         return content;
     }
 }
+
 /// <summary>
 /// 页面卡片视觉状态。
 /// </summary>
