@@ -17,6 +17,7 @@ using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Logic.Fractionation.Recipes.RecipeManager;
 using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.UI.MainPanel.Archive;
 

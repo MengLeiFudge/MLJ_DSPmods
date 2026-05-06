@@ -1,11 +1,10 @@
 ﻿using System;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
-using static FE.Logic.Manager.ItemManager;
 
-namespace FE.Utils;
+namespace FE.Logic.DataCenter.Patches;
 
-public static partial class Utils {
+public static class StorageSortPatch {
     #region 背包排序
 
     private static DateTime lastSortTime = DateTime.MinValue;
@@ -44,7 +43,7 @@ public static partial class Utils {
     }
 
     private static bool sortUpload() {
-        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && TechItemInteractionUnlocked;
+        bool isDoubleClick = (DateTime.Now - lastSortTime).TotalMilliseconds < 400 && PackageAccessRules.TechItemInteractionUnlocked;
         lastSortTime = DateTime.Now;
         if (!isDoubleClick) {
             //一次排序
@@ -68,7 +67,7 @@ public static partial class Utils {
             }
         } else {
             //二次排序
-            if (!TechItemInteractionUnlocked || !Miscellaneous.EnablePackageSortTwice) {
+            if (!PackageAccessRules.TechItemInteractionUnlocked || !Miscellaneous.EnablePackageSortTwice) {
                 return true;
             }
             StorageComponent package = GameMain.mainPlayer.package;
@@ -78,10 +77,10 @@ public static partial class Utils {
                     continue;
                 }
                 int itemId = package.grids[index].itemId;
-                if (itemId <= 0 || itemId >= 12000 || itemValue[itemId] >= maxValue) {
+                if (itemId <= 0 || itemId >= 12000 || FE.Logic.Items.ItemManager.itemValue[itemId] >= FE.Logic.Items.ItemManager.maxValue) {
                     continue;
                 }
-                AddItemToModData(itemId, package.grids[index].count, package.grids[index].inc,
+                DataCenterInventory.AddItemToModData(itemId, package.grids[index].count, package.grids[index].inc,
                     true);
                 package.grids[index].itemId = 0;
                 package.grids[index].count = 0;

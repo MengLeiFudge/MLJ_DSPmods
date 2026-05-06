@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using FE.Utils;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Economy;
 

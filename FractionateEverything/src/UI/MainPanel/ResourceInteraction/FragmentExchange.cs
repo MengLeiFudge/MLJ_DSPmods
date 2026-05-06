@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using FE.Logic.Economy;
 using static FE.UI.Components.GridDsl;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.UI.MainPanel.ResourceInteraction;
 

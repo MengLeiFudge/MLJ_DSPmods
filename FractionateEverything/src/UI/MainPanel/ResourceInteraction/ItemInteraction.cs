@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Components.GridDsl;
 using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.ResourceInteraction;

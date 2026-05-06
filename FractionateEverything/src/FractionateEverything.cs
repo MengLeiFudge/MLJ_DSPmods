@@ -21,6 +21,7 @@ using NebulaAPI;
 using NebulaAPI.Interfaces;
 using xiaoye97;
 using FE.Logic.Gacha;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE;

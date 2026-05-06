@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using FE.Logic.Gacha;
 using static FE.Logic.Gacha.GachaManager;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.ProgressTask;

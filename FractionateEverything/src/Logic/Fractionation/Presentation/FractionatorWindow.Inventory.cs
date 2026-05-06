@@ -6,6 +6,7 @@ using FE.Logic.Manager;
 using FE.Logic.Fractionation.Recipes;
 using HarmonyLib;
 using static FE.Utils.Utils;
+using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Presentation;
 
