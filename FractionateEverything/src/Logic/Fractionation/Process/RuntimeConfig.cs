@@ -12,7 +12,7 @@ public static partial class ProcessManager {
     public static readonly int MaxLevel = 12;
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
-    private static readonly double[] incTableFixedRatio = new double[Cargo.incTableMilli.Length];
+    private static double[] incTableFixedRatio = [];
     public static int BaseFracFluidOutputMax = 20;
     public static int BaseFracProductOutputMax = 20;
     public static int BaseFracFluidInputCargoMax = 40;
@@ -66,6 +66,8 @@ public static partial class ProcessManager {
         BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio * 12 / 4);//todo: 最大堆叠12改为全局
         BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio * 12 / 4);
 
+        // 增产剂表在游戏静态数据加载后才可靠，不能放到类型静态初始化阶段读取。
+        incTableFixedRatio = new double[Cargo.incTableMilli.Length];
         //增产剂的增产效果修复，因为增产点数对于增产的加成不是线性的，但对于加速的加成是线性的
         for (int i = 1; i < Cargo.incTableMilli.Length; i++) {
             incTableFixedRatio[i] = Cargo.accTableMilli[i] / Cargo.incTableMilli[i];
