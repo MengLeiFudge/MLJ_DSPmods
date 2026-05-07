@@ -1,4 +1,4 @@
-﻿using FE.Logic.Manager;
+﻿using FE.Logic.Items;
 using UnityEngine;
 
 namespace FE.Logic.Progression;

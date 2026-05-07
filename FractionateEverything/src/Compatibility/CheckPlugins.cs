@@ -7,7 +7,6 @@ using BepInEx.Logging;
 using BuildBarTool;
 using CommonAPI;
 using crecheng.DSPModSave;
-using FE.Compatibility.DarkFog;
 using FE.Compatibility.Mods;
 using FE.Compatibility.Nebula;
 using HarmonyLib;

@@ -4,7 +4,7 @@ using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;

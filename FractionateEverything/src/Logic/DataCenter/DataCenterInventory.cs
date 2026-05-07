@@ -202,8 +202,7 @@ public static class DataCenterInventory {
                 return 0;
             }
             if (centerItemInc[itemId] / centerItemCount[itemId] >= 4) {
-                inc = (int)PlayerInventoryAccess.split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId],
-                    count);
+                inc = (int)split_inc(ref centerItemCount[itemId], ref centerItemInc[itemId], count);
             } else {
                 if (centerItemInc[itemId] >= count * 4) {
                     centerItemCount[itemId] -= count;

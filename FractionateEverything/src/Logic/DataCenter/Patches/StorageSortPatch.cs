@@ -9,8 +9,6 @@ namespace FE.Logic.DataCenter.Patches;
 /// 背包排序后恢复数据中心物品缓存的补丁。
 /// </summary>
 public static class StorageSortPatch {
-    #region 背包排序
-
     private static DateTime lastSortTime = DateTime.MinValue;
 
     [HarmonyPrefix]
@@ -96,6 +94,4 @@ public static class StorageSortPatch {
         }
         return true;
     }
-
-    #endregion
 }

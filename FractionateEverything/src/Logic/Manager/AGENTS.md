@@ -1,10 +1,9 @@
-# Logic/Manager — 迁移期共享 Manager
+# Logic/Manager — 共享 Manager
 
-`Manager` 不再是新增功能的默认位置。当前只保留尚未归域或用于兼容旧引用的共享 manager/facade。
+`Manager` 不再是新增功能的默认位置。当前只保留尚未归域的共享 manager；不要新增迁移期门面或只负责转发旧调用面的 facade。
 
 ## Current Files
 
-- `ItemManager.cs`：迁移期 facade，核心物品逻辑已在 `Logic/Items/ItemManager.cs` 和 `Logic/DataCenter/DataCenterInventory.cs`。
 - `LabManager.cs`：实验室相关共享逻辑，暂未单独成域。
 - `MonitorManager.cs`：监控/统计相关共享逻辑，引用建筑定义但不拥有建筑域。
 

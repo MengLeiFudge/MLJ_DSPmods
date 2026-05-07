@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Gacha;

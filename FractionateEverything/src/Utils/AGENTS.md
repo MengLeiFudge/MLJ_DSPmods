@@ -5,7 +5,7 @@
 ## Files
 
 - `ProtoID.cs`：所有原版和 FE 新增 item/recipe/model/tech ID 常量。
-- `PackageUtils.cs`：数据中心/背包访问共享 flag 和翻译入口。
+- `PackageUtils.cs`：数据中心/背包访问共享 flag、翻译入口，以及原版同名 `split_inc` 增产点拆分 helper。
 - `I18NUtils.cs`：翻译注册、`Translate()`、常用位置 helper。
 - `RichTextUtils.cs`：富文本颜色/字号 helper。
 - `FormatUtils.cs`：百分比、名称等格式化。

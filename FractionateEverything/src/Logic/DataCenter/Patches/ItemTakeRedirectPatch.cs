@@ -10,6 +10,16 @@ namespace FE.Logic.DataCenter.Patches;
 /// 玩家取物调用重定向到统一库存访问的补丁。
 /// </summary>
 public static class PlayerInventoryItemAccessPatches {
+    // StorageComponent 取出物品方法一览（用于决定本文件和 TemporaryPackageAccessPatch 分别 patch 哪些方法）：
+    // [背包][测试背包]int TakeItem(int itemId, int count, out int inc)
+    // [不关联]void TakeItemFromGrid(int gridIndex, ref int itemId, ref int count, out int inc)
+    // [不关联]void TakeHeadItems(ref int itemId, ref int count, out int inc)
+    // [背包][测试背包]void TakeTailItems(ref int itemId, ref int count, out int inc, bool useBan = false)
+    // [不关联]bool TakeTailItems(ref int itemId, ref int count, int[] needs, out int inc, bool useBan = false)
+    // [不关联]void TakeTailItemsFiltered(ref int filter, ref int count, out int inc, bool useBan = false)
+    // [测试背包]void TakeTailItemsWithIncTable(int itemId, ref int count, out int inc, ref int[] incTable, bool useBan = false)
+    // [背包]bool TakeTailItemsByIncTable(int itemId, out int count, ref int[] incTable, bool useBan = false)
+
     /// <summary>
     /// 从玩家背包获取物品时，可以从 背包/物流背包/Mod背包 中获取
     /// </summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.Buildings.Definitions;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
 using FE.UI.Controls;
@@ -17,7 +17,7 @@ using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
+using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.ProgressTask;

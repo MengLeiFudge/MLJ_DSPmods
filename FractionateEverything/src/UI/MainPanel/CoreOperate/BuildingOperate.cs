@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Buildings;
+using FE.Logic.Fractionation.Fractionators;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -12,7 +13,7 @@ using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
@@ -340,8 +341,8 @@ public static class BuildingOperate {
         // 特质行：按建筑类型动态填充
         var (title1, desc1, title2, desc2) = GetTraitKeys(SelectedBuilding.ID);
         bool hasTraits = title1 != null;
-        bool trait1Active = SelectedBuilding.Level() >= BuildingManager.LevelThresholdTrait1;
-        bool trait2Active = SelectedBuilding.Level() >= BuildingManager.LevelThresholdTrait2;
+        bool trait1Active = SelectedBuilding.Level() >= BuildingGrowthService.LevelThresholdTrait1;
+        bool trait2Active = SelectedBuilding.Level() >= BuildingGrowthService.LevelThresholdTrait2;
 
         if (hasTraits) {
             string trait1Name = title1.Translate();
@@ -375,7 +376,7 @@ public static class BuildingOperate {
 
         if (!GameMain.sandboxToolsEnabled) {
             bool showBtn = SelectedBuilding.Level() < MaxLevel
-                           && BuildingManager.NeedsBreakthrough(SelectedBuilding.ID);
+                           && BuildingGrowthService.NeedsBreakthrough(SelectedBuilding.ID);
             btnReinforcement.gameObject.SetActive(showBtn);
             foreach (UIButton button in reinforcementSandboxBtn) {
                 button.gameObject.SetActive(false);
@@ -395,8 +396,8 @@ public static class BuildingOperate {
             reinforcementSandboxBtn[3].button.interactable = SelectedBuilding.Level() < MaxLevel;
         }
         string[] strs;
-        long currentExp = BuildingManager.GetBuildingExp(SelectedBuilding.ID);
-        long nextExp = BuildingManager.GetRequiredExpForNextLevel(SelectedBuilding.ID);
+        long currentExp = BuildingGrowthService.GetBuildingExp(SelectedBuilding.ID);
+        long nextExp = BuildingGrowthService.GetRequiredExpForNextLevel(SelectedBuilding.ID);
         if (SelectedBuilding.ID == IFE行星内物流交互站 || SelectedBuilding.ID == IFE星际物流交互站) {
             strs = [
                 nextExp > 0 ? $"{"成长经验".Translate()} {currentExp}/{nextExp}" :
@@ -457,14 +458,14 @@ public static class BuildingOperate {
         return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"增产".Translate()}×{LevelToPlrRatio(level):F1}";
     }
 
-    private static int LevelToMaxStack(int level) => BuildingManager.GetDefaultMaxStackByLevel(level);
+    private static int LevelToMaxStack(int level) => BuildingGrowthService.GetDefaultMaxStackByLevel(level);
 
-    private static float LevelToEnergyRatio(int level) => BuildingManager.GetDefaultEnergyRatioByLevel(level);
+    private static float LevelToEnergyRatio(int level) => BuildingGrowthService.GetDefaultEnergyRatioByLevel(level);
 
-    private static float LevelToPlrRatio(int level) => BuildingManager.GetDefaultPlrRatioByLevel(level);
+    private static float LevelToPlrRatio(int level) => BuildingGrowthService.GetDefaultPlrRatioByLevel(level);
 
     private static float LevelToInteractEnergyRatio(int level) =>
-        BuildingManager.GetStationInteractEnergyRatioByLevel(level);
+        BuildingGrowthService.GetStationInteractEnergyRatioByLevel(level);
 
     private static void Reinforcement() {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
@@ -473,12 +474,12 @@ public static class BuildingOperate {
         if (SelectedBuilding.Level() >= MaxLevel) {
             return;
         }
-        if (!BuildingManager.NeedsBreakthrough(SelectedBuilding.ID)) {
+        if (!BuildingGrowthService.NeedsBreakthrough(SelectedBuilding.ID)) {
             UIRealtimeTip.Popup("当前等级需要靠经验自动成长".Translate(), true, 2);
             return;
         }
         (int matrixId, int matrixCount, int fragmentCount) =
-            BuildingManager.GetBreakthroughCost(SelectedBuilding.Level());
+            BuildingGrowthService.GetBreakthroughCost(SelectedBuilding.Level());
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         Miscellaneous.ShowQuestion("提示".Translate(),
             (GameMain.sandboxToolsEnabled
@@ -520,7 +521,7 @@ public static class BuildingOperate {
     #endregion
 
     private static string GetBreakthroughCostText(int currentLevel) {
-        (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(currentLevel);
+        (int matrixId, int matrixCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(currentLevel);
         string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
         return $"{matrixName} x{matrixCount} + 残片 x{fragmentCount}";
     }

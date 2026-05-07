@@ -6,18 +6,14 @@
 
 ```
 Station/
-├── StationManager/
-│   ├── StationManager.cs   # 翻译入口、顶层说明、共享常量
-│   ├── Runtime.cs          # 上传/下载同步、目标数量、电力消耗、运行 patch
-│   ├── ModeState.cs        # 传输/容量模式状态和归一化
-│   ├── StationWindow.cs    # 独立物流站窗口按钮和槽位交互
-│   ├── ControlPanel.cs     # 总控面板窗口、槽位刷新、弹窗选项
-│   ├── ControlPanel/
-│   │   └── Inspector.cs    # 总控面板检查器布局和集装滑块
-│   ├── OutputStackPatch.cs # 物流站输出堆叠上限 transpiler
-│   ├── Save.cs             # 交互站模式存档读写
-│   └── Shared.cs           # 按钮布局和共享 UI helper
-└── ProliferatorPool.cs      # 交互站自动增产点池
+├── Definitions/             # 物流交互站建筑定义
+├── StationManager.cs        # 翻译入口、共享常量、存档读写
+├── Runtime.cs               # 上传/下载同步、目标数量、电力消耗、运行 patch
+├── ModeState.cs             # 传输/容量模式状态和归一化
+├── WindowPatch.cs           # 独立物流站窗口按钮和槽位交互
+├── ControlPanelPatch.cs     # 总控面板窗口、槽位刷新、检查器布局
+├── OutputStackPatch.cs      # 物流站输出堆叠上限 transpiler
+└── ProliferatorPool.cs       # 交互站自动增产点池
 ```
 
 ## Files

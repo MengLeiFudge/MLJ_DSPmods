@@ -6,32 +6,34 @@
 
 ```
 Fractionation/
-├── Recipes/        # BaseRecipe、ERecipe、RecipeManager、具体配方
-├── Growth/         # 配方成长状态、规则、执行器、快照
-├── Process/        # 分馏器运行热路径、传送带 IO、能耗 patch、性能探针
-├── State/          # 分馏塔实例状态：输出扩展、单路锁定、裂变点池、共鸣
+├── FracRecipes/    # BaseRecipe、ERecipe、RecipeManager、具体分馏配方
+├── Fractionators/  # 分馏塔定义、建筑成长、分馏塔特质状态
+├── Growth/         # 配方成长状态、规则、执行器、查询快照
+├── Process/        # 分馏器运行热路径、能耗 patch、性能探针
 └── Presentation/   # 分馏塔窗口、brief info、配方显示相关 UI patch
 ```
 
 ## Recipe Rules
 
 - `BaseRecipe.GetOutputs()` 是共享热路径，禁止直接为单个需求改它。
-- 新配方类型放 `Recipes/NewRecipe.cs`，继承 `BaseRecipe`，并在 `RecipeManager.AddFracRecipes()` 注册。
+- 新配方类型放 `FracRecipes/NewRecipe.cs`，继承 `BaseRecipe`，并在 `RecipeManager.AddFracRecipes()` 注册。
 - `OutputMain` 是主产物，`OutputAppend` 是副产物。
 - `fluidInputInc` 必须沿输出链路传递，不能吞掉增产点。
 
 ## Process Rules
 
-- `Process/ProcessManager/ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
-- 传送带输入输出 helper 放 `Process/ProcessManager/Belts.cs`。
-- 能耗 IL patch 放 `Process/ProcessManager/PowerPatch.cs`。
-- 性能探针和日志桶放 `Process/ProcessManager/Perf.cs`。
-- 交互塔献祭相关成功率逻辑放 `Process/ProcessManager/Sacrifice.cs`。
+- `Process/ProcessManager.cs` 保持核心 `InternalUpdate<T>` 集中可读。
+- 完整处理流程内部的传送带输入输出 helper 留在 `Process/ProcessManager.cs`。
+- 能耗 IL patch 放 `Process/PowerPatch.cs`。
+- 性能探针和日志桶放 `Process/Perf.cs`。
+- 交互塔献祭相关成功率逻辑放 `Process/Sacrifice.cs`。
 
-## State Rules
+## Fractionator Rules
 
-- 分馏塔实例级状态放 `State`，并接入 `BuildingManager`/相关 manager 的存档聚合。
-- 转化塔单路锁定相关实体、复制粘贴、蓝图同步在 `FractionatorSingleLock.cs`。
+- 分馏塔定义、建筑成长服务和分馏塔特质状态放 `Fractionators`。
+- 转化塔单路锁定相关实体、复制粘贴、蓝图同步在 `Fractionators/ConversionSingleLock.cs`。
+- 矿物复制塔裂变点池放 `Fractionators/MineralReplicationFissionPool.cs`。
+- 交互塔共鸣状态放 `Fractionators/InteractionTowerResonance.cs`。
 
 ## Presentation Rules
 

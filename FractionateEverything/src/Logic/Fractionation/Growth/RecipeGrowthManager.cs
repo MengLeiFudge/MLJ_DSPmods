@@ -1,8 +1,8 @@
 using System.IO;
 using FE.Logic.DarkFog;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Gacha;
-using FE.Logic.Manager;
+using FE.Logic.Items;
 
 namespace FE.Logic.Fractionation.Growth;
 

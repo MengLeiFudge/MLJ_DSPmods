@@ -11,7 +11,7 @@ using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Items.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 

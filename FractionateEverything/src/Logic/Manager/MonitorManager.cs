@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using FE.Logic.Buildings.Definitions;
+using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Station.Definitions;
 using HarmonyLib;
 using static FE.Utils.Utils;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;

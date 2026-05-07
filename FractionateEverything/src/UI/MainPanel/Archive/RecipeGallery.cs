@@ -2,14 +2,14 @@
 using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
+using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
 using static FE.Utils.Utils;
 
 namespace FE.UI.MainPanel.Archive;

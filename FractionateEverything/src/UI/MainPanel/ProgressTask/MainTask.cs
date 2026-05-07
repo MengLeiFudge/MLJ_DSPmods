@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using BepInEx.Configuration;
-using FE.Logic.Buildings.Definitions;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.DarkFog;
 using FE.Logic.Economy;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Gacha;
-using FE.Logic.Manager;
+using FE.Logic.DataCenter;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.DrawGrowth;
@@ -18,8 +18,8 @@ using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
-using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
+using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -427,11 +427,11 @@ public static class MainTask {
                 Node("resource-tech", "物品交互", "解锁物品交互科技", 1, IFE残片, IFE残片, 200,
                     () => IsTechUnlocked(TFE物品交互), () => GetTechProgressText(TFE物品交互)),
                 Node("resource-extract", "首次提取", "从分馏数据中心提取至少 1 次物品", 1, IFE残片, IFE残片, 200,
-                    () => ItemManager.ManualExtractCount >= 1,
-                    () => GetCountProgressText("提取次数", ItemManager.ManualExtractCount, 1)),
+                    () => DataCenterInventory.ManualExtractCount >= 1,
+                    () => GetCountProgressText("提取次数", DataCenterInventory.ManualExtractCount, 1)),
                 Node("resource-upload", "首次上传", "向分馏数据中心手动上传至少 1 次物品", 2, IFE残片, IFE残片, 200,
-                    () => ItemManager.ManualUploadCount >= 1,
-                    () => GetCountProgressText("上传次数", ItemManager.ManualUploadCount, 1)),
+                    () => DataCenterInventory.ManualUploadCount >= 1,
+                    () => GetCountProgressText("上传次数", DataCenterInventory.ManualUploadCount, 1)),
                 Node("resource-trade", "首次交易", "在交易所完成至少 1 次买入或卖出", 3, IFE残片, IFE残片, 300,
                     () => ExchangeManager.TotalTradeCount >= 1,
                     () => GetCountProgressText("交易次数", ExchangeManager.TotalTradeCount, 1)),
