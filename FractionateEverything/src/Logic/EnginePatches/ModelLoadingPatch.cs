@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using FE.Compatibility.DarkFog;
 using FE.Compatibility.Mods;
 using HarmonyLib;
 

@@ -18,6 +18,4 @@ public static class PackageAccessRules {
     /// 指示物品交互科技是否已解锁。
     /// </summary>
     public static bool TechItemInteractionUnlocked => GameMain.history.TechUnlocked(TFE物品交互);
-
-    public const int MinTurretAmmoNeedCount = 6;
 }

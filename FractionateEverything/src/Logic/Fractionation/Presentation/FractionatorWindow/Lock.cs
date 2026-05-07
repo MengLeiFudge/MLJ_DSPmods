@@ -1,9 +1,9 @@
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.State;
+using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.Process;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;

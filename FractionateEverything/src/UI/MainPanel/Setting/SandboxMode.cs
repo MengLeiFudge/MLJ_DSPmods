@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using BepInEx.Configuration;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;

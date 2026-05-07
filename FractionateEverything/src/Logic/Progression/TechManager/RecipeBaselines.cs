@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Recipes;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
+using FE.Logic.Fractionation.FracRecipes;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Progression;

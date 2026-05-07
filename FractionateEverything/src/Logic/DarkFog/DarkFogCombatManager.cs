@@ -1,8 +1,8 @@
 using System.Linq;
-using FE.Compatibility.DarkFog;
+using FE.Compatibility.Mods;
 using FE.Logic.Economy;
 using FE.Logic.Gacha;
-using FE.Logic.Manager;
+using FE.Logic.Items;
 using UnityEngine;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;

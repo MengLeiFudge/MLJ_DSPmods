@@ -1,4 +1,4 @@
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.UI.MainPanel.ProgressTask;
 
 namespace FE.Logic.Gacha;

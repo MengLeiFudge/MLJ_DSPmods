@@ -2,7 +2,8 @@
 using System.IO;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Logic.Fractionation.Recipes;
+using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.VanillaRecipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -11,8 +12,8 @@ using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Manager.ItemManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
+using static FE.Logic.Items.ItemManager;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
@@ -183,7 +184,7 @@ public static class VanillaRecipeOperate {
             return;
         }
 
-        VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
+        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
         if (vanillaRecipe == null) {
             return;
         }
@@ -264,7 +265,7 @@ public static class VanillaRecipeOperate {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
+        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
         int[] items = vanillaRecipe.recipe.Items;
         if (itemIdx >= items.Length) {
             return;
@@ -300,7 +301,7 @@ public static class VanillaRecipeOperate {
         if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
             return;
         }
-        VanillaRecipe vanillaRecipe = GetVanillaRecipe(SelectedRecipe.ID);
+        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
         if (!vanillaRecipe.CanUpgradeTime()) {
             UIMessageBox.Show("提示".Translate(),
                 "此配方的时间已经无法升级！".Translate(),

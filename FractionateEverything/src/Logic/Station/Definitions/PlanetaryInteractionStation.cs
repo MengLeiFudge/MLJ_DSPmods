@@ -1,0 +1,111 @@
+﻿using System.IO;
+using BuildBarTool;
+using CommonAPI.Systems;
+using FE.Compatibility.Mods;
+using UnityEngine;
+using static FE.FractionateEverything;
+using static FE.Logic.Fractionation.Fractionators.BuildingGrowthService;
+using static FE.Logic.Fractionation.Process.ProcessManager;
+using static FE.Utils.Utils;
+
+namespace FE.Logic.Station.Definitions;
+
+/// <summary>
+/// 行星内物流交互站
+/// </summary>
+public static class PlanetaryInteractionStation {
+    private static ItemProto item;
+    private static RecipeProto recipe;
+    private static ModelProto model;
+    public static Color color = new(0.8f, 0.3f, 0.6f);
+
+    public static int Level = 0;
+    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static float InteractEnergyRatio => GetStationInteractEnergyRatioByLevel(Level);
+    public static long workEnergyPerTick {
+        get => model.prefabDesc.workEnergyPerTick;
+        set => model.prefabDesc.workEnergyPerTick = value;
+    }
+    public static long idleEnergyPerTick {
+        get => model.prefabDesc.idleEnergyPerTick;
+        set => model.prefabDesc.idleEnergyPerTick = value;
+    }
+
+    public static void AddTranslations() {
+        Register("物流交互站", "Interaction Station");
+        Register("行星内物流交互站", "Planetary Interaction Station");
+        Register("I行星内物流交互站",
+            "Planetary logistics station that interacts with the fractionation data centre.\nTransfer Mode: Upload - uploads items exceeding the threshold to data centre; Download - downloads items from data centre when below threshold; Sync - both upload and download.\nCapacity Mode: Limited - upload limited by data centre target count, which is related to item value; Infinite - unlimited upload.",
+            "可以与分馏数据中心进行物品交互的行星内物流运输站。\n传输模式：仅上传-超过阈值时上传超出部分；仅下载-低于阈值时下载至阈值；双向同步-同时支持上传和下载。\n容量模式：有限上传-受数据中心目标数量限制，目标数量与物品价值相关；无限上传-不限制上传数量。");
+    }
+
+    public static void Create() {
+        item = ProtoRegistry.RegisterItem(IFE行星内物流交互站, "行星内物流交互站", "I行星内物流交互站",
+            "Assets/fe/interaction-station", tab分馏 * 1000 + 306, 10, EItemType.Production,
+            ProtoRegistry.GetDefaultIconDesc(Color.white, color));
+        recipe = ProtoRegistry.RegisterRecipe(RFE行星内物流交互站,
+            ERecipeType.Assemble, 1200, [I行星内物流运输站, IFE交互塔], [1, 12], [IFE行星内物流交互站], [1],
+            "I行星内物流交互站", TFE行星内物流交互, item.GridIndex, item.Name, item.IconPath);
+        recipe.IconPath = "";
+        recipe.NonProductive = true;
+        item.IconTag = "xxnjhz";
+        recipe.IconTag = "xxnjhz";
+        model = ProtoRegistry.RegisterModel(MFE行星内物流交互站, item,
+            "Entities/Prefabs/logistic-station", null, [53, 24, 38, 12, 10, 1, 40], 0);
+        item.SetBuildBar(OrbitalRing.Enable ? 6 : 5, item.GridIndex % 10, true);
+        //设定升降级关系
+        ItemProto oriItem = LDB.items.Select(I行星内物流运输站);
+        int[] upgrades = [I行星内物流运输站, IFE行星内物流交互站];
+        oriItem.Upgrades = upgrades;
+        oriItem.Grade = 1;
+        item.Upgrades = upgrades;
+        item.Grade = 2;
+    }
+
+    public static void SetMaterial() {
+        Material m_main = new(model.prefabDesc.lodMaterials[0][0]) { color = color };
+        Material m_black = model.prefabDesc.lodMaterials[0][1];
+        model.prefabDesc.materials = [m_main];
+        model.prefabDesc.lodMaterials = [
+            [m_main, m_black],
+            null,
+            null,
+            null,
+        ];
+    }
+
+    public static void UpdateHpAndEnergy() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        ModelProto stationModel = LDB.models.Select(M行星内物流运输站);
+        model.HpMax = stationModel.HpMax;
+        model.prefabDesc.stationMaxItemKinds = stationModel.prefabDesc.stationMaxItemKinds;
+        model.prefabDesc.stationMaxItemCount = stationModel.prefabDesc.stationMaxItemCount;
+        model.prefabDesc.stationMaxEnergyAcc = stationModel.prefabDesc.stationMaxEnergyAcc;
+        workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
+        idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
+    }
+
+    #region IModCanSave
+
+    public static void Import(BinaryReader r) {
+        r.ReadBlocks(
+            ("Level", br => { Level = Mathf.Max(0, Mathf.Min(MaxLevel, br.ReadInt32())); })
+        );
+        UpdateHpAndEnergy();
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.WriteBlocks(
+            ("Level", bw => bw.Write(Level))
+        );
+    }
+
+    public static void IntoOtherSave() {
+        Level = 0;
+        UpdateHpAndEnergy();
+    }
+
+    #endregion
+}

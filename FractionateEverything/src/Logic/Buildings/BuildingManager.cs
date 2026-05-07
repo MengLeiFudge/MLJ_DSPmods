@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.State;
+using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Process;
+using FE.Logic.Station.Definitions;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.Fractionation.Process.ProcessManager;
@@ -13,26 +14,6 @@ namespace FE.Logic.Buildings;
 /// FE 建筑等级阈值、原型注册和建筑聚合入口。
 /// </summary>
 public static partial class BuildingManager {
-    public const int LevelThresholdFluidEnhancement = 3;
-    public const int LevelThresholdTrait1 = 6;
-    public const int LevelThresholdTrait2 = 12;
-    public static readonly int[] BreakthroughLevels = [2, 5, 8, 11];
-    public static readonly int[] BreakthroughMatrixCosts = [1, 2, 4, 8];
-    public static readonly int[] BreakthroughFragmentCosts = [36, 120, 360, 960];
-    public const int DefaultMaxStackTier1UpperExclusive = 6;
-    public const int DefaultMaxStackTier2UpperExclusive = 9;
-    public const int DefaultMaxStackTier3UpperExclusive = 12;
-
-    private static readonly int[] growthBuildingIds = [
-        IFE交互塔,
-        IFE矿物复制塔,
-        IFE点数聚集塔,
-        IFE转化塔,
-        IFE精馏塔,
-        IFE行星内物流交互站,
-    ];
-    private static readonly long[] buildingExp = new long[growthBuildingIds.Length];
-
     public static void AddTranslations() {
         InteractionTower.AddTranslations();
         MineralReplicationTower.AddTranslations();
@@ -168,15 +149,7 @@ public static partial class BuildingManager {
             ("LockedOutput", FractionatorSingleLock.LockedOutputImport),
             ("FissionPointPool", FissionPointPool.FissionPointPoolImport),
             ("Resonance", ResonanceState.ResonanceImport),
-            ("BuildingExp", br => {
-                int count = br.ReadInt32();
-                for (int i = 0; i < Math.Min(count, buildingExp.Length); i++) {
-                    buildingExp[i] = br.ReadInt64();
-                }
-                for (int i = buildingExp.Length; i < count; i++) {
-                    br.ReadInt64();
-                }
-            })
+            ("BuildingExp", BuildingGrowthService.Import)
         );
     }
 
@@ -193,12 +166,7 @@ public static partial class BuildingManager {
             ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
             ("FissionPointPool", FissionPointPool.FissionPointPoolExport),
             ("Resonance", ResonanceState.ResonanceExport),
-            ("BuildingExp", bw => {
-                bw.Write(buildingExp.Length);
-                for (int i = 0; i < buildingExp.Length; i++) {
-                    bw.Write(buildingExp[i]);
-                }
-            })
+            ("BuildingExp", BuildingGrowthService.Export)
         );
     }
 
@@ -214,7 +182,7 @@ public static partial class BuildingManager {
         FractionatorSingleLock.LockedOutputIntoOtherSave();
         FissionPointPool.FissionPointPoolIntoOtherSave();
         ResonanceState.ResonanceIntoOtherSave();
-        Array.Clear(buildingExp, 0, buildingExp.Length);
+        BuildingGrowthService.IntoOtherSave();
     }
 
     #endregion

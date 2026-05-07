@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using FE.Logic.Buildings.Definitions;
-using FE.Logic.Fractionation.Recipes;
-using FE.Logic.Fractionation.State;
+using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.Process;
 using HarmonyLib;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;

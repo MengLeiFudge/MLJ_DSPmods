@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
-using FE.Logic.Buildings.Definitions;
+using FE.Logic.Fractionation.Fractionators;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Utils.Utils;

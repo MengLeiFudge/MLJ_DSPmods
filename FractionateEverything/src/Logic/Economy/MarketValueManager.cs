@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using FE.Logic.DataCenter;
 using UnityEngine;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 using Random = System.Random;
 

@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using BepInEx.Configuration;
 using FE.Logic.Buildings;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Economy;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Gacha;
-using FE.Logic.Manager;
+using FE.Logic.Items;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
 using FE.UI.MainPanel.DrawGrowth;
@@ -16,8 +17,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Fractionation.Process.ProcessManager;
-using static FE.Logic.Fractionation.Recipes.RecipeManager;
-using static FE.Logic.Fractionation.Recipes.ERecipeExtension;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
+using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
@@ -183,16 +184,16 @@ public static class FracStatistic {
                 growthLines[i].text = $"{building.name}  Lv{level}  已满级".WithColor(Gold);
                 continue;
             }
-            if (BuildingManager.NeedsBreakthrough(buildingId)) {
-                (int matrixId, int matrixCount, int fragmentCount) = BuildingManager.GetBreakthroughCost(level);
+            if (BuildingGrowthService.NeedsBreakthrough(buildingId)) {
+                (int matrixId, int matrixCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(level);
                 string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
                 growthLines[i].text =
                     $"{building.name}  Lv{level}  突破：{matrixName} x{matrixCount} + 残片 x{fragmentCount}"
                         .WithColor(Orange);
                 continue;
             }
-            long currentExp = BuildingManager.GetBuildingExp(buildingId);
-            long nextExp = BuildingManager.GetRequiredExpForNextLevel(buildingId);
+            long currentExp = BuildingGrowthService.GetBuildingExp(buildingId);
+            long nextExp = BuildingGrowthService.GetRequiredExpForNextLevel(buildingId);
             growthLines[i].text = $"{building.name}  Lv{level}  经验 {currentExp}/{nextExp}".WithColor(level / 3 + 1);
         }
     }
@@ -235,7 +236,7 @@ public static class FracStatistic {
     private static long GetBuildingExpTotal() {
         long total = 0L;
         foreach (int buildingId in trackedBuildingIds) {
-            total += BuildingManager.GetBuildingExp(buildingId);
+            total += BuildingGrowthService.GetBuildingExp(buildingId);
         }
         return total;
     }

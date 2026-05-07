@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using static FE.Logic.Manager.ItemManager;
+using static FE.Logic.Items.ItemManager;
 
 namespace FE.Logic.Gacha;
 

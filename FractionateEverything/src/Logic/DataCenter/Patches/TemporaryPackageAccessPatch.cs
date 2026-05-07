@@ -206,7 +206,7 @@ public static class TemporaryPackageAccessPatch {
         }
         testPackageUsedCounts[itemId] += count;
         long n = PlayerInventoryAccess.GetItemTotalCountAndInc(itemId, out long m);
-        long takeInc = PlayerInventoryAccess.split_inc(ref n, ref m, count);
+        long takeInc = split_inc(ref n, ref m, count);
         int incLow = (int)(takeInc / count);
         int incHighCount = (int)(takeInc - count * incLow);
         int incLowCount = count - incHighCount;
