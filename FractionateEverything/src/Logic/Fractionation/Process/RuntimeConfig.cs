@@ -9,6 +9,8 @@ namespace FE.Logic.Fractionation.Process;
 /// 分馏塔运行参数、增产倍率和核心更新热路径。
 /// </summary>
 public static partial class ProcessManager {
+    // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
+    private const int FractionatorBuildingTypeCount = IFE精馏塔 - IFE交互塔 + 1;
     public static readonly int MaxLevel = 12;
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
@@ -31,7 +33,7 @@ public static partial class ProcessManager {
     }
 
     private static readonly FractionatorRuntimeConfig[] runtimeConfigsByBuildingOffset =
-        new FractionatorRuntimeConfig[updateHandlersByBuildingOffset.Length];
+        new FractionatorRuntimeConfig[FractionatorBuildingTypeCount];
 
     static ProcessManager() {
         //强化成功率
