@@ -30,6 +30,7 @@ static class AfterBuildEvent {
     private const int CalcJsonCacheVersion = 2;
     private const int R2CopyRetryCount = 60;
     private const int R2CopyRetryDelayMs = 500;
+    private const int QqbotArtifactUploadTimeoutMs = 60000;
     private const string AutoUploadProjectId = "mlj_dspmods";
     private const int AutoUploadGroupId = 319567534;
     private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/upload-local";
@@ -317,7 +318,7 @@ static class AfterBuildEvent {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(QqbotArtifactUploadUrl);
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.Timeout = 5000;
+            request.Timeout = QqbotArtifactUploadTimeoutMs;
             request.ContentLength = body.Length;
             using (Stream requestStream = request.GetRequestStream()) {
                 requestStream.Write(body, 0, body.Length);
