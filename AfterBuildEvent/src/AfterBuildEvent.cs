@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -29,6 +30,9 @@ static class AfterBuildEvent {
     private const int CalcJsonCacheVersion = 2;
     private const int R2CopyRetryCount = 60;
     private const int R2CopyRetryDelayMs = 500;
+    private const string AutoUploadProjectId = "mlj_dspmods";
+    private const int AutoUploadGroupId = 319567534;
+    private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/upload-local";
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -243,7 +247,12 @@ static class AfterBuildEvent {
         PrepareR2Doorstop();
         if (automationMode) {
             WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false);
-            Console.WriteLine("自动模式完成：不打开 ModZips 文件夹，不启动游戏");
+            if (TryUploadAutomationPackagesToQqbot(generatedPackages)) {
+                Console.WriteLine("自动模式完成：已上传生成的 zip 到 QQ 群，不打开 ModZips 文件夹，不启动游戏");
+                return;
+            }
+            Process.Start("explorer", @".\ModZips");
+            Console.WriteLine("自动模式完成：自动上传失败，已打开 ModZips 文件夹，不启动游戏");
             return;
         }
 
@@ -281,6 +290,55 @@ static class AfterBuildEvent {
         };
         File.WriteAllText(resultPath, result.ToString(), Utf8NoBom);
         Console.WriteLine($"写入自动模式结果 {resultPath}");
+    }
+
+    private static bool TryUploadAutomationPackagesToQqbot(IReadOnlyList<string> generatedPackages) {
+        List<string> zipFiles = generatedPackages
+            .Where(file => file.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && File.Exists(file))
+            .ToList();
+        if (zipFiles.Count == 0) {
+            Console.WriteLine("自动上传跳过：没有生成 zip 文件");
+            return false;
+        }
+
+        try {
+            JObject payload = new() {
+                ["project_id"] = AutoUploadProjectId,
+                ["group_id"] = AutoUploadGroupId,
+                ["files"] = new JArray(zipFiles),
+            };
+            byte[] body = Utf8NoBom.GetBytes(payload.ToString());
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(QqbotArtifactUploadUrl);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Timeout = 5000;
+            request.ContentLength = body.Length;
+            using (Stream requestStream = request.GetRequestStream()) {
+                requestStream.Write(body, 0, body.Length);
+            }
+
+            using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            bool ok = (int)response.StatusCode >= 200 && (int)response.StatusCode < 300;
+            if (ok) {
+                Console.WriteLine($"自动上传成功：{zipFiles.Count} 个 zip -> QQ 群 {AutoUploadGroupId}");
+            } else {
+                Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
+            }
+            return ok;
+        }
+        catch (WebException ex) {
+            string detail = ex.Message;
+            if (ex.Response is HttpWebResponse response) {
+                using StreamReader reader = new(response.GetResponseStream(), Encoding.UTF8);
+                detail = $"HTTP {(int)response.StatusCode} {response.StatusCode}：{reader.ReadToEnd()}";
+            }
+            Console.WriteLine($"自动上传失败：{detail}");
+            return false;
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"自动上传失败：{ex.Message}");
+            return false;
+        }
     }
 
     private static void PrepareR2Doorstop() {

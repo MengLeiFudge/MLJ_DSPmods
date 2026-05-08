@@ -31,11 +31,13 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
 - write generated package paths to `ModZips/afterbuild-result.json`
-- do not open Explorer
+- try to upload generated zip packages to QQ group `319567534` through the local qqbot admin API
+- if upload succeeds, do not open Explorer
+- if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible
 - do not ask whether to launch Dyson Sphere Program
 - do not launch Dyson Sphere Program
 
-Codex final replies for automation runs must include the `AfterBuildEvent.exe 1` command result and the generated zip paths, because qqbot reads those paths and uploads the packages back to the source group.
+Codex final replies for automation runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, and whether local qqbot upload succeeded or fell back to opening `ModZips`.
 
 ## Option 2 — UpdateLibDll Detail
 
