@@ -42,9 +42,9 @@ public static partial class ProcessManager {
     private static readonly long[] fractionatorPerfDetailTicks = new long[FractionatorPerfDetailCount];
     private static readonly long[] fractionatorPerfDetailMaxTicks = new long[FractionatorPerfDetailCount];
     private static readonly long[] fractionatorPerfFeUpdateCallsByType =
-        new long[updateHandlersByBuildingOffset.Length];
+        new long[FractionatorBuildingTypeCount];
     private static readonly long[] fractionatorPerfFeUpdateTicksByType =
-        new long[updateHandlersByBuildingOffset.Length];
+        new long[FractionatorBuildingTypeCount];
     private static long fractionatorPerfWindowStartTick = -1;
     private static int fractionatorPerfLogging;
 
