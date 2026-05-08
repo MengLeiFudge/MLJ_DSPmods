@@ -33,6 +33,8 @@ static class AfterBuildEvent {
     private const string AutoUploadProjectId = "mlj_dspmods";
     private const int AutoUploadGroupId = 319567534;
     private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/upload-local";
+    private static readonly string DefaultAutoUploadSummary =
+        "构建完成并发布 FE 测试包。\n\n本次发布由 AfterBuildEvent 自动打包、同步 R2，并上传最新 FractionateEverything zip。";
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -70,7 +72,7 @@ static class AfterBuildEvent {
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
         string str = automationMode ? args[0].Trim() : Console.ReadLine();
         if (str == "1" || str == "") {
-            UpdateModsThenStart(automationMode);
+            UpdateModsThenStart(automationMode, args);
         } else if (str == "2") {
             UpdateLibDll();
         } else if (str == "3") {
@@ -84,7 +86,7 @@ static class AfterBuildEvent {
 
     #region 更新mod、打包、启动游戏
 
-    private static void UpdateModsThenStart(bool automationMode = false) {
+    private static void UpdateModsThenStart(bool automationMode = false, string[] args = null) {
         using CmdProcess cmd = new();
         List<string> generatedPackages = [];
         //强制终止游戏进程
@@ -246,8 +248,10 @@ static class AfterBuildEvent {
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
         if (automationMode) {
-            string automationResultPath = WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false);
-            if (TryPublishAutomationResultToQqbot(automationResultPath)) {
+            string uploadSummary = GetAutomationUploadSummary(args);
+            string automationResultPath = WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false,
+                uploadSummary);
+            if (TryPublishAutomationResultToQqbot(automationResultPath, uploadSummary)) {
                 Console.WriteLine("自动模式完成：已上传生成的 zip 到 QQ 群，不打开 ModZips 文件夹，不启动游戏");
                 return;
             }
@@ -280,20 +284,23 @@ static class AfterBuildEvent {
         Console.WriteLine($"复制 {source} -> {targetPath}");
     }
 
-    private static string WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame, bool openedModZips) {
+    private static string WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame,
+        bool openedModZips, string uploadSummary) {
+
         string resultPath = Path.GetFullPath(@".\ModZips\afterbuild-result.json");
         JObject result = new() {
             ["automation_mode"] = true,
             ["started_game"] = startedGame,
             ["opened_modzips"] = openedModZips,
             ["generated_packages"] = new JArray(generatedPackages),
+            ["publish_summary"] = uploadSummary,
         };
         File.WriteAllText(resultPath, result.ToString(), Utf8NoBom);
         Console.WriteLine($"写入自动模式结果 {resultPath}");
         return resultPath;
     }
 
-    private static bool TryPublishAutomationResultToQqbot(string automationResultPath) {
+    private static bool TryPublishAutomationResultToQqbot(string automationResultPath, string uploadSummary) {
         if (!File.Exists(automationResultPath)) {
             Console.WriteLine($"自动上传跳过：未找到自动模式结果 {automationResultPath}");
             return false;
@@ -304,6 +311,7 @@ static class AfterBuildEvent {
                 ["project_id"] = AutoUploadProjectId,
                 ["group_id"] = AutoUploadGroupId,
                 ["afterbuild_result_path"] = automationResultPath,
+                ["message"] = uploadSummary,
             };
             byte[] body = Utf8NoBom.GetBytes(payload.ToString());
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(QqbotArtifactUploadUrl);
@@ -337,6 +345,14 @@ static class AfterBuildEvent {
             Console.WriteLine($"自动上传失败：{ex.Message}");
             return false;
         }
+    }
+
+    private static string GetAutomationUploadSummary(string[] args) {
+        string summary = Environment.GetEnvironmentVariable("AFTERBUILD_PUBLISH_SUMMARY");
+        if (string.IsNullOrWhiteSpace(summary) && args != null && args.Length > 1) {
+            summary = string.Join("\n", args.Skip(1));
+        }
+        return string.IsNullOrWhiteSpace(summary) ? DefaultAutoUploadSummary : summary.Trim();
     }
 
     private static void PrepareR2Doorstop() {
