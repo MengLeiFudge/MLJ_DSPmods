@@ -21,17 +21,22 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
 
-qqbot/Codex automation usage passes the mode as argv:
+qqbot/Codex automation usage passes the mode as argv. Codex may pass an optional publish summary as additional argv, or via `AFTERBUILD_PUBLISH_SUMMARY`:
 
 ```bash
 ./AfterBuildEvent.exe 1
+./AfterBuildEvent.exe 1 "原因：用户反馈启动崩溃
+修复：避免 ProcessManager 静态初始化读取未就绪字段
+方式：使用固定建筑类型数量替代跨 partial 字段长度"
 ```
 
 In automation mode, option `1` keeps the packaging/R2 sync behavior but changes the user-facing side effects:
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
 - write generated package paths to `ModZips/afterbuild-result.json`
+- include a concise publish summary in `afterbuild-result.json` when provided; the summary should explain why this build exists, what was fixed or changed, and how it was fixed
 - push `afterbuild-result.json` to the local qqbot admin API, which publishes only `FractionateEverything_*.zip` to QQ group `319567534`
+- qqbot should use the provided summary as the group message content, instead of file-level diff statistics
 - qqbot deletes old bot-uploaded `FractionateEverything_*.zip` group files before uploading the new package
 - if upload succeeds, do not open Explorer
 - if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible
