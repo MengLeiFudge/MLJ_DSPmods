@@ -246,8 +246,8 @@ static class AfterBuildEvent {
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
         if (automationMode) {
-            WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false);
-            if (TryUploadAutomationPackagesToQqbot(generatedPackages)) {
+            string automationResultPath = WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false);
+            if (TryPublishAutomationResultToQqbot(automationResultPath)) {
                 Console.WriteLine("自动模式完成：已上传生成的 zip 到 QQ 群，不打开 ModZips 文件夹，不启动游戏");
                 return;
             }
@@ -280,7 +280,7 @@ static class AfterBuildEvent {
         Console.WriteLine($"复制 {source} -> {targetPath}");
     }
 
-    private static void WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame, bool openedModZips) {
+    private static string WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame, bool openedModZips) {
         string resultPath = Path.GetFullPath(@".\ModZips\afterbuild-result.json");
         JObject result = new() {
             ["automation_mode"] = true,
@@ -290,14 +290,12 @@ static class AfterBuildEvent {
         };
         File.WriteAllText(resultPath, result.ToString(), Utf8NoBom);
         Console.WriteLine($"写入自动模式结果 {resultPath}");
+        return resultPath;
     }
 
-    private static bool TryUploadAutomationPackagesToQqbot(IReadOnlyList<string> generatedPackages) {
-        List<string> zipFiles = generatedPackages
-            .Where(file => file.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && File.Exists(file))
-            .ToList();
-        if (zipFiles.Count == 0) {
-            Console.WriteLine("自动上传跳过：没有生成 zip 文件");
+    private static bool TryPublishAutomationResultToQqbot(string automationResultPath) {
+        if (!File.Exists(automationResultPath)) {
+            Console.WriteLine($"自动上传跳过：未找到自动模式结果 {automationResultPath}");
             return false;
         }
 
@@ -305,7 +303,7 @@ static class AfterBuildEvent {
             JObject payload = new() {
                 ["project_id"] = AutoUploadProjectId,
                 ["group_id"] = AutoUploadGroupId,
-                ["files"] = new JArray(zipFiles),
+                ["afterbuild_result_path"] = automationResultPath,
             };
             byte[] body = Utf8NoBom.GetBytes(payload.ToString());
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(QqbotArtifactUploadUrl);
@@ -320,7 +318,7 @@ static class AfterBuildEvent {
             using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             bool ok = (int)response.StatusCode >= 200 && (int)response.StatusCode < 300;
             if (ok) {
-                Console.WriteLine($"自动上传成功：{zipFiles.Count} 个 zip -> QQ 群 {AutoUploadGroupId}");
+                Console.WriteLine($"自动上传成功：已推送构建结果给 qqbot -> QQ 群 {AutoUploadGroupId}");
             } else {
                 Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
             }
