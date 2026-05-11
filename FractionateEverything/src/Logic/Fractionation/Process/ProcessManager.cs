@@ -1019,6 +1019,12 @@ public static partial class ProcessManager {
         }
     }
 
+    private static int GetPreferredFluidOutputStack(bool enableFluidEnhancement, int fluidStack,
+        float fluidInputCountPerCargo) {
+        int inputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
+        return enableFluidEnhancement ? Math.Max(fluidStack, inputStack) : inputStack;
+    }
+
     private static void TryOutputFluidToBelt(ref FractionatorComponent fractionator, int buildingID,
         bool enableFluidEnhancement, int fluidStack, CargoTraffic cargoTraffic, int beltId,
         float fluidInputCountPerCargo) {
@@ -1026,9 +1032,11 @@ public static partial class ProcessManager {
             return;
         }
 
+        // 流动强化不能把高堆叠输入拆回塔等级上限，否则循环带会被侧边输出口反向限速卡住。
+        int preferredStack = GetPreferredFluidOutputStack(enableFluidEnhancement, fluidStack, fluidInputCountPerCargo);
         if (enableFluidEnhancement) {
             for (int i = 0; i < MaxOutputTimes && fractionator.fluidOutputCount > 0; i++) {
-                int outputStack = GetFluidOutputStackToMove(fractionator, fluidStack);
+                int outputStack = GetFluidOutputStackToMove(fractionator, preferredStack);
                 if (outputStack <= 0) {
                     break;
                 }
@@ -1046,7 +1054,6 @@ public static partial class ProcessManager {
         if (cargoPath == null) {
             return;
         }
-        int preferredStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));
         for (int i = 0; i < MaxOutputTimes && fractionator.fluidOutputCount > 0; i++) {
             int outputStack = GetFluidOutputStackToMove(fractionator, preferredStack);
             if (outputStack <= 0) {
