@@ -21,7 +21,7 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
 
-qqbot/Codex automation usage passes the mode as argv. Codex may pass an optional publish summary as additional argv, or via `AFTERBUILD_PUBLISH_SUMMARY`:
+qqbot/Codex automation usage passes the mode as argv. Codex must pass a fresh publish summary as additional argv, or via `AFTERBUILD_PUBLISH_SUMMARY`. The summary is not optional for Codex automation because the fallback text is generic and does not tell the QQ group what changed.
 
 ```bash
 ./AfterBuildEvent.exe 1
@@ -30,11 +30,19 @@ qqbot/Codex automation usage passes the mode as argv. Codex may pass an optional
 方式：使用固定建筑类型数量替代跨 partial 字段长度"
 ```
 
+Codex automation order is mandatory:
+1. implement the change
+2. run the required verification commands
+3. commit the verified code
+4. run `AfterBuildEvent.exe 1` with a publish summary that describes that exact commit
+
+Do not run `AfterBuildEvent.exe 1` before the commit. The qqbot publish message reads the latest git commit from the repository; running before commit will publish the previous commit title even if the built DLL already contains local changes.
+
 In automation mode, option `1` keeps the packaging/R2 sync behavior but changes the user-facing side effects:
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
 - write generated package paths to `ModZips/afterbuild-result.json`
-- include a concise publish summary in `afterbuild-result.json` when provided; the summary should explain why this build exists, what was fixed or changed, and how it was fixed
+- include a concise publish summary in `afterbuild-result.json`; the summary should explain why this build exists, what was fixed or changed, how it was fixed, and which verification commands passed
 - push `afterbuild-result.json` to the local qqbot admin API, which publishes only `FractionateEverything_*.zip` to QQ group `319567534`
 - qqbot should use the provided summary as the group message content, instead of file-level diff statistics
 - qqbot deletes old bot-uploaded `FractionateEverything_*.zip` group files before uploading the new package

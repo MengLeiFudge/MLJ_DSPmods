@@ -21,7 +21,7 @@ Multiple DSP mods in one solution:
 
 **Packaging rule:** `FractionateEverything` and `GetDspData` are packaging-dependent projects. After a successful solution build for either of them, always start `AfterBuildEvent.exe`.
 - Manual/local interactive work: start `AfterBuildEvent.exe` without arguments in `wt.exe`, and do not send follow-up input. The user may choose a mode manually or close it directly.
-- qqbot/Codex automation work: run `AfterBuildEvent.exe 1` from the build output directory. This selects option 1 automatically, but must not open Explorer or launch the game.
+- qqbot/Codex automation work: first make the verified atomic git commit, then run `AfterBuildEvent.exe 1` from the build output directory. This selects option 1 automatically, but must not open Explorer or launch the game. The command must carry a fresh publish summary through `AFTERBUILD_PUBLISH_SUMMARY` or extra argv; do not rely on the default summary. The summary must match the commit being uploaded and include the user-visible reason, the fix/change, the implementation path, and the verification evidence.
 
 **Simulator rule:** `VanillaCurveSim` is a standalone simulator project. When only it changes, do not start `AfterBuildEvent.exe`; instead, it may be built and run directly.
 
@@ -38,7 +38,10 @@ wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug" 
 
 # qqbot/Codex automation after Debug build:
 cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Debug"
-./AfterBuildEvent.exe 1
+AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
+修复：xxx
+方式：xxx
+验证：MSBuild 0 warning 0 error；AfterBuildEvent.exe 1 成功" ./AfterBuildEvent.exe 1
 
 # FractionateEverything / GetDspData / shared infrastructure change:
 # Release build the full solution, then start the post-build tool in Windows Terminal hosting the EXE directly
@@ -50,7 +53,10 @@ wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release
 
 # qqbot/Codex automation after Release build:
 cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Release"
-./AfterBuildEvent.exe 1
+AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
+修复：xxx
+方式：xxx
+验证：MSBuild 0 warning 0 error；AfterBuildEvent.exe 1 成功" ./AfterBuildEvent.exe 1
 
 # VanillaCurveSim-only change: standalone Debug build and run
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
@@ -70,7 +76,7 @@ cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Release"
 **No unit tests exist.** Build verification is the quality gate:
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 - For manual `FractionateEverything` / `GetDspData` / shared infrastructure changes, always run the solution-level local `MSBuild.exe` command above before marking work complete, then start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
-- For qqbot/Codex automation changes, after the successful solution build run `AfterBuildEvent.exe 1` from the matching build output directory. Expected behavior: copy built mod files to R2, create zip packages under `ModZips`, write `ModZips/afterbuild-result.json`, do not open Explorer, and do not launch Dyson Sphere Program. The final Codex reply must include the build command/result, AfterBuildEvent command/result, generated zip file paths, R2 copy status, and the commit hash.
+- For qqbot/Codex automation changes, after the successful solution build commit the verified code first, then run `AfterBuildEvent.exe 1` from the matching build output directory with a non-empty publish summary. Expected behavior: copy built mod files to R2, create zip packages under `ModZips`, write `ModZips/afterbuild-result.json`, do not open Explorer, and do not launch Dyson Sphere Program. The final Codex reply must include the build command/result, AfterBuildEvent command/result, generated zip file paths, R2 copy status, the uploaded commit hash, and the exact publish summary used.
 - For `VanillaCurveSim`-only changes, build `VanillaCurveSim/VanillaCurveSim.csproj` and run `VanillaCurveSim.exe` directly.
 
 ## Key Files
