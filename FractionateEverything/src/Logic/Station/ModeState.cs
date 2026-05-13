@@ -42,6 +42,40 @@ public static partial class StationManager {
     /// <summary>每个交互站实体的每个槽位的容量模式设置</summary>
     private static ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode = new();
 
+    /// <summary>读取槽位模式，用于蓝图和复制参数扩展。</summary>
+    private static bool TryGetSlotModes(long entityId, int slotIndex, out int transferMode, out int capacityMode) {
+        transferMode = (int)ETransferMode.Sync;
+        capacityMode = (int)ECapacityMode.Limited;
+        bool hasValue = false;
+        if (slotTransferMode.TryGetValue(entityId, out ConcurrentDictionary<int, ETransferMode> transferDictionary)
+            && transferDictionary.TryGetValue(slotIndex, out ETransferMode transfer)) {
+            transferMode = (int)NormalizeTransferMode((int)transfer);
+            hasValue = true;
+        }
+        if (slotCapacityMode.TryGetValue(entityId, out ConcurrentDictionary<int, ECapacityMode> capacityDictionary)
+            && capacityDictionary.TryGetValue(slotIndex, out ECapacityMode capacity)) {
+            capacityMode = (int)NormalizeCapacityMode((int)capacity);
+            hasValue = true;
+        }
+        return hasValue;
+    }
+
+    /// <summary>写入槽位模式，用于从蓝图、Q 键复制和粘贴设置恢复运行态。</summary>
+    private static void SetSlotModes(long entityId, int slotIndex, int transferMode, int capacityMode) {
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ETransferMode>());
+        ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+            slotCapacityMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ECapacityMode>());
+        transferDictionary[slotIndex] = NormalizeTransferMode(transferMode);
+        capacityDictionary[slotIndex] = NormalizeCapacityMode(capacityMode);
+    }
+
+    /// <summary>清理指定实体的槽位模式，防止 entityId 复用继承旧状态。</summary>
+    private static void RemoveSlotModes(long entityId) {
+        slotTransferMode.TryRemove(entityId, out _);
+        slotCapacityMode.TryRemove(entityId, out _);
+    }
+
     /// <summary>
     /// 根据当前模式和选项索引获取下一个传输模式（循环切换）
     /// </summary>
