@@ -10,6 +10,7 @@ using System.Threading;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
+using AfterBuildEvent.DspCalcQuickUpdate;
 using static AfterBuildEvent.Utils;
 using static AfterBuildEvent.PathConfig;
 
@@ -71,6 +72,7 @@ static class AfterBuildEvent {
         Console.WriteLine("2表示更新部分需要的dll类库");
         Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
+        Console.WriteLine("5表示快速更新计算器模组版本和 raw JSON 文件名");
         string str = automationMode ? args[0].Trim() : Console.ReadLine();
         if (str == "1" || str == "") {
             UpdateModsThenStart(automationMode, args);
@@ -80,6 +82,8 @@ static class AfterBuildEvent {
             GetAllCalcJson();
         } else if (str == "4") {
             ExportCalcIcons();
+        } else if (str == "5") {
+            CalcQuickUpdateRunner.Run(args);
         } else {
             Console.WriteLine("输入有误！");
         }

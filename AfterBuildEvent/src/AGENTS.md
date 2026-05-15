@@ -1,15 +1,17 @@
 # AfterBuildEvent/src — Build Automation Tool
 
-Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines.
+Console app. Run from IDE as post-build event or standalone. The tool is now split between the legacy
+`AfterBuildEvent.cs` entry/large workflows and focused subfolders such as `DspCalcQuickUpdate/`.
 
 ## Files
 
 | File | Lines | Role |
 |---|---|---|
-| `AfterBuildEvent.cs` | 490 | `Main` entry, 3 feature implementations |
+| `AfterBuildEvent.cs` | large legacy workflow file | `Main` entry, packaging, DLL update, calculator JSON/icon workflows |
 | `Utils.cs` | 195 | Mod management helpers (combination math, r2 enable/disable) |
 | `CmdProcess.cs` | 75 | Persistent cmd.exe process wrapper |
-| `PathConfig.cs` | 66 | All path constants, auto-detects latest nuget version |
+| `PathConfig.cs` | path config | All path constants, auto-detects latest nuget version, reads external mod source paths |
+| `DspCalcQuickUpdate/` | calculator quick update | Mode 5: source-version audit, `gameData.ts` update, raw JSON filename copy |
 
 ## Modes
 
@@ -18,6 +20,11 @@ Console app. Run from IDE as post-build event or standalone. 4 files, ~826 lines
 | `1` | `UpdateModsThenStart()` | Kill DSP → copy DLLs to R2 → zip packages → launch game |
 | `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → scan/decompile R2 mod DLLs |
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
+| `4` | `ExportCalcIcons()` | Rebuild calculator icons from current raw data |
+| `5` | `CalcQuickUpdateRunner.Run()` | Quick-update calculator mod version and raw JSON filenames after source audit |
+
+Mode `5` intentionally waits for Enter before returning so the user can read the audit result and copied
+file list. Modes `1`, `3`, and `4` keep their existing completion behavior.
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
 

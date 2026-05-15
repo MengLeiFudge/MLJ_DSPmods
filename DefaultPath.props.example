@@ -5,5 +5,11 @@
         <ProfileDir>C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
         <DSPGameDir>D:\Steam\steamapps\common\Dyson Sphere Program</DSPGameDir>
         <NugetGameLibDir>C:\Users\MLJ\.nuget\packages\dysonsphereprogram.gamelibs</NugetGameLibDir>
+        <ModSourcesRootDir>D:\project\csharp\DSP MOD</ModSourcesRootDir>
+        <MoreMegaStructureSourceDir>D:\project\csharp\DSP MOD\DSPmod_MoreMegaStructures</MoreMegaStructureSourceDir>
+        <TheyComeFromVoidSourceDir>D:\project\csharp\DSP MOD\DSP_Battle</TheyComeFromVoidSourceDir>
+        <GenesisBookSourceDir>D:\project\csharp\DSP MOD\ProjectGenesis</GenesisBookSourceDir>
+        <OrbitalRingSourceDir>D:\project\csharp\DSP MOD\OrbitalRing-MOD</OrbitalRingSourceDir>
+        <FractionateEverythingSourceDir>D:\project\csharp\DSP MOD\MLJ_DSPmods\FractionateEverything</FractionateEverythingSourceDir>
     </PropertyGroup>
 </Project>
