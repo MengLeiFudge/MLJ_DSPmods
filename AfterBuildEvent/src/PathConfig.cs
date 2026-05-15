@@ -37,6 +37,18 @@ public static class PathConfig {
 
     private static string _nugetGameLibDir = $@"{UserDir}\.nuget\packages\dysonsphereprogram.gamelibs";
     public static string NugetGameLibNet45Dir;
+    private static string _modSourcesRootDir = @"D:\project\csharp\DSP MOD";
+    private static string _moreMegaStructureSourceDir = "";
+    private static string _theyComeFromVoidSourceDir = "";
+    private static string _genesisBookSourceDir = "";
+    private static string _orbitalRingSourceDir = "";
+    private static string _fractionateEverythingSourceDir = "";
+    public static string ModSourcesRootDir => _modSourcesRootDir;
+    public static string MoreMegaStructureSourceDir => _moreMegaStructureSourceDir;
+    public static string TheyComeFromVoidSourceDir => _theyComeFromVoidSourceDir;
+    public static string GenesisBookSourceDir => _genesisBookSourceDir;
+    public static string OrbitalRingSourceDir => _orbitalRingSourceDir;
+    public static string FractionateEverythingSourceDir => _fractionateEverythingSourceDir;
 
     public static string SolutionDir => @"..\..\..\..";
     public static string SolutionFullDir => ResolveSolutionFullDir();
@@ -49,15 +61,36 @@ public static class PathConfig {
 
     private static void LoadPath() {
         try {
-            XmlDocument xmlDocument;
+            XmlDocument xmlDocument = null;
             string defaultPathFile = $@"{SolutionDir}\DefaultPath.props";
             if (File.Exists(defaultPathFile)) {
                 xmlDocument = new();
                 xmlDocument.Load(defaultPathFile);
-                _r2ProfileDir = xmlDocument.SelectSingleNode("/Project/PropertyGroup/ProfileDir")?.InnerText;
-                _dspGameDir = xmlDocument.SelectSingleNode("/Project/PropertyGroup/DSPGameDir")?.InnerText;
-                _nugetGameLibDir = xmlDocument.SelectSingleNode("/Project/PropertyGroup/NugetGameLibDir")?.InnerText;
+                _r2ProfileDir = ReadPathValue(xmlDocument, "ProfileDir", _r2ProfileDir);
+                _dspGameDir = ReadPathValue(xmlDocument, "DSPGameDir", _dspGameDir);
+                _nugetGameLibDir = ReadPathValue(xmlDocument, "NugetGameLibDir", _nugetGameLibDir);
+                _modSourcesRootDir = ReadPathValue(xmlDocument, "ModSourcesRootDir", _modSourcesRootDir);
             }
+            _moreMegaStructureSourceDir = ReadPathValue(
+                xmlDocument,
+                "MoreMegaStructureSourceDir",
+                Path.Combine(_modSourcesRootDir, "DSPmod_MoreMegaStructures"));
+            _theyComeFromVoidSourceDir = ReadPathValue(
+                xmlDocument,
+                "TheyComeFromVoidSourceDir",
+                Path.Combine(_modSourcesRootDir, "DSP_Battle"));
+            _genesisBookSourceDir = ReadPathValue(
+                xmlDocument,
+                "GenesisBookSourceDir",
+                Path.Combine(_modSourcesRootDir, "ProjectGenesis"));
+            _orbitalRingSourceDir = ReadPathValue(
+                xmlDocument,
+                "OrbitalRingSourceDir",
+                Path.Combine(_modSourcesRootDir, "OrbitalRing-MOD"));
+            _fractionateEverythingSourceDir = ReadPathValue(
+                xmlDocument,
+                "FractionateEverythingSourceDir",
+                Path.Combine(SolutionFullDir, "FractionateEverything"));
             // 扫描 nuget 包目录，自动找最新已安装版本（兼容 Version="*-*" 通配符写法）
             var nugetBaseDir = new DirectoryInfo(_nugetGameLibDir);
             if (nugetBaseDir.Exists) {
@@ -72,6 +105,11 @@ public static class PathConfig {
         catch (Exception ex) {
             Console.WriteLine($"Error loading from DefaultPath.props: {ex.Message}");
         }
+    }
+
+    private static string ReadPathValue(XmlDocument xmlDocument, string propertyName, string fallback) {
+        string value = xmlDocument?.SelectSingleNode($"/Project/PropertyGroup/{propertyName}")?.InnerText;
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 
     private static string ResolveSolutionFullDir() {
