@@ -1585,6 +1585,7 @@ static class AfterBuildEvent {
         foreach (string jsonFile in Directory.GetFiles(dataDir, "*.json")) {
             JObject root = JObject.Parse(File.ReadAllText(jsonFile));
             List<string> lookupOrder = GetIconLookupOrder(Path.GetFileName(jsonFile));
+            string targetMod = lookupOrder.FirstOrDefault(modName => modName != "Vanilla") ?? "Vanilla";
             foreach ((int itemId, string iconName, _) in EnumerateRequiredCalcIcons(root)) {
                 if (string.IsNullOrWhiteSpace(iconName)) {
                     continue;
@@ -1601,9 +1602,14 @@ static class AfterBuildEvent {
                     continue;
                 }
 
-                if (!result.TryGetValue(sourceMod, out Dictionary<string, string> requiredIconFiles)) {
+                string copyTargetMod = lookupOrder.Contains(sourceMod, StringComparer.OrdinalIgnoreCase)
+                    ? sourceMod
+                    : targetMod;
+
+                // 计算器按 raw 文件启用模组顺序解析图标；跨模组兜底复用时也必须复制到当前 raw 的目标模组目录。
+                if (!result.TryGetValue(copyTargetMod, out Dictionary<string, string> requiredIconFiles)) {
                     requiredIconFiles = new(StringComparer.OrdinalIgnoreCase);
-                    result.Add(sourceMod, requiredIconFiles);
+                    result.Add(copyTargetMod, requiredIconFiles);
                 }
                 requiredIconFiles[iconName] = sourceFile;
             }
