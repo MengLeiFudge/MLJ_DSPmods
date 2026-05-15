@@ -1,4 +1,5 @@
 using System;
+using static AfterBuildEvent.PathConfig;
 
 namespace AfterBuildEvent.DspCalcQuickUpdate.Mods;
 
@@ -6,11 +7,13 @@ internal static class FractionateEverythingQuickUpdate {
     public static ModQuickUpdateSpec Create(ModSourceConfig config) {
         return new() {
             SourceConfig = config,
+            GitDir = SolutionFullDir,
+            WorktreeScope = "FractionateEverything",
             AuditPathPrefixes = [
-                "FractionateEverything.csproj",
-                "Assets/manifest.json",
-                "src/Logic/",
-                "src/Utils/ProtoID.cs",
+                "FractionateEverything/FractionateEverything.csproj",
+                "FractionateEverything/Assets/manifest.json",
+                "FractionateEverything/src/Logic/",
+                "FractionateEverything/src/Utils/ProtoID.cs",
             ],
             ReadSourceVersion = ReadVersion,
             AuditSource = QuickUpdateHelpers.ConservativeAudit,

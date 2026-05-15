@@ -13,7 +13,7 @@ internal static class QuickUpdateHelpers {
     private static readonly Regex VersionStringRegex =
         new(@"versionString\s*=\s*""([^""]+)""", RegexOptions.Compiled);
     private static readonly Regex MegaStructureTagRegex =
-        new(@"^MMSv(?<version>\d+\.\d+\.\d+)[A-Za-z]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        new(@"^MMSv(?<version>\d+\.\d+\.\d+(?:[A-Za-z]+)?)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public static string ReadVersionConst(string sourceFile) {
         string content = File.ReadAllText(sourceFile);
@@ -54,7 +54,7 @@ internal static class QuickUpdateHelpers {
 
     public static string ReadMoreMegaStructureVersionFromTags(ModQuickUpdateSpec spec) {
         ModSourceGitSync git = new();
-        CommandResult result = git.RunGit(spec.SourceDir, "tag --sort=-creatordate");
+        CommandResult result = git.RunGit(spec.GetGitDir(), "tag --sort=-creatordate");
         if (!result.Success) {
             throw new InvalidOperationException($"读取巨构 tag 失败：{result.Output}");
         }
@@ -93,7 +93,7 @@ internal static class QuickUpdateHelpers {
         }
 
         string pathspec = string.Join(" ", spec.AuditPathPrefixes.Select(QuoteGitPath));
-        CommandResult diffResult = git.RunGit(spec.SourceDir, $"diff --name-only {oldRevision}..{newRevision} -- {pathspec}");
+        CommandResult diffResult = git.RunGit(spec.GetGitDir(), $"diff --name-only {oldRevision}..{newRevision} -- {pathspec}");
         if (!diffResult.Success) {
             return SourceAuditResult.Uncertain($"{spec.DisplayName} 无法比较版本源码差异", diffResult.OutputLines);
         }
@@ -111,12 +111,12 @@ internal static class QuickUpdateHelpers {
     private static string FindRevisionForVersion(ModQuickUpdateSpec spec, string version) {
         ModSourceGitSync git = new();
         foreach (string candidate in BuildVersionRevisionCandidates(spec, version)) {
-            CommandResult result = git.RunGit(spec.SourceDir, $"rev-parse --verify {candidate}^{{commit}}");
+            CommandResult result = git.RunGit(spec.GetGitDir(), $"rev-parse --verify {candidate}^{{commit}}");
             if (result.Success && result.OutputLines.Count > 0) {
                 return result.OutputLines[0].Trim();
             }
         }
-        CommandResult grep = git.RunGit(spec.SourceDir, $"log --all --grep={QuoteGitArgument("v" + version)} --format=%H -1");
+        CommandResult grep = git.RunGit(spec.GetGitDir(), $"log --all --grep={QuoteGitArgument("v" + version)} --format=%H -1");
         if (grep.Success && grep.OutputLines.Count > 0) {
             return grep.OutputLines[0].Trim();
         }

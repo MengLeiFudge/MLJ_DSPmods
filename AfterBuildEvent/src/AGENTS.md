@@ -25,7 +25,10 @@ Console app. Run from IDE as post-build event or standalone. The tool is now spl
 
 Mode `5` intentionally waits for Enter before returning so the user can read the audit result and copied
 file list. It processes all configured calculator mods by default; an optional second argv may narrow the
-run to one mod for debugging. Modes `1`, `3`, and `4` keep their existing completion behavior.
+run to one mod for debugging. Git network sync in mode `5` uses a short timeout; after the first remote
+timeout in a run, the remaining mods skip remote sync and continue with local source inspection. This keeps
+offline quick-update checks from spending tens of seconds per mod waiting for GitHub. Modes `1`, `3`, and
+`4` keep their existing completion behavior.
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
 
