@@ -453,7 +453,6 @@ public class GetDspData : BaseUnityPlugin {
             var items = new JArray();
             dataObj.Add("items", items);
             foreach (var item in LDB.items.dataArray) {
-                addItem(item, items);
                 //添加与这个物品相关的特殊配方（游戏中不存在，但是计算器需要它们来计算）
                 //0.可直接采集的物品（黑雾不算）对应开采配方需要插入到最前，以尽量规避线性规划无解
                 int firstIdx = recipes.Count;
@@ -683,6 +682,7 @@ public class GetDspData : BaseUnityPlugin {
                     AddFracRecipes(recipes, item);
                 }
             }
+            AddReferencedItems(items, recipes);
             //科技
             var techs = new JArray();
             dataObj.Add("techs", techs);
@@ -817,6 +817,34 @@ public class GetDspData : BaseUnityPlugin {
                 { "OutputAppend", BuildOutputInfoArray(recipe.OutputAppend) },
                 { "IconName", ResolveIconName(item) },
             });
+        }
+    }
+
+    private static void AddReferencedItems(JArray items, JArray recipes) {
+        HashSet<int> requiredItemIds = [];
+        foreach (JObject recipe in recipes.OfType<JObject>()) {
+            AddIds(requiredItemIds, recipe["Items"]);
+            AddIds(requiredItemIds, recipe["Results"]);
+            AddIds(requiredItemIds, recipe["Factories"]);
+        }
+
+        foreach (ItemProto item in LDB.items.dataArray.OrderBy(item => item.ID)) {
+            if (requiredItemIds.Contains(item.ID)) {
+                addItem(item, items);
+            }
+        }
+    }
+
+    private static void AddIds(HashSet<int> target, JToken token) {
+        if (token is not JArray array) {
+            return;
+        }
+
+        foreach (JToken item in array) {
+            int? id = item.Value<int?>();
+            if (id.HasValue) {
+                target.Add(id.Value);
+            }
         }
     }
 
