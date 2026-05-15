@@ -12,6 +12,8 @@ internal sealed class ModQuickUpdateSpec {
     public string CalcName => SourceConfig.CalcName;
     public string DisplayName => SourceConfig.DisplayName;
     public string SourceDir => SourceConfig.SourceDir;
+    public string GitDir { get; set; } = "";
+    public string WorktreeScope { get; set; } = "";
     public string VersionRemote => SourceConfig.VersionRemote;
     public string PullRemote => SourceConfig.PullRemote;
     public string PullBranch => SourceConfig.PullBranch;
@@ -24,6 +26,14 @@ internal sealed class ModQuickUpdateSpec {
             throw new FileNotFoundException($"未找到 {DisplayName} 源码文件：{path}", path);
         }
         return path;
+    }
+
+    public string GetGitDir() {
+        return string.IsNullOrWhiteSpace(GitDir) ? SourceDir : GitDir;
+    }
+
+    public string GetWorktreeScope() {
+        return string.IsNullOrWhiteSpace(WorktreeScope) ? "." : WorktreeScope;
     }
 
     public SourceAuditResult RunAudit() {
