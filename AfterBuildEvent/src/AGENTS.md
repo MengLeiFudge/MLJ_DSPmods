@@ -21,10 +21,11 @@ Console app. Run from IDE as post-build event or standalone. The tool is now spl
 | `2` | `UpdateLibDll()` | Publicize + decompile game DLLs → scan/decompile R2 mod DLLs |
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
 | `4` | `ExportCalcIcons()` | Rebuild calculator icons from current raw data |
-| `5` | `CalcQuickUpdateRunner.Run()` | Quick-update calculator mod version and raw JSON filenames after source audit |
+| `5` | `CalcQuickUpdateRunner.Run()` | Check all configured calculator mods and quick-update versions/raw JSON filenames when source audit passes |
 
 Mode `5` intentionally waits for Enter before returning so the user can read the audit result and copied
-file list. Modes `1`, `3`, and `4` keep their existing completion behavior.
+file list. It processes all configured calculator mods by default; an optional second argv may narrow the
+run to one mod for debugging. Modes `1`, `3`, and `4` keep their existing completion behavior.
 
 Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
 
