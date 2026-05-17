@@ -1093,10 +1093,21 @@ public class GetDspData : BaseUnityPlugin {
                 LogWarning($"{proto.name}制造速度设为1.0");
                 obj.Add("Speed", 1.0);
             }
-            //obj.Add("MultipleOutput", proto.ID == I负熵熔炉 && GenesisBookEnable ? 2 : 1);
+            obj.Add("MultipleOutput", GetBuildingMultipleOutput(proto));
             obj.Add("Space", proto.GetSpace());
         }
         add.Add(obj);
+    }
+
+    static int GetBuildingMultipleOutput(ItemProto proto) {
+        // 这两个双倍产物来自模组 patch 行为，不是原版建筑通用数据，只能按已知建筑硬编码。
+        if (GenesisBookEnable && proto.ID == I负熵熔炉) {
+            return 2;
+        }
+        if (OrbitalRingEnable && proto.ID == I量子化工厂) {
+            return 2;
+        }
+        return 1;
     }
 
     static void addTech(TechProto proto, JArray add) {
@@ -1167,39 +1178,6 @@ public class GetDspData : BaseUnityPlugin {
             //创世+巨构情况下，多功能集成组件被专门设计为抛出异常，因为canMiningByMS已添加对应配方
             LogWarning(ex.ToString());
             return;
-        }
-        if (GenesisBookEnable && Factories.Contains(I负熵熔炉)) {
-            if ((int)proto.Type is (int)ERecipeType_GB.Smelt or (int)ERecipeType_GB.标准冶炼) {
-                //todo: 确认配方
-                Factories = Factories.Where(x => x != I负熵熔炉).ToArray();
-                addRecipe(proto, add, Factories);
-
-                RecipeProto proto2 = new RecipeProto();
-                proto.CopyPropsTo(ref proto2);
-                proto2.Type = unchecked((ERecipeType)(-1));
-                proto2.name = $"[负熵熔炉双倍产物]{proto.name}";
-                for (int i = 0; i < proto2.ResultCounts.Length; i++) {
-                    proto2.ResultCounts[i] *= 2;
-                }
-                addRecipe(proto2, add, [I负熵熔炉]);
-                return;
-            }
-        }
-        if (OrbitalRingEnable && Factories.Contains(I量子化工厂)) {
-            if ((int)proto.Type is (int)ERecipeType_OR.Chemical) {
-                Factories = Factories.Where(x => x != I量子化工厂).ToArray();
-                addRecipe(proto, add, Factories);
-
-                RecipeProto proto2 = new RecipeProto();
-                proto.CopyPropsTo(ref proto2);
-                proto2.Type = unchecked((ERecipeType)(-1));
-                proto2.name = $"[量子化工厂双倍产物]{proto.name}";
-                for (int i = 0; i < proto2.ResultCounts.Length; i++) {
-                    proto2.ResultCounts[i] *= 2;
-                }
-                addRecipe(proto2, add, [I量子化工厂]);
-                return;
-            }
         }
         addRecipe(proto, add, Factories);
     }
