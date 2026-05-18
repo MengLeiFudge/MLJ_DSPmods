@@ -180,6 +180,43 @@ public static class ProcessManager {
         return true;
     }
 
+    private static ProductOutputInfo FindProduct(List<ProductOutputInfo> products, int itemId,
+        bool mainOnly = false) {
+
+        foreach (ProductOutputInfo product in products) {
+            if (product.itemId != itemId) {
+                continue;
+            }
+            if (mainOnly && !product.isMainOutput) {
+                continue;
+            }
+            return product;
+        }
+        return null;
+    }
+
+    private static bool ContainsProduct(List<ProductOutputInfo> products, int itemId) {
+        return FindProduct(products, itemId) != null;
+    }
+
+    private static bool HasAnyProductAtLeast(List<ProductOutputInfo> products, int countThreshold) {
+        foreach (ProductOutputInfo product in products) {
+            if (product.count >= countThreshold) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool AreAllProductsEmpty(List<ProductOutputInfo> products) {
+        foreach (ProductOutputInfo product in products) {
+            if (product.count > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /// <summary>
     /// InternalUpdate的默认实现。
     /// </summary>
@@ -205,13 +242,13 @@ public static class ProcessManager {
                                      || products.Count != recipe.OutputMain.Count + recipe.OutputAppend.Count;
             if (!needResetProducts) {
                 foreach (OutputInfo info in recipe.OutputMain) {
-                    if (products.All(p => p.itemId != info.OutputID)) {
+                    if (!ContainsProduct(products, info.OutputID)) {
                         needResetProducts = true;
                         break;
                     }
                 }
                 foreach (OutputInfo info in recipe.OutputAppend) {
-                    if (products.All(p => p.itemId != info.OutputID)) {
+                    if (!ContainsProduct(products, info.OutputID)) {
                         needResetProducts = true;
                         break;
                     }
@@ -234,7 +271,7 @@ public static class ProcessManager {
         }
         //第一个主输出，recipe有则必定有，recipe没有则必定没有
         int product0Id = __instance.productId;
-        ProductOutputInfo product0 = products.FirstOrDefault(p => p.itemId == product0Id);
+        ProductOutputInfo product0 = FindProduct(products, product0Id);
         //如果通过面板取了物品，需要同步数目到products
         if (product0 != null) {
             product0.count = __instance.productOutputCount;
@@ -257,8 +294,9 @@ public static class ProcessManager {
         int fluidOutputMax = building.FluidOutputMax();
         bool enableFracForever = building.EnableFracForever();
         bool moveDirectly = recipe == null || recipe.Locked;
+        bool hasFullProduct = HasAnyProductAtLeast(products, productOutputMax);
         if (__instance.fluidInputCount > 0
-            && (products.All(p => p.count < productOutputMax) || enableFracForever)
+            && (!hasFullProduct || enableFracForever)
             && __instance.fluidOutputCount < fluidOutputMax) {
             __instance.progress += (int)(power
                                          * (500.0 / 3.0)
@@ -293,7 +331,7 @@ public static class ProcessManager {
                 }
                 //如果已研究分馏永动，判断分馏塔是否进入分馏永动状态
                 if (enableFracForever
-                    && products.Any(p => p.count >= productOutputMax)
+                    && hasFullProduct
                     && __instance.fluidOutputCount < fluidOutputMax) {
                     moveDirectly = true;
                     goto MoveDirectly;
@@ -344,8 +382,16 @@ public static class ProcessManager {
                             if (itemID == product0Id) {
                                 product0.count += itemCount;
                                 __instance.productOutputCount = product0.count;
+                                hasFullProduct = hasFullProduct || product0.count >= productOutputMax;
                             } else {
-                                products.FirstOrDefault(product => product.itemId == itemID).count += itemCount;
+                                ProductOutputInfo target = FindProduct(products, itemID);
+                                if (target != null) {
+                                    target.count += itemCount;
+                                    hasFullProduct = hasFullProduct || target.count >= productOutputMax;
+                                } else {
+                                    products.Add(new ProductOutputInfo(p.isMainOutput, itemID, itemCount));
+                                    hasFullProduct = hasFullProduct || itemCount >= productOutputMax;
+                                }
                             }
                         }
                     }
@@ -557,7 +603,7 @@ public static class ProcessManager {
             } else if (buildingID == IFE交互塔
                        && __instance.belt1 <= 0
                        && __instance.belt2 <= 0
-                       && products.All(p => p.count == 0)) {
+                       && AreAllProductsEmpty(products)) {
                 //正面作为输入，数据传到数据中心。可接受未到最大价值，且GridIndex可见的物品。
                 interactionMode = true;
                 interactionItemId =
@@ -579,7 +625,7 @@ public static class ProcessManager {
             // 如果缓存区全部清空，重置全部
             if (__instance.fluidInputCount == 0
                 && __instance.fluidOutputCount == 0
-                && products.All(p => p.count == 0)) {
+                && AreAllProductsEmpty(products)) {
                 __instance.fluidId = 0;
                 __instance.productId = 0;
                 products.Clear();
@@ -587,7 +633,7 @@ public static class ProcessManager {
                 signPool[__instance.entityId].iconType = 0U;
             }
             __instance.isWorking = __instance.fluidInputCount > 0
-                                   && products.All(p => p.count < productOutputMax)
+                                   && !HasAnyProductAtLeast(products, productOutputMax)
                                    && __instance.fluidOutputCount < fluidOutputMax
                                    && !moveDirectly;
         }
@@ -747,7 +793,7 @@ public static class ProcessManager {
             } else if (fractionator.fluidOutputCount >= fluidOutputMax) {
                 __instance.stateText.text = "原料堆积".Translate();
                 __instance.stateText.color = __instance.workStoppedColor;
-            } else if (products.Any(p => p.count >= productOutputMax)) {
+            } else if (HasAnyProductAtLeast(products, productOutputMax)) {
                 if (building.EnableFracForever()) {
                     __instance.stateText.text = "分馏永动".Translate();
                     __instance.stateText.color = __instance.workStoppedColor;
