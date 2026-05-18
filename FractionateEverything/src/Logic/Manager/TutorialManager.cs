@@ -401,13 +401,14 @@ public static class TutorialManager {
             $"""
              The Interaction Station is a logistic station that can interact with the Fractionation Data Centre.
 
-             The Interaction Station has multiple modes to adapt to different scenarios.
-             1. Items can be downloaded from the data centre when supply is unlocked or demand is locked. Items will no longer be downloaded after the slots are above the set threshold (initial value 20%).
-             2. When supply is locked or demand is unlocked, items can be uploaded to the data centre. Items will no longer be uploaded after the items in the slot are below the set threshold (80% of the initial value). After a certain number of items have been stored in the Fractionation Data Centre (10 groups for buildings, 100 groups for non-buildings), items can no longer be uploaded in this way.
-             The threshold value can be modified on the Miscellaneous Settings page.
-             3. When storage is unlocked, the number of items will be maintained at half of the slot limit as much as possible. There is no limit to the number of items that can be uploaded in this way.
-             4. When storage is locked, the number of items will be kept as close as possible to the number of items currently stored in the Fractionation Data Centre.
-             When the interstellar policy and local policy are different, they will take effect at the same time; when the interstellar policy is storage, only the local policy will be considered.
+             Each slot of an Interaction Station has a transfer mode and a capacity mode.
+             1. Sync: uploads the excess part when the slot is above the upload threshold, and downloads items when the slot is below the download threshold.
+             2. Upload Only: only uploads excess items to the Fractionation Data Centre.
+             3. Download Only: only downloads items from the Fractionation Data Centre to the threshold.
+             4. Limited Upload: stops uploading after the data centre reaches the target amount. The target is 10 stacks for buildings, and value-based for other items.
+             5. Infinite Upload: ignores the target amount and keeps uploading as long as the slot is above the upload threshold.
+             The upload/download thresholds can be modified on the Miscellaneous Settings page.
+             Q-copy, copy/paste settings, and blueprints preserve these per-slot modes.
 
              Uploading and downloading items consumes power from the Interaction Station. The higher the value of the item, the more power it consumes; the higher the enhancement level, the less power it consumes.
              The update frequency of the Interaction Station is 30 ticks (0.5s). When uploading or downloading items, individual slots consume up to '1/number of slots' of the Interaction Station's current power each time.
@@ -417,13 +418,14 @@ public static class TutorialManager {
             $"""
              物流交互站是可以与分馏数据中心进行物品交互的物流运输站。
 
-             物流交互站具有多种模式，以便于适配不同的场景。
-             1.供应无锁或需求锁定时，可从数据中心下载物品。槽位的物品高于设定的阈值（初始值20%）之后，物品将不再下载。
-             2.供应锁定或需求无锁时，可上传物品至数据中心。槽位的物品低于设定的阈值（初始值80%）之后，物品将不再上传。当分馏数据中心存储的物品达到一定数目后（建筑10组，非建筑100组），无法再通过此方式上传物品。
-             阈值可以在杂项设置页面修改。
-             3.仓储无锁时，物品数目将尽量维持在槽位上限的一半。此方式上传物品没有数目限制。
-             4.仓储锁定时，物品数目将尽量与分馏数据中心当前存储的物品数目保持一致。
-             当星际策略和本地策略不同时，它们将同时生效；当星际策略为仓储时，仅考虑本地策略。
+             物流交互站的每个槽位都有传输模式和容量模式。
+             1.双向同步：槽位数量高于上传阈值时上传超出部分，低于下载阈值时从分馏数据中心下载。
+             2.仅上传：只把超过上传阈值的物品上传到分馏数据中心。
+             3.仅下载：只从分馏数据中心下载物品，直到槽位达到下载阈值。
+             4.有限上传：分馏数据中心达到目标数量后停止上传。建筑目标为10组，其他物品按物品价值计算目标数量。
+             5.无限上传：不检查目标数量，只要槽位高于上传阈值就继续上传。
+             上传/下载阈值可以在杂项设置页面修改。
+             Q键复制、复制/粘贴设置和蓝图会保留这些每槽模式。
 
              上传、下载物品都会消耗物流交互站的电力。物品价值越高，消耗的电力越大；强化等级越高，消耗的电力越少。
              物流交互站的更新频率是30tick（0.5s）。上传或下载物品时，单个槽位每次至多消耗物流交互站当前电量的“1/槽位数目”。
