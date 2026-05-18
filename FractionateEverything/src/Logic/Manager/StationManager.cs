@@ -108,6 +108,11 @@ public static class StationManager {
         transferGameObjects.Clear();
         capacityGameObjects.Clear();
         controlPanelSdButtonOriginalPosition.Clear();
+        inspectorOriginalMasterWidth.Clear();
+        inspectorOriginalTopGroupWidth.Clear();
+        inspectorOriginalBgWidth.Clear();
+        inspectorOriginalRightGroupWidth.Clear();
+        filterOriginalStateGroupPosition.Clear();
         controlPanelStoragePopup.Clear();
         controlPanelStoragePopupOriginalX.Clear();
         controlPanelTransferGameObjects.Clear();
@@ -224,6 +229,11 @@ public static class StationManager {
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
     private static readonly Dictionary<RectTransform, float> controlPanelSdButtonOriginalPosition = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalMasterWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalTopGroupWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalBgWidth = [];
+    private static readonly Dictionary<RectTransform, float> inspectorOriginalRightGroupWidth = [];
+    private static readonly Dictionary<RectTransform, float> filterOriginalStateGroupPosition = [];
     private static readonly ConcurrentDictionary<UIControlPanelStationStorage, bool> controlPanelStoragePopup = new();
     private static readonly Dictionary<RectTransform, float> controlPanelStoragePopupOriginalX = [];
     private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
@@ -1693,6 +1703,192 @@ public static class StationManager {
 
         Transform parent = storage.localSdButton?.transform?.parent;
         return parent?.Find(buttonName);
+    }
+
+    private static float EnsureControlPanelSpacing(UIControlPanelStationInspector inspector) {
+        if (spacingX > 0f) {
+            return spacingX;
+        }
+
+        RectTransform rectTransform = inspector?.storageUIPrefab?.localSdButton?.GetComponent<RectTransform>();
+        if (rectTransform != null) {
+            spacingX = rectTransform.sizeDelta.x + ExtraSpacing;
+        }
+        return spacingX;
+    }
+
+    private static RectTransform FindInspectorRightGroupRect(UIControlPanelStationInspector inspector) {
+        if (inspector == null) {
+            return null;
+        }
+
+        RectTransform inspectorRect = inspector.rectTransform;
+        Transform rightGroupTransform = inspectorRect?.parent?.Find("right-group");
+        if (rightGroupTransform == null && inspector.masterWindow != null) {
+            rightGroupTransform = inspector.masterWindow.transform.Find("right-group");
+        }
+        if (rightGroupTransform == null && inspectorRect != null && inspectorRect.name == "right-group") {
+            return inspectorRect;
+        }
+        if (rightGroupTransform == null && inspector.masterWindow != null) {
+            RectTransform[] children = inspector.masterWindow.GetComponentsInChildren<RectTransform>(true);
+            foreach (RectTransform child in children) {
+                if (child != null && child.name == "right-group") {
+                    rightGroupTransform = child;
+                    break;
+                }
+            }
+        }
+
+        return rightGroupTransform as RectTransform;
+    }
+
+    private static void RestoreInspectorRightGroup(RectTransform rightGroupRect) {
+        if (rightGroupRect != null
+            && inspectorOriginalRightGroupWidth.TryGetValue(rightGroupRect, out float originalWidth)) {
+            rightGroupRect.sizeDelta = new Vector2(originalWidth, rightGroupRect.sizeDelta.y);
+        }
+    }
+
+    private static void RestoreInspectorStorageWidths(UIControlPanelStationInspector inspector) {
+        if (inspector?.storageUIs == null) {
+            return;
+        }
+
+        foreach (UIControlPanelStationStorage storage in inspector.storageUIs) {
+            if (storage == null) {
+                continue;
+            }
+
+            RectTransform topGroup = storage.transform.Find("top-group") as RectTransform;
+            if (topGroup != null
+                && inspectorOriginalTopGroupWidth.TryGetValue(topGroup, out float originalTopGroupWidth)) {
+                topGroup.sizeDelta = new Vector2(originalTopGroupWidth, topGroup.sizeDelta.y);
+            }
+
+            RectTransform bg = storage.transform.Find("bg") as RectTransform;
+            if (bg != null && inspectorOriginalBgWidth.TryGetValue(bg, out float originalBgWidth)) {
+                bg.sizeDelta = new Vector2(originalBgWidth, bg.sizeDelta.y);
+            }
+        }
+    }
+
+    private static void WidenInspectorStorageWidths(UIControlPanelStationInspector inspector) {
+        if (inspector?.storageUIs == null) {
+            return;
+        }
+
+        foreach (UIControlPanelStationStorage storage in inspector.storageUIs) {
+            if (storage == null) {
+                continue;
+            }
+
+            RectTransform topGroup = storage.transform.Find("top-group") as RectTransform;
+            if (topGroup != null) {
+                float originalTopGroupWidth = GetOrCacheOriginal(inspectorOriginalTopGroupWidth, topGroup,
+                    x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
+                topGroup.sizeDelta = new Vector2(originalTopGroupWidth + spacingX, topGroup.sizeDelta.y);
+            }
+
+            RectTransform bg = storage.transform.Find("bg") as RectTransform;
+            if (bg != null) {
+                float originalBgWidth = GetOrCacheOriginal(inspectorOriginalBgWidth, bg,
+                    x => x.rect.width > 0f ? x.rect.width : x.sizeDelta.x);
+                bg.sizeDelta = new Vector2(originalBgWidth + spacingX, bg.sizeDelta.y);
+            }
+        }
+    }
+
+    private static void RestoreControlPanelInspectorLayout(UIControlPanelStationInspector inspector,
+        RectTransform rightGroupRect) {
+        if (inspector?.storageUIs != null) {
+            foreach (UIControlPanelStationStorage storage in inspector.storageUIs) {
+                RestoreControlPanelStorageSlot(storage);
+            }
+        }
+
+        RestoreInspectorStorageWidths(inspector);
+
+        RectTransform stateGroupTrans = inspector?.masterWindow?.filterPanel?.stateFilterGroupTrans;
+        if (stateGroupTrans != null
+            && filterOriginalStateGroupPosition.TryGetValue(stateGroupTrans, out float stateGroupX)) {
+            stateGroupTrans.anchoredPosition = new Vector2(stateGroupX, stateGroupTrans.anchoredPosition.y);
+        }
+
+        RectTransform masterRect = inspector?.masterWindow != null
+            ? inspector.masterWindow.transform as RectTransform
+            : null;
+        if (masterRect != null && inspectorOriginalMasterWidth.TryGetValue(masterRect, out float masterWidth)) {
+            masterRect.sizeDelta = new Vector2(masterWidth, masterRect.sizeDelta.y);
+        }
+
+        RestoreInspectorRightGroup(rightGroupRect);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector._OnUpdate))]
+    public static void UIControlPanelStationInspector_OnUpdate_Postfix(UIControlPanelStationInspector __instance) {
+        if (__instance.stationId == 0 || __instance.factory == null) {
+            return;
+        }
+
+        StationComponent station = __instance.transport?.stationPool[__instance.stationId];
+        if (station == null || station.id != __instance.stationId) {
+            return;
+        }
+
+        EnsureControlPanelSpacing(__instance);
+        int buildingID = __instance.factory.entityPool[station.entityId].protoId;
+        RectTransform rightGroupRect = FindInspectorRightGroupRect(__instance);
+        if (!IsInteractionStation(buildingID)
+            || __instance.currentTabPanel != EUIControlPanelStationPanel.Info) {
+            RestoreControlPanelInspectorLayout(__instance, rightGroupRect);
+            return;
+        }
+
+        WidenInspectorStorageWidths(__instance);
+
+        bool logisticShipWarpDrive = GameMain.history.logisticShipWarpDrive;
+        RectTransform powerRect = __instance.powerGroupRect;
+        if (powerRect != null) {
+            float basePowerWidth = station.isStellar
+                ? (logisticShipWarpDrive ? 320f : 380f)
+                : 440f;
+            powerRect.sizeDelta = new Vector2(basePowerWidth + spacingX, 40f);
+        }
+
+        if (__instance.energyText != null && station.energyMax > 0) {
+            float energyRatio = (float)station.energy / station.energyMax;
+            float energyTextBaseX = (station.isStellar ? (logisticShipWarpDrive ? 180f : 240f) : 300f) + spacingX;
+            float energyTextX = energyRatio > 0.7f
+                ? Mathf.Round(energyTextBaseX * energyRatio - 30f)
+                : Mathf.Round(energyTextBaseX * energyRatio + 30f);
+            __instance.energyText.rectTransform.anchoredPosition =
+                new Vector2(energyTextX, __instance.energyText.rectTransform.anchoredPosition.y);
+        }
+
+        RectTransform masterRect = __instance.masterWindow != null
+            ? __instance.masterWindow.transform as RectTransform
+            : null;
+        if (masterRect != null) {
+            float originalMasterWidth =
+                GetOrCacheOriginal(inspectorOriginalMasterWidth, masterRect, x => x.sizeDelta.x);
+            masterRect.sizeDelta = new Vector2(originalMasterWidth + spacingX, masterRect.sizeDelta.y);
+        }
+
+        RectTransform stateGroupTrans = __instance.masterWindow?.filterPanel?.stateFilterGroupTrans;
+        if (stateGroupTrans != null) {
+            float originalStateGroupX = GetOrCacheOriginal(filterOriginalStateGroupPosition, stateGroupTrans,
+                x => x.anchoredPosition.x);
+            stateGroupTrans.anchoredPosition =
+                new Vector2(originalStateGroupX + spacingX, stateGroupTrans.anchoredPosition.y);
+        }
+
+        if (rightGroupRect != null) {
+            float originalRightWidth =
+                GetOrCacheOriginal(inspectorOriginalRightGroupWidth, rightGroupRect, x => x.sizeDelta.x);
+            rightGroupRect.sizeDelta = new Vector2(originalRightWidth + spacingX, rightGroupRect.sizeDelta.y);
+        }
     }
 
     private static void SetStoragePopupShift(UIStationStorage storage, bool shiftRight) {
