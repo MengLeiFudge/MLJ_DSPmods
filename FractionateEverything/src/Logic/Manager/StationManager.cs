@@ -104,6 +104,7 @@ public static class StationManager {
         slotCapacityMode.Clear();
         storageWidth.Clear();
         storagePopup.Clear();
+        storageSdButtonOriginalPosition.Clear();
         storagePopupOriginalX.Clear();
         transferGameObjects.Clear();
         capacityGameObjects.Clear();
@@ -225,6 +226,7 @@ public static class StationManager {
     private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
     private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
+    private static readonly Dictionary<RectTransform, float> storageSdButtonOriginalPosition = [];
     private static readonly Dictionary<RectTransform, float> storagePopupOriginalX = [];
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
@@ -419,21 +421,27 @@ public static class StationManager {
                 RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
                 spacingX = refRect.sizeDelta.x + ExtraSpacing;
                 string tName = "FE_transferModeButton_" + index;
-                Transform tTrans = storage.transform.Find(tName);
+                Transform tTrans = FindStationModeButtonTransform(storage, tName);
                 if (tTrans == null) {
                     GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject,
                         storage.localSdButton.transform.parent, false);
                     go.name = tName;
-                    transferGameObjects.TryAdd(storage, go);
+                    go.GetComponent<Button>()?.onClick.RemoveAllListeners();
+                    transferGameObjects[storage] = go;
+                } else {
+                    transferGameObjects[storage] = tTrans.gameObject;
                 }
 
                 string cName = "FE_capacityModeButton_" + index;
-                Transform cTrans = storage.transform.Find(cName);
+                Transform cTrans = FindStationModeButtonTransform(storage, cName);
                 if (cTrans == null) {
                     GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject,
                         storage.localSdButton.transform.parent, false);
                     go.name = cName;
-                    capacityGameObjects.TryAdd(storage, go);
+                    go.GetComponent<Button>()?.onClick.RemoveAllListeners();
+                    capacityGameObjects[storage] = go;
+                } else {
+                    capacityGameObjects[storage] = cTrans.gameObject;
                 }
 
                 storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
@@ -452,6 +460,7 @@ public static class StationManager {
         sliderOriginalPosition.Clear();
         storageWidth.Clear();
         storagePopup.Clear();
+        storageSdButtonOriginalPosition.Clear();
         storagePopupOriginalX.Clear();
         transferGameObjects.Clear();
         capacityGameObjects.Clear();
@@ -464,17 +473,21 @@ public static class StationManager {
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnOpen))]
     public static void UIStationStorage__OnOpen_Postfix(UIStationStorage __instance) {
         string tName = "FE_transferModeButton_" + __instance.index;
-        Transform tTrans = __instance.transform.Find(tName);
+        Transform tTrans = FindStationModeButtonTransform(__instance, tName);
         if (tTrans != null) {
             Button transferBtn = tTrans.GetComponent<Button>();
-            transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+            transferBtn?.onClick.RemoveAllListeners();
+            transferBtn?.onClick.AddListener(() => ShowTransferPopup(__instance));
+            transferGameObjects[__instance] = tTrans.gameObject;
         }
 
         string cName = "FE_capacityModeButton_" + __instance.index;
-        Transform cTrans = __instance.transform.Find(cName);
+        Transform cTrans = FindStationModeButtonTransform(__instance, cName);
         if (cTrans != null) {
             Button capBtn = cTrans.GetComponent<Button>();
-            capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+            capBtn?.onClick.RemoveAllListeners();
+            capBtn?.onClick.AddListener(() => ShowCapacityPopup(__instance));
+            capacityGameObjects[__instance] = cTrans.gameObject;
         }
     }
 
@@ -482,18 +495,12 @@ public static class StationManager {
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnClose))]
     public static void UIStationStorage__OnClose_Postfix(UIStationStorage __instance) {
         string tName = "FE_transferModeButton_" + __instance.index;
-        Transform tTrans = __instance.transform.Find(tName);
-        if (tTrans != null) {
-            Button transferBtn = tTrans.GetComponent<Button>();
-            transferBtn.onClick.RemoveAllListeners();
-        }
+        Transform tTrans = FindStationModeButtonTransform(__instance, tName);
+        tTrans?.GetComponent<Button>()?.onClick.RemoveAllListeners();
 
         string cName = "FE_capacityModeButton_" + __instance.index;
-        Transform cTrans = __instance.transform.Find(cName);
-        if (cTrans != null) {
-            Button capBtn = cTrans.GetComponent<Button>();
-            capBtn.onClick.RemoveAllListeners();
-        }
+        Transform cTrans = FindStationModeButtonTransform(__instance, cName);
+        cTrans?.GetComponent<Button>()?.onClick.RemoveAllListeners();
     }
 
     [HarmonyPostfix]
@@ -507,9 +514,12 @@ public static class StationManager {
             if (rectTransform != null && storageWidth.ContainsKey(storage)) {
                 storageWidth.TryRemove(storage, out _);
                 rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x - spacingX, rectTransform.sizeDelta.y);
-                RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
-                keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x + spacingX,
-                    keepModeComponent.anchoredPosition.y);
+                RectTransform keepModeComponent = storage.keepModeButton?.GetComponent<RectTransform>();
+                if (keepModeComponent != null
+                    && storageSdButtonOriginalPosition.TryGetValue(keepModeComponent, out float keepModeOriginal)) {
+                    keepModeComponent.anchoredPosition = new Vector2(keepModeOriginal,
+                        keepModeComponent.anchoredPosition.y);
+                }
             }
             if (transferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
                 transferGO.SetActive(false);
@@ -523,18 +533,30 @@ public static class StationManager {
         if (rectTransform != null && !storageWidth.ContainsKey(storage)) {
             storageWidth.TryAdd(storage, true);
             rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x + spacingX, rectTransform.sizeDelta.y);
-            RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
-            keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x - spacingX,
-                keepModeComponent.anchoredPosition.y);
+            RectTransform keepModeComponent = storage.keepModeButton?.GetComponent<RectTransform>();
+            if (keepModeComponent != null) {
+                float keepModeOriginal = GetOrCacheOriginal(storageSdButtonOriginalPosition, keepModeComponent,
+                    x => x.anchoredPosition.x);
+                keepModeComponent.anchoredPosition = new Vector2(keepModeOriginal - spacingX,
+                    keepModeComponent.anchoredPosition.y);
+            }
         }
 
+        RectTransform localComponent = storage.localSdButton?.GetComponent<RectTransform>();
+        RectTransform remoteComponent = storage.remoteSdButton?.GetComponent<RectTransform>();
         if (storageWidth.ContainsKey(storage)) {
-            RectTransform localComponent = storage.localSdButton.GetComponent<RectTransform>();
-            localComponent.anchoredPosition = new Vector2(localComponent.anchoredPosition.x - spacingX,
-                localComponent.anchoredPosition.y);
-            RectTransform remoteComponent = storage.remoteSdButton.GetComponent<RectTransform>();
-            remoteComponent.anchoredPosition = new Vector2(remoteComponent.anchoredPosition.x - spacingX,
-                remoteComponent.anchoredPosition.y);
+            if (localComponent != null) {
+                float localOriginal = GetOrCacheOriginal(storageSdButtonOriginalPosition, localComponent,
+                    x => x.anchoredPosition.x);
+                localComponent.anchoredPosition = new Vector2(localOriginal - spacingX,
+                    localComponent.anchoredPosition.y);
+            }
+            if (remoteComponent != null) {
+                float remoteOriginal = GetOrCacheOriginal(storageSdButtonOriginalPosition, remoteComponent,
+                    x => x.anchoredPosition.x);
+                remoteComponent.anchoredPosition = new Vector2(remoteOriginal - spacingX,
+                    remoteComponent.anchoredPosition.y);
+            }
         }
 
         var localImgRT = storage.localSdImage?.rectTransform;
@@ -554,7 +576,22 @@ public static class StationManager {
             bottomY = -BtnYOffset;
         }
 
-        RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
+        RectTransform refRect = localComponent;
+        if (refRect == null) {
+            return;
+        }
+        if (!transferGameObjects.ContainsKey(storage)) {
+            Transform transferTrans = FindStationModeButtonTransform(storage, "FE_transferModeButton_" + storage.index);
+            if (transferTrans != null) {
+                transferGameObjects[storage] = transferTrans.gameObject;
+            }
+        }
+        if (!capacityGameObjects.ContainsKey(storage)) {
+            Transform capacityTrans = FindStationModeButtonTransform(storage, "FE_capacityModeButton_" + storage.index);
+            if (capacityTrans != null) {
+                capacityGameObjects[storage] = capacityTrans.gameObject;
+            }
+        }
         ConcurrentDictionary<int, ETransferMode> transferDictionary =
             slotTransferMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
         ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
@@ -1688,6 +1725,22 @@ public static class StationManager {
         slotIsMyPopup.TryRemove(key, out _);
         slotIsTransfer.TryRemove(key, out _);
         slotPopupBoxRect.TryRemove(key, out _);
+    }
+
+    private static Transform FindStationModeButtonTransform(UIStationStorage storage,
+        string buttonName) {
+
+        if (storage == null) {
+            return null;
+        }
+
+        Transform byStorage = storage.transform.Find(buttonName);
+        if (byStorage != null) {
+            return byStorage;
+        }
+
+        Transform parent = storage.localSdButton?.transform?.parent;
+        return parent?.Find(buttonName);
     }
 
     private static Transform FindControlPanelModeButtonTransform(UIControlPanelStationStorage storage,
