@@ -42,7 +42,7 @@ internal sealed class ModSourceConfig {
             DisplayName = "星环",
             SourceDir = OrbitalRingSourceDir,
             VersionRemote = "upstream",
-            PullRemote = "origin",
+            PullRemote = "upstream",
             PullBranch = "main",
         });
         Add(result, new() {

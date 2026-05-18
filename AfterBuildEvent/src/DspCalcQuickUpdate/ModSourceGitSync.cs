@@ -46,6 +46,7 @@ internal sealed class ModSourceGitSync {
             return SourceAuditResult.Passed($"{spec.DisplayName} 已跳过远端同步，沿用本轮本地源码检查");
         }
 
+        string pullTarget = BuildPullTarget(spec);
         CommandResult fetch = RunGit(gitDir, $"fetch {spec.PullRemote} --prune", NetworkGitTimeoutMs);
         if (!fetch.Success) {
             skipNetworkSyncThisRun = true;
@@ -56,12 +57,14 @@ internal sealed class ModSourceGitSync {
             return SourceAuditResult.Passed($"{spec.DisplayName} 远端同步失败，已降级为本地源码检查", fetch.OutputLines);
         }
 
-        CommandResult pull = RunGit(gitDir, "pull --ff-only", NetworkGitTimeoutMs);
+        CommandResult pull = RunGit(gitDir, $"pull --ff-only {pullTarget}", NetworkGitTimeoutMs);
         if (!pull.Success) {
-            return SourceAuditResult.Uncertain($"{spec.DisplayName} 无法 fast-forward 拉取，请人工处理源码仓库", pull.OutputLines);
+            return SourceAuditResult.Uncertain(
+                $"{spec.DisplayName} 无法 fast-forward 拉取 {pullTarget}，请人工处理源码仓库",
+                pull.OutputLines);
         }
 
-        List<string> details = [];
+        List<string> details = [$"pull target: {pullTarget}"];
         details.AddRange(fetch.OutputLines);
         details.AddRange(pull.OutputLines);
         return SourceAuditResult.Passed($"{spec.DisplayName} 源码同步完成", details);
@@ -137,6 +140,13 @@ internal sealed class ModSourceGitSync {
 
     private static string QuoteGitPath(string path) {
         return "\"" + path.Replace("\"", "\\\"") + "\"";
+    }
+
+    private static string BuildPullTarget(ModQuickUpdateSpec spec) {
+        if (string.IsNullOrWhiteSpace(spec.PullBranch)) {
+            return spec.PullRemote;
+        }
+        return $"{spec.PullRemote} {spec.PullBranch}";
     }
 
     private static void KillProcessTree(int processId) {
