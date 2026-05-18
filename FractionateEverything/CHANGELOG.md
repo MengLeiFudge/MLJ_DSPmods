@@ -3,10 +3,12 @@
     + 物流交互站有限上传目标数量改为与物品价值相关。
     + 物流交互站每槽模式现在会随Q键复制、复制/粘贴设置和蓝图保存/恢复。
     + 优化分馏塔相关科技的特殊解锁说明，科技需求中的占位物会提示上传对应分馏塔的解锁方法。
+    + 优化分馏塔运行热路径，减少高数量分馏塔每帧处理时的重复产物扫描。
     + Added per-slot transfer and capacity mode buttons to Interaction Stations: Sync, Upload Only, Download Only, Limited Upload, and Infinite Upload.
     + The limited upload target count of the Interaction Station is now related to item value.
     + Per-slot Interaction Station modes are now preserved by Q-copy, copy/paste settings, and blueprints.
     + Improved special unlock descriptions for fractionator techs. The placeholder item in tech requirements now explains how to unlock by uploading the corresponding tower.
+    + Optimized the fractionator runtime hot path by reducing repeated product scans per tick when many fractionators are running.
 
 - v2.2.7
     + 修复下拉框不在最上面的问题。
