@@ -863,6 +863,9 @@ public class GetDspData : BaseUnityPlugin {
             { "Name", proto.name },
             { "GridIndex", proto.GridIndex },
             { "IconName", proto.iconSprite.name },
+            { "EnemyDropLevel", proto.EnemyDropLevel },
+            { "EnemyDropRange", new JArray(proto.EnemyDropRange.x, proto.EnemyDropRange.y) },
+            { "EnemyDropCount", proto.EnemyDropCount },
         };
         if (proto.GetSpace() >= 0) {
             //对于生产建筑，添加耗能、倍率、占地
