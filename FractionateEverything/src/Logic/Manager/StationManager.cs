@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection.Emit;
 using FE.UI.View.Setting;
 using HarmonyLib;
@@ -16,6 +17,129 @@ public static class StationManager {
     private static readonly int[] itemModSaveCount = new int[12000];
     private static int maxUploadCount;
     private static int maxDownloadCount;
+
+    private enum ETransferMode {
+        Sync = 0,
+        Upload = 1,
+        Download = 2
+    }
+
+    private enum ECapacityMode {
+        Limited = 0,
+        Infinite = 1
+    }
+
+    private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>> slotTransferMode =
+        new();
+    private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode =
+        new();
+
+    public static void AddTranslations() {
+        Register("双向同步", "Sync", "双向同步");
+        Register("仅上传", "Upload Only", "仅上传");
+        Register("仅下载", "Download Only", "仅下载");
+        Register("有限上传", "Limited Upload", "有限上传");
+        Register("无限上传", "Infinite Upload", "无限上传");
+    }
+
+    public static void Import(BinaryReader r) {
+        slotTransferMode.Clear();
+        slotCapacityMode.Clear();
+        int transferEntityCount = r.ReadInt32();
+        for (int i = 0; i < transferEntityCount; i++) {
+            long entityId = r.ReadInt64();
+            int slotCount = r.ReadInt32();
+            ConcurrentDictionary<int, ETransferMode> dict = new();
+            for (int j = 0; j < slotCount; j++) {
+                int slotIndex = r.ReadInt32();
+                dict[slotIndex] = NormalizeTransferMode(r.ReadInt32());
+            }
+            slotTransferMode[entityId] = dict;
+        }
+
+        int capacityEntityCount = r.ReadInt32();
+        for (int i = 0; i < capacityEntityCount; i++) {
+            long entityId = r.ReadInt64();
+            int slotCount = r.ReadInt32();
+            ConcurrentDictionary<int, ECapacityMode> dict = new();
+            for (int j = 0; j < slotCount; j++) {
+                int slotIndex = r.ReadInt32();
+                dict[slotIndex] = NormalizeCapacityMode(r.ReadInt32());
+            }
+            slotCapacityMode[entityId] = dict;
+        }
+    }
+
+    public static void Export(BinaryWriter w) {
+        w.Write(slotTransferMode.Count);
+        foreach (var kvp in slotTransferMode) {
+            w.Write(kvp.Key);
+            w.Write(kvp.Value.Count);
+            foreach (var slot in kvp.Value) {
+                w.Write(slot.Key);
+                w.Write((int)slot.Value);
+            }
+        }
+
+        w.Write(slotCapacityMode.Count);
+        foreach (var kvp in slotCapacityMode) {
+            w.Write(kvp.Key);
+            w.Write(kvp.Value.Count);
+            foreach (var slot in kvp.Value) {
+                w.Write(slot.Key);
+                w.Write((int)slot.Value);
+            }
+        }
+    }
+
+    public static void IntoOtherSave() {
+        lastTickDic.Clear();
+        slotTransferMode.Clear();
+        slotCapacityMode.Clear();
+        storageWidth.Clear();
+        storagePopup.Clear();
+        storagePopupOriginalX.Clear();
+        transferGameObjects.Clear();
+        capacityGameObjects.Clear();
+        controlPanelSdButtonOriginalPosition.Clear();
+        controlPanelStoragePopup.Clear();
+        controlPanelStoragePopupOriginalX.Clear();
+        controlPanelTransferGameObjects.Clear();
+        controlPanelCapacityGameObjects.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
+    }
+
+    private static ETransferMode NormalizeTransferMode(int value) {
+        return Enum.IsDefined(typeof(ETransferMode), value)
+            ? (ETransferMode)value
+            : ETransferMode.Sync;
+    }
+
+    private static ECapacityMode NormalizeCapacityMode(int value) {
+        return Enum.IsDefined(typeof(ECapacityMode), value)
+            ? (ECapacityMode)value
+            : ECapacityMode.Limited;
+    }
+
+    private static ETransferMode GetNextTransferMode(ETransferMode currentMode, int optionIndex) {
+        if (optionIndex == 0) {
+            return currentMode switch {
+                ETransferMode.Sync => ETransferMode.Upload,
+                ETransferMode.Upload => ETransferMode.Download,
+                _ => ETransferMode.Sync
+            };
+        }
+        if (optionIndex == 1) {
+            return currentMode switch {
+                ETransferMode.Sync => ETransferMode.Download,
+                ETransferMode.Upload => ETransferMode.Sync,
+                _ => ETransferMode.Upload
+            };
+        }
+        return currentMode;
+    }
 
     public static void CalculateItemModSaveCount() {
         foreach (var item in LDB.items.dataArray) {
@@ -54,6 +178,30 @@ public static class StationManager {
 
     private static readonly ConcurrentDictionary<StationComponent[], long> lastTickDic = [];
 
+    private static readonly Dictionary<RectTransform, float> windowOriginalWidth = [];
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalSize = [];
+    private static readonly Dictionary<RectTransform, Vector2> sliderOriginalPosition = [];
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storageWidth = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, bool> storagePopup = new();
+    private static readonly Dictionary<RectTransform, float> storagePopupOriginalX = [];
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
+    private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
+    private static readonly Dictionary<RectTransform, float> controlPanelSdButtonOriginalPosition = [];
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, bool> controlPanelStoragePopup = new();
+    private static readonly Dictionary<RectTransform, float> controlPanelStoragePopupOriginalX = [];
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
+        controlPanelTransferGameObjects = new();
+    private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
+        controlPanelCapacityGameObjects = new();
+    private const float ExtraSpacing = 12f;
+    private const float BtnHeight = 26f;
+    private const float BtnYOffset = 14f;
+    private static float spacingX;
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsMyPopup = new();
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> slotIsTransfer = new();
+    private static readonly ConcurrentDictionary<(long stationEntityId, int slotIndex), RectTransform>
+        slotPopupBoxRect = new();
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetTransport), nameof(PlanetTransport.GameTick))]
     public static void PlanetTransportGameTickPostPatch(PlanetTransport __instance, long time) {
@@ -87,10 +235,14 @@ public static class StationManager {
             // 循环所有的交互站
             float downloadThreshold = Miscellaneous.DownloadThreshold;
             float uploadThreshold = Miscellaneous.UploadThreshold;
-            float uploadThreshold2 = 1 - uploadThreshold;
             foreach (StationComponent stationComponent in stations) {
                 // 单个槽位可用最大电量
                 long maxSlotEnergy = stationComponent.energy / stationComponent.storage.Length;
+                long entityId = stationComponent.entityId;
+                ConcurrentDictionary<int, ETransferMode> transferDictionary =
+                    slotTransferMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ETransferMode>());
+                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                    slotCapacityMode.GetOrAdd(entityId, _ => new ConcurrentDictionary<int, ECapacityMode>());
                 // 循环交互站的所有的栏位
                 for (int i = 0; i < stationComponent.storage.Length; i++) {
                     // StationStore为struct，必须使用引用修改内容
@@ -98,52 +250,44 @@ public static class StationManager {
                     if (store.itemId <= 0 || itemValue[store.itemId] >= maxValue) {
                         continue;
                     }
-                    bool storeLocked = !GameMain.sandboxToolsEnabled && store.keepMode > 0;
-                    bool station2Mod;
-                    bool mod2Station;
-                    if (storeLocked) {
-                        station2Mod = store.remoteLogic == ELogisticStorage.Supply
-                                      || store.localLogic == ELogisticStorage.Supply;
-                        mod2Station = store.remoteLogic == ELogisticStorage.Demand
-                                      || store.localLogic == ELogisticStorage.Demand;
-                    } else {
-                        station2Mod = store.remoteLogic == ELogisticStorage.Demand
-                                      || store.localLogic == ELogisticStorage.Demand;
-                        mod2Station = store.remoteLogic == ELogisticStorage.Supply
-                                      || store.localLogic == ELogisticStorage.Supply;
-                    }
-                    if (mod2Station) {
-                        // 产线/Mod背包（背包仅在指定比例之下启用） -> 自身 -> 其他塔
-                        if (store.totalSupplyCount < store.max * downloadThreshold) {
-                            stationComponent.SetTargetCount(i,
-                                Math.Max(store.count, (int)(store.max * downloadThreshold - store.totalOrdered)),
-                                maxSlotEnergy);
-                        }
-                    }
-                    if (station2Mod) {
-                        // 其他塔 -> 自身 -> 产线/Mod背包（背包仅在指定比例之上启用）
-                        if (store.count > store.max * uploadThreshold
-                            && store.totalSupplyCount > store.max * uploadThreshold2) {
-                            int modTargetCount = itemModSaveCount[store.itemId];
-                            long modCurrCount = GetModDataItemCount(store.itemId);
-                            if (modCurrCount < modTargetCount) {
-                                int transferCount = Math.Min(store.count - (int)(store.max * uploadThreshold),
-                                    modTargetCount - (int)modCurrCount);
-                                stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+
+                    ETransferMode transferMode = transferDictionary.GetOrAdd(i, ETransferMode.Sync);
+                    ECapacityMode capacityMode = capacityDictionary.GetOrAdd(i, ECapacityMode.Limited);
+                    switch (transferMode) {
+                        case ETransferMode.Upload: {
+                            if (store.count > store.max * uploadThreshold) {
+                                int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
+                                if (transferCount > 0) {
+                                    stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                }
                             }
+                            break;
                         }
-                    }
-                    if (store.localLogic == ELogisticStorage.None) {
-                        if (storeLocked) {
-                            // 仓储锁定：维持数目为Min(仓储上限，(本格物品+Mod背包物品)/2)
-                            int totalCount = (int)Math.Min(int.MaxValue,
-                                store.count + GetModDataItemCount(store.itemId));
-                            // avgCount: 使交互站与Mod背包各持有一半物品的物品数目
-                            int avgCount = totalCount / 2;
-                            stationComponent.SetTargetCount(i, Math.Min(store.max, avgCount), maxSlotEnergy);
-                        } else {
-                            // 仓储解锁：维持数目为上限的一半，可以无限投入/取出
-                            stationComponent.SetTargetCount(i, store.max / 2, maxSlotEnergy);
+                        case ETransferMode.Download: {
+                            if (store.totalSupplyCount < store.max * downloadThreshold) {
+                                int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
+                                if (targetCount < store.count) {
+                                    targetCount = store.count;
+                                }
+                                stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
+                            }
+                            break;
+                        }
+                        case ETransferMode.Sync:
+                        default: {
+                            if (store.count > store.max * uploadThreshold) {
+                                int transferCount = GetUploadTransferCount(store, uploadThreshold, capacityMode);
+                                if (transferCount > 0) {
+                                    stationComponent.SetTargetCount(i, store.count - transferCount, maxSlotEnergy);
+                                }
+                            } else if (store.totalSupplyCount < store.max * downloadThreshold) {
+                                int targetCount = Mathf.RoundToInt(store.max * downloadThreshold);
+                                if (targetCount < store.count) {
+                                    targetCount = store.count;
+                                }
+                                stationComponent.SetTargetCount(i, targetCount, maxSlotEnergy);
+                            }
+                            break;
                         }
                     }
                 }
@@ -152,6 +296,26 @@ public static class StationManager {
         catch (Exception ex) {
             LogError(ex);
         }
+    }
+
+    private static int GetUploadTransferCount(in StationStore store, float uploadThreshold,
+        ECapacityMode capacityMode) {
+        int transferCount = store.count - (int)(store.max * uploadThreshold);
+        if (transferCount <= 0) {
+            return 0;
+        }
+
+        if (capacityMode != ECapacityMode.Limited) {
+            return transferCount;
+        }
+
+        int modTargetCount = itemModSaveCount[store.itemId];
+        long modCurrCount = GetModDataItemCount(store.itemId);
+        if (modCurrCount >= modTargetCount) {
+            return 0;
+        }
+
+        return Math.Min(transferCount, modTargetCount - (int)modCurrCount);
     }
 
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
@@ -195,54 +359,210 @@ public static class StationManager {
         }
     }
 
-    /// <summary>
-    /// 在物流交互站中启用沙盒模式的keepModeButton
-    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnCreate))]
+    public static void UIStationWindow_OnCreate_Postfix(UIStationWindow __instance) {
+        if (__instance?.windowTrans != null) {
+            GetOrCacheOriginal(windowOriginalWidth, __instance.windowTrans, x => x.sizeDelta.x);
+        }
+
+        for (int index = 0; index < 6; ++index) {
+            UIStationStorage storage = __instance.storageUIs[index];
+            try {
+                RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
+                spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                string tName = "FE_transferModeButton_" + index;
+                Transform tTrans = storage.transform.Find(tName);
+                if (tTrans == null) {
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject,
+                        storage.localSdButton.transform.parent, false);
+                    go.name = tName;
+                    transferGameObjects.TryAdd(storage, go);
+                }
+
+                string cName = "FE_capacityModeButton_" + index;
+                Transform cTrans = storage.transform.Find(cName);
+                if (cTrans == null) {
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject,
+                        storage.localSdButton.transform.parent, false);
+                    go.name = cName;
+                    capacityGameObjects.TryAdd(storage, go);
+                }
+
+                storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
+            }
+            catch (Exception ex) {
+                LogError($"FE StationManager: create mode buttons failed: {ex}");
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow._OnDestroy))]
+    public static void UIStationWindow__OnDestroy_Prefix(UIStationWindow __instance) {
+        windowOriginalWidth.Clear();
+        sliderOriginalSize.Clear();
+        sliderOriginalPosition.Clear();
+        storageWidth.Clear();
+        storagePopup.Clear();
+        storagePopupOriginalX.Clear();
+        transferGameObjects.Clear();
+        capacityGameObjects.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnOpen))]
+    public static void UIStationStorage__OnOpen_Postfix(UIStationStorage __instance) {
+        string tName = "FE_transferModeButton_" + __instance.index;
+        Transform tTrans = __instance.transform.Find(tName);
+        if (tTrans != null) {
+            Button transferBtn = tTrans.GetComponent<Button>();
+            transferBtn.onClick.AddListener(() => ShowTransferPopup(__instance));
+        }
+
+        string cName = "FE_capacityModeButton_" + __instance.index;
+        Transform cTrans = __instance.transform.Find(cName);
+        if (cTrans != null) {
+            Button capBtn = cTrans.GetComponent<Button>();
+            capBtn.onClick.AddListener(() => ShowCapacityPopup(__instance));
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage._OnClose))]
+    public static void UIStationStorage__OnClose_Postfix(UIStationStorage __instance) {
+        string tName = "FE_transferModeButton_" + __instance.index;
+        Transform tTrans = __instance.transform.Find(tName);
+        if (tTrans != null) {
+            Button transferBtn = tTrans.GetComponent<Button>();
+            transferBtn.onClick.RemoveAllListeners();
+        }
+
+        string cName = "FE_capacityModeButton_" + __instance.index;
+        Transform cTrans = __instance.transform.Find(cName);
+        if (cTrans != null) {
+            Button capBtn = cTrans.GetComponent<Button>();
+            capBtn.onClick.RemoveAllListeners();
+        }
+    }
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.RefreshValues))]
     public static void UIStationStorage_RefreshValues_Postfix(UIStationStorage __instance) {
-        // 如果是沙盒，不用处理，会自动启用按钮
-        if (GameMain.sandboxToolsEnabled) {
+        UIStationStorage storage = __instance;
+        int buildingID = storage.stationWindow.factory.entityPool[storage.station.entityId].protoId;
+        RectTransform rectTransform = storage.transform.GetComponent<RectTransform>();
+        if (!IsInteractionStation(buildingID)) {
+            SetStoragePopupShift(storage, false);
+            if (rectTransform != null && storageWidth.ContainsKey(storage)) {
+                storageWidth.TryRemove(storage, out _);
+                rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x - spacingX, rectTransform.sizeDelta.y);
+                RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
+                keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x + spacingX,
+                    keepModeComponent.anchoredPosition.y);
+            }
+            if (transferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
+                transferGO.SetActive(false);
+            }
+            if (capacityGameObjects.TryGetValue(storage, out GameObject capacityGO)) {
+                capacityGO.SetActive(false);
+            }
             return;
         }
-        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
-        // 如果不是自定义的塔，不处理
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return;
-        }
-        StationStore stationStore = new();
-        if (__instance.station != null && __instance.index < __instance.station.storage.Length)
-            stationStore = __instance.station.storage[__instance.index];
-        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
-        ItemProto itemProto2 = LDB.items.Select(buildingID);
-        // 如果物品或者塔不是游戏中存在的物品，不处理
-        if (itemProto1 == null || itemProto2 == null) {
-            return;
-        }
-        // 原版逻辑会先禁用这个按钮，所以在切换成供应或需求的时候不需要手动禁用
-        // 启用keepModeButton
-        __instance.keepModeButton.gameObject.SetActive(true);
-    }
 
-    /// <summary>
-    /// 点击keepModeButton按钮
-    /// </summary>
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnKeepModeButtonClick))]
-    public static bool UIStationStorage_OnKeepModeButtonClick_Prefix(UIStationStorage __instance) {
-        // 沙盒使用默认逻辑
-        if (GameMain.sandboxToolsEnabled) {
-            return true;
+        if (rectTransform != null && !storageWidth.ContainsKey(storage)) {
+            storageWidth.TryAdd(storage, true);
+            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x + spacingX, rectTransform.sizeDelta.y);
+            RectTransform keepModeComponent = storage.keepModeButton.GetComponent<RectTransform>();
+            keepModeComponent.anchoredPosition = new Vector2(keepModeComponent.anchoredPosition.x - spacingX,
+                keepModeComponent.anchoredPosition.y);
         }
-        // 只处理物流交互站
-        int buildingID = __instance.stationWindow.factory.entityPool[__instance.station.entityId].protoId;
-        if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            return true;
+
+        if (storageWidth.ContainsKey(storage)) {
+            RectTransform localComponent = storage.localSdButton.GetComponent<RectTransform>();
+            localComponent.anchoredPosition = new Vector2(localComponent.anchoredPosition.x - spacingX,
+                localComponent.anchoredPosition.y);
+            RectTransform remoteComponent = storage.remoteSdButton.GetComponent<RectTransform>();
+            remoteComponent.anchoredPosition = new Vector2(remoteComponent.anchoredPosition.x - spacingX,
+                remoteComponent.anchoredPosition.y);
         }
-        // 原版有4个keepMode，需要点4下，用不上，这里只处理0和1
-        __instance.station.storage[__instance.index].keepMode =
-            __instance.station.storage[__instance.index].keepMode == 0 ? 1 : 0;
-        return false;
+
+        var localImgRT = storage.localSdImage?.rectTransform;
+        var remoteImgRT = storage.remoteSdImage?.rectTransform;
+        float topY;
+        float bottomY;
+        if (storage.station != null && storage.station.isStellar && localImgRT != null && remoteImgRT != null) {
+            topY = localImgRT.anchoredPosition.y;
+            bottomY = remoteImgRT.anchoredPosition.y;
+        } else if (localImgRT != null) {
+            float centerY = localImgRT.anchoredPosition.y;
+            float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f + 2f;
+            topY = centerY + halfGap;
+            bottomY = centerY - halfGap;
+        } else {
+            topY = BtnYOffset;
+            bottomY = -BtnYOffset;
+        }
+
+        RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+
+        if (transferGameObjects.TryGetValue(storage, out GameObject tTrans)) {
+            tTrans.SetActive(storage.localSdButton.gameObject.activeSelf);
+            Text transferText = tTrans.GetComponentInChildren<Text>();
+            if (transferText != null) {
+                transferText.text = transferMode switch {
+                    ETransferMode.Sync => "双向同步".Translate(),
+                    ETransferMode.Upload => "仅上传".Translate(),
+                    ETransferMode.Download => "仅下载".Translate(),
+                    _ => "双向同步".Translate()
+                };
+            }
+            Image transferImage = tTrans.GetComponent<Image>();
+            if (transferImage != null) {
+                transferImage.color = transferMode switch {
+                    ETransferMode.Sync => storage.noneSpColor,
+                    ETransferMode.Upload => storage.demandColor,
+                    ETransferMode.Download => storage.supplyColor,
+                    _ => storage.noneSpColor
+                };
+            }
+            RectTransform rt = tTrans.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, topY);
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, BtnHeight);
+        }
+
+        if (capacityGameObjects.TryGetValue(storage, out GameObject cTrans)) {
+            ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                slotCapacityMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+            ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+            cTrans.SetActive(storage.localSdButton.gameObject.activeSelf
+                             && transferMode is ETransferMode.Sync or ETransferMode.Upload);
+            Text capText = cTrans.GetComponentInChildren<Text>();
+            if (capText != null) {
+                capText.text = capacityMode switch {
+                    ECapacityMode.Limited => "有限上传".Translate(),
+                    ECapacityMode.Infinite => "无限上传".Translate(),
+                    _ => "有限上传".Translate()
+                };
+            }
+            Image capImage = cTrans.GetComponent<Image>();
+            if (capImage != null) {
+                capImage.color = capacityMode switch {
+                    ECapacityMode.Limited => storage.supplyColor,
+                    ECapacityMode.Infinite => storage.demandColor,
+                    _ => storage.supplyColor
+                };
+            }
+            RectTransform rt = cTrans.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(refRect.anchoredPosition.x + spacingX, bottomY);
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, BtnHeight);
+        }
     }
 
     /// <summary>
@@ -269,26 +589,13 @@ public static class StationManager {
             return;
         }
         text.text = "  使用强化上限";
-        // 修改集装输出的可选上限
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
-        int pilerCount = station.pilerCount;
-        if (pilerCount == 0) {
-            // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
-        } else {
-            // 手动，设置为当前值
-            __instance.minPilerSlider.value = pilerCount;
-            __instance.minPilerValue.text = pilerCount.ToString();
-        }
-        if (maxProductOutputStack > 1) {
-            // 堆叠上限大于1，显示修改滑条
-            __instance.minPilerGroup.gameObject.SetActive(true);
-            __instance.pilerTechGroup.gameObject.SetActive(true);
-        }
+        RefreshInteractionStationPilerUI(
+            station,
+            __instance.minPilerSlider,
+            __instance.minPilerValue,
+            __instance.minPilerGroup.gameObject,
+            __instance.pilerTechGroup.gameObject
+        );
         __instance.event_lock = false;
     }
 
@@ -298,6 +605,23 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.RefreshTrans))]
     public static void UIStationWindow_RefreshTrans_Postfix(UIStationWindow __instance, StationComponent station) {
+        if (__instance?.factory == null || station == null || station.entityId <= 0) {
+            return;
+        }
+        bool isModStation = IsInteractionStation(__instance.factory.entityPool[station.entityId].protoId);
+        AdjustSliders(__instance, isModStation);
+        RectTransform windowTrans = __instance.windowTrans;
+        if (windowTrans == null) {
+            return;
+        }
+
+        float originalWidth = GetOrCacheOriginal(windowOriginalWidth, windowTrans, x => x.sizeDelta.x);
+        float targetWidth = originalWidth + (isModStation ? spacingX : 0f);
+        windowTrans.sizeDelta = new Vector2(targetWidth, windowTrans.sizeDelta.y);
+        if (!isModStation) {
+            return;
+        }
+
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         int maxProductOutputStack = building.MaxProductOutputStack();
         if (maxProductOutputStack <= 1) {
@@ -305,13 +629,535 @@ public static class StationManager {
             return;
         }
         if (station.isStellar) {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float)(360 + 76 * station.storage.Length + 36));
+            __instance.windowTrans.sizeDelta = new Vector2(targetWidth, (float)(360 + 76 * station.storage.Length + 36));
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 186f);
         } else {
-            __instance.windowTrans.sizeDelta = new Vector2(600f, (float)(300 + 76 * station.storage.Length + 36));
+            __instance.windowTrans.sizeDelta = new Vector2(targetWidth, (float)(300 + 76 * station.storage.Length + 36));
             __instance.panelDownTrans.anchoredPosition =
                 new Vector2(__instance.panelDownTrans.anchoredPosition.x, 126f);
+        }
+    }
+
+    private static void ShowTransferPopup(UIStationStorage __instance) {
+        UIStationStorage storage = __instance;
+        StationComponent station = __instance.station;
+        StationStore stationStore = new();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 =
+            LDB.items.Select((int)storage.stationWindow.factory.entityPool[storage.station.entityId].protoId);
+        if (itemProto1 == null || itemProto2 == null) {
+            return;
+        }
+
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = transferMode switch {
+            ETransferMode.Sync => storage.demandColor,
+            ETransferMode.Upload => storage.supplyColor,
+            _ => storage.noneSpColor
+        };
+        storage.optionImage1.color = transferMode switch {
+            ETransferMode.Sync => storage.supplyColor,
+            ETransferMode.Upload => storage.noneSpColor,
+            _ => storage.demandColor
+        };
+        storage.optionText0.text = transferMode switch {
+            ETransferMode.Sync => "仅上传".Translate(),
+            ETransferMode.Upload => "仅下载".Translate(),
+            _ => "双向同步".Translate()
+        };
+        storage.optionText1.text = transferMode switch {
+            ETransferMode.Sync => "仅下载".Translate(),
+            ETransferMode.Upload => "双向同步".Translate(),
+            _ => "仅上传".Translate()
+        };
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = true;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        SetStoragePopupShift(storage, true);
+    }
+
+    private static void ShowCapacityPopup(UIStationStorage __instance) {
+        UIStationStorage storage = __instance;
+        StationComponent station = __instance.station;
+        StationStore stationStore = new();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 =
+            LDB.items.Select((int)storage.stationWindow.factory.entityPool[storage.station.entityId].protoId);
+        if (itemProto1 == null || itemProto2 == null) {
+            return;
+        }
+
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = storage.demandColor;
+        storage.optionImage1.color = storage.supplyColor;
+        storage.optionText0.text = "无限上传".Translate();
+        storage.optionText1.text = "有限上传".Translate();
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = false;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        SetStoragePopupShift(storage, true);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnLocalSdButtonClick))]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnRemoteSdButtonClick))]
+    public static void UIStationStorage_OnSdButtonClick_Prefix(UIStationStorage __instance) {
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(__instance);
+        ClearPopupState(popupStateKey);
+        SetStoragePopupShift(__instance, false);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnOptionButton0Click))]
+    public static bool UIStationStorage_OnOptionButton0Click_Prefix(UIStationStorage __instance) {
+        return HandleOptionClick(__instance, 0);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIStationStorage), nameof(UIStationStorage.OnOptionButton1Click))]
+    public static bool UIStationStorage_OnOptionButton1Click_Prefix(UIStationStorage __instance) {
+        return HandleOptionClick(__instance, 1);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelWindow), nameof(UIControlPanelWindow._OnCreate))]
+    public static void UIControlPanelWindow_OnCreate_Postfix(UIControlPanelWindow __instance) {
+        if (__instance?.stationInspector?.storageUIs == null) {
+            return;
+        }
+
+        for (int index = 0; index < __instance.stationInspector.storageUIs.Length; ++index) {
+            UIControlPanelStationStorage storage = __instance.stationInspector.storageUIs[index];
+            if (storage?.localSdButton == null) {
+                continue;
+            }
+
+            try {
+                RectTransform refRect = storage.localSdButton.GetComponent<RectTransform>();
+                spacingX = refRect.sizeDelta.x + ExtraSpacing;
+                string transferName = "FE_cp_transferModeButton_" + index;
+                Transform transferTrans = FindControlPanelModeButtonTransform(storage, transferName);
+                if (transferTrans == null) {
+                    Transform parent = storage.localSdButton.transform.parent ?? storage.transform;
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject, parent, false);
+                    go.name = transferName;
+                    go.GetComponent<Button>()?.onClick.RemoveAllListeners();
+                    controlPanelTransferGameObjects[storage] = go;
+                } else {
+                    controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
+                }
+
+                string capacityName = "FE_cp_capacityModeButton_" + index;
+                Transform capacityTrans = FindControlPanelModeButtonTransform(storage, capacityName);
+                if (capacityTrans == null) {
+                    Transform parent = storage.localSdButton.transform.parent ?? storage.transform;
+                    GameObject go = GameObject.Instantiate(storage.localSdButton.gameObject, parent, false);
+                    go.name = capacityName;
+                    go.GetComponent<Button>()?.onClick.RemoveAllListeners();
+                    controlPanelCapacityGameObjects[storage] = go;
+                } else {
+                    controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
+                }
+
+                storage.popupBoxRect.SetSiblingIndex(storage.popupBoxRect.GetSiblingIndex() + 10);
+            }
+            catch (Exception ex) {
+                LogError($"FE StationManager: create control panel mode buttons failed: {ex}");
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelWindow), nameof(UIControlPanelWindow._OnDestroy))]
+    public static void UIControlPanelWindow_OnDestroy_Prefix(UIControlPanelWindow __instance) {
+        controlPanelSdButtonOriginalPosition.Clear();
+        controlPanelStoragePopup.Clear();
+        controlPanelStoragePopupOriginalX.Clear();
+        controlPanelTransferGameObjects.Clear();
+        controlPanelCapacityGameObjects.Clear();
+        slotIsMyPopup.Clear();
+        slotIsTransfer.Clear();
+        slotPopupBoxRect.Clear();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnOpen))]
+    public static void UIControlPanelStationStorage_OnOpen_Postfix(UIControlPanelStationStorage __instance) {
+        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
+        if (transferTrans != null) {
+            Button transferBtn = transferTrans.GetComponent<Button>();
+            transferBtn?.onClick.RemoveAllListeners();
+            transferBtn?.onClick.AddListener(() => ShowTransferPopup(__instance));
+            controlPanelTransferGameObjects[__instance] = transferTrans.gameObject;
+        }
+
+        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
+        if (capacityTrans != null) {
+            Button capBtn = capacityTrans.GetComponent<Button>();
+            capBtn?.onClick.RemoveAllListeners();
+            capBtn?.onClick.AddListener(() => ShowCapacityPopup(__instance));
+            controlPanelCapacityGameObjects[__instance] = capacityTrans.gameObject;
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage._OnClose))]
+    public static void UIControlPanelStationStorage_OnClose_Postfix(UIControlPanelStationStorage __instance) {
+        string transferName = "FE_cp_transferModeButton_" + __instance.index;
+        Transform transferTrans = FindControlPanelModeButtonTransform(__instance, transferName);
+        transferTrans?.GetComponent<Button>()?.onClick.RemoveAllListeners();
+
+        string capacityName = "FE_cp_capacityModeButton_" + __instance.index;
+        Transform capacityTrans = FindControlPanelModeButtonTransform(__instance, capacityName);
+        capacityTrans?.GetComponent<Button>()?.onClick.RemoveAllListeners();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.RefreshValues))]
+    public static void UIControlPanelStationStorage_RefreshValues_Postfix(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        if (storage?.station == null || storage.factory == null || storage.masterInspector == null) {
+            return;
+        }
+
+        int buildingID = storage.factory.entityPool[storage.station.entityId].protoId;
+        bool isModStation = IsInteractionStation(buildingID);
+        bool isInfoTab = storage.masterInspector.currentTabPanel == EUIControlPanelStationPanel.Info;
+        if (!isModStation || !isInfoTab) {
+            RestoreControlPanelStorageSlot(storage);
+            return;
+        }
+
+        RectTransform localRect = storage.localSdButton?.GetComponent<RectTransform>();
+        RectTransform remoteRect = storage.remoteSdButton?.GetComponent<RectTransform>();
+        if (localRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(localRect)) {
+                controlPanelSdButtonOriginalPosition[localRect] = localRect.anchoredPosition.x;
+            }
+            float original = controlPanelSdButtonOriginalPosition[localRect];
+            localRect.anchoredPosition = new Vector2(original - spacingX, localRect.anchoredPosition.y);
+        }
+        if (remoteRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(remoteRect)) {
+                controlPanelSdButtonOriginalPosition[remoteRect] = remoteRect.anchoredPosition.x;
+            }
+            float original = controlPanelSdButtonOriginalPosition[remoteRect];
+            remoteRect.anchoredPosition = new Vector2(original - spacingX, remoteRect.anchoredPosition.y);
+        }
+        RectTransform keepModeRect = storage.keepModeButton?.GetComponent<RectTransform>();
+        if (keepModeRect != null) {
+            if (!controlPanelSdButtonOriginalPosition.ContainsKey(keepModeRect)) {
+                controlPanelSdButtonOriginalPosition[keepModeRect] = keepModeRect.anchoredPosition.x;
+            }
+            float original = controlPanelSdButtonOriginalPosition[keepModeRect];
+            keepModeRect.anchoredPosition = new Vector2(original - spacingX, keepModeRect.anchoredPosition.y);
+        }
+
+        var localImgRT = storage.localSdImage?.rectTransform;
+        var remoteImgRT = storage.remoteSdImage?.rectTransform;
+        float topY;
+        float bottomY;
+        if (storage.station.isStellar && localImgRT != null && remoteImgRT != null) {
+            topY = localImgRT.anchoredPosition.y;
+            bottomY = remoteImgRT.anchoredPosition.y;
+        } else if (localImgRT != null) {
+            float centerY = localImgRT.anchoredPosition.y;
+            float halfGap = (localImgRT.sizeDelta.y - BtnHeight) / 2f + 2f;
+            topY = centerY + halfGap;
+            bottomY = centerY - halfGap;
+        } else {
+            topY = BtnYOffset;
+            bottomY = -BtnYOffset;
+        }
+        if (localRect == null) {
+            return;
+        }
+
+        if (!controlPanelTransferGameObjects.ContainsKey(storage)) {
+            Transform transferTrans =
+                FindControlPanelModeButtonTransform(storage, "FE_cp_transferModeButton_" + storage.index);
+            if (transferTrans != null) {
+                controlPanelTransferGameObjects[storage] = transferTrans.gameObject;
+            }
+        }
+        if (!controlPanelCapacityGameObjects.ContainsKey(storage)) {
+            Transform capacityTrans =
+                FindControlPanelModeButtonTransform(storage, "FE_cp_capacityModeButton_" + storage.index);
+            if (capacityTrans != null) {
+                controlPanelCapacityGameObjects[storage] = capacityTrans.gameObject;
+            }
+        }
+
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        if (controlPanelTransferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
+            transferGO.SetActive(storage.localSdButton.gameObject.activeSelf);
+            Text transferText = transferGO.GetComponentInChildren<Text>();
+            if (transferText != null) {
+                transferText.text = transferMode switch {
+                    ETransferMode.Sync => "双向同步".Translate(),
+                    ETransferMode.Upload => "仅上传".Translate(),
+                    ETransferMode.Download => "仅下载".Translate(),
+                    _ => "双向同步".Translate()
+                };
+            }
+            Image transferImage = transferGO.GetComponent<Image>();
+            if (transferImage != null) {
+                transferImage.color = transferMode switch {
+                    ETransferMode.Sync => storage.masterInspector.storageNoneSpColor,
+                    ETransferMode.Upload => storage.masterInspector.storageDemandColor,
+                    ETransferMode.Download => storage.masterInspector.storageSupplyColor,
+                    _ => storage.masterInspector.storageNoneSpColor
+                };
+            }
+            RectTransform transferRt = transferGO.GetComponent<RectTransform>();
+            transferRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, topY);
+            transferRt.sizeDelta = new Vector2(transferRt.sizeDelta.x, BtnHeight);
+        }
+
+        if (controlPanelCapacityGameObjects.TryGetValue(storage, out GameObject capacityGO)) {
+            ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                slotCapacityMode.GetOrAdd(storage.station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+            ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+            capacityGO.SetActive(storage.localSdButton.gameObject.activeSelf
+                                 && transferMode is ETransferMode.Sync or ETransferMode.Upload);
+            Text capText = capacityGO.GetComponentInChildren<Text>();
+            if (capText != null) {
+                capText.text = capacityMode switch {
+                    ECapacityMode.Limited => "有限上传".Translate(),
+                    ECapacityMode.Infinite => "无限上传".Translate(),
+                    _ => "有限上传".Translate()
+                };
+            }
+            Image capImage = capacityGO.GetComponent<Image>();
+            if (capImage != null) {
+                capImage.color = capacityMode switch {
+                    ECapacityMode.Limited => storage.masterInspector.storageSupplyColor,
+                    ECapacityMode.Infinite => storage.masterInspector.storageDemandColor,
+                    _ => storage.masterInspector.storageSupplyColor
+                };
+            }
+            RectTransform capRt = capacityGO.GetComponent<RectTransform>();
+            capRt.anchoredPosition = new Vector2(localRect.anchoredPosition.x + spacingX, bottomY);
+            capRt.sizeDelta = new Vector2(capRt.sizeDelta.x, BtnHeight);
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnLocalSdButtonClick))]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnRemoteSdButtonClick))]
+    public static void UIControlPanelStationStorage_OnSdButtonClick_Prefix(UIControlPanelStationStorage __instance) {
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(__instance);
+        ClearPopupState(popupStateKey);
+        SetControlPanelStoragePopupShift(__instance, true);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton0Click))]
+    public static bool UIControlPanelStationStorage_OnOptionButton0Click_Prefix(
+        UIControlPanelStationStorage __instance) {
+        return HandleOptionClick(__instance, 0);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIControlPanelStationStorage), nameof(UIControlPanelStationStorage.OnOptionButton1Click))]
+    public static bool UIControlPanelStationStorage_OnOptionButton1Click_Prefix(
+        UIControlPanelStationStorage __instance) {
+        return HandleOptionClick(__instance, 1);
+    }
+
+    private static bool HandleOptionClick(UIStationStorage __instance, int idx) {
+        try {
+            UIStationStorage storage = __instance;
+            (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+            if (!GetPopupFlag(slotIsMyPopup, popupStateKey)) {
+                return true;
+            }
+
+            StationComponent station = __instance.station;
+            UIStationWindow stationWindow = __instance.stationWindow;
+            if (storage.popupBoxRect == null
+                || !slotPopupBoxRect.TryGetValue(popupStateKey, out RectTransform popupRect)
+                || popupRect != storage.popupBoxRect
+                || !storage.popupBoxRect.gameObject.activeSelf) {
+                return true;
+            }
+
+            StationStore stationStore = new();
+            if (station != null && storage.index < station.storage.Length) {
+                stationStore = station.storage[storage.index];
+            }
+            ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+            ItemProto itemProto2 = LDB.items.Select((int)stationWindow.factory.entityPool[station.entityId].protoId);
+            if (itemProto1 == null || itemProto2 == null) {
+                return false;
+            }
+
+            if (GetPopupFlag(slotIsTransfer, popupStateKey)) {
+                ConcurrentDictionary<int, ETransferMode> transferDictionary =
+                    slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+                ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+                ETransferMode nextMode = GetNextTransferMode(transferMode, idx);
+                transferDictionary.TryUpdate(storage.index, nextMode, transferMode);
+            } else {
+                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                    slotCapacityMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+                ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+                if (idx == 0) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Infinite, capacityMode);
+                } else if (idx == 1) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Limited, capacityMode);
+                }
+            }
+
+            storage.popupBoxRect.gameObject.SetActive(false);
+            slotIsMyPopup[popupStateKey] = false;
+            return false;
+        }
+        catch (Exception ex) {
+            LogError($"FE HandleOptionClick error: {ex}");
+            return true;
+        }
+    }
+
+    private static void ShowTransferPopup(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        StationComponent station = __instance.station;
+        StationStore stationStore = new();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 = LDB.items.Select(storage.factory.entityPool[storage.station.entityId].protoId);
+        if (itemProto1 == null || itemProto2 == null) {
+            return;
+        }
+
+        ConcurrentDictionary<int, ETransferMode> transferDictionary =
+            slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+        ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = transferMode switch {
+            ETransferMode.Sync => storage.masterInspector.storageDemandColor,
+            ETransferMode.Upload => storage.masterInspector.storageSupplyColor,
+            _ => storage.masterInspector.storageNoneSpColor
+        };
+        storage.optionImage1.color = transferMode switch {
+            ETransferMode.Sync => storage.masterInspector.storageSupplyColor,
+            ETransferMode.Upload => storage.masterInspector.storageNoneSpColor,
+            _ => storage.masterInspector.storageDemandColor
+        };
+        storage.optionText0.text = transferMode switch {
+            ETransferMode.Sync => "仅上传".Translate(),
+            ETransferMode.Upload => "仅下载".Translate(),
+            _ => "双向同步".Translate()
+        };
+        storage.optionText1.text = transferMode switch {
+            ETransferMode.Sync => "仅下载".Translate(),
+            ETransferMode.Upload => "双向同步".Translate(),
+            _ => "仅上传".Translate()
+        };
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = true;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        SetControlPanelStoragePopupShift(storage, false);
+    }
+
+    private static void ShowCapacityPopup(UIControlPanelStationStorage __instance) {
+        UIControlPanelStationStorage storage = __instance;
+        StationComponent station = __instance.station;
+        StationStore stationStore = new();
+        if (station != null && storage.index < station.storage.Length) {
+            stationStore = station.storage[storage.index];
+        }
+        ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+        ItemProto itemProto2 = LDB.items.Select(storage.factory.entityPool[storage.station.entityId].protoId);
+        if (itemProto1 == null || itemProto2 == null) {
+            return;
+        }
+
+        (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+        storage.optionImage0.color = storage.masterInspector.storageDemandColor;
+        storage.optionImage1.color = storage.masterInspector.storageSupplyColor;
+        storage.optionText0.text = "无限上传".Translate();
+        storage.optionText1.text = "有限上传".Translate();
+        storage.popupBoxRect.gameObject.SetActive(!storage.popupBoxRect.gameObject.activeSelf);
+        bool isPopupActive = storage.popupBoxRect.gameObject.activeSelf;
+        slotIsMyPopup[popupStateKey] = isPopupActive;
+        slotIsTransfer[popupStateKey] = false;
+        slotPopupBoxRect[popupStateKey] = storage.popupBoxRect;
+        SetControlPanelStoragePopupShift(storage, false);
+    }
+
+    private static bool HandleOptionClick(UIControlPanelStationStorage __instance, int idx) {
+        try {
+            UIControlPanelStationStorage storage = __instance;
+            (long stationEntityId, int slotIndex) popupStateKey = GetPopupStateKey(storage);
+            if (!GetPopupFlag(slotIsMyPopup, popupStateKey)) {
+                return true;
+            }
+
+            StationComponent station = __instance.station;
+            if (storage.popupBoxRect == null
+                || !slotPopupBoxRect.TryGetValue(popupStateKey, out RectTransform popupRect)
+                || popupRect != storage.popupBoxRect
+                || !storage.popupBoxRect.gameObject.activeSelf) {
+                return true;
+            }
+
+            StationStore stationStore = new();
+            if (station != null && storage.index < station.storage.Length) {
+                stationStore = station.storage[storage.index];
+            }
+            ItemProto itemProto1 = LDB.items.Select(stationStore.itemId);
+            ItemProto itemProto2 = LDB.items.Select(storage.factory.entityPool[station.entityId].protoId);
+            if (itemProto1 == null || itemProto2 == null) {
+                return false;
+            }
+
+            if (GetPopupFlag(slotIsTransfer, popupStateKey)) {
+                ConcurrentDictionary<int, ETransferMode> transferDictionary =
+                    slotTransferMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ETransferMode>());
+                ETransferMode transferMode = transferDictionary.GetOrAdd(storage.index, ETransferMode.Sync);
+                ETransferMode nextMode = GetNextTransferMode(transferMode, idx);
+                transferDictionary.TryUpdate(storage.index, nextMode, transferMode);
+            } else {
+                ConcurrentDictionary<int, ECapacityMode> capacityDictionary =
+                    slotCapacityMode.GetOrAdd(station.entityId, new ConcurrentDictionary<int, ECapacityMode>());
+                ECapacityMode capacityMode = capacityDictionary.GetOrAdd(storage.index, ECapacityMode.Limited);
+                if (idx == 0) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Infinite, capacityMode);
+                } else if (idx == 1) {
+                    capacityDictionary.TryUpdate(storage.index, ECapacityMode.Limited, capacityMode);
+                }
+            }
+
+            storage.popupBoxRect.gameObject.SetActive(false);
+            slotIsMyPopup[popupStateKey] = false;
+            return false;
+        }
+        catch (Exception ex) {
+            LogError($"FE HandleOptionClick(UIControlPanelStationStorage) error: {ex}");
+            return true;
         }
     }
 
@@ -342,26 +1188,13 @@ public static class StationManager {
             return;
         }
         text.text = "  使用强化上限";
-        // 修改集装输出的可选上限
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
-        // 获取集装输出的当前上限
-        __instance.minPilerSlider.maxValue = maxProductOutputStack;
-        int pilerCount = station.pilerCount;
-        if (pilerCount == 0) {
-            // 自动，设置为上限
-            __instance.minPilerSlider.value = maxProductOutputStack;
-            __instance.minPilerValue.text = maxProductOutputStack.ToString();
-        } else {
-            // 手动，设置为当前值
-            __instance.minPilerSlider.value = pilerCount;
-            __instance.minPilerValue.text = pilerCount.ToString();
-        }
-        if (maxProductOutputStack > 1) {
-            // 堆叠上限大于1，显示修改滑条
-            __instance.minPilerGroup.gameObject.SetActive(true);
-            __instance.pilerTechGroup.gameObject.SetActive(true);
-        }
+        RefreshInteractionStationPilerUI(
+            station,
+            __instance.minPilerSlider,
+            __instance.minPilerValue,
+            __instance.minPilerGroup.gameObject,
+            __instance.pilerTechGroup.gameObject
+        );
         __instance.event_lock = false;
     }
 
@@ -385,13 +1218,7 @@ public static class StationManager {
         }
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
-            ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
-            int newVal = Mathf.RoundToInt(value);
-            // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
-            }
+            int newVal = GetClampedPilerCount(value);
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
         }
@@ -421,13 +1248,7 @@ public static class StationManager {
         }
         // 不是自动
         if (!__instance.techPilerCheck.enabled) {
-            ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-            int maxProductOutputStack = building.MaxProductOutputStack();
-            int newVal = Mathf.RoundToInt(value);
-            // 如果修改之后的值超过上限，设为上限
-            if (newVal > maxProductOutputStack) {
-                newVal = maxProductOutputStack;
-            }
+            int newVal = GetClampedPilerCount(value);
             __instance.transport.stationPool[__instance.stationId].pilerCount = newVal;
             __instance.minPilerValue.text = newVal.ToString();
         }
@@ -454,8 +1275,7 @@ public static class StationManager {
             return true;
         }
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxProductOutputStack = GetInteractionStationMaxStack();
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
@@ -485,8 +1305,7 @@ public static class StationManager {
             return true;
         }
         __instance.techPilerCheck.enabled = !__instance.techPilerCheck.enabled;
-        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
-        int maxProductOutputStack = building.MaxProductOutputStack();
+        int maxProductOutputStack = GetInteractionStationMaxStack();
         __instance.transport.stationPool[__instance.stationId].pilerCount =
             __instance.techPilerCheck.enabled
                 ? 0
@@ -572,5 +1391,204 @@ public static class StationManager {
         return buildingID is IFE行星内物流交互站 or IFE星际物流交互站
             ? LDB.items.Select(IFE行星内物流交互站).MaxProductOutputStack()
             : GameMain.history.stationPilerLevel;
+    }
+
+    private static bool IsInteractionStation(int buildingID) {
+        return buildingID is IFE行星内物流交互站 or IFE星际物流交互站;
+    }
+
+    private static int GetClampedPilerCount(float value) {
+        int maxStack = GetInteractionStationMaxStack();
+        int newValue = Mathf.RoundToInt(value);
+        return newValue > maxStack ? maxStack : newValue;
+    }
+
+    private static int GetInteractionStationMaxStack() {
+        ItemProto building = LDB.items.Select(IFE行星内物流交互站);
+        return building.MaxProductOutputStack();
+    }
+
+    private static void RefreshInteractionStationPilerUI(StationComponent station, Slider minPilerSlider,
+        Text minPilerValue, GameObject minPilerGroup, GameObject pilerTechGroup) {
+        int maxStack = GetInteractionStationMaxStack();
+        minPilerSlider.maxValue = maxStack;
+        int pilerCount = station.pilerCount;
+        int showValue = pilerCount == 0 ? maxStack : pilerCount;
+        minPilerSlider.value = showValue;
+        minPilerValue.text = showValue.ToString();
+        if (maxStack > 1) {
+            minPilerGroup.SetActive(true);
+            pilerTechGroup.SetActive(true);
+        }
+    }
+
+    private static (long stationEntityId, int slotIndex) GetPopupStateKey(UIStationStorage storage) {
+        if (storage == null) {
+            return (0L, -1);
+        }
+        long stationEntityId = storage.station != null ? storage.station.entityId : 0L;
+        return (stationEntityId, storage.index);
+    }
+
+    private static (long stationEntityId, int slotIndex) GetPopupStateKey(UIControlPanelStationStorage storage) {
+        if (storage == null) {
+            return (0L, -1);
+        }
+        long stationEntityId = storage.station != null ? storage.station.entityId : 0L;
+        return (stationEntityId, storage.index);
+    }
+
+    private static bool GetPopupFlag(ConcurrentDictionary<(long stationEntityId, int slotIndex), bool> stateDictionary,
+        (long stationEntityId, int slotIndex) key) {
+        return stateDictionary.TryGetValue(key, out bool value) && value;
+    }
+
+    private static void ClearPopupState((long stationEntityId, int slotIndex) key) {
+        slotIsMyPopup.TryRemove(key, out _);
+        slotIsTransfer.TryRemove(key, out _);
+        slotPopupBoxRect.TryRemove(key, out _);
+    }
+
+    private static Transform FindControlPanelModeButtonTransform(UIControlPanelStationStorage storage,
+        string buttonName) {
+        if (storage == null) {
+            return null;
+        }
+
+        Transform byStorage = storage.transform.Find(buttonName);
+        if (byStorage != null) {
+            return byStorage;
+        }
+
+        Transform parent = storage.localSdButton?.transform?.parent;
+        return parent?.Find(buttonName);
+    }
+
+    private static void SetStoragePopupShift(UIStationStorage storage, bool shiftRight) {
+        RectTransform popupRect = storage?.popupBoxRect;
+        if (popupRect == null) {
+            return;
+        }
+
+        float originalX = GetOrCacheOriginal(storagePopupOriginalX, popupRect, x => x.anchoredPosition.x);
+        float targetX = shiftRight ? originalX + spacingX : originalX;
+        popupRect.anchoredPosition = new Vector2(targetX, popupRect.anchoredPosition.y);
+        if (shiftRight) {
+            storagePopup[storage] = true;
+        } else {
+            storagePopup.TryRemove(storage, out _);
+        }
+    }
+
+    private static void SetControlPanelStoragePopupShift(UIControlPanelStationStorage storage, bool shiftLeft) {
+        RectTransform popupRect = storage?.popupBoxRect;
+        if (popupRect == null) {
+            return;
+        }
+
+        float originalX = GetOrCacheOriginal(controlPanelStoragePopupOriginalX, popupRect,
+            x => x.anchoredPosition.x);
+        float targetX = shiftLeft ? originalX - spacingX : originalX;
+        popupRect.anchoredPosition = new Vector2(targetX, popupRect.anchoredPosition.y);
+        if (shiftLeft) {
+            controlPanelStoragePopup[storage] = true;
+        } else {
+            controlPanelStoragePopup.TryRemove(storage, out _);
+        }
+    }
+
+    private static void RestoreControlPanelStorageSlot(UIControlPanelStationStorage storage) {
+        if (storage == null) {
+            return;
+        }
+
+        RectTransform localRect = storage.localSdButton?.GetComponent<RectTransform>();
+        if (localRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(localRect, out float localOriginal)) {
+            localRect.anchoredPosition = new Vector2(localOriginal, localRect.anchoredPosition.y);
+        }
+
+        RectTransform remoteRect = storage.remoteSdButton?.GetComponent<RectTransform>();
+        if (remoteRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(remoteRect, out float remoteOriginal)) {
+            remoteRect.anchoredPosition = new Vector2(remoteOriginal, remoteRect.anchoredPosition.y);
+        }
+
+        RectTransform keepModeRect = storage.keepModeButton?.GetComponent<RectTransform>();
+        if (keepModeRect != null
+            && controlPanelSdButtonOriginalPosition.TryGetValue(keepModeRect, out float keepModeOriginal)) {
+            keepModeRect.anchoredPosition = new Vector2(keepModeOriginal, keepModeRect.anchoredPosition.y);
+        }
+
+        SetControlPanelStoragePopupShift(storage, false);
+        ClearPopupState(GetPopupStateKey(storage));
+
+        if (controlPanelTransferGameObjects.TryGetValue(storage, out GameObject transferGO)) {
+            transferGO.SetActive(false);
+        }
+        if (controlPanelCapacityGameObjects.TryGetValue(storage, out GameObject capacityGO)) {
+            capacityGO.SetActive(false);
+        }
+    }
+
+    private static void AdjustSliders(UIStationWindow window, bool shouldWiden) {
+        if (window == null) {
+            return;
+        }
+
+        float delta = shouldWiden ? spacingX : 0f;
+        (Slider slider, Component valueText)[] controls = [
+            (window.maxChargePowerSlider, window.maxChargePowerValue),
+            (window.maxTripDroneSlider, window.maxTripDroneValue),
+            (window.maxTripVesselSlider, window.maxTripVesselValue),
+            (window.warperDistanceSlider, window.warperDistanceValue),
+            (window.minDeliverDroneSlider, window.minDeliverDroneValue),
+            (window.minDeliverVesselSlider, window.minDeliverVesselValue),
+            (window.maxMiningSpeedSlider, window.maxMiningSpeedValue),
+            (window.minPilerSlider, window.minPilerValue)
+        ];
+        foreach ((Slider slider, Component valueText) in controls) {
+            if (slider == null) {
+                continue;
+            }
+
+            RectTransform sliderRect = slider.GetComponent<RectTransform>();
+            if (sliderRect == null) {
+                continue;
+            }
+
+            Vector2 originalSize = GetOrCacheOriginal(sliderOriginalSize, sliderRect, x => x.sizeDelta);
+            Vector2 originalPosition = GetOrCacheOriginal(sliderOriginalPosition, sliderRect, x => x.anchoredPosition);
+            sliderRect.sizeDelta = new Vector2(originalSize.x + delta, originalSize.y);
+            sliderRect.anchoredPosition = new Vector2(originalPosition.x + delta, originalPosition.y);
+
+            RectTransform valueRect = valueText?.GetComponent<RectTransform>();
+            if (valueRect != null) {
+                Vector2 originalValuePosition =
+                    GetOrCacheOriginal(sliderOriginalPosition, valueRect, x => x.anchoredPosition);
+                valueRect.anchoredPosition = new Vector2(originalValuePosition.x + delta,
+                    originalValuePosition.y);
+            }
+        }
+    }
+
+    private static Vector2 GetOrCacheOriginal(Dictionary<RectTransform, Vector2> cache, RectTransform rect,
+        Func<RectTransform, Vector2> getter) {
+        if (cache.TryGetValue(rect, out Vector2 value)) {
+            return value;
+        }
+        value = getter(rect);
+        cache[rect] = value;
+        return value;
+    }
+
+    private static float GetOrCacheOriginal(Dictionary<RectTransform, float> cache, RectTransform rect,
+        Func<RectTransform, float> getter) {
+        if (cache.TryGetValue(rect, out float value)) {
+            return value;
+        }
+        value = getter(rect);
+        cache[rect] = value;
+        return value;
     }
 }

@@ -136,8 +136,8 @@ public static class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new fractionate technology, the new fractionator cannot be crafted using materials. At the fractionation data centre's lottery page, using vouchers to draw from the Prototype Pool yields various prototypes. Interacting with the fractionator to process these prototypes cultivates different fractionators. Additionally, the prototype lottery carries a minuscule chance of yielding a Targeted Prototype for a specific fractionator, which can be directly cultivated into that designated fractionator.",
-            "在全新的分馏科技中，新分馏塔无法使用材料制作。在分馏数据中心的奖券抽奖页面使用奖券抽取原胚奖池，可以得到不同的原胚；使用交互塔分馏原胚，可以培养出不同的分馏塔。除此之外，原胚抽奖有极小概率得到分馏塔定向原胚，它可以直接培养出指定的分馏塔。");
+            "In the new fractionate technology, new fractionators are not crafted directly from normal materials. Use tickets in the Fractionation Data Centre proto pool to obtain protos, then use an Interaction Tower to cultivate those protos into different fractionators. Rare directed protos can be cultivated directly into the selected tower type.",
+            "在新的分馏体系中，新分馏塔不再直接由普通材料制作。玩家需要在分馏数据中心的原胚奖池中使用奖券获得不同原胚，再用交互塔培养成不同的分馏塔；稀有的定向原胚则可以直接培养为指定塔种。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
@@ -147,8 +147,8 @@ public static class TechManager {
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            "COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.",
-            "主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。");
+            $"COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.\n\n{"Upload an Interaction Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。\n\n{"将交互塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品交互结果",
             "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
             "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
@@ -158,8 +158,8 @@ public static class TechManager {
 
         Register("T矿物复制", "Mineral Replication", "矿物复制");
         Register("矿物复制描述",
-            "During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.",
-            "在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。");
+            $"During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.\n\n{"Upload a Mineral Replication Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。\n\n{"将矿物复制塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("矿物复制结果",
             "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
@@ -167,40 +167,40 @@ public static class TechManager {
 
         Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
         Register("增产点数聚集描述",
-            "Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.",
-            "增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。");
+            $"Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.\n\n{"Upload a Points Aggregate Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。\n\n{"将点数聚集塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("增产点数聚集结果",
             "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
             "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
 
         Register("T量子复制", "Quantum Replication", "量子复制");
         Register("量子复制描述",
-            "With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.",
-            "随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。");
+            $"With continued research into dark fog and distilled essence, a new replication method has been developed. It can be applied to most items. By reconfiguring an object at the microscopic level and incorporating distilled essences of exceptional malleability, this item can be replicated in bulk. The proliferator points no longer increase the processing speed, but they can reduce the consumption of distilled essence.\n\n{"Upload a Quantum Replication Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"随着对黑雾和分馏精华的不断研究，一种新的复制模式随之诞生。如果将物品在微观层面进行重组，并添加具有卓越可塑性的分馏精华，就能批量复制这个物品。增产点数不再增加处理速度，但可以减少分馏精华的消耗。\n\n{"将量子复制塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("量子复制结果",
             "You have mastered quantum replication technology and can now batch replicate items with Fractionate Essence.",
             "你已经掌握了量子复制技术，可以用分馏精华批量复制物品了。");
 
         Register("T物品点金", "Item Alchemy", "物品点金");
         Register("物品点金描述",
-            "Item Alchemy Technology can transform items into various matrices. It's a simple, straightforward way to get matrices, but low-value items seem to have a hard time spawning matrices.",
-            "物品点金科技可以将物品点金成各种矩阵。这是一种简单、直接获取矩阵的方式，但是低价值物品似乎很难产出矩阵。");
+            $"Item Alchemy Technology can transform items into various matrices. It's a simple, straightforward way to get matrices, but low-value items seem to have a hard time spawning matrices.\n\n{"Upload an Alchemy Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品点金科技可以将物品点金成各种矩阵。这是一种简单、直接获取矩阵的方式，但是低价值物品似乎很难产出矩阵。\n\n{"将点金塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品点金结果",
             "You have mastered the art of item alchemy and can now transform items into various matrices.",
             "你已经掌握了物品点金技术，可以将物品点金成各种矩阵了。");
 
         Register("T物品分解", "Item Deconstruction", "物品分解");
         Register("物品分解描述",
-            "Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but it can be powerful in certain specific scenarios.",
-            "物品分解科技可以将物品分解成制作它的材料或沙土。这看起来似乎没有用，但是在某些特定的场景下，它能发挥出强大的威力。");
+            $"Item decomposition technology can break down items into the materials or sand used to make them. This may seem useless, but it can be powerful in certain specific scenarios.\n\n{"Upload a Deconstruction Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品分解科技可以将物品分解成制作它的材料或沙土。这看起来似乎没有用，但是在某些特定的场景下，它能发挥出强大的威力。\n\n{"将分解塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品分解结果",
             "You have mastered the art of item decomposition and can now break down items into the materials or sand used to craft them.",
             "你已经掌握了物品分解技术，可以将物品分解成制作它的材料或沙土了。");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            "Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...",
-            "物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……");
+            $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……\n\n{"将转化塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品转化结果",
             "You have mastered the art of item conversion and can now convert items into other items related to them.",
             "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");

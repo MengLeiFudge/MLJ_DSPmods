@@ -1,6 +1,10 @@
 - v2.2.9
+    + 物流交互站增加每槽传输模式与容量模式按钮，可选择双向同步、仅上传、仅下载，以及有限上传、无限上传。
     + 物流交互站有限上传目标数量改为与物品价值相关。
+    + 优化分馏塔相关科技的特殊解锁说明，科技需求中的占位物会提示上传对应分馏塔的解锁方法。
+    + Added per-slot transfer and capacity mode buttons to Interaction Stations: Sync, Upload Only, Download Only, Limited Upload, and Infinite Upload.
     + The limited upload target count of the Interaction Station is now related to item value.
+    + Improved special unlock descriptions for fractionator techs. The placeholder item in tech requirements now explains how to unlock by uploading the corresponding tower.
 
 - v2.2.7
     + 修复下拉框不在最上面的问题。

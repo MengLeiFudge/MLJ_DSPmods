@@ -83,6 +83,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
             BuildingManager.AddTranslations();
             ItemManager.AddTranslations();
             ProcessManager.AddTranslations();
+            StationManager.AddTranslations();
             TechManager.AddTranslations();
             TutorialManager.AddTranslations();
             MainWindow.AddTranslations();
@@ -236,17 +237,21 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.Import(r);
         ItemManager.Import(r);
         MainWindow.Import(r);
+        if (version >= 2) {
+            StationManager.Import(r);
+        }
     }
 
     /// <summary>
     /// 导出存档时执行。
     /// </summary>
     public void Export(BinaryWriter w) {
-        w.Write(1);
+        w.Write(2);
         RecipeManager.Export(w);
         BuildingManager.Export(w);
         ItemManager.Export(w);
         MainWindow.Export(w);
+        StationManager.Export(w);
     }
 
     /// <summary>
@@ -268,6 +273,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
         BuildingManager.IntoOtherSave();
         ItemManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
+        StationManager.IntoOtherSave();
         TechManager.ResetTechUnlockFlags();
     }
 
