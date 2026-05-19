@@ -24,6 +24,7 @@ public static class SandboxMode {
         Register("沙盒模式", "Sandbox Mode");
 
         Register("解锁所有分馏配方", "Unlock all fractionation recipes");
+        Register("所有分馏配方已解锁。", "All fractionation recipes have been unlocked.");
         Register("经验获取倍率", "Experience gain multiplier");
         Register("经验获取倍率说明",
             "Adjust the speed at which recipe experience is gained by processing items.",

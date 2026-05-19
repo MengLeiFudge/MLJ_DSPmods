@@ -73,13 +73,15 @@ public static class RecipeOperate {
         Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
         Register("费用", "Cost");
         Register("每种精华", "Each essence");
+        Register("一定量的", "a certain amount of");
         Register("成功率", "Success Rate");
         Register("损毁率", "Destroy Rate");
         Register("产出", "Output");
-        //Register("增产点数", "Proliferator Points");//原版已翻译
+        Register("增产点数", "Proliferator Points");
         //Register("其他", "Others");//原版已翻译
 
         Register("完全处理后的输出如下：", "The fully processed output is as follows:");
+        Register("，直至突破成功", ", until the breakthrough succeeds");
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("配方已到最高品质！", "Recipe has reached the highest quality!");
         Register("配方品质可突破，突破条件：",

@@ -6,7 +6,7 @@
         <TargetFramework>net472</TargetFramework>
         <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
         <Description>DSP MOD - FractionateEverything</Description>
-        <Version>2.2.9</Version>
+        <Version>2.2.10</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <PackageId>FractionateEverything</PackageId>
