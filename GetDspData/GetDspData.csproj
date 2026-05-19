@@ -5,6 +5,7 @@
         <TargetFramework>net472</TargetFramework>
         <BepInExPluginGuid>com.menglei.dsp.dspdata</BepInExPluginGuid>
         <Description>DSP MOD - GetDspData</Description>
+        <OutputType>Library</OutputType>
         <Version>1.0.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
