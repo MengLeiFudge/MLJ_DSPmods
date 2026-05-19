@@ -44,6 +44,7 @@ public static partial class ProcessManager {
         Register("损毁", "Destroy");
         Register("流动输入", "Flow input");
         Register("流动输出", "Flow output");
+        Register("配方不存在", "Recipe does not exist");
         Register("配方强化", "Recipe enhancement");
         Register("单锁", "Single Lock");
         Register("单锁产物数目", "Single-lock output count");

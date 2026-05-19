@@ -183,6 +183,11 @@ public static class BuildingOperate {
         Register("关键节点突破", "Breakthrough");
         Register("已满级", "Maxed");
         Register("当前等级需要靠经验自动成长", "This level advances automatically via EXP", "当前等级需要靠经验自动成长");
+        Register("待机/运行电力消耗", "Idle/working power consumption");
+        Register("上传/下载电力消耗", "Upload/download power consumption");
+        Register("物品最大堆叠", "Max item stack");
+        Register("增产剂效果", "Proliferator effect");
+        Register("原料流动增强", "Input flow enhancement");
         Register("能耗", "Enrg");
         Register("增产", "Prolif");
         Register("最大增产点数", "Max Inc Pts");

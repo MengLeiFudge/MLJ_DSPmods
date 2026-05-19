@@ -77,6 +77,9 @@ public static class VanillaRecipeOperate {
         Register("制作时间", "Crafting Time");
         Register("当前时间", "Current Time");
         Register("原版增强资源", "Enhance Resource", "增强资源");
+        Register("此配方的原料{0}已经无法升级！", "This recipe's input {0} can no longer be upgraded!");
+        Register("此配方的时间已经无法升级！", "This recipe's crafting time can no longer be upgraded!");
+        Register("来修改此项", "to modify this entry");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -274,7 +277,7 @@ public static class VanillaRecipeOperate {
         ItemProto item = LDB.items.Select(itemID);
         if (!vanillaRecipe.CanUpgradeInput(itemID)) {
             UIMessageBox.Show("提示".Translate(),
-                $"此配方的原料{item.name}已经无法升级！".Translate(),
+                string.Format("此配方的原料{0}已经无法升级！".Translate(), item.name),
                 "确定".Translate(), UIMessageBox.WARNING,
                 null);
             return;

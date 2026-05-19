@@ -33,6 +33,9 @@ public static class SandboxMode {
 
         Register("解锁所有分馏配方", "Unlock all fractionation recipes");
         Register("锁定所有分馏配方", "Lock all fractionation recipes");
+        Register("所有分馏配方已锁定。", "All fractionation recipes have been locked.");
+        Register("所有分馏配方已等级+1。", "All fractionation recipes gained +1 level.");
+        Register("所有分馏配方已满级。", "All fractionation recipes have been maxed.");
         Register("经验获取倍率", "Experience gain multiplier");
         Register("经验获取倍率说明",
             "Adjust the speed at which recipe experience is gained by processing items.",
