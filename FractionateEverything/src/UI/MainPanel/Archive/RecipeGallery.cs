@@ -33,6 +33,7 @@ public static class RecipeGallery {
         Register("配方解锁情况",
             $"The recipe gallery shows the current totals of {"Maxed".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}:",
             $"配方图鉴当前展示的是 {"满级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
+        Register("总计", "Total");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }

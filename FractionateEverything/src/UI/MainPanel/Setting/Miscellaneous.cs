@@ -91,7 +91,7 @@ public static class Miscellaneous {
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
         Register("物品提取目标", "Extraction target", "物品提取目标");
         Register("提取到手上", "To cursor", "提取到手上");
-        Register("提取到背包", "To package", "提取到背包");
+        Register("提取到背包", "To inventory", "提取到背包");
 
         Register("物品消耗顺序", "Order of consumption of items");
         Register("物品消耗顺序说明",
@@ -132,6 +132,8 @@ public static class Miscellaneous {
             "Double-click the inventory sort button to store excess items in the Fractionation Data Center");
         Register("AutoSorter模组将背包中多余物品收入分馏数据中心",
             "The AutoSorter mod stores excess inventory items in the Fractionation Data Center");
+        Register("PackageLogistic兼容数据中心",
+            "Allow PackageLogistic to use the Fractionation Data Center");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -170,7 +172,7 @@ public static class Miscellaneous {
         EnablePackageSortTwiceEntry =
             configFile.Bind("Miscellaneous", "EnablePackageSortTwice", true, "双击背包排序按钮将多余物品收入分馏数据中心");
         EnablePackageAutoSortTwiceEntry =
-            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将多余物品收入分馏数据中心");
+            configFile.Bind("Miscellaneous", "EnablePackageAutoSortTwice", false, "AutoSorter模组将背包中多余物品收入分馏数据中心");
         EnablePackageLogisticEntry =
             configFile.Bind("Miscellaneous", "PackageLogistic", false, "PackageLogistic兼容数据中心");
     }

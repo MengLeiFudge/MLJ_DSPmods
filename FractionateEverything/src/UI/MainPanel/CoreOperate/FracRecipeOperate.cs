@@ -97,6 +97,7 @@ public static class FracRecipeOperate {
         Register("产出", "Output");
         Register("随机", "Random");
         Register("单锁", "Single Lock");
+        Register("增产点数", "Proliferator points");
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("每个原料平均产出：", "Average output per raw material:");
