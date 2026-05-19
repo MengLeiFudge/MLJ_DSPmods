@@ -113,7 +113,11 @@ public static class Utils {
     /// </summary>
     public static void LoadModInfos() {
         modInfos.Clear();
-        using StreamReader sr = File.OpenText($@"{R2ProfileDir}\mods.yml");
+        if (!File.Exists(ModsConfigPath)) {
+            Console.WriteLine($"未找到 mods.yml：{ModsConfigPath}");
+            return;
+        }
+        using StreamReader sr = File.OpenText(ModsConfigPath);
         ModInfo modInfo = null;
         string line;
         Regex regex = new Regex("    - .+-.+-[0-9]+.[0-9]+.[0-9]+");
@@ -154,6 +158,66 @@ public static class Utils {
 
     public static ModInfo GetModInfo(string mod) {
         return modInfos.Find(m => m.name == mod || m.displayName == mod);
+    }
+
+    public static IReadOnlyList<ModInfo> GetAllModInfos() {
+        return modInfos;
+    }
+
+    /// <summary>
+    /// 将 mods.yml 中指定模组的 versionNumber 同步为当前项目版本。
+    /// 只改 major/minor/patch，保留其余字段与原有顺序。
+    /// </summary>
+    public static bool UpdateModVersionInConfig(string modName, string version) {
+        string modsConfigPath = $@"{R2ProfileDir}\mods.yml";
+        if (!File.Exists(modsConfigPath) || string.IsNullOrWhiteSpace(modName) || string.IsNullOrWhiteSpace(version)) {
+            return false;
+        }
+
+        string[] parts = version.Split('.');
+        if (parts.Length != 3) {
+            Console.WriteLine($"版本号格式异常：{version}");
+            return false;
+        }
+
+        string[] lines = File.ReadAllLines(modsConfigPath);
+        bool inTargetBlock = false;
+        bool updated = false;
+        for (int i = 0; i < lines.Length; i++) {
+            string line = lines[i];
+            if (line.StartsWith("- manifestVersion:")) {
+                inTargetBlock = false;
+                continue;
+            }
+
+            if (line.StartsWith("  name:")) {
+                string currentName = line.Substring(line.IndexOf(':') + 2);
+                inTargetBlock = currentName == modName;
+                continue;
+            }
+
+            if (!inTargetBlock) {
+                continue;
+            }
+
+            if (line.StartsWith("    major:")) {
+                lines[i] = $"    major: {parts[0]}";
+                updated = true;
+            } else if (line.StartsWith("    minor:")) {
+                lines[i] = $"    minor: {parts[1]}";
+                updated = true;
+            } else if (line.StartsWith("    patch:")) {
+                lines[i] = $"    patch: {parts[2]}";
+                updated = true;
+            }
+        }
+
+        if (!updated) {
+            return false;
+        }
+
+        File.WriteAllLines(modsConfigPath, lines);
+        return true;
     }
 
     /// <summary>
