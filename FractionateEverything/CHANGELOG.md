@@ -1,3 +1,9 @@
+- v2.2.10
+    + 修复杂项设置中“物品消耗顺序”选项在英文环境仍显示中文的问题。
+    + 新增翻译注册检测脚本，初步检查可见中文翻译 key 是否漏注册。
+    + Fixed the "Order of consumption of items" options in Miscellaneous settings still showing Chinese in English.
+    + Added an initial translation-registration check script for visible Chinese translation keys.
+
 - v2.2.9
     + 物流交互站增加每槽传输模式与容量模式按钮，可选择双向同步、仅上传、仅下载，以及有限上传、无限上传。
     + 物流交互站有限上传目标数量改为与物品价值相关。

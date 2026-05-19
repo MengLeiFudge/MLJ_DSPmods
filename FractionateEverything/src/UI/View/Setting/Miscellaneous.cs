@@ -21,12 +21,12 @@ public static class Miscellaneous {
     public static int RightClickTakeCount => ClickTakeCounts[RightClickTakeCountEntry.Value];
 
     private static readonly string[] TakeItemPriorityStrs = [
-        $"{"背包".Translate()} -> {"物流背包".Translate()} -> {"分馏数据中心".Translate()}",
-        $"{"背包".Translate()} -> {"分馏数据中心".Translate()} -> {"物流背包".Translate()}",
-        $"{"物流背包".Translate()} -> {"背包".Translate()} -> {"分馏数据中心".Translate()}",
-        $"{"物流背包".Translate()} -> {"分馏数据中心".Translate()} -> {"背包".Translate()}",
-        $"{"分馏数据中心".Translate()} -> {"背包".Translate()} -> {"物流背包".Translate()}",
-        $"{"分馏数据中心".Translate()} -> {"物流背包".Translate()} -> {"背包".Translate()}",
+        "背包 -> 物流背包 -> 分馏数据中心",
+        "背包 -> 分馏数据中心 -> 物流背包",
+        "物流背包 -> 背包 -> 分馏数据中心",
+        "物流背包 -> 分馏数据中心 -> 背包",
+        "分馏数据中心 -> 背包 -> 物流背包",
+        "分馏数据中心 -> 物流背包 -> 背包",
     ];
     private static readonly int[][] TakeItemPriorityArr = [
         [0, 1, 2],
@@ -69,8 +69,20 @@ public static class Miscellaneous {
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
 
         Register("物品消耗顺序", "Order of consumption of items");
-        Register("背包", "Package");
-        Register("物流背包", "Delivery Package");
+        Register("背包", "Inventory");
+        Register("物流背包", "Logistics Inventory");
+        Register("背包 -> 物流背包 -> 分馏数据中心",
+            "Inventory -> Logistics Inventory -> Fractionation Data Center");
+        Register("背包 -> 分馏数据中心 -> 物流背包",
+            "Inventory -> Fractionation Data Center -> Logistics Inventory");
+        Register("物流背包 -> 背包 -> 分馏数据中心",
+            "Logistics Inventory -> Inventory -> Fractionation Data Center");
+        Register("物流背包 -> 分馏数据中心 -> 背包",
+            "Logistics Inventory -> Fractionation Data Center -> Inventory");
+        Register("分馏数据中心 -> 背包 -> 物流背包",
+            "Fractionation Data Center -> Inventory -> Logistics Inventory");
+        Register("分馏数据中心 -> 物流背包 -> 背包",
+            "Fractionation Data Center -> Logistics Inventory -> Inventory");
         //Register("分馏数据中心", "Fractionation Data Centre");
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
