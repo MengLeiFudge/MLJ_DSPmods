@@ -4,13 +4,10 @@
         <TargetFramework>net472</TargetFramework>
         <!-- bepinex包源 -->
         <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
-        <!-- 在项目加载前就根据 OS 分配不同的中间路径 -->
-        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">obj/wsl/</BaseIntermediateOutputPath>
-        <BaseIntermediateOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">obj/win/</BaseIntermediateOutputPath>
-        <!-- 隔离输出路径，防止二进制文件冲突 -->
-        <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">bin/wsl/</BaseOutputPath>
-        <BaseOutputPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">bin/win/</BaseOutputPath>
-        <!-- 无论在哪个平台，始终排除 obj 和 bin 目录，防止冲突 -->
+        <!-- 输出路径不按 OS 或目标框架拆分，确保本机 Debug 产物固定在 bin\Debug -->
+        <BaseIntermediateOutputPath>obj/</BaseIntermediateOutputPath>
+        <BaseOutputPath>bin/</BaseOutputPath>
+        <!-- 始终排除 obj 和 bin 目录，防止构建产物进入编译输入 -->
         <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>
         <!-- 禁止在输出路径后追加框架名称 (如 net472) -->
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
