@@ -33,12 +33,12 @@ public static class Miscellaneous {
     private static ConfigEntry<int> ExtractTargetEntry;
 
     private static readonly string[] TakeItemPriorityStrs = [
-        $"{"背包".Translate()} -> {"物流背包".Translate()} -> {"分馏数据中心".Translate()}",
-        $"{"背包".Translate()} -> {"分馏数据中心".Translate()} -> {"物流背包".Translate()}",
-        $"{"物流背包".Translate()} -> {"背包".Translate()} -> {"分馏数据中心".Translate()}",
-        $"{"物流背包".Translate()} -> {"分馏数据中心".Translate()} -> {"背包".Translate()}",
-        $"{"分馏数据中心".Translate()} -> {"背包".Translate()} -> {"物流背包".Translate()}",
-        $"{"分馏数据中心".Translate()} -> {"物流背包".Translate()} -> {"背包".Translate()}",
+        "背包 -> 物流背包 -> 分馏数据中心",
+        "背包 -> 分馏数据中心 -> 物流背包",
+        "物流背包 -> 背包 -> 分馏数据中心",
+        "物流背包 -> 分馏数据中心 -> 背包",
+        "分馏数据中心 -> 背包 -> 物流背包",
+        "分馏数据中心 -> 物流背包 -> 背包",
     ];
     private static readonly int[][] TakeItemPriorityArr = [
         [0, 1, 2],
@@ -82,6 +82,10 @@ public static class Miscellaneous {
 
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
+        Register("参数配置", "Parameter Settings", "参数配置");
+        Register("调整物品提取组数、背包阈值、抽取模式和主面板风格",
+            "Adjust item extraction stack counts, inventory thresholds, draw mode, and main-panel style",
+            "调整物品提取组数、背包阈值、抽取模式和主面板风格");
 
         Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
@@ -90,8 +94,23 @@ public static class Miscellaneous {
         Register("提取到背包", "To package", "提取到背包");
 
         Register("物品消耗顺序", "Order of consumption of items");
-        Register("背包", "Package");
-        Register("物流背包", "Delivery Package");
+        Register("物品消耗顺序说明",
+            "Controls which storage is consumed first when FE lets construction, crafting, or other item-consuming actions use items from multiple places. It only changes the consumption priority and does not move items.",
+            "当 FE 允许建造、制作或其他消耗物品的操作从多个位置取物品时，此设置决定先从哪里扣除。它只改变消耗优先级，不会移动物品。");
+        Register("背包", "Inventory");
+        Register("物流背包", "Logistics Inventory");
+        Register("背包 -> 物流背包 -> 分馏数据中心",
+            "Inventory -> Logistics Inventory -> Fractionation Data Center");
+        Register("背包 -> 分馏数据中心 -> 物流背包",
+            "Inventory -> Fractionation Data Center -> Logistics Inventory");
+        Register("物流背包 -> 背包 -> 分馏数据中心",
+            "Logistics Inventory -> Inventory -> Fractionation Data Center");
+        Register("物流背包 -> 分馏数据中心 -> 背包",
+            "Logistics Inventory -> Fractionation Data Center -> Inventory");
+        Register("分馏数据中心 -> 背包 -> 物流背包",
+            "Fractionation Data Center -> Inventory -> Logistics Inventory");
+        Register("分馏数据中心 -> 物流背包 -> 背包",
+            "Fractionation Data Center -> Logistics Inventory -> Inventory");
 
         Register("物流交互站下载阈值", "Interaction Station download threshold");
         Register("物流交互站上传阈值", "Interaction Station upload threshold");
@@ -110,9 +129,9 @@ public static class Miscellaneous {
             "关闭后，FE 自己的确认弹窗会直接执行“确定”分支；警告框和提示框不受影响。");
 
         Register("双击背包排序按钮将多余物品收入分馏数据中心",
-            "Double-click the backpack sort button to store excess items in the distillation data center");
+            "Double-click the inventory sort button to store excess items in the Fractionation Data Center");
         Register("AutoSorter模组将背包中多余物品收入分馏数据中心",
-            "The AutoSorter module collects surplus items into the distillation data center.");
+            "The AutoSorter mod stores excess inventory items in the Fractionation Data Center");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
@@ -175,6 +194,7 @@ public static class Miscellaneous {
             LabeledComboBoxNode("物品提取目标", ExtractTargetStrs, ExtractTargetEntry,
                 pos: (++rowIdx, 0), objectName: "misc-extract-target"),
             LabeledComboBoxNode("物品消耗顺序", TakeItemPriorityStrs, TakeItemPriorityEntry,
+                tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明",
                 pos: (++rowIdx, 0), objectName: "misc-take-priority"),
             LabeledComboBoxNode("抽卡模式", ["常规模式", "速通模式"], (int)GachaManager.CurrentMode,
                 index => GachaManager.SetMode((GachaMode)index),
@@ -200,7 +220,7 @@ public static class Miscellaneous {
         for (int i = 0; i < rowIdx; i++) configRows.Add(Px(rowH));
         if (AutoSorter.Enable) {
             configRows.Add(Px(rowH));
-            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将多余物品收入分馏数据中心",
+            configChildren.Add(CheckBoxNode(EnablePackageAutoSortTwiceEntry, "AutoSorter模组将背包中多余物品收入分馏数据中心",
                 onBuilt: cb => PackageAutoSortTwiceCheckBox = cb,
                 pos: (++rowIdx, 0), objectName: "misc-auto-sorter"));
         }
@@ -215,7 +235,8 @@ public static class Miscellaneous {
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("杂项设置", objectName: "misc-setting-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值、抽取模式和主面板风格".WithColor(White)),
+                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值、抽取模式和主面板风格"
+                            .Translate().WithColor(White)),
                     ContentCard(
                         pos: (1, 0),
                         objectName: "misc-setting-config-card",
