@@ -73,7 +73,8 @@ AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
   "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\win\Release\VanillaCurveSim.exe"
 ```
 
-**No unit tests exist.** Build verification is the quality gate:
+**Verification entry points:** root `tests/` contains lightweight Python structural checks such as translation-registration guards. Run targeted Python tests when touching covered behavior, then use build verification as the release quality gate:
+- Translation registration guard: `python3 -m unittest tests.test_translation_registration`
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
 - For manual `FractionateEverything` / `GetDspData` / shared infrastructure changes, always run the solution-level local `MSBuild.exe` command above before marking work complete, then start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
 - For qqbot/Codex automation changes, after the successful solution build commit the verified code first, then run `AfterBuildEvent.exe 1` from the matching build output directory with a non-empty publish summary. Expected behavior: copy built mod files to R2, create zip packages under `ModZips`, write `ModZips/afterbuild-result.json`, do not open Explorer, and do not launch Dyson Sphere Program. The final Codex reply must include the build command/result, AfterBuildEvent command/result, generated zip file paths, R2 copy status, the uploaded commit hash, and the exact publish summary used.
