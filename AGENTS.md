@@ -12,47 +12,39 @@ Multiple DSP mods in one solution:
 
 ## Build Commands
 
-**Build tool rule:** In the current WSL environment, every compilation must use the local MSBuild at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`.
+**Build tool rule:** All compilation must use the local Windows environment. From WSL, run the Windows MSBuild executable at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`, but only from the Windows-mounted repository path that maps to `D:\project\csharp\DSP MOD\MLJ_DSPmods`. Do not compile from Linux-home worktrees such as `/home/mlj/.codex/worktrees/...`, because Windows tools see those as `\\wsl.localhost\...` paths and can fail to launch generated EXEs.
+
+**Output path rule:** Debug build output is fixed to `bin\Debug`. Do not introduce OS-specific output folders, and do not allow target-framework suffixes in the output path.
 
 **Build scope rule:** Build scope depends on the project that changed:
 - If any file under `FractionateEverything/` or `GetDspData/` changes, build the full solution `MLJ_DSPmods.sln`.
 - If shared build infrastructure changes, including `AfterBuildEvent/`, `Directory.Build.props`, `DefaultPath.props*`, or `MLJ_DSPmods.sln`, also build the full solution `MLJ_DSPmods.sln`.
 - If only `VanillaCurveSim/` changes, it may be built separately via `VanillaCurveSim/VanillaCurveSim.csproj`.
 
-**Packaging rule:** `FractionateEverything` and `GetDspData` are packaging-dependent projects. After a successful solution build for either of them, always start `AfterBuildEvent.exe`.
-- Manual/local interactive work: start `AfterBuildEvent.exe` without arguments in `wt.exe`, and do not send follow-up input. The user may choose a mode manually or close it directly.
-- qqbot/Codex automation work: first make the verified atomic git commit, then run `AfterBuildEvent.exe 1` from the build output directory. This selects option 1 automatically, but must not open Explorer or launch the game. The command must carry a fresh publish summary through `AFTERBUILD_PUBLISH_SUMMARY` or extra argv; do not rely on the default summary. The summary must match the commit being uploaded and include the user-visible reason, the fix/change, the implementation path, and the verification evidence.
+**Worktree build rule:** Code changes may be edited, tested with non-Windows structural checks, and committed inside a Codex worktree, but Windows compilation and all EXE launches must wait until the worktree branch is merged back into the target branch in the main Windows-mounted checkout. Do not start `AfterBuildEvent.exe` from a worktree.
+
+**Packaging rule:** `FractionateEverything` and `GetDspData` are packaging-dependent projects. After the worktree change is merged back into the target branch and the Debug solution build succeeds in the main Windows-mounted checkout, start `AfterBuildEvent.exe`.
+- Manual/local interactive work: start `AfterBuildEvent.exe` without arguments in `wt.exe` from `AfterBuildEvent\bin\Debug`, and do not send follow-up input. The user may choose a mode manually or close it directly.
+- qqbot/Codex automation work: first make the verified atomic git commit and merge it back to the target branch, then run `AfterBuildEvent.exe 1` from `AfterBuildEvent\bin\Debug` in the main Windows-mounted checkout. This selects option 1 automatically, but must not open Explorer or launch the game. The command must carry a fresh publish summary through `AFTERBUILD_PUBLISH_SUMMARY` or extra argv; do not rely on the default summary. The summary must match the commit being uploaded and include the user-visible reason, the fix/change, the implementation path, and the verification evidence.
 
 **Simulator rule:** `VanillaCurveSim` is a standalone simulator project. When only it changes, do not start `AfterBuildEvent.exe`; instead, it may be built and run directly.
 
 **Launch style rule:** Do not launch `AfterBuildEvent.exe` as a bare console process, and do not wrap it inside `powershell.exe`. On this Windows 11 machine, the closest match to the user's real double-click experience is to let `wt.exe` host `AfterBuildEvent.exe` directly, with the working directory set to the corresponding build output folder. The expected effect is: window title shows the `AfterBuildEvent.exe` path, and the content starts directly with the program's own prompt text, without any PowerShell banner.
 
 ```bash
+# Run these only after the worktree branch has been merged into the target branch
+# in the main Windows-mounted checkout.
+
 # FractionateEverything / GetDspData / shared infrastructure change:
 # Debug build the full solution, then start the post-build tool in Windows Terminal hosting the EXE directly
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
-wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug" \
-  "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Debug\AfterBuildEvent.exe"
+wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\Debug" \
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\Debug\AfterBuildEvent.exe"
 
 # qqbot/Codex automation after Debug build:
-cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Debug"
-AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
-修复：xxx
-方式：xxx
-验证：MSBuild 0 warning 0 error；AfterBuildEvent.exe 1 成功" ./AfterBuildEvent.exe 1
-
-# FractionateEverything / GetDspData / shared infrastructure change:
-# Release build the full solution, then start the post-build tool in Windows Terminal hosting the EXE directly
-"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
-  MLJ_DSPmods.sln \
-  /t:Build /p:Configuration=Release
-wt.exe -d "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release" \
-  "D:\project\csharp\DSP MOD\MLJ_DSPmods\AfterBuildEvent\bin\win\Release\AfterBuildEvent.exe"
-
-# qqbot/Codex automation after Release build:
-cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/win/Release"
+cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
 修复：xxx
 方式：xxx
@@ -63,21 +55,15 @@ AFTERBUILD_PUBLISH_SUMMARY="原因：用户反馈 xxx
   VanillaCurveSim/VanillaCurveSim.csproj \
   /t:Build /p:Configuration=Debug
 "/mnt/c/Windows/System32/cmd.exe" /c \
-  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\win\Debug\VanillaCurveSim.exe"
+  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\Debug\VanillaCurveSim.exe"
 
-# VanillaCurveSim-only change: standalone Release build and run
-"/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
-  VanillaCurveSim/VanillaCurveSim.csproj \
-  /t:Build /p:Configuration=Release
-"/mnt/c/Windows/System32/cmd.exe" /c \
-  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\win\Release\VanillaCurveSim.exe"
 ```
 
 **Verification entry points:** root `tests/` contains lightweight Python structural checks such as translation-registration guards. Run targeted Python tests when touching covered behavior, then use build verification as the release quality gate:
 - Translation registration guard: `python3 -m unittest tests.test_translation_registration`
 - Expected: `Build succeeded. 0 Warning(s). 0 Error(s).`
-- For manual `FractionateEverything` / `GetDspData` / shared infrastructure changes, always run the solution-level local `MSBuild.exe` command above before marking work complete, then start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
-- For qqbot/Codex automation changes, after the successful solution build commit the verified code first, then run `AfterBuildEvent.exe 1` from the matching build output directory with a non-empty publish summary. Expected behavior: copy built mod files to R2, create zip packages under `ModZips`, write `ModZips/afterbuild-result.json`, do not open Explorer, and do not launch Dyson Sphere Program. The final Codex reply must include the build command/result, AfterBuildEvent command/result, generated zip file paths, R2 copy status, the uploaded commit hash, and the exact publish summary used.
+- For manual `FractionateEverything` / `GetDspData` / shared infrastructure changes, first merge the worktree branch back into the target branch in the main Windows-mounted checkout, then run the solution-level local `MSBuild.exe` command above before marking work complete, then start `AfterBuildEvent.exe` in `wt.exe` as the directly hosted command, and do not auto-select any mode.
+- For qqbot/Codex automation changes, after the verified code is committed and merged back into the target branch, run the Debug solution build in the main Windows-mounted checkout, then run `AfterBuildEvent.exe 1` from `AfterBuildEvent\bin\Debug` with a non-empty publish summary. Expected behavior: copy built mod files to R2, create zip packages under `ModZips`, write `ModZips/afterbuild-result.json`, do not open Explorer, and do not launch Dyson Sphere Program. The final Codex reply must include the build command/result, AfterBuildEvent command/result, generated zip file paths, R2 copy status, the uploaded commit hash, and the exact publish summary used.
 - For `VanillaCurveSim`-only changes, build `VanillaCurveSim/VanillaCurveSim.csproj` and run `VanillaCurveSim.exe` directly.
 
 ## Key Files
@@ -386,7 +372,7 @@ pattern: class GameMain|void FixedUpdate
 1. **Never modify `BaseRecipe.GetOutputs` directly** — it's shared; subclass instead
 2. **Never touch `buffBonus1/2/3`** — reserved for future use
 3. **Avoid new Harmony patches** when existing code paths suffice
-4. **Always verify build with the correct scope** — `FractionateEverything` / `GetDspData` / shared infrastructure changes must build `MLJ_DSPmods.sln`, ensure `0 Error(s)`, then run `AfterBuildEvent.exe`; `VanillaCurveSim`-only changes may build `VanillaCurveSim.csproj` and run `VanillaCurveSim.exe`
+4. **Always verify build with the correct scope after merging back to the main Windows-mounted checkout** — `FractionateEverything` / `GetDspData` / shared infrastructure changes must build `MLJ_DSPmods.sln`, ensure `0 Error(s)`, then run `AfterBuildEvent.exe`; `VanillaCurveSim`-only changes may build `VanillaCurveSim.csproj` and run `VanillaCurveSim.exe`
 5. **LangVersion is `latest`** — use C# 12 features (collection expressions `[]`, primary constructors, etc.)
 
 ---
