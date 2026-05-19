@@ -33,6 +33,8 @@ EXTERNAL_TRANSLATION_KEYS = {
     "缺少原材料",
     "未供电",
     "其他",
+    "是",
+    "否",
 }
 
 
@@ -47,6 +49,11 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
 
 
+def is_line_commented(text: str, start: int) -> bool:
+    line_start = text.rfind("\n", 0, start) + 1
+    return text[line_start:start].lstrip().startswith("//")
+
+
 def source_files():
     return sorted(SOURCE_ROOT.rglob("*.cs"))
 
@@ -54,7 +61,10 @@ def source_files():
 def registered_keys() -> set[str]:
     keys = set()
     for path in source_files():
-        for match in REGISTER_RE.finditer(read_text(path)):
+        text = read_text(path)
+        for match in REGISTER_RE.finditer(text):
+            if is_line_commented(text, match.start()):
+                continue
             keys.add(decode_string_literal(match.group(1)))
     return keys
 
