@@ -37,6 +37,11 @@ static class AfterBuildEvent {
     private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/upload-local";
     private static readonly string DefaultAutoUploadSummary =
         "构建完成并发布 FE 测试包。\n\n本次发布由 AfterBuildEvent 自动打包、同步 R2，并上传最新 FractionateEverything zip。";
+#if DEBUG
+    private const string BuildConfiguration = "Debug";
+#else
+    private const string BuildConfiguration = "Release";
+#endif
 
     private sealed class ModDecompileTarget {
         public string DependencyExpression { get; set; } = "";
@@ -117,15 +122,9 @@ static class AfterBuildEvent {
             string r2ModDir = $@"{R2ProfileDir}\BepInEx\plugins\MengLei-{projectName}";
             string projectDir = dirInfo.FullName;
             //mod.dll
-#if DEBUG
-            string projectModFile = $@"{projectDir}\bin\win\debug\{projectName}.dll";
-            string projectModPdbFile = $@"{projectDir}\bin\win\debug\{projectName}.pdb";
-            string projectModMdbFile = $@"{projectDir}\bin\win\debug\{projectName}.dll.mdb";
-#else
-            string projectModFile = $@"{projectDir}\bin\win\release\{projectName}.dll";
-            string projectModPdbFile = $@"{projectDir}\bin\win\release\{projectName}.pdb";
-            string projectModMdbFile = $@"{projectDir}\bin\win\release\{projectName}.dll.mdb";
-#endif
+            string projectModFile = GetProjectOutputPath(projectName, BuildConfiguration, $"{projectName}.dll");
+            string projectModPdbFile = GetProjectOutputPath(projectName, BuildConfiguration, $"{projectName}.pdb");
+            string projectModMdbFile = GetProjectOutputPath(projectName, BuildConfiguration, $"{projectName}.dll.mdb");
             if (!File.Exists(projectModFile)) {
                 continue;
             }
@@ -1382,12 +1381,7 @@ static class AfterBuildEvent {
     }
 
     private static void SyncGetDspDataToR2ForIconExport() {
-#if DEBUG
-        string configuration = "Debug";
-#else
-        string configuration = "Release";
-#endif
-        string sourceDll = Path.Combine(SolutionFullDir, "GetDspData", "bin", "win", configuration, "GetDspData.dll");
+        string sourceDll = GetProjectOutputPath("GetDspData", BuildConfiguration, "GetDspData.dll");
         string sourceJsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
         CopyToR2RespectingOld(sourceDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "GetDspData.dll"));
         CopyToR2RespectingOld(sourceJsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"),
@@ -1950,15 +1944,10 @@ static class AfterBuildEvent {
     }
 
     private static void SyncCalcJsonExportModsToR2() {
-#if DEBUG
-        string configuration = "Debug";
-#else
-        string configuration = "Release";
-#endif
-        SyncProjectFileToR2("FractionateEverything", configuration, "FractionateEverything.dll");
-        SyncProjectFileToR2("FractionateEverything", configuration, "FractionateEverything.dll.mdb", false);
-        SyncProjectFileToR2("GetDspData", configuration, "GetDspData.dll");
-        SyncProjectFileToR2("GetDspData", configuration, "GetDspData.dll.mdb", false);
+        SyncProjectFileToR2("FractionateEverything", BuildConfiguration, "FractionateEverything.dll");
+        SyncProjectFileToR2("FractionateEverything", BuildConfiguration, "FractionateEverything.dll.mdb", false);
+        SyncProjectFileToR2("GetDspData", BuildConfiguration, "GetDspData.dll");
+        SyncProjectFileToR2("GetDspData", BuildConfiguration, "GetDspData.dll.mdb", false);
 
         string jsonDll = Path.Combine(SolutionFullDir, "lib", "Newtonsoft.Json.dll");
         CopyToR2RespectingOld(jsonDll, Path.Combine(R2PluginsDir, "MengLei-GetDspData", "Newtonsoft.Json.dll"), false);
@@ -1970,9 +1959,13 @@ static class AfterBuildEvent {
 
     private static void SyncProjectFileToR2(string projectName, string configuration, string fileName,
         bool required = true) {
-        string sourceFile = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration, fileName);
+        string sourceFile = GetProjectOutputPath(projectName, configuration, fileName);
         string targetFile = Path.Combine(R2PluginsDir, $"MengLei-{projectName}", fileName);
         CopyToR2RespectingOld(sourceFile, targetFile, required);
+    }
+
+    private static string GetProjectOutputPath(string projectName, string configuration, string fileName) {
+        return Path.Combine(SolutionFullDir, projectName, "bin", configuration, fileName);
     }
 
     private static void CopyToR2RespectingOld(string sourceFile, string targetFile, bool required = true) {
@@ -2094,14 +2087,8 @@ static class AfterBuildEvent {
 
     private static JArray BuildLocalDllSignature() {
         JArray result = [];
-#if DEBUG
-        string configuration = "Debug";
-#else
-        string configuration = "Release";
-#endif
         foreach (string projectName in CalcJsonLocalProjectNames) {
-            string dllPath = Path.Combine(SolutionFullDir, projectName, "bin", "win", configuration,
-                $"{projectName}.dll");
+            string dllPath = GetProjectOutputPath(projectName, BuildConfiguration, $"{projectName}.dll");
             FileInfo fileInfo = new(dllPath);
             result.Add(new JObject {
                 { "Project", projectName },
