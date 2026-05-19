@@ -290,8 +290,21 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 
 ## Git Practices
 
-- Commit messages in **Chinese**, conventional style: `功能：`, `修复：`, `重构：`, `杂项：`
-- Atomic commits (one logical change per commit)
+- Commit messages in **Chinese**, using this format: `<前缀>[可选作用域][!]: <描述>`
+- Supported prefixes:
+  - `功能：` 新增能力、机制、命令、页面或入口
+  - `调整：` 有意改变既有行为，且不是 bug fix 或纯新增
+  - `修复：` 修正崩溃、丢状态、错误路径、错误文案、兼容问题或其他错误行为
+  - `优化：` 性能、内存、加载速度、构建速度、包体积或查询次数改善，行为原则上不变
+  - `重构：` 内部结构调整，外部行为不变
+  - `构建：` 构建系统、输出路径、打包、发布、依赖、CI、工具链或自动化流程
+  - `文档：` README、AGENTS、设计说明、长期规则、教程文案等纯文本变更
+  - `测试：` 仅测试用例、测试脚本、测试数据、夹具或回归守卫变更
+  - `杂项：` 格式化、忽略文件整理等小维护；低频使用，不作为垃圾桶
+- Optional scope goes in parentheses when it improves one-line log scanning, for example `修复(UI): ...` or `构建(deps): ...`; scope describes the module or domain, not the change type.
+- Use `!` for breaking changes, for example `调整!: ...` or `功能(API)!: ...`; the commit body must explain impact and migration.
+- Commit body/details should record `原因：`, `实现：`, `验证：`, and `影响：` when the title alone is not enough.
+- Atomic commits are one complete functional or behavioral change; code, tests, config, and docs for the same change should usually stay in one commit.
 - Do **not** push unless explicitly approved by the user
 
 ### Commit Policy for Agents
