@@ -126,6 +126,20 @@ class TranslationRegistrationTests(unittest.TestCase):
         missing = [option for option in options if requires_fe_translation_key(option) and option not in keys]
         self.assertFalse(missing, "物品消耗顺序选项缺少 Register: " + ", ".join(missing))
 
+    def test_station_piler_labels_are_translated(self):
+        keys = registered_keys()
+        self.assertIn("使用科技上限", keys)
+        self.assertIn("使用强化上限", keys)
+
+        raw_assignment_re = re.compile(r'text\.text\s*=\s*"\s*(?:使用科技上限|使用强化上限)"')
+        offenders = []
+        for path in source_files():
+            text = read_text(path)
+            if raw_assignment_re.search(text):
+                offenders.append(str(path))
+
+        self.assertFalse(offenders, "物流站集装上限文本应走 Translate: " + ", ".join(offenders))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,6 +20,9 @@ public static partial class StationManager {
         // 容量模式按钮文本
         Register("有限上传", "Limited Upload", "有限上传");
         Register("无限上传", "Infinite Upload", "无限上传");
+        // 集装上限复选框文本
+        Register("使用科技上限", "Use tech limit", "使用科技上限");
+        Register("使用强化上限", "Use enhancement limit", "使用强化上限");
     }
 
     public static void Import(BinaryReader r) {

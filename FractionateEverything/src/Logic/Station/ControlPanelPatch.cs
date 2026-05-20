@@ -613,12 +613,12 @@ public static partial class StationManager {
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (!IsInteractionStation(buildingID)) {
             // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = "  使用科技上限";
+            text.text = $"  {"使用科技上限".Translate()}";
             __instance.event_lock = false;
             return;
         }
 
-        text.text = "  使用强化上限";
+        text.text = $"  {"使用强化上限".Translate()}";
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
