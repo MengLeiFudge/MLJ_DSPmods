@@ -103,7 +103,22 @@ while (!File.Exists(expectedFile)) { Thread.Sleep(100); }
 |---|---|
 | `DSPGameDir` | From `DefaultPath.props` or hardcoded default |
 | `NugetGameLibNet45Dir` | Auto-scanned: latest subdirectory of nuget gamelibs by `LastWriteTime` |
-| `SolutionDir` | `@"..\..\..\..\"` (relative from bin output) |
+| `SolutionDir` | resolved by walking upward from `AppContext.BaseDirectory` until `MLJ_DSPmods.sln` is found |
 | `PublicizerExe` | `lib\BepInEx.AssemblyPublicizer.Cli.exe` |
 
 Path overrides live in `DefaultPath.props` (gitignored). Copy from `DefaultPath.props.example`.
+
+## Project Output Layout
+
+`Directory.Build.props` fixes project output to `bin\<Configuration>` without OS or target-framework suffixes.
+AfterBuildEvent must use that layout when copying local project DLLs:
+
+```
+<ProjectName>\bin\Debug\<ProjectName>.dll
+<ProjectName>\bin\Release\<ProjectName>.dll
+```
+
+Do not reintroduce `bin\win\<Configuration>` or `bin\<Configuration>\net472` in AfterBuildEvent paths.
+`AfterBuildEvent.csproj` should keep `ProjectReference` entries with `ReferenceOutputAssembly="false"` for every
+local mod/tool project it packages or uses for calculator export, and those referenced projects should remain
+`OutputType=Library`.

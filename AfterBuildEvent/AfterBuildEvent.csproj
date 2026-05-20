@@ -16,4 +16,8 @@
             <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
         </Reference>
     </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\GetDspData\GetDspData.csproj" ReferenceOutputAssembly="false"/>
+    </ItemGroup>
 </Project>

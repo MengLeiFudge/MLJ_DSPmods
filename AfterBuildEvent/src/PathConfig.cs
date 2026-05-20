@@ -13,7 +13,7 @@ public static class PathConfig {
     public static string R2ProfileDir => _r2ProfileDir;
     public static string ModsConfigPath => $@"{R2ProfileDir}\mods.yml";
     public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
-    public static string CompatibilityDir => $@"{SolutionDir}\FractionateEverything\src\Compatibility";
+    public static string CompatibilityDir => $@"{SolutionFullDir}\FractionateEverything\src\Compatibility";
     public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
     public static string DspCalcDir => @"D:\project\js\dsp-calc";
     public static string DspCalcGameDataPath => $@"{DspCalcDir}\src\engine\data\gameData.ts";
@@ -50,10 +50,10 @@ public static class PathConfig {
     public static string OrbitalRingSourceDir => _orbitalRingSourceDir;
     public static string FractionateEverythingSourceDir => _fractionateEverythingSourceDir;
 
-    public static string SolutionDir => @"..\..\..\..";
+    public static string SolutionDir => SolutionFullDir;
     public static string SolutionFullDir => ResolveSolutionFullDir();
-    public static FileInfo PublicizerExe => new($@"{SolutionDir}\lib\BepInEx.AssemblyPublicizer.Cli.exe");
-    public static FileInfo Pdb2mdbExe => new($@"{SolutionDir}\lib\pdb2mdb.exe");
+    public static FileInfo PublicizerExe => new($@"{SolutionFullDir}\lib\BepInEx.AssemblyPublicizer.Cli.exe");
+    public static FileInfo Pdb2mdbExe => new($@"{SolutionFullDir}\lib\pdb2mdb.exe");
 
     static PathConfig() {
         LoadPath();
@@ -62,7 +62,7 @@ public static class PathConfig {
     private static void LoadPath() {
         try {
             XmlDocument xmlDocument = null;
-            string defaultPathFile = $@"{SolutionDir}\DefaultPath.props";
+            string defaultPathFile = $@"{SolutionFullDir}\DefaultPath.props";
             if (File.Exists(defaultPathFile)) {
                 xmlDocument = new();
                 xmlDocument.Load(defaultPathFile);
@@ -121,6 +121,7 @@ public static class PathConfig {
             dir = dir.Parent;
         }
 
-        return Path.GetFullPath(SolutionDir);
+        throw new DirectoryNotFoundException(
+            $"无法从程序目录向上定位 MLJ_DSPmods.sln：{AppContext.BaseDirectory}");
     }
 }
