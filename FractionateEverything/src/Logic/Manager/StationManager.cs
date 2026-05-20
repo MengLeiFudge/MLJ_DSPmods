@@ -46,6 +46,8 @@ public static class StationManager {
         Register("仅下载", "Download Only", "仅下载");
         Register("有限上传", "Limited Upload", "有限上传");
         Register("无限上传", "Infinite Upload", "无限上传");
+        Register("使用科技上限", "Use tech limit", "使用科技上限");
+        Register("使用强化上限", "Use enhancement limit", "使用强化上限");
     }
 
     public static void Import(BinaryReader r) {
@@ -668,11 +670,11 @@ public static class StationManager {
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = "  使用科技上限";
+            text.text = $"  {"使用科技上限".Translate()}";
             __instance.event_lock = false;
             return;
         }
-        text.text = "  使用强化上限";
+        text.text = $"  {"使用强化上限".Translate()}";
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
@@ -1267,11 +1269,11 @@ public static class StationManager {
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
             // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = "  使用科技上限";
+            text.text = $"  {"使用科技上限".Translate()}";
             __instance.event_lock = false;
             return;
         }
-        text.text = "  使用强化上限";
+        text.text = $"  {"使用强化上限".Translate()}";
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
