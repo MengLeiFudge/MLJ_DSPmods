@@ -60,7 +60,7 @@ public static class StationManager {
         Register("仅下载", "Download Only", "仅下载");
         Register("有限上传", "Limited Upload", "有限上传");
         Register("无限上传", "Infinite Upload", "无限上传");
-        Register("使用强化上限", "Use boost limit", "使用强化上限");
+        Register("使用强化上限", "Up to bonus limit", "使用强化上限");
     }
 
     public static void Import(BinaryReader r) {

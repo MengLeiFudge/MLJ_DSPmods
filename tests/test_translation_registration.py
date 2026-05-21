@@ -132,7 +132,8 @@ class TranslationRegistrationTests(unittest.TestCase):
         self.assertIn("使用强化上限", keys)
 
         station_manager = read_text(SOURCE_ROOT / "Logic/Manager/StationManager.cs")
-        self.assertIn('Register("使用强化上限", "Use boost limit", "使用强化上限")', station_manager)
+        self.assertIn('Register("使用强化上限", "Up to bonus limit", "使用强化上限")', station_manager)
+        self.assertNotIn("Use boost limit", station_manager)
         self.assertNotIn("Use enhancement limit", station_manager)
 
         raw_assignment_re = re.compile(r'text\.text\s*=\s*"\s*(?:使用科技上限|使用强化上限)"\s*;')
