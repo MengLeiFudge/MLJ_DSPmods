@@ -325,18 +325,14 @@ public static partial class StationManager {
             return;
         }
 
-        // 修改集装输出的描述
-        Component label = __instance.techPilerButton.transform.Find("label");
-        Text text = label.GetComponent<Text>();
         // 只处理物流交互站
         if (!isModStation) {
-            // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = $"  {"使用科技上限".Translate()}";
+            RestoreStationPilerLabel(__instance.techPilerButton);
             __instance.event_lock = false;
             return;
         }
 
-        text.text = $"  {"使用强化上限".Translate()}";
+        ApplyInteractionStationPilerLabel(__instance.techPilerButton);
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
@@ -657,6 +653,71 @@ public static partial class StationManager {
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> transferGameObjects = new();
     /// <summary>独立物流站面板：容量模式按钮GameObject缓存</summary>
     private static readonly ConcurrentDictionary<UIStationStorage, GameObject> capacityGameObjects = new();
+
+    private sealed class StationPilerLabelState {
+        public StationPilerLabelState(string text, string stringKey, string translation, bool hasLocalizer) {
+            Text = text;
+            StringKey = stringKey;
+            Translation = translation;
+            HasLocalizer = hasLocalizer;
+        }
+
+        public string Text { get; }
+        public string StringKey { get; }
+        public string Translation { get; }
+        public bool HasLocalizer { get; }
+    }
+
+    /// <summary>缓存原版集装上限 label 状态，用于从交互站切回原版站时恢复。</summary>
+    private static readonly ConcurrentDictionary<Text, StationPilerLabelState> stationPilerLabelOriginalState = new();
+
+    private static void ApplyInteractionStationPilerLabel(UIButton techPilerButton) {
+        Text text = GetStationPilerLabelText(techPilerButton);
+        if (text == null) {
+            return;
+        }
+
+        CacheStationPilerLabelState(text);
+        Localizer localizer = text.GetComponent<Localizer>();
+        if (localizer != null) {
+            localizer.stringKey = "使用强化上限";
+            localizer.translation = "使用强化上限".Translate();
+        }
+        text.text = "使用强化上限".Translate();
+    }
+
+    private static void RestoreStationPilerLabel(UIButton techPilerButton) {
+        Text text = GetStationPilerLabelText(techPilerButton);
+        if (text == null || !stationPilerLabelOriginalState.TryGetValue(text, out StationPilerLabelState state)) {
+            return;
+        }
+
+        Localizer localizer = text.GetComponent<Localizer>();
+        if (state.HasLocalizer && localizer != null) {
+            localizer.stringKey = state.StringKey;
+            localizer.translation = state.Translation;
+        }
+        text.text = state.Text;
+    }
+
+    private static Text GetStationPilerLabelText(UIButton techPilerButton) {
+        Transform label = techPilerButton?.transform.Find("label");
+        return label?.GetComponent<Text>();
+    }
+
+    private static void CacheStationPilerLabelState(Text text) {
+        if (stationPilerLabelOriginalState.ContainsKey(text)) {
+            return;
+        }
+
+        Localizer localizer = text.GetComponent<Localizer>();
+        stationPilerLabelOriginalState[text] = new StationPilerLabelState(
+            text.text,
+            localizer?.stringKey,
+            localizer?.translation,
+            localizer != null
+        );
+    }
 
     /// <summary>
     /// 调整独立物流站面板中滑块控件的位置和尺寸
