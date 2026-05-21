@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(".")
 AFTERBUILD_CSPROJ = ROOT / "AfterBuildEvent" / "AfterBuildEvent.csproj"
+AFTERBUILD_CS = ROOT / "AfterBuildEvent" / "src" / "AfterBuildEvent.cs"
 LOCAL_LIBRARY_PROJECTS = [
     ROOT / "FractionateEverything" / "FractionateEverything.csproj",
     ROOT / "GetDspData" / "GetDspData.csproj",
@@ -89,6 +90,25 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertIn("AppContext.BaseDirectory", text)
         self.assertIn("MLJ_DSPmods.sln", text)
         self.assertNotIn('public static string SolutionDir => @"..\\..\\..\\.."', text)
+
+    def test_packaging_deletes_only_current_version_zip(self):
+        text = read_text(AFTERBUILD_CS)
+
+        self.assertNotIn('Directory.GetFiles(@".\\ModZips")', text)
+        self.assertNotIn('file.StartsWith($@".\\ModZips\\{projectName}")', text)
+        self.assertIn("DeleteExistingVersionModZip(zipFile);", text)
+
+        helper_match = re.search(
+            r"private static void DeleteExistingVersionModZip\(string zipFile\) \{(?P<body>.*?)^    \}",
+            text,
+            re.DOTALL | re.MULTILINE,
+        )
+        self.assertIsNotNone(helper_match, "缺少同版本 zip 清理 helper")
+        helper_body = helper_match.group("body")
+        self.assertIn("File.Exists(zipFile)", helper_body)
+        self.assertIn("File.Delete(zipFile)", helper_body)
+        self.assertNotIn("Directory.GetFiles", helper_body)
+        self.assertNotIn("projectName", helper_body)
 
 
 if __name__ == "__main__":
