@@ -36,7 +36,6 @@ bld/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 .idea/
-.codex/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -216,6 +215,14 @@ csx/
 ecf/
 rcf/
 
+# Third-party mod DLLs now resolve from the local R2 profile instead of the repo.
+lib/BuildBarTool.dll
+lib/DSP_Battle-publicized.dll
+lib/ProjectGenesis-publicized.dll
+lib/ProjectOrbitalRing-publicized.dll
+
+*.mp4
+
 # Windows Store app package directories and files
 AppPackages/
 BundleArtifacts/
@@ -365,4 +372,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 gamedata/
+lib/tools/
 DefaultPath.props
+.sisyphus/
+.codex/
+.claude/
