@@ -35,6 +35,20 @@ public static class StationManager {
         Infinite = 1
     }
 
+    private readonly struct StationPilerLabelState {
+        public StationPilerLabelState(string text, string stringKey, string translation, bool hasLocalizer) {
+            Text = text;
+            StringKey = stringKey;
+            Translation = translation;
+            HasLocalizer = hasLocalizer;
+        }
+
+        public string Text { get; }
+        public string StringKey { get; }
+        public string Translation { get; }
+        public bool HasLocalizer { get; }
+    }
+
     private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ETransferMode>> slotTransferMode =
         new();
     private static readonly ConcurrentDictionary<long, ConcurrentDictionary<int, ECapacityMode>> slotCapacityMode =
@@ -46,8 +60,7 @@ public static class StationManager {
         Register("仅下载", "Download Only", "仅下载");
         Register("有限上传", "Limited Upload", "有限上传");
         Register("无限上传", "Infinite Upload", "无限上传");
-        Register("使用科技上限", "Use tech limit", "使用科技上限");
-        Register("使用强化上限", "Use enhancement limit", "使用强化上限");
+        Register("使用强化上限", "Use boost limit", "使用强化上限");
     }
 
     public static void Import(BinaryReader r) {
@@ -120,6 +133,7 @@ public static class StationManager {
         controlPanelStoragePopupOriginalX.Clear();
         controlPanelTransferGameObjects.Clear();
         controlPanelCapacityGameObjects.Clear();
+        stationPilerLabelOriginalState.Clear();
         slotIsMyPopup.Clear();
         slotIsTransfer.Clear();
         slotPopupBoxRect.Clear();
@@ -244,6 +258,7 @@ public static class StationManager {
         controlPanelTransferGameObjects = new();
     private static readonly ConcurrentDictionary<UIControlPanelStationStorage, GameObject>
         controlPanelCapacityGameObjects = new();
+    private static readonly Dictionary<Text, StationPilerLabelState> stationPilerLabelOriginalState = [];
     private const float ExtraSpacing = 12f;
     private const float BtnHeight = 26f;
     private const float BtnYOffset = 14f;
@@ -657,24 +672,18 @@ public static class StationManager {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIStationWindow), nameof(UIStationWindow.OnStationIdChange))]
     public static void UIStationWindow_OnStationIdChange_Postfix(UIStationWindow __instance) {
-        __instance.event_lock = true;
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
-            __instance.event_lock = false;
             return;
         }
-        // 修改集装输出的描述
-        Component label = __instance.techPilerButton.transform.Find("label");
-        Text text = label.GetComponent<Text>();
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = $"  {"使用科技上限".Translate()}";
-            __instance.event_lock = false;
+            RestoreStationPilerLabel(__instance.techPilerButton);
             return;
         }
-        text.text = $"  {"使用强化上限".Translate()}";
+        __instance.event_lock = true;
+        ApplyInteractionStationPilerLabel(__instance.techPilerButton);
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
@@ -1256,24 +1265,18 @@ public static class StationManager {
     [HarmonyPatch(typeof(UIControlPanelStationInspector), nameof(UIControlPanelStationInspector.RefreshTabPanelUI))]
     public static void UIControlPanelStationInspector_OnStationIdChange_Postfix(
         UIControlPanelStationInspector __instance) {
-        __instance.event_lock = true;
         StationComponent station = __instance.transport?.stationPool[__instance.stationId];
         if (station == null || station.id != __instance.stationId) {
-            __instance.event_lock = false;
             return;
         }
-        // 修改集装输出的描述
-        Component label = __instance.techPilerButton.transform.Find("label");
-        Text text = label.GetComponent<Text>();
         // 只处理物流交互站
         int buildingID = __instance.factory.entityPool[station.entityId].protoId;
         if (buildingID != IFE行星内物流交互站 && buildingID != IFE星际物流交互站) {
-            // 还原，避免不关窗口直接切换的时候显示错误
-            text.text = $"  {"使用科技上限".Translate()}";
-            __instance.event_lock = false;
+            RestoreStationPilerLabel(__instance.techPilerButton);
             return;
         }
-        text.text = $"  {"使用强化上限".Translate()}";
+        __instance.event_lock = true;
+        ApplyInteractionStationPilerLabel(__instance.techPilerButton);
         RefreshInteractionStationPilerUI(
             station,
             __instance.minPilerSlider,
@@ -1686,6 +1689,54 @@ public static class StationManager {
     private static int GetInteractionStationMaxStack() {
         ItemProto building = LDB.items.Select(IFE行星内物流交互站);
         return building.MaxProductOutputStack();
+    }
+
+    private static void ApplyInteractionStationPilerLabel(UIButton techPilerButton) {
+        Text text = GetStationPilerLabelText(techPilerButton);
+        if (text == null) {
+            return;
+        }
+
+        CacheStationPilerLabelState(text);
+        Localizer localizer = text.GetComponent<Localizer>();
+        if (localizer != null) {
+            localizer.stringKey = "使用强化上限";
+            localizer.translation = "使用强化上限".Translate();
+        }
+        text.text = "使用强化上限".Translate();
+    }
+
+    private static void RestoreStationPilerLabel(UIButton techPilerButton) {
+        Text text = GetStationPilerLabelText(techPilerButton);
+        if (text == null || !stationPilerLabelOriginalState.TryGetValue(text, out StationPilerLabelState state)) {
+            return;
+        }
+
+        Localizer localizer = text.GetComponent<Localizer>();
+        if (state.HasLocalizer && localizer != null) {
+            localizer.stringKey = state.StringKey;
+            localizer.translation = state.Translation;
+        }
+        text.text = state.Text;
+    }
+
+    private static Text GetStationPilerLabelText(UIButton techPilerButton) {
+        Transform label = techPilerButton?.transform.Find("label");
+        return label?.GetComponent<Text>();
+    }
+
+    private static void CacheStationPilerLabelState(Text text) {
+        if (stationPilerLabelOriginalState.ContainsKey(text)) {
+            return;
+        }
+
+        Localizer localizer = text.GetComponent<Localizer>();
+        stationPilerLabelOriginalState[text] = new StationPilerLabelState(
+            text.text,
+            localizer?.stringKey,
+            localizer?.translation,
+            localizer != null
+        );
     }
 
     private static void RefreshInteractionStationPilerUI(StationComponent station, Slider minPilerSlider,

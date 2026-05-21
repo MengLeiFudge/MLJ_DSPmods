@@ -128,17 +128,24 @@ class TranslationRegistrationTests(unittest.TestCase):
 
     def test_station_piler_labels_are_translated(self):
         keys = registered_keys()
-        self.assertIn("使用科技上限", keys)
+        self.assertNotIn("使用科技上限", keys)
         self.assertIn("使用强化上限", keys)
 
-        raw_assignment_re = re.compile(r'text\.text\s*=\s*"\s*(?:使用科技上限|使用强化上限)"')
+        station_manager = read_text(SOURCE_ROOT / "Logic/Manager/StationManager.cs")
+        self.assertIn('Register("使用强化上限", "Use boost limit", "使用强化上限")', station_manager)
+        self.assertNotIn("Use enhancement limit", station_manager)
+
+        raw_assignment_re = re.compile(r'text\.text\s*=\s*"\s*(?:使用科技上限|使用强化上限)"\s*;')
+        leading_space_re = re.compile(r'text\.text\s*=\s*\$"\s+\{')
         offenders = []
         for path in source_files():
             text = read_text(path)
-            if raw_assignment_re.search(text):
+            if raw_assignment_re.search(text) or leading_space_re.search(text):
                 offenders.append(str(path))
 
-        self.assertFalse(offenders, "物流站集装上限文本应走 Translate: " + ", ".join(offenders))
+        self.assertFalse(offenders, "物流站集装上限文本应走 Translate 且不能拼接前导空格: " + ", ".join(offenders))
+        self.assertNotIn('"使用科技上限".Translate()', station_manager)
+        self.assertIn("RestoreStationPilerLabel(__instance.techPilerButton);", station_manager)
 
 
 if __name__ == "__main__":
