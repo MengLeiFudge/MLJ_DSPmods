@@ -55,6 +55,7 @@ Do not run `AfterBuildEvent.exe 1` before the commit. The qqbot publish message 
 In automation mode, option `1` keeps the packaging/R2 sync behavior but changes the user-facing side effects:
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
+- before creating a package, delete only the current target zip path for the same project/version; do not clear other versions from `ModZips`
 - write generated package paths to `ModZips/afterbuild-result.json`
 - include a concise publish summary in `afterbuild-result.json`; the summary should explain why this build exists, what was fixed or changed, how it was fixed, and which verification commands passed
 - push `afterbuild-result.json` to the local qqbot admin API, which publishes only `FractionateEverything_*.zip` to QQ group `319567534`
