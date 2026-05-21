@@ -204,13 +204,8 @@ static class AfterBuildEvent {
             if (!Directory.Exists(@".\ModZips")) {
                 Directory.CreateDirectory(@".\ModZips");
             }
-            foreach (var file in Directory.GetFiles(@".\ModZips")) {
-                if (file.StartsWith($@".\ModZips\{projectName}") && file.EndsWith(".zip")) {
-                    File.Delete(file);
-                    Console.WriteLine($"删除 {file}");
-                }
-            }
             string zipFile = $@".\ModZips\{projectName}{version}.zip";
+            DeleteExistingVersionModZip(zipFile);
             ZipMod(fileList, zipFile);
             Console.WriteLine($"创建 {zipFile}");
             generatedPackages.Add(Path.GetFullPath(zipFile));
@@ -403,6 +398,15 @@ static class AfterBuildEvent {
         }
         zipStream.Finish();
         zipStream.Close();
+    }
+
+    private static void DeleteExistingVersionModZip(string zipFile) {
+        if (!File.Exists(zipFile)) {
+            return;
+        }
+
+        File.Delete(zipFile);
+        Console.WriteLine($"删除 {zipFile}");
     }
 
     #endregion
