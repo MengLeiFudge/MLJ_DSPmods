@@ -67,7 +67,6 @@ public static class MainWindow {
         TicketExchange.AddTranslations();
         Register("任务成就", "Tasks & Achievements");
         MainTask.AddTranslations();
-        RecurringTask.AddTranslations();
         Achievements.AddTranslations();
         DevelopmentDiary.AddTranslations();
         Register("图鉴档案", "Gallery & Archive");
@@ -94,7 +93,6 @@ public static class MainWindow {
         TicketExchange.LoadConfig(configFile);
 
         MainTask.LoadConfig(configFile);
-        RecurringTask.LoadConfig(configFile);
         Achievements.LoadConfig(configFile);
         DevelopmentDiary.LoadConfig(configFile);
 
@@ -177,7 +175,6 @@ public static class MainWindow {
             return;
         }
 
-        RecurringTask.TickAutoClaim();
         Achievements.TickAutoUnlock();
 
         if (_toggleKey.keyValue) {
@@ -506,7 +503,6 @@ public static class MainWindow {
             ("LimitedTimeStore", LimitedTimeStore.Import),
             ("TicketExchange", TicketExchange.Import),
             ("MainTask", MainTask.Import),
-            ("RecurringTask", RecurringTask.Import),
             ("Achievements", Achievements.Import),
             ("DevelopmentDiary", DevelopmentDiary.Import),
             ("RecipeGallery", RecipeGallery.Import),
@@ -527,7 +523,6 @@ public static class MainWindow {
             ("LimitedTimeStore", LimitedTimeStore.Export),
             ("TicketExchange", TicketExchange.Export),
             ("MainTask", MainTask.Export),
-            ("RecurringTask", RecurringTask.Export),
             ("Achievements", Achievements.Export),
             ("DevelopmentDiary", DevelopmentDiary.Export),
             ("RecipeGallery", RecipeGallery.Export),
@@ -550,7 +545,6 @@ public static class MainWindow {
         TicketExchange.IntoOtherSave();
 
         MainTask.IntoOtherSave();
-        RecurringTask.IntoOtherSave();
         Achievements.IntoOtherSave();
         DevelopmentDiary.IntoOtherSave();
 

@@ -7,6 +7,8 @@ from pathlib import Path
 ROOT = Path(".")
 AFTERBUILD_CSPROJ = ROOT / "AfterBuildEvent" / "AfterBuildEvent.csproj"
 AFTERBUILD_CS = ROOT / "AfterBuildEvent" / "src" / "AfterBuildEvent.cs"
+ROOT_AGENTS = ROOT / "AGENTS.md"
+AFTERBUILD_AGENTS = ROOT / "AfterBuildEvent" / "src" / "AGENTS.md"
 LOCAL_LIBRARY_PROJECTS = [
     ROOT / "FractionateEverything" / "FractionateEverything.csproj",
     ROOT / "GetDspData" / "GetDspData.csproj",
@@ -109,6 +111,78 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertIn("File.Delete(zipFile)", helper_body)
         self.assertNotIn("Directory.GetFiles", helper_body)
         self.assertNotIn("projectName", helper_body)
+
+    def test_root_agents_requires_afterbuild_automation_publish_for_packaged_changes(self):
+        text = read_text(ROOT_AGENTS)
+
+        forbidden_interactive_publish_rules = [
+            "Manual/local interactive work",
+            "without arguments",
+            "do not auto-select any mode",
+            "wt.exe -d",
+        ]
+        for phrase in forbidden_interactive_publish_rules:
+            self.assertNotIn(phrase, text)
+
+        required_publish_terms = [
+            "always run `AfterBuildEvent.exe 1`",
+            "latest commit body is the publish message source",
+            "generic local `publish-local` admin API",
+            "AfterBuildEvent` owns the publish target list",
+            "manually starts `AfterBuildEvent.exe` and selects option `1`",
+            "qqbot upload failure is not complete",
+        ]
+        for phrase in required_publish_terms:
+            self.assertIn(phrase, text)
+
+        removed_protocol_terms = [
+            "AFTERBUILD_PUBLISH_SUMMARY",
+            "ModZips/afterbuild-result.json",
+            "non-empty publish summary",
+        ]
+        for phrase in removed_protocol_terms:
+            self.assertNotIn(phrase, text)
+
+    def test_afterbuild_agents_treats_qqbot_delivery_as_publish_completion(self):
+        text = read_text(AFTERBUILD_AGENTS)
+
+        required_terms = [
+            "do not use the old no-argument interactive mode as publish completion",
+            "after the worktree is accepted and merged back into the Windows-mounted target branch",
+            "/admin/api/artifacts/publish-local",
+            "do not claim the package was delivered",
+            "manually chooses option `1`",
+            "latest commit body is the publish message source",
+            "PublishTargets",
+            "deletes only bot-uploaded files with the exact same name",
+        ]
+        for phrase in required_terms:
+            self.assertIn(phrase, text)
+
+        removed_terms = [
+            "afterbuild-result.json",
+            "AFTERBUILD_PUBLISH_SUMMARY",
+            "schema 2 package fingerprints",
+            "60-second freshness window",
+        ]
+        for phrase in removed_terms:
+            self.assertNotIn(phrase, text)
+
+    def test_afterbuild_option_one_publishes_for_manual_and_automation_modes(self):
+        text = read_text(AFTERBUILD_CS)
+
+        self.assertIn("List<GeneratedPackageInfo> generatedPackages = [];", text)
+        self.assertIn("BuildGeneratedPackageInfo(projectName, zipFile)", text)
+        self.assertIn("/admin/api/artifacts/publish-local", text)
+        self.assertIn("PublishTargets", text)
+        self.assertIn("BuildQqbotPublishFiles(generatedPackages)", text)
+        self.assertIn("bool publishSucceeded = TryPublishGeneratedPackagesToQqbot", text)
+        self.assertIn('["commit_detail"] = TryGetGitOutput("log -1 --pretty=%b")', text)
+        self.assertNotIn("WriteAutomationResult", text)
+        self.assertNotIn("afterbuild-result.json", text)
+        self.assertNotIn("AFTERBUILD_PUBLISH_SUMMARY", text)
+        self.assertIn('Console.WriteLine("手动模式：已上传生成的 zip 到 QQ 群");', text)
+        self.assertIn("CalculateSha256(fullPath)", text)
 
 
 if __name__ == "__main__":

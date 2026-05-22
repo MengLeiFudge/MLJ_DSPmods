@@ -76,12 +76,10 @@ public static class MainTask {
         Register("主线统计-市场订单", "Market orders", "市场订单");
         Register("主线统计-残片兑换", "Fragment exchanges", "残片兑换");
         Register("主线统计-成长报价", "Growth offers", "成长报价");
-        Register("主线统计-循环任务", "Recurring tasks", "循环任务");
         Register("主线节点-流派聚焦", "Focus Style", "流派聚焦");
         Register("主线节点-成长报价", "Growth Offer", "成长报价");
         Register("主线节点-市场订单", "Market Order", "市场订单");
         Register("主线节点-残片兑换", "Fragment Exchange", "残片兑换");
-        Register("循环类型", "Recurring types", "循环类型");
         Register("资源层级", "Resource tier", "资源层级");
         Register("黑雾阶段", "Dark Fog stage", "黑雾阶段");
         Register("休眠观察", "Dormant", "休眠观察");
@@ -111,7 +109,6 @@ public static class MainTask {
             ("低档建筑等级", "Early Building Levels"),
             ("低档配方", "Early Recipes"),
             ("资源交互", "Resource Interaction"),
-            ("循环任务入门", "Recurring Intro"),
             ("黑雾早期", "Early Dark Fog"),
             ("分馏启示", "Fractionation Insight"),
             ("电磁入门", "Electromagnetic Start"),
@@ -166,9 +163,6 @@ public static class MainTask {
             ("物品交互", "Item Interaction"),
             ("首次提取", "First Extract"),
             ("首次交易", "First Trade"),
-            ("首次循环", "First Recurring"),
-            ("循环五次", "Five Recurring"),
-            ("六类循环", "Six Recurring Types"),
             ("黑雾矩阵", "Dark Fog Matrix"),
             ("资源层 1", "Resource Tier 1"),
             ("资源层 2", "Resource Tier 2"),
@@ -441,15 +435,6 @@ public static class MainTask {
                 Node("resource-fragment", "主线节点-残片兑换", "完成至少 1 次残片兑换", 5, IFE残片, IFE残片, 400,
                     () => FragmentExchangeManager.TotalExchangeCount >= 1,
                     () => GetCountProgressText("主线统计-残片兑换", FragmentExchangeManager.TotalExchangeCount, 1))),
-            Branch("recurring-entry", "循环任务入门",
-                Node("recurring-first", "首次循环", "领取第 1 次循环任务奖励", 2, IFE残片, IFE残片, 200,
-                    () => RecurringTask.TotalClaimedCount >= 1,
-                    () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 1)),
-                Node("recurring-five", "循环五次", "累计领取 5 次循环任务奖励", 3, IFE残片, IFE残片, 300,
-                    () => RecurringTask.TotalClaimedCount >= 5,
-                    () => GetCountProgressText("主线统计-循环任务", RecurringTask.TotalClaimedCount, 5)),
-                Node("recurring-all-types", "六类循环", "六类循环任务各领取至少 1 次", 4, IFE残片, IFE残片, 500,
-                    () => RecurringTask.HasClaimedAllTaskTypes, () => GetRecurringTypeProgressText())),
             Branch("darkfog-early", "黑雾早期",
                 Node("darkfog-matrix", "黑雾矩阵", "持有或解锁黑雾矩阵", 7, I黑雾矩阵, I黑雾矩阵, 2,
                     () => GameMain.history != null
@@ -597,10 +582,6 @@ public static class MainTask {
     private static string GetFocusProgressText() {
         return
             $"{"聚焦流派".Translate()}：{(CurrentFocus == GachaFocusType.Balanced ? "否".Translate() : "是".Translate())}";
-    }
-
-    private static string GetRecurringTypeProgressText() {
-        return $"{"循环类型".Translate()}：{RecurringTask.ClaimedTaskTypeCount}/6";
     }
 
     private static string GetDarkFogStageProgressText(EDarkFogCombatStage targetStage) {
@@ -1063,16 +1044,42 @@ public static class MainTask {
             int branchCount = r.ReadInt32();
             for (int branchIndex = 0; branchIndex < branchCount; branchIndex++) {
                 int nodeCount = r.ReadInt32();
+                int targetBranchIndex = MapSavedBranchIndex(modeIndex, branchIndex, branchCount);
                 for (int nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
                     bool value = r.ReadBoolean();
                     if (modeIndex < matrix.Length
-                        && branchIndex < matrix[modeIndex].Length
-                        && nodeIndex < matrix[modeIndex][branchIndex].Length) {
-                        matrix[modeIndex][branchIndex][nodeIndex] = value;
+                        && targetBranchIndex >= 0
+                        && targetBranchIndex < matrix[modeIndex].Length
+                        && nodeIndex < matrix[modeIndex][targetBranchIndex].Length) {
+                        matrix[modeIndex][targetBranchIndex][nodeIndex] = value;
                     }
                 }
             }
         }
+    }
+
+    private static int MapSavedBranchIndex(int modeIndex, int savedBranchIndex, int savedBranchCount) {
+        if (modeIndex >= RouteMaps.Length) {
+            return -1;
+        }
+
+        RouteMap route = GetRouteByModeIndex(modeIndex);
+        if (savedBranchCount <= route.Branches.Length) {
+            return savedBranchIndex < route.Branches.Length ? savedBranchIndex : -1;
+        }
+
+        int removedBefore = 0;
+        for (int oldBranchIndex = 0; oldBranchIndex <= savedBranchIndex; oldBranchIndex++) {
+            if (IsRemovedLegacyBranchIndex(oldBranchIndex)) {
+                removedBefore++;
+            }
+        }
+        int mappedIndex = savedBranchIndex - removedBefore;
+        return mappedIndex >= 0 && mappedIndex < route.Branches.Length ? mappedIndex : -1;
+    }
+
+    private static bool IsRemovedLegacyBranchIndex(int oldBranchIndex) {
+        return oldBranchIndex == 8;
     }
 
     private static void ApplyLegacyProgress(int[] currentStageByModeLegacy, bool[] rewardClaimedByModeLegacy) {

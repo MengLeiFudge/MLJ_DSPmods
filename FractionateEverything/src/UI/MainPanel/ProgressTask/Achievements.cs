@@ -62,16 +62,6 @@ public static class Achievements {
     }
 
     /// <summary>
-    /// 成就奖励定义。
-    /// </summary>
-    private readonly struct AchievementRewardDefinition(
-        string rewardKey,
-        bool unlockRecurringAutoClaim = false) {
-        public readonly string RewardKey = rewardKey;
-        public readonly bool UnlockRecurringAutoClaim = unlockRecurringAutoClaim;
-    }
-
-    /// <summary>
     /// 成就加成汇总。
     /// </summary>
     private readonly struct AchievementBonusSummary(
@@ -153,9 +143,48 @@ public static class Achievements {
         "成就-精馏开路",
         "成就-万物归一",
     ];
+    private static readonly string[] recurringTaskAchievementNameOrder = [
+        "分馏星河",
+        "分馏星海",
+        "分馏宇宙",
+        "带速成型",
+        "满带洪流",
+        "星河带速",
+        "成就-开线先锋",
+        "开线统筹",
+        "开线传说",
+        "配方启蒙",
+        "配方初识",
+        "成就-配方入门",
+        "配方进修",
+        "配方拓展",
+        "成就-配方学者",
+        "配方总览",
+        "成就-配方专家",
+        "配方馆长",
+        "成就-万物百科",
+        "工艺起步",
+        "工艺进阶",
+        "工艺磨合",
+        "工艺稳态",
+        "成就-工艺优化",
+        "工艺跃迁",
+        "工艺巅峰",
+        "成就-工艺大师",
+        "任务推进",
+        "成就-任务自动化",
+        "任务永动",
+        "黑雾信标",
+        "黑雾压制",
+        "蜂巢猎场",
+        "奇点收束",
+        "基础闭环",
+        "全域工艺",
+        "成就-万物归一",
+        "常规毕业",
+        "速通毕业",
+    ];
     private static readonly Dictionary<string, int> achievementIndexByName = BuildAchievementIndexByName();
-    private static readonly Dictionary<string, AchievementRewardDefinition> rewardDefinitionsByKey =
-        BuildRewardDefinitionsByKey();
     private static bool[] unlocked = new bool[achievements.Length];
     private static bool[] claimed = new bool[achievements.Length];
     private static bool bonusSummaryDirty = true;
@@ -211,25 +240,12 @@ public static class Achievements {
         return map;
     }
 
-    private static Dictionary<string, AchievementRewardDefinition> BuildRewardDefinitionsByKey() {
-        AchievementRewardDefinition[] definitions = [
-            new("成就奖励-循环任务自动领取", unlockRecurringAutoClaim: true),
-        ];
-
-        var map = new Dictionary<string, AchievementRewardDefinition>(definitions.Length);
-        foreach (AchievementRewardDefinition definition in definitions) {
-            map[definition.RewardKey] = definition;
-        }
-        return map;
-    }
-
     private static AchievementInfo[] BuildAchievements() {
         var list = new List<AchievementInfo>(96);
         AddProductionAchievements(list);
         AddOpeningAchievements(list);
         AddRecipeAchievements(list);
         AddGrowthAchievements(list);
-        AddRecurringAchievements(list);
         AddDarkFogAchievements(list);
         AddChallengeAchievements(list);
         return [.. list];
@@ -370,34 +386,6 @@ public static class Achievements {
         }
     }
 
-    private static void AddRecurringAchievements(List<AchievementInfo> list) {
-        var defs =
-            new (string Name, int Target, string RewardKey, ETier Tier, float LogisticsBonus, float DoubleBonus)[] {
-                ("任务推进", 10, "成就奖励-当前阶段矩阵2", ETier.Silver, 0.003f, 0f),
-                ("成就-任务自动化", 100, "成就奖励-循环任务自动领取", ETier.Gold, 0.008f, 0.004f),
-                ("任务永动", 1000, "成就奖励-当前阶段矩阵16", ETier.Platinum, 0.016f, 0.01f),
-            };
-
-        foreach ((string name, int target, string rewardKey, ETier tier, float logisticsBonus,
-                     float doubleBonus) in defs) {
-            string desc = $"累计完成 {target} 次循环任务";
-            Action rewardAction = rewardKey == "成就奖励-循环任务自动领取"
-                ? RecurringTask.UnlockAutoClaim
-                : () => GrantRewardByKey(rewardKey);
-
-            list.Add(new AchievementInfo(
-                "成就分类-循环",
-                name,
-                desc,
-                rewardKey,
-                tier,
-                () => RecurringTask.TotalClaimedCount >= target,
-                rewardAction,
-                logisticsBonus: logisticsBonus,
-                doubleOutputBonus: doubleBonus));
-        }
-    }
-
     private static void AddDarkFogAchievements(List<AchievementInfo> list) {
         list.Add(new AchievementInfo(
             "成就分类-黑雾",
@@ -522,7 +510,6 @@ public static class Achievements {
         Register("成就分类-开线", "Opening", "开线");
         Register("成就分类-配方", "Recipe", "配方");
         Register("成就分类-成长", "Growth", "成长");
-        Register("成就分类-循环", "Recurring", "循环");
         Register("成就分类-黑雾", "Dark Fog", "黑雾");
         Register("成就分类-挑战", "Challenge", "挑战");
         Register("描述", "Description");
@@ -567,7 +554,6 @@ public static class Achievements {
         Register("成就奖励-定向原胚1", "Directional Proto x1", "定向原胚 x1");
         Register("成就奖励-星际物流交互站1", "Interstellar Interaction Station x1", "星际物流交互站 x1");
         Register("成就奖励-精馏塔原胚3", "Rectification Tower Proto x3", "精馏塔原胚 x3");
-        Register("成就奖励-循环任务自动领取", "Recurring task auto-claim", "循环任务自动领取");
 
         Register("分馏星河", "Fractionation Galaxy", "分馏星河");
         Register("分馏星海", "Fractionation Starsea", "分馏星海");
@@ -575,12 +561,9 @@ public static class Achievements {
         Register("带速成型", "Throughput Online", "带速成型");
         Register("满带洪流", "Full-Belt Torrent", "满带洪流");
         Register("星河带速", "Galactic Throughput", "星河带速");
-        Register("成就-任务自动化", "Task Automation");
         Register("成就-开线先锋", "Opening Pioneer");
         Register("开线统筹", "Opening Coordination", "开线统筹");
         Register("开线传说", "Opening Legend", "开线传说");
-        Register("任务推进", "Task Momentum", "任务推进");
-        Register("任务永动", "Task Perpetual", "任务永动");
         Register("成就-配方入门", "Recipe Beginner");
         Register("成就-配方学者", "Recipe Scholar");
         Register("成就-配方专家", "Recipe Expert");
@@ -665,6 +648,15 @@ public static class Achievements {
             return;
         }
 
+        if (flags.Length == recurringTaskAchievementNameOrder.Length) {
+            for (int i = 0; i < flags.Length; i++) {
+                if (flags[i] == '1') {
+                    MarkAchievementByName(recurringTaskAchievementNameOrder[i]);
+                }
+            }
+            return;
+        }
+
         int count = Math.Min(flags.Length, achievements.Length);
         for (int i = 0; i < count; i++) {
             bool obtained = flags[i] == '1';
@@ -674,6 +666,15 @@ public static class Achievements {
     }
 
     private static void ApplyClaimedFlags(bool[] flags) {
+        if (flags.Length == recurringTaskAchievementNameOrder.Length) {
+            for (int i = 0; i < flags.Length; i++) {
+                if (flags[i]) {
+                    MarkAchievementByName(recurringTaskAchievementNameOrder[i]);
+                }
+            }
+            return;
+        }
+
         int count = Math.Min(flags.Length, achievements.Length);
         for (int i = 0; i < count; i++) {
             if (!flags[i]) {
@@ -683,6 +684,16 @@ public static class Achievements {
             unlocked[i] = true;
             claimed[i] = true;
         }
+    }
+
+    private static bool MarkAchievementByName(string nameKey) {
+        if (!achievementIndexByName.TryGetValue(nameKey, out int index)) {
+            return false;
+        }
+
+        unlocked[index] = true;
+        claimed[index] = true;
+        return true;
     }
 
     private static string BuildAchievementFlags() {
@@ -789,16 +800,7 @@ public static class Achievements {
             ("ClaimedFlags", br => { oldClaimed = ReadLegacyFlags(br); })
         );
 
-        int saveCount = Math.Min(saveClaimed.Length, achievements.Length);
-        for (int i = 0; i < saveCount; i++) {
-            if (!saveClaimed[i] || claimed[i]) {
-                continue;
-            }
-
-            unlocked[i] = true;
-            claimed[i] = true;
-            migrated = true;
-        }
+        migrated = ApplyClaimedFlagsFromSave(saveClaimed) || migrated;
 
         int oldCount = Math.Max(oldUnlocked.Length, oldClaimed.Length);
         for (int oldIndex = 0; oldIndex < oldCount && oldIndex < legacyAchievementNameOrder.Length; oldIndex++) {
@@ -835,6 +837,30 @@ public static class Achievements {
             flags[i] = br.ReadBoolean();
         }
         return flags;
+    }
+
+    private static bool ApplyClaimedFlagsFromSave(bool[] flags) {
+        bool changed = false;
+        if (flags.Length == recurringTaskAchievementNameOrder.Length) {
+            for (int i = 0; i < flags.Length; i++) {
+                if (flags[i] && MarkAchievementByName(recurringTaskAchievementNameOrder[i])) {
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+
+        int count = Math.Min(flags.Length, achievements.Length);
+        for (int i = 0; i < count; i++) {
+            if (!flags[i] || claimed[i]) {
+                continue;
+            }
+
+            unlocked[i] = true;
+            claimed[i] = true;
+            changed = true;
+        }
+        return changed;
     }
 
     public static void Export(BinaryWriter w) {
@@ -1118,11 +1144,6 @@ public static class Achievements {
         AddFunctionalRewardText(rewards, "功能奖励-物流", info.LogisticsBonus, positive: true);
         AddFunctionalRewardText(rewards, "功能奖励-发电", info.PowerStageBonus, positive: true);
 
-        if (TryResolveRewardDefinition(info.RewardKey, out AchievementRewardDefinition definition)
-            && definition.UnlockRecurringAutoClaim) {
-            rewards.Add("成就奖励-循环任务自动领取".Translate());
-        }
-
         if (rewards.Count == 0) {
             return "无额外功能奖励".Translate().WithColor(Gray);
         }
@@ -1143,6 +1164,8 @@ public static class Achievements {
         rewards.Add(string.Format(key.Translate(), percent.ToString("0.##")));
     }
 
+    private static void GrantRewardByKey(string rewardKey) { }
+
     private static Color GetTierColor(ETier tier) {
         return tier switch {
             ETier.Bronze => Orange,
@@ -1151,20 +1174,6 @@ public static class Achievements {
             ETier.Platinum => Blue,
             _ => White,
         };
-    }
-
-    private static void GrantRewardByKey(string rewardKey) {
-        if (!TryResolveRewardDefinition(rewardKey, out AchievementRewardDefinition definition)) {
-            return;
-        }
-
-        if (definition.UnlockRecurringAutoClaim) {
-            RecurringTask.UnlockAutoClaim();
-        }
-    }
-
-    private static bool TryResolveRewardDefinition(string rewardKey, out AchievementRewardDefinition definition) {
-        return rewardDefinitionsByKey.TryGetValue(rewardKey, out definition);
     }
 
     private static bool IsTechUnlocked(int techId) {

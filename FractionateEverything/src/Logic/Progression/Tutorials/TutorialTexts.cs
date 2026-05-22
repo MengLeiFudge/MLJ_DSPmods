@@ -209,7 +209,6 @@ public static partial class TutorialManager {
              {"【任务系统】".WithColor(Blue)}
              任务系统已经拆分为：
              - 主线任务：首次解锁、阶段推进
-             - 循环任务：稳定补给
              - 成就系统：里程碑与全局长期被动
 
              {"【配方图鉴】".WithColor(Blue)}

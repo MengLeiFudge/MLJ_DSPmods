@@ -11,13 +11,24 @@ class FractionatorFluidOutputStackTests(unittest.TestCase):
 
         self.assertIn("GetPreferredFluidOutputStack", text)
         self.assertIn("Math.Max(fluidStack, inputStack)", text)
-        self.assertIn("GetPreferredFluidOutputStack(enableFluidEnhancement, fluidStack, fluidInputCountPerCargo)", text)
+        self.assertIn(
+            "GetPreferredFluidOutputStack(enableFluidEnhancement, fluidStack, fluidInputCountPerCargo,",
+            text,
+        )
 
     def test_non_enhanced_fluid_output_keeps_vanilla_average_input_stack(self):
         text = SOURCE.read_text(encoding="utf-8-sig")
 
         self.assertIn("int inputStack = Mathf.Max(1, Mathf.RoundToInt(fluidInputCountPerCargo));", text)
         self.assertIn("return enableFluidEnhancement ? Math.Max(fluidStack, inputStack) : inputStack;", text)
+
+    def test_missing_or_locked_recipe_fluid_output_forces_single_stack_passthrough(self):
+        text = SOURCE.read_text(encoding="utf-8-sig")
+
+        self.assertIn("bool moveDirectly = recipe == null || !RecipeGrowthQueries.IsUnlocked(recipe);", text)
+        self.assertIn("enableFracForever && !moveDirectly", text)
+        self.assertIn("forceSingleStack: moveDirectly", text)
+        self.assertIn("if (forceSingleStack) {\n            return 1;\n        }", text)
 
 
 if __name__ == "__main__":
