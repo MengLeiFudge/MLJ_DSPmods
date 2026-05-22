@@ -333,6 +333,8 @@ static class AfterBuildEvent {
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Utf8NoBom,
+                StandardErrorEncoding = Utf8NoBom,
             };
             using Process process = Process.Start(startInfo);
             string output = process.StandardOutput.ReadToEnd();
