@@ -178,6 +178,8 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertIn("BuildQqbotPublishFiles(generatedPackages)", text)
         self.assertIn("bool publishSucceeded = TryPublishGeneratedPackagesToQqbot", text)
         self.assertIn('["commit_detail"] = TryGetGitOutput("log -1 --pretty=%b")', text)
+        self.assertIn("StandardOutputEncoding = Utf8NoBom", text)
+        self.assertIn("StandardErrorEncoding = Utf8NoBom", text)
         self.assertNotIn("WriteAutomationResult", text)
         self.assertNotIn("afterbuild-result.json", text)
         self.assertNotIn("AFTERBUILD_PUBLISH_SUMMARY", text)
