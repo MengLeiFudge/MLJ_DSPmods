@@ -33,22 +33,20 @@ skip remote sync and continue with local source inspection. This keeps offline q
 spending tens of seconds per mod waiting for GitHub. Modes `1`, `3`, and `4` keep their existing completion
 behavior.
 
-Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`.
+Interactive usage reads the mode from stdin. An empty stdin is treated as option `1`. When a user manually chooses option `1`, the tool must still call the local qqbot admin API and dispatch the configured zip files before asking whether to launch Dyson Sphere Program.
 
-qqbot/Codex automation usage passes the mode as argv. Codex must pass a fresh publish summary as additional argv, or via `AFTERBUILD_PUBLISH_SUMMARY`. The summary is not optional for Codex automation because the fallback text is generic and does not tell the QQ group what changed.
+Required publish usage passes mode `1` as argv. The latest commit body is the publish message source; Codex must commit the verified code with a body that explains why this build exists, what changed, how it was changed, and which verification commands passed. This automated publish flow applies to manual/local agent work and qqbot/Codex automation work; do not use the old no-argument interactive mode as publish completion.
 
 ```bash
 ./AfterBuildEvent.exe 1
-./AfterBuildEvent.exe 1 "原因：用户反馈启动崩溃
-修复：避免 ProcessManager 静态初始化读取未就绪字段
-方式：使用固定建筑类型数量替代跨 partial 字段长度"
 ```
 
-Codex automation order is mandatory:
+Agent publish order is mandatory:
 1. implement the change
 2. run the required verification commands
 3. commit the verified code
-4. run `AfterBuildEvent.exe 1` with a publish summary that describes that exact commit
+4. after the worktree is accepted and merged back into the Windows-mounted target branch, build the solution
+5. run `AfterBuildEvent.exe 1`; the tool reads the current branch, HEAD, commit subject, and commit body from the merged checkout
 
 Do not run `AfterBuildEvent.exe 1` before the commit. The qqbot publish message reads the latest git commit from the repository; running before commit will publish the previous commit title even if the built DLL already contains local changes.
 
@@ -56,17 +54,17 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
 - before creating a package, delete only the current target zip path for the same project/version; do not clear other versions from `ModZips`
-- write generated package paths to `ModZips/afterbuild-result.json`
-- include a concise publish summary in `afterbuild-result.json`; the summary should explain why this build exists, what was fixed or changed, how it was fixed, and which verification commands passed
-- push `afterbuild-result.json` to the local qqbot admin API, which publishes only `FractionateEverything_*.zip` to QQ group `319567534`
-- qqbot should use the provided summary as the group message content, instead of file-level diff statistics
-- qqbot deletes old bot-uploaded `FractionateEverything_*.zip` group files before uploading the new package
+- build a JSON request in memory and post it to qqbot's localhost-only `/admin/api/artifacts/publish-local`
+- include `timestamp`, `project_id`, current `branch`, current `commit_hash`, current `commit_subject`, current `commit_detail`, and a `files` array
+- publish only zip files explicitly listed by `PublishTargets`; qqbot must not hard-code which MLJ_DSPmods packages are publishable
+- each file entry includes path, upload name, SHA256, and target QQ groups
+- qqbot deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
 - if upload succeeds, do not open Explorer
-- if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible
+- if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible, report the real failure, and do not claim the package was delivered
 - do not ask whether to launch Dyson Sphere Program
 - do not launch Dyson Sphere Program
 
-Codex final replies for automation runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, and whether local qqbot FE package publishing succeeded or fell back to opening `ModZips`.
+Codex final replies for publish runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, R2 copy status, and whether local qqbot package publishing succeeded or fell back to opening `ModZips`.
 
 ## Option 2 — UpdateLibDll Detail
 

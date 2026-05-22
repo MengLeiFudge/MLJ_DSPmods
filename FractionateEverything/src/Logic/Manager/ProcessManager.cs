@@ -417,11 +417,15 @@ public static class ProcessManager {
                         //创世传送带最大速率为60，如果每次尝试放1个物品到传送带上，需要每帧判定4次（60速*4堆叠/60帧）
                         //每帧至少尝试一次，尝试就会lock buffer进而影响效率，所以这里尝试减少输出的次数
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        int outputCargoStack = moveDirectly
+                            ? 1
+                            : Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1));
+                        if (!building.EnableFluidOutputStack() || moveDirectly) {
                             //未研究流动输出集装科技，根据传送带最大速率每帧判定2-4次
+                            //无配方/配方未解锁等直通状态不应用塔等级集装输出，保持单件流动输出语义。
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                        outputCargoStack, 1,
                                         (byte)fluidOutputIncAvg)) {
                                     break;
                                 }
@@ -491,10 +495,13 @@ public static class ProcessManager {
                     CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[__instance.belt2].segPathId);
                     if (cargoPath != null) {
                         int fluidOutputIncAvg = __instance.fluidOutputInc / __instance.fluidOutputCount;
-                        if (!building.EnableFluidOutputStack()) {
+                        int outputCargoStack = moveDirectly
+                            ? 1
+                            : Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1));
+                        if (!building.EnableFluidOutputStack() || moveDirectly) {
                             for (int i = 0; i < MaxOutputTimes && __instance.fluidOutputCount > 0; i++) {
                                 if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fluidId,
-                                        Mathf.CeilToInt((float)(fluidInputCountPerCargo - 0.1)), 1,
+                                        outputCargoStack, 1,
                                         (byte)fluidOutputIncAvg)) {
                                     break;
                                 }

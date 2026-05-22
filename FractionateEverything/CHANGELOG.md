@@ -1,6 +1,10 @@
 - v2.2.10
+    + 分馏塔在无配方或配方未解锁时不再按塔等级集装直通流动输出。
+    + 移除循环任务入口。
     + 修复杂项设置中“物品消耗顺序”选项在英文环境仍显示中文的问题。
     + 新增翻译注册检测脚本，初步检查可见中文翻译 key 是否漏注册。
+    + Fractionators no longer stack direct fluid passthrough by tower level when there is no recipe or the recipe is locked.
+    + Removed the recurring task entry.
     + Fixed the "Order of consumption of items" options in Miscellaneous settings still showing Chinese in English.
     + Added an initial translation-registration check script for visible Chinese translation keys.
 

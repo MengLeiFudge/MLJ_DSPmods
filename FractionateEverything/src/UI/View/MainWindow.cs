@@ -33,7 +33,6 @@ public static class MainWindow {
         LimitedTimeStore.AddTranslations();
         Register("进度系统", "Progress System");
         MainTask.AddTranslations();
-        RecurringTask.AddTranslations();
         Achievements.AddTranslations();
         DevelopmentDiary.AddTranslations();
         Register("统计相关", "Statistic Related");
@@ -56,7 +55,6 @@ public static class MainWindow {
         LimitedTimeStore.LoadConfig(configFile);
 
         MainTask.LoadConfig(configFile);
-        RecurringTask.LoadConfig(configFile);
         Achievements.LoadConfig(configFile);
         DevelopmentDiary.LoadConfig(configFile);
 
@@ -95,7 +93,6 @@ public static class MainWindow {
         LimitedTimeStore.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "进度系统");
         MainTask.CreateUI(wnd, trans);
-        RecurringTask.CreateUI(wnd, trans);
         Achievements.CreateUI(wnd, trans);
         DevelopmentDiary.CreateUI(wnd, trans);
         wnd.AddTabGroup(trans, "统计相关");
@@ -120,7 +117,6 @@ public static class MainWindow {
         LimitedTimeStore.UpdateUI();
 
         MainTask.UpdateUI();
-        RecurringTask.UpdateUI();
         Achievements.UpdateUI();
         DevelopmentDiary.UpdateUI();
 
@@ -194,7 +190,9 @@ public static class MainWindow {
         LimitedTimeStore.Import(r);
 
         MainTask.Import(r);
-        RecurringTask.Import(r);
+        if (version <= 2) {
+            r.ReadInt32();
+        }
         Achievements.Import(r);
         DevelopmentDiary.Import(r);
 
@@ -207,7 +205,7 @@ public static class MainWindow {
     }
 
     public static void Export(BinaryWriter w) {
-        w.Write(2);
+        w.Write(3);
 
         BuildingOperate.Export(w);
         RecipeOperate.Export(w);
@@ -219,7 +217,6 @@ public static class MainWindow {
         LimitedTimeStore.Export(w);
 
         MainTask.Export(w);
-        RecurringTask.Export(w);
         Achievements.Export(w);
         DevelopmentDiary.Export(w);
 
@@ -242,7 +239,6 @@ public static class MainWindow {
         LimitedTimeStore.IntoOtherSave();
 
         MainTask.IntoOtherSave();
-        RecurringTask.IntoOtherSave();
         Achievements.IntoOtherSave();
         DevelopmentDiary.IntoOtherSave();
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -34,9 +35,7 @@ static class AfterBuildEvent {
     private const int QqbotArtifactUploadTimeoutMs = 60000;
     private const string AutoUploadProjectId = "mlj_dspmods";
     private const int AutoUploadGroupId = 319567534;
-    private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/upload-local";
-    private static readonly string DefaultAutoUploadSummary =
-        "构建完成并发布 FE 测试包。\n\n本次发布由 AfterBuildEvent 自动打包、同步 R2，并上传最新 FractionateEverything zip。";
+    private const string QqbotArtifactUploadUrl = "http://127.0.0.1:8080/admin/api/artifacts/publish-local";
 #if DEBUG
     private const string BuildConfiguration = "Debug";
 #else
@@ -48,6 +47,27 @@ static class AfterBuildEvent {
         public string SourceName { get; set; } = "";
         public List<string> Keywords { get; set; } = [];
     }
+
+    private sealed class GeneratedPackageInfo {
+        public string ProjectName { get; set; } = "";
+        public string Path { get; set; } = "";
+        public string Name { get; set; } = "";
+        public long SizeBytes { get; set; }
+        public string LastWriteTimeUtc { get; set; } = "";
+        public string Sha256 { get; set; } = "";
+    }
+
+    private sealed class PublishTarget {
+        public string ProjectName { get; set; } = "";
+        public int[] GroupIds { get; set; } = [];
+    }
+
+    private static readonly PublishTarget[] PublishTargets = [
+        new() {
+            ProjectName = "FractionateEverything",
+            GroupIds = [AutoUploadGroupId],
+        },
+    ];
 
     private sealed class CalcIconExportTarget {
         public string TargetMod { get; set; } = "";
@@ -73,7 +93,7 @@ static class AfterBuildEvent {
         bool automationMode = args.Length > 0;
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
         Console.WriteLine(automationMode ? "自动模式：使用命令行参数选择执行模式" : "输入要执行的命令（直接回车表示1）：");
-        Console.WriteLine("1表示更新所有mod到R2，打包mod，然后启动游戏");
+        Console.WriteLine("1表示更新所有mod到R2，打包mod，通知qqbot并上传FE压缩包；交互模式可继续选择是否启动游戏");
         Console.WriteLine("2表示更新部分需要的dll类库");
         Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
@@ -98,7 +118,7 @@ static class AfterBuildEvent {
 
     private static void UpdateModsThenStart(bool automationMode = false, string[] args = null) {
         using CmdProcess cmd = new();
-        List<string> generatedPackages = [];
+        List<GeneratedPackageInfo> generatedPackages = [];
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
@@ -208,7 +228,7 @@ static class AfterBuildEvent {
             DeleteExistingVersionModZip(zipFile);
             ZipMod(fileList, zipFile);
             Console.WriteLine($"创建 {zipFile}");
-            generatedPackages.Add(Path.GetFullPath(zipFile));
+            generatedPackages.Add(BuildGeneratedPackageInfo(projectName, zipFile));
             //所有文件复制到R2，注意R2是否禁用了mod
             //mdb也要复制到R2（pdb不需要）
             fileList.Add(projectModMdbFile);
@@ -239,24 +259,24 @@ static class AfterBuildEvent {
             }
         }
 
-        //打开所有压缩包的文件夹
-        if (!automationMode) {
-            Process.Start("explorer", @".\ModZips");
-        }
-
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
+        bool publishSucceeded = TryPublishGeneratedPackagesToQqbot(generatedPackages);
         if (automationMode) {
-            string uploadSummary = GetAutomationUploadSummary(args);
-            string automationResultPath = WriteAutomationResult(generatedPackages, startedGame: false, openedModZips: false,
-                uploadSummary);
-            if (TryPublishAutomationResultToQqbot(automationResultPath, uploadSummary)) {
+            if (publishSucceeded) {
                 Console.WriteLine("自动模式完成：已上传生成的 zip 到 QQ 群，不打开 ModZips 文件夹，不启动游戏");
                 return;
             }
             Process.Start("explorer", @".\ModZips");
             Console.WriteLine("自动模式完成：自动上传失败，已打开 ModZips 文件夹，不启动游戏");
             return;
+        }
+
+        if (publishSucceeded) {
+            Console.WriteLine("手动模式：已上传生成的 zip 到 QQ 群");
+        } else {
+            Process.Start("explorer", @".\ModZips");
+            Console.WriteLine("手动模式：自动上传失败，已打开 ModZips 文件夹；继续保留是否启动游戏的手动选择");
         }
 
         //启动使用R2MOD的游戏
@@ -283,34 +303,63 @@ static class AfterBuildEvent {
         Console.WriteLine($"复制 {source} -> {targetPath}");
     }
 
-    private static string WriteAutomationResult(IReadOnlyList<string> generatedPackages, bool startedGame,
-        bool openedModZips, string uploadSummary) {
-
-        string resultPath = Path.GetFullPath(@".\ModZips\afterbuild-result.json");
-        JObject result = new() {
-            ["automation_mode"] = true,
-            ["started_game"] = startedGame,
-            ["opened_modzips"] = openedModZips,
-            ["generated_packages"] = new JArray(generatedPackages),
-            ["publish_summary"] = uploadSummary,
+    private static GeneratedPackageInfo BuildGeneratedPackageInfo(string projectName, string zipFile) {
+        string fullPath = Path.GetFullPath(zipFile);
+        FileInfo fileInfo = new(fullPath);
+        return new() {
+            ProjectName = projectName,
+            Path = fullPath,
+            Name = fileInfo.Name,
+            SizeBytes = fileInfo.Length,
+            LastWriteTimeUtc = fileInfo.LastWriteTimeUtc.ToString("O"),
+            Sha256 = CalculateSha256(fullPath),
         };
-        File.WriteAllText(resultPath, result.ToString(), Utf8NoBom);
-        Console.WriteLine($"写入自动模式结果 {resultPath}");
-        return resultPath;
     }
 
-    private static bool TryPublishAutomationResultToQqbot(string automationResultPath, string uploadSummary) {
-        if (!File.Exists(automationResultPath)) {
-            Console.WriteLine($"自动上传跳过：未找到自动模式结果 {automationResultPath}");
+    private static string CalculateSha256(string path) {
+        using SHA256 sha256 = SHA256.Create();
+        using FileStream stream = File.OpenRead(path);
+        byte[] hash = sha256.ComputeHash(stream);
+        return string.Concat(hash.Select(value => value.ToString("x2")));
+    }
+
+    private static string TryGetGitOutput(string arguments) {
+        try {
+            ProcessStartInfo startInfo = new() {
+                FileName = "git",
+                Arguments = arguments,
+                WorkingDirectory = SolutionDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            using Process process = Process.Start(startInfo);
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return process.ExitCode == 0 ? output.Trim() : "";
+        }
+        catch {
+            return "";
+        }
+    }
+
+    private static bool TryPublishGeneratedPackagesToQqbot(IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        JArray files = BuildQqbotPublishFiles(generatedPackages);
+        if (files.Count == 0) {
+            Console.WriteLine("自动上传跳过：本次没有配置需要推送到 QQ 群的 zip");
             return false;
         }
 
         try {
             JObject payload = new() {
+                ["timestamp"] = DateTime.UtcNow.ToString("O"),
                 ["project_id"] = AutoUploadProjectId,
-                ["group_id"] = AutoUploadGroupId,
-                ["afterbuild_result_path"] = automationResultPath,
-                ["message"] = uploadSummary,
+                ["branch"] = TryGetGitOutput("branch --show-current"),
+                ["commit_hash"] = TryGetGitOutput("rev-parse HEAD"),
+                ["commit_subject"] = TryGetGitOutput("log -1 --pretty=%s"),
+                ["commit_detail"] = TryGetGitOutput("log -1 --pretty=%b"),
+                ["files"] = files,
             };
             byte[] body = Utf8NoBom.GetBytes(payload.ToString());
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(QqbotArtifactUploadUrl);
@@ -325,7 +374,7 @@ static class AfterBuildEvent {
             using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             bool ok = (int)response.StatusCode >= 200 && (int)response.StatusCode < 300;
             if (ok) {
-                Console.WriteLine($"自动上传成功：已推送构建结果给 qqbot -> QQ 群 {AutoUploadGroupId}");
+                Console.WriteLine($"自动上传成功：已推送 {files.Count} 个 zip 给 qqbot");
             } else {
                 Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
             }
@@ -346,12 +395,22 @@ static class AfterBuildEvent {
         }
     }
 
-    private static string GetAutomationUploadSummary(string[] args) {
-        string summary = Environment.GetEnvironmentVariable("AFTERBUILD_PUBLISH_SUMMARY");
-        if (string.IsNullOrWhiteSpace(summary) && args != null && args.Length > 1) {
-            summary = string.Join("\n", args.Skip(1));
+    private static JArray BuildQqbotPublishFiles(IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        JArray files = [];
+        foreach (GeneratedPackageInfo package in generatedPackages) {
+            PublishTarget target = PublishTargets.FirstOrDefault(item =>
+                string.Equals(item.ProjectName, package.ProjectName, StringComparison.OrdinalIgnoreCase));
+            if (target == null || target.GroupIds.Length == 0) {
+                continue;
+            }
+            files.Add(new JObject {
+                ["path"] = package.Path,
+                ["name"] = package.Name,
+                ["sha256"] = package.Sha256,
+                ["targets"] = new JArray(target.GroupIds),
+            });
         }
-        return string.IsNullOrWhiteSpace(summary) ? DefaultAutoUploadSummary : summary.Trim();
+        return files;
     }
 
     private static void PrepareR2Doorstop() {
