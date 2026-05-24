@@ -204,7 +204,7 @@ public static class FracStatistic {
         ExchangeManager.ExchangeTicker hotTicker = ExchangeManager.ListedItems
             .Select(ExchangeManager.GetTicker)
             .Where(ticker => ticker != null)
-            .OrderByDescending(ticker => Mathf.Abs(ticker.NetPlayerVolume))
+            .OrderByDescending(ticker => Mathf.Abs(ticker.NetMarketVolume))
             .ThenByDescending(ticker => ticker.LastTradeTick)
             .FirstOrDefault();
 
@@ -216,7 +216,7 @@ public static class FracStatistic {
             $"{"统计-交易所概览".Translate()}：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
         economyLines[4].text = hotTicker == null
             ? $"{"统计-交易所概览".Translate()}：暂无活跃成交"
-            : $"{"统计-交易所概览".Translate()}：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F1}  净量 {hotTicker.NetPlayerVolume}";
+            : $"{"统计-交易所概览".Translate()}：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F2}  净流量 {hotTicker.NetMarketVolume}";
         economyLines[5].text =
             $"{"统计-当前阶段矩阵".Translate()}：生产 {MarketValueManager.GetCurrentProductionRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m  消耗 {MarketValueManager.GetCurrentConsumeRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m";
     }

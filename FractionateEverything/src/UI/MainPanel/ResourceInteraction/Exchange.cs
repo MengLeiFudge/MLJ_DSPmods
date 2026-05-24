@@ -166,11 +166,11 @@ public static class Exchange {
         }
 
         txtPrice.text =
-            $"{"当前价格".Translate()}：{ticker.LastPrice:F1}\n买入 {ticker.AskPrice:F1}    卖出 {ticker.BidPrice:F1}";
+            $"{"当前价格".Translate()}：{ticker.LastPrice:F2} ({ticker.ChangePercent:+0.00;-0.00;0.00}%)\n买入 {ticker.AskPrice:F2}    卖出 {ticker.BidPrice:F2}";
         txtInventory.text =
             $"{"库存".Translate()}：残片 {GetItemTotalCount(IFE残片)}";
         txtStats.text =
-            $"日内开盘 {ticker.DayOpenPrice:F1}\n最新价格 {ticker.LastPrice:F1}\n日高 / 日低 {ticker.DayHighPrice:F1} / {ticker.DayLowPrice:F1}\n净成交量 {ticker.NetPlayerVolume:F1}";
+            $"日内开盘 {ticker.DayOpenPrice:F2}\n最新价格 {ticker.LastPrice:F2}\n日高 / 日低 {ticker.DayHighPrice:F2} / {ticker.DayLowPrice:F2}\n市场净流量 {ticker.NetMarketVolume}";
         btnBuy1.SetText($"{"买1".Translate()} ({Mathf.CeilToInt(ticker.AskPrice)})");
         btnBuy10.SetText($"{"买10".Translate()} ({Mathf.CeilToInt(ticker.AskPrice * 10f)})");
         btnBuy100.SetText($"{"买100".Translate()} ({Mathf.CeilToInt(ticker.AskPrice * 100f)})");

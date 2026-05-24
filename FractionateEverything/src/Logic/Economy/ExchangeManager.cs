@@ -15,6 +15,13 @@ namespace FE.Logic.Economy;
 /// 使用 MarketValue 作为锚点，但价格存在独立波动与玩家交易冲击。
 /// </summary>
 public static class ExchangeManager {
+    private const long PriceRefreshIntervalTicks = 15L * 60L;
+    private const float FlowCarryRatio = 0.55f;
+    private const float FlowImpactPerUnit = 0.0035f;
+    private const float MaxFlowImpact = 0.18f;
+    private const float MeanReversionStrength = 0.25f;
+    private const float RandomShockRange = 0.055f;
+
     /// <summary>
     /// 交易所行情状态。
     /// </summary>
@@ -27,9 +34,15 @@ public static class ExchangeManager {
         public float DayHighPrice;
         public float DayLowPrice;
         public long LastTradeTick;
+        // 历史字段名保留给存档读写；实际语义是玩家交易 + 外部市场的净流量。
         public int NetPlayerVolume;
+        public int NetMarketVolume {
+            get => NetPlayerVolume;
+            set => NetPlayerVolume = value;
+        }
         public int RecentPlayerBuyVolume;
         public int RecentPlayerSellVolume;
+        public float ChangePercent => DayOpenPrice > 0f ? (LastPrice - DayOpenPrice) / DayOpenPrice * 100f : 0f;
     }
 
     private static readonly Random rng = new(20260403);
@@ -77,7 +90,7 @@ public static class ExchangeManager {
         }
 
         bool shouldRefresh = MarketValueManager.RefreshVersion != lastRefreshVersion
-                             || GameMain.gameTick - lastRefreshTick >= 3600L;
+                             || GameMain.gameTick - lastRefreshTick >= PriceRefreshIntervalTicks;
         if (!shouldRefresh) {
             return;
         }
@@ -135,10 +148,14 @@ public static class ExchangeManager {
     private static void RefreshTickers() {
         foreach (ExchangeTicker ticker in tickers.Values) {
             float anchor = Math.Max(1f, MarketValueManager.GetValue(ticker.ItemId));
-            float impact = Mathf.Clamp(ticker.NetPlayerVolume * 0.0035f, -0.15f, 0.15f);
-            float randomShock = 1f + ((float)rng.NextDouble() * 0.06f - 0.03f);
-            float target = anchor * (1f + impact) * randomShock;
-            float newMid = ticker.LastPrice * 0.70f + target * 0.30f;
+            int externalFlow = CalculateExternalOrderFlow(ticker, anchor);
+            float netFlow = ticker.NetMarketVolume * FlowCarryRatio + externalFlow;
+            float flowImpact = Mathf.Clamp(netFlow * FlowImpactPerUnit, -MaxFlowImpact, MaxFlowImpact);
+            float anchorGap = Mathf.Clamp((anchor - ticker.LastPrice) / anchor, -0.40f, 0.40f);
+            float meanReversion = anchorGap * MeanReversionStrength;
+            float randomShock = (float)rng.NextDouble() * RandomShockRange * 2f - RandomShockRange;
+            float target = anchor * (1f + flowImpact + meanReversion + randomShock);
+            float newMid = ticker.LastPrice * 0.58f + target * 0.42f;
             float minPrice = Math.Max(1f, anchor * 0.50f);
             float maxPrice = Math.Max(minPrice, anchor * 1.50f);
             newMid = Mathf.Clamp(newMid, minPrice, maxPrice);
@@ -148,7 +165,7 @@ public static class ExchangeManager {
             ticker.AskPrice = Math.Max(ticker.BidPrice, newMid * 1.04f);
             ticker.DayHighPrice = Math.Max(ticker.DayHighPrice, newMid);
             ticker.DayLowPrice = ticker.DayLowPrice <= 0f ? newMid : Math.Min(ticker.DayLowPrice, newMid);
-            ticker.NetPlayerVolume = Mathf.RoundToInt(ticker.NetPlayerVolume * 0.60f);
+            ticker.NetMarketVolume = Mathf.RoundToInt(netFlow);
             ticker.RecentPlayerBuyVolume = Mathf.RoundToInt(ticker.RecentPlayerBuyVolume * 0.50f);
             ticker.RecentPlayerSellVolume = Mathf.RoundToInt(ticker.RecentPlayerSellVolume * 0.50f);
         }
@@ -157,14 +174,28 @@ public static class ExchangeManager {
         lastRefreshVersion = MarketValueManager.RefreshVersion;
     }
 
+    private static int CalculateExternalOrderFlow(ExchangeTicker ticker, float anchor) {
+        float baseValue = Math.Max(1f, MarketValueManager.GetBaseValue(ticker.ItemId));
+        int liquidity = Mathf.Clamp(Mathf.RoundToInt(4f + (float)Math.Sqrt(baseValue) * 1.8f), 4, 60);
+        float anchorGap = Mathf.Clamp((anchor - ticker.LastPrice) / anchor, -0.45f, 0.45f);
+        float momentum = Mathf.Clamp(ticker.ChangePercent / 100f, -0.30f, 0.30f);
+        float randomPressure = (float)rng.NextDouble() * 2f - 1f;
+        float direction = Mathf.Clamp(randomPressure * 0.70f + anchorGap * 0.85f + momentum * 0.25f, -1f, 1f);
+        int flow = Mathf.RoundToInt(liquidity * direction);
+        if (flow == 0) {
+            flow = rng.Next(0, 2) == 0 ? -1 : 1;
+        }
+        return flow;
+    }
+
     private static void ApplyTradeImpact(ExchangeTicker ticker, int count, bool isBuy) {
         ticker.LastTradeTick = GameMain.gameTick;
         if (isBuy) {
             ticker.RecentPlayerBuyVolume += count;
-            ticker.NetPlayerVolume += count;
+            ticker.NetMarketVolume += count;
         } else {
             ticker.RecentPlayerSellVolume += count;
-            ticker.NetPlayerVolume -= count;
+            ticker.NetMarketVolume -= count;
         }
 
         float impactMagnitude = Math.Min(0.12f, 0.01f + 0.02f * (float)Math.Sqrt(count));
