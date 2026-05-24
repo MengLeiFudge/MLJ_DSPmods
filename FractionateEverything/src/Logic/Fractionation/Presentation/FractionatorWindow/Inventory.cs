@@ -65,7 +65,7 @@ public static partial class FractionatorWindow {
         return product?.count ?? 0;
     }
 
-    private static void SetModSlotCount(FractionatorComponent fractionator, List<ProductOutputInfo> products,
+    private static void SetModSlotCount(ref FractionatorComponent fractionator, List<ProductOutputInfo> products,
         int itemId,
         int count, ProductSlot slot = null) {
         if (slot != null) {
@@ -127,7 +127,8 @@ public static partial class FractionatorWindow {
         if (__instance.fractionatorId == 0 || __instance.factory == null || __instance.player == null) {
             return true;
         }
-        FractionatorComponent fractionator = __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
+        ref FractionatorComponent fractionator =
+            ref __instance.factorySystem.fractionatorPool[__instance.fractionatorId];
         if (fractionator.id != __instance.fractionatorId
             || !IsModFractionator(__instance.fractionatorId, __instance.factory)) {
             return true;
@@ -167,7 +168,7 @@ public static partial class FractionatorWindow {
             int handInc = player.inhandItemInc;
             int takeInc = isFluidSlot ? split_inc(ref handCount, ref handInc, add) : 0;
 
-            SetModSlotCount(fractionator, products, itemId, currentCount + add, slot);
+            SetModSlotCount(ref fractionator, products, itemId, currentCount + add, slot);
             fractionator.GetExtraState(__instance.factory).InvalidateFullProductCache();
             player.AddHandItemCount_Unsafe(-add);
             if (isFluidSlot) {
@@ -195,7 +196,7 @@ public static partial class FractionatorWindow {
             player.SetHandItemCount_Unsafe(currentCount);
             player.SetHandItemInc_Unsafe(currentInc);
         }
-        SetModSlotCount(fractionator, products, itemId, 0, slot);
+        SetModSlotCount(ref fractionator, products, itemId, 0, slot);
         fractionator.GetExtraState(__instance.factory).InvalidateFullProductCache();
         if (isFluidSlot) {
             fractionator.fluidOutputInc = 0;
