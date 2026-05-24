@@ -90,8 +90,8 @@ public static class BuildingOperate {
 
         Register("点数聚集效率层次", "Point accumulation efficiency level");
         Register("点数聚集效率层次说明",
-            "The efficiency level of point accumulation affects the output rate of the product and the maximum increase in points for the product, with an upper limit of 7.",
-            "点数聚集的效率层次会影响产物的输出速率、产物的最大增产点数，上限为7。");
+            "The efficiency level of point accumulation affects integration count and the maximum proliferator points of successful outputs. Lv6 unlocks input void spray, and Lv12 unlocks global point pool supplementation for successful outputs.",
+            "点数聚集的效率层次会影响集装数目和成功产物的最大增产点数。6级解锁输入虚空喷涂，12级解锁成功产物消耗全局点数池补点。");
         Register("点数聚集效率层次：", "Point accumulation efficiency level: ");
         Register("+1 聚集层次", "+1 aggregate level");
         Register("+1 点数聚集效率层次", "to +1 point accumulation efficiency level");
@@ -153,10 +153,10 @@ public static class BuildingOperate {
             "Each consumed raw material replenishes the point pool by 50 points (overriding Mass-Energy Fission's 25 pts). When there is no output belt on either side, flow output is automatically returned to flow input; product output is also prioritised for return to flow input.",
             "每个被消耗的原料向点数池补充50点（覆盖质能裂变的25点）。当侧面无输出传送带时，流动输出自动回填至流动输入；产物输出也优先回填至流动输入。");
 
-        Register("双重点数", "Double Points");
-        Register("双重点数说明",
-            "Each 1 proliferator point on the input is converted as 2 points during transfer.",
-            "原料的1点增产点数在转移时变为2点。");
+        Register("虚空聚集", "Void Aggregation");
+        Register("虚空聚集说明",
+            "When point aggregation succeeds, the tower can draw from the Fractionation Data Center's global proliferator point pool to make up the output's missing points.",
+            "点数聚集成功时，可以消耗分馏数据中心的全局增产点数池，补足产物缺少的增产点数。");
 
         Register("单路锁定", "Single-Path Lock");
         Register("单路锁定说明",
@@ -321,7 +321,7 @@ public static class BuildingOperate {
         return buildingId switch {
             IFE交互塔 => ("分馏献祭", "分馏献祭说明", "维度共鸣", "维度共鸣说明"),
             IFE矿物复制塔 => ("质能裂变", "质能裂变说明", "零压循环", "零压循环说明"),
-            IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "双重点数", "双重点数说明"),
+            IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "虚空聚集", "虚空聚集说明"),
             IFE转化塔 => ("因果溯源", "因果溯源说明", "单路锁定", "单路锁定说明"),
             IFE精馏塔 => ("余辉萃取", "余辉萃取说明", "超相压缩", "超相压缩说明"),
             _ => (null, null, null, null),

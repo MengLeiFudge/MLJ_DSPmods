@@ -137,9 +137,12 @@ public static partial class FractionatorWindow {
 
         float recipeSuccessRatio = 0f, mainOutputBonus = 1f, destroyRatio = 0f;
         if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
-            recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost) * (1 + pointsBonus);
+            recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost);
+            if (recipe is not PointAggregateRecipe) {
+                recipeSuccessRatio *= 1 + pointsBonus;
+                destroyRatio = recipe.DestroyRatio;
+            }
             mainOutputBonus = 1 + recipe.DoubleOutputRatio;
-            destroyRatio = recipe.DestroyRatio;
         }
 
         UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, mainOutputBonus, destroyRatio, hasFluid,

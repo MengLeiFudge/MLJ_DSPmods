@@ -114,7 +114,7 @@ public static class FracRecipeOperate {
         Register("牺牲特性", "Sacrifice Trait");
         Register("因果追踪", "Causal Tracing");
         Register("虚空喷射", "Void Spray");
-        Register("双倍点数", "Double Points");
+        Register("虚空聚集", "Void Aggregation");
         Register("最大增产等级", "Max Inc Level");
 
         // 右列：等级信息
@@ -355,14 +355,18 @@ public static class FracRecipeOperate {
                         .WithColor(Gray));
 
                 // 损毁率
-                float baseDestroyRatio = snapshot.DestroyRatio
-                                         + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
-                if (destroyReduction > 0f) {
-                    destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
+                if (recipe is PointAggregateRecipe) {
+                    ShowTextLine(line++, $"{"损毁率".Translate()} {0.0f:P3}".WithColor(Green));
+                } else {
+                    float baseDestroyRatio = snapshot.DestroyRatio
+                                             + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+                    float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+                    string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
+                    if (destroyReduction > 0f) {
+                        destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
+                    }
+                    ShowTextLine(line++, destroyText.WithColor(Red));
                 }
-                ShowTextLine(line++, destroyText.WithColor(Red));
             }
             ShowTextLine(line++, "");// 空行
 
@@ -710,11 +714,12 @@ public static class FracRecipeOperate {
         }
 
         // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
-        float plrRatio = building?.PlrRatio() ?? 1.0f;
+        float plrRatio = recipe is PointAggregateRecipe ? 0f : building?.PlrRatio() ?? 1.0f;
         float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
         float successBoost = (building?.SuccessBoost() ?? 0f) + Achievements.GetSuccessRateBonus();
         float successRatio = Mathf.Clamp01(recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
-        float fracRatio = (1 - recipe.DestroyRatio) * successRatio;
+        float destroyRatio = recipe is PointAggregateRecipe ? 0f : recipe.DestroyRatio;
+        float fracRatio = (1 - destroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
         float repeatRatio = fracRatio * remainInputRatio;
         float repeatMultiplier = repeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - repeatRatio);
@@ -820,7 +825,7 @@ public static class FracRecipeOperate {
             case IFE点数聚集塔:
                 ShowTextLine(line++,
                     $"{"虚空喷射".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidSpray)}  "
-                    + $"{"双倍点数".Translate()}：{FeatureStatus(PointAggregateTower.EnableDoublePoints)}  "
+                    + $"{"虚空聚集".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidAggregation)}  "
                     + $"{"最大增产等级".Translate()} {PointAggregateTower.MaxInc}");
                 break;
         }

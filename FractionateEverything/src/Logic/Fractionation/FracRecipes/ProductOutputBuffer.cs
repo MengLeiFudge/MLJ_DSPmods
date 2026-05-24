@@ -18,6 +18,7 @@ public struct FractionationBatchResult {
     public int SuccessCount;
     public int DestroyedCount;
     public int PassThroughCount;
+    public int PassThroughInc;
 
     public bool HasOutput => SuccessCount > 0;
 }

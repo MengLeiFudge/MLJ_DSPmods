@@ -416,6 +416,7 @@ public class ConversionRecipe : BaseRecipe {
             SuccessCount = successCount,
             DestroyedCount = destroyedCount,
             PassThroughCount = passThroughCount,
+            PassThroughInc = fluidInputIncAvg * passThroughCount,
         };
         return result;
     }

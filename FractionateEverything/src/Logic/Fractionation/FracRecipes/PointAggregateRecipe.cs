@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Process;
+using FE.Logic.Station;
 using static FE.Utils.Utils;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 
@@ -17,7 +18,7 @@ public class PointAggregateRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (ItemProto item in LDB.items.dataArray) {
-            PointAggregateRecipe recipe = new(item.ID, 0.2f, [new(1.0f, item.ID, 1)], []);
+            PointAggregateRecipe recipe = new(item.ID, 0.25f, [new(1.0f, item.ID, 1)], []);
             AddRecipe(recipe);
         }
     }
@@ -42,49 +43,31 @@ public class PointAggregateRecipe : BaseRecipe {
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
 
-        // 点数聚集逻辑：如果平均增产等级足够，则有概率聚集成功
-        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
-
-        if (GetRandDouble(ref seed) < ratio) {
-            // 成功聚集：双重点数仍然更强，但不再直接把点数消耗砍半，避免 12 级形成压倒性最优。
+        if (GetRandDouble(ref seed) < GetCandidateSuccessRatio(successBoost)
+            && TryPaySuccessInc(ref fluidInputInc)) {
             inputChange = -1;
             outputs = [new(true, InputID, 1)];
-            fluidInputInc -= PointAggregateTower.EnableDoublePoints
-                ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
-                : PointAggregateTower.MaxInc;
-            if (fluidInputInc < 0) {
-                fluidInputInc = 0;
-            }
             return;
         }
 
-        // 失败：直通
+        TakePassThroughInc(fluidInputIncAvg, ref fluidInputInc);
         inputChange = -1;
         outputs = ProcessManager.emptyOutputs;
-        fluidInputInc -= fluidInputIncAvg;
     }
 
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
 
-        // 点数聚集逻辑：如果平均增产等级足够，则有概率聚集成功
-        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
-
-        if (GetRandDouble(ref seed) < ratio) {
+        if (GetRandDouble(ref seed) < GetCandidateSuccessRatio(successBoost)
+            && TryPaySuccessInc(ref fluidInputInc)) {
             inputChange = -1;
             outputs.Add(true, InputID, 1);
-            fluidInputInc -= PointAggregateTower.EnableDoublePoints
-                ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
-                : PointAggregateTower.MaxInc;
-            if (fluidInputInc < 0) {
-                fluidInputInc = 0;
-            }
             return FractionationOutcome.Produced;
         }
 
+        TakePassThroughInc(fluidInputIncAvg, ref fluidInputInc);
         inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
         return FractionationOutcome.PassThrough;
     }
 
@@ -92,31 +75,95 @@ public class PointAggregateRecipe : BaseRecipe {
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
 
-        float ratio = fluidInputIncAvg / 10.0f * SuccessRatio * (1 + successBoost);
-        int successCount = RollBinomialApprox(ref seed, batchCount, ratio);
-        int passThroughCount = batchCount - successCount;
+        int candidateSuccessCount = RollBinomialApprox(ref seed, batchCount, GetCandidateSuccessRatio(successBoost));
+        int batchInputInc = TakeBatchInputInc(batchCount, fluidInputIncAvg, ref fluidInputInc);
+        int successCount = GetPayableSuccessCount(candidateSuccessCount, batchInputInc, out int usedInputInc,
+            out int usedPoolInc);
+        if (usedPoolInc > 0 && !ProliferatorPool.TryConsumeInc(usedPoolInc)) {
+            successCount = GetPayableSuccessCount(candidateSuccessCount, batchInputInc, 0, out usedInputInc,
+                out usedPoolInc);
+        }
         if (successCount > 0) {
             outputs.Add(true, InputID, successCount);
         }
 
-        int successIncCost = PointAggregateTower.EnableDoublePoints
-            ? Math.Max(1, (PointAggregateTower.MaxInc * 7 + 9) / 10)
-            : PointAggregateTower.MaxInc;
-        fluidInputInc -= successIncCost * successCount + fluidInputIncAvg * passThroughCount;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
-        }
-
+        int passThroughCount = batchCount - successCount;
         return new FractionationBatchResult {
             InputRemoveCount = batchCount,
             ConsumedRegisterCount = successCount,
             SuccessCount = successCount,
             DestroyedCount = 0,
             PassThroughCount = passThroughCount,
+            PassThroughInc = batchInputInc - usedInputInc,
         };
     }
 
     public override byte GetOutputInc(int itemId) => (byte)PointAggregateTower.MaxInc;
+
+    private float GetCandidateSuccessRatio(float successBoost) {
+        float ratio = SuccessRatio * (1 + successBoost);
+        return ratio > 0f ? ratio : 0f;
+    }
+
+    private static int TakeBatchInputInc(int batchCount, int fluidInputIncAvg, ref int fluidInputInc) {
+        int batchInputInc = Math.Min(Math.Max(0, fluidInputIncAvg) * batchCount, Math.Max(0, fluidInputInc));
+        fluidInputInc -= batchInputInc;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+        return batchInputInc;
+    }
+
+    private static void TakePassThroughInc(int fluidInputIncAvg, ref int fluidInputInc) {
+        int inputInc = Math.Min(Math.Max(0, fluidInputIncAvg), Math.Max(0, fluidInputInc));
+        fluidInputInc -= inputInc;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+    }
+
+    private static bool TryPaySuccessInc(ref int fluidInputInc) {
+        int targetInc = PointAggregateTower.MaxInc;
+        int inputInc = Math.Min(Math.Max(0, fluidInputInc), targetInc);
+        int poolInc = targetInc - inputInc;
+        if (poolInc == 0) {
+            fluidInputInc -= inputInc;
+            return true;
+        }
+        if (!PointAggregateTower.EnableVoidAggregation) {
+            return false;
+        }
+        if (!ProliferatorPool.TryConsumeInc(poolInc)) {
+            return false;
+        }
+        fluidInputInc -= inputInc;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+        return true;
+    }
+
+    private static int GetPayableSuccessCount(int candidateSuccessCount, int batchInputInc, out int usedInputInc,
+        out int usedPoolInc) {
+        int targetInc = PointAggregateTower.MaxInc;
+        int requiredInc = candidateSuccessCount * targetInc;
+        int poolNeed = Math.Max(0, requiredInc - batchInputInc);
+        int poolAvailable = PointAggregateTower.EnableVoidAggregation
+            ? Math.Min(ProliferatorPool.GetAvailableInc(), poolNeed)
+            : 0;
+        return GetPayableSuccessCount(candidateSuccessCount, batchInputInc, poolAvailable, out usedInputInc,
+            out usedPoolInc);
+    }
+
+    private static int GetPayableSuccessCount(int candidateSuccessCount, int batchInputInc, int poolAvailable,
+        out int usedInputInc, out int usedPoolInc) {
+        int targetInc = PointAggregateTower.MaxInc;
+        int successCount = Math.Min(candidateSuccessCount, (batchInputInc + poolAvailable) / targetInc);
+        int outputInc = successCount * targetInc;
+        usedInputInc = Math.Min(batchInputInc, outputInc);
+        usedPoolInc = outputInc - usedInputInc;
+        return successCount;
+    }
 
     #region IModCanSave
 

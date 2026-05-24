@@ -25,7 +25,7 @@ extract and upgrade related recipes and buildings!
 
 * 交互塔：将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。
 * 矿物复制塔：复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。
-* 点数聚集塔：将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。
+* 点数聚集塔：将输入物品和全局增产点数池中的点数集中到部分物品上，从而产出携带更多增产点数的物品。需要在分馏数据中心升级点数聚集效率层次。
 * 量子复制塔：利用分馏精华卓越的可塑性复制各种物品。增产点数可以减少分馏精华的消耗。运行时会自动从分馏数据中心扣除四种分馏精华。需要在分馏数据中心解锁并升级对应配方。
 * 转化塔：将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。
 * 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
@@ -38,9 +38,9 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 * Mineral Duplication Tower: Duplicates various minerals, including Black Mist-specific drops. There is a certain
   probability of getting a replication essence. You need to unlock and upgrade the corresponding recipe in the
   Fractionation Data Center.
-* Point Aggregation Tower: Concentrate production increase points on some items, thus producing items with more
-  production increase points. Requires upgrading the Point Aggregation Efficiency Level in the Fractionation Data
-  Center.
+* Point Aggregation Tower: Concentrates proliferator points from input items and the global point pool onto selected
+  items, producing items with more proliferator points. Requires upgrading the Point Aggregation Efficiency Level in the
+  Fractionation Data Center.
 * Quantum Replication Tower: Utilizes the superior malleability of Fractionation Essence to replicate various items.
   Increased production points reduce the consumption of Fractionation Essence. Four types of Fractionated Essence are
   automatically deducted from the Fractionation Data Center when running. You need to unlock and upgrade the

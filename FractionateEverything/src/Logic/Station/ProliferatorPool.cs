@@ -111,5 +111,30 @@ public static class ProliferatorPool {
         }
     }
 
+    /// <summary>
+    /// 读取当前可用的全局增产点数。只读热路径使用，真实扣除仍走 <see cref="TryConsumeInc"/>。
+    /// </summary>
+    public static int GetAvailableInc() {
+        lock (centerItemCount) {
+            return leftInc;
+        }
+    }
+
+    /// <summary>
+    /// 仅在点数充足时从全局增产点数池扣除指定点数。
+    /// </summary>
+    public static bool TryConsumeInc(int need) {
+        if (need <= 0) {
+            return true;
+        }
+        lock (centerItemCount) {
+            if (leftInc < need) {
+                return false;
+            }
+            leftInc -= need;
+            return true;
+        }
+    }
+
     #endregion
 }

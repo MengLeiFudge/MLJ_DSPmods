@@ -397,6 +397,7 @@ public static partial class ProcessManager {
                         SuccessCount = 0,
                         DestroyedCount = 0,
                         PassThroughCount = batchCount,
+                        PassThroughInc = fluidInputIncAvg * batchCount,
                     };
                     __instance.fluidInputInc -= fluidInputIncAvg * batchCount;
                     if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
@@ -437,6 +438,7 @@ public static partial class ProcessManager {
                 if (batchResult.InputRemoveCount > 0) {
                     __instance.fluidInputCount -= batchResult.InputRemoveCount;
                     if (__instance.fluidInputCount < 0) __instance.fluidInputCount = 0;
+                    if (__instance.fluidInputCount == 0) __instance.fluidInputInc = 0;
                     __instance.fluidInputCargoCount -= batchResult.InputRemoveCount / fluidInputCountPerCargo;
                     if (__instance.fluidInputCargoCount < 0f) __instance.fluidInputCargoCount = 0f;
                 }
@@ -444,7 +446,7 @@ public static partial class ProcessManager {
                 if (batchResult.PassThroughCount > 0) {
                     __instance.fluidOutputCount += batchResult.PassThroughCount;
                     __instance.fluidOutputTotal += batchResult.PassThroughCount;
-                    __instance.fluidOutputInc += fluidInputIncAvg * batchResult.PassThroughCount;
+                    __instance.fluidOutputInc += batchResult.PassThroughInc;
                     producedFluidThisTick = true;
                 }
 

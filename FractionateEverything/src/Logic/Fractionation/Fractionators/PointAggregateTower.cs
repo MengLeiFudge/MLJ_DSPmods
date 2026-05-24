@@ -23,7 +23,7 @@ public static class PointAggregateTower {
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
     public static bool EnableVoidSpray => Level >= LevelThresholdTrait1;
-    public static bool EnableDoublePoints => Level >= LevelThresholdTrait2;
+    public static bool EnableVoidAggregation => Level >= LevelThresholdTrait2;
     public static int MaxStack => GetDefaultMaxStackByLevel(Level);
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
