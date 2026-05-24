@@ -26,6 +26,11 @@ internal enum GachaRarity {
     S = 3,
 }
 
+internal enum FragmentEconomyPolicy {
+    CurrentApproximation = 0,
+    ProposedBalanced = 1,
+}
+
 internal sealed class FractionationConfigSnapshot {
     public string ScenarioName { get; init; } = string.Empty;
     public SimulationMode Mode { get; init; }
@@ -51,6 +56,14 @@ internal sealed class FractionationEffectMetrics {
     public double EnergyEfficiencyMultiplier { get; set; }
     public double GachaNetValuePerMatrix { get; set; }
     public double GrowthExchangeNetValue { get; set; }
+    public double CurrentFragmentNetBalance { get; set; }
+    public double CurrentFragmentSinkCoverageRatio { get; set; }
+    public double CurrentMatrixFeedbackRatio { get; set; }
+    public double CurrentRectificationUtilityScore { get; set; }
+    public double ProposedFragmentNetBalance { get; set; }
+    public double ProposedFragmentSinkCoverageRatio { get; set; }
+    public double ProposedMatrixFeedbackRatio { get; set; }
+    public double ProposedRectificationUtilityScore { get; set; }
     public double CompositeImpactIndex { get; set; }
 }
 
@@ -64,6 +77,7 @@ internal sealed class PhaseImpactBreakdown {
     public double GachaNetValuePerMatrix { get; set; }
     public double GrowthExchangeNetValue { get; set; }
     public double FragmentYieldMultiplier { get; set; }
+    public List<FragmentEconomyEstimate> FragmentEconomies { get; } = [];
     public List<string> Notes { get; } = [];
 }
 
@@ -130,4 +144,26 @@ internal sealed class FractionationPhaseEstimate {
     public double FragmentYieldMultiplier { get; init; }
     public double EstimatedFragments { get; init; }
     public List<TowerEffectEstimate> Towers { get; } = [];
+}
+
+internal sealed class FragmentEconomyEstimate {
+    public FragmentEconomyPolicy Policy { get; init; }
+    public string PolicyName { get; init; } = string.Empty;
+    public double RectificationFaucet { get; init; }
+    public double FractionationSuccessFaucet { get; init; }
+    public double GachaDuplicateFaucet { get; init; }
+    public double PassiveRewardFaucet { get; init; }
+    public double TotalFaucet { get; init; }
+    public double GrowthSink { get; init; }
+    public double MatrixExchangeSink { get; init; }
+    public double ConvenienceSink { get; init; }
+    public double TotalSink { get; init; }
+    public double NetFragments { get; init; }
+    public double SinkCoverageRatio { get; init; }
+    public double RectificationFaucetShare { get; init; }
+    public double SameStageMatrixFeedbackRatio { get; init; }
+    public double RectificationUtilityScore { get; init; }
+    public double InflationRiskScore { get; init; }
+    public double PositiveFeedbackRiskScore { get; init; }
+    public List<string> Warnings { get; } = [];
 }
