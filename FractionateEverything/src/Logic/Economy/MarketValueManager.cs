@@ -198,6 +198,7 @@ public static class MarketValueManager {
                && GetBaseValue(itemId) > 0f
                && GetBaseValue(itemId) < maxValue
                && itemId != IFE残片
+               && itemId != IFE记忆源点
                && itemId != I沙土;
     }
 

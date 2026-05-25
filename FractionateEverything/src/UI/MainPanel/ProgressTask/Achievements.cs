@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -14,6 +15,7 @@ using FE.UI.MainPanel.DrawGrowth;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
@@ -255,9 +257,9 @@ public static class Achievements {
         var totalDefs =
             new (string Name, long Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
                 DoubleBonus)[] {
-                    ("分馏星河", 100_000_000L, "成就奖励-残片1000", ETier.Gold, 0.01f, 0.003f, 0.003f),
-                    ("分馏星海", 1_000_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.006f, 0.008f),
-                    ("分馏宇宙", 10_000_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.03f, 0.01f, 0.02f),
+                    ("分馏星河", 100_000_000L, "成就奖励-源点2", ETier.Gold, 0.01f, 0.003f, 0.003f),
+                    ("分馏星海", 1_000_000_000L, "成就奖励-源点3", ETier.Platinum, 0.02f, 0.006f, 0.008f),
+                    ("分馏宇宙", 10_000_000_000L, "成就奖励-源点5", ETier.Platinum, 0.03f, 0.01f, 0.02f),
                 };
 
         foreach ((string name, long target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
@@ -279,9 +281,9 @@ public static class Achievements {
         var rateDefs =
             new (string Name, long Target, string RewardKey, ETier Tier, float SuccessBonus, float DestroyBonus, float
                 DoubleBonus)[] {
-                    ("带速成型", 100_000L, "成就奖励-残片1000", ETier.Gold, 0.006f, 0.002f, 0.002f),
-                    ("满带洪流", 1_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.012f, 0.004f, 0.006f),
-                    ("星河带速", 10_000_000L, "成就奖励-残片2000", ETier.Platinum, 0.02f, 0.008f, 0.012f),
+                    ("带速成型", 100_000L, "成就奖励-源点1", ETier.Gold, 0.006f, 0.002f, 0.002f),
+                    ("满带洪流", 1_000_000L, "成就奖励-源点2", ETier.Platinum, 0.012f, 0.004f, 0.006f),
+                    ("星河带速", 10_000_000L, "成就奖励-源点3", ETier.Platinum, 0.02f, 0.008f, 0.012f),
                 };
 
         foreach ((string name, long target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
@@ -338,8 +340,8 @@ public static class Achievements {
                     ("成就-配方学者", 30, "成就奖励-配方核心3", ETier.Silver, 0.003f, 0.003f, 0f),
                     ("配方总览", 60, "成就奖励-当前阶段矩阵4", ETier.Gold, 0.004f, 0.004f, 0.005f),
                     ("成就-配方专家", 100, "成就奖励-当前阶段矩阵8", ETier.Gold, 0.006f, 0.006f, 0.01f),
-                    ("配方馆长", 120, "成就奖励-残片800", ETier.Platinum, 0.01f, 0.008f, 0.015f),
-                    ("成就-万物百科", 150, "成就奖励-残片1000", ETier.Platinum, 0.015f, 0.01f, 0.02f),
+                    ("配方馆长", 120, "成就奖励-源点2", ETier.Platinum, 0.01f, 0.008f, 0.015f),
+                    ("成就-万物百科", 150, "成就奖励-源点3", ETier.Platinum, 0.015f, 0.01f, 0.02f),
                 };
 
         foreach ((string name, int target, string rewardKey, ETier tier, float successBonus, float destroyBonus,
@@ -365,10 +367,10 @@ public static class Achievements {
             ("工艺进阶", 2, "成就奖励-残片300", ETier.Bronze, 0.01f, 0f),
             ("工艺磨合", 3, "成就奖励-残片500", ETier.Silver, 0.015f, 0f),
             ("工艺稳态", 4, "成就奖励-残片500", ETier.Silver, 0.02f, 0f),
-            ("成就-工艺优化", 6, "成就奖励-残片800", ETier.Gold, 0.03f, 0.005f),
-            ("工艺跃迁", 8, "成就奖励-残片1000", ETier.Gold, 0.04f, 0.01f),
-            ("工艺巅峰", 10, "成就奖励-残片1000", ETier.Gold, 0.05f, 0.015f),
-            ("成就-工艺大师", 12, "成就奖励-残片2000", ETier.Platinum, 0.08f, 0.02f),
+            ("成就-工艺优化", 6, "成就奖励-源点1", ETier.Gold, 0.03f, 0.005f),
+            ("工艺跃迁", 8, "成就奖励-源点2", ETier.Gold, 0.04f, 0.01f),
+            ("工艺巅峰", 10, "成就奖励-源点2", ETier.Gold, 0.05f, 0.015f),
+            ("成就-工艺大师", 12, "成就奖励-源点4", ETier.Platinum, 0.08f, 0.02f),
         };
 
         foreach ((string name, int target, string rewardKey, ETier tier, float energyBonus, float powerBonus) in defs) {
@@ -401,10 +403,10 @@ public static class Achievements {
             "成就分类-黑雾",
             "黑雾压制",
             "将黑雾支线推进到“地面压制”阶段",
-            "成就奖励-残片800",
+            "成就奖励-源点1",
             ETier.Silver,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.GroundSuppression,
-            () => GrantRewardByKey("成就奖励-残片800"),
+            () => GrantRewardByKey("成就奖励-源点1"),
             successRateBonus: 0.003f,
             destroyReductionBonus: 0.002f));
         list.Add(new AchievementInfo(
@@ -422,10 +424,10 @@ public static class Achievements {
             "成就分类-黑雾",
             "奇点收束",
             "将黑雾支线推进到“奇点收束”阶段",
-            "成就奖励-残片2000",
+            "成就奖励-源点3",
             ETier.Platinum,
             () => DarkFogCombatManager.GetCurrentStage() >= EDarkFogCombatStage.Singularity,
-            () => GrantRewardByKey("成就奖励-残片2000"),
+            () => GrantRewardByKey("成就奖励-源点3"),
             successRateBonus: 0.006f,
             destroyReductionBonus: 0.004f,
             powerStageBonus: 0.012f));
@@ -476,13 +478,13 @@ public static class Achievements {
             "成就分类-挑战",
             "常规毕业",
             "常规模式下累计 30000 次分馏成功，并解锁 150 个配方与星际物流交互科技",
-            "成就奖励-残片2000",
+            "成就奖励-源点5",
             ETier.Platinum,
             () => !IsSpeedrunMode
                   && totalFractionSuccesses >= 30000
                   && GetUnlockedRecipeCount() >= 150
                   && IsTechUnlocked(TFE星际物流交互),
-            () => GrantRewardByKey("成就奖励-残片2000"),
+            () => GrantRewardByKey("成就奖励-源点5"),
             successRateBonus: 0.02f,
             powerStageBonus: 0.02f));
 
@@ -490,13 +492,13 @@ public static class Achievements {
             "成就分类-挑战",
             "速通毕业",
             "速通模式下累计 10000 次分馏成功、500 次开线抽取并解锁星际物流交互科技",
-            "成就奖励-残片2000",
+            "成就奖励-源点3",
             ETier.Platinum,
             () => IsSpeedrunMode
                   && totalFractionSuccesses >= 10000
                   && TicketRaffle.openingLineDraws >= 500
                   && IsTechUnlocked(TFE星际物流交互),
-            () => GrantRewardByKey("成就奖励-残片2000"),
+            () => GrantRewardByKey("成就奖励-源点3"),
             successRateBonus: 0.02f,
             doubleOutputBonus: 0.02f,
             logisticsBonus: 0.02f));
@@ -545,6 +547,11 @@ public static class Achievements {
         Register("成就奖励-残片800", "Fragments x800", "残片 x800");
         Register("成就奖励-残片1000", "Fragments x1000", "残片 x1000");
         Register("成就奖励-残片2000", "Fragments x2000", "残片 x2000");
+        Register("成就奖励-源点1", "Memory x1", "记忆源点 x1");
+        Register("成就奖励-源点2", "Memory x2", "记忆源点 x2");
+        Register("成就奖励-源点3", "Memory x3", "记忆源点 x3");
+        Register("成就奖励-源点4", "Memory x4", "记忆源点 x4");
+        Register("成就奖励-源点5", "Memory x5", "记忆源点 x5");
         Register("成就奖励-当前阶段矩阵2", "Current stage matrix x2", "当前阶段矩阵 x2");
         Register("成就奖励-当前阶段矩阵4", "Current stage matrix x4", "当前阶段矩阵 x4");
         Register("成就奖励-当前阶段矩阵8", "Current stage matrix x8", "当前阶段矩阵 x8");
@@ -1164,7 +1171,57 @@ public static class Achievements {
         rewards.Add(string.Format(key.Translate(), percent.ToString("0.##")));
     }
 
-    private static void GrantRewardByKey(string rewardKey) { }
+    private static void GrantRewardByKey(string rewardKey) {
+        switch (rewardKey) {
+            case "成就奖励-残片200":
+                AddItemToModData(IFE残片, 200, 0, true);
+                break;
+            case "成就奖励-残片300":
+                AddItemToModData(IFE残片, 300, 0, true);
+                break;
+            case "成就奖励-残片500":
+            case "成就奖励-配方核心1":
+                AddItemToModData(IFE残片, 500, 0, true);
+                break;
+            case "成就奖励-残片800":
+                AddItemToModData(IFE残片, 800, 0, true);
+                break;
+            case "成就奖励-残片1000":
+            case "成就奖励-配方核心3":
+                AddItemToModData(IFE残片, 1000, 0, true);
+                break;
+            case "成就奖励-残片2000":
+                AddItemToModData(IFE残片, 2000, 0, true);
+                break;
+            case "成就奖励-当前阶段矩阵2":
+                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 2, 0, true);
+                break;
+            case "成就奖励-当前阶段矩阵4":
+                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 4, 0, true);
+                break;
+            case "成就奖励-当前阶段矩阵8":
+                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 8, 0, true);
+                break;
+            case "成就奖励-当前阶段矩阵16":
+                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 16, 0, true);
+                break;
+            case "成就奖励-源点1":
+                AddItemToModData(IFE记忆源点, 1, 0, true);
+                break;
+            case "成就奖励-源点2":
+                AddItemToModData(IFE记忆源点, 2, 0, true);
+                break;
+            case "成就奖励-源点3":
+                AddItemToModData(IFE记忆源点, 3, 0, true);
+                break;
+            case "成就奖励-源点4":
+                AddItemToModData(IFE记忆源点, 4, 0, true);
+                break;
+            case "成就奖励-源点5":
+                AddItemToModData(IFE记忆源点, 5, 0, true);
+                break;
+        }
+    }
 
     private static Color GetTierColor(ETier tier) {
         return tier switch {

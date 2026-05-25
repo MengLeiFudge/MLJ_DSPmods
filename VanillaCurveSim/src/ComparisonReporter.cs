@@ -44,6 +44,8 @@ internal static class ComparisonReporter {
                 $"- 当前残片净结余/阶段：{scenario.Metrics.CurrentFragmentNetBalance:0.#}，消耗覆盖：{scenario.Metrics.CurrentFragmentSinkCoverageRatio:0.000}，同阶段矩阵回流：{scenario.Metrics.CurrentMatrixFeedbackRatio:0.000}，精馏存在感：{scenario.Metrics.CurrentRectificationUtilityScore:0.000}");
             sb.AppendLine(
                 $"- 建议残片净结余/阶段：{scenario.Metrics.ProposedFragmentNetBalance:0.#}，消耗覆盖：{scenario.Metrics.ProposedFragmentSinkCoverageRatio:0.000}，同阶段矩阵回流：{scenario.Metrics.ProposedMatrixFeedbackRatio:0.000}，精馏存在感：{scenario.Metrics.ProposedRectificationUtilityScore:0.000}");
+            sb.AppendLine(
+                $"- Memory 来源/阶段：当前 {scenario.Metrics.CurrentMemoryFaucetPerStage:0.00}，建议 {scenario.Metrics.ProposedMemoryFaucetPerStage:0.00}");
             sb.AppendLine($"- 综合影响指数：{scenario.Metrics.CompositeImpactIndex:0.000}");
             sb.AppendLine($"- 预设聚焦：{scenario.FinalConfig.Focus}");
             sb.AppendLine(
@@ -66,12 +68,12 @@ internal static class ComparisonReporter {
             sb.AppendLine();
             sb.AppendLine("### 残片经济阶段对照");
             sb.AppendLine();
-            sb.AppendLine("| 阶段 | 政策 | faucet | sink | 净结余 | 消耗覆盖 | 精馏占比 | 同阶矩阵回流 | 精馏存在感 |");
-            sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
+            sb.AppendLine("| 阶段 | 政策 | faucet | sink | 净结余 | 消耗覆盖 | 精馏占比 | 同阶矩阵回流 | 精馏存在感 | Memory |");
+            sb.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|");
             foreach (PhaseImpactBreakdown phase in scenario.Phases) {
                 foreach (FragmentEconomyEstimate economy in phase.FragmentEconomies) {
                     sb.AppendLine(
-                        $"| {phase.PhaseName} | {economy.PolicyName} | {economy.TotalFaucet:0.#} | {economy.TotalSink:0.#} | {economy.NetFragments:0.#} | {economy.SinkCoverageRatio:0.000} | {economy.RectificationFaucetShare:0.000} | {economy.SameStageMatrixFeedbackRatio:0.000} | {economy.RectificationUtilityScore:0.000} |");
+                        $"| {phase.PhaseName} | {economy.PolicyName} | {economy.TotalFaucet:0.#} | {economy.TotalSink:0.#} | {economy.NetFragments:0.#} | {economy.SinkCoverageRatio:0.000} | {economy.RectificationFaucetShare:0.000} | {economy.SameStageMatrixFeedbackRatio:0.000} | {economy.RectificationUtilityScore:0.000} | {economy.TotalMemoryFaucet:0.00} |");
                 }
             }
             sb.AppendLine();
@@ -80,7 +82,7 @@ internal static class ComparisonReporter {
             foreach (PhaseImpactBreakdown phase in scenario.Phases) {
                 foreach (FragmentEconomyEstimate economy in phase.FragmentEconomies) {
                     sb.AppendLine(
-                        $"- {phase.PhaseName} / {economy.PolicyName}：来源 精馏 {economy.RectificationFaucet:0.#}，成功副产 {economy.FractionationSuccessFaucet:0.#}，抽卡重复 {economy.GachaDuplicateFaucet:0.#}，任务/被动 {economy.PassiveRewardFaucet:0.#}；消耗 成长 {economy.GrowthSink:0.#}，矩阵兑换 {economy.MatrixExchangeSink:0.#}，便利 {economy.ConvenienceSink:0.#}");
+                        $"- {phase.PhaseName} / {economy.PolicyName}：来源 精馏 {economy.RectificationFaucet:0.#}，成功副产 {economy.FractionationSuccessFaucet:0.#}，抽卡重复 {economy.GachaDuplicateFaucet:0.#}，任务/被动 {economy.PassiveRewardFaucet:0.#}；消耗 成长 {economy.GrowthSink:0.#}，矩阵兑换 {economy.MatrixExchangeSink:0.#}，便利 {economy.ConvenienceSink:0.#}；Memory 阶段 {economy.MemoryMilestoneFaucet:0.00}，成就 {economy.MemoryAchievementFaucet:0.00}，精馏 {economy.MemoryRectificationFaucet:0.00}");
                     foreach (string warning in economy.Warnings) {
                         sb.AppendLine($"  - {warning}");
                     }

@@ -134,6 +134,7 @@ internal sealed class FeScenarioSimulator {
         result.Findings.Add(BuildEnergyFinding(result.Metrics.EnergyEfficiencyMultiplier));
         result.Findings.Add(BuildFragmentEconomyFinding(result.Metrics));
         result.Findings.Add(BuildRectificationFinding(result.Metrics));
+        result.Findings.Add(BuildMemoryFinding(result.Metrics));
         return result;
     }
 
@@ -148,6 +149,7 @@ internal sealed class FeScenarioSimulator {
             total.SinkCoverageRatio += estimate.SinkCoverageRatio * weight;
             total.MatrixFeedbackRatio += estimate.SameStageMatrixFeedbackRatio * weight;
             total.RectificationUtilityScore += estimate.RectificationUtilityScore * weight;
+            total.MemoryFaucet += estimate.TotalMemoryFaucet * weight;
         }
     }
 
@@ -170,6 +172,7 @@ internal sealed class FeScenarioSimulator {
             metrics.CurrentFragmentSinkCoverageRatio = total.SinkCoverageRatio / divisor;
             metrics.CurrentMatrixFeedbackRatio = total.MatrixFeedbackRatio / divisor;
             metrics.CurrentRectificationUtilityScore = total.RectificationUtilityScore / divisor;
+            metrics.CurrentMemoryFaucetPerStage = total.MemoryFaucet / divisor;
             return;
         }
 
@@ -177,6 +180,7 @@ internal sealed class FeScenarioSimulator {
         metrics.ProposedFragmentSinkCoverageRatio = total.SinkCoverageRatio / divisor;
         metrics.ProposedMatrixFeedbackRatio = total.MatrixFeedbackRatio / divisor;
         metrics.ProposedRectificationUtilityScore = total.RectificationUtilityScore / divisor;
+        metrics.ProposedMemoryFaucetPerStage = total.MemoryFaucet / divisor;
     }
 
     private static double ResolveCurrentMatrixRate(PhaseSummary baselinePhase, int stageIndex) {
@@ -264,6 +268,17 @@ internal sealed class FeScenarioSimulator {
             $"精馏塔在当前模拟口径下有稳定作用；建议政策存在感评分 {metrics.ProposedRectificationUtilityScore:0.00}。";
     }
 
+    private static string BuildMemoryFinding(FractionationEffectMetrics metrics) {
+        if (metrics.ProposedMemoryFaucetPerStage <= 0.1) {
+            return "Memory 在建议政策下仍几乎没有来源，珍贵操作会缺少可见进度。";
+        }
+        if (metrics.ProposedMemoryFaucetPerStage >= 5.0) {
+            return $"Memory 来源偏高：建议政策平均每阶段 {metrics.ProposedMemoryFaucetPerStage:0.0}，需要限制高价值操作。";
+        }
+        return
+            $"Memory 来源处于低频区间：建议政策平均每阶段 {metrics.ProposedMemoryFaucetPerStage:0.0}，不参与残片兑换回流。";
+    }
+
     private static string FormatPhaseName(ProgressPhase phase) {
         return phase switch {
             ProgressPhase.Bootstrap or ProgressPhase.Electromagnetic => "电磁矩阵阶段",
@@ -281,5 +296,6 @@ internal sealed class FeScenarioSimulator {
         public double SinkCoverageRatio { get; set; }
         public double MatrixFeedbackRatio { get; set; }
         public double RectificationUtilityScore { get; set; }
+        public double MemoryFaucet { get; set; }
     }
 }

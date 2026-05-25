@@ -49,11 +49,13 @@ public static class MainTask {
         Register("节点状态-已完成", "Completed", "已完成");
         Register("节点详情-条件", "Condition:", "条件：");
         Register("节点详情-奖励", "Reward:", "奖励：");
+        Register("节点详情-阶段奖励", "Stage reward:", "阶段奖励：");
         Register("节点详情-状态", "State:", "状态：");
         Register("节点详情-推荐阶段", "Recommended stage:", "推荐阶段：");
         Register("节点详情-推荐说明", "Recommendation only. It does not block other milestones.",
             "这只是推荐阶段，不限制实际完成顺序。");
         Register("主线里程碑达成提示", "Main milestone unlocked: {0}", "主线里程碑达成：{0}");
+        Register("主线阶段完成提示", "Main stage completed: {0}", "主线阶段完成：{0}");
         Register("是", "Yes");
         Register("否", "No");
         Register("无", "None", "无");
@@ -601,6 +603,7 @@ public static class MainTask {
 
     private static bool[][][] completedByMode;
     private static bool[][][] rewardedByMode;
+    private static bool[][] stageMemoryRewardedByMode;
     private static int[] selectedBranchByMode = [-1, -1];
     private static int[] selectedNodeByMode = [-1, -1];
     private static int _lastGlobalTickFrame = -1;
@@ -638,8 +641,10 @@ public static class MainTask {
     private static void EnsureRouteState() {
         completedByMode ??= CreateStateMatrix();
         rewardedByMode ??= CreateStateMatrix();
+        stageMemoryRewardedByMode ??= CreateStageRewardMatrix();
         ResizeStateMatrix(ref completedByMode);
         ResizeStateMatrix(ref rewardedByMode);
+        ResizeStageRewardMatrix(ref stageMemoryRewardedByMode);
     }
 
     private static bool[][][] CreateStateMatrix() {
@@ -650,6 +655,14 @@ public static class MainTask {
             for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
                 matrix[modeIndex][branchIndex] = new bool[route.Branches[branchIndex].Nodes.Length];
             }
+        }
+        return matrix;
+    }
+
+    private static bool[][] CreateStageRewardMatrix() {
+        bool[][] matrix = new bool[RouteMaps.Length][];
+        for (int modeIndex = 0; modeIndex < RouteMaps.Length; modeIndex++) {
+            matrix[modeIndex] = new bool[MainStages.Length];
         }
         return matrix;
     }
@@ -691,9 +704,28 @@ public static class MainTask {
         }
     }
 
+    private static void ResizeStageRewardMatrix(ref bool[][] matrix) {
+        if (matrix == null || matrix.Length != RouteMaps.Length) {
+            matrix = CreateStageRewardMatrix();
+            return;
+        }
+
+        for (int modeIndex = 0; modeIndex < RouteMaps.Length; modeIndex++) {
+            if (matrix[modeIndex] != null && matrix[modeIndex].Length == MainStages.Length) {
+                continue;
+            }
+            bool[] oldStages = matrix[modeIndex];
+            matrix[modeIndex] = new bool[MainStages.Length];
+            if (oldStages != null) {
+                Array.Copy(oldStages, matrix[modeIndex], Math.Min(oldStages.Length, MainStages.Length));
+            }
+        }
+    }
+
     private static void ResetRouteState() {
         completedByMode = CreateStateMatrix();
         rewardedByMode = CreateStateMatrix();
+        stageMemoryRewardedByMode = CreateStageRewardMatrix();
         selectedBranchByMode = [-1, -1];
         selectedNodeByMode = [-1, -1];
         _lastGlobalTickFrame = -1;
@@ -799,6 +831,7 @@ public static class MainTask {
             UIRealtimeTip.Popup(string.Format("主线里程碑达成提示".Translate(), node.Name.Translate()), true,
                 GetMainTaskRewardTipId());
         }
+        GrantCompletedStageMemoryRewards(modeIndex, showPopup, allowRewardGrant);
     }
 
     private static void GrantPendingRewards(bool showPopup) {
@@ -815,6 +848,75 @@ public static class MainTask {
                 }
             }
         }
+        for (int modeIndex = 0; modeIndex < RouteMaps.Length; modeIndex++) {
+            GrantCompletedStageMemoryRewards(modeIndex, showPopup, allowRewardGrant: true);
+        }
+    }
+
+    private static void GrantCompletedStageMemoryRewards(int modeIndex, bool showPopup, bool allowRewardGrant) {
+        if (!allowRewardGrant || modeIndex < 0 || modeIndex >= RouteMaps.Length) {
+            return;
+        }
+        RouteMap route = GetRouteByModeIndex(modeIndex);
+        for (int stageIndex = 0; stageIndex < MainStages.Length; stageIndex++) {
+            if (stageMemoryRewardedByMode[modeIndex][stageIndex]
+                || !IsStageFullyCompleted(route, modeIndex, stageIndex)) {
+                continue;
+            }
+
+            int memoryCount = GetStageMemoryRewardCount(stageIndex, modeIndex);
+            if (memoryCount <= 0) {
+                continue;
+            }
+
+            AddItemToModData(IFE记忆源点, memoryCount, 0, true);
+            if (showPopup && CanShowItemupTip()) {
+                UIItemup.Up(IFE记忆源点, memoryCount);
+            }
+            stageMemoryRewardedByMode[modeIndex][stageIndex] = true;
+            if (showPopup && CanShowRealtimeTip()) {
+                UIRealtimeTip.Popup(
+                    string.Format("主线阶段完成提示".Translate(), MainStages[stageIndex].Name.Translate()), true,
+                    GetMainTaskRewardTipId());
+            }
+        }
+    }
+
+    private static bool IsStageFullyCompleted(RouteMap route, int modeIndex, int stageIndex) {
+        bool hasStageNode = false;
+        for (int branchIndex = 0; branchIndex < route.Branches.Length; branchIndex++) {
+            TaskNode[] nodes = route.Branches[branchIndex].Nodes;
+            for (int nodeIndex = 0; nodeIndex < nodes.Length; nodeIndex++) {
+                if (nodes[nodeIndex].StageIndex != stageIndex) {
+                    continue;
+                }
+                hasStageNode = true;
+                if (!completedByMode[modeIndex][branchIndex][nodeIndex]) {
+                    return false;
+                }
+            }
+        }
+        return hasStageNode;
+    }
+
+    private static int GetStageMemoryRewardCount(int stageIndex, string modeName) {
+        if (stageIndex <= 0 || stageIndex >= 7) {
+            return 0;
+        }
+        int baseCount = stageIndex switch {
+            1 => 1,
+            2 => 1,
+            3 => 2,
+            4 => 2,
+            5 => 3,
+            6 => 4,
+            _ => 0,
+        };
+        return modeName == "速通主线" ? Math.Max(1, baseCount - 1) : baseCount;
+    }
+
+    private static int GetStageMemoryRewardCount(int stageIndex, int modeIndex) {
+        return GetStageMemoryRewardCount(stageIndex, GetRouteByModeIndex(modeIndex).CenterTitle);
     }
 
     private static void EnsureSelectedNode(int modeIndex) {
@@ -974,7 +1076,8 @@ public static class MainTask {
             ("NodeRewardedStates", br => {
                 ReadStateMatrix(br, rewardedByMode);
                 loadedRewardedState = true;
-            })
+            }),
+            ("StageMemoryRewardedStates", br => ReadStageRewardMatrix(br, stageMemoryRewardedByMode))
         );
 
         bool isLegacyImport = !loadedCompletedState || !loadedRewardedState;
@@ -1017,7 +1120,8 @@ public static class MainTask {
                 bw.Write(legacySpeedrunRewardClaimed);
             }),
             ("NodeCompletedStates", bw => WriteStateMatrix(bw, completedByMode)),
-            ("NodeRewardedStates", bw => WriteStateMatrix(bw, rewardedByMode))
+            ("NodeRewardedStates", bw => WriteStateMatrix(bw, rewardedByMode)),
+            ("StageMemoryRewardedStates", bw => WriteStageRewardMatrix(bw, stageMemoryRewardedByMode))
         );
     }
 
@@ -1038,6 +1142,16 @@ public static class MainTask {
         }
     }
 
+    private static void WriteStageRewardMatrix(BinaryWriter w, bool[][] matrix) {
+        w.Write(matrix.Length);
+        for (int modeIndex = 0; modeIndex < matrix.Length; modeIndex++) {
+            w.Write(matrix[modeIndex].Length);
+            for (int stageIndex = 0; stageIndex < matrix[modeIndex].Length; stageIndex++) {
+                w.Write(matrix[modeIndex][stageIndex]);
+            }
+        }
+    }
+
     private static void ReadStateMatrix(BinaryReader r, bool[][][] matrix) {
         int modeCount = r.ReadInt32();
         for (int modeIndex = 0; modeIndex < modeCount; modeIndex++) {
@@ -1053,6 +1167,19 @@ public static class MainTask {
                         && nodeIndex < matrix[modeIndex][targetBranchIndex].Length) {
                         matrix[modeIndex][targetBranchIndex][nodeIndex] = value;
                     }
+                }
+            }
+        }
+    }
+
+    private static void ReadStageRewardMatrix(BinaryReader r, bool[][] matrix) {
+        int modeCount = r.ReadInt32();
+        for (int modeIndex = 0; modeIndex < modeCount; modeIndex++) {
+            int stageCount = r.ReadInt32();
+            for (int stageIndex = 0; stageIndex < stageCount; stageIndex++) {
+                bool value = r.ReadBoolean();
+                if (modeIndex < matrix.Length && stageIndex < matrix[modeIndex].Length) {
+                    matrix[modeIndex][stageIndex] = value;
                 }
             }
         }
@@ -1545,7 +1672,7 @@ public static class MainTask {
         int nodeIndex) {
         RouteMap route = GetRouteByModeIndex(modeIndex);
         string progressText = GetNodeProgressText(modeIndex, branchIndex, nodeIndex);
-        string rewardText = GetRewardText(node);
+        string rewardText = GetRewardText(node, route.CenterTitle);
         string stageName = route.Stages[Math.Max(0, Math.Min(route.Stages.Length - 1, node.StageIndex))].Name
             .Translate();
 
@@ -1581,9 +1708,14 @@ public static class MainTask {
         };
     }
 
-    private static string GetRewardText(TaskNode node) {
+    private static string GetRewardText(TaskNode node, string modeName) {
         if (node.RewardItemId > 0 && LDB.items.Exist(node.RewardItemId)) {
-            return $"{LDB.items.Select(node.RewardItemId).name} x{node.RewardCount}";
+            string rewardText = $"{LDB.items.Select(node.RewardItemId).name} x{node.RewardCount}";
+            int stageMemoryCount = GetStageMemoryRewardCount(node.StageIndex, modeName);
+            if (stageMemoryCount > 0) {
+                rewardText += $"\n{"节点详情-阶段奖励".Translate()} {LDB.items.Select(IFE记忆源点).name} x{stageMemoryCount}";
+            }
+            return rewardText;
         }
         return "无".Translate();
     }

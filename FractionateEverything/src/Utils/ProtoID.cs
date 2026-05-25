@@ -455,6 +455,7 @@ public static partial class Utils {
     internal const int IFE万物分馏商店刷新提示 = 8048;
     internal const int IFE万物分馏科技解锁说明 = 8049;
     internal const int IFE残片 = 8060;
+    internal const int IFE记忆源点 = 8061;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;

@@ -32,6 +32,8 @@ internal sealed class FeFragmentEconomyEvaluator {
         SimulatorSelfCheck.Require(estimates[0].TotalFaucet > 0.0, "当前近似政策应有残片来源。");
         SimulatorSelfCheck.Require(estimates[1].SameStageMatrixFeedbackRatio < estimates[0].SameStageMatrixFeedbackRatio,
             "建议平衡政策应降低同阶段矩阵回流风险。");
+        SimulatorSelfCheck.Require(estimates[1].TotalMemoryFaucet > 0.0,
+            "建议平衡政策应输出阶段性 Memory 来源。");
     }
 
     public IReadOnlyList<FragmentEconomyEstimate> EvaluatePhase(FractionationConfigSnapshot config,
@@ -85,6 +87,9 @@ internal sealed class FeFragmentEconomyEvaluator {
             sameStageMatrixFeedback, proposed);
         double inflationRisk = ComputeInflationRisk(netFragments, totalFaucet, sinkCoverage);
         double feedbackRisk = ComputeFeedbackRisk(stage, sameStageMatrixFeedback);
+        double memoryMilestoneFaucet = EstimateMemoryMilestoneFaucet(config, proposed);
+        double memoryAchievementFaucet = EstimateMemoryAchievementFaucet(config, proposed);
+        double memoryRectificationFaucet = EstimateMemoryRectificationFaucet(config, fractionation, proposed);
 
         var estimate = new FragmentEconomyEstimate {
             Policy = policy,
@@ -105,6 +110,10 @@ internal sealed class FeFragmentEconomyEvaluator {
             RectificationUtilityScore = rectificationUtility,
             InflationRiskScore = inflationRisk,
             PositiveFeedbackRiskScore = feedbackRisk,
+            MemoryMilestoneFaucet = memoryMilestoneFaucet,
+            MemoryAchievementFaucet = memoryAchievementFaucet,
+            MemoryRectificationFaucet = memoryRectificationFaucet,
+            TotalMemoryFaucet = memoryMilestoneFaucet + memoryAchievementFaucet + memoryRectificationFaucet,
         };
         AddWarnings(estimate, stage, proposed);
         return estimate;
@@ -224,6 +233,58 @@ internal sealed class FeFragmentEconomyEvaluator {
         _ => 0.35,
     };
 
+    private static double EstimateMemoryMilestoneFaucet(FractionationConfigSnapshot config, bool proposed) {
+        if (!proposed) {
+            return 0.0;
+        }
+
+        double baseReward = config.StageIndex switch {
+            <= 0 => 0.0,
+            1 => 1.0,
+            2 => 1.0,
+            3 => 2.0,
+            4 => 2.0,
+            5 => 3.0,
+            _ => 4.0,
+        };
+        return config.IsSpeedrun && baseReward > 0.0 ? Math.Max(1.0, baseReward - 1.0) : baseReward;
+    }
+
+    private static double EstimateMemoryAchievementFaucet(FractionationConfigSnapshot config, bool proposed) {
+        if (!proposed) {
+            return 0.0;
+        }
+
+        double stagePressure = config.StageIndex switch {
+            <= 1 => 0.15,
+            <= 3 => 0.35,
+            _ => 0.65,
+        };
+        return config.IsSpeedrun ? stagePressure * 0.75 : stagePressure;
+    }
+
+    private static double EstimateMemoryRectificationFaucet(FractionationConfigSnapshot config,
+        FractionationPhaseEstimate fractionation, bool proposed) {
+        if (!proposed || config.RectificationTowerLevel < 12) {
+            return 0.0;
+        }
+
+        double chance = 0.0025;
+        if (config.SelectedIncLevel >= 4) {
+            chance += 0.0015;
+        }
+        if (config.SelectedIncLevel >= 8) {
+            chance += 0.001;
+        }
+
+        double currentMatrixShare = config.StageIndex switch {
+            <= 1 => 0.08,
+            <= 3 => 0.12,
+            _ => 0.16,
+        };
+        return Math.Max(0.0, fractionation.EstimatedFragments) * currentMatrixShare * chance;
+    }
+
     private static void AddWarnings(FragmentEconomyEstimate estimate, int stage, bool proposed) {
         if (estimate.SinkCoverageRatio < 0.75) {
             estimate.Warnings.Add("残片消耗覆盖不足，库存会持续膨胀。");
@@ -238,6 +299,9 @@ internal sealed class FeFragmentEconomyEvaluator {
         }
         if (estimate.InflationRiskScore > 0.65) {
             estimate.Warnings.Add("残片通胀风险偏高，需要增加可重复 sink 或降低非精馏 faucet。");
+        }
+        if (proposed && estimate.TotalMemoryFaucet > 6.0) {
+            estimate.Warnings.Add("Memory 阶段来源偏高，珍贵操作可能被快速刷穿。");
         }
     }
 }

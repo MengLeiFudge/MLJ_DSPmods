@@ -165,13 +165,13 @@ public static class BuildingOperate {
 
         Register("余辉萃取", "Afterglow Extraction");
         Register("余辉萃取说明",
-            "When the average proliferator points of inputs is at least 4, the current rectification grants 1 extra Fragment.",
-            "当输入原料平均增产点数不少于4时，本次精馏额外产出1个残片。");
+            "When the average proliferator points of inputs is at least 4, Memory extraction progress is slightly increased after Hyperphase Compression is unlocked.",
+            "当输入原料平均增产点数不少于4时，超相压缩解锁后的记忆源点萃取进度小幅提高。");
 
         Register("超相压缩", "Hyperphase Compression");
         Register("超相压缩说明",
-            "When the input is the current stage matrix or a Dark Fog Matrix, the current rectification grants 1 additional Fragment after other bonuses.",
-            "当输入为当前阶段矩阵或黑雾矩阵时，本次精馏在其他效果结算后再额外产出1个残片。");
+            "When the input is the current stage matrix or a Dark Fog Matrix, rectification has a low chance to extract Memory in addition to Fragments.",
+            "当输入为当前阶段矩阵或黑雾矩阵时，精馏除残片外有低概率萃取记忆源点。");
 
         Register("特质1（+6）：", "Trait 1 (+6): ");
         Register("特质2（+12）：", "Trait 2 (+12): ");

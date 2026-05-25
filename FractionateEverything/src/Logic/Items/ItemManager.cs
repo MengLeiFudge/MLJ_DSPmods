@@ -29,6 +29,10 @@ public static class ItemManager {
         Register("I残片",
             "Stable side resource produced by fractionation. Used for growth, deterministic补差 and focus switching.",
             "分馏体系产出的稳定副资源，可用于成长、定向补差和流派聚焦。");
+        Register("记忆源点", "Memory");
+        Register("I记忆源点",
+            "Rare memory source point. Used for precious growth operations and milestone rewards. It cannot be exchanged from Fragments.",
+            "稀有的记忆源点，用于珍贵成长操作和阶段里程碑奖励。残片不能兑换为记忆源点。");
 
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
@@ -95,6 +99,11 @@ public static class ItemManager {
             "Assets/fe/copy-essence", tab分馏 * 1000 + 103, 100, EItemType.Material,
             ProtoRegistry.GetDefaultIconDesc(Color.gray, Color.black));
         item.IconTag = "cpfragment";
+
+        item = ProtoRegistry.RegisterItem(IFE记忆源点, "记忆源点", "I记忆源点",
+            "Assets/fe/copy-essence", tab分馏 * 1000 + 104, 100, EItemType.Material,
+            ProtoRegistry.GetDefaultIconDesc(new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f)));
+        item.IconTag = "memory";
 
         item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
@@ -220,6 +229,7 @@ public static class ItemManager {
         itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE精馏塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
         itemValue[IFE残片] = 1.0f;
+        itemValue[IFE记忆源点] = 250.0f;
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {

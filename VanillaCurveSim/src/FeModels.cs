@@ -60,10 +60,12 @@ internal sealed class FractionationEffectMetrics {
     public double CurrentFragmentSinkCoverageRatio { get; set; }
     public double CurrentMatrixFeedbackRatio { get; set; }
     public double CurrentRectificationUtilityScore { get; set; }
+    public double CurrentMemoryFaucetPerStage { get; set; }
     public double ProposedFragmentNetBalance { get; set; }
     public double ProposedFragmentSinkCoverageRatio { get; set; }
     public double ProposedMatrixFeedbackRatio { get; set; }
     public double ProposedRectificationUtilityScore { get; set; }
+    public double ProposedMemoryFaucetPerStage { get; set; }
     public double CompositeImpactIndex { get; set; }
 }
 
@@ -165,5 +167,9 @@ internal sealed class FragmentEconomyEstimate {
     public double RectificationUtilityScore { get; init; }
     public double InflationRiskScore { get; init; }
     public double PositiveFeedbackRiskScore { get; init; }
+    public double MemoryMilestoneFaucet { get; init; }
+    public double MemoryAchievementFaucet { get; init; }
+    public double MemoryRectificationFaucet { get; init; }
+    public double TotalMemoryFaucet { get; init; }
     public List<string> Warnings { get; } = [];
 }

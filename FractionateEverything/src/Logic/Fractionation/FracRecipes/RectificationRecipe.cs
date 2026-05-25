@@ -46,14 +46,6 @@ public class RectificationRecipe : BaseRecipe {
         }
 
         int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        // 精馏塔特质只影响本次残片数，不改变输入消耗、产物类型与输出结构。
-        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
-            fragmentCount += 1;
-        }
-        if (RectificationTower.EnableHyperphaseCompression
-            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
-            fragmentCount += 1;
-        }
         outputs = [new(true, IFE残片, fragmentCount)];
     }
 
@@ -67,13 +59,6 @@ public class RectificationRecipe : BaseRecipe {
         }
 
         int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
-            fragmentCount += 1;
-        }
-        if (RectificationTower.EnableHyperphaseCompression
-            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
-            fragmentCount += 1;
-        }
         outputs.Add(true, IFE残片, fragmentCount);
         return FractionationOutcome.Produced;
     }
@@ -87,14 +72,9 @@ public class RectificationRecipe : BaseRecipe {
         }
 
         int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
-            fragmentCount += 1;
-        }
-        if (RectificationTower.EnableHyperphaseCompression
-            && (InputID == GetCurrentProgressMatrixId() || InputID == I黑雾矩阵)) {
-            fragmentCount += 1;
-        }
         outputs.Add(true, IFE残片, fragmentCount * batchCount);
+        int memoryCount = RollMemoryOutputs(ref seed, batchCount, fluidInputIncAvg);
+        outputs.Add(false, IFE记忆源点, memoryCount);
 
         return new FractionationBatchResult {
             InputRemoveCount = batchCount,
@@ -103,6 +83,30 @@ public class RectificationRecipe : BaseRecipe {
             DestroyedCount = 0,
             PassThroughCount = 0,
         };
+    }
+
+    private int RollMemoryOutputs(ref uint seed, int batchCount, int fluidInputIncAvg) {
+        if (!RectificationTower.EnableHyperphaseCompression
+            || batchCount <= 0
+            || InputID != GetCurrentProgressMatrixId() && InputID != I黑雾矩阵) {
+            return 0;
+        }
+
+        float probability = GetMemoryYieldChance(fluidInputIncAvg);
+        return RollBinomialApprox(ref seed, batchCount, probability);
+    }
+
+    private static float GetMemoryYieldChance(int fluidInputIncAvg) {
+        // Level 12 后才允许极低频萃取 Memory。Level 6 特质不再额外增加残片件数，
+        // 而是要求使用增产点数来提高萃取进度，避免继续放大残片输出带宽。
+        float chance = 0.0025f;
+        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
+            chance += 0.0015f;
+        }
+        if (fluidInputIncAvg >= 8) {
+            chance += 0.001f;
+        }
+        return chance;
     }
 
     #region IModCanSave

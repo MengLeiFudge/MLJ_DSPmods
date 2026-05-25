@@ -792,15 +792,7 @@ public static class FracRecipeOperate {
     }
 
     private static int GetRectificationDisplayFragmentCount(int inputId, int inputInc) {
-        int fragmentCount = GetRectificationFragmentYield(inputId, RectificationTower.PlrRatio);
-        if (RectificationTower.EnableAfterglowExtraction && inputInc >= 4) {
-            fragmentCount += 1;
-        }
-        if (RectificationTower.EnableHyperphaseCompression
-            && (inputId == GetCurrentProgressMatrixId() || inputId == I黑雾矩阵)) {
-            fragmentCount += 1;
-        }
-        return fragmentCount;
+        return GetRectificationFragmentYield(inputId, RectificationTower.PlrRatio);
     }
 
     // ==================== 建筑特殊特质 ====================
