@@ -84,6 +84,24 @@ public class CenterItemChangePacket {
 }
 
 /// <summary>
+/// 数据中心大额物品变化的联机同步包。
+/// </summary>
+public class CenterItemChangeLongPacket {
+    public byte[] data { get; set; }
+
+    public CenterItemChangeLongPacket() { }
+
+    public CenterItemChangeLongPacket(int itemId, long count, long inc = 0) {
+        using IWriterProvider p = NebulaModAPI.GetBinaryWriter();
+        BinaryWriter w = p.BinaryWriter;
+        w.Write(itemId);
+        w.Write(count);
+        w.Write(inc);
+        data = p.CloseAndGetBytes();
+    }
+}
+
+/// <summary>
 /// 在多人游戏中，当物品发生改变时，向其他玩家推送此事件。
 /// </summary>
 [RegisterPacketProcessor]
@@ -94,6 +112,24 @@ public class CenterItemChangePacketProcessor : BasePacketProcessor<CenterItemCha
         int itemId = r.ReadInt32();
         int count = r.ReadInt32();
         int inc = r.ReadInt32();
+        AddItemToModData(itemId, count, inc);
+        if (NebulaModAPI.IsMultiplayerActive && IsHost) {
+            NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
+        }
+    }
+}
+
+/// <summary>
+/// 在多人游戏中，当大额物品发生改变时，向其他玩家推送此事件。
+/// </summary>
+[RegisterPacketProcessor]
+public class CenterItemChangeLongPacketProcessor : BasePacketProcessor<CenterItemChangeLongPacket> {
+    public override void ProcessPacket(CenterItemChangeLongPacket packet, INebulaConnection conn) {
+        using IReaderProvider p = NebulaModAPI.GetBinaryReader(packet.data);
+        BinaryReader r = p.BinaryReader;
+        int itemId = r.ReadInt32();
+        long count = r.ReadInt64();
+        long inc = r.ReadInt64();
         AddItemToModData(itemId, count, inc);
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);
