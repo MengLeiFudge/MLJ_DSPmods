@@ -39,8 +39,8 @@ public static class RectificationTower {
     public static void AddTranslations() {
         Register("精馏塔", "Rectification Tower");
         Register("I精馏塔",
-            "Compress matrices into Fragments. Higher tower levels improve throughput, power efficiency and fragment conversion.",
-            "将矩阵稳定压缩为残片。精馏塔等级越高，吞吐、能耗与残片转化效率越好。");
+            "Extracts rectification-chain materials from matrices and purifies chain materials toward higher tiers.",
+            "从矩阵中析出精馏链条物，并继续纯化链条物以尝试获得更高阶材料。");
     }
 
     public static void Create() {

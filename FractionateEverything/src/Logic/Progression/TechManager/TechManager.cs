@@ -116,11 +116,11 @@ public static partial class TechManager {
 
         Register("T物品精馏", "Item Rectification", "物品精馏");
         Register("物品精馏描述",
-            $"Rectification technology can compress matrix-tier items into Fragments, providing a stable side resource for Growth and Focus systems. Higher-stage matrices and a stronger Rectification Tower both improve fragment output efficiency.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"物品精馏科技可以将矩阵层级物品稳定压缩为残片，为成长与聚焦系统提供持续副资源。矩阵层级越高、精馏塔越强，残片转化效率越好。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Rectification technology can extract multi-tier chain materials from matrices and purify those chain materials toward higher tiers. Higher-stage matrices shorten the chain, but rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品精馏科技可以从矩阵中析出多阶链条物，也可以继续纯化链条物以尝试获得更高阶材料。高级矩阵可以缩短链条，但精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品精馏结果",
-            "You have mastered Rectification technology and can now compress matrix-tier items into Fragments.",
-            "你已经掌握了物品精馏技术，可以将矩阵层级物品稳定压缩为残片了。");
+            "You have mastered Rectification technology and can now extract chain materials from matrices.",
+            "你已经掌握了物品精馏技术，可以从矩阵中析出链条物了。");
 
 
         Register("T行星内物流交互", "Planetary Logistics Interaction", "行星内物流交互");

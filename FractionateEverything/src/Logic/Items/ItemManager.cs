@@ -541,6 +541,19 @@ public static class ItemManager {
         return itemId >= IFE残片 && itemId <= IFE理论源点;
     }
 
+    public static int GetRectificationChainLevel(int itemId) {
+        return IsRectificationChainItem(itemId) ? itemId - IFE残片 : -1;
+    }
+
+    public static int GetRectificationChainItemId(int level) {
+        if (level < 0) {
+            level = 0;
+        } else if (level >= RectificationChainItemIds.Length) {
+            level = RectificationChainItemIds.Length - 1;
+        }
+        return RectificationChainItemIds[level];
+    }
+
     /// <summary>
     /// 获取主线矩阵阶段索引。黑雾矩阵按引力阶段处理，用于精馏与成长成本衰减。
     /// </summary>

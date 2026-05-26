@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Process;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
@@ -8,9 +9,19 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 矩阵精馏配方的产出分布逻辑。
+/// 矩阵入口与精馏链纯化配方的产出分布逻辑。
 /// </summary>
 public class RectificationRecipe : BaseRecipe {
+    public enum RectificationRecipeKind {
+        MatrixEntry,
+        ChainPurification,
+    }
+
+    public const float BaseHyperphaseRatio = 0.25f;
+    public const float MaxPlannedHyperphaseRatio = 0.60f;
+    private const float BranchDecay = 0.10f;
+    private const float ChainPurificationOutputCount = 0.50f;
+
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
         I能量矩阵,
@@ -23,90 +34,275 @@ public class RectificationRecipe : BaseRecipe {
 
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
-            int fragmentCount = GetRectificationBaseFragmentYield(matrixId);
-            AddRecipe(new RectificationRecipe(matrixId, 1.0f,
-                [new(1.0f, IFE残片, fragmentCount)],
-                []));
+            AddRecipe(CreateMatrixEntry(matrixId));
         }
+
+        foreach (int itemId in RectificationChainItemIds) {
+            AddRecipe(CreateChainPurification(itemId));
+        }
+    }
+
+    private static RectificationRecipe CreateMatrixEntry(int matrixId) {
+        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixEntry, 1.0f,
+            BuildMatrixEntryOutputs(matrixId), []);
+    }
+
+    private static RectificationRecipe CreateChainPurification(int inputId) {
+        return new RectificationRecipe(inputId, RectificationRecipeKind.ChainPurification, 1.0f,
+            BuildChainPurificationOutputs(inputId, BaseHyperphaseRatio), []);
+    }
+
+    private static List<OutputInfo> BuildMatrixEntryOutputs(int matrixId) {
+        (int mainLevel, int secondLevel, int thirdLevel, float mainRatio, float secondRatio) = matrixId switch {
+            I电磁矩阵 => (0, 1, 8, 0.94f, 0.055f),
+            I能量矩阵 => (2, 3, 8, 0.92f, 0.075f),
+            I结构矩阵 => (4, 5, 8, 0.90f, 0.090f),
+            I信息矩阵 => (6, 7, 8, 0.88f, 0.110f),
+            I引力矩阵 => (8, 9, 10, 0.86f, 0.125f),
+            I宇宙矩阵 => (8, 9, 10, 0.82f, 0.155f),
+            I黑雾矩阵 => (5, 8, 9, 0.88f, 0.105f),
+            _ => (0, 1, 8, 0.95f, 0.045f),
+        };
+
+        return BuildOutputInfos([
+            (mainRatio, GetRectificationChainItemId(mainLevel), GetMatrixEntryOutputBaseCount(matrixId, mainLevel)),
+            (secondRatio, GetRectificationChainItemId(secondLevel),
+                GetMatrixEntryOutputBaseCount(matrixId, secondLevel)),
+            (1.0f - mainRatio - secondRatio, GetRectificationChainItemId(thirdLevel),
+                GetMatrixEntryOutputBaseCount(matrixId, thirdLevel)),
+        ]);
+    }
+
+    private static float GetMatrixEntryOutputBaseCount(int matrixId, int outputLevel) {
+        float baseYield = GetRectificationBaseFragmentYield(matrixId);
+        float chainValue = itemValue[GetRectificationChainItemId(outputLevel)];
+        if (chainValue <= 0f || chainValue >= maxValue) {
+            return 1.0f;
+        }
+
+        float count = baseYield / chainValue;
+        return count < 0.0001f ? 0.0001f : count;
+    }
+
+    private static List<OutputInfo> BuildChainPurificationOutputs(int inputId, float hyperphaseRatio) {
+        int inputLevel = GetRectificationChainLevel(inputId);
+        if (inputLevel < 0) {
+            return [];
+        }
+
+        List<(float ratio, int itemId, float count)> outputs = [];
+        AddDirectionalChainOutputs(outputs, inputLevel, hyperphaseRatio, +1);
+        AddDirectionalChainOutputs(outputs, inputLevel, 1.0f - hyperphaseRatio, -1);
+        return BuildOutputInfos(outputs);
+    }
+
+    private static void AddDirectionalChainOutputs(List<(float ratio, int itemId, float count)> outputs,
+        int inputLevel, float directionRatio, int direction) {
+        if (directionRatio <= 0f) {
+            return;
+        }
+
+        float remaining = directionRatio;
+        float branchRatio = directionRatio * (1.0f - BranchDecay);
+        for (int delta = 1; delta < RectificationChainItemIds.Length && remaining > 0.000001f; delta++) {
+            int targetLevel = inputLevel + direction * delta;
+            bool isTail = targetLevel <= 0 || targetLevel >= RectificationChainItemIds.Length - 1;
+            if (isTail) {
+                AddOrMergeOutput(outputs, remaining, GetRectificationChainItemId(targetLevel),
+                    ChainPurificationOutputCount);
+                break;
+            }
+
+            AddOrMergeOutput(outputs, branchRatio, GetRectificationChainItemId(targetLevel),
+                ChainPurificationOutputCount);
+            remaining -= branchRatio;
+            branchRatio *= BranchDecay;
+        }
+    }
+
+    private static void AddOrMergeOutput(List<(float ratio, int itemId, float count)> outputs, float ratio, int itemId,
+        float count) {
+        if (ratio <= 0f || itemId <= 0) {
+            return;
+        }
+
+        for (int i = 0; i < outputs.Count; i++) {
+            if (outputs[i].itemId == itemId) {
+                (float oldRatio, int oldItemId, float oldCount) = outputs[i];
+                outputs[i] = (oldRatio + ratio, oldItemId, oldCount);
+                return;
+            }
+        }
+        outputs.Add((ratio, itemId, count));
+    }
+
+    private static List<OutputInfo> BuildOutputInfos(List<(float ratio, int itemId, float count)> specs) {
+        List<OutputInfo> outputs = [];
+        float totalRatio = 0f;
+        foreach ((float ratio, int itemId, float count) in specs) {
+            if (ratio <= 0f || itemId <= 0 || count <= 0f) {
+                continue;
+            }
+            outputs.Add(new(ratio, itemId, count));
+            totalRatio += ratio;
+        }
+
+        if (outputs.Count == 0 || totalRatio <= 0f) {
+            outputs.Add(new(1.0f, IFE残片, 1.0f));
+            return outputs;
+        }
+
+        if (totalRatio > 0f && totalRatio < 0.999f || totalRatio > 1.001f) {
+            float scale = 1.0f / totalRatio;
+            for (int i = 0; i < outputs.Count; i++) {
+                OutputInfo info = outputs[i];
+                outputs[i] = new OutputInfo(info.SuccessRatio * scale, info.OutputID, info.OutputCount);
+            }
+        }
+        return outputs;
     }
 
     public override ERecipe RecipeType => ERecipe.Rectification;
     public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
+    public RectificationRecipeKind Kind { get; }
 
-    public RectificationRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
-        List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
+    public override float DestroyRatio => Kind == RectificationRecipeKind.ChainPurification
+        ? 0.0f
+        : base.DestroyRatio;
+
+    public RectificationRecipe(int inputID, RectificationRecipeKind kind, float baseSuccessRatio,
+        List<OutputInfo> outputMain, List<OutputInfo> outputAppend)
+        : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
+        Kind = kind;
+    }
 
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
-        }
-
-        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        outputs = [new(true, IFE残片, fragmentCount)];
+        FractionationOutcome outcome = RollRectificationOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
+            ref fluidInputInc, out inputChange, out ProductOutputInfo product);
+        outputs = outcome == FractionationOutcome.Destroyed
+            ? null
+            : product == null
+                ? ProcessManager.emptyOutputs
+                : [product];
     }
 
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
-        inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
+        FractionationOutcome outcome = RollRectificationOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
+            ref fluidInputInc, out inputChange, out ProductOutputInfo product);
+        if (product != null) {
+            outputs.Add(product.isMainOutput, product.itemId, product.count);
         }
-
-        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        outputs.Add(true, IFE残片, fragmentCount);
-        return FractionationOutcome.Produced;
+        return outcome;
     }
 
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
-        fluidInputInc -= fluidInputIncAvg * batchCount;
+
+        int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
+        int successCount = batchCount - destroyedCount;
+        int inputRemoveCount = batchCount;
+        RollMainOutputs(ref seed, successCount, outputs);
+
+        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
             fluidInputInc = 0;
         }
 
-        int fragmentCount = GetRectificationFragmentYield(InputID, RectificationTower.PlrRatio);
-        outputs.Add(true, IFE残片, fragmentCount * batchCount);
-        int memoryCount = RollMemoryOutputs(ref seed, batchCount, fluidInputIncAvg);
-        outputs.Add(false, IFE记忆源点, memoryCount);
-
         return new FractionationBatchResult {
-            InputRemoveCount = batchCount,
+            InputRemoveCount = inputRemoveCount,
             ConsumedRegisterCount = batchCount,
-            SuccessCount = batchCount,
-            DestroyedCount = 0,
+            SuccessCount = successCount,
+            DestroyedCount = destroyedCount,
             PassThroughCount = 0,
+            PassThroughInc = 0,
         };
     }
 
-    private int RollMemoryOutputs(ref uint seed, int batchCount, int fluidInputIncAvg) {
-        if (!RectificationTower.EnableHyperphaseCompression
-            || batchCount <= 0
-            || InputID != GetCurrentProgressMatrixId() && InputID != I黑雾矩阵) {
-            return 0;
+    private FractionationOutcome RollRectificationOutputs(ref uint seed, float pointsBonus, float successBoost,
+        int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out ProductOutputInfo product) {
+        inputChange = -1;
+        fluidInputInc -= fluidInputIncAvg;
+        if (fluidInputInc < 0) {
+            fluidInputInc = 0;
+        }
+        product = null;
+
+        if (GetRandDouble(ref seed) < DestroyRatio) {
+            return FractionationOutcome.Destroyed;
         }
 
-        float probability = GetMemoryYieldChance(fluidInputIncAvg);
-        return RollBinomialApprox(ref seed, batchCount, probability);
+        OutputInfo outputInfo = RollMainOutputInfo(ref seed);
+        int count = RollOutputCount(ref seed, GetRuntimeOutputCount(outputInfo));
+        if (count <= 0) {
+            return FractionationOutcome.Destroyed;
+        }
+
+        product = new ProductOutputInfo(true, outputInfo.OutputID, count);
+        outputInfo.OutputTotalCount += count;
+        return FractionationOutcome.Produced;
     }
 
-    private static float GetMemoryYieldChance(int fluidInputIncAvg) {
-        // Level 12 后才允许极低频萃取 Memory。Level 6 特质不再额外增加残片件数，
-        // 而是要求使用增产点数来提高萃取进度，避免继续放大残片输出带宽。
-        float chance = 0.0025f;
-        if (RectificationTower.EnableAfterglowExtraction && fluidInputIncAvg >= 4) {
-            chance += 0.0015f;
+    private OutputInfo RollMainOutputInfo(ref uint seed) {
+        double ratio = GetRandDouble(ref seed);
+        float ratioMain = 0.0f;
+        foreach (OutputInfo outputInfo in OutputMain) {
+            ratioMain += outputInfo.SuccessRatio;
+            if (ratio <= ratioMain) {
+                return outputInfo;
+            }
         }
-        if (fluidInputIncAvg >= 8) {
-            chance += 0.001f;
+        return OutputMain[OutputMain.Count - 1];
+    }
+
+    private void RollMainOutputs(ref uint seed, int successCount, ProductOutputBuffer outputs) {
+        int remainingMainCount = successCount;
+        float remainingMainRatio = 1.0f;
+        for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
+            OutputInfo outputInfo = OutputMain[i];
+            int outputHits = i == OutputMain.Count - 1
+                ? remainingMainCount
+                : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
+            remainingMainCount -= outputHits;
+            remainingMainRatio -= outputInfo.SuccessRatio;
+            if (remainingMainRatio <= 0f) {
+                remainingMainRatio = 1.0f;
+            }
+            AddRolledRectificationOutput(ref seed, outputs, outputInfo, outputHits);
         }
-        return chance;
+    }
+
+    public float GetDisplayOutputCount(OutputInfo outputInfo) {
+        return GetRuntimeOutputCount(outputInfo);
+    }
+
+    private float GetRuntimeOutputCount(OutputInfo outputInfo) {
+        if (Kind != RectificationRecipeKind.MatrixEntry) {
+            return outputInfo.OutputCount;
+        }
+        float count = outputInfo.OutputCount * GetStageDecayFactor(InputID) * RectificationTower.PlrRatio;
+        return count < 0.0001f ? 0.0001f : count;
+    }
+
+    private void AddRolledRectificationOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
+        int outputHits) {
+        if (outputHits <= 0) {
+            return;
+        }
+
+        float outputCount = GetRuntimeOutputCount(outputInfo);
+        int baseCount = (int)outputCount;
+        float fractionalCount = outputCount - baseCount;
+        int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
+        if (totalCount <= 0) {
+            return;
+        }
+
+        outputs.Add(true, outputInfo.OutputID, totalCount);
+        outputInfo.OutputTotalCount += totalCount;
     }
 
     #region IModCanSave

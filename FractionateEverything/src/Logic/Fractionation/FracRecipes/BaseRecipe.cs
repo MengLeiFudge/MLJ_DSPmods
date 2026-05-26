@@ -60,7 +60,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率，数值越大时，增产剂对分馏效果越有明显提升
     /// </summary>
-    public float DestroyRatio {
+    public virtual float DestroyRatio {
         get {
             float raw = 0.04f;
             float reduce = GachaGalleryBonusManager.GetDestroyReduction(RecipeType);

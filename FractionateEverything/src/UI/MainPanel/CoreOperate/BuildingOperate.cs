@@ -165,13 +165,13 @@ public static class BuildingOperate {
 
         Register("余辉萃取", "Afterglow Extraction");
         Register("余辉萃取说明",
-            "When the average proliferator points of inputs is at least 4, Memory extraction progress is slightly increased after Hyperphase Compression is unlocked.",
-            "当输入原料平均增产点数不少于4时，超相压缩解锁后的记忆源点萃取进度小幅提高。");
+            "Improves high-order rectification stability. It is reserved for the hyperphase-ratio upgrade path.",
+            "提高高阶精馏稳定性，预留给高阶成相率升级链路。");
 
         Register("超相压缩", "Hyperphase Compression");
         Register("超相压缩说明",
-            "When the input is the current stage matrix or a Dark Fog Matrix, rectification has a low chance to extract Memory in addition to Fragments.",
-            "当输入为当前阶段矩阵或黑雾矩阵时，精馏除残片外有低概率萃取记忆源点。");
+            "Unlocks the late-stage concept of hyperphase compression. Chain purification currently follows the global hyperphase ratio model.",
+            "解锁后期超相压缩概念；当前链条纯化按全局高阶成相率模型结算。");
 
         Register("特质1（+6）：", "Trait 1 (+6): ");
         Register("特质2（+12）：", "Trait 2 (+12): ");

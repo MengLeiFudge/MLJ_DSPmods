@@ -98,6 +98,10 @@ public static class FracRecipeOperate {
         Register("随机", "Random");
         Register("单锁", "Single Lock");
         Register("增产点数", "Proliferator points");
+        Register("矩阵入口", "Matrix entry");
+        Register("链条纯化", "Chain purification");
+        Register("精馏配方不参与成功率加成；矩阵入口保留损毁，链条纯化损毁为0。",
+            "Rectification recipes do not use success-rate bonuses. Matrix entries keep destroy chance; chain purification has no destroy chance.");
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("每个原料平均产出：", "Average output per raw material:");
@@ -334,13 +338,21 @@ public static class FracRecipeOperate {
             ShowTextLine(line++, headerName.WithColor(recipe.MatrixID - I电磁矩阵));
             ShowTextLine(line++, "");// 空行
 
-            if (recipe is RectificationRecipe) {
+            if (recipe is RectificationRecipe rectificationHeaderRecipe) {
+                string kindText = rectificationHeaderRecipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixEntry
+                    ? "矩阵入口".Translate()
+                    : "链条纯化".Translate();
                 ShowTextLine(line++,
-                    $"{"成功率".Translate()} {1.0f:P3}（稳定压缩）".WithColor(Orange));
+                    $"{"成功率".Translate()} {1.0f:P3}（{kindText}）".WithColor(Orange));
                 ShowTextLine(line++,
-                    "精馏塔不参与成功率判定，献祭/成就成功率加成不会改变残片结算。".WithColor(Gray));
-                ShowTextLine(line++,
-                    $"{"损毁率".Translate()} {0.0f:P3}（稳定压缩）".WithColor(Green));
+                    "精馏配方不参与成功率加成；矩阵入口保留损毁，链条纯化损毁为0。".Translate()
+                        .WithColor(Gray));
+                string destroyColorText = rectificationHeaderRecipe.DestroyRatio <= 0f
+                    ? $"{"损毁率".Translate()} {0.0f:P3}"
+                    : $"{"损毁率".Translate()} {rectificationHeaderRecipe.DestroyRatio:P3}";
+                ShowTextLine(line++, destroyColorText.WithColor(rectificationHeaderRecipe.DestroyRatio <= 0f
+                    ? Green
+                    : Red));
             } else {
                 float sacrificeBoost = building?.SuccessBoost() ?? 0f;
                 float progressBoost = Achievements.GetSuccessRateBonus();
@@ -673,9 +685,8 @@ public static class FracRecipeOperate {
 
     private static void ShowRectificationProductLine(int line, RectificationRecipe recipe, OutputInfo info) {
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
-        int fragmentCount = GetRectificationDisplayFragmentCount(recipe.InputID, selectedInc.Value);
-        string count = forceShow || info.ShowOutputCount ? fragmentCount.ToString("F3") : "???";
-        string ratio = forceShow || info.ShowSuccessRatio ? 1.0f.ToString("P3") : "???";
+        string count = forceShow || info.ShowOutputCount ? recipe.GetDisplayOutputCount(info).ToString("F3") : "???";
+        string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
 
         txtProductLeft[line].text = ratio;
         txtProductLeft[line].SetPosition(ProductRatioX, 0f);
@@ -702,15 +713,16 @@ public static class FracRecipeOperate {
         ShowTextLine(line++, "每个原料平均产出：".Translate());
 
         if (recipe is RectificationRecipe rectificationRecipe) {
-            // 精馏配方是稳定压缩：不参与成功率/损毁/双倍/返料公式，直接显示当前条件下的真实残片数。
-            int fragmentCount = GetRectificationDisplayFragmentCount(rectificationRecipe.InputID, selectedInc.Value);
-            btnRecipeInfoIcons[line].gameObject.SetActive(true);
-            btnRecipeInfoIcons[line].Proto = LDB.items.Select(IFE残片);
-            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-            txtRecipeInfo[line].text = $"×{fragmentCount:F3}";
-            txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-            txtProductLeft[line].gameObject.SetActive(false);
-            return line + 1;
+            foreach (OutputInfo info in rectificationRecipe.OutputMain) {
+                btnRecipeInfoIcons[line].gameObject.SetActive(true);
+                btnRecipeInfoIcons[line].Proto = LDB.items.Select(info.OutputID);
+                NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
+                txtRecipeInfo[line].text = $"{info.SuccessRatio:P1}  ×{rectificationRecipe.GetDisplayOutputCount(info):F3}";
+                txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
+                txtProductLeft[line].gameObject.SetActive(false);
+                line++;
+            }
+            return line;
         }
 
         // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
@@ -789,10 +801,6 @@ public static class FracRecipeOperate {
         }
 
         return fracRatio * lockedPlan.OutputCount * mainOutputBonus * repeatMultiplier;
-    }
-
-    private static int GetRectificationDisplayFragmentCount(int inputId, int inputInc) {
-        return GetRectificationFragmentYield(inputId, RectificationTower.PlrRatio);
     }
 
     // ==================== 建筑特殊特质 ====================
