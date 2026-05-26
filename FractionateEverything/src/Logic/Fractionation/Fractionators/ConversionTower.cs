@@ -17,7 +17,7 @@ public static class ConversionTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.7f, 0.6f, 0.8f);
+    public static Color color = new(0.58f, 0.38f, 0.95f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;

@@ -17,7 +17,7 @@ public static class RectificationTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.3f, 0.6f, 0.9f);
+    public static Color color = new(0.18f, 0.46f, 1.0f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;

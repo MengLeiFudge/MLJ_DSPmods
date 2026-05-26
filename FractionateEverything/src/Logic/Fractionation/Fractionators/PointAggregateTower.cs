@@ -18,7 +18,7 @@ public static class PointAggregateTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.2509f, 0.8392f, 1.0f);
+    public static Color color = new(1.0f, 0.72f, 0.18f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;

@@ -17,7 +17,7 @@ public static class MineralReplicationTower {
     private static ItemProto item;
     private static RecipeProto recipe;
     private static ModelProto model;
-    public static Color color = new(0.4f, 1.0f, 0.949f);
+    public static Color color = new(0.22f, 0.9f, 0.38f);
 
     public static int Level = 0;
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
