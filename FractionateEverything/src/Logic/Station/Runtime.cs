@@ -205,6 +205,8 @@ public static partial class StationManager {
                                 break;
                             }
                         }
+
+                        TryAutoSprayStationStore(ref store);
                     }
                 }
             }
@@ -222,56 +224,60 @@ public static partial class StationManager {
     private static void SetTargetCount(this StationComponent stationComponent, int index, int targetCount,
         long maxSlotEnergy) {
         ref StationStore store = ref stationComponent.storage[index];
-        try {
-            if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
-                return;
-            }
+        if (store.count == targetCount || itemValue[store.itemId] == float.MaxValue) {
+            return;
+        }
 
-            ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
-            // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
-            float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
-            if (store.count < targetCount) {
-                // 将数据中心的物品下载到交互站
-                int count = targetCount - store.count;
-                // 总耗电大于剩余电量，修改数量
-                if (cost * count > maxSlotEnergy) {
-                    // 1个都玩不起直接放弃
-                    if (cost > maxSlotEnergy) {
-                        return;
-                    }
-
-                    count = Mathf.FloorToInt(maxSlotEnergy / cost);
+        ItemProto itemProto = LDB.items.Select(IFE行星内物流交互站);
+        // 物品价值(100价值=1000000J=1MJ，即每1价值，耗电10000J)
+        float cost = (float)Math.Sqrt(itemValue[store.itemId]) * 10000 * itemProto.InteractEnergyRatio();
+        if (store.count < targetCount) {
+            // 将数据中心的物品下载到交互站
+            int count = targetCount - store.count;
+            // 总耗电大于剩余电量，修改数量
+            if (cost * count > maxSlotEnergy) {
+                // 1个都玩不起直接放弃
+                if (cost > maxSlotEnergy) {
+                    return;
                 }
 
-                count = TakeItemFromModData(store.itemId, count, out int inc);
-                store.count += count;
-                store.inc += inc;
-                stationComponent.energy -= Mathf.CeilToInt(cost * count);
-                BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
-            } else {
-                // 将交互站的物品上传到数据中心
-                int count = store.count - targetCount;
-                // 总耗电大于剩余电量，修改数量
-                if (cost * count > maxSlotEnergy) {
-                    // 1个都玩不起直接放弃
-                    if (cost > maxSlotEnergy) {
-                        return;
-                    }
+                count = Mathf.FloorToInt(maxSlotEnergy / cost);
+            }
 
-                    count = Mathf.FloorToInt(maxSlotEnergy / cost);
+            count = TakeItemFromModData(store.itemId, count, out int inc);
+            store.count += count;
+            store.inc += inc;
+            stationComponent.energy -= Mathf.CeilToInt(cost * count);
+            BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
+        } else {
+            // 将交互站的物品上传到数据中心
+            int count = store.count - targetCount;
+            // 总耗电大于剩余电量，修改数量
+            if (cost * count > maxSlotEnergy) {
+                // 1个都玩不起直接放弃
+                if (cost > maxSlotEnergy) {
+                    return;
                 }
 
-                int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
-                AddItemToModData(store.itemId, count, inc);
-                stationComponent.energy -= Mathf.CeilToInt(cost * count);
-                BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
+                count = Mathf.FloorToInt(maxSlotEnergy / cost);
             }
+
+            int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
+            AddItemToModData(store.itemId, count, inc);
+            stationComponent.energy -= Mathf.CeilToInt(cost * count);
+            BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
         }
-        finally {
-            if (PlanetaryInteractionStation.Level >= 3) {
-                AddIncToItem(store.count, ref store.inc);
-            }
+    }
+
+    /// <summary>
+    /// 周期性把交互站槽内库存补到 MkIII 增产剂对应的平均 4 点，不再依赖上传/下载是否真实发生。
+    /// </summary>
+    private static void TryAutoSprayStationStore(ref StationStore store) {
+        if (PlanetaryInteractionStation.Level < 3 || store.count <= 0) {
+            return;
         }
+
+        AddIncToItem(store.count, ref store.inc);
     }
 
     /// <summary>
