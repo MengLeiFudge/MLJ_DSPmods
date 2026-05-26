@@ -301,7 +301,8 @@ public static partial class ProcessManager {
         int fluidInputCargoMax = BaseFracFluidInputCargoMax;
         int productOutputMax = runtimeConfig.ProductOutputMax;
         int fluidOutputMax = runtimeConfig.FluidOutputMax;
-        bool moveDirectly = recipe == null || !RecipeGrowthQueries.IsUnlocked(recipe);
+        bool canProcessRecipe = recipe != null && RecipeGrowthQueries.IsUnlocked(recipe);
+        bool moveDirectly = !canProcessRecipe;
         RecipeGrowthContext growthContext = default;
         bool growthContextReady = false;
         bool producedMainThisTick = false;
@@ -338,7 +339,7 @@ public static partial class ProcessManager {
             // 质能裂变 - 矿物复制塔在 Level >= 6 时，维持池中点数在目标值以上；
             // 当池量不足时，批量消耗原料填满点数池（每个原料+25点，零压循环激活时+50点）。
             // 取用时：若平均增产点数不足10，从池中补足至10。
-            if (enableMassEnergyFission && __instance.fluidInputCount > 0) {
+            if (enableMassEnergyFission && canProcessRecipe && __instance.fluidInputCount > 0) {
                 int pointsPerItem = MineralReplicationTower.EnableZeroPressureCycle ? 40 : 25;
                 int poolTarget = __instance.fluidInputCount * 15;
                 int pool = __instance.GetFissionPointPool(factory);
@@ -507,7 +508,8 @@ public static partial class ProcessManager {
         perfStageStart = GetFractionatorPerfTimestamp();
         // 零压循环 - 矿物复制塔在 Level >= 12 时，将产物和流动输出回流到输入
         if (isMineralReplicationTower
-            && MineralReplicationTower.EnableZeroPressureCycle) {
+            && MineralReplicationTower.EnableZeroPressureCycle
+            && canProcessRecipe) {
             // 12 级仍然允许自循环，但内循环缓冲只按 8-stack 设计，避免完全替代外部物流与供料。
             int zeroPressureStack = Math.Min(MineralReplicationTower.MaxStack, ZeroPressureInternalStackCap);
             int fluidInputTarget = MaxBeltSpeed * zeroPressureStack;

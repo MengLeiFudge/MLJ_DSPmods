@@ -25,10 +25,20 @@ class FractionatorFluidOutputStackTests(unittest.TestCase):
     def test_missing_or_locked_recipe_fluid_output_forces_single_stack_passthrough(self):
         text = SOURCE.read_text(encoding="utf-8-sig")
 
-        self.assertIn("bool moveDirectly = recipe == null || !RecipeGrowthQueries.IsUnlocked(recipe);", text)
+        self.assertIn("bool canProcessRecipe = recipe != null && RecipeGrowthQueries.IsUnlocked(recipe);", text)
+        self.assertIn("bool moveDirectly = !canProcessRecipe;", text)
         self.assertIn("enableFracForever && !moveDirectly", text)
         self.assertIn("forceSingleStack: moveDirectly", text)
         self.assertIn("if (forceSingleStack) {\n            return 1;\n        }", text)
+
+    def test_mineral_replication_traits_only_apply_to_processable_recipes(self):
+        text = SOURCE.read_text(encoding="utf-8-sig")
+
+        self.assertIn("if (enableMassEnergyFission && canProcessRecipe && __instance.fluidInputCount > 0)", text)
+        self.assertIn(
+            "if (isMineralReplicationTower\n            && MineralReplicationTower.EnableZeroPressureCycle\n            && canProcessRecipe)",
+            text,
+        )
 
 
 if __name__ == "__main__":
