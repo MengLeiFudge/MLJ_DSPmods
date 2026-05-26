@@ -197,8 +197,7 @@ public static class MarketValueManager {
                && LDB.items.Exist(itemId)
                && GetBaseValue(itemId) > 0f
                && GetBaseValue(itemId) < maxValue
-               && itemId != IFE残片
-               && itemId != IFE记忆源点
+               && !IsRectificationChainItem(itemId)
                && itemId != I沙土;
     }
 

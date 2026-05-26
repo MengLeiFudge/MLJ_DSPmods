@@ -48,7 +48,7 @@ public static class FragmentExchangeManager {
         if (!MarketValueManager.CanParticipateInEconomy(itemId)) {
             return false;
         }
-        return itemId != I沙土 && itemId != IFE残片 && itemId != IFE记忆源点;
+        return itemId != I沙土 && !IsRectificationChainItem(itemId);
     }
 
     public static FragmentQuote GetQuote(int itemId) {

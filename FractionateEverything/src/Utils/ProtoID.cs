@@ -455,7 +455,16 @@ public static partial class Utils {
     internal const int IFE万物分馏商店刷新提示 = 8048;
     internal const int IFE万物分馏科技解锁说明 = 8049;
     internal const int IFE残片 = 8060;
-    internal const int IFE记忆源点 = 8061;
+    internal const int IFE凝缩残片 = 8061;
+    internal const int IFE晶化残片 = 8062;
+    internal const int IFE棱镜残片 = 8063;
+    internal const int IFE回响残片 = 8064;
+    internal const int IFE记忆痕迹 = 8065;
+    internal const int IFE记忆碎晶 = 8066;
+    internal const int IFE记忆核心 = 8067;
+    internal const int IFE记忆源点 = 8068;
+    internal const int IFE纯净源点 = 8069;
+    internal const int IFE理论源点 = 8070;
     internal const int ISM熔炉采矿机A型 = 9446;
     internal const int ISM熔炉采矿机B型 = 9447;
     internal const int ISM化工采矿机C型 = 9448;
