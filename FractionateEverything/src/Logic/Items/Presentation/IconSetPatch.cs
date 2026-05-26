@@ -142,7 +142,8 @@ public static class IconSetPatch {
         TechProto[] dataArray4 = LDB.techs.dataArray;
         int length4 = dataArray4.Length;
         int lastTechId = 0;
-        List<string> iconPathSet = [];
+        uint lastTechIconIndex = 0;
+        Dictionary<string, uint> techIconIndexByPath = [];
         for (int index = length4 - 1; index >= 0; --index) {
             uint num17 = 0;
             TechProto techProto = dataArray4[index];
@@ -152,24 +153,31 @@ public static class IconSetPatch {
                     num17 = __instance.spriteIndexMap[iconSprite];
                 } else {
                     if (techProto.ID > 2000 && techProto.ID == lastTechId - 1) {
+                        num17 = lastTechIconIndex;
                         lastTechId = techProto.ID;
-                        continue;
-                    }
-                    lastTechId = techProto.ID;
-                    if (iconPathSet.Contains(dataArray4[index].IconPath)) {
-                        continue;
-                    }
-                    num17 = ++num1;
-                    if (num17 >= 625U) {
-                        num17 = 0U;
-                        Debug.LogWarning("图标图集空间不足！");
+                    } else if (!string.IsNullOrEmpty(techProto.IconPath)
+                               && techIconIndexByPath.TryGetValue(techProto.IconPath, out uint reusedTechIconIndex)) {
+                        num17 = reusedTechIconIndex;
+                        lastTechId = techProto.ID;
+                        lastTechIconIndex = num17;
                     } else {
-                        int num18 = (int)num17 % 25;
-                        int num19 = (int)num17 / 25;
-                        Graphics.CopyTexture(techProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/, 80/*0x50*/,
-                            __instance.texture, 0, 0, num18 * 80/*0x50*/, num19 * 80/*0x50*/);
+                        lastTechId = techProto.ID;
+                        num17 = ++num1;
+                        if (num17 >= 625U) {
+                            num17 = 0U;
+                            Debug.LogWarning("图标图集空间不足！");
+                        } else {
+                            int num18 = (int)num17 % 25;
+                            int num19 = (int)num17 / 25;
+                            Graphics.CopyTexture(techProto.iconSprite.texture, 0, 0, 0, 0, 80/*0x50*/, 80/*0x50*/,
+                                __instance.texture, 0, 0, num18 * 80/*0x50*/, num19 * 80/*0x50*/);
+                        }
+                        __instance.spriteIndexMap[iconSprite] = num17;
+                        if (!string.IsNullOrEmpty(techProto.IconPath)) {
+                            techIconIndexByPath[techProto.IconPath] = num17;
+                        }
+                        lastTechIconIndex = num17;
                     }
-                    __instance.spriteIndexMap[iconSprite] = num17;
                 }
                 if (!string.IsNullOrEmpty(techProto.IconTag)) {
                     int num20 = (int)num17 % 25;
