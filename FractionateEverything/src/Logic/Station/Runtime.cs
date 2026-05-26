@@ -206,7 +206,6 @@ public static partial class StationManager {
                             }
                         }
 
-                        TryAutoSprayStationStore(ref store);
                     }
                 }
             }
@@ -245,6 +244,9 @@ public static partial class StationManager {
             }
 
             count = TakeItemFromModData(store.itemId, count, out int inc);
+            if (PlanetaryInteractionStation.Level >= 3) {
+                AddIncToDownloadedItem(count, ref inc, PlanetaryInteractionStation.Level >= 12);
+            }
             store.count += count;
             store.inc += inc;
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
@@ -267,17 +269,6 @@ public static partial class StationManager {
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
             BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
         }
-    }
-
-    /// <summary>
-    /// 周期性把交互站槽内库存补到 MkIII 增产剂对应的平均 4 点，不再依赖上传/下载是否真实发生。
-    /// </summary>
-    private static void TryAutoSprayStationStore(ref StationStore store) {
-        if (PlanetaryInteractionStation.Level < 3 || store.count <= 0) {
-            return;
-        }
-
-        AddIncToItem(store.count, ref store.inc);
     }
 
     /// <summary>

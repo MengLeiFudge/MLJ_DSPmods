@@ -41,65 +41,7 @@ public static class ProliferatorPool {
         }
         lock (centerItemCount) {
             int need = targetTotal - itemInc;
-            //如果池内点数不足，尝试用各种增产剂（高级增产剂优先）补充点数
-            //需要考虑自喷涂影响；不足的情况下尽量一次性补充大量点数以减少运算消耗
-            if (leftInc < need) {
-                //i=2: MkIII (4点), i=1: MkII (2点), i=0: MkI (1点)
-                for (int i = 2; i >= 0; i--) {
-                    //本次喷涂预估需要need / plrBasePoints[i] + 1，额外再拿plrBaseUseCounts[i] * 2个
-                    int needCount = need / plrBasePoints[i] + 1 + plrBaseUseCounts[i] * 2;
-                    //取增产剂
-                    int actualTake = TakeItemFromModData(plrIDs[i], needCount, out int actualInc);
-                    if (actualTake == 0) {
-                        continue;
-                    }
-                    if (actualInc >= actualTake * 4) {
-                        // 1. 增产剂平均点数 >= 4 (例如平均 7.5 点)
-                        // 计算高点位 (Ceil) 和 低点位 (Floor)
-                        int highPoint = (actualInc + actualTake - 1) / actualTake;// 向上取整
-                        int lowPoint = highPoint - 1;
-                        // 设 highCount * highPoint + lowCount * lowPoint = actualInc
-                        // 且 highCount + lowCount = actualTake
-                        // 解得：highCount = actualInc - actualTake * lowPoint
-                        int highCount = actualInc - (actualTake * lowPoint);
-                        int lowCount = actualTake - highCount;
-                        leftInc += highCount * plrTotalPoints[i, Math.Min(10, highPoint)];
-                        leftInc += lowCount * plrTotalPoints[i, Math.Min(10, lowPoint)];
-                    } else {
-                        // 2. 增产剂平均点数 < 4
-                        int needToUpgrade = actualTake * 4 - actualInc;
-                        if (leftInc >= needToUpgrade) {
-                            // 2a. 点数池充足，消耗点数将这些增产剂全部“补齐”到 4 点级别
-                            leftInc -= needToUpgrade;
-                            leftInc += actualTake * (plrTotalPoints[i, 4]);
-                        } else {
-                            // 2b. 点数池也不够，执行极限“自喷涂”
-                            // 优先把现有的点数给一部分药剂喷到4点，剩下的药剂没水喷了，执行自喷涂逻辑
-                            // 自喷涂逻辑：消耗该药剂自身的 1 次（即 plrBasePoints[i] 点）来换取全额增产
-                            // 先计算目前 leftInc 能把多少个药剂强行提升到 4 点
-                            // 每提升一个需要：4点 - 该药剂当前平均携带点数
-                            float avgNow = (float)actualInc / actualTake;
-                            float costPerItem = 4.0f - avgNow;
-                            int canUpgradeCount = (int)(leftInc / costPerItem);
-                            if (canUpgradeCount > actualTake) canUpgradeCount = actualTake;
-                            // 剩下的只能靠自喷涂（消耗自身点数）
-                            int selfSprayCount = actualTake - canUpgradeCount;
-                            // 处理提升的部分
-                            leftInc -= (int)(canUpgradeCount * costPerItem);
-                            leftInc += canUpgradeCount * plrTotalPoints[i, 4];
-                            // 处理自喷涂部分：视为0点喷涂，但扣除一次消耗
-                            // 逻辑：(基础次数 * (1 + 0喷涂增益) - 1次自消耗) * 基础点数
-                            // 对应之前定义的 plrTotalPoints[i, 0] 是不扣消耗的，
-                            // 所以此处应为：plrTotalPoints[i, 0] - plrBasePoints[i]
-                            leftInc += selfSprayCount * (plrTotalPoints[i, 4] - plrBasePoints[i]);
-                        }
-                    }
-                    //如果点数池充足，跳出循环
-                    if (leftInc >= need) {
-                        break;
-                    }
-                }
-            }
+            EnsureLeftInc(need);
             //用池内点数补足物品点数
             if (leftInc >= need) {
                 itemInc += need;
@@ -107,6 +49,80 @@ public static class ProliferatorPool {
             } else {
                 itemInc += leftInc;
                 leftInc = 0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 下载到物流交互站的物品先按 1:1 补到 4 点，12 级后再按 1:3 最高补到 10 点。
+    /// </summary>
+    public static void AddIncToDownloadedItem(int itemCount, ref int itemInc, bool allowOverdrive) {
+        if (itemCount <= 0) {
+            return;
+        }
+
+        AddIncToItem(itemCount, ref itemInc);
+        int standardTargetTotal = itemCount * plrBasePoints[2];
+        if (!allowOverdrive || itemInc < standardTargetTotal) {
+            return;
+        }
+
+        int targetTotal = itemCount * 10;
+        if (itemInc >= targetTotal) {
+            return;
+        }
+
+        lock (centerItemCount) {
+            const int overdrivePointCost = 3;
+            int needInc = targetTotal - itemInc;
+            EnsureLeftInc(needInc * overdrivePointCost);
+
+            int addedInc = Math.Min(needInc, leftInc / overdrivePointCost);
+            itemInc += addedInc;
+            leftInc -= addedInc * overdrivePointCost;
+        }
+    }
+
+    private static void EnsureLeftInc(int need) {
+        if (leftInc >= need) {
+            return;
+        }
+
+        // i=2: MkIII (4点), i=1: MkII (2点), i=0: MkI (1点)
+        for (int i = 2; i >= 0; i--) {
+            // 本次喷涂预估需要 need / plrBasePoints[i] + 1，额外再拿 plrBaseUseCounts[i] * 2 个
+            int needCount = need / plrBasePoints[i] + 1 + plrBaseUseCounts[i] * 2;
+            int actualTake = TakeItemFromModData(plrIDs[i], needCount, out int actualInc);
+            if (actualTake == 0) {
+                continue;
+            }
+
+            if (actualInc >= actualTake * 4) {
+                int highPoint = (actualInc + actualTake - 1) / actualTake;// 向上取整
+                int lowPoint = highPoint - 1;
+                int highCount = actualInc - (actualTake * lowPoint);
+                int lowCount = actualTake - highCount;
+                leftInc += highCount * plrTotalPoints[i, Math.Min(10, highPoint)];
+                leftInc += lowCount * plrTotalPoints[i, Math.Min(10, lowPoint)];
+            } else {
+                int needToUpgrade = actualTake * 4 - actualInc;
+                if (leftInc >= needToUpgrade) {
+                    leftInc -= needToUpgrade;
+                    leftInc += actualTake * (plrTotalPoints[i, 4]);
+                } else {
+                    float avgNow = (float)actualInc / actualTake;
+                    float costPerItem = 4.0f - avgNow;
+                    int canUpgradeCount = (int)(leftInc / costPerItem);
+                    if (canUpgradeCount > actualTake) canUpgradeCount = actualTake;
+                    int selfSprayCount = actualTake - canUpgradeCount;
+                    leftInc -= (int)(canUpgradeCount * costPerItem);
+                    leftInc += canUpgradeCount * plrTotalPoints[i, 4];
+                    leftInc += selfSprayCount * (plrTotalPoints[i, 4] - plrBasePoints[i]);
+                }
+            }
+
+            if (leftInc >= need) {
+                break;
             }
         }
     }
