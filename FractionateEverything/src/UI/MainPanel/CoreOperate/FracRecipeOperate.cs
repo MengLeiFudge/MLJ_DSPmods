@@ -97,6 +97,8 @@ public static class FracRecipeOperate {
         Register("产出", "Output");
         Register("随机", "Random");
         Register("单锁", "Single Lock");
+        Register("随机简称", "R", "随");
+        Register("单锁简称", "L", "锁");
         Register("增产点数", "Proliferator points");
         Register("矩阵入口", "Matrix entry");
         Register("链条纯化", "Chain purification");
@@ -421,15 +423,13 @@ public static class FracRecipeOperate {
 
             // 建筑强化效果
             if (building != null) {
-                ShowIconLine(line++, building,
-                    $"{"建筑强化加成".Translate()} {building.name}  {"等级".Translate()} +{building.Level()}");
+                ShowTextLine(line++, "建筑强化加成".Translate().WithColor(Orange));
+                ShowIconLine(line++, building, $"{building.name}  {"等级".Translate()} +{building.Level()}");
 
-                ShowTextLine(line++,
-                    $"{"堆叠".Translate()} x{building.MaxStack()}  "
-                    + $"{"能耗比".Translate()} {building.EnergyRatio():P0}");
+                ShowTextLine(line++, $"{"堆叠".Translate()} x{building.MaxStack()}");
+                ShowTextLine(line++, $"{"能耗比".Translate()} {building.EnergyRatio():P0}");
 
-                ShowTextLine(line++,
-                    $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
+                ShowTextLine(line++, $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
 
                 float sBoost = building.SuccessBoost();
                 ShowTextLine(line++,
@@ -681,7 +681,7 @@ public static class FracRecipeOperate {
         btnRecipeInfoIcons[line].Proto = itemProto;
         NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
-        txtRecipeInfo[line].text = $"{"随机".Translate()}×{randomCount}  {"单锁".Translate()}×{lockedCount}";
+        txtRecipeInfo[line].text = $"{ShortRandomLabel()}×{randomCount}  {ShortLockLabel()}×{lockedCount}";
         txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
     }
 
@@ -784,7 +784,7 @@ public static class FracRecipeOperate {
             NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
 
             txtRecipeInfo[line].text = conversionRecipe != null && lockedCnt >= 0f
-                ? $"{"随机".Translate()}×{outCount}  {"单锁".Translate()}×{lockedOutCount}"
+                ? $"{ShortRandomLabel()}×{outCount}  {ShortLockLabel()}×{lockedOutCount}"
                 : $"×{outCount}";
             txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
 
@@ -869,4 +869,8 @@ public static class FracRecipeOperate {
 
     private static string FeatureStatus(bool enabled) =>
         enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
+
+    private static string ShortRandomLabel() => "随机简称".Translate();
+
+    private static string ShortLockLabel() => "单锁简称".Translate();
 }
