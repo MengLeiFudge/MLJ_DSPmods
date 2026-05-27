@@ -51,6 +51,7 @@ public static class MainWindow {
         Register("切换到旧版主面板", "Switch to legacy main panel");
         Register("生产管理", "Production Management");
         FracRecipeOperate.AddTranslations();
+        GlobalGrowthOperate.AddTranslations();
         VanillaRecipeOperate.AddTranslations();
         BuildingOperate.AddTranslations();
         Register("资源管理", "Resource Management");
@@ -79,6 +80,7 @@ public static class MainWindow {
 
     public static void LoadConfig(ConfigFile configFile) {
         FracRecipeOperate.LoadConfig(configFile);
+        GlobalGrowthOperate.LoadConfig(configFile);
         VanillaRecipeOperate.LoadConfig(configFile);
         BuildingOperate.LoadConfig(configFile);
 

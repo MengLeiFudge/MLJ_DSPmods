@@ -32,6 +32,7 @@ public static class MainWindowPageRegistry {
 
     private static readonly MainWindowPageDefinition[] allPages = [
         new(CoreOperateCategoryName, "分馏配方", FracRecipeOperate.CreateUI, FracRecipeOperate.UpdateUI),
+        new(CoreOperateCategoryName, "全局成长", GlobalGrowthOperate.CreateUI, GlobalGrowthOperate.UpdateUI),
         new(CoreOperateCategoryName, "原版配方", VanillaRecipeOperate.CreateUI, VanillaRecipeOperate.UpdateUI),
         new(CoreOperateCategoryName, "建筑操作", BuildingOperate.CreateUI, BuildingOperate.UpdateUI),
 

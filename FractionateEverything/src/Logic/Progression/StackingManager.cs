@@ -41,6 +41,18 @@ public static class StackingManager {
         ? Math.Max(BaseUnlockedMaxStack, ClampConfiguredMaxStack(configuredMaxStack))
         : LockedMaxStack;
 
+    public static bool CanUpgradeStack() => IsUnlocked && configuredMaxStack < AbsoluteMaxStack;
+
+    public static bool UpgradeStack() {
+        if (!CanUpgradeStack()) {
+            return false;
+        }
+
+        ConfiguredMaxStack = configuredMaxStack + 1;
+        SyncRuntimeState();
+        return true;
+    }
+
     public static int GetFractionatorMaxStack() => CurrentMaxStack;
 
     public static int GetLogisticStationMaxStack() => CurrentMaxStack;
