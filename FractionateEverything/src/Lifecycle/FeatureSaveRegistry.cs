@@ -33,6 +33,7 @@ public static class FeatureSaveRegistry {
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
+        VanillaRecipeManager.SyncRuntimeStateAfterImport();
         TechManager.RequestLoadTimeRecipeBaselineApply();
         TechManager.TryApplyLoadTimeRecipeBaselines();
     }
