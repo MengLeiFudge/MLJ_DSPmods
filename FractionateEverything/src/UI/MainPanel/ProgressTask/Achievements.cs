@@ -15,7 +15,6 @@ using FE.UI.MainPanel.DrawGrowth;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.UI.Layout.GridDsl;
 using static FE.Logic.Gacha.GachaManager;
 using static FE.Logic.Fractionation.Process.ProcessManager;
@@ -766,7 +765,6 @@ public static class Achievements {
         unlocked[index] = true;
         claimed[index] = true;
         MarkBonusSummaryDirty();
-        achievements[index].GrantReward?.Invoke();
         DevelopmentDiary.TryUnlockRandomFragmentFromAchievement();
 
         if (showPopup) {
@@ -1171,57 +1169,7 @@ public static class Achievements {
         rewards.Add(string.Format(key.Translate(), percent.ToString("0.##")));
     }
 
-    private static void GrantRewardByKey(string rewardKey) {
-        switch (rewardKey) {
-            case "成就奖励-残片200":
-                AddItemToModData(IFE残片, 200, 0, true);
-                break;
-            case "成就奖励-残片300":
-                AddItemToModData(IFE残片, 300, 0, true);
-                break;
-            case "成就奖励-残片500":
-            case "成就奖励-配方核心1":
-                AddItemToModData(IFE残片, 500, 0, true);
-                break;
-            case "成就奖励-残片800":
-                AddItemToModData(IFE残片, 800, 0, true);
-                break;
-            case "成就奖励-残片1000":
-            case "成就奖励-配方核心3":
-                AddItemToModData(IFE残片, 1000, 0, true);
-                break;
-            case "成就奖励-残片2000":
-                AddItemToModData(IFE残片, 2000, 0, true);
-                break;
-            case "成就奖励-当前阶段矩阵2":
-                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 2, 0, true);
-                break;
-            case "成就奖励-当前阶段矩阵4":
-                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 4, 0, true);
-                break;
-            case "成就奖励-当前阶段矩阵8":
-                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 8, 0, true);
-                break;
-            case "成就奖励-当前阶段矩阵16":
-                AddItemToModData(GachaService.GetCurrentDrawMatrixId(), 16, 0, true);
-                break;
-            case "成就奖励-源点1":
-                AddItemToModData(IFE记忆源点, 1, 0, true);
-                break;
-            case "成就奖励-源点2":
-                AddItemToModData(IFE记忆源点, 2, 0, true);
-                break;
-            case "成就奖励-源点3":
-                AddItemToModData(IFE记忆源点, 3, 0, true);
-                break;
-            case "成就奖励-源点4":
-                AddItemToModData(IFE记忆源点, 4, 0, true);
-                break;
-            case "成就奖励-源点5":
-                AddItemToModData(IFE记忆源点, 5, 0, true);
-                break;
-        }
-    }
+    private static void GrantRewardByKey(string rewardKey) { }
 
     private static Color GetTierColor(ETier tier) {
         return tier switch {

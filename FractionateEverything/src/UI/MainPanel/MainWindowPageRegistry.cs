@@ -37,9 +37,9 @@ public static class MainWindowPageRegistry {
 
         new(ResourceInteractionCategoryName, "物品交互", ItemInteraction.CreateUI, ItemInteraction.UpdateUI),
         new(ResourceInteractionCategoryName, "市场总览", ResourceOverview.CreateUI, ResourceOverview.UpdateUI),
-        new(ResourceInteractionCategoryName, "市场板", MarketBoard.CreateUI, MarketBoard.UpdateUI),
+        new(ResourceInteractionCategoryName, "限时订单", MarketBoard.CreateUI, MarketBoard.UpdateUI),
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI),
-        new(ResourceInteractionCategoryName, "残片兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI),
+        new(ResourceInteractionCategoryName, "稳定兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI),
 
         new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI),
         new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI),

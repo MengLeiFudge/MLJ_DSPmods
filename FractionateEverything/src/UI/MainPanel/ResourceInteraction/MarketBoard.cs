@@ -42,7 +42,7 @@ public static class MarketBoard {
     private static readonly OfferRow[] rows = new OfferRow[RowCount];
 
     public static void AddTranslations() {
-        Register("市场板", "Market Board");
+        Register("市场板", "Limited Orders", "限时订单");
         Register("交易", "Trade");
         Register("订单刷新", "Order Refresh");
         Register("补给刷新", "Supply Refresh", "补给刷新");
@@ -62,7 +62,7 @@ public static class MarketBoard {
                 rows: [Px(PageLayout.HeaderHeight), Px(72f), 1],
                 rowGap: PageLayout.Gap,
                 children: [
-                    Header("市场板", objectName: "market-board-header", pos: (0, 0),
+                    Header("残片市场", objectName: "market-board-header", pos: (0, 0),
                         onBuilt: refs => {
                             header = refs;
                             txtExpire = refs.Summary;
@@ -141,8 +141,8 @@ public static class MarketBoard {
         if (ticks < 0) {
             ticks = 0;
         }
-        header.Title.text = "市场板".Translate().WithColor(Orange);
-        txtExpire.text = $"{"补给刷新".Translate()}：{FormatTicks(ticks)}";
+        header.Title.text = "残片市场".Translate().WithColor(Orange);
+        txtExpire.text = $"{"市场板".Translate()} / {"补给刷新".Translate()}：{FormatTicks(ticks)}";
         txtBoardTitle.text = "补给概览".Translate().WithColor(Orange);
         int shortageCount = MarketBoardManager.ActiveOffers.Count(offer =>
             offer.OfferType == MarketBoardManager.MarketOfferType.SellToPlayer);

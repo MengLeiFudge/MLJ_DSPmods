@@ -48,7 +48,9 @@ public static class FragmentExchangeManager {
         if (!MarketValueManager.CanParticipateInEconomy(itemId)) {
             return false;
         }
-        return itemId != I沙土 && !IsRectificationChainItem(itemId);
+        return itemId != I沙土
+               && itemId != GetCurrentProgressMatrixId()
+               && !IsRectificationChainItem(itemId);
     }
 
     public static FragmentQuote GetQuote(int itemId) {
