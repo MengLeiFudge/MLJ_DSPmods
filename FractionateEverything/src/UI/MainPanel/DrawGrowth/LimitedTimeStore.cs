@@ -379,6 +379,9 @@ public static class LimitedTimeStore {
     }
 
     private static string GetOfferRewardText(GachaGrowthOffer offer) {
+        if (GachaService.TryGetGrowthOfferMaxedFragmentPreview(offer, out int fragmentCount)) {
+            return $"已满级，兑换后转为残片 x{fragmentCount}".WithColor(Gold);
+        }
         if (GachaService.IsDarkFogCatchupOffer(offer)) {
             return "配方成长";
         }

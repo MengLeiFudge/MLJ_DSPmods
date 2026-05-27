@@ -46,6 +46,12 @@ public static partial class GachaService {
         }
 
         if (IsDarkFogCatchupOffer(offer)) {
+            if (TryGetGrowthOfferMaxedFragmentPreview(offer, out int fragmentReward)) {
+                AddItemToModData(IFE残片, fragmentReward, 0, true);
+                reward = new GachaRewardResolution(GachaRewardType.DuplicateRecipeFragments, IFE残片, fragmentReward);
+                return true;
+            }
+
             int appliedRecipeCount = RecipeGrowthExecutor.ApplyDarkFogCatchupByItem(
                 offer.OutputId,
                 offer.OutputCount,
@@ -90,6 +96,53 @@ public static partial class GachaService {
         AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
         reward = new GachaRewardResolution(GachaRewardType.ItemGranted, offer.OutputId, offer.OutputCount);
         return true;
+    }
+
+    public static bool TryGetGrowthOfferMaxedFragmentPreview(GachaGrowthOffer offer, out int fragmentCount) {
+        fragmentCount = 0;
+        if (IsDarkFogRecipeGrowthOffer(offer)) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(offer.RecipeType, offer.OutputId);
+            if (recipe == null || !RecipeGrowthQueries.IsMaxed(recipe)) {
+                return false;
+            }
+
+            fragmentCount = GetDuplicateRecipeFragmentReward();
+            return true;
+        }
+
+        if (!IsDarkFogCatchupOffer(offer)) {
+            return false;
+        }
+
+        int affectedRecipeCount = 0;
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+            if (recipe.InputID != offer.OutputId
+                || family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
+                continue;
+            }
+
+            affectedRecipeCount++;
+            if (!RecipeGrowthQueries.IsMaxed(recipe)) {
+                return false;
+            }
+        }
+
+        if (affectedRecipeCount <= 0) {
+            return false;
+        }
+
+        fragmentCount = affectedRecipeCount * GetDuplicateRecipeFragmentReward();
+        return true;
+    }
+
+    private static int GetDuplicateRecipeFragmentReward() {
+        bool rectificationFocus = GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy;
+        if (GachaManager.IsSpeedrunMode) {
+            return rectificationFocus ? 35 : 25;
+        }
+
+        return rectificationFocus ? 20 : 15;
     }
 
     private static IReadOnlyList<GachaGrowthOffer> BuildNormalGrowthOffers() {
