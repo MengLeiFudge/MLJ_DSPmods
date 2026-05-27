@@ -65,8 +65,8 @@ public static class FracRecipeOperate {
 
     // 产物行布局（格式：概率 | 图标 | 数量）
     private const float ProductRatioX = 0f;// 左侧概率文本X
-    private const float ProductIconX = 72f;// 物品图标X（概率文本右侧）
-    private const float ProductTextX = 100f;// 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
+    private const float ProductIconX = 88f;// 物品图标X（概率文本右侧）
+    private const float ProductTextX = 120f;// 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
 
     // ==================== UI 元素 ====================
 
@@ -200,7 +200,7 @@ public static class FracRecipeOperate {
                         strong: true,
                         onBuilt: root => tab = root,
                         rows: BuildContentRows(),
-                        cols: [Px(600f), Fr(1)],
+                        cols: [Fr(5), Fr(4)],
                         rowGap: 0f,
                         columnGap: 20f,
                         children: [
@@ -275,7 +275,7 @@ public static class FracRecipeOperate {
         for (int i = 0; i < InfoLineCount; i++) {
             int index = i;
             int row = i + 2;
-            nodes.Add(Grid(pos: (row, 0), cols: [Px(72f), Px(24f), Px(24f), Fr(1)], children: [
+            nodes.Add(Grid(pos: (row, 0), cols: [Px(88f), Px(24f), Px(24f), Fr(1)], children: [
                 TextNode("", 15, onBuilt: text => {
                         txtRecipeInfo[index] = text;
                         text.rectTransform.sizeDelta = new Vector2(560f, LineHeight);
@@ -426,8 +426,10 @@ public static class FracRecipeOperate {
 
                 ShowTextLine(line++,
                     $"{"堆叠".Translate()} x{building.MaxStack()}  "
-                    + $"{"能耗比".Translate()} {building.EnergyRatio():P0}  "
-                    + $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
+                    + $"{"能耗比".Translate()} {building.EnergyRatio():P0}");
+
+                ShowTextLine(line++,
+                    $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
 
                 float sBoost = building.SuccessBoost();
                 ShowTextLine(line++,

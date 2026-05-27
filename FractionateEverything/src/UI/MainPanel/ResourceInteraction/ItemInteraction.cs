@@ -53,6 +53,7 @@ public static class ItemInteraction {
     private static RectTransform tab;
 
     private static ConfigEntry<bool> ShowNotStoredItemEntry;
+    private static ConfigEntry<int> SelectedFilterMaskEntry;
     private static int SelectedItemID;
     private static int _currentPage;
 
@@ -84,6 +85,11 @@ public static class ItemInteraction {
 
     public static void LoadConfig(ConfigFile configFile) {
         ShowNotStoredItemEntry = configFile.Bind("Item Interaction", "Show Not Stored Item", false, "是否显示未存储的物品。");
+        SelectedFilterMaskEntry = configFile.Bind("Item Interaction", "Selected Filter Mask", 0,
+            "物品交互页面的类型筛选位掩码。");
+        if (SelectedFilterMaskEntry.Value < 0) {
+            SelectedFilterMaskEntry.Value = 0;
+        }
     }
 
     public static void CreateUI(MyWindow wnd, RectTransform trans) {
@@ -168,18 +174,24 @@ public static class ItemInteraction {
             int row = i / FilterColumnCount;
             int col = i % FilterColumnCount;
             int filterIndex = i;
-            nodes.Add(CheckBoxNode(false, ItemTypeFilters[i].labelKey, 14,
+            nodes.Add(CheckBoxNode(IsFilterSelected(filterIndex), ItemTypeFilters[i].labelKey, 14,
                 onBuilt: cb => {
                     _typeFilterChecks[filterIndex] = cb;
-                    cb.OnChecked += () => { _currentPage = 0; };
+                    cb.OnChecked += () => {
+                        SaveSelectedFilterMask();
+                        _currentPage = 0;
+                    };
                 },
                 pos: (row + 1, col), objectName: $"item-interaction-filter-{filterIndex}"));
         }
 
-        nodes.Add(CheckBoxNode(false, "万物分馏", 14,
+        nodes.Add(CheckBoxNode(IsFilterSelected(ItemTypeFilters.Length), "万物分馏", 14,
             onBuilt: cb => {
                 _fractionateGroupCheckBox = cb;
-                cb.OnChecked += () => { _currentPage = 0; };
+                cb.OnChecked += () => {
+                    SaveSelectedFilterMask();
+                    _currentPage = 0;
+                };
             },
             pos: (3, 3), objectName: "item-interaction-filter-fractionate"));
 
@@ -329,6 +341,30 @@ public static class ItemInteraction {
         return false;
     }
 
+    private static bool IsFilterSelected(int index) {
+        int mask = SelectedFilterMaskEntry?.Value ?? 0;
+        return (mask & (1 << index)) != 0;
+    }
+
+    private static void SaveSelectedFilterMask() {
+        if (SelectedFilterMaskEntry == null) {
+            return;
+        }
+
+        int mask = 0;
+        for (int i = 0; i < _typeFilterChecks.Length; i++) {
+            if (_typeFilterChecks[i] != null && _typeFilterChecks[i].Checked) {
+                mask |= 1 << i;
+            }
+        }
+
+        if (_fractionateGroupCheckBox != null && _fractionateGroupCheckBox.Checked) {
+            mask |= 1 << ItemTypeFilters.Length;
+        }
+
+        SelectedFilterMaskEntry.Value = mask;
+    }
+
     private static void ClearAllGroupFilters() {
         for (int i = 0; i < _typeFilterChecks.Length; i++) {
             if (_typeFilterChecks[i] != null) {
@@ -339,6 +375,7 @@ public static class ItemInteraction {
         if (_fractionateGroupCheckBox != null) {
             _fractionateGroupCheckBox.Checked = false;
         }
+        SaveSelectedFilterMask();
         _currentPage = 0;
     }
 

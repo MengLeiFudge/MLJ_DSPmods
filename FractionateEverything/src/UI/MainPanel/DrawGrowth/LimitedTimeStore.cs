@@ -104,7 +104,7 @@ public static class LimitedTimeStore {
                         children: BuildGrowthResourceNodes()),
                     ContentCard(pos: (2, 0), objectName: "growth-store-offer-card",
                         rows: BuildGrowthOfferRows(),
-                        cols: [Fr(1), Px(44f), Px(44f), Fr(1), Px(44f), Fr(2), Fr(1)],
+                        cols: [Fr(1), Px(44f), Px(44f), Px(24f), Px(44f), Fr(3), Fr(1)],
                         rowGap: 4f,
                         columnGap: 8f,
                         children: BuildGrowthOfferNodes()),
@@ -208,11 +208,10 @@ public static class LimitedTimeStore {
                 pos: (rowPos, 3), objectName: $"growth-store-extra-cost-{rowIndex}"));
             nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => row.BtnRewardIcon = btn,
                 pos: (rowPos, 4), objectName: $"growth-store-reward-icon-{rowIndex}"));
-            nodes.Add(TextNode("", 13, wrap: true, onBuilt: text => row.TxtReward = text,
+            nodes.Add(TextNode("", 12, wrap: true, onBuilt: text => row.TxtReward = text,
                 pos: (rowPos, 5), objectName: $"growth-store-reward-{rowIndex}"));
             nodes.Add(TextNode("", 12, wrap: true, onBuilt: text => row.TxtDetail = text,
-                pos: (rowPos, 5), margin: Inset(0f, 18f, 0f, 0f),
-                objectName: $"growth-store-detail-{rowIndex}"));
+                pos: (rowPos, 5), objectName: $"growth-store-detail-{rowIndex}"));
             nodes.Add(ButtonNode("兑换", fontSize: 13, onBuilt: btn => row.BtnExchange = btn,
                 onClick: () => ExchangeOffer(row),
                 pos: (rowPos, 6), objectName: $"growth-store-exchange-{rowIndex}"));
@@ -316,7 +315,7 @@ public static class LimitedTimeStore {
                 growthPage.Rows[i].TxtExtraCost.gameObject.SetActive(visible);
                 growthPage.Rows[i].BtnRewardIcon.gameObject.SetActive(visible);
                 growthPage.Rows[i].TxtReward.gameObject.SetActive(visible);
-                growthPage.Rows[i].TxtDetail.gameObject.SetActive(visible);
+                growthPage.Rows[i].TxtDetail.gameObject.SetActive(false);
                 growthPage.Rows[i].BtnExchange.gameObject.SetActive(visible);
                 if (!visible) {
                     continue;
@@ -338,8 +337,8 @@ public static class LimitedTimeStore {
                 }
                 growthPage.Rows[i].BtnRewardIcon.Proto = LDB.items.Select(offer.OutputId);
                 growthPage.Rows[i].BtnRewardIcon.SetCount(offer.OutputCount);
-                growthPage.Rows[i].TxtReward.text = GetOfferRewardText(offer);
-                growthPage.Rows[i].TxtDetail.text = GetOfferDetailText(offer);
+                growthPage.Rows[i].TxtReward.text = GetOfferRowText(offer);
+                growthPage.Rows[i].TxtDetail.text = "";
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost
                               && (offer.ExtraCostItemId <= 0
@@ -371,6 +370,12 @@ public static class LimitedTimeStore {
 
     private static string GetCurrentFocusName() {
         return GachaService.GetFocusName(GachaManager.CurrentFocus);
+    }
+
+    private static string GetOfferRowText(GachaGrowthOffer offer) {
+        string reward = GetOfferRewardText(offer);
+        string detail = GetOfferDetailText(offer);
+        return string.IsNullOrEmpty(reward) ? detail : $"{reward}。{detail}";
     }
 
     private static string GetOfferRewardText(GachaGrowthOffer offer) {

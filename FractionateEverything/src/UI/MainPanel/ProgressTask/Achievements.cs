@@ -940,7 +940,7 @@ public static class Achievements {
                         pos: (2, 0),
                         objectName: "achievements-list-card",
                         rows: BuildAchievementListRows(),
-                        cols: [Fr(220), Fr(460), Px(42f), Fr(120), Fr(180)],
+                        cols: [Fr(220), Fr(420), Px(42f), Fr(220), Fr(110)],
                         rowGap: 6f,
                         columnGap: 8f,
                         children: BuildAchievementListNodes()),
@@ -993,7 +993,7 @@ public static class Achievements {
                 pos: (row, 1), objectName: $"txtAchievementDesc{slot}"));
             nodes.Add(ImageButtonNode(size: 40f, onBuilt: btn => rewardIcons[slot] = btn,
                 pos: (row, 2), objectName: $"txtAchievementRewardIcon{slot}"));
-            nodes.Add(TextNode("动态刷新", 13, onBuilt: text => txtAchievementRewards[slot] = text,
+            nodes.Add(TextNode("动态刷新", 13, wrap: true, onBuilt: text => txtAchievementRewards[slot] = text,
                 pos: (row, 3), objectName: $"txtAchievementReward{slot}"));
             nodes.Add(TextNode("动态刷新", 13, onBuilt: text => txtAchievementStates[slot] = text,
                 pos: (row, 4), objectName: $"txtAchievementState{slot}"));

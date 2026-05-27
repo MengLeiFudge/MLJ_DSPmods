@@ -160,7 +160,7 @@ public static class FracStatistic {
         };
         for (int i = 0; i < lines.Length; i++) {
             int index = i;
-            nodes.Add(TextNode("", 13, onBuilt: text => lines[index] = text,
+            nodes.Add(TextNode("", 13, anchor: TextAnchor.MiddleLeft, wrap: true, onBuilt: text => lines[index] = text,
                 pos: (index + 1, 0), objectName: $"{keyPrefix}{index}"));
         }
 
@@ -230,7 +230,7 @@ public static class FracStatistic {
         long directed = GetItemTotalCount(IFE分馏塔定向原胚);
         long total = interaction + mineral + point + conversion + rectification + directed;
         return
-            $"{total}  (交互 {interaction} / 复制 {mineral} / 聚集 {point} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed})";
+            $"{total}\n交互 {interaction} / 复制 {mineral} / 聚集 {point} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed}";
     }
 
     private static long GetBuildingExpTotal() {
