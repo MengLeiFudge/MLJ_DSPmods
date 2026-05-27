@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Station.Definitions;
+using FE.Logic.Progression;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -17,16 +16,7 @@ public static class MonitorManager {
     private const int VanillaMonitorMaxCargoPerSecond = 120;
     private const int VanillaMonitorMaxTargetCargoBytes = 72000;
 
-    public static int GetMonitorMaxStack() {
-        int maxStack = InteractionTower.MaxStack;
-        maxStack = Math.Max(maxStack, MineralReplicationTower.MaxStack);
-        maxStack = Math.Max(maxStack, PointAggregateTower.MaxStack);
-        maxStack = Math.Max(maxStack, ConversionTower.MaxStack);
-        maxStack = Math.Max(maxStack, RectificationTower.MaxStack);
-        maxStack = Math.Max(maxStack, PlanetaryInteractionStation.MaxStack);
-        maxStack = Math.Max(maxStack, InterstellarInteractionStation.MaxStack);
-        return Math.Max(VanillaMonitorMaxStack, maxStack);
-    }
+    public static int GetMonitorMaxStack() => Math.Max(VanillaMonitorMaxStack, StackingManager.CurrentMaxStack);
 
     public static int GetMonitorMaxCargoPerSecond() => VanillaMonitorMaxCargoPerSecond
                                                        / VanillaMonitorMaxStack

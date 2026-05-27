@@ -43,6 +43,7 @@ public static class FeatureBootstrap {
         TechManager.AddTechs();
         // 添加指引手册
         TutorialManager.AddTutorials();
+        StackingManager.ApplyVanillaTechProtoOverrides();
     }
 
     public static void PostAddData() {

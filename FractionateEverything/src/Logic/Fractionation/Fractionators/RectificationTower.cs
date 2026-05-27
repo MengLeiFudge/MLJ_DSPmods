@@ -2,6 +2,7 @@
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Progression;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Fractionation.Fractionators.BuildingGrowthService;
@@ -23,7 +24,7 @@ public static class RectificationTower {
     public static bool EnableFluidEnhancement => Level >= LevelThresholdFluidEnhancement;
     public static bool EnableAfterglowExtraction => Level >= LevelThresholdTrait1;
     public static bool EnableHyperphaseCompression => Level >= LevelThresholdTrait2;
-    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static int MaxStack => StackingManager.GetFractionatorMaxStack();
     public static float EnergyRatio => GetDefaultEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;

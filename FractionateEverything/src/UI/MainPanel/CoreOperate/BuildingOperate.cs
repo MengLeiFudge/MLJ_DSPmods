@@ -5,6 +5,7 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Progression;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -463,7 +464,7 @@ public static class BuildingOperate {
         return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"增产".Translate()}×{LevelToPlrRatio(level):F1}";
     }
 
-    private static int LevelToMaxStack(int level) => BuildingGrowthService.GetDefaultMaxStackByLevel(level);
+    private static int LevelToMaxStack(int level) => StackingManager.CurrentMaxStack;
 
     private static float LevelToEnergyRatio(int level) => BuildingGrowthService.GetDefaultEnergyRatioByLevel(level);
 

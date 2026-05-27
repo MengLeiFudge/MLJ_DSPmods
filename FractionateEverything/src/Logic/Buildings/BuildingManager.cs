@@ -2,6 +2,7 @@
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Process;
+using FE.Logic.Progression;
 using FE.Logic.Station.Definitions;
 using HarmonyLib;
 using UnityEngine;
@@ -71,8 +72,8 @@ public static partial class BuildingManager {
         foreach (ModelProto modelProto in LDB.models.dataArray) {
             if (modelProto.prefabDesc.isFractionator) {
                 modelProto.prefabDesc.fracFluidInputMax = BaseFracFluidInputCargoMax;
-                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax * 12 / 4;//todo: 改为全局
-                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax * 12 / 4;//todo: 改为全局
+                modelProto.prefabDesc.fracProductOutputMax = BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4;
+                modelProto.prefabDesc.fracFluidOutputMax = BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4;
             }
         }
     }
@@ -84,8 +85,8 @@ public static partial class BuildingManager {
     [HarmonyPatch(typeof(FractionatorComponent), nameof(FractionatorComponent.Import))]
     public static void FractionatorComponent_Import_Postfix(ref FractionatorComponent __instance) {
         __instance.fluidInputMax = BaseFracFluidInputCargoMax;
-        __instance.productOutputMax = BaseFracProductOutputMax * 12 / 4;//todo: 改为全局
-        __instance.fluidOutputMax = BaseFracFluidOutputMax * 12 / 4;//todo: 改为全局
+        __instance.productOutputMax = BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4;
+        __instance.fluidOutputMax = BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4;
     }
 
     /// <summary>
@@ -105,7 +106,7 @@ public static partial class BuildingManager {
             IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
             IFE精馏塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
-            _ => BaseFracProductOutputMax * 12 / 4//todo: 改为全局
+            _ => BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
 
@@ -119,7 +120,7 @@ public static partial class BuildingManager {
             IFE点数聚集塔 => BaseFracFluidOutputMax * Mathf.Max(1, PointAggregateTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
             IFE精馏塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
-            _ => BaseFracFluidOutputMax * 12 / 4//todo: 改为全局
+            _ => BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
 

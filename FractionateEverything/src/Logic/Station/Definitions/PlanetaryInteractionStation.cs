@@ -2,6 +2,7 @@
 using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
+using FE.Logic.Progression;
 using UnityEngine;
 using static FE.FractionateEverything;
 using static FE.Logic.Fractionation.Fractionators.BuildingGrowthService;
@@ -20,7 +21,7 @@ public static class PlanetaryInteractionStation {
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
     public static int Level = 0;
-    public static int MaxStack => GetDefaultMaxStackByLevel(Level);
+    public static int MaxStack => StackingManager.GetLogisticStationMaxStack();
     public static float InteractEnergyRatio => GetStationInteractEnergyRatioByLevel(Level);
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;

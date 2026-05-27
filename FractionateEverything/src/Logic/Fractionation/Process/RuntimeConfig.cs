@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Progression;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Process;
@@ -65,8 +66,8 @@ public static partial class ProcessManager {
         float ratio = MaxBeltSpeed / 30.0f;
         PrefabDesc desc = LDB.models.Select(M分馏塔).prefabDesc;
         BaseFracFluidInputCargoMax = (int)(desc.fracFluidInputMax * ratio);
-        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio * 12 / 4);//todo: 最大堆叠12改为全局
-        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio * 12 / 4);
+        BaseFracProductOutputMax = (int)(desc.fracProductOutputMax * ratio);
+        BaseFracFluidOutputMax = (int)(desc.fracFluidOutputMax * ratio);
 
         // 增产剂表在游戏静态数据加载后才可靠，不能放到类型静态初始化阶段读取。
         incTableFixedRatio = new double[Cargo.incTableMilli.Length];

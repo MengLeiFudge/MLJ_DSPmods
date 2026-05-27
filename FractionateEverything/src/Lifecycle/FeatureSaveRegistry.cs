@@ -24,6 +24,7 @@ public static class FeatureSaveRegistry {
             ("Recipe", RecipeManager.Import),
             ("VanillaRecipes", VanillaRecipeManager.Import),
             ("RecipeGrowth", RecipeGrowthManager.Import),
+            ("Stacking", StackingManager.Import),
             ("Building", BuildingManager.Import),
             ("Item", DataCenterInventory.Import),
             ("Process", ProcessManager.Import),
@@ -41,6 +42,7 @@ public static class FeatureSaveRegistry {
             ("Recipe", RecipeManager.Export),
             ("VanillaRecipes", VanillaRecipeManager.Export),
             ("RecipeGrowth", RecipeGrowthManager.Export),
+            ("Stacking", StackingManager.Export),
             ("Building", BuildingManager.Export),
             ("Item", DataCenterInventory.Export),
             ("Process", ProcessManager.Export),
@@ -55,6 +57,7 @@ public static class FeatureSaveRegistry {
         RecipeManager.IntoOtherSave();
         VanillaRecipeManager.IntoOtherSave();
         RecipeGrowthManager.IntoOtherSave();
+        StackingManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         DataCenterInventory.IntoOtherSave();
         ProcessManager.IntoOtherSave();

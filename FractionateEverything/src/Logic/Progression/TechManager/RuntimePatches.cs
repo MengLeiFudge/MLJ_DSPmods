@@ -39,6 +39,7 @@ public static partial class TechManager {
             }
         }
 
+        StackingManager.SyncRuntimeState();
         TryApplyLoadTimeRecipeBaselines();
 
         RecipeGrowthManager.SyncRuntimeUnlocks();
