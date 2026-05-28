@@ -12,6 +12,9 @@ namespace FE.Logic.Fractionation.Process;
 /// 分馏塔耗电计算的运行时补丁。
 /// </summary>
 public static partial class ProcessManager {[HarmonyTranspiler]
+    /// <summary>
+    /// 将原版分馏器能耗更新调用替换为 FE 分馏塔能耗适配入口。
+    /// </summary>
     [HarmonyPatch(typeof(FactorySystem), nameof(FactorySystem.GameTick))]
     [HarmonyPatch(typeof(GameLogic), nameof(GameLogic._fractionator_parallel))]
     public static IEnumerable<CodeInstruction> FactorySystem_SetPCState_Transpiler(
@@ -56,6 +59,9 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         return matcher.InstructionEnumeration();
     }
 
+    /// <summary>
+    /// 使用实体池为分馏塔设置电力消费者状态。
+    /// </summary>
     public static void SetPCStateWithEntityPool(ref FractionatorComponent fractionator, PowerConsumerComponent[] pcPool,
         EntityData[] entityPool) {
         long perfStart = GetFractionatorPerfTimestamp();
@@ -78,6 +84,9 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         }
     }
 
+    /// <summary>
+    /// 按 FE 分馏塔能耗规则设置电力消费者状态。
+    /// </summary>
     public static void SetPCState(this ref FractionatorComponent fractionator,
         PowerConsumerComponent[] pcPool, int buildingID) {
         double num1 = fractionator.fluidInputCargoCount > 0.0001

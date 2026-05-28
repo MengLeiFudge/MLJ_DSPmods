@@ -38,6 +38,9 @@ public enum ERecipe {
 /// 配方类型扩展方法。
 /// </summary>
 public static class ERecipeExtension {
+    /// <summary>
+    /// 注册该分馏域对象需要的本地化文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("未知", "Unknown");
         Register("建筑培养", "Building Train");
@@ -53,11 +56,17 @@ public static class ERecipeExtension {
         Register("点数聚集配方", "Point Aggregate Recipe");
     }
 
+    /// <summary>
+    /// 获取全部 FE 分馏配方类型。
+    /// </summary>
     public static readonly ERecipe[] RecipeTypes = Enum.GetValues(typeof(ERecipe))
         .Cast<ERecipe>()
         .Where(t => t != ERecipe.PointAggregate && t != ERecipe.Rectification)
         .ToArray();
 
+    /// <summary>
+    /// 获取全部 FE 分馏配方类型的短名称。
+    /// </summary>
     public static string[] RecipeTypeShortNames => RecipeTypes.Select(t => t.GetShortName()).ToArray();
 
     /// <summary>
@@ -74,6 +83,9 @@ public static class ERecipeExtension {
         };
     }
 
+    /// <summary>
+    /// 读取配方类型的完整显示名称。
+    /// </summary>
     public static string GetName(this ERecipe recipe) {
         return recipe switch {
             ERecipe.BuildingTrain => "建筑培养配方".Translate(),
@@ -85,6 +97,9 @@ public static class ERecipeExtension {
         };
     }
 
+    /// <summary>
+    /// 读取配方类型在 UI 中使用的代表物品图标 ID。
+    /// </summary>
     public static int GetSpriteItemId(this ERecipe recipe) {
         return recipe switch {
             ERecipe.BuildingTrain => IFE交互塔,

@@ -15,6 +15,9 @@ public static partial class FractionatorWindow {
     //   并设置 unsafeGameObjectState=true，让游戏的 _UpdateArray 继续驱动其 _Update，
     //   从而触发我们的 _OnUpdate Prefix，进而更新 modWindow。
 
+    /// <summary>
+    /// 在分馏塔窗口打开时切换到模组窗口状态。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow._OnOpen))]
     public static void OnWindowOpen(UIFractionatorWindow __instance) {
@@ -62,6 +65,9 @@ public static partial class FractionatorWindow {
 
     // ===== _OnClose Prefix：清理自定义状态，让原版正常清理字段 =====
 
+    /// <summary>
+    /// 在分馏塔窗口关闭时清理模组窗口状态。
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow._OnClose))]
     public static bool OnWindowClose(UIFractionatorWindow __instance) {
@@ -100,6 +106,9 @@ public static partial class FractionatorWindow {
     //   触发 originalWindow._OnUpdate()，我们在 Prefix 里拦截，执行 modWindow 更新，
     //   return false 跳过原版的显示逻辑（避免原版代码重新显示 oriProductBox/productBox 等）。
 
+    /// <summary>
+    /// 在分馏塔窗口更新时刷新模组产物槽显示。
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow._OnUpdate))]
     public static bool OnWindowUpdate(UIFractionatorWindow __instance) {

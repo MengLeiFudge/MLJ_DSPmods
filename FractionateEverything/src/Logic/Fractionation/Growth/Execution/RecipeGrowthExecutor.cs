@@ -8,6 +8,9 @@ namespace FE.Logic.Fractionation.Growth;
 /// 配方解锁、抽取重复和加工经验的成长执行逻辑。
 /// </summary>
 public static class RecipeGrowthExecutor {
+    /// <summary>
+    /// 按科技进度确保配方达到最低解锁等级。
+    /// </summary>
     public static RecipeGrowthResult EnsureUnlockedByTech(BaseRecipe recipe, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
@@ -21,6 +24,9 @@ public static class RecipeGrowthExecutor {
         return BuildResult(recipe, rule, previousLevel, state);
     }
 
+    /// <summary>
+    /// 按黑雾掉落进度确保配方达到最低解锁等级。
+    /// </summary>
     public static RecipeGrowthResult EnsureUnlockedByDarkFogDrop(BaseRecipe recipe, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
@@ -39,6 +45,9 @@ public static class RecipeGrowthExecutor {
         return BuildResult(recipe, rule, previousLevel, state);
     }
 
+    /// <summary>
+    /// 应用 DrawReward 对应的分馏域状态变更。
+    /// </summary>
     public static RecipeGrowthResult ApplyDrawReward(BaseRecipe recipe, RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
@@ -66,6 +75,9 @@ public static class RecipeGrowthExecutor {
         return BuildResult(recipe, rule, previousLevel, state, fragmentReward);
     }
 
+    /// <summary>
+    /// 应用分馏加工带来的配方成长经验。
+    /// </summary>
     public static RecipeGrowthResult ApplyProcessingProgress(BaseRecipe recipe, int inputCount, int successCount,
         RecipeGrowthContext context) {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
@@ -164,6 +176,9 @@ public static class RecipeGrowthExecutor {
         return BuildResult(recipe, rule, previousLevel, state);
     }
 
+    /// <summary>
+    /// 应用 DarkFogCatchupByItem 对应的分馏域状态变更。
+    /// </summary>
     public static int ApplyDarkFogCatchupByItem(int itemId, int growthExp, RecipeGrowthContext context) {
         if (growthExp <= 0) {
             return 0;
@@ -202,32 +217,50 @@ public static class RecipeGrowthExecutor {
         return BuildResult(recipe, rule, previousLevel, state);
     }
 
+    /// <summary>
+    /// 按科技进度确保配方达到最低解锁等级。
+    /// </summary>
     public static RecipeGrowthResult EnsureUnlockedByTech(RecipeKey key, RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : EnsureUnlockedByTech(recipe, context);
     }
 
+    /// <summary>
+    /// 应用 DrawReward 对应的分馏域状态变更。
+    /// </summary>
     public static RecipeGrowthResult ApplyDrawReward(RecipeKey key, RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : ApplyDrawReward(recipe, context);
     }
 
+    /// <summary>
+    /// 应用分馏加工带来的配方成长经验。
+    /// </summary>
     public static RecipeGrowthResult ApplyProcessingProgress(RecipeKey key, int inputCount, int successCount,
         RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : ApplyProcessingProgress(recipe, inputCount, successCount, context);
     }
 
+    /// <summary>
+    /// 按黑雾掉落进度确保配方达到最低解锁等级。
+    /// </summary>
     public static RecipeGrowthResult EnsureUnlockedByDarkFogDrop(RecipeKey key, RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : EnsureUnlockedByDarkFogDrop(recipe, context);
     }
 
+    /// <summary>
+    /// 应用黑雾追赶规则带来的配方成长经验。
+    /// </summary>
     public static RecipeGrowthResult ApplyCatchupProgress(RecipeKey key, int growthExp, RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : ApplyCatchupProgress(recipe, growthExp, context);
     }
 
+    /// <summary>
+    /// 在沙盒模式下直接设置配方等级。
+    /// </summary>
     public static RecipeGrowthResult SetLevelForSandbox(RecipeKey key, int targetLevel, RecipeGrowthContext context) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : SetLevelForSandbox(recipe, targetLevel, context);

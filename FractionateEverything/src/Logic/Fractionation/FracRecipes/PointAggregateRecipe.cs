@@ -27,6 +27,9 @@ public class PointAggregateRecipe : BaseRecipe {
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.PointAggregate;
+    /// <summary>
+    /// 获取该配方在成长系统中的角色。
+    /// </summary>
     public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
 
     /// <summary>
@@ -36,10 +39,16 @@ public class PointAggregateRecipe : BaseRecipe {
     /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
+    /// <summary>
+    /// 初始化 PointAggregateRecipe 的新实例。
+    /// </summary>
     public PointAggregateRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
+    /// <summary>
+    /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
+    /// </summary>
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
 
@@ -55,6 +64,9 @@ public class PointAggregateRecipe : BaseRecipe {
         outputs = ProcessManager.emptyOutputs;
     }
 
+    /// <summary>
+    /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
+    /// </summary>
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -71,6 +83,9 @@ public class PointAggregateRecipe : BaseRecipe {
         return FractionationOutcome.PassThrough;
     }
 
+    /// <summary>
+    /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
+    /// </summary>
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -98,6 +113,9 @@ public class PointAggregateRecipe : BaseRecipe {
         };
     }
 
+    /// <summary>
+    /// 返回指定输出物品应携带的增产点数。
+    /// </summary>
     public override byte GetOutputInc(int itemId) => (byte)PointAggregateTower.MaxInc;
 
     private float GetCandidateSuccessRatio(float successBoost) {
@@ -167,16 +185,25 @@ public class PointAggregateRecipe : BaseRecipe {
 
     #region IModCanSave
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public override void Import(BinaryReader r) {
         base.Import(r);
         r.ReadBlocks();
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public override void Export(BinaryWriter w) {
         base.Export(w);
         w.WriteBlocks();
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public override void IntoOtherSave() {
         base.IntoOtherSave();
     }

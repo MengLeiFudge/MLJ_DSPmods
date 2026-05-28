@@ -25,10 +25,16 @@ public abstract class BaseRecipe(
     float baseSuccessRatio,
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
+    /// <summary>
+    /// 获取配方类型、输入物品和等级组成的显示名称。
+    /// </summary>
     public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
                               + (RecipeGrowthQueries.IsUnlocked(this)
                                   ? $" Lv{RecipeGrowthQueries.GetLevel(this)}"
                                   : "");
+    /// <summary>
+    /// 获取带矩阵阶段颜色的配方显示名称。
+    /// </summary>
     public string TypeNameWC => TypeName.WithColor(MatrixID - I电磁矩阵);
 
     #region 配方类型、输入输出
@@ -104,6 +110,9 @@ public abstract class BaseRecipe(
     /// <param name="fluidInputInc">该分馏塔当前的全部增产点数，将在该方法中被修改</param>
     /// <param name="inputChange">原材料会变成几个（-1表示消耗，0表示保留）</param>
     /// <param name="outputs">损毁返回null，直通返回空List，成功返回输出产物</param>
+    /// <summary>
+    /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
+    /// </summary>
     public virtual void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         // 1. 损毁判定
@@ -183,6 +192,9 @@ public abstract class BaseRecipe(
         outputs = ProcessManager.emptyOutputs;
     }
 
+    /// <summary>
+    /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
+    /// </summary>
     public virtual FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -243,6 +255,9 @@ public abstract class BaseRecipe(
         return FractionationOutcome.PassThrough;
     }
 
+    /// <summary>
+    /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
+    /// </summary>
     public virtual FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -294,6 +309,9 @@ public abstract class BaseRecipe(
         return result;
     }
 
+    /// <summary>
+    /// 按输出概率和数量随机结算一条产物并加入缓存。
+    /// </summary>
     protected static void AddRolledOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
         bool isMainOutput, int outputHits, float doubleOutputRatio) {
         if (outputHits <= 0) {
@@ -315,6 +333,9 @@ public abstract class BaseRecipe(
         outputInfo.OutputTotalCount += totalCount;
     }
 
+    /// <summary>
+    /// 按小数产量随机取整得到实际输出数量。
+    /// </summary>
     protected static int RollOutputCount(ref uint seed, float outputCount) {
         int countReal = (int)outputCount;
         float fractionalCount = outputCount - countReal;
@@ -325,6 +346,9 @@ public abstract class BaseRecipe(
         return countReal;
     }
 
+    /// <summary>
+    /// 用分段算法近似结算二项分布成功次数。
+    /// </summary>
     public static int RollBinomialApprox(ref uint seed, int trials, float probability) {
         if (trials <= 0 || probability <= 0f) {
             return 0;
@@ -366,6 +390,9 @@ public abstract class BaseRecipe(
 
     #region IModCanSave
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public virtual void Import(BinaryReader r) {
         r.ReadBlocks(
             ("OutputMain", br => {
@@ -392,6 +419,9 @@ public abstract class BaseRecipe(
         );
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public virtual void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("OutputMain", bw => {
@@ -411,6 +441,9 @@ public abstract class BaseRecipe(
         );
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public virtual void IntoOtherSave() {
         foreach (OutputInfo info in OutputMain) {
             info.OutputTotalCount = 0;

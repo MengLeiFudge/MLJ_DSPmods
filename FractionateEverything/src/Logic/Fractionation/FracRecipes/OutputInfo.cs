@@ -9,6 +9,9 @@ namespace FE.Logic.Fractionation.FracRecipes;
 /// 注意，只有<see cref="FE.Logic.Fractionation.FracRecipes.OutputInfo.OutputTotalCount"/>值是可变的，其余均在游戏初始化时固定。
 /// </summary>
 public class OutputInfo(float successRatio, int outputID, float outputCount) {
+    /// <summary>
+    /// 注册该分馏域对象需要的本地化文本。
+    /// </summary>
     public static void AddTranslations() {
         // "总计" translation removed - no longer displayed in product list
     }
@@ -33,10 +36,22 @@ public class OutputInfo(float successRatio, int outputID, float outputCount) {
     /// </summary>
     public int OutputTotalCount { get; set; } = 0;
 
+    /// <summary>
+    /// 判断 UI 是否展示该输出的概率。
+    /// </summary>
     public bool ShowSuccessRatio => OutputTotalCount >= Math.Sqrt(500000 / itemValue[OutputID]);
+    /// <summary>
+    /// 判断 UI 是否展示该输出名称。
+    /// </summary>
     public bool ShowOutputName => OutputTotalCount > 0;
+    /// <summary>
+    /// 判断 UI 是否展示该输出数量。
+    /// </summary>
     public bool ShowOutputCount => OutputTotalCount >= Math.Sqrt(80000 / itemValue[OutputID]);
 
+    /// <summary>
+    /// 生成该输出信息面向 UI 的本地化描述文本。
+    /// </summary>
     public override string ToString() {
         ItemProto item = LDB.items.Select(OutputID);
         bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;

@@ -13,17 +13,47 @@ namespace FE.Logic.Fractionation.Fractionators;
 /// FE 建筑等级、经验和特性查询逻辑。
 /// </summary>
 public static class BuildingGrowthService {
+    /// <summary>
+    /// 定义解锁流动输入增产加成的建筑等级阈值。
+    /// </summary>
     public const int LevelThresholdFluidEnhancement = 3;
+    /// <summary>
+    /// 定义解锁第一项建筑特质的等级阈值。
+    /// </summary>
     public const int LevelThresholdTrait1 = 6;
+    /// <summary>
+    /// 定义解锁第二项建筑特质的等级阈值。
+    /// </summary>
     public const int LevelThresholdTrait2 = 12;
+    /// <summary>
+    /// 定义建筑成长需要突破的等级节点。
+    /// </summary>
     public static readonly int[] BreakthroughLevels = [2, 5, 8, 11];
+    /// <summary>
+    /// 定义各突破阶段需要消耗的矩阵数量。
+    /// </summary>
     public static readonly int[] BreakthroughMatrixCosts = [1, 2, 4, 8];
+    /// <summary>
+    /// 定义各突破阶段需要消耗的残片数量。
+    /// </summary>
     public static readonly int[] BreakthroughFragmentCosts = [36, 120, 360, 960];
+    /// <summary>
+    /// 定义旧版默认堆叠一档的等级上界。
+    /// </summary>
     public const int DefaultMaxStackTier1UpperExclusive = 6;
+    /// <summary>
+    /// 定义旧版默认堆叠二档的等级上界。
+    /// </summary>
     public const int DefaultMaxStackTier2UpperExclusive = 9;
+    /// <summary>
+    /// 定义旧版默认堆叠三档的等级上界。
+    /// </summary>
     public const int DefaultMaxStackTier3UpperExclusive = 12;
     private static readonly long[] buildingExp = new long[6];
 
+    /// <summary>
+    /// 读取或设置该分馏塔建筑的成长等级。
+    /// </summary>
     public static int Level(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.Level,
@@ -37,6 +67,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 按建筑等级返回旧版默认处理堆叠上限。
+    /// </summary>
     public static int GetDefaultMaxStackByLevel(int level) => level switch {
         < DefaultMaxStackTier1UpperExclusive => 1,
         < DefaultMaxStackTier2UpperExclusive => 4,
@@ -44,6 +77,9 @@ public static class BuildingGrowthService {
         _ => 12,
     };
 
+    /// <summary>
+    /// 按建筑等级返回分馏塔能耗倍率。
+    /// </summary>
     public static float GetDefaultEnergyRatioByLevel(int level) => level switch {
         < 1 => 1.0f,
         < 4 => 0.95f,
@@ -52,6 +88,9 @@ public static class BuildingGrowthService {
         _ => 0.5f,
     };
 
+    /// <summary>
+    /// 按建筑等级返回增产点倍率。
+    /// </summary>
     public static float GetDefaultPlrRatioByLevel(int level) => level switch {
         < 2 => 1.0f,
         < 5 => 1.1f,
@@ -60,6 +99,9 @@ public static class BuildingGrowthService {
         _ => 1.8f,
     };
 
+    /// <summary>
+    /// 按建筑等级返回交互站交互能耗倍率。
+    /// </summary>
     public static float GetStationInteractEnergyRatioByLevel(int level) => level switch {
         < 1 => 1.00f,
         < 2 => 0.95f,
@@ -85,16 +127,25 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取指定建筑类型累计的成长经验。
+    /// </summary>
     public static long GetBuildingExp(int buildingId) {
         int index = GetGrowthIndex(buildingId);
         return index >= 0 ? buildingExp[index] : 0L;
     }
 
+    /// <summary>
+    /// 判断指定建筑类型当前等级是否需要突破材料。
+    /// </summary>
     public static bool NeedsBreakthrough(int buildingId) {
         return GetRequiredExpForNextLevelInternal(GetCurrentLevel(buildingId)) <= 0
                && GetCurrentLevel(buildingId) < MaxLevel;
     }
 
+    /// <summary>
+    /// 计算指定建筑等级突破到下一阶段所需材料。
+    /// </summary>
     public static (int matrixId, int matrixCount, int fragmentCount) GetBreakthroughCost(int buildingLevel) {
         int matrixId = GetCurrentProgressMatrixId();
         for (int i = 0; i < BreakthroughLevels.Length; i++) {
@@ -105,10 +156,16 @@ public static class BuildingGrowthService {
         return (matrixId, 0, 0);
     }
 
+    /// <summary>
+    /// 读取指定建筑类型升到下一级所需经验。
+    /// </summary>
     public static long GetRequiredExpForNextLevel(int buildingId) {
         return GetRequiredExpForNextLevelInternal(GetCurrentLevel(buildingId));
     }
 
+    /// <summary>
+    /// 给指定建筑类型增加经验并尝试自动升级。
+    /// </summary>
     public static void AddBuildingExp(int buildingId, long amount) {
         int index = GetGrowthIndex(buildingId);
         if (index < 0 || amount <= 0) {
@@ -119,6 +176,9 @@ public static class BuildingGrowthService {
         TryAutoLevelUp(buildingId);
     }
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public static void Import(BinaryReader r) {
         int count = r.ReadInt32();
         for (int i = 0; i < Math.Min(count, buildingExp.Length); i++) {
@@ -129,6 +189,9 @@ public static class BuildingGrowthService {
         }
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public static void Export(BinaryWriter w) {
         w.Write(buildingExp.Length);
         for (int i = 0; i < buildingExp.Length; i++) {
@@ -136,6 +199,9 @@ public static class BuildingGrowthService {
         }
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public static void IntoOtherSave() {
         Array.Clear(buildingExp, 0, buildingExp.Length);
     }
@@ -185,6 +251,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取或设置该分馏塔建筑的成长等级。
+    /// </summary>
     public static void Level(this ItemProto building, int level, bool manual = false) {
         switch (building.ID) {
             case IFE交互塔:
@@ -222,6 +291,9 @@ public static class BuildingGrowthService {
         }
     }
 
+    /// <summary>
+    /// 判断该建筑是否已启用流动输入增产加成。
+    /// </summary>
     public static bool EnableFluidEnhancement(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.EnableFluidEnhancement,
@@ -233,6 +305,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取该建筑当前允许的分馏处理堆叠上限。
+    /// </summary>
     public static int MaxStack(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.MaxStack,
@@ -246,6 +321,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取该建筑当前每 tick 工作能耗。
+    /// </summary>
     public static long workEnergyPerTick(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.workEnergyPerTick,
@@ -259,6 +337,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取该建筑当前每 tick 待机能耗。
+    /// </summary>
     public static long idleEnergyPerTick(this ItemProto building) {
         switch (building.ID) {
             case IFE交互塔:
@@ -280,6 +361,9 @@ public static class BuildingGrowthService {
         }
     }
 
+    /// <summary>
+    /// 读取该建筑当前能耗倍率。
+    /// </summary>
     public static float EnergyRatio(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.EnergyRatio,
@@ -291,6 +375,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取该建筑当前交互能耗倍率。
+    /// </summary>
     public static float InteractEnergyRatio(this ItemProto building) {
         return building.ID switch {
             IFE行星内物流交互站 => PlanetaryInteractionStation.InteractEnergyRatio,
@@ -299,6 +386,9 @@ public static class BuildingGrowthService {
         };
     }
 
+    /// <summary>
+    /// 读取该建筑当前增产点倍率。
+    /// </summary>
     public static float PlrRatio(this ItemProto building) {
         return building.ID switch {
             IFE交互塔 => InteractionTower.PlrRatio,

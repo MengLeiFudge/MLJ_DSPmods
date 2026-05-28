@@ -12,24 +12,63 @@ namespace FE.Logic.Fractionation.Process;
 public static partial class ProcessManager {
     // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
     private const int FractionatorBuildingTypeCount = IFE精馏塔 - IFE交互塔 + 1;
+    /// <summary>
+    /// 获取该规则或快照允许的最高等级。
+    /// </summary>
     public static readonly int MaxLevel = 12;
+    /// <summary>
+    /// 保存按建筑等级索引的输入保留加成表。
+    /// </summary>
     public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
+    /// <summary>
+    /// 保存按建筑等级索引的额外成功率加成表。
+    /// </summary>
     public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     private static double[] incTableFixedRatio = [];
+    /// <summary>
+    /// 定义分馏塔流动输出缓存的基础上限。
+    /// </summary>
     public static int BaseFracFluidOutputMax = 20;
+    /// <summary>
+    /// 定义分馏塔产物输出缓存的基础上限。
+    /// </summary>
     public static int BaseFracProductOutputMax = 20;
+    /// <summary>
+    /// 定义分馏塔流动输入缓存的基础上限。
+    /// </summary>
     public static int BaseFracFluidInputCargoMax = 40;
+    /// <summary>
+    /// 定义热路径按传送带速度估算的最大输入速度。
+    /// </summary>
     public static int MaxBeltSpeed = 30;
 
     /// <summary>
     /// 单次分馏更新使用的运行参数快照。
     /// </summary>
     private struct FractionatorRuntimeConfig {
+        /// <summary>
+        /// 读取该建筑当前允许的分馏处理堆叠上限。
+        /// </summary>
         public int MaxStack;
+        /// <summary>
+        /// 保存该分馏塔运行配置允许缓存的产物输出上限。
+        /// </summary>
         public int ProductOutputMax;
+        /// <summary>
+        /// 保存该分馏塔运行配置允许缓存的流动输出上限。
+        /// </summary>
         public int FluidOutputMax;
+        /// <summary>
+        /// 读取该建筑当前增产点倍率。
+        /// </summary>
         public float PlrRatio;
+        /// <summary>
+        /// 保存该分馏塔类型当前获得的全局成功率加成。
+        /// </summary>
         public float SuccessBoost;
+        /// <summary>
+        /// 判断该建筑是否已启用流动输入增产加成。
+        /// </summary>
         public bool EnableFluidEnhancement;
     }
 
@@ -54,6 +93,9 @@ public static partial class ProcessManager {
         }
     }
 
+    /// <summary>
+    /// 初始化分馏运行热路径的配置表。
+    /// </summary>
     public static void Init() {
         //获取传送带的最大速度，以此决定循环的最大次数以及缓存区大小
         //游戏逻辑帧只有60，就算传送带再快，也只能取放一个槽位的物品，也就是最多4个，再多也取不到
@@ -78,6 +120,9 @@ public static partial class ProcessManager {
         RefreshFractionatorRuntimeConfig();
     }
 
+    /// <summary>
+    /// 刷新分馏塔等级和配置派生出的运行参数。
+    /// </summary>
     public static void RefreshFractionatorRuntimeConfig() {
         SetRuntimeConfig(IFE交互塔, InteractionTower.MaxStack, InteractionTower.PlrRatio,
             InteractionTower.SuccessBoost, InteractionTower.EnableFluidEnhancement);

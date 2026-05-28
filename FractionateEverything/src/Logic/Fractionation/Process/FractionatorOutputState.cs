@@ -18,9 +18,21 @@ public static class FractionatorOutputState {
     /// (planetId, entityId) => List&lt;ProductOutputInfo&gt;
     /// </summary>
     public sealed class FractionatorExtraState {
+        /// <summary>
+        /// 保存该分馏塔当前累计的扩展产物列表。
+        /// </summary>
         public readonly List<ProductOutputInfo> Products = [];
+        /// <summary>
+        /// 保存热路径复用的临时产物缓冲。
+        /// </summary>
         public readonly ProductOutputBuffer ScratchOutputs = new();
+        /// <summary>
+        /// 保存当前扩展产物列表包含的产物类型标记。
+        /// </summary>
         public byte CurrentOutputFlags;
+        /// <summary>
+        /// 保存当前运行时识别出的主产物物品 ID。
+        /// </summary>
         public ProductOutputInfo PrimaryProduct;
         private bool cachedRecipeValid;
         private int cachedFluidId;
@@ -36,6 +48,9 @@ public static class FractionatorOutputState {
         private int fullProductCacheThreshold;
         private bool fullProductCacheValue;
 
+        /// <summary>
+        /// 按配方类型和输入物品读取分馏配方。
+        /// </summary>
         public BaseRecipe GetRecipe(ERecipe recipeType, int fluidId) {
             if (cachedRecipeValid
                 && cachedFluidId == fluidId
@@ -50,10 +65,16 @@ public static class FractionatorOutputState {
             return cachedRecipe;
         }
 
+        /// <summary>
+        /// 按配方类型和输入物品读取分馏配方。
+        /// </summary>
         public T GetRecipe<T>(ERecipe recipeType, int fluidId) where T : BaseRecipe {
             return GetRecipe(recipeType, fluidId) as T;
         }
 
+        /// <summary>
+        /// 清除扩展状态中的配方查询缓存。
+        /// </summary>
         public void ClearRecipeCache() {
             cachedRecipeValid = false;
             cachedFluidId = 0;
@@ -62,6 +83,9 @@ public static class FractionatorOutputState {
             ClearRuntimeSchema();
         }
 
+        /// <summary>
+        /// 尝试读取分馏塔当前缓存的运行时输出架构。
+        /// </summary>
         public bool TryGetRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
             out ProductOutputInfo primaryProduct) {
 
@@ -85,6 +109,9 @@ public static class FractionatorOutputState {
             return true;
         }
 
+        /// <summary>
+        /// 记录分馏塔当前运行时输出架构。
+        /// </summary>
         public void MarkRuntimeSchema(ERecipe recipeType, int fluidId, BaseRecipe recipe, int productId,
             ProductOutputInfo primaryProduct) {
 
@@ -97,6 +124,9 @@ public static class FractionatorOutputState {
             PrimaryProduct = primaryProduct;
         }
 
+        /// <summary>
+        /// 清除分馏塔运行时输出架构缓存。
+        /// </summary>
         public void ClearRuntimeSchema() {
             runtimeSchemaValid = false;
             runtimeSchemaFluidId = 0;
@@ -107,6 +137,9 @@ public static class FractionatorOutputState {
             PrimaryProduct = null;
         }
 
+        /// <summary>
+        /// 判断分馏塔扩展产物缓存是否已有足够输出。
+        /// </summary>
         public bool HasFullProduct(int countThreshold, bool forceRefresh = false) {
             if (!forceRefresh
                 && fullProductCacheValid
@@ -128,10 +161,16 @@ public static class FractionatorOutputState {
             return hasFullProduct;
         }
 
+        /// <summary>
+        /// 标记扩展产物满载缓存失效。
+        /// </summary>
         public void InvalidateFullProductCache() {
             fullProductCacheValid = false;
         }
 
+        /// <summary>
+        /// 记录扩展产物已达到指定输出阈值。
+        /// </summary>
         public void MarkFullProductCache(int countThreshold) {
             fullProductCacheValid = true;
             fullProductCacheThreshold = countThreshold;
@@ -145,8 +184,17 @@ public static class FractionatorOutputState {
     /// 单个星球的分馏塔扩展状态数组和版本号。
     /// </summary>
     private sealed class FractionatorExtraStateArray(int length) {
+        /// <summary>
+        /// 保存该星球分馏塔扩展状态的同步锁。
+        /// </summary>
         public readonly object SyncRoot = new();
+        /// <summary>
+        /// 保存该星球按实体 ID 索引的分馏塔扩展状态。
+        /// </summary>
         public FractionatorExtraState[] States = new FractionatorExtraState[length];
+        /// <summary>
+        /// 保存该星球分馏塔扩展状态表的变更版本。
+        /// </summary>
         public int Version;
     }
 
@@ -196,6 +244,9 @@ public static class FractionatorOutputState {
         return states;
     }
 
+    /// <summary>
+    /// 读取分馏塔扩展输出状态。
+    /// </summary>
     public static void OutputExtendImport(BinaryReader r) {
         outputDic.Clear();
         outputStateArraysByPlanet.Clear();
@@ -224,6 +275,9 @@ public static class FractionatorOutputState {
         }
     }
 
+    /// <summary>
+    /// 写入分馏塔扩展输出状态。
+    /// </summary>
     public static void OutputExtendExport(BinaryWriter w) {
         w.Write(outputDic.Count);
         foreach (var p in outputDic) {
@@ -239,6 +293,9 @@ public static class FractionatorOutputState {
         }
     }
 
+    /// <summary>
+    /// 重置分馏塔扩展输出状态。
+    /// </summary>
     public static void OutputExtendIntoOtherSave() {
         outputDic.Clear();
         outputStateArraysByPlanet.Clear();
@@ -249,11 +306,17 @@ public static class FractionatorOutputState {
         cachedOutputStateArray = null;
     }
 
+    /// <summary>
+    /// 读取指定分馏塔当前可显示的产物列表。
+    /// </summary>
     public static List<ProductOutputInfo> products(this FractionatorComponent fractionator,
         PlanetFactory factory) {
         return fractionator.GetExtraState(factory).Products;
     }
 
+    /// <summary>
+    /// 读取或创建指定分馏塔的扩展运行状态。
+    /// </summary>
     public static FractionatorExtraState GetExtraState(this FractionatorComponent fractionator,
         PlanetFactory factory) {
         int planetId = factory.planetId;
@@ -276,6 +339,9 @@ public static class FractionatorOutputState {
         return state;
     }
 
+    /// <summary>
+    /// 清除指定实体对应的分馏塔扩展状态。
+    /// </summary>
     public static void ClearExtraState(PlanetFactory factory, int entityId) {
         if (factory == null || entityId <= 0) {
             return;

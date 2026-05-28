@@ -15,6 +15,9 @@ public static class ResonanceState {
     /// </summary>
     private static readonly ConcurrentDictionary<(int, int), float> resonanceBoostDic = [];
 
+    /// <summary>
+    /// 读取交互塔维度共鸣实例状态。
+    /// </summary>
     public static void ResonanceImport(BinaryReader r) {
         resonanceBoostDic.Clear();
         int count = r.ReadInt32();
@@ -26,6 +29,9 @@ public static class ResonanceState {
         }
     }
 
+    /// <summary>
+    /// 写入交互塔维度共鸣实例状态。
+    /// </summary>
     public static void ResonanceExport(BinaryWriter w) {
         w.Write(resonanceBoostDic.Count);
         foreach (var p in resonanceBoostDic) {
@@ -35,16 +41,25 @@ public static class ResonanceState {
         }
     }
 
+    /// <summary>
+    /// 重置交互塔维度共鸣实例状态。
+    /// </summary>
     public static void ResonanceIntoOtherSave() {
         resonanceBoostDic.Clear();
     }
 
+    /// <summary>
+    /// 读取指定交互塔当前维度共鸣成功率加成。
+    /// </summary>
     public static float GetResonanceBoost(this FractionatorComponent fractionator, PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
         return resonanceBoostDic.TryGetValue((planetId, entityId), out float boost) ? boost : 0f;
     }
 
+    /// <summary>
+    /// 设置指定交互塔当前维度共鸣成功率加成。
+    /// </summary>
     public static void SetResonanceBoost(this FractionatorComponent fractionator, PlanetFactory factory, float boost) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;

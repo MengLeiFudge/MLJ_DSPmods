@@ -15,6 +15,9 @@ public static class FissionPointPool {
     /// </summary>
     private static readonly ConcurrentDictionary<(int, int), int> fissionPointPoolDic = [];
 
+    /// <summary>
+    /// 读取矿物复制塔裂变点池实例状态。
+    /// </summary>
     public static void FissionPointPoolImport(BinaryReader r) {
         fissionPointPoolDic.Clear();
         int count = r.ReadInt32();
@@ -26,6 +29,9 @@ public static class FissionPointPool {
         }
     }
 
+    /// <summary>
+    /// 写入矿物复制塔裂变点池实例状态。
+    /// </summary>
     public static void FissionPointPoolExport(BinaryWriter w) {
         w.Write(fissionPointPoolDic.Count);
         foreach (var p in fissionPointPoolDic) {
@@ -35,16 +41,25 @@ public static class FissionPointPool {
         }
     }
 
+    /// <summary>
+    /// 重置矿物复制塔裂变点池实例状态。
+    /// </summary>
     public static void FissionPointPoolIntoOtherSave() {
         fissionPointPoolDic.Clear();
     }
 
+    /// <summary>
+    /// 读取指定矿物复制塔当前储存的裂变点数。
+    /// </summary>
     public static int GetFissionPointPool(this FractionatorComponent fractionator, PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
         return fissionPointPoolDic.TryGetValue((planetId, entityId), out int points) ? points : 0;
     }
 
+    /// <summary>
+    /// 设置指定矿物复制塔当前储存的裂变点数。
+    /// </summary>
     public static void SetFissionPointPool(this FractionatorComponent fractionator, PlanetFactory factory, int points) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;

@@ -76,15 +76,45 @@ public static partial class FractionatorWindow {
     /// 分馏塔窗口单个产物槽位的 UI 引用。
     /// </summary>
     private class ProductSlot {
+        /// <summary>
+        /// 保存产物槽根对象。
+        /// </summary>
         public GameObject go;
+        /// <summary>
+        /// 保存产物槽物品图标。
+        /// </summary>
         public Image icon;
+        /// <summary>
+        /// 保存产物槽按钮组件。
+        /// </summary>
         public UIButton button;
+        /// <summary>
+        /// 保存产物槽数量文本。
+        /// </summary>
         public Text countText;
+        /// <summary>
+        /// 保存产物槽概率文本。
+        /// </summary>
         public Text probText;
+        /// <summary>
+        /// 保存产物槽锁定图标。
+        /// </summary>
         public Image lockIcon;
+        /// <summary>
+        /// 保存产物槽增产点箭头图标数组。
+        /// </summary>
         public Image[] incArrows;
+        /// <summary>
+        /// 保存产物槽显示类型。
+        /// </summary>
         public ProductSlotKind kind;
+        /// <summary>
+        /// 保存产物槽左键点击处理器。
+        /// </summary>
         public Action<int> clickHandler;
+        /// <summary>
+        /// 保存产物槽右键点击处理器。
+        /// </summary>
         public Action<int> rightClickHandler;
     }
 

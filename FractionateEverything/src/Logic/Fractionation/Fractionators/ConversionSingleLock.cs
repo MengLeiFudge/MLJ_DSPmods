@@ -33,6 +33,9 @@ public static class FractionatorSingleLock {
         lockedOutputClipboardItemId = 0;
     }
 
+    /// <summary>
+    /// 读取转化塔单路锁定输出的实例状态。
+    /// </summary>
     public static void LockedOutputImport(BinaryReader r) {
         lockedOutputDic.Clear();
         int count = r.ReadInt32();
@@ -44,6 +47,9 @@ public static class FractionatorSingleLock {
         }
     }
 
+    /// <summary>
+    /// 写入转化塔单路锁定输出的实例状态。
+    /// </summary>
     public static void LockedOutputExport(BinaryWriter w) {
         w.Write(lockedOutputDic.Count);
         foreach (var p in lockedOutputDic) {
@@ -53,17 +59,26 @@ public static class FractionatorSingleLock {
         }
     }
 
+    /// <summary>
+    /// 重置转化塔单路锁定输出的实例状态。
+    /// </summary>
     public static void LockedOutputIntoOtherSave() {
         lockedOutputDic.Clear();
         ClearLockedOutputClipboard();
     }
 
+    /// <summary>
+    /// 读取指定转化塔当前锁定的输出物品。
+    /// </summary>
     public static int GetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
         return lockedOutputDic.TryGetValue((planetId, entityId), out int itemId) ? itemId : 0;
     }
 
+    /// <summary>
+    /// 设置指定转化塔当前锁定的输出物品。
+    /// </summary>
     public static void SetLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
@@ -133,6 +148,9 @@ public static class FractionatorSingleLock {
         }
     }
 
+    /// <summary>
+    /// 校验并修正转化塔锁定输出，使其匹配当前配方。
+    /// </summary>
     public static int NormalizeLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory,
         int itemId) {
         if (itemId == 0 || factory == null || !ConversionTower.EnableSingleLock) {
@@ -145,6 +163,9 @@ public static class FractionatorSingleLock {
         return recipe != null && recipe.TryGetLockedOutputPlan(itemId, out _) ? itemId : 0;
     }
 
+    /// <summary>
+    /// 读取经过配方校验后的转化塔锁定输出。
+    /// </summary>
     public static int GetNormalizedLockedOutput(this FractionatorComponent fractionator, PlanetFactory factory) {
         int lockedItemId = fractionator.GetLockedOutput(factory);
         int normalizedItemId = fractionator.NormalizeLockedOutput(factory, lockedItemId);
@@ -221,6 +242,9 @@ public static class FractionatorSingleLock {
         fractionator.SetLockedOutput(factory, fractionator.NormalizeLockedOutput(factory, lockedItemId));
     }
 
+    /// <summary>
+    /// 复制建筑设置后保存转化塔锁定输出到剪贴板状态。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnCopyBuildingSetting))]
     public static void PlanetFactory_OnCopyBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
@@ -232,6 +256,9 @@ public static class FractionatorSingleLock {
         ClearLockedOutputClipboard();
     }
 
+    /// <summary>
+    /// 粘贴建筑设置后恢复转化塔锁定输出。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnPasteBuildingSetting))]
     public static void PlanetFactory_OnPasteBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
@@ -242,6 +269,9 @@ public static class FractionatorSingleLock {
         fractionator.SetLockedOutputAndSync(__instance, lockedOutputClipboardItemId, manual: true);
     }
 
+    /// <summary>
+    /// 生成蓝图数据后写入转化塔锁定输出参数。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(BlueprintUtils), nameof(BlueprintUtils.GenerateBlueprintData))]
     public static void BlueprintUtils_GenerateBlueprintData_Postfix(BlueprintData _blueprintData, PlanetData _planet,
@@ -262,6 +292,9 @@ public static class FractionatorSingleLock {
         }
     }
 
+    /// <summary>
+    /// 实体逻辑组件创建后从预建筑参数恢复转化塔锁定输出。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.CreateEntityLogicComponents))]
     public static void PlanetFactory_CreateEntityLogicComponents_Postfix(PlanetFactory __instance, int entityId,
@@ -276,6 +309,9 @@ public static class FractionatorSingleLock {
         ApplyLockedOutputFromParameters(__instance, entityId, prebuild.parameters);
     }
 
+    /// <summary>
+    /// 蓝图强制铺设后清理临时锁定输出参数缓存。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(BuildTool_BlueprintPaste), nameof(BuildTool_BlueprintPaste.PasteForceDown))]
     public static void BuildTool_BlueprintPaste_PasteForceDown_Postfix(BuildTool_BlueprintPaste __instance) {
@@ -291,6 +327,9 @@ public static class FractionatorSingleLock {
         }
     }
 
+    /// <summary>
+    /// 实体删除前清理分馏塔实例级扩展状态。
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.RemoveEntityWithComponents))]
     public static void PlanetFactory_RemoveEntityWithComponents_Prefix(PlanetFactory __instance, int id) {
@@ -301,6 +340,9 @@ public static class FractionatorSingleLock {
         FractionatorOutputState.ClearExtraState(__instance, id);
     }
 
+    /// <summary>
+    /// 统计当前工厂中已建成的交互塔数量。
+    /// </summary>
     public static int CountInteractionTowers() {
         int count = 0;
         if (GameMain.data == null || GameMain.data.factories == null) return 0;

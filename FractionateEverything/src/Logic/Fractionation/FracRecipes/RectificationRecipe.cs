@@ -12,12 +12,21 @@ namespace FE.Logic.Fractionation.FracRecipes;
 /// 矩阵入口与精馏链纯化配方的产出分布逻辑。
 /// </summary>
 public class RectificationRecipe : BaseRecipe {
+    /// <summary>
+    /// 区分精馏配方的入口类型和链式纯化类型。
+    /// </summary>
     public enum RectificationRecipeKind {
         MatrixEntry,
         ChainPurification,
     }
 
+    /// <summary>
+    /// 定义精馏链纯化的基础相位压缩比例。
+    /// </summary>
     public const float BaseHyperphaseRatio = 0.25f;
+    /// <summary>
+    /// 定义当前规划的最高相位压缩比例。
+    /// </summary>
     public const float MaxPlannedHyperphaseRatio = 0.60f;
     private const float BranchDecay = 0.10f;
     private const float ChainPurificationOutputCount = 0.50f;
@@ -32,6 +41,9 @@ public class RectificationRecipe : BaseRecipe {
         I黑雾矩阵,
     ];
 
+    /// <summary>
+    /// 创建并注册该类型下的全部分馏配方。
+    /// </summary>
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
             AddRecipe(CreateMatrixEntry(matrixId));
@@ -162,20 +174,38 @@ public class RectificationRecipe : BaseRecipe {
         return outputs;
     }
 
+    /// <summary>
+    /// 获取该配方所属的分馏配方类型。
+    /// </summary>
     public override ERecipe RecipeType => ERecipe.Rectification;
+    /// <summary>
+    /// 获取该配方在成长系统中的角色。
+    /// </summary>
     public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
+    /// <summary>
+    /// 获取精馏配方的具体类型。
+    /// </summary>
     public RectificationRecipeKind Kind { get; }
 
+    /// <summary>
+    /// 获取该配方失败时输入物品损毁概率。
+    /// </summary>
     public override float DestroyRatio => Kind == RectificationRecipeKind.ChainPurification
         ? 0.0f
         : base.DestroyRatio;
 
+    /// <summary>
+    /// 执行 RectificationRecipe 对应的分馏域操作。
+    /// </summary>
     public RectificationRecipe(int inputID, RectificationRecipeKind kind, float baseSuccessRatio,
         List<OutputInfo> outputMain, List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
         Kind = kind;
     }
 
+    /// <summary>
+    /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
+    /// </summary>
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         FractionationOutcome outcome = RollRectificationOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
@@ -187,6 +217,9 @@ public class RectificationRecipe : BaseRecipe {
                 : [product];
     }
 
+    /// <summary>
+    /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
+    /// </summary>
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -198,6 +231,9 @@ public class RectificationRecipe : BaseRecipe {
         return outcome;
     }
 
+    /// <summary>
+    /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
+    /// </summary>
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
@@ -275,6 +311,9 @@ public class RectificationRecipe : BaseRecipe {
         }
     }
 
+    /// <summary>
+    /// 获取 DisplayOutputCount 对应的分馏域数据。
+    /// </summary>
     public float GetDisplayOutputCount(OutputInfo outputInfo) {
         return GetRuntimeOutputCount(outputInfo);
     }
@@ -307,16 +346,25 @@ public class RectificationRecipe : BaseRecipe {
 
     #region IModCanSave
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public override void Import(BinaryReader r) {
         base.Import(r);
         r.ReadBlocks();
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public override void Export(BinaryWriter w) {
         base.Export(w);
         w.WriteBlocks();
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public override void IntoOtherSave() {
         base.IntoOtherSave();
     }

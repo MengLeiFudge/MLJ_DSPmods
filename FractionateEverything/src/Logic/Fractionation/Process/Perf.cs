@@ -76,6 +76,9 @@ public static partial class ProcessManager {
         UpdateFractionatorPerfMax(fractionatorPerfStageMaxTicks, stage, elapsedTicks);
     }
 
+    /// <summary>
+    /// 记录分馏塔热路径指定阶段的性能耗时。
+    /// </summary>
     public static void RecordFractionatorPerfDetail(int detail, long elapsedTicks) {
         if (!EnableFractionatorPerfProbe) {
             return;

@@ -120,22 +120,34 @@ public class MineralCopyRecipe : BaseRecipe {
     /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
+    /// <summary>
+    /// 初始化 MineralCopyRecipe 的新实例。
+    /// </summary>
     public MineralCopyRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
     #region IModCanSave
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public override void Import(BinaryReader r) {
         base.Import(r);
         r.ReadBlocks();
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public override void Export(BinaryWriter w) {
         base.Export(w);
         w.WriteBlocks();
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public override void IntoOtherSave() {
         base.IntoOtherSave();
     }

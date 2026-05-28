@@ -66,6 +66,9 @@ public static partial class FractionatorWindow {
 
     // ===== 初始化：复制窗口并一次性修改布局 =====
 
+    /// <summary>
+    /// 创建并初始化模组分馏塔窗口实例。
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow._OnInit))]
     public static void CreateModWindowInstance(UIFractionatorWindow __instance) {

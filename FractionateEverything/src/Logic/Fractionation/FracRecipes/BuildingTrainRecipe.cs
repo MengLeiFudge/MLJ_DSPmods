@@ -30,6 +30,9 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.BuildingTrain;
+    /// <summary>
+    /// 获取该配方在成长系统中的角色。
+    /// </summary>
     public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.ToolUnlock;
 
     /// <summary>
@@ -39,22 +42,34 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// <param name="baseSuccessRatio">最大成功率</param>
     /// <param name="outputMain">主输出物品</param>
     /// <param name="outputAppend">附加输出物品</param>
+    /// <summary>
+    /// 初始化 BuildingTrainRecipe 的新实例。
+    /// </summary>
     public BuildingTrainRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
 
     #region IModCanSave
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public override void Import(BinaryReader r) {
         base.Import(r);
         r.ReadBlocks();
     }
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public override void Export(BinaryWriter w) {
         base.Export(w);
         w.WriteBlocks();
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public override void IntoOtherSave() {
         base.IntoOtherSave();
     }

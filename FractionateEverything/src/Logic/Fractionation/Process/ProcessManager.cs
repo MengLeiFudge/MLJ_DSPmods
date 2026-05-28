@@ -31,6 +31,9 @@ public static partial class ProcessManager {
         UpdateRectificationTower,
     ];
 
+    /// <summary>
+    /// 注册该分馏域对象需要的本地化文本。
+    /// </summary>
     public static void AddTranslations() {
         Register("交互模式", "Interaction mode");
         Register("原料堆积", "Fluid overflow");
@@ -58,11 +61,26 @@ public static partial class ProcessManager {
 
     #region Field
 
+    /// <summary>
+    /// 定义单次更新最多尝试输出产物的次数。
+    /// </summary>
     public static int MaxOutputTimes = 2;
+    /// <summary>
+    /// 提供无产物状态下复用的空输出列表。
+    /// </summary>
     public static readonly List<ProductOutputInfo> emptyOutputs = [];
     private const int ZeroPressureInternalStackCap = 8;
+    /// <summary>
+    /// 表示当前缓存包含主产物输出。
+    /// </summary>
     public const byte OutputFlagMain = 1 << 0;
+    /// <summary>
+    /// 表示当前缓存包含副产物输出。
+    /// </summary>
     public const byte OutputFlagSide = 1 << 1;
+    /// <summary>
+    /// 表示当前缓存包含流动物品输出。
+    /// </summary>
     public const byte OutputFlagFluid = 1 << 2;
     /// <summary>
     /// 累计分馏成功次数（用于任务系统）
@@ -72,9 +90,15 @@ public static partial class ProcessManager {
     private static readonly long[] fractionSuccessBuckets = new long[FractionRateWindowSeconds];
     private static long currentFractionRateSecond = -1;
     private static long currentFractionSuccessesPerMinute;
+    /// <summary>
+    /// 记录当前存档历史峰值每分钟成功分馏次数。
+    /// </summary>
     public static long peakFractionSuccessesPerMinute;
 
 
+    /// <summary>
+    /// 读取分馏塔当前输出缓存包含的产物类型标记。
+    /// </summary>
     public static byte GetCurrentOutputFlags(this FractionatorComponent fractionator,
         PlanetFactory factory) {
 
@@ -126,6 +150,9 @@ public static partial class ProcessManager {
     /// </ul>
     /// <para>除此之外，分馏判定结果由<see cref="FE.Logic.Fractionation.FracRecipes.BaseRecipe.GetOutputs"/>得到。</para>
     /// </remarks>
+    /// <summary>
+    /// 在原版分馏器更新前分发到 FE 分馏塔热路径。
+    /// </summary>
     public static uint InternalUpdateWithModDispatch(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister) {
         long perfStart = GetFractionatorPerfTimestamp();
@@ -1084,6 +1111,9 @@ public static partial class ProcessManager {
 
     #region IModCanSave
 
+    /// <summary>
+    /// 将该分馏域状态写入存档。
+    /// </summary>
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses)),
@@ -1091,6 +1121,9 @@ public static partial class ProcessManager {
         );
     }
 
+    /// <summary>
+    /// 从存档读取该分馏域状态。
+    /// </summary>
     public static void Import(BinaryReader r) {
         ResetFractionRateWindow();
         r.ReadBlocks(
@@ -1099,6 +1132,9 @@ public static partial class ProcessManager {
         );
     }
 
+    /// <summary>
+    /// 切换或进入其他存档时重置该分馏域状态。
+    /// </summary>
     public static void IntoOtherSave() {
         totalFractionSuccesses = 0;
         peakFractionSuccessesPerMinute = 0;

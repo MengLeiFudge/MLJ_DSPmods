@@ -20,15 +20,33 @@ public static class RecipeGrowthQueries {
         bool canApplyProcessingProgress,
         float remainInputRatio,
         float doubleOutputRatio) {
+        /// <summary>
+        /// 读取或设置该分馏塔建筑的成长等级。
+        /// </summary>
         public readonly int Level = level;
+        /// <summary>
+        /// 判断配方是否已解锁。
+        /// </summary>
         public readonly bool IsUnlocked = isUnlocked;
+        /// <summary>
+        /// 判断配方是否能从分馏加工中获得成长进度。
+        /// </summary>
         public readonly bool CanApplyProcessingProgress = canApplyProcessingProgress;
+        /// <summary>
+        /// 获取成长系统提供的输入保留概率。
+        /// </summary>
         public readonly float RemainInputRatio = remainInputRatio;
+        /// <summary>
+        /// 获取成长系统提供的双倍输出概率。
+        /// </summary>
         public readonly float DoubleOutputRatio = doubleOutputRatio;
     }
 
     private static readonly Dictionary<BaseRecipe, ProcessingRatioCache> processingRatioCache = [];
 
+    /// <summary>
+    /// 读取配方当前等级。
+    /// </summary>
     public static int GetLevel(BaseRecipe recipe) {
         if (processingRatioCache.TryGetValue(recipe, out ProcessingRatioCache cache)) {
             return cache.Level;
@@ -36,47 +54,80 @@ public static class RecipeGrowthQueries {
         return RecipeGrowthManager.Store.GetOrCreate(recipe).Level;
     }
 
+    /// <summary>
+    /// 读取配方当前等级。
+    /// </summary>
     public static int GetLevel(RecipeKey key) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? 0 : GetLevel(recipe);
     }
 
+    /// <summary>
+    /// 判断配方是否已解锁。
+    /// </summary>
     public static bool IsUnlocked(BaseRecipe recipe) {
         return GetProcessingCache(recipe).IsUnlocked;
     }
 
+    /// <summary>
+    /// 读取配方当前等级。
+    /// </summary>
     public static bool IsUnlocked(RecipeKey key) => GetLevel(key) > 0;
 
+    /// <summary>
+    /// 判断配方是否已达到最高等级。
+    /// </summary>
     public static bool IsMaxed(BaseRecipe recipe) {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         return GetLevel(recipe) >= rule.MaxLevel;
     }
 
+    /// <summary>
+    /// 判断配方是否已达到最高等级。
+    /// </summary>
     public static bool IsMaxed(RecipeKey key) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe != null && IsMaxed(recipe);
     }
 
+    /// <summary>
+    /// 读取配方最高等级。
+    /// </summary>
     public static int GetMaxLevel(BaseRecipe recipe) {
         return RecipeGrowthRules.GetRule(recipe).MaxLevel;
     }
 
+    /// <summary>
+    /// 读取面向旧版显示和兼容逻辑的有效等级。
+    /// </summary>
     public static int GetEffectiveLegacyLevel(BaseRecipe recipe) {
         return RecipeGrowthRules.GetEffectiveLegacyLevel(recipe, GetLevel(recipe));
     }
 
+    /// <summary>
+    /// 读取配方成长带来的输入保留概率。
+    /// </summary>
     public static float GetRemainInputRatio(BaseRecipe recipe) {
         return GetProcessingCache(recipe).RemainInputRatio;
     }
 
+    /// <summary>
+    /// 读取配方成长带来的双倍输出概率。
+    /// </summary>
     public static float GetDoubleOutputRatio(BaseRecipe recipe) {
         return GetProcessingCache(recipe).DoubleOutputRatio;
     }
 
+    /// <summary>
+    /// 判断配方是否能从分馏加工中获得成长进度。
+    /// </summary>
     public static bool CanApplyProcessingProgress(BaseRecipe recipe) {
         return GetProcessingCache(recipe).CanApplyProcessingProgress;
     }
 
+    /// <summary>
+    /// 一次性读取配方加工保留输入和双倍输出概率。
+    /// </summary>
     public static void GetProcessingRatios(BaseRecipe recipe, out float remainInputRatio, out float doubleOutputRatio) {
         ProcessingRatioCache cache = GetProcessingCache(recipe);
         remainInputRatio = cache.RemainInputRatio;
@@ -101,16 +152,25 @@ public static class RecipeGrowthQueries {
         return cache;
     }
 
+    /// <summary>
+    /// 清除指定配方的加工概率缓存。
+    /// </summary>
     public static void InvalidateProcessingCache(BaseRecipe recipe) {
         if (recipe != null) {
             processingRatioCache.Remove(recipe);
         }
     }
 
+    /// <summary>
+    /// 清除全部配方加工概率缓存。
+    /// </summary>
     public static void ClearProcessingCache() {
         processingRatioCache.Clear();
     }
 
+    /// <summary>
+    /// 构建配方展示快照。
+    /// </summary>
     public static RecipeDisplaySnapshot GetSnapshot(BaseRecipe recipe) {
         int level = GetLevel(recipe);
         int legacyLevel = GetEffectiveLegacyLevel(recipe);
@@ -140,11 +200,17 @@ public static class RecipeGrowthQueries {
         );
     }
 
+    /// <summary>
+    /// 构建配方展示快照。
+    /// </summary>
     public static RecipeDisplaySnapshot GetSnapshot(RecipeKey key) {
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
         return recipe == null ? default : GetSnapshot(recipe);
     }
 
+    /// <summary>
+    /// 按配方家族构建展示快照列表。
+    /// </summary>
     public static List<RecipeDisplaySnapshot> GetSnapshotsByFamily(RecipeFamily family) {
         return RecipeManager.AllRecipes
             .Where(recipe => RecipeGrowthRules.GetFamily(recipe) == family)
@@ -152,6 +218,9 @@ public static class RecipeGrowthQueries {
             .ToList();
     }
 
+    /// <summary>
+    /// 构建配方家族统计快照列表。
+    /// </summary>
     public static List<RecipeStatsSnapshot> GetFamilyStatsSnapshots() {
         Dictionary<RecipeFamily, List<BaseRecipe>> groups = RecipeManager.AllRecipes
             .GroupBy(RecipeGrowthRules.GetFamily)
@@ -188,6 +257,9 @@ public static class RecipeGrowthQueries {
         return snapshots;
     }
 
+    /// <summary>
+    /// 构建黑雾配方进度快照列表。
+    /// </summary>
     public static List<DarkFogRecipeProgressSnapshot> GetDarkFogProgressSnapshots() {
         List<DarkFogRecipeProgressSnapshot> snapshots = [];
         RecipeGrowthContext context = RecipeGrowthManager.BuildContext();
@@ -231,6 +303,9 @@ public static class RecipeGrowthQueries {
         return descriptions;
     }
 
+    /// <summary>
+    /// 统计指定配方类型中已解锁配方数量。
+    /// </summary>
     public static int GetUnlockedCount(params ERecipe[] types) {
         int count = 0;
         foreach (ERecipe type in types) {
@@ -243,6 +318,9 @@ public static class RecipeGrowthQueries {
         return count;
     }
 
+    /// <summary>
+    /// 统计指定配方类型中已满级配方数量。
+    /// </summary>
     public static int GetMaxedCount(params ERecipe[] types) {
         int count = 0;
         foreach (ERecipe type in types) {
@@ -255,6 +333,9 @@ public static class RecipeGrowthQueries {
         return count;
     }
 
+    /// <summary>
+    /// 统计图鉴按矩阵阶段和配方类型分组的解锁数量。
+    /// </summary>
     public static Dictionary<(int matrixId, ERecipe recipeType), (int unlocked, int maxed, int total)> GetGalleryCounts(
         IReadOnlyList<int> matrixIds,
         IReadOnlyList<ERecipe> recipeTypes

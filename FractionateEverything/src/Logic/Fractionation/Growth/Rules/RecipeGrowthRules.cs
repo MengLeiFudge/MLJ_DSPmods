@@ -30,6 +30,9 @@ public static class RecipeGrowthRules {
     private static readonly Dictionary<BaseRecipe, RecipeFamily> FamilyCache = [];
     private static readonly Dictionary<BaseRecipe, RecipeGrowthRule> RuleCache = [];
 
+    /// <summary>
+    /// 读取配方所属的成长家族。
+    /// </summary>
     public static RecipeFamily GetFamily(BaseRecipe recipe) {
         if (FamilyCache.TryGetValue(recipe, out RecipeFamily family)) {
             return family;
@@ -53,6 +56,9 @@ public static class RecipeGrowthRules {
         return family;
     }
 
+    /// <summary>
+    /// 读取配方使用的成长规则。
+    /// </summary>
     public static RecipeGrowthRule GetRule(BaseRecipe recipe) {
         if (RuleCache.TryGetValue(recipe, out RecipeGrowthRule rule)) {
             return rule;
@@ -79,6 +85,9 @@ public static class RecipeGrowthRules {
         return rule;
     }
 
+    /// <summary>
+    /// 读取矩阵阶段对应的基础配方等级。
+    /// </summary>
     public static int GetStageBaselineLevel(int matrixId) {
         return matrixId switch {
             I电磁矩阵 => 3,
@@ -88,11 +97,17 @@ public static class RecipeGrowthRules {
         };
     }
 
+    /// <summary>
+    /// 读取矩阵阶段对应的抽取解锁等级。
+    /// </summary>
     public static int GetDrawUnlockLevel(int matrixId) {
         int baseline = GetStageBaselineLevel(matrixId);
         return baseline > 0 ? baseline : 1;
     }
 
+    /// <summary>
+    /// 将配方等级限制在成长规则允许的范围内。
+    /// </summary>
     public static int ClampLevel(RecipeGrowthRule rule, int level) {
         if (level < 0) {
             level = 0;
@@ -100,6 +115,9 @@ public static class RecipeGrowthRules {
         return level > rule.MaxLevel ? rule.MaxLevel : level;
     }
 
+    /// <summary>
+    /// 将旧版等级转换为当前存储等级。
+    /// </summary>
     public static int ConvertLegacyLevelToStored(BaseRecipe recipe, int legacyLevel) {
         RecipeGrowthRule rule = GetRule(recipe);
         if (rule.Family == RecipeFamily.PointAggregate) {
@@ -114,6 +132,9 @@ public static class RecipeGrowthRules {
         return ClampLevel(rule, storedLevel);
     }
 
+    /// <summary>
+    /// 读取面向旧版显示和兼容逻辑的有效等级。
+    /// </summary>
     public static int GetEffectiveLegacyLevel(BaseRecipe recipe, int storedLevel) {
         RecipeGrowthRule rule = GetRule(recipe);
         if (rule.Family == RecipeFamily.PointAggregate) {
@@ -131,6 +152,9 @@ public static class RecipeGrowthRules {
         };
     }
 
+    /// <summary>
+    /// 计算当前等级升到下一级所需成长经验。
+    /// </summary>
     public static int GetUpgradeThreshold(RecipeGrowthRule rule, int currentLevel) {
         if (currentLevel < 0 || currentLevel >= rule.MaxLevel) {
             return int.MaxValue;

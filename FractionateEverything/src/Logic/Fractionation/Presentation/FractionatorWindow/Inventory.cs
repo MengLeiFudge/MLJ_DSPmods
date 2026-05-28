@@ -117,6 +117,9 @@ public static partial class FractionatorWindow {
         return buildingId == IFE转化塔 && fractionator.GetNormalizedLockedOutput(window.factory) != 0;
     }
 
+    /// <summary>
+    /// 处理模组分馏塔产物槽按钮点击。
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(UIFractionatorWindow), nameof(UIFractionatorWindow.OnProductUIButtonClick))]
     public static bool OnProductUIButtonClick_Prefix(UIFractionatorWindow __instance, int itemId) {
