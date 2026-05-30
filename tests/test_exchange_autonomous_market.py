@@ -47,6 +47,18 @@ class ExchangeAutonomousMarketTests(unittest.TestCase):
         self.assertIn("市场净流量 {ticker.NetMarketVolume}", exchange_ui)
         self.assertIn("净流量 {hotTicker.NetMarketVolume}", frac_statistic)
 
+    def test_frac_statistic_uses_saturating_volume_magnitude(self):
+        frac_statistic = read_text(FRAC_STATISTIC)
+        self.assertIn(
+            ".OrderByDescending(ticker => GetVolumeMagnitude(ticker.NetMarketVolume))",
+            frac_statistic,
+        )
+        self.assertIn("volume == int.MinValue ? int.MaxValue : Mathf.Abs(volume)", frac_statistic)
+        self.assertNotIn(
+            ".OrderByDescending(ticker => Mathf.Abs(ticker.NetMarketVolume))",
+            frac_statistic,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
