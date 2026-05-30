@@ -43,6 +43,7 @@ public static class VanillaRecipeOperate {
     private static Text txtTimeLimit;
     private static UIButton btnTimeLimitUpgrade;
     private static UIButton btnTimeUpgrade;
+    private static UIButton btnTimeUpgradeToLimit;
 
     private static RecipeProto SelectedRecipe { get; set; } = LDB.recipes.Select(R铁块);
 
@@ -74,6 +75,7 @@ public static class VanillaRecipeOperate {
         Register("当前数量", "Current Count");
         Register("升级次数", "Upgrade Times");
         Register("升级", "Upgrade");
+        Register("升满", "Max");
         Register("提升上限", "Raise cap", "提升上限");
         Register("仅缩短制作时间", "Only crafting time is enhanced");
         Register("全局时间上限", "Global time limit");
@@ -143,7 +145,10 @@ public static class VanillaRecipeOperate {
                                 pos: (MaxInputCount + 3, 5), objectName: "btnTimeLimitUpgrade"),
                             ButtonNode("升级", fontSize: 13, onClick: UpgradeTimeSpend,
                                 onBuilt: btn => btnTimeUpgrade = btn,
-                                pos: (MaxInputCount + 4, 5), objectName: "btnTimeUpgrade"),
+                                pos: (MaxInputCount + 4, 4), objectName: "btnTimeUpgrade"),
+                            ButtonNode("升满", fontSize: 13, onClick: UpgradeTimeSpendToLimit,
+                                onBuilt: btn => btnTimeUpgradeToLimit = btn,
+                                pos: (MaxInputCount + 4, 5), objectName: "btnTimeUpgradeToLimit"),
                         ]),
                 ]));
     }
@@ -238,18 +243,22 @@ public static class VanillaRecipeOperate {
         btnTimeLimitUpgrade.button.GetComponentInChildren<Text>().text =
             canUpgradeGlobalTimeLimit ? "提升上限".Translate() : GetTimeLimitBlockedText();
         btnTimeUpgrade.button.interactable = canUpgradeTime;
+        btnTimeUpgradeToLimit.button.interactable = canUpgradeTime;
 
         if (!canUpgradeTime) {
             if (limitedByMatrix) {
                 btnTimeUpgrade.button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
+                btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
             } else {
-                btnTimeUpgrade.button.GetComponentInChildren<Text>().text =
-                    vanillaRecipe.GetTimeUpgradeCount() >= VanillaRecipeManager.GlobalTimeLimitLevel
-                        ? "全局时间上限不足".Translate()
-                        : "已达上限".Translate();
+                string blockedText = vanillaRecipe.GetTimeUpgradeCount() >= VanillaRecipeManager.GlobalTimeLimitLevel
+                    ? "全局时间上限不足".Translate()
+                    : "已达上限".Translate();
+                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = blockedText;
+                btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = blockedText;
             }
         } else {
             btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "升级".Translate();
+            btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = "升满".Translate();
         }
     }
 
@@ -296,6 +305,44 @@ public static class VanillaRecipeOperate {
         }
     }
 
+    public static void UpgradeTimeSpendToLimit() {
+        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
+            return;
+        }
+        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
+        if (vanillaRecipe == null || !vanillaRecipe.CanUpgradeTime()) {
+            UIMessageBox.Show("提示".Translate(),
+                "此配方的时间已经无法升级！".Translate(),
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
+            return;
+        }
+
+        int targetLevel = GetReachableTimeUpgradeLevel(vanillaRecipe);
+        int fragmentCount = GetTimeUpgradeCostUntil(vanillaRecipe, targetLevel);
+        if (targetLevel <= vanillaRecipe.GetTimeUpgradeCount()) {
+            UIMessageBox.Show("提示".Translate(),
+                "此配方的时间已经无法升级！".Translate(),
+                "确定".Translate(), UIMessageBox.WARNING,
+                null);
+            return;
+        }
+
+        if (GameMain.sandboxToolsEnabled) {
+            UpgradeTimeToLevel(vanillaRecipe, targetLevel);
+        } else {
+            Miscellaneous.ShowQuestion("提示".Translate(),
+                $"{"要花费".Translate()} 残片 x {fragmentCount} "
+                + $"{"来修改此项".Translate()}{"吗？".Translate()}",
+                () => {
+                    if (!TakeItemWithTip(IFE残片, fragmentCount, out _)) {
+                        return;
+                    }
+                    UpgradeTimeToLevel(vanillaRecipe, targetLevel);
+                });
+        }
+    }
+
     #region IModCanSave
 
     public static void Import(BinaryReader r) {
@@ -313,6 +360,38 @@ public static class VanillaRecipeOperate {
     private static int GetTimeUpgradeCost(VanillaRecipe recipe) {
         int currentUpgrade = recipe.GetTimeUpgradeCount();
         return 30 + currentUpgrade * 15;
+    }
+
+    private static int GetTimeUpgradeCostUntil(VanillaRecipe recipe, int targetLevel) {
+        int totalCost = 0;
+        for (int level = recipe.GetTimeUpgradeCount(); level < targetLevel; level++) {
+            totalCost += 30 + level * 15;
+        }
+        return totalCost;
+    }
+
+    private static int GetReachableTimeUpgradeLevel(VanillaRecipe recipe) {
+        int currentLevel = recipe.GetTimeUpgradeCount();
+        int targetLevel = currentLevel;
+        int maxLevel = Mathf.Min(VanillaRecipeManager.GlobalTimeLimitLevel, VanillaRecipeManager.MaxTimeLimitLevel);
+        int currentTimeSpend = recipe.recipe.TimeSpend;
+        for (int level = currentLevel + 1; level <= maxLevel; level++) {
+            int nextTimeSpend = recipe.GetTimeSpendByUpgrade(level);
+            if (currentTimeSpend <= nextTimeSpend) {
+                break;
+            }
+
+            targetLevel = level;
+            currentTimeSpend = nextTimeSpend;
+        }
+
+        return targetLevel;
+    }
+
+    private static void UpgradeTimeToLevel(VanillaRecipe recipe, int targetLevel) {
+        while (recipe.GetTimeUpgradeCount() < targetLevel && recipe.CanUpgradeTime()) {
+            recipe.UpgradeTime();
+        }
     }
 
     private static string GetMatrixRequirementText(VanillaRecipe recipe) {
