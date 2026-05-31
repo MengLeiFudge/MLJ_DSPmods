@@ -50,7 +50,7 @@ namespace GetDspData;
 public class GetDspData : BaseUnityPlugin {
     private const string DynamicIconPathPrefix = "Assets/texpack/";
     private const int ExportIconSize = 80;
-    private const string SolutionDir = @"D:\project\DSP\MLJ_DSPmods";
+    private const string SolutionDir = @"D:\project\dsp\MLJ_DSPmods";
     private const string IconExportRequestPath =
         SolutionDir + @"\gamedata\calc-icon-export-request.json";
 

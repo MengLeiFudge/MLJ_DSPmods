@@ -5,11 +5,11 @@
         <ProfileDir>C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
         <DSPGameDir>D:\Steam\steamapps\common\Dyson Sphere Program</DSPGameDir>
         <NugetGameLibDir>C:\Users\MLJ\.nuget\packages\dysonsphereprogram.gamelibs</NugetGameLibDir>
-        <ModSourcesRootDir>D:\project\DSP</ModSourcesRootDir>
-        <MoreMegaStructureSourceDir>D:\project\DSP\DSPmod_MoreMegaStructures</MoreMegaStructureSourceDir>
-        <TheyComeFromVoidSourceDir>D:\project\DSP\DSP_Battle</TheyComeFromVoidSourceDir>
-        <GenesisBookSourceDir>D:\project\DSP\ProjectGenesis</GenesisBookSourceDir>
-        <OrbitalRingSourceDir>D:\project\DSP\OrbitalRing-MOD</OrbitalRingSourceDir>
-        <FractionateEverythingSourceDir>D:\project\DSP\MLJ_DSPmods\FractionateEverything</FractionateEverythingSourceDir>
+        <ModSourcesRootDir>D:\project\dsp</ModSourcesRootDir>
+        <MoreMegaStructureSourceDir>D:\project\dsp\DSPmod_MoreMegaStructures</MoreMegaStructureSourceDir>
+        <TheyComeFromVoidSourceDir>D:\project\dsp\DSP_Battle</TheyComeFromVoidSourceDir>
+        <GenesisBookSourceDir>D:\project\dsp\ProjectGenesis</GenesisBookSourceDir>
+        <OrbitalRingSourceDir>D:\project\dsp\OrbitalRing-MOD</OrbitalRingSourceDir>
+        <FractionateEverythingSourceDir>D:\project\dsp\MLJ_DSPmods\FractionateEverything</FractionateEverythingSourceDir>
     </PropertyGroup>
 </Project>

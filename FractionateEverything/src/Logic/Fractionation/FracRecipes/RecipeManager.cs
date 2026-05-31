@@ -37,7 +37,7 @@ public static class RecipeManager {
     private static bool fracRecipesReady;
 
 #if DEBUG
-    private const string SPRITE_CSV_DIR = @"D:\project\DSP\MLJ_DSPmods\gamedata";
+    private const string SPRITE_CSV_DIR = @"D:\project\dsp\MLJ_DSPmods\gamedata";
     private const string SPRITE_CSV_PATH = $@"{SPRITE_CSV_DIR}\fracIconPath.csv";
 #endif
 
