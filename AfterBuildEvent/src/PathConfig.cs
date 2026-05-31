@@ -15,7 +15,7 @@ public static class PathConfig {
     public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
     public static string CompatibilityDir => $@"{SolutionFullDir}\FractionateEverything\src\Compatibility";
     public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
-    public static string DspCalcDir => @"D:\project\js\dsp-calc";
+    public static string DspCalcDir => @"D:\project\DSP\dsp-calc";
     public static string DspCalcGameDataPath => $@"{DspCalcDir}\src\engine\data\gameData.ts";
     public static string DspCalcRawDataDir => $@"{DspCalcDir}\src\engine\data\raw";
     public static string DspCalcIconAssetsDir => $@"{DspCalcDir}\src\ui\components\icons\assets";
@@ -37,7 +37,7 @@ public static class PathConfig {
 
     private static string _nugetGameLibDir = $@"{UserDir}\.nuget\packages\dysonsphereprogram.gamelibs";
     public static string NugetGameLibNet45Dir;
-    private static string _modSourcesRootDir = @"D:\project\csharp\DSP MOD";
+    private static string _modSourcesRootDir = @"D:\project\DSP";
     private static string _moreMegaStructureSourceDir = "";
     private static string _theyComeFromVoidSourceDir = "";
     private static string _genesisBookSourceDir = "";

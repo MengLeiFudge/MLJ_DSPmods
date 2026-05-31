@@ -12,7 +12,7 @@ Multiple DSP mods in one solution:
 
 ## Build Commands
 
-**Build tool rule:** All compilation must use the local Windows environment. From WSL, run the Windows MSBuild executable at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`, but only from the Windows-mounted repository path that maps to `D:\project\csharp\DSP MOD\MLJ_DSPmods`. Do not compile from Linux-home worktrees such as `/home/mlj/.codex/worktrees/...`, because Windows tools see those as `\\wsl.localhost\...` paths and can fail to launch generated EXEs.
+**Build tool rule:** All compilation must use the local Windows environment. From WSL, run the Windows MSBuild executable at `/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe`, but only from the Windows-mounted repository path that maps to `D:\project\DSP\MLJ_DSPmods`. Do not compile from Linux-home worktrees such as `/home/mlj/.codex/worktrees/...`, because Windows tools see those as `\\wsl.localhost\...` paths and can fail to launch generated EXEs.
 
 **Output path rule:** Debug build output is fixed to `bin\Debug`. Do not introduce OS-specific output folders, and do not allow target-framework suffixes in the output path.
 
@@ -44,7 +44,7 @@ Multiple DSP mods in one solution:
 "/mnt/c/Program Files/Microsoft Visual Studio/18/Enterprise/MSBuild/Current/Bin/MSBuild.exe" \
   MLJ_DSPmods.sln \
   /t:Build /p:Configuration=Debug
-cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
+cd "/mnt/d/project/DSP/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 ./AfterBuildEvent.exe 1
 
 # VanillaCurveSim-only change: standalone Debug build and run
@@ -52,7 +52,7 @@ cd "/mnt/d/project/csharp/DSP MOD/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
   VanillaCurveSim/VanillaCurveSim.csproj \
   /t:Build /p:Configuration=Debug
 "/mnt/c/Windows/System32/cmd.exe" /c \
-  "D:\project\csharp\DSP MOD\MLJ_DSPmods\VanillaCurveSim\bin\Debug\VanillaCurveSim.exe"
+  "D:\project\DSP\MLJ_DSPmods\VanillaCurveSim\bin\Debug\VanillaCurveSim.exe"
 
 ```
 
