@@ -151,6 +151,10 @@ public class GetDspData : BaseUnityPlugin {
     }
 
     private static void WriteDataToFile() {
+        if (Localization.CurrentLanguageLCID != Localization.LCID_ZHCN) {
+            Localization.CurrentLanguageLCID = Localization.LCID_ZHCN;
+        }
+
         //如果当前语言索引非中文，直接返回
         if (Localization.CurrentLanguageLCID != Localization.LCID_ZHCN) {
             LogWarning("当前语言非中文，不生成数据文件");
