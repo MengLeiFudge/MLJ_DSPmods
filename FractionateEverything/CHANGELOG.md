@@ -1,3 +1,7 @@
+- v2.2.11
+    + 重新发布 2.2 兼容线，用于分发最新 2.2 系列构建包。
+    + Re-released the 2.2 compatibility line to distribute the latest 2.2 series build.
+
 - v2.2.10
     + 分馏塔在无配方或配方未解锁时不再按塔等级集装直通流动输出。
     + 移除循环任务入口。
