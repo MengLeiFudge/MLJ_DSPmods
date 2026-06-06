@@ -11,6 +11,7 @@ namespace FE.Logic.Fractionation.Growth;
 /// </summary>
 public static class RecipeGrowthRules {
     private static readonly int[] BuildingTrainThresholds = [12, 20, 34, 56, 90];
+    private static readonly int[] ProductionThresholds = [16, 28, 48, 80, 132];
     private static readonly int[] DarkFogThresholds = [12, 20, 34, 56, 90];
     private static readonly int[] RectificationThresholds = [14, 24, 42, 72, 120];
 
@@ -67,12 +68,12 @@ public static class RecipeGrowthRules {
             RecipeFamily.BuildingTrainForward => BuildingTrainForwardRule,
             RecipeFamily.BuildingTrainReverse => BuildingTrainReverseRule,
             RecipeFamily.MineralCopyNormal => new RecipeGrowthRule(
-                family, RecipeGrowthMode.DrawDuplicate, 5, 0, GetStageBaselineLevel(recipe.MatrixID),
-                GetDrawUnlockLevel(recipe.MatrixID), false, false, false),
+                family, RecipeGrowthMode.ProcessExp, 5, 0, GetStageBaselineLevel(recipe.MatrixID),
+                GetDrawUnlockLevel(recipe.MatrixID), false, true, false),
             RecipeFamily.MineralCopyDarkFog => MineralCopyDarkFogRule,
             RecipeFamily.ConversionMaterialNormal => new RecipeGrowthRule(
-                family, RecipeGrowthMode.DrawDuplicate, 5, 0, 0, GetDrawUnlockLevel(recipe.MatrixID),
-                false, false, false),
+                family, RecipeGrowthMode.ProcessExp, 5, 0, 0, GetDrawUnlockLevel(recipe.MatrixID),
+                false, true, false),
             RecipeFamily.ConversionMaterialDarkFog => ConversionMaterialDarkFogRule,
             RecipeFamily.ConversionBuilding => ConversionBuildingRule,
             RecipeFamily.Rectification => RectificationRule,
@@ -152,6 +153,8 @@ public static class RecipeGrowthRules {
         }
         return rule.Family switch {
             RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse => BuildingTrainThresholds[
+                currentLevel],
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal => ProductionThresholds[
                 currentLevel],
             RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog => DarkFogThresholds
                 [currentLevel],

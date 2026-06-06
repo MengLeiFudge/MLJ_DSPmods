@@ -144,7 +144,8 @@ public static class FracRecipeOperate {
             "Obtain from Dark Fog branch Growth Planning offers");
         Register("通过科技保底解锁", "Unlocked by tech baseline");
         Register("首次获得对应黑雾物品后解锁", "Unlock after obtaining the related Dark Fog item once");
-        Register("重复抽到该配方即可升级", "Upgrade by drawing the same recipe again");
+        Register("运行对应配方获取经验，重复获得时补充成长进度",
+            "Gain EXP by running the matching recipe; duplicate rewards add growth progress");
         Register("处理对应原胚获取经验，重复获得时也会直接提升",
             "Gain EXP by processing matching proto; duplicate rewards also level it up");
         Register("处理对应原胚获取经验", "Gain EXP by processing the matching proto");
@@ -589,7 +590,7 @@ public static class FracRecipeOperate {
         string prefix = snapshot.IsUnlocked ? string.Empty : $"{"解锁后".Translate()}";
         return rule.Family switch {
             RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
-                => prefix + "重复抽到该配方即可升级".Translate(),
+                => prefix + "运行对应配方获取经验，重复获得时补充成长进度".Translate(),
             RecipeFamily.BuildingTrainForward
                 => prefix + "处理对应原胚获取经验，重复获得时也会直接提升".Translate(),
             RecipeFamily.BuildingTrainReverse

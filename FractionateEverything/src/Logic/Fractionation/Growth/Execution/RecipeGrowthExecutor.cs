@@ -66,6 +66,8 @@ public static class RecipeGrowthExecutor {
             state.Level = rule.FixedMaxReward
                 ? rule.MaxLevel
                 : RecipeGrowthRules.ClampLevel(rule, rule.DrawUnlockLevel);
+        } else if (rule.UsesGrowthExp || rule.UsesPity) {
+            ApplyManualCatchupProgress(state, rule, context);
         } else {
             state.Level = rule.FixedMaxReward ? rule.MaxLevel : RecipeGrowthRules.ClampLevel(rule, state.Level + 1);
         }
@@ -97,6 +99,11 @@ public static class RecipeGrowthExecutor {
                 gain += successCount * 4;
                 state.GrowthExp += gain;
                 break;
+            case RecipeFamily.MineralCopyNormal:
+            case RecipeFamily.ConversionMaterialNormal:
+                gain += successCount * 2;
+                state.GrowthExp += gain;
+                break;
             case RecipeFamily.MineralCopyDarkFog:
             case RecipeFamily.ConversionMaterialDarkFog:
                 gain += successCount * 2;
@@ -107,21 +114,7 @@ public static class RecipeGrowthExecutor {
                 break;
         }
 
-        while (state.Level < rule.MaxLevel) {
-            int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, state.Level);
-            if (rule.UsesPity) {
-                if (state.PityProgress < threshold) {
-                    break;
-                }
-                state.PityProgress -= threshold;
-            } else {
-                if (state.GrowthExp < threshold) {
-                    break;
-                }
-                state.GrowthExp -= threshold;
-            }
-            state.Level++;
-        }
+        TryUpgradeByAccumulatedProgress(state, rule);
 
         if (state.Level != previousLevel || gain > 0) {
             state.UnlockSourceFlags |= RecipeUnlockSourceFlags.Processing;
@@ -147,6 +140,8 @@ public static class RecipeGrowthExecutor {
                 break;
             case RecipeFamily.BuildingTrainForward:
             case RecipeFamily.BuildingTrainReverse:
+            case RecipeFamily.MineralCopyNormal:
+            case RecipeFamily.ConversionMaterialNormal:
                 state.GrowthExp += growthExp;
                 break;
             case RecipeFamily.Rectification:
@@ -156,21 +151,7 @@ public static class RecipeGrowthExecutor {
                 return BuildResult(recipe, rule, previousLevel, state);
         }
 
-        while (state.Level < rule.MaxLevel) {
-            int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, state.Level);
-            if (rule.UsesPity) {
-                if (state.PityProgress < threshold) {
-                    break;
-                }
-                state.PityProgress -= threshold;
-            } else {
-                if (state.GrowthExp < threshold) {
-                    break;
-                }
-                state.GrowthExp -= threshold;
-            }
-            state.Level++;
-        }
+        TryUpgradeByAccumulatedProgress(state, rule);
 
         state.LastTouchedTick = context.GameTick;
         return BuildResult(recipe, rule, previousLevel, state);
@@ -199,6 +180,26 @@ public static class RecipeGrowthExecutor {
             }
         }
         return affectedRecipes;
+    }
+
+    private static void ApplyManualCatchupProgress(RecipeGrowthState state, RecipeGrowthRule rule,
+        RecipeGrowthContext context) {
+        int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, state.Level);
+        if (threshold == int.MaxValue) {
+            return;
+        }
+
+        int gain = threshold * (context.IsSpeedrunMode ? 2 : 1) / 2;
+        if (gain <= 0) {
+            gain = 1;
+        }
+
+        if (rule.UsesPity) {
+            state.PityProgress += gain;
+        } else {
+            state.GrowthExp += gain;
+        }
+        TryUpgradeByAccumulatedProgress(state, rule);
     }
 
     public static RecipeGrowthResult
@@ -276,5 +277,27 @@ public static class RecipeGrowthExecutor {
         bool isMaxed = state.Level >= rule.MaxLevel;
         return new RecipeGrowthResult(previousLevel, state.Level, wasUnlocked, isUnlocked, isMaxed,
             previousLevel != state.Level, fragmentReward);
+    }
+
+    private static void TryUpgradeByAccumulatedProgress(RecipeGrowthState state, RecipeGrowthRule rule) {
+        while (state.Level < rule.MaxLevel) {
+            int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, state.Level);
+            if (threshold == int.MaxValue) {
+                break;
+            }
+
+            if (rule.UsesPity) {
+                if (state.PityProgress < threshold) {
+                    break;
+                }
+                state.PityProgress -= threshold;
+            } else {
+                if (state.GrowthExp < threshold) {
+                    break;
+                }
+                state.GrowthExp -= threshold;
+            }
+            state.Level++;
+        }
     }
 }

@@ -5,7 +5,6 @@ namespace FE.Logic.Fractionation.Growth;
 /// </summary>
 public enum RecipeGrowthMode {
     None = 0,
-    DrawDuplicate = 1,
     ProcessExp = 2,
     Hybrid = 3,
     ProcessExpWithPity = 4,
