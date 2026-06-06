@@ -13,6 +13,20 @@ namespace FE.Logic.Gacha;
 /// 成长商店报价生成与购买结算逻辑。
 /// </summary>
 public static partial class GachaService {
+    public static int GetDarkFogGrowthOfferCount() {
+        int count = 0;
+        foreach (GachaGrowthOffer offer in GetGrowthOffers()) {
+            if (offer.ExtraCostItemId == I黑雾矩阵) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static bool IsEnhancedDarkFogRewardItem(int itemId) {
+        return itemId == IFE分馏塔定向原胚;
+    }
+
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
         IReadOnlyList<GachaGrowthOffer> baseOffers = IsSpeedrunMode
             ? BuildSpeedrunGrowthOffers()

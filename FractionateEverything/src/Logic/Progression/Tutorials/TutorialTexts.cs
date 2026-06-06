@@ -70,7 +70,7 @@ public static partial class TutorialManager {
              On the Building Operations page, you improve Fractionation Towers and Logistics Interaction Stations.
              1. Buildings use tower-type global growth rather than per-building training.
              2. Regular levels mainly come from tower EXP accumulated by use.
-             3. Key breakthroughs consume the current-stage Matrix plus Fragments.
+             3. Key breakthroughs consume current-stage Matrix Essences plus Fragments.
              4. Logistics Interaction Stations and Fractionation Towers follow the same growth philosophy, but gain EXP from different actions.
 
              {"[Item Interaction]".WithColor(Blue)} 
@@ -102,8 +102,8 @@ public static partial class TutorialManager {
              The old Limited Time Store has been reworked into Growth Planning and Resource Coordination.
              Its main jobs now are:
              - spend Growth Points and Fragments for deterministic catch-up
-             - use the current-stage Matrix as the direct draw cost
-             - use Dark Fog combat progression to unlock stage-based Dark Fog offers and special orders
+             - use Matrix Essences for catalysts and key breakthroughs
+             - use Dark Fog combat progression to unlock stage-based Dark Fog growth offers
 
              {"[Quest System]".WithColor(Blue)} 
              Progress is now split into three layers:
@@ -203,8 +203,8 @@ public static partial class TutorialManager {
              当前版本中，传统“限时商店”已被重构为成长规划与资源统筹。
              重点不再是随机刷新货物，而是：
              - 用池积分和残片做定向补差
-             - 用当前阶段矩阵承担抽取消耗
-             - 通过战斗推进黑雾支线阶段，再用黑雾矩阵承接成长报价与市场特单
+             - 用矩阵精华承担催化与关键节点突破
+             - 通过战斗推进黑雾支线阶段，再用黑雾矩阵承接成长报价
 
              {"【任务系统】".WithColor(Blue)}
              任务系统已经拆分为：

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
-using FE.Logic.DarkFog;
 using FE.Logic.Economy;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
@@ -46,11 +45,9 @@ public static class MarketBoard {
         Register("交易", "Trade");
         Register("订单刷新", "Order Refresh");
         Register("补给刷新", "Supply Refresh", "补给刷新");
-        Register("特单概览", "Special Orders", "特单概览");
         Register("补给概览", "Supply Overview", "补给概览");
         Register("短缺补给", "Shortage Supply", "短缺补给");
         Register("阶段矩阵补给", "Stage Matrix Supply", "阶段矩阵补给");
-        Register("黑雾补票", "Dark Fog Catch-up", "黑雾补票");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -62,7 +59,7 @@ public static class MarketBoard {
                 rows: [Px(PageLayout.HeaderHeight), Px(72f), 1],
                 rowGap: PageLayout.Gap,
                 children: [
-                    Header("残片市场", objectName: "market-board-header", pos: (0, 0),
+                    Header("市场板", objectName: "market-board-header", pos: (0, 0),
                         onBuilt: refs => {
                             header = refs;
                             txtExpire = refs.Summary;
@@ -73,7 +70,7 @@ public static class MarketBoard {
                         strong: true,
                         rows: [Px(24f), 1],
                         children: [
-                            CardTitleNode("特单概览", onBuilt: text => txtBoardTitle = text,
+                            CardTitleNode("补给概览", onBuilt: text => txtBoardTitle = text,
                                 pos: (0, 0), objectName: "market-board-summary-title"),
                             TextNode("", 13, onBuilt: text => txtSummary = text,
                                 pos: (1, 0), objectName: "market-board-summary"),
@@ -141,25 +138,15 @@ public static class MarketBoard {
         if (ticks < 0) {
             ticks = 0;
         }
-        header.Title.text = "残片市场".Translate().WithColor(Orange);
+        header.Title.text = "市场板".Translate().WithColor(Orange);
         txtExpire.text = $"{"市场板".Translate()} / {"补给刷新".Translate()}：{FormatTicks(ticks)}";
         txtBoardTitle.text = "补给概览".Translate().WithColor(Orange);
         int shortageCount = MarketBoardManager.ActiveOffers.Count(offer =>
             offer.OfferType == MarketBoardManager.MarketOfferType.SellToPlayer);
         int matrixCount = MarketBoardManager.ActiveOffers.Count(offer =>
             offer.OfferType == MarketBoardManager.MarketOfferType.StageSupply);
-        int darkFogSpecialCount = MarketBoardManager.ActiveOffers.Count(offer =>
-            offer.OfferType == MarketBoardManager.MarketOfferType.Special
-            && DarkFogCombatManager.IsDarkFogOffer(offer));
-        string stageName = DarkFogCombatManager.GetCurrentStage() switch {
-            EDarkFogCombatStage.Dormant => "休眠观察".WithColor(Orange),
-            EDarkFogCombatStage.Signal => "信号接触".WithColor(Blue),
-            EDarkFogCombatStage.GroundSuppression => "地面压制".WithColor(Green),
-            EDarkFogCombatStage.StellarHunt => "星域围猎".WithColor(Blue),
-            _ => "奇点收束".WithColor(Gold),
-        };
         txtSummary.text =
-            $"{"补给概览".Translate()}：{"短缺补给".Translate()} {shortageCount} 项    {"阶段矩阵补给".Translate()} {matrixCount} 项    {"黑雾补票".Translate()} {darkFogSpecialCount} 项    阶段 {stageName}";
+            $"{"补给概览".Translate()}：{"短缺补给".Translate()} {shortageCount} 项    {"阶段矩阵补给".Translate()} {matrixCount} 项";
 
         var offers = MarketBoardManager.ActiveOffers;
         for (int i = 0; i < rows.Length; i++) {
@@ -178,12 +165,6 @@ public static class MarketBoard {
                 rows[i].TxtExtra.text = "";
             }
             SetItem(rows[i].OutputIcon, rows[i].TxtOutput, offer.OutputItemId, offer.OutputCount);
-            if (MarketBoardManager.IsDarkFogRecipeBackfillOffer(offer)) {
-                rows[i].TxtOutput.text = "配方补票";
-            } else if (DarkFogCombatManager.IsDarkFogOffer(offer)
-                       && !DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputItemId)) {
-                rows[i].TxtOutput.text = "配方成长";
-            }
             string offerTag = GetOfferTag(offer);
             if (!string.IsNullOrEmpty(offerTag)) {
                 rows[i].TxtOutput.text = string.IsNullOrEmpty(rows[i].TxtOutput.text)
@@ -196,21 +177,13 @@ public static class MarketBoard {
     }
 
     private static string GetOfferTag(MarketBoardManager.MarketOffer offer) {
-        if (DarkFogCombatManager.IsEnhancedDarkFogOffer(offer)) {
-            return "[黑雾增强]".WithColor(Gold);
-        }
-        if (DarkFogCombatManager.IsDarkFogOffer(offer)) {
-            return $"[{"黑雾补票".Translate()}]".WithColor(Blue);
-        }
         if (offer.OfferType == MarketBoardManager.MarketOfferType.StageSupply) {
             return $"[{"阶段矩阵补给".Translate()}]".WithColor(Green);
         }
         if (offer.OfferType == MarketBoardManager.MarketOfferType.SellToPlayer) {
             return $"[{"短缺补给".Translate()}]".WithColor(Orange);
         }
-        return offer.OfferType == MarketBoardManager.MarketOfferType.Special
-            ? "[特单]".WithColor(Orange)
-            : string.Empty;
+        return string.Empty;
     }
 
     private static void SetItem(MyImageButton icon, Text text, int itemId, int count) {

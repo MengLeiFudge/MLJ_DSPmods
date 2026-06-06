@@ -187,7 +187,7 @@ public static class TicketExchange {
 
         return $"{"黑雾支线说明".Translate()}：阶段 {stageName}\n"
                + $"战况：地面基地 {DarkFogCombatManager.GetAliveGroundBaseCount()}    星域蜂巢 {DarkFogCombatManager.GetAliveHiveCount()}    物资层级 {DarkFogCombatManager.GetDarkFogResourceTier()}/4\n"
-               + $"成长页报价 {DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    市场板特单 {DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    黑雾配方 {unlockedRecipes}/{totalRecipes} 已解锁，满级 {maxedRecipes}    增强层 {enhancedText}\n"
+               + $"成长规划报价 {GachaService.GetDarkFogGrowthOfferCount()} 项    黑雾配方 {unlockedRecipes}/{totalRecipes} 已解锁，满级 {maxedRecipes}    增强层 {enhancedText}\n"
                + $"下一阶段：{nextTarget}";
     }
 

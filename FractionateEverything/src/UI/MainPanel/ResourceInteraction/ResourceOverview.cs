@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using FE.Logic.DarkFog;
 using FE.Logic.Economy;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Gacha;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -44,7 +45,7 @@ public static class ResourceOverview {
         Register("支线阶段", "Branch Stage", "支线阶段");
         Register("黑雾战况", "Combat Status", "战况概览");
         Register("黑雾成长报价", "Growth Offers", "成长报价");
-        Register("黑雾市场特单", "Special Orders", "市场特单");
+        Register("黑雾成长入口", "Growth Entries", "成长入口");
         Register("黑雾增强层", "Enhanced Layer", "增强层");
         Register("黑雾下一阶段", "Next Milestone", "下一阶段");
         Register("黑雾地面基地", "Ground Bases", "地面基地");
@@ -173,7 +174,7 @@ public static class ResourceOverview {
         darkFogLines[1].text =
             $"{"黑雾战况".Translate()}：{"黑雾地面基地".Translate()} {DarkFogCombatManager.GetAliveGroundBaseCount()}    {"黑雾星域蜂巢".Translate()} {DarkFogCombatManager.GetAliveHiveCount()}    {"黑雾物资层级".Translate()} {DarkFogCombatManager.GetDarkFogResourceTier()}/4";
         darkFogLines[2].text =
-            $"{"黑雾成长报价".Translate()}：{DarkFogCombatManager.GetUnlockedGrowthOfferCount()} 项    {"黑雾市场特单".Translate()}：{DarkFogCombatManager.GetUnlockedSpecialOrderCount()} 条    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
+            $"{"黑雾成长报价".Translate()}：{GachaService.GetDarkFogGrowthOfferCount()} 项    {"黑雾成长入口".Translate()}：成长规划    配方 {unlockedRecipes}/{totalRecipes} 已解锁 / 满级 {maxedRecipes}";
         darkFogLines[3].text = $"{"黑雾增强层".Translate()}：{BuildEnhancedLayerText()}";
         darkFogLines[4].text = $"{"黑雾下一阶段".Translate()}：{BuildNextMilestoneText()}";
     }

@@ -62,7 +62,7 @@ public static class FracStatistic {
         Register("统计-成长积分", "Growth Points", "成长积分");
         Register("统计-市场下次刷新", "Market Refresh", "市场下次刷新");
         Register("统计-市场热度", "Market Heat", "市场热度");
-        Register("统计-交易所概览", "Exchange Overview", "交易所概览");
+        Register("统计-市场指数概览", "Market Index Overview", "市场指数概览");
         Register("统计-页头摘要", "Growth, stock and economy overview", "成长、库存与动态经济总览");
     }
 
@@ -213,10 +213,10 @@ public static class FracStatistic {
         economyLines[1].text = $"{"统计-市场热度".Translate()}：最热 {FormatMarketItem(hotItemId)}";
         economyLines[2].text = $"{"统计-市场热度".Translate()}：最冷 {FormatMarketItem(coldItemId)}";
         economyLines[3].text =
-            $"{"统计-交易所概览".Translate()}：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
+            $"{"统计-市场指数概览".Translate()}：上市 {ExchangeManager.ListedItems.Count} 项 / 订单 {MarketBoardManager.ActiveOffers.Count} 条";
         economyLines[4].text = hotTicker == null
-            ? $"{"统计-交易所概览".Translate()}：暂无活跃成交"
-            : $"{"统计-交易所概览".Translate()}：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F2}  净流量 {hotTicker.NetMarketVolume}";
+            ? $"{"统计-市场指数概览".Translate()}：暂无活跃指数"
+            : $"{"统计-市场指数概览".Translate()}：{LDB.items.Select(hotTicker.ItemId)?.name} 现价 {hotTicker.LastPrice:F2}  净流量 {hotTicker.NetMarketVolume}";
         economyLines[5].text =
             $"{"统计-当前阶段矩阵".Translate()}：生产 {MarketValueManager.GetCurrentProductionRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m  消耗 {MarketValueManager.GetCurrentConsumeRate(ItemManager.GetCurrentProgressMatrixId()):F1}/m";
     }

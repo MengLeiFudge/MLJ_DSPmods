@@ -11,8 +11,8 @@ using static FE.Logic.DataCenter.PlayerInventoryAccess;
 namespace FE.Logic.Economy;
 
 /// <summary>
-/// 残片稳定兑换。
-/// 这是保底系统，不参与交易所价格波动。
+/// 残片稳定救急兑换。
+/// 只提供有限补差项，不再作为任意生产物资购买入口。
 /// </summary>
 public static class FragmentExchangeManager {
     /// <summary>
@@ -49,10 +49,7 @@ public static class FragmentExchangeManager {
         if (!MarketValueManager.CanParticipateInEconomy(itemId)) {
             return false;
         }
-        return itemId != I沙土
-               && itemId != GetCurrentProgressMatrixId()
-               && !IsRectificationChainItem(itemId)
-               && !IsSourcePointItem(itemId);
+        return IsStableRescueItem(itemId);
     }
 
     public static FragmentQuote GetQuote(int itemId) {
@@ -102,6 +99,16 @@ public static class FragmentExchangeManager {
         float premium = GetSafetyPremium(itemId);
         int fragmentCost = Mathf.Max(1, Mathf.CeilToInt(baseValue * stageWeight * premium));
         return new FragmentQuote(itemId, fragmentCost, stageWeight, premium);
+    }
+
+    private static bool IsStableRescueItem(int itemId) {
+        if (Array.IndexOf(MainProgressMatrixIds, itemId) >= 0) {
+            return GetMatrixStageIndex(itemId) <= GetCurrentProgressStageIndex();
+        }
+
+        return FractionatorTowerCatalog.IsActiveFractionatorProtoOrDirectional(itemId)
+               || itemId == IFE行星内物流交互站
+               || itemId == IFE星际物流交互站;
     }
 
     private static float GetStageWeight(int itemId) {

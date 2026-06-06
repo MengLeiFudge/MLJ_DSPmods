@@ -34,7 +34,10 @@ public static class FragmentExchange {
 
     public static void AddTranslations() {
         Register("残片兑换", "Stable Exchange", "稳定兑换");
-        Register("残片市场", "Fragment Market", "残片市场");
+        Register("残片市场", "Rescue Exchange", "救急兑换");
+        Register("买1", "Buy 1");
+        Register("买10", "Buy 10");
+        Register("买100", "Buy 100");
         Register("兑换价格", "Quote");
         Register("当前持有", "Balance");
         Register("目标物品", "Target Item", "目标物品");
@@ -51,7 +54,7 @@ public static class FragmentExchange {
                 rows: [Px(PageLayout.HeaderHeight), Px(190f), 1],
                 rowGap: PageLayout.Gap,
                 children: [
-                    Header("残片市场", objectName: "fragment-exchange-header", pos: (0, 0), onBuilt: refs => header = refs),
+                    Header("残片兑换", objectName: "fragment-exchange-header", pos: (0, 0), onBuilt: refs => header = refs),
                     Grid(
                         pos: (1, 0),
                         cols: [2, 3],
@@ -132,7 +135,7 @@ public static class FragmentExchange {
         }
         FragmentExchangeManager.FragmentQuote quote = FragmentExchangeManager.GetQuote(selectedItemId);
         ItemProto item = LDB.items.Select(selectedItemId);
-        header.Title.text = "残片市场".Translate().WithColor(Orange);
+        header.Title.text = "残片兑换".Translate().WithColor(Orange);
         header.Summary.text = item == null
             ? string.Empty
             : $"{"残片兑换".Translate()} / {"目标物品".Translate()}：{item.name}".WithColor(White);

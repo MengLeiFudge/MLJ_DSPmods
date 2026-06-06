@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
-using static FE.Logic.DataCenter.PlayerInventoryAccess;
 using Random = System.Random;
 
 namespace FE.Logic.Economy;
 
 /// <summary>
-/// 股票式交易所。
-/// 使用 MarketValue 作为锚点，但价格存在独立波动与玩家交易冲击。
+/// 市场指数。
+/// 使用 MarketValue 作为锚点，保留价格波动与外部流量，玩家不再在这里直接买卖生产物资。
 /// </summary>
 public static class ExchangeManager {
     private const long PriceRefreshIntervalTicks = 15L * 60L;
@@ -23,7 +21,7 @@ public static class ExchangeManager {
     private const float RandomShockRange = 0.055f;
 
     /// <summary>
-    /// 交易所行情状态。
+    /// 市场指数行情状态。
     /// </summary>
     public sealed class ExchangeTicker {
         public int ItemId;
@@ -34,7 +32,7 @@ public static class ExchangeManager {
         public float DayHighPrice;
         public float DayLowPrice;
         public long LastTradeTick;
-        // 历史字段名保留给存档读写；实际语义是玩家交易 + 外部市场的净流量。
+        // 历史字段名保留给存档读写；实际语义是外部市场净流量。
         public int NetPlayerVolume;
         public int NetMarketVolume {
             get => NetPlayerVolume;
@@ -57,7 +55,7 @@ public static class ExchangeManager {
     private static readonly Dictionary<int, ExchangeTicker> tickers = [];
     private static long lastRefreshTick;
     private static int lastRefreshVersion = -1;
-    public static long TotalTradeCount;
+    public static long TotalObservationCount;
 
     public static IReadOnlyList<int> ListedItems => listedItems;
 
@@ -109,39 +107,12 @@ public static class ExchangeManager {
         return tickers.ContainsKey(itemId);
     }
 
-    public static bool TryBuy(int itemId, int count) {
-        if (count <= 0 || !tickers.TryGetValue(itemId, out ExchangeTicker ticker)) {
+    public static bool RecordObservation(int itemId) {
+        if (!tickers.TryGetValue(itemId, out ExchangeTicker ticker)) {
             return false;
         }
-
-        long price = (long)Math.Ceiling(ticker.AskPrice * count);
-        if (price <= 0L || price > int.MaxValue) {
-            return false;
-        }
-        if (!TakeItemWithTip(IFE残片, (int)price, out _)) {
-            return false;
-        }
-
-        AddItemToModData(itemId, count, 0, true);
-        ApplyTradeImpact(ticker, count, isBuy: true);
-        TotalTradeCount++;
-        return true;
-    }
-
-    public static bool TrySell(int itemId, int count) {
-        if (count <= 0 || !tickers.TryGetValue(itemId, out ExchangeTicker ticker)) {
-            return false;
-        }
-        if (!TakeItemWithTip(itemId, count, out _)) {
-            return false;
-        }
-
-        long fragments = (long)Math.Floor(ticker.BidPrice * count);
-        if (fragments > 0) {
-            AddItemToModData(IFE残片, (int)Math.Min(int.MaxValue, fragments), 0, true);
-        }
-        ApplyTradeImpact(ticker, count, isBuy: false);
-        TotalTradeCount++;
+        ticker.LastTradeTick = GameMain.gameTick;
+        TotalObservationCount++;
         return true;
     }
 
@@ -188,26 +159,6 @@ public static class ExchangeManager {
         return flow;
     }
 
-    private static void ApplyTradeImpact(ExchangeTicker ticker, int count, bool isBuy) {
-        ticker.LastTradeTick = GameMain.gameTick;
-        if (isBuy) {
-            ticker.RecentPlayerBuyVolume += count;
-            ticker.NetMarketVolume += count;
-        } else {
-            ticker.RecentPlayerSellVolume += count;
-            ticker.NetMarketVolume -= count;
-        }
-
-        float impactMagnitude = Math.Min(0.12f, 0.01f + 0.02f * (float)Math.Sqrt(count));
-        float factor = isBuy ? 1f + impactMagnitude : 1f - impactMagnitude;
-        ticker.LastPrice = Math.Max(1f, ticker.LastPrice * factor);
-        ticker.BidPrice = Math.Max(1f, ticker.LastPrice * 0.96f);
-        ticker.AskPrice = Math.Max(ticker.BidPrice, ticker.LastPrice * 1.04f);
-        ticker.DayHighPrice = Math.Max(ticker.DayHighPrice, ticker.LastPrice);
-        ticker.DayLowPrice =
-            ticker.DayLowPrice <= 0f ? ticker.LastPrice : Math.Min(ticker.DayLowPrice, ticker.LastPrice);
-    }
-
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
             ("Tickers", br => {
@@ -234,7 +185,7 @@ public static class ExchangeManager {
                 lastRefreshTick = br.ReadInt64();
                 lastRefreshVersion = br.ReadInt32();
             }),
-            ("TradeStats", br => TotalTradeCount = Math.Max(0L, br.ReadInt64()))
+            ("TradeStats", br => TotalObservationCount = Math.Max(0L, br.ReadInt64()))
         );
     }
 
@@ -260,12 +211,12 @@ public static class ExchangeManager {
                 bw.Write(lastRefreshTick);
                 bw.Write(lastRefreshVersion);
             }),
-            ("TradeStats", bw => bw.Write(TotalTradeCount))
+            ("TradeStats", bw => bw.Write(TotalObservationCount))
         );
     }
 
     public static void IntoOtherSave() {
         Init();
-        TotalTradeCount = 0;
+        TotalObservationCount = 0;
     }
 }

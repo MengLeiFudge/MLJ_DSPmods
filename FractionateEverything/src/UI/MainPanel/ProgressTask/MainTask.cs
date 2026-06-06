@@ -74,7 +74,6 @@ public static class MainTask {
         Register("上传建筑", "Uploaded buildings", "上传建筑");
         Register("提取次数", "Extracts", "提取次数");
         Register("上传次数", "Uploads", "上传次数");
-        Register("交易次数", "Trades", "交易次数");
         Register("主线统计-市场订单", "Market orders", "市场订单");
         Register("主线统计-残片兑换", "Fragment exchanges", "残片兑换");
         Register("主线统计-成长报价", "Growth offers", "成长报价");
@@ -164,7 +163,6 @@ public static class MainTask {
             ("配方 40 个", "40 Recipes"),
             ("物品交互", "Item Interaction"),
             ("首次提取", "First Extract"),
-            ("首次交易", "First Trade"),
             ("黑雾矩阵", "Dark Fog Matrix"),
             ("资源层 1", "Resource Tier 1"),
             ("资源层 2", "Resource Tier 2"),
@@ -390,8 +388,8 @@ public static class MainTask {
                 Node("growth-focus", "主线节点-流派聚焦", "切换到任意非均衡聚焦流派", 2, IFE残片, IFE残片, 250,
                     () => CurrentFocus != GachaFocusType.Balanced, () => GetFocusProgressText()),
                 Node("growth-offer", "主线节点-成长报价", "解锁至少 1 项黑雾成长报价", 7, I黑雾矩阵, IFE残片, 400,
-                    () => DarkFogCombatManager.GetUnlockedGrowthOfferCount() >= 1,
-                    () => GetCountProgressText("主线统计-成长报价", DarkFogCombatManager.GetUnlockedGrowthOfferCount(), 1)),
+                    () => GachaService.GetDarkFogGrowthOfferCount() >= 1,
+                    () => GetCountProgressText("主线统计-成长报价", GachaService.GetDarkFogGrowthOfferCount(), 1)),
                 Node("growth-catchup", "首次补差", "完成至少 1 次市场板订单", 7, I黑雾矩阵, IFE残片, 500,
                     () => MarketBoardManager.TotalCompletedOfferCount >= 1,
                     () => GetCountProgressText("主线统计-市场订单", MarketBoardManager.TotalCompletedOfferCount, 1))),
@@ -432,9 +430,6 @@ public static class MainTask {
                 Node("resource-upload", "首次上传", "向分馏数据中心手动上传至少 1 次物品", 2, IFE残片, IFE残片, 200,
                     () => DataCenterInventory.ManualUploadCount >= 1,
                     () => GetCountProgressText("上传次数", DataCenterInventory.ManualUploadCount, 1)),
-                Node("resource-trade", "首次交易", "在交易所完成至少 1 次买入或卖出", 3, IFE残片, IFE残片, 300,
-                    () => ExchangeManager.TotalTradeCount >= 1,
-                    () => GetCountProgressText("交易次数", ExchangeManager.TotalTradeCount, 1)),
                 Node("resource-board", "主线节点-市场订单", "完成至少 1 次市场板订单", 4, IFE残片, IFE残片, 400,
                     () => MarketBoardManager.TotalCompletedOfferCount >= 1,
                     () => GetCountProgressText("主线统计-市场订单", MarketBoardManager.TotalCompletedOfferCount, 1)),

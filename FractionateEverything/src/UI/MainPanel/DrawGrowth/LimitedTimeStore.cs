@@ -402,7 +402,7 @@ public static class LimitedTimeStore {
     private static string GetOfferDetailText(GachaGrowthOffer offer) {
         if (offer.FocusType == GachaFocusType.Balanced) {
             if (offer.ExtraCostItemId == I黑雾矩阵) {
-                if (DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId)) {
+                if (GachaService.IsEnhancedDarkFogRewardItem(offer.OutputId)) {
                     return "黑雾增强层报价：消耗黑雾矩阵换取战斗支线的后段突破资源。".WithColor(Gold);
                 }
                 if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
@@ -429,7 +429,7 @@ public static class LimitedTimeStore {
 
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
             string prefix = offer.ExtraCostItemId == I黑雾矩阵
-                ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ? "黑雾增强层报价。" :
+                ? GachaService.IsEnhancedDarkFogRewardItem(offer.OutputId) ? "黑雾增强层报价。" :
                 GachaService.IsDarkFogRecipeGrowthOffer(offer) ? "黑雾支线配方报价。" : "黑雾支线报价。"
                 : "成长定向：";
             return $"{prefix}{focusName}。切到该方向后才会降价/加量。".WithColor(White);
@@ -437,7 +437,7 @@ public static class LimitedTimeStore {
 
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
         string detail = offer.ExtraCostItemId == I黑雾矩阵
-            ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ?
+            ? GachaService.IsEnhancedDarkFogRewardItem(offer.OutputId) ?
                 $"黑雾增强层命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算" :
                 GachaService.IsDarkFogRecipeGrowthOffer(offer) ?
                     $"黑雾支线配方命中 {focusName}：积分/残片按 {discountPercent:0}% 成本结算" :
