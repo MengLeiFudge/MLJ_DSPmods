@@ -76,8 +76,8 @@ public static class RectificationTower {
     public static void AddTranslations() {
         Register("精馏塔", "Rectification Tower");
         Register("I精馏塔",
-            "Extracts rectification-chain materials from matrices and purifies chain materials toward higher tiers.",
-            "从矩阵中析出精馏链条物，并继续纯化链条物以尝试获得更高阶材料。");
+            "Extracts matrix essences from matrices, then tunes essences through compression, reflux, or fragment ticket splitting.",
+            "从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间调相。");
     }
 
     /// <summary>

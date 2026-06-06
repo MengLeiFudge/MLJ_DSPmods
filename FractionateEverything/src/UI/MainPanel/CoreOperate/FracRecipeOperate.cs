@@ -100,10 +100,10 @@ public static class FracRecipeOperate {
         Register("随机简称", "R", "随");
         Register("单锁简称", "L", "锁");
         Register("增产点数", "Proliferator points");
-        Register("矩阵入口", "Matrix entry");
-        Register("链条纯化", "Chain purification");
-        Register("精馏配方不参与成功率加成；矩阵入口保留损毁，链条纯化损毁为0。",
-            "Rectification recipes do not use success-rate bonuses. Matrix entries keep destroy chance; chain purification has no destroy chance.");
+        Register("矩阵萃取", "Matrix extraction");
+        Register("精华调相", "Essence tuning");
+        Register("精馏配方不参与成功率加成；矩阵萃取保留损毁，精华调相损毁为0。",
+            "Rectification recipes do not use success-rate bonuses. Matrix extraction keeps destroy chance; essence tuning has no destroy chance.");
 
         Register("配方已完全升级！", "Recipe has been completely upgraded!");
         Register("每个原料平均产出：", "Average output per raw material:");
@@ -341,13 +341,14 @@ public static class FracRecipeOperate {
             ShowTextLine(line++, "");// 空行
 
             if (recipe is RectificationRecipe rectificationHeaderRecipe) {
-                string kindText = rectificationHeaderRecipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixEntry
-                    ? "矩阵入口".Translate()
-                    : "链条纯化".Translate();
+                string kindText = rectificationHeaderRecipe.Kind
+                                  == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
+                    ? "矩阵萃取".Translate()
+                    : "精华调相".Translate();
                 ShowTextLine(line++,
                     $"{"成功率".Translate()} {1.0f:P3}（{kindText}）".WithColor(Orange));
                 ShowTextLine(line++,
-                    "精馏配方不参与成功率加成；矩阵入口保留损毁，链条纯化损毁为0。".Translate()
+                    "精馏配方不参与成功率加成；矩阵萃取保留损毁，精华调相损毁为0。".Translate()
                         .WithColor(Gray));
                 string destroyColorText = rectificationHeaderRecipe.DestroyRatio <= 0f
                     ? $"{"损毁率".Translate()} {0.0f:P3}"

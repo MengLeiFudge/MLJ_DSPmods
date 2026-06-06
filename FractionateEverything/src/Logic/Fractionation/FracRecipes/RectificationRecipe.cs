@@ -9,27 +9,26 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 矩阵入口与精馏链纯化配方的产出分布逻辑。
+/// 矩阵萃取与矩阵精华调相配方的产出分布逻辑。
 /// </summary>
 public class RectificationRecipe : BaseRecipe {
     /// <summary>
-    /// 区分精馏配方的入口类型和链式纯化类型。
+    /// 区分精馏配方的矩阵萃取和精华调相类型。
     /// </summary>
     public enum RectificationRecipeKind {
-        MatrixEntry,
-        ChainPurification,
+        MatrixExtraction,
+        EssenceTuning,
     }
 
     /// <summary>
-    /// 定义精馏链纯化的基础相位压缩比例。
+    /// 定义精华调相时向高阶压缩的基础权重。
     /// </summary>
-    public const float BaseHyperphaseRatio = 0.25f;
+    public const float BaseCompressionRatio = 0.45f;
     /// <summary>
-    /// 定义当前规划的最高相位压缩比例。
+    /// 定义当前规划的最高压缩权重。
     /// </summary>
-    public const float MaxPlannedHyperphaseRatio = 0.60f;
-    private const float BranchDecay = 0.10f;
-    private const float ChainPurificationOutputCount = 0.50f;
+    public const float MaxPlannedCompressionRatio = 0.60f;
+    private const float TicketSplitRatio = 0.10f;
 
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
@@ -46,90 +45,68 @@ public class RectificationRecipe : BaseRecipe {
     /// </summary>
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
-            AddRecipe(CreateMatrixEntry(matrixId));
+            AddRecipe(CreateMatrixExtraction(matrixId));
         }
 
-        foreach (int itemId in RectificationChainItemIds) {
-            AddRecipe(CreateChainPurification(itemId));
+        foreach (int itemId in MatrixEssenceItemIds) {
+            AddRecipe(CreateEssenceTuning(itemId));
         }
     }
 
-    private static RectificationRecipe CreateMatrixEntry(int matrixId) {
-        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixEntry, 1.0f,
-            BuildMatrixEntryOutputs(matrixId), []);
+    private static RectificationRecipe CreateMatrixExtraction(int matrixId) {
+        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixExtraction, 1.0f,
+            BuildMatrixExtractionOutputs(matrixId), []);
     }
 
-    private static RectificationRecipe CreateChainPurification(int inputId) {
-        return new RectificationRecipe(inputId, RectificationRecipeKind.ChainPurification, 1.0f,
-            BuildChainPurificationOutputs(inputId, BaseHyperphaseRatio), []);
+    private static RectificationRecipe CreateEssenceTuning(int inputId) {
+        return new RectificationRecipe(inputId, RectificationRecipeKind.EssenceTuning, 1.0f,
+            BuildEssenceTuningOutputs(inputId, BaseCompressionRatio), []);
     }
 
-    private static List<OutputInfo> BuildMatrixEntryOutputs(int matrixId) {
-        (int mainLevel, int secondLevel, int thirdLevel, float mainRatio, float secondRatio) = matrixId switch {
-            I电磁矩阵 => (0, 1, 8, 0.94f, 0.055f),
-            I能量矩阵 => (2, 3, 8, 0.92f, 0.075f),
-            I结构矩阵 => (4, 5, 8, 0.90f, 0.090f),
-            I信息矩阵 => (6, 7, 8, 0.88f, 0.110f),
-            I引力矩阵 => (8, 9, 10, 0.86f, 0.125f),
-            I宇宙矩阵 => (8, 9, 10, 0.82f, 0.155f),
-            I黑雾矩阵 => (5, 8, 9, 0.88f, 0.105f),
-            _ => (0, 1, 8, 0.95f, 0.045f),
+    private static List<OutputInfo> BuildMatrixExtractionOutputs(int matrixId) {
+        if (matrixId == I黑雾矩阵) {
+            return BuildOutputInfos([
+                (0.75f, IFE信息精华, 1.0f),
+                (0.25f, IFE引力精华, 1.0f),
+            ]);
+        }
+
+        int essenceId = matrixId switch {
+            I电磁矩阵 => IFE电磁精华,
+            I能量矩阵 => IFE能量精华,
+            I结构矩阵 => IFE结构精华,
+            I信息矩阵 => IFE信息精华,
+            I引力矩阵 => IFE引力精华,
+            I宇宙矩阵 => IFE宇宙精华,
+            _ => IFE电磁精华,
         };
-
-        return BuildOutputInfos([
-            (mainRatio, GetRectificationChainItemId(mainLevel), GetMatrixEntryOutputBaseCount(matrixId, mainLevel)),
-            (secondRatio, GetRectificationChainItemId(secondLevel),
-                GetMatrixEntryOutputBaseCount(matrixId, secondLevel)),
-            (1.0f - mainRatio - secondRatio, GetRectificationChainItemId(thirdLevel),
-                GetMatrixEntryOutputBaseCount(matrixId, thirdLevel)),
-        ]);
+        return BuildOutputInfos([(1.0f, essenceId, 1.0f)]);
     }
 
-    private static float GetMatrixEntryOutputBaseCount(int matrixId, int outputLevel) {
-        float baseYield = GetRectificationBaseFragmentYield(matrixId);
-        float chainValue = itemValue[GetRectificationChainItemId(outputLevel)];
-        if (chainValue <= 0f || chainValue >= maxValue) {
-            return 1.0f;
-        }
-
-        float count = baseYield / chainValue;
-        return count < 0.0001f ? 0.0001f : count;
-    }
-
-    private static List<OutputInfo> BuildChainPurificationOutputs(int inputId, float hyperphaseRatio) {
-        int inputLevel = GetRectificationChainLevel(inputId);
+    private static List<OutputInfo> BuildEssenceTuningOutputs(int inputId, float compressionRatio) {
+        int inputLevel = GetMatrixEssenceLevel(inputId);
         if (inputLevel < 0) {
             return [];
         }
 
         List<(float ratio, int itemId, float count)> outputs = [];
-        AddDirectionalChainOutputs(outputs, inputLevel, hyperphaseRatio, +1);
-        AddDirectionalChainOutputs(outputs, inputLevel, 1.0f - hyperphaseRatio, -1);
+        float remainingRatio = 1.0f - TicketSplitRatio;
+        if (inputLevel < MatrixEssenceItemIds.Length - 1) {
+            float ratio = inputLevel == 0 ? remainingRatio : remainingRatio * compressionRatio;
+            AddOrMergeOutput(outputs, ratio, GetMatrixEssenceItemId(inputLevel + 1), 0.5f);
+        }
+        if (inputLevel > 0) {
+            float ratio = inputLevel == MatrixEssenceItemIds.Length - 1
+                ? remainingRatio
+                : remainingRatio * (1.0f - compressionRatio);
+            AddOrMergeOutput(outputs, ratio, GetMatrixEssenceItemId(inputLevel - 1), 2.0f);
+        }
+        if (inputLevel == 0 || inputLevel == MatrixEssenceItemIds.Length - 1) {
+            AddOrMergeOutput(outputs, 1.0f - remainingRatio, IFE残片, GetMatrixEssenceFaceValue(inputId));
+        } else {
+            AddOrMergeOutput(outputs, TicketSplitRatio, IFE残片, GetMatrixEssenceFaceValue(inputId));
+        }
         return BuildOutputInfos(outputs);
-    }
-
-    private static void AddDirectionalChainOutputs(List<(float ratio, int itemId, float count)> outputs,
-        int inputLevel, float directionRatio, int direction) {
-        if (directionRatio <= 0f) {
-            return;
-        }
-
-        float remaining = directionRatio;
-        float branchRatio = directionRatio * (1.0f - BranchDecay);
-        for (int delta = 1; delta < RectificationChainItemIds.Length && remaining > 0.000001f; delta++) {
-            int targetLevel = inputLevel + direction * delta;
-            bool isTail = targetLevel <= 0 || targetLevel >= RectificationChainItemIds.Length - 1;
-            if (isTail) {
-                AddOrMergeOutput(outputs, remaining, GetRectificationChainItemId(targetLevel),
-                    ChainPurificationOutputCount);
-                break;
-            }
-
-            AddOrMergeOutput(outputs, branchRatio, GetRectificationChainItemId(targetLevel),
-                ChainPurificationOutputCount);
-            remaining -= branchRatio;
-            branchRatio *= BranchDecay;
-        }
     }
 
     private static void AddOrMergeOutput(List<(float ratio, int itemId, float count)> outputs, float ratio, int itemId,
@@ -190,7 +167,7 @@ public class RectificationRecipe : BaseRecipe {
     /// <summary>
     /// 获取该配方失败时输入物品损毁概率。
     /// </summary>
-    public override float DestroyRatio => Kind == RectificationRecipeKind.ChainPurification
+    public override float DestroyRatio => Kind == RectificationRecipeKind.EssenceTuning
         ? 0.0f
         : base.DestroyRatio;
 
@@ -319,7 +296,7 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     private float GetRuntimeOutputCount(OutputInfo outputInfo) {
-        if (Kind != RectificationRecipeKind.MatrixEntry) {
+        if (Kind != RectificationRecipeKind.MatrixExtraction) {
             return outputInfo.OutputCount;
         }
         float count = outputInfo.OutputCount * GetStageDecayFactor(InputID) * RectificationTower.PlrRatio;

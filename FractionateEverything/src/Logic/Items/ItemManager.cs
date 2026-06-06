@@ -27,48 +27,44 @@ public static class ItemManager {
 
         Register("残片", "Fragment");
         Register("I残片",
-            "Lowest-tier rectification chain material. Used by FE growth and as the stable fragment currency.",
+            "Stable fragment currency produced by essence ticket splitting and FE rewards.",
             "分馏体系产出的稳定副资源，可用于成长、定向补差和流派聚焦。");
-        Register("凝缩残片", "Dense Fragment");
-        Register("I凝缩残片",
-            "A denser fragment condensed by rectification. It has no handcraft recipe and belongs to the rectification chain.",
-            "经精馏凝缩后的残片，没有手工制作配方，属于精馏链条物。");
-        Register("晶化残片", "Crystal Fragment");
-        Register("I晶化残片",
-            "A crystallized fragment produced during rectification. It is an intermediate rectification chain material.",
-            "精馏过程中晶化的残片，是精馏链条中的中间产物。");
-        Register("棱镜残片", "Prism Fragment");
-        Register("I棱镜残片",
-            "A prism-like fragment carrying more stable information traces.",
-            "带有更稳定信息痕迹的棱镜状残片。");
-        Register("回响残片", "Echo Fragment");
-        Register("I回响残片",
-            "A fragment with repeated memory echoes. It is still below true memory material.",
-            "带有重复记忆回响的残片，尚未形成真正的记忆材料。");
-        Register("记忆痕迹", "Trace Memory");
-        Register("I记忆痕迹",
-            "A faint memory trace extracted from high-order rectification.",
-            "从高阶精馏中析出的微弱记忆痕迹。");
-        Register("记忆碎晶", "Memory Shard");
-        Register("I记忆碎晶",
-            "A shard carrying condensed memory structure.",
-            "承载凝聚记忆结构的碎晶。");
-        Register("记忆核心", "Memory Core");
-        Register("I记忆核心",
-            "A stable memory core one tier below Memory.",
-            "低于记忆源点一阶的稳定记忆核心。");
+        Register("电磁精华", "Electromagnetic Essence");
+        Register("I电磁精华",
+            "Entity essence extracted from electromagnetic matrices. It carries 2 fragment value.",
+            "从电磁矩阵中萃取出的实体精华，面值为 2 残片。");
+        Register("能量精华", "Energy Essence");
+        Register("I能量精华",
+            "Entity essence extracted from energy matrices. It carries 4 fragment value.",
+            "从能量矩阵中萃取出的实体精华，面值为 4 残片。");
+        Register("结构精华", "Structure Essence");
+        Register("I结构精华",
+            "Entity essence extracted from structure matrices. It carries 8 fragment value.",
+            "从结构矩阵中萃取出的实体精华，面值为 8 残片。");
+        Register("信息精华", "Information Essence");
+        Register("I信息精华",
+            "Entity essence extracted from information matrices. It carries 16 fragment value.",
+            "从信息矩阵中萃取出的实体精华，面值为 16 残片。");
+        Register("引力精华", "Gravity Essence");
+        Register("I引力精华",
+            "Entity essence extracted from gravity matrices. It carries 32 fragment value.",
+            "从引力矩阵中萃取出的实体精华，面值为 32 残片。");
+        Register("宇宙精华", "Universe Essence");
+        Register("I宇宙精华",
+            "Entity essence extracted from universe matrices. It carries 64 fragment value.",
+            "从宇宙矩阵中萃取出的实体精华，面值为 64 残片。");
         Register("记忆源点", "Memory");
         Register("I记忆源点",
-            "Core high-order FE material used by stacking, recipe-time and rectification growth systems.",
-            "FE 高阶成长的核心材料，用于堆叠、原版配方时间和精馏成长系统。");
+            "Top-layer FE currency-like resource granted by non-production rewards. It is not produced by rectification.",
+            "FE 高层货币式资源，只能来自非产线奖励，不由精馏产线产出。");
         Register("纯净源点", "Pure Memory");
         Register("I纯净源点",
-            "A purified memory source point reserved for late-stage growth.",
-            "净化后的记忆源点，主要用于后期成长。");
+            "A higher-purity source point reserved for late-stage non-production rewards.",
+            "更高纯度的源点，预留给后期非产线奖励。");
         Register("理论源点", "Theoretical Memory");
         Register("I理论源点",
-            "The terminal material of the rectification chain. It is reserved for final-tier systems.",
-            "精馏链条的终端材料，预留给最终档系统。");
+            "A terminal source point placeholder reserved for final-tier systems. It is outside production chains.",
+            "终局源点占位物，预留给最终档系统，不进入产线。");
 
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
@@ -129,20 +125,18 @@ public static class ItemManager {
 
         RegisterRectificationChainItem(IFE残片, "残片", "I残片", 101,
             Color.gray, Color.black, "cpfragment");
-        RegisterRectificationChainItem(IFE凝缩残片, "凝缩残片", "I凝缩残片", 102,
-            new Color(0.46f, 0.52f, 0.62f), new Color(0.08f, 0.08f, 0.1f), "densefrag");
-        RegisterRectificationChainItem(IFE晶化残片, "晶化残片", "I晶化残片", 103,
-            new Color(0.58f, 0.85f, 1f), new Color(0.08f, 0.16f, 0.24f), "crystalfrag");
-        RegisterRectificationChainItem(IFE棱镜残片, "棱镜残片", "I棱镜残片", 104,
-            new Color(0.78f, 0.58f, 1f), new Color(0.16f, 0.08f, 0.28f), "prismfrag");
-        RegisterRectificationChainItem(IFE回响残片, "回响残片", "I回响残片", 105,
-            new Color(0.42f, 0.92f, 0.72f), new Color(0.06f, 0.22f, 0.14f), "echofrag");
-        RegisterRectificationChainItem(IFE记忆痕迹, "记忆痕迹", "I记忆痕迹", 106,
-            new Color(0.52f, 0.74f, 1f), new Color(0.08f, 0.16f, 0.30f), "tracememory");
-        RegisterRectificationChainItem(IFE记忆碎晶, "记忆碎晶", "I记忆碎晶", 107,
-            new Color(0.62f, 0.92f, 1f), new Color(0.05f, 0.18f, 0.26f), "memoryshard");
-        RegisterRectificationChainItem(IFE记忆核心, "记忆核心", "I记忆核心", 108,
-            new Color(0.35f, 0.68f, 1f), new Color(0.05f, 0.10f, 0.28f), "memorycore");
+        RegisterRectificationChainItem(IFE电磁精华, "电磁精华", "I电磁精华", 102,
+            new Color(0.32f, 0.72f, 1f), new Color(0.04f, 0.14f, 0.28f), "emessence");
+        RegisterRectificationChainItem(IFE能量精华, "能量精华", "I能量精华", 103,
+            new Color(1f, 0.52f, 0.18f), new Color(0.26f, 0.08f, 0.02f), "energyessence");
+        RegisterRectificationChainItem(IFE结构精华, "结构精华", "I结构精华", 104,
+            new Color(0.86f, 0.68f, 1f), new Color(0.16f, 0.06f, 0.28f), "structureessence");
+        RegisterRectificationChainItem(IFE信息精华, "信息精华", "I信息精华", 105,
+            new Color(0.36f, 0.96f, 0.78f), new Color(0.02f, 0.20f, 0.12f), "infoessence");
+        RegisterRectificationChainItem(IFE引力精华, "引力精华", "I引力精华", 106,
+            new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityessence");
+        RegisterRectificationChainItem(IFE宇宙精华, "宇宙精华", "I宇宙精华", 107,
+            new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeessence");
         RegisterRectificationChainItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
             new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f), "memory");
         RegisterRectificationChainItem(IFE纯净源点, "纯净源点", "I纯净源点", 110,
@@ -511,35 +505,40 @@ public static class ItemManager {
 
     public static readonly int[] itemToMatrix = new int[12000];
 
-    public static readonly int[] RectificationChainItemIds = [
-        IFE残片,
-        IFE凝缩残片,
-        IFE晶化残片,
-        IFE棱镜残片,
-        IFE回响残片,
-        IFE记忆痕迹,
-        IFE记忆碎晶,
-        IFE记忆核心,
-        IFE记忆源点,
-        IFE纯净源点,
-        IFE理论源点,
+    public static readonly int[] MatrixEssenceItemIds = [
+        IFE电磁精华,
+        IFE能量精华,
+        IFE结构精华,
+        IFE信息精华,
+        IFE引力精华,
+        IFE宇宙精华,
     ];
 
+    public static bool IsMatrixEssenceItem(int itemId) {
+        return itemId >= IFE电磁精华 && itemId <= IFE宇宙精华;
+    }
+
     public static bool IsRectificationChainItem(int itemId) {
-        return itemId >= IFE残片 && itemId <= IFE理论源点;
+        return itemId == IFE残片 || IsMatrixEssenceItem(itemId)
+               || itemId == IFE记忆源点 || itemId == IFE纯净源点 || itemId == IFE理论源点;
     }
 
-    public static int GetRectificationChainLevel(int itemId) {
-        return IsRectificationChainItem(itemId) ? itemId - IFE残片 : -1;
+    public static int GetMatrixEssenceLevel(int itemId) {
+        return IsMatrixEssenceItem(itemId) ? itemId - IFE电磁精华 : -1;
     }
 
-    public static int GetRectificationChainItemId(int level) {
+    public static int GetMatrixEssenceItemId(int level) {
         if (level < 0) {
             level = 0;
-        } else if (level >= RectificationChainItemIds.Length) {
-            level = RectificationChainItemIds.Length - 1;
+        } else if (level >= MatrixEssenceItemIds.Length) {
+            level = MatrixEssenceItemIds.Length - 1;
         }
-        return RectificationChainItemIds[level];
+        return MatrixEssenceItemIds[level];
+    }
+
+    public static int GetMatrixEssenceFaceValue(int itemId) {
+        int level = GetMatrixEssenceLevel(itemId);
+        return level < 0 ? 0 : 1 << (level + 1);
     }
 
     /// <summary>
@@ -594,9 +593,9 @@ public static class ItemManager {
             I电磁矩阵 => 2,
             I能量矩阵 => 4,
             I结构矩阵 => 8,
-            I信息矩阵 => 10,
-            I引力矩阵 => 16,
-            I宇宙矩阵 => 32,
+            I信息矩阵 => 16,
+            I引力矩阵 => 32,
+            I宇宙矩阵 => 64,
             I黑雾矩阵 => 20,
             _ => 1,
         };
@@ -665,13 +664,12 @@ public static class ItemManager {
 
     private static void SetRectificationChainValues() {
         itemValue[IFE残片] = 1.0f;
-        itemValue[IFE凝缩残片] = 2.0f;
-        itemValue[IFE晶化残片] = 4.0f;
-        itemValue[IFE棱镜残片] = 8.0f;
-        itemValue[IFE回响残片] = 16.0f;
-        itemValue[IFE记忆痕迹] = 32.0f;
-        itemValue[IFE记忆碎晶] = 64.0f;
-        itemValue[IFE记忆核心] = 128.0f;
+        itemValue[IFE电磁精华] = 2.0f;
+        itemValue[IFE能量精华] = 4.0f;
+        itemValue[IFE结构精华] = 8.0f;
+        itemValue[IFE信息精华] = 16.0f;
+        itemValue[IFE引力精华] = 32.0f;
+        itemValue[IFE宇宙精华] = 64.0f;
         itemValue[IFE记忆源点] = 256.0f;
         itemValue[IFE纯净源点] = 512.0f;
         itemValue[IFE理论源点] = 1024.0f;
@@ -679,13 +677,12 @@ public static class ItemManager {
 
     private static void SetRectificationChainMatrixStages() {
         itemToMatrix[IFE残片] = I电磁矩阵;
-        itemToMatrix[IFE凝缩残片] = I电磁矩阵;
-        itemToMatrix[IFE晶化残片] = I能量矩阵;
-        itemToMatrix[IFE棱镜残片] = I能量矩阵;
-        itemToMatrix[IFE回响残片] = I结构矩阵;
-        itemToMatrix[IFE记忆痕迹] = I结构矩阵;
-        itemToMatrix[IFE记忆碎晶] = I信息矩阵;
-        itemToMatrix[IFE记忆核心] = I信息矩阵;
+        itemToMatrix[IFE电磁精华] = I电磁矩阵;
+        itemToMatrix[IFE能量精华] = I能量矩阵;
+        itemToMatrix[IFE结构精华] = I结构矩阵;
+        itemToMatrix[IFE信息精华] = I信息矩阵;
+        itemToMatrix[IFE引力精华] = I引力矩阵;
+        itemToMatrix[IFE宇宙精华] = I宇宙矩阵;
         itemToMatrix[IFE记忆源点] = I引力矩阵;
         itemToMatrix[IFE纯净源点] = I引力矩阵;
         itemToMatrix[IFE理论源点] = I引力矩阵;

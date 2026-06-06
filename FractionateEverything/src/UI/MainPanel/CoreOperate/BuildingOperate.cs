@@ -156,8 +156,8 @@ public static class BuildingOperate {
 
         Register("超相压缩", "Hyperphase Compression");
         Register("超相压缩说明",
-            "Unlocks the late-stage concept of hyperphase compression. Chain purification currently follows the global hyperphase ratio model.",
-            "解锁后期超相压缩概念；当前链条纯化按全局高阶成相率模型结算。");
+            "Unlocks the late-stage concept of essence compression. Essence tuning currently follows the global compression weight model.",
+            "解锁后期精华压缩概念；当前精华调相按全局压缩权重模型结算。");
 
         Register("特质1（+6）：", "Trait 1 (+6): ");
         Register("特质2（+12）：", "Trait 2 (+12): ");

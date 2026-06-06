@@ -26,7 +26,7 @@ extract and upgrade related recipes and buildings!
 * 交互塔：将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。
 * 矿物复制塔：复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。
 * 转化塔：将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。
-* 精馏塔：将矩阵精馏为链条物，用于支撑 FE 自身的成长和购买项。需要在分馏数据中心解锁并升级对应配方。
+* 精馏塔：将矩阵精馏为矩阵精华，并在矩阵精华之间压缩、回流或拆成残片，用于支撑 FE 自身的成长和购买项。需要在分馏数据中心解锁并升级对应配方。
 * 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
 
 Fractionate Everything has added brand new buildings which are very powerful in their effects!
@@ -39,7 +39,7 @@ Fractionate Everything has added brand new buildings which are very powerful in 
   Fractionation Data Center.
 * Conversion Tower: Convert items into other items related to them. There is a certain probability of obtaining
   Transformation Essence. You need to unlock and upgrade the corresponding recipe in the Fractionation Data Center.
-* Rectification Tower: Rectifies matrices into chain materials used by FE growth and purchases. You need to unlock and
+* Rectification Tower: Rectifies matrices into matrix essences, then compresses, refluxes, or splits essences into fragments for FE growth and purchases. You need to unlock and
   upgrade the corresponding recipe in the Fractionation Data Center.
 * Logistics Interaction Station: An intra-planetary logistics station that can interact with the Fractionation Data
   Center.
