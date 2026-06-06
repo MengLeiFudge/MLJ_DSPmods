@@ -20,11 +20,18 @@ namespace FE.UI.MainPanel.DrawGrowth;
 /// 本页只展示当前抽取目标、卡池状态与最近结果，所有概率、保底、聚焦命中和奖励结算都来自 GachaService。
 /// </summary>
 public static class TicketRaffle {
+    private enum MainDrawPreference {
+        Balanced = 0,
+        Opening = 1,
+        Proto = 2,
+    }
+
     /// <summary>
     /// 单个抽取卡池标签页的 UI 引用集合。
     /// </summary>
     private sealed class RaffleTabUi {
         public int PoolId;
+        public bool UsesMainDrawPreference;
         public RectTransform Tab;
         public PageLayout.HeaderRefs Header;
         public Text TxtPoolName;
@@ -51,6 +58,7 @@ public static class TicketRaffle {
     public static long totalDraws;
     public static long openingLineDraws;
     private static readonly List<RaffleTabUi> activeUis = [];
+    private static MainDrawPreference currentMainDrawPreference = MainDrawPreference.Balanced;
     private static int currentMainDrawPoolId = GachaPool.PoolIdOpeningLine;
 
     private static void CleanupInvalidActiveUis() {
@@ -137,8 +145,10 @@ public static class TicketRaffle {
         Register("成长池积分", "Growth Points");
         Register("抽1次", "Draw x1");
         Register("抽10次", "Draw x10");
-        Register("切换到开线", "Switch to Opening");
-        Register("切换到原胚", "Switch to Proto");
+        Register("抽取偏好", "Draw Preference");
+        Register("偏好-平衡", "Balanced");
+        Register("偏好-开线优先", "Opening First");
+        Register("偏好-原胚优先", "Proto First");
         Register("前往成长池", "Go Growth");
         Register("前往聚焦页", "Go Focus");
         Register("结果摘要", "Summary");
@@ -175,8 +185,10 @@ public static class TicketRaffle {
 
     public static void LoadConfig(ConfigFile configFile) { }
 
-    public static void CreateMainDrawUI(MyWindow wnd, RectTransform trans) =>
-        CreatePoolUI(wnd, trans, currentMainDrawPoolId);
+    public static void CreateMainDrawUI(MyWindow wnd, RectTransform trans) {
+        SyncTotalDrawsFromSharedState();
+        CreatePoolUI(wnd, trans, ResolveMainDrawPool(), true);
+    }
 
     public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) =>
         CreatePoolUI(wnd, trans, GachaPool.PoolIdOpeningLine);
@@ -190,11 +202,13 @@ public static class TicketRaffle {
     public static void CreateLimitedUI(MyWindow wnd, RectTransform trans) =>
         CreatePoolUI(wnd, trans, GachaPool.PoolIdFocus);
 
-    private static void CreatePoolUI(MyWindow wnd, RectTransform trans, int poolId) {
+    private static void CreatePoolUI(MyWindow wnd, RectTransform trans, int poolId,
+        bool usesMainDrawPreference = false) {
         ResetActiveUisBeforeRecreate();
         SyncTotalDrawsFromSharedState();
         var ui = new RaffleTabUi {
             PoolId = poolId,
+            UsesMainDrawPreference = usesMainDrawPreference,
             Tab = trans
         };
         activeUis.Add(ui);
@@ -229,7 +243,7 @@ public static class TicketRaffle {
                             ButtonNode("抽10次", onClick: () => StartDraw(ui, 10), fontSize: 14,
                                 onBuilt: btn => ui.BtnDraw10 = btn,
                                 pos: (0, 1), objectName: $"ticket-raffle-draw-10-{poolId}"),
-                            ButtonNode("切换到原胚", onClick: () => SwitchDrawPool(ui), fontSize: 14,
+                            ButtonNode("抽取偏好", onClick: () => CycleMainDrawPreference(ui), fontSize: 14,
                                 onBuilt: btn => ui.BtnSwitchPool = btn,
                                 pos: (0, 2), objectName: $"ticket-raffle-switch-pool-{poolId}"),
                             ButtonNode("前往成长池",
@@ -250,13 +264,34 @@ public static class TicketRaffle {
         RefreshTabState(ui);
     }
 
-    private static void SwitchDrawPool(RaffleTabUi ui) {
-        ui.PoolId = ui.PoolId == GachaPool.PoolIdOpeningLine
-            ? GachaPool.PoolIdProtoLoop
-            : GachaPool.PoolIdOpeningLine;
-        currentMainDrawPoolId = ui.PoolId;
+    private static void CycleMainDrawPreference(RaffleTabUi ui) {
+        currentMainDrawPreference = currentMainDrawPreference switch {
+            MainDrawPreference.Balanced => MainDrawPreference.Opening,
+            MainDrawPreference.Opening => MainDrawPreference.Proto,
+            _ => MainDrawPreference.Balanced,
+        };
+        ui.PoolId = ResolveMainDrawPool();
         ClearResultDisplay(ui);
         RefreshTabState(ui);
+    }
+
+    private static int ResolveMainDrawPool() {
+        currentMainDrawPoolId = currentMainDrawPreference switch {
+            MainDrawPreference.Opening => GachaPool.PoolIdOpeningLine,
+            MainDrawPreference.Proto => GachaPool.PoolIdProtoLoop,
+            _ => openingLineDraws <= totalDraws - openingLineDraws
+                ? GachaPool.PoolIdOpeningLine
+                : GachaPool.PoolIdProtoLoop,
+        };
+        return currentMainDrawPoolId;
+    }
+
+    private static string GetMainDrawPreferenceText() {
+        return currentMainDrawPreference switch {
+            MainDrawPreference.Opening => "偏好-开线优先".Translate(),
+            MainDrawPreference.Proto => "偏好-原胚优先".Translate(),
+            _ => "偏好-平衡".Translate(),
+        };
     }
 
     private static void ClearResultDisplay(RaffleTabUi ui) {
@@ -336,6 +371,9 @@ public static class TicketRaffle {
     }
 
     private static void StartDraw(RaffleTabUi ui, int count) {
+        if (ui.UsesMainDrawPreference) {
+            ui.PoolId = ResolveMainDrawPool();
+        }
         if (!GachaPool.IsDrawPool(ui.PoolId)) {
             return;
         }
@@ -464,9 +502,7 @@ public static class TicketRaffle {
             ui.BtnDraw10.SetText($"{"抽10次".Translate()} ({draw10Cost})");
         }
         if (ui.BtnSwitchPool != null) {
-            ui.BtnSwitchPool.SetText(ui.PoolId == GachaPool.PoolIdOpeningLine
-                ? "切换到原胚".Translate()
-                : "切换到开线".Translate());
+            ui.BtnSwitchPool.SetText($"{"抽取偏好".Translate()}：{GetMainDrawPreferenceText()}");
         }
     }
 
@@ -543,6 +579,12 @@ public static class TicketRaffle {
             ("OpeningLineDraws", br => {
                 long value = br.ReadInt64();
                 openingLineDraws = value < 0 ? 0 : value;
+            }),
+            ("MainDrawPreference", br => {
+                int value = br.ReadInt32();
+                currentMainDrawPreference = value is >= 0 and <= 2
+                    ? (MainDrawPreference)value
+                    : MainDrawPreference.Balanced;
             })
         );
         SyncTotalDrawsToSharedState();
@@ -551,12 +593,15 @@ public static class TicketRaffle {
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("TotalDraws", bw => bw.Write(totalDraws)),
-            ("OpeningLineDraws", bw => bw.Write(openingLineDraws))
+            ("OpeningLineDraws", bw => bw.Write(openingLineDraws)),
+            ("MainDrawPreference", bw => bw.Write((int)currentMainDrawPreference))
         );
     }
 
     public static void IntoOtherSave() {
         activeUis.Clear();
+        currentMainDrawPreference = MainDrawPreference.Balanced;
+        currentMainDrawPoolId = GachaPool.PoolIdOpeningLine;
         ResetDrawCounters();
     }
 }
