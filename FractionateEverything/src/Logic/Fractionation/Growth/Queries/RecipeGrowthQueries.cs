@@ -142,12 +142,15 @@ public static class RecipeGrowthQueries {
         int level = RecipeGrowthManager.Store.GetOrCreate(recipe).Level;
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int legacyLevel = RecipeGrowthRules.GetEffectiveLegacyLevel(recipe, level);
+        GachaService.GetRecipeDrawUnitProcessingBonus(recipe, out float resonanceRemainBonus,
+            out float resonanceDoubleBonus);
         cache = new ProcessingRatioCache(
             level,
             level > 0,
             level > 0 && level < rule.MaxLevel && (rule.UsesGrowthExp || rule.UsesPity),
-            legacyLevel * 0.08f,
-            legacyLevel * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(recipe.RecipeType));
+            Mathf.Min(0.95f, legacyLevel * 0.08f + resonanceRemainBonus),
+            Mathf.Min(0.75f, legacyLevel * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(recipe.RecipeType)
+                         + resonanceDoubleBonus));
         processingRatioCache[recipe] = cache;
         return cache;
     }
@@ -194,8 +197,8 @@ public static class RecipeGrowthQueries {
             state.GrowthExp,
             state.PityProgress,
             BuildLevelDescriptions(recipe),
-            legacyLevel * 0.08f,
-            legacyLevel * 0.05f + GachaGalleryBonusManager.GetDoubleBonus(recipe.RecipeType),
+            GetRemainInputRatio(recipe),
+            GetDoubleOutputRatio(recipe),
             destroyRatio
         );
     }

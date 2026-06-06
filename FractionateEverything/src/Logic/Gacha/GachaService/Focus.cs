@@ -107,6 +107,40 @@ public static partial class GachaService {
                || RecipeGrowthExecutor.CountEssenceCatalystTargets(offer.ExtraCostItemId, requireMaxed: false) > 0;
     }
 
+    public static int GetRecipeDrawUnitResonance(BaseRecipe recipe) {
+        GachaDrawUnit unit = GetDrawUnitForRecipe(recipe);
+        if (!unit.Key.IsValid) {
+            return 0;
+        }
+
+        int resonance = GachaManager.GetDrawUnitResonance(unit.Key);
+        if (unit.Key.Kind != GachaDrawUnitKind.Recipe) {
+            resonance = Mathf.Max(resonance,
+                GachaManager.GetDrawUnitResonance(GachaDrawUnitKey.FromRecipe(recipe)));
+        }
+        return resonance;
+    }
+
+    public static void GetRecipeDrawUnitProcessingBonus(BaseRecipe recipe, out float remainInputBonus,
+        out float doubleOutputBonus) {
+        remainInputBonus = 0f;
+        doubleOutputBonus = 0f;
+        int resonance = GetRecipeDrawUnitResonance(recipe);
+        if (resonance <= 0) {
+            return;
+        }
+
+        RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+        switch (family) {
+            case RecipeFamily.MineralCopyNormal:
+                doubleOutputBonus = resonance * 0.01f;
+                break;
+            case RecipeFamily.ConversionItemChain:
+                remainInputBonus = resonance * 0.01f;
+                break;
+        }
+    }
+
     private static float GetOpeningRecipeFocusMultiplier(BaseRecipe recipe, int currentStageIndex) {
         GachaFocusType focus = GachaManager.CurrentFocus;
         if (focus == GachaFocusType.Balanced) {
@@ -150,11 +184,31 @@ public static partial class GachaService {
             return GachaFocusMatchType.None;
         }
         if (GachaPool.IsRecipePool(poolId)) {
-            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.MineralCopy, itemId)
-                                ?? RecipeManager.GetRecipe<BaseRecipe>(ERecipe.Conversion, itemId);
-            if (recipe == null) {
+            EnsureRecipeRewardIndex();
+            if (!recipeRewardIndex.TryGetValue(itemId, out GachaDrawUnit unit)) {
                 return GachaFocusMatchType.None;
             }
+            return GetDrawUnitFocusMatchType(unit);
+        }
+        if (GachaPool.IsProtoLoopPool(poolId)) {
+            if (itemId == GetFocusedEmbryoReward()) {
+                return GachaFocusMatchType.Main;
+            }
+            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && itemId == IFE分馏塔定向原胚) {
+                return GachaFocusMatchType.Side;
+            }
+        }
+        return GachaFocusMatchType.None;
+    }
+
+    private static GachaFocusMatchType GetDrawUnitFocusMatchType(GachaDrawUnit unit) {
+        bool sideHit = false;
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe == null) {
+                continue;
+            }
+
             if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
                 return GachaFocusMatchType.Main;
             }
@@ -167,25 +221,36 @@ public static partial class GachaService {
             }
             if (GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy
                 && RecipeGrowthQueries.IsMaxed(recipe)) {
-                return GachaFocusMatchType.Side;
+                sideHit = true;
             }
-            return recipe.RecipeType switch {
-                ERecipe.MineralCopy when GachaManager.CurrentFocus == GachaFocusType.MineralExpansion =>
-                    GachaFocusMatchType.Main,
-                ERecipe.Conversion when GachaManager.CurrentFocus == GachaFocusType.ConversionLeap =>
-                    GachaFocusMatchType.Main,
-                _ => GachaFocusMatchType.None,
-            };
-        }
-        if (GachaPool.IsProtoLoopPool(poolId)) {
-            if (itemId == GetFocusedEmbryoReward()) {
+            if (recipe.RecipeType == ERecipe.MineralCopy
+                && GachaManager.CurrentFocus == GachaFocusType.MineralExpansion) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && itemId == IFE分馏塔定向原胚) {
-                return GachaFocusMatchType.Side;
+            if (recipe.RecipeType == ERecipe.Conversion
+                && GachaManager.CurrentFocus == GachaFocusType.ConversionLeap) {
+                return GachaFocusMatchType.Main;
             }
         }
-        return GachaFocusMatchType.None;
+
+        return sideHit ? GachaFocusMatchType.Side : GachaFocusMatchType.None;
+    }
+
+    private static GachaDrawUnit GetDrawUnitForRecipe(BaseRecipe recipe) {
+        if (recipe == null) {
+            return default;
+        }
+
+        EnsureRecipeRewardIndex();
+        RecipeKey recipeKey = RecipeKey.FromRecipe(recipe);
+        foreach (GachaDrawUnit unit in recipeRewardIndex.Values) {
+            foreach (RecipeKey key in unit.RecipeKeys) {
+                if (key.RecipeType == recipeKey.RecipeType && key.InputId == recipeKey.InputId) {
+                    return unit;
+                }
+            }
+        }
+        return GachaDrawUnit.FromRecipe(recipe);
     }
 
     private static bool IsLogisticsRecipe(int inputId) {

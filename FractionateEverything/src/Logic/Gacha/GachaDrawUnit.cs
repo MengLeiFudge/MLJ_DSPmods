@@ -9,6 +9,8 @@ namespace FE.Logic.Gacha;
 public enum GachaDrawUnitKind {
     None = 0,
     Recipe = 1,
+    ResourceGroup = 2,
+    ConversionChain = 3,
 }
 
 /// <summary>
@@ -25,7 +27,9 @@ public readonly struct GachaDrawUnitKey {
     public ERecipe RecipeType { get; }
     public int InputId { get; }
 
-    public bool IsValid => Kind == GachaDrawUnitKind.Recipe && InputId > 0;
+    public bool IsValid => (Kind is GachaDrawUnitKind.Recipe
+        or GachaDrawUnitKind.ResourceGroup
+        or GachaDrawUnitKind.ConversionChain) && InputId > 0;
 
     public static GachaDrawUnitKey FromRecipe(BaseRecipe recipe) =>
         recipe == null ? default : new(GachaDrawUnitKind.Recipe, recipe.RecipeType, recipe.InputID);
@@ -39,21 +43,22 @@ public sealed class GachaDrawUnitState {
 }
 
 /// <summary>
-/// 抽取单位定义。当前先让主抽取开线偏好的一条生产配方对应一个抽取单位，后续可扩为配方组或家族。
+/// 抽取单位定义。一个单位可以映射单配方、资源组或转化链；底层等级仍由 RecipeGrowth 逐配方保存。
 /// </summary>
 public readonly struct GachaDrawUnit {
-    public GachaDrawUnit(GachaDrawUnitKey key, int displayItemId, RecipeKey recipeKey) {
+    public GachaDrawUnit(GachaDrawUnitKey key, int displayItemId, RecipeKey[] recipeKeys) {
         Key = key;
         DisplayItemId = displayItemId;
-        RecipeKey = recipeKey;
+        RecipeKeys = recipeKeys ?? [];
     }
 
     public GachaDrawUnitKey Key { get; }
     public int DisplayItemId { get; }
-    public RecipeKey RecipeKey { get; }
+    public RecipeKey[] RecipeKeys { get; }
+    public RecipeKey RecipeKey => RecipeKeys.Length > 0 ? RecipeKeys[0] : default;
 
     public static GachaDrawUnit FromRecipe(BaseRecipe recipe) => new(
         GachaDrawUnitKey.FromRecipe(recipe),
         recipe?.InputID ?? 0,
-        recipe == null ? default : RecipeKey.FromRecipe(recipe));
+        recipe == null ? [] : [RecipeKey.FromRecipe(recipe)]);
 }

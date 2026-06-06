@@ -72,7 +72,7 @@ public static partial class GachaService {
     private static readonly Random rng = new();
     private static readonly List<GachaPool> pools = [];
     private static readonly GachaPool[] poolsById = new GachaPool[GachaPool.PoolCount];
-    private static readonly Dictionary<int, BaseRecipe> recipeRewardIndex = [];
+    private static readonly Dictionary<int, GachaDrawUnit> recipeRewardIndex = [];
     private static int recipeRewardIndexRecipeCount;
 
     private static int cachedMatrixId;

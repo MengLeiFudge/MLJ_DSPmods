@@ -81,65 +81,65 @@ public static partial class GachaService {
     }
 
     private static void FillOpeningLinePool(GachaPool pool) {
-        var allRecipes = GetOpeningRecipes();
         int currentStageIndex = GetCurrentProgressStageIndex();
+        var allUnits = GetOpeningDrawUnits(currentStageIndex);
 
-        var previousStageRecipes = new List<int>();
-        var currentStageRecipes = new List<int>();
-        var lockedCurrentStageRecipes = new List<int>();
+        var previousStageUnits = new List<int>();
+        var currentStageUnits = new List<int>();
+        var lockedCurrentStageUnits = new List<int>();
 
-        foreach (BaseRecipe recipe in allRecipes) {
-            int stageIndex = GetMatrixStageIndex(recipe.MatrixID);
-            int itemId = recipe.InputID;
+        foreach (GachaDrawUnit unit in allUnits) {
+            int stageIndex = GetDrawUnitStageIndex(unit);
+            int itemId = unit.DisplayItemId;
             if (stageIndex < currentStageIndex) {
-                AddWeighted(previousStageRecipes, itemId, GetRecipeWeight(recipe, currentStageIndex));
+                AddWeighted(previousStageUnits, itemId, GetDrawUnitWeight(unit, currentStageIndex));
                 continue;
             }
 
             if (stageIndex == currentStageIndex) {
-                int weight = GetRecipeWeight(recipe, currentStageIndex);
-                AddWeighted(currentStageRecipes, itemId, weight);
-                if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
-                    AddWeighted(lockedCurrentStageRecipes, itemId, weight + 1);
+                int weight = GetDrawUnitWeight(unit, currentStageIndex);
+                AddWeighted(currentStageUnits, itemId, weight);
+                if (HasLockedRecipeAtStage(unit, currentStageIndex)) {
+                    AddWeighted(lockedCurrentStageUnits, itemId, weight + 1);
                 }
             }
         }
 
         if (IsSpeedrunMode) {
-            List<int> targetRecipes = currentStageRecipes.Count > 0 ? currentStageRecipes :
-                previousStageRecipes.Count > 0 ? previousStageRecipes : lockedCurrentStageRecipes;
-            if (targetRecipes.Count == 0) {
-                targetRecipes = [IFE残片];
+            List<int> targetUnits = currentStageUnits.Count > 0 ? currentStageUnits :
+                previousStageUnits.Count > 0 ? previousStageUnits : lockedCurrentStageUnits;
+            if (targetUnits.Count == 0) {
+                targetUnits = [IFE残片];
             }
-            pool.PoolC.AddRange(targetRecipes);
-            pool.PoolB.AddRange(targetRecipes);
-            pool.PoolA.AddRange(targetRecipes);
-            pool.PoolS.AddRange(lockedCurrentStageRecipes.Count > 0 ? lockedCurrentStageRecipes : targetRecipes);
+            pool.PoolC.AddRange(targetUnits);
+            pool.PoolB.AddRange(targetUnits);
+            pool.PoolA.AddRange(targetUnits);
+            pool.PoolS.AddRange(lockedCurrentStageUnits.Count > 0 ? lockedCurrentStageUnits : targetUnits);
             return;
         }
 
         pool.PoolC.Add(IFE残片);
 
-        if (previousStageRecipes.Count > 0) {
-            pool.PoolB.AddRange(previousStageRecipes);
+        if (previousStageUnits.Count > 0) {
+            pool.PoolB.AddRange(previousStageUnits);
         } else {
-            pool.PoolB.AddRange(currentStageRecipes);
+            pool.PoolB.AddRange(currentStageUnits);
         }
         if (pool.PoolB.Count == 0) {
             pool.PoolB.Add(IFE残片);
         }
 
-        if (currentStageRecipes.Count > 0) {
-            pool.PoolA.AddRange(currentStageRecipes);
+        if (currentStageUnits.Count > 0) {
+            pool.PoolA.AddRange(currentStageUnits);
         }
         if (pool.PoolA.Count == 0) {
             pool.PoolA.AddRange(pool.PoolB);
         }
 
-        if (lockedCurrentStageRecipes.Count > 0) {
-            pool.PoolS.AddRange(lockedCurrentStageRecipes);
-        } else if (currentStageRecipes.Count > 0) {
-            pool.PoolS.AddRange(currentStageRecipes);
+        if (lockedCurrentStageUnits.Count > 0) {
+            pool.PoolS.AddRange(lockedCurrentStageUnits);
+        } else if (currentStageUnits.Count > 0) {
+            pool.PoolS.AddRange(currentStageUnits);
         } else {
             pool.PoolS.AddRange(pool.PoolA);
         }
@@ -186,31 +186,49 @@ public static partial class GachaService {
     private static int GetOpeningRecipeStateHash() {
         int hash = 17;
         unchecked {
-            foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
-                if (!IsOpeningLineRecipe(recipe)) {
-                    continue;
-                }
+            foreach (GachaDrawUnit unit in GetOpeningDrawUnits(GetCurrentProgressStageIndex())) {
+                hash = hash * 31 + (int)unit.Key.Kind;
+                hash = hash * 31 + (int)unit.Key.RecipeType;
+                hash = hash * 31 + unit.Key.InputId;
+                hash = hash * 31 + GachaManager.GetDrawUnitResonance(unit.Key);
+                foreach (RecipeKey key in unit.RecipeKeys) {
+                    BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+                    if (recipe == null) {
+                        continue;
+                    }
 
-                hash = hash * 31 + recipe.InputID;
-                hash = hash * 31 + (int)recipe.RecipeType;
-                hash = hash * 31 + RecipeGrowthQueries.GetLevel(recipe);
-                hash = hash * 31 + recipe.MatrixID;
+                    hash = hash * 31 + recipe.InputID;
+                    hash = hash * 31 + (int)recipe.RecipeType;
+                    hash = hash * 31 + RecipeGrowthQueries.GetLevel(recipe);
+                    hash = hash * 31 + recipe.MatrixID;
+                }
             }
         }
         return hash;
     }
 
-    private static List<BaseRecipe> GetOpeningRecipes() {
-        int currentStageIndex = GetCurrentProgressStageIndex();
-        var recipes = new List<BaseRecipe>();
+    private static List<GachaDrawUnit> GetOpeningDrawUnits(int maxStageIndex) {
+        var mineralGroups = new Dictionary<GachaDrawUnitKey, List<BaseRecipe>>();
+        var mineralDisplayItems = new Dictionary<GachaDrawUnitKey, int>();
+        var conversionRecipes = new List<BaseRecipe>();
+
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
-            if (!IsOpeningLineRecipe(recipe) || GetMatrixStageIndex(recipe.MatrixID) > currentStageIndex) {
+            if (!IsOpeningLineRecipe(recipe) || GetMatrixStageIndex(recipe.MatrixID) > maxStageIndex) {
                 continue;
             }
 
-            recipes.Add(recipe);
+            if (recipe.RecipeType == ERecipe.MineralCopy) {
+                GachaDrawUnitKey key = GetMineralCopyDrawUnitKey(recipe, out int displayItemId);
+                AddRecipeToDrawUnitGroup(mineralGroups, mineralDisplayItems, key, displayItemId, recipe);
+            } else if (recipe.RecipeType == ERecipe.Conversion) {
+                conversionRecipes.Add(recipe);
+            }
         }
-        return recipes;
+
+        var units = new List<GachaDrawUnit>();
+        AddGroupedDrawUnits(units, mineralGroups, mineralDisplayItems);
+        units.AddRange(BuildConversionChainDrawUnits(conversionRecipes));
+        return units;
     }
 
     private static int GetRecipeWeight(BaseRecipe recipe, int currentStageIndex) {
@@ -241,6 +259,212 @@ public static partial class GachaService {
         }
 
         return Mathf.Max(1, Mathf.RoundToInt(weight));
+    }
+
+    private static int GetDrawUnitWeight(GachaDrawUnit unit, int currentStageIndex) {
+        float totalWeight = 0f;
+        int recipeCount = 0;
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe == null) {
+                continue;
+            }
+
+            totalWeight += GetRecipeWeight(recipe, currentStageIndex);
+            recipeCount++;
+        }
+
+        if (recipeCount <= 0) {
+            return 1;
+        }
+
+        float weight = totalWeight / recipeCount + Math.Min(recipeCount, 6) * (IsSpeedrunMode ? 10f : 8f);
+        if (IsDrawUnitFullyUnlocked(unit)
+            && GachaManager.GetDrawUnitResonance(unit.Key) < GachaManager.MaxDrawUnitResonance) {
+            weight *= IsSpeedrunMode ? 1.18f : 1.12f;
+        }
+        return Mathf.Max(1, Mathf.RoundToInt(weight));
+    }
+
+    private static int GetDrawUnitStageIndex(GachaDrawUnit unit) {
+        int stageIndex = 0;
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe != null) {
+                stageIndex = Math.Max(stageIndex, GetMatrixStageIndex(recipe.MatrixID));
+            }
+        }
+        return stageIndex;
+    }
+
+    private static bool HasLockedRecipeAtStage(GachaDrawUnit unit, int stageIndex) {
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe != null
+                && GetMatrixStageIndex(recipe.MatrixID) == stageIndex
+                && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool IsDrawUnitFullyUnlocked(GachaDrawUnit unit) {
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe != null && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+                return false;
+            }
+        }
+        return unit.RecipeKeys.Length > 0;
+    }
+
+    private static void AddRecipeToDrawUnitGroup(Dictionary<GachaDrawUnitKey, List<BaseRecipe>> groups,
+        Dictionary<GachaDrawUnitKey, int> displayItems, GachaDrawUnitKey key, int displayItemId, BaseRecipe recipe) {
+        if (!groups.TryGetValue(key, out List<BaseRecipe> recipes)) {
+            recipes = [];
+            groups[key] = recipes;
+            displayItems[key] = displayItemId;
+        }
+
+        recipes.Add(recipe);
+    }
+
+    private static void AddGroupedDrawUnits(List<GachaDrawUnit> units,
+        Dictionary<GachaDrawUnitKey, List<BaseRecipe>> groups,
+        Dictionary<GachaDrawUnitKey, int> displayItems) {
+        foreach (KeyValuePair<GachaDrawUnitKey, List<BaseRecipe>> pair in groups) {
+            if (!displayItems.TryGetValue(pair.Key, out int displayItemId)) {
+                displayItemId = pair.Value.Count > 0 ? pair.Value[0].InputID : 0;
+            }
+
+            units.Add(CreateDrawUnit(pair.Key, displayItemId, pair.Value));
+        }
+    }
+
+    private static GachaDrawUnit CreateDrawUnit(GachaDrawUnitKey key, int displayItemId, List<BaseRecipe> recipes) {
+        var recipeKeys = new RecipeKey[recipes.Count];
+        for (int i = 0; i < recipes.Count; i++) {
+            recipeKeys[i] = RecipeKey.FromRecipe(recipes[i]);
+        }
+
+        return new GachaDrawUnit(key, displayItemId, recipeKeys);
+    }
+
+    private static GachaDrawUnitKey GetMineralCopyDrawUnitKey(BaseRecipe recipe, out int displayItemId) {
+        int inputId = recipe.InputID;
+        if (IsBasicResourceCopy(inputId)) {
+            displayItemId = I铁矿;
+            return new GachaDrawUnitKey(GachaDrawUnitKind.ResourceGroup, ERecipe.MineralCopy, I铁矿);
+        }
+
+        if (IsFluidResourceCopy(inputId)) {
+            displayItemId = I水;
+            return new GachaDrawUnitKey(GachaDrawUnitKind.ResourceGroup, ERecipe.MineralCopy, I水);
+        }
+
+        if (IsRareResourceCopy(inputId)) {
+            displayItemId = I单极磁石;
+            return new GachaDrawUnitKey(GachaDrawUnitKind.ResourceGroup, ERecipe.MineralCopy, I单极磁石);
+        }
+
+        displayItemId = inputId;
+        return GachaDrawUnitKey.FromRecipe(recipe);
+    }
+
+    private static bool IsBasicResourceCopy(int inputId) {
+        return inputId switch {
+            I木材 or I植物燃料 or I铁矿 or I铜矿 or I硅石 or I钛石 or I石矿 or I煤矿 => true,
+            _ => false,
+        };
+    }
+
+    private static bool IsFluidResourceCopy(int inputId) {
+        return inputId switch {
+            I水 or I原油 or I硫酸 or I氢 or I重氢 => true,
+            _ => false,
+        };
+    }
+
+    private static bool IsRareResourceCopy(int inputId) {
+        return inputId switch {
+            I可燃冰 or I金伯利矿石 or I分形硅石 or I光栅石 or I刺笋结晶
+                or I单极磁石 or I有机晶体 or I临界光子 or I反物质 => true,
+            _ => false,
+        };
+    }
+
+    private static List<GachaDrawUnit> BuildConversionChainDrawUnits(List<BaseRecipe> conversionRecipes) {
+        var recipeByInputId = new Dictionary<int, BaseRecipe>();
+        var parents = new Dictionary<int, int>();
+        foreach (BaseRecipe recipe in conversionRecipes) {
+            recipeByInputId[recipe.InputID] = recipe;
+            EnsureUnionParent(parents, recipe.InputID);
+        }
+
+        foreach (BaseRecipe recipe in conversionRecipes) {
+            foreach (OutputInfo output in recipe.OutputMain) {
+                if (!recipeByInputId.ContainsKey(output.OutputID)) {
+                    continue;
+                }
+                Union(parents, recipe.InputID, output.OutputID);
+            }
+        }
+
+        var groups = new Dictionary<int, List<BaseRecipe>>();
+        foreach (BaseRecipe recipe in conversionRecipes) {
+            int root = FindParent(parents, recipe.InputID);
+            if (!groups.TryGetValue(root, out List<BaseRecipe> recipes)) {
+                recipes = [];
+                groups[root] = recipes;
+            }
+            recipes.Add(recipe);
+        }
+
+        var units = new List<GachaDrawUnit>();
+        foreach (List<BaseRecipe> recipes in groups.Values) {
+            int displayItemId = GetSmallestInputId(recipes);
+            var key = recipes.Count > 1
+                ? new GachaDrawUnitKey(GachaDrawUnitKind.ConversionChain, ERecipe.Conversion, displayItemId)
+                : GachaDrawUnitKey.FromRecipe(recipes[0]);
+            units.Add(CreateDrawUnit(key, displayItemId, recipes));
+        }
+
+        return units;
+    }
+
+    private static int GetSmallestInputId(List<BaseRecipe> recipes) {
+        int itemId = int.MaxValue;
+        foreach (BaseRecipe recipe in recipes) {
+            itemId = Math.Min(itemId, recipe.InputID);
+        }
+        return itemId == int.MaxValue ? 0 : itemId;
+    }
+
+    private static void EnsureUnionParent(Dictionary<int, int> parents, int itemId) {
+        if (!parents.ContainsKey(itemId)) {
+            parents[itemId] = itemId;
+        }
+    }
+
+    private static int FindParent(Dictionary<int, int> parents, int itemId) {
+        EnsureUnionParent(parents, itemId);
+        int parent = parents[itemId];
+        if (parent == itemId) {
+            return itemId;
+        }
+
+        int root = FindParent(parents, parent);
+        parents[itemId] = root;
+        return root;
+    }
+
+    private static void Union(Dictionary<int, int> parents, int a, int b) {
+        int rootA = FindParent(parents, a);
+        int rootB = FindParent(parents, b);
+        if (rootA != rootB) {
+            parents[rootB] = rootA;
+        }
     }
 
     private static int GetEmbryoWeight(int itemId) {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.Growth;
 using FE.Utils;
 
 namespace FE.Logic.Gacha;
@@ -273,6 +274,7 @@ public static class GachaManager {
                 }
             })
         );
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 
     public static void IntoOtherSave() {
@@ -282,5 +284,6 @@ public static class GachaManager {
         DrawUnitStates.Clear();
         CurrentMode = GachaMode.Normal;
         CurrentFocus = GachaFocusType.Balanced;
+        RecipeGrowthQueries.ClearProcessingCache();
     }
 }

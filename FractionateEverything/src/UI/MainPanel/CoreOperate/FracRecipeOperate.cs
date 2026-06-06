@@ -645,7 +645,7 @@ public static class FracRecipeOperate {
             return string.Empty;
         }
 
-        int resonance = GachaManager.GetDrawUnitResonance(GachaDrawUnitKey.FromRecipe(recipe));
+        int resonance = GachaService.GetRecipeDrawUnitResonance(recipe);
         return $"{"抽取单位回响".Translate()}：Lv{resonance}/{GachaManager.MaxDrawUnitResonance}";
     }
 

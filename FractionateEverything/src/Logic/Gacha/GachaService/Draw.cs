@@ -78,14 +78,21 @@ public static partial class GachaService {
 
         EnsureRecipeRewardIndex();
 
-        if (!recipeRewardIndex.TryGetValue(inputId, out BaseRecipe recipe)) {
+        if (!recipeRewardIndex.TryGetValue(inputId, out GachaDrawUnit unit)) {
             AddItemToModData(inputId, 1, 0, false);
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
         }
 
-        GachaDrawUnit unit = GachaDrawUnit.FromRecipe(recipe);
+        BaseRecipe recipe = SelectDrawUnitTargetRecipe(unit);
+        if (recipe == null) {
+            AddItemToModData(inputId, 1, 0, false);
+            return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
+        }
+
         bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
-        if (!wasLocked && GachaManager.TryAddDrawUnitResonance(unit.Key, out int resonanceLevel)) {
+        if (IsDrawUnitFullyUnlocked(unit) && GachaManager.TryAddDrawUnitResonance(unit.Key, out int resonanceLevel)) {
+            RecipeGrowthQueries.ClearProcessingCache();
+            InitPools();
             return new GachaRewardResolution(GachaRewardType.DrawUnitResonance, 0, resonanceLevel, unit.DisplayItemId);
         }
 
@@ -112,15 +119,41 @@ public static partial class GachaService {
         }
 
         recipeRewardIndex.Clear();
-        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
-            if (!IsOpeningLineRecipe(recipe) || recipeRewardIndex.ContainsKey(recipe.InputID)) {
+        foreach (GachaDrawUnit unit in GetOpeningDrawUnits(int.MaxValue)) {
+            if (!unit.Key.IsValid || unit.DisplayItemId <= 0 || recipeRewardIndex.ContainsKey(unit.DisplayItemId)) {
                 continue;
             }
 
-            recipeRewardIndex.Add(recipe.InputID, recipe);
+            recipeRewardIndex.Add(unit.DisplayItemId, unit);
         }
 
         recipeRewardIndexRecipeCount = recipeCount;
+    }
+
+    private static BaseRecipe SelectDrawUnitTargetRecipe(GachaDrawUnit unit) {
+        BaseRecipe fallback = null;
+        BaseRecipe bestProgressTarget = null;
+        foreach (RecipeKey key in unit.RecipeKeys) {
+            BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
+            if (recipe == null) {
+                continue;
+            }
+
+            fallback ??= recipe;
+            if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
+                return recipe;
+            }
+
+            if (!RecipeGrowthQueries.IsMaxed(recipe)
+                && (bestProgressTarget == null
+                    || RecipeGrowthQueries.GetLevel(recipe) < RecipeGrowthQueries.GetLevel(bestProgressTarget)
+                    || RecipeGrowthQueries.GetLevel(recipe) == RecipeGrowthQueries.GetLevel(bestProgressTarget)
+                    && recipe.InputID < bestProgressTarget.InputID)) {
+                bestProgressTarget = recipe;
+            }
+        }
+
+        return bestProgressTarget ?? fallback;
     }
 
     private static GachaRarity RollRarity(GachaPool pool, float currentSRate, bool forceS) {
