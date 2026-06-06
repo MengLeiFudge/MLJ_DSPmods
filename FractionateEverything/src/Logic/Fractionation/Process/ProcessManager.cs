@@ -1110,7 +1110,8 @@ public static partial class ProcessManager {
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("TotalFractionSuccesses", bw => bw.Write(totalFractionSuccesses)),
-            ("PeakFractionSuccessesPerMinute", bw => bw.Write(peakFractionSuccessesPerMinute))
+            ("PeakFractionSuccessesPerMinute", bw => bw.Write(peakFractionSuccessesPerMinute)),
+            ("Sacrifice", SacrificeExport)
         );
     }
 
@@ -1121,8 +1122,10 @@ public static partial class ProcessManager {
         ResetFractionRateWindow();
         r.ReadBlocks(
             ("TotalFractionSuccesses", br => totalFractionSuccesses = Math.Max(0, br.ReadInt64())),
-            ("PeakFractionSuccessesPerMinute", br => peakFractionSuccessesPerMinute = Math.Max(0, br.ReadInt64()))
+            ("PeakFractionSuccessesPerMinute", br => peakFractionSuccessesPerMinute = Math.Max(0, br.ReadInt64())),
+            ("Sacrifice", SacrificeImport)
         );
+        AbsorbDataCenterFractionatorStock();
     }
 
     /// <summary>

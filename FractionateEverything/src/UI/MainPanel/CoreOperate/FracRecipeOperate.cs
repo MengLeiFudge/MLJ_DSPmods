@@ -115,6 +115,7 @@ public static class FracRecipeOperate {
         Register("增产效率", "Proliferator Efficiency");
         Register("流体增强", "Fluid Enhancement");
         Register("成功率加成", "Success Boost");
+        Register("献祭累计", "Sacrificed");
         Register("已启用", "Enabled");
         Register("未启用", "Disabled");
         Register("牺牲特性", "Sacrifice Trait");
@@ -430,8 +431,9 @@ public static class FracRecipeOperate {
                 ShowTextLine(line++, $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
 
                 float sBoost = building.SuccessBoost();
+                long sacrificeCount = ProcessManager.GetSacrificedTowerCount(building.ID);
                 ShowTextLine(line++,
-                    $"{"成功率加成".Translate()} +{sBoost:P1}"
+                    $"{"成功率加成".Translate()} +{sBoost:P1}  {"献祭累计".Translate()} {sacrificeCount}"
                         .WithColor(sBoost > 0 ? Orange : Gray));
 
                 bool fluidEnh = building.EnableFluidEnhancement();

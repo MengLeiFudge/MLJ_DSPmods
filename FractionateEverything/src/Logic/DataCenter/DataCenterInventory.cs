@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Process;
 using FE.Logic.Progression;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
@@ -165,12 +166,14 @@ public static class DataCenterInventory {
         if (itemId <= 0 || itemId >= 12000) {
             return;
         }
+        if (count > 0 && FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
+            TechManager.CheckTechUnlockCondition(itemId);
+            ProcessManager.AddSacrificedTowers(itemId, count);
+            return;
+        }
         lock (centerItemCount) {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
-            if (FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
-                TechManager.CheckTechUnlockCondition(itemId);
-            }
         }
     }
 
@@ -254,12 +257,4 @@ public static class DataCenterInventory {
         }
     }
 
-    public static int Take10PercentTower(int itemId) {
-        if (itemId <= 0 || itemId >= 12000) {
-            return 0;
-        }
-        return centerItemCount[itemId] < 1000
-            ? 0
-            : TakeItemFromModData(itemId, (int)Math.Min(int.MaxValue, centerItemCount[itemId] / 10), out _);
-    }
 }

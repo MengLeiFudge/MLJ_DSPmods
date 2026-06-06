@@ -147,9 +147,9 @@ public static class MainTask {
             ("原胚整备", "Proto Setup"),
             ("五类原胚", "Five Proto Types"),
             ("首次培养", "First Cultivation"),
-            ("五塔培养", "Five Tower Cultivation"),
+            ("四塔培养", "Four Tower Cultivation"),
             ("首次上传", "First Upload"),
-            ("五塔上传", "Five Tower Upload"),
+            ("四塔上传", "Four Tower Upload"),
             ("建筑 1 级", "Building Level 1"),
             ("建筑 2 级", "Building Level 2"),
             ("建筑 3 级", "Building Level 3"),
@@ -399,10 +399,10 @@ public static class MainTask {
                     () => GetMaxBuildingLevel() >= 1, () => GetBuildingLevelProgressText(1)),
                 Node("building-train-four", "四塔培养", "四类万物分馏建筑均达到 1 级", 4, IFE转化塔, IFE残片, 600,
                     () => GetMinBuildingLevel() >= 1, () => GetMinBuildingLevelProgressText(1)),
-                Node("building-upload-one", "首次上传", "分馏数据中心内持有任意万物分馏建筑", 2, IFE交互塔, IFE残片, 200,
+                Node("building-upload-one", "首次上传", "累计向分馏数据中心上传任意万物分馏建筑", 2, IFE交互塔, IFE残片, 200,
                     () => GetUploadedBuildingTypeCount() >= 1,
                     () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 1)),
-                Node("building-upload-four", "四塔上传", "分馏数据中心内持有四类万物分馏建筑", 5, IFE精馏塔, IFE残片, 800,
+                Node("building-upload-four", "四塔上传", "累计向分馏数据中心上传四类万物分馏建筑", 5, IFE精馏塔, IFE残片, 800,
                     () => GetUploadedBuildingTypeCount() >= 4,
                     () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 4))),
             Branch("building-level-low", "低档建筑等级",
@@ -535,12 +535,7 @@ public static class MainTask {
     }
 
     private static int GetUploadedBuildingTypeCount() {
-        int count = 0;
-        if (GetItemTotalCount(IFE交互塔) > 0) count++;
-        if (GetItemTotalCount(IFE矿物复制塔) > 0) count++;
-        if (GetItemTotalCount(IFE转化塔) > 0) count++;
-        if (GetItemTotalCount(IFE精馏塔) > 0) count++;
-        return count;
+        return GetSacrificedTowerTypeCount();
     }
 
     private static long GetDrawCount(bool opening) {
