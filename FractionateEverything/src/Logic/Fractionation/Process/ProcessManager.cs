@@ -543,6 +543,8 @@ public static partial class ProcessManager {
             int fluidOutputTarget = 2 * zeroPressureStack;
             bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
                                       || __instance.belt2 > 0 && __instance.isOutput2;
+            bool hasProductOutputBelt = __instance.belt0 > 0 && __instance.isOutput0;
+            int productOutputReserve = hasProductOutputBelt ? maxStack : 0;
 
             // 步骤1：无传送带时，把 fluidOutput 超过 fluidOutputTarget 的部分回填到 fluidInput
             if (!hasFluidOutputBelt) {
@@ -569,7 +571,7 @@ public static partial class ProcessManager {
 
                     // 步骤2：补 fluidOutput 到 fluidOutputTarget（无论有无传送带，始终确保24）
                     int needForOutput = Math.Max(0, fluidOutputTarget - __instance.fluidOutputCount);
-                    int moveToOutput = Math.Min(mainProduct.count, needForOutput);
+                    int moveToOutput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForOutput);
                     if (moveToOutput > 0) {
                         __instance.fluidOutputCount += moveToOutput;
                         __instance.fluidOutputInc += productIncPerItem * moveToOutput;
@@ -585,7 +587,7 @@ public static partial class ProcessManager {
                     // 步骤3：补 fluidInput 到 fluidInputTarget
                     if (mainProduct.count > 0) {
                         int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
-                        int moveToInput = Math.Min(mainProduct.count, needForInput);
+                        int moveToInput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForInput);
                         if (moveToInput > 0) {
                             __instance.fluidInputCount += moveToInput;
                             __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
@@ -1060,6 +1062,31 @@ public static partial class ProcessManager {
         return enableFluidEnhancement ? Math.Max(fluidStack, inputStack) : inputStack;
     }
 
+    private static bool TryInsertFluidOutputAtHead(CargoPath cargoPath, int itemId, int maxStack,
+        int outputStack, int incAvg, out int insertedStack) {
+
+        insertedStack = outputStack;
+        if (cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, (byte)outputStack,
+                (byte)Math.Min(255, incAvg * outputStack))) {
+            return true;
+        }
+
+        if (outputStack <= 1) {
+            insertedStack = 0;
+            return false;
+        }
+
+        // 循环带头部可能已有同类半堆；整组写入失败时，退回单个填充以打破无空位卡死。
+        insertedStack = 1;
+        if (cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, 1,
+                (byte)Math.Min(255, incAvg))) {
+            return true;
+        }
+
+        insertedStack = 0;
+        return false;
+    }
+
     private static void TryOutputFluidToBelt(ref FractionatorComponent fractionator, int buildingID,
         bool enableFluidEnhancement, int fluidStack, CargoTraffic cargoTraffic, int beltId,
         float fluidInputCountPerCargo, bool forceSingleStack = false) {
@@ -1071,22 +1098,6 @@ public static partial class ProcessManager {
         // 无配方/配方未解锁的直通物不应用塔等级集装输出，保持原版单件流动输出语义。
         int preferredStack = GetPreferredFluidOutputStack(enableFluidEnhancement, fluidStack, fluidInputCountPerCargo,
             forceSingleStack);
-        if (enableFluidEnhancement) {
-            for (int i = 0; i < MaxOutputTimes && fractionator.fluidOutputCount > 0; i++) {
-                int outputStack = GetFluidOutputStackToMove(fractionator, preferredStack);
-                if (outputStack <= 0) {
-                    break;
-                }
-                int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, buildingID, outputStack);
-                if (!cargoTraffic.TryInsertItemAtHead(beltId, fractionator.fluidId, (byte)outputStack,
-                        (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
-                    break;
-                }
-                RemoveFluidOutput(ref fractionator, outputStack, fluidOutputIncAvg);
-            }
-            return;
-        }
-
         CargoPath cargoPath = cargoTraffic.GetCargoPath(cargoTraffic.beltPool[beltId].segPathId);
         if (cargoPath == null) {
             return;
@@ -1097,13 +1108,11 @@ public static partial class ProcessManager {
                 break;
             }
             int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, buildingID, outputStack);
-            if (!cargoPath.TryUpdateItemAtHeadAndFillBlank(fractionator.fluidId,
-                    Mathf.CeilToInt((float)(fluidInputCountPerCargo / outputStack - 0.1)),
-                    (byte)outputStack,
-                    (byte)Math.Min(255, fluidOutputIncAvg * outputStack))) {
+            if (!TryInsertFluidOutputAtHead(cargoPath, fractionator.fluidId, preferredStack, outputStack,
+                    fluidOutputIncAvg, out int insertedStack)) {
                 break;
             }
-            RemoveFluidOutput(ref fractionator, outputStack, fluidOutputIncAvg);
+            RemoveFluidOutput(ref fractionator, insertedStack, fluidOutputIncAvg);
         }
     }
 

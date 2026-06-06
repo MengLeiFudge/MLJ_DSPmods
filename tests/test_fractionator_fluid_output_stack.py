@@ -40,6 +40,35 @@ class FractionatorFluidOutputStackTests(unittest.TestCase):
             text,
         )
 
+    def test_zero_pressure_reserves_one_product_stack_for_front_output_belt(self):
+        text = SOURCE.read_text(encoding="utf-8-sig")
+
+        self.assertIn("bool hasProductOutputBelt = __instance.belt0 > 0 && __instance.isOutput0;", text)
+        self.assertIn("int productOutputReserve = hasProductOutputBelt ? maxStack : 0;", text)
+        self.assertIn(
+            "int moveToOutput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForOutput);",
+            text,
+        )
+        self.assertIn(
+            "int moveToInput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForInput);",
+            text,
+        )
+
+    def test_enhanced_fluid_output_can_fill_partial_head_stack(self):
+        text = SOURCE.read_text(encoding="utf-8-sig")
+
+        self.assertIn("TryInsertFluidOutputAtHead", text)
+        self.assertIn(
+            "cargoPath.TryUpdateItemAtHeadAndFillBlank(itemId, maxStack, (byte)outputStack,",
+            text,
+        )
+        self.assertIn("insertedStack = 1;", text)
+        self.assertIn(
+            "RemoveFluidOutput(ref fractionator, insertedStack, fluidOutputIncAvg);",
+            text,
+        )
+        self.assertNotIn("cargoTraffic.TryInsertItemAtHead(beltId", text)
+
 
 if __name__ == "__main__":
     unittest.main()
