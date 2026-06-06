@@ -11,7 +11,7 @@ namespace FE.Logic.Fractionation.Process;
 /// </summary>
 public static partial class ProcessManager {
     // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
-    private const int FractionatorBuildingTypeCount = IFE精馏塔 - IFE交互塔 + 1;
+    private const int FractionatorBuildingTypeCount = 4;
     /// <summary>
     /// 获取该规则或快照允许的最高等级。
     /// </summary>
@@ -128,8 +128,6 @@ public static partial class ProcessManager {
             InteractionTower.SuccessBoost, InteractionTower.EnableFluidEnhancement);
         SetRuntimeConfig(IFE矿物复制塔, MineralReplicationTower.MaxStack, MineralReplicationTower.PlrRatio,
             MineralReplicationTower.SuccessBoost, MineralReplicationTower.EnableFluidEnhancement);
-        SetRuntimeConfig(IFE点数聚集塔, PointAggregateTower.MaxStack, PointAggregateTower.PlrRatio,
-            PointAggregateTower.SuccessBoost, PointAggregateTower.EnableFluidEnhancement);
         SetRuntimeConfig(IFE转化塔, ConversionTower.MaxStack, ConversionTower.PlrRatio,
             ConversionTower.SuccessBoost, ConversionTower.EnableFluidEnhancement);
         SetRuntimeConfig(IFE精馏塔, RectificationTower.MaxStack, RectificationTower.PlrRatio,
@@ -139,7 +137,7 @@ public static partial class ProcessManager {
     private static void SetRuntimeConfig(int buildingID, int maxStack, float plrRatio, float successBoost,
         bool enableFluidEnhancement) {
 
-        int index = buildingID - IFE交互塔;
+        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (index < 0 || index >= runtimeConfigsByBuildingOffset.Length) {
             return;
         }
@@ -154,7 +152,7 @@ public static partial class ProcessManager {
     }
 
     private static FractionatorRuntimeConfig GetRuntimeConfig(int buildingID) {
-        int index = buildingID - IFE交互塔;
+        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (index >= 0 && index < runtimeConfigsByBuildingOffset.Length) {
             FractionatorRuntimeConfig config = runtimeConfigsByBuildingOffset[index];
             if (config.MaxStack > 0) {

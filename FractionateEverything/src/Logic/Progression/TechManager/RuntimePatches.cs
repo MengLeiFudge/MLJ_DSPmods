@@ -1,5 +1,6 @@
 ﻿using System;
 using FE.Logic.Fractionation.Growth;
+using FE.Logic.Fractionation.Fractionators;
 using HarmonyLib;
 using static FE.Utils.Utils;
 
@@ -10,7 +11,7 @@ namespace FE.Logic.Progression;
 /// Preload2会初始化unlockRecipeArray，之后LDBTool添加就不会报空指针异常。
 /// </summary>
 public static partial class TechManager {
-    private static readonly bool[] techUnlockFlags = new bool[7];
+    private static readonly bool[] techUnlockFlags = new bool[4];
 
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
@@ -18,8 +19,9 @@ public static partial class TechManager {
     }
 
     public static void CheckTechUnlockCondition(int itemId) {
-        if (itemId >= IFE交互塔 && itemId <= IFE精馏塔) {
-            techUnlockFlags[itemId - IFE交互塔] = true;
+        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(itemId);
+        if (index >= 0) {
+            techUnlockFlags[index] = true;
         }
     }
 
@@ -31,8 +33,13 @@ public static partial class TechManager {
     public static void Player_GameTick_Postfix() {
         for (int i = 0; i < techUnlockFlags.Length; i++) {
             if (techUnlockFlags[i]) {
-                if (!GameMain.history.TechUnlocked(TFE物品交互 + i)) {
-                    GameMain.history.UnlockTechUnlimited(TFE物品交互 + i, false);
+                int techId = GetActiveFractionatorUnlockTechId(i);
+                if (techId <= 0) {
+                    techUnlockFlags[i] = false;
+                    continue;
+                }
+                if (!GameMain.history.TechUnlocked(techId)) {
+                    GameMain.history.UnlockTechUnlimited(techId, false);
                 } else {
                     techUnlockFlags[i] = false;
                 }
@@ -43,6 +50,16 @@ public static partial class TechManager {
         TryApplyLoadTimeRecipeBaselines();
 
         RecipeGrowthManager.SyncRuntimeUnlocks();
+    }
+
+    private static int GetActiveFractionatorUnlockTechId(int index) {
+        return index switch {
+            0 => TFE物品交互,
+            1 => TFE矿物复制,
+            2 => TFE物品转化,
+            3 => TFE物品精馏,
+            _ => 0,
+        };
     }
 
     [HarmonyPrefix]

@@ -1191,6 +1191,6 @@ public static class Achievements {
 
     private static int GetMaxBuildingLevel() {
         return Math.Max(InteractionTower.Level, Math.Max(MineralReplicationTower.Level,
-            Math.Max(PointAggregateTower.Level, Math.Max(ConversionTower.Level, RectificationTower.Level))));
+            Math.Max(ConversionTower.Level, RectificationTower.Level)));
     }
 }

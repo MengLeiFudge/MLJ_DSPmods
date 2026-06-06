@@ -130,7 +130,7 @@ public static partial class GachaService {
             GachaFocusType.ConversionLeap => IFE转化塔原胚,
             GachaFocusType.LogisticsInteraction => IFE交互塔原胚,
             GachaFocusType.EmbryoCycle => IFE分馏塔定向原胚,
-            GachaFocusType.ProcessOptimization => IFE点数聚集塔原胚,
+            GachaFocusType.ProcessOptimization => IFE转化塔原胚,
             GachaFocusType.RectificationEconomy => IFE精馏塔原胚,
             _ => IFE交互塔原胚,
         };

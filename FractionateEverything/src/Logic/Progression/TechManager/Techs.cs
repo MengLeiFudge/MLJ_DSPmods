@@ -63,7 +63,7 @@ public static partial class TechManager {
             GetTechPos(0, 3)
         );
         tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE残片, IFE点数聚集塔原胚];
+        tech超值礼包3.AddItems = [IFE残片, IFE转化塔原胚];
         tech超值礼包3.AddItemCounts = [500, 10];
         tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
         tech超值礼包3.PropertyItemCounts = [100];
@@ -147,18 +147,6 @@ public static partial class TechManager {
         tech矿物复制.PropertyOverrideItems = [I电磁矩阵];
         tech矿物复制.PropertyItemCounts = [200];
         tech矿物复制.IconTag = "tkwfz";
-
-        var tech增产点数聚集 = ProtoRegistry.RegisterTech(
-            TFE增产点数聚集, "T增产点数聚集", "增产点数聚集描述", "增产点数聚集结果", "Assets/fe/tech增产点数聚集",
-            [],
-            [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE点数聚集塔],
-            GetTechPos(1, 4)
-        );
-        tech增产点数聚集.PreTechsImplicit = [TFE分馏塔原胚];
-        tech增产点数聚集.PropertyOverrideItems = [I电磁矩阵];
-        tech增产点数聚集.PropertyItemCounts = [200];
-        tech增产点数聚集.IconTag = "zcdsjj";
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",

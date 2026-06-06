@@ -18,7 +18,6 @@ public static partial class BuildingManager {
     public static void AddTranslations() {
         InteractionTower.AddTranslations();
         MineralReplicationTower.AddTranslations();
-        PointAggregateTower.AddTranslations();
         ConversionTower.AddTranslations();
         RectificationTower.AddTranslations();
 
@@ -35,7 +34,6 @@ public static partial class BuildingManager {
 
         InteractionTower.Create();
         MineralReplicationTower.Create();
-        PointAggregateTower.Create();
         ConversionTower.Create();
         RectificationTower.Create();
 
@@ -46,7 +44,6 @@ public static partial class BuildingManager {
     public static void SetFractionatorMaterial() {
         InteractionTower.SetMaterial();
         MineralReplicationTower.SetMaterial();
-        PointAggregateTower.SetMaterial();
         ConversionTower.SetMaterial();
         RectificationTower.SetMaterial();
 
@@ -57,7 +54,6 @@ public static partial class BuildingManager {
     public static void UpdateHpAndEnergy() {
         InteractionTower.UpdateHpAndEnergy();
         MineralReplicationTower.UpdateHpAndEnergy();
-        PointAggregateTower.UpdateHpAndEnergy();
         ConversionTower.UpdateHpAndEnergy();
         RectificationTower.UpdateHpAndEnergy();
 
@@ -103,7 +99,6 @@ public static partial class BuildingManager {
         return fractionator.ID switch {
             IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxStack,
             IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
-            IFE点数聚集塔 => BaseFracProductOutputMax * PointAggregateTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
             IFE精馏塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
             _ => BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4
@@ -117,7 +112,6 @@ public static partial class BuildingManager {
         return fractionator.ID switch {
             IFE交互塔 => BaseFracFluidOutputMax * Mathf.Max(1, InteractionTower.MaxStack / 4),
             IFE矿物复制塔 => BaseFracFluidOutputMax * Mathf.Max(1, MineralReplicationTower.MaxStack / 4),
-            IFE点数聚集塔 => BaseFracFluidOutputMax * Mathf.Max(1, PointAggregateTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
             IFE精馏塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
             _ => BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4
@@ -128,7 +122,6 @@ public static partial class BuildingManager {
         return fractionator.ID switch {
             IFE交互塔 => InteractionTower.SuccessBoost,
             IFE矿物复制塔 => MineralReplicationTower.SuccessBoost,
-            IFE点数聚集塔 => PointAggregateTower.SuccessBoost,
             IFE转化塔 => ConversionTower.SuccessBoost,
             IFE精馏塔 => RectificationTower.SuccessBoost,
             _ => 0
@@ -141,7 +134,6 @@ public static partial class BuildingManager {
         r.ReadBlocks(
             ("InteractionTower", InteractionTower.Import),
             ("MineralReplicationTower", MineralReplicationTower.Import),
-            ("PointAggregateTower", PointAggregateTower.Import),
             ("ConversionTower", ConversionTower.Import),
             ("RectificationTower", RectificationTower.Import),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Import),
@@ -158,7 +150,6 @@ public static partial class BuildingManager {
         w.WriteBlocks(
             ("InteractionTower", InteractionTower.Export),
             ("MineralReplicationTower", MineralReplicationTower.Export),
-            ("PointAggregateTower", PointAggregateTower.Export),
             ("ConversionTower", ConversionTower.Export),
             ("RectificationTower", RectificationTower.Export),
             ("PlanetaryInteractionStation", PlanetaryInteractionStation.Export),
@@ -174,7 +165,6 @@ public static partial class BuildingManager {
     public static void IntoOtherSave() {
         InteractionTower.IntoOtherSave();
         MineralReplicationTower.IntoOtherSave();
-        PointAggregateTower.IntoOtherSave();
         ConversionTower.IntoOtherSave();
         RectificationTower.IntoOtherSave();
         PlanetaryInteractionStation.IntoOtherSave();

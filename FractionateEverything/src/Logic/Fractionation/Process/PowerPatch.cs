@@ -66,7 +66,7 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         EntityData[] entityPool) {
         long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = entityPool[fractionator.entityId].protoId;
-        if (buildingID < IFE交互塔 || buildingID > IFE精馏塔) {
+        if (!FractionatorTowerCatalog.IsActiveFractionator(buildingID)) {
             try {
                 fractionator.SetPCState(pcPool);// 原版分馏塔保持原逻辑
                 return;
@@ -98,10 +98,7 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         num2 = num2 * num1 - MaxBeltSpeed;
         if (num2 < 0.0)
             num2 = 0.0;
-        double powerRatio = buildingID switch {
-            IFE点数聚集塔 => 1.0,
-            _ => Cargo.powerTableRatio[fractionator.incLevel] * GetFractionatorEnergyRatio(buildingID)
-        };
+        double powerRatio = Cargo.powerTableRatio[fractionator.incLevel] * GetFractionatorEnergyRatio(buildingID);
         ref PowerConsumerComponent pc = ref pcPool[fractionator.pcId];
         pc.workEnergyPerTick = GetFractionatorWorkEnergyPerTick(buildingID);
         pc.idleEnergyPerTick = GetFractionatorIdleEnergyPerTick(buildingID);
@@ -113,7 +110,6 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         return buildingID switch {
             IFE交互塔 => InteractionTower.workEnergyPerTick,
             IFE矿物复制塔 => MineralReplicationTower.workEnergyPerTick,
-            IFE点数聚集塔 => PointAggregateTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
             IFE精馏塔 => RectificationTower.workEnergyPerTick,
             _ => 0
@@ -124,7 +120,6 @@ public static partial class ProcessManager {[HarmonyTranspiler]
         return buildingID switch {
             IFE交互塔 => InteractionTower.idleEnergyPerTick,
             IFE矿物复制塔 => MineralReplicationTower.idleEnergyPerTick,
-            IFE点数聚集塔 => PointAggregateTower.idleEnergyPerTick,
             IFE转化塔 => ConversionTower.idleEnergyPerTick,
             IFE精馏塔 => RectificationTower.idleEnergyPerTick,
             _ => 0

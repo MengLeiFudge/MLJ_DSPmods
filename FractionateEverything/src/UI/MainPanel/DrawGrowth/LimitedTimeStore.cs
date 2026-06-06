@@ -448,7 +448,7 @@ public static class LimitedTimeStore {
                 $"交互物流：开线池偏物流链，原胚池偏交互塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
             GachaFocusType.EmbryoCycle =>
                 $"原胚循环：开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"工艺优化：开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。"
+            GachaFocusType.ProcessOptimization => $"工艺优化：开线池偏当前阶段配方，原胚池偏转化塔，成长页命中条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
             GachaFocusType.RectificationEconomy => $"精馏经济：原胚池偏精馏塔，重复满级配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
@@ -471,7 +471,7 @@ public static class LimitedTimeStore {
             GachaFocusType.EmbryoCycle => $"{activePrefix} 开线池偏未解锁配方，原胚池偏定向原胚，成长页命中条目按 {discountPercent:0}% 成本并额外 +1。"
                 .WithColor(active ? Green : White),
             GachaFocusType.ProcessOptimization =>
-                $"{activePrefix} 开线池偏当前阶段配方，原胚池偏点数聚集塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                $"{activePrefix} 开线池偏当前阶段配方，原胚池偏转化塔，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(
                     active ? Green : White),
             GachaFocusType.RectificationEconomy =>
                 $"{activePrefix} 原胚池偏精馏塔，满级重复配方补偿更多残片，成长页命中条目按 {discountPercent:0}% 成本结算。".WithColor(

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FE.Logic.Fractionation.Fractionators;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Utils.Utils;
@@ -197,7 +198,7 @@ public static partial class FractionatorWindow {
         FractionatorComponent frac = factory.factorySystem.fractionatorPool[fractionatorId];
         if (frac.id != fractionatorId) return false;
         int buildingId = factory.entityPool[frac.entityId].protoId;
-        return buildingId >= IFE交互塔 && buildingId <= IFE精馏塔;
+        return FractionatorTowerCatalog.IsActiveFractionator(buildingId);
     }
 
     private static void OnSlotClick(ProductSlot slot, int itemId) {

@@ -368,19 +368,14 @@ public static class FracRecipeOperate {
                     $"(献祭 +{sacrificeBoost:P2} / 成就 +{progressBoost:P2})"
                         .WithColor(Gray));
 
-                // 损毁率
-                if (recipe is PointAggregateRecipe) {
-                    ShowTextLine(line++, $"{"损毁率".Translate()} {0.0f:P3}".WithColor(Green));
-                } else {
-                    float baseDestroyRatio = snapshot.DestroyRatio
-                                             + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                    float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                    string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
-                    if (destroyReduction > 0f) {
-                        destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
-                    }
-                    ShowTextLine(line++, destroyText.WithColor(Red));
+                float baseDestroyRatio = snapshot.DestroyRatio
+                                         + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+                float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
+                string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
+                if (destroyReduction > 0f) {
+                    destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
                 }
+                ShowTextLine(line++, destroyText.WithColor(Red));
             }
             ShowTextLine(line++, "");// 空行
 
@@ -577,7 +572,7 @@ public static class FracRecipeOperate {
                 => "首次获得对应黑雾物品后解锁".Translate(),
             _ when recipe.RecipeType == ERecipe.Conversion && recipe.MatrixID == I黑雾矩阵
                 => "通过黑雾支线成长规划报价获得".Translate(),
-            RecipeFamily.ConversionBuilding or RecipeFamily.PointAggregate
+            RecipeFamily.ConversionBuilding
                 => "通过成长规划或固定入口获得；解锁后直接满级".Translate(),
             RecipeFamily.Rectification
                 => "通过科技保底解锁".Translate(),
@@ -602,7 +597,7 @@ public static class FracRecipeOperate {
                 => prefix + "处理对应黑雾物品获取经验，也可通过成长规划补差".Translate(),
             RecipeFamily.Rectification
                 => prefix + "处理对应矩阵获取保底进度".Translate(),
-            RecipeFamily.ConversionBuilding or RecipeFamily.PointAggregate
+            RecipeFamily.ConversionBuilding
                 => snapshot.IsUnlocked
                     ? "已完全升级，无需继续成长".Translate()
                     : prefix + "直接满级".Translate(),
@@ -728,11 +723,11 @@ public static class FracRecipeOperate {
         }
 
         // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
-        float plrRatio = recipe is PointAggregateRecipe ? 0f : building?.PlrRatio() ?? 1.0f;
+        float plrRatio = building?.PlrRatio() ?? 1.0f;
         float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
         float successBoost = (building?.SuccessBoost() ?? 0f) + Achievements.GetSuccessRateBonus();
         float successRatio = Mathf.Clamp01(recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
-        float destroyRatio = recipe is PointAggregateRecipe ? 0f : recipe.DestroyRatio;
+        float destroyRatio = recipe.DestroyRatio;
         float fracRatio = (1 - destroyRatio) * successRatio;
         float remainInputRatio = recipe.RemainInputRatio;
         float repeatRatio = fracRatio * remainInputRatio;
@@ -823,12 +818,6 @@ public static class FracRecipeOperate {
                 ShowTextLine(line++,
                     $"{"因果追踪".Translate()}：{FeatureStatus(ConversionTower.EnableCausalTracing)}  "
                     + $"{"单锁".Translate()}：{FeatureStatus(ConversionTower.EnableSingleLock)}");
-                break;
-            case IFE点数聚集塔:
-                ShowTextLine(line++,
-                    $"{"虚空喷射".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidSpray)}  "
-                    + $"{"虚空聚集".Translate()}：{FeatureStatus(PointAggregateTower.EnableVoidAggregation)}  "
-                    + $"{"最大增产等级".Translate()} {PointAggregateTower.MaxInc}");
                 break;
         }
         return line;

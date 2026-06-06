@@ -98,14 +98,6 @@ public static partial class TechManager {
             "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
         Register("解锁部分矿物复制配方", "Unlock some Mineral Replication recipes");
 
-        Register("T增产点数聚集", "Proliferator Points Aggregate", "增产点数聚集");
-        Register("增产点数聚集描述",
-            $"Due to material limitations, proliferator technology has been unable to make further breakthroughs. However, proliferator point aggregation technology has solved this problem through fractionation. It can concentrate proliferator points onto specific items, thereby producing items that carry more proliferator points.\n\n{"Upload a Points Aggregate Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"增产剂科技因材料限制暂时无法突破，而增产点数聚集科技通过分馏的形式解决了此问题。它可以将增产点数集中到部分物品上，从而产出携带更多的增产点数的物品。\n\n{"将点数聚集塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
-        Register("增产点数聚集结果",
-            "You have mastered the technique of accumulating proliferator points, allowing items to carry more proliferator points.",
-            "你已经掌握了增产点数聚集技术，可以让物品携带更多的增产点数了。");
-
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
             $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",

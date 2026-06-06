@@ -394,17 +394,17 @@ public static class MainTask {
             Branch("proto-building", "原胚建筑",
                 ProtoNode("proto-first", "首获原胚", "持有任意 1 个分馏塔原胚", 1, IFE交互塔原胚, 1),
                 ProtoNode("proto-three", "原胚整备", "累计持有 3 类分馏塔原胚", 2, IFE矿物复制塔原胚, 3),
-                ProtoNode("proto-five", "五类原胚", "累计持有 5 类分馏塔原胚", 4, IFE分馏塔定向原胚, 5),
+                ProtoNode("proto-four", "四类原胚", "累计持有 4 类分馏塔原胚", 4, IFE分馏塔定向原胚, 4),
                 Node("building-train-one", "首次培养", "任意万物分馏建筑等级达到 1", 1, IFE交互塔, IFE残片, 200,
                     () => GetMaxBuildingLevel() >= 1, () => GetBuildingLevelProgressText(1)),
-                Node("building-train-five", "五塔培养", "五类万物分馏建筑均达到 1 级", 4, IFE点数聚集塔, IFE残片, 600,
+                Node("building-train-four", "四塔培养", "四类万物分馏建筑均达到 1 级", 4, IFE转化塔, IFE残片, 600,
                     () => GetMinBuildingLevel() >= 1, () => GetMinBuildingLevelProgressText(1)),
                 Node("building-upload-one", "首次上传", "分馏数据中心内持有任意万物分馏建筑", 2, IFE交互塔, IFE残片, 200,
                     () => GetUploadedBuildingTypeCount() >= 1,
                     () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 1)),
-                Node("building-upload-five", "五塔上传", "分馏数据中心内持有五类万物分馏建筑", 5, IFE精馏塔, IFE残片, 800,
-                    () => GetUploadedBuildingTypeCount() >= 5,
-                    () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 5))),
+                Node("building-upload-four", "四塔上传", "分馏数据中心内持有四类万物分馏建筑", 5, IFE精馏塔, IFE残片, 800,
+                    () => GetUploadedBuildingTypeCount() >= 4,
+                    () => GetCountProgressText("上传建筑", GetUploadedBuildingTypeCount(), 4))),
             Branch("building-level-low", "低档建筑等级",
                 BuildingLevelNode("building-level-1", "建筑 1 级", 1, 1, 200),
                 BuildingLevelNode("building-level-2", "建筑 2 级", 2, 2, 300),
@@ -516,19 +516,18 @@ public static class MainTask {
 
     private static int GetMaxBuildingLevel() {
         return Math.Max(InteractionTower.Level, Math.Max(MineralReplicationTower.Level,
-            Math.Max(PointAggregateTower.Level, Math.Max(ConversionTower.Level, RectificationTower.Level))));
+            Math.Max(ConversionTower.Level, RectificationTower.Level)));
     }
 
     private static int GetMinBuildingLevel() {
         return Math.Min(InteractionTower.Level, Math.Min(MineralReplicationTower.Level,
-            Math.Min(PointAggregateTower.Level, Math.Min(ConversionTower.Level, RectificationTower.Level))));
+            Math.Min(ConversionTower.Level, RectificationTower.Level)));
     }
 
     private static int GetProtoTypeCount() {
         int count = 0;
         if (GetItemTotalCount(IFE交互塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE矿物复制塔原胚) > 0) count++;
-        if (GetItemTotalCount(IFE点数聚集塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE转化塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE精馏塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE分馏塔定向原胚) > 0) count++;
@@ -539,7 +538,6 @@ public static class MainTask {
         int count = 0;
         if (GetItemTotalCount(IFE交互塔) > 0) count++;
         if (GetItemTotalCount(IFE矿物复制塔) > 0) count++;
-        if (GetItemTotalCount(IFE点数聚集塔) > 0) count++;
         if (GetItemTotalCount(IFE转化塔) > 0) count++;
         if (GetItemTotalCount(IFE精馏塔) > 0) count++;
         return count;

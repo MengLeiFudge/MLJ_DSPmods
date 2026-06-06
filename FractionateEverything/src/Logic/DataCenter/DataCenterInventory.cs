@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Progression;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
@@ -167,7 +168,7 @@ public static class DataCenterInventory {
         lock (centerItemCount) {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
-            if (itemId >= IFE交互塔 && itemId <= IFE精馏塔) {
+            if (FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
                 TechManager.CheckTechUnlockCondition(itemId);
             }
         }

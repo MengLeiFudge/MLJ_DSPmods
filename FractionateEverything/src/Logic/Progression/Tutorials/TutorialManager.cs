@@ -108,7 +108,7 @@ public static partial class TutorialManager {
         return [
             new(nextId++, "万物分馏简介", "Fractionate Everything", "TOR_GameSecond", [10]),
             new(nextId++, "分馏数据中心", "Fractionation data centre", "TOR_TechUnlocked", [TFE分馏数据中心, 4]),
-            new(nextId++, "分馏塔使用指南", "Fractionator guidelines", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔]),
+            new(nextId++, "分馏塔使用指南", "Fractionator guidelines", "TOR_OnBuild", [IFE交互塔, IFE矿物复制塔, IFE转化塔, IFE精馏塔]),
             new(nextId++, "物流交互站使用指南", "Interaction station guidelines", "TOR_OnBuild", [IFE行星内物流交互站, IFE星际物流交互站]),
         ];
     }

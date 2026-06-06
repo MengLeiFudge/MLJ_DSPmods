@@ -11,7 +11,7 @@ namespace FE.Logic.Fractionation.Process;
 /// 交互塔献祭加成与矩阵消耗逻辑。
 /// </summary>
 public static partial class ProcessManager {
-    private const int SacrificeTowerTypeCount = IFE精馏塔 - IFE交互塔 + 1;
+    private const int SacrificeTowerTypeCount = 4;
     private const float SacrificeBoostStep = 0.05f;
     private const float SacrificeBoostCapTrait1 = 0.75f;
     private const float SacrificeBoostCapTrait2 = 1.00f;
@@ -36,7 +36,7 @@ public static partial class ProcessManager {
         int buffCount = 0;
         int[] takeCounts = new int[SacrificeTowerTypeCount];
         for (int i = 0; i < takeCounts.Length; i++) {
-            takeCounts[i] = Take10PercentTower(IFE交互塔 + i);
+            takeCounts[i] = Take10PercentTower(FractionatorTowerCatalog.ActiveFractionatorBuildingIds[i]);
             if (takeCounts[i] > 0) {
                 buffCount++;
             }
@@ -61,9 +61,8 @@ public static partial class ProcessManager {
 
         InteractionTower.SuccessBoost = sacrificeStepIndex[0] * SacrificeBoostStep;
         MineralReplicationTower.SuccessBoost = sacrificeStepIndex[1] * SacrificeBoostStep;
-        PointAggregateTower.SuccessBoost = sacrificeStepIndex[2] * SacrificeBoostStep;
-        ConversionTower.SuccessBoost = sacrificeStepIndex[3] * SacrificeBoostStep;
-        RectificationTower.SuccessBoost = sacrificeStepIndex[4] * SacrificeBoostStep;
+        ConversionTower.SuccessBoost = sacrificeStepIndex[2] * SacrificeBoostStep;
+        RectificationTower.SuccessBoost = sacrificeStepIndex[3] * SacrificeBoostStep;
         RefreshFractionatorRuntimeConfig();
     }
 
@@ -71,7 +70,6 @@ public static partial class ProcessManager {
         Array.Clear(sacrificeStepIndex, 0, sacrificeStepIndex.Length);
         InteractionTower.SuccessBoost = 0f;
         MineralReplicationTower.SuccessBoost = 0f;
-        PointAggregateTower.SuccessBoost = 0f;
         ConversionTower.SuccessBoost = 0f;
         RectificationTower.SuccessBoost = 0f;
         RefreshFractionatorRuntimeConfig();

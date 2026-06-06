@@ -138,10 +138,8 @@ public static partial class FractionatorWindow {
         float recipeSuccessRatio = 0f, mainOutputBonus = 1f, destroyRatio = 0f;
         if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
             recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost);
-            if (recipe is not PointAggregateRecipe) {
-                recipeSuccessRatio *= 1 + pointsBonus;
-                destroyRatio = recipe.DestroyRatio;
-            }
+            recipeSuccessRatio *= 1 + pointsBonus;
+            destroyRatio = recipe.DestroyRatio;
             mainOutputBonus = 1 + recipe.DoubleOutputRatio;
         }
 
@@ -232,7 +230,6 @@ public static partial class FractionatorWindow {
         return buildingID switch {
             IFE交互塔 => GetRecipe<BuildingTrainRecipe>(ERecipe.BuildingTrain, fluidId),
             IFE矿物复制塔 => GetRecipe<MineralCopyRecipe>(ERecipe.MineralCopy, fluidId),
-            IFE点数聚集塔 => GetRecipe<PointAggregateRecipe>(ERecipe.PointAggregate, fluidId),
             IFE转化塔 => GetRecipe<ConversionRecipe>(ERecipe.Conversion, fluidId),
             IFE精馏塔 => GetRecipe<RectificationRecipe>(ERecipe.Rectification, fluidId),
             _ => null

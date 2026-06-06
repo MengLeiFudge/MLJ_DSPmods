@@ -28,7 +28,8 @@ public static class RecipeManager {
     /// <summary>
     /// 按配方类型分类配方，加快访问速度，格式：[(int)ERecipe][(int)ItemID]
     /// </summary>
-    private static readonly BaseRecipe[][] RecipeTypeArr = new BaseRecipe[Enum.GetNames(typeof(ERecipe)).Length + 1][];
+    private static readonly BaseRecipe[][] RecipeTypeArr =
+        new BaseRecipe[Enum.GetValues(typeof(ERecipe)).Cast<int>().Max() + 1][];
 
     /// <summary>
     /// 按物品科技层级分类配方，Key：(int)MatrixID
@@ -59,7 +60,6 @@ public static class RecipeManager {
 
         BuildingTrainRecipe.CreateAll();
         MineralCopyRecipe.CreateAll();
-        PointAggregateRecipe.CreateAll();
         ConversionRecipe.CreateAll();
         RectificationRecipe.CreateAll();
         fracRecipesReady = true;

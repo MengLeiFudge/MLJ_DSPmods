@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Fractionation.Fractionators;
 using UnityEngine;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -119,10 +120,12 @@ public static class FragmentExchangeManager {
         if (MarketValueManager.IsStoreOfValue(itemId)) {
             return 2.20f;
         }
-        if (itemId >= IFE交互塔原胚 && itemId <= IFE分馏塔定向原胚) {
+        if (FractionatorTowerCatalog.IsActiveFractionatorProtoOrDirectional(itemId)) {
             return 2.00f;
         }
-        if (itemId >= IFE交互塔 && itemId <= IFE星际物流交互站) {
+        if (FractionatorTowerCatalog.IsActiveFractionator(itemId)
+            || itemId == IFE行星内物流交互站
+            || itemId == IFE星际物流交互站) {
             return 1.80f;
         }
         return 1.45f;

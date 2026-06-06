@@ -42,7 +42,6 @@ public static class XxxTower {
 
 - `Definitions/InteractionTower.cs`：交互塔，献祭特质和维度共鸣相关入口。
 - `Definitions/MineralReplicationTower.cs`：矿物复制塔，流动增强相关。
-- `Definitions/PointAggregateTower.cs`：点数聚集塔，点数聚集效率。
 - `Definitions/ConversionTower.cs`：转化塔，转化配方和单路锁定能力。
 - `Definitions/RectificationTower.cs`：精馏塔，矩阵/黑雾矩阵转残片。
 - `Definitions/PlanetaryInteractionStation.cs`：行星内物流交互站。

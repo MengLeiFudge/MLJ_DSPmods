@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
 using static FE.Utils.Utils;
 
@@ -23,8 +24,6 @@ public static class RecipeGrowthRules {
         RecipeFamily.ConversionMaterialDarkFog, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
     private static readonly RecipeGrowthRule ConversionBuildingRule = new(
         RecipeFamily.ConversionBuilding, RecipeGrowthMode.FixedMax, 5, 0, 0, 5, true, false, false);
-    private static readonly RecipeGrowthRule PointAggregateRule = new(
-        RecipeFamily.PointAggregate, RecipeGrowthMode.FixedMax, 5, 5, 5, 5, true, false, false);
     private static readonly RecipeGrowthRule RectificationRule = new(
         RecipeFamily.Rectification, RecipeGrowthMode.ProcessExpWithPity, 5, 0, 1, 0, false, false, true);
     private static readonly Dictionary<BaseRecipe, RecipeFamily> FamilyCache = [];
@@ -48,7 +47,6 @@ public static class RecipeGrowthRules {
             ConversionRecipe => IsBuildingItem(recipe.InputID) ? RecipeFamily.ConversionBuilding :
                 IsDarkFogItem(recipe.InputID) ? RecipeFamily.ConversionMaterialDarkFog :
                 RecipeFamily.ConversionMaterialNormal,
-            PointAggregateRecipe => RecipeFamily.PointAggregate,
             RectificationRecipe => RecipeFamily.Rectification,
             _ => RecipeFamily.Unknown,
         };
@@ -77,7 +75,6 @@ public static class RecipeGrowthRules {
                 false, false, false),
             RecipeFamily.ConversionMaterialDarkFog => ConversionMaterialDarkFogRule,
             RecipeFamily.ConversionBuilding => ConversionBuildingRule,
-            RecipeFamily.PointAggregate => PointAggregateRule,
             RecipeFamily.Rectification => RectificationRule,
             _ => new RecipeGrowthRule(RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false),
         };
@@ -120,9 +117,6 @@ public static class RecipeGrowthRules {
     /// </summary>
     public static int ConvertLegacyLevelToStored(BaseRecipe recipe, int legacyLevel) {
         RecipeGrowthRule rule = GetRule(recipe);
-        if (rule.Family == RecipeFamily.PointAggregate) {
-            return rule.MaxLevel;
-        }
         if (legacyLevel < 0) {
             return 0;
         }
@@ -137,9 +131,6 @@ public static class RecipeGrowthRules {
     /// </summary>
     public static int GetEffectiveLegacyLevel(BaseRecipe recipe, int storedLevel) {
         RecipeGrowthRule rule = GetRule(recipe);
-        if (rule.Family == RecipeFamily.PointAggregate) {
-            return 10;
-        }
         if (storedLevel <= 0) {
             return 0;
         }
@@ -170,7 +161,7 @@ public static class RecipeGrowthRules {
     }
 
     private static bool IsEmbryoInput(int inputId) {
-        return inputId >= IFE交互塔原胚 && inputId <= IFE精馏塔原胚 || inputId == IFE分馏塔定向原胚;
+        return FractionatorTowerCatalog.IsActiveFractionatorProtoOrDirectional(inputId);
     }
 
     private static bool IsBuildingItem(int inputId) {

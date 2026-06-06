@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
 using UnityEngine;
@@ -146,7 +147,7 @@ public static partial class GachaService {
 
     private static void FillProtoLoopPool(GachaPool pool) {
         List<int> weightedEmbryos = [];
-        for (int itemId = IFE交互塔原胚; itemId <= IFE精馏塔原胚; itemId++) {
+        foreach (int itemId in FractionatorTowerCatalog.ActiveFractionatorProtoIds) {
             AddWeighted(weightedEmbryos, itemId, GetEmbryoWeight(itemId));
         }
         AddWeighted(weightedEmbryos, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚));

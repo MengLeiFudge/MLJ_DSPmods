@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Fractionation.Fractionators;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 
@@ -13,8 +14,10 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// 添加所有建筑培养配方
     /// </summary>
     public static void CreateAll() {
-        for (int fracProtoID = IFE交互塔原胚; fracProtoID <= IFE精馏塔原胚; fracProtoID++) {
-            int buildingID = IFE交互塔 + fracProtoID - IFE交互塔原胚;
+        foreach (int fracProtoID in FractionatorTowerCatalog.ActiveFractionatorProtoIds) {
+            if (!FractionatorTowerCatalog.TryGetBuildingIdForProto(fracProtoID, out int buildingID)) {
+                continue;
+            }
             AddRecipe(new BuildingTrainRecipe(fracProtoID, 0.05f, [
                 new(0.96f, buildingID, 1),
                 new(0.04f, IFE分馏塔定向原胚, 1),

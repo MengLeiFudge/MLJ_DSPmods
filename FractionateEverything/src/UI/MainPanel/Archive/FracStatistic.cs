@@ -39,7 +39,7 @@ public static class FracStatistic {
     private static readonly Text[] stockLines = new Text[6];
     private static readonly Text[] economyLines = new Text[6];
     private static readonly int[] trackedBuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔, IFE行星内物流交互站
+        IFE交互塔, IFE矿物复制塔, IFE转化塔, IFE精馏塔, IFE行星内物流交互站
     ];
 
     public static void AddTranslations() {
@@ -228,13 +228,12 @@ public static class FracStatistic {
     private static string GetProtoSummary() {
         long interaction = GetItemTotalCount(IFE交互塔原胚);
         long mineral = GetItemTotalCount(IFE矿物复制塔原胚);
-        long point = GetItemTotalCount(IFE点数聚集塔原胚);
         long conversion = GetItemTotalCount(IFE转化塔原胚);
         long rectification = GetItemTotalCount(IFE精馏塔原胚);
         long directed = GetItemTotalCount(IFE分馏塔定向原胚);
-        long total = interaction + mineral + point + conversion + rectification + directed;
+        long total = interaction + mineral + conversion + rectification + directed;
         return
-            $"{total}\n交互 {interaction} / 复制 {mineral} / 聚集 {point} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed}";
+            $"{total}\n交互 {interaction} / 复制 {mineral} / 转化 {conversion} / 精馏 {rectification} / 定向 {directed}";
     }
 
     private static long GetBuildingExpTotal() {

@@ -160,7 +160,7 @@ public static class TicketRaffle {
         Register("聚焦-原胚循环", "Embryo Cycle");
         Register("聚焦描述-原胚循环", "Bias directional protos and deterministic proto补差.", "提高定向原胚与原胚补差收益，强化原胚闭环。");
         Register("聚焦-工艺优化", "Process Optimization");
-        Register("聚焦描述-工艺优化", "Bias current-stage recipes and Point Aggregate Tower protos.", "提高当前阶段配方与点数聚集塔原胚权重。");
+        Register("聚焦描述-工艺优化", "Bias current-stage recipes and Conversion Tower protos.", "提高当前阶段配方与转化塔原胚权重。");
         Register("聚焦-精馏经济", "Rectification Economy");
         Register("聚焦描述-精馏经济", "Bias Rectification Tower protos and growth support for fragment economy.",
             "提高精馏塔原胚与残片经济相关补差收益。");
@@ -471,7 +471,7 @@ public static class TicketRaffle {
                 .WithColor(Green),
             GachaFocusType.EmbryoCycle =>
                 $"开线池偏向未解锁配方，原胚池偏向定向原胚；成长页命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向点数聚集塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向转化塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
             GachaFocusType.RectificationEconomy => $"原胚池偏向精馏塔，满级重复配方会补偿更多残片；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),

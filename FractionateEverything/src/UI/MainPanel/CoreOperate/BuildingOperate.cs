@@ -30,13 +30,16 @@ public static class BuildingOperate {
     private static RectTransform tab;
 
     private static ConfigEntry<int> BuildingTypeEntry;
-    private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[BuildingTypeEntry.Value]);
+    private static ItemProto SelectedBuilding => LDB.items.Select(BuildingIds[SelectedBuildingIndex]);
+    private static int SelectedBuildingIndex => BuildingTypeEntry.Value >= 0 && BuildingTypeEntry.Value < BuildingIds.Length
+        ? BuildingTypeEntry.Value
+        : 0;
     private static readonly int[] BuildingIds = [
-        IFE交互塔, IFE矿物复制塔, IFE点数聚集塔, IFE转化塔, IFE精馏塔, IFE行星内物流交互站
+        IFE交互塔, IFE矿物复制塔, IFE转化塔, IFE精馏塔, IFE行星内物流交互站
     ];
     private static readonly string[] BuildingTypeNames = [
-        "交互塔".Translate(), "矿物复制塔".Translate(), "点数聚集塔".Translate(), "转化塔".Translate(),
-        "精馏塔".Translate(), "物流交互站".Translate()
+        "交互塔".Translate(), "矿物复制塔".Translate(), "转化塔".Translate(), "精馏塔".Translate(),
+        "物流交互站".Translate()
     ];
     private static MyImageButton btnFragmentIcon;
     private static Text txtFragmentCount;
@@ -89,14 +92,6 @@ public static class BuildingOperate {
         Register("未启用分馏永动", "Not enable fractionate forever");
         Register("启用分馏永动", "to enable fractionate forever");
 
-        Register("点数聚集效率层次", "Point accumulation efficiency level");
-        Register("点数聚集效率层次说明",
-            "The efficiency level of point accumulation affects integration count and the maximum proliferator points of successful outputs. Lv6 unlocks input void spray, and Lv12 unlocks global point pool supplementation for successful outputs.",
-            "点数聚集的效率层次会影响集装数目和成功产物的最大增产点数。6级解锁输入虚空喷涂，12级解锁成功产物消耗全局点数池补点。");
-        Register("点数聚集效率层次：", "Point accumulation efficiency level: ");
-        Register("+1 聚集层次", "+1 aggregate level");
-        Register("+1 点数聚集效率层次", "to +1 point accumulation efficiency level");
-
         Register("分馏塔强化功能将在以上升级全部升满后解锁。",
             "The fractionator enhancement feature will unlock once all the above upgrades have been fully completed.");
         Register("强化等级：", "Reinforcement level: ");
@@ -133,11 +128,6 @@ public static class BuildingOperate {
             "Maintains an internal point pool (target: 100 x max stack). When the pool drops below the target, raw materials are consumed in bulk to replenish it (25 pts/item; 50 pts/item when Zero-Pressure Cycle is also active). When average proliferator points of inputs is below 10, points are drawn from the pool to bring them to 10.",
             "塔内维持一个点数池（目标值：100×最大集装）。当池量低于目标值时，批量消耗原料补满（每个原料换25点，同时激活零压循环时换50点）。当输入原料平均增产点数不足10时，从池中取点补足至10。");
 
-        Register("虚空喷涂", "Void Spray");
-        Register("虚空喷涂说明",
-            "When the average proliferator points of inputs is below 4, the tower automatically uses proliferators from the fractionation data centre to spray the inputs.",
-            "当原料的平均增产点数不足4时，会自动使用分馏数据中心的增产剂对原料进行喷涂。");
-
         Register("因果溯源", "Causal Tracing");
         Register("因果溯源说明",
             "When the fractionation result is 'raw material destroyed', there is a 50% chance that the raw material is not consumed.",
@@ -153,11 +143,6 @@ public static class BuildingOperate {
         Register("零压循环说明",
             "Each consumed raw material replenishes the point pool by 50 points (overriding Mass-Energy Fission's 25 pts). When there is no output belt on either side, flow output is automatically returned to flow input; product output is also prioritised for return to flow input.",
             "每个被消耗的原料向点数池补充50点（覆盖质能裂变的25点）。当侧面无输出传送带时，流动输出自动回填至流动输入；产物输出也优先回填至流动输入。");
-
-        Register("虚空聚集", "Void Aggregation");
-        Register("虚空聚集说明",
-            "When point aggregation succeeds, the tower can draw from the Fractionation Data Center's global proliferator point pool to make up the output's missing points.",
-            "点数聚集成功时，可以消耗分馏数据中心的全局增产点数池，补足产物缺少的增产点数。");
 
         Register("单路锁定", "Single-Path Lock");
         Register("单路锁定说明",
@@ -322,7 +307,6 @@ public static class BuildingOperate {
         return buildingId switch {
             IFE交互塔 => ("分馏献祭", "分馏献祭说明", "维度共鸣", "维度共鸣说明"),
             IFE矿物复制塔 => ("质能裂变", "质能裂变说明", "零压循环", "零压循环说明"),
-            IFE点数聚集塔 => ("虚空喷涂", "虚空喷涂说明", "虚空聚集", "虚空聚集说明"),
             IFE转化塔 => ("因果溯源", "因果溯源说明", "单路锁定", "单路锁定说明"),
             IFE精馏塔 => ("余辉萃取", "余辉萃取说明", "超相压缩", "超相压缩说明"),
             _ => (null, null, null, null),
@@ -457,10 +441,6 @@ public static class BuildingOperate {
             return $"+{level}  ×{stack}  {"交互电力".Translate()}{LevelToInteractEnergyRatio(level):P0}";
         }
         float energy = LevelToEnergyRatio(level);
-        if (buildingId == IFE点数聚集塔) {
-            int maxInc = Math.Min(level + 4, 10);
-            return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"最大增产点数".Translate()}{maxInc}";
-        }
         return $"+{level}  ×{stack}  {"能耗".Translate()}{energy:P0}  {"增产".Translate()}×{LevelToPlrRatio(level):F1}";
     }
 

@@ -26,7 +26,6 @@ public static partial class ProcessManager {
     private static readonly FractionatorUpdateHandler[] updateHandlersByBuildingOffset = [
         UpdateInteractionTower,
         UpdateMineralReplicationTower,
-        UpdatePointAggregateTower,
         UpdateConversionTower,
         UpdateRectificationTower,
     ];
@@ -157,7 +156,7 @@ public static partial class ProcessManager {
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister) {
         long perfStart = GetFractionatorPerfTimestamp();
         int buildingID = factory.entityPool[fractionator.entityId].protoId;
-        int handlerIndex = buildingID - IFE交互塔;
+        int handlerIndex = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (handlerIndex >= 0 && handlerIndex < updateHandlersByBuildingOffset.Length) {
             try {
                 uint result = 0;
@@ -193,13 +192,6 @@ public static partial class ProcessManager {
             consumeRegister, ref result, ERecipe.MineralCopy);
     }
 
-    private static void UpdatePointAggregateTower(ref FractionatorComponent fractionator,
-        PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
-        ref uint result) {
-        InternalUpdate<PointAggregateRecipe>(ref fractionator, factory, power, signPool, productRegister,
-            consumeRegister, ref result, ERecipe.PointAggregate);
-    }
-
     private static void UpdateConversionTower(ref FractionatorComponent fractionator,
         PlanetFactory factory, float power, SignData[] signPool, int[] productRegister, int[] consumeRegister,
         ref uint result) {
@@ -227,7 +219,6 @@ public static partial class ProcessManager {
         int buildingID = factory.entityPool[entityId].protoId;
         bool isInteractionTower = buildingID == IFE交互塔;
         bool isMineralReplicationTower = buildingID == IFE矿物复制塔;
-        bool isPointAggregateTower = buildingID == IFE点数聚集塔;
         bool isConversionTower = buildingID == IFE转化塔;
         bool enableMassEnergyFission = isMineralReplicationTower && MineralReplicationTower.EnableMassEnergyFission;
         //所有产物输出
@@ -358,10 +349,6 @@ public static partial class ProcessManager {
                                          + 0.75);
             if (__instance.progress > 300000) {
                 __instance.progress = 300000;
-            }
-            // 虚空喷涂 - 点数聚集塔在 Level >= 6 时自动补充增产点数
-            if (isPointAggregateTower && PointAggregateTower.EnableVoidSpray) {
-                AddIncToItem(__instance.fluidInputCount, ref __instance.fluidInputInc);
             }
             // 质能裂变 - 矿物复制塔在 Level >= 6 时，维持池中点数在目标值以上；
             // 当池量不足时，批量消耗原料填满点数池（每个原料+25点，零压循环激活时+50点）。
@@ -1035,9 +1022,6 @@ public static partial class ProcessManager {
     private static int GetFluidOutputIncAvg(FractionatorComponent fractionator, int buildingID, int outputStack) {
         if (outputStack <= 0 || fractionator.fluidOutputCount <= 0) {
             return 0;
-        }
-        if (buildingID == IFE点数聚集塔) {
-            return fractionator.fluidOutputInc >= 4 * outputStack ? 4 : 0;
         }
         return fractionator.fluidOutputInc / fractionator.fluidOutputCount;
     }
