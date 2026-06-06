@@ -141,14 +141,8 @@ public class ConversionRecipe : BaseRecipe {
             ]);
         }
 
-        //化工页面
-        if (GenesisBook.Enable) {
-            CreateChain([[IGB聚丙烯], [IGB聚苯硫醚PPS], [IGB聚酰亚胺PI]]);
-        } else if (OrbitalRing.Enable) {
-            CreateChain([[I原油], [IOR重油], [IOR轻油]]);
-        } else {
-            CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII]]);
-        }
+        //化工页面仅保留增产剂这类消耗品链，普通化工材料不能进入转化线。
+        CreateChain([[I增产剂MkI], [I增产剂MkII], [I增产剂MkIII]]);
 
         //防御页面
         CreateChain([[I原型机], [I精准无人机, I攻击无人机], [I护卫舰], [I驱逐舰], [IMS水滴]]);
