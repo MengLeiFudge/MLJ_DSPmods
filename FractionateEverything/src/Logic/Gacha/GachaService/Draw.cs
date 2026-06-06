@@ -66,9 +66,39 @@ public static partial class GachaService {
         if (GachaPool.IsRecipePool(poolId)) {
             return ResolveRecipeReward(itemId);
         }
+        if (GachaPool.IsProtoLoopPool(poolId)) {
+            return ResolveProtoLoopReward(itemId);
+        }
 
         AddItemToModData(itemId, 1, 0, false);
         return new GachaRewardResolution(GachaRewardType.ItemGranted, itemId, 1);
+    }
+
+    private static GachaRewardResolution ResolveProtoLoopReward(int itemId) {
+        AddItemToModData(itemId, 1, 0, false);
+        if (!TryGetProtoLoopDrawUnit(itemId, out GachaDrawUnit unit)) {
+            return new GachaRewardResolution(GachaRewardType.ItemGranted, itemId, 1);
+        }
+
+        BaseRecipe recipe = SelectDrawUnitTargetRecipe(unit);
+        if (recipe == null) {
+            return new GachaRewardResolution(GachaRewardType.ItemGranted, itemId, 1);
+        }
+
+        if (IsDrawUnitFullyUnlocked(unit)
+            && GachaManager.TryAddDrawUnitResonance(unit.Key, out int resonanceLevel)) {
+            RecipeGrowthQueries.ClearProcessingCache();
+            InitPools();
+            return new GachaRewardResolution(GachaRewardType.DrawUnitResonance, 0, resonanceLevel, unit.DisplayItemId);
+        }
+
+        bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
+        RecipeGrowthResult growthResult =
+            RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
+        GachaRewardType rewardType = wasLocked
+            ? GachaRewardType.RecipeUnlock
+            : growthResult.StateChanged ? GachaRewardType.RecipeUpgrade : GachaRewardType.RecipeProgress;
+        return new GachaRewardResolution(rewardType, 0, RecipeGrowthQueries.GetLevel(recipe), unit.DisplayItemId);
     }
 
     private static GachaRewardResolution ResolveRecipeReward(int inputId) {
@@ -112,22 +142,30 @@ public static partial class GachaService {
         return new GachaRewardResolution(rewardType, 0, RecipeGrowthQueries.GetLevel(recipe), unit.DisplayItemId);
     }
 
-    private static void EnsureRecipeRewardIndex() {
+    private static void EnsureRecipeRewardIndex(bool force = false) {
         int recipeCount = RecipeManager.AllRecipes.Count;
-        if (recipeRewardIndexRecipeCount == recipeCount) {
+        if (!force && recipeRewardIndexRecipeCount == recipeCount) {
+            return;
+        }
+        if (isRebuildingRecipeRewardIndex) {
             return;
         }
 
-        recipeRewardIndex.Clear();
-        foreach (GachaDrawUnit unit in GetOpeningDrawUnits(int.MaxValue)) {
-            if (!unit.Key.IsValid || unit.DisplayItemId <= 0 || recipeRewardIndex.ContainsKey(unit.DisplayItemId)) {
-                continue;
+        isRebuildingRecipeRewardIndex = true;
+        try {
+            recipeRewardIndex.Clear();
+            foreach (GachaDrawUnit unit in GetRewardDrawUnits()) {
+                if (!unit.Key.IsValid || unit.DisplayItemId <= 0 || recipeRewardIndex.ContainsKey(unit.DisplayItemId)) {
+                    continue;
+                }
+
+                recipeRewardIndex.Add(unit.DisplayItemId, unit);
             }
 
-            recipeRewardIndex.Add(unit.DisplayItemId, unit);
+            recipeRewardIndexRecipeCount = recipeCount;
+        } finally {
+            isRebuildingRecipeRewardIndex = false;
         }
-
-        recipeRewardIndexRecipeCount = recipeCount;
     }
 
     private static BaseRecipe SelectDrawUnitTargetRecipe(GachaDrawUnit unit) {

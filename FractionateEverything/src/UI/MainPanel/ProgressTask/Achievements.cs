@@ -312,7 +312,7 @@ public static class Achievements {
 
         foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus,
                      float logisticsBonus) in defs) {
-            string desc = $"累计完成 {target} 次主抽取开线偏好";
+            string desc = $"累计完成 {target} 次主抽取路线偏好";
             list.Add(new AchievementInfo(
                 "成就分类-开线",
                 name,
@@ -490,7 +490,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "速通毕业",
-            "速通模式下累计 10000 次分馏成功、500 次主抽取开线偏好并解锁星际物流交互科技",
+            "速通模式下累计 10000 次分馏成功、500 次主抽取路线偏好并解锁星际物流交互科技",
             "成就奖励-源点3",
             ETier.Platinum,
             () => IsSpeedrunMode
@@ -508,7 +508,7 @@ public static class Achievements {
         Register("成就系统", "Achievement System");
         Register("成就", "Achievement");
         Register("成就分类-生产", "Production", "生产");
-        Register("成就分类-开线", "Opening", "开线");
+        Register("成就分类-开线", "Route", "路线");
         Register("成就分类-配方", "Recipe", "配方");
         Register("成就分类-成长", "Growth", "成长");
         Register("成就分类-黑雾", "Dark Fog", "黑雾");
@@ -567,9 +567,9 @@ public static class Achievements {
         Register("带速成型", "Throughput Online", "带速成型");
         Register("满带洪流", "Full-Belt Torrent", "满带洪流");
         Register("星河带速", "Galactic Throughput", "星河带速");
-        Register("成就-开线先锋", "Opening Pioneer");
-        Register("开线统筹", "Opening Coordination", "开线统筹");
-        Register("开线传说", "Opening Legend", "开线传说");
+        Register("成就-开线先锋", "Route Pioneer", "路线先锋");
+        Register("开线统筹", "Route Coordination", "路线统筹");
+        Register("开线传说", "Route Legend", "路线传说");
         Register("成就-配方入门", "Recipe Beginner");
         Register("成就-配方学者", "Recipe Scholar");
         Register("成就-配方专家", "Recipe Expert");

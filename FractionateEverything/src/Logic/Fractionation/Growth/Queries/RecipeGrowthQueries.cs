@@ -179,11 +179,7 @@ public static class RecipeGrowthQueries {
         int legacyLevel = GetEffectiveLegacyLevel(recipe);
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-        float destroyRatio = 0.04f;
-        destroyRatio -= GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-        if (destroyRatio < 0f) {
-            destroyRatio = 0f;
-        }
+        float destroyRatio = recipe.DestroyRatio;
 
         return new RecipeDisplaySnapshot(
             recipe.RecipeType,
@@ -292,6 +288,10 @@ public static class RecipeGrowthQueries {
     }
 
     private static string[] BuildLevelDescriptions(BaseRecipe recipe) {
+        if (recipe is RectificationRecipe rectificationRecipe) {
+            return BuildRectificationLevelDescriptions(rectificationRecipe);
+        }
+
         int maxLevel = GetMaxLevel(recipe);
         string[] descriptions = new string[maxLevel + 1];
         descriptions[0] = $"Lv0  {"未解锁".Translate()}";
@@ -302,6 +302,25 @@ public static class RecipeGrowthQueries {
             string maxSuffix = level >= maxLevel ? "  MAX".WithColor(Gold) : string.Empty;
             descriptions[level] =
                 $"Lv{level}  {"不消耗原料".Translate()}{remainPct}%  {"翻倍产出".Translate()}{doublePct}%{maxSuffix}";
+        }
+        return descriptions;
+    }
+
+    private static string[] BuildRectificationLevelDescriptions(RectificationRecipe recipe) {
+        int maxLevel = GetMaxLevel(recipe);
+        string[] descriptions = new string[maxLevel + 1];
+        descriptions[0] = $"Lv0  {"未解锁".Translate()}";
+        for (int level = 1; level <= maxLevel; level++) {
+            string maxSuffix = level >= maxLevel ? "  MAX".WithColor(Gold) : string.Empty;
+            if (recipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction) {
+                float destroyRatio = RectificationRecipe.GetMatrixExtractionDestroyRatioForLevel(level);
+                descriptions[level] = $"Lv{level}  {"萃取损耗".Translate()}{destroyRatio:P1}{maxSuffix}";
+            } else {
+                float compressionCount = RectificationRecipe.GetCompressionOutputCountForLevel(level);
+                float refluxCount = RectificationRecipe.GetRefluxOutputCountForLevel(level);
+                descriptions[level] =
+                    $"Lv{level}  {"压缩倍率".Translate()}{compressionCount:F2}  {"回流倍率".Translate()}{refluxCount:F2}{maxSuffix}";
+            }
         }
         return descriptions;
     }

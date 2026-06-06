@@ -39,7 +39,7 @@ public static class TicketExchange {
         Register("抽取总览说明",
             "Review draw costs, current resources, focus switch costs and Dark Fog branch progress.",
             "查看抽取成本、当前资源、聚焦切换成本与黑雾支线进度。");
-        Register("开线偏好成本", "Opening Preference Cost");
+        Register("开线偏好成本", "Route Preference Cost", "路线偏好成本");
         Register("原胚偏好成本", "Proto Preference Cost");
         Register("聚焦切换成本", "Focus Switch Cost");
         Register("黑雾支线说明", "Dark Fog Branch", "黑雾支线");

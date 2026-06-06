@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Gacha;
 using FE.Logic.Progression;
 using HarmonyLib;
 using UnityEngine;
@@ -45,12 +47,28 @@ public static partial class ProcessManager {
         if (index < 0 || index >= sacrificeTowerCounts.Length) {
             return;
         }
+        count = GetEffectiveSacrificeCount(buildingId, count);
         sacrificeTowerCounts[index] = long.MaxValue - sacrificeTowerCounts[index] < count
             ? long.MaxValue
             : sacrificeTowerCounts[index] + count;
         if (InteractionTower.EnableSacrificeTrait) {
             UpdateSacrificeBoost();
         }
+    }
+
+    private static long GetEffectiveSacrificeCount(int buildingId, long count) {
+        int resonance = GachaManager.GetDrawUnitResonance(
+            new GachaDrawUnitKey(GachaDrawUnitKind.TowerFamily, ERecipe.BuildingTrain, buildingId));
+        if (resonance <= 0 || count <= 0) {
+            return count;
+        }
+
+        double scaled = count * (1.0 + resonance * 0.05);
+        if (scaled >= long.MaxValue) {
+            return long.MaxValue;
+        }
+        long effectiveCount = (long)scaled;
+        return effectiveCount > count ? effectiveCount : count;
     }
 
     public static void AbsorbDataCenterFractionatorStock() {

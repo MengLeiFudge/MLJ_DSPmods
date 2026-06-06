@@ -61,7 +61,7 @@ public static class MainTask {
         Register("无", "None", "无");
         Register("数量", "Count", "数量");
         Register("分馏次数", "Fractionations", "分馏次数");
-        Register("主线统计-开线偏好抽取", "Opening-preference draws", "开线偏好抽取");
+        Register("主线统计-路线偏好抽取", "Route-preference draws", "路线偏好抽取");
         Register("主线统计-原胚偏好抽取", "Proto-preference draws", "原胚偏好抽取");
         Register("科技解锁", "Tech unlocked", "科技解锁");
         Register("物品解锁", "Item unlocked", "物品解锁");
@@ -131,11 +131,11 @@ public static class MainTask {
             ("分馏两百次", "Two Hundred Fractionations"),
             ("分馏三百次", "Three Hundred Fractionations"),
             ("主线闭环", "Main Closure"),
-            ("首次开线偏好", "First Opening Preference"),
-            ("开线偏好五次", "Five Opening Preferences"),
-            ("开线偏好十次", "Ten Opening Preferences"),
-            ("开线偏好二十次", "Twenty Opening Preferences"),
-            ("开线偏好五十次", "Fifty Opening Preferences"),
+            ("首次路线偏好", "First Route Preference"),
+            ("路线偏好五次", "Five Route Preferences"),
+            ("路线偏好十次", "Ten Route Preferences"),
+            ("路线偏好二十次", "Twenty Route Preferences"),
+            ("路线偏好五十次", "Fifty Route Preferences"),
             ("首次原胚偏好", "First Proto Preference"),
             ("原胚偏好五次", "Five Proto Preferences"),
             ("原胚偏好十次", "Ten Proto Preferences"),
@@ -178,12 +178,12 @@ public static class MainTask {
             ("累计完成 10 次分馏成功", "Reach 10 successful fractionations"),
             ("累计完成 50 次分馏成功", "Reach 50 successful fractionations"),
             ("累计完成 200 次分馏成功", "Reach 200 successful fractionations"),
-            ("累计完成 1 次主抽取开线偏好", "Perform 1 Main Draw opening-preference draw"),
-            ("累计完成 5 次主抽取开线偏好", "Perform 5 Main Draw opening-preference draws"),
-            ("累计完成 20 次主抽取开线偏好", "Perform 20 Main Draw opening-preference draws"),
-            ("累计完成 50 次主抽取开线偏好", "Perform 50 Main Draw opening-preference draws"),
-            ("累计完成 100 次主抽取开线偏好", "Perform 100 Main Draw opening-preference draws"),
-            ("累计完成 200 次主抽取开线偏好", "Perform 200 Main Draw opening-preference draws"),
+            ("累计完成 1 次主抽取路线偏好", "Perform 1 Main Draw route-preference draw"),
+            ("累计完成 5 次主抽取路线偏好", "Perform 5 Main Draw route-preference draws"),
+            ("累计完成 20 次主抽取路线偏好", "Perform 20 Main Draw route-preference draws"),
+            ("累计完成 50 次主抽取路线偏好", "Perform 50 Main Draw route-preference draws"),
+            ("累计完成 100 次主抽取路线偏好", "Perform 100 Main Draw route-preference draws"),
+            ("累计完成 200 次主抽取路线偏好", "Perform 200 Main Draw route-preference draws"),
             ("累计完成 1 次主抽取原胚偏好", "Perform 1 Main Draw proto-preference draw"),
             ("累计完成 5 次主抽取原胚偏好", "Perform 5 Main Draw proto-preference draws"),
             ("累计完成 10 次主抽取原胚偏好", "Perform 10 Main Draw proto-preference draws"),
@@ -200,7 +200,7 @@ public static class MainTask {
             ("累计解锁 80 个分馏配方", "Unlock 80 fractionation recipes"),
             ("累计解锁 100 个分馏配方并完成 5000 次分馏成功", "Unlock 100 recipes and reach 5000 successful fractionations"),
             ("累计完成 800 次分馏成功", "Reach 800 successful fractionations"),
-            ("累计完成 10 次主抽取开线偏好", "Perform 10 Main Draw opening-preference draws"),
+            ("累计完成 10 次主抽取路线偏好", "Perform 10 Main Draw route-preference draws"),
             ("解锁 30 个分馏配方", "Unlock 30 fractionation recipes"),
             ("累计解锁 30 个分馏配方", "Unlock 30 fractionation recipes"),
             ("累计解锁 60 个分馏配方并完成 3000 次分馏成功", "Unlock 60 recipes and reach 3000 successful fractionations"),
@@ -372,11 +372,11 @@ public static class MainTask {
                     () =>
                         $"{GetRecipeProgressText(finalRecipeTarget)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, finalFractionTarget)}")),
             Branch("draw-low", "低档抽取",
-                DrawNode("draw-opening-1", "首次开线偏好", "累计完成 1 次主抽取开线偏好", 1, IFE残片, 1, true, 100),
-                DrawNode("draw-opening-5", "开线偏好五次", "累计完成 5 次主抽取开线偏好", 1, IFE残片, 5, true, 150),
-                DrawNode("draw-opening-10", "开线偏好十次", "累计完成 10 次主抽取开线偏好", 2, IFE残片, 10, true, 200),
-                DrawNode("draw-opening-20", "开线偏好二十次", "累计完成 20 次主抽取开线偏好", 2, IFE残片, 20, true, 300),
-                DrawNode("draw-opening-50", "开线偏好五十次", "累计完成 50 次主抽取开线偏好", 3, IFE残片, 50, true, 500),
+                DrawNode("draw-opening-1", "首次路线偏好", "累计完成 1 次主抽取路线偏好", 1, IFE残片, 1, true, 100),
+                DrawNode("draw-opening-5", "路线偏好五次", "累计完成 5 次主抽取路线偏好", 1, IFE残片, 5, true, 150),
+                DrawNode("draw-opening-10", "路线偏好十次", "累计完成 10 次主抽取路线偏好", 2, IFE残片, 10, true, 200),
+                DrawNode("draw-opening-20", "路线偏好二十次", "累计完成 20 次主抽取路线偏好", 2, IFE残片, 20, true, 300),
+                DrawNode("draw-opening-50", "路线偏好五十次", "累计完成 50 次主抽取路线偏好", 3, IFE残片, 50, true, 500),
                 DrawNode("draw-proto-1", "首次原胚偏好", "累计完成 1 次主抽取原胚偏好", 2, IFE交互塔原胚, 1, false, 1),
                 DrawNode("draw-proto-5", "原胚偏好五次", "累计完成 5 次主抽取原胚偏好", 3, IFE矿物复制塔原胚, 5, false, 1),
                 DrawNode("draw-proto-10", "原胚偏好十次", "累计完成 10 次主抽取原胚偏好", 4, IFE转化塔原胚, 10, false, 1)),
@@ -476,7 +476,7 @@ public static class MainTask {
         bool opening, int rewardCount) {
         return Node(id, name, desc, stageIndex, iconItemId, IFE残片, rewardCount,
             () => GetDrawCount(opening) >= target,
-            () => GetCountProgressText(opening ? "主线统计-开线偏好抽取" : "主线统计-原胚偏好抽取", GetDrawCount(opening), target));
+            () => GetCountProgressText(opening ? "主线统计-路线偏好抽取" : "主线统计-原胚偏好抽取", GetDrawCount(opening), target));
     }
 
     private static TaskNode ProtoNode(string id, string name, string desc, int stageIndex, int iconItemId,

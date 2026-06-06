@@ -74,6 +74,7 @@ public static partial class GachaService {
     private static readonly GachaPool[] poolsById = new GachaPool[GachaPool.PoolCount];
     private static readonly Dictionary<int, GachaDrawUnit> recipeRewardIndex = [];
     private static int recipeRewardIndexRecipeCount;
+    private static bool isRebuildingRecipeRewardIndex;
 
     private static int cachedMatrixId;
     private static GachaFocusType cachedFocus = GachaFocusType.Balanced;

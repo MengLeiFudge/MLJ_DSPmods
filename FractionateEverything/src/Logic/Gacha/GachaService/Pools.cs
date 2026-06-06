@@ -4,6 +4,7 @@ using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
 using UnityEngine;
+using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 
@@ -14,7 +15,7 @@ namespace FE.Logic.Gacha;
 /// </summary>
 public static partial class GachaService {
     public static void InitPools() {
-        EnsureRecipeRewardIndex();
+        EnsureRecipeRewardIndex(force: true);
         cachedMatrixId = GetCurrentProgressMatrixId();
         cachedFocus = GachaManager.CurrentFocus;
         cachedMode = GachaManager.CurrentMode;
@@ -172,8 +173,8 @@ public static partial class GachaService {
     }
 
     /// <summary>
-    /// 主抽取开线偏好当前只消费“生产型”配方。
-    /// 工具/解锁型与特殊成长型配方继续走科技、主抽取原胚偏好或成长规划，不混入随机开线入口。
+    /// 主抽取路线偏好当前只消费“生产型”配方。
+    /// 工具/解锁型与特殊成长型配方继续走科技、主抽取原胚偏好或成长规划，不混入随机路线入口。
     /// </summary>
     private static bool IsOpeningLineRecipe(BaseRecipe recipe) {
         return recipe != null
@@ -210,24 +211,30 @@ public static partial class GachaService {
     private static List<GachaDrawUnit> GetOpeningDrawUnits(int maxStageIndex) {
         var mineralGroups = new Dictionary<GachaDrawUnitKey, List<BaseRecipe>>();
         var mineralDisplayItems = new Dictionary<GachaDrawUnitKey, int>();
+        var rectificationGroups = new Dictionary<GachaDrawUnitKey, List<BaseRecipe>>();
+        var rectificationDisplayItems = new Dictionary<GachaDrawUnitKey, int>();
         var conversionRecipes = new List<BaseRecipe>();
 
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
-            if (!IsOpeningLineRecipe(recipe) || GetMatrixStageIndex(recipe.MatrixID) > maxStageIndex) {
+            if (recipe == null || GetMatrixStageIndex(recipe.MatrixID) > maxStageIndex) {
                 continue;
             }
 
-            if (recipe.RecipeType == ERecipe.MineralCopy) {
+            if (IsOpeningLineRecipe(recipe) && recipe.RecipeType == ERecipe.MineralCopy) {
                 GachaDrawUnitKey key = GetMineralCopyDrawUnitKey(recipe, out int displayItemId);
                 AddRecipeToDrawUnitGroup(mineralGroups, mineralDisplayItems, key, displayItemId, recipe);
-            } else if (recipe.RecipeType == ERecipe.Conversion) {
+            } else if (IsOpeningLineRecipe(recipe) && recipe.RecipeType == ERecipe.Conversion) {
                 conversionRecipes.Add(recipe);
+            } else if (IsRectificationOpeningUnitRecipe(recipe)) {
+                GachaDrawUnitKey key = GetRectificationDrawUnitKey((RectificationRecipe)recipe, out int displayItemId);
+                AddRecipeToDrawUnitGroup(rectificationGroups, rectificationDisplayItems, key, displayItemId, recipe);
             }
         }
 
         var units = new List<GachaDrawUnit>();
         AddGroupedDrawUnits(units, mineralGroups, mineralDisplayItems);
         units.AddRange(BuildConversionChainDrawUnits(conversionRecipes));
+        AddGroupedDrawUnits(units, rectificationGroups, rectificationDisplayItems);
         return units;
     }
 
@@ -237,11 +244,12 @@ public static partial class GachaService {
             RecipeFamily.MineralCopyNormal => IsSpeedrunMode ? 120f : 100f,
             RecipeFamily.ConversionItemChain => IsSpeedrunMode ? 120f : 100f,
             RecipeFamily.ConversionBuilding => IsSpeedrunMode ? 32f : 40f,
+            RecipeFamily.Rectification => IsSpeedrunMode ? 58f : 46f,
             _ => 1f,
         };
 
         int recipeStageIndex = GetMatrixStageIndex(recipe.MatrixID);
-        if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
+        if (RecipeGrowthQueries.GetLevel(recipe) <= 0) {
             weight *= IsSpeedrunMode ? 1.8f : 1.5f;
         }
         if (recipeStageIndex == currentStageIndex) {
@@ -302,7 +310,7 @@ public static partial class GachaService {
             BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
             if (recipe != null
                 && GetMatrixStageIndex(recipe.MatrixID) == stageIndex
-                && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+                && RecipeGrowthQueries.GetLevel(recipe) <= 0) {
                 return true;
             }
         }
@@ -312,7 +320,7 @@ public static partial class GachaService {
     private static bool IsDrawUnitFullyUnlocked(GachaDrawUnit unit) {
         foreach (RecipeKey key in unit.RecipeKeys) {
             BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(key.RecipeType, key.InputId);
-            if (recipe != null && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+            if (recipe != null && RecipeGrowthQueries.GetLevel(recipe) <= 0) {
                 return false;
             }
         }
@@ -433,6 +441,36 @@ public static partial class GachaService {
         return units;
     }
 
+    private static bool IsRectificationOpeningUnitRecipe(BaseRecipe recipe) {
+        if (recipe is not RectificationRecipe rectificationRecipe) {
+            return false;
+        }
+
+        if (rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.EssenceTuning) {
+            return true;
+        }
+
+        return rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
+               && rectificationRecipe.InputID == I黑雾矩阵
+               && IsDarkFogMatrixVisible();
+    }
+
+    private static bool IsDarkFogMatrixVisible() {
+        return GameMain.history != null && GameMain.history.ItemUnlocked(I黑雾矩阵)
+               || GetModDataItemCount(I黑雾矩阵) > 0;
+    }
+
+    private static GachaDrawUnitKey GetRectificationDrawUnitKey(RectificationRecipe recipe, out int displayItemId) {
+        if (recipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
+            && recipe.InputID == I黑雾矩阵) {
+            displayItemId = I黑雾矩阵;
+            return new GachaDrawUnitKey(GachaDrawUnitKind.RectificationFamily, ERecipe.Rectification, I黑雾矩阵);
+        }
+
+        displayItemId = IFE电磁精华;
+        return new GachaDrawUnitKey(GachaDrawUnitKind.RectificationFamily, ERecipe.Rectification, IFE电磁精华);
+    }
+
     private static int GetSmallestInputId(List<BaseRecipe> recipes) {
         int itemId = int.MaxValue;
         foreach (BaseRecipe recipe in recipes) {
@@ -482,8 +520,63 @@ public static partial class GachaService {
             && itemId == IFE精馏塔原胚) {
             weight *= 1.3f;
         }
+        if (TryGetProtoLoopDrawUnit(itemId, out GachaDrawUnit unit)
+            && IsDrawUnitFullyUnlocked(unit)
+            && GachaManager.GetDrawUnitResonance(unit.Key) < GachaManager.MaxDrawUnitResonance) {
+            weight *= IsSpeedrunMode ? 1.16f : 1.10f;
+        }
 
         return Mathf.Max(1, Mathf.RoundToInt(weight));
+    }
+
+    private static IEnumerable<GachaDrawUnit> GetRewardDrawUnits() {
+        foreach (GachaDrawUnit unit in GetOpeningDrawUnits(int.MaxValue)) {
+            yield return unit;
+        }
+
+        foreach (GachaDrawUnit unit in GetProtoLoopDrawUnits()) {
+            yield return unit;
+        }
+    }
+
+    private static List<GachaDrawUnit> GetProtoLoopDrawUnits() {
+        List<GachaDrawUnit> units = [];
+        foreach (int protoId in FractionatorTowerCatalog.ActiveFractionatorProtoIds) {
+            if (TryCreateTowerDrawUnit(protoId, out GachaDrawUnit unit)) {
+                units.Add(unit);
+            }
+        }
+        return units;
+    }
+
+    private static bool TryGetProtoLoopDrawUnit(int itemId, out GachaDrawUnit unit) {
+        return TryCreateTowerDrawUnit(itemId, out unit);
+    }
+
+    private static bool TryCreateTowerDrawUnit(int protoId, out GachaDrawUnit unit) {
+        unit = default;
+        if (!FractionatorTowerCatalog.TryGetBuildingIdForProto(protoId, out int buildingId)) {
+            return false;
+        }
+
+        List<BaseRecipe> recipes = [];
+        BaseRecipe forwardRecipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.BuildingTrain, protoId);
+        BaseRecipe reverseRecipe = RecipeManager.GetRecipe<BaseRecipe>(ERecipe.BuildingTrain, buildingId);
+        if (forwardRecipe != null) {
+            recipes.Add(forwardRecipe);
+        }
+        if (reverseRecipe != null) {
+            recipes.Add(reverseRecipe);
+        }
+        if (recipes.Count == 0) {
+            return false;
+        }
+
+        unit = CreateDrawUnit(
+            new GachaDrawUnitKey(GachaDrawUnitKind.TowerFamily, ERecipe.BuildingTrain, buildingId),
+            protoId,
+            recipes);
+        return true;
     }
 
     private static void AddWeighted(List<int> target, int itemId, int weight) {

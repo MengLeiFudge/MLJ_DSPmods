@@ -48,16 +48,16 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 
 抽奖是很重要的一环。快来试试你的手气吧！
 
-* 主抽取：消耗当前阶段矩阵，按抽取偏好获得新抽取单位、分馏塔原胚、定向原胚和补差资源。抽取单位可能是一条配方、一个资源组或一条转化链。
-* 抽取偏好：可以在平衡、开线优先、原胚优先之间切换，用很少的操作控制当前发展方向。
+* 主抽取：消耗当前阶段矩阵，按抽取偏好获得路线抽取单位、分馏塔原胚、定向原胚和补差资源。抽取单位可能是一条配方、一个资源组、一条转化链、一个塔种或一个精馏家族。
+* 抽取偏好：可以在平衡、路线优先、原胚优先之间切换，用很少的操作控制当前发展方向。
 * 成长规划：使用成长积分、残片和矩阵精华进行确定性补差，避免手动重复操作无限拖延。
 * 流派聚焦：不是独立奖池，而是对主抽取偏好和成长规划命中权重进行方向修正。
 
 Raffles are an important part of the process. Come and try your luck!
 
-* Main Draw: Spend the current-stage Matrix to obtain new recipes, fractionator protos, directional protos, and catch-up
+* Main Draw: Spend the current-stage Matrix to obtain route draw units, fractionator protos, directional protos, and catch-up
   resources according to your draw preference.
-* Draw Preference: Switch between balanced, opening-first, and proto-first to steer progression with minimal operation.
+* Draw Preference: Switch between balanced, route-first, and proto-first to steer progression with minimal operation.
 * Growth Planning: Spend growth points, fragments, and matrix essences on deterministic catch-up.
 * Focus Control: Not a standalone pool. It biases Main Draw preference and Growth Planning hits toward the selected route.
 

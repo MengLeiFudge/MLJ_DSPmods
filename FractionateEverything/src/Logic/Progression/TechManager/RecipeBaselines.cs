@@ -68,7 +68,7 @@ public static partial class TechManager {
     }
 
     /// <summary>
-    /// 部分配方不在主抽取开线偏好里，或被归进黑雾阶段后没有自然获取入口。
+    /// 部分配方不在主抽取路线偏好里，或被归进黑雾阶段后没有自然获取入口。
     /// 当其对应科技已解锁时，补一个最低档位保底，避免旧档和高进度档里永久缺口。
     /// </summary>
     private static void EnsureGuaranteedConversionRecipeBaselines() {

@@ -102,6 +102,9 @@ public static class FracRecipeOperate {
         Register("增产点数", "Proliferator points");
         Register("矩阵萃取", "Matrix extraction");
         Register("精华调相", "Essence tuning");
+        Register("萃取损耗", "Extraction loss");
+        Register("压缩倍率", "Compression");
+        Register("回流倍率", "Reflux");
         Register("精馏配方不参与成功率加成；矩阵萃取保留损毁，精华调相损毁为0。",
             "Rectification recipes do not use success-rate bonuses. Matrix extraction keeps destroy chance; essence tuning has no destroy chance.");
 
@@ -135,9 +138,10 @@ public static class FracRecipeOperate {
         Register("升级方式", "Upgrade Method");
         Register("成长进度", "Growth Progress");
         Register("抽取单位回响", "Draw Unit Resonance");
-        Register("通过主抽取开线偏好获取", "Obtain from Main Draw opening preference");
+        Register("通过主抽取开线偏好获取", "Obtain from Main Draw route preference", "通过主抽取路线偏好获取");
         Register("通过主抽取开线偏好获取；部分前期配方也会随科技保底解锁",
-            "Obtain from Main Draw opening preference; some early recipes are also unlocked by tech baseline");
+            "Obtain from Main Draw route preference; some early recipes are also unlocked by tech baseline",
+            "通过主抽取路线偏好获取；部分前期配方也会随科技保底解锁");
         Register("通过主抽取原胚偏好或成长规划获得；相关科技也会保底解锁",
             "Obtain from Main Draw proto preference or Growth Planning; related tech also provides baseline unlock");
         Register("通过成长规划或固定入口获得；解锁后直接满级",
@@ -154,6 +158,8 @@ public static class FracRecipeOperate {
         Register("处理对应黑雾物品获取经验，也可通过成长规划补差",
             "Gain EXP by processing the matching Dark Fog item, or catch up through Growth Planning");
         Register("处理对应矩阵获取保底进度", "Build pity progress by processing matching matrices");
+        Register("处理对应矩阵或矩阵精华获取保底进度，也可通过矩阵精华催化补差",
+            "Build pity progress by processing matching matrices or matrix essences; matrix essences can also catalyse catch-up");
         Register("解锁后", "After unlocking");
         Register("直接满级", "be granted at max level immediately");
         Register("已完全升级，无需继续成长", "Fully upgraded; no further growth needed");
@@ -606,7 +612,7 @@ public static class FracRecipeOperate {
             RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
                 => prefix + "处理对应黑雾物品获取经验，也可通过成长规划补差".Translate(),
             RecipeFamily.Rectification
-                => prefix + "处理对应矩阵获取保底进度".Translate(),
+                => prefix + "处理对应矩阵或矩阵精华获取保底进度，也可通过矩阵精华催化补差".Translate(),
             RecipeFamily.ConversionBuilding
                 => snapshot.IsUnlocked
                     ? "已完全升级，无需继续成长".Translate()
@@ -641,7 +647,7 @@ public static class FracRecipeOperate {
     }
 
     private static string BuildDrawUnitResonanceHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        if (!snapshot.IsUnlocked || !IsOpeningDrawUnitRecipe(recipe)) {
+        if (!snapshot.IsUnlocked || !IsDrawUnitRecipe(recipe)) {
             return string.Empty;
         }
 
@@ -649,13 +655,17 @@ public static class FracRecipeOperate {
         return $"{"抽取单位回响".Translate()}：Lv{resonance}/{GachaManager.MaxDrawUnitResonance}";
     }
 
-    private static bool IsOpeningDrawUnitRecipe(BaseRecipe recipe) {
-        if (recipe == null || recipe.GrowthRole != ERecipeGrowthRole.Production || recipe.MatrixID == I黑雾矩阵) {
+    private static bool IsDrawUnitRecipe(BaseRecipe recipe) {
+        if (recipe == null) {
             return false;
         }
 
         RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-        return family is RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain;
+        return family is RecipeFamily.BuildingTrainForward
+            or RecipeFamily.BuildingTrainReverse
+            or RecipeFamily.MineralCopyNormal
+            or RecipeFamily.ConversionItemChain
+            or RecipeFamily.Rectification;
     }
 
     private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;

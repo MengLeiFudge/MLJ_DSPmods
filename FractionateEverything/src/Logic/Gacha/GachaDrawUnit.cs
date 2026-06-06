@@ -11,6 +11,8 @@ public enum GachaDrawUnitKind {
     Recipe = 1,
     ResourceGroup = 2,
     ConversionChain = 3,
+    TowerFamily = 4,
+    RectificationFamily = 5,
 }
 
 /// <summary>
@@ -29,7 +31,9 @@ public readonly struct GachaDrawUnitKey {
 
     public bool IsValid => (Kind is GachaDrawUnitKind.Recipe
         or GachaDrawUnitKind.ResourceGroup
-        or GachaDrawUnitKind.ConversionChain) && InputId > 0;
+        or GachaDrawUnitKind.ConversionChain
+        or GachaDrawUnitKind.TowerFamily
+        or GachaDrawUnitKind.RectificationFamily) && InputId > 0;
 
     public static GachaDrawUnitKey FromRecipe(BaseRecipe recipe) =>
         recipe == null ? default : new(GachaDrawUnitKind.Recipe, recipe.RecipeType, recipe.InputID);
@@ -43,7 +47,7 @@ public sealed class GachaDrawUnitState {
 }
 
 /// <summary>
-/// 抽取单位定义。一个单位可以映射单配方、资源组或转化链；底层等级仍由 RecipeGrowth 逐配方保存。
+/// 抽取单位定义。一个单位可以映射单配方、资源组、转化链、塔种或精馏家族；底层等级仍由 RecipeGrowth 逐配方保存。
 /// </summary>
 public readonly struct GachaDrawUnit {
     public GachaDrawUnit(GachaDrawUnitKey key, int displayItemId, RecipeKey[] recipeKeys) {

@@ -54,14 +54,14 @@ public static partial class TutorialManager {
              {"[How to Use (simple version)]".WithColor(Blue)}
              The current 3.0 loop is organised around four keywords: Main Draw, Preference, Growth, and Focus.
              1. Build the production line for the current-stage Matrix. Matrices are spent directly for draws; physical tickets are no longer the main currency.
-             2. Spend the current-stage Matrix in Main Draw. Draw Preference steers the result toward new recipes, tower protos, or directional protos.
+             2. Spend the current-stage Matrix in Main Draw. Draw Preference steers the result toward route draw units, tower protos, or directional protos.
              3. Feed matrices into the Rectification Tower to extract Matrix Essences, then compress, reflux, or split essences into fragments. Essences, Fragments, and Growth Points support deterministic catch-up and breakthroughs.
              4. Change the Focus layer according to your current build direction. Focus does not create a new pool by itself; it biases Main Draw and Growth outcomes toward the chosen route.
              5. Recipe growth and building growth are now split: recipes care about unlocks, levels, and full-upgrade progress, while buildings care about tower-type EXP and key breakthroughs.
 
              {"[Recipe Operation]".WithColor(Blue)} 
              This page lets you inspect any FE recipe and its current progress.
-             1. Recipes are mainly obtained from Main Draw, the Growth page, or by spending Fractionation Recipe Cores.
+             1. Recipes and draw units are mainly obtained from Main Draw, the Growth page, or route baselines.
              2. Recipe levels increase by actually running the corresponding line. Sand can still be used as a direct EXP shortcut.
              3. The gallery and long-term progression now care more about whether a recipe is unlocked and fully upgraded than about old ticket-era pool bookkeeping.
              4. Equivalent Output remains the best place to quantify expected outputs after recipe, tower, and proliferator bonuses are applied.
@@ -93,8 +93,8 @@ public static partial class TutorialManager {
 
              {"[Draw System]".WithColor(Blue)}
              The current draw structure is Main Draw plus preference:
-             1. Main Draw: spends the current-stage Matrix for new recipes, tower protos, directional protos, and catch-up resources.
-             2. Draw Preference: switches between balanced, opening-first, and proto-first without adding extra operation-heavy pools.
+             1. Main Draw: spends the current-stage Matrix for route draw units, tower protos, directional protos, and catch-up resources.
+             2. Draw Preference: switches between balanced, route-first, and proto-first without adding extra operation-heavy pools.
              3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, matrix essence catalysts, and the staged offers of the Dark Fog combat branch.
              4. Focus Layer: not a standalone pool. It biases Main Draw and Growth offers toward the selected direction.
 
@@ -122,8 +122,8 @@ public static partial class TutorialManager {
              {"【使用简介（太长不看版）】".WithColor(Blue)}
              面板有很多功能，其中当前你必须理解的核心是“主抽取、偏好、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
              1.搭建当前阶段矩阵产线。矩阵将直接作为抽取资源，不再需要实体奖券。
-             2.在主抽取中设置抽取偏好，再投入矩阵。偏好可以让结果更偏新配方、原胚或定向原胚。
-             3.通过精馏塔把矩阵加工为矩阵精华，再让精华压缩、回流或拆成残片，配合池积分进入“成长规划”。
+             2.在主抽取中设置抽取偏好，再投入矩阵。偏好可以让结果更偏路线抽取单位、原胚或定向原胚。
+             3.通过精馏塔把矩阵加工为矩阵精华，再让精华压缩、回流或拆成残片，配合成长积分进入“成长规划”。
              4.根据你想走的路线切换“流派聚焦”，让对应方向的配方、原胚或成长报价更容易命中。
              5.配方和建筑成长现在分流处理：配方侧强调解锁、升级与满级；建筑侧强调塔种经验与关键节点突破。
 
@@ -137,7 +137,7 @@ public static partial class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-黑雾矩阵]和[转化-黑雾矩阵]是不同的配方，它们之间没有任何关联。黑雾矩阵输入矿物复制塔，将会根据[矿物复制-黑雾矩阵]配方进行处理；黑雾矩阵输入转化塔，将会根据[转化-黑雾矩阵]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方的获取途径有：主抽取开线偏好、成长规划补差，以及科技保底解锁。
+             配方或抽取单位的获取途径有：主抽取路线偏好、成长规划补差、产线运行，以及科技保底解锁。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限由配方所属系统决定。
@@ -185,11 +185,11 @@ public static partial class TutorialManager {
              抽取系统现在围绕“主抽取 + 偏好”展开：
 
              1.主抽取
-             消耗当前阶段矩阵，获得新配方、分馏塔原胚、定向原胚和补差资源。
+             消耗当前阶段矩阵，获得路线抽取单位、分馏塔原胚、定向原胚和补差资源。
              它是唯一主要手动抽取入口，不再要求玩家长期在多个奖池之间切换。
 
              2.抽取偏好
-             可以在平衡、开线优先、原胚优先之间切换。
+             可以在平衡、路线优先、原胚优先之间切换。
              它改变主抽取内部方向，而不是新增一个需要反复操作的奖池。
 
              3.成长规划
@@ -202,7 +202,7 @@ public static partial class TutorialManager {
              {"【限时商店】".WithColor(Blue)}
              当前版本中，传统“限时商店”已被重构为成长规划与资源统筹。
              重点不再是随机刷新货物，而是：
-             - 用池积分和残片做定向补差
+             - 用成长积分和残片做定向补差
              - 用矩阵精华承担催化与关键节点突破
              - 通过战斗推进黑雾支线阶段，再用黑雾矩阵承接成长报价
 

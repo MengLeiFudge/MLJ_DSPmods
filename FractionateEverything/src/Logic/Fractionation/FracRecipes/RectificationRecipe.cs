@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
+using FE.Logic.Gacha;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
@@ -30,6 +32,9 @@ public class RectificationRecipe : BaseRecipe {
     public const float MaxPlannedCompressionRatio = 0.60f;
     private const float TicketSplitRatio = 0.10f;
     public static int CurrentTuningTargetId;
+    private static readonly float[] MatrixExtractionDestroyRatios = [0.04f, 0.03f, 0.02f, 0.01f, 0.005f, 0.0f];
+    private static readonly float[] CompressionOutputCounts = [0.45f, 0.46f, 0.48f, 0.50f, 0.51f, 0.52f];
+    private static readonly float[] RefluxOutputCounts = [1.80f, 1.88f, 1.96f, 2.00f, 2.06f, 2.12f];
 
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
@@ -177,12 +182,40 @@ public class RectificationRecipe : BaseRecipe {
         return false;
     }
 
+    public static float GetMatrixExtractionDestroyRatioForLevel(int level) =>
+        MatrixExtractionDestroyRatios[ClampRatioLevel(level)];
+
+    public static float GetCompressionOutputCountForLevel(int level) =>
+        CompressionOutputCounts[ClampRatioLevel(level)];
+
+    public static float GetRefluxOutputCountForLevel(int level) =>
+        RefluxOutputCounts[ClampRatioLevel(level)];
+
+    private static int ClampRatioLevel(int level) {
+        if (level <= 0) {
+            return 0;
+        }
+        if (level >= 5) {
+            return MatrixExtractionDestroyRatios.Length - 1;
+        }
+        return level;
+    }
+
     /// <summary>
     /// 获取该配方失败时输入物品损毁概率。
     /// </summary>
-    public override float DestroyRatio => Kind == RectificationRecipeKind.EssenceTuning
-        ? 0.0f
-        : base.DestroyRatio;
+    public override float DestroyRatio {
+        get {
+            if (Kind == RectificationRecipeKind.EssenceTuning) {
+                return 0.0f;
+            }
+
+            float raw = GetMatrixExtractionDestroyRatioForLevel(RecipeGrowthQueries.GetLevel(this));
+            raw -= GachaService.GetRecipeDrawUnitResonance(this) * 0.002f;
+            raw -= GachaGalleryBonusManager.GetDestroyReduction(RecipeType);
+            return raw > 0f ? raw : 0f;
+        }
+    }
 
     /// <summary>
     /// 执行 RectificationRecipe 对应的分馏域操作。
@@ -326,10 +359,24 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     private float GetRuntimeOutputCount(OutputInfo outputInfo) {
-        if (Kind != RectificationRecipeKind.MatrixExtraction) {
-            return outputInfo.OutputCount;
+        if (Kind == RectificationRecipeKind.MatrixExtraction) {
+            float matrixCount = outputInfo.OutputCount * GetStageDecayFactor(InputID) * RectificationTower.PlrRatio;
+            return matrixCount < 0.0001f ? 0.0001f : matrixCount;
         }
-        float count = outputInfo.OutputCount * GetStageDecayFactor(InputID) * RectificationTower.PlrRatio;
+
+        int inputLevel = GetMatrixEssenceLevel(InputID);
+        int outputLevel = GetMatrixEssenceLevel(outputInfo.OutputID);
+        float count = outputInfo.OutputCount;
+        int recipeLevel = RecipeGrowthQueries.GetLevel(this);
+        if (inputLevel >= 0 && outputLevel == inputLevel + 1) {
+            count = GetCompressionOutputCountForLevel(recipeLevel);
+        } else if (inputLevel >= 0 && outputLevel == inputLevel - 1) {
+            count = GetRefluxOutputCountForLevel(recipeLevel);
+        }
+
+        if (outputInfo.OutputID != IFE残片) {
+            count *= 1.0f + GachaService.GetRecipeDrawUnitResonance(this) * 0.005f;
+        }
         return count < 0.0001f ? 0.0001f : count;
     }
 

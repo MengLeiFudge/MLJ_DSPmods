@@ -26,7 +26,7 @@ public static class RecipeGrowthRules {
     private static readonly RecipeGrowthRule ConversionBuildingRule = new(
         RecipeFamily.ConversionBuilding, RecipeGrowthMode.FixedMax, 5, 0, 0, 5, true, false, false);
     private static readonly RecipeGrowthRule RectificationRule = new(
-        RecipeFamily.Rectification, RecipeGrowthMode.ProcessExpWithPity, 5, 0, 1, 0, false, false, true);
+        RecipeFamily.Rectification, RecipeGrowthMode.ProcessExpWithPity, 5, 0, 1, 1, false, false, true);
     private static readonly Dictionary<BaseRecipe, RecipeFamily> FamilyCache = [];
     private static readonly Dictionary<BaseRecipe, RecipeGrowthRule> RuleCache = [];
 

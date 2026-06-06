@@ -132,6 +132,10 @@ public static partial class GachaService {
 
         RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
         switch (family) {
+            case RecipeFamily.BuildingTrainForward:
+            case RecipeFamily.BuildingTrainReverse:
+                doubleOutputBonus = resonance * 0.006f;
+                break;
             case RecipeFamily.MineralCopyNormal:
                 doubleOutputBonus = resonance * 0.01f;
                 break;
@@ -156,13 +160,14 @@ public static partial class GachaService {
         if (focus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
             return mainMultiplier;
         }
-        if (focus == GachaFocusType.EmbryoCycle && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+        if (focus == GachaFocusType.EmbryoCycle && RecipeGrowthQueries.GetLevel(recipe) <= 0) {
             return sideMultiplier;
         }
 
         return recipe.RecipeType switch {
             ERecipe.MineralCopy when focus == GachaFocusType.MineralExpansion => mainMultiplier,
             ERecipe.Conversion when focus == GachaFocusType.ConversionLeap => mainMultiplier,
+            ERecipe.Rectification when focus == GachaFocusType.RectificationEconomy => mainMultiplier,
             _ => 1f,
         };
     }
@@ -212,7 +217,7 @@ public static partial class GachaService {
             if (GachaManager.CurrentFocus == GachaFocusType.LogisticsInteraction && IsLogisticsRecipe(recipe.InputID)) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && !RecipeGrowthQueries.IsUnlocked(recipe)) {
+            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && RecipeGrowthQueries.GetLevel(recipe) <= 0) {
                 return GachaFocusMatchType.Main;
             }
             if (GachaManager.CurrentFocus == GachaFocusType.ProcessOptimization
@@ -229,6 +234,10 @@ public static partial class GachaService {
             }
             if (recipe.RecipeType == ERecipe.Conversion
                 && GachaManager.CurrentFocus == GachaFocusType.ConversionLeap) {
+                return GachaFocusMatchType.Main;
+            }
+            if (recipe.RecipeType == ERecipe.Rectification
+                && GachaManager.CurrentFocus == GachaFocusType.RectificationEconomy) {
                 return GachaFocusMatchType.Main;
             }
         }

@@ -463,15 +463,15 @@ public static class LimitedTimeStore {
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
         return GachaManager.CurrentFocus switch {
             GachaFocusType.Balanced => "平衡发展：主抽取不额外偏置，成长规划只保留常规补差。".WithColor(White),
-            GachaFocusType.MineralExpansion => $"复制扩张：主抽取开线方向更偏矿物复制，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.ConversionLeap => $"转化跃迁：主抽取开线方向更偏转化配方，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.MineralExpansion => $"复制扩张：主抽取路线更偏矿物复制抽取单位，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.ConversionLeap => $"转化跃迁：主抽取路线更偏转化链抽取单位，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
             GachaFocusType.LogisticsInteraction =>
-                $"交互物流：主抽取开线方向偏物流链，原胚方向偏交互塔，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+                $"交互物流：主抽取路线偏物流链抽取单位，原胚方向偏交互塔，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
             GachaFocusType.EmbryoCycle =>
-                $"原胚循环：主抽取偏未解锁配方与定向原胚，成长规划命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"工艺优化：主抽取开线方向偏当前阶段配方，原胚方向偏转化塔，成长规划命中条目按 {discountPercent:0}% 成本结算。"
+                $"原胚循环：主抽取偏未解锁抽取单位与定向原胚，成长规划命中条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
+            GachaFocusType.ProcessOptimization => $"工艺优化：主抽取路线偏当前阶段抽取单位，原胚方向偏转化塔，成长规划命中条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
-            GachaFocusType.RectificationEconomy => $"精馏经济：主抽取原胚方向偏精馏塔，重复满级配方补偿更多残片，成长规划命中条目按 {discountPercent:0}% 成本结算。"
+            GachaFocusType.RectificationEconomy => $"精馏经济：主抽取路线偏精馏家族，原胚方向偏精馏塔，成长规划命中条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
             _ => string.Empty,
         };
@@ -483,19 +483,19 @@ public static class LimitedTimeStore {
         return focusType switch {
             GachaFocusType.Balanced => $"{activePrefix} 不额外偏置主抽取，成长规划不触发方向折扣。".WithColor(active ? Green : White),
             GachaFocusType.MineralExpansion =>
-                $"{activePrefix} 主抽取开线方向更偏矿物复制，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
-            GachaFocusType.ConversionLeap => $"{activePrefix} 主抽取开线方向更偏转化配方，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                $"{activePrefix} 主抽取路线更偏矿物复制抽取单位，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(active ? Green : White),
+            GachaFocusType.ConversionLeap => $"{activePrefix} 主抽取路线更偏转化链抽取单位，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
                 active ? Green : White),
             GachaFocusType.LogisticsInteraction =>
-                $"{activePrefix} 主抽取开线方向偏物流链，原胚方向偏交互塔原胚，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                $"{activePrefix} 主抽取路线偏物流链抽取单位，原胚方向偏交互塔原胚，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
                     active ? Green : White),
-            GachaFocusType.EmbryoCycle => $"{activePrefix} 主抽取偏未解锁配方与定向原胚，成长规划命中条目按 {discountPercent:0}% 成本并额外 +1。"
+            GachaFocusType.EmbryoCycle => $"{activePrefix} 主抽取偏未解锁抽取单位与定向原胚，成长规划命中条目按 {discountPercent:0}% 成本并额外 +1。"
                 .WithColor(active ? Green : White),
             GachaFocusType.ProcessOptimization =>
-                $"{activePrefix} 主抽取开线方向偏当前阶段配方，原胚方向偏转化塔，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                $"{activePrefix} 主抽取路线偏当前阶段抽取单位，原胚方向偏转化塔，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
                     active ? Green : White),
             GachaFocusType.RectificationEconomy =>
-                $"{activePrefix} 主抽取原胚方向偏精馏塔，满级重复配方补偿更多残片，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
+                $"{activePrefix} 主抽取路线偏精馏家族，原胚方向偏精馏塔，成长规划命中条目按 {discountPercent:0}% 成本结算。".WithColor(
                     active ? Green : White),
             _ => string.Empty,
         };

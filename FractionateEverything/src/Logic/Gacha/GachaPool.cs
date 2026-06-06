@@ -73,7 +73,7 @@ public readonly struct GachaResult {
 public class GachaPool {
     /// <summary>
     /// 卡池 ID 语义合同。ID 保留为兼容层，玩家界面统一显示为主抽取偏好和成长规划。
-    /// 0=主抽取开线偏好（抽到配方时走配方奖励逻辑）
+    /// 0=主抽取路线偏好（抽到路线抽取单位时走配方奖励逻辑）
     /// 1=主抽取原胚偏好（抽到物品时入数据中心）
     /// 2=成长规划（非随机，主要承载积分/定向补差）
     /// 3=流派聚焦层（不直接抽卡，只负责方向加权）
@@ -109,7 +109,7 @@ public class GachaPool {
         return poolId >= 0 && poolId < PoolCount;
     }
 
-    /// <summary>仅主抽取开线偏好在发奖时走配方奖励逻辑。</summary>
+    /// <summary>仅主抽取路线偏好在发奖时走配方奖励逻辑。</summary>
     public static bool IsRecipePool(int poolId) {
         return poolId == PoolIdOpeningLine;
     }
