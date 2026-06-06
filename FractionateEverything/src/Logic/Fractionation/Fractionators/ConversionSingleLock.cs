@@ -337,6 +337,7 @@ public static class FractionatorSingleLock {
             return;
         }
         lockedOutputDic.TryRemove((__instance.planetId, id), out _);
+        RectificationTuningTarget.ClearTuningTarget(__instance, id);
         FractionatorOutputState.ClearExtraState(__instance, id);
     }
 

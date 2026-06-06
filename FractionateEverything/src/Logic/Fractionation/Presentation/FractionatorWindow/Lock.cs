@@ -22,6 +22,10 @@ public static partial class FractionatorWindow {
         return recipe.TryGetLockedOutputPlan(itemId, out _);
     }
 
+    private static bool IsTunableOutput(RectificationRecipe recipe, int itemId) {
+        return recipe != null && recipe.SupportsTuningTarget(itemId);
+    }
+
     private static void OnSlotRightClick(int itemId) {
         UIFractionatorWindow target = sourceWindow ?? modWindow;
         if (target == null || target.fractionatorId == 0 || target.factory == null) {
@@ -32,7 +36,23 @@ public static partial class FractionatorWindow {
             return;
         }
         int buildingId = target.factory.entityPool[fractionator.entityId].protoId;
-        if (buildingId != IFE转化塔 || !ConversionTower.EnableSingleLock || itemId == fractionator.fluidId) {
+        if (itemId == fractionator.fluidId) {
+            return;
+        }
+
+        if (buildingId == IFE转化塔) {
+            ToggleConversionLockedOutput(target, fractionator, itemId);
+            return;
+        }
+
+        if (buildingId == IFE精馏塔) {
+            ToggleRectificationTuningTarget(target, fractionator, itemId);
+        }
+    }
+
+    private static void ToggleConversionLockedOutput(UIFractionatorWindow target, FractionatorComponent fractionator,
+        int itemId) {
+        if (!ConversionTower.EnableSingleLock) {
             return;
         }
 
@@ -49,6 +69,26 @@ public static partial class FractionatorWindow {
             fractionator.SetLockedOutputAndSync(target.factory, itemId, manual: true);
             string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
             UIRealtimeTip.Popup(string.Format("已锁定单路产物：{0}".Translate(), itemName));
+        }
+
+        DoModWindowUpdate(target);
+    }
+
+    private static void ToggleRectificationTuningTarget(UIFractionatorWindow target, FractionatorComponent fractionator,
+        int itemId) {
+        RectificationRecipe recipe = GetRecipe<RectificationRecipe>(ERecipe.Rectification, fractionator.fluidId);
+        if (!IsTunableOutput(recipe, itemId)) {
+            return;
+        }
+
+        int currentTargetItemId = fractionator.GetTuningTarget(target.factory);
+        if (currentTargetItemId == itemId) {
+            fractionator.SetTuningTargetAndSync(target.factory, 0, manual: true);
+            UIRealtimeTip.Popup("已清除调相方向".Translate());
+        } else {
+            fractionator.SetTuningTargetAndSync(target.factory, itemId, manual: true);
+            string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
+            UIRealtimeTip.Popup(string.Format("已设定调相方向：{0}".Translate(), itemName));
         }
 
         DoModWindowUpdate(target);
@@ -161,6 +201,39 @@ public static partial class FractionatorWindow {
             lockHintText.text = recipe == null
                 ? string.Empty
                 : (lockedOutputId == 0 ? "右键设为单锁".Translate() : "右键清除单锁".Translate());
+        }
+    }
+
+    private static void UpdateTargetStatusUI(FractionatorComponent fractionator, ConversionRecipe conversionRecipe,
+        int lockedOutputId, bool showLockControls, RectificationRecipe rectificationRecipe, int tuningTargetId,
+        bool showTuningControls) {
+        bool showControls = showLockControls || showTuningControls;
+        if (lockStateText != null) {
+            lockStateText.gameObject.SetActive(showControls);
+        }
+        if (lockHintText != null) {
+            lockHintText.gameObject.SetActive(showControls);
+        }
+        if (!showControls) {
+            return;
+        }
+
+        if (showLockControls) {
+            UpdateLockStatusUI(fractionator, conversionRecipe, lockedOutputId, showLockControls);
+            return;
+        }
+
+        string targetName = "未锁定".Translate();
+        if (tuningTargetId != 0) {
+            targetName = LDB.items.Select(tuningTargetId)?.name ?? tuningTargetId.ToString();
+        }
+        if (lockStateText != null) {
+            lockStateText.text = $"{"调相方向".Translate()}：{targetName}";
+        }
+        if (lockHintText != null) {
+            lockHintText.text = rectificationRecipe == null
+                ? string.Empty
+                : (tuningTargetId == 0 ? "右键设为调相方向".Translate() : "右键清除调相方向".Translate());
         }
     }
 }

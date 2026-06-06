@@ -249,6 +249,9 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
             case 2:
                 FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
+            case 3:
+                RectificationTuningTarget.ApplyTuningTargetPacket(packet.planetId, packet.entityId, packet.itemId);
+                break;
         }
         if (NebulaModAPI.IsMultiplayerActive && IsHost) {
             NebulaModAPI.MultiplayerSession.Network.SendPacketExclude(packet, conn);

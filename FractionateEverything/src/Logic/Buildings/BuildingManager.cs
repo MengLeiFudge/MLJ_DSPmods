@@ -140,6 +140,7 @@ public static partial class BuildingManager {
             ("InterstellarInteractionStation", InterstellarInteractionStation.Import),
             ("OutputExtend", FractionatorOutputState.OutputExtendImport),
             ("LockedOutput", FractionatorSingleLock.LockedOutputImport),
+            ("RectificationTuningTarget", RectificationTuningTarget.TuningTargetImport),
             ("FissionPointPool", FissionPointPool.FissionPointPoolImport),
             ("Resonance", ResonanceState.ResonanceImport),
             ("BuildingExp", BuildingGrowthService.Import)
@@ -156,6 +157,7 @@ public static partial class BuildingManager {
             ("InterstellarInteractionStation", InterstellarInteractionStation.Export),
             ("OutputExtend", FractionatorOutputState.OutputExtendExport),
             ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
+            ("RectificationTuningTarget", RectificationTuningTarget.TuningTargetExport),
             ("FissionPointPool", FissionPointPool.FissionPointPoolExport),
             ("Resonance", ResonanceState.ResonanceExport),
             ("BuildingExp", BuildingGrowthService.Export)
@@ -171,6 +173,7 @@ public static partial class BuildingManager {
         InterstellarInteractionStation.IntoOtherSave();
         FractionatorOutputState.OutputExtendIntoOtherSave();
         FractionatorSingleLock.LockedOutputIntoOtherSave();
+        RectificationTuningTarget.TuningTargetIntoOtherSave();
         FissionPointPool.FissionPointPoolIntoOtherSave();
         ResonanceState.ResonanceIntoOtherSave();
         BuildingGrowthService.IntoOtherSave();

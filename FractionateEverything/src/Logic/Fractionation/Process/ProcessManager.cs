@@ -56,6 +56,11 @@ public static partial class ProcessManager {
         Register("已锁定单路产物：{0}", "Locked output: {0}");
         Register("已清除单路锁定", "Single lock cleared");
         Register("锁定产物无效，已清除", "Locked output invalid, cleared");
+        Register("调相方向", "Tuning target");
+        Register("右键设为调相方向", "Right-click to set tuning target");
+        Register("右键清除调相方向", "Right-click to clear tuning target");
+        Register("已设定调相方向：{0}", "Tuning target: {0}");
+        Register("已清除调相方向", "Tuning target cleared");
     }
 
     #region Field
@@ -220,6 +225,7 @@ public static partial class ProcessManager {
         bool isInteractionTower = buildingID == IFE交互塔;
         bool isMineralReplicationTower = buildingID == IFE矿物复制塔;
         bool isConversionTower = buildingID == IFE转化塔;
+        bool isRectificationTower = buildingID == IFE精馏塔;
         bool enableMassEnergyFission = isMineralReplicationTower && MineralReplicationTower.EnableMassEnergyFission;
         //所有产物输出
         FractionatorOutputState.FractionatorExtraState extraState = __instance.GetExtraState(factory);
@@ -251,6 +257,10 @@ public static partial class ProcessManager {
                 __instance.SetLockedOutput(factory,
                     __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
             }
+            if (isRectificationTower) {
+                __instance.SetTuningTarget(factory,
+                    __instance.NormalizeTuningTarget(factory, __instance.GetTuningTarget(factory)));
+            }
             if (needResetProducts) {
                 extraState.MarkRuntimeSchema(recipeType, fluidId, null, __instance.productId, null);
             }
@@ -279,6 +289,10 @@ public static partial class ProcessManager {
                 if (isConversionTower) {
                     __instance.SetLockedOutput(factory,
                         __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
+                }
+                if (isRectificationTower) {
+                    __instance.SetTuningTarget(factory,
+                        __instance.NormalizeTuningTarget(factory, __instance.GetTuningTarget(factory)));
                 }
             }
             int productId = __instance.productId;
@@ -423,6 +437,9 @@ public static partial class ProcessManager {
                     if (isConversionTower) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
                     }
+                    if (isRectificationTower) {
+                        RectificationRecipe.CurrentTuningTargetId = __instance.GetNormalizedTuningTarget(factory);
+                    }
                     perfDetailStart = GetFractionatorPerfTimestamp();
                     try {
                         batchResult = recipe.GetOutputsBatchFast(ref __instance.seed, pointsBonus, successBoost,
@@ -431,6 +448,9 @@ public static partial class ProcessManager {
                     finally {
                         if (isConversionTower) {
                             ConversionRecipe.CurrentLockedOutputId = 0;
+                        }
+                        if (isRectificationTower) {
+                            RectificationRecipe.CurrentTuningTargetId = 0;
                         }
                     }
                     RecordFractionatorPerfDetail(FractionatorPerfDetailProcessGetOutputs,

@@ -29,6 +29,7 @@ public class RectificationRecipe : BaseRecipe {
     /// </summary>
     public const float MaxPlannedCompressionRatio = 0.60f;
     private const float TicketSplitRatio = 0.10f;
+    public static int CurrentTuningTargetId;
 
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
@@ -164,6 +165,18 @@ public class RectificationRecipe : BaseRecipe {
     /// </summary>
     public RectificationRecipeKind Kind { get; }
 
+    public bool SupportsTuningTarget(int itemId) {
+        if (Kind != RectificationRecipeKind.EssenceTuning || itemId <= 0) {
+            return false;
+        }
+        foreach (OutputInfo output in OutputMain) {
+            if (output.OutputID == itemId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /// <summary>
     /// 获取该配方失败时输入物品损毁概率。
     /// </summary>
@@ -218,7 +231,12 @@ public class RectificationRecipe : BaseRecipe {
         int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
         int successCount = batchCount - destroyedCount;
         int inputRemoveCount = batchCount;
-        RollMainOutputs(ref seed, successCount, outputs);
+        OutputInfo directedOutput = GetDirectedOutputInfo();
+        if (directedOutput != null) {
+            AddRolledRectificationOutput(ref seed, outputs, directedOutput, successCount);
+        } else {
+            RollMainOutputs(ref seed, successCount, outputs);
+        }
 
         fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
@@ -248,7 +266,7 @@ public class RectificationRecipe : BaseRecipe {
             return FractionationOutcome.Destroyed;
         }
 
-        OutputInfo outputInfo = RollMainOutputInfo(ref seed);
+        OutputInfo outputInfo = GetDirectedOutputInfo() ?? RollMainOutputInfo(ref seed);
         int count = RollOutputCount(ref seed, GetRuntimeOutputCount(outputInfo));
         if (count <= 0) {
             return FractionationOutcome.Destroyed;
@@ -269,6 +287,18 @@ public class RectificationRecipe : BaseRecipe {
             }
         }
         return OutputMain[OutputMain.Count - 1];
+    }
+
+    private OutputInfo GetDirectedOutputInfo() {
+        if (Kind != RectificationRecipeKind.EssenceTuning || CurrentTuningTargetId == 0) {
+            return null;
+        }
+        foreach (OutputInfo outputInfo in OutputMain) {
+            if (outputInfo.OutputID == CurrentTuningTargetId) {
+                return outputInfo;
+            }
+        }
+        return null;
     }
 
     private void RollMainOutputs(ref uint seed, int successCount, ProductOutputBuffer outputs) {
