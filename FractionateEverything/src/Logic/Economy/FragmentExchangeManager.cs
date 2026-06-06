@@ -51,7 +51,8 @@ public static class FragmentExchangeManager {
         }
         return itemId != I沙土
                && itemId != GetCurrentProgressMatrixId()
-               && !IsRectificationChainItem(itemId);
+               && !IsRectificationChainItem(itemId)
+               && !IsSourcePointItem(itemId);
     }
 
     public static FragmentQuote GetQuote(int itemId) {

@@ -137,11 +137,11 @@ public static class ItemManager {
             new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityessence");
         RegisterRectificationChainItem(IFE宇宙精华, "宇宙精华", "I宇宙精华", 107,
             new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeessence");
-        RegisterRectificationChainItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
+        RegisterSourcePointItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
             new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f), "memory");
-        RegisterRectificationChainItem(IFE纯净源点, "纯净源点", "I纯净源点", 110,
+        RegisterSourcePointItem(IFE纯净源点, "纯净源点", "I纯净源点", 110,
             new Color(0.86f, 0.96f, 1f), new Color(0.14f, 0.28f, 0.40f), "purememory");
-        RegisterRectificationChainItem(IFE理论源点, "理论源点", "I理论源点", 111,
+        RegisterSourcePointItem(IFE理论源点, "理论源点", "I理论源点", 111,
             new Color(1f, 0.92f, 0.48f), new Color(0.28f, 0.20f, 0.06f), "theoreticalmemory");
 
         item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
@@ -177,6 +177,16 @@ public static class ItemManager {
     }
 
     private static void RegisterRectificationChainItem(int itemId, string name, string description, int gridOffset,
+        Color iconColor, Color iconBackgroundColor, string iconTag) {
+        RegisterFeInternalItem(itemId, name, description, gridOffset, iconColor, iconBackgroundColor, iconTag);
+    }
+
+    private static void RegisterSourcePointItem(int itemId, string name, string description, int gridOffset,
+        Color iconColor, Color iconBackgroundColor, string iconTag) {
+        RegisterFeInternalItem(itemId, name, description, gridOffset, iconColor, iconBackgroundColor, iconTag);
+    }
+
+    private static void RegisterFeInternalItem(int itemId, string name, string description, int gridOffset,
         Color iconColor, Color iconBackgroundColor, string iconTag) {
         ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description,
             "Assets/fe/copy-essence", tab分馏 * 1000 + gridOffset, 100, EItemType.Material,
@@ -519,8 +529,11 @@ public static class ItemManager {
     }
 
     public static bool IsRectificationChainItem(int itemId) {
-        return itemId == IFE残片 || IsMatrixEssenceItem(itemId)
-               || itemId == IFE记忆源点 || itemId == IFE纯净源点 || itemId == IFE理论源点;
+        return itemId == IFE残片 || IsMatrixEssenceItem(itemId);
+    }
+
+    public static bool IsSourcePointItem(int itemId) {
+        return itemId == IFE记忆源点 || itemId == IFE纯净源点 || itemId == IFE理论源点;
     }
 
     public static int GetMatrixEssenceLevel(int itemId) {

@@ -198,6 +198,7 @@ public static class MarketValueManager {
                && GetBaseValue(itemId) > 0f
                && GetBaseValue(itemId) < maxValue
                && !IsRectificationChainItem(itemId)
+               && !IsSourcePointItem(itemId)
                && itemId != I沙土;
     }
 
