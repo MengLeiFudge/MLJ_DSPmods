@@ -133,6 +133,7 @@ public static class FracRecipeOperate {
         Register("解锁方式", "Unlock Method");
         Register("升级方式", "Upgrade Method");
         Register("成长进度", "Growth Progress");
+        Register("抽取单位回响", "Draw Unit Resonance");
         Register("通过开线抽取获取", "Obtain from Opening Pool");
         Register("通过开线抽取获取；部分前期配方也会随科技保底解锁",
             "Obtain from Opening Pool; some early recipes are also unlocked by tech baseline");
@@ -542,6 +543,11 @@ public static class FracRecipeOperate {
             SetRightInfoLine(infoLineIdx++, $"{"升级方式".Translate()}：{"已完全升级，无需继续成长".Translate()}".WithColor(Green));
         }
 
+        string resonanceHint = BuildDrawUnitResonanceHint(recipe, snapshot);
+        if (!string.IsNullOrEmpty(resonanceHint)) {
+            SetRightInfoLine(infoLineIdx++, resonanceHint.WithColor(Purple));
+        }
+
         for (; infoLineIdx < LevelLineCount; infoLineIdx++) {
             txtLevelInfo[infoLineIdx].text = "";
         }
@@ -630,6 +636,24 @@ public static class FracRecipeOperate {
         }
 
         return string.Empty;
+    }
+
+    private static string BuildDrawUnitResonanceHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
+        if (!snapshot.IsUnlocked || !IsOpeningDrawUnitRecipe(recipe)) {
+            return string.Empty;
+        }
+
+        int resonance = GachaManager.GetDrawUnitResonance(GachaDrawUnitKey.FromRecipe(recipe));
+        return $"{"抽取单位回响".Translate()}：Lv{resonance}/{GachaManager.MaxDrawUnitResonance}";
+    }
+
+    private static bool IsOpeningDrawUnitRecipe(BaseRecipe recipe) {
+        if (recipe == null || recipe.GrowthRole != ERecipeGrowthRole.Production || recipe.MatrixID == I黑雾矩阵) {
+            return false;
+        }
+
+        RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
+        return family is RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal;
     }
 
     private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;
