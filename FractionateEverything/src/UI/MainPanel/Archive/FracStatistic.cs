@@ -185,10 +185,10 @@ public static class FracStatistic {
                 continue;
             }
             if (BuildingGrowthService.NeedsBreakthrough(buildingId)) {
-                (int matrixId, int matrixCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(level);
-                string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
+                (int essenceId, int essenceCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(level);
+                string essenceName = LDB.items.Select(essenceId)?.name ?? essenceId.ToString();
                 growthLines[i].text =
-                    $"{building.name}  Lv{level}  突破：{matrixName} x{matrixCount} + 残片 x{fragmentCount}"
+                    $"{building.name}  Lv{level}  突破：{essenceName} x{essenceCount} + 残片 x{fragmentCount}"
                         .WithColor(Orange);
                 continue;
             }

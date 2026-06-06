@@ -211,7 +211,7 @@ public static class GlobalGrowthOperate {
     private static string BuildTimeCostText() {
         return GameMain.sandboxToolsEnabled
             ? $"{ "升级消耗".Translate()}：{"无消耗".Translate()}"
-            : $"{ "升级消耗".Translate()}：当前临时无消耗，后续接矩阵 + Memory";
+            : $"{ "升级消耗".Translate()}：当前临时无消耗，后续接矩阵精华 + 源点";
     }
 
     private static string GetStackBlockedText() {
@@ -236,41 +236,41 @@ public static class GlobalGrowthOperate {
 
     private static StackUpgradeCost GetStackUpgradeCost() {
         int nextStack = System.Math.Min(StackingManager.CurrentMaxStack + 1, StackingManager.AbsoluteMaxStack);
-        int matrixIndex = System.Math.Min((nextStack - StackingManager.BaseUnlockedMaxStack) / 3,
+        int essenceIndex = System.Math.Min((nextStack - StackingManager.BaseUnlockedMaxStack) / 3,
             MainProgressMatrixIds.Length - 1);
-        int matrixId = MainProgressMatrixIds[matrixIndex];
-        int matrixCount = 200 + (nextStack - StackingManager.BaseUnlockedMaxStack) * 80;
+        int essenceId = GetMatrixEssenceItemId(essenceIndex);
+        int essenceCount = 200 + (nextStack - StackingManager.BaseUnlockedMaxStack) * 80;
         int memoryItemId = nextStack >= 14 ? IFE纯净源点 : IFE记忆源点;
         int memoryCount = nextStack >= 14 ? 1 + (nextStack - 14) / 2 : 1 + (nextStack - 5) / 3;
-        return new(matrixId, matrixCount, memoryItemId, System.Math.Max(1, memoryCount));
+        return new(essenceId, essenceCount, memoryItemId, System.Math.Max(1, memoryCount));
     }
 
     private static string BuildCostText(StackUpgradeCost cost) {
-        string matrixName = LDB.items.Select(cost.MatrixId)?.name ?? cost.MatrixId.ToString();
+        string essenceName = LDB.items.Select(cost.EssenceId)?.name ?? cost.EssenceId.ToString();
         string memoryName = LDB.items.Select(cost.MemoryItemId)?.name ?? cost.MemoryItemId.ToString();
-        return $"{matrixName} x{cost.MatrixCount}，{memoryName} x{cost.MemoryCount}";
+        return $"{essenceName} x{cost.EssenceCount}，{memoryName} x{cost.MemoryCount}";
     }
 
     private static bool TryTakeCost(StackUpgradeCost cost) {
-        if (GetItemTotalCount(cost.MatrixId) < cost.MatrixCount) {
-            return TakeItemWithTip(cost.MatrixId, cost.MatrixCount, out _);
+        if (GetItemTotalCount(cost.EssenceId) < cost.EssenceCount) {
+            return TakeItemWithTip(cost.EssenceId, cost.EssenceCount, out _);
         }
 
         if (GetItemTotalCount(cost.MemoryItemId) < cost.MemoryCount) {
             return TakeItemWithTip(cost.MemoryItemId, cost.MemoryCount, out _);
         }
 
-        return TakeItemWithTip(cost.MatrixId, cost.MatrixCount, out _)
+        return TakeItemWithTip(cost.EssenceId, cost.EssenceCount, out _)
                && TakeItemWithTip(cost.MemoryItemId, cost.MemoryCount, out _);
     }
 
     private readonly struct StackUpgradeCost(
-        int matrixId,
-        int matrixCount,
+        int essenceId,
+        int essenceCount,
         int memoryItemId,
         int memoryCount) {
-        public int MatrixId { get; } = matrixId;
-        public int MatrixCount { get; } = matrixCount;
+        public int EssenceId { get; } = essenceId;
+        public int EssenceCount { get; } = essenceCount;
         public int MemoryItemId { get; } = memoryItemId;
         public int MemoryCount { get; } = memoryCount;
     }

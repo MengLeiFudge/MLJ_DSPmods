@@ -43,8 +43,8 @@ public static class BuildingOperate {
     ];
     private static MyImageButton btnFragmentIcon;
     private static Text txtFragmentCount;
-    private static MyImageButton btnMatrixIcon;
-    private static Text txtMatrixCount;
+    private static MyImageButton btnEssenceIcon;
+    private static Text txtEssenceCount;
 
     private static Text txtBuildingInfo5;
     private static UIButton btnTip5;
@@ -218,10 +218,10 @@ public static class BuildingOperate {
                                         pos: (0, 3), objectName: "building-fragment-icon"),
                                     TextNode("", 13, onBuilt: text => txtFragmentCount = text,
                                         pos: (0, 4), objectName: "building-fragment-count"),
-                                    ImageButtonNode(size: 40f, onBuilt: btn => btnMatrixIcon = btn,
-                                        pos: (0, 5), objectName: "building-matrix-icon"),
-                                    TextNode("", 13, onBuilt: text => txtMatrixCount = text,
-                                        pos: (0, 6), objectName: "building-matrix-count"),
+                                    ImageButtonNode(size: 40f, onBuilt: btn => btnEssenceIcon = btn,
+                                        pos: (0, 5), objectName: "building-essence-icon"),
+                                    TextNode("", 13, onBuilt: text => txtEssenceCount = text,
+                                        pos: (0, 6), objectName: "building-essence-count"),
                                 ]),
                             Grid(pos: (1, 0), span: (1, 2), cols: [1, 1, 1, 1], columnGap: 12f,
                                 children: [
@@ -317,12 +317,12 @@ public static class BuildingOperate {
         if (!tab.gameObject.activeSelf) {
             return;
         }
-        int currentMatrixId = GetCurrentProgressMatrixId();
-        btnMatrixIcon.Proto = LDB.items.Select(currentMatrixId);
+        int currentEssenceId = GetMatrixEssenceItemId(GetCurrentProgressStageIndex());
+        btnEssenceIcon.Proto = LDB.items.Select(currentEssenceId);
         btnFragmentIcon.SetCount(GetItemTotalCount(IFE残片));
-        btnMatrixIcon.SetCount(GetItemTotalCount(currentMatrixId));
+        btnEssenceIcon.SetCount(GetItemTotalCount(currentEssenceId));
         txtFragmentCount.text = "";
-        txtMatrixCount.text = "";
+        txtEssenceCount.text = "";
 
         string s = $"{"当前建筑强化等级".Translate()} +{SelectedBuilding.Level()}";
         txtBuildingInfo5.text = s.WithColor(SelectedBuilding.Level() / 3 + 1);
@@ -464,16 +464,16 @@ public static class BuildingOperate {
             UIRealtimeTip.Popup("当前等级需要靠经验自动成长".Translate(), true, 2);
             return;
         }
-        (int matrixId, int matrixCount, int fragmentCount) =
+        (int essenceId, int essenceCount, int fragmentCount) =
             BuildingGrowthService.GetBreakthroughCost(SelectedBuilding.Level());
-        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
+        string essenceName = LDB.items.Select(essenceId)?.name ?? essenceId.ToString();
         Miscellaneous.ShowQuestion("提示".Translate(),
             (GameMain.sandboxToolsEnabled
                 ? ""
-                : $"{"要花费".Translate()} {matrixName} x {matrixCount} + 残片 x {fragmentCount} ")
+                : $"{"要花费".Translate()} {essenceName} x {essenceCount} + 残片 x {fragmentCount} ")
             + $"{"关键节点突破".Translate()}{"吗？".Translate()}",
             () => {
-                if (!TakeItemWithTip(matrixId, matrixCount, out _)
+                if (!TakeItemWithTip(essenceId, essenceCount, out _)
                     || !TakeItemWithTip(IFE残片, fragmentCount, out _)) {
                     return;
                 }
@@ -507,8 +507,8 @@ public static class BuildingOperate {
     #endregion
 
     private static string GetBreakthroughCostText(int currentLevel) {
-        (int matrixId, int matrixCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(currentLevel);
-        string matrixName = LDB.items.Select(matrixId)?.name ?? matrixId.ToString();
-        return $"{matrixName} x{matrixCount} + 残片 x{fragmentCount}";
+        (int essenceId, int essenceCount, int fragmentCount) = BuildingGrowthService.GetBreakthroughCost(currentLevel);
+        string essenceName = LDB.items.Select(essenceId)?.name ?? essenceId.ToString();
+        return $"{essenceName} x{essenceCount} + 残片 x{fragmentCount}";
     }
 }

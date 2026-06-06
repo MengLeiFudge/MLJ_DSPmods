@@ -30,9 +30,9 @@ public static class BuildingGrowthService {
     /// </summary>
     public static readonly int[] BreakthroughLevels = [2, 5, 8, 11];
     /// <summary>
-    /// 定义各突破阶段需要消耗的矩阵数量。
+    /// 定义各突破阶段需要消耗的矩阵精华数量。
     /// </summary>
-    public static readonly int[] BreakthroughMatrixCosts = [1, 2, 4, 8];
+    public static readonly int[] BreakthroughEssenceCosts = [1, 2, 4, 8];
     /// <summary>
     /// 定义各突破阶段需要消耗的残片数量。
     /// </summary>
@@ -144,14 +144,14 @@ public static class BuildingGrowthService {
     /// <summary>
     /// 计算指定建筑等级突破到下一阶段所需材料。
     /// </summary>
-    public static (int matrixId, int matrixCount, int fragmentCount) GetBreakthroughCost(int buildingLevel) {
-        int matrixId = GetCurrentProgressMatrixId();
+    public static (int essenceId, int essenceCount, int fragmentCount) GetBreakthroughCost(int buildingLevel) {
+        int essenceId = GetMatrixEssenceItemId(GetCurrentProgressStageIndex());
         for (int i = 0; i < BreakthroughLevels.Length; i++) {
             if (BreakthroughLevels[i] == buildingLevel) {
-                return (matrixId, BreakthroughMatrixCosts[i], BreakthroughFragmentCosts[i]);
+                return (essenceId, BreakthroughEssenceCosts[i], BreakthroughFragmentCosts[i]);
             }
         }
-        return (matrixId, 0, 0);
+        return (essenceId, 0, 0);
     }
 
     /// <summary>
