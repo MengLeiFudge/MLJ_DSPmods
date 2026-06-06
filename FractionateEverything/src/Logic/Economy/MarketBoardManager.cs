@@ -266,7 +266,7 @@ public static class MarketBoardManager {
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
             if (recipe.InputID == itemId
-                && family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+                && family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
                 && !RecipeGrowthQueries.IsMaxed(recipe)) {
                 return true;
             }

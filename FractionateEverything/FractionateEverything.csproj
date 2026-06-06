@@ -6,7 +6,7 @@
         <RootNamespace>FE</RootNamespace>
         <AssemblyName>FractionateEverything</AssemblyName>
         <PackageId>FractionateEverything</PackageId>
-        <Version>2.3.0</Version>
+        <Version>3.0.0</Version>
         <Description>DSP MOD - FractionateEverything</Description>
         <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
         <ProfileDir Condition="'$(ProfileDir)' == '' and '$(USERPROFILE)' != ''">$(USERPROFILE)\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>

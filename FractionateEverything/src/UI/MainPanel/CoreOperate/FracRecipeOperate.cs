@@ -574,11 +574,11 @@ public static class FracRecipeOperate {
         return rule.Family switch {
             RecipeFamily.MineralCopyNormal when rule.TechBaselineLevel > 0
                 => "通过开线抽取获取；部分前期配方也会随科技保底解锁".Translate(),
-            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain
                 => "通过开线抽取获取".Translate(),
             RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse
                 => "通过原胚闭环或成长规划获得；相关科技也会保底解锁".Translate(),
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
                 => "首次获得对应黑雾物品后解锁".Translate(),
             _ when recipe.RecipeType == ERecipe.Conversion && recipe.MatrixID == I黑雾矩阵
                 => "通过黑雾支线成长规划报价获得".Translate(),
@@ -597,13 +597,13 @@ public static class FracRecipeOperate {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         string prefix = snapshot.IsUnlocked ? string.Empty : $"{"解锁后".Translate()}";
         return rule.Family switch {
-            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain
                 => prefix + "运行对应配方获取经验，重复获得时补充成长进度".Translate(),
             RecipeFamily.BuildingTrainForward
                 => prefix + "处理对应原胚获取经验，重复获得时也会直接提升".Translate(),
             RecipeFamily.BuildingTrainReverse
                 => prefix + "处理对应原胚获取经验".Translate(),
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
                 => prefix + "处理对应黑雾物品获取经验，也可通过成长规划补差".Translate(),
             RecipeFamily.Rectification
                 => prefix + "处理对应矩阵获取保底进度".Translate(),
@@ -655,7 +655,7 @@ public static class FracRecipeOperate {
         }
 
         RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-        return family is RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal;
+        return family is RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain;
     }
 
     private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;

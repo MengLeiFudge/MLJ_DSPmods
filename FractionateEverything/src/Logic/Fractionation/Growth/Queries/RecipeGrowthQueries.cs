@@ -266,7 +266,7 @@ public static class RecipeGrowthQueries {
         int stageIndex = RecipeGrowthCatchup.GetDarkFogStageIndex(context.DarkFogStage);
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-            if (family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
+            if (family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionDarkFogChain) {
                 continue;
             }
             RecipeDisplaySnapshot snapshot = GetSnapshot(recipe);

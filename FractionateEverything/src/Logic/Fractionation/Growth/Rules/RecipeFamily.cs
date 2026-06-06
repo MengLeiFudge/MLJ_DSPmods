@@ -9,8 +9,8 @@ public enum RecipeFamily {
     BuildingTrainReverse = 2,
     MineralCopyNormal = 3,
     MineralCopyDarkFog = 4,
-    ConversionMaterialNormal = 5,
-    ConversionMaterialDarkFog = 6,
+    ConversionItemChain = 5,
+    ConversionDarkFogChain = 6,
     ConversionBuilding = 7,
     Rectification = 9,
 }

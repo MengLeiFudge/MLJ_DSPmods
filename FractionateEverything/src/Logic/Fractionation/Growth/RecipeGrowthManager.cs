@@ -86,7 +86,7 @@ public static class RecipeGrowthManager {
         RecipeGrowthContext context = BuildContext();
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-            if (family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog) {
+            if (family is RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain) {
                 RecipeGrowthExecutor.EnsureUnlockedByDarkFogDrop(recipe, context);
             }
         }

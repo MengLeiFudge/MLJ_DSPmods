@@ -146,7 +146,7 @@ public static partial class GachaService {
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
             if (recipe.InputID != offer.OutputId
-                || family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
+                || family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionDarkFogChain) {
                 continue;
             }
 

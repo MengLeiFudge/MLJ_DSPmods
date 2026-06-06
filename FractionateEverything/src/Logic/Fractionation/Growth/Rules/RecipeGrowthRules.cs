@@ -21,8 +21,8 @@ public static class RecipeGrowthRules {
         RecipeFamily.BuildingTrainReverse, RecipeGrowthMode.ProcessExp, 5, 0, 1, 1, false, true, false);
     private static readonly RecipeGrowthRule MineralCopyDarkFogRule = new(
         RecipeFamily.MineralCopyDarkFog, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
-    private static readonly RecipeGrowthRule ConversionMaterialDarkFogRule = new(
-        RecipeFamily.ConversionMaterialDarkFog, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
+    private static readonly RecipeGrowthRule ConversionDarkFogChainRule = new(
+        RecipeFamily.ConversionDarkFogChain, RecipeGrowthMode.ProcessExp, 5, 0, 0, 1, false, true, false);
     private static readonly RecipeGrowthRule ConversionBuildingRule = new(
         RecipeFamily.ConversionBuilding, RecipeGrowthMode.FixedMax, 5, 0, 0, 5, true, false, false);
     private static readonly RecipeGrowthRule RectificationRule = new(
@@ -46,8 +46,8 @@ public static class RecipeGrowthRules {
                 ? RecipeFamily.MineralCopyDarkFog
                 : RecipeFamily.MineralCopyNormal,
             ConversionRecipe => IsBuildingItem(recipe.InputID) ? RecipeFamily.ConversionBuilding :
-                IsDarkFogItem(recipe.InputID) ? RecipeFamily.ConversionMaterialDarkFog :
-                RecipeFamily.ConversionMaterialNormal,
+                IsDarkFogItem(recipe.InputID) ? RecipeFamily.ConversionDarkFogChain :
+                RecipeFamily.ConversionItemChain,
             RectificationRecipe => RecipeFamily.Rectification,
             _ => RecipeFamily.Unknown,
         };
@@ -71,10 +71,10 @@ public static class RecipeGrowthRules {
                 family, RecipeGrowthMode.ProcessExp, 5, 0, GetStageBaselineLevel(recipe.MatrixID),
                 GetDrawUnlockLevel(recipe.MatrixID), false, true, false),
             RecipeFamily.MineralCopyDarkFog => MineralCopyDarkFogRule,
-            RecipeFamily.ConversionMaterialNormal => new RecipeGrowthRule(
+            RecipeFamily.ConversionItemChain => new RecipeGrowthRule(
                 family, RecipeGrowthMode.ProcessExp, 5, 0, 0, GetDrawUnlockLevel(recipe.MatrixID),
                 false, true, false),
-            RecipeFamily.ConversionMaterialDarkFog => ConversionMaterialDarkFogRule,
+            RecipeFamily.ConversionDarkFogChain => ConversionDarkFogChainRule,
             RecipeFamily.ConversionBuilding => ConversionBuildingRule,
             RecipeFamily.Rectification => RectificationRule,
             _ => new RecipeGrowthRule(RecipeFamily.Unknown, RecipeGrowthMode.None, 5, 0, 0, 1, false, false, false),
@@ -154,9 +154,9 @@ public static class RecipeGrowthRules {
         return rule.Family switch {
             RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse => BuildingTrainThresholds[
                 currentLevel],
-            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionMaterialNormal => ProductionThresholds[
+            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain => ProductionThresholds[
                 currentLevel],
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionMaterialDarkFog => DarkFogThresholds
+            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain => DarkFogThresholds
                 [currentLevel],
             RecipeFamily.Rectification => RectificationThresholds[currentLevel],
             _ => int.MaxValue,

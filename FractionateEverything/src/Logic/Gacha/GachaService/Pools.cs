@@ -217,7 +217,7 @@ public static partial class GachaService {
         RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
         float weight = family switch {
             RecipeFamily.MineralCopyNormal => IsSpeedrunMode ? 120f : 100f,
-            RecipeFamily.ConversionMaterialNormal => IsSpeedrunMode ? 120f : 100f,
+            RecipeFamily.ConversionItemChain => IsSpeedrunMode ? 120f : 100f,
             RecipeFamily.ConversionBuilding => IsSpeedrunMode ? 32f : 40f,
             _ => 1f,
         };

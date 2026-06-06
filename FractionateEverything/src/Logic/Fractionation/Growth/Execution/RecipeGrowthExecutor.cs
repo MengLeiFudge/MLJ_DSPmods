@@ -32,7 +32,7 @@ public static class RecipeGrowthExecutor {
         RecipeGrowthState state = RecipeGrowthManager.Store.GetOrCreate(recipe);
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         int previousLevel = state.Level;
-        if (rule.Family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
+        if (rule.Family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionDarkFogChain) {
             return BuildResult(recipe, rule, previousLevel, state);
         }
 
@@ -101,12 +101,12 @@ public static class RecipeGrowthExecutor {
                 state.GrowthExp += gain;
                 break;
             case RecipeFamily.MineralCopyNormal:
-            case RecipeFamily.ConversionMaterialNormal:
+            case RecipeFamily.ConversionItemChain:
                 gain += successCount * 2;
                 state.GrowthExp += gain;
                 break;
             case RecipeFamily.MineralCopyDarkFog:
-            case RecipeFamily.ConversionMaterialDarkFog:
+            case RecipeFamily.ConversionDarkFogChain:
                 gain += successCount * 2;
                 state.GrowthExp += RecipeGrowthCatchup.GetAdjustedDarkFogProcessExp(recipe, gain, context);
                 break;
@@ -136,13 +136,13 @@ public static class RecipeGrowthExecutor {
 
         switch (rule.Family) {
             case RecipeFamily.MineralCopyDarkFog:
-            case RecipeFamily.ConversionMaterialDarkFog:
+            case RecipeFamily.ConversionDarkFogChain:
                 state.GrowthExp += RecipeGrowthCatchup.GetAdjustedDarkFogCatchupExp(recipe, growthExp, context);
                 break;
             case RecipeFamily.BuildingTrainForward:
             case RecipeFamily.BuildingTrainReverse:
             case RecipeFamily.MineralCopyNormal:
-            case RecipeFamily.ConversionMaterialNormal:
+            case RecipeFamily.ConversionItemChain:
                 state.GrowthExp += growthExp;
                 break;
             case RecipeFamily.Rectification:
@@ -170,7 +170,7 @@ public static class RecipeGrowthExecutor {
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
             RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
             if (recipe.InputID != itemId
-                || family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionMaterialDarkFog) {
+                || family is not RecipeFamily.MineralCopyDarkFog and not RecipeFamily.ConversionDarkFogChain) {
                 continue;
             }
 
