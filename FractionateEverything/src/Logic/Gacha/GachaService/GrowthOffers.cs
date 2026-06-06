@@ -2,6 +2,7 @@
 using FE.Logic.DarkFog;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
+using static FE.Logic.Items.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
@@ -25,6 +26,11 @@ public static partial class GachaService {
 
     internal static bool TryExchangeGrowthOffer(GachaGrowthOffer offer, out GachaRewardResolution reward) {
         reward = new GachaRewardResolution(GachaRewardType.None, 0, 0);
+
+        if (IsEssenceCatalystOffer(offer)
+            && RecipeGrowthExecutor.CountEssenceCatalystTargets(offer.ExtraCostItemId, requireMaxed: false) <= 0) {
+            return false;
+        }
 
         if (offer.PointCost > 0 && !GachaManager.TryConsumePoolPoints(GachaPool.PoolIdGrowth, offer.PointCost)) {
             return false;
@@ -93,6 +99,28 @@ public static partial class GachaService {
             return true;
         }
 
+        if (IsEssenceCatalystOffer(offer)) {
+            int affectedRecipeCount = RecipeGrowthExecutor.ApplyEssenceCatalyst(
+                offer.ExtraCostItemId,
+                offer.OutputCount,
+                RecipeGrowthManager.BuildContext(manual: true));
+            if (affectedRecipeCount <= 0) {
+                if (offer.PointCost > 0) {
+                    GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, offer.PointCost);
+                }
+                if (offer.FragmentCost > 0) {
+                    AddItemToModData(IFE残片, offer.FragmentCost, 0, true);
+                }
+                if (offer.ExtraCostItemId > 0) {
+                    AddItemToModData(offer.ExtraCostItemId, offer.ExtraCostCount, 0, true);
+                }
+                return false;
+            }
+            reward = new GachaRewardResolution(GachaRewardType.RecipeProgress, offer.OutputId,
+                affectedRecipeCount);
+            return true;
+        }
+
         AddItemToModData(offer.OutputId, offer.OutputCount, 0, true);
         reward = new GachaRewardResolution(GachaRewardType.ItemGranted, offer.OutputId, offer.OutputCount);
         return true;
@@ -153,6 +181,7 @@ public static partial class GachaService {
             new(36, 30, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
         };
 
+        AppendEssenceCatalystOffer(offers);
         AppendBlackFogOffers(offers);
         return offers;
     }
@@ -164,8 +193,30 @@ public static partial class GachaService {
             new(15, 10, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
         };
 
+        AppendEssenceCatalystOffer(offers, pointCost: 14, fragmentCost: 8);
         AppendBlackFogOffers(offers, pointBaseOffset: -4, fragmentBaseOffset: -4);
         return offers;
+    }
+
+    private static void AppendEssenceCatalystOffer(List<GachaGrowthOffer> offers, int pointCost = 22,
+        int fragmentCost = 14) {
+        int essenceItemId = GetCurrentCatalystEssenceItemId();
+        if (essenceItemId <= 0) {
+            return;
+        }
+
+        int catalystExp = GetEssenceCatalystGrowthExp(essenceItemId);
+        offers.Add(new(pointCost, fragmentCost, essenceItemId, catalystExp, GachaFocusType.RectificationEconomy,
+            essenceItemId, 1, GachaGrowthOfferKind.EssenceCatalyst, ERecipe.Rectification));
+    }
+
+    private static int GetCurrentCatalystEssenceItemId() {
+        return GetMatrixEssenceItemId(GetCurrentProgressStageIndex());
+    }
+
+    private static int GetEssenceCatalystGrowthExp(int essenceItemId) {
+        int faceValue = GetMatrixEssenceFaceValue(essenceItemId);
+        return faceValue <= 0 ? 0 : faceValue * (IsSpeedrunMode ? 4 : 3);
     }
 
     private static void AppendBlackFogOffers(List<GachaGrowthOffer> offers, int pointBaseOffset = 0,

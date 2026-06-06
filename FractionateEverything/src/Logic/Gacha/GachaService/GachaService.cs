@@ -47,6 +47,7 @@ public enum GachaGrowthOfferKind {
     ItemGrant = 0,
     DarkFogCatchup = 1,
     DarkFogRecipeGrowth = 2,
+    EssenceCatalyst = 3,
 }
 
 /// <summary>

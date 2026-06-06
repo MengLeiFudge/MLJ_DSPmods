@@ -98,6 +98,15 @@ public static partial class GachaService {
         return offer.OfferKind == GachaGrowthOfferKind.DarkFogRecipeGrowth;
     }
 
+    public static bool IsEssenceCatalystOffer(GachaGrowthOffer offer) {
+        return offer.OfferKind == GachaGrowthOfferKind.EssenceCatalyst;
+    }
+
+    public static bool CanApplyEssenceCatalystOffer(GachaGrowthOffer offer) {
+        return !IsEssenceCatalystOffer(offer)
+               || RecipeGrowthExecutor.CountEssenceCatalystTargets(offer.ExtraCostItemId, requireMaxed: false) > 0;
+    }
+
     private static float GetOpeningRecipeFocusMultiplier(BaseRecipe recipe, int currentStageIndex) {
         GachaFocusType focus = GachaManager.CurrentFocus;
         if (focus == GachaFocusType.Balanced) {

@@ -1,5 +1,6 @@
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Gacha;
+using static FE.Logic.Items.ItemManager;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Fractionation.Growth;
@@ -180,6 +181,58 @@ public static class RecipeGrowthExecutor {
             }
         }
         return affectedRecipes;
+    }
+
+    /// <summary>
+    /// 消耗矩阵精华催化同阶段及以下的精馏配方成长。
+    /// </summary>
+    public static int ApplyEssenceCatalyst(int essenceItemId, int growthExp, RecipeGrowthContext context) {
+        int catalystStage = GetMatrixEssenceLevel(essenceItemId);
+        if (catalystStage < 0 || growthExp <= 0) {
+            return 0;
+        }
+
+        int affectedRecipes = 0;
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            if (RecipeGrowthRules.GetFamily(recipe) != RecipeFamily.Rectification
+                || GetMatrixStageIndex(recipe.MatrixID) > catalystStage
+                || !RecipeGrowthQueries.IsUnlocked(recipe)
+                || RecipeGrowthQueries.IsMaxed(recipe)) {
+                continue;
+            }
+
+            ApplyCatchupProgress(recipe, growthExp, context);
+            affectedRecipes++;
+        }
+        return affectedRecipes;
+    }
+
+    /// <summary>
+    /// 统计指定矩阵精华可催化的精馏配方数量。
+    /// </summary>
+    public static int CountEssenceCatalystTargets(int essenceItemId, bool requireMaxed) {
+        int catalystStage = GetMatrixEssenceLevel(essenceItemId);
+        if (catalystStage < 0) {
+            return 0;
+        }
+
+        int count = 0;
+        foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
+            if (RecipeGrowthRules.GetFamily(recipe) != RecipeFamily.Rectification
+                || GetMatrixStageIndex(recipe.MatrixID) > catalystStage
+                || !RecipeGrowthQueries.IsUnlocked(recipe)) {
+                continue;
+            }
+            bool isMaxed = RecipeGrowthQueries.IsMaxed(recipe);
+            if (requireMaxed && !isMaxed) {
+                return 0;
+            }
+            if (!requireMaxed && isMaxed) {
+                continue;
+            }
+            count++;
+        }
+        return count;
     }
 
     private static void ApplyManualCatchupProgress(RecipeGrowthState state, RecipeGrowthRule rule,

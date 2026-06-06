@@ -275,6 +275,10 @@ public static class LimitedTimeStore {
                 _ => $"{itemName} 转化配方暂未推进",
             };
             UIRealtimeTip.Popup(message);
+        } else if (GachaService.IsEssenceCatalystOffer(offer)) {
+            UIRealtimeTip.Popup(reward.RewardCount > 0
+                ? $"{itemName} 已催化 {reward.RewardCount} 个精馏配方"
+                : $"{itemName} 暂无可催化的精馏配方");
         } else {
             UIRealtimeTip.Popup($"获得 {itemName} x{reward.RewardCount}");
         }
@@ -342,7 +346,8 @@ public static class LimitedTimeStore {
                 bool canBuy = GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth) >= offer.PointCost
                               && GetItemTotalCount(IFE残片) >= offer.FragmentCost
                               && (offer.ExtraCostItemId <= 0
-                                  || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount);
+                                  || GetItemTotalCount(offer.ExtraCostItemId) >= offer.ExtraCostCount)
+                              && GachaService.CanApplyEssenceCatalystOffer(offer);
                 growthPage.Rows[i].BtnExchange.button.interactable = canBuy;
             }
         }
@@ -388,6 +393,9 @@ public static class LimitedTimeStore {
         if (GachaService.IsDarkFogRecipeGrowthOffer(offer)) {
             return "转化配方成长";
         }
+        if (GachaService.IsEssenceCatalystOffer(offer)) {
+            return "精馏催化";
+        }
         return string.Empty;
     }
 
@@ -406,6 +414,19 @@ public static class LimitedTimeStore {
         }
 
         string focusName = GachaService.GetFocusName(offer.FocusType);
+        if (GachaService.IsEssenceCatalystOffer(offer)) {
+            string baseText = $"精华催化：消耗矩阵精华，推进同阶段及以下已解锁精馏配方成长 +{offer.OutputCount}";
+            if (!GachaService.CanApplyEssenceCatalystOffer(offer)) {
+                return $"{baseText}。当前没有可催化目标。".WithColor(White);
+            }
+            if (!GachaService.IsFocusedGrowthOffer(offer)) {
+                return $"{baseText}。切到 {focusName} 后才会降价。".WithColor(White);
+            }
+            float catalystDiscountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
+            return $"{baseText}。已命中 {focusName}：积分/残片按 {catalystDiscountPercent:0}% 成本结算".WithColor(
+                Green);
+        }
+
         if (!GachaService.IsFocusedGrowthOffer(offer)) {
             string prefix = offer.ExtraCostItemId == I黑雾矩阵
                 ? DarkFogCombatManager.IsEnhancedRewardItem(offer.OutputId) ? "黑雾增强层报价。" :
