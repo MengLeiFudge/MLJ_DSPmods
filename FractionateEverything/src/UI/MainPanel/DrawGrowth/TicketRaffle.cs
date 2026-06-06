@@ -96,41 +96,41 @@ public static class TicketRaffle {
 
     public static void AddTranslations() {
         Register("主抽取", "Main Draw");
-        Register("开线抽取", "Opening Draw");
-        Register("原胚抽取", "Proto Draw");
+        Register("主抽取开线方向", "Main Draw - Opening");
+        Register("主抽取原胚方向", "Main Draw - Proto");
         Register("成长说明", "Growth Info");
         Register("聚焦说明", "Focus Info");
         Register("常规模式", "Normal Mode");
         Register("速通模式", "Speedrun Mode");
 
-        Register("开线池", "Opening Pool");
-        Register("原胚闭环池", "Proto Loop Pool");
-        Register("成长池", "Growth Pool");
+        Register("主抽取开线偏好", "Main Draw - Opening Preference", "主抽取：开线偏好");
+        Register("主抽取原胚偏好", "Main Draw - Proto Preference", "主抽取：原胚偏好");
+        Register("成长规划", "Growth Planning");
         Register("流派聚焦", "Focus Control");
-        Register("阶段箱池", "Stage Box Pool");
-        Register("简化原胚池", "Simplified Proto Pool");
-        Register("简化成长池", "Simplified Growth Pool");
+        Register("速通开线方向", "Speedrun Opening Direction", "速通开线方向");
+        Register("速通原胚方向", "Speedrun Proto Direction", "速通原胚方向");
+        Register("速通成长规划", "Speedrun Growth Planning", "速通成长规划");
         Register("速通聚焦层", "Speedrun Focus Layer");
 
-        Register("开线池说明",
-            "Spend the current stage Matrix to draw Mineral Replication / Conversion recipes. Focus raises matching directions.",
-            "消耗当前阶段矩阵，抽取矿物复制/转化的新配方与阶段推进条目。当前聚焦会提高对应方向的命中权重。");
-        Register("原胚闭环池说明",
-            "Spend the current stage Matrix to draw protos and directional protos. Focus raises matching tower embryos.",
-            "消耗当前阶段矩阵，抽取各类原胚与定向原胚。当前聚焦会提高对应塔种原胚的出现权重。");
-        Register("成长池说明",
-            "Growth is deterministic. Use pool points and fragments on the Growth page.",
-            "成长池为非随机成长入口。请前往成长页使用池积分与残片进行补差和定向成长。");
+        Register("主抽取开线偏好说明",
+            "Main Draw is currently steering toward Mineral Replication / Conversion recipes and line-branch unlocks. Focus raises matching directions.",
+            "主抽取当前偏向矿物复制/转化的新配方与阶段推进条目。当前聚焦会提高对应方向的命中权重。");
+        Register("主抽取原胚偏好说明",
+            "Main Draw is currently steering toward protos and directional protos. Focus raises matching tower embryos.",
+            "主抽取当前偏向各类原胚与定向原胚。当前聚焦会提高对应塔种原胚的出现权重。");
+        Register("成长规划说明",
+            "Growth is deterministic. Use growth points, fragments, and matrix essences on the Growth page.",
+            "成长规划为非随机成长入口。请使用成长积分、残片与矩阵精华进行补差和定向成长。");
         Register("流派聚焦说明",
-            "Focus is not a standalone draw pool. Select a focus on the Focus page to bias opening/proto rewards.",
-            "流派聚焦不是独立抽卡池。请前往聚焦页选择方向，以偏置开线池和原胚闭环池的奖励分布。");
-        Register("阶段箱池说明",
+            "Focus is not a standalone draw pool. Select a focus on the Focus page to bias Main Draw and Growth Planning.",
+            "流派聚焦不是独立抽卡池。请前往聚焦页选择方向，以偏置主抽取和成长规划的奖励分布。");
+        Register("速通开线方向说明",
             "Speedrun mode only. Each draw directly yields a current-stage opening target, greatly accelerating line unlock speed.",
             "仅速通模式使用。每次抽取都直接给当前阶段的开线目标，显著提升开线速度。");
-        Register("简化原胚池说明",
+        Register("速通原胚方向说明",
             "Speedrun mode only. Proto growth is more aggressive and directional protos appear faster.",
             "仅速通模式使用。原胚成长节奏更激进，定向原胚成型更快。");
-        Register("简化成长池说明",
+        Register("速通成长规划说明",
             "Speedrun mode only. Only key补差 and rapid breakthroughs remain, with lower resource pressure.",
             "仅速通模式使用。只保留关键补差与快速突破，资源压力更低。");
         Register("速通聚焦层说明",
@@ -142,14 +142,14 @@ public static class TicketRaffle {
         Register("残片余额", "Fragments");
         Register("保底进度", "Pity");
         Register("当前池积分", "Pool Points");
-        Register("成长池积分", "Growth Points");
+        Register("成长积分", "Growth Points");
         Register("抽1次", "Draw x1");
         Register("抽10次", "Draw x10");
         Register("抽取偏好", "Draw Preference");
         Register("偏好-平衡", "Balanced");
         Register("偏好-开线优先", "Opening First");
         Register("偏好-原胚优先", "Proto First");
-        Register("前往成长池", "Go Growth");
+        Register("前往成长规划", "Go Growth Planning");
         Register("前往聚焦页", "Go Focus");
         Register("结果摘要", "Summary");
         Register("暂无抽取结果", "No draws yet.", "暂无抽取结果");
@@ -175,7 +175,7 @@ public static class TicketRaffle {
         Register("聚焦-交互物流", "Interaction Logistics");
         Register("聚焦描述-交互物流", "Bias Interaction Tower protos for logistics and upload loops.", "提高交互塔原胚权重，强化上传与物流中枢。");
         Register("聚焦-原胚循环", "Embryo Cycle");
-        Register("聚焦描述-原胚循环", "Bias directional protos and deterministic proto补差.", "提高定向原胚与原胚补差收益，强化原胚闭环。");
+        Register("聚焦描述-原胚循环", "Bias directional protos and deterministic proto catch-up.", "提高定向原胚与原胚补差收益，强化原胚循环。");
         Register("聚焦-工艺优化", "Process Optimization");
         Register("聚焦描述-工艺优化", "Bias current-stage recipes and Conversion Tower protos.", "提高当前阶段配方与转化塔原胚权重。");
         Register("聚焦-精馏经济", "Rectification Economy");
@@ -246,7 +246,7 @@ public static class TicketRaffle {
                             ButtonNode("抽取偏好", onClick: () => CycleMainDrawPreference(ui), fontSize: 14,
                                 onBuilt: btn => ui.BtnSwitchPool = btn,
                                 pos: (0, 2), objectName: $"ticket-raffle-switch-pool-{poolId}"),
-                            ButtonNode("前往成长池",
+                            ButtonNode("前往成长规划",
                                 onClick: () =>
                                     MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 1),
                                 fontSize: 14,
@@ -435,7 +435,7 @@ public static class TicketRaffle {
             + $" / A×{aCount}".WithColor(Purple)
             + $" / B×{bCount}".WithColor(Blue)
             + $" / C×{cCount}".WithColor(White)
-            + $"    {"成长池积分".Translate()} +{results.Count}".WithColor(Green)
+            + $"    {"成长积分".Translate()} +{results.Count}".WithColor(Green)
             + $"    {"聚焦命中".Translate()} ×{focusHitCount}".WithColor(Green)
             + $" / {"聚焦主目标".Translate()} ×{focusMainHitCount}".WithColor(Blue)
             + $" / {"保底命中".Translate()} ×{hardPityCount}".WithColor(Gold);
@@ -486,7 +486,7 @@ public static class TicketRaffle {
         ui.TxtPity.text = GachaPool.IsDrawPool(ui.PoolId)
             ? $"{"保底进度".Translate()}：{GachaManager.PityCount[ui.PoolId] + 1}/90"
             : $"{"保底进度".Translate()}：-";
-        ui.TxtPoints.text = $"{"成长池积分".Translate()}：{GachaService.GetDisplayPoolPoints()}";
+        ui.TxtPoints.text = $"{"成长积分".Translate()}：{GachaService.GetDisplayPoolPoints()}";
         ui.TxtFocus.text =
             $"{"当前聚焦".Translate()}：{GachaService.GetFocusName(GachaManager.CurrentFocus)}    {GetFocusEffectSummary()}";
 
@@ -544,16 +544,16 @@ public static class TicketRaffle {
     private static string GetFocusEffectSummary() {
         float discountPercent = GachaService.GetFocusedOfferDiscountFactor() * 100f;
         return GachaManager.CurrentFocus switch {
-            GachaFocusType.Balanced => "不额外偏置开线或原胚，成长页保持原价。".WithColor(White),
-            GachaFocusType.MineralExpansion => $"开线池偏向矿物复制；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.ConversionLeap => $"开线池偏向转化配方；成长页命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
-            GachaFocusType.LogisticsInteraction => $"开线池偏向物流链配方，原胚池偏向交互塔原胚；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+            GachaFocusType.Balanced => "不额外偏置主抽取，成长规划保持原价。".WithColor(White),
+            GachaFocusType.MineralExpansion => $"主抽取开线方向偏向矿物复制；成长规划命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.ConversionLeap => $"主抽取开线方向偏向转化配方；成长规划命中方向条目按 {discountPercent:0}% 成本结算。".WithColor(Green),
+            GachaFocusType.LogisticsInteraction => $"主抽取开线方向偏向物流链配方，原胚方向偏向交互塔原胚；成长规划命中方向条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
             GachaFocusType.EmbryoCycle =>
-                $"开线池偏向未解锁配方，原胚池偏向定向原胚；成长页命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
-            GachaFocusType.ProcessOptimization => $"开线池偏向当前阶段配方，原胚池偏向转化塔；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+                $"主抽取偏向未解锁配方与定向原胚；成长规划命中方向条目按 {discountPercent:0}% 成本并额外 +1。".WithColor(Green),
+            GachaFocusType.ProcessOptimization => $"主抽取开线方向偏向当前阶段配方，原胚方向偏向转化塔；成长规划命中方向条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
-            GachaFocusType.RectificationEconomy => $"原胚池偏向精馏塔，满级重复配方会补偿更多残片；成长页命中方向条目按 {discountPercent:0}% 成本结算。"
+            GachaFocusType.RectificationEconomy => $"主抽取原胚方向偏向精馏塔，满级重复配方会补偿更多残片；成长规划命中方向条目按 {discountPercent:0}% 成本结算。"
                 .WithColor(Green),
             _ => string.Empty,
         };

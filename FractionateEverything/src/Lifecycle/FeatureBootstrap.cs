@@ -35,7 +35,7 @@ public static class FeatureBootstrap {
     }
 
     public static void PreAddData() {
-        // 添加 2.3 主路径使用的核心物品与原胚
+        // 添加 3.0 主路径使用的核心物品与原胚
         ItemManager.AddCoreItemsAndPrototypes();
         // 初步添加分馏塔
         BuildingManager.AddFractionators();

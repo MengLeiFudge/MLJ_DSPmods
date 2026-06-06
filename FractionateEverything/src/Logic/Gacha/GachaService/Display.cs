@@ -13,40 +13,40 @@ public static partial class GachaService {
     public static string GetPoolNameKey(int poolId) {
         if (IsSpeedrunMode) {
             return poolId switch {
-                GachaPool.PoolIdOpeningLine => "阶段箱池",
-                GachaPool.PoolIdProtoLoop => "简化原胚池",
-                GachaPool.PoolIdGrowth => "简化成长池",
+                GachaPool.PoolIdOpeningLine => "速通开线方向",
+                GachaPool.PoolIdProtoLoop => "速通原胚方向",
+                GachaPool.PoolIdGrowth => "速通成长规划",
                 GachaPool.PoolIdFocus => "速通聚焦层",
-                _ => "阶段箱池",
+                _ => "速通开线方向",
             };
         }
 
         return poolId switch {
-            GachaPool.PoolIdOpeningLine => "开线池",
-            GachaPool.PoolIdProtoLoop => "原胚闭环池",
-            GachaPool.PoolIdGrowth => "成长池",
+            GachaPool.PoolIdOpeningLine => "主抽取开线偏好",
+            GachaPool.PoolIdProtoLoop => "主抽取原胚偏好",
+            GachaPool.PoolIdGrowth => "成长规划",
             GachaPool.PoolIdFocus => "流派聚焦",
-            _ => "开线池",
+            _ => "主抽取开线偏好",
         };
     }
 
     public static string GetPoolDescKey(int poolId) {
         if (IsSpeedrunMode) {
             return poolId switch {
-                GachaPool.PoolIdOpeningLine => "阶段箱池说明",
-                GachaPool.PoolIdProtoLoop => "简化原胚池说明",
-                GachaPool.PoolIdGrowth => "简化成长池说明",
+                GachaPool.PoolIdOpeningLine => "速通开线方向说明",
+                GachaPool.PoolIdProtoLoop => "速通原胚方向说明",
+                GachaPool.PoolIdGrowth => "速通成长规划说明",
                 GachaPool.PoolIdFocus => "速通聚焦层说明",
-                _ => "阶段箱池说明",
+                _ => "速通开线方向说明",
             };
         }
 
         return poolId switch {
-            GachaPool.PoolIdOpeningLine => "开线池说明",
-            GachaPool.PoolIdProtoLoop => "原胚闭环池说明",
-            GachaPool.PoolIdGrowth => "成长池说明",
+            GachaPool.PoolIdOpeningLine => "主抽取开线偏好说明",
+            GachaPool.PoolIdProtoLoop => "主抽取原胚偏好说明",
+            GachaPool.PoolIdGrowth => "成长规划说明",
             GachaPool.PoolIdFocus => "流派聚焦说明",
-            _ => "开线池说明",
+            _ => "主抽取开线偏好说明",
         };
     }
 

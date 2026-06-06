@@ -70,8 +70,8 @@ public static partial class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new fractionate technology, the new fractionators are no longer crafted directly with materials. Obtain various protos from the Proto Loop Pool or Growth page, then use the Interaction Tower to cultivate them into different fractionators. Rare directional protos can be cultivated directly into the chosen tower type.",
-            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从原胚闭环池或成长页获得不同原胚，再用交互塔培养成不同的分馏塔；稀有的定向原胚则可以直接培养为指定塔种。");
+            "In the new fractionate technology, new fractionators are no longer crafted directly with materials. Obtain various protos from Main Draw proto preference or Growth Planning, then use the Interaction Tower to cultivate them into different fractionators. Rare directional protos can be cultivated directly into the chosen tower type.",
+            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从主抽取原胚偏好或成长规划获得不同原胚，再用交互塔培养成不同的分馏塔；稀有的定向原胚则可以直接培养为指定塔种。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");

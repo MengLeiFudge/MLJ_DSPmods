@@ -39,7 +39,7 @@ public sealed class GachaDrawUnitState {
 }
 
 /// <summary>
-/// 抽取单位定义。当前先让开线池一条生产配方对应一个抽取单位，后续可扩为配方组或家族。
+/// 抽取单位定义。当前先让主抽取开线偏好的一条生产配方对应一个抽取单位，后续可扩为配方组或家族。
 /// </summary>
 public readonly struct GachaDrawUnit {
     public GachaDrawUnit(GachaDrawUnitKey key, int displayItemId, RecipeKey recipeKey) {

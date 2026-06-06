@@ -39,8 +39,8 @@ public static class TicketExchange {
         Register("抽取总览说明",
             "Review draw costs, current resources, focus switch costs and Dark Fog branch progress.",
             "查看抽取成本、当前资源、聚焦切换成本与黑雾支线进度。");
-        Register("开线池成本", "Opening Pool Cost");
-        Register("原胚池成本", "Proto Pool Cost");
+        Register("开线偏好成本", "Opening Preference Cost");
+        Register("原胚偏好成本", "Proto Preference Cost");
         Register("聚焦切换成本", "Focus Switch Cost");
         Register("黑雾支线说明", "Dark Fog Branch", "黑雾支线");
         Register("前往成长规划", "Go Growth Planning");
@@ -147,11 +147,11 @@ public static class TicketExchange {
         txtDarkFogTitle.text = "黑雾支线说明".Translate().WithColor(Orange);
         txtMode.text = $"当前模式：{GachaService.GetModeNameKey().Translate()}";
         txtCostOpening.text =
-            $"{"开线池成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
+            $"{"开线偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
         txtCostProto.text =
-            $"{"原胚池成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
+            $"{"原胚偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
         txtCostFocus.text =
-            $"{"聚焦切换成本".Translate()}：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    成长积分统一进入成长池";
+            $"{"聚焦切换成本".Translate()}：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    成长积分统一进入成长规划";
         txtDarkFogStatus.text = BuildDarkFogStatusText();
     }
 

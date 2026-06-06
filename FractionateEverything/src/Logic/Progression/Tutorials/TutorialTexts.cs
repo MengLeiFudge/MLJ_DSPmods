@@ -19,8 +19,8 @@ public static partial class TutorialManager {
              There will also be a new guide that explains how to use the Interactive Tower after you build it.
              3. Cultivate a new Interactive Tower and upload it to the Fractionation Data Centre to unlock the 'Item Interaction' technology.
              This is an extremely powerful support feature that defies space limitations and can be thought of as an external backpack with unlimited capacity.
-             4. Build the production line for the current-stage Matrix and spend the matrices directly in the Opening Pool or Proto Loop Pool.
-             Fragments then become the long-term resource for growth catch-up and focus switching.
+             4. Build the production line for the current-stage Matrix and spend matrices in Main Draw with a draw preference.
+             Fragments and Matrix Essences then become the long-term resources for growth catch-up and focus switching.
 
              By the way, there is one thing you should remember: you can always revisit all the guidelines by pressing {"[G] key".WithColor(Orange)}.
 
@@ -36,8 +36,8 @@ public static partial class TutorialManager {
              建设交互塔之后，也会有新的指引对此进行讲解。
              3.培养出新的交互塔，并将其上传至分馏数据中心，解锁“物品交互”科技。
              这是一项极其强大的辅助功能，无视空间限制，你可以将它视为具有无限容量的外部背包。
-             4.搭建当前阶段矩阵产线，并直接把矩阵投入开线池或原胚闭环池。
-             残片则主要通过精馏矩阵、任务与成就获得，用于成长和聚焦。
+             4.搭建当前阶段矩阵产线，并在主抽取中设置偏好后投入矩阵。
+             残片和矩阵精华则主要通过精馏、任务与成就获得，用于成长和聚焦。
 
              对了，有一件事情你要记住：你可以随时按{"[G]键".WithColor(Orange)}重新查阅所有指引。
 
@@ -52,16 +52,16 @@ public static partial class TutorialManager {
              This is a new master control panel that allows you to easily manage Fractionation Technology related content.
 
              {"[How to Use (simple version)]".WithColor(Blue)}
-             The current 2.3 loop is organised around four keywords: Opening, Proto, Growth, and Focus.
-             1. Build the production line for the current-stage Matrix. Matrices are spent directly for draws in version 2.3; physical tickets are no longer the main currency.
-             2. Spend the current-stage Matrix in the Opening Pool or the Proto Loop Pool. The Opening Pool unlocks new recipes and line branches, while the Proto Loop Pool provides tower protos and directional protos.
-             3. Feed matrices into the Rectification Tower to compress them into Fragments. Fragments, together with Growth Points, are then used on the Growth page for deterministic catch-up and breakthroughs.
-             4. Change the Focus layer according to your current build direction. Focus does not create a new pool by itself; it biases Opening, Proto, and Growth outcomes toward the chosen route.
+             The current 3.0 loop is organised around four keywords: Main Draw, Preference, Growth, and Focus.
+             1. Build the production line for the current-stage Matrix. Matrices are spent directly for draws; physical tickets are no longer the main currency.
+             2. Spend the current-stage Matrix in Main Draw. Draw Preference steers the result toward new recipes, tower protos, or directional protos.
+             3. Feed matrices into the Rectification Tower to extract Matrix Essences, then compress, reflux, or split essences into fragments. Essences, Fragments, and Growth Points support deterministic catch-up and breakthroughs.
+             4. Change the Focus layer according to your current build direction. Focus does not create a new pool by itself; it biases Main Draw and Growth outcomes toward the chosen route.
              5. Recipe growth and building growth are now split: recipes care about unlocks, levels, and full-upgrade progress, while buildings care about tower-type EXP and key breakthroughs.
 
              {"[Recipe Operation]".WithColor(Blue)} 
              This page lets you inspect any FE recipe and its current progress.
-             1. Recipes are mainly obtained from the Opening Pool, the Growth page, or by spending Fractionation Recipe Cores.
+             1. Recipes are mainly obtained from Main Draw, the Growth page, or by spending Fractionation Recipe Cores.
              2. Recipe levels increase by actually running the corresponding line. Sand can still be used as a direct EXP shortcut.
              3. The gallery and long-term progression now care more about whether a recipe is unlocked and fully upgraded than about old ticket-era pool bookkeeping.
              4. Equivalent Output remains the best place to quantify expected outputs after recipe, tower, and proliferator bonuses are applied.
@@ -92,11 +92,11 @@ public static partial class TutorialManager {
              3. Various fill operations (manual creation, manual research, TAB fill, fuel fill, etc.) will automatically download items and use them.
 
              {"[Draw System]".WithColor(Blue)}
-             The current draw structure is "three pools plus one focus layer":
-             1. Opening Pool: spends the current-stage Matrix to unlock new recipes and line branches.
-             2. Proto Loop Pool: spends the current-stage Matrix to obtain tower protos and directional protos.
-             3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, and the staged offers of the Dark Fog combat branch.
-             4. Focus Layer: not a standalone pool. It biases the Opening Pool, Proto Loop Pool, and Growth offers toward the selected direction.
+             The current draw structure is Main Draw plus preference:
+             1. Main Draw: spends the current-stage Matrix for new recipes, tower protos, directional protos, and catch-up resources.
+             2. Draw Preference: switches between balanced, opening-first, and proto-first without adding extra operation-heavy pools.
+             3. Growth Page: deterministic rather than random, used for catch-up, breakthroughs, matrix essence catalysts, and the staged offers of the Dark Fog combat branch.
+             4. Focus Layer: not a standalone pool. It biases Main Draw and Growth offers toward the selected direction.
 
              {"[Growth Planning]".WithColor(Blue)}
              The old Limited Time Store has been reworked into Growth Planning and Resource Coordination.
@@ -120,11 +120,11 @@ public static partial class TutorialManager {
              这是一个全新的总控面板，可以让你方便地管理分馏科技相关内容。
 
              {"【使用简介（太长不看版）】".WithColor(Blue)}
-             面板有很多功能，其中当前你必须理解的核心是“开线、原胚、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
+             面板有很多功能，其中当前你必须理解的核心是“主抽取、偏好、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
              1.搭建当前阶段矩阵产线。矩阵将直接作为抽取资源，不再需要实体奖券。
-             2.把矩阵投入“开线池”或“原胚闭环池”。前者负责新配方，后者负责原胚与定向原胚。
-             3.通过精馏塔把矩阵精馏为链条物，再配合池积分进入“成长规划”。
-             4.根据你想走的路线切换“流派聚焦”，让对应方向的配方或原胚更容易出现。
+             2.在主抽取中设置抽取偏好，再投入矩阵。偏好可以让结果更偏新配方、原胚或定向原胚。
+             3.通过精馏塔把矩阵加工为矩阵精华，再让精华压缩、回流或拆成残片，配合池积分进入“成长规划”。
+             4.根据你想走的路线切换“流派聚焦”，让对应方向的配方、原胚或成长报价更容易命中。
              5.配方和建筑成长现在分流处理：配方侧强调解锁、升级与满级；建筑侧强调塔种经验与关键节点突破。
 
              {"【配方操作】".WithColor(Blue)}
@@ -137,7 +137,7 @@ public static partial class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-黑雾矩阵]和[转化-黑雾矩阵]是不同的配方，它们之间没有任何关联。黑雾矩阵输入矿物复制塔，将会根据[矿物复制-黑雾矩阵]配方进行处理；黑雾矩阵输入转化塔，将会根据[转化-黑雾矩阵]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方的获取途径有：开线抽取、成长规划补差，以及科技保底解锁。
+             配方的获取途径有：主抽取开线偏好、成长规划补差，以及科技保底解锁。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限由配方所属系统决定。
@@ -145,7 +145,7 @@ public static partial class TutorialManager {
              经验达到升级所需的数值后，配方将自动提升到下一个等级，直至到达当前配方的等级上限。
 
              3.满级与长期推进
-             当前 2.3 口径更关注“是否解锁、是否满级、是否补齐关键成长项”。
+             当前 3.0 口径更关注“是否解锁、是否满级、是否补齐关键成长项”。
              因此，任务、成就、图鉴和成长规划会更多围绕这些长期指标来组织，而不是围绕旧奖券时代的抽池文案。
 
              4.等效输出
@@ -182,21 +182,21 @@ public static partial class TutorialManager {
              3.各种填充操作（手动制作、手动研究、TAB填充、燃料填充等等）会自动下载物品并使用。
 
              {"【抽取系统】".WithColor(Blue)}
-             抽取系统现在围绕“三池一层”展开：
+             抽取系统现在围绕“主抽取 + 偏好”展开：
 
-             1.开线池
-             主要负责矿物复制、转化以及未来真正承担“开新线”的分馏配方。
-             消耗当前阶段矩阵，强调“抽到之后值得回去重搭一条线”。
+             1.主抽取
+             消耗当前阶段矩阵，获得新配方、分馏塔原胚、定向原胚和补差资源。
+             它是唯一主要手动抽取入口，不再要求玩家长期在多个奖池之间切换。
 
-             2.原胚闭环池
-             主要负责各类原胚、定向原胚以及原胚闭环相关奖励。
-             这是分馏塔原胚的核心来源。
+             2.抽取偏好
+             可以在平衡、开线优先、原胚优先之间切换。
+             它改变主抽取内部方向，而不是新增一个需要反复操作的奖池。
 
              3.成长规划
              属于非随机入口，主要负责定向补差、关键节点突破，以及黑雾战斗支线的阶段兑现。
 
              4.流派聚焦
-             不是独立奖池，而是对开线池、原胚闭环池、成长规划进行方向加权。
+             不是独立奖池，而是对主抽取偏好和成长规划进行方向加权。
              速通模式下，聚焦会更激进地强化被选中的路线，并压低其他路线。
 
              {"【限时商店】".WithColor(Blue)}
@@ -225,12 +225,11 @@ public static partial class TutorialManager {
              {"[Cultivate Fractionation Tower]".WithColor(Blue)} 
              In the new Fractionation Technology, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
              Simply put, by using the Interactive Tower to fractionate non-directional 'Fractionation Tower Raw Blanks', you can get different Fractionation Towers, and at the same time, there is a small chance that you can get 'Fractionation Tower Directional Raw Blanks'.
-             There are 5 types of non-directional protos, and their products are as follows (the proto descriptions also show the corresponding tower type):
+             There are 4 types of non-directional protos, and their products are as follows (the proto descriptions also show the corresponding tower type):
              Type I: Interaction Tower (96%), Fractionator Directed Proto (4%)
              Type II: Mineral Replication Tower (96%), Fractionator Directed Proto (4%)
-             Type III: Points Aggregate Tower (96%), Fractionator Directed Proto (4%)
-             Type IV: Conversion Tower (96%), Fractionator Directed Proto (4%)
-             Type V: Rectification Tower (96%), Fractionator Directed Proto (4%)
+             Type III: Conversion Tower (96%), Fractionator Directed Proto (4%)
+             Type IV: Rectification Tower (96%), Fractionator Directed Proto (4%)
              Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix the different types of Protoembryo!
              Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus unlocking the corresponding tech.
              Uploading different Fractionation Towers will unlock different techs. For example, uploading a Mineral Replication Tower will unlock the Mineral Replication tech, and uploading an Interaction Tower will unlock the Item Interaction tech.
@@ -244,12 +243,8 @@ public static partial class TutorialManager {
              {"[Mineral Replication Tower]".WithColor(Blue)} 
              Mineral Replication Towers can replicate various minerals in multiples. This is helpful for resource-poor star zones.
 
-             {"[Points Aggregate Tower]".WithColor(Blue)} 
-             The Points Aggregate Tower allows you to adjust the number of points for input items, focusing points on some items to break through the limitations of the Increaser.
-             The initial product has only 4 points of production enhancers. You can increase the number of points you can produce by selecting Points Aggregate Tower on the Building Operations page and upgrading the 'Point Aggregation Efficiency Level', up to a maximum of 10 points.
-
              {"[Rectification Tower]".WithColor(Blue)} 
-             The Rectification Tower stably compresses matrix-tier inputs into Fragments. The higher its level, the better its throughput, energy ratio, and fragment conversion efficiency.
+             The Rectification Tower extracts Matrix Essences from matrices, then tunes those essences through compression, reflux, or fragment splitting. Higher levels improve throughput and efficiency.
 
              {"[Conversion Tower]".WithColor(Blue)} 
              The Conversion Tower can convert items into other related items.
@@ -273,7 +268,7 @@ public static partial class TutorialManager {
              矿物复制塔可以将各种矿物复制为多个。这对资源贫瘠的星区很有帮助。
 
              {"【精馏塔】".WithColor(Blue)}
-             精馏塔可以将矩阵精馏为多阶链条物，也可以继续纯化链条物以尝试获得更高阶材料。高级矩阵可以缩短链条，但精馏本身并不是等价兑换。
+             精馏塔可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间调相。精馏本身不是等价兑换，而是实体产线资源的加工链。
 
              {"【转化塔】".WithColor(Blue)}
              转化塔可以将物品转化为其他相关的物品。

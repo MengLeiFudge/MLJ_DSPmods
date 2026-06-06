@@ -59,7 +59,7 @@ public static class FracStatistic {
         Register("统计-资源库存", "Resource Stock", "资源库存");
         Register("统计-动态经济", "Dynamic Economy", "动态经济");
         Register("统计-残片余额", "Fragment Stock", "残片余额");
-        Register("统计-成长池积分", "Growth Points", "成长池积分");
+        Register("统计-成长积分", "Growth Points", "成长积分");
         Register("统计-市场下次刷新", "Market Refresh", "市场下次刷新");
         Register("统计-市场热度", "Market Heat", "市场热度");
         Register("统计-交易所概览", "Exchange Overview", "交易所概览");
@@ -134,7 +134,7 @@ public static class FracStatistic {
         summaryLines[6].text = $"{"统计-当前阶段矩阵".Translate()}：{currentMatrixName}  (阶段 {currentStageIndex + 1})";
 
         stockLines[0].text = $"{"统计-残片余额".Translate()}：{GetItemTotalCount(IFE残片)}";
-        stockLines[1].text = $"{"统计-成长池积分".Translate()}：{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
+        stockLines[1].text = $"{"统计-成长积分".Translate()}：{GachaManager.GetPoolPoints(GachaPool.PoolIdGrowth)}";
         stockLines[2].text = $"{"统计-当前阶段矩阵".Translate()}：{currentMatrixName} x{GetItemTotalCount(currentMatrixId)}";
         stockLines[3].text = $"{"统计-黑雾矩阵库存".Translate()}：{GetItemTotalCount(I黑雾矩阵)}";
         stockLines[4].text = $"{"统计-原胚库存".Translate()}：{GetProtoSummary()}";

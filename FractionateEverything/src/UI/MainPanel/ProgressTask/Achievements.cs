@@ -312,7 +312,7 @@ public static class Achievements {
 
         foreach ((string name, int target, string rewardKey, ETier tier, float doubleBonus,
                      float logisticsBonus) in defs) {
-            string desc = $"累计完成 {target} 次开线抽取";
+            string desc = $"累计完成 {target} 次主抽取开线偏好";
             list.Add(new AchievementInfo(
                 "成就分类-开线",
                 name,
@@ -490,7 +490,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "速通毕业",
-            "速通模式下累计 10000 次分馏成功、500 次开线抽取并解锁星际物流交互科技",
+            "速通模式下累计 10000 次分馏成功、500 次主抽取开线偏好并解锁星际物流交互科技",
             "成就奖励-源点3",
             ETier.Platinum,
             () => IsSpeedrunMode

@@ -135,11 +135,11 @@ public static class FracRecipeOperate {
         Register("升级方式", "Upgrade Method");
         Register("成长进度", "Growth Progress");
         Register("抽取单位回响", "Draw Unit Resonance");
-        Register("通过开线抽取获取", "Obtain from Opening Pool");
-        Register("通过开线抽取获取；部分前期配方也会随科技保底解锁",
-            "Obtain from Opening Pool; some early recipes are also unlocked by tech baseline");
-        Register("通过原胚闭环或成长规划获得；相关科技也会保底解锁",
-            "Obtain from Proto Loop or Growth Planning; related tech also provides baseline unlock");
+        Register("通过主抽取开线偏好获取", "Obtain from Main Draw opening preference");
+        Register("通过主抽取开线偏好获取；部分前期配方也会随科技保底解锁",
+            "Obtain from Main Draw opening preference; some early recipes are also unlocked by tech baseline");
+        Register("通过主抽取原胚偏好或成长规划获得；相关科技也会保底解锁",
+            "Obtain from Main Draw proto preference or Growth Planning; related tech also provides baseline unlock");
         Register("通过成长规划或固定入口获得；解锁后直接满级",
             "Obtain from Growth Planning or fixed entry; unlocking grants max level directly");
         Register("通过黑雾支线成长规划报价获得",
@@ -573,11 +573,11 @@ public static class FracRecipeOperate {
         RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
         return rule.Family switch {
             RecipeFamily.MineralCopyNormal when rule.TechBaselineLevel > 0
-                => "通过开线抽取获取；部分前期配方也会随科技保底解锁".Translate(),
+                => "通过主抽取开线偏好获取；部分前期配方也会随科技保底解锁".Translate(),
             RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain
-                => "通过开线抽取获取".Translate(),
+                => "通过主抽取开线偏好获取".Translate(),
             RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse
-                => "通过原胚闭环或成长规划获得；相关科技也会保底解锁".Translate(),
+                => "通过主抽取原胚偏好或成长规划获得；相关科技也会保底解锁".Translate(),
             RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
                 => "首次获得对应黑雾物品后解锁".Translate(),
             _ when recipe.RecipeType == ERecipe.Conversion && recipe.MatrixID == I黑雾矩阵
@@ -586,7 +586,7 @@ public static class FracRecipeOperate {
                 => "通过成长规划或固定入口获得；解锁后直接满级".Translate(),
             RecipeFamily.Rectification
                 => "通过科技保底解锁".Translate(),
-            _ => "通过开线抽取获取".Translate(),
+            _ => "通过主抽取开线偏好获取".Translate(),
         };
     }
 

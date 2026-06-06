@@ -48,26 +48,25 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 
 抽奖是很重要的一环。快来试试你的手气吧！
 
-* 配方奖池：可以抽取各种分馏配方。
-* 原胚奖池：可以抽取各种分馏塔原胚。
-* 材料奖池：可以抽取各种已解锁的材料。
-* 建筑奖池：可以抽取各种已解锁的建筑。
+* 主抽取：消耗当前阶段矩阵，按抽取偏好获得新配方、分馏塔原胚、定向原胚和补差资源。
+* 抽取偏好：可以在平衡、开线优先、原胚优先之间切换，用很少的操作控制当前发展方向。
+* 成长规划：使用成长积分、残片和矩阵精华进行确定性补差，避免手动重复操作无限拖延。
+* 流派聚焦：不是独立奖池，而是对主抽取偏好和成长规划命中权重进行方向修正。
 
 Raffles are an important part of the process. Come and try your luck!
 
-* Recipe Prize Pool: You can draw all kinds of Fractionation Recipes, and if you are lucky, you can also get the
-  Fractionation Recipe Universal Core.
-* Original embryo prize pool: you can extract a variety of fractionator embryo, good luck can also get the fractionator
-  increase chip.
-* Material Pool: You can extract various unlocked materials.
-* Building Pool: You can draw various unlocked buildings.
+* Main Draw: Spend the current-stage Matrix to obtain new recipes, fractionator protos, directional protos, and catch-up
+  resources according to your draw preference.
+* Draw Preference: Switch between balanced, opening-first, and proto-first to steer progression with minimal operation.
+* Growth Planning: Spend growth points, fragments, and matrix essences on deterministic catch-up.
+* Focus Control: Not a standalone pool. It biases Main Draw preference and Growth Planning hits toward the selected route.
 
 ### 配方升级与突破、建筑升级与强化 Recipe upgrades and breakthroughs, building upgrades and enhancements
 
 无论是配方还是建筑，都需要不断升级，才能达到最强力的状态！
 
 * 配方升级：使用指定配方分馏即可持续获得经验，经验达标后可自动升级！
-* 配方突破：配方品质有白、绿、蓝、紫、红、金，达到一定等级，收集足够数目的回响，即可突破到新的品质！
+* 配方长期成长：重复获得已解锁配方会补充成长进度；满级后多余收益会转入残片等长期资源。
 * 建筑升级：建筑有很多实用的升级项，例如流动输出堆叠、产物输出堆叠，可以摆脱集装的烦恼！
 * 建筑强化：建筑完全升级后，即可逐步强化至+20，加快速率，提升产能！
 
@@ -75,8 +74,8 @@ Both recipes and buildings need to be constantly upgraded to reach their most po
 
 * Recipe upgrading: using the specified recipe fractionation can be continuously gained experience, experience can be
   automatically upgraded after reaching the standard!
-* Recipe Breakthrough: Recipe qualities are white, green, blue, purple, red, and gold, reaching a certain level and
-  collecting a sufficient number of echoes can break through to a new quality!
+* Long-term recipe growth: duplicate unlocked recipes add growth progress; overflow from maxed recipes becomes long-term
+  resources such as fragments.
 * Building Upgrade: There are many practical upgrades for buildings, such as flow output stacking and product output
   stacking, which can get rid of the trouble of assembling!
 * Building Enhancement: Once a building is fully upgraded, it can be gradually enhanced to +20 to speed up the rate and

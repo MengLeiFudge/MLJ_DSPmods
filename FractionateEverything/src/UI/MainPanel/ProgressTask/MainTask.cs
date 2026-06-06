@@ -61,12 +61,12 @@ public static class MainTask {
         Register("无", "None", "无");
         Register("数量", "Count", "数量");
         Register("分馏次数", "Fractionations", "分馏次数");
-        Register("主线统计-开线抽取", "Opening draws", "开线抽取");
-        Register("主线统计-原胚抽取", "Proto draws", "原胚抽取");
+        Register("主线统计-开线偏好抽取", "Opening-preference draws", "开线偏好抽取");
+        Register("主线统计-原胚偏好抽取", "Proto-preference draws", "原胚偏好抽取");
         Register("科技解锁", "Tech unlocked", "科技解锁");
         Register("物品解锁", "Item unlocked", "物品解锁");
         Register("建筑等级", "Building level", "建筑等级");
-        Register("五塔最低等级", "Min tower level", "五塔最低等级");
+        Register("四塔最低等级", "Min tower level", "四塔最低等级");
         Register("解锁配方", "Unlocked recipes", "解锁配方");
         Register("配方等级", "Recipe level", "配方等级");
         Register("聚焦流派", "Focus style", "聚焦流派");
@@ -132,20 +132,20 @@ public static class MainTask {
             ("分馏两百次", "Two Hundred Fractionations"),
             ("分馏三百次", "Three Hundred Fractionations"),
             ("主线闭环", "Main Closure"),
-            ("首次开线", "First Opening"),
-            ("开线五次", "Five Openings"),
-            ("开线十次", "Ten Openings"),
-            ("开线二十次", "Twenty Openings"),
-            ("开线五十次", "Fifty Openings"),
-            ("首次原胚", "First Proto Draw"),
-            ("原胚五次", "Five Proto Draws"),
-            ("原胚十次", "Ten Proto Draws"),
+            ("首次开线偏好", "First Opening Preference"),
+            ("开线偏好五次", "Five Opening Preferences"),
+            ("开线偏好十次", "Ten Opening Preferences"),
+            ("开线偏好二十次", "Twenty Opening Preferences"),
+            ("开线偏好五十次", "Fifty Opening Preferences"),
+            ("首次原胚偏好", "First Proto Preference"),
+            ("原胚偏好五次", "Five Proto Preferences"),
+            ("原胚偏好十次", "Ten Proto Preferences"),
             ("首次配方", "First Recipe"),
             ("首次升级", "First Upgrade"),
             ("首次补差", "First Catch-up"),
             ("首获原胚", "First Proto"),
             ("原胚整备", "Proto Setup"),
-            ("五类原胚", "Five Proto Types"),
+            ("四类原胚", "Four Proto Types"),
             ("首次培养", "First Cultivation"),
             ("四塔培养", "Four Tower Cultivation"),
             ("首次上传", "First Upload"),
@@ -180,11 +180,15 @@ public static class MainTask {
             ("累计完成 10 次分馏成功", "Reach 10 successful fractionations"),
             ("累计完成 50 次分馏成功", "Reach 50 successful fractionations"),
             ("累计完成 200 次分馏成功", "Reach 200 successful fractionations"),
-            ("累计完成 5 次开线抽取", "Perform 5 opening draws"),
-            ("累计完成 20 次开线抽取", "Perform 20 opening draws"),
-            ("累计完成 50 次开线抽取", "Perform 50 opening draws"),
-            ("累计完成 100 次开线抽取", "Perform 100 opening draws"),
-            ("累计完成 200 次开线抽取", "Perform 200 opening draws"),
+            ("累计完成 1 次主抽取开线偏好", "Perform 1 Main Draw opening-preference draw"),
+            ("累计完成 5 次主抽取开线偏好", "Perform 5 Main Draw opening-preference draws"),
+            ("累计完成 20 次主抽取开线偏好", "Perform 20 Main Draw opening-preference draws"),
+            ("累计完成 50 次主抽取开线偏好", "Perform 50 Main Draw opening-preference draws"),
+            ("累计完成 100 次主抽取开线偏好", "Perform 100 Main Draw opening-preference draws"),
+            ("累计完成 200 次主抽取开线偏好", "Perform 200 Main Draw opening-preference draws"),
+            ("累计完成 1 次主抽取原胚偏好", "Perform 1 Main Draw proto-preference draw"),
+            ("累计完成 5 次主抽取原胚偏好", "Perform 5 Main Draw proto-preference draws"),
+            ("累计完成 10 次主抽取原胚偏好", "Perform 10 Main Draw proto-preference draws"),
             ("解锁矿物复制科技", "Unlock Mineral Replication technology"),
             ("解锁分馏塔原胚科技", "Unlock Fractionator Proto technology"),
             ("解锁物品转化科技", "Unlock Item Conversion technology"),
@@ -198,7 +202,7 @@ public static class MainTask {
             ("累计解锁 80 个分馏配方", "Unlock 80 fractionation recipes"),
             ("累计解锁 100 个分馏配方并完成 5000 次分馏成功", "Unlock 100 recipes and reach 5000 successful fractionations"),
             ("累计完成 800 次分馏成功", "Reach 800 successful fractionations"),
-            ("累计完成 10 次开线抽取", "Perform 10 opening draws"),
+            ("累计完成 10 次主抽取开线偏好", "Perform 10 Main Draw opening-preference draws"),
             ("解锁 30 个分馏配方", "Unlock 30 fractionation recipes"),
             ("累计解锁 30 个分馏配方", "Unlock 30 fractionation recipes"),
             ("累计解锁 60 个分馏配方并完成 3000 次分馏成功", "Unlock 60 recipes and reach 3000 successful fractionations"),
@@ -370,14 +374,14 @@ public static class MainTask {
                     () =>
                         $"{GetRecipeProgressText(finalRecipeTarget)} / {GetCountProgressText("分馏次数", totalFractionSuccesses, finalFractionTarget)}")),
             Branch("draw-low", "低档抽取",
-                DrawNode("draw-opening-1", "首次开线", "累计完成 1 次开线抽取", 1, IFE残片, 1, true, 100),
-                DrawNode("draw-opening-5", "开线五次", "累计完成 5 次开线抽取", 1, IFE残片, 5, true, 150),
-                DrawNode("draw-opening-10", "开线十次", "累计完成 10 次开线抽取", 2, IFE残片, 10, true, 200),
-                DrawNode("draw-opening-20", "开线二十次", "累计完成 20 次开线抽取", 2, IFE残片, 20, true, 300),
-                DrawNode("draw-opening-50", "开线五十次", "累计完成 50 次开线抽取", 3, IFE残片, 50, true, 500),
-                DrawNode("draw-proto-1", "首次原胚", "累计完成 1 次原胚抽取", 2, IFE交互塔原胚, 1, false, 1),
-                DrawNode("draw-proto-5", "原胚五次", "累计完成 5 次原胚抽取", 3, IFE矿物复制塔原胚, 5, false, 1),
-                DrawNode("draw-proto-10", "原胚十次", "累计完成 10 次原胚抽取", 4, IFE转化塔原胚, 10, false, 1)),
+                DrawNode("draw-opening-1", "首次开线偏好", "累计完成 1 次主抽取开线偏好", 1, IFE残片, 1, true, 100),
+                DrawNode("draw-opening-5", "开线偏好五次", "累计完成 5 次主抽取开线偏好", 1, IFE残片, 5, true, 150),
+                DrawNode("draw-opening-10", "开线偏好十次", "累计完成 10 次主抽取开线偏好", 2, IFE残片, 10, true, 200),
+                DrawNode("draw-opening-20", "开线偏好二十次", "累计完成 20 次主抽取开线偏好", 2, IFE残片, 20, true, 300),
+                DrawNode("draw-opening-50", "开线偏好五十次", "累计完成 50 次主抽取开线偏好", 3, IFE残片, 50, true, 500),
+                DrawNode("draw-proto-1", "首次原胚偏好", "累计完成 1 次主抽取原胚偏好", 2, IFE交互塔原胚, 1, false, 1),
+                DrawNode("draw-proto-5", "原胚偏好五次", "累计完成 5 次主抽取原胚偏好", 3, IFE矿物复制塔原胚, 5, false, 1),
+                DrawNode("draw-proto-10", "原胚偏好十次", "累计完成 10 次主抽取原胚偏好", 4, IFE转化塔原胚, 10, false, 1)),
             Branch("growth-plan", "成长规划",
                 Node("growth-recipe-1", "首次配方", "解锁第 1 个分馏配方", 1, IFE残片, IFE残片, 150,
                     () => GetUnlockedRecipeCount() >= 1, () => GetRecipeProgressText(1)),
@@ -477,7 +481,7 @@ public static class MainTask {
         bool opening, int rewardCount) {
         return Node(id, name, desc, stageIndex, iconItemId, IFE残片, rewardCount,
             () => GetDrawCount(opening) >= target,
-            () => GetCountProgressText(opening ? "主线统计-开线抽取" : "主线统计-原胚抽取", GetDrawCount(opening), target));
+            () => GetCountProgressText(opening ? "主线统计-开线偏好抽取" : "主线统计-原胚偏好抽取", GetDrawCount(opening), target));
     }
 
     private static TaskNode ProtoNode(string id, string name, string desc, int stageIndex, int iconItemId,
@@ -563,7 +567,7 @@ public static class MainTask {
     }
 
     private static string GetMinBuildingLevelProgressText(int targetLevel) {
-        return $"{"五塔最低等级".Translate()}：{GetMinBuildingLevel()}/{targetLevel}";
+        return $"{"四塔最低等级".Translate()}：{GetMinBuildingLevel()}/{targetLevel}";
     }
 
     private static string GetRecipeProgressText(int targetCount) {

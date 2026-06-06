@@ -172,8 +172,8 @@ public static partial class GachaService {
     }
 
     /// <summary>
-    /// 开线池当前只消费“生产型”配方。
-    /// 工具/解锁型与特殊成长型配方继续走科技、原胚闭环或成长页，不混入随机开线入口。
+    /// 主抽取开线偏好当前只消费“生产型”配方。
+    /// 工具/解锁型与特殊成长型配方继续走科技、主抽取原胚偏好或成长规划，不混入随机开线入口。
     /// </summary>
     private static bool IsOpeningLineRecipe(BaseRecipe recipe) {
         return recipe != null
