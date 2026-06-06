@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.Utils;
 
 namespace FE.Logic.Gacha;
@@ -27,13 +29,14 @@ public enum GachaMode {
 
 /// <summary>
 /// 抽卡状态存档层。
-/// 这里只保存保底、成长池积分和聚焦状态；抽卡结果分布与成长报价由 GachaService 负责实时计算。
+/// 这里只保存保底、成长池积分、聚焦状态和抽取单位回响；抽卡结果分布与成长报价由 GachaService 负责实时计算。
 /// </summary>
 public static class GachaManager {
     // 每个抽卡池的保底计数器（poolId → 自上次出S后的连续未出S抽数）
     public static readonly int[] PityCount = new int[GachaPool.PoolCount];
     public static readonly int[] PoolPoints = new int[GachaPool.PoolCount];
     public static readonly int[] FocusAffinity = new int[Enum.GetValues(typeof(GachaFocusType)).Length];
+    private static readonly Dictionary<GachaDrawUnitKey, GachaDrawUnitState> DrawUnitStates = [];
 
     public static GachaMode CurrentMode = GachaMode.Normal;
     public static GachaFocusType CurrentFocus = GachaFocusType.Balanced;
@@ -137,6 +140,34 @@ public static class GachaManager {
     }
 
     public static bool IsSpeedrunMode => CurrentMode == GachaMode.Speedrun;
+    public const int MaxDrawUnitResonance = 3;
+
+    public static int GetDrawUnitResonance(GachaDrawUnitKey key) {
+        if (!key.IsValid) {
+            return 0;
+        }
+        return DrawUnitStates.TryGetValue(key, out GachaDrawUnitState state) ? state.Resonance : 0;
+    }
+
+    public static bool TryAddDrawUnitResonance(GachaDrawUnitKey key, out int resonanceLevel) {
+        resonanceLevel = GetDrawUnitResonance(key);
+        if (!key.IsValid || resonanceLevel >= MaxDrawUnitResonance) {
+            return false;
+        }
+
+        GachaDrawUnitState state = GetOrCreateDrawUnitState(key);
+        state.Resonance = Math.Min(MaxDrawUnitResonance, state.Resonance + 1);
+        resonanceLevel = state.Resonance;
+        return true;
+    }
+
+    private static GachaDrawUnitState GetOrCreateDrawUnitState(GachaDrawUnitKey key) {
+        if (!DrawUnitStates.TryGetValue(key, out GachaDrawUnitState state)) {
+            state = new GachaDrawUnitState();
+            DrawUnitStates[key] = state;
+        }
+        return state;
+    }
 
     public static void SetMode(GachaMode mode) {
         CurrentMode = mode;
@@ -188,11 +219,21 @@ public static class GachaManager {
                 for (int i = 0; i < FocusAffinity.Length; i++) {
                     bw.Write(FocusAffinity[i]);
                 }
+            }),
+            ("DrawUnitResonance", bw => {
+                bw.Write(DrawUnitStates.Count);
+                foreach (KeyValuePair<GachaDrawUnitKey, GachaDrawUnitState> pair in DrawUnitStates) {
+                    bw.Write((int)pair.Key.Kind);
+                    bw.Write((int)pair.Key.RecipeType);
+                    bw.Write(pair.Key.InputId);
+                    bw.Write(pair.Value.Resonance);
+                }
             })
         );
     }
 
     public static void Import(BinaryReader r) {
+        DrawUnitStates.Clear();
         r.ReadBlocks(
             ("PityCount", br => {
                 for (int i = 0; i < PityCount.Length; i++) {
@@ -214,6 +255,22 @@ public static class GachaManager {
                 for (int i = FocusAffinity.Length; i < count; i++) {
                     br.ReadInt32();
                 }
+            }),
+            ("DrawUnitResonance", br => {
+                int count = ClampNonNegative(br.ReadInt32());
+                for (int i = 0; i < count; i++) {
+                    var kind = (GachaDrawUnitKind)br.ReadInt32();
+                    var recipeType = (ERecipe)br.ReadInt32();
+                    int inputId = br.ReadInt32();
+                    int resonance = br.ReadInt32();
+                    var key = new GachaDrawUnitKey(kind, recipeType, inputId);
+                    if (!key.IsValid) {
+                        continue;
+                    }
+                    DrawUnitStates[key] = new GachaDrawUnitState {
+                        Resonance = Math.Min(MaxDrawUnitResonance, ClampNonNegative(resonance)),
+                    };
+                }
             })
         );
     }
@@ -222,6 +279,7 @@ public static class GachaManager {
         Array.Clear(PityCount, 0, PityCount.Length);
         Array.Clear(PoolPoints, 0, PoolPoints.Length);
         Array.Clear(FocusAffinity, 0, FocusAffinity.Length);
+        DrawUnitStates.Clear();
         CurrentMode = GachaMode.Normal;
         CurrentFocus = GachaFocusType.Balanced;
     }

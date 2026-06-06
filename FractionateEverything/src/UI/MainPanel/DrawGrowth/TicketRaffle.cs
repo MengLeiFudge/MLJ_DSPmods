@@ -140,7 +140,9 @@ public static class TicketRaffle {
         Register("暂无抽取结果", "No draws yet.", "暂无抽取结果");
         Register("更多结果已折叠", "More results folded.", "其余结果已折叠");
         Register("配方解锁", "Recipe Unlock");
+        Register("配方进度", "Recipe Progress");
         Register("配方提升", "Recipe Upgrade");
+        Register("抽取单位回响", "Draw Unit Resonance");
         Register("满级转残片", "Duplicate -> Fragments", "满级转残片");
         Register("物品入库", "Stored");
         Register("聚焦主目标", "Focus Main");
@@ -444,7 +446,9 @@ public static class TicketRaffle {
     private static string GetRewardText(GachaResult result) {
         return result.RewardType switch {
             GachaRewardType.RecipeUnlock => $"{"配方解锁".Translate()} Lv{result.RewardCount}".WithColor(Orange),
+            GachaRewardType.RecipeProgress => $"{"配方进度".Translate()} Lv{result.RewardCount}".WithColor(Blue),
             GachaRewardType.RecipeUpgrade => $"{"配方提升".Translate()} -> Lv{result.RewardCount}".WithColor(Orange),
+            GachaRewardType.DrawUnitResonance => $"{"抽取单位回响".Translate()} Lv{result.RewardCount}/3".WithColor(Purple),
             GachaRewardType.DuplicateRecipeFragments =>
                 $"{"满级转残片".Translate()} x{result.RewardCount}".WithColor(Green),
             GachaRewardType.ItemGranted => $"{"物品入库".Translate()} x{result.RewardCount}".WithColor(Blue),

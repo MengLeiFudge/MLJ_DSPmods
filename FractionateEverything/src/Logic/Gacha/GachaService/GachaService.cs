@@ -55,10 +55,12 @@ public enum GachaGrowthOfferKind {
 internal readonly struct GachaRewardResolution(
     GachaRewardType rewardType,
     int rewardItemId,
-    int rewardCount) {
+    int rewardCount,
+    int displayItemId = 0) {
     public GachaRewardType RewardType { get; } = rewardType;
     public int RewardItemId { get; } = rewardItemId;
     public int RewardCount { get; } = rewardCount;
+    public int DisplayItemId { get; } = displayItemId;
 }
 
 /// <summary>

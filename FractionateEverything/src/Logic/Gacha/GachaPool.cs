@@ -29,7 +29,9 @@ public enum GachaFocusMatchType {
 public enum GachaRewardType {
     None,
     RecipeUnlock,
+    RecipeProgress,
     RecipeUpgrade,
+    DrawUnitResonance,
     DuplicateRecipeFragments,
     ItemGranted,
 }
@@ -43,12 +45,14 @@ public readonly struct GachaResult {
     public readonly GachaFocusMatchType FocusMatchType;
     public readonly GachaRewardType RewardType;
     public readonly int RewardItemId;// 实际补偿/发放物品ID；配方升级时为0
-    public readonly int RewardCount;// 实际补偿/发放数量；配方升级时记录升级后的等级
+    public readonly int RewardCount;// 实际补偿/发放数量；配方升级/回响时记录升级后的等级
     public readonly bool WasHardPity;// 是否由硬保底直接产出
     public bool IsFocusHit => FocusMatchType != GachaFocusMatchType.None;
     public bool HitFocusMainTarget => FocusMatchType == GachaFocusMatchType.Main;
     public bool IsRecipe => RewardType is GachaRewardType.RecipeUnlock
+        or GachaRewardType.RecipeProgress
         or GachaRewardType.RecipeUpgrade
+        or GachaRewardType.DrawUnitResonance
         or GachaRewardType.DuplicateRecipeFragments;
 
     public GachaResult(int itemId, GachaRarity rarity, GachaFocusMatchType focusMatchType, GachaRewardType rewardType,

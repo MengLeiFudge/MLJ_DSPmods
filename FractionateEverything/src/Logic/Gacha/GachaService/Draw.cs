@@ -42,7 +42,8 @@ public static partial class GachaService {
 
             GachaManager.RecordDraw(poolId, rarity == GachaRarity.S);
             GachaManager.AddPoolPoints(GachaPool.PoolIdGrowth, 1);
-            results.Add(new GachaResult(itemId, rarity, focusMatchType, reward.RewardType, reward.RewardItemId,
+            int displayItemId = reward.DisplayItemId > 0 ? reward.DisplayItemId : itemId;
+            results.Add(new GachaResult(displayItemId, rarity, focusMatchType, reward.RewardType, reward.RewardItemId,
                 reward.RewardCount, wasHardPity: hardPity));
         }
 
@@ -82,18 +83,26 @@ public static partial class GachaService {
             return new GachaRewardResolution(GachaRewardType.ItemGranted, inputId, 1);
         }
 
+        GachaDrawUnit unit = GachaDrawUnit.FromRecipe(recipe);
         bool wasLocked = !RecipeGrowthQueries.IsUnlocked(recipe);
+        if (!wasLocked && GachaManager.TryAddDrawUnitResonance(unit.Key, out int resonanceLevel)) {
+            return new GachaRewardResolution(GachaRewardType.DrawUnitResonance, 0, resonanceLevel, unit.DisplayItemId);
+        }
+
         RecipeGrowthResult growthResult =
             RecipeGrowthExecutor.ApplyDrawReward(recipe, RecipeGrowthManager.BuildContext(manual: true));
 
         if (growthResult.FragmentReward > 0) {
             int fragmentReward = growthResult.FragmentReward;
             AddItemToModData(IFE残片, fragmentReward, 0, true);
-            return new GachaRewardResolution(GachaRewardType.DuplicateRecipeFragments, IFE残片, fragmentReward);
+            return new GachaRewardResolution(GachaRewardType.DuplicateRecipeFragments, IFE残片, fragmentReward,
+                unit.DisplayItemId);
         }
 
-        return new GachaRewardResolution(wasLocked ? GachaRewardType.RecipeUnlock : GachaRewardType.RecipeUpgrade, 0,
-            RecipeGrowthQueries.GetLevel(recipe));
+        GachaRewardType rewardType = wasLocked
+            ? GachaRewardType.RecipeUnlock
+            : growthResult.StateChanged ? GachaRewardType.RecipeUpgrade : GachaRewardType.RecipeProgress;
+        return new GachaRewardResolution(rewardType, 0, RecipeGrowthQueries.GetLevel(recipe), unit.DisplayItemId);
     }
 
     private static void EnsureRecipeRewardIndex() {
