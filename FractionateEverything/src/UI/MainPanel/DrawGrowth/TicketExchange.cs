@@ -119,7 +119,7 @@ public static class TicketExchange {
                         children: [
                             ButtonNode("前往成长规划",
                                 onClick: () =>
-                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2),
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 1),
                                 pos: (0, 0), objectName: "ticket-exchange-go-growth"),
                             ButtonNode("前往市场板",
                                 onClick: () =>

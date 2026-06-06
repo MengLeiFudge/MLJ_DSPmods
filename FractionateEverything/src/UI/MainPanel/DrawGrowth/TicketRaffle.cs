@@ -16,8 +16,8 @@ using static FE.UI.Foundation.RectTransformUtils;
 namespace FE.UI.MainPanel.DrawGrowth;
 
 /// <summary>
-/// 开线 / 原胚抽取页。
-/// 本页只展示当前卡池状态与最近结果，所有概率、保底、聚焦命中和奖励结算都来自 GachaService。
+/// 主抽取页。
+/// 本页只展示当前抽取目标、卡池状态与最近结果，所有概率、保底、聚焦命中和奖励结算都来自 GachaService。
 /// </summary>
 public static class TicketRaffle {
     /// <summary>
@@ -43,6 +43,7 @@ public static class TicketRaffle {
         public readonly MyImageButton[] BtnResultIcons = new MyImageButton[8];
         public UIButton BtnDraw1;
         public UIButton BtnDraw10;
+        public UIButton BtnSwitchPool;
         public UIButton BtnGoGrowth;
         public UIButton BtnGoFocus;
     }
@@ -50,6 +51,7 @@ public static class TicketRaffle {
     public static long totalDraws;
     public static long openingLineDraws;
     private static readonly List<RaffleTabUi> activeUis = [];
+    private static int currentMainDrawPoolId = GachaPool.PoolIdOpeningLine;
 
     private static void CleanupInvalidActiveUis() {
         activeUis.RemoveAll(ui => ui?.Tab == null);
@@ -85,6 +87,7 @@ public static class TicketRaffle {
     }
 
     public static void AddTranslations() {
+        Register("主抽取", "Main Draw");
         Register("开线抽取", "Opening Draw");
         Register("原胚抽取", "Proto Draw");
         Register("成长说明", "Growth Info");
@@ -134,6 +137,8 @@ public static class TicketRaffle {
         Register("成长池积分", "Growth Points");
         Register("抽1次", "Draw x1");
         Register("抽10次", "Draw x10");
+        Register("切换到开线", "Switch to Opening");
+        Register("切换到原胚", "Switch to Proto");
         Register("前往成长池", "Go Growth");
         Register("前往聚焦页", "Go Focus");
         Register("结果摘要", "Summary");
@@ -169,6 +174,9 @@ public static class TicketRaffle {
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
+
+    public static void CreateMainDrawUI(MyWindow wnd, RectTransform trans) =>
+        CreatePoolUI(wnd, trans, currentMainDrawPoolId);
 
     public static void CreateRecipeUI(MyWindow wnd, RectTransform trans) =>
         CreatePoolUI(wnd, trans, GachaPool.PoolIdOpeningLine);
@@ -212,7 +220,7 @@ public static class TicketRaffle {
                         columnGap: 8f,
                         children: BuildResultNodes(ui, poolId)),
                     FooterCard(pos: (3, 0), objectName: $"ticket-raffle-footer-card-{poolId}",
-                        cols: [1, 1, 2, 1, 1],
+                        cols: [1, 1, 1, 1, 1],
                         columnGap: PageLayout.InnerGap,
                         children: [
                             ButtonNode("抽1次", onClick: () => StartDraw(ui, 1), fontSize: 14,
@@ -221,15 +229,18 @@ public static class TicketRaffle {
                             ButtonNode("抽10次", onClick: () => StartDraw(ui, 10), fontSize: 14,
                                 onBuilt: btn => ui.BtnDraw10 = btn,
                                 pos: (0, 1), objectName: $"ticket-raffle-draw-10-{poolId}"),
+                            ButtonNode("切换到原胚", onClick: () => SwitchDrawPool(ui), fontSize: 14,
+                                onBuilt: btn => ui.BtnSwitchPool = btn,
+                                pos: (0, 2), objectName: $"ticket-raffle-switch-pool-{poolId}"),
                             ButtonNode("前往成长池",
                                 onClick: () =>
-                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2),
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 1),
                                 fontSize: 14,
                                 onBuilt: btn => ui.BtnGoGrowth = btn,
                                 pos: (0, 3), objectName: $"ticket-raffle-go-growth-{poolId}"),
                             ButtonNode("前往聚焦页",
                                 onClick: () =>
-                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 3),
+                                    MainWindow.NavigateToPage(MainWindowPageRegistry.DrawGrowthCategoryName, 2),
                                 fontSize: 14,
                                 onBuilt: btn => ui.BtnGoFocus = btn,
                                 pos: (0, 4), objectName: $"ticket-raffle-go-focus-{poolId}"),
@@ -237,6 +248,30 @@ public static class TicketRaffle {
                 ]));
 
         RefreshTabState(ui);
+    }
+
+    private static void SwitchDrawPool(RaffleTabUi ui) {
+        ui.PoolId = ui.PoolId == GachaPool.PoolIdOpeningLine
+            ? GachaPool.PoolIdProtoLoop
+            : GachaPool.PoolIdOpeningLine;
+        currentMainDrawPoolId = ui.PoolId;
+        ClearResultDisplay(ui);
+        RefreshTabState(ui);
+    }
+
+    private static void ClearResultDisplay(RaffleTabUi ui) {
+        if (ui.TxtResultSummary != null) {
+            ui.TxtResultSummary.text = "暂无抽取结果".Translate();
+        }
+
+        for (int i = 0; i < ui.TxtResultLines.Length; i++) {
+            ui.TxtResultLines[i].text = "";
+            if (ui.BtnResultIcons[i] == null) {
+                continue;
+            }
+            ui.BtnResultIcons[i].gameObject.SetActive(false);
+            ui.BtnResultIcons[i].ClearCountText();
+        }
     }
 
     private static IReadOnlyList<LayoutNode> BuildResourceNodes(RaffleTabUi ui, int poolId) {
@@ -427,6 +462,11 @@ public static class TicketRaffle {
         if (ui.BtnDraw10?.button != null) {
             ui.BtnDraw10.button.interactable = canDraw10;
             ui.BtnDraw10.SetText($"{"抽10次".Translate()} ({draw10Cost})");
+        }
+        if (ui.BtnSwitchPool != null) {
+            ui.BtnSwitchPool.SetText(ui.PoolId == GachaPool.PoolIdOpeningLine
+                ? "切换到原胚".Translate()
+                : "切换到开线".Translate());
         }
     }
 

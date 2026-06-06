@@ -42,8 +42,7 @@ public static class MainWindowPageRegistry {
         new(ResourceInteractionCategoryName, "交易所", Exchange.CreateUI, Exchange.UpdateUI),
         new(ResourceInteractionCategoryName, "稳定兑换", FragmentExchange.CreateUI, FragmentExchange.UpdateUI),
 
-        new(DrawGrowthCategoryName, "开线抽取", TicketRaffle.CreateRecipeUI, TicketRaffle.UpdateUI),
-        new(DrawGrowthCategoryName, "原胚抽取", TicketRaffle.CreateProtoUI, TicketRaffle.UpdateUI),
+        new(DrawGrowthCategoryName, "主抽取", TicketRaffle.CreateMainDrawUI, TicketRaffle.UpdateUI),
         new(DrawGrowthCategoryName, "成长规划", LimitedTimeStore.CreateRecipeUI, LimitedTimeStore.UpdateUI),
         new(DrawGrowthCategoryName, "流派聚焦", LimitedTimeStore.CreateProtoUI, LimitedTimeStore.UpdateUI),
         new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI),
