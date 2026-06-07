@@ -1,0 +1,11 @@
+{
+    "name": "SaveDataExporter",
+    "author": "MengLei",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MengLeiFudge/MLJ_DSPmods",
+    "description": "按快捷键导出当前存档内星系/星球维度的物品统计数据。",
+    "dependencies": [
+        "xiaoye97-BepInEx-5.4.17",
+        "CommonAPI-CommonAPI-1.6.7"
+    ]
+}

@@ -19,5 +19,6 @@
     <ItemGroup>
         <ProjectReference Include="..\FractionateEverything\FractionateEverything.csproj" ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\GetDspData\GetDspData.csproj" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\SaveDataExporter\SaveDataExporter.csproj" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 </Project>

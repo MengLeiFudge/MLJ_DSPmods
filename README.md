@@ -29,6 +29,13 @@ feedback. I would be appreciated.
 For mod developers only, you can export in-game items, recipes, models, technology and other information to a specified
 file.
 
+### [Save Data Exporter 存档数据导出](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/SaveDataExporter)
+
+按自定义快捷键导出当前已载入存档的星系/星球维度物品统计数据，默认快捷键为空，输出为 `.xlsx`。
+
+Exports per-star and per-planet item statistics from the currently loaded save through a custom hotkey. The hotkey is
+unbound by default and the output format is `.xlsx`.
+
 ### [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 
 包含多个新分馏塔，大量分馏配方，还有可以直接与数据中心交互的物流交互站！尽情享受分馏的乐趣吧！

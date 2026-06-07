@@ -12,6 +12,7 @@ AFTERBUILD_AGENTS = ROOT / "AfterBuildEvent" / "src" / "AGENTS.md"
 LOCAL_LIBRARY_PROJECTS = [
     ROOT / "FractionateEverything" / "FractionateEverything.csproj",
     ROOT / "GetDspData" / "GetDspData.csproj",
+    ROOT / "SaveDataExporter" / "SaveDataExporter.csproj",
 ]
 
 

@@ -67,6 +67,10 @@ static class AfterBuildEvent {
             ProjectName = "FractionateEverything",
             GroupIds = [AutoUploadGroupId],
         },
+        new() {
+            ProjectName = "SaveDataExporter",
+            GroupIds = [AutoUploadGroupId],
+        },
     ];
 
     private sealed class CalcIconExportTarget {
@@ -93,7 +97,7 @@ static class AfterBuildEvent {
         bool automationMode = args.Length > 0;
         Console.WriteLine("本项目需要依赖于其他所有项目，且其他项目输出类型需要设定为类库");
         Console.WriteLine(automationMode ? "自动模式：使用命令行参数选择执行模式" : "输入要执行的命令（直接回车表示1）：");
-        Console.WriteLine("1表示更新所有mod到R2，打包mod，通知qqbot并上传FE压缩包；交互模式可继续选择是否启动游戏");
+        Console.WriteLine("1表示更新所有mod到R2，打包mod，通知qqbot并上传配置的压缩包；交互模式可继续选择是否启动游戏");
         Console.WriteLine("2表示更新部分需要的dll类库");
         Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
