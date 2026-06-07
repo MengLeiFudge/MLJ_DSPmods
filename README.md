@@ -31,10 +31,11 @@ file.
 
 ### [Save Data Exporter 存档数据导出](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/SaveDataExporter)
 
-按自定义快捷键导出当前已载入存档的星系/星球维度物品统计数据，默认快捷键为空，输出为 `.xlsx`。
+按自定义快捷键导出当前已载入存档的星系/星球维度物品统计数据，默认快捷键为空，输出为 `.xlsx`，可在游戏设置的“杂项”页面选择按时间戳生成新文件或按存档名固定覆盖。
 
 Exports per-star and per-planet item statistics from the currently loaded save through a custom hotkey. The hotkey is
-unbound by default and the output format is `.xlsx`.
+unbound by default, the output format is `.xlsx`, and file naming can either create timestamped files or overwrite a
+save-name-specific file.
 
 ### [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 

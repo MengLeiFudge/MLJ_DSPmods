@@ -25,7 +25,6 @@ class SaveDataExporterTests(unittest.TestCase):
         self.assertIn("BepInEx.Core", package_refs)
         self.assertIn("DysonSphereProgram.Modding.CommonAPI", package_refs)
         self.assertIn("DysonSphereProgram.GameLibs", package_refs)
-
         references = {node.attrib["Include"] for node in root.findall(".//Reference")}
         self.assertIn("System.IO.Compression", references)
 
@@ -57,6 +56,35 @@ class SaveDataExporterTests(unittest.TestCase):
         self.assertIn("理论消耗", text)
         self.assertIn("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", text)
 
+    def test_output_file_name_mode_supports_timestamped_and_overwrite_modes(self):
+        text = read_text(SOURCE)
+
+        self.assertIn("ConfigEntry<OutputFileNameMode> outputFileNameModeEntry", text)
+        self.assertIn("\"OutputFileNameMode\"", text)
+        self.assertIn("OutputFileNameMode.TimestampedNewFile", text)
+        self.assertIn("OutputFileNameMode.SaveNameOverwrite", text)
+        self.assertIn("SaveDataExporter_{saveName}.xlsx", text)
+        self.assertIn("SaveDataExporter_{saveName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx", text)
+        self.assertIn("FileMode.Create", text)
+
+    def test_output_file_name_mode_is_added_to_game_misc_settings_page(self):
+        text = read_text(SOURCE)
+
+        self.assertIn("HarmonyPatch(typeof(UIOptionWindow), \"_OnOpen\")", text)
+        self.assertIn("HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnApplyClick))", text)
+        self.assertIn("HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnRevertButtonClick))", text)
+        self.assertIn("content-5", text)
+        self.assertIn("OptionRowStartY = -220f", text)
+        self.assertIn("OptionRowStepY = 40f", text)
+        self.assertIn("GetNextOptionRowY", text)
+        self.assertIn("outputFileNameModeParent = parent", text)
+        self.assertIn("FindDirectChild(outputFileNameModeParent, OptionWindowLabelName)", text)
+        self.assertIn("outputFileNameModeComboBox.Items.Clear()", text)
+        self.assertIn("org.LoShin.GenesisBook", text)
+        self.assertIn("org.ProfessorCat305.OrbitalRing", text)
+        self.assertIn("导出文件命名模式", text)
+        self.assertIn("固定存档名（覆盖同名文件）", text)
+
     def test_user_docs_describe_usage_and_empty_hotkey(self):
         readme = read_text(README)
         manifest = read_text(MANIFEST)
@@ -65,6 +93,11 @@ class SaveDataExporterTests(unittest.TestCase):
         self.assertIn("主页或未载入存档时不会导出", readme)
         self.assertIn("BepInEx/config/SaveDataExporter", readme)
         self.assertIn("1143,6006", readme)
+        self.assertIn("OutputFileNameMode", readme)
+        self.assertIn("游戏设置的“杂项”页面", readme)
+        self.assertIn("TimestampedNewFile", readme)
+        self.assertIn("SaveNameOverwrite", readme)
+        self.assertIn("SaveDataExporter_<存档名>.xlsx", readme)
         self.assertIn("SaveDataExporter", manifest)
 
 

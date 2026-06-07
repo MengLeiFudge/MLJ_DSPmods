@@ -13,7 +13,10 @@ using BepInEx.Logging;
 using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
+using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace SaveDataExporter;
 
@@ -24,6 +27,16 @@ public class SaveDataExporterPlugin : BaseUnityPlugin {
     private const string ExportKeyId = "ExportSaveStatistics";
     private const int DefaultTimeLevel = 1;
     private const string DefaultTargetItems = "1143,6006";
+    private const string OptionWindowMiscContentPath =
+        "UI Root/Overlay Canvas/Top Windows/Option Window/details/content-5";
+    private const string OptionWindowTipLevelLabelPath =
+        "UI Root/Overlay Canvas/Top Windows/Option Window/details/content-5/labels/tiplevel";
+    private const string OptionWindowTipLevelComboPath =
+        "UI Root/Overlay Canvas/Top Windows/Option Window/details/content-5/comps/ComboBox";
+    private const string OptionWindowLabelName = "sde-output-file-name-mode-label";
+    private const string OptionWindowComboName = "sde-output-file-name-mode-combo";
+    private const float OptionRowStartY = -220f;
+    private const float OptionRowStepY = 40f;
     private static readonly string[] MetricNames = ["实际产量", "理论产量", "实际消耗", "理论消耗"];
     private static readonly double[] RateDivisors = [1d, 10d, 60d, 600d, 6000d];
     private static readonly string[] TimeLevelNames = ["1分钟", "10分钟", "1小时", "10小时", "100小时"];
@@ -32,6 +45,9 @@ public class SaveDataExporterPlugin : BaseUnityPlugin {
     private static ConfigEntry<string> targetItemsEntry;
     private static ConfigEntry<int> timeLevelEntry;
     private static ConfigEntry<string> outputDirectoryEntry;
+    private static ConfigEntry<OutputFileNameMode> outputFileNameModeEntry;
+    private static Transform outputFileNameModeParent;
+    private static UIComboBox outputFileNameModeComboBox;
 
     public void Awake() {
         logger = Logger;
@@ -50,6 +66,12 @@ public class SaveDataExporterPlugin : BaseUnityPlugin {
             "OutputDirectory",
             "",
             "导出目录。留空时使用 BepInEx/config/SaveDataExporter。");
+        outputFileNameModeEntry = Config.Bind(
+            "Miscellaneous",
+            "OutputFileNameMode",
+            OutputFileNameMode.TimestampedNewFile,
+            "输出文件命名模式。TimestampedNewFile=文件名包含导出时间，每次生成新文件；SaveNameOverwrite=固定为 SaveDataExporter_<存档名>.xlsx，已有同名文件时覆盖。");
+        new Harmony(PluginInfo.PLUGIN_GUID).PatchAll(typeof(SaveDataExporterPlugin));
 
         CustomKeyBindSystem.RegisterKeyBind<PressKeyBind>(new BuiltinKey {
             key = new CombineKey(0, 0, ECombineKeyAction.OnceClick, true),
@@ -332,8 +354,192 @@ public class SaveDataExporterPlugin : BaseUnityPlugin {
 
         Directory.CreateDirectory(outputDirectory);
         string saveName = SanitizeFileName(string.IsNullOrWhiteSpace(gameData.gameName) ? "save" : gameData.gameName);
-        string fileName = $"SaveDataExporter_{saveName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        string fileName = GetOutputFileNameMode() == OutputFileNameMode.SaveNameOverwrite
+            ? $"SaveDataExporter_{saveName}.xlsx"
+            : $"SaveDataExporter_{saveName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return Path.Combine(outputDirectory, fileName);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIOptionWindow), "_OnOpen")]
+    [HarmonyAfter(new string[] { "org.LoShin.GenesisBook", "org.ProfessorCat305.OrbitalRing" })]
+    private static void UIOptionWindow_OnOpen_Postfix(UIOptionWindow __instance) {
+        EnsureOptionWindowControl(__instance);
+        ResetOptionWindowControl();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnRevertButtonClick))]
+    private static void UIOptionWindow_OnRevertButtonClick_Postfix(int idx) {
+        if (idx == 4) {
+            ResetOptionWindowControl();
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UIOptionWindow), nameof(UIOptionWindow.OnApplyClick))]
+    private static void UIOptionWindow_OnApplyClick_Postfix() {
+        if (outputFileNameModeComboBox == null) {
+            return;
+        }
+
+        outputFileNameModeEntry.Value = IndexToOutputFileNameMode(outputFileNameModeComboBox.itemIndex);
+    }
+
+    private static void EnsureOptionWindowControl(UIOptionWindow optionWindow) {
+        Transform parent = GetOptionWindowMiscContent(optionWindow);
+        if (parent == null) {
+            return;
+        }
+
+        Transform existing = FindDirectChild(parent, OptionWindowComboName);
+        if (existing != null) {
+            outputFileNameModeParent = parent;
+            outputFileNameModeComboBox = existing.GetComponentInChildren<UIComboBox>();
+            if (outputFileNameModeComboBox == null) {
+                logger.LogWarning("原版设置-杂项页面下拉框已存在但组件缺失，无法刷新导出文件命名模式。");
+                return;
+            }
+
+            RefreshOptionWindowControlText();
+            return;
+        }
+
+        GameObject labelPrefab = GameObject.Find(OptionWindowTipLevelLabelPath);
+        GameObject comboPrefab = GameObject.Find(OptionWindowTipLevelComboPath);
+        if (labelPrefab == null || comboPrefab == null) {
+            logger.LogWarning("未找到原版设置-杂项页面的提示等级控件，无法添加导出文件命名模式下拉框。");
+            return;
+        }
+
+        float rowY = GetNextOptionRowY(parent);
+        outputFileNameModeParent = parent;
+        GameObject labelObject = UnityEngine.Object.Instantiate(labelPrefab, parent);
+        labelObject.name = OptionWindowLabelName;
+        DestroyLocalizer(labelObject);
+        ((RectTransform)labelObject.transform).anchoredPosition = new Vector2(30f, rowY);
+
+        GameObject comboObject = UnityEngine.Object.Instantiate(comboPrefab, parent);
+        comboObject.name = OptionWindowComboName;
+        DestroyLocalizer(comboObject);
+        ((RectTransform)comboObject.transform).anchoredPosition = new Vector2(340f, rowY);
+
+        outputFileNameModeComboBox = comboObject.GetComponentInChildren<UIComboBox>();
+        if (outputFileNameModeComboBox == null) {
+            logger.LogWarning("原版设置-杂项页面下拉框克隆失败，无法添加导出文件命名模式。");
+            return;
+        }
+
+        ((UnityEventBase)outputFileNameModeComboBox.onItemIndexChange).RemoveAllListeners();
+        ((RectTransform)((Component)outputFileNameModeComboBox).transform).sizeDelta = new Vector2(430f, 30f);
+        RefreshOptionWindowControlText();
+    }
+
+    private static Transform GetOptionWindowMiscContent(UIOptionWindow optionWindow) {
+        Transform tipLevelTransform = optionWindow?.tipLevelComp == null
+            ? null
+            : ((Component)optionWindow.tipLevelComp).transform;
+        Transform parent = tipLevelTransform?.parent?.parent;
+        if (parent != null) {
+            return parent;
+        }
+
+        return GameObject.Find(OptionWindowMiscContentPath)?.transform;
+    }
+
+    private static Transform FindDirectChild(Transform parent, string objectName) {
+        for (int i = 0; i < parent.childCount; i++) {
+            Transform child = parent.GetChild(i);
+            if (child.name == objectName) {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    private static float GetNextOptionRowY(Transform parent) {
+        float rowY = OptionRowStartY;
+        for (int i = 0; i < parent.childCount; i++) {
+            Transform child = parent.GetChild(i);
+            if (child.name is OptionWindowLabelName or OptionWindowComboName || child is not RectTransform rect) {
+                continue;
+            }
+
+            float childY = rect.anchoredPosition.y;
+            if (childY <= OptionRowStartY + 0.1f) {
+                rowY = Math.Min(rowY, childY - OptionRowStepY);
+            }
+        }
+
+        return rowY;
+    }
+
+    private static void RefreshOptionWindowControlText() {
+        if (outputFileNameModeComboBox == null) {
+            return;
+        }
+
+        Transform labelTransform = outputFileNameModeParent == null
+            ? null
+            : FindDirectChild(outputFileNameModeParent, OptionWindowLabelName);
+        if (labelTransform != null && labelTransform.TryGetComponent(out Text labelText)) {
+            labelText.text = GetOutputFileNameModeLabel();
+        }
+
+        outputFileNameModeComboBox.Items.Clear();
+        outputFileNameModeComboBox.Items.AddRange(GetOutputFileNameModeOptions());
+        outputFileNameModeComboBox.ItemsData.Clear();
+        outputFileNameModeComboBox.translated = true;
+        outputFileNameModeComboBox.UpdateItems();
+        ResetOptionWindowControl();
+    }
+
+    private static void ResetOptionWindowControl() {
+        if (outputFileNameModeComboBox != null) {
+            outputFileNameModeComboBox.itemIndex = OutputFileNameModeToIndex(GetOutputFileNameMode());
+        }
+    }
+
+    private static void DestroyLocalizer(GameObject obj) {
+        Localizer localizer = obj.GetComponent<Localizer>();
+        if (localizer != null) {
+            UnityEngine.Object.DestroyImmediate(localizer);
+        }
+    }
+
+    private static string GetOutputFileNameModeLabel() {
+        return IsChineseLanguage()
+            ? "导出文件命名模式"
+            : "Export file naming";
+    }
+
+    private static List<string> GetOutputFileNameModeOptions() {
+        return IsChineseLanguage()
+            ? ["含导出时间（每次新文件）", "固定存档名（覆盖同名文件）"]
+            : ["Timestamped new file", "Save-name overwrite"];
+    }
+
+    private static bool IsChineseLanguage() {
+        return Localization.CurrentLanguageLCID is 2052 or 1028 or 3076;
+    }
+
+    private static OutputFileNameMode GetOutputFileNameMode() {
+        OutputFileNameMode mode = outputFileNameModeEntry.Value;
+        if (Enum.IsDefined(typeof(OutputFileNameMode), mode)) {
+            return mode;
+        }
+
+        outputFileNameModeEntry.Value = OutputFileNameMode.TimestampedNewFile;
+        return OutputFileNameMode.TimestampedNewFile;
+    }
+
+    private static int OutputFileNameModeToIndex(OutputFileNameMode mode) {
+        return mode == OutputFileNameMode.SaveNameOverwrite ? 1 : 0;
+    }
+
+    private static OutputFileNameMode IndexToOutputFileNameMode(int index) {
+        return index == 1 ? OutputFileNameMode.SaveNameOverwrite : OutputFileNameMode.TimestampedNewFile;
     }
 
     private static string SanitizeFileName(string value) {
@@ -421,6 +627,11 @@ public class SaveDataExporterPlugin : BaseUnityPlugin {
         public double ReferenceProduction { get; }
         public double ActualConsumption { get; }
         public double ReferenceConsumption { get; }
+    }
+
+    private enum OutputFileNameMode {
+        TimestampedNewFile = 0,
+        SaveNameOverwrite = 1,
     }
 }
 
