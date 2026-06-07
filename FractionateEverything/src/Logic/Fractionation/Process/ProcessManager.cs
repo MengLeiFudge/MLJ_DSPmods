@@ -1144,7 +1144,6 @@ public static partial class ProcessManager {
             ("PeakFractionSuccessesPerMinute", br => peakFractionSuccessesPerMinute = Math.Max(0, br.ReadInt64())),
             ("Sacrifice", SacrificeImport)
         );
-        AbsorbDataCenterFractionatorStock();
     }
 
     /// <summary>

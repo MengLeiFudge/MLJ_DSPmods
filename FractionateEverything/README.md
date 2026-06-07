@@ -23,7 +23,7 @@ extract and upgrade related recipes and buildings!
 
 万物分馏添加了全新的建筑，它们的效果非常强大！
 
-* 交互塔：将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心。
+* 交互塔：将分馏塔原胚培养为不同的分馏塔。除此之外，当交互塔的正面输入并且两侧无连接时，输入的物品会上传至分馏数据中心；某类分馏塔在数据中心达到1000个后，分馏献祭会按秒消耗当前库存的一部分，为对应塔种提供当秒成功率加成。
 * 矿物复制塔：复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。
 * 转化塔：将物品转化为与其相关的其他物品。需要在分馏数据中心解锁并升级对应配方。
 * 精馏塔：将矩阵精馏为矩阵精华，并在矩阵精华之间压缩、回流或拆成残片，用于支撑 FE 自身的成长和购买项。需要在分馏数据中心解锁并升级对应配方。
@@ -33,7 +33,9 @@ Fractionate Everything has added brand new buildings which are very powerful in 
 
 * Interaction Tower: Cultivates the fractionator proto-germ into a different fractionator. In addition to this, when the
   front of the Interaction Tower is input and there are no connections on either side, the input items will be uploaded
-  to the Fractionation Data Center.
+  to the Fractionation Data Center. Once the data centre holds at least 1000 fractionators of a type, fractionation
+  sacrifice consumes part of the current stock each second to provide a same-second success-rate boost for the matching
+  tower type.
 * Mineral Duplication Tower: Duplicates various minerals, including Black Mist-specific drops. There is a certain
   probability of getting a replication essence. You need to unlock and upgrade the corresponding recipe in the
   Fractionation Data Center.

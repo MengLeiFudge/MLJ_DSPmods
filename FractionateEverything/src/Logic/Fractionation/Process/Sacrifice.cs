@@ -3,7 +3,6 @@ using System.IO;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Gacha;
-using FE.Logic.Progression;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -19,41 +18,24 @@ public static partial class ProcessManager {
     private const float SacrificeBoostStep = 0.05f;
     private const float SacrificeBoostCapTrait1 = 0.75f;
     private const float SacrificeBoostCapTrait2 = 1.00f;
-    private static readonly long[] sacrificeTowerCounts = new long[SacrificeTowerTypeCount];
+    private static readonly long[] lastSacrificeTowerCounts = new long[SacrificeTowerTypeCount];
     private static readonly int[] sacrificeStepIndex = new int[SacrificeTowerTypeCount];
 
     public static long GetSacrificedTowerCount(int buildingId) {
         int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingId);
-        return index >= 0 && index < sacrificeTowerCounts.Length
-            ? sacrificeTowerCounts[index]
+        return index >= 0 && index < lastSacrificeTowerCounts.Length
+            ? lastSacrificeTowerCounts[index]
             : 0L;
     }
 
     public static int GetSacrificedTowerTypeCount() {
         int count = 0;
-        for (int i = 0; i < sacrificeTowerCounts.Length; i++) {
-            if (sacrificeTowerCounts[i] > 0) {
+        for (int i = 0; i < lastSacrificeTowerCounts.Length; i++) {
+            if (lastSacrificeTowerCounts[i] > 0) {
                 count++;
             }
         }
         return count;
-    }
-
-    public static void AddSacrificedTowers(int buildingId, long count) {
-        if (count <= 0) {
-            return;
-        }
-        int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingId);
-        if (index < 0 || index >= sacrificeTowerCounts.Length) {
-            return;
-        }
-        count = GetEffectiveSacrificeCount(buildingId, count);
-        sacrificeTowerCounts[index] = long.MaxValue - sacrificeTowerCounts[index] < count
-            ? long.MaxValue
-            : sacrificeTowerCounts[index] + count;
-        if (InteractionTower.EnableSacrificeTrait) {
-            UpdateSacrificeBoost();
-        }
     }
 
     private static long GetEffectiveSacrificeCount(int buildingId, long count) {
@@ -71,19 +53,6 @@ public static partial class ProcessManager {
         return effectiveCount > count ? effectiveCount : count;
     }
 
-    public static void AbsorbDataCenterFractionatorStock() {
-        for (int i = 0; i < SacrificeTowerTypeCount; i++) {
-            int itemId = FractionatorTowerCatalog.ActiveFractionatorBuildingIds[i];
-            long count = GetModDataItemCount(itemId);
-            if (count <= 0) {
-                continue;
-            }
-            TakeItemFromModData(itemId, count, out _);
-            TechManager.CheckTechUnlockCondition(itemId);
-            AddSacrificedTowers(itemId, count);
-        }
-    }
-
     /// <summary>
     /// 交互塔特质
     /// </summary>
@@ -97,18 +66,17 @@ public static partial class ProcessManager {
             return;
         }
         if (!InteractionTower.EnableSacrificeTrait) {
-            ResetSacrificeBoostOnly();
+            ResetSacrificeBoostState();
             return;
         }
-        UpdateSacrificeBoost();
-    }
-
-    private static void UpdateSacrificeBoost() {
         int buffCount = 0;
         long[] effectiveCounts = new long[SacrificeTowerTypeCount];
-        for (int i = 0; i < effectiveCounts.Length; i++) {
-            effectiveCounts[i] = sacrificeTowerCounts[i];
-            if (effectiveCounts[i] > 0) {
+        for (int i = 0; i < SacrificeTowerTypeCount; i++) {
+            int itemId = FractionatorTowerCatalog.ActiveFractionatorBuildingIds[i];
+            long sacrificedCount = Take10PercentTower(itemId);
+            lastSacrificeTowerCounts[i] = sacrificedCount;
+            effectiveCounts[i] = GetEffectiveSacrificeCount(itemId, sacrificedCount);
+            if (sacrificedCount > 0) {
                 buffCount++;
             }
         }
@@ -117,6 +85,10 @@ public static partial class ProcessManager {
                 effectiveCounts[i] = ScaleSacrificeCount(effectiveCounts[i], 1.0 + 0.1 * buffCount);
             }
         }
+        UpdateSacrificeBoost(effectiveCounts);
+    }
+
+    private static void UpdateSacrificeBoost(long[] effectiveCounts) {
         float boostCap = InteractionTower.EnableDimensionalResonance
             ? SacrificeBoostCapTrait2
             : SacrificeBoostCapTrait1;
@@ -142,7 +114,7 @@ public static partial class ProcessManager {
     }
 
     private static void ResetSacrificeBoostState() {
-        Array.Clear(sacrificeTowerCounts, 0, sacrificeTowerCounts.Length);
+        Array.Clear(lastSacrificeTowerCounts, 0, lastSacrificeTowerCounts.Length);
         ResetSacrificeBoostOnly();
     }
 
@@ -156,35 +128,19 @@ public static partial class ProcessManager {
     }
 
     private static void SacrificeImport(BinaryReader r) {
-        Array.Clear(sacrificeTowerCounts, 0, sacrificeTowerCounts.Length);
         r.ReadBlocks(
             ("TowerCounts", br => {
                 int size = br.ReadInt32();
                 for (int i = 0; i < size; i++) {
-                    int index = br.ReadInt32();
-                    long count = br.ReadInt64();
-                    if (index >= 0 && index < sacrificeTowerCounts.Length) {
-                        sacrificeTowerCounts[index] = Math.Max(0L, count);
-                    }
+                    _ = br.ReadInt32();
+                    _ = br.ReadInt64();
                 }
             })
         );
-        if (InteractionTower.EnableSacrificeTrait) {
-            UpdateSacrificeBoost();
-        } else {
-            ResetSacrificeBoostOnly();
-        }
+        ResetSacrificeBoostState();
     }
 
     private static void SacrificeExport(BinaryWriter w) {
-        w.WriteBlocks(
-            ("TowerCounts", bw => {
-                bw.Write(sacrificeTowerCounts.Length);
-                for (int i = 0; i < sacrificeTowerCounts.Length; i++) {
-                    bw.Write(i);
-                    bw.Write(sacrificeTowerCounts[i]);
-                }
-            })
-        );
+        w.WriteBlocks();
     }
 }

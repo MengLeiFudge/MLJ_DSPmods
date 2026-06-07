@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Process;
 using FE.Logic.Progression;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
@@ -17,6 +16,7 @@ namespace FE.Logic.DataCenter;
 public static class DataCenterInventory {
     private const int MaxIntTakeCountByInc = int.MaxValue / 10;
     private const long MaxLongTakeCountByInc = long.MaxValue / 10L;
+    private const long FractionatorSacrificeThreshold = 1000L;
 
     public static readonly long[] centerItemCount = new long[12000];
     public static readonly long[] centerItemInc = new long[12000];
@@ -166,15 +166,27 @@ public static class DataCenterInventory {
         if (itemId <= 0 || itemId >= 12000) {
             return;
         }
-        if (count > 0 && FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
-            TechManager.CheckTechUnlockCondition(itemId);
-            ProcessManager.AddSacrificedTowers(itemId, count);
-            return;
-        }
         lock (centerItemCount) {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
+            if (FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
+                TechManager.CheckTechUnlockCondition(itemId);
+            }
         }
+    }
+
+    public static long Take10PercentTower(int itemId) {
+        if (itemId <= 0 || itemId >= 12000 || !FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
+            return 0L;
+        }
+        long count;
+        lock (centerItemCount) {
+            count = centerItemCount[itemId];
+        }
+        if (count < FractionatorSacrificeThreshold) {
+            return 0L;
+        }
+        return TakeItemFromModData(itemId, count / 10, out _);
     }
 
     public static long GetModDataItemCount(int itemId) {

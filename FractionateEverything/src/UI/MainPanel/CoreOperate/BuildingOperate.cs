@@ -120,8 +120,8 @@ public static class BuildingOperate {
         // 各塔特质标题和说明（+6 特质）
         Register("分馏献祭", "Fractionation Sacrifice");
         Register("分馏献祭说明",
-            "Fractionators uploaded to the data centre are consumed as sacrifice progress. With n sacrificed fractionators, fractionate recipes' success rate of the same type is increased by sqrt(n)/10, rounded down to 5% steps.",
-            "上传至数据中心的分馏塔会被消耗并累计为献祭进度。献祭n个分馏塔时，同类型分馏配方获得 sqrt(n)/10 的成功率加成，并向下取整到5%阶梯。");
+            "When the data centre holds at least 1000 fractionators of a type, the sacrifice trait consumes 10% of the current stock each second. With n fractionators sacrificed last second, fractionate recipes' success rate of the same type is increased by sqrt(n)/10, rounded down to 5% steps.",
+            "当某类分馏塔在数据中心达到1000个时，献祭特质每秒消耗当前库存的10%。上一秒献祭n个分馏塔时，同类型分馏配方获得 sqrt(n)/10 的成功率加成，并向下取整到5%阶梯。");
 
         Register("质能裂变", "Mass-Energy Fission");
         Register("质能裂变说明",

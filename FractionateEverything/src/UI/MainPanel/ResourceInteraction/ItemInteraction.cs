@@ -79,8 +79,8 @@ public static class ItemInteraction {
             "The storage capacity of the following items in the Fractionation data centre are: ");
         Register("提取物品", "Extract Item");
         Register("提取物品说明",
-            "Left-click or right-click to extract items. The number of extraction groups can be adjusted on the settings page.",
-            "左键单击、右键单击均可提取物品，提取组数可以在设置页面调整。");
+            "Left-click or right-click to extract items. The number of extraction groups can be adjusted on the settings page. This page shows the actual extractable data-centre stock.",
+            "左键单击、右键单击均可提取物品，提取组数可以在设置页面调整。本页面显示的是数据中心当前实际可提取库存。");
     }
 
     public static void LoadConfig(ConfigFile configFile) {
