@@ -550,12 +550,11 @@ public static partial class ProcessManager {
             int fluidOutputTarget = 2 * zeroPressureStack;
             bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
                                       || __instance.belt2 > 0 && __instance.isOutput2;
-            bool hasProductOutputBelt = __instance.belt0 > 0 && __instance.isOutput0;
-            int productOutputReserve = hasProductOutputBelt ? maxStack : 0;
 
-            // 步骤1：无传送带时，把 fluidOutput 超过 fluidOutputTarget 的部分回填到 fluidInput
+            // 步骤1：无流动输出带时，先用流动输出回补输入，避免自循环被外部输出抢走。
             if (!hasFluidOutputBelt) {
-                int fluidMoveCount = Math.Max(0, __instance.fluidOutputCount - fluidOutputTarget);
+                int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
+                int fluidMoveCount = Math.Min(__instance.fluidOutputCount, needForInput);
                 if (fluidMoveCount > 0) {
                     int fluidOutputIncAvg = __instance.fluidOutputCount > 0
                         ? __instance.fluidOutputInc / __instance.fluidOutputCount
@@ -570,19 +569,21 @@ public static partial class ProcessManager {
                 }
             }
 
-            // 步骤2 & 3：从产物补 fluidOutput 到 fluidOutputTarget，再补 fluidInput 到 fluidInputTarget
+            // 步骤2 & 3：复制产物先补 fluidInput，再补 fluidOutput；剩余产物才允许外部输出。
             if (recipe != null) {
                 ProductOutputInfo mainProduct = FindProduct(products, fluidId, mainOnly: true);
                 if (mainProduct != null && mainProduct.count > 0) {
                     int productIncPerItem = recipe.GetOutputInc(fluidId);
 
-                    // 步骤2：补 fluidOutput 到 fluidOutputTarget（无论有无传送带，始终确保24）
-                    int needForOutput = Math.Max(0, fluidOutputTarget - __instance.fluidOutputCount);
-                    int moveToOutput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForOutput);
-                    if (moveToOutput > 0) {
-                        __instance.fluidOutputCount += moveToOutput;
-                        __instance.fluidOutputInc += productIncPerItem * moveToOutput;
-                        mainProduct.count -= moveToOutput;
+                    // 步骤2：优先补 fluidInput 到自循环目标。
+                    int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
+                    int moveToInput = Math.Min(mainProduct.count, needForInput);
+                    if (moveToInput > 0) {
+                        __instance.fluidInputCount += moveToInput;
+                        __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                            __instance.fluidInputCargoCount + (float)moveToInput / fluidInputCountPerCargo);
+                        __instance.fluidInputInc += productIncPerItem * moveToInput;
+                        mainProduct.count -= moveToInput;
                         extraState.InvalidateFullProductCache();
                         needRecheckFullProduct = needRecheckFullProduct
                                                  || hasFullProduct && mainProduct.count < productOutputMax;
@@ -591,16 +592,14 @@ public static partial class ProcessManager {
                         }
                     }
 
-                    // 步骤3：补 fluidInput 到 fluidInputTarget
+                    // 步骤3：输入目标满足后，再补 fluidOutput 到内部流动缓冲。
                     if (mainProduct.count > 0) {
-                        int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
-                        int moveToInput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForInput);
-                        if (moveToInput > 0) {
-                            __instance.fluidInputCount += moveToInput;
-                            __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
-                                __instance.fluidInputCargoCount + (float)moveToInput / fluidInputCountPerCargo);
-                            __instance.fluidInputInc += productIncPerItem * moveToInput;
-                            mainProduct.count -= moveToInput;
+                        int needForOutput = Math.Max(0, fluidOutputTarget - __instance.fluidOutputCount);
+                        int moveToOutput = Math.Min(mainProduct.count, needForOutput);
+                        if (moveToOutput > 0) {
+                            __instance.fluidOutputCount += moveToOutput;
+                            __instance.fluidOutputInc += productIncPerItem * moveToOutput;
+                            mainProduct.count -= moveToOutput;
                             extraState.InvalidateFullProductCache();
                             needRecheckFullProduct = needRecheckFullProduct
                                                      || hasFullProduct && mainProduct.count < productOutputMax;
