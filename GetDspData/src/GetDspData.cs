@@ -1076,6 +1076,21 @@ public class GetDspData : BaseUnityPlugin {
             { "EnemyDropRange", new JArray(proto.EnemyDropRange.x, proto.EnemyDropRange.y) },
             { "EnemyDropCount", proto.EnemyDropCount },
         };
+        if (proto.prefabDesc != null) {
+            obj.Add("ModelIndex", proto.prefabDesc.modelIndex);
+            obj.Add("IsBelt", proto.prefabDesc.isBelt);
+            obj.Add("IsInserter", proto.prefabDesc.isInserter);
+            obj.Add("IsAssembler", proto.prefabDesc.isAssembler);
+            obj.Add("IsLab", proto.prefabDesc.isLab);
+            obj.Add("AssemblerRecipeType", (int)proto.prefabDesc.assemblerRecipeType);
+            if (proto.prefabDesc.isBelt) {
+                obj.Add("BeltSpeedPerSecond", proto.prefabDesc.beltSpeed * 6.0);
+            }
+            if (proto.prefabDesc.isInserter) {
+                obj.Add("InserterGrade", proto.prefabDesc.inserterGrade);
+                obj.Add("InserterSTT", proto.prefabDesc.inserterSTT);
+            }
+        }
         if (proto.GetSpace() >= 0) {
             //对于生产建筑，添加耗能、倍率、占地
             obj.Add("WorkEnergyPerTick", proto.prefabDesc.workEnergyPerTick);
@@ -1150,6 +1165,7 @@ public class GetDspData : BaseUnityPlugin {
         if (proto.Type == ERecipeType.Fractionate) {
             float produceProb = proto.ResultCounts[0] / (float)proto.ItemCounts[0];
             var obj = new JObject {
+                { "ID", proto.ID },
                 { "Type", (int)proto.Type },
                 { "Factories", new JArray(new[] { I分馏塔 }) },
                 { "Name", proto.name },
@@ -1214,6 +1230,7 @@ public class GetDspData : BaseUnityPlugin {
         bool flag4 = proto.Type == ERecipeType.Fractionate;
         if (TimeSpend == 0.0f) {
             var obj = new JObject {
+                { "ID", proto.ID },
                 { "Type", (int)proto.Type },
                 { "Factories", new JArray(Factories) },
                 { "Name", proto.name },
@@ -1228,6 +1245,7 @@ public class GetDspData : BaseUnityPlugin {
             add.Add(obj);
         } else {
             var obj = new JObject {
+                { "ID", proto.ID },
                 { "Type", (int)proto.Type },
                 { "Factories", new JArray(Factories) },
                 { "Name", proto.name },
