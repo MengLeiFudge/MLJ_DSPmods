@@ -1,17 +1,27 @@
 # AfterBuildEvent/src — Build Automation Tool
 
-Console app. Run from IDE as post-build event or standalone. The tool is now split between the legacy
-`AfterBuildEvent.cs` entry/large workflows and focused subfolders such as `DspCalcQuickUpdate/`.
+Console app. Run from IDE as post-build event or standalone. The tool is split by execution mode and
+supporting workflow so `AfterBuildEvent.cs` remains the entry/router instead of owning every workflow.
 
 ## Files
 
 | File | Lines | Role |
 |---|---|---|
-| `AfterBuildEvent.cs` | large legacy workflow file | `Main` entry, packaging, DLL update, calculator JSON/icon workflows |
+| `AfterBuildEvent.cs` | entry/router + shared nested models/constants | `Main` mode selection and cross-workflow shared data types |
 | `Utils.cs` | 195 | Mod management helpers (combination math, r2 enable/disable) |
 | `CmdProcess.cs` | 75 | Persistent cmd.exe process wrapper |
 | `PathConfig.cs` | path config | All path constants, auto-detects latest nuget version, reads external mod source paths |
+| `Publishing/` | mode 1 publish/package workflow | R2 copy, zip packaging, package metadata, qqbot `publish-local` request |
+| `LibraryUpdate/` | mode 2 DLL workflow | Publicize/decompile game DLLs and installed R2 mod DLLs |
+| `CalcJson/` | mode 3 JSON workflow | Calculator raw JSON generation, cache signature, `gameData.ts` version sync |
+| `CalcIcons/` | mode 4 icon workflow + mode 3 icon tail | Required icon discovery, offline/game icon export, asset sync |
 | `DspCalcQuickUpdate/` | calculator quick update | Mode 5: source-version audit, `gameData.ts` update, raw JSON filename copy |
+
+`AfterBuildEvent` is implemented as a `static partial class` across these files. Keep new mode-specific
+methods in the owning folder instead of adding them back to `AfterBuildEvent.cs`. Cross-workflow helpers
+may stay in the folder that currently owns the related behavior, but if another feature starts depending on
+the same helper, prefer moving that helper into a small shared `Core/` file rather than creating duplicate
+copies.
 
 ## Modes
 
