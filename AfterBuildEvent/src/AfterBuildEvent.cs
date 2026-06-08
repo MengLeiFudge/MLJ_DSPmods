@@ -62,6 +62,13 @@ static partial class AfterBuildEvent {
         public int[] GroupIds { get; set; } = [];
     }
 
+    private sealed class QqbotPublishSummary {
+        public bool HasCounts { get; set; }
+        public int UploadedCount { get; set; }
+        public int DeletedCount { get; set; }
+        public int SkippedCount { get; set; }
+    }
+
     private static readonly PublishTarget[] PublishTargets = [
         new() {
             ProjectName = "FractionateEverything",

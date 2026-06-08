@@ -68,7 +68,8 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - include `timestamp`, `project_id`, current `branch`, current `commit_hash`, current `commit_subject`, current `commit_detail`, and a `files` array
 - publish only zip files explicitly listed by `PublishTargets`; qqbot must not hard-code which MLJ_DSPmods packages are publishable
 - each file entry includes path, upload name, SHA256, and target QQ groups
-- qqbot deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
+- qqbot skips delete/upload/message when the same target group and upload name already published the same SHA256; otherwise it deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
+- successful publish logs must report qqbot's returned `uploaded`, `deleted`, and `skipped` counts; do not use the request file count as the actual pushed count
 - if upload succeeds, do not open Explorer
 - if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible, report the real failure, and do not claim the package was delivered
 - do not ask whether to launch Dyson Sphere Program
@@ -131,3 +132,9 @@ Do not reintroduce `bin\win\<Configuration>` or `bin\<Configuration>\net472` in 
 `AfterBuildEvent.csproj` should keep `ProjectReference` entries with `ReferenceOutputAssembly="false"` for every
 local mod/tool project it packages or uses for calculator export, and those referenced projects should remain
 `OutputType=Library`.
+
+## Deterministic Zip Rule
+
+Mode `1` package zips must be deterministic for unchanged contents. `ZipMod()` sorts entries by file name and
+uses a fixed zip entry timestamp so rerunning `AfterBuildEvent.exe 1` does not change zip SHA256 solely because
+the command ran at a different time. Do not reintroduce current-time entry metadata into package zips.

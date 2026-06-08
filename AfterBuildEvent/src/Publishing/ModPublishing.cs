@@ -277,9 +277,15 @@ static partial class AfterBuildEvent {
             }
 
             using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            string responseBody = ReadResponseBody(response);
             bool ok = (int)response.StatusCode >= 200 && (int)response.StatusCode < 300;
             if (ok) {
-                Console.WriteLine($"自动上传成功：已推送 {files.Count} 个 zip 给 qqbot");
+                QqbotPublishSummary summary = ParseQqbotPublishSummary(responseBody);
+                if (summary.HasCounts) {
+                    Console.WriteLine($"自动上传完成：上传 {summary.UploadedCount} 个 zip，跳过 {summary.SkippedCount} 个未变化 zip，删除旧文件 {summary.DeletedCount} 个");
+                } else {
+                    Console.WriteLine($"自动上传完成：qqbot 已接受 {files.Count} 个 zip 的发布请求");
+                }
             } else {
                 Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
             }
@@ -297,6 +303,40 @@ static partial class AfterBuildEvent {
         catch (Exception ex) {
             Console.WriteLine($"自动上传失败：{ex.Message}");
             return false;
+        }
+    }
+
+    private static string ReadResponseBody(HttpWebResponse response) {
+        using Stream responseStream = response.GetResponseStream();
+        if (responseStream == null) {
+            return "";
+        }
+        using StreamReader reader = new(responseStream, Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
+    private static QqbotPublishSummary ParseQqbotPublishSummary(string responseBody) {
+        if (string.IsNullOrWhiteSpace(responseBody)) {
+            return new();
+        }
+
+        try {
+            JObject response = JObject.Parse(responseBody);
+            if (response["uploaded"] is not JArray uploaded ||
+                response["deleted"] is not JArray deleted ||
+                response["skipped"] is not JArray skipped) {
+                return new();
+            }
+
+            return new() {
+                HasCounts = true,
+                UploadedCount = uploaded.Count,
+                DeletedCount = deleted.Count,
+                SkippedCount = skipped.Count,
+            };
+        }
+        catch {
+            return new();
         }
     }
 
@@ -335,6 +375,8 @@ static partial class AfterBuildEvent {
         File.WriteAllLines(doorstop_config, lines);
     }
 
+    private static readonly DateTime StableZipEntryTime = new(2000, 1, 1, 0, 0, 0);
+
     static void ZipMod(List<string> fileList, string zipPath) {
         string zipParentDir = new FileInfo(zipPath).DirectoryName;
         if (zipParentDir == null) {
@@ -347,10 +389,14 @@ static partial class AfterBuildEvent {
             File.Delete(zipPath);
         }
         using var zipStream = new ZipOutputStream(File.Create(zipPath));
-        foreach (var file in fileList) {
+        foreach (var file in fileList.OrderBy(file => Path.GetFileName(file), StringComparer.OrdinalIgnoreCase)) {
             //MOD上传至R2的时候，文件要直接打包在里面，不能嵌套文件夹，所以相对路径直接使用文件名
             //但是也有一些特殊情况需要文件夹
-            var entry = new ZipEntry(Path.GetFileName(file));
+            FileInfo fileInfo = new(file);
+            var entry = new ZipEntry(Path.GetFileName(file)) {
+                DateTime = StableZipEntryTime,
+                Size = fileInfo.Length,
+            };
             zipStream.PutNextEntry(entry);
             using FileStream fs = File.OpenRead(file);
             byte[] buffer = new byte[4096];
