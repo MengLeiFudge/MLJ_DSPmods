@@ -548,36 +548,38 @@ public static partial class ProcessManager {
             int zeroPressureStack = Math.Min(MineralReplicationTower.MaxStack, ZeroPressureInternalStackCap);
             int fluidInputTarget = MaxBeltSpeed * zeroPressureStack;
             int fluidOutputTarget = 2 * zeroPressureStack;
-            bool hasFluidOutputBelt = __instance.belt1 > 0 && __instance.isOutput1
-                                      || __instance.belt2 > 0 && __instance.isOutput2;
 
-            // 步骤1：无流动输出带时，先用流动输出回补输入，避免自循环被外部输出抢走。
-            if (!hasFluidOutputBelt) {
-                int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
-                int fluidMoveCount = Math.Min(__instance.fluidOutputCount, needForInput);
-                if (fluidMoveCount > 0) {
-                    int fluidOutputIncAvg = __instance.fluidOutputCount > 0
-                        ? __instance.fluidOutputInc / __instance.fluidOutputCount
-                        : 0;
-                    int moveInc = fluidOutputIncAvg * fluidMoveCount;
-                    __instance.fluidInputCount += fluidMoveCount;
-                    __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
-                        __instance.fluidInputCargoCount + (float)fluidMoveCount / fluidInputCountPerCargo);
-                    __instance.fluidInputInc += moveInc;
-                    __instance.fluidOutputCount -= fluidMoveCount;
-                    __instance.fluidOutputInc -= moveInc;
+            // 步骤1：已有流动输出缓存先回补输入，即使接了侧边输出带也不能抢在自循环输入前出货。
+            int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
+            int fluidMoveCount = Math.Min(__instance.fluidOutputCount, needForInput);
+            if (fluidMoveCount > 0) {
+                int fluidOutputIncAvg = __instance.fluidOutputCount > 0
+                    ? __instance.fluidOutputInc / __instance.fluidOutputCount
+                    : 0;
+                int moveInc = fluidOutputIncAvg * fluidMoveCount;
+                __instance.fluidInputCount += fluidMoveCount;
+                __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,
+                    __instance.fluidInputCargoCount + (float)fluidMoveCount / fluidInputCountPerCargo);
+                __instance.fluidInputInc += moveInc;
+                __instance.fluidOutputCount -= fluidMoveCount;
+                __instance.fluidOutputInc -= moveInc;
+                if (__instance.fluidOutputCount <= 0) {
+                    __instance.fluidOutputCount = 0;
+                    __instance.fluidOutputInc = 0;
+                } else if (__instance.fluidOutputInc < 0) {
+                    __instance.fluidOutputInc = 0;
                 }
             }
 
-            // 步骤2 & 3：复制产物先补 fluidInput，再补 fluidOutput；剩余产物才允许外部输出。
+            // 步骤2 & 3：复制产物先补输入，再补流动输出；剩余产物才允许外部产物输出。
             if (recipe != null) {
                 ProductOutputInfo mainProduct = FindProduct(products, fluidId, mainOnly: true);
                 if (mainProduct != null && mainProduct.count > 0) {
                     int productIncPerItem = recipe.GetOutputInc(fluidId);
 
                     // 步骤2：优先补 fluidInput 到自循环目标。
-                    int needForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
-                    int moveToInput = Math.Min(mainProduct.count, needForInput);
+                    int productNeedForInput = Math.Max(0, fluidInputTarget - __instance.fluidInputCount);
+                    int moveToInput = Math.Min(mainProduct.count, productNeedForInput);
                     if (moveToInput > 0) {
                         __instance.fluidInputCount += moveToInput;
                         __instance.fluidInputCargoCount = Math.Min(fluidInputCargoMax,

@@ -40,19 +40,19 @@ class FractionatorFluidOutputStackTests(unittest.TestCase):
             text,
         )
 
-    def test_zero_pressure_reserves_one_product_stack_for_front_output_belt(self):
+    def test_zero_pressure_replenishes_input_then_fluid_output_before_product_output(self):
         text = SOURCE.read_text(encoding="utf-8-sig")
 
-        self.assertIn("bool hasProductOutputBelt = __instance.belt0 > 0 && __instance.isOutput0;", text)
-        self.assertIn("int productOutputReserve = hasProductOutputBelt ? maxStack : 0;", text)
-        self.assertIn(
-            "int moveToOutput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForOutput);",
-            text,
-        )
-        self.assertIn(
-            "int moveToInput = Math.Min(Math.Max(0, mainProduct.count - productOutputReserve), needForInput);",
-            text,
-        )
+        self.assertNotIn("if (!hasFluidOutputBelt)", text)
+        self.assertNotIn("productOutputReserve", text)
+        fluid_to_input = text.index("int fluidMoveCount = Math.Min(__instance.fluidOutputCount, needForInput);")
+        product_to_input = text.index("int moveToInput = Math.Min(mainProduct.count, productNeedForInput);")
+        product_to_output = text.index("int moveToOutput = Math.Min(mainProduct.count, needForOutput);")
+        product_belt_output = text.index("SelectProductForBeltOutput(products, productStack, lockedOutputId,")
+
+        self.assertLess(fluid_to_input, product_to_input)
+        self.assertLess(product_to_input, product_to_output)
+        self.assertLess(product_to_output, product_belt_output)
 
     def test_enhanced_fluid_output_can_fill_partial_head_stack(self):
         text = SOURCE.read_text(encoding="utf-8-sig")
