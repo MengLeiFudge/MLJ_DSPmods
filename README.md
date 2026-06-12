@@ -44,6 +44,12 @@ save-name-specific file.
 Featuring multiple new fractionators, a vast array of distillation recipes, and Interaction Stations that interact
 directly with the data centre! Have fun with fractionation!
 
+### [UXAEnhance UXAssist强化](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/UXAEnhance)
+
+强化 UXAssist 的自动配置物流设施页面：支持通过本模组配置提高滑条上限，并为每个滑条提供单项全局应用按钮。
+
+Enhances UXAssist's auto-config logistics UI with configurable slider limits and per-slider global apply buttons.
+
 ## 模组安装说明 Mod Installation Guide
 
 你可以在[thunderstore](https://thunderstore.io/c/dyson-sphere-program/p/MengLei/)查看我发布的所有模组。

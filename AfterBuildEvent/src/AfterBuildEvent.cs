@@ -78,6 +78,10 @@ static partial class AfterBuildEvent {
             ProjectName = "SaveDataExporter",
             GroupIds = [AutoUploadGroupId],
         },
+        new() {
+            ProjectName = "UXAEnhance",
+            GroupIds = [AutoUploadGroupId],
+        },
     ];
 
     private sealed class CalcIconExportTarget {

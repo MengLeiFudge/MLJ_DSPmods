@@ -7,12 +7,14 @@ from pathlib import Path
 ROOT = Path(".")
 AFTERBUILD_CSPROJ = ROOT / "AfterBuildEvent" / "AfterBuildEvent.csproj"
 AFTERBUILD_CS = ROOT / "AfterBuildEvent" / "src" / "AfterBuildEvent.cs"
+AFTERBUILD_PUBLISHING_CS = ROOT / "AfterBuildEvent" / "src" / "Publishing" / "ModPublishing.cs"
 ROOT_AGENTS = ROOT / "AGENTS.md"
 AFTERBUILD_AGENTS = ROOT / "AfterBuildEvent" / "src" / "AGENTS.md"
 LOCAL_LIBRARY_PROJECTS = [
     ROOT / "FractionateEverything" / "FractionateEverything.csproj",
     ROOT / "GetDspData" / "GetDspData.csproj",
     ROOT / "SaveDataExporter" / "SaveDataExporter.csproj",
+    ROOT / "UXAEnhance" / "UXAEnhance.csproj",
 ]
 
 
@@ -95,7 +97,7 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertNotIn('public static string SolutionDir => @"..\\..\\..\\.."', text)
 
     def test_packaging_deletes_only_current_version_zip(self):
-        text = read_text(AFTERBUILD_CS)
+        text = read_text(AFTERBUILD_PUBLISHING_CS)
 
         self.assertNotIn('Directory.GetFiles(@".\\ModZips")', text)
         self.assertNotIn('file.StartsWith($@".\\ModZips\\{projectName}")', text)
@@ -170,7 +172,7 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
             self.assertNotIn(phrase, text)
 
     def test_afterbuild_option_one_publishes_for_manual_and_automation_modes(self):
-        text = read_text(AFTERBUILD_CS)
+        text = read_text(AFTERBUILD_CS) + read_text(AFTERBUILD_PUBLISHING_CS)
 
         self.assertIn("List<GeneratedPackageInfo> generatedPackages = [];", text)
         self.assertIn("BuildGeneratedPackageInfo(projectName, zipFile)", text)
@@ -186,6 +188,18 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertNotIn("AFTERBUILD_PUBLISH_SUMMARY", text)
         self.assertIn('Console.WriteLine("手动模式：已上传生成的 zip 到 QQ 群");', text)
         self.assertIn("CalculateSha256(fullPath)", text)
+
+    def test_afterbuild_option_one_can_filter_projects_by_argv(self):
+        text = read_text(AFTERBUILD_PUBLISHING_CS)
+
+        required_terms = [
+            "HashSet<string> selectedProjects = ParseSelectedPublishProjects(args);",
+            "selectedProjects.Count > 0 && !selectedProjects.Contains(projectName)",
+            "ReportMissingSelectedProjects(selectedProjects, generatedPackages);",
+            "arg.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries)",
+        ]
+        for phrase in required_terms:
+            self.assertIn(phrase, text)
 
 
 if __name__ == "__main__":

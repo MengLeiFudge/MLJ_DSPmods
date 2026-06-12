@@ -1,0 +1,10 @@
+{
+    "name": "UXAEnhance",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/UXAEnhance",
+    "description": "Enhances UXAssist auto-config logistics sliders with configurable limits and per-item global apply buttons.",
+    "dependencies": [
+        "CommonAPI-CommonAPI-1.6.7",
+        "soarqin-UXAssist-1.5.8"
+    ]
+}

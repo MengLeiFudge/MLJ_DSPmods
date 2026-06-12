@@ -22,6 +22,7 @@ static partial class AfterBuildEvent {
     private static void UpdateModsThenStart(bool automationMode = false, string[] args = null) {
         using CmdProcess cmd = new();
         List<GeneratedPackageInfo> generatedPackages = [];
+        HashSet<string> selectedProjects = ParseSelectedPublishProjects(args);
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
@@ -38,6 +39,9 @@ static partial class AfterBuildEvent {
             }
             string projectName = xmlDocument.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText;
             if (projectName == null) {
+                continue;
+            }
+            if (selectedProjects.Count > 0 && !selectedProjects.Contains(projectName)) {
                 continue;
             }
             //要打包的所有文件，也是要复制到R2_BepInEx的文件
@@ -162,6 +166,8 @@ static partial class AfterBuildEvent {
             }
         }
 
+        ReportMissingSelectedProjects(selectedProjects, generatedPackages);
+
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
         bool publishSucceeded = TryPublishGeneratedPackagesToQqbot(generatedPackages);
@@ -187,6 +193,45 @@ static partial class AfterBuildEvent {
         string str = Console.ReadLine();
         if (str == "" || str == "1") {
             cmd.Exec(RunDSP);
+        }
+    }
+
+    private static HashSet<string> ParseSelectedPublishProjects(string[] args) {
+        HashSet<string> selectedProjects = new(StringComparer.OrdinalIgnoreCase);
+        if (args == null || args.Length <= 1) {
+            return selectedProjects;
+        }
+
+        foreach (string arg in args.Skip(1)) {
+            foreach (string projectName in arg.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries)) {
+                string trimmed = projectName.Trim();
+                if (trimmed.Length > 0) {
+                    selectedProjects.Add(trimmed);
+                }
+            }
+        }
+
+        if (selectedProjects.Count > 0) {
+            Console.WriteLine($"仅处理指定项目：{string.Join(", ", selectedProjects.OrderBy(item => item, StringComparer.OrdinalIgnoreCase))}");
+        }
+
+        return selectedProjects;
+    }
+
+    private static void ReportMissingSelectedProjects(
+        HashSet<string> selectedProjects,
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        if (selectedProjects.Count == 0) {
+            return;
+        }
+
+        HashSet<string> generatedProjectNames = generatedPackages
+            .Select(package => package.ProjectName)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (string projectName in selectedProjects.OrderBy(item => item, StringComparer.OrdinalIgnoreCase)) {
+            if (!generatedProjectNames.Contains(projectName)) {
+                Console.WriteLine($"指定项目未生成 zip，已跳过：{projectName}");
+            }
         }
     }
 

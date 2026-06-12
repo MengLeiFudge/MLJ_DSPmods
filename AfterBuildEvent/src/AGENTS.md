@@ -49,7 +49,13 @@ Required publish usage passes mode `1` as argv. The latest commit body is the pu
 
 ```bash
 ./AfterBuildEvent.exe 1
+# Optional single-project correction publish:
+./AfterBuildEvent.exe 1 UXAEnhance
 ```
+
+Mode `1` accepts optional project names after the mode argument. When present, only those projects are
+packaged, copied to R2, and offered to qqbot. Use this for single-mod correction publishes so unrelated
+`PublishTargets` are not resent.
 
 Agent publish order is mandatory:
 1. implement the change
