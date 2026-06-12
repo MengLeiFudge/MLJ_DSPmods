@@ -16,6 +16,8 @@ internal enum AutoConfigApplyTarget {
     IlsDroneMinDeliver,
     IlsShipMinDeliver,
     IlsMinPilerValue,
+    IlsIncludeOrbitCollector,
+    IlsWarperNecessary,
     IlsDroneCount,
     IlsShipCount,
     VeinCollectorHarvestSpeed,

@@ -1,5 +1,5 @@
 using BepInEx;
-using HarmonyLib;
+using UXAssist.UI;
 
 namespace UXAEnhance;
 
@@ -8,15 +8,12 @@ namespace UXAEnhance;
 public class UXAEnhancePlugin : BaseUnityPlugin {
     public const string UxAssistGuid = "org.soardev.uxassist";
 
-    private Harmony harmony;
-
     private void Awake() {
         SliderLimitConfig.Bind(Config);
-        harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-        harmony.PatchAll(typeof(UXAEnhancePlugin).Assembly);
+        MyConfigWindow.OnUICreated += UXAssistConfigWindowPatch.OnUxAssistConfigWindowCreated;
     }
 
     private void OnDestroy() {
-        harmony?.UnpatchSelf();
+        MyConfigWindow.OnUICreated -= UXAssistConfigWindowPatch.OnUxAssistConfigWindowCreated;
     }
 }

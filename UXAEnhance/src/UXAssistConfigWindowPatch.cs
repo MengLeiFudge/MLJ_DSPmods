@@ -1,22 +1,18 @@
 using System;
-using HarmonyLib;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using UXAssist;
 using UXAssist.Patches;
 using UXAssist.UI;
 
 namespace UXAEnhance;
 
-[HarmonyPatch]
 internal static class UXAssistConfigWindowPatch {
     private const float ButtonWidth = 44f;
     private const float ButtonOffsetX = 470f;
     private const int ButtonFontSize = 12;
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UIConfigWindow), "CreateUI")]
-    private static void UIConfigWindow_CreateUI_Postfix(MyConfigWindow wnd, RectTransform trans) {
+    public static void OnUxAssistConfigWindowCreated(MyConfigWindow wnd, RectTransform trans) {
         RectTransform tab = FindLogisticsTab(trans);
         if (tab == null) {
             return;
@@ -46,6 +42,8 @@ internal static class UXAssistConfigWindowPatch {
         AddApplyButton(wnd, tab, sliders[16], "AutoConfigILSShipCount", SliderLimitConfig.IlsShipCountMax, AutoConfigApplyTarget.IlsShipCount, 679f);
         AddApplyButton(wnd, tab, sliders[17], "AutoConfigVeinCollectorHarvestSpeed", SliderLimitConfig.VeinCollectorHarvestSpeedMax, AutoConfigApplyTarget.VeinCollectorHarvestSpeed, 681f);
         AddApplyButton(wnd, tab, sliders[18], "AutoConfigVeinCollectorMinPilerValue", SliderLimitConfig.VeinCollectorMinPilerValueMax, AutoConfigApplyTarget.VeinCollectorMinPilerValue, 683f);
+        AddBooleanApplyButton(wnd, tab, AutoConfigApplyTarget.IlsIncludeOrbitCollector, "AutoConfigILSIncludeOrbitCollector", 628f);
+        AddBooleanApplyButton(wnd, tab, AutoConfigApplyTarget.IlsWarperNecessary, "AutoConfigILSWarperNecessary", 646f);
     }
 
     private static RectTransform FindLogisticsTab(RectTransform trans) {
@@ -82,7 +80,7 @@ internal static class UXAssistConfigWindowPatch {
         UIButton button = wnd.AddButton(ButtonOffsetX, y, ButtonWidth, tab, "应用", ButtonFontSize,
             $"uxaenhance-apply-{configName}", () => ApplyAndNotify(target));
         button.tips.tipTitle = "UXAEnhance";
-        button.tips.tipText = $"应用此项到全局已有设施。来源 UXAssist.UIConfigWindow.cs:{sourceLine:0}";
+        button.tips.tipText = BuildApplyTip(target, sourceLine);
         button.UpdateTip();
 
         maxConfig.SettingChanged += OnMaxConfigChanged;
@@ -99,8 +97,31 @@ internal static class UXAssistConfigWindowPatch {
         }
     }
 
+    private static void AddBooleanApplyButton(MyConfigWindow wnd, RectTransform tab, AutoConfigApplyTarget target, string objectName, float y) {
+        UIButton button = wnd.AddButton(ButtonOffsetX, y, ButtonWidth, tab, "应用", ButtonFontSize,
+            $"uxaenhance-apply-{objectName}", () => ApplyAndNotify(target));
+        button.tips.tipTitle = "UXAEnhance";
+        button.tips.tipText = target switch {
+            AutoConfigApplyTarget.IlsIncludeOrbitCollector => "应用到全局已有星际物流运输站：是否包含轨道采集器。",
+            AutoConfigApplyTarget.IlsWarperNecessary => "应用到全局已有星际物流运输站：是否需要翘曲器。",
+            _ => "应用此项到全局已有设施。",
+        };
+        button.UpdateTip();
+    }
+
+    private static string BuildApplyTip(AutoConfigApplyTarget target, float sourceLine) {
+        string tip = $"应用此项到全局已有设施。来源 UXAssist.UIConfigWindow.cs:{sourceLine:0}";
+        return target switch {
+            AutoConfigApplyTarget.IlsChargePower => tip + "\n星际物流运输站：1 = 15MW。",
+            AutoConfigApplyTarget.PlsChargePower => tip + "\n行星物流运输站：1 = 3MW。",
+            AutoConfigApplyTarget.DispenserChargePower => tip + "\n物流配送器：1 = 0.3MW。",
+            _ => tip,
+        };
+    }
+
     private static BepInEx.Configuration.ConfigEntry<int> GetUxAssistConfig(string configName) {
-        return (BepInEx.Configuration.ConfigEntry<int>)AccessTools.Field(typeof(LogisticsPatch), configName).GetValue(null);
+        FieldInfo field = typeof(LogisticsPatch).GetField(configName, BindingFlags.Static | BindingFlags.Public);
+        return (BepInEx.Configuration.ConfigEntry<int>)field?.GetValue(null);
     }
 
     private static MySideSlider[] FindAutoConfigSliders(RectTransform tab) {

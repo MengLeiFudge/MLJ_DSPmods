@@ -194,6 +194,12 @@ internal static class AutoConfigGlobalApplyService {
             case AutoConfigApplyTarget.IlsMinPilerValue:
                 station.pilerCount = LogisticsPatch.AutoConfigILSMinPilerValue.Value;
                 return true;
+            case AutoConfigApplyTarget.IlsIncludeOrbitCollector:
+                station.includeOrbitCollector = LogisticsPatch.AutoConfigILSIncludeOrbitCollector.Value;
+                return true;
+            case AutoConfigApplyTarget.IlsWarperNecessary:
+                station.warperNecessary = LogisticsPatch.AutoConfigILSWarperNecessary.Value;
+                return true;
             case AutoConfigApplyTarget.IlsDroneCount:
                 FillStationDrones(station, LogisticsPatch.AutoConfigILSDroneCount.Value);
                 return true;

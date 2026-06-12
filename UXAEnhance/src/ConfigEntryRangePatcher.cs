@@ -1,13 +1,12 @@
 using System.Reflection;
 using BepInEx.Configuration;
-using HarmonyLib;
 
 namespace UXAEnhance;
 
 internal static class ConfigEntryRangePatcher {
     private static readonly FieldInfo DescriptionField =
-        AccessTools.Field(typeof(ConfigEntryBase), "<Description>k__BackingField") ??
-        AccessTools.Field(typeof(ConfigEntryBase), "_description");
+        typeof(ConfigEntryBase).GetField("<Description>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic) ??
+        typeof(ConfigEntryBase).GetField("_description", BindingFlags.Instance | BindingFlags.NonPublic);
 
     public static bool SetRange(ConfigEntry<int> config, int minValue, int maxValue) {
         if (config == null) {
