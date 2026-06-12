@@ -55,6 +55,7 @@ static partial class AfterBuildEvent {
         public long SizeBytes { get; set; }
         public string LastWriteTimeUtc { get; set; } = "";
         public string Sha256 { get; set; } = "";
+        public string ContentSha256 { get; set; } = "";
     }
 
     private sealed class PublishTarget {

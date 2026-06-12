@@ -133,9 +133,10 @@ static partial class AfterBuildEvent {
             }
             string zipFile = $@".\ModZips\{projectName}{version}.zip";
             DeleteExistingVersionModZip(zipFile);
+            string contentSha256 = CalculatePackageContentSha256(fileList);
             ZipMod(fileList, zipFile);
             Console.WriteLine($"创建 {zipFile}");
-            generatedPackages.Add(BuildGeneratedPackageInfo(projectName, zipFile));
+            generatedPackages.Add(BuildGeneratedPackageInfo(projectName, zipFile, contentSha256));
             //所有文件复制到R2，注意R2是否禁用了mod
             //mdb也要复制到R2（pdb不需要）
             fileList.Add(projectModMdbFile);
@@ -251,7 +252,7 @@ static partial class AfterBuildEvent {
         Console.WriteLine($"复制 {source} -> {targetPath}");
     }
 
-    private static GeneratedPackageInfo BuildGeneratedPackageInfo(string projectName, string zipFile) {
+    private static GeneratedPackageInfo BuildGeneratedPackageInfo(string projectName, string zipFile, string contentSha256) {
         string fullPath = Path.GetFullPath(zipFile);
         FileInfo fileInfo = new(fullPath);
         return new() {
@@ -261,6 +262,7 @@ static partial class AfterBuildEvent {
             SizeBytes = fileInfo.Length,
             LastWriteTimeUtc = fileInfo.LastWriteTimeUtc.ToString("O"),
             Sha256 = CalculateSha256(fullPath),
+            ContentSha256 = contentSha256,
         };
     }
 
@@ -269,6 +271,30 @@ static partial class AfterBuildEvent {
         using FileStream stream = File.OpenRead(path);
         byte[] hash = sha256.ComputeHash(stream);
         return string.Concat(hash.Select(value => value.ToString("x2")));
+    }
+
+    private static string CalculatePackageContentSha256(IReadOnlyList<string> fileList) {
+        using SHA256 sha256 = SHA256.Create();
+        foreach (string file in fileList.OrderBy(file => Path.GetFileName(file), StringComparer.OrdinalIgnoreCase)) {
+            FileInfo fileInfo = new(file);
+            WriteHashText(sha256, Path.GetFileName(file));
+            WriteHashText(sha256, fileInfo.Length.ToString());
+            using FileStream stream = File.OpenRead(file);
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0) {
+                sha256.TransformBlock(buffer, 0, read, null, 0);
+            }
+            sha256.TransformBlock([0], 0, 1, null, 0);
+        }
+        sha256.TransformFinalBlock([], 0, 0);
+        return string.Concat(sha256.Hash.Select(value => value.ToString("x2")));
+    }
+
+    private static void WriteHashText(HashAlgorithm hashAlgorithm, string text) {
+        byte[] bytes = Utf8NoBom.GetBytes(text ?? "");
+        hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, null, 0);
+        hashAlgorithm.TransformBlock([0], 0, 1, null, 0);
     }
 
     private static string TryGetGitOutput(string arguments) {
@@ -397,6 +423,7 @@ static partial class AfterBuildEvent {
                 ["path"] = package.Path,
                 ["name"] = package.Name,
                 ["sha256"] = package.Sha256,
+                ["content_sha256"] = package.ContentSha256,
                 ["targets"] = new JArray(target.GroupIds),
             });
         }

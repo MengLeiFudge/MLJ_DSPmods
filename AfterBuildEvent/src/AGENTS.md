@@ -74,7 +74,8 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - include `timestamp`, `project_id`, current `branch`, current `commit_hash`, current `commit_subject`, current `commit_detail`, and a `files` array
 - publish only zip files explicitly listed by `PublishTargets`; qqbot must not hard-code which MLJ_DSPmods packages are publishable
 - each file entry includes path, upload name, SHA256, and target QQ groups
-- qqbot skips delete/upload/message when the same target group and upload name already published the same SHA256; otherwise it deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
+- `sha256` is the zip file integrity checksum; `content_sha256` is the stable hash of zip entry names, sizes, and bytes, and qqbot uses it to skip unchanged package contents
+- qqbot skips delete/upload/message when the same target group and upload name already published the same `content_sha256`; otherwise it deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
 - successful publish logs must report qqbot's returned `uploaded`, `deleted`, and `skipped` counts; do not use the request file count as the actual pushed count
 - if upload succeeds, do not open Explorer
 - if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible, report the real failure, and do not claim the package was delivered

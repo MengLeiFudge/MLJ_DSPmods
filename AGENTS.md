@@ -32,6 +32,7 @@ Multiple DSP mods in one solution:
 - `AfterBuildEvent` owns the publish target list. To publish another mod or group, edit the tool-side publish target configuration; do not add MLJ_DSPmods-specific rules to qqbot.
 - If the user manually starts `AfterBuildEvent.exe` and selects option `1`, the tool must still notify qqbot and dispatch the configured zip files before any optional game launch prompt.
 - A publish run with qqbot upload failure is not complete. Report the real qqbot/HTTP error and keep the package paths visible for manual recovery instead of claiming the change was dispatched.
+- `AfterBuildEvent.exe 1` must send both `sha256` and `content_sha256` to qqbot: `sha256` validates the zip file itself, while `content_sha256` is the stable hash of zip entry names, sizes, and bytes used to skip unchanged package contents.
 
 **Simulator rule:** `VanillaCurveSim` is a standalone simulator project. When only it changes, do not start `AfterBuildEvent.exe`; instead, it may be built and run directly.
 

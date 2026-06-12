@@ -175,7 +175,7 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         text = read_text(AFTERBUILD_CS) + read_text(AFTERBUILD_PUBLISHING_CS)
 
         self.assertIn("List<GeneratedPackageInfo> generatedPackages = [];", text)
-        self.assertIn("BuildGeneratedPackageInfo(projectName, zipFile)", text)
+        self.assertIn("BuildGeneratedPackageInfo(projectName, zipFile, contentSha256)", text)
         self.assertIn("/admin/api/artifacts/publish-local", text)
         self.assertIn("PublishTargets", text)
         self.assertIn("BuildQqbotPublishFiles(generatedPackages)", text)
@@ -188,6 +188,8 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         self.assertNotIn("AFTERBUILD_PUBLISH_SUMMARY", text)
         self.assertIn('Console.WriteLine("手动模式：已上传生成的 zip 到 QQ 群");', text)
         self.assertIn("CalculateSha256(fullPath)", text)
+        self.assertIn("CalculatePackageContentSha256(fileList)", text)
+        self.assertIn('["content_sha256"] = package.ContentSha256', text)
 
     def test_afterbuild_option_one_can_filter_projects_by_argv(self):
         text = read_text(AFTERBUILD_PUBLISHING_CS)
