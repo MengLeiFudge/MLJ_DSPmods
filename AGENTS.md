@@ -97,6 +97,14 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 - 已验证原版 `resources.assets` 中存在 `Texture2D: diamond`，但 AssetStudio 导出的 `diamond.png` 是 `56x56`；当前计算器图标需要 `80x80`，所以离线 80x80 过滤会跳过它。游戏内导出会把同一个图标渲染到 `80x80` 画布，才是计算器应使用的结果。
 - R2 禁用模组时会把文件改成 `.old`。图标工具查找已知资源文件时必须同时兼容 `foo` 和 `foo.old`，不要只硬编码其中一种。
 
+## Design Documentation Boundary
+
+- `FractionateEverything/DESIGN.md` is a human-facing implementation blueprint for the FE fractionation domain, not a short marketing or progress summary.
+- Keep `DESIGN.md` focused on stable system hierarchy, design purpose, source-level class relationships, gameplay contracts, formulas, tables, recipe families, tower traits, draw/acquisition rules, task/achievement relationships, and major boundaries needed for a human owner to reconstruct the current fractionation design.
+- Do not add build/publish commands, validation logs, commit history, temporary gaps, AI workflow instructions, task plans, or chat-derived status reports to `DESIGN.md`.
+- AI-facing workflow and repository rules belong in this `AGENTS.md` or the relevant domain `AGENTS.md`; user-facing installation or public behavior belongs in `README.md`; temporary reasoning belongs in `.codex/drafts/` or `.codex/plans/`.
+- When updating `DESIGN.md`, prefer stable implementation/design facts over brevity. Remove noisy process details, but keep the formulas and data tables that define current behavior.
+
 ## Project Structure
 
 ```
