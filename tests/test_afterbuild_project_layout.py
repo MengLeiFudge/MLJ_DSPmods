@@ -8,6 +8,7 @@ ROOT = Path(".")
 AFTERBUILD_CSPROJ = ROOT / "AfterBuildEvent" / "AfterBuildEvent.csproj"
 AFTERBUILD_CS = ROOT / "AfterBuildEvent" / "src" / "AfterBuildEvent.cs"
 AFTERBUILD_PUBLISHING_CS = ROOT / "AfterBuildEvent" / "src" / "Publishing" / "ModPublishing.cs"
+DIRECTORY_BUILD_PROPS = ROOT / "Directory.Build.props"
 ROOT_AGENTS = ROOT / "AGENTS.md"
 AFTERBUILD_AGENTS = ROOT / "AfterBuildEvent" / "src" / "AGENTS.md"
 LOCAL_LIBRARY_PROJECTS = [
@@ -202,6 +203,19 @@ class AfterBuildProjectLayoutTests(unittest.TestCase):
         ]
         for phrase in required_terms:
             self.assertIn(phrase, text)
+
+    def test_build_does_not_embed_git_revision_in_informational_version(self):
+        self.assertEqual(
+            "false",
+            property_value(DIRECTORY_BUILD_PROPS, "IncludeSourceRevisionInInformationalVersion").lower(),
+            "Directory.Build.props 必须禁用 Git 修订号注入，避免完整构建让无关项目 DLL 随 HEAD 变化",
+        )
+
+        root_agents = read_text(ROOT_AGENTS)
+        afterbuild_agents = read_text(AFTERBUILD_AGENTS)
+        for text in [root_agents, afterbuild_agents]:
+            self.assertIn("IncludeSourceRevisionInInformationalVersion", text)
+            self.assertIn("AssemblyInformationalVersion", text)
 
 
 if __name__ == "__main__":

@@ -128,6 +128,10 @@ Path overrides live in `DefaultPath.props` (gitignored). Copy from `DefaultPath.
 ## Project Output Layout
 
 `Directory.Build.props` fixes project output to `bin\<Configuration>` without OS or target-framework suffixes.
+It also keeps `IncludeSourceRevisionInInformationalVersion=false` so `AssemblyInformationalVersion` stays at the
+declared package version instead of appending the current Git revision. Do not re-enable Git revision embedding:
+mode `1` compares package contents, and a full solution build would otherwise make unrelated project DLLs change
+solely because `HEAD` changed.
 AfterBuildEvent must use that layout when copying local project DLLs:
 
 ```

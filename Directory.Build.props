@@ -17,6 +17,8 @@
         <DebugType>portable</DebugType>
         <!-- 使用最新语言特性 -->
         <LangVersion>latest</LangVersion>
+        <!-- 不把当前 Git 提交号写进 AssemblyInformationalVersion，避免只改一个项目时全量重编译导致无关 DLL 字节变化 -->
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
         <!-- 使用x64平台 -->
         <PlatformTarget>x64</PlatformTarget>
         <!-- 允许不安全代码，配合publize的dll使用 -->

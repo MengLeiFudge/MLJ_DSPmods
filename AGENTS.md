@@ -18,6 +18,8 @@ Multiple DSP mods in one solution:
 
 **Output path rule:** Debug build output is fixed to `bin\Debug`. Do not introduce OS-specific output folders, and do not allow target-framework suffixes in the output path.
 
+**Assembly metadata rule:** `Directory.Build.props` must keep `IncludeSourceRevisionInInformationalVersion=false`. Do not embed the current Git revision into `AssemblyInformationalVersion`, because full-solution Debug builds recompile every packaged project and would otherwise make unrelated DLLs change whenever `HEAD` changes.
+
 **Build scope rule:** Build scope depends on the project that changed:
 - If any file under `FractionateEverything/`, `GetDspData/`, `SaveDataExporter/`, or `UXAEnhance/` changes, build the full solution `MLJ_DSPmods.sln`.
 - If shared build infrastructure changes, including `AfterBuildEvent/`, `Directory.Build.props`, `DefaultPath.props*`, or `MLJ_DSPmods.sln`, also build the full solution `MLJ_DSPmods.sln`.
