@@ -10,9 +10,14 @@ public static class PathConfig {
 
     private static string _r2ProfileDir =
         $@"{UserDir}\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default";
+    private static string _r2CacheDir =
+        $@"{UserDir}\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\cache";
     public static string R2ProfileDir => _r2ProfileDir;
+    public static string R2CacheDir => _r2CacheDir;
     public static string ModsConfigPath => $@"{R2ProfileDir}\mods.yml";
     public static string R2PluginsDir => $@"{R2ProfileDir}\BepInEx\plugins";
+    public static string ExternalModReferencesGeneratedPropsPath =>
+        $@"{SolutionFullDir}\ExternalModReferences.generated.props";
     public static string CompatibilityDir => $@"{SolutionFullDir}\FractionateEverything\src\Compatibility";
     public static string CheckPluginsSourcePath => $@"{CompatibilityDir}\CheckPlugins.cs";
     public static string DspCalcDir => @"D:\project\dsp\dsp-calc";
@@ -67,6 +72,7 @@ public static class PathConfig {
                 xmlDocument = new();
                 xmlDocument.Load(defaultPathFile);
                 _r2ProfileDir = ReadPathValue(xmlDocument, "ProfileDir", _r2ProfileDir);
+                _r2CacheDir = ReadPathValue(xmlDocument, "R2CacheDir", _r2CacheDir);
                 _dspGameDir = ReadPathValue(xmlDocument, "DSPGameDir", _dspGameDir);
                 _nugetGameLibDir = ReadPathValue(xmlDocument, "NugetGameLibDir", _nugetGameLibDir);
                 _modSourcesRootDir = ReadPathValue(xmlDocument, "ModSourcesRootDir", _modSourcesRootDir);

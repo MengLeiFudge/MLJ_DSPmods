@@ -114,6 +114,7 @@ static partial class AfterBuildEvent {
         Console.WriteLine("3表示生成计算器 JSON + 图标 + 同步所需图标");
         Console.WriteLine("4表示仅重建计算器所需图标资源（排障用，游戏内提取）");
         Console.WriteLine("5表示快速更新计算器模组版本和 raw JSON 文件名");
+        Console.WriteLine("6表示根据 mods.yml 与 R2 cache 生成外部模组编译引用配置");
         string str = automationMode ? args[0].Trim() : Console.ReadLine();
         if (str == "1" || str == "") {
             UpdateModsThenStart(automationMode, args);
@@ -125,6 +126,8 @@ static partial class AfterBuildEvent {
             ExportCalcIcons();
         } else if (str == "5") {
             CalcQuickUpdateRunner.Run(args);
+        } else if (str == "6") {
+            GenerateExternalModReferencesProps();
         } else {
             Console.WriteLine("输入有误！");
         }

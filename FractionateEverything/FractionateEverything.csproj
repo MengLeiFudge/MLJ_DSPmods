@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\DefaultPath.props" Condition="Exists('..\DefaultPath.props')"/>
+    <Import Project="..\ExternalModReferences.generated.props" Condition="Exists('..\ExternalModReferences.generated.props')"/>
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <RootNamespace>FE</RootNamespace>
@@ -11,11 +12,11 @@
         <BepInExPluginGuid>com.menglei.dsp.fe</BepInExPluginGuid>
         <ProfileDir Condition="'$(ProfileDir)' == '' and '$(USERPROFILE)' != ''">$(USERPROFILE)\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
         <R2PluginsDir Condition="'$(ProfileDir)' != ''">$(ProfileDir)\BepInEx\plugins</R2PluginsDir>
-        <BuildBarToolHintPath Condition="Exists('$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll')">$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll</BuildBarToolHintPath>
+        <BuildBarToolHintPath Condition="'$(BuildBarToolHintPath)' == '' and Exists('$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll')">$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll</BuildBarToolHintPath>
         <BuildBarToolHintPath Condition="'$(BuildBarToolHintPath)' == '' and Exists('$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll.old')">$(R2PluginsDir)\jinxOAO-BuildBarTool\BuildBarTool.dll.old</BuildBarToolHintPath>
-        <TheyComeFromVoidHintPath Condition="Exists('$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll')">$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll</TheyComeFromVoidHintPath>
+        <TheyComeFromVoidHintPath Condition="'$(TheyComeFromVoidHintPath)' == '' and Exists('$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll')">$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll</TheyComeFromVoidHintPath>
         <TheyComeFromVoidHintPath Condition="'$(TheyComeFromVoidHintPath)' == '' and Exists('$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll.old')">$(R2PluginsDir)\ckcz123-TheyComeFromVoid\DSP_Battle.dll.old</TheyComeFromVoidHintPath>
-        <GenesisBookHintPath Condition="Exists('$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll')">$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll</GenesisBookHintPath>
+        <GenesisBookHintPath Condition="'$(GenesisBookHintPath)' == '' and Exists('$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll')">$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll</GenesisBookHintPath>
         <GenesisBookHintPath Condition="'$(GenesisBookHintPath)' == '' and Exists('$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll.old')">$(R2PluginsDir)\HiddenCirno-GenesisBook\ProjectGenesis.dll.old</GenesisBookHintPath>
     </PropertyGroup>
     <ItemGroup>
@@ -48,10 +49,10 @@
     </ItemGroup>
     <Target Name="ValidateExternalModReferences" BeforeTargets="ResolveReferences">
         <Error Condition="'$(BuildBarToolHintPath)' == ''"
-               Text="未在 R2 中找到 BuildBarTool.dll 或 BuildBarTool.dll.old；请检查 ProfileDir 与 jinxOAO-BuildBarTool 安装状态。"/>
+               Text="未找到 BuildBarTool 编译引用；请先运行 AfterBuildEvent.exe 6 生成 ExternalModReferences.generated.props，或检查 ProfileDir/R2CacheDir 与 jinxOAO-BuildBarTool。"/>
         <Error Condition="'$(TheyComeFromVoidHintPath)' == ''"
-               Text="未在 R2 中找到 DSP_Battle.dll 或 DSP_Battle.dll.old；请检查 ProfileDir 与 ckcz123-TheyComeFromVoid 安装状态。"/>
+               Text="未找到 DSP_Battle 编译引用；请先运行 AfterBuildEvent.exe 6 生成 ExternalModReferences.generated.props，或检查 ProfileDir/R2CacheDir 与 ckcz123-TheyComeFromVoid。"/>
         <Error Condition="'$(GenesisBookHintPath)' == ''"
-               Text="未在 R2 中找到 ProjectGenesis.dll 或 ProjectGenesis.dll.old；请检查 ProfileDir 与 HiddenCirno-GenesisBook 安装状态。"/>
+               Text="未找到 ProjectGenesis 编译引用；请先运行 AfterBuildEvent.exe 6 生成 ExternalModReferences.generated.props，或检查 ProfileDir/R2CacheDir 与 HiddenCirno-GenesisBook。"/>
     </Target>
 </Project>

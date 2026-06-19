@@ -10,9 +10,9 @@ supporting workflow so `AfterBuildEvent.cs` remains the entry/router instead of 
 | `AfterBuildEvent.cs` | entry/router + shared nested models/constants | `Main` mode selection and cross-workflow shared data types |
 | `Utils.cs` | 195 | Mod management helpers (combination math, r2 enable/disable) |
 | `CmdProcess.cs` | 75 | Persistent cmd.exe process wrapper |
-| `PathConfig.cs` | path config | All path constants, auto-detects latest nuget version, reads external mod source paths |
+| `PathConfig.cs` | path config | All path constants, auto-detects latest nuget version, reads external mod source/cache paths |
 | `Publishing/` | mode 1 publish/package workflow | R2 copy, zip packaging, package metadata, qqbot `publish-local` request |
-| `LibraryUpdate/` | mode 2 DLL workflow | Publicize/decompile game DLLs and installed R2 mod DLLs |
+| `LibraryUpdate/` | mode 2 DLL workflow + mode 6 external refs | Publicize/decompile game DLLs and installed R2 mod DLLs; generate cache-backed compile reference props |
 | `CalcJson/` | mode 3 JSON workflow | Calculator raw JSON generation, cache signature, `gameData.ts` version sync |
 | `CalcIcons/` | mode 4 icon workflow + mode 3 icon tail | Required icon discovery, offline/game icon export, asset sync |
 | `DspCalcQuickUpdate/` | calculator quick update | Mode 5: source-version audit, `gameData.ts` update, raw JSON filename copy |
@@ -32,6 +32,7 @@ copies.
 | `3` | `GetAllCalcJson()` | Enumerate all mod combos → launch game per combo → collect JSON export |
 | `4` | `ExportCalcIcons()` | Rebuild calculator icons from current raw data |
 | `5` | `CalcQuickUpdateRunner.Run()` | Check all configured calculator mods and quick-update versions/raw JSON filenames when source audit passes |
+| `6` | `GenerateExternalModReferencesProps()` | Read profile `mods.yml` versions → resolve external mod DLLs from R2 cache → write `ExternalModReferences.generated.props` |
 
 Mode `5` intentionally waits for Enter before returning so the user can read the audit result and copied
 file list. It processes all configured calculator mods by default; an optional second argv may narrow the
@@ -105,6 +106,17 @@ DecompileDll(ilspycmd → gamedata/DecompiledSource/<AssemblyName>/)
 
 Requires `ilspycmd` globally installed: `dotnet tool install -g ilspycmd`
 
+## Option 6 — External Compile References
+
+Mode `6` generates the local `ExternalModReferences.generated.props` file used by
+`FractionateEverything.csproj` for external mod compile references.
+
+Source of truth:
+- `ProfileDir\mods.yml` selects the package and version currently targeted by the developer profile.
+- `R2CacheDir\<package>\<version>\...` provides the actual DLL file, independent of whether that mod is enabled in the profile.
+
+This avoids using profile plugin files like `DSP_Battle.dll.old` as the primary compile reference. The generated props file is machine-local and gitignored. Run `AfterBuildEvent.exe 6` again after updating external mod versions in R2. Keep the profile plugin `.dll/.dll.old` lookup only as fallback behavior in project files.
+
 ## CmdProcess — Async cmd.exe Wrapper
 
 `Exec(string)` writes to a **shared persistent cmd.exe stdin** — it does NOT wait for completion.
@@ -119,6 +131,7 @@ while (!File.Exists(expectedFile)) { Thread.Sleep(100); }
 | Property | Value |
 |---|---|
 | `DSPGameDir` | From `DefaultPath.props` or hardcoded default |
+| `R2CacheDir` | From `DefaultPath.props` or r2modman local cache default |
 | `NugetGameLibNet45Dir` | Auto-scanned: latest subdirectory of nuget gamelibs by `LastWriteTime` |
 | `SolutionDir` | resolved by walking upward from `AppContext.BaseDirectory` until `MLJ_DSPmods.sln` is found |
 | `PublicizerExe` | `lib\BepInEx.AssemblyPublicizer.Cli.exe` |

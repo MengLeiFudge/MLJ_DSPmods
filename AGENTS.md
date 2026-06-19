@@ -20,6 +20,8 @@ Multiple DSP mods in one solution:
 
 **Assembly metadata rule:** `Directory.Build.props` must keep `IncludeSourceRevisionInInformationalVersion=false`. Do not embed the current Git revision into `AssemblyInformationalVersion`, because full-solution Debug builds recompile every packaged project and would otherwise make unrelated DLLs change whenever `HEAD` changes.
 
+**External mod reference rule:** `FractionateEverything` compile-time references for external R2 mods should resolve from `ExternalModReferences.generated.props` when possible. Generate it by running `AfterBuildEvent.exe 6` in the main Windows-mounted checkout after changing R2 mod versions. The generator reads `ProfileDir\mods.yml` for the selected package versions, then resolves DLLs from `R2CacheDir\<package>\<version>\...` so disabled profile files such as `.dll.old` do not become the primary compile reference. `ExternalModReferences.generated.props` is local/generated and must not be committed. `FractionateEverything.csproj` may keep profile plugin `.dll/.dll.old` lookup only as a fallback.
+
 **Build scope rule:** Build scope depends on the project that changed:
 - If any file under `FractionateEverything/`, `GetDspData/`, `SaveDataExporter/`, or `UXAEnhance/` changes, build the full solution `MLJ_DSPmods.sln`.
 - If shared build infrastructure changes, including `AfterBuildEvent/`, `Directory.Build.props`, `DefaultPath.props*`, or `MLJ_DSPmods.sln`, also build the full solution `MLJ_DSPmods.sln`.
@@ -82,6 +84,7 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 | `UXAEnhance/UXAEnhance.csproj` | Runtime UXAssist add-on; depends on `UXAssist` |
 | `VanillaCurveSim/VanillaCurveSim.csproj` | Standalone simulator EXE; can build/run without `AfterBuildEvent` |
 | `DefaultPath.props` / `DefaultPath.props.example` | Game library path config (copy example, fill paths) |
+| `ExternalModReferences.generated.props` | Local generated external R2 mod reference paths; created by `AfterBuildEvent.exe 6`, gitignored |
 | `lib/` | Custom binaries kept in-repo (`Newtonsoft.Json.dll`, publicizer tools, misc helpers) |
 
 **Build notes:**

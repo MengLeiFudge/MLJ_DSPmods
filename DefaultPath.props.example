@@ -3,6 +3,7 @@
 <Project>
     <PropertyGroup Label="DefaultPath">
         <ProfileDir>C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Default</ProfileDir>
+        <R2CacheDir>C:\Users\MLJ\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\cache</R2CacheDir>
         <DSPGameDir>D:\Steam\steamapps\common\Dyson Sphere Program</DSPGameDir>
         <NugetGameLibDir>C:\Users\MLJ\.nuget\packages\dysonsphereprogram.gamelibs</NugetGameLibDir>
         <ModSourcesRootDir>D:\project\dsp</ModSourcesRootDir>
