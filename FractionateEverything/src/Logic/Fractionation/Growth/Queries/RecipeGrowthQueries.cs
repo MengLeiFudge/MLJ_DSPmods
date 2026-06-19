@@ -313,8 +313,8 @@ public static class RecipeGrowthQueries {
         for (int level = 1; level <= maxLevel; level++) {
             string maxSuffix = level >= maxLevel ? "  MAX".WithColor(Gold) : string.Empty;
             if (recipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction) {
-                float destroyRatio = RectificationRecipe.GetMatrixExtractionDestroyRatioForLevel(level);
-                descriptions[level] = $"Lv{level}  {"萃取损耗".Translate()}{destroyRatio:P1}{maxSuffix}";
+                float outputCount = recipe.GetDisplayOutputCount(recipe.OutputMain[0]);
+                descriptions[level] = $"Lv{level}  {"矩阵萃取".Translate()} x{outputCount:F2}{maxSuffix}";
             } else {
                 float compressionCount = RectificationRecipe.GetCompressionOutputCountForLevel(level);
                 float refluxCount = RectificationRecipe.GetRefluxOutputCountForLevel(level);

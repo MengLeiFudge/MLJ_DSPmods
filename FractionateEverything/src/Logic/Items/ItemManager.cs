@@ -57,35 +57,26 @@ public static class ItemManager {
         Register("I记忆源点",
             "Top-layer FE currency-like resource granted by non-production rewards. It is not produced by rectification.",
             "FE 高层货币式资源，只能来自非产线奖励，不由精馏产线产出。");
-        Register("纯净源点", "Pure Memory");
-        Register("I纯净源点",
-            "A higher-purity source point reserved for late-stage non-production rewards.",
-            "更高纯度的源点，预留给后期非产线奖励。");
-        Register("理论源点", "Theoretical Memory");
-        Register("I理论源点",
-            "A terminal source point placeholder reserved for final-tier systems. It is outside production chains.",
-            "终局源点占位物，预留给最终档系统，不进入产线。");
-
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
-            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Interaction Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到交互塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes an Interaction Tower.",
+            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到交互塔。");
         Register("矿物复制塔原胚", "Mineral Replication Tower Proto");
         Register("I矿物复制塔原胚",
-            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Mineral Replication Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到矿物复制塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Mineral Replication Tower.",
+            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到矿物复制塔。");
         Register("转化塔原胚", "Conversion Tower Proto");
         Register("I转化塔原胚",
-            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Conversion Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到转化塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Conversion Tower.",
+            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到转化塔。");
         Register("精馏塔原胚", "Rectification Tower Proto");
         Register("I精馏塔原胚",
-            "One of the fractionator protos, obtained through the proto lottery. After trained by Interaction Tower, Rectification Tower can be obtained, and there is also a lower chance to get fractionator directed protos.",
-            "分馏塔雏形之一，通过原胚抽奖得到。经过交互塔培养后，可以得到精馏塔，也有较低几率得到分馏塔定向原胚。");
+            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Rectification Tower.",
+            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到精馏塔。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
         Register("I分馏塔定向原胚",
-            "The fractionator protos that mutate during training are extremely plastic and can be directly cultured into the specified fractionator.",
-            "培养过程中发生变异的分馏塔原胚，具有极高的可塑性，可以直接培养为指定的分馏塔。");
+            "Legacy proto reserved for old saves. New retrieval and growth routes no longer create it.",
+            "旧存档保留物品。新的时隧检索和成长路线不再产出它。");
     }
 
     #region 添加新物品
@@ -139,10 +130,6 @@ public static class ItemManager {
             new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeessence");
         RegisterSourcePointItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
             new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f), "memory");
-        RegisterSourcePointItem(IFE纯净源点, "纯净源点", "I纯净源点", 110,
-            new Color(0.86f, 0.96f, 1f), new Color(0.14f, 0.28f, 0.40f), "purememory");
-        RegisterSourcePointItem(IFE理论源点, "理论源点", "I理论源点", 111,
-            new Color(1f, 0.92f, 0.48f), new Color(0.28f, 0.20f, 0.06f), "theoreticalmemory");
 
         item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
             "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
@@ -533,7 +520,7 @@ public static class ItemManager {
     }
 
     public static bool IsSourcePointItem(int itemId) {
-        return itemId == IFE记忆源点 || itemId == IFE纯净源点 || itemId == IFE理论源点;
+        return itemId == IFE记忆源点;
     }
 
     public static int GetMatrixEssenceLevel(int itemId) {
@@ -555,7 +542,7 @@ public static class ItemManager {
     }
 
     /// <summary>
-    /// 获取主线矩阵阶段索引。黑雾矩阵按引力阶段处理，用于精馏与成长成本衰减。
+    /// 获取主线矩阵阶段索引。黑雾矩阵不是主线矩阵，返回 -1 供调用方显式分支处理。
     /// </summary>
     public static int GetMatrixStageIndex(int matrixId) {
         return matrixId switch {
@@ -565,7 +552,7 @@ public static class ItemManager {
             I信息矩阵 => 3,
             I引力矩阵 => 4,
             I宇宙矩阵 => 5,
-            I黑雾矩阵 => 4,
+            I黑雾矩阵 => -1,
             _ => matrixId > 0 && matrixId < itemToMatrix.Length
                 ? GetMatrixStageIndex(itemToMatrix[matrixId])
                 : 0,
@@ -592,7 +579,11 @@ public static class ItemManager {
     }
 
     public static float GetStageDecayFactor(int sourceMatrixId) {
-        int stageDelta = GetCurrentProgressStageIndex() - GetMatrixStageIndex(sourceMatrixId);
+        int sourceStage = GetMatrixStageIndex(sourceMatrixId);
+        if (sourceStage < 0) {
+            return 1.0f;
+        }
+        int stageDelta = GetCurrentProgressStageIndex() - sourceStage;
         return stageDelta switch {
             <= 0 => 1.0f,
             1 => 0.70f,
@@ -609,13 +600,12 @@ public static class ItemManager {
             I信息矩阵 => 16,
             I引力矩阵 => 32,
             I宇宙矩阵 => 64,
-            I黑雾矩阵 => 20,
             _ => 1,
         };
     }
 
     public static int GetRectificationFragmentYield(int matrixId, float ratio = 1f) {
-        float value = GetRectificationBaseFragmentYield(matrixId) * GetStageDecayFactor(matrixId) * ratio;
+        float value = GetRectificationBaseFragmentYield(matrixId) * ratio;
         return Mathf.Max(1, Mathf.RoundToInt(value));
     }
 
@@ -684,8 +674,6 @@ public static class ItemManager {
         itemValue[IFE引力精华] = 32.0f;
         itemValue[IFE宇宙精华] = 64.0f;
         itemValue[IFE记忆源点] = 256.0f;
-        itemValue[IFE纯净源点] = 512.0f;
-        itemValue[IFE理论源点] = 1024.0f;
     }
 
     private static void SetRectificationChainMatrixStages() {
@@ -697,8 +685,6 @@ public static class ItemManager {
         itemToMatrix[IFE引力精华] = I引力矩阵;
         itemToMatrix[IFE宇宙精华] = I宇宙矩阵;
         itemToMatrix[IFE记忆源点] = I引力矩阵;
-        itemToMatrix[IFE纯净源点] = I引力矩阵;
-        itemToMatrix[IFE理论源点] = I引力矩阵;
     }
 
     public static int GetTechTopMatrixID(TechProto tech) {

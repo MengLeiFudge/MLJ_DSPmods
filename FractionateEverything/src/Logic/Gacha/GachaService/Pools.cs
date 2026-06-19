@@ -151,7 +151,6 @@ public static partial class GachaService {
         foreach (int itemId in FractionatorTowerCatalog.ActiveFractionatorProtoIds) {
             AddWeighted(weightedEmbryos, itemId, GetEmbryoWeight(itemId));
         }
-        AddWeighted(weightedEmbryos, IFE分馏塔定向原胚, GetEmbryoWeight(IFE分馏塔定向原胚));
 
         pool.PoolC.AddRange(weightedEmbryos);
         pool.PoolB.AddRange(weightedEmbryos);
@@ -163,7 +162,7 @@ public static partial class GachaService {
         pool.PoolC.Add(IFE残片);
         pool.PoolB.Add(GetCurrentDrawMatrixId());
         pool.PoolA.Add(GetFocusedEmbryoReward());
-        pool.PoolS.Add(IFE分馏塔定向原胚);
+        pool.PoolS.Add(GetFocusedEmbryoReward());
     }
 
     private static void FillFocusPool(GachaPool pool) {
@@ -446,27 +445,10 @@ public static partial class GachaService {
             return false;
         }
 
-        if (rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.EssenceTuning) {
-            return true;
-        }
-
-        return rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
-               && rectificationRecipe.InputID == I黑雾矩阵
-               && IsDarkFogMatrixVisible();
-    }
-
-    private static bool IsDarkFogMatrixVisible() {
-        return GameMain.history != null && GameMain.history.ItemUnlocked(I黑雾矩阵)
-               || GetModDataItemCount(I黑雾矩阵) > 0;
+        return rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.EssenceTuning;
     }
 
     private static GachaDrawUnitKey GetRectificationDrawUnitKey(RectificationRecipe recipe, out int displayItemId) {
-        if (recipe.Kind == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
-            && recipe.InputID == I黑雾矩阵) {
-            displayItemId = I黑雾矩阵;
-            return new GachaDrawUnitKey(GachaDrawUnitKind.RectificationFamily, ERecipe.Rectification, I黑雾矩阵);
-        }
-
         displayItemId = IFE电磁精华;
         return new GachaDrawUnitKey(GachaDrawUnitKind.RectificationFamily, ERecipe.Rectification, IFE电磁精华);
     }
@@ -507,9 +489,7 @@ public static partial class GachaService {
 
     private static int GetEmbryoWeight(int itemId) {
         float weight;
-        if (itemId == IFE分馏塔定向原胚) {
-            weight = IsSpeedrunMode ? 80f : 65f;
-        } else if (itemId == GetFocusedEmbryoReward()) {
+        if (itemId == GetFocusedEmbryoReward()) {
             weight = IsSpeedrunMode ? 115f : 100f;
         } else {
             weight = IsSpeedrunMode ? 85f : 80f;

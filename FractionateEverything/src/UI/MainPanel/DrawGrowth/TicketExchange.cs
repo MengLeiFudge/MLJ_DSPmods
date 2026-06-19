@@ -35,10 +35,10 @@ public static class TicketExchange {
     private static MyImageButton btnDarkFogMatrix;
 
     public static void AddTranslations() {
-        Register("抽取总览", "Draw Overview");
+        Register("抽取总览", "Retrieval Overview", "检索总览");
         Register("抽取总览说明",
-            "Review draw costs, current resources, focus switch costs and Dark Fog branch progress.",
-            "查看抽取成本、当前资源、聚焦切换成本与黑雾支线进度。");
+            "Review retrieval costs, current resources, focus switch costs and Dark Fog branch progress.",
+            "查看检索成本、当前资源、聚焦切换成本与黑雾支线进度。");
         Register("开线偏好成本", "Route Preference Cost", "路线偏好成本");
         Register("原胚偏好成本", "Proto Preference Cost");
         Register("聚焦切换成本", "Focus Switch Cost");
@@ -147,11 +147,11 @@ public static class TicketExchange {
         txtDarkFogTitle.text = "黑雾支线说明".Translate().WithColor(Orange);
         txtMode.text = $"当前模式：{GachaService.GetModeNameKey().Translate()}";
         txtCostOpening.text =
-            $"{"开线偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 抽";
+            $"{"开线偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdOpeningLine, 1)} / 检索";
         txtCostProto.text =
-            $"{"原胚偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 抽";
+            $"{"原胚偏好成本".Translate()}：x{GachaService.GetDrawMatrixCost(GachaPool.PoolIdProtoLoop, 1)} / 检索";
         txtCostFocus.text =
-            $"{"聚焦切换成本".Translate()}：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    成长积分统一进入成长规划";
+            $"{"聚焦切换成本".Translate()}：残片 x{GachaService.GetFocusSwitchFragmentCost(GachaFocusType.MineralExpansion)} 起    校准进度统一进入成长规划";
         txtDarkFogStatus.text = BuildDarkFogStatusText();
     }
 

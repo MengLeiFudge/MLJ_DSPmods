@@ -14,7 +14,6 @@ public static class VanillaRecipeManager {
     public const int MaxTimeLimitLevel = 16;
     private static readonly List<VanillaRecipe> VanillaRecipeList = [];
     private static readonly Dictionary<int, VanillaRecipe> VanillaRecipeDic = [];
-    private static int globalTimeLimitLevel;
 
     /// <summary>
     /// 添加原版配方调节项。
@@ -42,31 +41,16 @@ public static class VanillaRecipeManager {
         return VanillaRecipeDic.TryGetValue(recipeId, out VanillaRecipe recipe) ? recipe : null;
     }
 
-    public static int GlobalTimeLimitLevel => globalTimeLimitLevel;
+    public static int GlobalTimeLimitLevel => GetMaxTimeLimitLevelByCurrentStack();
 
-    public static double GlobalTimeLimitRatio => GetTimeRatioForLevel(globalTimeLimitLevel);
+    public static double GlobalTimeLimitRatio => StackingManager.CurrentVanillaRecipeTimeRatio;
 
-    public static bool CanUpgradeGlobalTimeLimit() {
-        if (!StackingManager.IsUnlocked || globalTimeLimitLevel >= MaxTimeLimitLevel) {
-            return false;
-        }
+    public static bool CanUpgradeGlobalTimeLimit() => false;
 
-        int nextLevel = globalTimeLimitLevel + 1;
-        return GetRequiredStackForTimeLevel(nextLevel) <= StackingManager.CurrentMaxStack;
-    }
-
-    public static bool UpgradeGlobalTimeLimit() {
-        if (!CanUpgradeGlobalTimeLimit()) {
-            return false;
-        }
-
-        globalTimeLimitLevel++;
-        return true;
-    }
+    public static bool UpgradeGlobalTimeLimit() => false;
 
     public static double GetTimeRatioForLevel(int level) {
-        int clampedLevel = Math.Max(0, Math.Min(MaxTimeLimitLevel, level));
-        return Math.Max(0.2, 1.0 - clampedLevel * 0.05);
+        return level <= 0 ? 1.0 : Math.Max(0.2, 1.0 - Math.Min(MaxTimeLimitLevel, level) * 0.05);
     }
 
     public static int GetRequiredStackForTimeLevel(int level) {
@@ -75,15 +59,8 @@ public static class VanillaRecipeManager {
     }
 
     public static int GetMaxTimeLimitLevelByCurrentStack() {
-        int stack = StackingManager.CurrentMaxStack;
-        int maxLevel = 0;
-        for (int level = 1; level <= MaxTimeLimitLevel; level++) {
-            if (GetRequiredStackForTimeLevel(level) > stack) {
-                break;
-            }
-            maxLevel = level;
-        }
-        return maxLevel;
+        double ratio = StackingManager.CurrentVanillaRecipeTimeRatio;
+        return Math.Max(0, Math.Min(MaxTimeLimitLevel, (int)Math.Round((1.0 - ratio) / 0.05)));
     }
 
     public static void RefreshRecipeExecuteData(int recipeId = 0) {
@@ -124,17 +101,16 @@ public static class VanillaRecipeManager {
         if (r.BaseStream.Position < r.BaseStream.Length) {
             r.ReadBlocks(
                 ("GlobalTimeLimitLevel", br => {
-                    globalTimeLimitLevel = br.ReadInt32();
+                    br.ReadInt32();
                     globalLimitLoaded = true;
                 })
             );
         }
 
-        if (!globalLimitLoaded) {
-            globalTimeLimitLevel = maxImportedTimeLevel;
+        if (!globalLimitLoaded && maxImportedTimeLevel > 0) {
+            LogInfo($"Ignored legacy vanilla recipe time level {maxImportedTimeLevel}; now synced by stack.");
         }
 
-        globalTimeLimitLevel = Math.Max(0, Math.Min(MaxTimeLimitLevel, globalTimeLimitLevel));
         ClampRecipeTimeLevels();
     }
 
@@ -147,12 +123,11 @@ public static class VanillaRecipeManager {
             );
         }
         w.WriteBlocks(
-            ("GlobalTimeLimitLevel", bw => bw.Write(globalTimeLimitLevel))
+            ("GlobalTimeLimitLevel", bw => bw.Write(GlobalTimeLimitLevel))
         );
     }
 
     public static void IntoOtherSave() {
-        globalTimeLimitLevel = 0;
         foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
             vanillaRecipe.IntoOtherSave();
         }
@@ -160,15 +135,11 @@ public static class VanillaRecipeManager {
     }
 
     public static void SyncRuntimeStateAfterImport() {
-        ClampGlobalTimeLimitByStack();
         ClampRecipeTimeLevels();
         RefreshRecipeExecuteData();
     }
 
-    internal static void ClampGlobalTimeLimitByStack() {
-        int maxByStack = GetMaxTimeLimitLevelByCurrentStack();
-        globalTimeLimitLevel = Math.Max(0, Math.Min(Math.Min(MaxTimeLimitLevel, globalTimeLimitLevel), maxByStack));
-    }
+    internal static void ClampGlobalTimeLimitByStack() { }
 
     private static void ClampRecipeTimeLevels() {
         foreach (VanillaRecipe vanillaRecipe in VanillaRecipeList) {
@@ -220,7 +191,6 @@ public class VanillaRecipe {
     private readonly Dictionary<int, int> inputCounts = [];
     public readonly RecipeProto recipe;
     private readonly int timeSpend;
-    private int timeSpendUpgrade = 0;
     public int MatrixId { get; }
 
     public VanillaRecipe(RecipeProto recipe) {
@@ -287,8 +257,7 @@ public class VanillaRecipe {
     /// </summary>
     public int[] GetCurrAndNextTimeSpend() {
         int currTimeSpend = recipe.TimeSpend;
-        int nextLevel = Math.Min(timeSpendUpgrade + 1, VanillaRecipeManager.GlobalTimeLimitLevel);
-        int nextTimeSpend = GetTimeSpendByUpgrade(nextLevel);
+        int nextTimeSpend = GetTimeSpendByUpgrade(VanillaRecipeManager.GlobalTimeLimitLevel);
         return [currTimeSpend, nextTimeSpend];
     }
 
@@ -296,29 +265,14 @@ public class VanillaRecipe {
     /// 返回能否升级配方的花费时间
     /// </summary>
     public bool CanUpgradeTime() {
-        if (LimitedByMatrix || !StackingManager.IsUnlocked) {
-            return false;
-        }
-        VanillaRecipeManager.ClampGlobalTimeLimitByStack();
-        if (timeSpendUpgrade >= VanillaRecipeManager.GlobalTimeLimitLevel) {
-            return false;
-        }
-
-        int[] info = GetCurrAndNextTimeSpend();
-        return info[0] > info[1];
+        return false;
     }
 
     /// <summary>
     /// 升级配方的花费时间
     /// </summary>
     public bool UpgradeTime() {
-        if (!CanUpgradeTime()) {
-            return false;
-        }
-        timeSpendUpgrade++;
-        ApplyTimeSpend();
-        VanillaRecipeManager.RefreshRecipeExecuteData(recipe.ID);
-        return true;
+        return false;
     }
 
     /// <summary>
@@ -332,23 +286,22 @@ public class VanillaRecipe {
     /// 获取时间的升级次数
     /// </summary>
     public int GetTimeUpgradeCount() {
-        return timeSpendUpgrade;
+        return VanillaRecipeManager.GlobalTimeLimitLevel;
     }
 
     public int GetTimeSpendByUpgrade(int level) {
-        return Math.Max(1, (int)Math.Ceiling(timeSpend * VanillaRecipeManager.GetTimeRatioForLevel(level)));
+        double ratio = level == VanillaRecipeManager.GlobalTimeLimitLevel
+            ? VanillaRecipeManager.GlobalTimeLimitRatio
+            : VanillaRecipeManager.GetTimeRatioForLevel(level);
+        return Math.Max(1, (int)Math.Ceiling(timeSpend * ratio));
     }
 
     public void ClampTimeUpgradeToGlobalLimit() {
-        int clampedLevel = Math.Max(0, Math.Min(timeSpendUpgrade, VanillaRecipeManager.GlobalTimeLimitLevel));
-        if (clampedLevel != timeSpendUpgrade) {
-            timeSpendUpgrade = clampedLevel;
-            ApplyTimeSpend();
-        }
+        ApplyTimeSpend();
     }
 
     private void ApplyTimeSpend() {
-        recipe.TimeSpend = GetTimeSpendByUpgrade(timeSpendUpgrade);
+        recipe.TimeSpend = GetTimeSpendByUpgrade(VanillaRecipeManager.GlobalTimeLimitLevel);
     }
 
     #region IModCanSave
@@ -363,7 +316,7 @@ public class VanillaRecipe {
                 }
             }),
             ("TimeUpgrades", br => {
-                timeSpendUpgrade = Math.Max(0, Math.Min(VanillaRecipeManager.MaxTimeLimitLevel, br.ReadInt32()));
+                br.ReadInt32();
                 ApplyTimeSpend();
             })
         );
@@ -374,7 +327,7 @@ public class VanillaRecipe {
             ("InputUpgrades", bw => {
                 bw.Write(0);
             }),
-            ("TimeUpgrades", bw => { bw.Write(timeSpendUpgrade); })
+            ("TimeUpgrades", bw => { bw.Write(VanillaRecipeManager.GlobalTimeLimitLevel); })
         );
     }
 
@@ -387,7 +340,7 @@ public class VanillaRecipe {
             }
         }
         recipe.TimeSpend = timeSpend;
-        timeSpendUpgrade = 0;
+        ApplyTimeSpend();
     }
 
     #endregion

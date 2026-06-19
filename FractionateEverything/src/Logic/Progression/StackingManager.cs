@@ -13,6 +13,7 @@ public static class StackingManager {
     public const int LockedMaxStack = 1;
     public const int BaseUnlockedMaxStack = 4;
     public const int AbsoluteMaxStack = 20;
+    public static readonly int[] StackMilestones = [4, 8, 12, 16, 20];
     private static readonly int[] HiddenSorterTechs = [
         T集装分拣器改良, T集装分拣器改良 + 1, T集装分拣器改良 + 2,
         T集装分拣器改良 + 3, T集装分拣器改良 + 4, T集装分拣器改良 + 5
@@ -48,10 +49,23 @@ public static class StackingManager {
             return false;
         }
 
-        ConfiguredMaxStack = configuredMaxStack + 1;
+        ConfiguredMaxStack = GetNextMilestone(configuredMaxStack);
         SyncRuntimeState();
         return true;
     }
+
+    public static int GetNextMilestone(int stack) {
+        foreach (int milestone in StackMilestones) {
+            if (milestone > stack) {
+                return milestone;
+            }
+        }
+        return AbsoluteMaxStack;
+    }
+
+    public static double CurrentVanillaRecipeTimeRatio => IsUnlocked
+        ? 4.0 / CurrentMaxStack
+        : 1.0;
 
     public static int GetFractionatorMaxStack() => CurrentMaxStack;
 
@@ -100,8 +114,15 @@ public static class StackingManager {
         lastSyncedUnlocked = false;
     }
 
-    private static int ClampConfiguredMaxStack(int stack) =>
-        Math.Max(BaseUnlockedMaxStack, Math.Min(AbsoluteMaxStack, stack));
+    private static int ClampConfiguredMaxStack(int stack) {
+        int clamped = Math.Max(BaseUnlockedMaxStack, Math.Min(AbsoluteMaxStack, stack));
+        foreach (int milestone in StackMilestones) {
+            if (clamped <= milestone) {
+                return milestone;
+            }
+        }
+        return AbsoluteMaxStack;
+    }
 
     private static void SetHiddenTechs(int[] techIds) {
         foreach (int techId in techIds) {
@@ -153,5 +174,6 @@ public static class StackingManager {
     private static void RefreshStackDependents() {
         ProcessManager.RefreshFractionatorRuntimeConfig();
         BuildingManager.SetFractionatorCacheSize();
+        FE.Logic.VanillaRecipes.VanillaRecipeManager.SyncRuntimeStateAfterImport();
     }
 }

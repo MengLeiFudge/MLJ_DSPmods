@@ -36,7 +36,7 @@ public static partial class TutorialManager {
              建设交互塔之后，也会有新的指引对此进行讲解。
              3.培养出新的交互塔，并将其上传至分馏数据中心，解锁“物品交互”科技。
              这是一项极其强大的辅助功能，无视空间限制，你可以将它视为具有无限容量的外部背包。
-             4.搭建当前阶段矩阵产线，并在主抽取中设置偏好后投入矩阵。
+             4.搭建当前阶段矩阵产线，并在主检索中设置偏好后投入矩阵。
              残片和矩阵精华则主要通过精馏、任务与成就获得，用于成长和聚焦。
 
              对了，有一件事情你要记住：你可以随时按{"[G]键".WithColor(Orange)}重新查阅所有指引。
@@ -120,10 +120,10 @@ public static partial class TutorialManager {
              这是一个全新的总控面板，可以让你方便地管理分馏科技相关内容。
 
              {"【使用简介（太长不看版）】".WithColor(Blue)}
-             面板有很多功能，其中当前你必须理解的核心是“主抽取、偏好、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
+             面板有很多功能，其中当前你必须理解的核心是“时隧检索、偏好、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
              1.搭建当前阶段矩阵产线。矩阵将直接作为抽取资源，不再需要实体奖券。
-             2.在主抽取中设置抽取偏好，再投入矩阵。偏好可以让结果更偏路线抽取单位、原胚或定向原胚。
-             3.通过精馏塔把矩阵加工为矩阵精华，再让精华压缩、回流或拆成残片，配合成长积分进入“成长规划”。
+             2.在时隧检索中设置检索偏好，再投入矩阵。偏好可以让结果更偏路线检索单位或指定塔型原胚。
+             3.通过精馏塔把矩阵加工为矩阵精华，再让精华压缩、回流或拆成残片，配合校准进度进入“成长规划”。
              4.根据你想走的路线切换“流派聚焦”，让对应方向的配方、原胚或成长报价更容易命中。
              5.配方和建筑成长现在分流处理：配方侧强调解锁、升级与满级；建筑侧强调塔种经验与关键节点突破。
 
@@ -137,7 +137,7 @@ public static partial class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-黑雾矩阵]和[转化-黑雾矩阵]是不同的配方，它们之间没有任何关联。黑雾矩阵输入矿物复制塔，将会根据[矿物复制-黑雾矩阵]配方进行处理；黑雾矩阵输入转化塔，将会根据[转化-黑雾矩阵]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方或抽取单位的获取途径有：主抽取路线偏好、成长规划补差、产线运行，以及科技保底解锁。
+             配方或检索单位的获取途径有：时隧检索路线偏好、成长规划补差、产线运行，以及科技基线修复。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限由配方所属系统决定。
@@ -146,7 +146,7 @@ public static partial class TutorialManager {
 
              3.满级与长期推进
              当前 3.0 口径更关注“是否解锁、是否满级、是否补齐关键成长项”。
-             因此，任务、成就、图鉴和成长规划会更多围绕这些长期指标来组织，而不是围绕旧奖券时代的抽池文案。
+             因此，任务、成就、图鉴和成长规划会更多围绕这些长期指标来组织，而不是围绕旧奖券时代的检索入口文案。
 
              4.等效输出
              等效输出可以在一定程度上帮助你进行量化。
@@ -181,28 +181,28 @@ public static partial class TutorialManager {
              2.物流交互站会下载满足一定条件的物品。查阅【物流交互站使用指南】指引以了解更多信息。
              3.各种填充操作（手动制作、手动研究、TAB填充、燃料填充等等）会自动下载物品并使用。
 
-             {"【抽取系统】".WithColor(Blue)}
-             抽取系统现在围绕“主抽取 + 偏好”展开：
+             {"【时隧检索】".WithColor(Blue)}
+             时隧检索现在围绕“主检索 + 偏好”展开：
 
-             1.主抽取
-             消耗当前阶段矩阵，获得路线抽取单位、分馏塔原胚、定向原胚和补差资源。
-             它是唯一主要手动抽取入口，不再要求玩家长期在多个奖池之间切换。
+             1.主检索
+             消耗当前阶段矩阵，获得路线检索单位、分馏塔原胚和补差资源。
+             它是唯一主要手动检索入口，不再要求玩家长期在多个入口之间切换。
 
-             2.抽取偏好
+             2.检索偏好
              可以在平衡、路线优先、原胚优先之间切换。
-             它改变主抽取内部方向，而不是新增一个需要反复操作的奖池。
+             它改变主检索内部方向，而不是新增一个需要反复操作的入口。
 
              3.成长规划
              属于非随机入口，主要负责定向补差、关键节点突破，以及黑雾战斗支线的阶段兑现。
 
              4.流派聚焦
-             不是独立奖池，而是对主抽取偏好和成长规划进行方向加权。
+             不是独立入口，而是对主检索偏好和成长规划进行方向加权。
              速通模式下，聚焦会更激进地强化被选中的路线，并压低其他路线。
 
              {"【限时商店】".WithColor(Blue)}
              当前版本中，传统“限时商店”已被重构为成长规划与资源统筹。
              重点不再是随机刷新货物，而是：
-             - 用成长积分和残片做定向补差
+             - 用校准进度和残片做定向补差
              - 用矩阵精华承担催化与关键节点突破
              - 通过战斗推进黑雾支线阶段，再用黑雾矩阵承接成长报价
 
@@ -224,17 +224,16 @@ public static partial class TutorialManager {
             $"""
              {"[Cultivate Fractionation Tower]".WithColor(Blue)} 
              In the new Fractionation Technology, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
-             Simply put, by using the Interactive Tower to fractionate non-directional 'Fractionation Tower Raw Blanks', you can get different Fractionation Towers, and at the same time, there is a small chance that you can get 'Fractionation Tower Directional Raw Blanks'.
-             There are 4 types of non-directional protos, and their products are as follows (the proto descriptions also show the corresponding tower type):
-             Type I: Interaction Tower (96%), Fractionator Directed Proto (4%)
-             Type II: Mineral Replication Tower (96%), Fractionator Directed Proto (4%)
-             Type III: Conversion Tower (96%), Fractionator Directed Proto (4%)
-             Type IV: Rectification Tower (96%), Fractionator Directed Proto (4%)
+             Simply put, by using the Interaction Tower to fractionate a tower proto, you get the matching Fractionation Tower with 100% output.
+             There are 4 tower protos, and their products are as follows:
+             Type I: Interaction Tower
+             Type II: Mineral Replication Tower
+             Type III: Conversion Tower
+             Type IV: Rectification Tower
              Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix the different types of Protoembryo!
              Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus unlocking the corresponding tech.
              Uploading different Fractionation Towers will unlock different techs. For example, uploading a Mineral Replication Tower will unlock the Mineral Replication tech, and uploading an Interaction Tower will unlock the Item Interaction tech.
              Note that only Interactive Towers in 'Item Interaction' mode can upload positively entered items to the Fractionation Data Centre. This means that there can be no items inside the tower, and the left and right ports cannot be connected to a conveyor belt.
-             Directional prototypes can be crafted directly into the specified fractionation tower without being processed by the interaction tower.
 
              {"[Interaction Tower]".WithColor(Blue)} 
              The Interaction Tower has two functions: to grow embryos into various fractionation towers, and to upload items.
@@ -244,7 +243,7 @@ public static partial class TutorialManager {
              Mineral Replication Towers can replicate various minerals in multiples. This is helpful for resource-poor star zones.
 
              {"[Rectification Tower]".WithColor(Blue)} 
-             The Rectification Tower extracts Matrix Essences from matrices, then tunes those essences through compression, reflux, or fragment splitting. Higher levels improve throughput and efficiency.
+             The Rectification Tower extracts Matrix Essences from matrices, then reshapes those essences through compression, reflux, or fragment splitting. Higher levels improve throughput and efficiency.
 
              {"[Conversion Tower]".WithColor(Blue)} 
              The Conversion Tower can convert items into other related items.
@@ -252,13 +251,11 @@ public static partial class TutorialManager {
             $"""
              {"【培养分馏塔】".WithColor(Blue)}
              在新的分馏科技中，分馏塔不再通过制造得到，而是主要通过交互塔培养得到。
-             简而言之，使用交互塔分馏各种原胚，即可得到不同的分馏塔，同时还有小概率（4%）得到“分馏塔定向原胚”。
-             分馏塔定向原胚可以直接制作为指定的分馏塔，无需经过交互塔处理。
+             简而言之，使用交互塔分馏各种原胚，即可 100% 得到对应类型的分馏塔。
              注意，{"任何分馏塔同一时间只能处理一种物品".WithColor(Orange)}，所以不同类型的原胚不要混投！
              将产出的分馏塔通过传送带输入至另一个交互塔的正面接口，即可上传物品至分馏数据中心，从而解锁对应的科技。
              上传不同分馏塔会解锁不同科技。例如，上传矿物复制塔将解锁矿物复制科技，上传交互塔将解锁物品交互科技。
              注意，只有处于“物品交互”模式下的交互塔才能上传正面输入的物品到分馏数据中心。也就是说，交互塔内部不能有物品，并且左右接口不能与传送带连接。
-             定向原胚可以直接制作为指定的分馏塔，无需经过交互塔处理。
 
              {"【交互塔】".WithColor(Blue)}
              交互塔有两个功能：将原胚培养为各种分馏塔，以及上传物品。
@@ -268,7 +265,7 @@ public static partial class TutorialManager {
              矿物复制塔可以将各种矿物复制为多个。这对资源贫瘠的星区很有帮助。
 
              {"【精馏塔】".WithColor(Blue)}
-             精馏塔可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间调相。精馏本身不是等价兑换，而是实体产线资源的加工链。
+             精馏塔可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。精馏本身不是等价兑换，而是实体产线资源的加工链。
 
              {"【转化塔】".WithColor(Blue)}
              转化塔可以将物品转化为其他相关的物品。

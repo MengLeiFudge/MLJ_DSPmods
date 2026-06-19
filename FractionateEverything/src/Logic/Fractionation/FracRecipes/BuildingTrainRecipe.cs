@@ -19,12 +19,10 @@ public class BuildingTrainRecipe : BaseRecipe {
                 continue;
             }
             AddRecipe(new BuildingTrainRecipe(fracProtoID, 0.05f, [
-                new(0.96f, buildingID, 1),
-                new(0.04f, IFE分馏塔定向原胚, 1),
+                new(1.0f, buildingID, 1),
             ], []));
             AddRecipe(new BuildingTrainRecipe(buildingID, 0.05f, [
-                new(0.96f, fracProtoID, 1),
-                new(0.04f, IFE分馏塔定向原胚, 1),
+                new(1.0f, fracProtoID, 1),
             ], []));
         }
     }

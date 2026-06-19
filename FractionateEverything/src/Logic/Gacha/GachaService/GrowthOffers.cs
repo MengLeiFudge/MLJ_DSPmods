@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FE.Logic.DarkFog;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
 using static FE.Logic.Items.ItemManager;
@@ -24,7 +25,7 @@ public static partial class GachaService {
     }
 
     public static bool IsEnhancedDarkFogRewardItem(int itemId) {
-        return itemId == IFE分馏塔定向原胚;
+        return FractionatorTowerCatalog.IsActiveFractionatorProto(itemId);
     }
 
     public static IReadOnlyList<GachaGrowthOffer> GetGrowthOffers() {
@@ -192,7 +193,7 @@ public static partial class GachaService {
             new(5, 0, IFE残片, 50),
             new(10, 10, GetCurrentDrawMatrixId(), 4),
             new(20, 15, GetFocusedEmbryoReward(), 1, GachaManager.CurrentFocus),
-            new(36, 30, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
+            new(36, 30, GetLeastStockedEmbryoReward(), 1, GachaFocusType.EmbryoCycle),
         };
 
         AppendEssenceCatalystOffer(offers);
@@ -204,7 +205,7 @@ public static partial class GachaService {
         var offers = new List<GachaGrowthOffer> {
             new(4, 0, GetCurrentDrawMatrixId(), 6),
             new(8, 6, GetFocusedEmbryoReward(), 1, GachaManager.CurrentFocus),
-            new(15, 10, IFE分馏塔定向原胚, 1, GachaFocusType.EmbryoCycle),
+            new(15, 10, GetLeastStockedEmbryoReward(), 1, GachaFocusType.EmbryoCycle),
         };
 
         AppendEssenceCatalystOffer(offers, pointCost: 14, fragmentCost: 8);
@@ -279,7 +280,7 @@ public static partial class GachaService {
         }
         if (DarkFogCombatManager.IsEnhancedLayerEnabled() && stage >= EDarkFogCombatStage.Singularity) {
             if (enhancedNodeCount >= 2) {
-                offers.Add(new(48 + pointBaseOffset, 32 + fragmentBaseOffset, IFE分馏塔定向原胚, 1,
+                offers.Add(new(48 + pointBaseOffset, 32 + fragmentBaseOffset, GetLeastStockedEmbryoReward(), 1,
                     GachaFocusType.EmbryoCycle, I黑雾矩阵, 4));
             }
         }

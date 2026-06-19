@@ -56,11 +56,11 @@ public static partial class ProcessManager {
         Register("已锁定单路产物：{0}", "Locked output: {0}");
         Register("已清除单路锁定", "Single lock cleared");
         Register("锁定产物无效，已清除", "Locked output invalid, cleared");
-        Register("调相方向", "Tuning target");
-        Register("右键设为调相方向", "Right-click to set tuning target");
-        Register("右键清除调相方向", "Right-click to clear tuning target");
-        Register("已设定调相方向：{0}", "Tuning target: {0}");
-        Register("已清除调相方向", "Tuning target cleared");
+        Register("调相方向", "Reshape target", "重整方向");
+        Register("右键设为调相方向", "Right-click to set reshape target", "右键设为重整方向");
+        Register("右键清除调相方向", "Right-click to clear reshape target", "右键清除重整方向");
+        Register("已设定调相方向：{0}", "Reshape target: {0}", "已设定重整方向：{0}");
+        Register("已清除调相方向", "Reshape target cleared", "已清除重整方向");
     }
 
     #region Field

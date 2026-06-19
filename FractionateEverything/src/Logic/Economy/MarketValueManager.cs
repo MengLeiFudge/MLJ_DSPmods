@@ -21,7 +21,7 @@ public static class MarketValueManager {
 
     private static readonly Random rng = new(20260402);
     private static readonly HashSet<int> storeOfValueItems = [
-        I宇宙矩阵, I黑雾矩阵, IFE分馏塔定向原胚
+        I宇宙矩阵
     ];
 
     public static readonly float[] MarketMultiplier = new float[12000];
@@ -72,7 +72,8 @@ public static class MarketValueManager {
         int currentStageIndex = GetCurrentProgressStageIndex();
         for (int itemId = 1; itemId < MarketMultiplier.Length; itemId++) {
             float baseValue = GetBaseValue(itemId);
-            if (baseValue <= 0f || baseValue >= maxValue || !LDB.items.Exist(itemId)) {
+            if (baseValue <= 0f || baseValue >= maxValue || !LDB.items.Exist(itemId)
+                || !CanParticipateInEconomy(itemId)) {
                 MarketMultiplier[itemId] = 1f;
                 MarketValue[itemId] = 0f;
                 continue;
@@ -199,6 +200,9 @@ public static class MarketValueManager {
                && GetBaseValue(itemId) < maxValue
                && !IsRectificationChainItem(itemId)
                && !IsSourcePointItem(itemId)
+               && GetMatrixStageIndex(itemId) >= 0
+               && itemId != I黑雾矩阵
+               && itemId != IFE分馏塔定向原胚
                && itemId != I沙土;
     }
 

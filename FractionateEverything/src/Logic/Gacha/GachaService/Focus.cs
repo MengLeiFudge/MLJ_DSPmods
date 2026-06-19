@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
 using UnityEngine;
@@ -86,7 +87,7 @@ public static partial class GachaService {
 
     public static bool IsCoreGrowthReward(GachaGrowthOffer offer) {
         return offer.OutputId == GetFocusedEmbryoReward()
-               || offer.OutputId == IFE分馏塔定向原胚
+               || FractionatorTowerCatalog.IsActiveFractionatorProto(offer.OutputId)
                || offer.OutputId == IFE残片;
     }
 
@@ -177,11 +178,24 @@ public static partial class GachaService {
             GachaFocusType.MineralExpansion => IFE矿物复制塔原胚,
             GachaFocusType.ConversionLeap => IFE转化塔原胚,
             GachaFocusType.LogisticsInteraction => IFE交互塔原胚,
-            GachaFocusType.EmbryoCycle => IFE分馏塔定向原胚,
+            GachaFocusType.EmbryoCycle => GetLeastStockedEmbryoReward(),
             GachaFocusType.ProcessOptimization => IFE转化塔原胚,
             GachaFocusType.RectificationEconomy => IFE精馏塔原胚,
             _ => IFE交互塔原胚,
         };
+    }
+
+    private static int GetLeastStockedEmbryoReward() {
+        int bestItemId = IFE交互塔原胚;
+        long bestCount = long.MaxValue;
+        foreach (int itemId in FractionatorTowerCatalog.ActiveFractionatorProtoIds) {
+            long count = GetItemTotalCount(itemId);
+            if (count < bestCount) {
+                bestItemId = itemId;
+                bestCount = count;
+            }
+        }
+        return bestItemId;
     }
 
     private static GachaFocusMatchType GetFocusMatchType(int poolId, int itemId) {
@@ -199,7 +213,8 @@ public static partial class GachaService {
             if (itemId == GetFocusedEmbryoReward()) {
                 return GachaFocusMatchType.Main;
             }
-            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle && itemId == IFE分馏塔定向原胚) {
+            if (GachaManager.CurrentFocus == GachaFocusType.EmbryoCycle
+                && FractionatorTowerCatalog.IsActiveFractionatorProto(itemId)) {
                 return GachaFocusMatchType.Side;
             }
         }

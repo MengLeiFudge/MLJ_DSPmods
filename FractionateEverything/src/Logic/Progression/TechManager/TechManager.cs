@@ -70,8 +70,8 @@ public static partial class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new fractionate technology, new fractionators are no longer crafted directly with materials. Obtain various protos from Main Draw proto preference or Growth Planning, then use the Interaction Tower to cultivate them into different fractionators. Rare directional protos can be cultivated directly into the chosen tower type.",
-            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从主抽取原胚偏好或成长规划获得不同原胚，再用交互塔培养成不同的分馏塔；稀有的定向原胚则可以直接培养为指定塔种。");
+            "In the new fractionate technology, new fractionators are no longer crafted directly with materials. Obtain tower protos from time-tunnel retrieval or Growth Planning, then use the Interaction Tower to cultivate them into the matching fractionators.",
+            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从时隧检索原胚偏好或成长规划获得不同原胚，再用交互塔培养成对应的分馏塔。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
@@ -108,8 +108,8 @@ public static partial class TechManager {
 
         Register("T物品精馏", "Item Rectification", "物品精馏");
         Register("物品精馏描述",
-            $"Rectification technology extracts matrix essences from matrices, then tunes essences through compression, reflux, or fragment ticket splitting. Rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"物品精馏科技可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间调相。精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Rectification technology extracts matrix essences from matrices, then reshapes essences through compression, reflux, or fragment splitting. Rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品精馏科技可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品精馏结果",
             "You have mastered Rectification technology and can now extract matrix essences from matrices.",
             "你已经掌握了物品精馏技术，可以从矩阵中萃取矩阵精华了。");

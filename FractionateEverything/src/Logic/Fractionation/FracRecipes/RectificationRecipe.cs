@@ -11,11 +11,11 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 矩阵萃取与矩阵精华调相配方的产出分布逻辑。
+/// 矩阵萃取与矩阵精华重整配方的产出分布逻辑。
 /// </summary>
 public class RectificationRecipe : BaseRecipe {
     /// <summary>
-    /// 区分精馏配方的矩阵萃取和精华调相类型。
+    /// 区分精馏配方的矩阵萃取和精华重整类型。
     /// </summary>
     public enum RectificationRecipeKind {
         MatrixExtraction,
@@ -23,7 +23,7 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 定义精华调相时向高阶压缩的基础权重。
+    /// 定义精华重整时向高阶压缩的基础权重。
     /// </summary>
     public const float BaseCompressionRatio = 0.45f;
     /// <summary>
@@ -32,7 +32,6 @@ public class RectificationRecipe : BaseRecipe {
     public const float MaxPlannedCompressionRatio = 0.60f;
     private const float TicketSplitRatio = 0.10f;
     public static int CurrentTuningTargetId;
-    private static readonly float[] MatrixExtractionDestroyRatios = [0.04f, 0.03f, 0.02f, 0.01f, 0.005f, 0.0f];
     private static readonly float[] CompressionOutputCounts = [0.45f, 0.46f, 0.48f, 0.50f, 0.51f, 0.52f];
     private static readonly float[] RefluxOutputCounts = [1.80f, 1.88f, 1.96f, 2.00f, 2.06f, 2.12f];
 
@@ -43,7 +42,6 @@ public class RectificationRecipe : BaseRecipe {
         I信息矩阵,
         I引力矩阵,
         I宇宙矩阵,
-        I黑雾矩阵,
     ];
 
     /// <summary>
@@ -60,23 +58,16 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     private static RectificationRecipe CreateMatrixExtraction(int matrixId) {
-        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixExtraction, 1.0f,
+        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixExtraction, 0.05f,
             BuildMatrixExtractionOutputs(matrixId), []);
     }
 
     private static RectificationRecipe CreateEssenceTuning(int inputId) {
-        return new RectificationRecipe(inputId, RectificationRecipeKind.EssenceTuning, 1.0f,
+        return new RectificationRecipe(inputId, RectificationRecipeKind.EssenceTuning, 0.05f,
             BuildEssenceTuningOutputs(inputId, BaseCompressionRatio), []);
     }
 
     private static List<OutputInfo> BuildMatrixExtractionOutputs(int matrixId) {
-        if (matrixId == I黑雾矩阵) {
-            return BuildOutputInfos([
-                (0.75f, IFE信息精华, 1.0f),
-                (0.25f, IFE引力精华, 1.0f),
-            ]);
-        }
-
         int essenceId = matrixId switch {
             I电磁矩阵 => IFE电磁精华,
             I能量矩阵 => IFE能量精华,
@@ -182,9 +173,6 @@ public class RectificationRecipe : BaseRecipe {
         return false;
     }
 
-    public static float GetMatrixExtractionDestroyRatioForLevel(int level) =>
-        MatrixExtractionDestroyRatios[ClampRatioLevel(level)];
-
     public static float GetCompressionOutputCountForLevel(int level) =>
         CompressionOutputCounts[ClampRatioLevel(level)];
 
@@ -195,26 +183,10 @@ public class RectificationRecipe : BaseRecipe {
         if (level <= 0) {
             return 0;
         }
-        if (level >= 5) {
-            return MatrixExtractionDestroyRatios.Length - 1;
+        if (level >= CompressionOutputCounts.Length) {
+            return CompressionOutputCounts.Length - 1;
         }
         return level;
-    }
-
-    /// <summary>
-    /// 获取该配方失败时输入物品损毁概率。
-    /// </summary>
-    public override float DestroyRatio {
-        get {
-            if (Kind == RectificationRecipeKind.EssenceTuning) {
-                return 0.0f;
-            }
-
-            float raw = GetMatrixExtractionDestroyRatioForLevel(RecipeGrowthQueries.GetLevel(this));
-            raw -= GachaService.GetRecipeDrawUnitResonance(this) * 0.002f;
-            raw -= GachaGalleryBonusManager.GetDestroyReduction(RecipeType);
-            return raw > 0f ? raw : 0f;
-        }
     }
 
     /// <summary>
@@ -262,8 +234,11 @@ public class RectificationRecipe : BaseRecipe {
         outputs.Clear();
 
         int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
-        int successCount = batchCount - destroyedCount;
-        int inputRemoveCount = batchCount;
+        int aliveCount = batchCount - destroyedCount;
+        float successRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
+        int successCount = RollBinomialApprox(ref seed, aliveCount, successRatio);
+        int passThroughCount = aliveCount - successCount;
+        int inputRemoveCount = destroyedCount + successCount + passThroughCount;
         OutputInfo directedOutput = GetDirectedOutputInfo();
         if (directedOutput != null) {
             AddRolledRectificationOutput(ref seed, outputs, directedOutput, successCount);
@@ -278,11 +253,11 @@ public class RectificationRecipe : BaseRecipe {
 
         return new FractionationBatchResult {
             InputRemoveCount = inputRemoveCount,
-            ConsumedRegisterCount = batchCount,
+            ConsumedRegisterCount = destroyedCount + successCount,
             SuccessCount = successCount,
             DestroyedCount = destroyedCount,
-            PassThroughCount = 0,
-            PassThroughInc = 0,
+            PassThroughCount = passThroughCount,
+            PassThroughInc = fluidInputIncAvg * passThroughCount,
         };
     }
 
@@ -297,6 +272,10 @@ public class RectificationRecipe : BaseRecipe {
 
         if (GetRandDouble(ref seed) < DestroyRatio) {
             return FractionationOutcome.Destroyed;
+        }
+
+        if (GetRandDouble(ref seed) >= SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
+            return FractionationOutcome.PassThrough;
         }
 
         OutputInfo outputInfo = GetDirectedOutputInfo() ?? RollMainOutputInfo(ref seed);
@@ -360,7 +339,7 @@ public class RectificationRecipe : BaseRecipe {
 
     private float GetRuntimeOutputCount(OutputInfo outputInfo) {
         if (Kind == RectificationRecipeKind.MatrixExtraction) {
-            float matrixCount = outputInfo.OutputCount * GetStageDecayFactor(InputID) * RectificationTower.PlrRatio;
+            float matrixCount = outputInfo.OutputCount * RectificationTower.PlrRatio;
             return matrixCount < 0.0001f ? 0.0001f : matrixCount;
         }
 

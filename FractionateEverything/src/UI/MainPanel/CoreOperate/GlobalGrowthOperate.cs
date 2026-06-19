@@ -18,7 +18,7 @@ using static FE.Utils.Utils;
 namespace FE.UI.MainPanel.CoreOperate;
 
 /// <summary>
-/// 全局成长页面。承载统一堆叠和原版配方全局时间上限这类跨系统升级。
+/// 全局成长页面。承载统一堆叠以及随堆叠自动同步的原版配方时间倍率。
 /// </summary>
 public static class GlobalGrowthOperate {
     private static RectTransform tab;
@@ -32,7 +32,6 @@ public static class GlobalGrowthOperate {
     private static Text txtTimeEffect;
     private static Text txtTimeCost;
     private static UIButton btnStackUpgrade;
-    private static UIButton btnTimeLimitUpgrade;
 
     public static void AddTranslations() {
         Register("全局成长", "Global Growth", "全局成长");
@@ -45,16 +44,17 @@ public static class GlobalGrowthOperate {
         Register("升级堆叠", "Upgrade stack", "升级堆叠");
         Register("升级消耗", "Upgrade cost", "升级消耗");
         Register("全局成长页说明",
-            "Upgrade global stacking and vanilla recipe time caps here.",
-            "在这里升级统一堆叠与原版配方全局时间上限。");
+            "Upgrade logistics repair stages here. Vanilla recipe time is synced from the current stack.",
+            "在这里推进物流修复档位；原版配方时间会按当前堆叠自动同步。");
         Register("影响范围", "Affected systems", "影响范围");
         Register("全局成长-堆叠影响",
             "Fractionators / logistics stations / pilers / stack inserters / related runtime caps",
             "分馏塔 / 物流站 / 集装机 / 集装分拣器 / 相关运行时上限");
         Register("全局成长-时间影响",
-            "Raises the maximum time reduction allowed for vanilla recipes. Individual recipes still need fragment upgrades.",
-            "提高原版配方允许达到的最大时间缩短上限；单条配方仍需消耗残片单独升级。");
+            "Vanilla recipe time is automatically synced as RecipeTimeRatio = 4 / CurrentStack.",
+            "原版配方时间自动同步：RecipeTimeRatio = 4 / CurrentStack。");
         Register("无消耗", "No cost", "无消耗");
+        Register("自动同步", "Auto sync", "自动同步");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -102,8 +102,7 @@ public static class GlobalGrowthOperate {
                                         pos: (2, 0), objectName: "global-growth-time-effect"),
                                     TextNode("", 13, wrap: true, onBuilt: text => txtTimeCost = text,
                                         pos: (3, 0), objectName: "global-growth-time-cost"),
-                                    ButtonNode("提升上限", onClick: UpgradeGlobalTimeLimit,
-                                        onBuilt: btn => btnTimeLimitUpgrade = btn,
+                                    TextNode("自动同步", 13, anchor: TextAnchor.MiddleCenter,
                                         pos: (4, 0), objectName: "global-growth-time-upgrade"),
                                 ]),
                         ]),
@@ -130,9 +129,6 @@ public static class GlobalGrowthOperate {
         txtTimeStatus.text = BuildTimeStatusText();
         txtTimeEffect.text = $"{"影响范围".Translate()}：{"全局成长-时间影响".Translate()}";
         txtTimeCost.text = BuildTimeCostText();
-        bool canUpgradeTimeLimit = VanillaRecipeManager.CanUpgradeGlobalTimeLimit();
-        btnTimeLimitUpgrade.button.interactable = canUpgradeTimeLimit;
-        btnTimeLimitUpgrade.SetText(canUpgradeTimeLimit ? "提升上限".Translate() : GetTimeLimitBlockedText());
     }
 
     private static void UpgradeStack() {
@@ -163,27 +159,13 @@ public static class GlobalGrowthOperate {
             });
     }
 
-    private static void UpgradeGlobalTimeLimit() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-
-        if (!VanillaRecipeManager.CanUpgradeGlobalTimeLimit()) {
-            UIMessageBox.Show("提示".Translate(), GetTimeLimitBlockedText(), "确定".Translate(),
-                UIMessageBox.WARNING, null);
-            return;
-        }
-
-        VanillaRecipeManager.UpgradeGlobalTimeLimit();
-    }
-
     private static string BuildStackStatusText() {
         if (GameMain.history == null || !StackingManager.IsUnlocked) {
             return "需要集装物流系统".Translate();
         }
 
         int current = StackingManager.CurrentMaxStack;
-        int next = System.Math.Min(current + 1, StackingManager.AbsoluteMaxStack);
+        int next = StackingManager.GetNextMilestone(current);
         return $"{ "当前堆叠".Translate()}：{current}/{StackingManager.AbsoluteMaxStack}\n"
                + $"{ "下一堆叠".Translate()}：{next}";
     }
@@ -201,17 +183,13 @@ public static class GlobalGrowthOperate {
             return "需要集装物流系统".Translate();
         }
 
-        int level = VanillaRecipeManager.GlobalTimeLimitLevel;
-        int maxByStack = VanillaRecipeManager.GetMaxTimeLimitLevelByCurrentStack();
-        return $"{ "全局时间上限".Translate()}：{level}/{VanillaRecipeManager.MaxTimeLimitLevel}"
-               + $"  {VanillaRecipeManager.GlobalTimeLimitRatio:P0}\n"
-               + $"{ "当前堆叠".Translate()}：{StackingManager.CurrentMaxStack}  cap {maxByStack}";
+        return $"{ "自动同步".Translate()}：RecipeTimeRatio = 4 / {StackingManager.CurrentMaxStack}"
+               + $" = {VanillaRecipeManager.GlobalTimeLimitRatio:P0}\n"
+               + $"{ "当前堆叠".Translate()}：{StackingManager.CurrentMaxStack}";
     }
 
     private static string BuildTimeCostText() {
-        return GameMain.sandboxToolsEnabled
-            ? $"{ "升级消耗".Translate()}：{"无消耗".Translate()}"
-            : $"{ "升级消耗".Translate()}：当前临时无消耗，后续接矩阵精华 + 源点";
+        return $"{ "升级消耗".Translate()}：{"自动同步".Translate()}";
     }
 
     private static string GetStackBlockedText() {
@@ -222,27 +200,14 @@ public static class GlobalGrowthOperate {
         return "已达上限".Translate();
     }
 
-    private static string GetTimeLimitBlockedText() {
-        if (GameMain.history == null || !StackingManager.IsUnlocked) {
-            return "需要集装物流系统".Translate();
-        }
-
-        if (VanillaRecipeManager.GlobalTimeLimitLevel >= VanillaRecipeManager.MaxTimeLimitLevel) {
-            return "已达上限".Translate();
-        }
-
-        return "需要更高堆叠上限".Translate();
-    }
-
     private static StackUpgradeCost GetStackUpgradeCost() {
-        int nextStack = System.Math.Min(StackingManager.CurrentMaxStack + 1, StackingManager.AbsoluteMaxStack);
-        int essenceIndex = System.Math.Min((nextStack - StackingManager.BaseUnlockedMaxStack) / 3,
+        int nextStack = StackingManager.GetNextMilestone(StackingManager.CurrentMaxStack);
+        int essenceIndex = System.Math.Min((nextStack - StackingManager.BaseUnlockedMaxStack) / 4,
             MainProgressMatrixIds.Length - 1);
         int essenceId = GetMatrixEssenceItemId(essenceIndex);
-        int essenceCount = 200 + (nextStack - StackingManager.BaseUnlockedMaxStack) * 80;
-        int memoryItemId = nextStack >= 14 ? IFE纯净源点 : IFE记忆源点;
-        int memoryCount = nextStack >= 14 ? 1 + (nextStack - 14) / 2 : 1 + (nextStack - 5) / 3;
-        return new(essenceId, essenceCount, memoryItemId, System.Math.Max(1, memoryCount));
+        int essenceCount = 200 + (nextStack - StackingManager.BaseUnlockedMaxStack) * 60;
+        int memoryCount = 1 + (nextStack - StackingManager.BaseUnlockedMaxStack) / 4;
+        return new(essenceId, essenceCount, IFE记忆源点, System.Math.Max(1, memoryCount));
     }
 
     private static string BuildCostText(StackUpgradeCost cost) {

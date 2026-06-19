@@ -11,7 +11,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 精馏塔精华调相方向状态、交互和存档逻辑。
+/// 精馏塔精华重整方向状态、交互和存档逻辑。
 /// </summary>
 public static class RectificationTuningTarget {
     private static readonly ConcurrentDictionary<(int, int), int> tuningTargetDic = [];

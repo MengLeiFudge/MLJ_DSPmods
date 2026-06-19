@@ -57,7 +57,7 @@ public static partial class GachaService {
 
         return poolId switch {
             GachaPool.PoolIdOpeningLine => IFE残片,
-            GachaPool.PoolIdProtoLoop => IFE分馏塔定向原胚,
+            GachaPool.PoolIdProtoLoop => GetFocusedEmbryoReward(),
             _ => IFE残片,
         };
     }

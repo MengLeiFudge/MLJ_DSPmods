@@ -396,7 +396,7 @@ public static class MainTask {
             Branch("proto-building", "原胚建筑",
                 ProtoNode("proto-first", "首获原胚", "持有任意 1 个分馏塔原胚", 1, IFE交互塔原胚, 1),
                 ProtoNode("proto-three", "原胚整备", "累计持有 3 类分馏塔原胚", 2, IFE矿物复制塔原胚, 3),
-                ProtoNode("proto-four", "四类原胚", "累计持有 4 类分馏塔原胚", 4, IFE分馏塔定向原胚, 4),
+                ProtoNode("proto-four", "四类原胚", "累计持有 4 类分馏塔原胚", 4, IFE精馏塔原胚, 4),
                 Node("building-train-one", "首次培养", "任意万物分馏建筑等级达到 1", 1, IFE交互塔, IFE残片, 200,
                     () => GetMaxBuildingLevel() >= 1, () => GetBuildingLevelProgressText(1)),
                 Node("building-train-four", "四塔培养", "四类万物分馏建筑均达到 1 级", 4, IFE转化塔, IFE残片, 600,
@@ -529,7 +529,6 @@ public static class MainTask {
         if (GetItemTotalCount(IFE矿物复制塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE转化塔原胚) > 0) count++;
         if (GetItemTotalCount(IFE精馏塔原胚) > 0) count++;
-        if (GetItemTotalCount(IFE分馏塔定向原胚) > 0) count++;
         return count;
     }
 

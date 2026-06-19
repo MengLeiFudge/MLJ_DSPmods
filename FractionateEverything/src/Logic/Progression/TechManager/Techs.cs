@@ -105,8 +105,8 @@ public static partial class TechManager {
             GetTechPos(0, 6)
         );
         tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE残片, IFE分馏塔定向原胚];
-        tech超值礼包6.AddItemCounts = [1200, 2];
+        tech超值礼包6.AddItems = [IFE残片, IFE交互塔原胚, IFE矿物复制塔原胚, IFE转化塔原胚, IFE精馏塔原胚];
+        tech超值礼包6.AddItemCounts = [1200, 2, 2, 2, 2];
         tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
         tech超值礼包6.PropertyItemCounts = [100];
         tech超值礼包6.IconTag = "tczlb6";
@@ -118,8 +118,8 @@ public static partial class TechManager {
             [],
             GetTechPos(1, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE分馏塔定向原胚];
-        tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE转化塔原胚, IFE精馏塔原胚];
+        tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20, 20];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
         tech分馏塔原胚.IconTag = "tfltyp";

@@ -7,12 +7,10 @@ using FE.Logic.VanillaRecipes;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
-using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
@@ -73,17 +71,19 @@ public static class VanillaRecipeOperate {
             "左键在已解锁配方之间切换，右键在全部可用配方中切换。");
         Register("输入物品", "Input Items");
         Register("当前数量", "Current Count");
-        Register("升级次数", "Upgrade Times");
-        Register("升级", "Upgrade");
-        Register("升满", "Max");
-        Register("提升上限", "Raise cap", "提升上限");
+        Register("升级次数", "Sync tier");
+        Register("升级", "Auto");
+        Register("升满", "Auto");
+        Register("提升上限", "Auto sync", "自动同步");
         Register("仅缩短制作时间", "Only crafting time is enhanced");
-        Register("全局时间上限", "Global time limit");
+        Register("全局时间上限", "Recipe time sync");
         Register("需要集装物流系统", "Logistics stacking system required", "需要集装物流系统");
-        Register("需要更高堆叠上限", "Higher stack limit required", "需要更高堆叠上限");
-        Register("全局时间上限不足", "Global time limit required", "全局时间上限不足");
+        Register("需要更高堆叠上限", "Higher stack limit required", "随堆叠提升");
+        Register("全局时间上限不足", "Synced by stack", "随堆叠同步");
         Register("科技层次不足", "Next-tier tech completion required", "需完成下一层科技");
-        Register("已达上限", "Max upgrade reached", "已达上限");
+        Register("已达上限", "Synced", "已同步");
+        Register("自动同步", "Auto sync", "自动同步");
+        Register("随堆叠同步配方时间", "Recipe time is synced by stack", "配方时间由当前堆叠上限自动同步。");
         Register("制作时间", "Crafting Time");
         Register("当前时间", "Current Time");
         Register("原版增强资源", "Enhance Resource", "增强资源");
@@ -102,7 +102,7 @@ public static class VanillaRecipeOperate {
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("原版配方", objectName: "vanilla-recipe-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "查看原版配方的原料、耗时与升级进度".WithColor(White)),
+                        onBuilt: refs => refs.Summary.text = "查看原版配方的原料、耗时与堆叠同步状态".WithColor(White)),
                     ContentCard(
                         pos: (1, 0),
                         objectName: "vanilla-recipe-content-card",
@@ -140,13 +140,13 @@ public static class VanillaRecipeOperate {
                                 pos: (MaxInputCount + 3, 3), objectName: "txtTimeUpgrade"),
                             TextNode("", 13, onBuilt: text => txtTimeLimit = text,
                                 pos: (MaxInputCount + 3, 4), objectName: "txtTimeLimit"),
-                            ButtonNode("提升上限", fontSize: 13, onClick: UpgradeGlobalTimeLimit,
+                            ButtonNode("自动同步", fontSize: 13, onClick: ShowAutoSyncTip,
                                 onBuilt: btn => btnTimeLimitUpgrade = btn,
                                 pos: (MaxInputCount + 3, 5), objectName: "btnTimeLimitUpgrade"),
-                            ButtonNode("升级", fontSize: 13, onClick: UpgradeTimeSpend,
+                            ButtonNode("自动同步", fontSize: 13, onClick: ShowAutoSyncTip,
                                 onBuilt: btn => btnTimeUpgrade = btn,
                                 pos: (MaxInputCount + 4, 4), objectName: "btnTimeUpgrade"),
-                            ButtonNode("升满", fontSize: 13, onClick: UpgradeTimeSpendToLimit,
+                            ButtonNode("自动同步", fontSize: 13, onClick: ShowAutoSyncTip,
                                 onBuilt: btn => btnTimeUpgradeToLimit = btn,
                                 pos: (MaxInputCount + 4, 5), objectName: "btnTimeUpgradeToLimit"),
                         ]),
@@ -204,8 +204,6 @@ public static class VanillaRecipeOperate {
         int[] items = vanillaRecipe.recipe.Items;
         int[] itemCounts = vanillaRecipe.recipe.ItemCounts;
 
-        bool limitedByMatrix = vanillaRecipe.LimitedByMatrix;
-
         for (int i = 0; i < MaxInputCount; i++) {
             if (i < items.Length) {
                 // 显示该输入物品
@@ -233,114 +231,26 @@ public static class VanillaRecipeOperate {
         int[] timeInfo = vanillaRecipe.GetCurrAndNextTimeSpend();
         int currTime = timeInfo[0];
         int nextTime = timeInfo[1];
-        bool canUpgradeTime = vanillaRecipe.CanUpgradeTime();
-
-        txtTimeValue.text = $"{"当前时间".Translate()}: {currTime / 60.0f:F2}s → {nextTime / 60.0f:F2}s";
-        txtTimeUpgrade.text = $"{"升级次数".Translate()}: {vanillaRecipe.GetTimeUpgradeCount()}";
+        txtTimeValue.text = currTime == nextTime
+            ? $"{"当前时间".Translate()}: {currTime / 60.0f:F2}s"
+            : $"{"当前时间".Translate()}: {currTime / 60.0f:F2}s → {nextTime / 60.0f:F2}s";
+        txtTimeUpgrade.text = $"{"升级次数".Translate()}: stack {StackingManager.CurrentMaxStack}";
         txtTimeLimit.text = GetTimeLimitText();
-        bool canUpgradeGlobalTimeLimit = VanillaRecipeManager.CanUpgradeGlobalTimeLimit();
-        btnTimeLimitUpgrade.button.interactable = canUpgradeGlobalTimeLimit;
-        btnTimeLimitUpgrade.button.GetComponentInChildren<Text>().text =
-            canUpgradeGlobalTimeLimit ? "提升上限".Translate() : GetTimeLimitBlockedText();
-        btnTimeUpgrade.button.interactable = canUpgradeTime;
-        btnTimeUpgradeToLimit.button.interactable = canUpgradeTime;
-
-        if (!canUpgradeTime) {
-            if (limitedByMatrix) {
-                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
-                btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = GetMatrixRequirementText(vanillaRecipe);
-            } else {
-                string blockedText = vanillaRecipe.GetTimeUpgradeCount() >= VanillaRecipeManager.GlobalTimeLimitLevel
-                    ? "全局时间上限不足".Translate()
-                    : "已达上限".Translate();
-                btnTimeUpgrade.button.GetComponentInChildren<Text>().text = blockedText;
-                btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = blockedText;
-            }
-        } else {
-            btnTimeUpgrade.button.GetComponentInChildren<Text>().text = "升级".Translate();
-            btnTimeUpgradeToLimit.button.GetComponentInChildren<Text>().text = "升满".Translate();
-        }
+        SetAutoSyncButton(btnTimeLimitUpgrade);
+        SetAutoSyncButton(btnTimeUpgrade);
+        SetAutoSyncButton(btnTimeUpgradeToLimit);
     }
 
-    public static void UpgradeGlobalTimeLimit() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        if (!VanillaRecipeManager.CanUpgradeGlobalTimeLimit()) {
-            UIMessageBox.Show("提示".Translate(),
-                GetTimeLimitBlockedText(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-
-        VanillaRecipeManager.UpgradeGlobalTimeLimit();
+    private static void SetAutoSyncButton(UIButton button) {
+        button.button.interactable = false;
+        button.button.GetComponentInChildren<Text>().text = "自动同步".Translate();
     }
 
-    public static void UpgradeTimeSpend() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
-        if (!vanillaRecipe.CanUpgradeTime()) {
-            UIMessageBox.Show("提示".Translate(),
-                "此配方的时间已经无法升级！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-        if (GameMain.sandboxToolsEnabled) {
-            vanillaRecipe.UpgradeTime();
-        } else {
-            int fragmentCount = GetTimeUpgradeCost(vanillaRecipe);
-            Miscellaneous.ShowQuestion("提示".Translate(),
-                $"{"要花费".Translate()} 残片 x {fragmentCount} "
-                + $"{"来修改此项".Translate()}{"吗？".Translate()}",
-                () => {
-                    if (!TakeItemWithTip(IFE残片, fragmentCount, out _)) {
-                        return;
-                    }
-                    vanillaRecipe.UpgradeTime();
-                });
-        }
-    }
-
-    public static void UpgradeTimeSpendToLimit() {
-        if (DSPGame.IsMenuDemo || GameMain.mainPlayer == null) {
-            return;
-        }
-        VanillaRecipe vanillaRecipe = VanillaRecipeManager.GetVanillaRecipe(SelectedRecipe.ID);
-        if (vanillaRecipe == null || !vanillaRecipe.CanUpgradeTime()) {
-            UIMessageBox.Show("提示".Translate(),
-                "此配方的时间已经无法升级！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-
-        int targetLevel = GetReachableTimeUpgradeLevel(vanillaRecipe);
-        int fragmentCount = GetTimeUpgradeCostUntil(vanillaRecipe, targetLevel);
-        if (targetLevel <= vanillaRecipe.GetTimeUpgradeCount()) {
-            UIMessageBox.Show("提示".Translate(),
-                "此配方的时间已经无法升级！".Translate(),
-                "确定".Translate(), UIMessageBox.WARNING,
-                null);
-            return;
-        }
-
-        if (GameMain.sandboxToolsEnabled) {
-            UpgradeTimeToLevel(vanillaRecipe, targetLevel);
-        } else {
-            Miscellaneous.ShowQuestion("提示".Translate(),
-                $"{"要花费".Translate()} 残片 x {fragmentCount} "
-                + $"{"来修改此项".Translate()}{"吗？".Translate()}",
-                () => {
-                    if (!TakeItemWithTip(IFE残片, fragmentCount, out _)) {
-                        return;
-                    }
-                    UpgradeTimeToLevel(vanillaRecipe, targetLevel);
-                });
-        }
+    public static void ShowAutoSyncTip() {
+        UIMessageBox.Show("提示".Translate(),
+            "随堆叠同步配方时间".Translate(),
+            "确定".Translate(), UIMessageBox.WARNING,
+            null);
     }
 
     #region IModCanSave
@@ -357,77 +267,18 @@ public static class VanillaRecipeOperate {
 
     #endregion
 
-    private static int GetTimeUpgradeCost(VanillaRecipe recipe) {
-        int currentUpgrade = recipe.GetTimeUpgradeCount();
-        return 30 + currentUpgrade * 15;
-    }
-
-    private static int GetTimeUpgradeCostUntil(VanillaRecipe recipe, int targetLevel) {
-        int totalCost = 0;
-        for (int level = recipe.GetTimeUpgradeCount(); level < targetLevel; level++) {
-            totalCost += 30 + level * 15;
-        }
-        return totalCost;
-    }
-
-    private static int GetReachableTimeUpgradeLevel(VanillaRecipe recipe) {
-        int currentLevel = recipe.GetTimeUpgradeCount();
-        int targetLevel = currentLevel;
-        int maxLevel = Mathf.Min(VanillaRecipeManager.GlobalTimeLimitLevel, VanillaRecipeManager.MaxTimeLimitLevel);
-        int currentTimeSpend = recipe.recipe.TimeSpend;
-        for (int level = currentLevel + 1; level <= maxLevel; level++) {
-            int nextTimeSpend = recipe.GetTimeSpendByUpgrade(level);
-            if (currentTimeSpend <= nextTimeSpend) {
-                break;
-            }
-
-            targetLevel = level;
-            currentTimeSpend = nextTimeSpend;
-        }
-
-        return targetLevel;
-    }
-
-    private static void UpgradeTimeToLevel(VanillaRecipe recipe, int targetLevel) {
-        while (recipe.GetTimeUpgradeCount() < targetLevel && recipe.CanUpgradeTime()) {
-            recipe.UpgradeTime();
-        }
-    }
-
-    private static string GetMatrixRequirementText(VanillaRecipe recipe) {
-        int stageIndex = GetMatrixStageIndex(recipe.MatrixId);
-        int requiredIndex = Mathf.Min(stageIndex + 1, MainProgressMatrixIds.Length - 1);
-        int requiredMatrixId = MainProgressMatrixIds[requiredIndex];
-        string nextMatrixName = LDB.items.Select(requiredMatrixId)?.name ?? requiredMatrixId.ToString();
-        return $"{nextMatrixName} 全科技";
-    }
-
     private static string GetTimeLimitText() {
         if (GameMain.history == null) {
             return "";
         }
 
-        if (!VanillaRecipeManager.CanUpgradeGlobalTimeLimit()
-            && !GameMain.history.TechUnlocked(T集装物流系统)) {
+        if (!StackingManager.IsUnlocked && !GameMain.history.TechUnlocked(T集装物流系统)) {
             return "需要集装物流系统".Translate();
         }
 
         int level = VanillaRecipeManager.GlobalTimeLimitLevel;
         double ratio = VanillaRecipeManager.GlobalTimeLimitRatio;
-        int maxByStack = VanillaRecipeManager.GetMaxTimeLimitLevelByCurrentStack();
         return $"{ "全局时间上限".Translate()}: {level}/{VanillaRecipeManager.MaxTimeLimitLevel}"
-               + $" ({ratio:P0}, stack {StackingManager.CurrentMaxStack}, cap {maxByStack})";
-    }
-
-    private static string GetTimeLimitBlockedText() {
-        if (GameMain.history == null || !GameMain.history.TechUnlocked(T集装物流系统)) {
-            return "需要集装物流系统".Translate();
-        }
-
-        if (VanillaRecipeManager.GlobalTimeLimitLevel >= VanillaRecipeManager.MaxTimeLimitLevel) {
-            return "已达上限".Translate();
-        }
-
-        return "需要更高堆叠上限".Translate();
+               + $" ({ratio:P0}, stack {StackingManager.CurrentMaxStack})";
     }
 }
