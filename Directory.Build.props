@@ -15,6 +15,11 @@
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
         <!-- 统一调试符号格式，确保跨平台一致性 -->
         <DebugType>portable</DebugType>
+        <!-- 源码和编译参数不变时保持 DLL/PDB 字节稳定，避免无实质变化的重编译触发重复发布 -->
+        <Deterministic>true</Deterministic>
+        <!-- 不把当前 Git revision 写入 PDB SourceLink；否则只要 HEAD 变化，无关项目的 DLL/PDB 也会变化 -->
+        <EnableSourceLink>false</EnableSourceLink>
+        <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
         <!-- 使用最新语言特性 -->
         <LangVersion>latest</LangVersion>
         <!-- 不把当前 Git 提交号写进 AssemblyInformationalVersion，避免只改一个项目时全量重编译导致无关 DLL 字节变化 -->

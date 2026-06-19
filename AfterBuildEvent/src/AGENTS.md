@@ -71,19 +71,20 @@ In automation mode, option `1` keeps the packaging/R2 sync behavior but changes 
 - copy built mod files to the R2 profile
 - create zip packages under `ModZips`
 - before creating a package, delete only the current target zip path for the same project/version; do not clear other versions from `ModZips`
-- build a JSON request in memory and post it to qqbot's localhost-only `/admin/api/artifacts/publish-local`
+- maintain a local package content-hash cache under `ModZips\publish-content-sha256\`; packages whose content hash matches the local cache must not be included in the qqbot request
+- build a JSON request in memory and post it to qqbot's localhost-only `/admin/api/artifacts/publish-local` only when at least one configured package content changed
 - include `timestamp`, `project_id`, current `branch`, current `commit_hash`, current `commit_subject`, current `commit_detail`, and a `files` array
 - publish only zip files explicitly listed by `PublishTargets`; qqbot must not hard-code which MLJ_DSPmods packages are publishable
 - each file entry includes path, upload name, SHA256, and target QQ groups
-- `sha256` is the zip file integrity checksum; `content_sha256` is the stable hash of zip entry names, sizes, and bytes, and qqbot uses it to skip unchanged package contents
-- qqbot skips delete/upload/message when the same target group and upload name already published the same `content_sha256`; otherwise it deletes only bot-uploaded files with the exact same name in the target group before uploading the new file
+- `sha256` is the zip file integrity checksum; `content_sha256` is the stable hash of zip entry names, sizes, and bytes and is sent as metadata
+- qqbot must independently recalculate zip content hash from the received local path and compare it with its own cache before delete/upload/message; do not rely on timestamp or on trusting the client-provided `content_sha256`
 - successful publish logs must report qqbot's returned `uploaded`, `deleted`, and `skipped` counts; do not use the request file count as the actual pushed count
 - if upload succeeds, do not open Explorer
 - if qqbot is unavailable or upload fails, open Explorer at `ModZips` so the package is still visible, report the real failure, and do not claim the package was delivered
 - do not ask whether to launch Dyson Sphere Program
 - do not launch Dyson Sphere Program
 
-Codex final replies for publish runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, R2 copy status, and whether local qqbot package publishing succeeded or fell back to opening `ModZips`.
+Codex final replies for publish runs must include the `AfterBuildEvent.exe 1` command result, generated zip paths, R2 copy status, and whether packages were locally skipped, sent to qqbot, uploaded, or fell back to opening `ModZips`.
 
 ## Option 2 — UpdateLibDll Detail
 
@@ -162,3 +163,5 @@ local mod/tool project it packages or uses for calculator export, and those refe
 Mode `1` package zips must be deterministic for unchanged contents. `ZipMod()` sorts entries by file name and
 uses a fixed zip entry timestamp so rerunning `AfterBuildEvent.exe 1` does not change zip SHA256 solely because
 the command ran at a different time. Do not reintroduce current-time entry metadata into package zips.
+Mode `1` also maintains the local publish guard in `ModZips\publish-content-sha256\`. Only update that cache after
+the qqbot request succeeds. A package that matches the local content hash must not be sent to qqbot at all.

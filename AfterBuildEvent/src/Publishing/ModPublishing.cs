@@ -19,6 +19,16 @@ namespace AfterBuildEvent;
 static partial class AfterBuildEvent {
     #region 更新mod、打包、启动游戏
 
+    private sealed class QqbotPublishOutcome {
+        public bool Succeeded { get; set; }
+        public bool SentRequest { get; set; }
+    }
+
+    private sealed class LocalPublishState {
+        public string Name { get; set; } = "";
+        public string ContentSha256 { get; set; } = "";
+    }
+
     private static void UpdateModsThenStart(bool automationMode = false, string[] args = null) {
         using CmdProcess cmd = new();
         List<GeneratedPackageInfo> generatedPackages = [];
@@ -171,10 +181,13 @@ static partial class AfterBuildEvent {
 
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
-        bool publishSucceeded = TryPublishGeneratedPackagesToQqbot(generatedPackages);
+        QqbotPublishOutcome publishOutcome = TryPublishGeneratedPackagesToQqbot(generatedPackages);
         if (automationMode) {
-            if (publishSucceeded) {
-                Console.WriteLine("自动模式完成：已上传生成的 zip 到 QQ 群，不打开 ModZips 文件夹，不启动游戏");
+            if (publishOutcome.Succeeded) {
+                string finishMessage = publishOutcome.SentRequest
+                    ? "自动模式完成：已处理生成的 zip 发布请求，不打开 ModZips 文件夹，不启动游戏"
+                    : "自动模式完成：zip 内容未变化，已跳过 QQ 群上传，不打开 ModZips 文件夹，不启动游戏";
+                Console.WriteLine(finishMessage);
                 return;
             }
             Process.Start("explorer", @".\ModZips");
@@ -182,8 +195,10 @@ static partial class AfterBuildEvent {
             return;
         }
 
-        if (publishSucceeded) {
-            Console.WriteLine("手动模式：已上传生成的 zip 到 QQ 群");
+        if (publishOutcome.Succeeded) {
+            Console.WriteLine(publishOutcome.SentRequest
+                ? "手动模式：已处理生成的 zip 发布请求"
+                : "手动模式：zip 内容未变化，已跳过 QQ 群上传");
         } else {
             Process.Start("explorer", @".\ModZips");
             Console.WriteLine("手动模式：自动上传失败，已打开 ModZips 文件夹；继续保留是否启动游戏的手动选择");
@@ -320,11 +335,25 @@ static partial class AfterBuildEvent {
         }
     }
 
-    private static bool TryPublishGeneratedPackagesToQqbot(IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
-        JArray files = BuildQqbotPublishFiles(generatedPackages);
-        if (files.Count == 0) {
+    private static QqbotPublishOutcome TryPublishGeneratedPackagesToQqbot(
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        List<GeneratedPackageInfo> configuredPackages = GetConfiguredPublishPackages(generatedPackages);
+        if (configuredPackages.Count == 0) {
             Console.WriteLine("自动上传跳过：本次没有配置需要推送到 QQ 群的 zip");
-            return false;
+            return new() {
+                Succeeded = false,
+                SentRequest = false,
+            };
+        }
+
+        List<GeneratedPackageInfo> publishablePackages = GetLocallyChangedPublishPackages(configuredPackages);
+        JArray files = BuildQqbotPublishFiles(publishablePackages);
+        if (files.Count == 0) {
+            Console.WriteLine("自动上传跳过：本次没有内容变化的配置 zip，无需通知 qqbot");
+            return new() {
+                Succeeded = true,
+                SentRequest = false,
+            };
         }
 
         try {
@@ -357,10 +386,14 @@ static partial class AfterBuildEvent {
                 } else {
                     Console.WriteLine($"自动上传完成：qqbot 已接受 {files.Count} 个 zip 的发布请求");
                 }
+                SaveLocalPublishStates(publishablePackages);
             } else {
                 Console.WriteLine($"自动上传失败：qqbot 返回 HTTP {(int)response.StatusCode}");
             }
-            return ok;
+            return new() {
+                Succeeded = ok,
+                SentRequest = true,
+            };
         }
         catch (WebException ex) {
             string detail = ex.Message;
@@ -369,12 +402,91 @@ static partial class AfterBuildEvent {
                 detail = $"HTTP {(int)response.StatusCode} {response.StatusCode}：{reader.ReadToEnd()}";
             }
             Console.WriteLine($"自动上传失败：{detail}");
-            return false;
+            return new() {
+                Succeeded = false,
+                SentRequest = true,
+            };
         }
         catch (Exception ex) {
             Console.WriteLine($"自动上传失败：{ex.Message}");
-            return false;
+            return new() {
+                Succeeded = false,
+                SentRequest = true,
+            };
         }
+    }
+
+    private static List<GeneratedPackageInfo> GetConfiguredPublishPackages(
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        List<GeneratedPackageInfo> configuredPackages = [];
+        foreach (GeneratedPackageInfo package in generatedPackages) {
+            PublishTarget target = PublishTargets.FirstOrDefault(item =>
+                string.Equals(item.ProjectName, package.ProjectName, StringComparison.OrdinalIgnoreCase));
+            if (target == null || target.GroupIds.Length == 0) {
+                continue;
+            }
+
+            configuredPackages.Add(package);
+        }
+
+        return configuredPackages;
+    }
+
+    private static List<GeneratedPackageInfo> GetLocallyChangedPublishPackages(
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        List<GeneratedPackageInfo> publishablePackages = [];
+        foreach (GeneratedPackageInfo package in generatedPackages) {
+            LocalPublishState state = LoadLocalPublishState(package.Name);
+            if (string.Equals(package.Name, state.Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(package.ContentSha256, state.ContentSha256, StringComparison.OrdinalIgnoreCase)) {
+                Console.WriteLine($"本地上传跳过：{package.Name} 内容未变化 ({package.ContentSha256})");
+                continue;
+            }
+
+            publishablePackages.Add(package);
+        }
+        return publishablePackages;
+    }
+
+    private static void SaveLocalPublishStates(IReadOnlyList<GeneratedPackageInfo> packages) {
+        foreach (GeneratedPackageInfo package in packages) {
+            SaveLocalPublishState(package);
+        }
+    }
+
+    private static LocalPublishState LoadLocalPublishState(string packageName) {
+        string path = GetLocalPublishStatePath(packageName);
+        if (!File.Exists(path)) {
+            return new();
+        }
+
+        try {
+            JObject payload = JObject.Parse(File.ReadAllText(path));
+            return new() {
+                Name = payload.Value<string>("name") ?? "",
+                ContentSha256 = payload.Value<string>("content_sha256")?.Trim().ToLowerInvariant() ?? "",
+            };
+        }
+        catch {
+            return new();
+        }
+    }
+
+    private static void SaveLocalPublishState(GeneratedPackageInfo package) {
+        string path = GetLocalPublishStatePath(package.Name);
+        Directory.CreateDirectory(Path.GetDirectoryName(path) ?? @".\ModZips");
+        JObject payload = new() {
+            ["name"] = package.Name,
+            ["content_sha256"] = package.ContentSha256,
+            ["sha256"] = package.Sha256,
+            ["updated_at_utc"] = DateTime.UtcNow.ToString("O"),
+        };
+        File.WriteAllText(path, payload.ToString(), Utf8NoBom);
+    }
+
+    private static string GetLocalPublishStatePath(string packageName) {
+        string safeName = string.Join("_", packageName.Split(Path.GetInvalidFileNameChars()));
+        return Path.Combine(@".\ModZips", "publish-content-sha256", $"{safeName}.json");
     }
 
     private static string ReadResponseBody(HttpWebResponse response) {
