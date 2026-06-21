@@ -101,8 +101,8 @@ cd "/mnt/d/project/dsp/MLJ_DSPmods/AfterBuildEvent/bin/Debug"
 
 ## Design Documentation Boundary
 
-- `FractionateEverything/DESIGN.md` is the FE fractionation domain's author/AI-facing module audit and direction document, not a short marketing summary and not the numeric implementation spec.
-- Keep `DESIGN.md` focused on module necessity, design purpose, replacement/overlap analysis, cross-module interaction, player impact, audit conclusions, modification direction, and hard boundaries. It should answer why a module exists and what direction future changes must follow.
+- `FractionateEverything/DESIGN.md` is the FE fractionation domain's author/AI-facing design-conclusion index, not a marketing summary, numeric implementation spec, or long audit report.
+- Keep `DESIGN.md` concise and focused on stable conclusions, modification direction, hard boundaries, and prohibitions. Do not keep the full audit reasoning, necessity proof, replacement analysis, or player-impact argument there once a conclusion is settled.
 - `FractionateEverything/DESIGN_DETAILS.md` is the matching mechanism detail document. Keep formulas, thresholds, trigger timing, concrete numeric tables, state fields, code entry points, UI operation details, and other executable design details there, in the same module order as `DESIGN.md`.
 - `DESIGN_DETAILS.md` must refine `DESIGN.md`, not override it. If a detailed rule needs to change a module's purpose, necessity, interaction boundary, or audit conclusion, update `DESIGN.md` first, then adjust `DESIGN_DETAILS.md` and code.
 - Do not add build/publish commands, validation logs, commit history, temporary gaps, AI workflow instructions, task plans, or chat-derived status reports to `DESIGN.md` or `DESIGN_DETAILS.md`.
