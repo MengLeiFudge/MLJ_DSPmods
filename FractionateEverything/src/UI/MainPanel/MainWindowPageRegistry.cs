@@ -48,6 +48,7 @@ public static class MainWindowPageRegistry {
         new(DrawGrowthCategoryName, "抽取总览", TicketExchange.CreateUI, TicketExchange.UpdateUI),
 
         new(ProgressTaskCategoryName, "主线任务", MainTask.CreateUI, MainTask.UpdateUI),
+        new(ProgressTaskCategoryName, "恢复手册", RecoveryGuide.CreateUI, RecoveryGuide.UpdateUI),
         new(ProgressTaskCategoryName, "成就系统", Achievements.CreateUI, Achievements.UpdateUI),
 
         new(ArchiveCategoryName, "配方图鉴", RecipeGallery.CreateUI, RecipeGallery.UpdateUI),
