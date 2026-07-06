@@ -21,7 +21,7 @@ public static partial class TechManager {
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
         tech分馏数据中心.AddItems = [IFE交互塔原胚];
-        tech分馏数据中心.AddItemCounts = [80];//20用于解锁分馏塔原胚科技，60赠送
+        tech分馏数据中心.AddItemCounts = [80];//启动套件中的基础交互塔原胚
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
         tech分馏数据中心.IconTag = "flsjzx";

@@ -26,7 +26,7 @@ public static partial class TechManager {
     }
 
     /// <summary>
-    /// 对于所有解锁标记为true的分馏塔，解锁对应科技。
+    /// 对于所有恢复标记为 true 的分馏塔，恢复对应旧文明协议。
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(Player), nameof(Player.GameTick))]
@@ -40,6 +40,8 @@ public static partial class TechManager {
                 }
                 if (!GameMain.history.TechUnlocked(techId)) {
                     GameMain.history.UnlockTechUnlimited(techId, false);
+                    CivilizationRecoveryManager.ShowProtocolRecoveredTip(techId);
+                    techUnlockFlags[i] = false;
                 } else {
                     techUnlockFlags[i] = false;
                 }
@@ -47,6 +49,7 @@ public static partial class TechManager {
         }
 
         StackingManager.SyncRuntimeState();
+        CivilizationRecoveryManager.Tick();
         TryApplyLoadTimeRecipeBaselines();
 
         RecipeGrowthManager.SyncRuntimeUnlocks();
@@ -70,12 +73,12 @@ public static partial class TechManager {
                        + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
         }
-        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包9) {
+        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
             __result = $"{"一个物超所值的礼包".Translate()}";
             return false;
         }
         if (__instance.ID == TFE分馏塔原胚) {
-            __result = $"{"解锁全部建筑培养配方".Translate()}\r\n"
+            __result = $"{"恢复全部建筑培养配方".Translate()}\r\n"
                        + $"{"给予一个交互塔".Translate()}\r\n"
                        + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
@@ -86,7 +89,7 @@ public static partial class TechManager {
             return false;
         }
         if (__instance.ID == TFE矿物复制) {
-            __result = $"{"解锁部分矿物复制配方".Translate()}";
+            __result = $"{"恢复部分矿物复制配方".Translate()}";
             return false;
         }
         return true;
@@ -104,5 +107,11 @@ public static partial class TechManager {
         }
 
         EnsureGuaranteedConversionRecipeBaselines();
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(UIGeneralTips), nameof(UIGeneralTips.OnTechUnlocked))]
+    public static bool UIGeneralTips_OnTechUnlocked_Prefix(int techId) {
+        return !CivilizationRecoveryManager.IsInternalRecoveryTech(techId);
     }
 }

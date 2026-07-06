@@ -10,14 +10,13 @@ public static partial class TutorialManager {
         Register("万物分馏简介标题", "Fractionate Everything", "万物分馏简介");
         Register("万物分馏简介前字",
             $"""
-             With the huge amount of arithmetic power in each star zone, the Fractionation Technology has seen a major breakthrough. The Mastermind believes that the new Fractionation Technology can bring great convenience to Icarus, greatly increasing the speed of exploration and construction. Now, the new department 'Fractionation Data Centre' has been established, and the related technology has been distributed to all Icarus.
+             An abnormal old-civilization signal has been detected near the landing zone. The first contact is unstable, but the recovered starter kit contains a data-centre communication channel, initial tower protos, and one Interaction Tower.
 
-             However, you still need to do some preparatory work to unlock the appropriate permissions. Here is a short guide: 
-             1. Research the 'Fractionation Data Centre' technology to unlock access to the Fractionation Data Centre.
-             After researching, press {"[Shift + F] key".WithColor(Orange)} to connect to the Fractionation Data Centre.
-             2. Research the 'Fractionator Proto' tech and read the tech description carefully to learn how to use the Interactive Tower to grow Raw Embryos into new Fractionation Towers, as well as how to use the Interactive Tower to upload items.
+             Here is a short early guide:
+             1. Follow the abnormal signal and recover the starter kit. After the data-centre communication channel is established, press {"[Shift + F] key".WithColor(Orange)} to connect to the Fractionation Data Centre.
+             2. Open the Recovery Guide page in the panel and follow it step by step to learn how to use the Interaction Tower to cultivate protos into new Fractionation Towers, as well as how to upload items.
              There will also be a new guide that explains how to use the Interactive Tower after you build it.
-             3. Cultivate a new Interactive Tower and upload it to the Fractionation Data Centre to unlock the 'Item Interaction' technology.
+             3. Cultivate a new Interactive Tower and upload it to the Fractionation Data Centre to restore the Item Interaction protocol.
              This is an extremely powerful support feature that defies space limitations and can be thought of as an external backpack with unlimited capacity.
              4. Build the production line for the current-stage Matrix and spend matrices in Main Draw with a draw preference.
              Fragments and Matrix Essences then become the long-term resources for growth catch-up and focus switching.
@@ -27,14 +26,13 @@ public static partial class TutorialManager {
              {"Have fun with fractionation!".WithColor(Blue)}
              """,
             $"""
-             在各个星区巨额算力的加持下，分馏科技迎来了重大突破。主脑认为，全新的分馏科技可以为伊卡洛斯带来极大的便利，从大幅提升探索和建设的速度。现在，新部门“分馏数据中心”已经建立，相关科技也下发给了各位伊卡洛斯。
+             着陆区附近探测到了异常旧文明信号。第一次接触并不稳定，但回收得到的启动套件里包含数据中心通信方式、初始分馏塔原胚和一座交互塔。
 
-             不过，你还需要做一些准备工作，才能解锁相应的权限。以下是一个简短的前期指引：
-             1.研究“分馏数据中心”科技，解锁连接到分馏数据中心的权限。
-             研究完成后，按{"[Shift + F]键".WithColor(Orange)}即可连接到分馏数据中心。
-             2.研究“分馏塔原胚”科技，仔细阅读科技说明，了解如何使用交互塔将原胚培养为新的分馏塔，以及如何使用交互塔上传物品。
-             建设交互塔之后，也会有新的指引对此进行讲解。你也可以打开分馏数据中心的“恢复手册”页面，按步骤完成第一轮原胚孵化。
-             3.培养出新的交互塔，并将其上传至分馏数据中心，解锁“物品交互”科技。
+             以下是一个简短的前期指引：
+             1.按异常信号提示前往信号点，回收旧文明启动套件。数据中心通信建立后，按{"[Shift + F]键".WithColor(Orange)}即可连接到分馏数据中心。
+             2.打开分馏数据中心的“恢复手册”页面，按步骤学习如何使用交互塔将原胚培养为新的分馏塔，以及如何使用交互塔上传物品。
+             建设交互塔之后，也会有新的指引对此进行讲解。
+             3.培养出新的交互塔，并将其上传至分馏数据中心，恢复“物品交互”协议。
              这是一项极其强大的辅助功能，无视空间限制，你可以将它视为具有无限容量的外部背包。
              4.搭建当前阶段矩阵产线，并在主检索中设置偏好后投入矩阵。
              残片和矩阵精华则主要通过精馏、任务与成就获得，用于成长和聚焦。
@@ -49,7 +47,7 @@ public static partial class TutorialManager {
         Register("分馏数据中心前字",
             $"""
              You can now connect to the Fractionation Data Centre by pressing {"[Shift + F] key".WithColor(Orange)}.
-             This is a new master control panel that allows you to easily manage Fractionation Technology related content.
+             This is a recovered old-civilization control panel for managing Fractionation protocols, growth, and resources.
 
              {"[How to Use (simple version)]".WithColor(Blue)}
              The current 3.0 loop is organised around four keywords: Main Draw, Preference, Growth, and Focus.
@@ -74,17 +72,17 @@ public static partial class TutorialManager {
              4. Logistics Interaction Stations and Fractionation Towers follow the same growth philosophy, but gain EXP from different actions.
 
              {"[Item Interaction]".WithColor(Blue)} 
-             Item Interaction is an extremely powerful and convenient feature, much loved by various Icarus.
+             Item Interaction is an extremely powerful and convenient protocol, much loved by various Icarus.
 
-             Under the influence of item interaction technology, most actions can be performed using items stored in the Fractionation Data Centre, rather than having to extract them from the backpack and use them again. Examples include: 
+             After the Item Interaction protocol is restored, most actions can be performed using items stored in the Fractionation Data Centre, rather than having to extract them from the backpack and use them again. Examples include:
              Fabrication Table to manually craft items; Quick Build Bar to select a building; Tech to manually research; Building TAB to fill items; Fuel Fill; Warp Fill; Ammo Fill; Drone Fill ...... and many more.
-             However, to use these handy features, you need to unlock the Item Interaction tech before storing a sufficient number of items to the Fractionation Data Centre.
+             However, to use these handy features, you need to restore the Item Interaction protocol before storing a sufficient number of items to the Fractionation Data Centre.
 
              How to upload items:
              1. The Interaction Tower will upload items entered on the front interface. Check the [Fractionation Tower User Guide] guide for more information.
              2. The Logistics Interactive Station will upload items that meet certain conditions. Check the 'Logistics Interactive Station User's Guide' for more information.
              3. Some draw rewards and growth rewards will be uploaded automatically.
-             4. When you double-click the backpack button, all items in your backpack will be uploaded (you need to unlock the 'Item Interaction' technology, and your logistics backpack will not be affected).
+             4. When you double-click the backpack button, all items in your backpack will be uploaded (the Item Interaction protocol must be restored first, and your logistics backpack will not be affected).
 
              How to download items:
              1. On the Item Interaction or Important Items page, left-click or right-click the corresponding item to extract it. You can set the number of groups to be extracted on the Miscellaneous Settings page.
@@ -117,7 +115,7 @@ public static partial class TutorialManager {
              """,
             $"""
              现在，你可以按{"[Shift + F]键".WithColor(Orange)}连接到分馏数据中心。
-             这是一个全新的总控面板，可以让你方便地管理分馏科技相关内容。
+             这是一个已恢复的旧文明总控面板，可以让你方便地管理分馏协议、成长与资源。
 
              {"【使用简介（太长不看版）】".WithColor(Blue)}
              面板有很多功能，其中当前你必须理解的核心是“时隧检索、偏好、成长、聚焦”这四组系统。一般而言，推进流程是这样的：
@@ -137,7 +135,7 @@ public static partial class TutorialManager {
              在对应配方解锁后，你才可以对相应物品进行处理。
              注意，即使是相同的物品，也有不同的配方。例如，[矿物复制-黑雾矩阵]和[转化-黑雾矩阵]是不同的配方，它们之间没有任何关联。黑雾矩阵输入矿物复制塔，将会根据[矿物复制-黑雾矩阵]配方进行处理；黑雾矩阵输入转化塔，将会根据[转化-黑雾矩阵]配方进行处理。
              一个配方刚解锁时，它的输出信息是隐藏的。你需要搭建对应产线并使用此配方，之后相关信息会逐渐解锁。你也可以在设置中选择直接显示配方的具体信息。
-             配方或检索单位的获取途径有：时隧检索路线偏好、成长规划补差、产线运行，以及科技基线修复。
+             配方或检索单位的获取途径有：时隧检索路线偏好、成长规划补差、产线运行，以及协议基线修复。
 
              2.配方经验、等级与升级
              每个配方都有等级，解锁后等级为1。等级越高，配方效果也就越强。等级上限由配方所属系统决定。
@@ -164,17 +162,17 @@ public static partial class TutorialManager {
              4.物流交互站与分馏塔仍然共享同一套全局成长思路，只是经验来源不同。
 
              {"【物品交互】".WithColor(Blue)}
-             物品交互是一项极其强大的便利功能，深受各个伊卡洛斯的喜爱。
+             物品交互是一项极其强大的便利协议，深受各个伊卡洛斯的喜爱。
 
-             在物品交互科技的影响下，绝大多数操作都可以直接使用分馏数据中心存储的物品，而不需要提取物品到背包再使用。例如：
+             在物品交互协议恢复后，绝大多数操作都可以直接使用分馏数据中心存储的物品，而不需要提取物品到背包再使用。例如：
              制造台手动制作物品；快捷建造栏选择建筑；科技手动研究；建筑TAB填充物品；燃料填充；翘曲填充；弹药填充；无人机填充……等等。
-             不过，要想使用这些便利的功能，你需要先解锁物品交互科技，再向分馏数据中心存储足够数目的物品。
+             不过，要想使用这些便利的功能，你需要先恢复物品交互协议，再向分馏数据中心存储足够数目的物品。
 
              如何上传物品：
              1.交互塔会上传正面接口输入的物品。查阅【分馏塔使用指南】指引以了解更多信息。
              2.物流交互站会上传满足一定条件的物品。查阅【物流交互站使用指南】指引以了解更多信息。
              3.部分抽取奖励、成长奖励会自动上传到分馏数据中心。
-             4.双击整理背包按钮时，背包内的物品会全部上传（需解锁“物品交互”科技，物流背包不受影响）。
+             4.双击整理背包按钮时，背包内的物品会全部上传（需恢复“物品交互”协议，物流背包不受影响）。
 
              如何下载物品：
              1.在物品交互页面，左键或右键点击对应物品即可提取。可以在杂项设置页面设定提取的组数。
@@ -223,7 +221,7 @@ public static partial class TutorialManager {
         Register("分馏塔使用指南前字",
             $"""
              {"[Cultivate Fractionation Tower]".WithColor(Blue)} 
-             In the new Fractionation Technology, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
+             In the old-civilization recovery system, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
              Simply put, by using the Interaction Tower to fractionate a tower proto, you get the matching Fractionation Tower with 100% output.
              There are 4 tower protos, and their products are as follows:
              Type I: Interaction Tower
@@ -231,8 +229,8 @@ public static partial class TutorialManager {
              Type III: Conversion Tower
              Type IV: Rectification Tower
              Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix the different types of Protoembryo!
-             Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus unlocking the corresponding tech.
-             Uploading different Fractionation Towers will unlock different techs. For example, uploading a Mineral Replication Tower will unlock the Mineral Replication tech, and uploading an Interaction Tower will unlock the Item Interaction tech.
+             Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus restoring the corresponding old-civilization protocol.
+             Uploading different Fractionation Towers will restore different protocols. For example, uploading a Mineral Replication Tower will restore the Mineral Replication protocol, and uploading an Interaction Tower will restore the Item Interaction protocol.
              Note that only Interactive Towers in 'Item Interaction' mode can upload positively entered items to the Fractionation Data Centre. This means that there can be no items inside the tower, and the left and right ports cannot be connected to a conveyor belt.
 
              {"[Interaction Tower]".WithColor(Blue)} 
@@ -250,11 +248,11 @@ public static partial class TutorialManager {
              """,
             $"""
              {"【培养分馏塔】".WithColor(Blue)}
-             在新的分馏科技中，分馏塔不再通过制造得到，而是主要通过交互塔培养得到。
+             在旧文明恢复体系中，分馏塔不再通过制造得到，而是主要通过交互塔培养得到。
              简而言之，使用交互塔分馏各种原胚，即可 100% 得到对应类型的分馏塔。
              注意，{"任何分馏塔同一时间只能处理一种物品".WithColor(Orange)}，所以不同类型的原胚不要混投！
              将产出的分馏塔通过传送带输入至另一个交互塔的正面接口，即可上传物品至分馏数据中心，从而恢复对应的旧文明协议。
-             上传不同分馏塔会解锁不同科技。例如，上传矿物复制塔将解锁矿物复制科技，上传交互塔将解锁物品交互科技。
+             上传不同分馏塔会恢复不同协议。例如，上传矿物复制塔将恢复矿物复制协议，上传交互塔将恢复物品交互协议。
              注意，只有处于“物品交互”模式下的交互塔才能上传正面输入的物品到分馏数据中心。也就是说，交互塔内部不能有物品，并且左右接口不能与传送带连接。
 
              如果你不确定第一轮该怎么搭建，可以打开分馏数据中心的“恢复手册”页面。推荐顺序是：先放下交互塔，将左右口接成环，正面输出接临时箱子；向环内输入交互塔原胚，产出第二台交互塔；再拆掉临时箱子，把第一台塔的产物接入第二台塔的正面入口完成上传。

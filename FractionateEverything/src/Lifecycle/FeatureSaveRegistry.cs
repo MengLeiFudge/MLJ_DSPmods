@@ -30,6 +30,7 @@ public static class FeatureSaveRegistry {
             ("Process", ProcessManager.Import),
             ("Gacha", GachaManager.Import),
             ("Economy", EconomyManager.Import),
+            ("CivilizationRecovery", CivilizationRecoveryManager.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
@@ -49,6 +50,7 @@ public static class FeatureSaveRegistry {
             ("Process", ProcessManager.Export),
             ("Gacha", GachaManager.Export),
             ("Economy", EconomyManager.Export),
+            ("CivilizationRecovery", CivilizationRecoveryManager.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -65,6 +67,7 @@ public static class FeatureSaveRegistry {
         GachaManager.IntoOtherSave();
         EconomyManager.IntoOtherSave();
         DarkFogCombatManager.IntoOtherSave();
+        CivilizationRecoveryManager.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 

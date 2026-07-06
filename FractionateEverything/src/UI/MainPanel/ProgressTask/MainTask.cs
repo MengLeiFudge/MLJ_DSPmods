@@ -8,6 +8,7 @@ using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Gacha;
 using FE.Logic.DataCenter;
+using FE.Logic.Progression;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel.DrawGrowth;
@@ -64,6 +65,8 @@ public static class MainTask {
         Register("主线统计-路线偏好抽取", "Route-preference draws", "路线偏好抽取");
         Register("主线统计-原胚偏好抽取", "Proto-preference draws", "原胚偏好抽取");
         Register("科技解锁", "Tech unlocked", "科技解锁");
+        Register("协议恢复", "Protocol restored", "协议恢复");
+        Register("补给回收", "Supplies recovered", "补给回收");
         Register("物品解锁", "Item unlocked", "物品解锁");
         Register("建筑等级", "Building level", "建筑等级");
         Register("四塔最低等级", "Min tower level", "四塔最低等级");
@@ -174,7 +177,7 @@ public static class MainTask {
         }
 
         (string key, string en)[] routeDescs = [
-            ("解锁分馏数据中心科技", "Unlock the Fractionation Data Center technology"),
+            ("回收旧文明启动套件", "Recover the old-civilization starter kit"),
             ("累计完成 10 次分馏成功", "Reach 10 successful fractionations"),
             ("累计完成 50 次分馏成功", "Reach 50 successful fractionations"),
             ("累计完成 200 次分馏成功", "Reach 200 successful fractionations"),
@@ -187,13 +190,20 @@ public static class MainTask {
             ("累计完成 1 次主抽取原胚偏好", "Perform 1 Main Draw proto-preference draw"),
             ("累计完成 5 次主抽取原胚偏好", "Perform 5 Main Draw proto-preference draws"),
             ("累计完成 10 次主抽取原胚偏好", "Perform 10 Main Draw proto-preference draws"),
-            ("解锁矿物复制科技", "Unlock Mineral Replication technology"),
-            ("解锁分馏塔原胚科技", "Unlock Fractionator Proto technology"),
-            ("解锁物品转化科技", "Unlock Item Conversion technology"),
+            ("恢复矿物复制协议", "Restore the Mineral Replication protocol"),
+            ("恢复原胚培养资料", "Recover proto cultivation records"),
+            ("恢复物品转化协议", "Restore the Item Conversion protocol"),
             ("任意万物分馏建筑等级达到 3", "Raise any FE building to level 3"),
             ("任意万物分馏建筑等级达到 6", "Raise any FE building to level 6"),
-            ("解锁物品精馏科技", "Unlock Rectification technology"),
-            ("解锁星际物流交互科技", "Unlock Interstellar Logistics Interaction technology"),
+            ("恢复精馏协议", "Restore the Rectification protocol"),
+            ("恢复星际物流交互协议", "Restore the Interstellar Logistics Interaction protocol"),
+            ("回收电磁阶段补给", "Recover electromagnetic-stage supplies"),
+            ("回收能量阶段补给", "Recover energy-stage supplies"),
+            ("回收结构阶段补给", "Recover structure-stage supplies"),
+            ("回收信息阶段补给", "Recover information-stage supplies"),
+            ("回收引力阶段补给", "Recover gravity-stage supplies"),
+            ("回收宇宙阶段补给", "Recover universe-stage supplies"),
+            ("恢复物品交互协议", "Restore the Item Interaction protocol"),
             ("将黑雾支线推进到“信号接触”阶段", "Advance the Dark Fog branch to Signal Contact"),
             ("将黑雾支线推进到“地面压制”阶段", "Advance the Dark Fog branch to Ground Suppression"),
             ("累计解锁 40 个分馏配方", "Unlock 40 fractionation recipes"),
@@ -325,32 +335,32 @@ public static class MainTask {
     private static TaskBranch[] BuildSharedBranches(int finalRecipeTarget, long finalFractionTarget) {
         return [
             Branch("matrix-stage", "矩阵阶段",
-                Node("matrix-data-center", "分馏启示", "解锁分馏数据中心科技", 0, IFE残片, IFE残片, 200,
-                    () => IsTechUnlocked(TFE分馏数据中心), () => GetTechProgressText(TFE分馏数据中心)),
+                Node("matrix-data-center", "分馏启示", "回收旧文明启动套件", 0, IFE残片, IFE残片, 200,
+                    () => IsTechUnlocked(TFE分馏数据中心), () => GetProtocolProgressText(TFE分馏数据中心)),
                 Node("matrix-em", "电磁入门", "解锁电磁矩阵", 1, I电磁矩阵, IFE残片, 200,
                     () => IsTechUnlocked(T电磁矩阵), () => GetTechProgressText(T电磁矩阵)),
-                Node("matrix-gift-1", "电磁礼包", "研究超值礼包1", 1, I电磁矩阵, IFE残片, 200,
-                    () => IsTechUnlocked(TFE超值礼包1), () => GetTechProgressText(TFE超值礼包1)),
+                Node("matrix-gift-1", "电磁礼包", "回收电磁阶段补给", 1, I电磁矩阵, IFE残片, 200,
+                    () => IsTechUnlocked(TFE超值礼包1), () => GetSupplyProgressText(TFE超值礼包1)),
                 Node("matrix-energy", "能量阶段", "解锁能量矩阵", 2, I能量矩阵, IFE残片, 300,
                     () => IsTechUnlocked(T能量矩阵), () => GetTechProgressText(T能量矩阵)),
-                Node("matrix-gift-2", "能量礼包", "研究超值礼包2", 2, I能量矩阵, IFE残片, 300,
-                    () => IsTechUnlocked(TFE超值礼包2), () => GetTechProgressText(TFE超值礼包2)),
+                Node("matrix-gift-2", "能量礼包", "回收能量阶段补给", 2, I能量矩阵, IFE残片, 300,
+                    () => IsTechUnlocked(TFE超值礼包2), () => GetSupplyProgressText(TFE超值礼包2)),
                 Node("matrix-structure", "结构阶段", "解锁结构矩阵", 3, I结构矩阵, IFE残片, 400,
                     () => IsTechUnlocked(T结构矩阵), () => GetTechProgressText(T结构矩阵)),
-                Node("matrix-gift-3", "结构礼包", "研究超值礼包3", 3, I结构矩阵, IFE残片, 400,
-                    () => IsTechUnlocked(TFE超值礼包3), () => GetTechProgressText(TFE超值礼包3)),
+                Node("matrix-gift-3", "结构礼包", "回收结构阶段补给", 3, I结构矩阵, IFE残片, 400,
+                    () => IsTechUnlocked(TFE超值礼包3), () => GetSupplyProgressText(TFE超值礼包3)),
                 Node("matrix-information", "信息阶段", "解锁信息矩阵", 4, I信息矩阵, IFE残片, 500,
                     () => IsTechUnlocked(T信息矩阵), () => GetTechProgressText(T信息矩阵)),
-                Node("matrix-gift-4", "信息礼包", "研究超值礼包4", 4, I信息矩阵, IFE残片, 500,
-                    () => IsTechUnlocked(TFE超值礼包4), () => GetTechProgressText(TFE超值礼包4)),
+                Node("matrix-gift-4", "信息礼包", "回收信息阶段补给", 4, I信息矩阵, IFE残片, 500,
+                    () => IsTechUnlocked(TFE超值礼包4), () => GetSupplyProgressText(TFE超值礼包4)),
                 Node("matrix-gravity", "引力阶段", "解锁引力矩阵", 5, I引力矩阵, IFE残片, 600,
                     () => IsTechUnlocked(T引力矩阵), () => GetTechProgressText(T引力矩阵)),
-                Node("matrix-gift-5", "引力礼包", "研究超值礼包5", 5, I引力矩阵, IFE残片, 600,
-                    () => IsTechUnlocked(TFE超值礼包5), () => GetTechProgressText(TFE超值礼包5)),
+                Node("matrix-gift-5", "引力礼包", "回收引力阶段补给", 5, I引力矩阵, IFE残片, 600,
+                    () => IsTechUnlocked(TFE超值礼包5), () => GetSupplyProgressText(TFE超值礼包5)),
                 Node("matrix-universe", "宇宙阶段", "解锁宇宙矩阵", 6, I宇宙矩阵, IFE残片, 800,
                     () => IsTechUnlocked(T宇宙矩阵), () => GetTechProgressText(T宇宙矩阵)),
-                Node("matrix-gift-6", "宇宙礼包", "研究超值礼包6", 6, I宇宙矩阵, IFE残片, 800,
-                    () => IsTechUnlocked(TFE超值礼包6), () => GetTechProgressText(TFE超值礼包6))),
+                Node("matrix-gift-6", "宇宙礼包", "回收宇宙阶段补给", 6, I宇宙矩阵, IFE残片, 800,
+                    () => IsTechUnlocked(TFE超值礼包6), () => GetSupplyProgressText(TFE超值礼包6))),
             Branch("fraction-low", "低档分馏",
                 CountNode("frac-first", "首次分馏", "累计完成 1 次分馏成功", 0, IFE残片, 1, totalFractionSuccesses,
                     () => totalFractionSuccesses, 100),
@@ -422,8 +432,8 @@ public static class MainTask {
                 RecipeCountNode("recipe-30", "配方 30 个", 4, 30, 700),
                 RecipeCountNode("recipe-40", "配方 40 个", 5, 40, 900)),
             Branch("resource-interaction", "资源交互",
-                Node("resource-tech", "物品交互", "解锁物品交互科技", 1, IFE残片, IFE残片, 200,
-                    () => IsTechUnlocked(TFE物品交互), () => GetTechProgressText(TFE物品交互)),
+                Node("resource-tech", "物品交互", "恢复物品交互协议", 1, IFE残片, IFE残片, 200,
+                    () => IsTechUnlocked(TFE物品交互), () => GetProtocolProgressText(TFE物品交互)),
                 Node("resource-extract", "首次提取", "从分馏数据中心提取至少 1 次物品", 1, IFE残片, IFE残片, 200,
                     () => DataCenterInventory.ManualExtractCount >= 1,
                     () => GetCountProgressText("提取次数", DataCenterInventory.ManualExtractCount, 1)),
@@ -544,6 +554,14 @@ public static class MainTask {
 
     private static string GetTechProgressText(int techId) {
         return $"{"科技解锁".Translate()}：{(IsTechUnlocked(techId) ? "是".Translate() : "否".Translate())}";
+    }
+
+    private static string GetProtocolProgressText(int techId) {
+        return $"{"协议恢复".Translate()}：{(IsTechUnlocked(techId) ? "是".Translate() : "否".Translate())}";
+    }
+
+    private static string GetSupplyProgressText(int techId) {
+        return $"{"补给回收".Translate()}：{(IsTechUnlocked(techId) ? "是".Translate() : "否".Translate())}";
     }
 
     private static string GetItemUnlockProgressText(int itemId) {

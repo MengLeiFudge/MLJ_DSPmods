@@ -3,6 +3,7 @@ using System.IO;
 using BepInEx.Configuration;
 using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Progression;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -399,7 +400,7 @@ public static class RecoveryGuide {
     }
 
     private static bool HasDataCenterAccess() {
-        return GameMain.history != null && GameMain.history.TechUnlocked(TFE分馏数据中心);
+        return CivilizationRecoveryManager.HasDataCenterCommunication;
     }
 
     private static bool HasFirstInteractionTowerReady() {

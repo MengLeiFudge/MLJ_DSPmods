@@ -60,6 +60,7 @@ public static class FeatureBootstrap {
         }
 
         PreloadAndInitAll();
+        CivilizationRecoveryManager.SuppressInternalTechTreeEntries();
         // 获取部分数据，例如传送带最大速度等
         ProcessManager.Init();
         // 计算物品价值

@@ -10,126 +10,136 @@ public static partial class TechManager {
     public static void AddTranslations() {
         Register("T分馏数据中心", "Fractionation Data Centre", "分馏数据中心");
         Register("分馏数据中心描述",
-            $"With the exploration of more and more star regions, fractionation technology has greatly expanded. Press {"Shift + F".WithColor(Orange)} to connect to the fractionation data centre, which is a new way of data interaction and the main carrier of new fractionation technology. At the same time, in recognition of Icarus' spirit of exploration, some initial fractionation formulas will also be unlocked.",
-            $"随着探索的星区越来越多，分馏科技有了极大的拓展。按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心，这是全新的数据交互方式，也是新分馏科技的主要载体。同时，为了嘉奖伊卡洛斯的探索精神，一些初期的分馏配方也会随之解锁。");
+            $"An abnormal old-civilization signal has been recovered. The starter kit contains the data-centre communication channel, initial tower protos, and one Interaction Tower. Press {"Shift + F".WithColor(Orange)} after recovery to connect to the Fractionation Data Centre.",
+            $"已回收异常旧文明信号中的启动套件。套件包含数据中心通信方式、初始分馏塔原胚和一座交互塔。回收完成后按 {"Shift + F".WithColor(Orange)} 即可连接到分馏数据中心。");
         Register("分馏数据中心结果",
-            "You have mastered the method of connecting to the fractionation data centre, and now you can connect to the fractionation data centre.",
-            "你已经掌握了连接分馏数据中心的方法，现在可以连接到分馏数据中心了。");
-        Register("允许连接到分馏数据中心", "Allow connection to fractionation data centre");
-        Register("给予一些分馏塔原胚", "Provide some fractionator protos");
+            "Data-centre communication has been restored. The starter kit cargo is available.",
+            "数据中心通信已恢复，启动套件货物已就绪。");
+        Register("允许连接到分馏数据中心", "Restore data-centre communication", "恢复数据中心通信");
+        Register("给予一些分馏塔原胚", "Recover starter tower protos", "回收启动套件原胚");
+        Register("旧文明启动套件回收提示", "Old-civilization starter kit recovered.", "已回收旧文明启动套件，数据中心通信已建立。");
+        Register("异常旧文明信号出生星提示",
+            "Abnormal old-civilization signal detected on the birth planet.",
+            "出生星上探测到异常旧文明信号。");
+        Register("异常旧文明信号距离提示",
+            "Abnormal old-civilization signal: about {0} m to the east-northeast.",
+            "异常旧文明信号：东北偏东方向约 {0} 米。");
+        Register("文明阶段补给恢复提示", "Civilization recovery stage supplies received.", "文明恢复阶段补给已回收。");
+        Register("旧文明协议恢复提示", "Old-civilization protocol restored.", "旧文明协议已恢复。");
+        Register("物流交互协议恢复提示", "Logistics interaction protocol restored.", "物流交互协议已恢复。");
 
 
-        Register("T超值礼包1", "Super Value Gift Pack 1", "超值礼包1");
+        Register("T超值礼包1", "Electromagnetic Recovery Supplies", "电磁阶段补给");
         Register("超值礼包1描述",
-            "Super Value Gift Pack! Spend 100 Electromagnetic Matrix to receive Fragments and early-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100电磁矩阵，即可获得残片与前期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the electromagnetic matrix stage is restored. Contains fragments and early growth materials.",
+            "电磁矩阵阶段恢复后释放的文明补给，包含残片与前期成长物资。");
         Register("超值礼包1结果",
-            "Fragments and early-stage growth supplies have been added to the fractionation data centre.",
-            "残片与前期成长物资已下载到分馏数据中心。");
-        Register("一个物超所值的礼包", "A great value package deal");
+            "Fragments and early-stage growth supplies have been recovered.",
+            "残片与前期成长物资已回收。");
+        Register("一个物超所值的礼包", "Civilization recovery stage supplies", "文明恢复阶段补给");
 
-        Register("T超值礼包2", "Super Value Gift Pack 2", "超值礼包2");
+        Register("T超值礼包2", "Energy Recovery Supplies", "能量阶段补给");
         Register("超值礼包2描述",
-            "Super Value Gift Pack! Spend 100 Energy Matrix to receive Fragments and early-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100能量矩阵，即可获得残片与前期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the energy matrix stage is restored. Contains fragments and early growth materials.",
+            "能量矩阵阶段恢复后释放的文明补给，包含残片与前期成长物资。");
         Register("超值礼包2结果",
-            "Fragments and early-stage growth supplies have been added to the fractionation data centre.",
-            "残片与前期成长物资已下载到分馏数据中心。");
+            "Fragments and early-stage growth supplies have been recovered.",
+            "残片与前期成长物资已回收。");
 
-        Register("T超值礼包3", "Super Value Gift Pack 3", "超值礼包3");
+        Register("T超值礼包3", "Structure Recovery Supplies", "结构阶段补给");
         Register("超值礼包3描述",
-            "Super Value Gift Pack! Spend 100 Structure Matrix to receive Fragments and mid-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100结构矩阵，即可获得残片与中期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the structure matrix stage is restored. Contains fragments and mid-stage growth materials.",
+            "结构矩阵阶段恢复后释放的文明补给，包含残片与中期成长物资。");
         Register("超值礼包3结果",
-            "Fragments and mid-stage growth supplies have been added to the fractionation data centre.",
-            "残片与中期成长物资已下载到分馏数据中心。");
+            "Fragments and mid-stage growth supplies have been recovered.",
+            "残片与中期成长物资已回收。");
 
-        Register("T超值礼包4", "Super Value Gift Pack 4", "超值礼包4");
+        Register("T超值礼包4", "Information Recovery Supplies", "信息阶段补给");
         Register("超值礼包4描述",
-            "Super Value Gift Pack! Spend 100 Information Matrix to receive Fragments and mid-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100信息矩阵，即可获得残片与中期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the information matrix stage is restored. Contains fragments and mid-stage growth materials.",
+            "信息矩阵阶段恢复后释放的文明补给，包含残片与中期成长物资。");
         Register("超值礼包4结果",
-            "Fragments and mid-stage growth supplies have been added to the fractionation data centre.",
-            "残片与中期成长物资已下载到分馏数据中心。");
+            "Fragments and mid-stage growth supplies have been recovered.",
+            "残片与中期成长物资已回收。");
 
-        Register("T超值礼包5", "Super Value Gift Pack 5", "超值礼包5");
+        Register("T超值礼包5", "Gravity Recovery Supplies", "引力阶段补给");
         Register("超值礼包5描述",
-            "Super Value Gift Pack! Spend 100 Gravity Matrix to receive Fragments and late-stage growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100引力矩阵，即可获得残片与后期成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the gravity matrix stage is restored. Contains fragments and late-stage growth materials.",
+            "引力矩阵阶段恢复后释放的文明补给，包含残片与后期成长物资。");
         Register("超值礼包5结果",
-            "Fragments and late-stage growth supplies have been added to the fractionation data centre.",
-            "残片与后期成长物资已下载到分馏数据中心。");
+            "Fragments and late-stage growth supplies have been recovered.",
+            "残片与后期成长物资已回收。");
 
-        Register("T超值礼包6", "Super Value Gift Pack 6", "超值礼包6");
+        Register("T超值礼包6", "Universe Recovery Supplies", "宇宙阶段补给");
         Register("超值礼包6描述",
-            "Super Value Gift Pack! Spend 100 Universe Matrix to receive Fragments and endgame growth supplies.\n\nA tiny line in the bottom-right reads: final interpretation belongs to COSMO.",
-            "超值礼包！只要100宇宙矩阵，即可获得残片与终局成长物资！\n\n（右下角有一行很小的字，上面写着：本活动解释权归主脑所有。）");
+            "Civilization recovery supplies released after the universe matrix stage is restored. Contains fragments and endgame growth materials.",
+            "宇宙矩阵阶段恢复后释放的文明补给，包含残片与终局成长物资。");
         Register("超值礼包6结果",
-            "Fragments and endgame growth supplies have been added to the fractionation data centre.",
-            "残片与终局成长物资已下载到分馏数据中心。");
+            "Fragments and endgame growth supplies have been recovered.",
+            "残片与终局成长物资已回收。");
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the new fractionate technology, new fractionators are no longer crafted directly with materials. Obtain tower protos from time-tunnel retrieval or Growth Planning, then use the Interaction Tower to cultivate them into the matching fractionators.",
+            "In the recovered fractionation system, new fractionators are no longer crafted directly with materials. Obtain tower protos from time-tunnel retrieval or Growth Planning, then use the Interaction Tower to cultivate them into the matching fractionators.",
             "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从时隧检索原胚偏好或成长规划获得不同原胚，再用交互塔培养成对应的分馏塔。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
-        Register("解锁全部建筑培养配方", "Unlock all building train recipes");
+        Register("恢复全部建筑培养配方", "Restore all building train recipes", "恢复全部建筑培养配方");
         Register("给予一个交互塔", "Provide a Interactive Tower");
 
         Register("T物品交互", "Item Interaction", "物品交互");
         Register("物品交互描述",
-            $"COSMO has developed an advanced item transmission technology, in which the interaction tower is responsible for converting physical items into virtual data and vice versa. When the interaction tower is in interaction mode, input items are transmitted to the fractionation data centre in the form of data, and selected items are output in physical form. Additionally, the interaction tower is responsible for cultivating fractionator prototypes. When the interaction tower is in cultivation mode, it can cultivate non-specific fractionator prototypes into different types of fractionators.\n\n{"Upload an Interaction Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"主脑开发了一种高级的物品传输技术，其中交互塔承担了实体物品与虚拟数据互相转化的职责。交互塔处于交互模式时，输入的物品会以数据的形式传递到分馏数据中心，选择的物品会以实体形式输出。同时，交互塔也承担了培养分馏塔原胚的职责。交互塔处于培养模式时，可以将非定向的分馏塔原胚培养为不同的分馏塔。\n\n{"将交互塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"The old-civilization protocol lets the Interaction Tower convert physical items into data-centre records and recover selected records as items. The same tower also cultivates factionator protos into tower types.\n\n{"Upload an Interaction Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"旧文明协议允许交互塔把实体物品转换为数据中心记录，也可以把选中的记录重新取回为实体物品。同时，交互塔也承担了培养分馏塔原胚的职责。\n\n{"将交互塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品交互结果",
-            "You have mastered the Item Interaction technology and can now use the item interaction tower to interact with the production line.",
-            "你已经掌握了物品交互技术，可以用物品交互塔与产线交互了。");
+            "The item interaction protocol has been restored. The Interaction Tower can now interact with production lines.",
+            "物品交互协议已恢复，现在可以用交互塔与产线交互了。");
         Register("自动上传被扔掉的物品", "Automatically upload dropped items");
         Register("双击背包排序按钮，自动上传背包内物品",
             "Double-click the backpack sort button to automatically upload the items within the backpack");
 
         Register("T矿物复制", "Mineral Replication", "矿物复制");
         Register("矿物复制描述",
-            $"During the exploration of Icarus, the COSMO discovered that some star systems were extremely resource-poor and difficult to sustain. Mineral replication technology was the perfect solution to this problem, as it could replicate most minerals, allowing Icarus to easily explore barren star systems.\n\n{"Upload a Mineral Replication Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"在伊卡洛斯探索的过程中，主脑发现一些星区的资源极度匮乏，难以为继。矿物复制科技刚好可以解决这个问题，它能复制绝大多数矿物，让伊卡洛斯轻松探索贫瘠的星区。\n\n{"将矿物复制塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Mineral replication is an old-civilization protocol for sustaining poor star systems by duplicating most ores.\n\n{"Upload a Mineral Replication Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"矿物复制是旧文明用于维持贫瘠星区探索的协议，可以复制绝大多数矿物。\n\n{"将矿物复制塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("矿物复制结果",
-            "You have mastered the mineral replication technique and can now replicate minerals into multiple copies.",
-            "你已经掌握了矿物复制技术，可以将矿物复制为多份了。");
-        Register("解锁部分矿物复制配方", "Unlock some Mineral Replication recipes");
+            "The mineral replication protocol has been restored. Minerals can now be duplicated.",
+            "矿物复制协议已恢复，现在可以将矿物复制为多份。");
+        Register("恢复部分矿物复制配方", "Restore some Mineral Replication recipes", "恢复部分矿物复制配方");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            $"Item conversion technology can convert items into other items related to them. According to COSMO, transformations follow the principle of equivalence, though in practice there seems to be more to it than that...\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"物品转化科技可以将物品转化成与其相关的其他物品。据主脑说，转化遵循等价原则，不过实际似乎不止这样……\n\n{"将转化塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Item conversion is an old-civilization protocol that converts items into related outputs. It appears to follow equivalence rules, but the recovered records are incomplete.\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"物品转化是旧文明协议，可以将物品转化成与其相关的其他物品。它似乎遵循等价原则，但已恢复记录并不完整。\n\n{"将转化塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品转化结果",
-            "You have mastered the art of item conversion and can now convert items into other items related to them.",
-            "你已经掌握了物品转化技术，可以将物品转化成与其相关的其他物品了。");
+            "The item conversion protocol has been restored. Related item conversion is now available.",
+            "物品转化协议已恢复，现在可以进行相关物品转化。");
 
         Register("T物品精馏", "Item Rectification", "物品精馏");
         Register("物品精馏描述",
-            $"Rectification technology extracts matrix essences from matrices, then reshapes essences through compression, reflux, or fragment splitting. Rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to unlock this technology.".WithColor(Orange)}\n{"This technology is unlocked through a special method rather than normal research. Hover the placeholder item in the tech requirements to learn how to unlock it.".WithColor(Gold)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"物品精馏科技可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可解锁此科技。".WithColor(Orange)}\n{"该科技通过特殊方式解锁，而非通过研究。鼠标移至科技需求物品占位符上以了解如何解锁该科技。".WithColor(Gold)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Rectification is an old-civilization protocol that extracts matrix essences from matrices, then reshapes essences through compression, reflux, or fragment splitting. Rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"精馏是旧文明协议，可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品精馏结果",
-            "You have mastered Rectification technology and can now extract matrix essences from matrices.",
-            "你已经掌握了物品精馏技术，可以从矩阵中萃取矩阵精华了。");
+            "The rectification protocol has been restored. Matrix essences can now be extracted from matrices.",
+            "精馏协议已恢复，现在可以从矩阵中萃取矩阵精华。");
 
 
         Register("T行星内物流交互", "Planetary Logistics Interaction", "行星内物流交互");
         Register("行星内物流交互描述",
             "Planetary Logistics Interaction lets local logistics stations exchange items directly with the Fractionation Data Centre, reducing repeated manual hauling within the same planet.",
-            "行星内物流交互科技允许本地物流站直接与分馏数据中心交换物品，减少同星球范围内的重复搬运与手动中转。");
+            "行星内物流交互协议允许本地物流站直接与分馏数据中心交换物品，减少同星球范围内的重复搬运与手动中转。");
         Register("行星内物流交互结果",
-            "You have mastered planetary logistics interaction and can now let local logistics stations interact with the Fractionation Data Centre.",
-            "你已经掌握了行星内物流交互技术，现在可以让本地物流站与分馏数据中心直接交互。");
+            "The planetary logistics interaction protocol has been restored. Local logistics stations can now interact with the Fractionation Data Centre.",
+            "行星内物流交互协议已恢复，现在可以让本地物流站与分馏数据中心直接交互。");
 
         Register("T星际物流交互", "Interstellar Logistics Interaction", "星际物流交互");
         Register("星际物流交互描述",
             "Interstellar Logistics Interaction extends the same direct data-centre exchange to interstellar logistics stations, turning them into long-range item interaction hubs.",
-            "星际物流交互科技把同样的直连交互能力扩展到星际物流站，使其成为跨星系的物资交互中枢。");
+            "星际物流交互协议把同样的直连交互能力扩展到星际物流站，使其成为跨星系的物资交互中枢。");
         Register("星际物流交互结果",
-            "You have mastered interstellar logistics interaction and can now let interstellar logistics stations interact with the Fractionation Data Centre.",
-            "你已经掌握了星际物流交互技术，现在可以让星际物流站与分馏数据中心直接交互。");
+            "The interstellar logistics interaction protocol has been restored. Interstellar logistics stations can now interact with the Fractionation Data Centre.",
+            "星际物流交互协议已恢复，现在可以让星际物流站与分馏数据中心直接交互。");
     }
 
     /// <summary>

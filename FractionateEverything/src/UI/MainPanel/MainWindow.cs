@@ -11,6 +11,7 @@ using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Shell.Analysis;
 using FE.UI.MainPanel.Shell.MessageBox;
 using FE.UI.MainPanel.Theme;
+using FE.Logic.Progression;
 using UnityEngine;
 using static FE.Utils.Utils;
 using static FE.UI.Foundation.RectTransformUtils;
@@ -175,7 +176,7 @@ public static class MainWindow {
             return;
         }
 
-        if (!GameMain.history.TechUnlocked(TFE分馏数据中心)) {
+        if (!CivilizationRecoveryManager.HasDataCenterCommunication) {
             return;
         }
 

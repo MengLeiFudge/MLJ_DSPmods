@@ -476,7 +476,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "常规毕业",
-            "常规模式下累计 30000 次分馏成功，并解锁 150 个配方与星际物流交互科技",
+            "常规模式下累计 30000 次分馏成功，并解锁 150 个配方、恢复星际物流交互协议",
             "成就奖励-源点5",
             ETier.Platinum,
             () => !IsSpeedrunMode
@@ -490,7 +490,7 @@ public static class Achievements {
         list.Add(new AchievementInfo(
             "成就分类-挑战",
             "速通毕业",
-            "速通模式下累计 10000 次分馏成功、500 次主抽取路线偏好并解锁星际物流交互科技",
+            "速通模式下累计 10000 次分馏成功、500 次主抽取路线偏好并恢复星际物流交互协议",
             "成就奖励-源点3",
             ETier.Platinum,
             () => IsSpeedrunMode

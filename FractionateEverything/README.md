@@ -83,21 +83,19 @@ Both recipes and buildings need to be constantly upgraded to reach their most po
 * Building Enhancement: Once a building is fully upgraded, it can be gradually enhanced to +20 to speed up the rate and
   increase production capacity!
 
-### 新分馏科技 New Fractionation Technology
+### 文明恢复与协议 Civilization Recovery Protocols
 
-除了使用矩阵解锁的常规科技，还有一部分科技是通过特殊方式解锁的！
+万物分馏能力不再作为主脑科技树里的普通研究项。开局会回收旧文明启动套件，建立分馏数据中心通信，并取得初始原胚与第一座交互塔。
 
-将产物上传至分馏数据中心，即可解锁对应科技，得到合成它的配方~
+后续将不同分馏塔上传至分馏数据中心，即可恢复对应旧文明协议并取得配方。例如交互塔恢复物品交互协议，矿物复制塔恢复矿物复制协议。
 
-至于怎么做，就需要你在游戏中研究了！
+Fractionate Everything abilities are no longer presented as regular tech-tree research. At the start, an
+old-civilization starter kit restores data-centre communication and grants the initial protos plus the first Interaction
+Tower.
 
-In addition to the regular techs that are unlocked using the Matrix, there are some techs that are unlocked in a special
-way!
-
-By uploading a product to the Fractionation Data Center, you can unlock the corresponding technology and get the recipe
-to synthesize it.
-
-As for how to do it, you need to research it in the game!
+After that, upload different Fractionation Towers to the Fractionation Data Centre to restore the corresponding protocol
+and obtain its recipes. For example, Interaction Towers restore Item Interaction, while Mineral Replication Towers restore
+Mineral Replication.
 
 ### 任务系统、成就系统 Quest System, Achievement System
 
