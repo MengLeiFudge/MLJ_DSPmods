@@ -58,6 +58,14 @@ Mode `1` accepts optional project names after the mode argument. When present, o
 packaged, copied to R2, and offered to qqbot. Use this for single-mod correction publishes so unrelated
 `PublishTargets` are not resent.
 
+In automated mode without explicit project names, mode `1` may still package and copy every local mod to R2,
+but the qqbot publish candidate list must be narrowed from the latest commit's changed paths. For example,
+a commit that only touches `FractionateEverything/` should only offer `FractionateEverything` to qqbot even
+if `SaveDataExporter` and `UXAEnhance` were also rebuilt, packaged, or copied locally. Shared package-affecting
+paths such as `Directory.Build.props`, `MLJ_DSPmods.sln`, and `lib/` may intentionally fan out to all configured
+publish targets. Pure tool changes under `AfterBuildEvent/` must not create QQ group updates for unrelated mod
+packages.
+
 Agent publish order is mandatory:
 1. implement the change
 2. run the required verification commands

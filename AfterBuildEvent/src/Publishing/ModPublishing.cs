@@ -33,6 +33,7 @@ static partial class AfterBuildEvent {
         using CmdProcess cmd = new();
         List<GeneratedPackageInfo> generatedPackages = [];
         HashSet<string> selectedProjects = ParseSelectedPublishProjects(args);
+        HashSet<string> qqPublishProjectFilter = ResolveQqPublishProjectFilter(automationMode, selectedProjects);
         //强制终止游戏进程
         Console.WriteLine("终止游戏进程...");
         cmd.Exec(KillDSP);
@@ -181,7 +182,9 @@ static partial class AfterBuildEvent {
 
         //将R2的winhttp.dll、doorstop_config.ini复制到游戏目录
         PrepareR2Doorstop();
-        QqbotPublishOutcome publishOutcome = TryPublishGeneratedPackagesToQqbot(generatedPackages);
+        QqbotPublishOutcome publishOutcome = TryPublishGeneratedPackagesToQqbot(
+            generatedPackages,
+            qqPublishProjectFilter);
         if (automationMode) {
             if (publishOutcome.Succeeded) {
                 string finishMessage = publishOutcome.SentRequest
@@ -232,6 +235,63 @@ static partial class AfterBuildEvent {
         }
 
         return selectedProjects;
+    }
+
+    private static HashSet<string> ResolveQqPublishProjectFilter(
+        bool automationMode,
+        HashSet<string> selectedProjects) {
+        if (selectedProjects.Count > 0) {
+            return new(selectedProjects, StringComparer.OrdinalIgnoreCase);
+        }
+        if (!automationMode) {
+            return null;
+        }
+
+        HashSet<string> changedProjects = GetLatestCommitChangedPublishProjects();
+        if (changedProjects.Count > 0) {
+            Console.WriteLine($"自动发布目标：{string.Join(", ", changedProjects.OrderBy(item => item, StringComparer.OrdinalIgnoreCase))}");
+        } else {
+            Console.WriteLine("自动发布目标：最新提交未修改配置发布项目，QQ 上传将跳过");
+        }
+        return changedProjects;
+    }
+
+    private static HashSet<string> GetLatestCommitChangedPublishProjects() {
+        HashSet<string> projects = new(StringComparer.OrdinalIgnoreCase);
+        string output = TryGetGitOutput("diff-tree --no-commit-id --name-only -r HEAD");
+        foreach (string rawPath in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)) {
+            string path = rawPath.Trim().Replace('\\', '/');
+            if (path.Length == 0) {
+                continue;
+            }
+            if (IsSharedPackageAffectingPath(path)) {
+                foreach (PublishTarget target in PublishTargets) {
+                    projects.Add(target.ProjectName);
+                }
+                continue;
+            }
+            string projectName = GetProjectNameFromChangedPath(path);
+            if (!string.IsNullOrWhiteSpace(projectName)) {
+                projects.Add(projectName);
+            }
+        }
+        return projects;
+    }
+
+    private static bool IsSharedPackageAffectingPath(string path) {
+        return string.Equals(path, "Directory.Build.props", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(path, "MLJ_DSPmods.sln", StringComparison.OrdinalIgnoreCase)
+               || path.StartsWith("lib/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetProjectNameFromChangedPath(string path) {
+        foreach (PublishTarget target in PublishTargets) {
+            string prefix = $"{target.ProjectName}/";
+            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) {
+                return target.ProjectName;
+            }
+        }
+        return "";
     }
 
     private static void ReportMissingSelectedProjects(
@@ -336,12 +396,15 @@ static partial class AfterBuildEvent {
     }
 
     private static QqbotPublishOutcome TryPublishGeneratedPackagesToQqbot(
-        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
-        List<GeneratedPackageInfo> configuredPackages = GetConfiguredPublishPackages(generatedPackages);
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages,
+        HashSet<string> qqPublishProjectFilter) {
+        List<GeneratedPackageInfo> configuredPackages = GetConfiguredPublishPackages(
+            generatedPackages,
+            qqPublishProjectFilter);
         if (configuredPackages.Count == 0) {
             Console.WriteLine("自动上传跳过：本次没有配置需要推送到 QQ 群的 zip");
             return new() {
-                Succeeded = false,
+                Succeeded = true,
                 SentRequest = false,
             };
         }
@@ -417,9 +480,13 @@ static partial class AfterBuildEvent {
     }
 
     private static List<GeneratedPackageInfo> GetConfiguredPublishPackages(
-        IReadOnlyList<GeneratedPackageInfo> generatedPackages) {
+        IReadOnlyList<GeneratedPackageInfo> generatedPackages,
+        HashSet<string> qqPublishProjectFilter) {
         List<GeneratedPackageInfo> configuredPackages = [];
         foreach (GeneratedPackageInfo package in generatedPackages) {
+            if (qqPublishProjectFilter != null && !qqPublishProjectFilter.Contains(package.ProjectName)) {
+                continue;
+            }
             PublishTarget target = PublishTargets.FirstOrDefault(item =>
                 string.Equals(item.ProjectName, package.ProjectName, StringComparison.OrdinalIgnoreCase));
             if (target == null || target.GroupIds.Length == 0) {
