@@ -72,6 +72,10 @@ static partial class AfterBuildEvent {
 
     private static readonly PublishTarget[] PublishTargets = [
         new() {
+            ProjectName = "BlueprintPlanet",
+            GroupIds = [AutoUploadGroupId],
+        },
+        new() {
             ProjectName = "FractionateEverything",
             GroupIds = [AutoUploadGroupId],
         },

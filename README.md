@@ -50,6 +50,12 @@ save-name-specific file.
 
 Enhances UXAssist's auto-config logistics UI with configurable slider limits and per-slider global apply buttons.
 
+### [Blueprint Planet 蓝图星球](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/BlueprintPlanet)
+
+新建原版蓝图时自动记录当前星球名称为“蓝图星球”属性，并将它作为缩略图文字默认值。
+
+When creating a new vanilla blueprint, records the current planet name as the “Blueprint Planet” property and uses it as the default thumbnail text.
+
 ## 模组安装说明 Mod Installation Guide
 
 你可以在[thunderstore](https://thunderstore.io/c/dyson-sphere-program/p/MengLei/)查看我发布的所有模组。

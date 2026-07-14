@@ -1,0 +1,10 @@
+{
+    "name": "BlueprintPlanet",
+    "author": "MengLei",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/BlueprintPlanet",
+    "description": "新建蓝图时自动记录当前星球名称，并将其设为缩略图文字默认值。",
+    "dependencies": [
+        "xiaoye97-BepInEx-5.4.17"
+    ]
+}
