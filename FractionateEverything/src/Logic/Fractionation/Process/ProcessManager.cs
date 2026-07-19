@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using UnityEngine;
-using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.FracRecipes.Runtime;
+using FE.Logic.DataCenter;
 using FE.Logic.Items;
-using FE.UI.MainPanel.ProgressTask;
-using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
 using static FE.Logic.Station.ProliferatorPool;
 
@@ -329,14 +327,14 @@ public static partial class ProcessManager {
         int maxStack = runtimeConfig.MaxStack;
         float plrRatio = runtimeConfig.PlrRatio;
         float buildingSuccessBoost = runtimeConfig.SuccessBoost;
-        bool enableFracForever = runtimeConfig.EnableFluidEnhancement;
+        bool enableFluidOutputStacking = runtimeConfig.EnableFluidOutputStacking;
+        bool enableProductOutputStacking = runtimeConfig.EnableProductOutputStacking;
+        bool enableFracForever = runtimeConfig.EnableFractionationForever;
         int fluidInputCargoMax = BaseFracFluidInputCargoMax;
         int productOutputMax = runtimeConfig.ProductOutputMax;
         int fluidOutputMax = runtimeConfig.FluidOutputMax;
-        bool canProcessRecipe = recipe != null && RecipeGrowthQueries.IsUnlocked(recipe);
+        bool canProcessRecipe = recipe != null && RecipeAvailabilityStore.IsAvailable(recipe);
         bool moveDirectly = !canProcessRecipe;
-        RecipeGrowthContext growthContext = default;
-        bool growthContextReady = false;
         bool producedMainThisTick = false;
         bool producedSideThisTick = false;
         bool producedFluidThisTick = false;
@@ -344,7 +342,6 @@ public static partial class ProcessManager {
         bool needRecheckFullProduct = false;
         int consumedInputThisTick = 0;
         int successCountThisTick = 0;
-        int fragmentRewardThisTick = 0;
         List<ProductOutputInfo> productRegisterDeltas = null;
         RecordFractionatorPerfDetail(FractionatorPerfDetailPrepareConfig, GetFractionatorPerfElapsed(perfConfigStart));
         RecordFractionatorPerfStage(FractionatorPerfStagePrepare, GetFractionatorPerfElapsed(perfStageStart));
@@ -432,7 +429,7 @@ public static partial class ProcessManager {
                     if (__instance.fluidInputInc < 0) __instance.fluidInputInc = 0;
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * plrRatio;
-                    float successBoost = buildingSuccessBoost + Achievements.GetSuccessRateBonus();
+                    float successBoost = buildingSuccessBoost + RecipeModifierCache.GetSuccessRateBonus(recipe);
                     // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
                     if (isConversionTower) {
                         ConversionRecipe.CurrentLockedOutputId = __instance.GetLockedOutput(factory);
@@ -516,8 +513,6 @@ public static partial class ProcessManager {
                     }
                     RecordFractionatorPerfDetail(FractionatorPerfDetailProcessMergeOutputs,
                         GetFractionatorPerfElapsed(perfDetailStart));
-                    fragmentRewardThisTick += BaseRecipe.RollBinomialApprox(ref __instance.seed,
-                        batchResult.SuccessCount, 0.02f);
                 }
 
                 consumedInputThisTick += batchResult.ConsumedRegisterCount;
@@ -529,9 +524,8 @@ public static partial class ProcessManager {
         RecordFractionatorPerfStage(FractionatorPerfStageProcess, GetFractionatorPerfElapsed(perfStageStart));
         perfStageStart = GetFractionatorPerfTimestamp();
         perfDetailStart = GetFractionatorPerfTimestamp();
-        FlushProcessingDeltas(recipe, buildingID, fluidId, consumedInputThisTick, successCountThisTick,
-            fragmentRewardThisTick, productRegisterDeltas, productRegister, consumeRegister, ref growthContext,
-            ref growthContextReady);
+        FlushProcessingDeltas(fluidId, consumedInputThisTick, successCountThisTick,
+            productRegisterDeltas, productRegister, consumeRegister);
         RecordFractionatorPerfDetail(FractionatorPerfDetailFlushDeltas, GetFractionatorPerfElapsed(perfDetailStart));
 
         SetCurrentOutputFlags(factory,
@@ -620,7 +614,7 @@ public static partial class ProcessManager {
         byte inc;
         if (__instance.belt1 > 0) {
             if (__instance.isOutput1) {
-                TryOutputFluidToBelt(ref __instance, buildingID, enableFracForever && !moveDirectly, maxStack,
+                TryOutputFluidToBelt(ref __instance, enableFluidOutputStacking && !moveDirectly, maxStack,
                     cargoTraffic, __instance.belt1, fluidInputCountPerCargo, forceSingleStack: moveDirectly);
             } else if (!__instance.isOutput1 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
@@ -680,7 +674,7 @@ public static partial class ProcessManager {
         }
         if (__instance.belt2 > 0) {
             if (__instance.isOutput2) {
-                TryOutputFluidToBelt(ref __instance, buildingID, enableFracForever && !moveDirectly, maxStack,
+                TryOutputFluidToBelt(ref __instance, enableFluidOutputStacking && !moveDirectly, maxStack,
                     cargoTraffic, __instance.belt2, fluidInputCountPerCargo, forceSingleStack: moveDirectly);
             } else if (!__instance.isOutput2 && __instance.fluidInputCargoCount < fluidInputCargoMax) {
                 if (fluidId > 0) {
@@ -745,7 +739,7 @@ public static partial class ProcessManager {
             if (__instance.isOutput0) {
                 if (products.Count > 0) {
                     //获取分馏塔产物输出堆叠
-                    int productStack = maxStack;
+                    int productStack = enableProductOutputStacking ? maxStack : 1;
                     int lockedOutputId = isConversionTower && ConversionTower.EnableSingleLock
                         ? __instance.GetNormalizedLockedOutput(factory)
                         : 0;
@@ -788,7 +782,7 @@ public static partial class ProcessManager {
                 int interactionItemId =
                     cargoTraffic.TryPickItemAtRear(__instance.belt0, 0, ItemManager.needs, out stack, out inc);
                 if (interactionItemId > 0) {
-                    AddItemToModData(interactionItemId, stack, inc);
+                    DataCenterUploadRouter.Upload(interactionItemId, stack, inc);
                     __instance.fluidId = interactionItemId;
                     __instance.productId = interactionItemId;
                     __instance.produceProb = 0.01f;
@@ -845,10 +839,9 @@ public static partial class ProcessManager {
         delta.count += count;
     }
 
-    private static void FlushProcessingDeltas(BaseRecipe recipe, int buildingID, int fluidId, int consumedInputCount,
-        int successCount, int fragmentRewardCount, List<ProductOutputInfo> productRegisterDeltas,
-        int[] productRegister, int[] consumeRegister, ref RecipeGrowthContext growthContext,
-        ref bool growthContextReady) {
+    private static void FlushProcessingDeltas(int fluidId, int consumedInputCount,
+        int successCount, List<ProductOutputInfo> productRegisterDeltas,
+        int[] productRegister, int[] consumeRegister) {
         if (consumedInputCount > 0) {
             Interlocked.Add(ref consumeRegister[fluidId], consumedInputCount);
         }
@@ -859,19 +852,6 @@ public static partial class ProcessManager {
         }
         if (successCount > 0) {
             RecordFractionSuccess(successCount);
-            BuildingGrowthService.AddBuildingExp(buildingID, successCount);
-        }
-        if (successCount > 0) {
-            if (recipe != null && RecipeGrowthQueries.CanApplyProcessingProgress(recipe)) {
-                if (!growthContextReady) {
-                    growthContext = RecipeGrowthManager.BuildContext();
-                    growthContextReady = true;
-                }
-                RecipeGrowthExecutor.ApplyProcessingProgress(recipe, successCount, successCount, growthContext);
-            }
-        }
-        if (fragmentRewardCount > 0) {
-            AddItemToModData(IFE残片, fragmentRewardCount, 0, false);
         }
     }
 
@@ -1040,7 +1020,7 @@ public static partial class ProcessManager {
         return fractionator.fluidInputCount == 0 ? fractionator.fluidOutputCount : 0;
     }
 
-    private static int GetFluidOutputIncAvg(FractionatorComponent fractionator, int buildingID, int outputStack) {
+    private static int GetFluidOutputIncAvg(FractionatorComponent fractionator, int outputStack) {
         if (outputStack <= 0 || fractionator.fluidOutputCount <= 0) {
             return 0;
         }
@@ -1092,7 +1072,7 @@ public static partial class ProcessManager {
         return false;
     }
 
-    private static void TryOutputFluidToBelt(ref FractionatorComponent fractionator, int buildingID,
+    private static void TryOutputFluidToBelt(ref FractionatorComponent fractionator,
         bool enableFluidEnhancement, int fluidStack, CargoTraffic cargoTraffic, int beltId,
         float fluidInputCountPerCargo, bool forceSingleStack = false) {
         if (beltId <= 0 || fractionator.fluidOutputCount <= 0) {
@@ -1112,7 +1092,7 @@ public static partial class ProcessManager {
             if (outputStack <= 0) {
                 break;
             }
-            int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, buildingID, outputStack);
+            int fluidOutputIncAvg = GetFluidOutputIncAvg(fractionator, outputStack);
             if (!TryInsertFluidOutputAtHead(cargoPath, fractionator.fluidId, preferredStack, outputStack,
                     fluidOutputIncAvg, out int insertedStack)) {
                 break;

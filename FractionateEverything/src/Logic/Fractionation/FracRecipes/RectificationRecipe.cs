@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
-using FE.Logic.Gacha;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
@@ -32,8 +29,8 @@ public class RectificationRecipe : BaseRecipe {
     public const float MaxPlannedCompressionRatio = 0.60f;
     private const float TicketSplitRatio = 0.10f;
     public static int CurrentTuningTargetId;
-    private static readonly float[] CompressionOutputCounts = [0.45f, 0.46f, 0.48f, 0.50f, 0.51f, 0.52f];
-    private static readonly float[] RefluxOutputCounts = [1.80f, 1.88f, 1.96f, 2.00f, 2.06f, 2.12f];
+    private const float CompressionOutputCount = 0.45f;
+    private const float RefluxOutputCount = 1.80f;
 
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
@@ -52,9 +49,6 @@ public class RectificationRecipe : BaseRecipe {
             AddRecipe(CreateMatrixExtraction(matrixId));
         }
 
-        foreach (int itemId in MatrixEssenceItemIds) {
-            AddRecipe(CreateEssenceTuning(itemId));
-        }
     }
 
     private static RectificationRecipe CreateMatrixExtraction(int matrixId) {
@@ -153,10 +147,6 @@ public class RectificationRecipe : BaseRecipe {
     /// </summary>
     public override ERecipe RecipeType => ERecipe.Rectification;
     /// <summary>
-    /// 获取该配方在成长系统中的角色。
-    /// </summary>
-    public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.SpecialGrowth;
-    /// <summary>
     /// 获取精馏配方的具体类型。
     /// </summary>
     public RectificationRecipeKind Kind { get; }
@@ -171,22 +161,6 @@ public class RectificationRecipe : BaseRecipe {
             }
         }
         return false;
-    }
-
-    public static float GetCompressionOutputCountForLevel(int level) =>
-        CompressionOutputCounts[ClampRatioLevel(level)];
-
-    public static float GetRefluxOutputCountForLevel(int level) =>
-        RefluxOutputCounts[ClampRatioLevel(level)];
-
-    private static int ClampRatioLevel(int level) {
-        if (level <= 0) {
-            return 0;
-        }
-        if (level >= CompressionOutputCounts.Length) {
-            return CompressionOutputCounts.Length - 1;
-        }
-        return level;
     }
 
     /// <summary>
@@ -346,15 +320,10 @@ public class RectificationRecipe : BaseRecipe {
         int inputLevel = GetMatrixEssenceLevel(InputID);
         int outputLevel = GetMatrixEssenceLevel(outputInfo.OutputID);
         float count = outputInfo.OutputCount;
-        int recipeLevel = RecipeGrowthQueries.GetLevel(this);
         if (inputLevel >= 0 && outputLevel == inputLevel + 1) {
-            count = GetCompressionOutputCountForLevel(recipeLevel);
+            count = CompressionOutputCount;
         } else if (inputLevel >= 0 && outputLevel == inputLevel - 1) {
-            count = GetRefluxOutputCountForLevel(recipeLevel);
-        }
-
-        if (outputInfo.OutputID != IFE残片) {
-            count *= 1.0f + GachaService.GetRecipeDrawUnitResonance(this) * 0.005f;
+            count = RefluxOutputCount;
         }
         return count < 0.0001f ? 0.0001f : count;
     }
@@ -376,31 +345,4 @@ public class RectificationRecipe : BaseRecipe {
         outputs.Add(true, outputInfo.OutputID, totalCount);
         outputInfo.OutputTotalCount += totalCount;
     }
-
-    #region IModCanSave
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public override void Import(BinaryReader r) {
-        base.Import(r);
-        r.ReadBlocks();
-    }
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public override void Export(BinaryWriter w) {
-        base.Export(w);
-        w.WriteBlocks();
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public override void IntoOtherSave() {
-        base.IntoOtherSave();
-    }
-
-    #endregion
 }

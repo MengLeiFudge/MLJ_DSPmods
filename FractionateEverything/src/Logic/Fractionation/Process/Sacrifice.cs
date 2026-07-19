@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Gacha;
 using HarmonyLib;
 using UnityEngine;
 using static FE.Logic.DataCenter.DataCenterInventory;
@@ -38,21 +36,6 @@ public static partial class ProcessManager {
         return count;
     }
 
-    private static long GetEffectiveSacrificeCount(int buildingId, long count) {
-        int resonance = GachaManager.GetDrawUnitResonance(
-            new GachaDrawUnitKey(GachaDrawUnitKind.TowerFamily, ERecipe.BuildingTrain, buildingId));
-        if (resonance <= 0 || count <= 0) {
-            return count;
-        }
-
-        double scaled = count * (1.0 + resonance * 0.05);
-        if (scaled >= long.MaxValue) {
-            return long.MaxValue;
-        }
-        long effectiveCount = (long)scaled;
-        return effectiveCount > count ? effectiveCount : count;
-    }
-
     /// <summary>
     /// 交互塔特质
     /// </summary>
@@ -75,7 +58,7 @@ public static partial class ProcessManager {
             int itemId = FractionatorTowerCatalog.ActiveFractionatorBuildingIds[i];
             long sacrificedCount = Take10PercentTower(itemId);
             lastSacrificeTowerCounts[i] = sacrificedCount;
-            effectiveCounts[i] = GetEffectiveSacrificeCount(itemId, sacrificedCount);
+            effectiveCounts[i] = sacrificedCount;
             if (sacrificedCount > 0) {
                 buffCount++;
             }

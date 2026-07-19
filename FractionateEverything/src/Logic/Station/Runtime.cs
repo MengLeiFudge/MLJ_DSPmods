@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.Logic.DataCenter;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Station.Definitions;
 using FE.UI.MainPanel.Setting;
@@ -265,7 +266,7 @@ public static partial class StationManager {
             }
 
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
-            AddItemToModData(store.itemId, count, inc);
+            DataCenterUploadRouter.Upload(store.itemId, count, inc);
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
             BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
         }

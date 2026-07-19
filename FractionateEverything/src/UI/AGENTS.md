@@ -13,35 +13,29 @@ UI/
     ├── Shell/               # MessageBox / Analysis 主面板窗口壳
     ├── Theme/               # 主面板页面视觉骨架
     ├── MainWindow.cs          # 双面板总控（打开/关闭/切换/导航/保存）
-    ├── MainWindowPageRegistry.cs # 页面注册中心（分类、过滤、Analysis 开关）
-    └── DrawGrowth/            # 抽奖/商店/兑换系统（TicketRaffle + LimitedTimeStore + Gacha）
+    ├── MainWindowPageRegistry.cs # 页面注册中心（分类与过滤）
+    └── Civilization/          # 文明总览、协议恢复、远古科技树、文明成就
 └── Patches/      # 只保留 Common 通用控件 patch
 ```
 
 ## 双主面板契约（必须遵守）
 
-- 枚举：`FEMainPanelType = None/Legacy/Analysis`（枚举名暂保留存档兼容语义；窗口实现命名使用 MessageBox / Analysis）
+- 枚举：`FEMainPanelType = None/Legacy/Analysis`（`Legacy` 对应 MessageBox 风格窗口，`Analysis` 对应分析风格窗口）
 - 选中态：`SelectedMainPanelType`
 - 打开态：`OpenedMainPanelType`
 - 切换入口：`SwitchMainPanelFrom` / `SwitchSelectedMainPanelAndOpen`
 - 跨页跳转统一走：`MainWindow.NavigateToPage(category, tabIndex)`
-- 面板共享态统一走：`MainWindow.SharedPanelState`（目前仅含抽奖总次数与成就页码）
 
 ## 页面注册规则
 
 在 `MainWindowPageRegistry.allPages` 注册页面：
 
 ```csharp
-new(category, subpage,
-    createUI, updateUI,
-    enabledInAnalysis: bool,
-    sandboxOnly: bool,
-    createUIInAnalysis: optional)
+new(category, subpage, createUI, updateUI, sandboxOnly: bool)
 ```
 
-- Legacy 默认可见
-- Analysis 仅 `enabledInAnalysis=true` 才可见
-- Analysis 可选专用渲染：`createUIInAnalysis`
+- 注册页面在 MessageBox 与 Analysis 两种窗口中共用同一套页面实现。
+- 仅沙盒页面使用 `sandboxOnly=true`，普通页面不要自行判断窗口风格。
 
 ## MainPanel 页面最小接口（静态类）
 

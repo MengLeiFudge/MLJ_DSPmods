@@ -74,10 +74,10 @@ public static class RectificationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("精馏塔", "Rectification Tower");
+        Register("精馏塔", "Analysis Tower", "解析塔");
         Register("I精馏塔",
-            "Extracts matrix essences from matrices, then reshapes essences through compression, reflux, or fragment splitting.",
-            "从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。");
+            "Converts matrices into physical analysis data used to recover ancient-civilization protocols.",
+            "将矩阵转化为实体解析数据，用于恢复远古文明协议。");
     }
 
     /// <summary>

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FE.Compatibility.Mods;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
@@ -339,19 +337,12 @@ public class ConversionRecipe : BaseRecipe {
         // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
         float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         if (GetRandDouble(ref seed) < lockedSuccessRatio) {
-            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
-
-            if (GetRandDouble(ref seed) < doubleOutputRatio) {
-                countReal *= 2;
-            }
 
             if (countReal > 0) {
                 lockedPlan.SourceOutput.OutputTotalCount += countReal;
-                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
-                if (inputChange < 0) {
-                    fluidInputInc -= fluidInputIncAvg;
-                }
+                inputChange = -1;
+                fluidInputInc -= fluidInputIncAvg;
 
                 outputs = [new ProductOutputInfo(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal)];
                 return;
@@ -385,19 +376,12 @@ public class ConversionRecipe : BaseRecipe {
         // 2. 成功判定：单路锁定将成功后的随机路径替换为固定目标方案。
         float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
         if (GetRandDouble(ref seed) < lockedSuccessRatio) {
-            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             int countReal = RollOutputCount(ref seed, lockedPlan.OutputCount);
-
-            if (GetRandDouble(ref seed) < doubleOutputRatio) {
-                countReal *= 2;
-            }
 
             if (countReal > 0) {
                 lockedPlan.SourceOutput.OutputTotalCount += countReal;
-                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
-                if (inputChange < 0) {
-                    fluidInputInc -= fluidInputIncAvg;
-                }
+                inputChange = -1;
+                fluidInputInc -= fluidInputIncAvg;
 
                 outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, countReal);
                 return FractionationOutcome.Produced;
@@ -425,13 +409,9 @@ public class ConversionRecipe : BaseRecipe {
         int successCount = RollBinomialApprox(ref seed, aliveCount, lockedSuccessRatio);
         int passThroughCount = aliveCount - successCount;
 
-        RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
-        int remainInputCount = RollBinomialApprox(ref seed, successCount, remainInputRatio);
-        int successConsumedCount = successCount - remainInputCount;
+        AddRolledLockedOutput(ref seed, outputs, lockedPlan, successCount);
 
-        AddRolledLockedOutput(ref seed, outputs, lockedPlan, successCount, doubleOutputRatio);
-
-        int inputRemoveCount = destroyedCount + passThroughCount + successConsumedCount;
+        int inputRemoveCount = destroyedCount + passThroughCount + successCount;
         fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
             fluidInputInc = 0;
@@ -449,7 +429,7 @@ public class ConversionRecipe : BaseRecipe {
     }
 
     private static void AddRolledLockedOutput(ref uint seed, ProductOutputBuffer outputs,
-        LockedOutputPlan lockedPlan, int outputHits, float doubleOutputRatio) {
+        LockedOutputPlan lockedPlan, int outputHits) {
         if (outputHits <= 0) {
             return;
         }
@@ -457,10 +437,6 @@ public class ConversionRecipe : BaseRecipe {
         int baseCount = (int)lockedPlan.OutputCount;
         float fractionalCount = lockedPlan.OutputCount - baseCount;
         int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
-        if (doubleOutputRatio > 0f) {
-            int doubleHits = RollBinomialApprox(ref seed, outputHits, doubleOutputRatio);
-            totalCount += doubleHits * baseCount + RollBinomialApprox(ref seed, doubleHits, fractionalCount);
-        }
         if (totalCount <= 0) {
             return;
         }
@@ -513,31 +489,4 @@ public class ConversionRecipe : BaseRecipe {
         float outputValue = itemValue[outputId];
         return outputValue > 0f && outputValue < maxValue;
     }
-
-    #region IModCanSave
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public override void Import(BinaryReader r) {
-        base.Import(r);
-        r.ReadBlocks();
-    }
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public override void Export(BinaryWriter w) {
-        base.Export(w);
-        w.WriteBlocks();
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public override void IntoOtherSave() {
-        base.IntoOtherSave();
-    }
-
-    #endregion
 }

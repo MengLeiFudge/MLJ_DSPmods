@@ -122,12 +122,11 @@ FractionateEverything/src/
 │   └── DarkFog/                # They Come From Void compatibility
 ├── Logic/                      # → Logic/AGENTS.md
 │   ├── Buildings/              # Building definitions + building growth → Buildings/AGENTS.md
-│   ├── Fractionation/          # Recipes, growth, process, state, fractionator window presentation
+│   ├── Fractionation/          # Recipes, runtime process/state, fractionator window presentation
 │   ├── Station/                # Data-centre station interaction, station UI patches, proliferator pool
 │   ├── DataCenter/             # Data centre inventory + package access patches
 │   ├── Items/                  # Item prototypes/value/matrix helpers + item presentation patches
-│   ├── Gacha/                  # Gacha state, pools, draw service, gallery bonus
-│   ├── Economy/                # Market value, exchange, fragment economy, market board
+│   ├── Civilization/           # Ancient stages, analysis, protocols, tech tree, achievements, migration
 │   ├── Progression/            # Tech and tutorial systems
 │   ├── DarkFog/                # FE dark-fog branch and combat progression
 │   ├── EnginePatches/          # Standalone engine/data loading transpilers
@@ -136,11 +135,11 @@ FractionateEverything/src/
 │   ├── Components/             # Reusable widgets (MyWindow, MyImageButton, …) → Components/AGENTS.md
 │   ├── Patches/Common/         # UI-specific common control patches
 │   └── MainPanel/              # FE main panel pages → MainPanel/AGENTS.md
-│       ├── MainWindow.cs       # Dual-panel lifecycle hub (Legacy + Analysis)
-│       ├── MainWindowPageRegistry.cs # Page registry + category filtering + Analysis availability
+│       ├── MainWindow.cs       # Dual-panel lifecycle hub (MessageBox + Analysis)
+│       ├── MainWindowPageRegistry.cs # Page registry + category filtering
 │       ├── Archive/            # Stats, recipe gallery, dev diary
+│       ├── Civilization/       # Overview, protocol recovery, ancient tech tree, achievements
 │       ├── CoreOperate/        # Recipe/building operate panels
-│       ├── DrawGrowth/         # Gacha (Raffle + Store), exchange system
 │       ├── ProgressTask/       # Quests, achievements, main tasks
 │       ├── ResourceInteraction/ # DataCentre item interaction
 │       └── Setting/            # VIP, sandbox, misc config
@@ -351,7 +350,7 @@ public static IEnumerable<CodeInstruction> SomeClass_Method_Transpiler(
 - `.sisyphus/plans/` — task plans with checkboxes; update when tasks complete
 - `.sisyphus/notepads/` — learnings from previous sessions; read before starting
 - `.sisyphus/evidence/` — screenshots and supporting evidence
-- Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Fractionation/`, `Logic/Station/`, `Logic/Buildings/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Gacha/`, `Logic/Economy/`, `Logic/Progression/`, `Logic/DarkFog/`, `UI/`, `UI/Components/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
+- Subdirectory `AGENTS.md` files exist for major FE domains such as `Logic/Civilization/`, `Logic/Fractionation/`, `Logic/Station/`, `Logic/Buildings/`, `Logic/DataCenter/`, `Logic/Items/`, `Logic/Progression/`, `Logic/DarkFog/`, `UI/`, `UI/Controls/`, `UI/MainPanel/`, `Compatibility/`, `Utils/`, and `AfterBuildEvent/src/`
 - **Simulator-first workflow (mandatory):** when the user is exploring balance, pacing, or design direction and has not yet approved applying the result to the real mod, agents must restrict code changes to `VanillaCurveSim/**` (and supporting docs/plans if needed). In this stage, agents may read `FractionateEverything/**` to mirror real formulas, but must not modify FE project files until the user explicitly confirms that the simulated result should be applied to FE.
 
 ## Analysis UI Layout Baseline (Mandatory)

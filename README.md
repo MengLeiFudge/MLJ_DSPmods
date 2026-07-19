@@ -24,10 +24,10 @@ feedback. I would be appreciated.
 
 ### [Fractionate Everything 万物分馏](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/FractionateEverything)
 
-包含多个新分馏塔，大量分馏配方，还有可以直接与数据中心交互的物流交互站！尽情享受分馏的乐趣吧！
+包含交互塔、资源塔、转化塔和解析塔，以及以矩阵解析数据、协议恢复和远古科技树组织的大量分馏配方；物流交互站可以把生产线直接接入数据中心。
 
-Featuring multiple new fractionators, a vast array of distillation recipes, and Interaction Stations that interact
-directly with the data centre! Have fun with fractionation!
+Featuring four specialized fractionators, protocol recovery driven by matrix analysis data, an ancient technology
+tree, and Interaction Stations that connect production lines directly to the data centre.
 
 ### [Get Dsp Data 获取游戏数据](https://github.com/MengLeiFudge/MLJ_DSPmods/tree/master/GetDspData)
 

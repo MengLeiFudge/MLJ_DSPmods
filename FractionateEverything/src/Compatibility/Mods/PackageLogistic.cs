@@ -64,16 +64,16 @@ public static class PackageLogistic {
         }
         long modDataItemCount = GetModDataItemCount(itemId);
         if (itemId is I氢 or I精炼油) {
-            AddItemToModData(itemId, count, inc);
+            DataCenterUploadRouter.Upload(itemId, count, inc);
             __result = [count, inc];
         } else if (modDataItemCount < 10000) {
             int min = (int)Math.Min(count, 10000 - modDataItemCount);
             if (min != count) {
                 int splitInc = split_inc(ref count, ref inc, min);
-                AddItemToModData(itemId, min, splitInc);
+                DataCenterUploadRouter.Upload(itemId, min, splitInc);
                 __result = [min, splitInc];
             } else {
-                AddItemToModData(itemId, count, inc);
+                DataCenterUploadRouter.Upload(itemId, count, inc);
                 __result = [count, inc];
             }
         } else {

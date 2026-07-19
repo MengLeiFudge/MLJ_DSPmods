@@ -74,10 +74,10 @@ public static class MineralReplicationTower {
     /// 注册该分馏域对象需要的本地化文本。
     /// </summary>
     public static void AddTranslations() {
-        Register("矿物复制塔", "Mineral Replication Tower");
+        Register("矿物复制塔", "Resource Tower", "资源塔");
         Register("I矿物复制塔",
-            "Replicate various minerals, including dark fog-specific drops. The corresponding recipes must be unlocked and upgraded at the fractionation data centre.",
-            "复制各种矿物，包括黑雾特有掉落。需要在分馏数据中心解锁并升级对应配方。");
+            "Replicates raw resources, including eligible dark-fog drops. Protocols are recovered through civilization analysis.",
+            "复制原矿资源以及符合条件的黑雾掉落；对应协议通过文明解析逐步恢复。");
     }
 
     /// <summary>

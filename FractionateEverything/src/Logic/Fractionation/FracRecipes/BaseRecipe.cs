@@ -1,21 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
-using FE.Logic.Gacha;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.FracRecipes;
-
-/// <summary>
-/// 配方在成长系统中的职责分类。
-/// </summary>
-public enum ERecipeGrowthRole {
-    Production = 0,
-    ToolUnlock = 1,
-    SpecialGrowth = 2,
-}
 
 /// <summary>
 /// 分馏配方基类
@@ -26,12 +15,9 @@ public abstract class BaseRecipe(
     List<OutputInfo> outputMain,
     List<OutputInfo> outputAppend) {
     /// <summary>
-    /// 获取配方类型、输入物品和等级组成的显示名称。
+    /// 获取配方类型和输入物品组成的显示名称。
     /// </summary>
-    public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}"
-                              + (RecipeGrowthQueries.IsUnlocked(this)
-                                  ? $" Lv{RecipeGrowthQueries.GetLevel(this)}"
-                                  : "");
+    public string TypeName => $"{RecipeType.GetShortName()}-{LDB.items.Select(InputID).name}";
     /// <summary>
     /// 获取带矩阵阶段颜色的配方显示名称。
     /// </summary>
@@ -43,11 +29,6 @@ public abstract class BaseRecipe(
     /// 类型
     /// </summary>
     public abstract ERecipe RecipeType { get; }
-
-    /// <summary>
-    /// 配方成长语义。用于区分生产型、工具/解锁型、特殊成长型。
-    /// </summary>
-    public virtual ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.Production;
 
     /// <summary>
     /// 输入物品的ID
@@ -66,14 +47,7 @@ public abstract class BaseRecipe(
     /// <summary>
     /// 配方损毁率，数值越大时，增产剂对分馏效果越有明显提升
     /// </summary>
-    public virtual float DestroyRatio {
-        get {
-            float raw = 0.04f;
-            float reduce = GachaGalleryBonusManager.GetDestroyReduction(RecipeType);
-            float result = raw - reduce;
-            return result > 0f ? result : 0f;
-        }
-    }
+    public virtual float DestroyRatio => 0.04f;
 
     /// <summary>
     /// 主产物信息，概率之和必须为100%。
@@ -88,16 +62,6 @@ public abstract class BaseRecipe(
     /// 如果输出的物品数目为小数，则进行二次判定。
     /// </summary>
     public List<OutputInfo> OutputAppend => outputAppend;
-
-    /// <summary>
-    /// 原料不消耗概率
-    /// </summary>
-    public float RemainInputRatio => RecipeGrowthQueries.GetRemainInputRatio(this);
-
-    /// <summary>
-    /// 产物翻倍概率
-    /// </summary>
-    public float DoubleOutputRatio => RecipeGrowthQueries.GetDoubleOutputRatio(this);
 
     /// <summary>
     /// 获取某次输出的执行结果。
@@ -126,7 +90,6 @@ public abstract class BaseRecipe(
         // 2. 成功判定
         if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
             List<ProductOutputInfo> list = [];
-            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             // 主输出判定，由于主输出概率之和为100%，所以必定输出且只会输出其中一个
             double ratio = GetRandDouble(ref seed);
             float ratioMain = 0.0f;// 用于累计概率
@@ -139,11 +102,6 @@ public abstract class BaseRecipe(
                     countAvg -= countReal;
                     if (countAvg > 0.0001 && GetRandDouble(ref seed) < countAvg) {
                         countReal++;
-                    }
-
-                    // 产物翻倍判定
-                    if (GetRandDouble(ref seed) < doubleOutputRatio) {
-                        countReal *= 2;
                     }
 
                     if (countReal > 0) {
@@ -170,11 +128,8 @@ public abstract class BaseRecipe(
             }
 
             if (list.Count > 0) {
-                // 原料不消耗判定
-                inputChange = (GetRandDouble(ref seed) < remainInputRatio) ? 0 : -1;
-                if (inputChange < 0) {
-                    fluidInputInc -= fluidInputIncAvg;
-                }
+                inputChange = -1;
+                fluidInputInc -= fluidInputIncAvg;
                 outputs = list;
                 return;
             }
@@ -208,16 +163,12 @@ public abstract class BaseRecipe(
 
         // 2. 成功判定
         if (GetRandDouble(ref seed) < SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
-            RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
             double ratio = GetRandDouble(ref seed);
             float ratioMain = 0.0f;
             foreach (var outputInfo in OutputMain) {
                 ratioMain += outputInfo.SuccessRatio;
                 if (ratio <= ratioMain) {
                     int countReal = RollOutputCount(ref seed, outputInfo.OutputCount);
-                    if (GetRandDouble(ref seed) < doubleOutputRatio) {
-                        countReal *= 2;
-                    }
                     if (countReal > 0) {
                         outputs.Add(true, outputInfo.OutputID, countReal);
                         outputInfo.OutputTotalCount += countReal;
@@ -237,10 +188,8 @@ public abstract class BaseRecipe(
             }
 
             if (outputs.Count > 0) {
-                inputChange = GetRandDouble(ref seed) < remainInputRatio ? 0 : -1;
-                if (inputChange < 0) {
-                    fluidInputInc -= fluidInputIncAvg;
-                }
+                inputChange = -1;
+                fluidInputInc -= fluidInputIncAvg;
                 return FractionationOutcome.Produced;
             }
 
@@ -268,10 +217,6 @@ public abstract class BaseRecipe(
         int successCount = RollBinomialApprox(ref seed, aliveCount, successRatio);
         int passThroughCount = aliveCount - successCount;
 
-        RecipeGrowthQueries.GetProcessingRatios(this, out float remainInputRatio, out float doubleOutputRatio);
-        int remainInputCount = RollBinomialApprox(ref seed, successCount, remainInputRatio);
-        int successConsumedCount = successCount - remainInputCount;
-
         int remainingMainCount = successCount;
         float remainingMainRatio = 1.0f;
         for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
@@ -284,15 +229,15 @@ public abstract class BaseRecipe(
             if (remainingMainRatio <= 0f) {
                 remainingMainRatio = 1.0f;
             }
-            AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits, doubleOutputRatio);
+            AddRolledOutput(ref seed, outputs, outputInfo, true, outputHits);
         }
 
         foreach (var outputInfo in OutputAppend) {
             int outputHits = RollBinomialApprox(ref seed, successCount, outputInfo.SuccessRatio);
-            AddRolledOutput(ref seed, outputs, outputInfo, false, outputHits, 0f);
+            AddRolledOutput(ref seed, outputs, outputInfo, false, outputHits);
         }
 
-        int inputRemoveCount = destroyedCount + passThroughCount + successConsumedCount;
+        int inputRemoveCount = destroyedCount + passThroughCount + successCount;
         fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
             fluidInputInc = 0;
@@ -313,7 +258,7 @@ public abstract class BaseRecipe(
     /// 按输出概率和数量随机结算一条产物并加入缓存。
     /// </summary>
     protected static void AddRolledOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
-        bool isMainOutput, int outputHits, float doubleOutputRatio) {
+        bool isMainOutput, int outputHits) {
         if (outputHits <= 0) {
             return;
         }
@@ -321,10 +266,6 @@ public abstract class BaseRecipe(
         int baseCount = (int)outputInfo.OutputCount;
         float fractionalCount = outputInfo.OutputCount - baseCount;
         int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
-        if (doubleOutputRatio > 0f) {
-            int doubleHits = RollBinomialApprox(ref seed, outputHits, doubleOutputRatio);
-            totalCount += doubleHits * baseCount + RollBinomialApprox(ref seed, doubleHits, fractionalCount);
-        }
         if (totalCount <= 0) {
             return;
         }
@@ -414,8 +355,7 @@ public abstract class BaseRecipe(
                     if (info != null) info.OutputTotalCount = total;
                     else LogWarning($"Output {id} not found in {TypeName} append outputs");
                 }
-            }),
-            ("Meta", br => { RecipeGrowthManager.ImportLegacyState(this, br.ReadInt32()); })
+            })
         );
     }
 

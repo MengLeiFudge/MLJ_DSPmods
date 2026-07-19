@@ -7,12 +7,11 @@
 ```
 Logic/
 ├── Buildings/       # 建筑注册聚合
-├── Fractionation/   # 分馏配方、配方成长、分馏运行热路径、分馏塔表现层 patch
+├── Fractionation/   # 分馏配方、运行投影、分馏运行热路径、分馏塔表现层 patch
 ├── Station/         # 物流交互站运行、窗口/总控面板 patch、增产点池
 ├── DataCenter/      # 数据中心库存、玩家背包访问、物品访问重定向 patch
 ├── Items/           # FE 物品原型、价值、矩阵阶段、图标/信号选择表现层
-├── Gacha/           # 抽取状态、卡池、抽取服务、图鉴加成
-├── Economy/         # 市场价值、兑换、残片经济、市场面板数据
+├── Civilization/    # 远古文明阶段、解析、协议、科技树和成就
 ├── Progression/     # 科技、教程、成就/引导元数据
 ├── DarkFog/         # 黑雾分支和战斗进度
 ├── EnginePatches/   # 独立游戏引擎/数据加载 transpiler
@@ -50,7 +49,8 @@ public static void IntoOtherSave() {
 - 分馏配方/运行/窗口显示：放 `Fractionation`。
 - 物流交互站与数据中心交互：放 `Station`；纯数据中心库存或背包访问规则放 `DataCenter`。
 - 物品原型、价值、矩阵阶段和图标/信号表现层：放 `Items`。
-- 抽取、市场、科技、教程、黑雾分别放 `Gacha`、`Economy`、`Progression`、`DarkFog`。
+- 文明解析、协议、远古科技和文明成就放 `Civilization`；不得重新引入旧抽取、市场或线性配方成长域。
+- 原版科技兼容、启动套件和教程仍放 `Progression`；黑雾战斗进度放 `DarkFog`。
 - 独立游戏引擎级 transpiler 放 `EnginePatches`；能归属到功能域的 patch 不放这里。
 
 ## 反模式

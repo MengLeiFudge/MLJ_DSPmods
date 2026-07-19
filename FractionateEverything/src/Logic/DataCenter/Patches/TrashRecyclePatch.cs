@@ -22,7 +22,7 @@ public static class TrashRecyclePatch {
             return true;
         }
         DataCenterInventory.ManualUploadCount++;
-        DataCenterInventory.AddItemToModData(itemId, count, inc, true);
+        DataCenterUploadRouter.Upload(itemId, count, inc, true);
         return false;
     }
 
@@ -43,7 +43,7 @@ public static class TrashRecyclePatch {
         }
         if (__instance.inhandItemId > 0 && __instance.inhandItemCount > 0) {
             DataCenterInventory.ManualUploadCount++;
-            DataCenterInventory.AddItemToModData(__instance.inhandItemId, __instance.inhandItemCount,
+            DataCenterUploadRouter.Upload(__instance.inhandItemId, __instance.inhandItemCount,
                 __instance.inhandItemInc, true);
         }
         __instance.inhandItemId = 0;

@@ -80,8 +80,8 @@ public static partial class TechManager {
 
         Register("T分馏塔原胚", "Fractionator Proto", "分馏塔原胚");
         Register("分馏塔原胚描述",
-            "In the recovered fractionation system, new fractionators are no longer crafted directly with materials. Obtain tower protos from time-tunnel retrieval or Growth Planning, then use the Interaction Tower to cultivate them into the matching fractionators.",
-            "在新的分馏体系中，新分馏塔不再直接由材料制作。玩家需要从时隧检索原胚偏好或成长规划获得不同原胚，再用交互塔培养成对应的分馏塔。");
+            "In the recovered fractionation system, new towers are cultivated from recovered protos instead of being crafted directly. Feed a matching proto through an Interaction Tower to obtain that tower type.",
+            "在恢复后的分馏体系中，新分馏塔不再直接制造，而是由回收的原胚培养得到。将对应原胚送入交互塔，即可得到相应塔型。");
         Register("分馏塔原胚结果",
             "You have learned about the relevant information of the distillation tower precursor, and can combine different qualities of distillation tower precursor into directional distillation tower precursor.",
             "你已经了解了分馏塔原胚的相关信息，可以将分馏塔原胚培养为不同的分馏塔了。");
@@ -99,30 +99,30 @@ public static partial class TechManager {
         Register("双击背包排序按钮，自动上传背包内物品",
             "Double-click the backpack sort button to automatically upload the items within the backpack");
 
-        Register("T矿物复制", "Mineral Replication", "矿物复制");
+        Register("T矿物复制", "Resource Tower Control", "资源塔控制");
         Register("矿物复制描述",
-            $"Mineral replication is an old-civilization protocol for sustaining poor star systems by duplicating most ores.\n\n{"Upload a Mineral Replication Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"矿物复制是旧文明用于维持贫瘠星区探索的协议，可以复制绝大多数矿物。\n\n{"将矿物复制塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Registering a Resource Tower restores its control interface. Individual resource-replication recipes still require civilization protocol recovery.\n\n{"Upload a Resource Tower to the Fractionation Data Centre to register it.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"注册资源塔会恢复其控制接口；具体资源复制配方仍需通过文明协议恢复。\n\n{"将资源塔上传至分馏数据中心即可完成注册。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("矿物复制结果",
-            "The mineral replication protocol has been restored. Minerals can now be duplicated.",
-            "矿物复制协议已恢复，现在可以将矿物复制为多份。");
+            "The Resource Tower has been registered. Recover individual recipe protocols through civilization analysis.",
+            "资源塔已完成注册；请继续通过文明解析恢复具体配方协议。");
         Register("恢复部分矿物复制配方", "Restore some Mineral Replication recipes", "恢复部分矿物复制配方");
 
         Register("T物品转化", "Item Conversion", "物品转化");
         Register("物品转化描述",
-            $"Item conversion is an old-civilization protocol that converts items into related outputs. It appears to follow equivalence rules, but the recovered records are incomplete.\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"物品转化是旧文明协议，可以将物品转化成与其相关的其他物品。它似乎遵循等价原则，但已恢复记录并不完整。\n\n{"将转化塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"Registering a Conversion Tower restores its control interface. Individual conversion recipes still require civilization protocol recovery.\n\n{"Upload a Conversion Tower to the Fractionation Data Centre to register it.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"注册转化塔会恢复其控制接口；具体转化配方仍需通过文明协议恢复。\n\n{"将转化塔上传至分馏数据中心即可完成注册。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品转化结果",
-            "The item conversion protocol has been restored. Related item conversion is now available.",
-            "物品转化协议已恢复，现在可以进行相关物品转化。");
+            "The Conversion Tower has been registered. Recover individual recipe protocols through civilization analysis.",
+            "转化塔已完成注册；请继续通过文明解析恢复具体配方协议。");
 
-        Register("T物品精馏", "Item Rectification", "物品精馏");
+        Register("T物品精馏", "Civilization Analysis", "文明解析");
         Register("物品精馏描述",
-            $"Rectification is an old-civilization protocol that extracts matrix essences from matrices, then reshapes essences through compression, reflux, or fragment splitting. Rectification is not an equivalent exchange.\n\n{"Upload a Rectification Tower to the Fractionation Data Centre to restore this protocol.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
-            $"精馏是旧文明协议，可以从矩阵中萃取矩阵精华，并让矩阵精华在压缩、回流和残片拆票之间重整。精馏不是等价兑换。\n\n{"将精馏塔上传至分馏数据中心即可恢复此协议。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
+            $"The Analysis Tower converts matrices into physical analysis data used for protocol recovery.\n\n{"Upload an Analysis Tower to the Fractionation Data Centre to register it.".WithColor(Orange)}\nSee the {"[G] key".WithColor(Orange)} guide for detailed instructions.",
+            $"解析塔会将矩阵转化为实体解析数据，用于恢复配方协议。\n\n{"将解析塔上传至分馏数据中心即可完成注册。".WithColor(Orange)}\n查看{"[G]键".WithColor(Orange)}指引以了解详细信息。");
         Register("物品精馏结果",
-            "The rectification protocol has been restored. Matrix essences can now be extracted from matrices.",
-            "精馏协议已恢复，现在可以从矩阵中萃取矩阵精华。");
+            "The Analysis Tower has been registered. Matrices can now be converted into analysis data.",
+            "解析塔已完成注册；现在可以将矩阵转化为解析数据。");
 
 
         Register("T行星内物流交互", "Planetary Logistics Interaction", "行星内物流交互");

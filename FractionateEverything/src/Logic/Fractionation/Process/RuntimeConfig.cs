@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Progression;
 using static FE.Utils.Utils;
@@ -16,14 +17,6 @@ public static partial class ProcessManager {
     /// 获取该规则或快照允许的最高等级。
     /// </summary>
     public static readonly int MaxLevel = 12;
-    /// <summary>
-    /// 保存按建筑等级索引的输入保留加成表。
-    /// </summary>
-    public static readonly float[] ReinforcementBonusArr = new float[MaxLevel + 1];
-    /// <summary>
-    /// 保存按建筑等级索引的额外成功率加成表。
-    /// </summary>
-    public static readonly float[] ReinforcementSuccessRatioArr = new float[MaxLevel + 1];
     private static double[] incTableFixedRatio = [];
     /// <summary>
     /// 定义分馏塔流动输出缓存的基础上限。
@@ -67,31 +60,21 @@ public static partial class ProcessManager {
         /// </summary>
         public float SuccessBoost;
         /// <summary>
-        /// 判断该建筑是否已启用流动输入增产加成。
+        /// 判断该建筑是否已启用流动输出堆叠。
         /// </summary>
-        public bool EnableFluidEnhancement;
+        public bool EnableFluidOutputStacking;
+        /// <summary>
+        /// 判断该建筑是否已启用产物输出堆叠。
+        /// </summary>
+        public bool EnableProductOutputStacking;
+        /// <summary>
+        /// 判断该建筑是否已启用产物满载时继续分馏的永动能力。
+        /// </summary>
+        public bool EnableFractionationForever;
     }
 
     private static readonly FractionatorRuntimeConfig[] runtimeConfigsByBuildingOffset =
         new FractionatorRuntimeConfig[FractionatorBuildingTypeCount];
-
-    static ProcessManager() {
-        //强化成功率
-        int index = 0;
-        float ratio = 0.5f;
-        for (int loopCount = 1; index < ReinforcementSuccessRatioArr.Length - 1 && ratio > 0; loopCount++) {
-            for (int j = 0; j < loopCount && index < ReinforcementSuccessRatioArr.Length - 1; j++) {
-                ReinforcementSuccessRatioArr[index++] = ratio;
-            }
-            ratio -= 0.05f;
-        }
-        //强化加成
-        for (int i = 1; i < ReinforcementBonusArr.Length; i++) {
-            ReinforcementBonusArr[i] = i < 10
-                ? 0.001f * i * i + 0.019f * i
-                : 0.003f * i * i - 0.019f * i + 0.18f;
-        }
-    }
 
     /// <summary>
     /// 初始化分馏运行热路径的配置表。
@@ -121,21 +104,21 @@ public static partial class ProcessManager {
     }
 
     /// <summary>
-    /// 刷新分馏塔等级和配置派生出的运行参数。
+    /// 刷新分馏塔原型参数和远古科技节点派生出的运行参数。
     /// </summary>
     public static void RefreshFractionatorRuntimeConfig() {
-        SetRuntimeConfig(IFE交互塔, InteractionTower.MaxStack, InteractionTower.PlrRatio,
-            InteractionTower.SuccessBoost, InteractionTower.EnableFluidEnhancement);
-        SetRuntimeConfig(IFE矿物复制塔, MineralReplicationTower.MaxStack, MineralReplicationTower.PlrRatio,
-            MineralReplicationTower.SuccessBoost, MineralReplicationTower.EnableFluidEnhancement);
-        SetRuntimeConfig(IFE转化塔, ConversionTower.MaxStack, ConversionTower.PlrRatio,
-            ConversionTower.SuccessBoost, ConversionTower.EnableFluidEnhancement);
-        SetRuntimeConfig(IFE精馏塔, RectificationTower.MaxStack, RectificationTower.PlrRatio,
-            RectificationTower.SuccessBoost, RectificationTower.EnableFluidEnhancement);
+        SetRuntimeConfig(IFE交互塔, ERecipe.BuildingTrain, InteractionTower.MaxStack, InteractionTower.PlrRatio,
+            InteractionTower.SuccessBoost);
+        SetRuntimeConfig(IFE矿物复制塔, ERecipe.MineralCopy, MineralReplicationTower.MaxStack,
+            MineralReplicationTower.PlrRatio, MineralReplicationTower.SuccessBoost);
+        SetRuntimeConfig(IFE转化塔, ERecipe.Conversion, ConversionTower.MaxStack, ConversionTower.PlrRatio,
+            ConversionTower.SuccessBoost);
+        SetRuntimeConfig(IFE精馏塔, ERecipe.Rectification, RectificationTower.MaxStack, RectificationTower.PlrRatio,
+            RectificationTower.SuccessBoost);
     }
 
-    private static void SetRuntimeConfig(int buildingID, int maxStack, float plrRatio, float successBoost,
-        bool enableFluidEnhancement) {
+    private static void SetRuntimeConfig(int buildingID, ERecipe recipeType, int maxStack, float plrRatio,
+        float successBoost) {
 
         int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (index < 0 || index >= runtimeConfigsByBuildingOffset.Length) {
@@ -147,7 +130,9 @@ public static partial class ProcessManager {
             FluidOutputMax = BaseFracFluidOutputMax * Math.Max(1, maxStack / 4),
             PlrRatio = plrRatio,
             SuccessBoost = successBoost,
-            EnableFluidEnhancement = enableFluidEnhancement,
+            EnableFluidOutputStacking = TowerRuntimeModifierCache.IsFluidOutputStackingEnabled(recipeType),
+            EnableProductOutputStacking = TowerRuntimeModifierCache.IsProductOutputStackingEnabled(recipeType),
+            EnableFractionationForever = TowerRuntimeModifierCache.IsFractionationForeverEnabled(recipeType),
         };
     }
 
@@ -166,7 +151,9 @@ public static partial class ProcessManager {
             FluidOutputMax = BaseFracFluidOutputMax,
             PlrRatio = 1.0f,
             SuccessBoost = 0f,
-            EnableFluidEnhancement = false,
+            EnableFluidOutputStacking = false,
+            EnableProductOutputStacking = false,
+            EnableFractionationForever = false,
         };
     }
 }

@@ -6,7 +6,6 @@ using BepInEx.Configuration;
 using FE.Compatibility.Mods;
 using FE.Compatibility.Nebula;
 using FE.Logic.DataCenter;
-using FE.Logic.Gacha;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
@@ -64,7 +63,6 @@ public static class Miscellaneous {
     private static MyCheckBox PackageSortTwiceCheckBox;
     private static MyCheckBox PackageAutoSortTwiceCheckBox;
     private static UIButton SwitchMainPanelButton;
-    private static MyComboBox GachaModeComboBox;
     private static ConfigEntry<bool> EnablePackageSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageAutoSortTwiceEntry;
     private static ConfigEntry<bool> EnablePackageLogisticEntry;
@@ -83,9 +81,9 @@ public static class Miscellaneous {
     public static void AddTranslations() {
         Register("杂项设置", "Miscellaneous");
         Register("参数配置", "Parameter Settings", "参数配置");
-        Register("调整物品提取组数、背包阈值、抽取模式和主面板风格",
-            "Adjust item extraction stack counts, inventory thresholds, draw mode, and main-panel style",
-            "调整物品提取组数、背包阈值、抽取模式和主面板风格");
+        Register("调整物品提取组数、背包阈值和主面板风格",
+            "Adjust item extraction stack counts, inventory thresholds, and main-panel style",
+            "调整物品提取组数、背包阈值和主面板风格");
 
         Register("左键单击时提取几组物品", "Extract how many sets of items when left-click");
         Register("右键单击时提取几组物品", "Extract how many sets of items when right-click");
@@ -119,7 +117,6 @@ public static class Miscellaneous {
             "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
 
         Register("显示分馏配方详细信息", "Show fractionate recipe details");
-        Register("抽卡模式", "Gacha Mode", "抽卡模式");
         Register("显示分馏配方详细信息说明",
             "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
             "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
@@ -198,10 +195,6 @@ public static class Miscellaneous {
             LabeledComboBoxNode("物品消耗顺序", TakeItemPriorityStrs, TakeItemPriorityEntry,
                 tipTitle: "物品消耗顺序", tipContent: "物品消耗顺序说明",
                 pos: (++rowIdx, 0), objectName: "misc-take-priority"),
-            LabeledComboBoxNode("抽卡模式", ["常规模式", "速通模式"], (int)GachaManager.CurrentMode,
-                index => GachaManager.SetMode((GachaMode)index),
-                onBuilt: cb => GachaModeComboBox = cb,
-                pos: (++rowIdx, 0), objectName: "misc-gacha-mode"),
             LabeledSliderNode("物流交互站下载阈值", DownloadThresholdEntry, new DownloadThresholdMapper(), "P0",
                 tipTitle: "物流交互站下载阈值", tipContent: "物流交互站阈值修改说明",
                 onSliderBuilt: s => DownloadThresholdSlider = s,
@@ -237,7 +230,7 @@ public static class Miscellaneous {
                 rowGap: PageLayout.Gap,
                 children: [
                     Header("杂项设置", objectName: "misc-setting-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值、抽取模式和主面板风格"
+                        onBuilt: refs => refs.Summary.text = "调整物品提取组数、背包阈值和主面板风格"
                             .Translate().WithColor(White)),
                     ContentCard(
                         pos: (1, 0),
@@ -271,10 +264,6 @@ public static class Miscellaneous {
         if (AutoSorter.Enable) {
             PackageAutoSortTwiceCheckBox.enabled = PackageAccessRules.TechItemInteractionUnlocked;
         }
-        if (GachaModeComboBox != null) {
-            GachaModeComboBox.SetIndex((int)GachaManager.CurrentMode);
-        }
-
         RefreshSwitchMainPanelButtonLabel();
     }
 

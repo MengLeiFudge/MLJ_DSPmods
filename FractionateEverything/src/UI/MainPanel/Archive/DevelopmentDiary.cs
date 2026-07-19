@@ -6,7 +6,6 @@ using System.Text;
 using BepInEx.Configuration;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
-using FE.UI.MainPanel.ProgressTask;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
@@ -973,47 +972,10 @@ public static class DevelopmentDiary {
         return builder.ToString();
     }
 
-    private static bool TryUnlockRandomFragmentInternal() {
-        List<int> availableCategoryIndices = [];
-        for (int categoryIndex = 0; categoryIndex < diaryCategories.Length; categoryIndex++) {
-            if (diaryCategories[categoryIndex].Fragments.Any(fragment => !IsUnlocked(fragment))) {
-                availableCategoryIndices.Add(categoryIndex);
-            }
-        }
-
-        if (availableCategoryIndices.Count == 0) {
-            return false;
-        }
-
-        int selectedCategoryIndex = availableCategoryIndices[GetRandInt(0, availableCategoryIndices.Count)];
-        foreach (DiaryFragment fragment in diaryCategories[selectedCategoryIndex].Fragments
-                     .OrderBy(static item => item.Order)) {
-            if (IsUnlocked(fragment)) {
-                continue;
-            }
-
+    private static void UnlockAllFragments() {
+        foreach (DiaryFragment fragment in diaryFragments) {
             unlockedFragmentIds.Add(fragment.Id);
-            return true;
         }
-
-        return false;
-    }
-
-    private static void SyncUnlockedFragmentsWithAchievements() {
-        int targetUnlockedCount = Math.Min(Achievements.GetClaimedAchievementCount(), diaryFragments.Length);
-        while (unlockedFragmentIds.Count < targetUnlockedCount) {
-            if (!TryUnlockRandomFragmentInternal()) {
-                break;
-            }
-        }
-    }
-
-    public static bool TryUnlockRandomFragmentFromAchievement() {
-        bool changed = TryUnlockRandomFragmentInternal();
-        if (changed) {
-            RefreshEntry();
-        }
-        return changed;
     }
 
     private static RectTransform tab;
@@ -1202,7 +1164,7 @@ public static class DevelopmentDiary {
             })
         );
         ClampSelection();
-        SyncUnlockedFragmentsWithAchievements();
+        UnlockAllFragments();
     }
 
     public static void Export(BinaryWriter w) {
@@ -1228,7 +1190,7 @@ public static class DevelopmentDiary {
 
     public static void IntoOtherSave() {
         ResetState();
-        SyncUnlockedFragmentsWithAchievements();
+        UnlockAllFragments();
     }
 
     #endregion

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FE.Compatibility.Mods;
 using FE.Logic.Fractionation.Fractionators;
@@ -126,31 +125,4 @@ public class MineralCopyRecipe : BaseRecipe {
     public MineralCopyRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
-
-    #region IModCanSave
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public override void Import(BinaryReader r) {
-        base.Import(r);
-        r.ReadBlocks();
-    }
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public override void Export(BinaryWriter w) {
-        base.Export(w);
-        w.WriteBlocks();
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public override void IntoOtherSave() {
-        base.IntoOtherSave();
-    }
-
-    #endregion
 }

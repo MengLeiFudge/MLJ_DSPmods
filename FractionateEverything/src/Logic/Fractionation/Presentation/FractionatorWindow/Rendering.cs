@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.FracRecipes.Runtime;
 using FE.Logic.Fractionation.Process;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,8 +38,7 @@ public static partial class FractionatorWindow {
         if (building == null) return;
 
         // 标题
-        int level = building.Level();
-        modWindow.titleText.text = level > 0 ? $"{building.name} +{level}" : building.name;
+        modWindow.titleText.text = building.name;
 
         // 电力
         PowerConsumerComponent powerConsumer = src.powerSystem.consumerPool[fractionator.pcId];
@@ -139,11 +138,10 @@ public static partial class FractionatorWindow {
         float pointsBonus = (float)MaxTableMilli(avgInc);
 
         float recipeSuccessRatio = 0f, mainOutputBonus = 1f, destroyRatio = 0f;
-        if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
+        if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost);
             recipeSuccessRatio *= 1 + pointsBonus;
             destroyRatio = recipe.DestroyRatio;
-            mainOutputBonus = 1 + recipe.DoubleOutputRatio;
         }
 
         UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, mainOutputBonus, destroyRatio, hasFluid,
@@ -184,9 +182,7 @@ public static partial class FractionatorWindow {
                 modWindow.stateText.text = "原料堆积".Translate();
                 modWindow.stateText.color = modWindow.workStoppedColor;
             } else if (products.Any(p => p.count >= productOutputMax)) {
-                modWindow.stateText.text = building.EnableFluidEnhancement()
-                    ? "分馏永动".Translate()
-                    : "产物堆积".Translate();
+                modWindow.stateText.text = "产物堆积".Translate();
                 modWindow.stateText.color = modWindow.workStoppedColor;
             } else if (fractionator.fluidInputCount == 0) {
                 modWindow.stateText.text = "缺少原材料".Translate();
@@ -303,7 +299,7 @@ public static partial class FractionatorWindow {
                                   && rectificationRecipe != null
                                   && rectificationRecipe.SupportsTuningTarget(tuningTargetId);
 
-        if (recipe != null && RecipeGrowthQueries.IsUnlocked(recipe)) {
+        if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             foreach (var output in recipe.OutputMain) {
                 if (mainCount >= MaxMainSlots) break;
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
@@ -366,16 +362,15 @@ public static partial class FractionatorWindow {
             if (recipe == null) {
                 fluidRightText.text =
                     $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方不存在".Translate()}</color>";
-            } else if (!RecipeGrowthQueries.IsUnlocked(recipe)) {
+            } else if (!RecipeAvailabilityStore.IsAvailable(recipe)) {
                 fluidRightText.text =
                     $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{"配方未解锁".Translate()}</color>";
             } else {
-                int recipeLevel = RecipeGrowthQueries.GetLevel(recipe);
                 bool hasDestroy = destroyRatio > 0f;
                 string destroyStr = hasDestroy ? destroyRatio.FormatP() : "";
-                fluidRightText.text = recipeLevel > 0
-                    ? $"{"配方强化".Translate()} +{recipeLevel}\n<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>"
-                    : (hasDestroy ? $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>" : "");
+                fluidRightText.text = hasDestroy
+                    ? $"<color=#{ColorUtility.ToHtmlStringRGBA(DestroyColor)}>{destroyStr}</color>"
+                    : "";
             }
         }
 

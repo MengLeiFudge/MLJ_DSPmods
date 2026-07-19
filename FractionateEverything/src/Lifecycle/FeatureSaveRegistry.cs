@@ -1,11 +1,9 @@
 ﻿using System.IO;
 using FE.Logic.Buildings;
+using FE.Logic.Civilization;
 using FE.Logic.DarkFog;
-using FE.Logic.Economy;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Gacha;
 using FE.Logic.DataCenter;
 using FE.Logic.Progression;
 using FE.Logic.Station;
@@ -23,34 +21,27 @@ public static class FeatureSaveRegistry {
         r.ReadBlocks(
             ("Recipe", RecipeManager.Import),
             ("VanillaRecipes", VanillaRecipeManager.Import),
-            ("RecipeGrowth", RecipeGrowthManager.Import),
             ("Stacking", StackingManager.Import),
             ("Building", BuildingManager.Import),
             ("Item", DataCenterInventory.Import),
             ("Process", ProcessManager.Import),
-            ("Gacha", GachaManager.Import),
-            ("Economy", EconomyManager.Import),
-            ("CivilizationRecovery", CivilizationRecoveryManager.Import),
+            ("AncientCivilization", CivilizationModule.Import),
             ("UI", MainWindow.Import),
             ("Station", StationManager.Import)
         );
         VanillaRecipeManager.SyncRuntimeStateAfterImport();
-        TechManager.RequestLoadTimeRecipeBaselineApply();
-        TechManager.TryApplyLoadTimeRecipeBaselines();
+        CivilizationModule.AfterImport();
     }
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
             ("Recipe", RecipeManager.Export),
             ("VanillaRecipes", VanillaRecipeManager.Export),
-            ("RecipeGrowth", RecipeGrowthManager.Export),
             ("Stacking", StackingManager.Export),
             ("Building", BuildingManager.Export),
             ("Item", DataCenterInventory.Export),
             ("Process", ProcessManager.Export),
-            ("Gacha", GachaManager.Export),
-            ("Economy", EconomyManager.Export),
-            ("CivilizationRecovery", CivilizationRecoveryManager.Export),
+            ("AncientCivilization", CivilizationModule.Export),
             ("UI", MainWindow.Export),
             ("Station", StationManager.Export)
         );
@@ -59,15 +50,12 @@ public static class FeatureSaveRegistry {
     public static void IntoOtherSave() {
         RecipeManager.IntoOtherSave();
         VanillaRecipeManager.IntoOtherSave();
-        RecipeGrowthManager.IntoOtherSave();
         StackingManager.IntoOtherSave();
         BuildingManager.IntoOtherSave();
         DataCenterInventory.IntoOtherSave();
         ProcessManager.IntoOtherSave();
-        GachaManager.IntoOtherSave();
-        EconomyManager.IntoOtherSave();
         DarkFogCombatManager.IntoOtherSave();
-        CivilizationRecoveryManager.IntoOtherSave();
+        CivilizationModule.IntoOtherSave();
         MainWindow.IntoOtherSave();
         StationManager.IntoOtherSave();
 

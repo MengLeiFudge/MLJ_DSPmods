@@ -85,7 +85,7 @@ public static class StorageSortPatch {
                     || ItemManager.itemValue[itemId] >= ItemManager.maxValue) {
                     continue;
                 }
-                DataCenterInventory.AddItemToModData(itemId, package.grids[index].count, package.grids[index].inc,
+                DataCenterUploadRouter.Upload(itemId, package.grids[index].count, package.grids[index].inc,
                     true);
                 package.grids[index].itemId = 0;
                 package.grids[index].count = 0;

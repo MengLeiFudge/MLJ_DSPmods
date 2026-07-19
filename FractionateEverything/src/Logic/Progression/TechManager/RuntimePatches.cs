@@ -1,5 +1,4 @@
 ﻿using System;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Fractionators;
 using HarmonyLib;
 using static FE.Utils.Utils;
@@ -15,7 +14,6 @@ public static partial class TechManager {
 
     public static void ResetTechUnlockFlags() {
         Array.Clear(techUnlockFlags, 0, techUnlockFlags.Length);
-        pendingLoadTimeRecipeBaselineApply = false;
     }
 
     public static void CheckTechUnlockCondition(int itemId) {
@@ -50,9 +48,6 @@ public static partial class TechManager {
 
         StackingManager.SyncRuntimeState();
         CivilizationRecoveryManager.Tick();
-        TryApplyLoadTimeRecipeBaselines();
-
-        RecipeGrowthManager.SyncRuntimeUnlocks();
     }
 
     private static int GetActiveFractionatorUnlockTechId(int index) {
@@ -93,20 +88,6 @@ public static partial class TechManager {
             return false;
         }
         return true;
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameHistoryData), nameof(GameHistoryData.NotifyTechUnlock))]
-    public static void GameHistoryData_NotifyTechUnlock_Postfix(int _techId) {
-        if (_techId == TFE分馏塔原胚) {
-            EnsureBuildingTrainRecipeBaseline();
-        } else if (_techId == TFE矿物复制) {
-            EnsureInitialMineralCopyRecipeBaseline();
-        } else if (_techId == TFE物品精馏) {
-            EnsureRectificationRecipeBaseline();
-        }
-
-        EnsureGuaranteedConversionRecipeBaselines();
     }
 
     [HarmonyPrefix]

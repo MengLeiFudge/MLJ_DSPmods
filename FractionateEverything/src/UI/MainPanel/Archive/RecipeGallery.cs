@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
-using FE.Logic.Fractionation.Growth;
+using FE.Logic.Civilization.Protocols;
 using FE.Logic.Fractionation.FracRecipes;
+using FE.Logic.Fractionation.FracRecipes.Runtime;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
 using FE.UI.MainPanel.Theme;
@@ -18,9 +19,9 @@ namespace FE.UI.MainPanel.Archive;
 /// 分馏配方图鉴与完成度统计页面。
 /// </summary>
 public static class RecipeGallery {
-    // 行数：配方类型+矩阵7种+总计    列数：矩阵类型+配方3种+总计
+    // 行数：表头+矩阵7种+总计    列数：矩阵类型+配方4种+总计
     private const int MatrixCount = 7;
-    private const int RecipeCount = 3;
+    private const int RecipeCount = 4;
     private static RectTransform window;
     private static RectTransform tab;
     private static PageLayout.HeaderRefs header;
@@ -31,8 +32,8 @@ public static class RecipeGallery {
     public static void AddTranslations() {
         Register("配方图鉴", "Recipe Gallery");
         Register("配方解锁情况",
-            $"The recipe gallery shows the current totals of {"Maxed".WithColor(7)}/{"Unlocked".WithColor(4)}/{"Total".WithColor(1)}:",
-            $"配方图鉴当前展示的是 {"满级".WithColor(7)}/{"已解锁".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
+            $"The recipe gallery shows the current totals of {"Complete".WithColor(7)}/{"Available".WithColor(4)}/{"Total".WithColor(1)}:",
+            $"配方图鉴当前展示的是 {"完成".WithColor(7)}/{"可用".WithColor(4)}/{"总数".WithColor(1)} 三项汇总：");
         Register("总计", "Total");
     }
 
@@ -63,7 +64,7 @@ public static class RecipeGallery {
                 ]));
         recipeUnlockInfoText[0, 0].text = "";
         for (int j = 1; j <= RecipeCount; j++) {
-            recipeUnlockInfoText[0, j].text = RecipeTypeShortNames[j - 1];
+            recipeUnlockInfoText[0, j].text = RecipeTypes[j - 1].GetShortName();
         }
         recipeUnlockInfoText[0, RecipeCount + 1].text = "总计".Translate();
         for (int i = 1; i <= MatrixCount; i++) {
@@ -121,15 +122,34 @@ public static class RecipeGallery {
         header.Summary.text = "配方解锁情况".Translate().WithColor(White);
         txtGridTitle.text = "配方解锁情况".Translate().WithColor(Orange);
 
-        int[,] fullUpgradeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
+        int[,] completeCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] unlockCountArr = new int[MatrixCount + 1, RecipeCount + 1];
         int[,] totalCountArr = new int[MatrixCount + 1, RecipeCount + 1];
-        var counts = RecipeGrowthQueries.GetGalleryCounts(Matrixes, RecipeTypes);
         for (int i = 0; i < MatrixCount; i++) {
             for (int j = 0; j < RecipeCount; j++) {
                 int matrixID = Matrixes[i];
                 ERecipe type = RecipeTypes[j];
-                (int unlocked, int maxed, int total) = counts[(matrixID, type)];
+                int unlocked = 0;
+                int complete = 0;
+                int total = 0;
+                foreach (BaseRecipe recipe in RecipeManager.GetRecipesByMatrix(matrixID)) {
+                    if (recipe.RecipeType != type) {
+                        continue;
+                    }
+
+                    total++;
+                    RecipeKey recipeKey = RecipeKey.FromRecipe(recipe);
+                    ProtocolDefinition definition = ProtocolCatalog.Get(recipeKey);
+                    bool available = RecipeAvailabilityStore.IsAvailable(recipeKey);
+                    if (available) {
+                        unlocked++;
+                    }
+
+                    if (definition == null ? available : ProtocolProgressStore.IsComplete(recipeKey)) {
+                        complete++;
+                    }
+                }
+
                 totalCountArr[i, j] = total;
                 totalCountArr[MatrixCount, j] += total;
                 totalCountArr[i, RecipeCount] += total;
@@ -138,17 +158,17 @@ public static class RecipeGallery {
                 unlockCountArr[MatrixCount, j] += unlocked;
                 unlockCountArr[i, RecipeCount] += unlocked;
                 unlockCountArr[MatrixCount, RecipeCount] += unlocked;
-                fullUpgradeCountArr[i, j] = maxed;
-                fullUpgradeCountArr[MatrixCount, j] += maxed;
-                fullUpgradeCountArr[i, RecipeCount] += maxed;
-                fullUpgradeCountArr[MatrixCount, RecipeCount] += maxed;
+                completeCountArr[i, j] = complete;
+                completeCountArr[MatrixCount, j] += complete;
+                completeCountArr[i, RecipeCount] += complete;
+                completeCountArr[MatrixCount, RecipeCount] += complete;
             }
         }
 
         for (int i = 0; i < MatrixCount + 1; i++) {
             for (int j = 0; j < RecipeCount + 1; j++) {
                 recipeUnlockInfoText[i + 1, j + 1].text =
-                    $"{fullUpgradeCountArr[i, j].ToString().WithColor(7)}"
+                    $"{completeCountArr[i, j].ToString().WithColor(7)}"
                     + $"/{unlockCountArr[i, j].ToString().WithColor(4)}"
                     + $"/{totalCountArr[i, j].ToString().WithColor(1)}";
             }

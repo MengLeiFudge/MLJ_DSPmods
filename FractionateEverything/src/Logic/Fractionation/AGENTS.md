@@ -1,6 +1,6 @@
 # Logic/Fractionation — 分馏域
 
-分馏域是 FE 核心玩法逻辑，包含配方、配方成长、分馏塔运行热路径、实例状态和分馏塔窗口表现层 patch。
+分馏域是 FE 核心玩法逻辑，包含配方、文明状态的运行投影、分馏塔运行热路径、实例状态和分馏塔窗口表现层 patch。
 
 ## Structure
 
@@ -8,7 +8,6 @@
 Fractionation/
 ├── FracRecipes/    # BaseRecipe、ERecipe、RecipeManager、具体分馏配方
 ├── Fractionators/  # 分馏塔定义、建筑成长、分馏塔特质状态
-├── Growth/         # 配方成长状态、规则、执行器、查询快照
 ├── Process/        # 分馏器运行热路径、能耗 patch、性能探针
 └── Presentation/   # 分馏塔窗口、brief info、配方显示相关 UI patch
 ```
@@ -19,6 +18,8 @@ Fractionation/
 - 新配方类型放 `FracRecipes/NewRecipe.cs`，继承 `BaseRecipe`，并在 `RecipeManager.AddFracRecipes()` 注册。
 - `OutputMain` 是主产物，`OutputAppend` 是副产物。
 - `fluidInputInc` 必须沿输出链路传递，不能吞掉增产点。
+- `FracRecipes/Runtime/` 只保存文明域投影过来的配方可用性和固定加成；不得引用文明业务对象。
+- 旧线性配方等级、经验、突破和重复抽取增幅已经删除，不得在运行缓存中恢复这些概念。
 
 ## Process Rules
 
@@ -31,6 +32,7 @@ Fractionation/
 ## Fractionator Rules
 
 - 分馏塔定义、建筑成长服务和分馏塔特质状态放 `Fractionators`。
+- `TowerRuntimeModifierCache` 是科技树投影结果，不保存、不自行计算科技条件。
 - 转化塔单路锁定相关实体、复制粘贴、蓝图同步在 `Fractionators/ConversionSingleLock.cs`。
 - 矿物复制塔裂变点池放 `Fractionators/MineralReplicationFissionPool.cs`。
 - 交互塔共鸣状态放 `Fractionators/InteractionTowerResonance.cs`。

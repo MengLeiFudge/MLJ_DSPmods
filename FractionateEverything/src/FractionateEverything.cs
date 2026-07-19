@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -12,10 +12,9 @@ using crecheng.DSPModSave;
 using FE.Lifecycle;
 using FE.Compatibility;
 using FE.Compatibility.Nebula;
-using FE.Logic.Gacha;
+using FE.Logic.Civilization;
 using FE.UI.Foundation.Window;
 using FE.UI.MainPanel;
-using FE.UI.MainPanel.ProgressTask;
 using HarmonyLib;
 using NebulaAPI;
 using NebulaAPI.Interfaces;
@@ -145,7 +144,6 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
     private void Start() {
         MyWindowManager.InitBaseObjects();
         MyWindowManager.Enable(true);
-        GachaService.InitPools();
     }
 
     private void OnDestroy() {
@@ -154,7 +152,7 @@ public class FractionateEverything : BaseUnityPlugin, IModCanSave, IMultiplayerM
 
     private void Update() {
         MainWindow.OnInputUpdate();
-        MainTask.Tick();
+        CivilizationModule.Tick();
     }
 
     #region IModCanSave & IMultiplayerModWithSettings

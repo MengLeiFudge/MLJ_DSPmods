@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using FE.Logic.Fractionation.Fractionators;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
@@ -32,11 +31,6 @@ public class BuildingTrainRecipe : BaseRecipe {
     /// </summary>
     public override ERecipe RecipeType => ERecipe.BuildingTrain;
     /// <summary>
-    /// 获取该配方在成长系统中的角色。
-    /// </summary>
-    public override ERecipeGrowthRole GrowthRole => ERecipeGrowthRole.ToolUnlock;
-
-    /// <summary>
     /// 创建建筑培养配方实例
     /// </summary>
     /// <param name="inputID">输入物品ID</param>
@@ -49,31 +43,4 @@ public class BuildingTrainRecipe : BaseRecipe {
     public BuildingTrainRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) { }
-
-    #region IModCanSave
-
-    /// <summary>
-    /// 从存档读取该分馏域状态。
-    /// </summary>
-    public override void Import(BinaryReader r) {
-        base.Import(r);
-        r.ReadBlocks();
-    }
-
-    /// <summary>
-    /// 将该分馏域状态写入存档。
-    /// </summary>
-    public override void Export(BinaryWriter w) {
-        base.Export(w);
-        w.WriteBlocks();
-    }
-
-    /// <summary>
-    /// 切换或进入其他存档时重置该分馏域状态。
-    /// </summary>
-    public override void IntoOtherSave() {
-        base.IntoOtherSave();
-    }
-
-    #endregion
 }

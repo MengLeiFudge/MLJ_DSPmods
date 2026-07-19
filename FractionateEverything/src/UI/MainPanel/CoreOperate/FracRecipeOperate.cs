@@ -1,186 +1,294 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using BepInEx.Configuration;
 using CommonAPI.Systems;
-using FE.Compatibility.Mods;
 using FE.Logic.Buildings;
-using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
-using FE.Logic.Fractionation.Process;
+using FE.Logic.Civilization.Configuration;
+using FE.Logic.Civilization.Protocols;
 using FE.Logic.Fractionation.FracRecipes;
-using FE.Logic.Gacha;
+using FE.Logic.Fractionation.FracRecipes.Runtime;
+using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Fractionation.Process;
 using FE.UI.Controls;
 using FE.UI.Foundation.Window;
 using FE.UI.Layout;
-using FE.UI.MainPanel.ProgressTask;
-using FE.UI.MainPanel.Setting;
 using FE.UI.MainPanel.Theme;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.UI.Layout.GridDsl;
-using static FE.Logic.Items.ItemManager;
-using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
+using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
+using static FE.UI.Layout.GridDsl;
 using static FE.Utils.Utils;
-using static FE.UI.Foundation.RectTransformUtils;
 
 namespace FE.UI.MainPanel.CoreOperate;
 
 /// <summary>
-/// 分馏配方等级、经验和解锁操作页面。
+/// 查看分馏配方的协议状态、产物结构和当前塔型运行参数。
 /// </summary>
 public static class FracRecipeOperate {
-    private static RectTransform window;
     private static RectTransform tab;
+    private static PageLayout.HeaderRefs header;
+    private static ItemProto selectedItem = LDB.items.Select(I铁矿);
+    private static MyImageButton selectedItemButton;
+    private static Text selectedItemNameText;
+    private static MyComboBox recipeTypeCombo;
+    private static Text recipeText;
+    private static Text protocolText;
+    private static ConfigEntry<int> recipeTypeEntry;
 
-    private static ItemProto SelectedItem { get; set; } = LDB.items.Select(I铁矿);
-    private static Text txtCurrItem;
-    private static MyImageButton btnSelectedItem;
-    private static readonly UIButton[] recipeSandboxBtn = new UIButton[4];
+    private static ERecipe SelectedRecipeType => RecipeTypes[recipeTypeEntry.Value];
 
-    private static void OnButtonChangeItemClick(bool showLocked, float y) {
-        float popupX = tab.anchoredPosition.x - tab.rect.width / 2;
-        float popupY = tab.anchoredPosition.y + tab.rect.height / 2 - y;
-        UIItemPickerExtension.Popup(new(popupX, popupY), item => {
-            if (item == null) return;
-            SelectedItem = item;
-        }, true, item => {
-            BaseRecipe recipe = GetRecipe<BaseRecipe>(SelectedRecipeType, item.ID);
-            return recipe != null && (showLocked || RecipeGrowthQueries.IsUnlocked(recipe));
-        });
-    }
-
-    private static ConfigEntry<int> RecipeTypeEntry;
-    private static ERecipe SelectedRecipeType => RecipeTypes[RecipeTypeEntry.Value];
-    private static BaseRecipe SelectedRecipe => GetRecipe<BaseRecipe>(SelectedRecipeType, SelectedItem.ID);
-
-    // ==================== 布局常量 ====================
-
-    private const int InfoLineCount = 28;// 左列文本行数
-    private const int LevelLineCount = 13;// 右列: 标题 + Lv0 到 Lv5 + 预留空行
-    private const float RightColX = 620f;// 右列X起始位置
-    private const float IconSize = 24f;
-    private const float TextOffsetWithIcon = 28f;// 图标宽度 + 间距
-    private const float LineHeight = 22f;
-
-    // 产物行布局（格式：概率 | 图标 | 数量）
-    private const float ProductRatioX = 0f;// 左侧概率文本X
-    private const float ProductIconX = 88f;// 物品图标X（概率文本右侧）
-    private const float ProductTextX = 120f;// 名称×数目文本X（= ProductIconX + TextOffsetWithIcon）
-
-    // ==================== UI 元素 ====================
-
-    private static Text[] txtRecipeInfo = new Text[InfoLineCount];
-    private static Text[] txtProductLeft = new Text[InfoLineCount];// 产物行左侧文本（概率/等效数量）
-    private static MyImageButton[] btnRecipeInfoIcons = new MyImageButton[InfoLineCount];
-    private static MySlider[] incSliders = new MySlider[InfoLineCount];
-    private static ConfigEntry<int> selectedInc;
-
-    // 右列：配方强化等级信息
-    private static Text[] txtLevelInfo = new Text[LevelLineCount];
-
-    // ==================== 翻译注册 ====================
+    private static BaseRecipe SelectedRecipe => selectedItem == null
+        ? null
+        : GetRecipe<BaseRecipe>(SelectedRecipeType, selectedItem.ID);
 
     public static void AddTranslations() {
-        Register("分馏配方", "Fractionate Recipe");
-
-        Register("当前物品", "Current item");
+        Register("分馏配方", "Fractionation Recipes");
+        Register("分馏配方摘要", "View protocol status, recipe outputs, and current runtime parameters.",
+            "查看协议状态、配方产物结构与当前运行参数。");
+        Register("当前物品", "Current Item");
+        Register("配方类型", "Recipe Type");
         Register("分馏配方提示按钮说明1",
-            "Left-click to switch between unlocked recipes in the current recipe category, right-click to switch between all available recipes in the current recipe category.",
-            "左键在当前配方类别已解锁配方之间切换，右键在当前配方类别全部可用配方中切换。");
-        Register("配方类型", "Recipe type");
-
-        Register("配方不存在！", "Recipe does not exist!");
-        Register("分馏配方未解锁", "Recipe locked", "配方未解锁");
-        Register("成功率", "Success Ratio");
-        Register("损毁率", "Destroy Ratio");
-        Register("产出", "Output");
-        Register("随机", "Random");
-        Register("单锁", "Single Lock");
-        Register("随机简称", "R", "随");
-        Register("单锁简称", "L", "锁");
-        Register("增产点数", "Proliferator points");
-        Register("矩阵萃取", "Matrix extraction");
-        Register("精华重整", "Essence reshaping");
-        Register("萃取损耗", "Extraction loss");
-        Register("压缩倍率", "Compression");
-        Register("回流倍率", "Reflux");
-        Register("精馏配方使用基础成功率；失败时输入直通，损毁只使用通用损毁规则。",
-            "Rectification recipes use base success chance. Failed inputs pass through; destroy chance uses the general rule.");
-
-        Register("配方已完全升级！", "Recipe has been completely upgraded!");
-        Register("每个原料平均产出：", "Average output per raw material:");
-
-        Register("建筑强化加成", "Building Enhancement Bonuses");
-        Register("等级", "Level");
-        Register("堆叠", "Stack");
-        Register("能耗比", "Energy Ratio");
-        Register("增产效率", "Proliferator Efficiency");
-        Register("流体增强", "Fluid Enhancement");
-        Register("成功率加成", "Success Boost");
-        Register("上秒献祭", "Last sacrificed");
+            "Select any item that has at least one fractionation recipe. The recipe type automatically switches to a valid tower.",
+            "选择至少拥有一种分馏配方的物品；当前塔型不适用时会自动切换到有效塔型。");
+        Register("配方产物结构", "Recipe Outputs");
+        Register("协议与运行状态", "Protocol and Runtime Status");
+        Register("协议未发现", "Protocol not discovered");
+        Register("协议解析中", "Protocol analysis in progress");
+        Register("协议已恢复", "Protocol recovered");
+        Register("不由文明协议控制", "Not controlled by civilization protocols");
+        Register("尚未进入检索池", "Not yet eligible for retrieval");
+        Register("已经进入检索池", "Eligible for retrieval");
+        Register("当前不可运行", "Unavailable");
+        Register("当前可运行", "Available");
+        Register("协议未完整恢复，产物结构将在完整度达到100%后显示。",
+            "The output structure becomes visible after protocol completeness reaches 100%.");
+        Register("主产物", "Main Outputs");
+        Register("副产物", "Byproducts");
+        Register("无", "None");
+        Register("输入", "Input");
+        Register("基础成功率", "Base Success Rate");
+        Register("损毁率", "Destruction Rate");
+        Register("状态", "Status");
+        Register("文明阶段", "Civilization Stage");
+        Register("协议状态", "Protocol Status");
+        Register("协议完整度", "Protocol Completeness");
+        Register("检索资格", "Retrieval Eligibility");
+        Register("运行塔型", "Runtime Tower");
+        Register("处理堆叠上限", "Processing Stack Limit");
+        Register("增产点倍率", "Proliferator Point Multiplier");
+        Register("全局成功率增幅", "Global Success Rate Bonus");
+        Register("流动输出堆叠", "Fluid Output Stacking");
+        Register("产物输出堆叠", "Product Output Stacking");
         Register("已启用", "Enabled");
-        Register("未启用", "Disabled");
-        Register("牺牲特性", "Sacrifice Trait");
-        Register("因果追踪", "Causal Tracing");
-        Register("虚空喷射", "Void Spray");
-        Register("虚空聚集", "Void Aggregation");
-        Register("最大增产等级", "Max Inc Level");
-
-        // 右列：等级信息
-        Register("当前配方强化等级", "Current Recipe Enhancement Level");
-        Register("当前配方等级", "Current Recipe Level");
-        Register("配方未解锁", "Recipe Locked");
-        Register("无通用加成", "No General Bonus");
-        Register("不消耗原料", "No Consume");
-        Register("翻倍产出", "Double Output");
-        Register("解锁方式", "Unlock Method");
-        Register("升级方式", "Upgrade Method");
-        Register("成长进度", "Growth Progress");
-        Register("抽取单位回响", "Retrieval Unit Resonance", "检索单位回响");
-        Register("通过主检索开线偏好获取", "Obtain from main retrieval route preference", "通过主检索路线偏好获取");
-        Register("通过主检索开线偏好获取；部分前期配方也会随科技基线修复",
-            "Obtain from main retrieval route preference; some early recipes are also repaired by tech baseline",
-            "通过主检索路线偏好获取；部分前期配方也会随科技基线修复");
-        Register("通过主检索原胚偏好或成长规划获得；相关科技也会基线修复",
-            "Obtain from main retrieval proto preference or Growth Planning; related tech also provides baseline repair");
-        Register("通过成长规划或固定入口获得；解锁后直接满级",
-            "Obtain from Growth Planning or fixed entry; unlocking grants max level directly");
-        Register("通过黑雾支线成长规划报价获得",
-            "Obtain from Dark Fog branch Growth Planning offers");
-        Register("通过科技基线修复", "Repaired by tech baseline");
-        Register("首次获得对应黑雾物品后解锁", "Unlock after obtaining the related Dark Fog item once");
-        Register("运行对应配方获取经验，重复获得时补充成长进度",
-            "Gain EXP by running the matching recipe; duplicate rewards add growth progress");
-        Register("处理对应原胚获取经验，重复获得时也会直接提升",
-            "Gain EXP by processing matching proto; duplicate rewards also level it up");
-        Register("处理对应原胚获取经验", "Gain EXP by processing the matching proto");
-        Register("处理对应黑雾物品获取经验，也可通过成长规划补差",
-            "Gain EXP by processing the matching Dark Fog item, or catch up through Growth Planning");
-        Register("处理对应矩阵获取稳定锚定进度", "Build stabilization progress by processing matching matrices");
-        Register("处理对应矩阵或矩阵精华获取稳定锚定进度，也可通过矩阵精华催化补差",
-            "Build stabilization progress by processing matching matrices or matrix essences; matrix essences can also catalyse catch-up");
-        Register("解锁后", "After unlocking");
-        Register("直接满级", "be granted at max level immediately");
-        Register("已完全升级，无需继续成长", "Fully upgraded; no further growth needed");
+        Register("未解锁", "Locked");
     }
-
-    // ==================== 配置加载 ====================
 
     public static void LoadConfig(ConfigFile configFile) {
-        RecipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "想要查看的配方类型。");
-        if (RecipeTypeEntry.Value < 0 || RecipeTypeEntry.Value >= RecipeTypes.Length) {
-            RecipeTypeEntry.Value = 0;
-        }
-        selectedInc = configFile.Bind("Recipe Operate", "Selected Inc", 0, "想要查看的最终输出的增产点数");
-        if (selectedInc.Value is < 0 or > 10) {
-            selectedInc.Value = 0;
+        recipeTypeEntry = configFile.Bind("Recipe Operate", "Recipe Type", 0, "想要查看的配方类型。");
+        if (recipeTypeEntry.Value < 0 || recipeTypeEntry.Value >= RecipeTypes.Length) {
+            recipeTypeEntry.Value = 0;
         }
     }
 
-    #region IModCanSave
+    public static void CreateUI(MyWindow wnd, RectTransform trans) {
+        tab = trans;
+        selectedItem ??= LDB.items.Select(I铁矿);
+        EnsureValidRecipeType();
+        BuildLayout(wnd, trans,
+            Grid(
+                rows: [Px(PageLayout.HeaderHeight), Px(64f), 1],
+                rowGap: PageLayout.Gap,
+                children: [
+                    Header("分馏配方", "分馏配方摘要", pos: (0, 0), objectName: "frac-recipe-header",
+                        onBuilt: refs => header = refs),
+                    ContentCard(pos: (1, 0), objectName: "frac-recipe-selector", strong: true,
+                        cols: [Px(90f), Px(44f), Px(28f), Fr(1), Px(90f), Px(210f)],
+                        columnGap: 8f,
+                        children: [
+                            TextNode("当前物品", 15, pos: (0, 0), objectName: "frac-recipe-current-item-label"),
+                            ImageButtonNode(selectedItem, 40f,
+                                onBuilt: button => selectedItemButton = button.WithClickEvent(OpenItemPicker, null),
+                                pos: (0, 1), objectName: "frac-recipe-current-item"),
+                            TipsButtonNode("提示", "分馏配方提示按钮说明1",
+                                pos: (0, 2), objectName: "frac-recipe-tip"),
+                            TextNode("", 13, onBuilt: text => selectedItemNameText = text,
+                                pos: (0, 3), objectName: "frac-recipe-current-item-name"),
+                            TextNode("配方类型", 15, pos: (0, 4), objectName: "frac-recipe-type-label"),
+                            ComboBoxNode(onBuilt: combo => {
+                                    recipeTypeCombo = combo.WithItems(RecipeTypeShortNames)
+                                        .WithSize(200f, 0f)
+                                        .WithConfigEntry(recipeTypeEntry)
+                                        .WithOnSelChanged(_ => EnsureValidRecipeType());
+                                },
+                                pos: (0, 5), objectName: "frac-recipe-type-combo"),
+                        ]),
+                    Grid(pos: (2, 0), cols: [1, 1], columnGap: PageLayout.Gap, children: [
+                        ContentCard(pos: (0, 0), objectName: "frac-recipe-output-card", strong: true,
+                            rows: [Px(28f), 1], rowGap: PageLayout.InnerGap, children: [
+                                CardTitleNode("配方产物结构", pos: (0, 0), objectName: "frac-recipe-output-title"),
+                                TextNode("", 13, White, wrap: true, anchor: TextAnchor.UpperLeft,
+                                    onBuilt: text => {
+                                        recipeText = text;
+                                        text.supportRichText = true;
+                                    }, pos: (1, 0), objectName: "frac-recipe-output-text"),
+                            ]),
+                        ContentCard(pos: (0, 1), objectName: "frac-recipe-protocol-card",
+                            rows: [Px(28f), 1], rowGap: PageLayout.InnerGap, children: [
+                                CardTitleNode("协议与运行状态", pos: (0, 0), objectName: "frac-recipe-protocol-title"),
+                                TextNode("", 13, White, wrap: true, anchor: TextAnchor.UpperLeft,
+                                    onBuilt: text => {
+                                        protocolText = text;
+                                        text.supportRichText = true;
+                                    }, pos: (1, 0), objectName: "frac-recipe-protocol-text"),
+                            ]),
+                    ]),
+                ]));
+        UpdateUI();
+    }
 
-    // ==================== 存档 ====================
+    private static void OpenItemPicker() {
+        float popupX = tab.anchoredPosition.x - tab.rect.width / 2f;
+        float popupY = tab.anchoredPosition.y + tab.rect.height / 2f - PageLayout.HeaderHeight;
+        UIItemPickerExtension.Popup(new Vector2(popupX, popupY), item => {
+            if (item == null) {
+                return;
+            }
+            selectedItem = item;
+            EnsureValidRecipeType();
+            UpdateUI();
+        }, true, item => item != null && HasAnyRecipe(item.ID));
+    }
+
+    private static bool HasAnyRecipe(int itemId) {
+        foreach (ERecipe recipeType in RecipeTypes) {
+            if (GetRecipe<BaseRecipe>(recipeType, itemId) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void EnsureValidRecipeType() {
+        if (recipeTypeEntry == null || selectedItem == null) {
+            return;
+        }
+
+        int selectedIndex = Mathf.Clamp(recipeTypeEntry.Value, 0, RecipeTypes.Length - 1);
+        if (GetRecipe<BaseRecipe>(RecipeTypes[selectedIndex], selectedItem.ID) != null) {
+            if (recipeTypeEntry.Value != selectedIndex) {
+                recipeTypeEntry.Value = selectedIndex;
+            }
+            return;
+        }
+
+        for (int i = 0; i < RecipeTypes.Length; i++) {
+            if (GetRecipe<BaseRecipe>(RecipeTypes[i], selectedItem.ID) == null) {
+                continue;
+            }
+            recipeTypeEntry.Value = i;
+            recipeTypeCombo?.SetIndex(i);
+            return;
+        }
+    }
+
+    public static void UpdateUI() {
+        if (tab == null || !tab.gameObject.activeSelf) {
+            return;
+        }
+
+        EnsureValidRecipeType();
+        BaseRecipe recipe = SelectedRecipe;
+        selectedItemButton.Proto = selectedItem;
+        selectedItemNameText.text = selectedItem?.name ?? string.Empty;
+        header.Title.text = "分馏配方".Translate().WithColor(Orange);
+        header.Summary.text = "分馏配方摘要".Translate().WithColor(White);
+        recipeText.text = BuildRecipeText(recipe);
+        protocolText.text = BuildProtocolText(recipe);
+    }
+
+    private static string BuildRecipeText(BaseRecipe recipe) {
+        if (recipe == null) {
+            return string.Empty;
+        }
+
+        bool available = RecipeAvailabilityStore.IsAvailable(recipe);
+        var text = new StringBuilder();
+        text.AppendLine(recipe.TypeNameWC);
+        text.AppendLine($"{"输入".Translate()}：1 × {GetItemName(recipe.InputID)}");
+        text.AppendLine($"{"基础成功率".Translate()}：{recipe.SuccessRatio:P3}");
+        text.AppendLine($"{"损毁率".Translate()}：{recipe.DestroyRatio:P3}");
+        text.AppendLine($"{"状态".Translate()}：{(available ? "当前可运行" : "当前不可运行").Translate()}");
+        text.AppendLine();
+        if (!available) {
+            text.Append("协议未完整恢复，产物结构将在完整度达到100%后显示。".Translate());
+            return text.ToString();
+        }
+
+        AppendOutputs(text, "主产物".Translate(), recipe.OutputMain);
+        text.AppendLine();
+        AppendOutputs(text, "副产物".Translate(), recipe.OutputAppend);
+        return text.ToString();
+    }
+
+    private static void AppendOutputs(StringBuilder text, string title, IReadOnlyList<OutputInfo> outputs) {
+        text.AppendLine(title.WithColor(Orange));
+        if (outputs.Count == 0) {
+            text.AppendLine($"- {"无".Translate()}");
+            return;
+        }
+        foreach (OutputInfo output in outputs) {
+            text.AppendLine($"- {output}");
+        }
+    }
+
+    private static string BuildProtocolText(BaseRecipe recipe) {
+        if (recipe == null) {
+            return string.Empty;
+        }
+
+        var text = new StringBuilder();
+        RecipeKey recipeKey = RecipeKey.FromRecipe(recipe);
+        ProtocolDefinition definition = ProtocolCatalog.Get(recipeKey);
+        if (definition == null) {
+            text.AppendLine($"{"协议状态".Translate()}：{"不由文明协议控制".Translate()}");
+        } else {
+            ProtocolProgressStore.ProtocolProgress progress = ProtocolProgressStore.GetOrCreate(recipeKey);
+            MatrixStageDefinition stage = ProgressionProfileRegistry.Current?.GetStage(definition.StageKey);
+            string protocolState = progress.Completeness >= 100
+                ? "协议已恢复"
+                : progress.Discovered ? "协议解析中" : "协议未发现";
+            text.AppendLine($"{"文明阶段".Translate()}：{stage?.DisplayNameKey.Translate() ?? definition.StageKey}");
+            text.AppendLine($"{"协议状态".Translate()}：{protocolState.Translate()}");
+            text.AppendLine($"{"协议完整度".Translate()}：{progress.Completeness}%");
+            text.AppendLine($"{"检索资格".Translate()}：{(ProtocolEligibilityService.IsEligible(definition)
+                ? "已经进入检索池" : "尚未进入检索池").Translate()}");
+        }
+
+        text.AppendLine();
+        ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
+        if (building != null) {
+            text.AppendLine($"{"运行塔型".Translate()}：{building.name}");
+            text.AppendLine($"{"处理堆叠上限".Translate()}：{building.MaxStack()}");
+            text.AppendLine($"{"增产点倍率".Translate()}：{building.PlrRatio():P0}");
+            text.AppendLine($"{"全局成功率增幅".Translate()}：{building.SuccessBoost():P0}");
+        }
+        text.AppendLine();
+        text.AppendLine($"{"流动输出堆叠".Translate()}：{GetSwitchText(
+            TowerRuntimeModifierCache.IsFluidOutputStackingEnabled(recipe.RecipeType))}");
+        text.AppendLine($"{"产物输出堆叠".Translate()}：{GetSwitchText(
+            TowerRuntimeModifierCache.IsProductOutputStackingEnabled(recipe.RecipeType))}");
+        text.AppendLine($"{"分馏永动".Translate()}：{GetSwitchText(
+            TowerRuntimeModifierCache.IsFractionationForeverEnabled(recipe.RecipeType))}");
+        return text.ToString();
+    }
+
+    private static string GetItemName(int itemId) => LDB.items.Select(itemId)?.name ?? itemId.ToString();
+
+    private static string GetSwitchText(bool enabled) => (enabled ? "已启用" : "未解锁").Translate();
+
+    #region IModCanSave
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks();
@@ -193,711 +301,4 @@ public static class FracRecipeOperate {
     public static void IntoOtherSave() { }
 
     #endregion
-
-    // ==================== UI 创建 ====================
-
-    public static void CreateUI(MyWindow wnd, RectTransform trans) {
-        window = trans;
-        BuildLayout(wnd, trans,
-            Grid(
-                rows: [Px(PageLayout.HeaderHeight), 1],
-                rowGap: PageLayout.Gap,
-                children: [
-                    Header("分馏配方", objectName: "frac-recipe-header", pos: (0, 0),
-                        onBuilt: refs => refs.Summary.text = "查看配方成功率、损毁率、产物结构与强化等级信息".WithColor(White)),
-                    ContentCard(
-                        pos: (1, 0),
-                        objectName: "frac-recipe-content-card",
-                        strong: true,
-                        onBuilt: root => tab = root,
-                        rows: BuildContentRows(),
-                        cols: [Fr(5), Fr(4)],
-                        rowGap: 0f,
-                        columnGap: 20f,
-                        children: [
-                            Grid(pos: (0, 0), span: (1, 2),
-                                cols: [Px(72f), Px(44f), Px(28f), Px(90f), Px(220f), Fr(1)],
-                                columnGap: 8f,
-                                children: [
-                                    TextNode("当前物品", 15, onBuilt: text => txtCurrItem = text,
-                                        pos: (0, 0), objectName: "textCurrItem"),
-                                    ImageButtonNode(SelectedItem, 40f,
-                                        onBuilt: btn => btnSelectedItem = btn.WithClickEvent(
-                                            () => { OnButtonChangeItemClick(false, 22f); },
-                                            () => { OnButtonChangeItemClick(true, 22f); }),
-                                        pos: (0, 1), objectName: "button-change-item"),
-                                    TipsButtonNode("提示", "分馏配方提示按钮说明1",
-                                        pos: (0, 2), objectName: "frac-recipe-tip"),
-                                    TextNode("配方类型", 15, pos: (0, 3), objectName: "frac-recipe-type-label"),
-                                    ComboBoxNode(onBuilt: combo => combo.WithItems(RecipeTypeShortNames)
-                                            .WithSize(200, 0).WithConfigEntry(RecipeTypeEntry),
-                                        pos: (0, 4), objectName: "frac-recipe-type-combo"),
-                                ]),
-                            Grid(pos: (1, 0), span: (1, 2), cols: [1, 1, 1, 1], columnGap: 12f,
-                                children: BuildSandboxButtonNodes()),
-                            ..BuildInfoLineNodes(),
-                        ]),
-                ]));
-    }
-
-    private static IReadOnlyList<LayoutTrack> BuildContentRows() {
-        var rows = new List<LayoutTrack> { Px(44f), Px(36f) };
-        for (int i = 0; i < InfoLineCount; i++) {
-            rows.Add(Px(LineHeight));
-        }
-
-        return rows;
-    }
-
-    private static IReadOnlyList<LayoutNode> BuildSandboxButtonNodes() {
-        return [
-            ButtonNode("重置等级", onClick: () => {
-                if (SelectedRecipe != null) {
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 0,
-                        RecipeGrowthManager.BuildContext(manual: true));
-                }
-            }, onBuilt: btn => recipeSandboxBtn[0] = btn, pos: (0, 0), objectName: "frac-recipe-reset-level"),
-            ButtonNode("等级-1", onClick: () => {
-                if (SelectedRecipe != null) {
-                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level - 1,
-                        RecipeGrowthManager.BuildContext(manual: true));
-                }
-            }, onBuilt: btn => recipeSandboxBtn[1] = btn, pos: (0, 1), objectName: "frac-recipe-level-down"),
-            ButtonNode("等级+1", onClick: () => {
-                if (SelectedRecipe != null) {
-                    int level = RecipeGrowthQueries.GetLevel(SelectedRecipe);
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, level + 1,
-                        RecipeGrowthManager.BuildContext(manual: true));
-                }
-            }, onBuilt: btn => recipeSandboxBtn[2] = btn, pos: (0, 2), objectName: "frac-recipe-level-up"),
-            ButtonNode("等级升满", onClick: () => {
-                if (SelectedRecipe != null) {
-                    RecipeGrowthExecutor.SetLevelForSandbox(SelectedRecipe, 5,
-                        RecipeGrowthManager.BuildContext(manual: true));
-                }
-            }, onBuilt: btn => recipeSandboxBtn[3] = btn, pos: (0, 3), objectName: "frac-recipe-level-max"),
-        ];
-    }
-
-    private static IReadOnlyList<LayoutNode> BuildInfoLineNodes() {
-        int[] rang = !GenesisBook.Enable ? [0, 1, 2, 4, 10] : [0, 4, 10];
-        var nodes = new List<LayoutNode>();
-        for (int i = 0; i < InfoLineCount; i++) {
-            int index = i;
-            int row = i + 2;
-            nodes.Add(Grid(pos: (row, 0), cols: [Px(88f), Px(24f), Px(24f), Fr(1)], children: [
-                TextNode("", 15, onBuilt: text => {
-                        txtRecipeInfo[index] = text;
-                        text.rectTransform.sizeDelta = new Vector2(560f, LineHeight);
-                    },
-                    pos: (0, 0), span: (1, 4), objectName: $"frac-recipe-info-{index}"),
-                TextNode("", 15, onBuilt: text => {
-                        txtProductLeft[index] = text;
-                        text.gameObject.SetActive(false);
-                    },
-                    pos: (0, 0), objectName: $"frac-recipe-product-ratio-{index}"),
-                ImageButtonNode(size: IconSize, onBuilt: btn => {
-                        btn.gameObject.SetActive(false);
-                        btnRecipeInfoIcons[index] = btn;
-                    },
-                    pos: (0, 1), objectName: $"frac-recipe-product-icon-{index}"),
-                SliderNode(selectedInc, rang, null, 200f, onBuilt: slider => {
-                        slider.gameObject.SetActive(false);
-                        incSliders[index] = slider;
-                    },
-                    pos: (0, 3), objectName: $"frac-recipe-inc-slider-{index}"),
-            ]));
-            if (i < LevelLineCount) {
-                nodes.Add(TextNode("", 13, onBuilt: text => txtLevelInfo[index] = text,
-                    pos: (row, 1), objectName: $"frac-recipe-level-info-{index}"));
-            }
-        }
-
-        return nodes;
-    }
-
-    // ==================== UI 更新 ====================
-
-    public static void UpdateUI() {
-        if (!tab.gameObject.activeSelf) {
-            return;
-        }
-
-        btnSelectedItem.Proto = SelectedItem;
-        ERecipe recipeType = RecipeTypes[RecipeTypeEntry.Value];
-        BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, SelectedItem.ID);
-        RecipeDisplaySnapshot snapshot = recipe == null ? default : RecipeGrowthQueries.GetSnapshot(recipe);
-        ItemProto building = LDB.items.Select(recipeType.GetSpriteItemId());
-        int line = 0;
-        foreach (MySlider slider in incSliders) {
-            slider?.gameObject.SetActive(false);
-        }
-        RefreshSandboxButtons(recipe, snapshot);
-
-        if (recipe == null) {
-            ShowTextLine(line++, "配方不存在！".Translate().WithColor(Red));
-        } else if (!snapshot.IsUnlocked) {
-            string headerLocked = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
-            int recipeColor = recipe.MatrixID - I电磁矩阵;
-            ShowTextLine(line++, $"{headerLocked.WithColor(recipeColor)} {"分馏配方未解锁".Translate().WithColor(Red)}");
-        } else {
-            // ---- 左列内容 ----
-
-            // 第1行：配方类型-原料名称（剥离强化等级）
-            string headerName = $"{recipeType.GetShortName()}-{LDB.items.Select(recipe.InputID).name}";
-            ShowTextLine(line++, headerName.WithColor(recipe.MatrixID - I电磁矩阵));
-            ShowTextLine(line++, "");// 空行
-
-            if (recipe is RectificationRecipe rectificationHeaderRecipe) {
-                string kindText = rectificationHeaderRecipe.Kind
-                                  == RectificationRecipe.RectificationRecipeKind.MatrixExtraction
-                    ? "矩阵萃取".Translate()
-                    : "精华重整".Translate();
-                ShowTextLine(line++,
-                    $"{"成功率".Translate()} {rectificationHeaderRecipe.SuccessRatio:P3}（{kindText}）".WithColor(Orange));
-                ShowTextLine(line++,
-                    "精馏配方使用基础成功率；失败时输入直通，损毁只使用通用损毁规则。".Translate()
-                        .WithColor(Gray));
-                string destroyColorText = rectificationHeaderRecipe.DestroyRatio <= 0f
-                    ? $"{"损毁率".Translate()} {0.0f:P3}"
-                    : $"{"损毁率".Translate()} {rectificationHeaderRecipe.DestroyRatio:P3}";
-                ShowTextLine(line++, destroyColorText.WithColor(rectificationHeaderRecipe.DestroyRatio <= 0f
-                    ? Green
-                    : Red));
-            } else {
-                float sacrificeBoost = building?.SuccessBoost() ?? 0f;
-                float progressBoost = Achievements.GetSuccessRateBonus();
-                float actualSuccessRatio = Mathf.Clamp01(recipe.SuccessRatio
-                                                         * (1f + sacrificeBoost)
-                                                         * (1f + progressBoost));
-                ShowTextLine(line++,
-                    $"{"成功率".Translate()} {recipe.SuccessRatio:P3} × {(1f + sacrificeBoost):F3} × {(1f + progressBoost):F3} = {actualSuccessRatio:P3}"
-                        .WithColor(Orange));
-                ShowTextLine(line++,
-                    $"(献祭 +{sacrificeBoost:P2} / 成就 +{progressBoost:P2})"
-                        .WithColor(Gray));
-
-                float baseDestroyRatio = snapshot.DestroyRatio
-                                         + GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                float destroyReduction = GachaGalleryBonusManager.GetDestroyReduction(recipe.RecipeType);
-                string destroyText = $"{"损毁率".Translate()} {baseDestroyRatio:P3}";
-                if (destroyReduction > 0f) {
-                    destroyText += $"（成就 -{destroyReduction:P3}，实际 {recipe.DestroyRatio:P3}）";
-                }
-                ShowTextLine(line++, destroyText.WithColor(Red));
-            }
-            ShowTextLine(line++, "");// 空行
-
-            // 主产物：标签独占一行，下方竖向列表
-            if (recipe.OutputMain.Count > 0) {
-                ShowTextLine(line, "产出".Translate().WithColor(Orange));
-                line++;// 标签独占一行
-            }
-            foreach (OutputInfo info in recipe.OutputMain) {
-                if (recipe is RectificationRecipe rectificationRecipe) {
-                    ShowRectificationProductLine(line++, rectificationRecipe, info);
-                } else {
-                    if (recipe is ConversionRecipe conversionRecipe) {
-                        ShowConversionProductLine(line++, conversionRecipe, LDB.items.Select(info.OutputID), info);
-                    } else {
-                        ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
-                    }
-                }
-            }
-
-            // 副产物：标签独占一行，下方竖向列表
-            if (recipe.OutputAppend.Count > 0) {
-                ShowTextLine(line, "其他".Translate().WithColor(Orange));
-                line++;// 标签独占一行
-            }
-            foreach (OutputInfo info in recipe.OutputAppend) {
-                if (recipe is ConversionRecipe conversionRecipe) {
-                    ShowConversionProductLine(line++, conversionRecipe, LDB.items.Select(info.OutputID), info);
-                } else {
-                    ShowProductLine(line++, LDB.items.Select(info.OutputID), info);
-                }
-            }
-
-            ShowTextLine(line++, "");// 空行
-
-            // 等效处理：增产点数滑条 + 竖向输出列表
-            line = ShowEqProcessingSection(line, recipe, building);
-
-            ShowTextLine(line++, "");// 空行
-
-            // 建筑强化效果
-            if (building != null) {
-                ShowTextLine(line++, "建筑强化加成".Translate().WithColor(Orange));
-                ShowIconLine(line++, building, $"{building.name}  {"等级".Translate()} +{building.Level()}");
-
-                ShowTextLine(line++, $"{"堆叠".Translate()} x{building.MaxStack()}");
-                ShowTextLine(line++, $"{"能耗比".Translate()} {building.EnergyRatio():P0}");
-
-                ShowTextLine(line++, $"{"增产效率".Translate()} x{building.PlrRatio():F1}");
-
-                float sBoost = building.SuccessBoost();
-                long sacrificeCount = ProcessManager.GetSacrificedTowerCount(building.ID);
-                ShowTextLine(line++,
-                    $"{"成功率加成".Translate()} +{sBoost:P1}  {"上秒献祭".Translate()} {sacrificeCount}"
-                        .WithColor(sBoost > 0 ? Orange : Gray));
-
-                bool fluidEnh = building.EnableFluidEnhancement();
-                ShowTextLine(line++,
-                    $"{"流体增强".Translate()}："
-                    + (fluidEnh
-                        ? "已启用".Translate().WithColor(Green)
-                        : "未启用".Translate().WithColor(Gray)));
-
-                line = ShowBuildingFeatures(line, building);
-            }
-        }
-
-        // 隐藏剩余左列行
-        for (; line < InfoLineCount; line++) {
-            HideAllLine(line);
-        }
-
-        // 更新右列：配方强化等级表
-        UpdateLevelColumn(recipe, snapshot);
-    }
-
-    /// <summary>
-    /// 沙盒页顶部四个按钮统一按当前配方的真实等级边界刷新状态。
-    /// </summary>
-    private static void RefreshSandboxButtons(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        if (!GameMain.sandboxToolsEnabled) {
-            foreach (UIButton button in recipeSandboxBtn) {
-                button.gameObject.SetActive(false);
-            }
-            return;
-        }
-
-        foreach (UIButton button in recipeSandboxBtn) {
-            button.gameObject.SetActive(true);
-        }
-
-        bool hasRecipe = recipe != null;
-        int recipeLevel = hasRecipe ? snapshot.Level : 0;
-        bool unlocked = hasRecipe && snapshot.IsUnlocked;
-        int maxLevel = hasRecipe ? snapshot.MaxLevel : 0;
-
-        recipeSandboxBtn[0].button.interactable = unlocked && recipeLevel > 0;
-        recipeSandboxBtn[1].button.interactable = hasRecipe && recipeLevel > 0;
-        recipeSandboxBtn[2].button.interactable = hasRecipe && recipeLevel < maxLevel;
-        recipeSandboxBtn[3].button.interactable = hasRecipe && recipeLevel < maxLevel;
-    }
-
-    // ==================== 右列：强化等级表 ====================
-
-    private static void UpdateLevelColumn(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        int currentLevel = recipe == null ? 0 : snapshot.Level;
-
-        // 标题行
-        string headerText;
-        if (recipe == null) {
-            headerText = "";
-            foreach (Text text in txtLevelInfo) {
-                text.text = "";
-            }
-            return;
-        } else if (!snapshot.IsUnlocked) {
-            headerText = "配方未解锁".Translate();
-        } else {
-            headerText = $"{"当前配方等级".Translate()} Lv{currentLevel}";
-        }
-        txtLevelInfo[0].text = headerText.WithColor(snapshot.IsUnlocked ? Orange : Red);
-
-        int maxLevel = snapshot.MaxLevel;
-        for (int lvl = 0; lvl <= maxLevel; lvl++) {
-            int lineIdx = lvl + 1;
-            string lvlText = snapshot.LevelDescriptions[lvl];
-
-            string coloredText;
-            if (!snapshot.IsUnlocked) {
-                coloredText = lvlText.WithColor(Gray);// 未解锁：全灰
-            } else if (lvl == currentLevel) {
-                coloredText = lvlText.WithColor(Orange);// 当前等级：橙色高亮
-            } else if (lvl < currentLevel) {
-                coloredText = lvlText.WithColor(Green);// 已达到：绿色
-            } else {
-                coloredText = lvlText;// 未达到：默认白色
-            }
-
-            txtLevelInfo[lineIdx].text = coloredText;
-        }
-
-        for (int lineIdx = maxLevel + 2; lineIdx < LevelLineCount; lineIdx++) {
-            txtLevelInfo[lineIdx].text = "";
-        }
-
-        int infoLineIdx = maxLevel + 2;
-        if (!snapshot.IsUnlocked) {
-            SetRightInfoLine(infoLineIdx++, $"{"解锁方式".Translate()}：{BuildUnlockHint(recipe)}".WithColor(Blue));
-        }
-
-        if (!snapshot.IsMaxed) {
-            string upgradeHint = BuildUpgradeHint(recipe, snapshot);
-            if (!string.IsNullOrEmpty(upgradeHint)) {
-                SetRightInfoLine(infoLineIdx++, $"{"升级方式".Translate()}：{upgradeHint}"
-                    .WithColor(snapshot.IsUnlocked ? White : Gray));
-            }
-
-            string progressHint = BuildUpgradeProgressHint(recipe, snapshot);
-            if (!string.IsNullOrEmpty(progressHint)) {
-                SetRightInfoLine(infoLineIdx++, $"{"成长进度".Translate()}：{progressHint}".WithColor(Gray));
-            }
-        } else {
-            SetRightInfoLine(infoLineIdx++, $"{"升级方式".Translate()}：{"已完全升级，无需继续成长".Translate()}".WithColor(Green));
-        }
-
-        string resonanceHint = BuildDrawUnitResonanceHint(recipe, snapshot);
-        if (!string.IsNullOrEmpty(resonanceHint)) {
-            SetRightInfoLine(infoLineIdx++, resonanceHint.WithColor(Purple));
-        }
-
-        for (; infoLineIdx < LevelLineCount; infoLineIdx++) {
-            txtLevelInfo[infoLineIdx].text = "";
-        }
-    }
-
-    /// <summary>
-    /// 右侧等级栏下方的辅助说明统一走这里，避免后续继续分散手写定位。
-    /// </summary>
-    private static void SetRightInfoLine(int lineIdx, string text) {
-        if (lineIdx < 0 || lineIdx >= LevelLineCount) {
-            return;
-        }
-
-        txtLevelInfo[lineIdx].text = text;
-    }
-
-    /// <summary>
-    /// 按当前配方家族生成解锁提示，优先输出玩家在当前版本里真正能执行的入口。
-    /// </summary>
-    private static string BuildUnlockHint(BaseRecipe recipe) {
-        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
-        return rule.Family switch {
-            RecipeFamily.MineralCopyNormal when rule.TechBaselineLevel > 0
-                => "通过主检索开线偏好获取；部分前期配方也会随科技基线修复".Translate(),
-            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain
-                => "通过主检索开线偏好获取".Translate(),
-            RecipeFamily.BuildingTrainForward or RecipeFamily.BuildingTrainReverse
-                => "通过主检索原胚偏好或成长规划获得；相关科技也会基线修复".Translate(),
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
-                => "首次获得对应黑雾物品后解锁".Translate(),
-            _ when recipe.RecipeType == ERecipe.Conversion && recipe.MatrixID == I黑雾矩阵
-                => "通过黑雾支线成长规划报价获得".Translate(),
-            RecipeFamily.ConversionBuilding
-                => "通过成长规划或固定入口获得；解锁后直接满级".Translate(),
-            RecipeFamily.Rectification
-                => "通过科技基线修复".Translate(),
-            _ => "通过主检索开线偏好获取".Translate(),
-        };
-    }
-
-    /// <summary>
-    /// 按成长模式给出升级方式说明；若当前还未解锁，会自动补上“解锁后”前缀。
-    /// </summary>
-    private static string BuildUpgradeHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
-        string prefix = snapshot.IsUnlocked ? string.Empty : $"{"解锁后".Translate()}";
-        return rule.Family switch {
-            RecipeFamily.MineralCopyNormal or RecipeFamily.ConversionItemChain
-                => prefix + "运行对应配方获取经验，重复获得时补充成长进度".Translate(),
-            RecipeFamily.BuildingTrainForward
-                => prefix + "处理对应原胚获取经验，重复获得时也会直接提升".Translate(),
-            RecipeFamily.BuildingTrainReverse
-                => prefix + "处理对应原胚获取经验".Translate(),
-            RecipeFamily.MineralCopyDarkFog or RecipeFamily.ConversionDarkFogChain
-                => prefix + "处理对应黑雾物品获取经验，也可通过成长规划补差".Translate(),
-            RecipeFamily.Rectification
-                => prefix + "处理对应矩阵或矩阵精华获取稳定锚定进度，也可通过矩阵精华催化补差".Translate(),
-            RecipeFamily.ConversionBuilding
-                => snapshot.IsUnlocked
-                    ? "已完全升级，无需继续成长".Translate()
-                    : prefix + "直接满级".Translate(),
-            _ => string.Empty,
-        };
-    }
-
-    /// <summary>
-    /// 只有当前规则存在明确阈值时，才显示经验/保底进度，避免给出虚假的进度条。
-    /// </summary>
-    private static string BuildUpgradeProgressHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        if (!snapshot.IsUnlocked || snapshot.IsMaxed) {
-            return string.Empty;
-        }
-
-        RecipeGrowthRule rule = RecipeGrowthRules.GetRule(recipe);
-        int threshold = RecipeGrowthRules.GetUpgradeThreshold(rule, snapshot.Level);
-        if (threshold == int.MaxValue) {
-            return string.Empty;
-        }
-
-        if (rule.UsesPity) {
-            return $"{snapshot.PityProgress}/{threshold}";
-        }
-
-        if (rule.UsesGrowthExp) {
-            return $"{snapshot.GrowthExp}/{threshold}";
-        }
-
-        return string.Empty;
-    }
-
-    private static string BuildDrawUnitResonanceHint(BaseRecipe recipe, RecipeDisplaySnapshot snapshot) {
-        if (!snapshot.IsUnlocked || !IsDrawUnitRecipe(recipe)) {
-            return string.Empty;
-        }
-
-        int resonance = GachaService.GetRecipeDrawUnitResonance(recipe);
-        return $"{"抽取单位回响".Translate()}：Lv{resonance}/{GachaManager.MaxDrawUnitResonance}";
-    }
-
-    private static bool IsDrawUnitRecipe(BaseRecipe recipe) {
-        if (recipe == null) {
-            return false;
-        }
-
-        RecipeFamily family = RecipeGrowthRules.GetFamily(recipe);
-        return family is RecipeFamily.BuildingTrainForward
-            or RecipeFamily.BuildingTrainReverse
-            or RecipeFamily.MineralCopyNormal
-            or RecipeFamily.ConversionItemChain
-            or RecipeFamily.Rectification;
-    }
-
-    private static float GetBaseDestroyRatio(BaseRecipe recipe, int? level = null) => 0.04f;
-
-    // ==================== 产物显示（格式：概率 | 图标 | 数量） ====================
-
-    /// <summary>
-    /// 显示单个产物行：左侧概率文本，中间物品图标，右侧数量。
-    /// </summary>
-    private static void ShowProductLine(int line, ItemProto itemProto, OutputInfo info) {
-        bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
-        string count = forceShow || info.ShowOutputCount ? info.OutputCount.ToString("F3") : "???";
-        string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
-
-        // 左侧：概率文本
-        txtProductLeft[line].text = ratio;
-        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
-        txtProductLeft[line].gameObject.SetActive(true);
-
-        // 中间：物品图标
-        btnRecipeInfoIcons[line].gameObject.SetActive(true);
-        btnRecipeInfoIcons[line].Proto = itemProto;
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-
-        // 右侧：数量
-        txtRecipeInfo[line].text = $"×{count}";
-        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-    }
-
-    private static void ShowConversionProductLine(int line, ConversionRecipe recipe, ItemProto itemProto,
-        OutputInfo info) {
-        bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
-        bool showCount = forceShow || info.ShowOutputCount;
-        string randomCount = showCount ? info.OutputCount.ToString("F3") : "???";
-        string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
-        string lockedCount = recipe.TryGetLockedOutputPlan(info.OutputID,
-            out ConversionRecipe.LockedOutputPlan lockedPlan)
-            ? (showCount ? lockedPlan.OutputCount.ToString("F3") : "???")
-            : "???";
-
-        txtProductLeft[line].text = ratio;
-        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
-        txtProductLeft[line].gameObject.SetActive(true);
-
-        btnRecipeInfoIcons[line].gameObject.SetActive(true);
-        btnRecipeInfoIcons[line].Proto = itemProto;
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-
-        txtRecipeInfo[line].text = $"{ShortRandomLabel()}×{randomCount}  {ShortLockLabel()}×{lockedCount}";
-        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-    }
-
-    private static void ShowRectificationProductLine(int line, RectificationRecipe recipe, OutputInfo info) {
-        bool forceShow = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
-        string count = forceShow || info.ShowOutputCount ? recipe.GetDisplayOutputCount(info).ToString("F3") : "???";
-        string ratio = forceShow || info.ShowSuccessRatio ? info.SuccessRatio.ToString("P3") : "???";
-
-        txtProductLeft[line].text = ratio;
-        txtProductLeft[line].SetPosition(ProductRatioX, 0f);
-        txtProductLeft[line].gameObject.SetActive(true);
-
-        btnRecipeInfoIcons[line].gameObject.SetActive(true);
-        btnRecipeInfoIcons[line].Proto = LDB.items.Select(info.OutputID);
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-
-        txtRecipeInfo[line].text = $"×{count}";
-        txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-    }
-
-    // ==================== 等效处理（滑条 + 竖向输出列表） ====================
-
-    private static int ShowEqProcessingSection(int line, BaseRecipe recipe, ItemProto building) {
-        HideIconOnLine(line);
-        txtProductLeft[line].gameObject.SetActive(false);
-        txtRecipeInfo[line].text = "增产点数".Translate();
-        txtRecipeInfo[line].SetPosition(0f, 0f);
-        incSliders[line].gameObject.SetActive(true);
-        line++;
-
-        ShowTextLine(line++, "每个原料平均产出：".Translate());
-
-        if (recipe is RectificationRecipe rectificationRecipe) {
-            foreach (OutputInfo info in rectificationRecipe.OutputMain) {
-                btnRecipeInfoIcons[line].gameObject.SetActive(true);
-                btnRecipeInfoIcons[line].Proto = LDB.items.Select(info.OutputID);
-                NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-                txtRecipeInfo[line].text = $"{info.SuccessRatio:P1}  ×{rectificationRecipe.GetDisplayOutputCount(info):F3}";
-                txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-                txtProductLeft[line].gameObject.SetActive(false);
-                line++;
-            }
-            return line;
-        }
-
-        // E = fracRatio / (1 - fracRatio*r)，其中 fracRatio=(1-d)*s，r=remainInputRatio
-        float plrRatio = building?.PlrRatio() ?? 1.0f;
-        float pointsBonus = (float)ProcessManager.MaxTableMilli(selectedInc.Value) * plrRatio;
-        float successBoost = (building?.SuccessBoost() ?? 0f) + Achievements.GetSuccessRateBonus();
-        float successRatio = Mathf.Clamp01(recipe.SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
-        float destroyRatio = recipe.DestroyRatio;
-        float fracRatio = (1 - destroyRatio) * successRatio;
-        float remainInputRatio = recipe.RemainInputRatio;
-        float repeatRatio = fracRatio * remainInputRatio;
-        float repeatMultiplier = repeatRatio >= 0.9999f ? 10000.0f : 1.0f / (1.0f - repeatRatio);
-        float mainOutputBonus = 1.0f + recipe.DoubleOutputRatio;
-
-        ConversionRecipe conversionRecipe = recipe as ConversionRecipe;
-        List<(int id, float cnt, float lockedCnt, bool showCount)> outputs = [];
-        Dictionary<int, int> outputIndex = [];
-
-        foreach (var info in recipe.OutputMain) {
-            int id = info.OutputID;
-            float cnt = fracRatio * info.SuccessRatio * info.OutputCount * mainOutputBonus * repeatMultiplier;
-            float lockedCnt = GetLockedEquivalentCount(conversionRecipe, id, fracRatio, mainOutputBonus,
-                repeatMultiplier);
-            if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, elc, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, elc >= 0f ? elc : lockedCnt, ecu);
-            } else {
-                outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, lockedCnt, info.ShowSuccessRatio));
-            }
-        }
-        foreach (var info in recipe.OutputAppend) {
-            int id = info.OutputID;
-            float cnt = fracRatio * info.SuccessRatio * info.OutputCount * repeatMultiplier;
-            float lockedCnt = GetLockedEquivalentCount(conversionRecipe, id, fracRatio, mainOutputBonus,
-                repeatMultiplier);
-            if (outputIndex.TryGetValue(id, out int idx)) {
-                var (eid, ec, elc, ecu) = outputs[idx];
-                outputs[idx] = (eid, ec + cnt, elc >= 0f ? elc : lockedCnt, ecu);
-            } else {
-                outputIndex[id] = outputs.Count;
-                outputs.Add((id, cnt, lockedCnt, info.ShowSuccessRatio));
-            }
-        }
-
-        bool showDetails = GameMain.sandboxToolsEnabled || Miscellaneous.ShowFractionateRecipeDetails;
-
-        foreach (var (id, cnt, lockedCnt, showCount) in outputs) {
-            ItemProto outItem = LDB.items.Select(id);
-            string outCount = showDetails || showCount ? cnt.ToString("F3") : "???";
-            string lockedOutCount = showDetails || showCount ? lockedCnt.ToString("F3") : "???";
-
-            txtProductLeft[line].gameObject.SetActive(false);
-
-            btnRecipeInfoIcons[line].gameObject.SetActive(true);
-            btnRecipeInfoIcons[line].Proto = outItem;
-            NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], ProductIconX, 0f);
-
-            txtRecipeInfo[line].text = conversionRecipe != null && lockedCnt >= 0f
-                ? $"{ShortRandomLabel()}×{outCount}  {ShortLockLabel()}×{lockedOutCount}"
-                : $"×{outCount}";
-            txtRecipeInfo[line].SetPosition(ProductTextX, 0f);
-
-            line++;
-        }
-
-        return line;
-    }
-
-    private static float GetLockedEquivalentCount(ConversionRecipe recipe, int outputId, float fracRatio,
-        float mainOutputBonus, float repeatMultiplier) {
-        if (recipe == null
-            || !recipe.TryGetLockedOutputPlan(outputId,
-                out ConversionRecipe.LockedOutputPlan lockedPlan)) {
-            return -1f;
-        }
-
-        return fracRatio * lockedPlan.OutputCount * mainOutputBonus * repeatMultiplier;
-    }
-
-    // ==================== 建筑特殊特质 ====================
-
-    private static int ShowBuildingFeatures(int line, ItemProto building) {
-        switch (building.ID) {
-            case IFE交互塔:
-                ShowTextLine(line++,
-                    $"{"牺牲特性".Translate()}：{FeatureStatus(InteractionTower.EnableSacrificeTrait)}  "
-                    + $"{"维度共鸣".Translate()}：{FeatureStatus(InteractionTower.EnableDimensionalResonance)}");
-                break;
-            case IFE矿物复制塔:
-                ShowTextLine(line++,
-                    $"{"质能裂变".Translate()}：{FeatureStatus(MineralReplicationTower.EnableMassEnergyFission)}  "
-                    + $"{"零压循环".Translate()}：{FeatureStatus(MineralReplicationTower.EnableZeroPressureCycle)}");
-                break;
-            case IFE转化塔:
-                ShowTextLine(line++,
-                    $"{"因果追踪".Translate()}：{FeatureStatus(ConversionTower.EnableCausalTracing)}  "
-                    + $"{"单锁".Translate()}：{FeatureStatus(ConversionTower.EnableSingleLock)}");
-                break;
-        }
-        return line;
-    }
-
-    // ==================== 辅助显示方法 ====================
-
-    private static void ShowIconLine(int line, ItemProto itemProto, string text) {
-        txtProductLeft[line].gameObject.SetActive(false);
-        incSliders[line].gameObject.SetActive(false);
-        btnRecipeInfoIcons[line].gameObject.SetActive(true);
-        btnRecipeInfoIcons[line].Proto = itemProto;
-        NormalizeRectWithMidLeft(btnRecipeInfoIcons[line], 0f, 0f);
-        txtRecipeInfo[line].text = text;
-        txtRecipeInfo[line].SetPosition(TextOffsetWithIcon, 0f);
-    }
-
-    private static void ShowTextLine(int line, string text) {
-        HideIconOnLine(line);
-        txtProductLeft[line].gameObject.SetActive(false);
-        incSliders[line].gameObject.SetActive(false);
-        txtRecipeInfo[line].text = text;
-        txtRecipeInfo[line].SetPosition(0f, 0f);
-    }
-
-    private static void HideIconOnLine(int line) {
-        btnRecipeInfoIcons[line].gameObject.SetActive(false);
-    }
-
-    private static void HideAllLine(int line) {
-        btnRecipeInfoIcons[line].gameObject.SetActive(false);
-        txtProductLeft[line].gameObject.SetActive(false);
-        incSliders[line].gameObject.SetActive(false);
-        txtProductLeft[line].text = "";
-        txtRecipeInfo[line].text = "";
-        txtRecipeInfo[line].SetPosition(0f, 0f);
-    }
-
-    private static string FeatureStatus(bool enabled) =>
-        enabled ? "已启用".Translate().WithColor(Green) : "未启用".Translate().WithColor(Gray);
-
-    private static string ShortRandomLabel() => "随机简称".Translate();
-
-    private static string ShortLockLabel() => "单锁简称".Translate();
 }

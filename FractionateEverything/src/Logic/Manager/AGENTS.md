@@ -16,8 +16,7 @@
 - 物流交互站：`Logic/Station`
 - 数据中心库存/背包访问：`Logic/DataCenter`
 - 物品原型/价值/矩阵阶段：`Logic/Items`
-- 抽取：`Logic/Gacha`
-- 经济：`Logic/Economy`
+- 文明协议检索、科技点和成就：`Logic/Civilization`
 - 科技/教程：`Logic/Progression`
 - 黑雾：`Logic/DarkFog`
 

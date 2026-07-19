@@ -10,7 +10,6 @@ using CommonAPI;
 using crecheng.DSPModSave;
 using FE.Logic.Buildings;
 using FE.Logic.Fractionation.Fractionators;
-using FE.Logic.Fractionation.Growth;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Items;
@@ -784,7 +783,6 @@ public class GetDspData : BaseUnityPlugin {
             //↓测试环境调整↓
             // recipe.SandBoxMaxUpDowngrade(true);
             building.Level(12);
-            RecipeGrowthExecutor.SetLevelForSandbox(recipe, 5, RecipeGrowthManager.BuildContext());
             int fluidInputIncAvg = 0;
             //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
@@ -813,8 +811,8 @@ public class GetDspData : BaseUnityPlugin {
                 { "Proliferator", 1 },
                 { "SuccessRatio", recipe.SuccessRatio },
                 { "DestroyRatio", recipe.DestroyRatio },
-                { "RemainInputRatio", recipe.RemainInputRatio },
-                { "DoubleOutputRatio", recipe.DoubleOutputRatio },
+                { "RemainInputRatio", 0.0 },
+                { "DoubleOutputRatio", 0.0 },
                 { "PointsBonus", pointsBonus },
                 { "SuccessBoost", successBoost },
                 { "OutputMain", BuildOutputInfoArray(recipe.OutputMain) },

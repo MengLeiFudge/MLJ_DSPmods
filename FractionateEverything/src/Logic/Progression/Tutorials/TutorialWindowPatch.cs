@@ -10,7 +10,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Progression;
 
 /// <summary>
-/// 教程窗口布局兼容与滚动阅读检测补丁。
+/// 教程窗口布局兼容补丁。
 /// </summary>
 public static partial class TutorialManager {
     static MethodInfo genesisBookIsLayoutMethod;
@@ -32,20 +32,6 @@ public static partial class TutorialManager {
             __instance.entryList.m_ScrollRect.enabled = false;
             __instance.entryList.m_ScrollRect.enabled = true;
         }
-
-        TryMarkCurrentTutorialViewedToBottom(__instance);
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]
-    private static void UITutorialWindow_OnTutorialChange_Postfix(UITutorialWindow __instance) {
-        TryMarkCurrentTutorialViewedToBottom(__instance);
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow._OnUpdate))]
-    private static void UITutorialWindow_OnUpdate_Postfix(UITutorialWindow __instance) {
-        TryMarkCurrentTutorialViewedToBottom(__instance);
     }
 
     [HarmonyPatch(typeof(UITutorialWindow), nameof(UITutorialWindow.OnTutorialChange))]

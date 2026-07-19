@@ -91,7 +91,7 @@ public static class RecoveryGuide {
         Register("恢复手册-类型", "Type", "类型");
         Register("恢复手册-步骤", "Step", "步骤");
         Register("恢复手册-当前目标完成", "Initial loop complete. Continue with retrieval and tower registration.",
-            "第一轮闭环已完成。接下来继续处理时隧检索和塔型注册。");
+            "第一轮闭环已完成。接下来继续进行文明协议恢复和塔型注册。");
         Register("恢复手册-页脚",
             "Manual confirmations only record guide progress. They do not unlock production, grant items, or replace real recovery conditions.",
             "手动确认只记录指引进度，不解锁生产、不发放物品，也不替代真实恢复条件。");
@@ -135,14 +135,14 @@ public static class RecoveryGuide {
 
         Register("恢复手册章节-数据中心", "Data centre storage: upload, extract, and view current stock.",
             "数据中心库存：上传、提取和查看当前储量。");
-        Register("恢复手册章节-时隧检索", "Timespace retrieval: spend stage resources to find routes, protos, and catch-up rewards.",
-            "时隧检索：消耗阶段资源，检索路线、原胚和补差奖励。");
+        Register("恢复手册章节-时隧检索", "Protocol recovery: upload analysis data, then spend retrieval opportunities to discover and complete recipes.",
+            "协议恢复：上传解析数据，再消耗检索机会发现并补全配方协议。");
         Register("恢复手册章节-塔型注册", "Tower registration: upload each produced tower to recover its protocol.",
             "塔型注册：上传各类产出的分馏塔，恢复对应协议。");
         Register("恢复手册章节-物流交互", "Interaction stations: automate data-centre upload and download after the first loop.",
             "物流交互站：第一轮闭环后，自动化数据中心上传和下载。");
-        Register("恢复手册章节-精馏", "Rectification: turn matrices into essence, reflux, compression, and fragments.",
-            "精馏：将矩阵转为精华，并处理回流、压缩和残片。");
+        Register("恢复手册章节-精馏", "Civilization analysis: turn matrices into physical analysis data for protocol recovery.",
+            "文明解析：将矩阵转为实体解析数据，用于恢复配方协议。");
     }
 
     public static void LoadConfig(ConfigFile configFile) { }
@@ -404,8 +404,7 @@ public static class RecoveryGuide {
     }
 
     private static bool HasFirstInteractionTowerReady() {
-        return InteractionTower.Level > 0
-               || GetItemTotalCount(IFE交互塔) > 0
+        return GetItemTotalCount(IFE交互塔) > 0
                || DataCenterInventory.centerItemCount[IFE交互塔] > 0;
     }
 

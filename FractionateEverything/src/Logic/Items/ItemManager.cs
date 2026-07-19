@@ -22,61 +22,61 @@ public static class ItemManager {
 
         Register("万物分馏科技解锁说明", "Protocol Recovery Tip", "协议恢复说明");
         Register("I万物分馏科技解锁说明",
-            "This is only a placeholder used to explain protocol recovery, not a normal research material.\nFE protocols are restored by cultivating the corresponding Fractionator, then uploading that tower to the Fractionation Data Centre.\nUpload method: feed the tower into the front port of an Interaction Tower while it is in Item Interaction mode. The Interaction Tower must be empty, and its left and right ports must not be connected to belts.\nProtocol mapping: Interaction Tower -> Item Interaction; Mineral Replication Tower -> Mineral Replication; Conversion Tower -> Item Conversion; Rectification Tower -> Rectification.",
-            "这只是一个用于说明协议恢复方式的占位符，不是常规科研材料。\nFE 协议需要先培养出对应分馏塔，再将该分馏塔上传至分馏数据中心恢复。\n上传方法：让交互塔处于“物品交互”模式，再将分馏塔从交互塔正面接口输入。此时交互塔内部不能有物品，左右接口也不能连接传送带。\n协议对应关系：交互塔 -> 物品交互；矿物复制塔 -> 矿物复制；转化塔 -> 物品转化；精馏塔 -> 精馏。");
+            "This placeholder explains tower registration and is not a normal research material. Cultivate the corresponding tower, then upload it through the front port of an empty Interaction Tower. Recipe protocols are recovered separately through civilization analysis.",
+            "这只是用于说明塔型注册的占位物品，不是常规科研材料。先培养出对应分馏塔，再通过空置交互塔的正面入口上传；具体配方协议需要另外通过文明解析恢复。");
 
         Register("残片", "Fragment");
         Register("I残片",
-            "Stable fragment currency produced by essence ticket splitting and FE rewards.",
-            "分馏体系产出的稳定副资源，可用于成长、定向补差和流派聚焦。");
-        Register("电磁精华", "Electromagnetic Essence");
+            "Legacy secondary resource retained for existing saves and compatible rewards.",
+            "为旧存档和兼容奖励保留的次级资源；当前文明解析主线不依赖它。");
+        Register("电磁精华", "Electromagnetic Analysis Data", "电磁解析数据");
         Register("I电磁精华",
-            "Entity essence extracted from electromagnetic matrices. It carries 2 fragment value.",
-            "从电磁矩阵中萃取出的实体精华，面值为 2 残片。");
-        Register("能量精华", "Energy Essence");
+            "Physical analysis data extracted from electromagnetic matrices. Upload it to generate retrieval opportunities.",
+            "从电磁矩阵中解析出的实体数据；上传后会积累电磁阶段的协议检索机会。");
+        Register("能量精华", "Energy Analysis Data", "能量解析数据");
         Register("I能量精华",
-            "Entity essence extracted from energy matrices. It carries 4 fragment value.",
-            "从能量矩阵中萃取出的实体精华，面值为 4 残片。");
-        Register("结构精华", "Structure Essence");
+            "Physical analysis data extracted from energy matrices. Upload it to generate retrieval opportunities.",
+            "从能量矩阵中解析出的实体数据；上传后会积累能量阶段的协议检索机会。");
+        Register("结构精华", "Structure Analysis Data", "结构解析数据");
         Register("I结构精华",
-            "Entity essence extracted from structure matrices. It carries 8 fragment value.",
-            "从结构矩阵中萃取出的实体精华，面值为 8 残片。");
-        Register("信息精华", "Information Essence");
+            "Physical analysis data extracted from structure matrices. Upload it to generate retrieval opportunities.",
+            "从结构矩阵中解析出的实体数据；上传后会积累结构阶段的协议检索机会。");
+        Register("信息精华", "Information Analysis Data", "信息解析数据");
         Register("I信息精华",
-            "Entity essence extracted from information matrices. It carries 16 fragment value.",
-            "从信息矩阵中萃取出的实体精华，面值为 16 残片。");
-        Register("引力精华", "Gravity Essence");
+            "Physical analysis data extracted from information matrices. Upload it to generate retrieval opportunities.",
+            "从信息矩阵中解析出的实体数据；上传后会积累信息阶段的协议检索机会。");
+        Register("引力精华", "Gravity Analysis Data", "引力解析数据");
         Register("I引力精华",
-            "Entity essence extracted from gravity matrices. It carries 32 fragment value.",
-            "从引力矩阵中萃取出的实体精华，面值为 32 残片。");
-        Register("宇宙精华", "Universe Essence");
+            "Physical analysis data extracted from gravity matrices. Upload it to generate retrieval opportunities.",
+            "从引力矩阵中解析出的实体数据；上传后会积累引力阶段的协议检索机会。");
+        Register("宇宙精华", "Universe Analysis Data", "宇宙解析数据");
         Register("I宇宙精华",
-            "Entity essence extracted from universe matrices. It carries 64 fragment value.",
-            "从宇宙矩阵中萃取出的实体精华，面值为 64 残片。");
+            "Physical analysis data extracted from universe matrices. Upload it to generate retrieval opportunities.",
+            "从宇宙矩阵中解析出的实体数据；上传后会积累宇宙阶段的协议检索机会。");
         Register("记忆源点", "Memory");
         Register("I记忆源点",
             "Top-layer FE currency-like resource granted by non-production rewards. It is not produced by rectification.",
             "FE 高层货币式资源，只能来自非产线奖励，不由精馏产线产出。");
         Register("交互塔原胚", "Interaction Tower Proto");
         Register("I交互塔原胚",
-            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes an Interaction Tower.",
-            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到交互塔。");
-        Register("矿物复制塔原胚", "Mineral Replication Tower Proto");
+            "A recovered tower proto. After cultivation in an Interaction Tower, it becomes an Interaction Tower.",
+            "回收得到的分馏塔雏形之一，经过交互塔培养后可以得到交互塔。");
+        Register("矿物复制塔原胚", "Resource Tower Proto", "资源塔原胚");
         Register("I矿物复制塔原胚",
-            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Mineral Replication Tower.",
-            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到矿物复制塔。");
+            "One of the fractionator protos. After cultivation in an Interaction Tower, it becomes a Resource Tower.",
+            "分馏塔雏形之一，经过交互塔培养后可以得到资源塔。");
         Register("转化塔原胚", "Conversion Tower Proto");
         Register("I转化塔原胚",
-            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Conversion Tower.",
-            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到转化塔。");
-        Register("精馏塔原胚", "Rectification Tower Proto");
+            "A recovered tower proto. After cultivation in an Interaction Tower, it becomes a Conversion Tower.",
+            "回收得到的分馏塔雏形之一，经过交互塔培养后可以得到转化塔。");
+        Register("精馏塔原胚", "Analysis Tower Proto", "解析塔原胚");
         Register("I精馏塔原胚",
-            "One of the fractionator protos, obtained through time-tunnel retrieval. After trained by Interaction Tower, it becomes a Rectification Tower.",
-            "分馏塔雏形之一，通过时隧检索得到。经过交互塔培养后，可以得到精馏塔。");
+            "One of the fractionator protos. After cultivation in an Interaction Tower, it becomes an Analysis Tower.",
+            "分馏塔雏形之一，经过交互塔培养后可以得到解析塔。");
         Register("分馏塔定向原胚", "Fractionator Directed Proto");
         Register("I分馏塔定向原胚",
-            "Legacy proto reserved for old saves. New retrieval and growth routes no longer create it.",
-            "旧存档保留物品。新的时隧检索和成长路线不再产出它。");
+            "Legacy proto reserved for old saves. The civilization-analysis route does not create it.",
+            "旧存档保留物品；当前文明解析路线不再产出它。");
     }
 
     #region 添加新物品

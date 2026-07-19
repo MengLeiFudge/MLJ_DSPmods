@@ -1,6 +1,5 @@
 ﻿using FE.Logic.Buildings;
-using FE.Logic.Economy;
-using FE.Logic.Fractionation.Growth;
+using FE.Logic.Civilization;
 using FE.Logic.Fractionation.Process;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Items;
@@ -31,6 +30,7 @@ public static class FeatureBootstrap {
         StationManager.AddTranslations();
         TechManager.AddTranslations();
         TutorialManager.AddTranslations();
+        CivilizationModule.AddTranslations();
         MainWindow.AddTranslations();
     }
 
@@ -67,15 +67,13 @@ public static class FeatureBootstrap {
         ItemManager.CalculateItemValues();
         // 将物品分类到各个矩阵层级中
         ItemManager.ClassifyItemsToMatrix();
-        // 动态经济系统依赖基础价值与矩阵阶段映射
-        EconomyManager.Init();
         // UpdateHpAndEnergy 用到了 Init 生成的数据
         BuildingManager.UpdateHpAndEnergy();
         // SetFractionatorCacheSize 用到了 Init 生成的数据
         BuildingManager.SetFractionatorCacheSize();
         // AddFracRecipes 用到了 Init 生成的数据
         RecipeManager.AddFracRecipes();
-        RecipeGrowthManager.InitializeFromRecipes();
+        CivilizationModule.Initialize();
         VanillaRecipeManager.AddVanillaRecipes();
         // CalculateItemModSaveCount 用到了 CalculateItemValues 生成的数据
         StationManager.CalculateItemModSaveCount();

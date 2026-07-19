@@ -39,23 +39,20 @@ public static class ERecipeExtension {
     public static void AddTranslations() {
         Register("未知", "Unknown");
         Register("建筑培养", "Building Train");
-        Register("矿物复制", "Mineral Replication");
+        Register("矿物复制", "Resource Replication", "资源复制");
         Register("转化", "Conversion");
-        Register("精馏", "Rectification");
+        Register("精馏", "Civilization Analysis", "文明解析");
         Register("未知配方", "Unknown Recipe");
         Register("建筑培养配方", "Building Train Recipe");
-        Register("矿物复制配方", "Mineral Replication Recipe");
+        Register("矿物复制配方", "Resource Replication Recipe", "资源复制配方");
         Register("转化配方", "Conversion Recipe");
-        Register("精馏配方", "Rectification Recipe");
+        Register("精馏配方", "Civilization Analysis Recipe", "文明解析配方");
     }
 
     /// <summary>
     /// 获取全部 FE 分馏配方类型。
     /// </summary>
-    public static readonly ERecipe[] RecipeTypes = Enum.GetValues(typeof(ERecipe))
-        .Cast<ERecipe>()
-        .Where(t => t != ERecipe.Rectification)
-        .ToArray();
+    public static readonly ERecipe[] RecipeTypes = Enum.GetValues(typeof(ERecipe)).Cast<ERecipe>().ToArray();
 
     /// <summary>
     /// 获取全部 FE 分馏配方类型的短名称。
