@@ -56,6 +56,12 @@ public static class CivilizationRuntimeSync {
                 case AncientTechEffectType.FractionationForever:
                     TowerRuntimeModifierCache.EnableFractionationForever(node.TowerType);
                     break;
+                case AncientTechEffectType.MainOutputLock:
+                    TowerRuntimeModifierCache.EnableMainOutputLock(node.TowerType);
+                    break;
+                case AncientTechEffectType.ByproductDiscard:
+                    TowerRuntimeModifierCache.EnableByproductDiscard(node.TowerType);
+                    break;
             }
         }
     }

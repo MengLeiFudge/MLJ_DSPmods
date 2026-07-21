@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FE.Logic.Buildings.Migration;
 using static FE.Logic.Items.ItemManager;
 using static FE.Utils.Utils;
 using static FE.Logic.Fractionation.FracRecipes.ERecipeExtension;
@@ -180,7 +181,7 @@ public static class RecipeManager {
                 int count = br.ReadInt32();
                 for (int i = 0; i < count; i++) {
                     ERecipe recipeType = (ERecipe)br.ReadInt32();
-                    int inputID = br.ReadInt32();
+                    int inputID = LegacyProtoMigration.MapItemId(br.ReadInt32());
                     var fRecipe = GetRecipe<BaseRecipe>(recipeType, inputID);
                     // 不管有没有实例对象，都必须执行 ReadBlocks 以确保流位置正确
                     br.ReadBlocks(

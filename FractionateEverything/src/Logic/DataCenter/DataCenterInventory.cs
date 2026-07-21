@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FE.Compatibility.Nebula;
-using FE.Logic.Fractionation.Fractionators;
+using FE.Logic.Buildings.Migration;
 using FE.UI.MainPanel.Setting;
 using NebulaAPI;
 using static FE.Utils.Utils;
@@ -15,11 +15,9 @@ namespace FE.Logic.DataCenter;
 public static class DataCenterInventory {
     private const int MaxIntTakeCountByInc = int.MaxValue / 10;
     private const long MaxLongTakeCountByInc = long.MaxValue / 10L;
-    private const long FractionatorSacrificeThreshold = 1000L;
 
     public static readonly long[] centerItemCount = new long[12000];
     public static readonly long[] centerItemInc = new long[12000];
-    public static int leftInc = 0;
     public static long ManualExtractCount;
     public static long ManualUploadCount;
 
@@ -37,7 +35,6 @@ public static class DataCenterInventory {
                     bw.Write(centerItemInc[itemId]);
                 }
             }),
-            ("LeftInc", bw => bw.Write(leftInc)),
             ("ManualInteractionStats", bw => {
                 bw.Write(ManualExtractCount);
                 bw.Write(ManualUploadCount);
@@ -59,18 +56,17 @@ public static class DataCenterInventory {
                     }
                 }
             }),
-            ("LeftInc", br => leftInc = br.ReadInt32()),
             ("ManualInteractionStats", br => {
                 ManualExtractCount = Math.Max(0L, br.ReadInt64());
                 ManualUploadCount = Math.Max(0L, br.ReadInt64());
             })
         );
+        LegacyProtoMigration.MigrateDataCenterInventory(centerItemCount, centerItemInc);
     }
 
     public static void IntoOtherSave() {
         Array.Clear(centerItemCount, 0, centerItemCount.Length);
         Array.Clear(centerItemInc, 0, centerItemInc.Length);
-        leftInc = 0;
         ManualExtractCount = 0;
         ManualUploadCount = 0;
     }
@@ -138,11 +134,6 @@ public static class DataCenterInventory {
         return true;
     }
 
-    public static int GetEssenceMinCount() => GetFragmentMinCount();
-
-    public static bool TakeEssenceFromModData(int n, int[] consumeRegister) =>
-        TakeFragmentsFromModData(n, consumeRegister);
-
     public static void AddItemToModData(int itemId, int count, int inc = 0, bool manual = false) {
         AddItemToModDataInternal(itemId, count, inc);
         if (NebulaModAPI.IsMultiplayerActive && manual) {
@@ -169,20 +160,6 @@ public static class DataCenterInventory {
             centerItemCount[itemId] += count;
             centerItemInc[itemId] += inc;
         }
-    }
-
-    public static long Take10PercentTower(int itemId) {
-        if (itemId <= 0 || itemId >= 12000 || !FractionatorTowerCatalog.IsActiveFractionator(itemId)) {
-            return 0L;
-        }
-        long count;
-        lock (centerItemCount) {
-            count = centerItemCount[itemId];
-        }
-        if (count < FractionatorSacrificeThreshold) {
-            return 0L;
-        }
-        return TakeItemFromModData(itemId, count / 10, out _);
     }
 
     public static long GetModDataItemCount(int itemId) {

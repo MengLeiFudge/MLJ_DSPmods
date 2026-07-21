@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using FE.Logic.Buildings;
 using FE.Logic.DataCenter;
-using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Station.Definitions;
 using FE.UI.MainPanel.Setting;
 using HarmonyLib;
@@ -10,7 +10,6 @@ using UnityEngine;
 using static FE.Logic.Items.ItemManager;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
-using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Logic.Station;
@@ -245,13 +244,9 @@ public static partial class StationManager {
             }
 
             count = TakeItemFromModData(store.itemId, count, out int inc);
-            if (PlanetaryInteractionStation.Level >= 3) {
-                AddIncToDownloadedItem(count, ref inc, PlanetaryInteractionStation.Level >= 12);
-            }
             store.count += count;
             store.inc += inc;
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
-            BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
         } else {
             // 将交互站的物品上传到数据中心
             int count = store.count - targetCount;
@@ -268,7 +263,6 @@ public static partial class StationManager {
             int inc = store.count <= 0 ? 0 : split_inc(ref store.count, ref store.inc, count);
             DataCenterUploadRouter.Upload(store.itemId, count, inc);
             stationComponent.energy -= Mathf.CeilToInt(cost * count);
-            BuildingGrowthService.AddBuildingExp(IFE行星内物流交互站, count);
         }
     }
 

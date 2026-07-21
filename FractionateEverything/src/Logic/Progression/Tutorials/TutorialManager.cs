@@ -34,7 +34,7 @@ public static partial class TutorialManager {
             new(nextId++, "万物分馏简介", "TOR_GameSecond", [10]),
             new(nextId++, "分馏数据中心", "TOR_TechUnlocked", [TFE分馏数据中心, 4]),
             new(nextId++, "分馏塔使用指南", "TOR_OnBuild",
-                [IFE交互塔, IFE矿物复制塔, IFE转化塔, IFE精馏塔]),
+                [IFE交互塔, IFE资源塔, IFE转化塔, IFE解析塔]),
             new(nextId++, "物流交互站使用指南", "TOR_OnBuild",
                 [IFE行星内物流交互站, IFE星际物流交互站]),
         ];

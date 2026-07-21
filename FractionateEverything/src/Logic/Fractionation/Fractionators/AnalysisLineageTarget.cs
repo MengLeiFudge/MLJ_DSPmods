@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using FE.Compatibility.Nebula;
+using FE.Logic.Buildings.Migration;
 using FE.Logic.Fractionation.FracRecipes;
 using HarmonyLib;
 using NebulaAPI;
@@ -11,70 +12,70 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 精馏塔精华重整方向状态、交互和存档逻辑。
+/// 保存解析塔谱系分化目标，并同步实体、复制粘贴、蓝图和联机状态。
 /// </summary>
-public static class RectificationTuningTarget {
-    private static readonly ConcurrentDictionary<(int, int), int> tuningTargetDic = [];
-    private const int TuningTargetParamMagic = 0x54554E45;
-    private const int TuningTargetParamVersion = 1;
-    private static bool hasTuningTargetClipboard;
-    private static int tuningTargetClipboardItemId;
+public static class AnalysisLineageTarget {
+    private static readonly ConcurrentDictionary<(int, int), int> lineageTargetDic = [];
+    private const int LineageTargetParamMagic = 0x54554E45;
+    private const int LineageTargetParamVersion = 1;
+    private static bool hasLineageTargetClipboard;
+    private static int lineageTargetClipboardItemId;
 
-    private static void ClearTuningTargetClipboard() {
-        hasTuningTargetClipboard = false;
-        tuningTargetClipboardItemId = 0;
+    private static void ClearLineageTargetClipboard() {
+        hasLineageTargetClipboard = false;
+        lineageTargetClipboardItemId = 0;
     }
 
-    public static void TuningTargetImport(BinaryReader r) {
-        tuningTargetDic.Clear();
+    public static void LineageTargetImport(BinaryReader r) {
+        lineageTargetDic.Clear();
         int count = r.ReadInt32();
         for (int i = 0; i < count; i++) {
             int planetId = r.ReadInt32();
             int entityId = r.ReadInt32();
-            int itemId = r.ReadInt32();
+            int itemId = LegacyProtoMigration.MapItemId(r.ReadInt32());
             if (itemId > 0) {
-                tuningTargetDic.TryAdd((planetId, entityId), itemId);
+                lineageTargetDic.TryAdd((planetId, entityId), itemId);
             }
         }
     }
 
-    public static void TuningTargetExport(BinaryWriter w) {
-        w.Write(tuningTargetDic.Count);
-        foreach (var p in tuningTargetDic) {
+    public static void LineageTargetExport(BinaryWriter w) {
+        w.Write(lineageTargetDic.Count);
+        foreach (var p in lineageTargetDic) {
             w.Write(p.Key.Item1);
             w.Write(p.Key.Item2);
             w.Write(p.Value);
         }
     }
 
-    public static void TuningTargetIntoOtherSave() {
-        tuningTargetDic.Clear();
-        ClearTuningTargetClipboard();
+    public static void LineageTargetIntoOtherSave() {
+        lineageTargetDic.Clear();
+        ClearLineageTargetClipboard();
     }
 
-    public static int GetTuningTarget(this FractionatorComponent fractionator, PlanetFactory factory) {
+    public static int GetLineageTarget(this FractionatorComponent fractionator, PlanetFactory factory) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
-        return tuningTargetDic.TryGetValue((planetId, entityId), out int itemId) ? itemId : 0;
+        return lineageTargetDic.TryGetValue((planetId, entityId), out int itemId) ? itemId : 0;
     }
 
-    public static void SetTuningTarget(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
+    public static void SetLineageTarget(this FractionatorComponent fractionator, PlanetFactory factory, int itemId) {
         int planetId = factory.planetId;
         int entityId = fractionator.entityId;
         if (itemId == 0) {
-            tuningTargetDic.TryRemove((planetId, entityId), out _);
+            lineageTargetDic.TryRemove((planetId, entityId), out _);
         } else {
-            tuningTargetDic[(planetId, entityId)] = itemId;
+            lineageTargetDic[(planetId, entityId)] = itemId;
         }
     }
 
-    public static int SetTuningTargetAndSync(this FractionatorComponent fractionator, PlanetFactory factory, int itemId,
+    public static int SetLineageTargetAndSync(this FractionatorComponent fractionator, PlanetFactory factory, int itemId,
         bool manual = false) {
-        int normalizedItemId = fractionator.NormalizeTuningTarget(factory, itemId);
-        fractionator.SetTuningTarget(factory, normalizedItemId);
+        int normalizedItemId = fractionator.NormalizeLineageTarget(factory, itemId);
+        fractionator.SetLineageTarget(factory, normalizedItemId);
         if (manual && factory != null && NebulaModAPI.IsMultiplayerActive && !NebulaMultiplayerModAPI.IsOthers()) {
             NebulaModAPI.MultiplayerSession.Network.SendPacket(
-                new BuildingChangePacket(IFE精馏塔, 3, factory.planetId, fractionator.entityId, normalizedItemId));
+                new BuildingChangePacket(IFE解析塔, 3, factory.planetId, fractionator.entityId, normalizedItemId));
         }
         return normalizedItemId;
     }
@@ -86,7 +87,7 @@ public static class RectificationTuningTarget {
             return false;
         }
         EntityData entityData = factory.entityPool[entityId];
-        if (entityData.id != entityId || entityData.protoId != IFE精馏塔 || entityData.fractionatorId <= 0) {
+        if (entityData.id != entityId || entityData.protoId != IFE解析塔 || entityData.fractionatorId <= 0) {
             return false;
         }
         fractionator = factory.factorySystem.fractionatorPool[entityData.fractionatorId];
@@ -106,76 +107,54 @@ public static class RectificationTuningTarget {
         return gameData.factories[factoryIndex];
     }
 
-    public static void ApplyTuningTargetPacket(int planetId, int entityId, int itemId) {
+    public static void ApplyLineageTargetPacket(int planetId, int entityId, int itemId) {
         if (planetId <= 0 || entityId <= 0) {
             return;
         }
         if (itemId == 0) {
-            tuningTargetDic.TryRemove((planetId, entityId), out _);
+            lineageTargetDic.TryRemove((planetId, entityId), out _);
         } else {
-            tuningTargetDic[(planetId, entityId)] = itemId;
+            lineageTargetDic[(planetId, entityId)] = itemId;
         }
         PlanetFactory factory = GetFactoryByPlanetId(planetId);
         if (TryGetRectificationFractionator(factory, entityId, out FractionatorComponent fractionator)) {
-            fractionator.SetTuningTarget(factory, fractionator.NormalizeTuningTarget(factory, itemId));
+            fractionator.SetLineageTarget(factory, fractionator.NormalizeLineageTarget(factory, itemId));
         }
     }
 
-    public static int NormalizeTuningTarget(this FractionatorComponent fractionator, PlanetFactory factory,
+    public static int NormalizeLineageTarget(this FractionatorComponent fractionator, PlanetFactory factory,
         int itemId) {
-        if (itemId == 0 || factory == null) {
+        if (itemId == 0 || factory == null
+            || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Rectification)) {
             return 0;
         }
         if (fractionator.fluidId == 0) {
             return itemId;
         }
         RectificationRecipe recipe = GetRecipe<RectificationRecipe>(ERecipe.Rectification, fractionator.fluidId);
-        return recipe != null && recipe.SupportsTuningTarget(itemId) ? itemId : 0;
+        return recipe != null && recipe.IsMainOutputLockCalibrated && recipe.SupportsLineageTarget(itemId)
+            ? itemId
+            : 0;
     }
 
-    public static int GetNormalizedTuningTarget(this FractionatorComponent fractionator, PlanetFactory factory) {
-        int targetItemId = fractionator.GetTuningTarget(factory);
-        int normalizedItemId = fractionator.NormalizeTuningTarget(factory, targetItemId);
+    public static int GetNormalizedLineageTarget(this FractionatorComponent fractionator, PlanetFactory factory) {
+        int targetItemId = fractionator.GetLineageTarget(factory);
+        int normalizedItemId = fractionator.NormalizeLineageTarget(factory, targetItemId);
         if (normalizedItemId != targetItemId) {
-            fractionator.SetTuningTarget(factory, normalizedItemId);
+            fractionator.SetLineageTarget(factory, normalizedItemId);
         }
         return normalizedItemId;
     }
 
-    private static int[] AppendTuningTargetParam(int[] parameters, int targetItemId) {
-        int[] baseParameters = parameters ?? [];
-        if (TryReadTuningTargetParam(baseParameters, out _, out int baseParamCount)) {
-            Array.Resize(ref baseParameters, baseParamCount);
-        }
-        int[] result = new int[baseParameters.Length + 3];
-        Array.Copy(baseParameters, result, baseParameters.Length);
-        int tailIndex = baseParameters.Length;
-        result[tailIndex] = TuningTargetParamMagic;
-        result[tailIndex + 1] = TuningTargetParamVersion;
-        result[tailIndex + 2] = targetItemId;
-        return result;
-    }
+    private static int[] AppendLineageTargetParam(int[] parameters, int targetItemId) =>
+        FractionatorBlueprintParameters.Upsert(parameters, LineageTargetParamMagic, LineageTargetParamVersion,
+            targetItemId);
 
-    private static bool TryReadTuningTargetParam(int[] parameters, out int targetItemId) {
-        return TryReadTuningTargetParam(parameters, out targetItemId, out _);
-    }
+    private static bool TryReadLineageTargetParam(int[] parameters, out int targetItemId) =>
+        FractionatorBlueprintParameters.TryRead(parameters, LineageTargetParamMagic, LineageTargetParamVersion,
+            out targetItemId);
 
-    private static bool TryReadTuningTargetParam(int[] parameters, out int targetItemId, out int baseParamCount) {
-        targetItemId = 0;
-        baseParamCount = parameters?.Length ?? 0;
-        if (parameters == null || parameters.Length < 3) {
-            return false;
-        }
-        int tailIndex = parameters.Length - 3;
-        if (parameters[tailIndex] != TuningTargetParamMagic || parameters[tailIndex + 1] != TuningTargetParamVersion) {
-            return false;
-        }
-        targetItemId = parameters[tailIndex + 2];
-        baseParamCount = tailIndex;
-        return true;
-    }
-
-    private static bool TryGetBlueprintTuningTarget(PlanetFactory factory, int objectId, out int targetItemId) {
+    private static bool TryGetBlueprintLineageTarget(PlanetFactory factory, int objectId, out int targetItemId) {
         targetItemId = 0;
         if (factory == null || objectId == 0) {
             return false;
@@ -184,7 +163,7 @@ public static class RectificationTuningTarget {
             if (!TryGetRectificationFractionator(factory, objectId, out FractionatorComponent fractionator)) {
                 return false;
             }
-            targetItemId = fractionator.GetTuningTarget(factory);
+            targetItemId = fractionator.GetLineageTarget(factory);
             return true;
         }
         int prebuildId = -objectId;
@@ -192,49 +171,49 @@ public static class RectificationTuningTarget {
             return false;
         }
         ref PrebuildData prebuild = ref factory.prebuildPool[prebuildId];
-        if (prebuild.id != prebuildId || prebuild.protoId != IFE精馏塔) {
+        if (prebuild.id != prebuildId || prebuild.protoId != IFE解析塔) {
             return false;
         }
-        TryReadTuningTargetParam(prebuild.parameters, out targetItemId);
+        TryReadLineageTargetParam(prebuild.parameters, out targetItemId);
         return true;
     }
 
-    private static void ApplyTuningTargetFromParameters(PlanetFactory factory, int entityId, int[] parameters) {
-        if (!TryReadTuningTargetParam(parameters, out int targetItemId)) {
+    private static void ApplyLineageTargetFromParameters(PlanetFactory factory, int entityId, int[] parameters) {
+        if (!TryReadLineageTargetParam(parameters, out int targetItemId)) {
             return;
         }
         if (!TryGetRectificationFractionator(factory, entityId, out FractionatorComponent fractionator)) {
             return;
         }
-        fractionator.SetTuningTarget(factory, fractionator.NormalizeTuningTarget(factory, targetItemId));
+        fractionator.SetLineageTarget(factory, fractionator.NormalizeLineageTarget(factory, targetItemId));
     }
 
-    public static void ClearTuningTarget(PlanetFactory factory, int entityId) {
+    public static void ClearLineageTarget(PlanetFactory factory, int entityId) {
         if (factory == null || entityId <= 0) {
             return;
         }
-        tuningTargetDic.TryRemove((factory.planetId, entityId), out _);
+        lineageTargetDic.TryRemove((factory.planetId, entityId), out _);
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnCopyBuildingSetting))]
     public static void PlanetFactory_OnCopyBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
         if (TryGetRectificationFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
-            hasTuningTargetClipboard = true;
-            tuningTargetClipboardItemId = fractionator.GetTuningTarget(__instance);
+            hasLineageTargetClipboard = true;
+            lineageTargetClipboardItemId = fractionator.GetLineageTarget(__instance);
             return;
         }
-        ClearTuningTargetClipboard();
+        ClearLineageTargetClipboard();
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PlanetFactory), nameof(PlanetFactory.OnPasteBuildingSetting))]
     public static void PlanetFactory_OnPasteBuildingSetting_Postfix(PlanetFactory __instance, int entityId) {
-        if (!hasTuningTargetClipboard
+        if (!hasLineageTargetClipboard
             || !TryGetRectificationFractionator(__instance, entityId, out FractionatorComponent fractionator)) {
             return;
         }
-        fractionator.SetTuningTargetAndSync(__instance, tuningTargetClipboardItemId, manual: true);
+        fractionator.SetLineageTargetAndSync(__instance, lineageTargetClipboardItemId, manual: true);
     }
 
     [HarmonyPostfix]
@@ -246,14 +225,14 @@ public static class RectificationTuningTarget {
         }
         int count = Math.Min(_objCount, Math.Min(_objIds.Length, _blueprintData.buildings.Length));
         for (int i = 0; i < count; i++) {
-            if (!TryGetBlueprintTuningTarget(_planet.factory, _objIds[i], out int targetItemId)) {
+            if (!TryGetBlueprintLineageTarget(_planet.factory, _objIds[i], out int targetItemId)) {
                 continue;
             }
             BlueprintBuilding building = _blueprintData.buildings[i];
             if (building == null) {
                 continue;
             }
-            building.parameters = AppendTuningTargetParam(building.parameters, targetItemId);
+            building.parameters = AppendLineageTargetParam(building.parameters, targetItemId);
         }
     }
 
@@ -268,7 +247,7 @@ public static class RectificationTuningTarget {
         if (prebuild.id != prebuildId) {
             return;
         }
-        ApplyTuningTargetFromParameters(__instance, entityId, prebuild.parameters);
+        ApplyLineageTargetFromParameters(__instance, entityId, prebuild.parameters);
     }
 
     [HarmonyPostfix]
@@ -282,7 +261,7 @@ public static class RectificationTuningTarget {
             if (buildPreview == null || buildPreview.coverObjId <= 0 || buildPreview.willReconstructCover) {
                 continue;
             }
-            ApplyTuningTargetFromParameters(__instance.factory, buildPreview.coverObjId, buildPreview.parameters);
+            ApplyLineageTargetFromParameters(__instance.factory, buildPreview.coverObjId, buildPreview.parameters);
         }
     }
 }

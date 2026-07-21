@@ -1,4 +1,5 @@
-﻿using FE.Logic.Civilization.Analysis;
+﻿using FE.Compatibility.Nebula;
+using FE.Logic.Civilization.Analysis;
 using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Progression;
 
@@ -17,7 +18,16 @@ public static class DataCenterUploadRouter {
             return;
         }
 
-        if (AnalysisService.TrySubmitDataItem(itemId, count, out _)) {
+        if (manual && AnalysisService.IsAnalysisDataItem(itemId)
+            && NebulaMultiplayerModAPI.RequestAnalysisDataUpload(itemId, count)) {
+            return;
+        }
+
+        if (AnalysisService.TrySubmitDataItem(itemId, count, out int generatedOpportunities)) {
+            // 自动上传只在形成新检索机会时发包，避免逐件广播；手动上传立即刷新客户端页面。
+            if (manual || generatedOpportunities > 0) {
+                NebulaMultiplayerModAPI.BroadcastCivilizationState();
+            }
             return;
         }
 

@@ -109,9 +109,9 @@ public static partial class ProcessManager {[HarmonyTranspiler]
     private static long GetFractionatorWorkEnergyPerTick(int buildingID) {
         return buildingID switch {
             IFE交互塔 => InteractionTower.workEnergyPerTick,
-            IFE矿物复制塔 => MineralReplicationTower.workEnergyPerTick,
+            IFE资源塔 => MineralReplicationTower.workEnergyPerTick,
             IFE转化塔 => ConversionTower.workEnergyPerTick,
-            IFE精馏塔 => RectificationTower.workEnergyPerTick,
+            IFE解析塔 => RectificationTower.workEnergyPerTick,
             _ => 0
         };
     }
@@ -119,9 +119,9 @@ public static partial class ProcessManager {[HarmonyTranspiler]
     private static long GetFractionatorIdleEnergyPerTick(int buildingID) {
         return buildingID switch {
             IFE交互塔 => InteractionTower.idleEnergyPerTick,
-            IFE矿物复制塔 => MineralReplicationTower.idleEnergyPerTick,
+            IFE资源塔 => MineralReplicationTower.idleEnergyPerTick,
             IFE转化塔 => ConversionTower.idleEnergyPerTick,
-            IFE精馏塔 => RectificationTower.idleEnergyPerTick,
+            IFE解析塔 => RectificationTower.idleEnergyPerTick,
             _ => 0
         };
     }
@@ -129,9 +129,9 @@ public static partial class ProcessManager {[HarmonyTranspiler]
     private static float GetFractionatorEnergyRatio(int buildingID) {
         return buildingID switch {
             IFE交互塔 => InteractionTower.EnergyRatio,
-            IFE矿物复制塔 => MineralReplicationTower.EnergyRatio,
+            IFE资源塔 => MineralReplicationTower.EnergyRatio,
             IFE转化塔 => ConversionTower.EnergyRatio,
-            IFE精馏塔 => RectificationTower.EnergyRatio,
+            IFE解析塔 => RectificationTower.EnergyRatio,
             _ => 1.0f
         };
     }

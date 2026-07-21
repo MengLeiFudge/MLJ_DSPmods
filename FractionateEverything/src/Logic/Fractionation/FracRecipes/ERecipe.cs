@@ -91,9 +91,9 @@ public static class ERecipeExtension {
     public static int GetSpriteItemId(this ERecipe recipe) {
         return recipe switch {
             ERecipe.BuildingTrain => IFE交互塔,
-            ERecipe.MineralCopy => IFE矿物复制塔,
+            ERecipe.MineralCopy => IFE资源塔,
             ERecipe.Conversion => IFE转化塔,
-            ERecipe.Rectification => IFE精馏塔,
+            ERecipe.Rectification => IFE解析塔,
             _ => 0,
         };
     }

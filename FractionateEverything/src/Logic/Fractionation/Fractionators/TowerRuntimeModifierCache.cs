@@ -10,11 +10,15 @@ public static class TowerRuntimeModifierCache {
     private static readonly HashSet<ERecipe> fluidOutputStackingTypes = [];
     private static readonly HashSet<ERecipe> productOutputStackingTypes = [];
     private static readonly HashSet<ERecipe> fractionationForeverTypes = [];
+    private static readonly HashSet<ERecipe> mainOutputLockTypes = [];
+    private static readonly HashSet<ERecipe> byproductDiscardTypes = [];
 
     public static void Reset() {
         fluidOutputStackingTypes.Clear();
         productOutputStackingTypes.Clear();
         fractionationForeverTypes.Clear();
+        mainOutputLockTypes.Clear();
+        byproductDiscardTypes.Clear();
     }
 
     public static void EnableFluidOutputStacking(ERecipe recipeType) => fluidOutputStackingTypes.Add(recipeType);
@@ -31,4 +35,12 @@ public static class TowerRuntimeModifierCache {
 
     public static bool IsFractionationForeverEnabled(ERecipe recipeType) =>
         fractionationForeverTypes.Contains(recipeType);
+
+    public static void EnableMainOutputLock(ERecipe recipeType) => mainOutputLockTypes.Add(recipeType);
+
+    public static bool IsMainOutputLockEnabled(ERecipe recipeType) => mainOutputLockTypes.Contains(recipeType);
+
+    public static void EnableByproductDiscard(ERecipe recipeType) => byproductDiscardTypes.Add(recipeType);
+
+    public static bool IsByproductDiscardEnabled(ERecipe recipeType) => byproductDiscardTypes.Contains(recipeType);
 }

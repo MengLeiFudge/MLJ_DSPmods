@@ -16,9 +16,9 @@ public static class AncientTechTreeCatalog {
         nodes.Clear();
         nodesByKey.Clear();
         AddTowerPath("interaction", "交互塔", ERecipe.BuildingTrain);
+        AddTowerPath("analysis", "解析塔", ERecipe.Rectification);
         AddTowerPath("resource", "资源塔", ERecipe.MineralCopy);
         AddTowerPath("conversion", "转化塔", ERecipe.Conversion);
-        AddTowerPath("analysis", "解析塔", ERecipe.Rectification);
     }
 
     public static AncientTechNodeDefinition Get(string nodeKey) =>
@@ -41,8 +41,8 @@ public static class AncientTechTreeCatalog {
         Add(new(foreverKey, $"远古科技-{towerName}分馏永动", towerType, 3,
             AncientTechEffectType.FractionationForever, productKey));
         Add(new(lockKey, $"远古科技-{towerName}主路锁定", towerType, 5,
-            AncientTechEffectType.MainOutputLock, foreverKey, runtimeImplemented: false));
+            AncientTechEffectType.MainOutputLock, foreverKey));
         Add(new($"{keyPrefix}.byproduct-discard", $"远古科技-{towerName}副产物弃置", towerType, 8,
-            AncientTechEffectType.ByproductDiscard, lockKey, runtimeImplemented: false));
+            AncientTechEffectType.ByproductDiscard, lockKey));
     }
 }

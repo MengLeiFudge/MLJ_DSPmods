@@ -20,106 +20,106 @@ public static partial class TechManager {
             GetTechPos(1, 0)
         );
         tech分馏数据中心.PreTechsImplicit = [T电磁矩阵];
-        tech分馏数据中心.AddItems = [IFE交互塔原胚];
-        tech分馏数据中心.AddItemCounts = [80];//启动套件中的基础交互塔原胚
+        tech分馏数据中心.AddItems = [];
+        tech分馏数据中心.AddItemCounts = [];
         tech分馏数据中心.PropertyOverrideItems = [I电磁矩阵];
         tech分馏数据中心.PropertyItemCounts = [10];
         tech分馏数据中心.IconTag = "flsjzx";
 
 
-        var tech超值礼包1 = ProtoRegistry.RegisterTech(
-            TFE超值礼包1, "T超值礼包1", "超值礼包1描述", "超值礼包1结果", "Assets/fe/tech超值礼包",
+        var tech阶段补给1 = ProtoRegistry.RegisterTech(
+            TFE阶段补给1, "T阶段补给1", "阶段补给1描述", "阶段补给1结果", "Assets/fe/tech阶段补给",
             [TFE分馏数据中心],
             [I电磁矩阵], [100], 3600,
             [],
             GetTechPos(0, 1)
         );
-        tech超值礼包1.PreTechsImplicit = [TFE物品交互];
-        tech超值礼包1.AddItems = [IFE残片, IFE交互塔原胚];
-        tech超值礼包1.AddItemCounts = [300, 20];
-        tech超值礼包1.PropertyOverrideItems = [I电磁矩阵];
-        tech超值礼包1.PropertyItemCounts = [100];
-        tech超值礼包1.IconTag = "tczlb1";
+        tech阶段补给1.PreTechsImplicit = [TFE物品交互];
+        tech阶段补给1.AddItems = [IFE残片];
+        tech阶段补给1.AddItemCounts = [300];
+        tech阶段补给1.PropertyOverrideItems = [I电磁矩阵];
+        tech阶段补给1.PropertyItemCounts = [100];
+        tech阶段补给1.IconTag = "tczlb1";
 
-        var tech超值礼包2 = ProtoRegistry.RegisterTech(
-            TFE超值礼包2, "T超值礼包2", "超值礼包2描述", "超值礼包2结果", "Assets/fe/tech超值礼包",
-            [TFE超值礼包1],
+        var tech阶段补给2 = ProtoRegistry.RegisterTech(
+            TFE阶段补给2, "T阶段补给2", "阶段补给2描述", "阶段补给2结果", "Assets/fe/tech阶段补给",
+            [TFE阶段补给1],
             [I能量矩阵], [100], 3600,
             [],
             GetTechPos(0, 2)
         );
-        tech超值礼包2.PreTechsImplicit = [T能量矩阵];
-        tech超值礼包2.AddItems = [IFE残片, IFE矿物复制塔原胚];
-        tech超值礼包2.AddItemCounts = [400, 20];
-        tech超值礼包2.PropertyOverrideItems = [I能量矩阵];
-        tech超值礼包2.PropertyItemCounts = [100];
-        tech超值礼包2.IconTag = "tczlb2";
+        tech阶段补给2.PreTechsImplicit = [T能量矩阵];
+        tech阶段补给2.AddItems = [IFE残片];
+        tech阶段补给2.AddItemCounts = [400];
+        tech阶段补给2.PropertyOverrideItems = [I能量矩阵];
+        tech阶段补给2.PropertyItemCounts = [100];
+        tech阶段补给2.IconTag = "tczlb2";
 
-        var tech超值礼包3 = ProtoRegistry.RegisterTech(
-            TFE超值礼包3, "T超值礼包3", "超值礼包3描述", "超值礼包3结果", "Assets/fe/tech超值礼包",
-            [TFE超值礼包2],
+        var tech阶段补给3 = ProtoRegistry.RegisterTech(
+            TFE阶段补给3, "T阶段补给3", "阶段补给3描述", "阶段补给3结果", "Assets/fe/tech阶段补给",
+            [TFE阶段补给2],
             [I结构矩阵], [100], 3600,
             [],
             GetTechPos(0, 3)
         );
-        tech超值礼包3.PreTechsImplicit = [T结构矩阵];
-        tech超值礼包3.AddItems = [IFE残片, IFE转化塔原胚];
-        tech超值礼包3.AddItemCounts = [500, 10];
-        tech超值礼包3.PropertyOverrideItems = [I结构矩阵];
-        tech超值礼包3.PropertyItemCounts = [100];
-        tech超值礼包3.IconTag = "tczlb3";
+        tech阶段补给3.PreTechsImplicit = [T结构矩阵];
+        tech阶段补给3.AddItems = [IFE残片];
+        tech阶段补给3.AddItemCounts = [500];
+        tech阶段补给3.PropertyOverrideItems = [I结构矩阵];
+        tech阶段补给3.PropertyItemCounts = [100];
+        tech阶段补给3.IconTag = "tczlb3";
 
-        var tech超值礼包4 = ProtoRegistry.RegisterTech(
-            TFE超值礼包4, "T超值礼包4", "超值礼包4描述", "超值礼包4结果", "Assets/fe/tech超值礼包",
-            [TFE超值礼包3],
+        var tech阶段补给4 = ProtoRegistry.RegisterTech(
+            TFE阶段补给4, "T阶段补给4", "阶段补给4描述", "阶段补给4结果", "Assets/fe/tech阶段补给",
+            [TFE阶段补给3],
             [I信息矩阵], [100], 3600,
             [],
             GetTechPos(0, 4)
         );
-        tech超值礼包4.PreTechsImplicit = [T信息矩阵];
-        tech超值礼包4.AddItems = [IFE残片, IFE转化塔原胚];
-        tech超值礼包4.AddItemCounts = [600, 10];
-        tech超值礼包4.PropertyOverrideItems = [I信息矩阵];
-        tech超值礼包4.PropertyItemCounts = [100];
-        tech超值礼包4.IconTag = "tczlb4";
+        tech阶段补给4.PreTechsImplicit = [T信息矩阵];
+        tech阶段补给4.AddItems = [IFE残片];
+        tech阶段补给4.AddItemCounts = [600];
+        tech阶段补给4.PropertyOverrideItems = [I信息矩阵];
+        tech阶段补给4.PropertyItemCounts = [100];
+        tech阶段补给4.IconTag = "tczlb4";
 
-        var tech超值礼包5 = ProtoRegistry.RegisterTech(
-            TFE超值礼包5, "T超值礼包5", "超值礼包5描述", "超值礼包5结果", "Assets/fe/tech超值礼包",
-            [TFE超值礼包4],
+        var tech阶段补给5 = ProtoRegistry.RegisterTech(
+            TFE阶段补给5, "T阶段补给5", "阶段补给5描述", "阶段补给5结果", "Assets/fe/tech阶段补给",
+            [TFE阶段补给4],
             [I引力矩阵], [100], 3600,
             [],
             GetTechPos(0, 5)
         );
-        tech超值礼包5.PreTechsImplicit = [T引力矩阵];
-        tech超值礼包5.AddItems = [IFE残片, IFE精馏塔原胚];
-        tech超值礼包5.AddItemCounts = [800, 10];
-        tech超值礼包5.PropertyOverrideItems = [I引力矩阵];
-        tech超值礼包5.PropertyItemCounts = [100];
-        tech超值礼包5.IconTag = "tczlb5";
+        tech阶段补给5.PreTechsImplicit = [T引力矩阵];
+        tech阶段补给5.AddItems = [IFE残片];
+        tech阶段补给5.AddItemCounts = [800];
+        tech阶段补给5.PropertyOverrideItems = [I引力矩阵];
+        tech阶段补给5.PropertyItemCounts = [100];
+        tech阶段补给5.IconTag = "tczlb5";
 
-        var tech超值礼包6 = ProtoRegistry.RegisterTech(
-            TFE超值礼包6, "T超值礼包6", "超值礼包6描述", "超值礼包6结果", "Assets/fe/tech超值礼包",
-            [TFE超值礼包5],
+        var tech阶段补给6 = ProtoRegistry.RegisterTech(
+            TFE阶段补给6, "T阶段补给6", "阶段补给6描述", "阶段补给6结果", "Assets/fe/tech阶段补给",
+            [TFE阶段补给5],
             [I宇宙矩阵], [100], 3600,
             [],
             GetTechPos(0, 6)
         );
-        tech超值礼包6.PreTechsImplicit = [T宇宙矩阵];
-        tech超值礼包6.AddItems = [IFE残片, IFE交互塔原胚, IFE矿物复制塔原胚, IFE转化塔原胚, IFE精馏塔原胚];
-        tech超值礼包6.AddItemCounts = [1200, 2, 2, 2, 2];
-        tech超值礼包6.PropertyOverrideItems = [I宇宙矩阵];
-        tech超值礼包6.PropertyItemCounts = [100];
-        tech超值礼包6.IconTag = "tczlb6";
+        tech阶段补给6.PreTechsImplicit = [T宇宙矩阵];
+        tech阶段补给6.AddItems = [IFE残片];
+        tech阶段补给6.AddItemCounts = [1200];
+        tech阶段补给6.PropertyOverrideItems = [I宇宙矩阵];
+        tech阶段补给6.PropertyItemCounts = [100];
+        tech阶段补给6.IconTag = "tczlb6";
 
         var tech分馏塔原胚 = ProtoRegistry.RegisterTech(
             TFE分馏塔原胚, "T分馏塔原胚", "分馏塔原胚描述", "分馏塔原胚结果", "Assets/fe/tech分馏塔原胚",
             [TFE分馏数据中心],
-            [IFE交互塔原胚], [20], 3600,
+            [], [], 3600,
             [],
             GetTechPos(1, 1)
         );
-        tech分馏塔原胚.AddItems = [IFE交互塔, IFE交互塔原胚, IFE矿物复制塔原胚, IFE转化塔原胚, IFE精馏塔原胚];
-        tech分馏塔原胚.AddItemCounts = [1, 30, 30, 20, 20];
+        tech分馏塔原胚.AddItems = [IFE交互塔, IFE通用原胚];
+        tech分馏塔原胚.AddItemCounts = [1, 80];
         tech分馏塔原胚.PropertyOverrideItems = [I电磁矩阵];
         tech分馏塔原胚.PropertyItemCounts = [100];
         tech分馏塔原胚.IconTag = "tfltyp";
@@ -127,8 +127,8 @@ public static partial class TechManager {
         var tech物品交互 = ProtoRegistry.RegisterTech(
             TFE物品交互, "T物品交互", "物品交互描述", "物品交互结果", "Assets/fe/tech物品交互",
             [],
-            [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE交互塔],
+            [], [], 3600000,
+            [],
             GetTechPos(1, 2)
         );
         tech物品交互.PreTechsImplicit = [TFE分馏塔原胚];
@@ -136,23 +136,23 @@ public static partial class TechManager {
         tech物品交互.PropertyItemCounts = [200];
         tech物品交互.IconTag = "twpjh";
 
-        var tech矿物复制 = ProtoRegistry.RegisterTech(
-            TFE矿物复制, "T矿物复制", "矿物复制描述", "矿物复制结果", "Assets/fe/tech矿物复制",
+        var tech资源复制 = ProtoRegistry.RegisterTech(
+            TFE资源复制, "T资源复制", "资源复制描述", "资源复制结果", "Assets/fe/tech资源复制",
             [],
-            [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE矿物复制塔],
+            [], [], 3600000,
+            [],
             GetTechPos(1, 3)
         );
-        tech矿物复制.PreTechsImplicit = [TFE分馏塔原胚];
-        tech矿物复制.PropertyOverrideItems = [I电磁矩阵];
-        tech矿物复制.PropertyItemCounts = [200];
-        tech矿物复制.IconTag = "tkwfz";
+        tech资源复制.PreTechsImplicit = [TFE分馏塔原胚];
+        tech资源复制.PropertyOverrideItems = [I电磁矩阵];
+        tech资源复制.PropertyItemCounts = [200];
+        tech资源复制.IconTag = "tkwfz";
 
         var tech物品转化 = ProtoRegistry.RegisterTech(
             TFE物品转化, "T物品转化", "物品转化描述", "物品转化结果", "Assets/fe/tech物品转化",
             [],
-            [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE转化塔],
+            [], [], 3600000,
+            [],
             GetTechPos(1, 5)
         );
         tech物品转化.PreTechsImplicit = [TFE分馏塔原胚];
@@ -160,17 +160,17 @@ public static partial class TechManager {
         tech物品转化.PropertyItemCounts = [200];
         tech物品转化.IconTag = "twpzh";
 
-        var tech物品精馏 = ProtoRegistry.RegisterTech(
-            TFE物品精馏, "T物品精馏", "物品精馏描述", "物品精馏结果", "Assets/fe/tech物品分解",
+        var tech文明解析 = ProtoRegistry.RegisterTech(
+            TFE文明解析, "T文明解析", "文明解析描述", "文明解析结果", "Assets/fe/tech物品分解",
             [],
-            [IFE万物分馏科技解锁说明], [1], 3600000,
-            [RFE精馏塔],
+            [], [], 3600000,
+            [],
             GetTechPos(1, 6)
         );
-        tech物品精馏.PreTechsImplicit = [TFE分馏塔原胚];
-        tech物品精馏.PropertyOverrideItems = [I电磁矩阵];
-        tech物品精馏.PropertyItemCounts = [200];
-        tech物品精馏.IconTag = "twpjl";
+        tech文明解析.PreTechsImplicit = [TFE分馏塔原胚];
+        tech文明解析.PropertyOverrideItems = [I电磁矩阵];
+        tech文明解析.PropertyItemCounts = [200];
+        tech文明解析.IconTag = "twpjl";
 
         var tech行星物流系统 = LDB.techs.Select(T行星物流系统);
         var tech行星内物流交互 = ProtoRegistry.RegisterTech(

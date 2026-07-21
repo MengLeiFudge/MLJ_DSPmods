@@ -9,7 +9,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 矿物复制塔配方类（1A -> 1.1A）
+/// 定义资源塔输入同种资源并复制为更多同种资源的基础配方。
 /// </summary>
 public class MineralCopyRecipe : BaseRecipe {
     /// <summary>
@@ -20,31 +20,30 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I植物燃料, 0.05f);
         Create(I铁矿, 0.05f);
         Create(I铜矿, 0.05f);
-        Create(I硅石, 0.05f, [new(0.01f, I分形硅石, 1)]);
+        Create(I硅石, 0.05f);
         Create(I钛石, 0.05f);
-        Create(I石矿, 0.05f, [new(0.01f, I硅石, 1), new(0.01f, I钛石, 1)]);
-        Create(I煤矿, 0.05f, [new(0.01f, I金刚石, 1)]);
+        Create(I石矿, 0.05f);
+        Create(I煤矿, 0.05f);
         Create(I水, 0.05f);
         Create(I原油, 0.05f);
         Create(I硫酸, 0.05f);
-        Create(I氢, 0.05f, [new(0.01f, I重氢, 1)]);
-        Create(I重氢, 0.05f, [new(0.01f, I氢, 1)]);
-        Create(I临界光子, 0.05f);
+        Create(I氢, 0.05f);
+        Create(I重氢, 0.05f);
         if (GenesisBook.Enable) {
             Create(IGB钨矿, 0.05f);
             Create(IGB铝矿, 0.05f);
-            Create(IGB硫矿, 0.05f, [new(0.01f, I硫酸, 1), new(0.01f, IGB二氧化硫, 1)]);
-            Create(IGB放射性矿物, 0.05f, [new(0.01f, IGB铀矿, 1), new(0.01f, IGB钚矿, 1)]);
-            Create(IGB海水, 0.05f, [new(0.01f, IGB氯化钠, 1)]);
+            Create(IGB硫矿, 0.05f);
+            Create(IGB放射性矿物, 0.05f);
+            Create(IGB海水, 0.05f);
             Create(IGB盐酸, 0.05f);
             Create(IGB硝酸, 0.05f);
-            Create(IGB氨, 0.05f, [new(0.01f, IGB氮, 1), new(0.01f, I氢, 1)]);
-            Create(IGB氮, 0.05f, [new(0.01f, IGB氨, 1)]);
-            Create(IGB氧, 0.05f, [new(0.01f, IGB二氧化碳, 1)]);
-            Create(IGB氦, 0.05f, [new(0.01f, IGB氦三, 1)]);
-            Create(IGB氦三, 0.05f, [new(0.01f, IGB氦, 1)]);
-            Create(IGB二氧化碳, 0.05f, [new(0.01f, IGB氧, 1), new(0.01f, I高能石墨, 1)]);
-            Create(IGB二氧化硫, 0.05f, [new(0.01f, IGB氧, 1), new(0.01f, IGB硫粉, 1)]);
+            Create(IGB氨, 0.05f);
+            Create(IGB氮, 0.05f);
+            Create(IGB氧, 0.05f);
+            Create(IGB氦, 0.05f);
+            Create(IGB氦三, 0.05f);
+            Create(IGB二氧化碳, 0.05f);
+            Create(IGB二氧化硫, 0.05f);
         }
         if (OrbitalRing.Enable) {
             Create(IOR黄铁矿, 0.05f);
@@ -65,7 +64,6 @@ public class MineralCopyRecipe : BaseRecipe {
         Create(I负熵奇点, 0.05f);
         Create(I核心素, 0.05f);
         Create(I能量碎片, 0.05f);
-        Create(I反物质, 0.05f);
 
         //添加其他矿物的复制配方
         foreach (VeinProto vein in LDB.veins.dataArray) {
@@ -86,31 +84,21 @@ public class MineralCopyRecipe : BaseRecipe {
     }
 
     private static void Create(int inputID, float baseSuccessRatio) {
-        Create(inputID, baseSuccessRatio, []);
-    }
-
-    private static void Create(int inputID, float baseSuccessRatio, List<OutputInfo> outputAppend) {
-        if (itemValue[inputID] >= maxValue) {
+        // 临界光子和反物质必须保留戴森球、射线接收与质能转换的原版产线边界。
+        if (inputID is I临界光子 or I反物质 || itemValue[inputID] >= maxValue) {
             return;
         }
-        outputAppend.RemoveAll(info => itemValue[info.OutputID] >= maxValue);
         AddRecipe(new MineralCopyRecipe(inputID, baseSuccessRatio,
             [
                 new(1.000f, inputID, 2),
             ],
-            outputAppend));
+            []));
     }
 
     /// <summary>
     /// 配方类型
     /// </summary>
     public override ERecipe RecipeType => ERecipe.MineralCopy;
-
-    /// <summary>
-    /// 产物增产点数。质能裂变启用时为10点（整体喷涂），否则为0。
-    /// </summary>
-    public override byte GetOutputInc(int itemId) =>
-        MineralReplicationTower.EnableMassEnergyFission ? (byte)10 : (byte)0;
 
     /// <summary>
     /// 创建矿物复制塔配方实例

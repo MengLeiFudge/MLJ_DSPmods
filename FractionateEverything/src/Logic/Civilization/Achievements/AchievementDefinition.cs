@@ -2,6 +2,9 @@
 
 namespace FE.Logic.Civilization.Achievements;
 
+/// <summary>
+/// 标识文明成就使用的累计进度条件。
+/// </summary>
 public enum AchievementConditionType {
     CompletedProtocols,
     CompletedStages,
@@ -9,6 +12,9 @@ public enum AchievementConditionType {
     FractionationSuccesses,
 }
 
+/// <summary>
+/// 标识文明成就完成后投影到配方运行时的固定奖励。
+/// </summary>
 public enum AchievementRewardType {
     RecipeTypeSuccessRate,
     AllRecipeSuccessRate,

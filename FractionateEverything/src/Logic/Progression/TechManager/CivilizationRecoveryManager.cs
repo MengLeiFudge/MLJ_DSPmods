@@ -25,12 +25,12 @@ public static class CivilizationRecoveryManager {
     ];
 
     private static readonly int[] matrixStageSupplyTechIds = [
-        TFE超值礼包1,
-        TFE超值礼包2,
-        TFE超值礼包3,
-        TFE超值礼包4,
-        TFE超值礼包5,
-        TFE超值礼包6,
+        TFE阶段补给1,
+        TFE阶段补给2,
+        TFE阶段补给3,
+        TFE阶段补给4,
+        TFE阶段补给5,
+        TFE阶段补给6,
     ];
 
     private static readonly int[] logisticsInteractionTechIds = [
@@ -47,18 +47,17 @@ public static class CivilizationRecoveryManager {
         TFE分馏数据中心,
         TFE分馏塔原胚,
         TFE物品交互,
-        TFE矿物复制,
-        TFE增产点数聚集,
+        TFE文明解析,
+        TFE资源复制,
         TFE物品转化,
-        TFE物品精馏,
         TFE行星内物流交互,
         TFE星际物流交互,
-        TFE超值礼包1,
-        TFE超值礼包2,
-        TFE超值礼包3,
-        TFE超值礼包4,
-        TFE超值礼包5,
-        TFE超值礼包6,
+        TFE阶段补给1,
+        TFE阶段补给2,
+        TFE阶段补给3,
+        TFE阶段补给4,
+        TFE阶段补给5,
+        TFE阶段补给6,
     ];
 
     private static readonly bool[] matrixStageSupplyRecovered = new bool[matrixStageSupplyTechIds.Length];

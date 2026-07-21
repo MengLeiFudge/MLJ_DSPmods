@@ -53,9 +53,9 @@ public static partial class TechManager {
     private static int GetActiveFractionatorUnlockTechId(int index) {
         return index switch {
             0 => TFE物品交互,
-            1 => TFE矿物复制,
-            2 => TFE物品转化,
-            3 => TFE物品精馏,
+            1 => TFE文明解析,
+            2 => TFE资源复制,
+            3 => TFE物品转化,
             _ => 0,
         };
     }
@@ -68,8 +68,8 @@ public static partial class TechManager {
                        + $"{"给予一些分馏塔原胚".Translate()}";
             return false;
         }
-        if (__instance.ID >= TFE超值礼包1 && __instance.ID <= TFE超值礼包6) {
-            __result = $"{"一个物超所值的礼包".Translate()}";
+        if (__instance.ID is >= TFE阶段补给1 and <= TFE阶段补给6) {
+            __result = $"{"文明阶段补给".Translate()}";
             return false;
         }
         if (__instance.ID == TFE分馏塔原胚) {
@@ -83,8 +83,8 @@ public static partial class TechManager {
                        + $"{"双击背包排序按钮，自动上传背包内物品".Translate()}";
             return false;
         }
-        if (__instance.ID == TFE矿物复制) {
-            __result = $"{"恢复部分矿物复制配方".Translate()}";
+        if (__instance.ID == TFE资源复制) {
+            __result = $"{"注册资源塔控制接口".Translate()}";
             return false;
         }
         return true;

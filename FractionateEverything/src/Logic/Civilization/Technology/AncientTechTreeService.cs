@@ -1,4 +1,5 @@
-﻿using FE.Logic.Civilization.Protocols;
+﻿using FE.Compatibility.Nebula;
+using FE.Logic.Civilization.Protocols;
 
 namespace FE.Logic.Civilization.Technology;
 
@@ -17,12 +18,17 @@ public static class AncientTechTreeService {
     }
 
     public static bool TryPurchase(string nodeKey) {
+        if (NebulaMultiplayerModAPI.RequestAncientTechPurchase(nodeKey)) {
+            return true;
+        }
+
         AncientTechNodeDefinition node = AncientTechTreeCatalog.Get(nodeKey);
         if (node == null || !CanPurchase(nodeKey) || !AncientTechTreeState.TrySpend(node.Cost)) {
             return false;
         }
         AncientTechTreeState.SetLevel(nodeKey, 1);
         CivilizationRuntimeSync.Refresh();
+        NebulaMultiplayerModAPI.BroadcastCivilizationState();
         return true;
     }
 }

@@ -25,7 +25,7 @@ public static class ProtocolCatalog {
         }
 
         foreach (BaseRecipe recipe in RecipeManager.AllRecipes) {
-            if (recipe.RecipeType is not ERecipe.MineralCopy and not ERecipe.Conversion) {
+            if (!recipe.RequiresProtocolRecovery) {
                 continue;
             }
 
@@ -38,7 +38,7 @@ public static class ProtocolCatalog {
 
             // 黑雾协议在实际接触对应掉落后加入电磁检索池，但不阻塞六阶段主线。
             var definition = new ProtocolDefinition(RecipeKey.FromRecipe(recipe), stage.StageKey,
-                countsTowardStageCompletion);
+                countsTowardStageCompletion && recipe.CountsTowardStageCompletion);
             definitions.Add(definition);
             definitionsByRecipe[definition.RecipeKey] = definition;
             if (!definitionsByStage.TryGetValue(stage.StageKey, out List<ProtocolDefinition> stageDefinitions)) {
@@ -95,6 +95,10 @@ public static class ProtocolCatalog {
     }
 
     private static int GetProtocolStageOrder(BaseRecipe recipe) {
+        if (recipe.ProtocolStageOrder >= 0) {
+            return recipe.ProtocolStageOrder;
+        }
+
         int stageOrder = FE.Logic.Items.ItemManager.GetMatrixStageIndex(recipe.MatrixID);
         if (recipe.RecipeType != ERecipe.Conversion) {
             return stageOrder;

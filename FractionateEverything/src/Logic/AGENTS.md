@@ -8,7 +8,7 @@
 Logic/
 ├── Buildings/       # 建筑注册聚合
 ├── Fractionation/   # 分馏配方、运行投影、分馏运行热路径、分馏塔表现层 patch
-├── Station/         # 物流交互站运行、窗口/总控面板 patch、增产点池
+├── Station/         # 物流交互站定义、运行和窗口/总控面板 patch
 ├── DataCenter/      # 数据中心库存、玩家背包访问、物品访问重定向 patch
 ├── Items/           # FE 物品原型、价值、矩阵阶段、图标/信号选择表现层
 ├── Civilization/    # 远古文明阶段、解析、协议、科技树和成就

@@ -15,68 +15,44 @@ namespace FE.Logic.Items;
 /// </summary>
 public static class ItemManager {
     public static void AddTranslations() {
-        Register("万物分馏商店刷新提示", "The shop has been refreshed!", "商店已刷新！");
-        Register("I万物分馏商店刷新提示",
-            $"The shop has been refreshed, don't forget to claim your relief supplies~\n(This is just a store refresh prompt and has no practical use. However, {"you should NOT be able to see this text, right?".WithColor(Red)})",
-            $"商店已刷新，别忘了领取救济粮哦~\n（只是一个商店刷新的提示，没有实际用途。但是，{"你应该看不到这段话才对呀？".WithColor(Red)}）");
-
-        Register("万物分馏科技解锁说明", "Protocol Recovery Tip", "协议恢复说明");
-        Register("I万物分馏科技解锁说明",
-            "This placeholder explains tower registration and is not a normal research material. Cultivate the corresponding tower, then upload it through the front port of an empty Interaction Tower. Recipe protocols are recovered separately through civilization analysis.",
-            "这只是用于说明塔型注册的占位物品，不是常规科研材料。先培养出对应分馏塔，再通过空置交互塔的正面入口上传；具体配方协议需要另外通过文明解析恢复。");
-
-        Register("残片", "Fragment");
+        Register("残片", "Archive Fragment", "残片");
         Register("I残片",
-            "Legacy secondary resource retained for existing saves and compatible rewards.",
-            "为旧存档和兼容奖励保留的次级资源；当前文明解析主线不依赖它。");
-        Register("电磁精华", "Electromagnetic Analysis Data", "电磁解析数据");
-        Register("I电磁精华",
-            "Physical analysis data extracted from electromagnetic matrices. Upload it to generate retrieval opportunities.",
-            "从电磁矩阵中解析出的实体数据；上传后会积累电磁阶段的协议检索机会。");
-        Register("能量精华", "Energy Analysis Data", "能量解析数据");
-        Register("I能量精华",
-            "Physical analysis data extracted from energy matrices. Upload it to generate retrieval opportunities.",
-            "从能量矩阵中解析出的实体数据；上传后会积累能量阶段的协议检索机会。");
-        Register("结构精华", "Structure Analysis Data", "结构解析数据");
-        Register("I结构精华",
-            "Physical analysis data extracted from structure matrices. Upload it to generate retrieval opportunities.",
-            "从结构矩阵中解析出的实体数据；上传后会积累结构阶段的协议检索机会。");
-        Register("信息精华", "Information Analysis Data", "信息解析数据");
-        Register("I信息精华",
-            "Physical analysis data extracted from information matrices. Upload it to generate retrieval opportunities.",
-            "从信息矩阵中解析出的实体数据；上传后会积累信息阶段的协议检索机会。");
-        Register("引力精华", "Gravity Analysis Data", "引力解析数据");
-        Register("I引力精华",
-            "Physical analysis data extracted from gravity matrices. Upload it to generate retrieval opportunities.",
-            "从引力矩阵中解析出的实体数据；上传后会积累引力阶段的协议检索机会。");
-        Register("宇宙精华", "Universe Analysis Data", "宇宙解析数据");
-        Register("I宇宙精华",
-            "Physical analysis data extracted from universe matrices. Upload it to generate retrieval opportunities.",
-            "从宇宙矩阵中解析出的实体数据；上传后会积累宇宙阶段的协议检索机会。");
-        Register("记忆源点", "Memory");
+            "Common archive currency recovered from damaged or invalid protocol data. It can narrow retrieval direction.",
+            "从损坏或无效协议数据中整理出的普通档案货币，可用于收窄检索方向。");
+        Register("记忆源点", "Memory Anchor", "记忆源点");
         Register("I记忆源点",
-            "Top-layer FE currency-like resource granted by non-production rewards. It is not produced by rectification.",
-            "FE 高层货币式资源，只能来自非产线奖励，不由精馏产线产出。");
-        Register("交互塔原胚", "Interaction Tower Proto");
-        Register("I交互塔原胚",
-            "A recovered tower proto. After cultivation in an Interaction Tower, it becomes an Interaction Tower.",
-            "回收得到的分馏塔雏形之一，经过交互塔培养后可以得到交互塔。");
-        Register("矿物复制塔原胚", "Resource Tower Proto", "资源塔原胚");
-        Register("I矿物复制塔原胚",
-            "One of the fractionator protos. After cultivation in an Interaction Tower, it becomes a Resource Tower.",
-            "分馏塔雏形之一，经过交互塔培养后可以得到资源塔。");
-        Register("转化塔原胚", "Conversion Tower Proto");
-        Register("I转化塔原胚",
-            "A recovered tower proto. After cultivation in an Interaction Tower, it becomes a Conversion Tower.",
-            "回收得到的分馏塔雏形之一，经过交互塔培养后可以得到转化塔。");
-        Register("精馏塔原胚", "Analysis Tower Proto", "解析塔原胚");
-        Register("I精馏塔原胚",
-            "One of the fractionator protos. After cultivation in an Interaction Tower, it becomes an Analysis Tower.",
-            "分馏塔雏形之一，经过交互塔培养后可以得到解析塔。");
-        Register("分馏塔定向原胚", "Fractionator Directed Proto");
-        Register("I分馏塔定向原胚",
-            "Legacy proto reserved for old saves. The civilization-analysis route does not create it.",
-            "旧存档保留物品；当前文明解析路线不再产出它。");
+            "A high-integrity archive anchor used to locate and advance one eligible protocol precisely.",
+            "高完整度的文明档案锚点，可用于精确定位并推进一项符合阶段条件的协议。");
+
+        RegisterAnalysisDataTranslations("电磁解析数据", "Electromagnetic Analysis Data", "电磁");
+        RegisterAnalysisDataTranslations("能量解析数据", "Energy Analysis Data", "能量");
+        RegisterAnalysisDataTranslations("结构解析数据", "Structure Analysis Data", "结构");
+        RegisterAnalysisDataTranslations("信息解析数据", "Information Analysis Data", "信息");
+        RegisterAnalysisDataTranslations("引力解析数据", "Gravity Analysis Data", "引力");
+        RegisterAnalysisDataTranslations("宇宙解析数据", "Universe Analysis Data", "宇宙");
+
+        Register("通用原胚", "Common Tower Proto", "通用原胚");
+        Register("I通用原胚",
+            "An active proto whose lineage is not fixed. An Interaction Tower can incubate it into any tower type.",
+            "尚未固定谱系的活性原胚，可在交互塔中随机培养为任意一种分馏塔。");
+        RegisterTowerProtoTranslations("交互塔原胚", "Interaction Tower Proto", "交互塔");
+        RegisterTowerProtoTranslations("解析塔原胚", "Analysis Tower Proto", "解析塔");
+        RegisterTowerProtoTranslations("资源塔原胚", "Resource Tower Proto", "资源塔");
+        RegisterTowerProtoTranslations("转化塔原胚", "Conversion Tower Proto", "转化塔");
+    }
+
+    private static void RegisterAnalysisDataTranslations(string name, string englishName, string stageName) {
+        Register(name, englishName, name);
+        Register($"I{name}",
+            $"Physical analysis data extracted from {stageName} matrix records. Upload it to generate retrieval opportunities.",
+            $"从{stageName}矩阵中解析出的实体数据；上传后会积累{stageName}阶段的协议检索机会。");
+    }
+
+    private static void RegisterTowerProtoTranslations(string name, string englishName, string towerName) {
+        Register(name, englishName, name);
+        Register($"I{name}",
+            $"A lineage-fixed proto. Cultivating it in an Interaction Tower produces a {towerName}.",
+            $"已经固定为{towerName}谱系的原胚，在交互塔中培养后会稳定产出{towerName}。");
     }
 
     #region 添加新物品
@@ -107,68 +83,46 @@ public static class ItemManager {
         // recipe.NonProductive = true 表示增产剂仅能加速，不能增产
         // RecipeUnlocked Patch 用于调整配方解锁状态（Item直接用UnlockKey=-1，就不需要patch item的）
 
-        ProtoRegistry.RegisterItem(IFE万物分馏商店刷新提示, "万物分馏商店刷新提示", "I万物分馏商店刷新提示",
-            Tech1134IconPath, 0, 100, EItemType.Decoration);
-        ProtoRegistry.RegisterItem(IFE万物分馏科技解锁说明, "万物分馏科技解锁说明", "I万物分馏科技解锁说明",
-            Tech1134IconPath, 0, 100, EItemType.Decoration);
-
-        ItemProto item;
-
-        RegisterRectificationChainItem(IFE残片, "残片", "I残片", 101,
+        RegisterCivilizationItem(IFE残片, "残片", "I残片", 101,
             Color.gray, Color.black, "cpfragment");
-        RegisterRectificationChainItem(IFE电磁精华, "电磁精华", "I电磁精华", 102,
-            new Color(0.32f, 0.72f, 1f), new Color(0.04f, 0.14f, 0.28f), "emessence");
-        RegisterRectificationChainItem(IFE能量精华, "能量精华", "I能量精华", 103,
-            new Color(1f, 0.52f, 0.18f), new Color(0.26f, 0.08f, 0.02f), "energyessence");
-        RegisterRectificationChainItem(IFE结构精华, "结构精华", "I结构精华", 104,
-            new Color(0.86f, 0.68f, 1f), new Color(0.16f, 0.06f, 0.28f), "structureessence");
-        RegisterRectificationChainItem(IFE信息精华, "信息精华", "I信息精华", 105,
-            new Color(0.36f, 0.96f, 0.78f), new Color(0.02f, 0.20f, 0.12f), "infoessence");
-        RegisterRectificationChainItem(IFE引力精华, "引力精华", "I引力精华", 106,
-            new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityessence");
-        RegisterRectificationChainItem(IFE宇宙精华, "宇宙精华", "I宇宙精华", 107,
-            new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeessence");
-        RegisterSourcePointItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
+        RegisterCivilizationItem(IFE电磁解析数据, "电磁解析数据", "I电磁解析数据", 102,
+            new Color(0.32f, 0.72f, 1f), new Color(0.04f, 0.14f, 0.28f), "emanalysis");
+        RegisterCivilizationItem(IFE能量解析数据, "能量解析数据", "I能量解析数据", 103,
+            new Color(1f, 0.52f, 0.18f), new Color(0.26f, 0.08f, 0.02f), "energyanalysis");
+        RegisterCivilizationItem(IFE结构解析数据, "结构解析数据", "I结构解析数据", 104,
+            new Color(0.86f, 0.68f, 1f), new Color(0.16f, 0.06f, 0.28f), "structureanalysis");
+        RegisterCivilizationItem(IFE信息解析数据, "信息解析数据", "I信息解析数据", 105,
+            new Color(0.36f, 0.96f, 0.78f), new Color(0.02f, 0.20f, 0.12f), "infoanalysis");
+        RegisterCivilizationItem(IFE引力解析数据, "引力解析数据", "I引力解析数据", 106,
+            new Color(0.76f, 0.82f, 1f), new Color(0.10f, 0.10f, 0.30f), "gravityanalysis");
+        RegisterCivilizationItem(IFE宇宙解析数据, "宇宙解析数据", "I宇宙解析数据", 107,
+            new Color(1f, 0.92f, 0.42f), new Color(0.28f, 0.20f, 0.04f), "universeanalysis");
+        RegisterCivilizationItem(IFE记忆源点, "记忆源点", "I记忆源点", 109,
             new Color(0.45f, 0.75f, 1f), new Color(0.1f, 0.2f, 0.4f), "memory");
 
-        item = ProtoRegistry.RegisterItem(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚",
-            "Assets/fe/frac-proto-normal", tab分馏 * 1000 + 201, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(InteractionTower.color, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "jhtyp";
-
-        item = ProtoRegistry.RegisterItem(IFE矿物复制塔原胚, "矿物复制塔原胚", "I矿物复制塔原胚",
-            "Assets/fe/frac-proto-uncommon", tab分馏 * 1000 + 202, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(MineralReplicationTower.color, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "kwfzyp";
-
-        item = ProtoRegistry.RegisterItem(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚",
-            "Assets/fe/frac-proto-epic", tab分馏 * 1000 + 204, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(ConversionTower.color, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "zhtyp";
-
-        item = ProtoRegistry.RegisterItem(IFE精馏塔原胚, "精馏塔原胚", "I精馏塔原胚",
-            "Assets/fe/frac-proto-legendary", tab分馏 * 1000 + 205, 30, EItemType.Material,
-            ProtoRegistry.GetDefaultIconDesc(RectificationTower.color, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "hstyp";
-
-        item = ProtoRegistry.RegisterItem(IFE分馏塔定向原胚, "分馏塔定向原胚", "I分馏塔定向原胚",
-            "Assets/fe/frac-proto-directional", tab分馏 * 1000 + 206, 30, EItemType.Product,
-            ProtoRegistry.GetDefaultIconDesc(Color.red, Color.gray));
-        item.UnlockKey = -1;
-        item.IconTag = "fldxyp";
-
+        RegisterTowerProto(IFE交互塔原胚, "交互塔原胚", "I交互塔原胚", 201,
+            "Assets/fe/frac-proto-normal", InteractionTower.color, "interaction-proto");
+        RegisterTowerProto(IFE解析塔原胚, "解析塔原胚", "I解析塔原胚", 202,
+            "Assets/fe/frac-proto-legendary", RectificationTower.color, "analysis-proto");
+        RegisterTowerProto(IFE资源塔原胚, "资源塔原胚", "I资源塔原胚", 203,
+            "Assets/fe/frac-proto-uncommon", MineralReplicationTower.color, "resource-proto");
+        RegisterTowerProto(IFE转化塔原胚, "转化塔原胚", "I转化塔原胚", 204,
+            "Assets/fe/frac-proto-epic", ConversionTower.color, "conversion-proto");
+        RegisterTowerProto(IFE通用原胚, "通用原胚", "I通用原胚", 205,
+            "Assets/fe/frac-proto-directional", Color.red, "common-proto");
     }
 
-    private static void RegisterRectificationChainItem(int itemId, string name, string description, int gridOffset,
-        Color iconColor, Color iconBackgroundColor, string iconTag) {
-        RegisterFeInternalItem(itemId, name, description, gridOffset, iconColor, iconBackgroundColor, iconTag);
+    private static ItemProto RegisterTowerProto(int itemId, string name, string description, int gridOffset,
+        string iconPath, Color color, string iconTag) {
+        ItemProto item = ProtoRegistry.RegisterItem(itemId, name, description, iconPath,
+            tab分馏 * 1000 + gridOffset, 30, EItemType.Material,
+            ProtoRegistry.GetDefaultIconDesc(color, Color.gray));
+        item.UnlockKey = -1;
+        item.IconTag = iconTag;
+        return item;
     }
 
-    private static void RegisterSourcePointItem(int itemId, string name, string description, int gridOffset,
+    private static void RegisterCivilizationItem(int itemId, string name, string description, int gridOffset,
         Color iconColor, Color iconBackgroundColor, string iconTag) {
         RegisterFeInternalItem(itemId, name, description, gridOffset, iconColor, iconBackgroundColor, iconTag);
     }
@@ -255,17 +209,17 @@ public static class ItemManager {
         itemValue[I临界光子] = 400.0f;
         //设置分馏塔、分馏塔原胚价值
         float modFractionatorValue = 400.0f;
-        float directionalFracProtoValue = 2000.0f;
-        itemValue[IFE矿物复制塔] = modFractionatorValue;
+        float commonProtoValue = 2000.0f;
+        itemValue[IFE资源塔] = modFractionatorValue;
         itemValue[IFE交互塔] = modFractionatorValue;
         itemValue[IFE转化塔] = modFractionatorValue;
-        itemValue[IFE精馏塔] = modFractionatorValue;
-        itemValue[IFE分馏塔定向原胚] = directionalFracProtoValue;
-        itemValue[IFE交互塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE矿物复制塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        itemValue[IFE精馏塔原胚] = 0.96f * modFractionatorValue + 0.04f * directionalFracProtoValue;
-        SetRectificationChainValues();
+        itemValue[IFE解析塔] = modFractionatorValue;
+        itemValue[IFE通用原胚] = commonProtoValue;
+        itemValue[IFE交互塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE资源塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE转化塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        itemValue[IFE解析塔原胚] = 0.96f * modFractionatorValue + 0.04f * commonProtoValue;
+        SetCivilizationResourceValues();
         //不存在的物品价值都设为特定值，这样也会将上面某些物品重置为maxValue（某些Mod未开启的情况下会有）
         for (int i = 0; i < itemValue.Length; i++) {
             if (itemValue[i] == 0 || !LDB.items.Exist(i)) {
@@ -277,8 +231,8 @@ public static class ItemManager {
         var iEnumerable = LDB.recipes.dataArray.Where(r =>
             !r.Items.Contains(IMS多功能集成组件)
             && !r.Results.Contains(IMS多功能集成组件)
-            && !r.Items.Contains(IFE分馏塔定向原胚)
-            && !r.Results.Contains(IFE分馏塔定向原胚)
+            && !r.Items.Contains(IFE通用原胚)
+            && !r.Results.Contains(IFE通用原胚)
             && r.GridIndexValid());
         var recipes = iEnumerable.ToArray();
 
@@ -502,42 +456,42 @@ public static class ItemManager {
 
     public static readonly int[] itemToMatrix = new int[12000];
 
-    public static readonly int[] MatrixEssenceItemIds = [
-        IFE电磁精华,
-        IFE能量精华,
-        IFE结构精华,
-        IFE信息精华,
-        IFE引力精华,
-        IFE宇宙精华,
+    public static readonly int[] AnalysisDataItemIds = [
+        IFE电磁解析数据,
+        IFE能量解析数据,
+        IFE结构解析数据,
+        IFE信息解析数据,
+        IFE引力解析数据,
+        IFE宇宙解析数据,
     ];
 
-    public static bool IsMatrixEssenceItem(int itemId) {
-        return itemId >= IFE电磁精华 && itemId <= IFE宇宙精华;
+    public static bool IsAnalysisDataItem(int itemId) {
+        return itemId >= IFE电磁解析数据 && itemId <= IFE宇宙解析数据;
     }
 
-    public static bool IsRectificationChainItem(int itemId) {
-        return itemId == IFE残片 || IsMatrixEssenceItem(itemId);
+    public static bool IsCivilizationResourceItem(int itemId) {
+        return itemId == IFE残片 || IsAnalysisDataItem(itemId);
     }
 
-    public static bool IsSourcePointItem(int itemId) {
+    public static bool IsMemoryAnchorItem(int itemId) {
         return itemId == IFE记忆源点;
     }
 
-    public static int GetMatrixEssenceLevel(int itemId) {
-        return IsMatrixEssenceItem(itemId) ? itemId - IFE电磁精华 : -1;
+    public static int GetAnalysisDataLevel(int itemId) {
+        return IsAnalysisDataItem(itemId) ? itemId - IFE电磁解析数据 : -1;
     }
 
-    public static int GetMatrixEssenceItemId(int level) {
+    public static int GetAnalysisDataItemId(int level) {
         if (level < 0) {
             level = 0;
-        } else if (level >= MatrixEssenceItemIds.Length) {
-            level = MatrixEssenceItemIds.Length - 1;
+        } else if (level >= AnalysisDataItemIds.Length) {
+            level = AnalysisDataItemIds.Length - 1;
         }
-        return MatrixEssenceItemIds[level];
+        return AnalysisDataItemIds[level];
     }
 
-    public static int GetMatrixEssenceFaceValue(int itemId) {
-        int level = GetMatrixEssenceLevel(itemId);
+    public static int GetAnalysisDataFaceValue(int itemId) {
+        int level = GetAnalysisDataLevel(itemId);
         return level < 0 ? 0 : 1 << (level + 1);
     }
 
@@ -662,28 +616,28 @@ public static class ItemManager {
             itemToMatrix[item.ID] = topMatrixID;
             // LogDebug($"物品{item.name}({item.ID})归类到{LDB.items.Select(topMatrixID).name}({topMatrixID})");
         }
-        SetRectificationChainMatrixStages();
+        SetCivilizationResourceMatrixStages();
     }
 
-    private static void SetRectificationChainValues() {
+    private static void SetCivilizationResourceValues() {
         itemValue[IFE残片] = 1.0f;
-        itemValue[IFE电磁精华] = 2.0f;
-        itemValue[IFE能量精华] = 4.0f;
-        itemValue[IFE结构精华] = 8.0f;
-        itemValue[IFE信息精华] = 16.0f;
-        itemValue[IFE引力精华] = 32.0f;
-        itemValue[IFE宇宙精华] = 64.0f;
+        itemValue[IFE电磁解析数据] = 2.0f;
+        itemValue[IFE能量解析数据] = 4.0f;
+        itemValue[IFE结构解析数据] = 8.0f;
+        itemValue[IFE信息解析数据] = 16.0f;
+        itemValue[IFE引力解析数据] = 32.0f;
+        itemValue[IFE宇宙解析数据] = 64.0f;
         itemValue[IFE记忆源点] = 256.0f;
     }
 
-    private static void SetRectificationChainMatrixStages() {
+    private static void SetCivilizationResourceMatrixStages() {
         itemToMatrix[IFE残片] = I电磁矩阵;
-        itemToMatrix[IFE电磁精华] = I电磁矩阵;
-        itemToMatrix[IFE能量精华] = I能量矩阵;
-        itemToMatrix[IFE结构精华] = I结构矩阵;
-        itemToMatrix[IFE信息精华] = I信息矩阵;
-        itemToMatrix[IFE引力精华] = I引力矩阵;
-        itemToMatrix[IFE宇宙精华] = I宇宙矩阵;
+        itemToMatrix[IFE电磁解析数据] = I电磁矩阵;
+        itemToMatrix[IFE能量解析数据] = I能量矩阵;
+        itemToMatrix[IFE结构解析数据] = I结构矩阵;
+        itemToMatrix[IFE信息解析数据] = I信息矩阵;
+        itemToMatrix[IFE引力解析数据] = I引力矩阵;
+        itemToMatrix[IFE宇宙解析数据] = I宇宙矩阵;
         itemToMatrix[IFE记忆源点] = I引力矩阵;
     }
 

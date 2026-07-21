@@ -21,7 +21,7 @@ public static partial class ProcessManager {
     private const int FractionatorPerfStagePrepare = 0;
     private const int FractionatorPerfStageProcess = 1;
     private const int FractionatorPerfStageFlushDeltas = 2;
-    private const int FractionatorPerfStageZeroPressure = 3;
+    private const int FractionatorPerfStagePostProcess = 3;
     private const int FractionatorPerfStageFluidBelts = 4;
     private const int FractionatorPerfStageProductBelt = 5;
     private const int FractionatorPerfStageFinalize = 6;
@@ -204,11 +204,11 @@ public static partial class ProcessManager {
         return "feTypes="
                + FormatFeType(IFE交互塔, calls, ticks)
                + ";"
-               + FormatFeType(IFE矿物复制塔, calls, ticks)
+               + FormatFeType(IFE资源塔, calls, ticks)
                + ";"
                + FormatFeType(IFE转化塔, calls, ticks)
                + ";"
-               + FormatFeType(IFE精馏塔, calls, ticks);
+               + FormatFeType(IFE解析塔, calls, ticks);
     }
 
     private static string FormatStagePerf(long[] calls, long[] ticks, long[] maxTicks) {
@@ -216,7 +216,7 @@ public static partial class ProcessManager {
         AppendStagePerf(builder, "prepare", FractionatorPerfStagePrepare, calls, ticks, maxTicks);
         AppendStagePerf(builder, "process", FractionatorPerfStageProcess, calls, ticks, maxTicks);
         AppendStagePerf(builder, "flush", FractionatorPerfStageFlushDeltas, calls, ticks, maxTicks);
-        AppendStagePerf(builder, "zeroPressure", FractionatorPerfStageZeroPressure, calls, ticks, maxTicks);
+        AppendStagePerf(builder, "postProcess", FractionatorPerfStagePostProcess, calls, ticks, maxTicks);
         AppendStagePerf(builder, "fluidBelts", FractionatorPerfStageFluidBelts, calls, ticks, maxTicks);
         AppendStagePerf(builder, "productBelt", FractionatorPerfStageProductBelt, calls, ticks, maxTicks);
         AppendStagePerf(builder, "finalize", FractionatorPerfStageFinalize, calls, ticks, maxTicks);

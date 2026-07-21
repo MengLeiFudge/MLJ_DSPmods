@@ -13,10 +13,6 @@ namespace FE.Logic.Fractionation.Process;
 public static partial class ProcessManager {
     // partial 类跨文件静态字段初始化顺序不稳定，不能用另一个文件里的 handler 数组决定长度。
     private const int FractionatorBuildingTypeCount = 4;
-    /// <summary>
-    /// 获取该规则或快照允许的最高等级。
-    /// </summary>
-    public static readonly int MaxLevel = 12;
     private static double[] incTableFixedRatio = [];
     /// <summary>
     /// 定义分馏塔流动输出缓存的基础上限。
@@ -56,10 +52,6 @@ public static partial class ProcessManager {
         /// </summary>
         public float PlrRatio;
         /// <summary>
-        /// 保存该分馏塔类型当前获得的全局成功率加成。
-        /// </summary>
-        public float SuccessBoost;
-        /// <summary>
         /// 判断该建筑是否已启用流动输出堆叠。
         /// </summary>
         public bool EnableFluidOutputStacking;
@@ -71,6 +63,10 @@ public static partial class ProcessManager {
         /// 判断该建筑是否已启用产物满载时继续分馏的永动能力。
         /// </summary>
         public bool EnableFractionationForever;
+        /// <summary>
+        /// 判断该建筑是否已获得副产物弃置控制框架。
+        /// </summary>
+        public bool EnableByproductDiscard;
     }
 
     private static readonly FractionatorRuntimeConfig[] runtimeConfigsByBuildingOffset =
@@ -107,18 +103,14 @@ public static partial class ProcessManager {
     /// 刷新分馏塔原型参数和远古科技节点派生出的运行参数。
     /// </summary>
     public static void RefreshFractionatorRuntimeConfig() {
-        SetRuntimeConfig(IFE交互塔, ERecipe.BuildingTrain, InteractionTower.MaxStack, InteractionTower.PlrRatio,
-            InteractionTower.SuccessBoost);
-        SetRuntimeConfig(IFE矿物复制塔, ERecipe.MineralCopy, MineralReplicationTower.MaxStack,
-            MineralReplicationTower.PlrRatio, MineralReplicationTower.SuccessBoost);
-        SetRuntimeConfig(IFE转化塔, ERecipe.Conversion, ConversionTower.MaxStack, ConversionTower.PlrRatio,
-            ConversionTower.SuccessBoost);
-        SetRuntimeConfig(IFE精馏塔, ERecipe.Rectification, RectificationTower.MaxStack, RectificationTower.PlrRatio,
-            RectificationTower.SuccessBoost);
+        SetRuntimeConfig(IFE交互塔, ERecipe.BuildingTrain, InteractionTower.MaxStack, InteractionTower.PlrRatio);
+        SetRuntimeConfig(IFE资源塔, ERecipe.MineralCopy, MineralReplicationTower.MaxStack,
+            MineralReplicationTower.PlrRatio);
+        SetRuntimeConfig(IFE转化塔, ERecipe.Conversion, ConversionTower.MaxStack, ConversionTower.PlrRatio);
+        SetRuntimeConfig(IFE解析塔, ERecipe.Rectification, RectificationTower.MaxStack, RectificationTower.PlrRatio);
     }
 
-    private static void SetRuntimeConfig(int buildingID, ERecipe recipeType, int maxStack, float plrRatio,
-        float successBoost) {
+    private static void SetRuntimeConfig(int buildingID, ERecipe recipeType, int maxStack, float plrRatio) {
 
         int index = FractionatorTowerCatalog.GetActiveFractionatorIndex(buildingID);
         if (index < 0 || index >= runtimeConfigsByBuildingOffset.Length) {
@@ -129,10 +121,10 @@ public static partial class ProcessManager {
             ProductOutputMax = BaseFracProductOutputMax * maxStack,
             FluidOutputMax = BaseFracFluidOutputMax * Math.Max(1, maxStack / 4),
             PlrRatio = plrRatio,
-            SuccessBoost = successBoost,
             EnableFluidOutputStacking = TowerRuntimeModifierCache.IsFluidOutputStackingEnabled(recipeType),
             EnableProductOutputStacking = TowerRuntimeModifierCache.IsProductOutputStackingEnabled(recipeType),
             EnableFractionationForever = TowerRuntimeModifierCache.IsFractionationForeverEnabled(recipeType),
+            EnableByproductDiscard = TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipeType),
         };
     }
 
@@ -150,10 +142,10 @@ public static partial class ProcessManager {
             ProductOutputMax = BaseFracProductOutputMax * 3,
             FluidOutputMax = BaseFracFluidOutputMax,
             PlrRatio = 1.0f,
-            SuccessBoost = 0f,
             EnableFluidOutputStacking = false,
             EnableProductOutputStacking = false,
             EnableFractionationForever = false,
+            EnableByproductDiscard = false,
         };
     }
 }

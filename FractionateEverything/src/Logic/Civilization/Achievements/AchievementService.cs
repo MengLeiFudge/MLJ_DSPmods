@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FE.Compatibility.Nebula;
 using FE.Logic.Civilization.Protocols;
 using FE.Logic.Civilization.Technology;
 using FE.Logic.Fractionation.Process;
@@ -12,6 +13,10 @@ public static class AchievementService {
     private static long lastEvaluationTick = long.MinValue;
 
     public static void Tick() {
+        if (NebulaMultiplayerModAPI.IsMultiplayerActive && NebulaMultiplayerModAPI.IsClient) {
+            return;
+        }
+
         long tick = GameMain.gameTick;
         if (tick >= 0 && lastEvaluationTick >= 0 && tick - lastEvaluationTick < 60) {
             return;
@@ -26,6 +31,7 @@ public static class AchievementService {
         }
         if (changed) {
             CivilizationRuntimeSync.Refresh();
+            NebulaMultiplayerModAPI.BroadcastCivilizationState();
         }
     }
 

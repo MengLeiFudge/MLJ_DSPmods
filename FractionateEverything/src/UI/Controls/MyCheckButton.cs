@@ -7,7 +7,7 @@ using static FE.UI.Foundation.RectTransformUtils;
 namespace FE.UI.Controls;
 
 /// <summary>
-///
+/// 带图标和标签的开关按钮控件。
 /// </summary>
 public class MyCheckButton : MonoBehaviour {
     public RectTransform rectTrans;

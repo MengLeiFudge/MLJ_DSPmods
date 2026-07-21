@@ -7,7 +7,7 @@
 ```
 Fractionation/
 ├── FracRecipes/    # BaseRecipe、ERecipe、RecipeManager、具体分馏配方
-├── Fractionators/  # 分馏塔定义、建筑成长、分馏塔特质状态
+├── Fractionators/  # 分馏塔定义、科技运行投影与单塔实例状态
 ├── Process/        # 分馏器运行热路径、能耗 patch、性能探针
 └── Presentation/   # 分馏塔窗口、brief info、配方显示相关 UI patch
 ```
@@ -27,15 +27,15 @@ Fractionation/
 - 完整处理流程内部的传送带输入输出 helper 留在 `Process/ProcessManager.cs`。
 - 能耗 IL patch 放 `Process/PowerPatch.cs`。
 - 性能探针和日志桶放 `Process/Perf.cs`。
-- 交互塔献祭相关成功率逻辑放 `Process/Sacrifice.cs`。
+- 旧献祭成功率、建筑等级和裂变池逻辑已经删除，不得重新接入热路径。
 
 ## Fractionator Rules
 
-- 分馏塔定义、建筑成长服务和分馏塔特质状态放 `Fractionators`。
+- 分馏塔定义、科技运行投影和单塔实例状态放 `Fractionators`。
 - `TowerRuntimeModifierCache` 是科技树投影结果，不保存、不自行计算科技条件。
-- 转化塔单路锁定相关实体、复制粘贴、蓝图同步在 `Fractionators/ConversionSingleLock.cs`。
-- 矿物复制塔裂变点池放 `Fractionators/MineralReplicationFissionPool.cs`。
-- 交互塔共鸣状态放 `Fractionators/InteractionTowerResonance.cs`。
+- 主路锁定、解析谱系目标和副产物弃置均采用“塔型科技许可 + 配方累计成功校准 + 单塔实例设置”三层约束。
+- 主路锁定只处理 `OutputMain`；副产物弃置只处理 `OutputAppend`，不得提供补偿。
+- 单塔实例状态必须接入存档、复制粘贴、蓝图和 Nebula 同步。
 
 ## Presentation Rules
 

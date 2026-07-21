@@ -780,13 +780,8 @@ public class GetDspData : BaseUnityPlugin {
                 continue;
             }
             ItemProto building = LDB.items.Select(recipe.RecipeType.GetSpriteItemId());
-            //↓测试环境调整↓
-            // recipe.SandBoxMaxUpDowngrade(true);
-            building.Level(12);
             int fluidInputIncAvg = 0;
-            //↑测试环境调整↑
             float pointsBonus = (float)ProcessManager.MaxTableMilli(fluidInputIncAvg);
-            float successBoost = building.SuccessBoost();
             List<int> Items = [item.ID];
             List<float> ItemCounts = [1];
             List<int> Results = [];
@@ -814,7 +809,6 @@ public class GetDspData : BaseUnityPlugin {
                 { "RemainInputRatio", 0.0 },
                 { "DoubleOutputRatio", 0.0 },
                 { "PointsBonus", pointsBonus },
-                { "SuccessBoost", successBoost },
                 { "OutputMain", BuildOutputInfoArray(recipe.OutputMain) },
                 { "OutputAppend", BuildOutputInfoArray(recipe.OutputAppend) },
                 { "IconName", ResolveIconName(item) },

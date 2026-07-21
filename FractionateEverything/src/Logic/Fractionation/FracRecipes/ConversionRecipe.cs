@@ -253,7 +253,7 @@ public class ConversionRecipe : BaseRecipe {
     public ConversionRecipe(int inputID, float baseSuccessRatio, List<OutputInfo> outputMain,
         List<OutputInfo> outputAppend)
         : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
-        lockedOutputPlansByItemId = BuildLockedOutputPlans(inputID, outputMain, outputAppend);
+        lockedOutputPlansByItemId = BuildLockedOutputPlans(inputID, outputMain);
     }
 
     private readonly Dictionary<int, LockedOutputPlan> lockedOutputPlansByItemId;
@@ -272,7 +272,7 @@ public class ConversionRecipe : BaseRecipe {
     /// </summary>
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        if (ConversionTower.EnableSingleLock
+        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
             && CurrentLockedOutputId != 0
             && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
             GetLockedOutput(ref seed, pointsBonus, successBoost, fluidInputIncAvg, ref fluidInputInc,
@@ -290,7 +290,7 @@ public class ConversionRecipe : BaseRecipe {
     /// </summary>
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
-        if (ConversionTower.EnableSingleLock
+        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
             && CurrentLockedOutputId != 0
             && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
             return GetLockedOutputFast(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
@@ -306,7 +306,7 @@ public class ConversionRecipe : BaseRecipe {
     /// </summary>
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
-        if (ConversionTower.EnableSingleLock
+        if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
             && CurrentLockedOutputId != 0
             && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
             return GetLockedOutputBatchFast(ref seed, pointsBonus, successBoost, batchCount,
@@ -406,12 +406,12 @@ public class ConversionRecipe : BaseRecipe {
         int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
         int aliveCount = batchCount - destroyedCount;
         float lockedSuccessRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        int successCount = RollBinomialApprox(ref seed, aliveCount, lockedSuccessRatio);
-        int passThroughCount = aliveCount - successCount;
+        int rolledSuccessCount = RollBinomialApprox(ref seed, aliveCount, lockedSuccessRatio);
+        int passThroughCount = aliveCount - rolledSuccessCount;
+        int producedSuccessCount = AddRolledLockedOutput(ref seed, outputs, lockedPlan, rolledSuccessCount);
 
-        AddRolledLockedOutput(ref seed, outputs, lockedPlan, successCount);
-
-        int inputRemoveCount = destroyedCount + passThroughCount + successCount;
+        destroyedCount += rolledSuccessCount - producedSuccessCount;
+        int inputRemoveCount = destroyedCount + passThroughCount + producedSuccessCount;
         fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
         if (fluidInputInc < 0) {
             fluidInputInc = 0;
@@ -419,8 +419,8 @@ public class ConversionRecipe : BaseRecipe {
 
         FractionationBatchResult result = new() {
             InputRemoveCount = inputRemoveCount,
-            ConsumedRegisterCount = destroyedCount + successCount,
-            SuccessCount = successCount,
+            ConsumedRegisterCount = destroyedCount + producedSuccessCount,
+            SuccessCount = producedSuccessCount,
             DestroyedCount = destroyedCount,
             PassThroughCount = passThroughCount,
             PassThroughInc = fluidInputIncAvg * passThroughCount,
@@ -428,35 +428,34 @@ public class ConversionRecipe : BaseRecipe {
         return result;
     }
 
-    private static void AddRolledLockedOutput(ref uint seed, ProductOutputBuffer outputs,
+    private static int AddRolledLockedOutput(ref uint seed, ProductOutputBuffer outputs,
         LockedOutputPlan lockedPlan, int outputHits) {
         if (outputHits <= 0) {
-            return;
+            return 0;
         }
 
         int baseCount = (int)lockedPlan.OutputCount;
         float fractionalCount = lockedPlan.OutputCount - baseCount;
         int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
         if (totalCount <= 0) {
-            return;
+            return 0;
         }
 
         lockedPlan.SourceOutput.OutputTotalCount += totalCount;
         outputs.Add(lockedPlan.IsMainOutput, lockedPlan.OutputID, totalCount);
+        return baseCount > 0 ? outputHits : totalCount;
     }
 
     private static Dictionary<int, LockedOutputPlan> BuildLockedOutputPlans(int inputId,
-        List<OutputInfo> outputMain, List<OutputInfo> outputAppend) {
+        List<OutputInfo> outputMain) {
         Dictionary<int, LockedOutputPlan> plans = [];
         HashSet<int> lockableOutputIds = [];
         CollectLockableOutputIds(lockableOutputIds, outputMain);
-        CollectLockableOutputIds(lockableOutputIds, outputAppend);
         if (lockableOutputIds.Count <= 1) {
             return plans;
         }
 
         AddLockedOutputPlans(plans, inputId, outputMain, true);
-        AddLockedOutputPlans(plans, inputId, outputAppend, false);
         return plans;
     }
 

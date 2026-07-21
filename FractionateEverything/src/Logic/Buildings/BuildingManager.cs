@@ -12,7 +12,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Buildings;
 
 /// <summary>
-/// FE 建筑等级阈值、原型注册和建筑聚合入口。
+/// FE 建筑原型注册、固定运行属性和建筑实例状态聚合入口。
 /// </summary>
 public static partial class BuildingManager {
     public static void AddTranslations() {
@@ -98,9 +98,9 @@ public static partial class BuildingManager {
     public static int ProductOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
             IFE交互塔 => BaseFracProductOutputMax * InteractionTower.MaxStack,
-            IFE矿物复制塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
+            IFE资源塔 => BaseFracProductOutputMax * MineralReplicationTower.MaxStack,
             IFE转化塔 => BaseFracProductOutputMax * ConversionTower.MaxStack,
-            IFE精馏塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
+            IFE解析塔 => BaseFracProductOutputMax * RectificationTower.MaxStack,
             _ => BaseFracProductOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
@@ -111,20 +111,49 @@ public static partial class BuildingManager {
     public static int FluidOutputMax(this ItemProto fractionator) {
         return fractionator.ID switch {
             IFE交互塔 => BaseFracFluidOutputMax * Mathf.Max(1, InteractionTower.MaxStack / 4),
-            IFE矿物复制塔 => BaseFracFluidOutputMax * Mathf.Max(1, MineralReplicationTower.MaxStack / 4),
+            IFE资源塔 => BaseFracFluidOutputMax * Mathf.Max(1, MineralReplicationTower.MaxStack / 4),
             IFE转化塔 => BaseFracFluidOutputMax * Mathf.Max(1, ConversionTower.MaxStack / 4),
-            IFE精馏塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
+            IFE解析塔 => BaseFracFluidOutputMax * Mathf.Max(1, RectificationTower.MaxStack / 4),
             _ => BaseFracFluidOutputMax * StackingManager.CurrentMaxStack / 4
         };
     }
 
-    public static float SuccessBoost(this ItemProto fractionator) {
-        return fractionator.ID switch {
-            IFE交互塔 => InteractionTower.SuccessBoost,
-            IFE矿物复制塔 => MineralReplicationTower.SuccessBoost,
-            IFE转化塔 => ConversionTower.SuccessBoost,
-            IFE精馏塔 => RectificationTower.SuccessBoost,
-            _ => 0
+    /// <summary>
+    /// 读取建筑当前允许的处理堆叠上限；该值来自全局堆叠科技，不属于建筑等级。
+    /// </summary>
+    public static int MaxStack(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.MaxStack,
+            IFE资源塔 => MineralReplicationTower.MaxStack,
+            IFE转化塔 => ConversionTower.MaxStack,
+            IFE解析塔 => RectificationTower.MaxStack,
+            IFE行星内物流交互站 => PlanetaryInteractionStation.MaxStack,
+            IFE星际物流交互站 => InterstellarInteractionStation.MaxStack,
+            _ => 1
+        };
+    }
+
+    /// <summary>
+    /// 读取物流交互站的固定交互能耗倍率。
+    /// </summary>
+    public static float InteractEnergyRatio(this ItemProto building) {
+        return building.ID switch {
+            IFE行星内物流交互站 => PlanetaryInteractionStation.InteractEnergyRatio,
+            IFE星际物流交互站 => InterstellarInteractionStation.InteractEnergyRatio,
+            _ => 1.0f
+        };
+    }
+
+    /// <summary>
+    /// 读取分馏塔的固定增产点倍率。
+    /// </summary>
+    public static float PlrRatio(this ItemProto building) {
+        return building.ID switch {
+            IFE交互塔 => InteractionTower.PlrRatio,
+            IFE资源塔 => MineralReplicationTower.PlrRatio,
+            IFE转化塔 => ConversionTower.PlrRatio,
+            IFE解析塔 => RectificationTower.PlrRatio,
+            _ => 1.0f
         };
     }
 
@@ -132,76 +161,29 @@ public static partial class BuildingManager {
 
     public static void Import(BinaryReader r) {
         r.ReadBlocks(
-            ("InteractionTower", InteractionTower.Import),
-            ("MineralReplicationTower", MineralReplicationTower.Import),
-            ("ConversionTower", ConversionTower.Import),
-            ("RectificationTower", RectificationTower.Import),
-            ("PlanetaryInteractionStation", PlanetaryInteractionStation.Import),
-            ("InterstellarInteractionStation", InterstellarInteractionStation.Import),
             ("OutputExtend", FractionatorOutputState.OutputExtendImport),
             ("LockedOutput", FractionatorSingleLock.LockedOutputImport),
-            ("RectificationTuningTarget", RectificationTuningTarget.TuningTargetImport),
-            ("FissionPointPool", FissionPointPool.FissionPointPoolImport),
-            ("Resonance", ResonanceState.ResonanceImport),
-            ("BuildingExp", BuildingGrowthService.Import)
+            ("RectificationTuningTarget", AnalysisLineageTarget.LineageTargetImport),
+            ("AnalysisLineageTarget", AnalysisLineageTarget.LineageTargetImport),
+            ("FractionatorByproductDiscard", FractionatorByproductDiscard.Import)
         );
     }
 
     public static void Export(BinaryWriter w) {
         w.WriteBlocks(
-            ("InteractionTower", InteractionTower.Export),
-            ("MineralReplicationTower", MineralReplicationTower.Export),
-            ("ConversionTower", ConversionTower.Export),
-            ("RectificationTower", RectificationTower.Export),
-            ("PlanetaryInteractionStation", PlanetaryInteractionStation.Export),
-            ("InterstellarInteractionStation", InterstellarInteractionStation.Export),
             ("OutputExtend", FractionatorOutputState.OutputExtendExport),
             ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
-            ("RectificationTuningTarget", RectificationTuningTarget.TuningTargetExport),
-            ("FissionPointPool", FissionPointPool.FissionPointPoolExport),
-            ("Resonance", ResonanceState.ResonanceExport),
-            ("BuildingExp", BuildingGrowthService.Export)
+            ("AnalysisLineageTarget", AnalysisLineageTarget.LineageTargetExport),
+            ("FractionatorByproductDiscard", FractionatorByproductDiscard.Export)
         );
     }
 
     public static void IntoOtherSave() {
-        InteractionTower.IntoOtherSave();
-        MineralReplicationTower.IntoOtherSave();
-        ConversionTower.IntoOtherSave();
-        RectificationTower.IntoOtherSave();
-        PlanetaryInteractionStation.IntoOtherSave();
-        InterstellarInteractionStation.IntoOtherSave();
         FractionatorOutputState.OutputExtendIntoOtherSave();
         FractionatorSingleLock.LockedOutputIntoOtherSave();
-        RectificationTuningTarget.TuningTargetIntoOtherSave();
-        FissionPointPool.FissionPointPoolIntoOtherSave();
-        ResonanceState.ResonanceIntoOtherSave();
-        BuildingGrowthService.IntoOtherSave();
+        AnalysisLineageTarget.LineageTargetIntoOtherSave();
+        FractionatorByproductDiscard.IntoOtherSave();
     }
 
     #endregion
-
-    /// <summary>
-    /// 将已建造的建筑转为新的ID
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(EntityData), nameof(EntityData.Import))]
-    public static void EntityData_Import_Postfix(ref EntityData __instance) {
-        if (__instance.modelIndex == 606) {
-            __instance.protoId = IFE精馏塔;
-            __instance.modelIndex = MFE精馏塔;
-        }
-        if (__instance.modelIndex == 607) {
-            __instance.protoId = IFE转化塔;
-            __instance.modelIndex = MFE转化塔;
-        }
-        if (__instance.modelIndex == 608) {
-            __instance.protoId = IFE行星内物流交互站;
-            __instance.modelIndex = MFE行星内物流交互站;
-        }
-        if (__instance.modelIndex == 609) {
-            __instance.protoId = IFE星际物流交互站;
-            __instance.modelIndex = MFE星际物流交互站;
-        }
-    }
 }

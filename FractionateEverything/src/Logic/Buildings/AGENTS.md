@@ -1,60 +1,41 @@
-# Logic/Buildings — 建筑域
+# Logic/Buildings — 建筑聚合与迁移域
 
-建筑域包含 FE 新增建筑定义、建筑等级/经验、建筑原型注册、材质/能耗刷新和建筑相关存档聚合。
+本目录负责跨功能域聚合 FE 建筑原型注册、材质/能耗刷新、固定运行属性、建筑实例状态存档和 FE 2.x Proto 迁移。具体塔定义仍归各自功能域。
 
 ## Structure
 
 ```
 Buildings/
-├── BuildingManager.cs          # 建筑注册、材质/能耗刷新、缓存上限、存档聚合
-├── BuildingGrowthService.cs    # 等级、经验、突破消耗、等级派生属性
-└── Definitions/                # 一类建筑一个静态定义类
+├── BuildingManager.cs       # 跨域注册、固定属性、缓存上限、实例状态存档聚合
+└── Migration/
+    └── LegacyProtoMigration.cs # FE 2.x 现役 Proto ID 和持久状态迁移
 ```
 
-## Building Definition Template
+## Definition Ownership
 
-```csharp
-namespace FE.Logic.Buildings.Definitions;
-
-public static class XxxTower {
-    private static ItemProto item;
-    private static RecipeProto recipe;
-    private static ModelProto model;
-    public static Color color = new(r, g, b);
-
-    public static int Level = 0;
-    public static bool EnableXxx => Level >= N;
-    public static int MaxStack => Level switch { < 6 => 1, < 9 => 4, _ => 8 };
-    public static float EnergyRatio => Level switch { ... };
-
-    public static void AddTranslations() { ... }
-    public static void Create() { ... }
-    public static void SetMaterial() { ... }
-    public static void UpdateHpAndEnergy() { ... }
-
-    public static void Import(BinaryReader r) { ... }
-    public static void Export(BinaryWriter w) { ... }
-    public static void IntoOtherSave() { ... }
-}
-```
-
-## Files
-
-- `Definitions/InteractionTower.cs`：交互塔，献祭特质和维度共鸣相关入口。
-- `Definitions/MineralReplicationTower.cs`：矿物复制塔，流动增强相关。
-- `Definitions/ConversionTower.cs`：转化塔，转化配方和单路锁定能力。
-- `Definitions/RectificationTower.cs`：精馏塔，矩阵/黑雾矩阵转残片。
-- `Definitions/PlanetaryInteractionStation.cs`：行星内物流交互站。
-- `Definitions/InterstellarInteractionStation.cs`：星际物流交互站，等级委托到行星站。
+- `Logic/Fractionation/Fractionators/InteractionTower.cs`：交互塔原型。
+- `Logic/Fractionation/Fractionators/RectificationTower.cs`：解析塔原型。
+- `Logic/Fractionation/Fractionators/MineralReplicationTower.cs`：资源塔原型。
+- `Logic/Fractionation/Fractionators/ConversionTower.cs`：转化塔原型。
+- `Logic/Station/Definitions/PlanetaryInteractionStation.cs`：行星内物流交互站原型。
+- `Logic/Station/Definitions/InterstellarInteractionStation.cs`：星际物流交互站原型。
 
 ## Registration Flow
 
-`BuildingManager.AddFractionators()` 调用各建筑 `Create()`。
-`BuildingManager.SetFractionatorMaterial()` 调用各建筑 `SetMaterial()`。
-`BuildingManager.UpdateHpAndEnergy()` 调用各建筑 `UpdateHpAndEnergy()`。
+`BuildingManager.AddTranslations()` 聚合各建筑翻译。
+`BuildingManager.AddFractionators()` 聚合各建筑 `Create()`。
+`BuildingManager.SetFractionatorMaterial()` 聚合各建筑 `SetMaterial()`。
+`BuildingManager.UpdateHpAndEnergy()` 聚合各建筑 `UpdateHpAndEnergy()`。
+
+## Rules
+
+- 建筑不再拥有等级、经验、突破、献祭、裂变池或共鸣状态；塔型能力来自文明科技投影、协议状态或明确的单塔实例状态。
+- 新增建筑实例状态必须接入 `BuildingManager.Import/Export/IntoOtherSave`，并评估复制粘贴、蓝图和联机同步。
+- FE 2.x 迁移只映射现役对应物，不把废弃内容映射为新内容。
+- `BuildingManager` 只做跨域聚合和通用固定属性，不把分馏热路径或物流站运行逻辑搬入本目录。
 
 ## Anti-Patterns
 
-- 新增建筑状态但不接入 `Import/Export/IntoOtherSave`。
-- 在建筑定义里处理分馏运行热路径；运行逻辑应进 `Logic/Fractionation/Process`。
+- 为了集中注册而把具体塔定义移入 `Logic/Buildings`，破坏功能域所有权。
 - 在建筑定义里处理主面板 UI；主面板页面应进 `UI/MainPanel`。
+- 恢复旧建筑成长字段或用隐藏等级替代文明科技许可。

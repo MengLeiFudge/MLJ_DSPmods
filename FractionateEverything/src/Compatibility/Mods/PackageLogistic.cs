@@ -6,7 +6,6 @@ using FE.UI.MainPanel.Setting;
 using HarmonyLib;
 using static FE.Logic.DataCenter.DataCenterInventory;
 using static FE.Utils.Utils;
-using static FE.Logic.Station.ProliferatorPool;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
 
 namespace FE.Compatibility.Mods;
@@ -91,7 +90,6 @@ public static class PackageLogistic {
             return false;
         }
         int expectCount = TakeItemFromModData(itemId, count, out int expectInc);
-        AddIncToItem(expectCount, ref expectInc);
         __result = [expectCount, expectInc];
         return false;
     }

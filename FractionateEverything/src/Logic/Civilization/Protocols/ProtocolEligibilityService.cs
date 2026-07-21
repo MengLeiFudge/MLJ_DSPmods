@@ -12,7 +12,8 @@ public static class ProtocolEligibilityService {
         MatrixStageDefinition stage = ProgressionProfileRegistry.Current?.GetStage(definition.StageKey);
         BaseRecipe recipe = RecipeManager.GetRecipe<BaseRecipe>(definition.RecipeKey.RecipeType,
             definition.RecipeKey.InputId);
-        if (stage == null || recipe == null || stage.Order > FE.Logic.Items.ItemManager.GetCurrentProgressStageIndex()) {
+        if (stage == null || recipe == null || !recipe.IsProtocolEligible
+            || stage.Order > FE.Logic.Items.ItemManager.GetCurrentProgressStageIndex()) {
             return false;
         }
 

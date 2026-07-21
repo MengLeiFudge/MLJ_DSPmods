@@ -272,7 +272,6 @@ public static class FracRecipeOperate {
             text.AppendLine($"{"运行塔型".Translate()}：{building.name}");
             text.AppendLine($"{"处理堆叠上限".Translate()}：{building.MaxStack()}");
             text.AppendLine($"{"增产点倍率".Translate()}：{building.PlrRatio():P0}");
-            text.AppendLine($"{"全局成功率增幅".Translate()}：{building.SuccessBoost():P0}");
         }
         text.AppendLine();
         text.AppendLine($"{"流动输出堆叠".Translate()}：{GetSwitchText(

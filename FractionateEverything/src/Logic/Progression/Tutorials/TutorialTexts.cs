@@ -16,7 +16,7 @@ public static partial class TutorialManager {
              1. Follow the abnormal signal and recover the starter kit. After the data-centre communication channel is established, press {"[Shift + F] key".WithColor(Orange)} to connect to the Fractionation Data Centre.
              2. Open the Recovery Guide page in the panel and follow it step by step to learn how to use the Interaction Tower to cultivate protos into new Fractionation Towers, as well as how to upload items.
              There will also be a new guide that explains how to use the Interactive Tower after you build it.
-             3. Cultivate a new Interactive Tower and upload it to the Fractionation Data Centre to restore the Item Interaction protocol.
+             3. Cultivate common protos until you obtain a new Interaction Tower, then upload it to the Fractionation Data Centre to restore the Item Interaction protocol.
              This is an extremely powerful support feature that defies space limitations and can be thought of as an external backpack with unlimited capacity.
              4. Build the production line for the current-stage Matrix. Process matrices in the Analysis Tower, upload the physical analysis data, and spend the generated retrieval opportunities to recover recipes.
 
@@ -31,7 +31,7 @@ public static partial class TutorialManager {
              1.按异常信号提示前往信号点，回收旧文明启动套件。数据中心通信建立后，按{"[Shift + F]键".WithColor(Orange)}即可连接到分馏数据中心。
              2.打开分馏数据中心的“恢复手册”页面，按步骤学习如何使用交互塔将原胚培养为新的分馏塔，以及如何使用交互塔上传物品。
              建设交互塔之后，也会有新的指引对此进行讲解。
-             3.培养出新的交互塔，并将其上传至分馏数据中心，恢复“物品交互”协议。
+             3.持续培养通用原胚，直到获得新的交互塔；将其上传至分馏数据中心，恢复“物品交互”协议。
              这是一项极其强大的辅助功能，无视空间限制，你可以将它视为具有无限容量的外部背包。
              4.搭建当前阶段矩阵产线，用解析塔将矩阵处理为实体解析数据；上传数据后生成检索机会，用于发现并补全配方协议。
 
@@ -51,12 +51,12 @@ public static partial class TutorialManager {
              1. Build the production line for a Matrix stage.
              2. Feed matrices into the Analysis Tower. It outputs physical analysis data for that stage.
              3. Upload the analysis data through an Interaction Tower or another data-centre upload path. Data is converted into progressively more expensive retrieval opportunities.
-             4. Spend an opportunity on Protocol Recovery. A retrieval may fail, discover a recipe protocol, or increase the completeness of an already discovered protocol.
-             5. A recipe becomes usable at 100% completeness. You may prioritise one discovered protocol, but discovery order remains partly random.
+             4. Spend an opportunity on Protocol Recovery. Broad retrieval uses only the opportunity; directional retrieval also spends fragments to restrict the recipe family; anchored retrieval spends a memory source point to target one unfinished protocol. Failed retrievals award fragments.
+             5. A recipe becomes usable at 100% completeness. You may prioritise one discovered protocol, and batch retrieval follows the same single-step rules in order.
 
              {"[Ancient Technology]".WithColor(Blue)}
              After the main protocols of a stage are complete, later opportunities enter deep analysis. Deep analysis produces the single shared Ancient Technology Point type.
-             Spend these points on the four tower branches. The first implemented nodes enable stacked flow output for Interaction, Resource, Conversion, and Analysis Towers.
+             Spend these points on the four tower branches. Each branch unlocks flow stacking, product stacking, continuous fractionation, main-output locking, and byproduct discard in order. The last two also require actual recipe calibration and a per-building setting.
 
              {"[Recipe Operation]".WithColor(Blue)}
              The Recipe page displays output structure and actual running parameters. Resource Replication and Conversion recipes display protocol discovery and completeness instead of legacy recipe levels.
@@ -90,12 +90,12 @@ public static partial class TutorialManager {
              1.搭建某个矩阵阶段的生产线。
              2.将矩阵输入解析塔，得到该阶段的实体解析数据。
              3.通过交互塔或其他数据中心上传入口上传解析数据。数据会转化为检索机会，且后续机会所需数据越来越多。
-             4.在“文明协议恢复”页面消耗机会。一次检索可能无有效响应、发现新配方协议，或推进已发现协议的完整度。
-             5.协议完整度达到 100% 后，对应配方才可运行。已发现协议可以设为优先目标，但发现顺序仍保留少量随机性。
+             4.在“文明协议恢复”页面消耗机会。广域检索只消耗机会；方向检索额外消耗残片并限制配方方向；锚定检索消耗记忆源点并固定一个未完成协议。失败检索会获得残片。
+             5.协议完整度达到 100% 后，对应配方才可运行。已发现协议可以设为优先目标；批量检索仍按同一单次规则逐次结算。
 
              {"【远古科技】".WithColor(Blue)}
              当一个阶段的主协议全部完成后，后续检索机会会进入深层解析。深层解析只产出一种“远古文明科技点”。
-             科技点可以投入交互塔、资源塔、转化塔和解析塔四条主干。当前首批节点用于解锁对应塔型的流动物品堆叠输出。
+             科技点可以投入交互塔、解析塔、资源塔和转化塔四条主干。每条主干依次解锁流动输出堆叠、产物输出堆叠、分馏永动、主路锁定和副产物弃置；后两项还要求当前配方完成实际生产校准，并由单塔保存设置。
 
              {"【配方操作】".WithColor(Blue)}
              配方页面用于查看产物结构和实际运行参数。资源复制与转化配方的右侧信息改为协议发现状态和完整度，不再显示旧配方等级。
@@ -129,14 +129,10 @@ public static partial class TutorialManager {
         Register("分馏塔使用指南前字",
             $"""
              {"[Cultivate Fractionation Tower]".WithColor(Blue)} 
-             In the old-civilization recovery system, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interactive Towers.
-             Simply put, by using the Interaction Tower to fractionate a tower proto, you get the matching Fractionation Tower with 100% output.
-             There are 4 tower protos, and their products are as follows:
-             Type I: Interaction Tower
-             Type II: Resource Tower
-             Type III: Conversion Tower
-             Type IV: Analysis Tower
-             Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix the different types of Protoembryo!
+             In the old-civilization recovery system, Fractionation Towers are no longer obtained by manufacturing, but mainly by cultivating them in Interaction Towers.
+             A common proto randomly cultivates into one of four tower types. A dedicated Interaction, Analysis, Resource, or Conversion proto always cultivates into its matching tower.
+             The Analysis Tower can differentiate common protos into dedicated lineages. After enough dedicated cultivation and protocol recovery, an Interaction Tower can reverse a built tower into its matching dedicated proto.
+             Note that {"Only one type of item can be processed by any Fractionation Tower at any one time".WithColor(Orange)}, so don't mix different proto types in one tower!
              Items can be uploaded to the Fractionation Data Centre by feeding the output Fractionation Tower through a conveyor belt to the front interface of another Interactive Tower, thus restoring the corresponding old-civilization protocol.
              Uploading different Fractionation Towers registers their tower type. For example, uploading a Resource Tower restores its control protocol, while uploading an Interaction Tower restores the Item Interaction protocol.
              Note that only Interactive Towers in 'Item Interaction' mode can upload positively entered items to the Fractionation Data Centre. This means that there can be no items inside the tower, and the left and right ports cannot be connected to a conveyor belt.
@@ -157,13 +153,13 @@ public static partial class TutorialManager {
             $"""
              {"【培养分馏塔】".WithColor(Blue)}
              在旧文明恢复体系中，分馏塔不再通过制造得到，而是主要通过交互塔培养得到。
-             简而言之，使用交互塔分馏各种原胚，即可 100% 得到对应类型的分馏塔。
+             通用原胚会随机培养为交互、解析、资源或转化塔；四种专属原胚会稳定培养为对应塔型。解析塔可以把通用原胚分化为专属谱系；专属培养达到资格并恢复返祖协议后，交互塔还能把实体塔还原为对应专属原胚。
              注意，{"任何分馏塔同一时间只能处理一种物品".WithColor(Orange)}，所以不同类型的原胚不要混投！
              将产出的分馏塔通过传送带输入至另一个交互塔的正面接口，即可上传物品至分馏数据中心，从而恢复对应的旧文明协议。
              上传不同分馏塔会完成对应塔型注册。例如，上传资源塔会恢复资源塔的旧文明控制协议，上传交互塔会恢复物品交互协议。
              注意，只有处于“物品交互”模式下的交互塔才能上传正面输入的物品到分馏数据中心。也就是说，交互塔内部不能有物品，并且左右接口不能与传送带连接。
 
-             如果你不确定第一轮该怎么搭建，可以打开分馏数据中心的“恢复手册”页面。推荐顺序是：先放下交互塔，将左右口接成环，正面输出接临时箱子；向环内输入交互塔原胚，产出第二台交互塔；再拆掉临时箱子，把第一台塔的产物接入第二台塔的正面入口完成上传。
+             如果你不确定第一轮该怎么搭建，可以打开分馏数据中心的“恢复手册”页面。推荐顺序是：先放下交互塔，将左右口接成环，正面输出接临时箱子；持续输入通用原胚并保留随机产出的塔，直到获得第二台交互塔；再拆掉临时箱子，把第一台塔的产物接入第二台塔的正面入口完成上传。
 
              {"【交互塔】".WithColor(Blue)}
              交互塔有两个功能：将原胚培养为各种分馏塔，以及上传物品。
@@ -194,7 +190,7 @@ public static partial class TutorialManager {
              4. When storage is locked, the number of items will be kept as close as possible to the number of items currently stored in the Fractionation Data Centre.
              When the interstellar policy and local policy are different, they will take effect at the same time; when the interstellar policy is storage, only the local policy will be considered.
 
-             Uploading and downloading items consumes power from the Interaction Station. The higher the value of the item, the more power it consumes; the higher the enhancement level, the less power it consumes.
+             Uploading and downloading items consumes power from the Interaction Station. The higher the value of the item, the more power it consumes.
              The update frequency of the Interaction Station is 30 ticks (0.5s). When uploading or downloading items, individual slots consume up to '1/number of slots' of the Interaction Station's current power each time.
 
              You can use the lift function to replace a logistic station with a corresponding interaction station. For example, Planetary Logistic Station can be upgraded to Planetary Interaction Station.
@@ -210,7 +206,7 @@ public static partial class TutorialManager {
              4.仓储锁定时，物品数目将尽量与分馏数据中心当前存储的物品数目保持一致。
              当星际策略和本地策略不同时，它们将同时生效；当星际策略为仓储时，仅考虑本地策略。
 
-             上传、下载物品都会消耗物流交互站的电力。物品价值越高，消耗的电力越大；强化等级越高，消耗的电力越少。
+             上传、下载物品都会消耗物流交互站的电力。物品价值越高，消耗的电力越大。
              物流交互站的更新频率是30tick（0.5s）。上传或下载物品时，单个槽位每次至多消耗物流交互站当前电量的“1/槽位数目”。
 
              你可以使用升降级功能，将物流运输站与对应的物流交互站替换。例如，行星内物流运输站可以升级为行星内物流交互站。

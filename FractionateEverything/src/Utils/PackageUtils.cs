@@ -14,7 +14,6 @@ public static partial class Utils {
         Register("兑换", "Exchange");
         Register("已兑换", "Exchanged");
         Register("无法兑换", "Can not exchange");
-        Register("配方经验", "recipe experience");
         Register("FE存档版本不兼容标题", "Save Incompatible", "存档版本不兼容");
         Register("FE存档版本不兼容内容",
             "Due to a major mod update, this save is incompatible with the previous version. Some data has been cleared. As compensation, 5000 Fragments have been added to your data centre.",

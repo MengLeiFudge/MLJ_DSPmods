@@ -1,36 +1,26 @@
 ﻿using System.Collections.Generic;
-using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.Process;
-using static FE.Logic.Items.ItemManager;
 using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.FracRecipes;
 
 /// <summary>
-/// 矩阵萃取与矩阵精华重整配方的产出分布逻辑。
+/// 定义解析塔的矩阵解析和通用原胚谱系分化配方。
 /// </summary>
-public class RectificationRecipe : BaseRecipe {
+public sealed class RectificationRecipe : BaseRecipe {
     /// <summary>
-    /// 区分精馏配方的矩阵萃取和精华重整类型。
+    /// 区分矩阵解析与原胚谱系分化行为。
     /// </summary>
     public enum RectificationRecipeKind {
-        MatrixExtraction,
-        EssenceTuning,
+        MatrixAnalysis,
+        LineageDifferentiation,
     }
 
     /// <summary>
-    /// 定义精华重整时向高阶压缩的基础权重。
+    /// 保存热路径为当前解析塔实例设置的谱系目标；主路锁定接入前保持为零。
     /// </summary>
-    public const float BaseCompressionRatio = 0.45f;
-    /// <summary>
-    /// 定义当前规划的最高压缩权重。
-    /// </summary>
-    public const float MaxPlannedCompressionRatio = 0.60f;
-    private const float TicketSplitRatio = 0.10f;
-    public static int CurrentTuningTargetId;
-    private const float CompressionOutputCount = 0.45f;
-    private const float RefluxOutputCount = 1.80f;
+    public static int CurrentLineageTargetId;
 
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
@@ -42,142 +32,65 @@ public class RectificationRecipe : BaseRecipe {
     ];
 
     /// <summary>
-    /// 创建并注册该类型下的全部分馏配方。
+    /// 创建六阶段矩阵解析配方和通用原胚谱系分化配方。
     /// </summary>
     public static void CreateAll() {
         foreach (int matrixId in MatrixInputs) {
-            AddRecipe(CreateMatrixExtraction(matrixId));
+            AddRecipe(new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixAnalysis, 0.05f,
+                [new(1.0f, GetAnalysisDataItemId(matrixId), 1)], []));
         }
 
-    }
-
-    private static RectificationRecipe CreateMatrixExtraction(int matrixId) {
-        return new RectificationRecipe(matrixId, RectificationRecipeKind.MatrixExtraction, 0.05f,
-            BuildMatrixExtractionOutputs(matrixId), []);
-    }
-
-    private static RectificationRecipe CreateEssenceTuning(int inputId) {
-        return new RectificationRecipe(inputId, RectificationRecipeKind.EssenceTuning, 0.05f,
-            BuildEssenceTuningOutputs(inputId, BaseCompressionRatio), []);
-    }
-
-    private static List<OutputInfo> BuildMatrixExtractionOutputs(int matrixId) {
-        int essenceId = matrixId switch {
-            I电磁矩阵 => IFE电磁精华,
-            I能量矩阵 => IFE能量精华,
-            I结构矩阵 => IFE结构精华,
-            I信息矩阵 => IFE信息精华,
-            I引力矩阵 => IFE引力精华,
-            I宇宙矩阵 => IFE宇宙精华,
-            _ => IFE电磁精华,
-        };
-        return BuildOutputInfos([(1.0f, essenceId, 1.0f)]);
-    }
-
-    private static List<OutputInfo> BuildEssenceTuningOutputs(int inputId, float compressionRatio) {
-        int inputLevel = GetMatrixEssenceLevel(inputId);
-        if (inputLevel < 0) {
-            return [];
-        }
-
-        List<(float ratio, int itemId, float count)> outputs = [];
-        float remainingRatio = 1.0f - TicketSplitRatio;
-        if (inputLevel < MatrixEssenceItemIds.Length - 1) {
-            float ratio = inputLevel == 0 ? remainingRatio : remainingRatio * compressionRatio;
-            AddOrMergeOutput(outputs, ratio, GetMatrixEssenceItemId(inputLevel + 1), 0.5f);
-        }
-        if (inputLevel > 0) {
-            float ratio = inputLevel == MatrixEssenceItemIds.Length - 1
-                ? remainingRatio
-                : remainingRatio * (1.0f - compressionRatio);
-            AddOrMergeOutput(outputs, ratio, GetMatrixEssenceItemId(inputLevel - 1), 2.0f);
-        }
-        if (inputLevel == 0 || inputLevel == MatrixEssenceItemIds.Length - 1) {
-            AddOrMergeOutput(outputs, 1.0f - remainingRatio, IFE残片, GetMatrixEssenceFaceValue(inputId));
-        } else {
-            AddOrMergeOutput(outputs, TicketSplitRatio, IFE残片, GetMatrixEssenceFaceValue(inputId));
-        }
-        return BuildOutputInfos(outputs);
-    }
-
-    private static void AddOrMergeOutput(List<(float ratio, int itemId, float count)> outputs, float ratio, int itemId,
-        float count) {
-        if (ratio <= 0f || itemId <= 0) {
-            return;
-        }
-
-        for (int i = 0; i < outputs.Count; i++) {
-            if (outputs[i].itemId == itemId) {
-                (float oldRatio, int oldItemId, float oldCount) = outputs[i];
-                outputs[i] = (oldRatio + ratio, oldItemId, oldCount);
-                return;
-            }
-        }
-        outputs.Add((ratio, itemId, count));
-    }
-
-    private static List<OutputInfo> BuildOutputInfos(List<(float ratio, int itemId, float count)> specs) {
-        List<OutputInfo> outputs = [];
-        float totalRatio = 0f;
-        foreach ((float ratio, int itemId, float count) in specs) {
-            if (ratio <= 0f || itemId <= 0 || count <= 0f) {
-                continue;
-            }
-            outputs.Add(new(ratio, itemId, count));
-            totalRatio += ratio;
-        }
-
-        if (outputs.Count == 0 || totalRatio <= 0f) {
-            outputs.Add(new(1.0f, IFE残片, 1.0f));
-            return outputs;
-        }
-
-        if (totalRatio > 0f && totalRatio < 0.999f || totalRatio > 1.001f) {
-            float scale = 1.0f / totalRatio;
-            for (int i = 0; i < outputs.Count; i++) {
-                OutputInfo info = outputs[i];
-                outputs[i] = new OutputInfo(info.SuccessRatio * scale, info.OutputID, info.OutputCount);
-            }
-        }
-        return outputs;
+        AddRecipe(new RectificationRecipe(IFE通用原胚, RectificationRecipeKind.LineageDifferentiation, 0.05f, [
+            new(0.25f, IFE交互塔原胚, 1),
+            new(0.25f, IFE解析塔原胚, 1),
+            new(0.25f, IFE资源塔原胚, 1),
+            new(0.25f, IFE转化塔原胚, 1),
+        ], []));
     }
 
     /// <summary>
-    /// 获取该配方所属的分馏配方类型。
+    /// 获取文明解析配方类型。
     /// </summary>
     public override ERecipe RecipeType => ERecipe.Rectification;
+
     /// <summary>
-    /// 获取精馏配方的具体类型。
+    /// 谱系分化需要先恢复文明协议，矩阵解析属于基础设施配方。
+    /// </summary>
+    public override bool RequiresProtocolRecovery => Kind == RectificationRecipeKind.LineageDifferentiation;
+
+    /// <summary>
+    /// 谱系分化协议固定归入电磁阶段。
+    /// </summary>
+    public override int ProtocolStageOrder => Kind == RectificationRecipeKind.LineageDifferentiation ? 0 : -1;
+
+    /// <summary>
+    /// 获取该实例对应的解析塔行为类型。
     /// </summary>
     public RectificationRecipeKind Kind { get; }
 
-    public bool SupportsTuningTarget(int itemId) {
-        if (Kind != RectificationRecipeKind.EssenceTuning || itemId <= 0) {
-            return false;
-        }
-        foreach (OutputInfo output in OutputMain) {
-            if (output.OutputID == itemId) {
-                return true;
-            }
-        }
-        return false;
+    /// <summary>
+    /// 判断物品是否属于谱系分化配方的可选主产物。
+    /// </summary>
+    public bool SupportsLineageTarget(int itemId) {
+        return Kind == RectificationRecipeKind.LineageDifferentiation
+               && OutputMain.Exists(output => output.OutputID == itemId);
     }
 
     /// <summary>
-    /// 执行 RectificationRecipe 对应的分馏域操作。
+    /// 初始化一项矩阵解析或谱系分化配方。
     /// </summary>
-    public RectificationRecipe(int inputID, RectificationRecipeKind kind, float baseSuccessRatio,
+    public RectificationRecipe(int inputId, RectificationRecipeKind kind, float baseSuccessRatio,
         List<OutputInfo> outputMain, List<OutputInfo> outputAppend)
-        : base(inputID, baseSuccessRatio, outputMain, outputAppend) {
+        : base(inputId, baseSuccessRatio, outputMain, outputAppend) {
         Kind = kind;
     }
 
     /// <summary>
-    /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
+    /// 执行单次解析结算，并在主路锁定生效时固定谱系分化结果。
     /// </summary>
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
-        FractionationOutcome outcome = RollRectificationOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
+        FractionationOutcome outcome = RollOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
             ref fluidInputInc, out inputChange, out ProductOutputInfo product);
         outputs = outcome == FractionationOutcome.Destroyed
             ? null
@@ -187,12 +100,12 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 执行单次轻量分馏结算，供运行热路径减少分配使用。
+    /// 执行单次轻量解析结算。
     /// </summary>
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         outputs.Clear();
-        FractionationOutcome outcome = RollRectificationOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
+        FractionationOutcome outcome = RollOutputs(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
             ref fluidInputInc, out inputChange, out ProductOutputInfo product);
         if (product != null) {
             outputs.Add(product.isMainOutput, product.itemId, product.count);
@@ -201,30 +114,25 @@ public class RectificationRecipe : BaseRecipe {
     }
 
     /// <summary>
-    /// 执行批量轻量分馏结算，供运行热路径合并多次处理。
+    /// 执行批量轻量解析结算。
     /// </summary>
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         outputs.Clear();
-
         int destroyedCount = RollBinomialApprox(ref seed, batchCount, DestroyRatio);
         int aliveCount = batchCount - destroyedCount;
-        float successRatio = SuccessRatio * (1 + pointsBonus) * (1 + successBoost);
-        int successCount = RollBinomialApprox(ref seed, aliveCount, successRatio);
+        int successCount = RollBinomialApprox(ref seed, aliveCount,
+            SuccessRatio * (1 + pointsBonus) * (1 + successBoost));
         int passThroughCount = aliveCount - successCount;
-        int inputRemoveCount = destroyedCount + successCount + passThroughCount;
         OutputInfo directedOutput = GetDirectedOutputInfo();
         if (directedOutput != null) {
-            AddRolledRectificationOutput(ref seed, outputs, directedOutput, successCount);
+            AddRolledOutput(ref seed, outputs, directedOutput, true, successCount);
         } else {
             RollMainOutputs(ref seed, successCount, outputs);
         }
 
-        fluidInputInc -= fluidInputIncAvg * inputRemoveCount;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
-        }
-
+        int inputRemoveCount = destroyedCount + successCount + passThroughCount;
+        fluidInputInc = System.Math.Max(0, fluidInputInc - fluidInputIncAvg * inputRemoveCount);
         return new FractionationBatchResult {
             InputRemoveCount = inputRemoveCount,
             ConsumedRegisterCount = destroyedCount + successCount,
@@ -235,114 +143,70 @@ public class RectificationRecipe : BaseRecipe {
         };
     }
 
-    private FractionationOutcome RollRectificationOutputs(ref uint seed, float pointsBonus, float successBoost,
+    private FractionationOutcome RollOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out ProductOutputInfo product) {
         inputChange = -1;
-        fluidInputInc -= fluidInputIncAvg;
-        if (fluidInputInc < 0) {
-            fluidInputInc = 0;
-        }
+        fluidInputInc = System.Math.Max(0, fluidInputInc - fluidInputIncAvg);
         product = null;
-
         if (GetRandDouble(ref seed) < DestroyRatio) {
             return FractionationOutcome.Destroyed;
         }
-
         if (GetRandDouble(ref seed) >= SuccessRatio * (1 + pointsBonus) * (1 + successBoost)) {
             return FractionationOutcome.PassThrough;
         }
 
-        OutputInfo outputInfo = GetDirectedOutputInfo() ?? RollMainOutputInfo(ref seed);
-        int count = RollOutputCount(ref seed, GetRuntimeOutputCount(outputInfo));
+        OutputInfo output = GetDirectedOutputInfo() ?? RollMainOutput(ref seed);
+        int count = RollOutputCount(ref seed, output.OutputCount);
         if (count <= 0) {
             return FractionationOutcome.Destroyed;
         }
-
-        product = new ProductOutputInfo(true, outputInfo.OutputID, count);
-        outputInfo.OutputTotalCount += count;
+        output.OutputTotalCount += count;
+        product = new ProductOutputInfo(true, output.OutputID, count);
         return FractionationOutcome.Produced;
     }
 
-    private OutputInfo RollMainOutputInfo(ref uint seed) {
+    private OutputInfo GetDirectedOutputInfo() {
+        if (Kind != RectificationRecipeKind.LineageDifferentiation || CurrentLineageTargetId == 0) {
+            return null;
+        }
+        return OutputMain.Find(output => output.OutputID == CurrentLineageTargetId);
+    }
+
+    private OutputInfo RollMainOutput(ref uint seed) {
         double ratio = GetRandDouble(ref seed);
-        float ratioMain = 0.0f;
-        foreach (OutputInfo outputInfo in OutputMain) {
-            ratioMain += outputInfo.SuccessRatio;
-            if (ratio <= ratioMain) {
-                return outputInfo;
+        float accumulated = 0f;
+        foreach (OutputInfo output in OutputMain) {
+            accumulated += output.SuccessRatio;
+            if (ratio <= accumulated) {
+                return output;
             }
         }
         return OutputMain[OutputMain.Count - 1];
     }
 
-    private OutputInfo GetDirectedOutputInfo() {
-        if (Kind != RectificationRecipeKind.EssenceTuning || CurrentTuningTargetId == 0) {
-            return null;
-        }
-        foreach (OutputInfo outputInfo in OutputMain) {
-            if (outputInfo.OutputID == CurrentTuningTargetId) {
-                return outputInfo;
-            }
-        }
-        return null;
-    }
-
     private void RollMainOutputs(ref uint seed, int successCount, ProductOutputBuffer outputs) {
-        int remainingMainCount = successCount;
-        float remainingMainRatio = 1.0f;
-        for (int i = 0; i < OutputMain.Count && remainingMainCount > 0; i++) {
-            OutputInfo outputInfo = OutputMain[i];
-            int outputHits = i == OutputMain.Count - 1
-                ? remainingMainCount
-                : RollBinomialApprox(ref seed, remainingMainCount, outputInfo.SuccessRatio / remainingMainRatio);
-            remainingMainCount -= outputHits;
-            remainingMainRatio -= outputInfo.SuccessRatio;
-            if (remainingMainRatio <= 0f) {
-                remainingMainRatio = 1.0f;
-            }
-            AddRolledRectificationOutput(ref seed, outputs, outputInfo, outputHits);
+        int remaining = successCount;
+        float remainingRatio = 1f;
+        for (int i = 0; i < OutputMain.Count && remaining > 0; i++) {
+            OutputInfo output = OutputMain[i];
+            int hits = i == OutputMain.Count - 1
+                ? remaining
+                : RollBinomialApprox(ref seed, remaining, output.SuccessRatio / remainingRatio);
+            remaining -= hits;
+            remainingRatio -= output.SuccessRatio;
+            AddRolledOutput(ref seed, outputs, output, true, hits);
         }
     }
 
-    /// <summary>
-    /// 获取 DisplayOutputCount 对应的分馏域数据。
-    /// </summary>
-    public float GetDisplayOutputCount(OutputInfo outputInfo) {
-        return GetRuntimeOutputCount(outputInfo);
-    }
-
-    private float GetRuntimeOutputCount(OutputInfo outputInfo) {
-        if (Kind == RectificationRecipeKind.MatrixExtraction) {
-            float matrixCount = outputInfo.OutputCount * RectificationTower.PlrRatio;
-            return matrixCount < 0.0001f ? 0.0001f : matrixCount;
-        }
-
-        int inputLevel = GetMatrixEssenceLevel(InputID);
-        int outputLevel = GetMatrixEssenceLevel(outputInfo.OutputID);
-        float count = outputInfo.OutputCount;
-        if (inputLevel >= 0 && outputLevel == inputLevel + 1) {
-            count = CompressionOutputCount;
-        } else if (inputLevel >= 0 && outputLevel == inputLevel - 1) {
-            count = RefluxOutputCount;
-        }
-        return count < 0.0001f ? 0.0001f : count;
-    }
-
-    private void AddRolledRectificationOutput(ref uint seed, ProductOutputBuffer outputs, OutputInfo outputInfo,
-        int outputHits) {
-        if (outputHits <= 0) {
-            return;
-        }
-
-        float outputCount = GetRuntimeOutputCount(outputInfo);
-        int baseCount = (int)outputCount;
-        float fractionalCount = outputCount - baseCount;
-        int totalCount = outputHits * baseCount + RollBinomialApprox(ref seed, outputHits, fractionalCount);
-        if (totalCount <= 0) {
-            return;
-        }
-
-        outputs.Add(true, outputInfo.OutputID, totalCount);
-        outputInfo.OutputTotalCount += totalCount;
+    private static int GetAnalysisDataItemId(int matrixId) {
+        return matrixId switch {
+            I电磁矩阵 => IFE电磁解析数据,
+            I能量矩阵 => IFE能量解析数据,
+            I结构矩阵 => IFE结构解析数据,
+            I信息矩阵 => IFE信息解析数据,
+            I引力矩阵 => IFE引力解析数据,
+            I宇宙矩阵 => IFE宇宙解析数据,
+            _ => IFE电磁解析数据,
+        };
     }
 }

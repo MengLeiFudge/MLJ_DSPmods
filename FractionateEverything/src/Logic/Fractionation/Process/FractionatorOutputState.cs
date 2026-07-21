@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using FE.Logic.Buildings.Migration;
 using FE.Logic.Fractionation.FracRecipes;
 
 namespace FE.Logic.Fractionation.Process;
@@ -263,9 +264,9 @@ public static class FractionatorOutputState {
             int outputKinds = r.ReadInt32();
             for (int j = 0; j < outputKinds; j++) {
                 bool isMainOutput = r.ReadBoolean();
-                int outputId = r.ReadInt32();
+                int outputId = LegacyProtoMigration.MapItemId(r.ReadInt32());
                 int outputCount = r.ReadInt32();
-                if (LDB.items.Exist(outputId)) {
+                if (!LDB.items.Exist(outputId)) {
                     continue;
                 }
                 state.Products.Add(new(isMainOutput, outputId, outputCount));

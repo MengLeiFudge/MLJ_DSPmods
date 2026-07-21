@@ -23,37 +23,42 @@ ancient-civilization protocols.
 
 万物分馏添加了全新的建筑，它们的效果非常强大！
 
-* 交互塔：培养分馏塔原胚；正面输入且两侧无连接时，将物品上传至分馏数据中心。
+* 交互塔：将通用原胚随机培养为四类塔，将专属原胚稳定培养为对应塔型，并在返祖协议恢复后把实体塔还原为专属原胚；正面输入且两侧无连接时，将物品上传至分馏数据中心。
+* 解析塔：将矩阵处理为实体解析数据，上传后为对应文明阶段生成协议检索机会；也负责把通用原胚分化为专属谱系。
 * 资源塔：复制可持续消耗的原矿资源，包括满足接触条件的黑雾掉落；对应协议完整度达到 100 后才可运行。
 * 转化塔：在同一工业链或用途链内转换物品；对应协议完整度达到 100 后才可运行。
-* 解析塔：将矩阵处理为实体解析数据，上传后为对应文明阶段生成协议检索机会。
 * 物流交互站：可以与分馏数据中心进行物品交互的行星内物流运输站。
 
 Fractionate Everything has added brand new buildings which are very powerful in their effects!
 
-* Interaction Tower: Cultivates fractionator embryos and uploads front-input items to the Data Center when neither side
-  is connected.
+* Interaction Tower: Randomly cultivates common protos into one of four tower types, stably cultivates dedicated protos,
+  and reverses towers into dedicated protos after the atavism protocol is recovered. It also uploads front-input items
+  to the Data Center when neither side is connected.
+* Analysis Tower: Processes matrices into physical analysis data and differentiates common protos into dedicated
+  lineages. Uploading analysis data generates retrieval opportunities for the matching civilization stage.
 * Resource Tower: Replicates consumable raw resources, including eligible dark-fog drops. A managed recipe becomes
   usable only after its protocol reaches 100 completeness.
 * Conversion Tower: Converts items within the same production or use chain. A managed recipe becomes usable only after
   its protocol reaches 100 completeness.
-* Analysis Tower: Processes matrices into physical analysis data; uploading that data generates retrieval opportunities
-  for the matching civilization stage.
 * Logistics Interaction Station: An intra-planetary logistics station that can interact with the Fractionation Data
   Center.
 
 ### 文明恢复与协议 Civilization Recovery Protocols
 
-万物分馏能力不再作为主脑科技树里的普通研究项。玩家通过解析塔生产实体解析数据，再将数据上传到分馏数据中心，逐步生成越来越昂贵的检索机会。
+万物分馏能力不再作为主脑科技树里的普通研究项。数据中心内的残缺文明 AI 只管理档案索引、权限和设施调度，不能读取协议正文或自行创造科技。玩家通过解析塔生产实体解析数据，再将数据上传到分馏数据中心，逐步生成越来越昂贵的检索机会。
 
-每次检索可能没有响应、发现一项新协议，或推进一项已发现协议。已发现协议可设置优先目标；连续失败和连续未发现都有保底。随机性只改变恢复顺序和速度，协议最终都能取得。完整度达到 100 后，对应资源复制或转化配方才可运行；没有协议的阶段会直接进入深层解析，不会卡住已有检索机会。
+检索分为三种策略：广域检索只消耗机会；方向检索额外消耗残片，将候选限制到一种配方方向；锚定检索额外消耗记忆源点，固定发现或推进选中的未完成协议。残片和记忆源点是普通检索货币；远古文明科技点是只用于科技树的永久资源，三者不能互换。失败检索会返还残片，连续失败和连续未发现都有保底；批量检索仍按相同单次顺序逐次结算。随机性只改变恢复顺序和速度，协议最终都能取得。完整度达到 100 后，对应配方才可运行；没有协议的阶段会直接进入深层解析。
 
-Fractionate Everything abilities are no longer ordinary core-game research. Analysis Towers produce physical analysis
-data, and uploading it to the Data Center generates progressively more expensive retrieval opportunities.
+Fractionate Everything abilities are no longer ordinary core-game research. The damaged archive AI only manages indexes,
+permissions, and facility scheduling; it cannot read protocol contents or invent technology. Analysis Towers produce
+physical analysis data, and uploading it to the Data Center generates progressively more expensive retrieval opportunities.
 
-A retrieval may fail, discover a protocol, or advance a discovered one. Discovered protocols can be prioritized, while
-failure and discovery pity prevent permanent stalls. Randomness changes order and pacing only. A managed recipe becomes
-usable at 100 completeness; stages with no protocols proceed directly to deep analysis.
+Broad retrieval spends only an opportunity. Directional retrieval also spends fragments to restrict the recipe family,
+while anchored retrieval spends a memory source point to target one unfinished protocol. Fragments and memory source
+points are ordinary retrieval currencies; ancient technology points are permanent and only purchase technology-tree
+nodes, with no exchange between them. Failed retrievals award fragments, pity rules prevent permanent stalls, and batch
+retrieval settles the same single-step rules in order. A
+managed recipe becomes usable at 100 completeness; stages with no protocols proceed directly to deep analysis.
 
 ### 远古科技树 Ancient Technology Tree
 
@@ -61,13 +66,14 @@ usable at 100 completeness; stages with no protocols proceed directly to deep an
 
 `流动输出堆叠 → 产物输出堆叠 → 分馏永动 → 主路锁定 → 副产物弃置`
 
-节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。当前前三项已接入运行逻辑；后两项会显示为尚未接入且不可购买，不会用文字伪装成已经生效。
+节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力均已接入运行逻辑。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。
 
 After all required protocols in a stage are complete, later retrievals become deep analysis and award the single ancient
-technology point type. The tree has four parallel vertical paths for Interaction, Resource, Conversion, and Analysis
-Towers. Each path advances through fluid-output stacking, product-output stacking, continuous fractionation, main-output
-locking, and byproduct discard. The first three abilities are active; the final two remain visibly unavailable until their
-runtime behavior is implemented.
+technology point type. The tree has four parallel vertical paths for Interaction, Analysis, Resource, and Conversion
+Towers. All five shared abilities are active. Main-output locking and byproduct discard additionally require recipe
+calibration through actual successful production and per-building settings. Those settings persist through saves,
+copy/paste, blueprints, and multiplayer sync. Locking only selects main outputs; discard destroys side outputs without
+compensation.
 
 ### 文明成就 Civilization Achievements
 
@@ -76,6 +82,15 @@ runtime behavior is implemented.
 Civilization achievements are fixed milestones in the current save. Protocol recovery, stage completion, technology
 spending, and real fractionation activity advance them naturally. Their fixed bonuses apply automatically and do not use
 claimable quests, daily rewards, or cross-save draw power.
+
+### 3.0 存档迁移 3.0 Save Migration
+
+3.0 为 FE 自有物品、配方、模型和隐藏科技重新分配了独立 ID。迁移只处理 FE 2.x 中仍有明确现役对应物的六类建筑、物流配方和相关持久状态；量子复制塔、点金塔、旧等级成长等已废弃内容不会映射成新机制。旧存档和蓝图的映射已做结构复核，但在取得真实 FE 2.x 样本前不视为完成样本验证。
+
+Version 3.0 assigns new isolated IDs to FE items, recipes, models, and hidden carrier technologies. Migration is limited
+to the six FE 2.x buildings and related active state that still have an unambiguous modern counterpart. Removed content
+such as Quantum Replication, Alchemy, and building-level growth is not reinterpreted as a new mechanic. The migration is
+structurally reviewed but remains unverified against real FE 2.x save and blueprint samples.
 
 ## 安装方法 Installation
 

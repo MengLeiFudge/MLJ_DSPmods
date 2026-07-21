@@ -175,7 +175,7 @@ public static partial class FractionatorWindow {
         //     (SideY + FluidY) / 2,
         //     window.sepLine1.transform.localPosition.z);
 
-        // 流动输出右侧的提示文字，包括配方强化等级、损毁率
+        // 流动输出右侧的提示文字，包括当前配方状态与损毁率
         if (window.oriProductProbText != null) {
             GameObject frGo = Object.Instantiate(window.oriProductProbText.gameObject, window.transform);
             frGo.name = "fluid-right-info";

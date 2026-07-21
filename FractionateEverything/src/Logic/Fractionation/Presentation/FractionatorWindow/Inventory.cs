@@ -109,7 +109,7 @@ public static partial class FractionatorWindow {
 
     private static bool BlockSingleLockManualInsert(UIFractionatorWindow window,
         FractionatorComponent fractionator) {
-        if (window?.factory == null || !ConversionTower.EnableSingleLock) {
+        if (window?.factory == null || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)) {
             return false;
         }
 

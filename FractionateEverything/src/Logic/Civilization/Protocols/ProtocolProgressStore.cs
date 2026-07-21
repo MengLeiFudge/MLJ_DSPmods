@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FE.Logic.Buildings.Migration;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Utils;
 
@@ -56,7 +57,8 @@ public static class ProtocolProgressStore {
             ("Protocols", br => {
                 int count = Math.Max(0, br.ReadInt32());
                 for (int i = 0; i < count; i++) {
-                    RecipeKey recipeKey = new((ERecipe)br.ReadInt32(), br.ReadInt32());
+                    RecipeKey recipeKey = new((ERecipe)br.ReadInt32(),
+                        LegacyProtoMigration.MapItemId(br.ReadInt32()));
                     protocols[recipeKey] = new ProtocolProgress {
                         Discovered = br.ReadBoolean(),
                         Completeness = Math.Max(0, Math.Min(100, br.ReadInt32())),
@@ -68,7 +70,8 @@ public static class ProtocolProgressStore {
                 for (int i = 0; i < count; i++) {
                     string stageKey = br.ReadString();
                     bool hasPreferred = br.ReadBoolean();
-                    RecipeKey preferred = new((ERecipe)br.ReadInt32(), br.ReadInt32());
+                    RecipeKey preferred = new((ERecipe)br.ReadInt32(),
+                        LegacyProtoMigration.MapItemId(br.ReadInt32()));
                     retrievalProgress[stageKey] = new StageRetrievalProgress {
                         HasPreferredRecipe = hasPreferred,
                         PreferredRecipe = preferred,

@@ -98,8 +98,8 @@ public static class RecoveryGuide {
 
         Register("恢复手册步骤-启动套件", "Recover the starter kit", "回收启动套件");
         Register("恢复手册步骤说明-启动套件",
-            "Find the abnormal old-civilization signal and recover the communication module, Interaction Tower, and starter protos.",
-            "前往异常旧文明信号点，回收通信模块、交互塔和初始原胚。");
+            "Find the abnormal old-civilization signal and recover the communication module, Interaction Tower, and common protos.",
+            "前往异常旧文明信号点，回收通信模块、交互塔和通用原胚。");
         Register("恢复手册步骤-打开面板", "Open the data centre", "打开分馏数据中心");
         Register("恢复手册步骤说明-打开面板",
             "Use Shift+F after communication is established. This manual remains available for review.",
@@ -116,14 +116,14 @@ public static class RecoveryGuide {
         Register("恢复手册步骤说明-临时箱子",
             "Use a temporary box to catch the first produced Interaction Tower before the upload tower exists.",
             "先用临时箱子接住第一台产出的交互塔，因为此时还没有第二台上传塔。");
-        Register("恢复手册步骤-输入原胚", "Feed Interaction Tower protos into the loop", "向环输入交互塔原胚");
+        Register("恢复手册步骤-输入原胚", "Feed common protos into the loop", "向环输入通用原胚");
         Register("恢复手册步骤说明-输入原胚",
-            "Do not mix different proto types in the same tower. The Interaction Tower proto produces an Interaction Tower.",
-            "不要在同一台塔里混投不同原胚；交互塔原胚会产出交互塔。");
+            "Common protos randomly cultivate into one of four tower types. Keep each result and continue until an Interaction Tower is produced.",
+            "通用原胚会随机培养为四种塔型之一。保留每次产物并继续培养，直到获得交互塔。");
         Register("恢复手册步骤-获得第二塔", "Produce and place the second Interaction Tower", "获得并放置第二个交互塔");
         Register("恢复手册步骤说明-获得第二塔",
-            "After the first tower produces another Interaction Tower, place it next to the line as the upload tower.",
-            "第一台塔产出新的交互塔后，把它放到产线旁作为上传塔。");
+            "Place the cultivated Interaction Tower next to the line as the upload tower; other tower results remain useful for later production.",
+            "把培养得到的交互塔放到产线旁作为上传塔；其他塔型产物保留用于后续生产。");
         Register("恢复手册步骤-接入上传", "Remove the box and feed the second tower front port", "拆箱并接入第二塔正面");
         Register("恢复手册步骤说明-接入上传",
             "Remove the temporary box, then send the first tower output into the second tower front port.",
@@ -394,9 +394,9 @@ public static class RecoveryGuide {
     private static bool HasStarterKit() {
         return HasDataCenterAccess()
                || GetItemTotalCount(IFE交互塔) > 0
-               || GetItemTotalCount(IFE交互塔原胚) > 0
+               || GetItemTotalCount(IFE通用原胚) > 0
                || DataCenterInventory.centerItemCount[IFE交互塔] > 0
-               || DataCenterInventory.centerItemCount[IFE交互塔原胚] > 0;
+               || DataCenterInventory.centerItemCount[IFE通用原胚] > 0;
     }
 
     private static bool HasDataCenterAccess() {

@@ -9,6 +9,12 @@ namespace FE.Logic.Civilization.Analysis;
 public static class AnalysisService {
     private static readonly int[] baseOpportunityCosts = [8, 12, 18, 28, 42, 64];
 
+    /// <summary>
+    /// 判断物品是否是当前进程配置中的实体解析数据。
+    /// </summary>
+    public static bool IsAnalysisDataItem(int itemId) =>
+        ProgressionProfileRegistry.Current?.GetStageByAnalysisDataItem(itemId) != null;
+
     public static bool TrySubmitDataItem(int itemId, long count, out int generatedOpportunities) {
         generatedOpportunities = 0;
         MatrixStageDefinition stage = ProgressionProfileRegistry.Current?.GetStageByAnalysisDataItem(itemId);

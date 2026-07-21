@@ -892,7 +892,7 @@ public static partial class StationManager {
     /// <param name="value">滑块数值</param>
     /// <returns>限制后的整数值</returns>
     private static int GetClampedPilerCount(float value) {
-        // 获取当前交互站的最大堆叠数（强化等级上限）
+        // 获取当前交互站由全局堆叠科技允许的最大堆叠数
         int maxStack = GetInteractionStationMaxStack();
         // 将滑块浮点值四舍五入为整数
         int newValue = Mathf.RoundToInt(value);
@@ -901,7 +901,7 @@ public static partial class StationManager {
     }
 
     /// <summary>
-    /// 获取物流交互站的最大堆叠数（强化等级）
+    /// 获取物流交互站由全局堆叠科技允许的最大堆叠数
     /// </summary>
     /// <returns>最大堆叠数量</returns>
     private static int GetInteractionStationMaxStack() {

@@ -1,11 +1,9 @@
-﻿using System.IO;
-using BuildBarTool;
+﻿using BuildBarTool;
 using CommonAPI.Systems;
 using FE.Compatibility.Mods;
 using FE.Logic.Progression;
 using UnityEngine;
 using static FE.FractionateEverything;
-using static FE.Logic.Fractionation.Fractionators.BuildingGrowthService;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Station.Definitions;
@@ -19,9 +17,8 @@ public static class InterstellarInteractionStation {
     private static ModelProto model;
     public static Color color = new(0.8f, 0.3f, 0.6f);
 
-    public static int Level => PlanetaryInteractionStation.Level;
     public static int MaxStack => StackingManager.GetLogisticStationMaxStack();
-    public static float InteractEnergyRatio => GetStationInteractEnergyRatioByLevel(Level);
+    public const float InteractEnergyRatio = 1.0f;
     public static long workEnergyPerTick {
         get => model.prefabDesc.workEnergyPerTick;
         set => model.prefabDesc.workEnergyPerTick = value;
@@ -85,27 +82,4 @@ public static class InterstellarInteractionStation {
         workEnergyPerTick = stationModel.prefabDesc.workEnergyPerTick;
         idleEnergyPerTick = stationModel.prefabDesc.idleEnergyPerTick;
     }
-
-    #region IModCanSave
-
-    public static void Import(BinaryReader r) {
-        r.ReadBlocks(
-            //Level与小塔共用一个
-            //("Level", br => { Level = Mathf.Max(0, Mathf.Min(MaxLevel, br.ReadInt32())); })
-        );
-        UpdateHpAndEnergy();
-    }
-
-    public static void Export(BinaryWriter w) {
-        w.WriteBlocks(
-            //Level与小塔共用一个
-            //("Level", bw => bw.Write(Level))
-        );
-    }
-
-    public static void IntoOtherSave() {
-        UpdateHpAndEnergy();
-    }
-
-    #endregion
 }

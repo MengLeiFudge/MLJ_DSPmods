@@ -2,6 +2,9 @@
 
 namespace FE.Logic.Civilization.Technology;
 
+/// <summary>
+/// 标识固定塔型科技节点可投影到运行时的工程能力。
+/// </summary>
 public enum AncientTechEffectType {
     FluidOutputStacking,
     ProductOutputStacking,

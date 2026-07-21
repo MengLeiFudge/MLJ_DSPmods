@@ -8,5 +8,5 @@
 
 ## Rules
 
-- 第三方 They Come From Void 兼容代码放 `Compatibility/DarkFog`。
+- 第三方 They Come From Void 兼容代码放 `Compatibility/Mods/TheyComeFromVoid.cs`。
 - FE 自己的黑雾进度状态放本目录，并接入 `FeatureSaveRegistry`。
