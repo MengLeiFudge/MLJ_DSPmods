@@ -20,7 +20,6 @@ public static class FeatureBootstrap {
 
     public static void AddTranslations() {
         Register("分馏页面", "Fractionate", "分馏");
-        Register("分馏与插件页面", "Frac&Beacon", "分馏&插件");
         ERecipeExtension.AddTranslations();
         OutputInfo.AddTranslations();
         FeUtils.AddTranslations();
