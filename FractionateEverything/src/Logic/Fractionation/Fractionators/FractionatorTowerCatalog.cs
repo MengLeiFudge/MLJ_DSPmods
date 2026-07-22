@@ -1,4 +1,5 @@
-﻿using static FE.Utils.Utils;
+﻿using FE.Logic.Fractionation.FracRecipes;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -37,6 +38,19 @@ public static class FractionatorTowerCatalog {
             IFE资源塔 => 2,
             IFE转化塔 => 3,
             _ => -1,
+        };
+    }
+
+    /// <summary>
+    /// 获取活动分馏塔建筑对应的配方分支；未知建筑返回零值。
+    /// </summary>
+    public static ERecipe GetRecipeType(int buildingId) {
+        return buildingId switch {
+            IFE交互塔 => ERecipe.BuildingTrain,
+            IFE解析塔 => ERecipe.Rectification,
+            IFE资源塔 => ERecipe.MineralCopy,
+            IFE转化塔 => ERecipe.Conversion,
+            _ => (ERecipe)0,
         };
     }
 

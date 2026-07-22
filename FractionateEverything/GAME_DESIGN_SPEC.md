@@ -285,8 +285,8 @@ RecipeKey = (ERecipe RecipeType, int InputId)
 - `Logic/Civilization/Technology/AncientTechTreeState.cs`
 - `Logic/Civilization/Technology/AncientTechTreeService.cs`
 - `Logic/Fractionation/Fractionators/TowerRuntimeModifierCache.cs`
-- `Logic/Fractionation/Fractionators/ConversionSingleLock.cs`
-- `Logic/Fractionation/Fractionators/AnalysisLineageTarget.cs`
+- `Logic/Fractionation/Fractionators/FractionatorMainOutputLock.cs`
+- `Logic/Fractionation/Fractionators/AnalysisLineageTarget.cs`（只读旧状态兼容）
 - `Logic/Fractionation/Fractionators/FractionatorByproductDiscard.cs`
 - `Logic/Fractionation/Process/ProcessManager.cs`
 
@@ -322,6 +322,8 @@ PrerequisiteNodeKey
 
 购买要求至少完成一个协议阶段，并且前置节点已解锁。同一塔型的所有实体塔共享节点状态。
 
+每项能力分别维护自己的授权与执行逻辑，但四塔必须都接入该项能力的同一入口。每塔状态可以分别为启用或未解锁；不得按塔型、配方类、主产物数量或副产物数量省略能力字段或 UI 行。当前配方无可用效果时显示对应的无目标/无副产物状态。
+
 能力语义：
 
 - `EnableFluidOutputStacking`：流动物品按塔当前堆叠上限整组输出。
@@ -349,7 +351,7 @@ AND 当前实体塔已保存对应设置
 5S
 ```
 
-交互塔通用孵化、转化塔多主产物和解析塔谱系分化分别保存实例目标。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。
+四塔统一使用 `LockedOutput` 保存主路目标。交互塔通用孵化、转化塔多主产物和解析塔谱系分化仍分别提供自己的候选集合与结算算法；资源塔等当前只有单一主产物的配方保留主路锁定状态和 UI，但显示当前无可选目标。主路锁定只作用于 `OutputMain`；副产物弃置只作用于 `OutputAppend`。
 
 批量结算只按实际产出成功数调用 `RecordSuccesses`。副产物批量补救按缺失成功次数和本批次已观察副产物命中率计算：
 
@@ -359,7 +361,7 @@ RollBinomialApprox(
     producedHits / rolledSuccessCount)
 ```
 
-三个实例状态通过 `FractionatorBlueprintParameters` 的共享 `Upsert/TryRead` 写入同一蓝图参数数组，互不覆盖；同时接入存档、复制粘贴和 Nebula packet type `2/3/4`。
+主路目标和副产物弃置通过 `FractionatorBlueprintParameters` 的共享 `Upsert/TryRead` 写入同一蓝图参数数组，互不覆盖；同时接入存档、复制粘贴和 Nebula packet type `2/4`。旧解析谱系蓝图参数和 packet type `3` 只作为兼容输入读取并迁入主路目标，新状态不再写出。
 
 ## 8. 成就与长期目标
 
@@ -430,7 +432,7 @@ Recovery
 
 定义目录不保存，只保存当前存档状态；导入后统一重建运行投影。首版试验使用的顶层 `Civilization` 块不注册读取，由通用未知块机制跳过；其中的协议、解析、科技点和成就不折算、不迁移，新结构从 `AncientCivilization` 空状态开始。旧 `Gacha`、`Economy`、`RecipeGrowth`、旧主面板页面和旧顶层文明恢复块同样不读取或导出。
 
-`BuildingManager` 保存配方累计成功和实例运行设置。解析谱系目标导入同时识别旧块名 `RectificationTuningTarget` 与当前块名 `AnalysisLineageTarget`，用于同一现役状态的名称兼容。
+`BuildingManager` 保存配方累计成功和实例运行设置。四塔主路目标统一写入 `LockedOutput`。导入仍识别旧解析谱系块名 `RectificationTuningTarget` 与 `AnalysisLineageTarget`，并将其中状态合并到通用主路目标；旧蓝图的谱系参数块同样作为兼容输入读取，新存档和新蓝图不再单独写出谱系目标。
 
 Nebula 文明同步采用主机权威模型：
 

@@ -5,8 +5,6 @@ using FE.Compatibility.Nebula;
 using FE.Logic.Fractionation.FracRecipes;
 using HarmonyLib;
 using NebulaAPI;
-using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
-using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Fractionators;
 
@@ -82,16 +80,12 @@ public static class FractionatorByproductDiscard {
             return false;
         }
 
-        ERecipe recipeType = GetRecipeType(factory.entityPool[fractionator.entityId].protoId);
+        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(factory.entityPool[fractionator.entityId].protoId);
         if (recipeType == (ERecipe)0 || !TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipeType)) {
             return false;
         }
-        if (fractionator.fluidId == 0) {
-            return true;
-        }
-
-        BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, fractionator.fluidId);
-        return recipe != null && recipe.OutputAppend.Count > 0 && recipe.IsByproductDiscardCalibrated;
+        // 实例开关独立于当前配方保存；校准和副产物存在性只决定运行时是否产生效果。
+        return true;
     }
 
     public static bool GetNormalizedByproductDiscard(this FractionatorComponent fractionator,
@@ -126,16 +120,6 @@ public static class FractionatorByproductDiscard {
         }
     }
 
-    private static ERecipe GetRecipeType(int buildingId) {
-        return buildingId switch {
-            IFE交互塔 => ERecipe.BuildingTrain,
-            IFE解析塔 => ERecipe.Rectification,
-            IFE资源塔 => ERecipe.MineralCopy,
-            IFE转化塔 => ERecipe.Conversion,
-            _ => (ERecipe)0,
-        };
-    }
-
     private static bool TryGetFractionator(PlanetFactory factory, int entityId,
         out FractionatorComponent fractionator) {
         fractionator = default;
@@ -143,7 +127,8 @@ public static class FractionatorByproductDiscard {
             return false;
         }
         EntityData entity = factory.entityPool[entityId];
-        if (entity.id != entityId || GetRecipeType(entity.protoId) == (ERecipe)0 || entity.fractionatorId <= 0) {
+        if (entity.id != entityId || FractionatorTowerCatalog.GetRecipeType(entity.protoId) == (ERecipe)0
+            || entity.fractionatorId <= 0) {
             return false;
         }
         fractionator = factory.factorySystem.fractionatorPool[entity.fractionatorId];
@@ -189,7 +174,7 @@ public static class FractionatorByproductDiscard {
             return false;
         }
         ref PrebuildData prebuild = ref factory.prebuildPool[prebuildId];
-        return prebuild.id == prebuildId && GetRecipeType(prebuild.protoId) != (ERecipe)0
+        return prebuild.id == prebuildId && FractionatorTowerCatalog.GetRecipeType(prebuild.protoId) != (ERecipe)0
                && TryReadParameter(prebuild.parameters, out enabled);
     }
 

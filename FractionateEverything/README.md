@@ -67,14 +67,17 @@ analysis; unfinished auxiliary protocols remain available through guaranteed-eff
 
 `流动输出堆叠 → 产物输出堆叠 → 分馏永动 → 主路锁定 → 副产物弃置`
 
-节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力均已接入运行逻辑。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。
+节点有真实前置关系和递增价格，同类所有实体塔共享解锁状态。五项能力彼此独立，但每一项都以相同结构覆盖四类塔；每塔可以处于不同解锁状态，当前配方没有可用效果时仍显示该能力及其无目标状态，而不会整项消失。主路锁定和副产物弃置还要求当前配方累计成功次数达到校准门槛，并由单座塔保存目标或开关；这些实例状态随存档、复制粘贴、蓝图和联机同步。四塔共用主路目标状态，解析塔谱系分化继续使用自己的候选与结算规则。主路锁定只选择主产物，副产物弃置只销毁副产物且不提供补偿。系统设置中的“始终显示完整分馏配方信息”开启后，会在所有分馏塔窗口和配方页面直接显示产物名称、数量和概率。
 
 After all required protocols in a stage are complete, later broad retrievals become deep analysis and award the single
 ancient technology point type. The tree has four parallel vertical paths for Interaction, Analysis, Resource, and Conversion
-Towers. All five shared abilities are active. Main-output locking and byproduct discard additionally require recipe
-calibration through actual successful production and per-building settings. Those settings persist through saves,
-copy/paste, blueprints, and multiplayer sync. Locking only selects main outputs; discard destroys side outputs without
-compensation.
+Towers. The five abilities remain independent, but each ability uses the same structure across all four tower types.
+A tower may have a different enabled state, while recipes with no current effect still display the ability instead of
+omitting it. Main-output locking and byproduct discard additionally require recipe calibration and per-building settings.
+Those settings persist through saves, copy/paste, blueprints, and multiplayer sync. All towers share the main-output target
+state; analysis lineage keeps its recipe-specific candidates and settlement rules. Locking only selects main outputs, and
+discard destroys side outputs without compensation. The "Always show complete fractionation recipe information" setting
+reveals product names, amounts, and probabilities in every fractionator window and recipe page.
 
 ### 文明成就 Civilization Achievements
 

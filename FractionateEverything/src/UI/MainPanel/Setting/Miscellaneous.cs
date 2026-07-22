@@ -116,10 +116,10 @@ public static class Miscellaneous {
             "To ensure consistent processing logic, this value cannot be modified in multiplayer games. You can change it in single player mode and save it before playing online.",
             "为保证处理逻辑一致，多人游戏中无法修改此值。你可以在单人模式修改并保存后再联机游玩。");
 
-        Register("显示分馏配方详细信息", "Show fractionate recipe details");
-        Register("显示分馏配方详细信息说明",
-            "Fractionation recipe details include the name, number, and probability of all products of the recipe.\nWhen disabled, the relevant information is gradually unlocked with the number of successful fractionate counts. When enabled, the relevant information is displayed directly.",
-            "分馏配方详细信息包括配方所有产物的名称、数目、概率。\n禁用时，相关信息会随着分馏成功的次数逐渐解锁。启用时，相关信息会直接显示。");
+        Register("始终显示完整分馏配方信息", "Always show complete fractionation recipe information");
+        Register("始终显示完整分馏配方信息说明",
+            "When enabled, all product names, amounts, and probabilities are shown without requiring accumulated production.\nWhen disabled, this information is gradually revealed as the recipe produces items.",
+            "开启后，无需累计产出即可直接显示全部产物的名称、数量和概率。\n关闭后，相关信息仍随该配方的累计产出逐步公开。");
         Register("启用确认弹窗", "Enable confirmation dialogs", "启用确认弹窗");
         Register("启用确认弹窗说明",
             "When disabled, FE's own question dialogs execute the confirm branch directly. Warning/info dialogs are not affected.",
@@ -162,7 +162,7 @@ public static class Miscellaneous {
         }
 
         ShowFractionateRecipeDetailsEntry =
-            configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "显示分馏配方详细信息");
+            configFile.Bind("Miscellaneous", "ShowFractionateRecipeDetails", false, "始终显示完整分馏配方信息");
         EnableConfirmationDialogEntry =
             configFile.Bind("Miscellaneous", "EnableConfirmationDialog", true, "启用确认弹窗");
 
@@ -205,8 +205,8 @@ public static class Miscellaneous {
                 onSliderBuilt: s => UploadThresholdSlider = s,
                 onTipBuilt: t => UploadThresholdTipsButton2 = t,
                 pos: (++rowIdx, 0), objectName: "misc-upload-threshold"),
-            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "显示分馏配方详细信息",
-                tipTitle: "显示分馏配方详细信息", tipContent: "显示分馏配方详细信息说明",
+            CheckBoxNode(ShowFractionateRecipeDetailsEntry, "始终显示完整分馏配方信息",
+                tipTitle: "始终显示完整分馏配方信息", tipContent: "始终显示完整分馏配方信息说明",
                 pos: (++rowIdx, 0), objectName: "misc-show-recipe-details"),
             CheckBoxNode(EnableConfirmationDialogEntry, "启用确认弹窗",
                 tipTitle: "启用确认弹窗", tipContent: "启用确认弹窗说明",

@@ -405,7 +405,8 @@ public class BuildingChangePacketProcessor : BasePacketProcessor<BuildingChangeP
                 FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
             case 3:
-                AnalysisLineageTarget.ApplyLineageTargetPacket(packet.planetId, packet.entityId, packet.itemId);
+                // 兼容旧版解析谱系目标包；新版四塔统一使用主路目标包类型 2。
+                FractionatorSingleLock.ApplyLockedOutputPacket(packet.planetId, packet.entityId, packet.itemId);
                 break;
             case 4:
                 FractionatorByproductDiscard.ApplyPacket(packet.planetId, packet.entityId, packet.itemId != 0);

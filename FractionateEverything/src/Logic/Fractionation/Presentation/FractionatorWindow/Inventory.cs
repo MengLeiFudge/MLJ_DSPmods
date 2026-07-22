@@ -4,8 +4,8 @@ using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.Process;
 using HarmonyLib;
-using static FE.Utils.Utils;
 using static FE.Logic.DataCenter.PlayerInventoryAccess;
+using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
 
@@ -109,12 +109,14 @@ public static partial class FractionatorWindow {
 
     private static bool BlockSingleLockManualInsert(UIFractionatorWindow window,
         FractionatorComponent fractionator) {
-        if (window?.factory == null || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)) {
+        if (window?.factory == null) {
             return false;
         }
 
         int buildingId = window.factory.entityPool[fractionator.entityId].protoId;
-        return buildingId == IFE转化塔 && fractionator.GetNormalizedLockedOutput(window.factory) != 0;
+        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(buildingId);
+        return TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)
+               && fractionator.GetNormalizedLockedOutput(window.factory) != 0;
     }
 
     /// <summary>

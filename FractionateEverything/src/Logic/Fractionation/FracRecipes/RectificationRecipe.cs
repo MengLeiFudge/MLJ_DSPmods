@@ -17,11 +17,6 @@ public sealed class RectificationRecipe : BaseRecipe {
         LineageDifferentiation,
     }
 
-    /// <summary>
-    /// 保存热路径为当前解析塔实例设置的谱系目标；主路锁定接入前保持为零。
-    /// </summary>
-    public static int CurrentLineageTargetId;
-
     private static readonly int[] MatrixInputs = [
         I电磁矩阵,
         I能量矩阵,
@@ -67,14 +62,6 @@ public sealed class RectificationRecipe : BaseRecipe {
     /// 获取该实例对应的解析塔行为类型。
     /// </summary>
     public RectificationRecipeKind Kind { get; }
-
-    /// <summary>
-    /// 判断物品是否属于谱系分化配方的可选主产物。
-    /// </summary>
-    public bool SupportsLineageTarget(int itemId) {
-        return Kind == RectificationRecipeKind.LineageDifferentiation
-               && OutputMain.Exists(output => output.OutputID == itemId);
-    }
 
     /// <summary>
     /// 初始化一项矩阵解析或谱系分化配方。
@@ -166,10 +153,10 @@ public sealed class RectificationRecipe : BaseRecipe {
     }
 
     private OutputInfo GetDirectedOutputInfo() {
-        if (Kind != RectificationRecipeKind.LineageDifferentiation || CurrentLineageTargetId == 0) {
+        if (Kind != RectificationRecipeKind.LineageDifferentiation || CurrentMainOutputTargetId == 0) {
             return null;
         }
-        return OutputMain.Find(output => output.OutputID == CurrentLineageTargetId);
+        return OutputMain.Find(output => output.OutputID == CurrentMainOutputTargetId);
     }
 
     private OutputInfo RollMainOutput(ref uint seed) {

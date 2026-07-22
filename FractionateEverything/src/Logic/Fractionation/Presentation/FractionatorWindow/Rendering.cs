@@ -7,6 +7,7 @@ using FE.Logic.Fractionation.Fractionators;
 using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.FracRecipes.Runtime;
 using FE.Logic.Fractionation.Process;
+using FE.UI.MainPanel.Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using static FE.Logic.Fractionation.Process.ProcessManager;
@@ -126,17 +127,12 @@ public static partial class FractionatorWindow {
 
         // 配方和产物区
         BaseRecipe recipe = GetRecipeForBuilding(buildingID, fractionator.fluidId);
-        int lockedOutputId = buildingID is IFE交互塔 or IFE转化塔
-            ? fractionator.GetNormalizedLockedOutput(src.factory)
-            : 0;
-        int lineageTargetId = buildingID == IFE解析塔
-            ? fractionator.GetNormalizedLineageTarget(src.factory)
-            : 0;
+        int lockedOutputId = fractionator.GetNormalizedLockedOutput(src.factory);
 
         int avgInc = fractionator.fluidInputCount > 0 ? fractionator.fluidInputInc / fractionator.fluidInputCount : 0;
         float pointsBonus = (float)MaxTableMilli(avgInc);
 
-        float recipeSuccessRatio = 0f, mainOutputBonus = 1f, destroyRatio = 0f;
+        float recipeSuccessRatio = 0f, destroyRatio = 0f;
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             float successBoost = RecipeModifierCache.GetSuccessRateBonus(recipe);
             recipeSuccessRatio = recipe.SuccessRatio * (1 + successBoost);
@@ -144,8 +140,7 @@ public static partial class FractionatorWindow {
             destroyRatio = recipe.DestroyRatio;
         }
 
-        UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, mainOutputBonus, destroyRatio, hasFluid,
-            lockedOutputId, lineageTargetId);
+        UpdateUIElements(src, fractionator, recipe, recipeSuccessRatio, destroyRatio, hasFluid, lockedOutputId);
     }
 
     private static void UpdateModStateText(UIFractionatorWindow src,
@@ -237,27 +232,22 @@ public static partial class FractionatorWindow {
 
     private static void UpdateUIElements(UIFractionatorWindow src,
         FractionatorComponent fractionator, BaseRecipe recipe,
-        float recipeSuccessRatio, float mainOutputBonus, float destroyRatio, bool hasFluid, int lockedOutputId,
-        int lineageTargetId) {
+        float recipeSuccessRatio, float destroyRatio, bool hasFluid, int lockedOutputId) {
 
         List<ProductOutputInfo> products = fractionator.products(src.factory);
-        bool sandboxMode = GameMain.sandboxToolsEnabled;
+        bool showCompleteRecipeInformation = GameMain.sandboxToolsEnabled
+                                             || Miscellaneous.ShowFractionateRecipeDetails;
         int buildingID = src.factory.entityPool[fractionator.entityId].protoId;
-        RectificationRecipe rectificationRecipe = recipe as RectificationRecipe;
-        bool showLockControls = buildingID is IFE交互塔 or IFE转化塔
+        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(buildingID);
+        bool mainOutputLockUnlocked = TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType);
+        bool showLockControls = mainOutputLockUnlocked
                                 && recipe != null
-                                && recipe.IsMainOutputLockCalibrated
-                                && recipe.OutputMain.Count > 1
-                                && TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipe.RecipeType);
-        bool showLineageControls = buildingID == IFE解析塔
-                                  && TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Rectification)
-                                  && rectificationRecipe != null
-                                  && rectificationRecipe.IsMainOutputLockCalibrated
-                                  && rectificationRecipe.Kind == RectificationRecipe.RectificationRecipeKind.LineageDifferentiation;
-        bool showDiscardControls = recipe != null
+                                && recipe.IsMainOutputLockCalibrated;
+        bool byproductDiscardUnlocked = TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipeType);
+        bool showDiscardControls = byproductDiscardUnlocked
+                                   && recipe != null
                                    && recipe.OutputAppend.Count > 0
-                                   && recipe.IsByproductDiscardCalibrated
-                                   && TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType);
+                                   && recipe.IsByproductDiscardCalibrated;
         bool discardByproducts = showDiscardControls && fractionator.GetNormalizedByproductDiscard(src.factory);
 
         foreach (var slot in mainSlots)
@@ -281,8 +271,8 @@ public static partial class FractionatorWindow {
             if (_sideArrowText != null) _sideArrowText.gameObject.SetActive(false);
             if (_fluidArrowText != null) _fluidArrowText.gameObject.SetActive(false);
             if (fluidRightText != null) fluidRightText.gameObject.SetActive(false);
-            UpdateTargetStatusUI(recipe, lockedOutputId, showLockControls,
-                rectificationRecipe, lineageTargetId, showLineageControls, showDiscardControls, discardByproducts);
+            UpdateTargetStatusUI(recipe, lockedOutputId, mainOutputLockUnlocked,
+                byproductDiscardUnlocked, discardByproducts);
             if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
             if (modWindow.oriProductIcon != null) ((Behaviour)modWindow.oriProductIcon).enabled = false;
             if (modWindow.oriProductCountText != null) ((Behaviour)modWindow.oriProductCountText).enabled = false;
@@ -299,10 +289,6 @@ public static partial class FractionatorWindow {
         bool singleLockActive = showLockControls
                                 && lockedOutputId != 0
                                 && IsLockableOutput(recipe, lockedOutputId);
-        bool lineageTargetActive = showLineageControls
-                                  && lineageTargetId != 0
-                                  && rectificationRecipe != null
-                                  && rectificationRecipe.SupportsLineageTarget(lineageTargetId);
 
         if (recipe != null && RecipeAvailabilityStore.IsAvailable(recipe)) {
             foreach (var output in recipe.OutputMain) {
@@ -310,16 +296,12 @@ public static partial class FractionatorWindow {
                 var pInfo = products.Find(p => p.itemId == output.OutputID && p.isMainOutput);
                 float ratio = singleLockActive
                     ? (output.OutputID == lockedOutputId ? recipeSuccessRatio : 0f)
-                    : lineageTargetActive
-                        ? (output.OutputID == lineageTargetId ? recipeSuccessRatio : 0f)
-                        : recipeSuccessRatio * output.SuccessRatio;
+                    : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(mainSlots[mainCount], output, pInfo?.count ?? 0,
                     ratio,
-                    singleLockActive || lineageTargetActive || output.ShowSuccessRatio || sandboxMode,
+                    singleLockActive || output.ShowSuccessRatio || showCompleteRecipeInformation,
                     ProductSlotKind.Main);
-                SetSlotLocked(mainSlots[mainCount],
-                    singleLockActive && output.OutputID == lockedOutputId
-                    || lineageTargetActive && output.OutputID == lineageTargetId);
+                SetSlotLocked(mainSlots[mainCount], singleLockActive && output.OutputID == lockedOutputId);
                 mainSuccessSum += ratio;
                 mainCount++;
             }
@@ -329,7 +311,7 @@ public static partial class FractionatorWindow {
                 float ratio = discardByproducts ? 0f : recipeSuccessRatio * output.SuccessRatio;
                 FillSlot(sideSlots[sideCount], output, pInfo?.count ?? 0,
                     ratio,
-                    discardByproducts || output.ShowSuccessRatio || sandboxMode,
+                    discardByproducts || output.ShowSuccessRatio || showCompleteRecipeInformation,
                     ProductSlotKind.Side);
                 SetSlotLocked(sideSlots[sideCount], discardByproducts);
                 sideCount++;
@@ -352,8 +334,8 @@ public static partial class FractionatorWindow {
             _fluidArrowText.color = ProbColor;
         }
         if (modWindow.oriProductBox != null) modWindow.oriProductBox.SetActive(false);
-        UpdateTargetStatusUI(recipe, lockedOutputId, showLockControls,
-            rectificationRecipe, lineageTargetId, showLineageControls, showDiscardControls, discardByproducts);
+        UpdateTargetStatusUI(recipe, lockedOutputId, mainOutputLockUnlocked,
+            byproductDiscardUnlocked, discardByproducts);
 
         // 流体输出右侧信息
         if (fluidRightText != null) {

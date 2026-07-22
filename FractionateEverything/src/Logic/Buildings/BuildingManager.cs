@@ -173,7 +173,6 @@ public static partial class BuildingManager {
         w.WriteBlocks(
             ("OutputExtend", FractionatorOutputState.OutputExtendExport),
             ("LockedOutput", FractionatorSingleLock.LockedOutputExport),
-            ("AnalysisLineageTarget", AnalysisLineageTarget.LineageTargetExport),
             ("FractionatorByproductDiscard", FractionatorByproductDiscard.Export)
         );
     }
@@ -181,7 +180,6 @@ public static partial class BuildingManager {
     public static void IntoOtherSave() {
         FractionatorOutputState.OutputExtendIntoOtherSave();
         FractionatorSingleLock.LockedOutputIntoOtherSave();
-        AnalysisLineageTarget.LineageTargetIntoOtherSave();
         FractionatorByproductDiscard.IntoOtherSave();
     }
 

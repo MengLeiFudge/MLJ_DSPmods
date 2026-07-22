@@ -47,6 +47,10 @@ public static partial class ProcessManager {
         Register("配方强化", "Recipe enhancement");
         Register("单锁", "Main Route Lock", "主路锁定");
         Register("未锁定", "Not locked");
+        Register("未校准", "Not calibrated");
+        Register("等待配方", "Waiting for recipe");
+        Register("当前无可选主产物", "No selectable main product for the current recipe");
+        Register("当前无副产物", "No byproducts for the current recipe");
         Register("主路目标", "Main route target");
         Register("右键设为单锁", "Right-click to set main route target", "右键设为主路目标");
         Register("右键清除单锁", "Right-click to clear main route target", "右键清除主路目标");
@@ -224,8 +228,6 @@ public static partial class ProcessManager {
         int entityId = __instance.entityId;
         int buildingID = factory.entityPool[entityId].protoId;
         bool isInteractionTower = buildingID == IFE交互塔;
-        bool isConversionTower = buildingID == IFE转化塔;
-        bool isRectificationTower = buildingID == IFE解析塔;
         //所有产物输出
         FractionatorOutputState.FractionatorExtraState extraState = __instance.GetExtraState(factory);
         List<ProductOutputInfo> products = extraState.Products;
@@ -252,14 +254,8 @@ public static partial class ProcessManager {
                 signPool[entityId].iconId0 = 0;
                 signPool[entityId].iconType = 0U;
             }
-            if (isInteractionTower || isConversionTower) {
-                __instance.SetLockedOutput(factory,
-                    __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
-            }
-            if (isRectificationTower) {
-                __instance.SetLineageTarget(factory,
-                    __instance.NormalizeLineageTarget(factory, __instance.GetLineageTarget(factory)));
-            }
+            __instance.SetLockedOutput(factory,
+                __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
             if (needResetProducts) {
                 extraState.MarkRuntimeSchema(recipeType, fluidId, null, __instance.productId, null);
             }
@@ -284,15 +280,9 @@ public static partial class ProcessManager {
                 foreach (OutputInfo info in recipe.OutputAppend) {
                     products.Add(new(false, info.OutputID, 0));
                 }
-                // C8: 单路锁定 - 配方变化时按新配方校验，兼容复制粘贴/蓝图带过来的预设锁定。
-                if (isInteractionTower || isConversionTower) {
-                    __instance.SetLockedOutput(factory,
-                        __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
-                }
-                if (isRectificationTower) {
-                    __instance.SetLineageTarget(factory,
-                        __instance.NormalizeLineageTarget(factory, __instance.GetLineageTarget(factory)));
-                }
+                // 配方变化时按新配方校验四塔共用的主路目标，兼容复制粘贴和蓝图预设。
+                __instance.SetLockedOutput(factory,
+                    __instance.NormalizeLockedOutput(factory, __instance.GetLockedOutput(factory)));
             }
             int productId = __instance.productId;
             product0 = products.Count > 0 && products[0].itemId == productId
@@ -401,31 +391,15 @@ public static partial class ProcessManager {
                 } else {
                     float pointsBonus = (float)MaxTableMilli(fluidInputIncAvg) * plrRatio;
                     float successBoost = RecipeModifierCache.GetSuccessRateBonus(recipe);
-                    // C8: 单路锁定 - 在调用 GetOutputs 前设置当前锁定产物ID
-                    if (isInteractionTower) {
-                        BaseRecipe.CurrentMainOutputTargetId = __instance.GetNormalizedLockedOutput(factory);
-                    }
-                    if (isConversionTower) {
-                        ConversionRecipe.CurrentLockedOutputId = __instance.GetNormalizedLockedOutput(factory);
-                    }
-                    if (isRectificationTower) {
-                        RectificationRecipe.CurrentLineageTargetId = __instance.GetNormalizedLineageTarget(factory);
-                    }
+                    // 四塔共用同一个主路目标入口；具体配方只负责解释候选目标和结算数量。
+                    BaseRecipe.CurrentMainOutputTargetId = __instance.GetNormalizedLockedOutput(factory);
                     perfDetailStart = GetFractionatorPerfTimestamp();
                     try {
                         batchResult = recipe.GetOutputsBatchFast(ref __instance.seed, pointsBonus, successBoost,
                             batchCount, fluidInputIncAvg, ref __instance.fluidInputInc, outputBuffer);
                     }
                     finally {
-                        if (isInteractionTower) {
-                            BaseRecipe.CurrentMainOutputTargetId = 0;
-                        }
-                        if (isConversionTower) {
-                            ConversionRecipe.CurrentLockedOutputId = 0;
-                        }
-                        if (isRectificationTower) {
-                            RectificationRecipe.CurrentLineageTargetId = 0;
-                        }
+                        BaseRecipe.CurrentMainOutputTargetId = 0;
                     }
                     RecordFractionatorPerfDetail(FractionatorPerfDetailProcessGetOutputs,
                         GetFractionatorPerfElapsed(perfDetailStart));
@@ -637,9 +611,7 @@ public static partial class ProcessManager {
                 if (products.Count > 0) {
                     //获取分馏塔产物输出堆叠
                     int productStack = enableProductOutputStacking ? maxStack : 1;
-                    int lockedOutputId = (isInteractionTower || isConversionTower)
-                        ? __instance.GetNormalizedLockedOutput(factory)
-                        : 0;
+                    int lockedOutputId = __instance.GetNormalizedLockedOutput(factory);
                     ProductOutputInfo product = SelectProductForBeltOutput(products, productStack, lockedOutputId,
                         out bool flushNonLockedProduct);
                     //输出产物
@@ -705,9 +677,8 @@ public static partial class ProcessManager {
                 extraState.InvalidateFullProductCache();
                 signPool[entityId].iconId0 = 0;
                 signPool[entityId].iconType = 0U;
-                // C8: 单路锁定 - 缓存区清空后保留实体级锁定，允许空塔预设目标产物。
-                if ((isInteractionTower || isConversionTower)
-                    && !TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)) {
+                // 缓存区清空后保留实体级主路目标；只有对应科技未解锁时才清除。
+                if (!TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)) {
                     __instance.SetLockedOutput(factory, 0);
                 }
             }

@@ -280,6 +280,10 @@ public static class FracRecipeOperate {
             TowerRuntimeModifierCache.IsProductOutputStackingEnabled(recipe.RecipeType))}");
         text.AppendLine($"{"分馏永动".Translate()}：{GetSwitchText(
             TowerRuntimeModifierCache.IsFractionationForeverEnabled(recipe.RecipeType))}");
+        text.AppendLine($"{"主路锁定".Translate()}：{GetSwitchText(
+            TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipe.RecipeType))}");
+        text.AppendLine($"{"副产物弃置".Translate()}：{GetSwitchText(
+            TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType))}");
         return text.ToString();
     }
 

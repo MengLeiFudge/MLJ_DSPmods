@@ -135,7 +135,7 @@ public static partial class FractionatorWindow {
         foreach (var slot in mainSlots) {
             if (slot?.button != null) {
                 slot.clickHandler = itemId => OnSlotClick(slot, itemId);
-                slot.rightClickHandler = OnSlotRightClick;
+                slot.rightClickHandler = itemId => OnSlotRightClick(slot, itemId);
                 slot.button.onClick += slot.clickHandler;
                 slot.button.onRightClick += slot.rightClickHandler;
             }
@@ -143,7 +143,7 @@ public static partial class FractionatorWindow {
         foreach (var slot in sideSlots) {
             if (slot?.button != null) {
                 slot.clickHandler = itemId => OnSlotClick(slot, itemId);
-                slot.rightClickHandler = OnSlotRightClick;
+                slot.rightClickHandler = itemId => OnSlotRightClick(slot, itemId);
                 slot.button.onClick += slot.clickHandler;
                 slot.button.onRightClick += slot.rightClickHandler;
             }

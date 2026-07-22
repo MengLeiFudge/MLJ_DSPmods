@@ -14,7 +14,7 @@ using static FE.Utils.Utils;
 namespace FE.Logic.Fractionation.Fractionators;
 
 /// <summary>
-/// 分馏塔主路锁定状态、交互和存档逻辑。
+/// 四类分馏塔共用的主路锁定状态、交互和存档逻辑。
 /// </summary>
 public static class FractionatorSingleLock {
     #region 分馏塔锁定
@@ -26,6 +26,8 @@ public static class FractionatorSingleLock {
     private static readonly ConcurrentDictionary<(int, int), int> lockedOutputDic = [];
     private const int LockedOutputParamMagic = 0x4C4F434B;
     private const int LockedOutputParamVersion = 1;
+    private const int LegacyLineageTargetParamMagic = 0x54554E45;
+    private const int LegacyLineageTargetParamVersion = 1;
     private static bool hasLockedOutputClipboard;
     private static int lockedOutputClipboardItemId;
 
@@ -57,6 +59,15 @@ public static class FractionatorSingleLock {
             w.Write(p.Key.Item1);
             w.Write(p.Key.Item2);
             w.Write(p.Value);
+        }
+    }
+
+    /// <summary>
+    /// 合并旧解析谱系目标；新版通用主路目标已经存在时不覆盖。
+    /// </summary>
+    public static void TryAddLegacyLockedOutput(int planetId, int entityId, int itemId) {
+        if (planetId > 0 && entityId > 0 && itemId > 0) {
+            lockedOutputDic.TryAdd((planetId, entityId), itemId);
         }
     }
 
@@ -113,7 +124,7 @@ public static class FractionatorSingleLock {
         }
         EntityData entityData = factory.entityPool[entityId];
         if (entityData.id != entityId
-            || entityData.protoId is not (IFE交互塔 or IFE转化塔)
+            || !FractionatorTowerCatalog.IsActiveFractionator(entityData.protoId)
             || entityData.fractionatorId <= 0) {
             return false;
         }
@@ -163,11 +174,7 @@ public static class FractionatorSingleLock {
         }
 
         int buildingId = factory.entityPool[fractionator.entityId].protoId;
-        ERecipe recipeType = buildingId switch {
-            IFE交互塔 => ERecipe.BuildingTrain,
-            IFE转化塔 => ERecipe.Conversion,
-            _ => (ERecipe)0,
-        };
+        ERecipe recipeType = FractionatorTowerCatalog.GetRecipeType(buildingId);
         if (recipeType == (ERecipe)0 || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)) {
             return 0;
         }
@@ -178,9 +185,6 @@ public static class FractionatorSingleLock {
         BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, fractionator.fluidId);
         if (recipe == null || !recipe.IsMainOutputLockCalibrated) {
             return 0;
-        }
-        if (recipe is ConversionRecipe conversionRecipe) {
-            return conversionRecipe.TryGetLockedOutputPlan(itemId, out _) ? itemId : 0;
         }
         return recipe.SupportsMainOutputLock(itemId) ? itemId : 0;
     }
@@ -201,9 +205,14 @@ public static class FractionatorSingleLock {
         FractionatorBlueprintParameters.Upsert(parameters, LockedOutputParamMagic, LockedOutputParamVersion,
             lockedItemId);
 
-    private static bool TryReadLockedOutputParam(int[] parameters, out int lockedItemId) =>
-        FractionatorBlueprintParameters.TryRead(parameters, LockedOutputParamMagic, LockedOutputParamVersion,
-            out lockedItemId);
+    private static bool TryReadLockedOutputParam(int[] parameters, out int lockedItemId) {
+        if (FractionatorBlueprintParameters.TryRead(parameters, LockedOutputParamMagic, LockedOutputParamVersion,
+                out lockedItemId)) {
+            return true;
+        }
+        return FractionatorBlueprintParameters.TryRead(parameters, LegacyLineageTargetParamMagic,
+            LegacyLineageTargetParamVersion, out lockedItemId);
+    }
 
     private static bool TryGetBlueprintLockedOutput(PlanetFactory factory, int objectId, out int lockedItemId) {
         lockedItemId = 0;
@@ -222,7 +231,7 @@ public static class FractionatorSingleLock {
             return false;
         }
         ref PrebuildData prebuild = ref factory.prebuildPool[prebuildId];
-        if (prebuild.id != prebuildId || prebuild.protoId is not (IFE交互塔 or IFE转化塔)) {
+        if (prebuild.id != prebuildId || !FractionatorTowerCatalog.IsActiveFractionator(prebuild.protoId)) {
             return false;
         }
         TryReadLockedOutputParam(prebuild.parameters, out lockedItemId);
@@ -335,7 +344,6 @@ public static class FractionatorSingleLock {
         }
         lockedOutputDic.TryRemove((__instance.planetId, id), out _);
         FractionatorByproductDiscard.Clear(__instance, id);
-        AnalysisLineageTarget.ClearLineageTarget(__instance, id);
         FractionatorOutputState.ClearExtraState(__instance, id);
     }
 

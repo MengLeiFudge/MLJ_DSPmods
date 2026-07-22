@@ -263,9 +263,9 @@ public class ConversionRecipe : BaseRecipe {
     public bool SupportsLockedOutput => lockedOutputPlansByItemId.Count > 0;
 
     /// <summary>
-    /// 当前分馏塔锁定的输出物品ID（由 ProcessManager 在调用 GetOutputs 前设置）
+    /// 判断指定主产物是否可作为当前转化配方的主路目标。
     /// </summary>
-    public static int CurrentLockedOutputId = 0;
+    public override bool SupportsMainOutputLock(int itemId) => TryGetLockedOutputPlan(itemId, out _);
 
     /// <summary>
     /// 执行单次完整分馏结算并写回主产物、副产物和输入保留结果。
@@ -273,8 +273,8 @@ public class ConversionRecipe : BaseRecipe {
     public override void GetOutputs(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, out List<ProductOutputInfo> outputs) {
         if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentLockedOutputId != 0
-            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
+            && CurrentMainOutputTargetId != 0
+            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
             GetLockedOutput(ref seed, pointsBonus, successBoost, fluidInputIncAvg, ref fluidInputInc,
                 lockedPlan, out inputChange, out outputs);
             return;
@@ -291,8 +291,8 @@ public class ConversionRecipe : BaseRecipe {
     public override FractionationOutcome GetOutputsFast(ref uint seed, float pointsBonus, float successBoost,
         int fluidInputIncAvg, ref int fluidInputInc, out int inputChange, ProductOutputBuffer outputs) {
         if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentLockedOutputId != 0
-            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
+            && CurrentMainOutputTargetId != 0
+            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
             return GetLockedOutputFast(ref seed, pointsBonus, successBoost, fluidInputIncAvg,
                 ref fluidInputInc, lockedPlan, out inputChange, outputs);
         }
@@ -307,8 +307,8 @@ public class ConversionRecipe : BaseRecipe {
     public override FractionationBatchResult GetOutputsBatchFast(ref uint seed, float pointsBonus, float successBoost,
         int batchCount, int fluidInputIncAvg, ref int fluidInputInc, ProductOutputBuffer outputs) {
         if (TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Conversion)
-            && CurrentLockedOutputId != 0
-            && TryGetLockedOutputPlan(CurrentLockedOutputId, out LockedOutputPlan lockedPlan)) {
+            && CurrentMainOutputTargetId != 0
+            && TryGetLockedOutputPlan(CurrentMainOutputTargetId, out LockedOutputPlan lockedPlan)) {
             return GetLockedOutputBatchFast(ref seed, pointsBonus, successBoost, batchCount,
                 fluidInputIncAvg, ref fluidInputInc, lockedPlan, outputs);
         }

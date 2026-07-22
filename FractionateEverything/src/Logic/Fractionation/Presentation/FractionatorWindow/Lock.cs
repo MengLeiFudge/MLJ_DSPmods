@@ -3,7 +3,6 @@ using FE.Logic.Fractionation.FracRecipes;
 using FE.Logic.Fractionation.Process;
 using UnityEngine;
 using UnityEngine.UI;
-using static FE.Logic.Fractionation.FracRecipes.RecipeManager;
 using static FE.Utils.Utils;
 
 namespace FE.Logic.Fractionation.Presentation;
@@ -19,54 +18,32 @@ public static partial class FractionatorWindow {
         if (recipe == null || itemId == 0 || !recipe.IsMainOutputLockCalibrated) {
             return false;
         }
-        return recipe is ConversionRecipe conversionRecipe
-            ? conversionRecipe.TryGetLockedOutputPlan(itemId, out _)
-            : recipe.SupportsMainOutputLock(itemId);
+        return recipe.SupportsMainOutputLock(itemId);
     }
 
-    private static bool IsLineageTargetOutput(RectificationRecipe recipe, int itemId) {
-        return recipe != null && recipe.SupportsLineageTarget(itemId);
-    }
-
-    private static void OnSlotRightClick(int itemId) {
+    private static void OnSlotRightClick(ProductSlot slot, int itemId) {
         UIFractionatorWindow target = sourceWindow ?? modWindow;
-        if (target == null || target.fractionatorId == 0 || target.factory == null) {
+        if (slot == null || target == null || target.fractionatorId == 0 || target.factory == null) {
             return;
         }
         FractionatorComponent fractionator = target.factorySystem.fractionatorPool[target.fractionatorId];
-        if (fractionator.id != target.fractionatorId) {
-            return;
-        }
-        int buildingId = target.factory.entityPool[fractionator.entityId].protoId;
-        if (itemId == fractionator.fluidId) {
+        if (fractionator.id != target.fractionatorId || slot.kind == ProductSlotKind.Fluid) {
             return;
         }
 
+        int buildingId = target.factory.entityPool[fractionator.entityId].protoId;
         BaseRecipe recipe = GetRecipeForBuilding(buildingId, fractionator.fluidId);
-        if (recipe?.OutputAppend.Exists(output => output.OutputID == itemId) == true) {
+        if (slot.kind == ProductSlotKind.Side) {
             ToggleByproductDiscard(target, fractionator, recipe);
             return;
         }
-
-        if (buildingId is IFE交互塔 or IFE转化塔) {
-            ToggleLockedOutput(target, fractionator, buildingId, itemId);
-            return;
-        }
-
-        if (buildingId == IFE解析塔) {
-            ToggleAnalysisLineageTarget(target, fractionator, itemId);
-        }
+        ToggleLockedOutput(target, fractionator, recipe, itemId);
     }
 
     private static void ToggleLockedOutput(UIFractionatorWindow target, FractionatorComponent fractionator,
-        int buildingId, int itemId) {
-        ERecipe recipeType = buildingId == IFE交互塔 ? ERecipe.BuildingTrain : ERecipe.Conversion;
-        if (!TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipeType)) {
-            return;
-        }
-
-        BaseRecipe recipe = GetRecipe<BaseRecipe>(recipeType, fractionator.fluidId);
-        if (!IsLockableOutput(recipe, itemId)) {
+        BaseRecipe recipe, int itemId) {
+        if (recipe == null || !TowerRuntimeModifierCache.IsMainOutputLockEnabled(recipe.RecipeType)
+            || !IsLockableOutput(recipe, itemId)) {
             return;
         }
 
@@ -85,38 +62,14 @@ public static partial class FractionatorWindow {
 
     private static void ToggleByproductDiscard(UIFractionatorWindow target, FractionatorComponent fractionator,
         BaseRecipe recipe) {
-        if (!TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType)
-            || !recipe.IsByproductDiscardCalibrated) {
+        if (recipe == null || !TowerRuntimeModifierCache.IsByproductDiscardEnabled(recipe.RecipeType)
+            || recipe.OutputAppend.Count == 0 || !recipe.IsByproductDiscardCalibrated) {
             return;
         }
 
         bool enabled = !fractionator.GetNormalizedByproductDiscard(target.factory);
         fractionator.SetByproductDiscardAndSync(target.factory, enabled, manual: true);
         UIRealtimeTip.Popup((enabled ? "已启用副产物弃置" : "已关闭副产物弃置").Translate());
-        DoModWindowUpdate(target);
-    }
-
-    private static void ToggleAnalysisLineageTarget(UIFractionatorWindow target, FractionatorComponent fractionator,
-        int itemId) {
-        if (!TowerRuntimeModifierCache.IsMainOutputLockEnabled(ERecipe.Rectification)) {
-            return;
-        }
-
-        RectificationRecipe recipe = GetRecipe<RectificationRecipe>(ERecipe.Rectification, fractionator.fluidId);
-        if (!IsLineageTargetOutput(recipe, itemId)) {
-            return;
-        }
-
-        int currentTargetItemId = fractionator.GetLineageTarget(target.factory);
-        if (currentTargetItemId == itemId) {
-            fractionator.SetLineageTargetAndSync(target.factory, 0, manual: true);
-            UIRealtimeTip.Popup("已清除谱系方向".Translate());
-        } else {
-            fractionator.SetLineageTargetAndSync(target.factory, itemId, manual: true);
-            string itemName = LDB.items.Select(itemId)?.name ?? itemId.ToString();
-            UIRealtimeTip.Popup(string.Format("已设定谱系方向：{0}".Translate(), itemName));
-        }
-
         DoModWindowUpdate(target);
     }
 
@@ -194,73 +147,70 @@ public static partial class FractionatorWindow {
         return Color.white;
     }
 
-    private static void UpdateLockStatusUI(BaseRecipe recipe, int lockedOutputId, bool showLockControls) {
+    private static void UpdateTargetStatusUI(BaseRecipe recipe, int lockedOutputId,
+        bool mainOutputLockUnlocked, bool byproductDiscardUnlocked, bool discardByproducts) {
         if (lockStateText != null) {
-            lockStateText.gameObject.SetActive(showLockControls);
+            lockStateText.gameObject.SetActive(true);
+            lockStateText.text = BuildMainOutputLockState(recipe, lockedOutputId, mainOutputLockUnlocked)
+                                 + "\r\n"
+                                 + BuildByproductDiscardState(recipe, byproductDiscardUnlocked, discardByproducts);
         }
         if (lockHintText != null) {
-            lockHintText.gameObject.SetActive(showLockControls);
-        }
-        if (!showLockControls) {
-            return;
-        }
-
-        string targetName = lockedOutputId == 0
-            ? "未锁定".Translate()
-            : LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
-        if (lockStateText != null) {
-            lockStateText.text = $"{"主路目标".Translate()}：{targetName}";
-        }
-        if (lockHintText != null) {
-            lockHintText.text = recipe == null
-                ? string.Empty
-                : (lockedOutputId == 0 ? "右键设为单锁".Translate() : "右键清除单锁".Translate());
-        }
-    }
-
-    private static void UpdateTargetStatusUI(BaseRecipe lockRecipe, int lockedOutputId, bool showLockControls,
-        RectificationRecipe rectificationRecipe, int lineageTargetId, bool showLineageControls,
-        bool showDiscardControls, bool discardByproducts) {
-        bool showControls = showLockControls || showLineageControls || showDiscardControls;
-        if (lockStateText != null) {
-            lockStateText.gameObject.SetActive(showControls);
-        }
-        if (lockHintText != null) {
-            lockHintText.gameObject.SetActive(showControls);
-        }
-        if (!showControls) {
-            return;
-        }
-
-        if (showLockControls) {
-            UpdateLockStatusUI(lockRecipe, lockedOutputId, showLockControls);
-        } else if (showLineageControls) {
-            string targetName = lineageTargetId == 0
-                ? "未锁定".Translate()
-                : LDB.items.Select(lineageTargetId)?.name ?? lineageTargetId.ToString();
-            if (lockStateText != null) {
-                lockStateText.text = $"{"谱系方向".Translate()}：{targetName}";
-            }
-            if (lockHintText != null) {
-                lockHintText.text = rectificationRecipe == null
-                    ? string.Empty
-                    : (lineageTargetId == 0 ? "右键设为谱系方向".Translate() : "右键清除谱系方向".Translate());
-            }
-        } else {
-            if (lockStateText != null) lockStateText.text = string.Empty;
-            if (lockHintText != null) lockHintText.text = string.Empty;
-        }
-
-        if (showDiscardControls) {
-            string discardState = discardByproducts ? "弃置".Translate() : "保留".Translate();
-            if (lockStateText != null) {
-                lockStateText.text = $"{lockStateText.text}{(lockStateText.text.Length > 0 ? "\r\n" : string.Empty)}"
-                                     + $"{"副产物".Translate()}：{discardState}";
-            }
-            if (lockHintText != null) {
+            lockHintText.gameObject.SetActive(true);
+            lockHintText.text = BuildMainOutputLockHint(recipe, lockedOutputId, mainOutputLockUnlocked);
+            if (CanToggleByproductDiscard(recipe, byproductDiscardUnlocked)) {
                 lockHintText.text = $"{lockHintText.text}{(lockHintText.text.Length > 0 ? "\r\n" : string.Empty)}"
                                     + "右键切换副产物弃置".Translate();
             }
         }
+    }
+
+    private static string BuildMainOutputLockState(BaseRecipe recipe, int lockedOutputId, bool unlocked) {
+        if (!unlocked) {
+            return $"{"主路锁定".Translate()}：{"未解锁".Translate()}";
+        }
+        if (recipe == null) {
+            return $"{"主路锁定".Translate()}：{"等待配方".Translate()}";
+        }
+        if (!recipe.IsMainOutputLockCalibrated) {
+            return $"{"主路锁定".Translate()}：{"未校准".Translate()} "
+                   + $"{recipe.TotalSuccessCount}/{recipe.MainOutputLockCalibrationThreshold}";
+        }
+        if (!recipe.OutputMain.Exists(output => recipe.SupportsMainOutputLock(output.OutputID))) {
+            return $"{"主路锁定".Translate()}：{"当前无可选主产物".Translate()}";
+        }
+        string targetName = lockedOutputId == 0
+            ? "未锁定".Translate()
+            : LDB.items.Select(lockedOutputId)?.name ?? lockedOutputId.ToString();
+        return $"{"主路目标".Translate()}：{targetName}";
+    }
+
+    private static string BuildMainOutputLockHint(BaseRecipe recipe, int lockedOutputId, bool unlocked) {
+        if (!unlocked || recipe == null || !recipe.IsMainOutputLockCalibrated
+            || !recipe.OutputMain.Exists(output => recipe.SupportsMainOutputLock(output.OutputID))) {
+            return string.Empty;
+        }
+        return lockedOutputId == 0 ? "右键设为单锁".Translate() : "右键清除单锁".Translate();
+    }
+
+    private static string BuildByproductDiscardState(BaseRecipe recipe, bool unlocked, bool enabled) {
+        if (!unlocked) {
+            return $"{"副产物弃置".Translate()}：{"未解锁".Translate()}";
+        }
+        if (recipe == null) {
+            return $"{"副产物弃置".Translate()}：{"等待配方".Translate()}";
+        }
+        if (!recipe.IsByproductDiscardCalibrated) {
+            return $"{"副产物弃置".Translate()}：{"未校准".Translate()} "
+                   + $"{recipe.TotalSuccessCount}/{recipe.ByproductDiscardCalibrationThreshold}";
+        }
+        if (recipe.OutputAppend.Count == 0) {
+            return $"{"副产物弃置".Translate()}：{"当前无副产物".Translate()}";
+        }
+        return $"{"副产物弃置".Translate()}：{(enabled ? "弃置" : "保留").Translate()}";
+    }
+
+    private static bool CanToggleByproductDiscard(BaseRecipe recipe, bool unlocked) {
+        return unlocked && recipe != null && recipe.IsByproductDiscardCalibrated && recipe.OutputAppend.Count > 0;
     }
 }
